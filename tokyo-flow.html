@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>東京市場USD/JPYフロー分析</title>
+  <meta name="description" content="東京市場USD/JPYスポット出来高、前日比、20営業日平均との差、手入力ゴトー日を確認する分析ページ">
+  <link rel="stylesheet" href="style.css?v=9">
+  <style>
+    .flow-main{margin-top:-44px}.flow-panel{padding:20px;border:1px solid var(--border);border-radius:16px;background:#fff;box-shadow:var(--shadow)}
+    .flow-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin-bottom:18px}.flow-toolbar label{display:grid;gap:6px;color:var(--muted);font-size:13px}.flow-toolbar select{min-width:170px}
+    .flow-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}.flow-kpi{padding:16px;border:1px solid var(--border);border-radius:13px;background:linear-gradient(180deg,#fff,#f8fbfd)}.flow-kpi span{display:block;color:var(--muted);font-size:12px;font-weight:800}.flow-kpi strong{display:block;margin-top:6px;font-size:24px}.flow-kpi small{color:var(--muted)}
+    .chart-wrap{position:relative;min-height:390px;padding:10px;border:1px solid var(--border);border-radius:14px;background:#fff}.chart-wrap canvas{width:100%;height:370px}
+    .legend{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0 0;color:var(--muted);font-size:12px}.legend span:before{content:"";display:inline-block;width:18px;height:4px;margin-right:6px;vertical-align:middle;border-radius:999px;background:#2f7ea9}.legend .l-day:before{background:#d08c26}.legend .l-avg:before{background:#8b5fbf}.legend .l-goto:before{height:12px;background:#e8f5eb;border:1px solid #7cb68b}
+    .flow-table-wrap{overflow:auto;margin-top:20px}.flow-table{width:100%;border-collapse:collapse;font-size:13px}.flow-table th,.flow-table td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}.flow-table th:first-child,.flow-table td:first-child,.flow-table th:nth-child(5),.flow-table td:nth-child(5),.flow-table th:nth-child(6),.flow-table td:nth-child(6){text-align:left}.flow-table tr.goto-row{background:#f2fbf4}.badge{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800}.badge.normal{background:#e8f5eb;color:#24633a}.badge.early{background:#fff0d8;color:#8a5a0a}.badge.month-end{background:#e8f1fb;color:#245f9b}.badge.month-start{background:#f0e8fb;color:#67419a}.badge.unknown{background:#eef1f4;color:#687789}
+    .status-note{margin:0 0 14px;color:var(--muted);font-size:13px}.manual-note{margin-top:14px;padding:12px 14px;border-left:4px solid #d5aa35;background:#fff8e4;color:#725a17;font-size:13px}
+    @media(max-width:800px){.flow-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.chart-wrap{min-height:330px}.chart-wrap canvas{height:310px}}
+  </style>
+</head>
+<body>
+  <header class="site-header market-page-header">
+    <div class="wrap">
+      <a class="back-link" href="index.html">← マーケットレポートへ戻る</a>
+      <p class="eyebrow">TOKYO MARKET FLOW ANALYSIS</p>
+      <h1>東京市場USD/JPYフロー分析</h1>
+      <p class="lead">出来高の増減と20営業日平均との差を確認し、手入力したゴトー日・前倒し日・月末要因を重ねて見ます。</p>
+    </div>
+  </header>
+  <main class="wrap flow-main">
+    <section class="flow-panel">
+      <div class="section-heading">
+        <div><p class="section-kicker">VOLUME & FIXING FLOW</p><h2 style="margin:0">東京市場スポット出来高</h2></div>
+        <p id="flowStatus">読み込み中です…</p>
+      </div>
+      <p class="status-note">単位：百万ドル。ゴトー日は暦から自動判定せず、JSONの手入力値だけを表示します。</p>
+      <div class="flow-toolbar">
+        <label>表示期間<select id="rangeFilter"><option value="20">直近20営業日</option><option value="40" selected>直近40営業日</option><option value="all">全期間</option></select></label>
+        <label>ゴトー日<select id="gotoFilter"><option value="all">すべて</option><option value="goto">ゴトー日のみ</option><option value="early">前倒しのみ</option><option value="month-end">月末のみ</option><option value="unset">未入力のみ</option></select></label>
+      </div>
+      <div class="flow-kpis">
+        <article class="flow-kpi"><span>最新出来高</span><strong id="latestVolume">—</strong><small id="latestDate">—</small></article>
+        <article class="flow-kpi"><span>前日比</span><strong id="latestDayChange">—</strong><small>前営業日との比較</small></article>
+        <article class="flow-kpi"><span>20営業日平均との差</span><strong id="latestVs20d">—</strong><small>平均対比</small></article>
+        <article class="flow-kpi"><span>手入力ゴトー日件数</span><strong id="gotoCount">—</strong><small>表示中データ</small></article>
+      </div>
+      <div class="chart-wrap"><canvas id="flowChart" aria-label="東京市場USDJPY出来高グラフ"></canvas></div>
+      <div class="legend"><span>出来高</span><span class="l-day">前日比</span><span class="l-avg">20営業日平均との差</span><span class="l-goto">手入力ゴトー日</span></div>
+      <p class="manual-note">編集方法：<code>tokyo-usdjpy-volume.json</code> の各行で <code>gotoBi</code>、<code>gotoBiType</code>、<code>memo</code> を手入力します。未入力は <code>gotoBi: null</code> のままにします。</p>
+      <div class="flow-table-wrap"><table class="flow-table"><thead><tr><th>日付</th><th>出来高</th><th>前日比</th><th>20日平均との差</th><th>ゴトー日区分</th><th>メモ</th></tr></thead><tbody id="flowTableBody"></tbody></table></div>
+    </section>
+  </main>
+  <footer><div class="wrap">© Market Report</div></footer>
+  <script src="tokyo-flow.js?v=1"></script>
+</body>
+</html>
