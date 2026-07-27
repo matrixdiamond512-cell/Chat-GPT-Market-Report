@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>マーケットレポート</title>
   <meta name="description" content="マーケットレポートをHTMLで閲覧できるダッシュボード">
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
   <header class="site-header">
@@ -34,6 +34,17 @@
       <label>月
         <select id="monthFilter"><option value="all">すべて</option></select>
       </label>
+      <label>市場
+        <select id="marketFilter">
+          <option value="all">すべて</option>
+          <option value="USD/JPY">USD/JPY</option>
+          <option value="EUR/USD">EUR/USD</option>
+          <option value="日経225先物">日経225先物</option>
+          <option value="金">金</option>
+          <option value="原油">原油</option>
+          <option value="BTCUSD">BTCUSD</option>
+        </select>
+      </label>
       <label class="search-field">キーワード
         <input id="searchInput" type="search" placeholder="例：ドル円、原油、金、米金利">
       </label>
@@ -58,6 +69,6 @@
   </main>
 
   <footer><div class="wrap">© Market Report</div></footer>
-  <script src="script.js?v=3"></script>
+  <script src="script.js?v=4"></script>
 </body>
 </html>
