@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>市場別分析｜マーケットレポート</title>
-  <meta name="description" content="市場別に過去の見通し、材料、需給、シナリオ、崩れる条件を確認できます。">
-  <link rel="stylesheet" href="style.css?v=7">
+  <meta name="description" content="市場別に過去の見通し、材料、需給、類似相場、シナリオ検証を確認できます。">
+  <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
   <header class="site-header market-page-header">
@@ -14,65 +14,43 @@
       <p class="eyebrow">MARKET DETAIL</p>
       <h1 id="marketPageTitle">市場別分析</h1>
       <p class="lead" id="marketPageLead">過去レポートから市場ごとの材料、方向感、需給、シナリオを整理します。</p>
+      <nav class="market-switcher" aria-label="市場切り替え">
+        <a href="market.html?market=USD%2FJPY">USD/JPY</a><a href="market.html?market=EUR%2FUSD">EUR/USD</a><a href="market.html?market=日経225先物">日経225先物</a><a href="market.html?market=金">金</a><a href="market.html?market=原油">原油</a><a href="market.html?market=BTCUSD">BTCUSD</a>
+      </nav>
     </div>
   </header>
 
   <main class="wrap market-page-main">
     <section class="market-summary-grid">
-      <article class="summary-stat">
-        <span class="dashboard-label">分析対象レポート</span>
-        <strong id="marketReportCount">—</strong>
-      </article>
-      <article class="summary-stat">
-        <span class="dashboard-label">直近の方向感</span>
-        <strong id="marketLatestDirection">—</strong>
-      </article>
-      <article class="summary-stat">
-        <span class="dashboard-label">最頻出テーマ</span>
-        <strong id="marketTopTheme">—</strong>
-      </article>
-      <article class="summary-stat">
-        <span class="dashboard-label">直近更新</span>
-        <strong id="marketLatestDate">—</strong>
-      </article>
+      <article class="summary-stat"><span class="dashboard-label">分析対象レポート</span><strong id="marketReportCount">—</strong></article>
+      <article class="summary-stat"><span class="dashboard-label">直近の方向感</span><strong id="marketLatestDirection">—</strong></article>
+      <article class="summary-stat"><span class="dashboard-label">最頻出テーマ</span><strong id="marketTopTheme">—</strong></article>
+      <article class="summary-stat"><span class="dashboard-label">直近更新</span><strong id="marketLatestDate">—</strong></article>
     </section>
 
     <section class="market-analysis-grid">
-      <article class="insight-card">
-        <div class="insight-card-head">
-          <div>
-            <span class="dashboard-label">DIRECTION HISTORY</span>
-            <h2>方向感の履歴</h2>
-          </div>
-        </div>
-        <div id="directionHistory" class="direction-history"></div>
-      </article>
+      <article class="insight-card"><div class="insight-card-head"><div><span class="dashboard-label">DIRECTION HISTORY</span><h2>方向感の履歴</h2></div></div><div id="directionHistory" class="direction-history"></div></article>
+      <article class="insight-card"><div class="insight-card-head"><div><span class="dashboard-label">RECURRING CATALYSTS</span><h2>頻出材料</h2></div></div><div id="marketThemeRanking" class="ranking-list"></div></article>
+    </section>
 
-      <article class="insight-card">
-        <div class="insight-card-head">
-          <div>
-            <span class="dashboard-label">RECURRING CATALYSTS</span>
-            <h2>頻出材料</h2>
-          </div>
-        </div>
-        <div id="marketThemeRanking" class="ranking-list"></div>
-      </article>
+    <section class="intelligence-grid">
+      <article class="insight-card"><div class="insight-card-head"><div><span class="dashboard-label">SCENARIO REVIEW</span><h2>シナリオ検証</h2></div><span class="mini-note" id="scenarioReviewStatus"></span></div><div id="scenarioReview" class="scenario-review"></div></article>
+      <article class="insight-card"><div class="insight-card-head"><div><span class="dashboard-label">SIMILAR MARKET</span><h2>類似相場</h2></div><span class="mini-note">テーマ・方向・材料・主導市場を比較</span></div><div id="marketSimilarReports" class="similar-list"></div></article>
+    </section>
+
+    <section class="intelligence-grid">
+      <article class="insight-card"><div class="insight-card-head"><div><span class="dashboard-label">THEME TIMELINE</span><h2>相場テーマの時系列</h2></div></div><div id="themeTimeline" class="theme-timeline"></div></article>
+      <article class="insight-card"><div class="insight-card-head"><div><span class="dashboard-label">CROSS-ASSET TRANSMISSION</span><h2>市場間フロー</h2></div><span class="mini-note">レポート記載の資金フローを整理</span></div><div id="marketFlowMap" class="flow-map"></div></article>
     </section>
 
     <section>
-      <div class="section-heading">
-        <div>
-          <p class="section-kicker">MARKET REPORT ARCHIVE</p>
-          <h2>過去の見通し</h2>
-        </div>
-        <p id="marketArchiveCount"></p>
-      </div>
+      <div class="section-heading"><div><p class="section-kicker">MARKET REPORT ARCHIVE</p><h2>過去の見通し</h2></div><p id="marketArchiveCount"></p></div>
       <div id="marketArchive" class="market-archive"></div>
       <p id="marketEmpty" class="empty" hidden>この市場のレポートはまだありません。</p>
     </section>
   </main>
 
   <footer><div class="wrap">© Market Report</div></footer>
-  <script src="market.js?v=7"></script>
+  <script src="market.js?v=8"></script>
 </body>
 </html>
