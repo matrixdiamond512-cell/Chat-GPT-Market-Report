@@ -12,9 +12,13 @@
     .flow-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}.flow-kpi{padding:16px;border:1px solid var(--border);border-radius:13px;background:linear-gradient(180deg,#fff,#f8fbfd)}.flow-kpi span{display:block;color:var(--muted);font-size:12px;font-weight:800}.flow-kpi strong{display:block;margin-top:6px;font-size:24px}.flow-kpi small{color:var(--muted)}
     .chart-wrap{position:relative;min-height:390px;padding:10px;border:1px solid var(--border);border-radius:14px;background:#fff}.chart-wrap canvas{width:100%;height:370px}
     .legend{display:flex;gap:14px;flex-wrap:wrap;margin:12px 0 0;color:var(--muted);font-size:12px}.legend span:before{content:"";display:inline-block;width:18px;height:4px;margin-right:6px;vertical-align:middle;border-radius:999px;background:#2f7ea9}.legend .l-day:before{background:#d08c26}.legend .l-avg:before{background:#8b5fbf}.legend .l-goto:before{height:12px;background:#e8f5eb;border:1px solid #7cb68b}
+    .analysis-block{margin-top:20px;padding:18px;border:1px solid var(--border);border-radius:14px;background:#fbfcfd}.analysis-block h3{margin:0 0 12px;font-size:18px}.analysis-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.analysis-card{padding:15px;border:1px solid var(--border);border-radius:12px;background:#fff}.analysis-card span{display:block;color:var(--muted);font-size:12px;font-weight:800}.analysis-card strong{display:block;margin-top:5px;font-size:21px}.analysis-card small{display:block;margin-top:4px;color:var(--muted)}
+    .weekday-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.weekday-card{padding:14px;border:1px solid var(--border);border-radius:12px;background:#fff}.weekday-card b{display:block;margin-bottom:6px}.weekday-bar{height:7px;border-radius:999px;background:#edf2f5;overflow:hidden}.weekday-bar span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:999px}.weekday-card small{display:block;margin-top:7px;color:var(--muted)}
+    .surge-list{display:grid;gap:9px}.surge-item{display:grid;grid-template-columns:95px 1fr auto;gap:10px;align-items:center;padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:#fff}.surge-item strong{text-align:right}.surge-tag{display:inline-flex;padding:3px 7px;border-radius:999px;background:#fff0d8;color:#8a5a0a;font-size:11px;font-weight:800}
     .flow-table-wrap{overflow:auto;margin-top:20px}.flow-table{width:100%;border-collapse:collapse;font-size:13px}.flow-table th,.flow-table td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}.flow-table th:first-child,.flow-table td:first-child,.flow-table th:nth-child(5),.flow-table td:nth-child(5),.flow-table th:nth-child(6),.flow-table td:nth-child(6){text-align:left}.flow-table tr.goto-row{background:#f2fbf4}.badge{display:inline-flex;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:800}.badge.normal{background:#e8f5eb;color:#24633a}.badge.early{background:#fff0d8;color:#8a5a0a}.badge.month-end{background:#e8f1fb;color:#245f9b}.badge.month-start{background:#f0e8fb;color:#67419a}.badge.unknown{background:#eef1f4;color:#687789}
     .status-note{margin:0 0 14px;color:var(--muted);font-size:13px}.manual-note{margin-top:14px;padding:12px 14px;border-left:4px solid #d5aa35;background:#fff8e4;color:#725a17;font-size:13px}
-    @media(max-width:800px){.flow-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.chart-wrap{min-height:330px}.chart-wrap canvas{height:310px}}
+    @media(max-width:900px){.analysis-grid{grid-template-columns:1fr}.weekday-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:800px){.flow-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.chart-wrap{min-height:330px}.chart-wrap canvas{height:310px}.surge-item{grid-template-columns:82px 1fr}.surge-item strong{grid-column:2;text-align:left}}
   </style>
 </head>
 <body>
@@ -45,11 +49,36 @@
       </div>
       <div class="chart-wrap"><canvas id="flowChart" aria-label="東京市場USDJPY出来高グラフ"></canvas></div>
       <div class="legend"><span>出来高</span><span class="l-day">前日比</span><span class="l-avg">20営業日平均との差</span><span class="l-goto">手入力ゴトー日</span></div>
+
+      <section class="analysis-block" aria-label="ゴトー日比較">
+        <h3>ゴトー日と通常日の比較</h3>
+        <div class="analysis-grid">
+          <article class="analysis-card"><span>ゴトー日平均出来高</span><strong id="gotoAverage">—</strong><small id="gotoAverageCount">—</small></article>
+          <article class="analysis-card"><span>通常日平均出来高</span><strong id="normalAverage">—</strong><small id="normalAverageCount">—</small></article>
+          <article class="analysis-card"><span>ゴトー日プレミアム</span><strong id="gotoPremium">—</strong><small>通常日平均に対する差</small></article>
+        </div>
+      </section>
+
+      <section class="analysis-block" aria-label="曜日別出来高">
+        <h3>曜日別平均出来高</h3>
+        <div id="weekdayStats" class="weekday-grid"></div>
+      </section>
+
+      <section class="analysis-block" aria-label="区分別統計">
+        <h3>ゴトー日区分別統計</h3>
+        <div id="typeStats" class="analysis-grid"></div>
+      </section>
+
+      <section class="analysis-block" aria-label="出来高急増日">
+        <h3>出来高急増日</h3>
+        <div id="surgeList" class="surge-list"></div>
+      </section>
+
       <p class="manual-note">編集方法：<code>tokyo-usdjpy-volume.json</code> の各行で <code>gotoBi</code>、<code>gotoBiType</code>、<code>memo</code> を手入力します。未入力は <code>gotoBi: null</code> のままにします。</p>
       <div class="flow-table-wrap"><table class="flow-table"><thead><tr><th>日付</th><th>出来高</th><th>前日比</th><th>20日平均との差</th><th>ゴトー日区分</th><th>メモ</th></tr></thead><tbody id="flowTableBody"></tbody></table></div>
     </section>
   </main>
   <footer><div class="wrap">© Market Report</div></footer>
-  <script src="tokyo-flow.js?v=1"></script>
+  <script src="tokyo-flow.js?v=2"></script>
 </body>
 </html>
