@@ -4,20 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>マーケットレポート</title>
-  <meta name="description" content="マーケットレポートをHTMLで閲覧できるアーカイブ">
-  <link rel="stylesheet" href="style.css?v=2">
+  <meta name="description" content="マーケットレポートをHTMLで閲覧できるダッシュボード">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
   <header class="site-header">
-    <div class="wrap">
-      <p class="eyebrow">MARKET REPORT ARCHIVE</p>
-      <h1>マーケットレポート</h1>
-      <p class="lead">本文と図解要素をWebページとして表示します。</p>
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">MARKET REPORT DASHBOARD</p>
+        <h1>マーケットレポート</h1>
+        <p class="lead">相場テーマ、重要ニュース、需給、個別見通しを1ページで確認できます。</p>
+      </div>
+      <div class="hero-note">画像不要・スマホ対応・検索可能</div>
     </div>
   </header>
 
   <main class="wrap">
-    <section class="toolbar">
+    <section class="toolbar" aria-label="レポート絞り込み">
       <label>時間帯
         <select id="timeFilter">
           <option value="all">すべて</option>
@@ -28,13 +31,19 @@
           <option value="21:00">21:00</option>
         </select>
       </label>
-      <label>キーワード
-        <input id="searchInput" type="search" placeholder="例：ドル円、原油、金">
+      <label>月
+        <select id="monthFilter"><option value="all">すべて</option></select>
+      </label>
+      <label class="search-field">キーワード
+        <input id="searchInput" type="search" placeholder="例：ドル円、原油、金、米金利">
       </label>
     </section>
 
     <section>
-      <h2>最新レポート</h2>
+      <div class="section-heading">
+        <h2>最新レポート</h2>
+        <p id="latestTimestamp"></p>
+      </div>
       <div id="latestReport"><p class="empty">読み込み中です…</p></div>
     </section>
 
@@ -49,6 +58,6 @@
   </main>
 
   <footer><div class="wrap">© Market Report</div></footer>
-  <script src="script.js?v=2"></script>
+  <script src="script.js?v=3"></script>
 </body>
 </html>
