@@ -1,145 +1,31 @@
-const marketPageTitle=document.getElementById("marketPageTitle");
-const marketPageLead=document.getElementById("marketPageLead");
-const marketReportCount=document.getElementById("marketReportCount");
-const marketLatestDirection=document.getElementById("marketLatestDirection");
-const marketTopTheme=document.getElementById("marketTopTheme");
-const marketLatestDate=document.getElementById("marketLatestDate");
-const directionHistory=document.getElementById("directionHistory");
-const marketThemeRanking=document.getElementById("marketThemeRanking");
-const marketArchive=document.getElementById("marketArchive");
-const marketArchiveCount=document.getElementById("marketArchiveCount");
-const marketEmpty=document.getElementById("marketEmpty");
+const $=id=>document.getElementById(id);
+const marketPageTitle=$("marketPageTitle"),marketPageLead=$("marketPageLead"),marketReportCount=$("marketReportCount"),marketLatestDirection=$("marketLatestDirection"),marketTopTheme=$("marketTopTheme"),marketLatestDate=$("marketLatestDate"),directionHistory=$("directionHistory"),marketThemeRanking=$("marketThemeRanking"),marketArchive=$("marketArchive"),marketArchiveCount=$("marketArchiveCount"),marketEmpty=$("marketEmpty"),scenarioReview=$("scenarioReview"),scenarioReviewStatus=$("scenarioReviewStatus"),marketSimilarReports=$("marketSimilarReports"),themeTimeline=$("themeTimeline"),marketFlowMap=$("marketFlowMap");
 
-const MARKET_ALIASES={
-  "USD/JPY":["USD/JPY","USDJPY","ドル円"],
-  "EUR/USD":["EUR/USD","EURUSD","ユーロドル"],
-  "日経225先物":["日経225先物","日経先物","大阪取引所"],
-  "金":["金","ゴールド","Gold","XAUUSD"],
-  "原油":["原油","WTI","ブレント","Crude Oil"],
-  "BTCUSD":["BTCUSD","BTC/USD","ビットコイン","Bitcoin"]
-};
+const MARKET_ALIASES={"USD/JPY":["USD/JPY","USDJPY","ドル円"],"EUR/USD":["EUR/USD","EURUSD","ユーロドル"],"日経225先物":["日経225先物","日経先物","大阪取引所"],"金":["金","ゴールド","Gold","XAUUSD"],"原油":["原油","WTI","ブレント","Crude Oil"],"BTCUSD":["BTCUSD","BTC/USD","ビットコイン","Bitcoin"]};
+const THEMES=[["米金利",["米金利","米長期金利","米10年債","国債利回り"]],["金融政策",["FRB","FOMC","日銀","ECB","利上げ","利下げ"]],["インフレ",["インフレ","CPI","PCE","物価","期待インフレ"]],["地政学",["地政学","中東","ホルムズ","制裁","戦争","紛争"]],["実需・需給",["実需","需給","ポジション","フロー","買い戻し","ショートカバー"]],["オプション・先物",["オプション","SQ","MSQ","ガンマ","先物建玉"]],["AI・半導体",["AI","半導体","NASDAQ","NVIDIA","エヌビディア"]],["原油・エネルギー",["原油","WTI","ブレント","OPEC","エネルギー"]],["暗号資産",["BTC","ビットコイン","暗号資産","ETF資金"]],["リスク選好",["リスクオン","リスクオフ","安全資産","安全逃避"]]];
 
-const THEMES=[
-  ["米金利",["米金利","米長期金利","米10年債","国債利回り"]],
-  ["金融政策",["FRB","FOMC","日銀","ECB","利上げ","利下げ"]],
-  ["インフレ",["インフレ","CPI","PCE","物価","期待インフレ"]],
-  ["地政学",["地政学","中東","ホルムズ","制裁","戦争","紛争"]],
-  ["実需・需給",["実需","需給","ポジション","フロー","買い戻し","ショートカバー"]],
-  ["オプション・先物",["オプション","SQ","MSQ","ガンマ","先物建玉"]],
-  ["AI・半導体",["AI","半導体","NASDAQ","NVIDIA","エヌビディア"]],
-  ["原油・エネルギー",["原油","WTI","ブレント","OPEC","エネルギー"]],
-  ["暗号資産",["BTC","ビットコイン","暗号資産","ETF資金"]],
-  ["リスク選好",["リスクオン","リスクオフ","安全資産","安全逃避"]]
-];
+function esc(v=""){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));}
+function asArray(v){return Array.isArray(v)?v:(v?[v]:[]);}function textOf(v){return typeof v==="string"?v:(v?.text||v?.summary||v?.title||"");}
+function directionClass(v=""){const t=String(v).toLowerCase();if(/[上昇|強気|買い|反発|up|bull]/.test(t))return"up";if(/[下落|弱気|売り|反落|down|bear]/.test(t))return"down";return"neutral";}
+function normalizeMarketName(raw){const d=decodeURIComponent(raw||"").trim();const f=Object.entries(MARKET_ALIASES).find(([,a])=>a.some(x=>x.toLowerCase()===d.toLowerCase()));return f?f[0]:d||"USD/JPY";}
+function matchesMarket(m,n){const a=MARKET_ALIASES[n]||[n],h=[m?.name,m?.symbol,m?.ticker].filter(Boolean).join(" ").toLowerCase();return a.some(x=>h.includes(x.toLowerCase()));}
+function findMarket(r,n){return asArray(r.markets).find(m=>matchesMarket(m,n));}
+function reportText(r,m){return [r.theme,r.leadingMarket,...asArray(r.tags),...asArray(r.news),...asArray(r.crossAssetFlow),...asArray(r.positioning),...asArray(r.changes),m?.material,m?.positioning,m?.mainScenario,m?.alternativeScenario,m?.risk].map(textOf).join(" ").toLowerCase();}
+function extractThemes(r,m){const text=reportText(r,m),set=new Set();THEMES.forEach(([label,keys])=>{if(keys.some(k=>text.includes(k.toLowerCase())))set.add(label);});return set;}
+function themeCounts(rows){const c=new Map();rows.forEach(({report,market})=>extractThemes(report,market).forEach(t=>c.set(t,(c.get(t)||0)+1)));return [...c.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],"ja"));}
+function jaccard(a,b){const u=new Set([...a,...b]);if(!u.size)return 0;let i=0;a.forEach(x=>{if(b.has(x))i++;});return i/u.size;}
+function similarity(a,b){const theme=jaccard(extractThemes(a.report,a.market),extractThemes(b.report,b.market));const direction=directionClass(a.market.direction)===directionClass(b.market.direction)?1:0;const leader=a.report.leadingMarket&&b.report.leadingMarket&&String(a.report.leadingMarket).includes(String(b.report.leadingMarket))?1:0;const wordsA=new Set(reportText(a.report,a.market).split(/[^\p{L}\p{N}]+/u).filter(x=>x.length>2)),wordsB=new Set(reportText(b.report,b.market).split(/[^\p{L}\p{N}]+/u).filter(x=>x.length>2));return Math.round((theme*.45+jaccard(wordsA,wordsB)*.35+direction*.15+leader*.05)*100);}
 
-function esc(value=""){return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));}
-function asArray(value){return Array.isArray(value)?value:(value?[value]:[]);}
-function textOf(value){return typeof value==="string"?value:(value?.text||value?.summary||value?.title||"");}
-function directionClass(value=""){
-  const text=String(value).toLowerCase();
-  if(/[上昇|強気|買い|反発|up|bull]/.test(text))return "up";
-  if(/[下落|弱気|売り|反落|down|bear]/.test(text))return "down";
-  return "neutral";
-}
-function normalizeMarketName(raw){
-  const decoded=decodeURIComponent(raw||"").trim();
-  const found=Object.entries(MARKET_ALIASES).find(([,aliases])=>aliases.some(alias=>alias.toLowerCase()===decoded.toLowerCase()));
-  return found?found[0]:decoded||"USD/JPY";
-}
-function matchesMarket(market,name){
-  const aliases=MARKET_ALIASES[name]||[name];
-  const haystack=[market?.name,market?.symbol,market?.ticker].filter(Boolean).join(" ").toLowerCase();
-  return aliases.some(alias=>haystack.includes(alias.toLowerCase()));
-}
-function findMarket(report,name){return asArray(report.markets).find(m=>matchesMarket(m,name));}
-function reportText(report,market){
-  return [report.theme,report.leadingMarket,...asArray(report.tags),...asArray(report.news),...asArray(report.crossAssetFlow),...asArray(report.positioning),market?.material,market?.positioning,market?.mainScenario,market?.alternativeScenario,market?.risk].map(textOf).join(" ").toLowerCase();
-}
-function themeCounts(rows){
-  const counts=new Map();
-  rows.forEach(({report,market})=>{
-    const text=reportText(report,market);
-    THEMES.forEach(([label,keywords])=>{
-      if(keywords.some(keyword=>text.includes(keyword.toLowerCase())))counts.set(label,(counts.get(label)||0)+1);
-    });
-  });
-  return [...counts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],"ja"));
-}
-function renderStats(rows,marketName){
-  const latest=rows[0];
-  const ranking=themeCounts(rows);
-  marketPageTitle.textContent=`${marketName}｜市場別分析`;
-  marketPageLead.textContent=`${marketName}に関する過去レポートを横断し、方向感、材料、需給、シナリオの変化を確認します。`;
-  document.title=`${marketName}｜市場別分析｜マーケットレポート`;
-  marketReportCount.textContent=`${rows.length}件`;
-  marketLatestDirection.innerHTML=latest?`<span class="direction ${directionClass(latest.market.direction)}">${esc(latest.market.direction||"中立")}</span>`:"—";
-  marketTopTheme.textContent=ranking[0]?.[0]||"集計対象なし";
-  marketLatestDate.textContent=latest?`${latest.report.date.replaceAll("-","/")} ${latest.report.time||""}`:"—";
-}
-function renderDirectionHistory(rows){
-  const recent=rows.slice(0,12).reverse();
-  directionHistory.innerHTML=recent.length?recent.map(({report,market})=>`
-    <div class="history-item">
-      <span class="history-date">${esc((report.date||"").slice(5).replace("-","/"))}<small>${esc(report.time||"")}</small></span>
-      <span class="history-line"></span>
-      <span class="direction ${directionClass(market.direction)}">${esc(market.direction||"中立")}</span>
-    </div>`).join(""):"<p class='empty compact-empty'>履歴がありません。</p>";
-}
-function renderThemeRanking(rows){
-  const ranking=themeCounts(rows).slice(0,8);
-  const max=ranking[0]?.[1]||1;
-  marketThemeRanking.innerHTML=ranking.length?ranking.map(([label,count],index)=>`
-    <div class="ranking-row">
-      <span class="ranking-number">${index+1}</span>
-      <div class="ranking-main">
-        <div class="ranking-label"><strong>${esc(label)}</strong><span>${count}回</span></div>
-        <div class="ranking-bar"><span style="width:${Math.max(8,count/max*100)}%"></span></div>
-      </div>
-    </div>`).join(""):"<p class='empty compact-empty'>集計できる材料がありません。</p>";
-}
-function renderArchive(rows,marketName){
-  marketArchiveCount.textContent=`${rows.length}件`;
-  marketEmpty.hidden=rows.length!==0;
-  marketArchive.innerHTML=rows.map(({report,market})=>`
-    <article class="market-archive-card">
-      <header>
-        <div>
-          <p class="archive-date">${esc((report.date||"").replaceAll("-","/"))} ${esc(report.time||"")}</p>
-          <h3>${esc(report.title||`${marketName}見通し`)}</h3>
-        </div>
-        <span class="direction ${directionClass(market.direction)}">${esc(market.direction||"中立")}</span>
-      </header>
-      ${market.price?`<p class="archive-price"><strong>${esc(market.price)}</strong>${market.change?` <span>${esc(market.change)}</span>`:""}</p>`:""}
-      <div class="archive-grid">
-        <section><h4>材料</h4><p>${esc(market.material||market.outlook||"記載なし")}</p></section>
-        <section><h4>需給・ポジション</h4><p>${esc(market.positioning||"記載なし")}</p></section>
-        <section><h4>メインシナリオ</h4><p>${esc(market.mainScenario||"記載なし")}</p></section>
-        <section><h4>崩れる条件</h4><p>${esc(market.breakCondition||"記載なし")}</p></section>
-      </div>
-      ${market.alternativeScenario?`<p class="archive-alt"><strong>代替シナリオ：</strong>${esc(market.alternativeScenario)}</p>`:""}
-      ${market.risk?`<p class="archive-risk"><strong>リスク：</strong>${esc(market.risk)}</p>`:""}
-      <p class="archive-theme"><strong>全体テーマ：</strong>${esc(report.theme||"記載なし")}</p>
-    </article>`).join("");
-}
-async function init(){
-  const params=new URLSearchParams(location.search);
-  const marketName=normalizeMarketName(params.get("name")||params.get("market"));
-  try{
-    const response=await fetch(`reports.json?ts=${Date.now()}`,{cache:"no-store"});
-    if(!response.ok)throw new Error("reports.jsonを取得できませんでした。");
-    const data=await response.json();
-    if(!Array.isArray(data))throw new Error("レポート一覧の形式が正しくありません。");
-    const rows=data.filter(report=>/^\d{4}-\d{2}-\d{2}$/.test(report.date||"")).map(report=>({report,market:findMarket(report,marketName)})).filter(row=>row.market).sort((a,b)=>(`${b.report.date} ${b.report.time}`).localeCompare(`${a.report.date} ${a.report.time}`));
-    renderStats(rows,marketName);
-    renderDirectionHistory(rows);
-    renderThemeRanking(rows);
-    renderArchive(rows,marketName);
-  }catch(error){
-    marketPageTitle.textContent="市場別分析を表示できません";
-    marketPageLead.textContent=error.message;
-    marketArchive.innerHTML=`<p class="empty">${esc(error.message)}</p>`;
-    marketEmpty.hidden=true;
-  }
-}
+function renderStats(rows,name){const latest=rows[0],ranking=themeCounts(rows);marketPageTitle.textContent=`${name}｜市場別分析`;marketPageLead.textContent=`${name}に関する過去レポートを横断し、方向感、材料、需給、シナリオの変化を確認します。`;document.title=`${name}｜市場別分析｜マーケットレポート`;marketReportCount.textContent=`${rows.length}件`;marketLatestDirection.innerHTML=latest?`<span class="direction ${directionClass(latest.market.direction)}">${esc(latest.market.direction||"中立")}</span>`:"—";marketTopTheme.textContent=ranking[0]?.[0]||"集計対象なし";marketLatestDate.textContent=latest?`${latest.report.date.replaceAll("-","/")} ${latest.report.time||""}`:"—";document.querySelectorAll(".market-switcher a").forEach(a=>a.classList.toggle("active",decodeURIComponent(a.searchParams?.get?.("market")||new URL(a.href).searchParams.get("market"))===name));}
+function renderDirectionHistory(rows){const recent=rows.slice(0,12).reverse();directionHistory.innerHTML=recent.length?recent.map(({report,market})=>`<div class="history-item"><span class="history-date">${esc((report.date||"").slice(5).replace("-","/"))}<small>${esc(report.time||"")}</small></span><span class="history-line"></span><span class="direction ${directionClass(market.direction)}">${esc(market.direction||"中立")}</span></div>`).join(""):"<p class='empty compact-empty'>履歴がありません。</p>";}
+function renderThemeRanking(rows){const ranking=themeCounts(rows).slice(0,8),max=ranking[0]?.[1]||1;marketThemeRanking.innerHTML=ranking.length?ranking.map(([label,count],i)=>`<div class="ranking-row"><span class="ranking-number">${i+1}</span><div class="ranking-main"><div class="ranking-label"><strong>${esc(label)}</strong><span>${count}回</span></div><div class="ranking-bar"><span style="width:${Math.max(8,count/max*100)}%"></span></div></div></div>`).join(""):"<p class='empty compact-empty'>集計できる材料がありません。</p>";}
 
+function renderScenarioReview(rows){const pairs=[];for(let i=rows.length-1;i>0;i--){const current=rows[i],next=rows[i-1],forecast=directionClass(current.market.direction),actual=directionClass(next.market.direction);if(forecast!=="neutral"&&actual!=="neutral")pairs.push({...current,next,hit:forecast===actual});}
+ const hits=pairs.filter(x=>x.hit).length,rate=pairs.length?Math.round(hits/pairs.length*100):null;scenarioReviewStatus.textContent=pairs.length?`${pairs.length}件を暫定評価`:"評価対象なし";scenarioReview.innerHTML=pairs.length?`<div class="scenario-score"><strong>${rate}%</strong><span>方向一致率</span><small>次回レポートの方向感を実績代理値として比較</small></div><div class="scenario-breakdown"><span class="scenario-hit">一致 ${hits}</span><span class="scenario-miss">不一致 ${pairs.length-hits}</span></div><div class="scenario-list">${pairs.slice(-6).reverse().map(x=>`<div class="scenario-row"><span>${esc(x.report.date.slice(5).replace("-","/"))}</span><span class="direction ${directionClass(x.market.direction)}">${esc(x.market.direction)}</span><span class="scenario-arrow">→</span><span class="direction ${directionClass(x.next.market.direction)}">${esc(x.next.market.direction)}</span><strong class="${x.hit?"hit":"miss"}">${x.hit?"一致":"不一致"}</strong></div>`).join("")}</div><p class="analysis-caution">価格実績ではなく、次回レポートに記録された方向感との比較です。厳密な的中率には終値データの保存が必要です。</p>`:"<p class='empty compact-empty'>方向感を比較できるレポートが不足しています。</p>";}
+function renderSimilar(rows){if(rows.length<2){marketSimilarReports.innerHTML="<p class='empty compact-empty'>比較対象がありません。</p>";return;}const latest=rows[0],results=rows.slice(1).map(row=>({row,score:similarity(latest,row)})).sort((a,b)=>b.score-a.score).slice(0,5);marketSimilarReports.innerHTML=results.map(({row,score},i)=>`<button class="similar-row" type="button" data-key="${esc(row.report.date)}-${esc(row.report.time)}"><span class="similar-rank">${i+1}</span><span class="similar-content"><strong>${esc(row.report.date.replaceAll("-","/"))} ${esc(row.report.time||"")}</strong><small>${esc(row.report.theme||row.market.material||"テーマ記載なし")}</small></span><span class="similar-score">${score}%</span></button>`).join("");marketSimilarReports.querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{document.getElementById(`report-${btn.dataset.key}`)?.scrollIntoView({behavior:"smooth",block:"start"});}));}
+function renderTimeline(rows){const byMonth=new Map();[...rows].reverse().forEach(row=>{const month=row.report.date.slice(0,7);if(!byMonth.has(month))byMonth.set(month,[]);byMonth.get(month).push(row);});themeTimeline.innerHTML=[...byMonth.entries()].slice(-8).map(([month,items],i,all)=>{const top=themeCounts(items)[0]?.[0]||"テーマ不明";return `<div class="timeline-item"><div class="timeline-dot"></div><div><small>${esc(month.replace("-","/"))}</small><strong>${esc(top)}</strong><span>${items.length}件</span></div>${i<all.length-1?'<span class="timeline-arrow">↓</span>':""}</div>`;}).join("")||"<p class='empty compact-empty'>時系列を作成できません。</p>";}
+function renderFlow(rows,name){const latest=rows[0];if(!latest){marketFlowMap.innerHTML="<p class='empty compact-empty'>フロー情報がありません。</p>";return;}const flows=asArray(latest.report.crossAssetFlow).map(textOf).filter(Boolean);const fallback=[latest.report.leadingMarket,latest.market.material,name,latest.market.mainScenario].filter(Boolean);const nodes=(flows.length?flows:fallback).slice(0,5);marketFlowMap.innerHTML=nodes.length?nodes.map((node,i)=>`<div class="flow-node"><span>${i+1}</span><p>${esc(node)}</p></div>${i<nodes.length-1?'<div class="flow-arrow">↓</div>':""}`).join(""):"<p class='empty compact-empty'>最新レポートにフロー記載がありません。</p>";}
+function renderArchive(rows,name){marketArchiveCount.textContent=`${rows.length}件`;marketEmpty.hidden=rows.length!==0;marketArchive.innerHTML=rows.map(({report,market})=>`<article class="market-archive-card" id="report-${esc(report.date)}-${esc(report.time)}"><header><div><p class="archive-date">${esc(report.date.replaceAll("-","/"))} ${esc(report.time||"")}</p><h3>${esc(report.title||`${name}見通し`)}</h3></div><span class="direction ${directionClass(market.direction)}">${esc(market.direction||"中立")}</span></header>${market.price?`<p class="archive-price"><strong>${esc(market.price)}</strong>${market.change?` <span>${esc(market.change)}</span>`:""}</p>`:""}<div class="archive-grid"><section><h4>材料</h4><p>${esc(market.material||market.outlook||"記載なし")}</p></section><section><h4>需給・ポジション</h4><p>${esc(market.positioning||"記載なし")}</p></section><section><h4>メインシナリオ</h4><p>${esc(market.mainScenario||"記載なし")}</p></section><section><h4>崩れる条件</h4><p>${esc(market.breakCondition||"記載なし")}</p></section></div>${market.alternativeScenario?`<p class="archive-alt"><strong>代替シナリオ：</strong>${esc(market.alternativeScenario)}</p>`:""}${market.risk?`<p class="archive-risk"><strong>リスク：</strong>${esc(market.risk)}</p>`:""}<p class="archive-theme"><strong>全体テーマ：</strong>${esc(report.theme||"記載なし")}</p></article>`).join("");}
+
+async function init(){const params=new URLSearchParams(location.search),name=normalizeMarketName(params.get("name")||params.get("market"));try{const response=await fetch(`reports.json?ts=${Date.now()}`,{cache:"no-store"});if(!response.ok)throw new Error("reports.jsonを取得できませんでした。");const data=await response.json();if(!Array.isArray(data))throw new Error("レポート一覧の形式が正しくありません。");const rows=data.filter(r=>/^\d{4}-\d{2}-\d{2}$/.test(r.date||"")).map(report=>({report,market:findMarket(report,name)})).filter(x=>x.market).sort((a,b)=>(`${b.report.date} ${b.report.time}`).localeCompare(`${a.report.date} ${a.report.time}`));renderStats(rows,name);renderDirectionHistory(rows);renderThemeRanking(rows);renderScenarioReview(rows);renderSimilar(rows);renderTimeline(rows);renderFlow(rows,name);renderArchive(rows,name);}catch(error){marketPageTitle.textContent="市場別分析を表示できません";marketPageLead.textContent=error.message;marketArchive.innerHTML=`<p class="empty">${esc(error.message)}</p>`;marketEmpty.hidden=true;}}
 init();
