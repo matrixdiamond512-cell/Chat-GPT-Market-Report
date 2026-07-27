@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 REPORTS_DIR = Path("reports")
 OUTPUT_FILE = Path("reports.json")
+DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+TIME_PATTERN = re.compile(r"^\d{2}:\d{2}$")
 
 
 def load_report(path: Path) -> dict:
@@ -16,11 +19,24 @@ def load_report(path: Path) -> dict:
     if missing:
         raise ValueError(f"{path}: required fields missing: {', '.join(missing)}")
 
+    if not DATE_PATTERN.fullmatch(str(data["date"])):
+        raise ValueError(f"{path}: date must be YYYY-MM-DD")
+    if not TIME_PATTERN.fullmatch(str(data["time"])):
+        raise ValueError(f"{path}: time must be HH:MM")
+
     return data
 
 
+def report_paths() -> list[Path]:
+    return [
+        path
+        for path in sorted(REPORTS_DIR.glob("*.json"))
+        if not path.name.startswith("_")
+    ]
+
+
 def main() -> None:
-    reports = [load_report(path) for path in sorted(REPORTS_DIR.glob("*.json"))]
+    reports = [load_report(path) for path in report_paths()]
     reports.sort(key=lambda item: f"{item['date']} {item['time']}", reverse=True)
 
     OUTPUT_FILE.write_text(
