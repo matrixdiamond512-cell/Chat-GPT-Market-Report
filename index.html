@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>マーケットレポート</title>
   <meta name="description" content="相場テーマ、ニュース、資金フロー、需給、個別見通しを確認できるマーケットダッシュボード">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
   <header class="site-header">
@@ -66,6 +66,40 @@
       <div id="dashboardMarkets" class="ticker-grid" aria-label="主要市場の方向感"></div>
     </section>
 
+    <section class="insight-section" aria-label="蓄積レポート分析">
+      <div class="section-heading insight-heading">
+        <div>
+          <p class="section-kicker">REPORT INTELLIGENCE</p>
+          <h2>蓄積レポート分析</h2>
+        </div>
+        <p id="analysisStatus">集計中です…</p>
+      </div>
+
+      <div class="insight-grid">
+        <article class="insight-card">
+          <div class="insight-card-head">
+            <div>
+              <span class="dashboard-label">THEME RANKING</span>
+              <h3>頻出テーマ</h3>
+            </div>
+            <span class="mini-note">登録レポートから自動集計</span>
+          </div>
+          <div id="themeRanking" class="ranking-list"></div>
+        </article>
+
+        <article class="insight-card similar-card">
+          <div class="insight-card-head">
+            <div>
+              <span class="dashboard-label">SIMILAR MARKET</span>
+              <h3>最新レポートに似た相場</h3>
+            </div>
+            <span class="mini-note">文章・タグ・市場方向を比較</span>
+          </div>
+          <div id="similarReports" class="similar-list"></div>
+        </article>
+      </div>
+    </section>
+
     <section class="toolbar" aria-label="レポート絞り込み">
       <label>時間帯
         <select id="timeFilter">
@@ -115,6 +149,6 @@
   </main>
 
   <footer><div class="wrap">© Market Report</div></footer>
-  <script src="script.js?v=5"></script>
+  <script src="script.js?v=6"></script>
 </body>
 </html>
