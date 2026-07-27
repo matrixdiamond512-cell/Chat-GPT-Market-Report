@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>市場別分析｜マーケットレポート</title>
   <meta name="description" content="市場別に過去の見通し、材料、需給、類似相場、シナリオ検証を確認できます。">
-  <link rel="stylesheet" href="style.css?v=8">
+  <link rel="stylesheet" href="style.css?v=9">
 </head>
 <body>
   <header class="site-header market-page-header">
@@ -28,6 +28,29 @@
       <article class="summary-stat"><span class="dashboard-label">直近更新</span><strong id="marketLatestDate">—</strong></article>
     </section>
 
+    <section class="market-kpi-grid" aria-label="市場別統計">
+      <article class="kpi-card"><span>強気比率</span><strong id="bullishRate">—</strong><small>方向感が上昇・強気の割合</small></article>
+      <article class="kpi-card"><span>弱気比率</span><strong id="bearishRate">—</strong><small>方向感が下落・弱気の割合</small></article>
+      <article class="kpi-card"><span>方向転換</span><strong id="directionChanges">—</strong><small>前回から方向が変わった回数</small></article>
+      <article class="kpi-card"><span>最多時間帯</span><strong id="dominantTime">—</strong><small>分析対象が最も多い配信時刻</small></article>
+    </section>
+
+    <section class="natural-search-section insight-card">
+      <div class="insight-card-head">
+        <div><span class="dashboard-label">NATURAL LANGUAGE SEARCH</span><h2>過去レポートを文章で検索</h2></div>
+        <span class="mini-note">複数語・否定語・方向表現を解析</span>
+      </div>
+      <form id="marketSearchForm" class="natural-search-form">
+        <input id="marketSearchInput" type="search" placeholder="例：原油高でドル円が上昇した局面 / 円安でも日経が下落 / SQ前の買い戻し" autocomplete="off">
+        <button type="submit">検索</button>
+      </form>
+      <div class="search-suggestions" aria-label="検索例">
+        <button type="button">米金利上昇で下落</button><button type="button">リスクオフと安全資産</button><button type="button">実需主導の円安</button><button type="button">オプション需給で反発</button>
+      </div>
+      <p id="marketSearchStatus" class="search-status">検索語を入力してください。</p>
+      <div id="marketSearchResults" class="search-results"></div>
+    </section>
+
     <section class="market-analysis-grid">
       <article class="insight-card"><div class="insight-card-head"><div><span class="dashboard-label">DIRECTION HISTORY</span><h2>方向感の履歴</h2></div></div><div id="directionHistory" class="direction-history"></div></article>
       <article class="insight-card"><div class="insight-card-head"><div><span class="dashboard-label">RECURRING CATALYSTS</span><h2>頻出材料</h2></div></div><div id="marketThemeRanking" class="ranking-list"></div></article>
@@ -40,7 +63,7 @@
 
     <section class="intelligence-grid">
       <article class="insight-card"><div class="insight-card-head"><div><span class="dashboard-label">THEME TIMELINE</span><h2>相場テーマの時系列</h2></div></div><div id="themeTimeline" class="theme-timeline"></div></article>
-      <article class="insight-card"><div class="insight-card-head"><div><span class="dashboard-label">CROSS-ASSET TRANSMISSION</span><h2>市場間フロー</h2></div><span class="mini-note">レポート記載の資金フローを整理</span></div><div id="marketFlowMap" class="flow-map"></div></article>
+      <article class="insight-card"><div class="insight-card-head"><div><span class="dashboard-label">CROSS-ASSET NETWORK</span><h2>クロスアセット・ネットワーク</h2></div><span class="mini-note">最新レポートの材料と市場の伝播</span></div><div id="marketNetwork" class="market-network" role="img" aria-label="市場間の関係図"></div><div id="marketFlowMap" class="flow-map"></div></article>
     </section>
 
     <section>
@@ -51,6 +74,6 @@
   </main>
 
   <footer><div class="wrap">© Market Report</div></footer>
-  <script src="market.js?v=8"></script>
+  <script src="market.js?v=9"></script>
 </body>
 </html>
