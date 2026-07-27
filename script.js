@@ -7,11 +7,23 @@ const marketFilter=document.getElementById("marketFilter");
 const searchInput=document.getElementById("searchInput");
 const resultCount=document.getElementById("resultCount");
 const emptyMessage=document.getElementById("emptyMessage");
+const heroStatus=document.getElementById("heroStatus");
+const dashboardTimestamp=document.getElementById("dashboardTimestamp");
+const dashboardTheme=document.getElementById("dashboardTheme");
+const dashboardLeader=document.getElementById("dashboardLeader");
+const dashboardConsistency=document.getElementById("dashboardConsistency");
+const dashboardPositioning=document.getElementById("dashboardPositioning");
+const dashboardNews=document.getElementById("dashboardNews");
+const dashboardFlow=document.getElementById("dashboardFlow");
+const dashboardHandover=document.getElementById("dashboardHandover");
+const dashboardMarkets=document.getElementById("dashboardMarkets");
 let reports=[];
 
 function esc(value=""){return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));}
 function asArray(value){return Array.isArray(value)?value:(value?[value]:[]);}
-function listText(items=[]){const rows=asArray(items);return rows.length?rows.map(x=>`<p>・${esc(typeof x==="string"?x:(x.text||x.summary||JSON.stringify(x)))}</p>`).join(""):"<p>記載なし</p>";}
+function itemText(item){return typeof item==="string"?item:(item?.text||item?.summary||item?.title||JSON.stringify(item));}
+function listText(items=[]){const rows=asArray(items);return rows.length?rows.map(x=>`<p>・${esc(itemText(x))}</p>`).join(""):"<p>記載なし</p>";}
+function compactList(items=[],limit=3){const rows=asArray(items).slice(0,limit);return rows.length?rows.map(x=>`<p>・${esc(itemText(x))}</p>`).join(""):"<p>記載なし</p>";}
 function directionClass(value=""){
   const text=String(value).toLowerCase();
   if(/[上昇|強気|買い|反発|up|bull]/.test(text))return "up";
@@ -77,6 +89,30 @@ function reportCard(item,marketName="all"){
   </article>`;
 }
 
+function renderDashboard(item){
+  if(!item)return;
+  const stamp=`${(item.date||"").replaceAll("-","/")} ${item.time||""}`.trim();
+  dashboardTimestamp.textContent=`最終更新 ${stamp}`;
+  heroStatus.textContent=`最新レポート ${stamp}`;
+  dashboardTheme.textContent=item.theme||"記載なし";
+  dashboardLeader.textContent=item.leadingMarket||"記載なし";
+  dashboardConsistency.innerHTML=compactList(item.consistency,3);
+  dashboardPositioning.innerHTML=compactList(item.positioning,3);
+  dashboardNews.innerHTML=compactList(item.news,4);
+  dashboardFlow.innerHTML=compactList(item.crossAssetFlow,4);
+  dashboardHandover.innerHTML=compactList(item.handover,4);
+  dashboardMarkets.innerHTML=asArray(item.markets).slice(0,6).map(m=>`
+    <article class="ticker-card">
+      <div class="ticker-top">
+        <h3>${esc(m.name||"市場")}</h3>
+        <span class="direction ${directionClass(m.direction)}">${esc(m.direction||"中立")}</span>
+      </div>
+      ${m.price?`<p class="ticker-price">${esc(m.price)}</p>`:"<p class='ticker-price'>—</p>"}
+      <p class="ticker-change">${esc(m.change||"変化記載なし")}</p>
+      <p class="ticker-material">${esc(m.material||m.outlook||"材料記載なし")}</p>
+    </article>`).join("")||"<p class='empty'>市場データがありません。</p>";
+}
+
 function populateMonths(){
   const months=[...new Set(reports.map(r=>(r.date||"").slice(0,7)).filter(Boolean))].sort().reverse();
   monthFilter.innerHTML='<option value="all">すべて</option>'+months.map(m=>`<option value="${esc(m)}">${esc(formatMonth(m))}</option>`).join("");
@@ -103,10 +139,22 @@ async function init(){
     if(!Array.isArray(data))throw new Error("レポート一覧の形式が正しくありません。");
     reports=data.sort((a,b)=>(`${b.date} ${b.time}`).localeCompare(`${a.date} ${a.time}`));
     populateMonths();
-    if(reports[0]){latestReport.innerHTML=reportCard(reports[0]);latestTimestamp.textContent=`最終更新 ${reports[0].date.replaceAll("-","/")} ${reports[0].time}`;}
-    else latestReport.innerHTML="<p class='empty'>レポートがありません。</p>";
+    if(reports[0]){
+      renderDashboard(reports[0]);
+      latestReport.innerHTML=reportCard(reports[0]);
+      latestTimestamp.textContent=`最終更新 ${reports[0].date.replaceAll("-","/")} ${reports[0].time}`;
+    }else{
+      latestReport.innerHTML="<p class='empty'>レポートがありません。</p>";
+      heroStatus.textContent="レポートなし";
+    }
     render();
-  }catch(error){latestReport.innerHTML=`<p class="empty">${esc(error.message)}</p>`;reportList.innerHTML="";resultCount.textContent="0件";}
+  }catch(error){
+    latestReport.innerHTML=`<p class="empty">${esc(error.message)}</p>`;
+    reportList.innerHTML="";
+    resultCount.textContent="0件";
+    heroStatus.textContent="データ取得エラー";
+    dashboardTheme.textContent="データを取得できませんでした";
+  }
 }
 [timeFilter,monthFilter,marketFilter].forEach(element=>element.addEventListener("change",render));
 searchInput.addEventListener("input",render);
