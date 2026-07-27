@@ -29,6 +29,26 @@ function activateDashboardMarketLinks(){
     card.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();open();}});
   });
 }
+function addTokyoFlowEntry(){
+  if(document.getElementById("tokyoFlowEntry"))return;
+  const dashboard=document.querySelector(".dashboard-section");
+  if(!dashboard)return;
+  const section=document.createElement("section");
+  section.id="tokyoFlowEntry";
+  section.className="insight-section";
+  section.setAttribute("aria-label","東京市場USDJPYフロー分析へのリンク");
+  section.innerHTML=`
+    <a href="tokyo-flow.html" class="insight-card" style="display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;color:inherit;text-decoration:none;background:linear-gradient(135deg,#eef7fb,#fff);border-color:#c7dfec">
+      <span>
+        <span class="dashboard-label">TOKYO USD/JPY FLOW</span>
+        <strong style="display:block;font-size:21px;margin-bottom:4px">東京市場USD/JPYフロー分析</strong>
+        <span style="display:block;color:var(--muted);font-size:14px">スポット出来高、前日比、20営業日平均との差、手入力ゴトー日をまとめて確認</span>
+      </span>
+      <span style="color:var(--accent);font-weight:900;white-space:nowrap">分析ページを開く →</span>
+    </a>`;
+  dashboard.insertAdjacentElement("afterend",section);
+}
 const dashboardObserver=new MutationObserver(activateDashboardMarketLinks);
 const dashboardTarget=document.getElementById("dashboardMarkets");
 if(dashboardTarget){dashboardObserver.observe(dashboardTarget,{childList:true});activateDashboardMarketLinks();}
+addTokyoFlowEntry();
