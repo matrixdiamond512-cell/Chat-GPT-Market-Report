@@ -1,93 +1,65 @@
-const latestReport = document.getElementById("latestReport");
-const reportGrid = document.getElementById("reportGrid");
-const timeFilter = document.getElementById("timeFilter");
-const searchInput = document.getElementById("searchInput");
-const resultCount = document.getElementById("resultCount");
-const emptyMessage = document.getElementById("emptyMessage");
-const dialog = document.getElementById("imageDialog");
-const dialogImage = document.getElementById("dialogImage");
-const dialogCaption = document.getElementById("dialogCaption");
-const closeDialog = document.getElementById("closeDialog");
+const latestReport=document.getElementById("latestReport");
+const reportList=document.getElementById("reportList");
+const timeFilter=document.getElementById("timeFilter");
+const searchInput=document.getElementById("searchInput");
+const resultCount=document.getElementById("resultCount");
+const emptyMessage=document.getElementById("emptyMessage");
+let reports=[];
 
-let reports = [];
+function esc(value=""){return String(value).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));}
+function listText(items=[]){return items.map(x=>`<p>・${esc(x)}</p>`).join("");}
 
-function formatDateTime(item) {
-  return `${item.date.replaceAll("-", "/")} ${item.time}`;
+function reportCard(item){
+  const markets=(item.markets||[]).map(m=>`
+    <div class="market-item">
+      <h5>${esc(m.name)}</h5>
+      <p><strong>${esc(m.direction)}</strong></p>
+      <p>${esc(m.outlook)}</p>
+      <p>崩れる条件：${esc(m.breakCondition)}</p>
+    </div>`).join("");
+
+  return `<article class="report-card">
+    <header class="report-head">
+      <h3>${esc(item.title)}</h3>
+      <p class="meta">${esc(item.date.replaceAll("-","/"))} ${esc(item.time)}｜${esc((item.tags||[]).join("・"))}</p>
+    </header>
+    <div class="report-body">
+      <div class="theme"><strong>今日の相場テーマ</strong>${esc(item.theme)}</div>
+      <div class="section-grid">
+        <section class="panel"><h4>前回からの変化</h4>${listText(item.changes)}</section>
+        <section class="panel"><h4>材料と値動きの整合性</h4>${listText(item.consistency)}</section>
+        <section class="panel"><h4>今日の主導市場</h4><p>${esc(item.leadingMarket)}</p></section>
+        <section class="panel"><h4>ポジションの偏り</h4>${listText(item.positioning)}</section>
+        <section class="panel"><h4>重要ニュース</h4>${listText(item.news)}</section>
+        <section class="panel"><h4>次の時間帯への引き継ぎ</h4>${listText(item.handover)}</section>
+      </div>
+      <div class="market-grid">${markets}</div>
+    </div>
+  </article>`;
 }
 
-function openImage(item) {
-  dialogImage.src = item.image;
-  dialogImage.alt = item.title;
-  dialogCaption.textContent = `${item.title}｜${formatDateTime(item)}`;
-  dialog.showModal();
-}
-
-function card(item, latest = false) {
-  const article = document.createElement("article");
-  article.className = latest ? "latest-card" : "report-card";
-
-  const button = document.createElement("button");
-  button.type = "button";
-  button.addEventListener("click", () => openImage(item));
-
-  const img = document.createElement("img");
-  img.src = item.image;
-  img.alt = item.title;
-  img.loading = latest ? "eager" : "lazy";
-
-  const body = document.createElement("div");
-  body.className = "card-body";
-
-  const title = document.createElement("h3");
-  title.textContent = item.title;
-
-  const meta = document.createElement("p");
-  meta.className = "meta";
-  meta.textContent = `${formatDateTime(item)}${item.tags?.length ? "｜" + item.tags.join("・") : ""}`;
-
-  body.append(title, meta);
-  button.append(img, body);
-  article.append(button);
-  return article;
-}
-
-function render() {
-  const selectedTime = timeFilter.value;
-  const keyword = searchInput.value.trim().toLowerCase();
-
-  const filtered = reports.filter(item => {
-    const timeMatch = selectedTime === "all" || item.time === selectedTime;
-    const haystack = [item.title, item.date, item.time, ...(item.tags || [])].join(" ").toLowerCase();
-    return timeMatch && (!keyword || haystack.includes(keyword));
+function render(){
+  const t=timeFilter.value;
+  const q=searchInput.value.trim().toLowerCase();
+  const filtered=reports.filter(r=>{
+    const haystack=JSON.stringify(r).toLowerCase();
+    return (t==="all"||r.time===t)&&(!q||haystack.includes(q));
   });
-
-  reportGrid.innerHTML = "";
-  filtered.forEach(item => reportGrid.append(card(item)));
-
-  resultCount.textContent = `${filtered.length}件`;
-  emptyMessage.hidden = filtered.length !== 0;
+  reportList.innerHTML=filtered.map(reportCard).join("");
+  resultCount.textContent=`${filtered.length}件`;
+  emptyMessage.hidden=filtered.length!==0;
 }
 
-async function init() {
-  try {
-    const response = await fetch("reports.json", { cache: "no-store" });
-    if (!response.ok) throw new Error("reports.jsonを取得できませんでした。");
-    reports = await response.json();
-    reports.sort((a, b) => (`${b.date} ${b.time}`).localeCompare(`${a.date} ${a.time}`));
-
-    latestReport.innerHTML = "";
-    if (reports[0]) latestReport.append(card(reports[0], true));
+async function init(){
+  try{
+    const response=await fetch("reports.json",{cache:"no-store"});
+    if(!response.ok)throw new Error("reports.jsonを取得できませんでした。");
+    reports=await response.json();
+    reports.sort((a,b)=>(`${b.date} ${b.time}`).localeCompare(`${a.date} ${a.time}`));
+    latestReport.innerHTML=reports[0]?reportCard(reports[0]):"<p class='empty'>レポートがありません。</p>";
     render();
-  } catch (error) {
-    latestReport.innerHTML = `<p class="empty">${error.message}</p>`;
-  }
+  }catch(error){latestReport.innerHTML=`<p class="empty">${esc(error.message)}</p>`;}
 }
-
-timeFilter.addEventListener("change", render);
-searchInput.addEventListener("input", render);
-closeDialog.addEventListener("click", () => dialog.close());
-dialog.addEventListener("click", event => {
-  if (event.target === dialog) dialog.close();
-});
-
+timeFilter.addEventListener("change",render);
+searchInput.addEventListener("input",render);
 init();

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>マーケットレポート</title>
-  <meta name="description" content="マーケットレポート図解アーカイブ">
+  <meta name="description" content="マーケットレポートをHTMLで閲覧できるアーカイブ">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,25 +12,23 @@
     <div class="wrap">
       <p class="eyebrow">MARKET REPORT ARCHIVE</p>
       <h1>マーケットレポート</h1>
-      <p class="lead">図解を日時順に確認できるアーカイブです。</p>
+      <p class="lead">本文と図解要素をWebページとして表示します。</p>
     </div>
   </header>
 
   <main class="wrap">
-    <section class="toolbar" aria-label="絞り込み">
-      <label>
-        時間帯
+    <section class="toolbar">
+      <label>時間帯
         <select id="timeFilter">
           <option value="all">すべて</option>
           <option value="07:00">07:00</option>
+          <option value="09:00">土曜09:00</option>
           <option value="12:00">12:00</option>
           <option value="16:00">16:00</option>
           <option value="21:00">21:00</option>
-          <option value="09:00">土曜09:00</option>
         </select>
       </label>
-      <label>
-        キーワード
+      <label>キーワード
         <input id="searchInput" type="search" placeholder="例：ドル円、原油、金">
       </label>
     </section>
@@ -42,24 +40,15 @@
 
     <section>
       <div class="section-heading">
-        <h2>過去の図解</h2>
+        <h2>過去のレポート</h2>
         <p id="resultCount"></p>
       </div>
-      <div id="reportGrid" class="report-grid"></div>
+      <div id="reportList" class="report-list"></div>
       <p id="emptyMessage" class="empty" hidden>該当するレポートがありません。</p>
     </section>
   </main>
 
-  <dialog id="imageDialog">
-    <button id="closeDialog" class="close-button" type="button" aria-label="閉じる">×</button>
-    <img id="dialogImage" alt="">
-    <p id="dialogCaption"></p>
-  </dialog>
-
-  <footer>
-    <div class="wrap">© Market Report</div>
-  </footer>
-
+  <footer><div class="wrap">© Market Report</div></footer>
   <script src="script.js"></script>
 </body>
 </html>
