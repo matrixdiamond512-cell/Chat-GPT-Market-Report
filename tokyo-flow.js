@@ -13,6 +13,14 @@
     latestDayChange: document.getElementById('latestDayChange'),
     latestVs20d: document.getElementById('latestVs20d'),
     gotoCount: document.getElementById('gotoCount'),
+    gotoAverage: document.getElementById('gotoAverage'),
+    gotoAverageCount: document.getElementById('gotoAverageCount'),
+    normalAverage: document.getElementById('normalAverage'),
+    normalAverageCount: document.getElementById('normalAverageCount'),
+    gotoPremium: document.getElementById('gotoPremium'),
+    weekdayStats: document.getElementById('weekdayStats'),
+    typeStats: document.getElementById('typeStats'),
+    surgeList: document.getElementById('surgeList'),
     tableBody: document.getElementById('flowTableBody'),
     canvas: document.getElementById('flowChart')
   };
@@ -23,6 +31,7 @@
     const d = new Date(`${value}T00:00:00`);
     return new Intl.DateTimeFormat('ja-JP', { month: 'numeric', day: 'numeric', weekday: 'short' }).format(d);
   };
+  const average = rows => rows.length ? rows.reduce((sum, row) => sum + row.volume, 0) / rows.length : null;
 
   function badgeClass(type) {
     if (type === '前倒し') return 'early';
@@ -47,11 +56,11 @@
     if (filter === 'early') rows = rows.filter(r => r.gotoBi === true && r.gotoBiType === '前倒し');
     if (filter === 'month-end') rows = rows.filter(r => r.gotoBi === true && r.gotoBiType === '月末');
     if (filter === 'unset') rows = rows.filter(r => r.gotoBi == null);
-
     if (range !== 'all') rows = rows.slice(-Number(range));
-    state.filtered = rows;
 
+    state.filtered = rows;
     renderKpis();
+    renderStatistics();
     renderTable();
     drawChart();
     els.status.textContent = `${rows.length}営業日を表示`;
@@ -73,6 +82,77 @@
     els.latestDayChange.textContent = fmtPct(latest.dayChange);
     els.latestVs20d.textContent = fmtPct(latest.vs20d);
     els.gotoCount.textContent = String(rows.filter(r => r.gotoBi === true).length);
+  }
+
+  function renderStatistics() {
+    const rows = state.filtered;
+    const gotoRows = rows.filter(r => r.gotoBi === true);
+    const normalRows = rows.filter(r => r.gotoBi === false);
+    const gotoAvg = average(gotoRows);
+    const normalAvg = average(normalRows);
+
+    els.gotoAverage.textContent = gotoAvg == null ? '—' : `${fmtInt.format(Math.round(gotoAvg))} 百万ドル`;
+    els.gotoAverageCount.textContent = `${gotoRows.length}営業日`;
+    els.normalAverage.textContent = normalAvg == null ? '—' : `${fmtInt.format(Math.round(normalAvg))} 百万ドル`;
+    els.normalAverageCount.textContent = `${normalRows.length}営業日`;
+    els.gotoPremium.textContent = gotoAvg == null || normalAvg == null || normalAvg === 0 ? '—' : fmtPct(gotoAvg / normalAvg - 1);
+
+    renderWeekdayStats(rows);
+    renderTypeStats(gotoRows);
+    renderSurges(rows);
+  }
+
+  function renderWeekdayStats(rows) {
+    const names = ['日', '月', '火', '水', '木', '金', '土'];
+    const groups = [1, 2, 3, 4, 5].map(day => {
+      const matches = rows.filter(row => new Date(`${row.date}T00:00:00`).getDay() === day);
+      return { day, rows: matches, avg: average(matches) };
+    });
+    const max = Math.max(1, ...groups.map(group => group.avg || 0));
+    els.weekdayStats.innerHTML = groups.map(group => `
+      <article class="weekday-card">
+        <b>${names[group.day]}曜日</b>
+        <div class="weekday-bar"><span style="width:${group.avg == null ? 0 : (group.avg / max * 100).toFixed(1)}%"></span></div>
+        <small>${group.avg == null ? 'データなし' : `${fmtInt.format(Math.round(group.avg))} 百万ドル／${group.rows.length}日`}</small>
+      </article>`).join('');
+  }
+
+  function renderTypeStats(rows) {
+    if (!rows.length) {
+      els.typeStats.innerHTML = '<p class="empty">手入力されたゴトー日データがありません。</p>';
+      return;
+    }
+    const groups = new Map();
+    rows.forEach(row => {
+      const key = row.gotoBiType || '通常ゴトー日';
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(row);
+    });
+    els.typeStats.innerHTML = [...groups.entries()]
+      .sort((a, b) => average(b[1]) - average(a[1]))
+      .map(([type, group]) => `
+        <article class="analysis-card">
+          <span>${escapeHtml(type)}</span>
+          <strong>${fmtInt.format(Math.round(average(group)))} 百万ドル</strong>
+          <small>${group.length}営業日・20日平均との差平均 ${fmtPct(group.reduce((sum, row) => sum + row.vs20d, 0) / group.length)}</small>
+        </article>`).join('');
+  }
+
+  function renderSurges(rows) {
+    const surges = rows
+      .filter(row => row.vs20d >= 0.15 || row.dayChange >= 0.20)
+      .sort((a, b) => Math.max(b.vs20d, b.dayChange) - Math.max(a.vs20d, a.dayChange))
+      .slice(0, 8);
+    if (!surges.length) {
+      els.surgeList.innerHTML = '<p class="empty">表示期間内に顕著な出来高急増日はありません。</p>';
+      return;
+    }
+    els.surgeList.innerHTML = surges.map(row => `
+      <article class="surge-item">
+        <span>${escapeHtml(row.date)}</span>
+        <span>${row.gotoBi === true ? `<span class="surge-tag">${escapeHtml(badgeLabel(row))}</span> ` : ''}${escapeHtml(row.memo || '出来高増加')}</span>
+        <strong>${fmtInt.format(row.volume)} 百万ドル<br><small>前日比 ${fmtPct(row.dayChange)}／20日比 ${fmtPct(row.vs20d)}</small></strong>
+      </article>`).join('');
   }
 
   function renderTable() {
@@ -100,7 +180,6 @@
     const width = rect.width;
     const height = rect.height;
     ctx.clearRect(0, 0, width, height);
-
     const rows = state.filtered;
     if (!rows.length) {
       ctx.fillStyle = '#687789';
@@ -125,11 +204,10 @@
     ctx.lineWidth = 1;
 
     for (let i = 0; i <= 4; i++) {
-      const y = pad.top + (plotH * i / 4);
+      const y = pad.top + plotH * i / 4;
       ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(width - pad.right, y); ctx.stroke();
-      const value = maxVolume * (1 - i / 4);
       ctx.textAlign = 'right';
-      ctx.fillText(Math.round(value).toLocaleString('ja-JP'), pad.left - 8, y);
+      ctx.fillText(Math.round(maxVolume * (1 - i / 4)).toLocaleString('ja-JP'), pad.left - 8, y);
     }
 
     const zeroY = pad.top + plotH / 2;
@@ -147,7 +225,7 @@
         ctx.fillStyle = 'rgba(92, 166, 111, .12)';
         ctx.fillRect(x - step / 2, pad.top, step, plotH);
       }
-      const h = (row.volume / maxVolume) * plotH;
+      const h = row.volume / maxVolume * plotH;
       ctx.fillStyle = '#2f7ea9';
       ctx.fillRect(x - barW / 2, pad.top + plotH - h, barW, h);
     });
@@ -177,13 +255,13 @@
     ctx.beginPath();
     rows.forEach((row, i) => {
       const x = pad.left + step * i + step / 2;
-      const y = pad.top + plotH / 2 - (row[key] / limit) * (plotH / 2);
+      const y = pad.top + plotH / 2 - row[key] / limit * (plotH / 2);
       if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     });
     ctx.stroke();
     rows.forEach((row, i) => {
       const x = pad.left + step * i + step / 2;
-      const y = pad.top + plotH / 2 - (row[key] / limit) * (plotH / 2);
+      const y = pad.top + plotH / 2 - row[key] / limit * (plotH / 2);
       ctx.beginPath(); ctx.arc(x, y, 2.3, 0, Math.PI * 2); ctx.fill();
     });
   }
@@ -199,12 +277,7 @@
       const data = await response.json();
       state.all = data
         .filter(row => row && row.date && Number.isFinite(Number(row.volume)))
-        .map(row => ({
-          ...row,
-          volume: Number(row.volume),
-          dayChange: Number(row.dayChange || 0),
-          vs20d: Number(row.vs20d || 0)
-        }))
+        .map(row => ({ ...row, volume: Number(row.volume), dayChange: Number(row.dayChange || 0), vs20d: Number(row.vs20d || 0) }))
         .sort((a, b) => a.date.localeCompare(b.date));
       applyFilters();
     } catch (error) {
