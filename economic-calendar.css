@@ -1,0 +1,35 @@
+/* External economic calendar */
+.event-source-note{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:12px 0 10px;color:var(--mr-muted,#617087);font-size:11px;line-height:1.6}
+.event-source-badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.02em}
+.event-source-badge.is-external{background:#eaf7f0;color:#147a4a}
+.event-source-badge.is-fallback{background:#fff6df;color:#8a5b00}
+.event-source-badge.is-error{background:#fff1f3;color:#a72f42}
+.event-heatmap{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0 14px}
+.heat-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #dbe4ee;border-radius:999px;background:#fff;color:#42536a;font-size:11px;font-weight:800;cursor:pointer}
+.heat-chip strong{display:grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#eef3f7;font-size:10px}
+.heat-chip.heat-high{border-color:#efb5be;background:#fff3f5;color:#9f2f42}
+.heat-chip.heat-medium{border-color:#efd79a;background:#fff9e9;color:#866000}
+.heat-chip.heat-low{border-color:#bcd8c9;background:#f0faf4;color:#176e47}
+.heat-chip.heat-none{opacity:.62}
+.event-list{display:grid;gap:9px;max-height:none!important;overflow:visible!important;padding-right:0!important}
+.event-row{display:grid;grid-template-columns:64px 42px minmax(0,1fr) 250px;gap:12px;align-items:start;padding:13px 14px;border:1px solid #dfe7ef;border-radius:11px;background:#fff}
+.event-row.is-past{opacity:.58;background:#f7f9fb}
+.event-time{font-size:14px;font-weight:900;color:#17395c;white-space:nowrap}
+.event-country{display:inline-grid;place-items:center;min-height:26px;padding:3px 6px;border-radius:7px;background:#edf3f8;color:#42536a;font-size:10px;font-weight:900}
+.event-main{min-width:0}
+.event-title-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.event-title-row strong{font-size:14px;line-height:1.5}
+.event-level{display:inline-flex;align-items:center;padding:3px 7px;border-radius:999px;font-size:9px;font-weight:900}
+.event-level--high{background:#fff0f2;color:#b52d3b}
+.event-level--medium{background:#fff7e6;color:#946200}
+.event-level--low{background:#edf4f7;color:#607083}
+.event-impact{display:block;margin-top:4px;color:#59697c;font-size:11px;line-height:1.5}
+.event-comment{margin:6px 0 0!important;color:#43536a!important;font-size:12px!important;line-height:1.65!important}
+.event-figures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.event-figures span{display:grid;gap:2px;padding:7px 8px;border-radius:8px;background:#f5f8fb;color:#68788b;font-size:9px;text-align:center}
+.event-figures strong{color:#26374d;font-size:12px}
+.event-figures strong.has-actual{color:#0d6d45}
+.event-figures.is-empty{display:block;padding:8px;border-radius:8px;background:#f7f9fb;color:#8a97a6;font-size:10px;text-align:center}
+.event-empty{margin:0;padding:18px;border:1px dashed #cfd9e3;border-radius:10px;background:#fafcfd;color:#657489;font-size:13px;text-align:center}
+@media(max-width:1000px){.event-row{grid-template-columns:58px 38px minmax(0,1fr)}.event-figures{grid-column:3}}
+@media(max-width:700px){.event-card-head{display:grid}.event-filter-label{justify-self:start}.event-row{grid-template-columns:54px 36px minmax(0,1fr);gap:8px;padding:11px}.event-figures{grid-column:1/-1}.event-title-row strong{font-size:13px}}
