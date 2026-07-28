@@ -3,13 +3,30 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>マーケットレポート</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>マーケットレポート｜読みやすい完成版</title>
   <meta name="description" content="相場テーマ、重要ニュース、資金フロー、需給、セクター、指数寄与度、個別銘柄、6市場の見通しを確認できるマーケットダッシュボード">
-  <link rel="stylesheet" href="style.css?v=11">
-  <link rel="stylesheet" href="archive-layout.css?v=5">
-  <link rel="stylesheet" href="report-view-toggle.css?v=2">
-  <link rel="stylesheet" href="market-report-v2.css?v=2">
-  <style>.data-quality-notice{margin:0 0 18px;padding:12px 16px;border:1px solid rgba(166,118,0,.28);border-radius:12px;background:#fff8db;color:#6a4b00;font-weight:700;line-height:1.6}</style>
+  <link rel="stylesheet" href="style.css?v=12">
+  <link rel="stylesheet" href="archive-layout.css?v=6">
+  <link rel="stylesheet" href="report-view-toggle.css?v=3">
+  <link rel="stylesheet" href="market-report-v2.css?v=3">
+  <style>
+    .data-quality-notice{margin:0 0 18px;padding:12px 16px;border:1px solid rgba(166,118,0,.28);border-radius:12px;background:#fff8db;color:#6a4b00;font-weight:700;line-height:1.6}
+    /* Critical readability rules are inline so an old cached CSS file cannot restore the unreadable two-column wall. */
+    .report-explorer{display:block!important;grid-template-columns:none!important;width:100%!important}
+    .archive-section{position:static!important;max-height:none!important;width:100%!important;margin:0 0 24px!important}
+    .report-viewer{width:100%!important;min-width:0!important}
+    .report-list{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;max-height:420px!important;overflow:auto!important}
+    .archive-day,.archive-day-list{display:contents!important}.archive-day-head{grid-column:1/-1!important}
+    .report-summary-dashboard{width:min(1180px,100%)!important;margin:0 auto!important}
+    .report-reader{width:min(900px,100%)!important;max-width:900px!important;margin:0 auto!important;padding:52px 68px 70px!important}
+    .report-reader-copy{font-size:18px!important;line-height:2.05!important}.report-reader-copy p{margin:0 0 26px!important}
+    .report-reader-section{padding:48px 0!important}.report-reader-section h2{margin-bottom:28px!important;font-size:25px!important}
+    @media(max-width:1000px){.report-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}.report-reader{padding:42px 36px 56px!important}}
+    @media(max-width:700px){.report-list{grid-template-columns:1fr!important}.report-reader{padding:28px 20px 44px!important}.report-reader-copy{font-size:16px!important;line-height:1.95!important}}
+  </style>
 </head>
 <body>
   <header class="site-header">
@@ -66,6 +83,6 @@
   </main>
 
   <footer><div class="wrap">© Market Report</div></footer>
-  <script src="report-data-hydrator.js?v=3"></script><script src="script.js?v=13"></script><script src="dashboard-events.js?v=4"></script><script src="dashboard-links.js?v=1"></script><script src="report-view-toggle.js?v=5"></script><script src="market-report-v2.js?v=2"></script><script src="dashboard-quality-guard.js?v=2"></script>
+  <script src="report-data-hydrator.js?v=4"></script><script src="script.js?v=14"></script><script src="dashboard-events.js?v=5"></script><script src="dashboard-links.js?v=2"></script><script src="report-view-toggle.js?v=6"></script><script src="market-report-v2.js?v=3"></script><script src="dashboard-quality-guard.js?v=3"></script>
 </body>
 </html>
