@@ -6,72 +6,37 @@
   <title>マーケットレポート</title>
   <meta name="description" content="相場テーマ、ニュース、資金フロー、需給、個別見通しを確認できるマーケットダッシュボード">
   <link rel="stylesheet" href="style.css?v=10">
-  <link rel="stylesheet" href="archive-layout.css?v=3">
+  <link rel="stylesheet" href="archive-layout.css?v=4">
 </head>
 <body>
-  <header class="site-header">
-    <div class="wrap hero-grid">
-      <div><p class="eyebrow">MARKET INTELLIGENCE DASHBOARD</p><h1>マーケットレポート</h1><p class="lead">ニュースの羅列ではなく、「何が市場を動かし、次に何を見るべきか」を整理します。</p></div>
-      <div class="hero-note" id="heroStatus">最新データを読み込み中</div>
-    </div>
-  </header>
-
+  <header class="site-header"><div class="wrap hero-grid"><div><p class="eyebrow">MARKET INTELLIGENCE DASHBOARD</p><h1>マーケットレポート</h1><p class="lead">ニュースの羅列ではなく、「何が市場を動かし、次に何を見るべきか」を整理します。</p></div><div class="hero-note" id="heroStatus">最新データを読み込み中</div></div></header>
   <main class="wrap">
     <section class="dashboard-section" aria-label="最新マーケットダッシュボード">
       <div class="section-heading dashboard-heading"><div><p class="section-kicker">LATEST MARKET SNAPSHOT</p><h2>今日の市場全体像</h2></div><p id="dashboardTimestamp"></p></div>
-
       <div class="dashboard-grid">
         <article class="dashboard-card dashboard-card--theme"><span class="dashboard-label">今日の相場テーマ</span><strong id="dashboardTheme">読み込み中です…</strong></article>
         <article class="dashboard-card"><span class="dashboard-label">今日の主導市場</span><strong id="dashboardLeader">—</strong></article>
         <article class="dashboard-card"><span class="dashboard-label">材料と値動き</span><div id="dashboardConsistency" class="dashboard-list">—</div></article>
         <article class="dashboard-card"><span class="dashboard-label">ポジションの偏り</span><div id="dashboardPositioning" class="dashboard-list">—</div></article>
       </div>
-
       <div class="dashboard-wide-grid dashboard-wide-grid--events">
         <article class="dashboard-card dashboard-card--events">
-          <div class="event-card-head">
-            <div><span class="dashboard-label">本日の重要イベント</span><p id="eventCountdown" class="event-countdown">次のイベントを確認中…</p></div>
-            <label class="event-filter-label">市場
-              <select id="eventMarketFilter">
-                <option value="all">すべて</option><option value="USD/JPY">USD/JPY</option><option value="EUR/USD">EUR/USD</option><option value="日経225先物">日経225先物</option><option value="金">金</option><option value="原油">原油</option><option value="BTCUSD">BTCUSD</option>
-              </select>
-            </label>
-          </div>
+          <div class="event-card-head"><div><span class="dashboard-label">本日の重要イベント</span><p id="eventCountdown" class="event-countdown">次のイベントを確認中…</p></div><label class="event-filter-label">市場<select id="eventMarketFilter"><option value="all">すべて</option><option value="USD/JPY">USD/JPY</option><option value="EUR/USD">EUR/USD</option><option value="日経225先物">日経225先物</option><option value="金">金</option><option value="原油">原油</option><option value="BTCUSD">BTCUSD</option></select></label></div>
           <div id="eventHeatmap" class="event-heatmap" aria-label="市場別イベント影響度"></div>
+          <div id="marketSessionTimeline" class="market-session-timeline" aria-label="市場別タイムライン"></div>
           <div id="dashboardEvents" class="dashboard-list event-list">読み込み中です…</div>
         </article>
         <article class="dashboard-card"><span class="dashboard-label">重要ニュース</span><div id="dashboardNews" class="dashboard-list">—</div></article>
         <article class="dashboard-card"><span class="dashboard-label">クロスアセット資金フロー</span><div id="dashboardFlow" class="dashboard-list">—</div></article>
         <article class="dashboard-card"><span class="dashboard-label">次の時間帯への引き継ぎ</span><div id="dashboardHandover" class="dashboard-list">—</div></article>
       </div>
-
       <div id="dashboardMarkets" class="ticker-grid" aria-label="主要市場の方向感"></div>
     </section>
-
-    <section class="insight-section" aria-label="蓄積レポート分析">
-      <div class="section-heading insight-heading"><div><p class="section-kicker">REPORT INTELLIGENCE</p><h2>蓄積レポート分析</h2></div><p id="analysisStatus">集計中です…</p></div>
-      <div class="insight-grid">
-        <article class="insight-card"><div class="insight-card-head"><div><span class="dashboard-label">THEME RANKING</span><h3>頻出テーマ</h3></div><span class="mini-note">登録レポートから自動集計</span></div><div id="themeRanking" class="ranking-list"></div></article>
-        <article class="insight-card similar-card"><div class="insight-card-head"><div><span class="dashboard-label">SIMILAR MARKET</span><h3>最新レポートに似た相場</h3></div><span class="mini-note">文章・タグ・市場方向を比較</span></div><div id="similarReports" class="similar-list"></div></article>
-      </div>
-    </section>
-
-    <section class="toolbar" aria-label="レポート絞り込み">
-      <label>時間帯<select id="timeFilter"><option value="all">すべて</option><option value="07:00">07:00</option><option value="09:00">土曜09:00</option><option value="12:00">12:00</option><option value="16:00">16:00</option><option value="21:00">21:00</option></select></label>
-      <label>月<select id="monthFilter"><option value="all">すべて</option></select></label>
-      <label>市場<select id="marketFilter"><option value="all">すべて</option><option value="USD/JPY">USD/JPY</option><option value="EUR/USD">EUR/USD</option><option value="日経225先物">日経225先物</option><option value="金">金</option><option value="原油">原油</option><option value="BTCUSD">BTCUSD</option></select></label>
-      <label class="search-field">キーワード<input id="searchInput" type="search" placeholder="例：ドル円、原油、米金利、半導体"></label>
-    </section>
-
-    <section class="report-explorer" aria-label="マーケットレポート検索・閲覧">
-      <aside class="archive-section"><div class="section-heading archive-heading"><div><p class="section-kicker">REPORT ARCHIVE</p><h2>過去レポート一覧</h2></div><p id="resultCount"></p></div><p class="archive-guide">カードをクリックすると右側に全文を表示します。</p><div id="reportList" class="report-list"></div><button id="loadMoreButton" class="load-more" type="button" hidden>さらに表示</button><p id="emptyMessage" class="empty" hidden>該当するレポートがありません。</p></aside>
-      <section id="latestSection" class="report-viewer"><div class="section-heading viewer-heading"><div><p class="section-kicker">SELECTED REPORT</p><h2>選択したレポート</h2></div><p id="latestTimestamp"></p></div><div id="latestReport"><p class="empty">読み込み中です…</p></div></section>
-    </section>
+    <section class="insight-section" aria-label="蓄積レポート分析"><div class="section-heading insight-heading"><div><p class="section-kicker">REPORT INTELLIGENCE</p><h2>蓄積レポート分析</h2></div><p id="analysisStatus">集計中です…</p></div><div class="insight-grid"><article class="insight-card"><div class="insight-card-head"><div><span class="dashboard-label">THEME RANKING</span><h3>頻出テーマ</h3></div><span class="mini-note">登録レポートから自動集計</span></div><div id="themeRanking" class="ranking-list"></div></article><article class="insight-card similar-card"><div class="insight-card-head"><div><span class="dashboard-label">SIMILAR MARKET</span><h3>最新レポートに似た相場</h3></div><span class="mini-note">文章・タグ・市場方向を比較</span></div><div id="similarReports" class="similar-list"></div></article></div></section>
+    <section class="toolbar" aria-label="レポート絞り込み"><label>時間帯<select id="timeFilter"><option value="all">すべて</option><option value="07:00">07:00</option><option value="09:00">土曜09:00</option><option value="12:00">12:00</option><option value="16:00">16:00</option><option value="21:00">21:00</option></select></label><label>月<select id="monthFilter"><option value="all">すべて</option></select></label><label>市場<select id="marketFilter"><option value="all">すべて</option><option value="USD/JPY">USD/JPY</option><option value="EUR/USD">EUR/USD</option><option value="日経225先物">日経225先物</option><option value="金">金</option><option value="原油">原油</option><option value="BTCUSD">BTCUSD</option></select></label><label class="search-field">キーワード<input id="searchInput" type="search" placeholder="例：ドル円、原油、米金利、半導体"></label></section>
+    <section class="report-explorer" aria-label="マーケットレポート検索・閲覧"><aside class="archive-section"><div class="section-heading archive-heading"><div><p class="section-kicker">REPORT ARCHIVE</p><h2>過去レポート一覧</h2></div><p id="resultCount"></p></div><p class="archive-guide">カードをクリックすると右側に全文を表示します。</p><div id="reportList" class="report-list"></div><button id="loadMoreButton" class="load-more" type="button" hidden>さらに表示</button><p id="emptyMessage" class="empty" hidden>該当するレポートがありません。</p></aside><section id="latestSection" class="report-viewer"><div class="section-heading viewer-heading"><div><p class="section-kicker">SELECTED REPORT</p><h2>選択したレポート</h2></div><p id="latestTimestamp"></p></div><div id="latestReport"><p class="empty">読み込み中です…</p></div></section></section>
   </main>
-
   <footer><div class="wrap">© Market Report</div></footer>
-  <script src="script.js?v=10"></script>
-  <script src="dashboard-events.js?v=2"></script>
-  <script src="dashboard-links.js?v=1"></script>
+  <script src="script.js?v=10"></script><script src="dashboard-events.js?v=3"></script><script src="dashboard-links.js?v=1"></script>
 </body>
 </html>
