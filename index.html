@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="archive-layout.css?v=6">
   <link rel="stylesheet" href="report-view-toggle.css?v=3">
   <link rel="stylesheet" href="market-report-v2.css?v=5">
+  <link rel="stylesheet" href="economic-calendar.css?v=1">
   <style>
     .data-quality-notice{margin:0 0 18px;padding:12px 16px;border:1px solid rgba(166,118,0,.28);border-radius:12px;background:#fff8db;color:#6a4b00;font-weight:700;line-height:1.6}
     .report-explorer{display:block!important;grid-template-columns:none!important;width:100%!important}
@@ -52,7 +53,7 @@
         <article class="dashboard-card dashboard-card--risk"><span class="dashboard-label">最重要リスク・崩れる条件</span><strong id="dashboardRisk">—</strong></article>
       </div>
       <div class="dashboard-wide-grid dashboard-wide-grid--events">
-        <article class="dashboard-card dashboard-card--events"><div class="event-card-head"><div><span class="dashboard-label">本日の重要イベント</span><p id="eventCountdown" class="event-countdown">次のイベントを確認中…</p></div><label class="event-filter-label">市場<select id="eventMarketFilter"><option value="all">すべて</option><option value="USD/JPY">USD/JPY</option><option value="EUR/USD">EUR/USD</option><option value="日経225先物">日経225先物</option><option value="金">金</option><option value="原油">原油</option><option value="BTCUSD">BTCUSD</option></select></label></div><div id="eventHeatmap" class="event-heatmap"></div><div id="marketSessionTimeline" class="market-session-timeline"></div><div id="dashboardEvents" class="dashboard-list event-list">読み込み中です…</div></article>
+        <article class="dashboard-card dashboard-card--events"><div class="event-card-head"><div><span class="dashboard-label">外部経済指標カレンダー</span><p id="eventCountdown" class="event-countdown">次のイベントを確認中…</p></div><label class="event-filter-label">市場<select id="eventMarketFilter"><option value="all">すべて</option><option value="USD/JPY">USD/JPY</option><option value="EUR/USD">EUR/USD</option><option value="日経225先物">日経225先物</option><option value="金">金</option><option value="原油">原油</option><option value="BTCUSD">BTCUSD</option></select></label></div><div id="eventHeatmap" class="event-heatmap"></div><div id="marketSessionTimeline" class="market-session-timeline"></div><div id="dashboardEvents" class="dashboard-list event-list">読み込み中です…</div></article>
         <article class="dashboard-card"><span class="dashboard-label">重要ニュース</span><div id="dashboardNews" class="dashboard-list">—</div></article>
         <article class="dashboard-card"><span class="dashboard-label">クロスアセット資金フロー</span><div id="dashboardFlow" class="dashboard-list">—</div></article>
         <article class="dashboard-card"><span class="dashboard-label">次の時間帯への引き継ぎ</span><div id="dashboardHandover" class="dashboard-list">—</div></article>
@@ -73,6 +74,6 @@
     <section class="report-explorer" aria-label="マーケットレポート検索・閲覧"><aside class="archive-section"><div class="section-heading archive-heading"><div><p class="section-kicker">REPORT ARCHIVE</p><h2>過去レポート一覧</h2></div><p id="resultCount"></p></div><p class="archive-guide">レポートを選ぶと、下の閲覧エリアに30秒要約を表示します。必要な場合だけ全文表示へ切り替えてください。</p><div id="reportList" class="report-list"></div><button id="loadMoreButton" class="load-more" type="button" hidden>さらに表示</button><p id="emptyMessage" class="empty" hidden>該当するレポートがありません。</p></aside><section id="latestSection" class="report-viewer"><div class="section-heading viewer-heading"><div><p class="section-kicker">SELECTED REPORT</p><h2>選択したレポート</h2></div><p id="latestTimestamp"></p></div><div class="report-view-tabs" role="tablist" aria-label="レポート表示方法"><button type="button" role="tab" data-report-view="summary" class="is-active" aria-selected="true">📊 30秒で要点を見る</button><button type="button" role="tab" data-report-view="text" aria-selected="false">📄 全文を読む</button></div><div id="latestReport"><p class="empty">読み込み中です…</p></div></section></section>
   </main>
   <footer><div class="wrap">© Market Report</div></footer>
-  <script src="report-data-hydrator.js?v=4"></script><script src="script.js?v=14"></script><script src="dashboard-events.js?v=5"></script><script src="dashboard-links.js?v=2"></script><script src="report-view-toggle.js?v=6"></script><script src="market-report-v2.js?v=3"></script><script src="dashboard-quality-guard.js?v=3"></script>
+  <script src="report-data-hydrator.js?v=4"></script><script src="script.js?v=14"></script><script src="dashboard-events.js?v=7"></script><script src="dashboard-links.js?v=2"></script><script src="report-view-toggle.js?v=6"></script><script src="market-report-v2.js?v=3"></script><script src="dashboard-quality-guard.js?v=3"></script>
 </body>
 </html>
