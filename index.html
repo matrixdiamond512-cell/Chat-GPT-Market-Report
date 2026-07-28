@@ -6,66 +6,43 @@
   <title>マーケットレポート</title>
   <meta name="description" content="相場テーマ、ニュース、資金フロー、需給、個別見通しを確認できるマーケットダッシュボード">
   <link rel="stylesheet" href="style.css?v=10">
-  <link rel="stylesheet" href="archive-layout.css?v=2">
+  <link rel="stylesheet" href="archive-layout.css?v=3">
 </head>
 <body>
   <header class="site-header">
     <div class="wrap hero-grid">
-      <div>
-        <p class="eyebrow">MARKET INTELLIGENCE DASHBOARD</p>
-        <h1>マーケットレポート</h1>
-        <p class="lead">ニュースの羅列ではなく、「何が市場を動かし、次に何を見るべきか」を整理します。</p>
-      </div>
+      <div><p class="eyebrow">MARKET INTELLIGENCE DASHBOARD</p><h1>マーケットレポート</h1><p class="lead">ニュースの羅列ではなく、「何が市場を動かし、次に何を見るべきか」を整理します。</p></div>
       <div class="hero-note" id="heroStatus">最新データを読み込み中</div>
     </div>
   </header>
 
   <main class="wrap">
     <section class="dashboard-section" aria-label="最新マーケットダッシュボード">
-      <div class="section-heading dashboard-heading">
-        <div>
-          <p class="section-kicker">LATEST MARKET SNAPSHOT</p>
-          <h2>今日の市場全体像</h2>
-        </div>
-        <p id="dashboardTimestamp"></p>
-      </div>
+      <div class="section-heading dashboard-heading"><div><p class="section-kicker">LATEST MARKET SNAPSHOT</p><h2>今日の市場全体像</h2></div><p id="dashboardTimestamp"></p></div>
 
       <div class="dashboard-grid">
-        <article class="dashboard-card dashboard-card--theme">
-          <span class="dashboard-label">今日の相場テーマ</span>
-          <strong id="dashboardTheme">読み込み中です…</strong>
-        </article>
-        <article class="dashboard-card">
-          <span class="dashboard-label">今日の主導市場</span>
-          <strong id="dashboardLeader">—</strong>
-        </article>
-        <article class="dashboard-card">
-          <span class="dashboard-label">材料と値動き</span>
-          <div id="dashboardConsistency" class="dashboard-list">—</div>
-        </article>
-        <article class="dashboard-card">
-          <span class="dashboard-label">ポジションの偏り</span>
-          <div id="dashboardPositioning" class="dashboard-list">—</div>
-        </article>
+        <article class="dashboard-card dashboard-card--theme"><span class="dashboard-label">今日の相場テーマ</span><strong id="dashboardTheme">読み込み中です…</strong></article>
+        <article class="dashboard-card"><span class="dashboard-label">今日の主導市場</span><strong id="dashboardLeader">—</strong></article>
+        <article class="dashboard-card"><span class="dashboard-label">材料と値動き</span><div id="dashboardConsistency" class="dashboard-list">—</div></article>
+        <article class="dashboard-card"><span class="dashboard-label">ポジションの偏り</span><div id="dashboardPositioning" class="dashboard-list">—</div></article>
       </div>
 
       <div class="dashboard-wide-grid dashboard-wide-grid--events">
         <article class="dashboard-card dashboard-card--events">
-          <span class="dashboard-label">本日の重要イベント</span>
+          <div class="event-card-head">
+            <div><span class="dashboard-label">本日の重要イベント</span><p id="eventCountdown" class="event-countdown">次のイベントを確認中…</p></div>
+            <label class="event-filter-label">市場
+              <select id="eventMarketFilter">
+                <option value="all">すべて</option><option value="USD/JPY">USD/JPY</option><option value="EUR/USD">EUR/USD</option><option value="日経225先物">日経225先物</option><option value="金">金</option><option value="原油">原油</option><option value="BTCUSD">BTCUSD</option>
+              </select>
+            </label>
+          </div>
+          <div id="eventHeatmap" class="event-heatmap" aria-label="市場別イベント影響度"></div>
           <div id="dashboardEvents" class="dashboard-list event-list">読み込み中です…</div>
         </article>
-        <article class="dashboard-card">
-          <span class="dashboard-label">重要ニュース</span>
-          <div id="dashboardNews" class="dashboard-list">—</div>
-        </article>
-        <article class="dashboard-card">
-          <span class="dashboard-label">クロスアセット資金フロー</span>
-          <div id="dashboardFlow" class="dashboard-list">—</div>
-        </article>
-        <article class="dashboard-card">
-          <span class="dashboard-label">次の時間帯への引き継ぎ</span>
-          <div id="dashboardHandover" class="dashboard-list">—</div>
-        </article>
+        <article class="dashboard-card"><span class="dashboard-label">重要ニュース</span><div id="dashboardNews" class="dashboard-list">—</div></article>
+        <article class="dashboard-card"><span class="dashboard-label">クロスアセット資金フロー</span><div id="dashboardFlow" class="dashboard-list">—</div></article>
+        <article class="dashboard-card"><span class="dashboard-label">次の時間帯への引き継ぎ</span><div id="dashboardHandover" class="dashboard-list">—</div></article>
       </div>
 
       <div id="dashboardMarkets" class="ticker-grid" aria-label="主要市場の方向感"></div>
@@ -94,7 +71,7 @@
 
   <footer><div class="wrap">© Market Report</div></footer>
   <script src="script.js?v=10"></script>
-  <script src="dashboard-events.js?v=1"></script>
+  <script src="dashboard-events.js?v=2"></script>
   <script src="dashboard-links.js?v=1"></script>
 </body>
 </html>
