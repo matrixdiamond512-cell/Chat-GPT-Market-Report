@@ -4,6 +4,10 @@
 Provider: Financial Modeling Prep stable economic-calendar endpoint.
 Authentication: FMP_API_KEY environment variable.
 Output: economic-calendar.json (JST-normalized, browser-safe static JSON).
+
+When the API key is not configured, the script writes a clear placeholder file
+instead of failing silently. Once the secret is configured, the same workflow
+replaces the placeholder with live calendar data.
 """
 
 from __future__ import annotations
@@ -31,11 +35,32 @@ MEDIUM_WORDS = (
 )
 
 
+def now_jst() -> datetime:
+    return datetime.now(JST)
+
+
+def write_output(payload: dict[str, Any]) -> None:
+    OUTPUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def get_date_range() -> tuple[str, str]:
-    now_jst = datetime.now(JST)
-    start = (now_jst - timedelta(days=1)).date().isoformat()
-    end = (now_jst + timedelta(days=7)).date().isoformat()
+    current = now_jst()
+    start = (current - timedelta(days=1)).date().isoformat()
+    end = (current + timedelta(days=7)).date().isoformat()
     return start, end
+
+
+def placeholder(status: str, message: str) -> dict[str, Any]:
+    start, end = get_date_range()
+    return {
+        "status": status,
+        "message": message,
+        "updatedAt": now_jst().isoformat(timespec="seconds"),
+        "timezone": "Asia/Tokyo",
+        "provider": "Financial Modeling Prep",
+        "range": {"from": start, "to": end},
+        "events": [],
+    }
 
 
 def fetch_json(url: str) -> Any:
@@ -98,7 +123,7 @@ def markets_for(country: str, title: str) -> list[str]:
     lowered = title.lower()
     if country == "US":
         markets.update(["USD/JPY", "EUR/USD", "日経225先物", "金", "BTCUSD"])
-    elif country in {"JP"}:
+    elif country == "JP":
         markets.update(["USD/JPY", "日経225先物"])
     elif country in {"EU", "DE", "FR", "IT"}:
         markets.update(["EUR/USD", "金"])
@@ -144,8 +169,9 @@ def normalize_item(item: dict[str, Any]) -> dict[str, Any] | None:
 def main() -> int:
     api_key = os.environ.get("FMP_API_KEY", "").strip()
     if not api_key:
-        print("FMP_API_KEY is not configured.", file=sys.stderr)
-        return 2
+        write_output(placeholder("not_configured", "FMP_API_KEY is not configured."))
+        print(f"Wrote not-configured placeholder to {OUTPUT}")
+        return 0
 
     start, end = get_date_range()
     query = urllib.parse.urlencode({"from": start, "to": end, "apikey": api_key})
@@ -165,13 +191,14 @@ def main() -> int:
     events.sort(key=lambda event: (event["datetimeJst"], -event["importance"], event["title"]))
 
     result = {
-        "updatedAt": datetime.now(JST).isoformat(timespec="seconds"),
+        "status": "ok",
+        "updatedAt": now_jst().isoformat(timespec="seconds"),
         "timezone": "Asia/Tokyo",
         "provider": "Financial Modeling Prep",
         "range": {"from": start, "to": end},
         "events": events,
     }
-    OUTPUT.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    write_output(result)
     print(f"Wrote {len(events)} events to {OUTPUT}")
     return 0
 
