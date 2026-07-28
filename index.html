@@ -11,19 +11,20 @@
   <link rel="stylesheet" href="style.css?v=12">
   <link rel="stylesheet" href="archive-layout.css?v=6">
   <link rel="stylesheet" href="report-view-toggle.css?v=3">
-  <link rel="stylesheet" href="market-report-v2.css?v=4">
+  <link rel="stylesheet" href="market-report-v2.css?v=5">
   <style>
     .data-quality-notice{margin:0 0 18px;padding:12px 16px;border:1px solid rgba(166,118,0,.28);border-radius:12px;background:#fff8db;color:#6a4b00;font-weight:700;line-height:1.6}
     .report-explorer{display:block!important;grid-template-columns:none!important;width:100%!important}
     .archive-section{position:static!important;max-height:none!important;width:100%!important;margin:0 0 24px!important}
     .report-viewer{width:100%!important;min-width:0!important}
-    .report-list{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;max-height:420px!important;overflow:auto!important}
+    .report-list{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;max-height:390px!important;overflow:auto!important}
     .archive-day,.archive-day-list{display:contents!important}.archive-day-head{grid-column:1/-1!important}
-    .report-summary-dashboard{width:min(1180px,100%)!important;margin:0 auto!important}
-    .report-reader{width:min(900px,100%)!important;max-width:900px!important;margin:0 auto!important;padding:52px 68px 70px!important}
-    .report-reader-copy{font-size:18px!important;line-height:2.05!important}.report-reader-copy p{margin:0 0 26px!important}
-    .report-reader-section{padding:48px 0!important}.report-reader-section h2{margin-bottom:28px!important;font-size:25px!important}
-    @media(max-width:1000px){.report-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}.report-reader{padding:42px 36px 56px!important}}
+    .report-summary-dashboard{width:min(1160px,100%)!important;margin:0 auto!important}
+    .report-reader{width:min(900px,100%)!important;max-width:900px!important;margin:0 auto!important;padding:54px 70px 72px!important}
+    .report-reader-copy{font-size:17px!important;line-height:2!important}.report-reader-copy p{margin:0 0 23px!important}
+    .report-reader-section{padding:44px 0!important}.report-reader-section h2{margin-bottom:24px!important;font-size:24px!important}
+    @media(max-width:1100px){.report-list{grid-template-columns:repeat(3,minmax(0,1fr))!important}.report-reader{padding:42px 36px 56px!important}}
+    @media(max-width:820px){.report-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
     @media(max-width:700px){.report-list{grid-template-columns:1fr!important}.report-reader{padding:28px 20px 44px!important}.report-reader-copy{font-size:16px!important;line-height:1.95!important}}
   </style>
 </head>
@@ -34,14 +35,11 @@
         <p class="eyebrow">WEB版マーケットレポート</p>
         <h1>マーケットレポート</h1>
         <p class="lead">ニュースの羅列ではなく、材料から金利・為替・資金フロー・需給・価格反応までをつなげ、次に見るべきポイントを整理します。</p>
-        <nav class="site-nav" aria-label="ページ内ナビゲーション">
-          <a href="#snapshot">ダッシュボード</a><a href="#market-depth">セクター・個別銘柄</a><a href="#intelligence">テーマ分析</a><a href="#reports">過去レポート一覧</a>
-        </nav>
+        <nav class="site-nav" aria-label="ページ内ナビゲーション"><a href="#snapshot">ダッシュボード</a><a href="#market-depth">セクター・個別銘柄</a><a href="#intelligence">テーマ分析</a><a href="#reports">過去レポート一覧</a></nav>
       </div>
       <div class="hero-note" id="heroStatus">最新データを読み込み中</div>
     </div>
   </header>
-
   <main class="wrap">
     <section id="snapshot" class="dashboard-section" aria-label="最新マーケットダッシュボード">
       <div class="section-heading dashboard-heading"><div><p class="section-kicker">LATEST MARKET SNAPSHOT</p><h2>今日の市場全体像</h2></div><p id="dashboardTimestamp"></p></div>
@@ -70,17 +68,10 @@
         </div>
       </section>
     </section>
-
     <section id="intelligence" class="insight-section" aria-label="蓄積レポート分析"><div class="section-heading insight-heading"><div><p class="section-kicker">REPORT INTELLIGENCE</p><h2>蓄積レポート分析</h2></div><p id="analysisStatus">集計中です…</p></div><div class="insight-grid"><article class="insight-card"><div class="insight-card-head"><div><span class="dashboard-label">THEME RANKING</span><h3>頻出テーマ</h3></div><span class="mini-note">登録レポートから自動集計</span></div><div id="themeRanking" class="ranking-list"></div></article><article class="insight-card similar-card"><div class="insight-card-head"><div><span class="dashboard-label">SIMILAR MARKET</span><h3>最新レポートに似た相場</h3></div><span class="mini-note">文章・タグ・市場方向を比較</span></div><div id="similarReports" class="similar-list"></div></article></div></section>
-
     <section id="reports" class="toolbar" aria-label="レポート絞り込み"><label>時間帯<select id="timeFilter"><option value="all">すべて</option><option value="07:00">07:00</option><option value="09:00">土曜09:00</option><option value="12:00">12:00</option><option value="16:00">16:00</option><option value="21:00">21:00</option></select></label><label>月<select id="monthFilter"><option value="all">すべて</option></select></label><label>市場<select id="marketFilter"><option value="all">すべて</option><option value="USD/JPY">USD/JPY</option><option value="EUR/USD">EUR/USD</option><option value="日経225先物">日経225先物</option><option value="金">金</option><option value="原油">原油</option><option value="BTCUSD">BTCUSD</option></select></label><label class="search-field">キーワード<input id="searchInput" type="search" placeholder="例：ドル円、原油、米金利、半導体、寄与度"></label></section>
-
-    <section class="report-explorer" aria-label="マーケットレポート検索・閲覧">
-      <aside class="archive-section"><div class="section-heading archive-heading"><div><p class="section-kicker">REPORT ARCHIVE</p><h2>過去レポート一覧</h2></div><p id="resultCount"></p></div><p class="archive-guide">レポートを選ぶと、下の閲覧エリアに30秒要約を表示します。必要な場合だけ全文表示へ切り替えてください。</p><div id="reportList" class="report-list"></div><button id="loadMoreButton" class="load-more" type="button" hidden>さらに表示</button><p id="emptyMessage" class="empty" hidden>該当するレポートがありません。</p></aside>
-      <section id="latestSection" class="report-viewer"><div class="section-heading viewer-heading"><div><p class="section-kicker">SELECTED REPORT</p><h2>選択したレポート</h2></div><p id="latestTimestamp"></p></div><div class="report-view-tabs" role="tablist" aria-label="レポート表示方法"><button type="button" role="tab" data-report-view="summary" class="is-active" aria-selected="true">📊 30秒で要点を見る</button><button type="button" role="tab" data-report-view="text" aria-selected="false">📄 全文を読む</button></div><div id="latestReport"><p class="empty">読み込み中です…</p></div></section>
-    </section>
+    <section class="report-explorer" aria-label="マーケットレポート検索・閲覧"><aside class="archive-section"><div class="section-heading archive-heading"><div><p class="section-kicker">REPORT ARCHIVE</p><h2>過去レポート一覧</h2></div><p id="resultCount"></p></div><p class="archive-guide">レポートを選ぶと、下の閲覧エリアに30秒要約を表示します。必要な場合だけ全文表示へ切り替えてください。</p><div id="reportList" class="report-list"></div><button id="loadMoreButton" class="load-more" type="button" hidden>さらに表示</button><p id="emptyMessage" class="empty" hidden>該当するレポートがありません。</p></aside><section id="latestSection" class="report-viewer"><div class="section-heading viewer-heading"><div><p class="section-kicker">SELECTED REPORT</p><h2>選択したレポート</h2></div><p id="latestTimestamp"></p></div><div class="report-view-tabs" role="tablist" aria-label="レポート表示方法"><button type="button" role="tab" data-report-view="summary" class="is-active" aria-selected="true">📊 30秒で要点を見る</button><button type="button" role="tab" data-report-view="text" aria-selected="false">📄 全文を読む</button></div><div id="latestReport"><p class="empty">読み込み中です…</p></div></section></section>
   </main>
-
   <footer><div class="wrap">© Market Report</div></footer>
   <script src="report-data-hydrator.js?v=4"></script><script src="script.js?v=14"></script><script src="dashboard-events.js?v=5"></script><script src="dashboard-links.js?v=2"></script><script src="report-view-toggle.js?v=6"></script><script src="market-report-v2.js?v=3"></script><script src="dashboard-quality-guard.js?v=3"></script>
 </body>
