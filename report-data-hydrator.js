@@ -11,16 +11,17 @@
 
   const clean = value => String(value || "").replace(/\r/g, "").trim();
   const paragraphs = text => clean(text).split(/\n{2,}/).map(x => x.replace(/\n+/g, " ").trim()).filter(Boolean);
+  const lines = text => clean(text).split(/\n+/).map(x => x.trim()).filter(Boolean);
   const isSparse = value => !value || (Array.isArray(value) && value.length === 0) || value === "本文参照" || value === "旧形式のため原文参照";
 
   function splitSections(fullText) {
-    const lines = clean(fullText).split("\n");
+    const rows = clean(fullText).split("\n");
     const sections = [];
     let current = { heading: "冒頭", body: [] };
-    const headingPattern = /^\s*(?:第?\d+\s*[．.、:：)]|【[^】]+】|■|◆|◇|●)\s*(.+)$/;
-    lines.forEach(line => {
+    const headingPattern = /^\s*(?:第?\d+\s*[．.、:：)]|【[^】]+】|■|◆|◇|●|#+)\s*(.+)$/;
+    rows.forEach(line => {
       const match = line.match(headingPattern);
-      if (match && line.trim().length < 100) {
+      if (match && line.trim().length < 120) {
         if (current.body.some(x => x.trim())) sections.push(current);
         current = { heading: clean(match[1]), body: [] };
       } else {
@@ -54,10 +55,7 @@
     const existing = (report.markets || []).find(m => m.name === name) || {};
     const matchedSections = sections.filter(section => pattern.test(section.heading));
     let text = matchedSections.map(section => `${section.heading}\n${section.text}`).join("\n\n");
-    if (!text) {
-      const lines = fullText.split("\n").filter(line => pattern.test(line));
-      text = lines.slice(0, 12).join("\n");
-    }
+    if (!text) text = fullText.split("\n").filter(line => pattern.test(line)).slice(0, 12).join("\n");
     const ps = paragraphs(text);
     const priceLine = ps.find(p => /\d/.test(p) && /円|ドル|%|％|前後|台|ポイント/.test(p)) || "";
     return {
@@ -73,6 +71,24 @@
       breakCondition: existing.breakCondition && existing.breakCondition !== "取得不能" ? existing.breakCondition : (ps.find(p => /崩れる条件|見方を変える|無効|否定/.test(p)) || "本文参照"),
       risk: existing.risk || (ps.find(p => /リスク|注意|警戒/.test(p)) || "")
     };
+  }
+
+  function sectionRows(sections, headingPattern, fallbackText, linePattern) {
+    const sectionText = findSections(sections, headingPattern);
+    const source = sectionText || fallbackText;
+    const rows = lines(source).filter(line => !/^[-=＿\s]+$/.test(line));
+    if (sectionText) return rows;
+    return rows.filter(line => linePattern.test(line));
+  }
+
+  function hydrateInternals(hydrated, sections, fullText) {
+    if (isSparse(hydrated.usSectors)) hydrated.usSectors = sectionRows(sections, /米国.*(?:セクター|業種)|S&P.*(?:セクター|業種)|米株.*(?:セクター|業種)/i, fullText, /米国.*(?:セクター|業種)|S&P|NASDAQ|SOX|ラッセル|Russell/i).slice(0, 12);
+    if (isSparse(hydrated.japanSectors)) hydrated.japanSectors = sectionRows(sections, /(?:東京|日本|東証).*(?:セクター|業種)|東証33業種/i, fullText, /東京市場|日本株|東証|銀行|商社|海運|自動車|電機|半導体|医薬品|小売|不動産/).filter(x => !/米国|S&P|NASDAQ|SOX|Russell/i.test(x)).slice(0, 12);
+    if (isSparse(hydrated.nikkeiPositiveContributors)) hydrated.nikkeiPositiveContributors = sectionRows(sections, /日経.*(?:プラス寄与|押し上げ)|プラス寄与度/i, fullText, /プラス寄与|押し上げ寄与|日経.*押し上げ/).slice(0, 8);
+    if (isSparse(hydrated.nikkeiNegativeContributors)) hydrated.nikkeiNegativeContributors = sectionRows(sections, /日経.*(?:マイナス寄与|押し下げ)|マイナス寄与度/i, fullText, /マイナス寄与|押し下げ寄与|日経.*押し下げ/).slice(0, 8);
+    if (isSparse(hydrated.usGainers)) hydrated.usGainers = sectionRows(sections, /米国.*(?:大幅上昇|値上がり銘柄|上昇率上位)|S&P.*上昇率上位/i, fullText, /米国.*(?:大幅上昇|値上がり|上昇率上位)|S&P.*上昇率上位|NASDAQ.*上昇率上位/i).slice(0, 8);
+    if (isSparse(hydrated.usLosers)) hydrated.usLosers = sectionRows(sections, /米国.*(?:大幅下落|値下がり銘柄|下落率上位)|S&P.*下落率上位/i, fullText, /米国.*(?:大幅下落|値下がり|下落率上位)|S&P.*下落率上位|NASDAQ.*下落率上位/i).slice(0, 8);
+    return hydrated;
   }
 
   function hydrateReport(report) {
@@ -113,6 +129,7 @@
     if (!hydrated.breakConditions) hydrated.breakConditions = scenarioParagraphs.find(p => /崩れる|無効|否定|見方を変える/.test(p)) || "";
 
     hydrated.markets = MARKET_ALIASES.map(([name, pattern]) => inferMarket(hydrated, name, pattern, sections, fullText));
+    hydrateInternals(hydrated, sections, fullText);
     hydrated._hydratedFromFullText = true;
     return hydrated;
   }
