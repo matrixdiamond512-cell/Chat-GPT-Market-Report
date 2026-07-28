@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="style.css?v=10">
   <link rel="stylesheet" href="archive-layout.css?v=4">
   <link rel="stylesheet" href="report-view-toggle.css?v=1">
+  <style>
+    .data-quality-notice{margin:0 0 18px;padding:12px 16px;border:1px solid rgba(166,118,0,.28);border-radius:12px;background:#fff8db;color:#6a4b00;font-weight:700;line-height:1.6}
+  </style>
 </head>
 <body>
   <header class="site-header"><div class="wrap hero-grid"><div><p class="eyebrow">MARKET INTELLIGENCE DASHBOARD</p><h1>マーケットレポート</h1><p class="lead">ニュースの羅列ではなく、「何が市場を動かし、次に何を見るべきか」を整理します。</p></div><div class="hero-note" id="heroStatus">最新データを読み込み中</div></div></header>
@@ -38,6 +41,11 @@
     <section class="report-explorer" aria-label="マーケットレポート検索・閲覧"><aside class="archive-section"><div class="section-heading archive-heading"><div><p class="section-kicker">REPORT ARCHIVE</p><h2>過去レポート一覧</h2></div><p id="resultCount"></p></div><p class="archive-guide">カードをクリックすると右側に全文を表示します。</p><div id="reportList" class="report-list"></div><button id="loadMoreButton" class="load-more" type="button" hidden>さらに表示</button><p id="emptyMessage" class="empty" hidden>該当するレポートがありません。</p></aside><section id="latestSection" class="report-viewer"><div class="section-heading viewer-heading"><div><p class="section-kicker">SELECTED REPORT</p><h2>選択したレポート</h2></div><p id="latestTimestamp"></p></div><div class="report-view-tabs" role="tablist" aria-label="レポート表示方法"><button type="button" role="tab" data-report-view="summary" aria-selected="false">📊 要点をパネルで見る</button><button type="button" role="tab" data-report-view="text" class="is-active" aria-selected="true">📄 全文を一気に読む</button></div><div id="latestReport"><p class="empty">読み込み中です…</p></div></section></section>
   </main>
   <footer><div class="wrap">© Market Report</div></footer>
-  <script src="report-data-hydrator.js?v=1"></script><script src="script.js?v=11"></script><script src="dashboard-events.js?v=4"></script><script src="dashboard-links.js?v=1"></script><script src="report-view-toggle.js?v=3"></script>
+  <script src="report-data-hydrator.js?v=2"></script>
+  <script src="script.js?v=12"></script>
+  <script src="dashboard-events.js?v=4"></script>
+  <script src="dashboard-links.js?v=1"></script>
+  <script src="report-view-toggle.js?v=3"></script>
+  <script src="dashboard-quality-guard.js?v=2"></script>
 </body>
 </html>
