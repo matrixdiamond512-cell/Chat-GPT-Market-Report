@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <style>
+    body{font-family:Arial,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;margin:0;padding:16px;background:#f6f8fb;color:#1f2937}
+    h2{font-size:18px;margin:0 0 8px}
+    p{font-size:12px;line-height:1.6;margin:0 0 12px;color:#4b5563}
+    textarea{width:100%;min-height:420px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:8px;padding:10px;font:12px/1.5 monospace;background:#fff;resize:vertical}
+    .buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+    button{border:0;border-radius:8px;padding:10px 12px;font-weight:700;cursor:pointer}
+    .preview{background:#e5e7eb;color:#111827}
+    .publish{background:#111827;color:#fff}
+    .template{width:100%;margin-top:8px;background:#dbeafe;color:#1e3a8a}
+    .status{margin-top:12px;padding:10px;border-radius:8px;background:#fff;border:1px solid #e5e7eb;font-size:12px;white-space:pre-wrap}
+    .ok{border-color:#86efac;background:#f0fdf4;color:#166534}
+    .error{border-color:#fca5a5;background:#fef2f2;color:#991b1b}
+    a{color:#2563eb}
+  </style>
+</head>
+<body>
+  <h2>WEB版マーケットレポート登録</h2>
+  <p>ChatGPTが出力したWEB版用JSONを貼り付け、確認後に公開します。同じ日付・時刻のレポートは上書きされます。</p>
+  <textarea id="jsonInput" placeholder="ここに1件分のレポートJSONを貼り付けてください"></textarea>
+  <div class="buttons">
+    <button class="preview" onclick="previewReport()">内容を確認</button>
+    <button class="publish" onclick="publishReport()">WEB版へ公開</button>
+  </div>
+  <button class="template" onclick="insertTemplate()">入力テンプレートを表示</button>
+  <div id="status" class="status">待機中</div>
+
+<script>
+const template={
+  date:'2026-07-28',time:'07:00',title:'マーケットレポート｜2026/07/28（火）07:00',
+  tags:['ドル円','ユーロドル','日経225先物','金','原油','BTCUSD'],
+  theme:'今日の相場テーマ',changes:['前回からの変化'],consistency:['材料と値動きの整合性'],
+  leadingMarket:'今日の主導市場',positioning:['ポジションの偏り'],news:['重要ニュース'],
+  crossAssetFlow:['クロスアセット資金フロー'],handover:['次の時間帯への引き継ぎ'],
+  events:['今後のイベント'],mainScenario:'メインシナリオ',alternativeScenario:'代替シナリオ',
+  breakConditions:'全体シナリオが崩れる条件',riskManagement:['リスク管理'],
+  markets:[
+    {name:'金',direction:'中立',price:'',change:'',material:'',positioning:'',levels:'',mainScenario:'',alternativeScenario:'',breakCondition:'',risk:''},
+    {name:'原油',direction:'中立',price:'',change:'',material:'',positioning:'',levels:'',mainScenario:'',alternativeScenario:'',breakCondition:'',risk:''},
+    {name:'日経225先物',direction:'中立',price:'',change:'',material:'',positioning:'',levels:'',mainScenario:'',alternativeScenario:'',breakCondition:'',risk:''},
+    {name:'USD/JPY',direction:'中立',price:'',change:'',material:'',positioning:'',levels:'',mainScenario:'',alternativeScenario:'',breakCondition:'',risk:''},
+    {name:'EUR/USD',direction:'中立',price:'',change:'',material:'',positioning:'',levels:'',mainScenario:'',alternativeScenario:'',breakCondition:'',risk:''},
+    {name:'BTCUSD',direction:'中立',price:'',change:'',material:'',positioning:'',levels:'',mainScenario:'',alternativeScenario:'',breakCondition:'',risk:''}
+  ],sources:[]
+};
+function setStatus(text,type=''){const el=document.getElementById('status');el.className='status '+type;el.innerHTML=text;}
+function insertTemplate(){document.getElementById('jsonInput').value=JSON.stringify(template,null,2);setStatus('テンプレートを入力しました。');}
+function getText(){return document.getElementById('jsonInput').value.trim();}
+function previewReport(){const text=getText();if(!text){setStatus('JSONを貼り付けてください。','error');return;}setStatus('確認中…');google.script.run.withSuccessHandler(report=>{setStatus('確認OK\n'+report.title+'\n'+report.date+' '+report.time,'ok');}).withFailureHandler(err=>setStatus(err.message||String(err),'error')).previewWebReport(text);}
+function publishReport(){const text=getText();if(!text){setStatus('JSONを貼り付けてください。','error');return;}if(!confirm('このレポートをWEB版へ公開しますか？'))return;setStatus('公開中…');google.script.run.withSuccessHandler(result=>{setStatus('公開しました。\n'+result.title+'\nコミット: '+result.commitSha+'\n<a href="'+result.pagesUrl+'" target="_blank">WEB版を開く</a>','ok');}).withFailureHandler(err=>setStatus(err.message||String(err),'error')).publishWebReport(text);}
+</script>
+</body>
+</html>
