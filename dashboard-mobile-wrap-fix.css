@@ -1,0 +1,88 @@
+/* Emergency mobile wrapping fix — 2026-07-29
+   Prevents dashboard text from collapsing to one or two characters per line. */
+
+#dashboardFlow,
+#dashboardFlow *,
+.dashboard-wide-grid .dashboard-card,
+.dashboard-wide-grid .dashboard-card *,
+.cross-asset-transmission,
+.cross-asset-transmission * {
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  word-break: normal !important;
+  overflow-wrap: anywhere !important;
+  white-space: normal !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+#dashboardFlow {
+  display: block !important;
+  width: 100% !important;
+}
+
+#dashboardFlow > *,
+#dashboardFlow p,
+#dashboardFlow div,
+#dashboardFlow span,
+#dashboardFlow strong,
+#dashboardFlow b,
+#dashboardFlow li {
+  display: block !important;
+  width: auto !important;
+  inline-size: auto !important;
+  max-inline-size: 100% !important;
+}
+
+.dashboard-wide-grid > .dashboard-card {
+  width: 100% !important;
+  min-inline-size: 0 !important;
+}
+
+.cross-asset-flow {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+  width: 100% !important;
+}
+
+.cross-asset-step {
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.cross-asset-step b,
+.cross-asset-step strong {
+  display: block !important;
+  width: auto !important;
+  min-width: 0 !important;
+}
+
+@media (max-width: 700px) {
+  .dashboard-wide-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) !important;
+    width: 100% !important;
+  }
+
+  .dashboard-wide-grid > .dashboard-card {
+    grid-column: 1 / -1 !important;
+  }
+
+  #dashboardFlow {
+    font-size: 14px !important;
+    line-height: 1.8 !important;
+  }
+
+  .cross-asset-step {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cross-asset-step i,
+  .cross-asset-flow > em {
+    display: none !important;
+  }
+}
