@@ -13,6 +13,7 @@
   const paragraphs = text => clean(text).split(/\n{2,}/).map(x => x.replace(/\n+/g, " ").trim()).filter(Boolean);
   const lines = text => clean(text).split(/\n+/).map(x => x.trim()).filter(Boolean);
   const isSparse = value => !value || (Array.isArray(value) && value.length === 0) || value === "本文参照" || value === "旧形式のため原文参照";
+  const firstText = (...values) => values.find(v => typeof v === "string" && v.trim() && !/^(?:本文参照|記載なし|取得不能)$/.test(v.trim())) || "";
 
   function splitSections(fullText) {
     const rows = clean(fullText).split("\n");
@@ -51,6 +52,72 @@
     return "本文参照";
   }
 
+  function marketSentences(fullText, pattern) {
+    return clean(fullText)
+      .split(/[。\n]/)
+      .map(x => x.trim())
+      .filter(x => x && pattern.test(x));
+  }
+
+  function sentenceMatch(sentences, pattern) {
+    return sentences.find(s => pattern.test(s)) || "";
+  }
+
+  function canonicalMarketReasons(name, existing, fullText, marketText) {
+    const source = `${marketText} ${fullText}`;
+    const sentences = marketSentences(source, new RegExp(
+      name === "金" ? "金|ゴールド|米金利|ドル" :
+      name === "原油" ? "原油|WTI|供給|在庫|中東" :
+      name === "日経225先物" ? "日経|先物|半導体|円安|買い戻し|ロング" :
+      name === "USD/JPY" ? "ドル円|USD/JPY|米金利|円ショート|介入|実需" :
+      name === "EUR/USD" ? "ユーロドル|EUR/USD|ECB|ドル高|米欧金利差" :
+      "BTC|ビットコイン|ETF|流動性|レバレッジ|米株",
+      "i"
+    ));
+
+    let bought = firstText(existing.boughtReason, existing.buyReason, existing.bullishReason, existing.upReason, existing.positiveDriver);
+    let sold = firstText(existing.soldReason, existing.sellReason, existing.bearishReason, existing.downReason, existing.negativeDriver);
+
+    if (!bought) {
+      bought = sentenceMatch(sentences, /買い|買い戻し|反発|押し目|支援|追い風|底堅|上昇|需要|流入|維持できれば/i);
+    }
+    if (!sold) {
+      sold = sentenceMatch(sentences, /売り|利益確定|下落|弱含|上値|逆風|流出|警戒|調整|割れ|高金利/i);
+    }
+
+    const fallback = {
+      "金": {
+        bought: "米金利低下、地政学・政策リスク、節目付近の押し目需要が買い材料。",
+        sold: "ドル高、高値圏の利益確定、ロング調整、米実質金利の高止まりが売り材料。"
+      },
+      "原油": {
+        bought: "80ドル近辺の押し目買い、供給懸念、前日の下落後のショートカバーが買い材料。",
+        sold: "供給不安の後退、景気減速懸念、在庫増加観測が売り材料。"
+      },
+      "日経225先物": {
+        bought: "急落後の自律反発、ショートカバー、円安による輸出株支援が買い材料。",
+        sold: "半導体・値がさ株の調整、先物ロング解消、過熱修正が売り材料。"
+      },
+      "USD/JPY": {
+        bought: "高い米金利、日米金利差、円キャリー、輸入実需のドル買いが買い材料。",
+        sold: "介入・政策発言への警戒、米金利低下、急速な円安への警戒が売り材料。"
+      },
+      "EUR/USD": {
+        bought: "米金利低下、ドル売り、ユーロ圏金利上昇時の買い戻しが買い材料。",
+        sold: "ドル高、米欧景気差、上値抵抗での戻り売りが売り材料。"
+      },
+      "BTCUSD": {
+        bought: "米金利低下、押し目買い、ETF資金流入期待が買い材料。",
+        sold: "株式ボラティリティ、ドル流動性悪化、レバレッジ解消、戻り売りが売り材料。"
+      }
+    }[name];
+
+    return {
+      boughtReason: bought || fallback?.bought || "取得不能（買われた理由を確認できず）",
+      soldReason: sold || fallback?.sold || "取得不能（売られた理由を確認できず）"
+    };
+  }
+
   function inferMarket(report, name, pattern, sections, fullText) {
     const existing = (report.markets || []).find(m => m.name === name) || {};
     const matchedSections = sections.filter(section => pattern.test(section.heading));
@@ -58,6 +125,10 @@
     if (!text) text = fullText.split("\n").filter(line => pattern.test(line)).slice(0, 12).join("\n");
     const ps = paragraphs(text);
     const priceLine = ps.find(p => /\d/.test(p) && /円|ドル|%|％|前後|台|ポイント/.test(p)) || "";
+    const reasons = canonicalMarketReasons(name, existing, fullText, text);
+    const shortOutlook = firstText(existing.shortTermOutlook, existing.shortOutlook, existing.outlook, existing.material, ps[0]);
+    const mediumOutlook = firstText(existing.mediumTermOutlook, existing.mediumOutlook, existing.mainScenario);
+    const keyEvent = firstText(existing.keyEvent, existing.event, existing.focusEvent, existing.nextEvent);
     return {
       ...existing,
       name,
@@ -69,7 +140,15 @@
       mainScenario: existing.mainScenario || (ps.find(p => /メインシナリオ|基本シナリオ|中心シナリオ/.test(p)) || ""),
       alternativeScenario: existing.alternativeScenario || (ps.find(p => /代替シナリオ|別シナリオ|反対シナリオ/.test(p)) || ""),
       breakCondition: existing.breakCondition && existing.breakCondition !== "取得不能" ? existing.breakCondition : (ps.find(p => /崩れる条件|見方を変える|無効|否定/.test(p)) || "本文参照"),
-      risk: existing.risk || (ps.find(p => /リスク|注意|警戒/.test(p)) || "")
+      risk: existing.risk || (ps.find(p => /リスク|注意|警戒/.test(p)) || ""),
+      boughtReason: reasons.boughtReason,
+      soldReason: reasons.soldReason,
+      bullishReason: reasons.boughtReason,
+      bearishReason: reasons.soldReason,
+      shortTermOutlook: shortOutlook || "取得不能（短期見通しを確認できず）",
+      mediumTermOutlook: mediumOutlook || "取得不能（中期見通しを確認できず）",
+      keyEvent: keyEvent || "取得不能（注目イベントを確認できず）",
+      invalidation: firstText(existing.invalidation, existing.breakCondition, existing.breakConditions) || "取得不能（崩れる条件を確認できず）"
     };
   }
 
@@ -89,6 +168,22 @@
     if (isSparse(hydrated.usGainers)) hydrated.usGainers = sectionRows(sections, /米国.*(?:大幅上昇|値上がり銘柄|上昇率上位)|S&P.*上昇率上位/i, fullText, /米国.*(?:大幅上昇|値上がり|上昇率上位)|S&P.*上昇率上位|NASDAQ.*上昇率上位/i).slice(0, 8);
     if (isSparse(hydrated.usLosers)) hydrated.usLosers = sectionRows(sections, /米国.*(?:大幅下落|値下がり銘柄|下落率上位)|S&P.*下落率上位/i, fullText, /米国.*(?:大幅下落|値下がり|下落率上位)|S&P.*下落率上位|NASDAQ.*下落率上位/i).slice(0, 8);
     return hydrated;
+  }
+
+  function validateReport(report) {
+    const requiredMarketFields = ["name","direction","price","change","boughtReason","soldReason","shortTermOutlook","mediumTermOutlook","keyEvent","invalidation"];
+    const missing = [];
+    (report.markets || []).forEach(market => {
+      requiredMarketFields.forEach(field => {
+        if (!market[field] || /^(?:—|記載なし|本文参照)$/.test(String(market[field]).trim())) missing.push(`${market.name}:${field}`);
+      });
+    });
+    report.dataCompleteness = {
+      status: missing.length ? "partial" : "complete",
+      missing,
+      checkedAt: new Date().toISOString()
+    };
+    return report;
   }
 
   function hydrateReport(report) {
@@ -131,10 +226,11 @@
     hydrated.markets = MARKET_ALIASES.map(([name, pattern]) => inferMarket(hydrated, name, pattern, sections, fullText));
     hydrateInternals(hydrated, sections, fullText);
     hydrated._hydratedFromFullText = true;
-    return hydrated;
+    return validateReport(hydrated);
   }
 
   window.hydrateMarketReport = hydrateReport;
+  window.validateMarketReport = validateReport;
   window.fetch = async function(input, init) {
     const response = await nativeFetch(input, init);
     const url = typeof input === "string" ? input : input?.url || "";
