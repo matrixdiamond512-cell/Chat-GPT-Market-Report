@@ -1,0 +1,292 @@
+/* Market Report Dashboard readability standard — Version 2.23 */
+:root{
+  --mr-reading-width:1080px;
+  --mr-section-gap:44px;
+  --mr-card-gap:24px;
+  --mr-block-gap:20px;
+  --mr-line-height:1.8;
+}
+
+/* Overall reading rhythm */
+.dashboard{
+  max-width:1440px;
+  margin-inline:auto;
+  padding:28px 28px 72px;
+}
+.dashboard > section,
+.dashboard > .section-heading,
+.dashboard > .market-anchor{
+  scroll-margin-top:150px;
+}
+.dashboard > section + section,
+.dashboard > section + .section-heading,
+.dashboard > .section-heading + section{
+  margin-top:var(--mr-section-gap);
+}
+.grid{
+  gap:var(--mr-card-gap) !important;
+}
+.card{
+  padding:24px !important;
+  line-height:var(--mr-line-height);
+}
+.card h2,
+.card h3{
+  line-height:1.35;
+  margin:0 0 18px;
+}
+.card p,
+.card ul,
+.card ol{
+  line-height:var(--mr-line-height);
+}
+.card p + p,
+.card ul + p,
+.card p + ul,
+.card ol + p,
+.card p + ol{
+  margin-top:18px;
+}
+.card li + li{
+  margin-top:12px;
+}
+
+/* Section headings */
+.section-heading{
+  margin-top:52px !important;
+  margin-bottom:24px !important;
+  padding:8px 0 18px 16px;
+  border-left:4px solid var(--accent,#548cff);
+  border-bottom:1px solid rgba(148,163,184,.25);
+}
+.section-heading h2{
+  margin:4px 0 0;
+  line-height:1.35;
+}
+
+/* Six-market cards: every subject block remains visible and separated */
+.summary-grid{
+  gap:28px !important;
+}
+.decision-card{
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+  padding:26px !important;
+}
+.decision-card .summary-main{
+  padding-bottom:20px;
+  border-bottom:1px solid rgba(148,163,184,.22);
+}
+.decision-card .summary-quote{
+  margin-top:14px;
+}
+.decision-card .summary-direction{
+  display:inline-flex;
+  margin-top:12px;
+}
+.decision-card .summary-decision{
+  display:flex;
+  flex-direction:column;
+  gap:var(--mr-block-gap);
+}
+.decision-card .decision-row,
+.decision-card .break-condition-row,
+.decision-card .event-row{
+  padding:16px 0;
+  line-height:1.75;
+  border-top:1px solid rgba(148,163,184,.16);
+}
+.decision-card .decision-row b,
+.decision-card .break-condition-row b,
+.decision-card .event-row b{
+  display:block;
+  margin-bottom:8px;
+}
+.decision-card .trade-plan,
+.decision-card .metrics-row,
+.decision-card .outlook-row{
+  gap:16px !important;
+  padding:18px 0;
+  border-top:1px solid rgba(148,163,184,.16);
+  border-bottom:1px solid rgba(148,163,184,.16);
+}
+.decision-card .trade-plan > div,
+.decision-card .metrics-row > div,
+.decision-card .outlook-row > div{
+  padding:14px 16px;
+  line-height:1.7;
+}
+.decision-card .trade-plan b,
+.decision-card .metrics-row b,
+.decision-card .outlook-row b{
+  display:block;
+  margin-bottom:8px;
+}
+
+/* Other dashboard cards */
+.middle-grid .card,
+.depth-grid .card,
+.bottom-grid .card{
+  min-height:0;
+}
+.row{
+  min-height:42px;
+  padding:10px 0 !important;
+  line-height:1.55;
+}
+.row + .row{
+  border-top:1px solid rgba(148,163,184,.12);
+}
+.dual{
+  gap:22px !important;
+}
+.subhead{
+  margin-bottom:14px;
+  padding:10px 12px;
+}
+.event-card{
+  padding:16px 18px !important;
+  line-height:1.65;
+}
+.event-card + .event-card{
+  margin-top:12px;
+}
+.flow{
+  gap:18px !important;
+}
+.flow-note{
+  margin-top:18px;
+  line-height:1.8;
+}
+
+/* Full text / modal / document-like views */
+.modal{
+  width:min(1100px,calc(100vw - 40px));
+  max-height:90vh;
+}
+.modal-body{
+  padding:28px 34px 48px !important;
+  line-height:1.85;
+}
+.diagram-text,
+.report-full-text,
+.full-text,
+.fulltext,
+.detail-text,
+[data-view="fulltext"],
+[data-view="detail-text"],
+article.report-body,
+main.report-body{
+  width:100%;
+  max-width:var(--mr-reading-width);
+  margin-inline:auto;
+  padding:36px 40px 64px;
+  line-height:1.85;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  font-size:16px;
+}
+.diagram-text{
+  min-height:68vh;
+  resize:vertical;
+  padding:28px !important;
+  border-radius:12px;
+}
+.report-full-text h1,
+.full-text h1,
+.fulltext h1,
+.detail-text h1,
+article.report-body h1,
+main.report-body h1{
+  margin:20px 0 34px;
+  padding-bottom:22px;
+  border-bottom:3px solid #a855f7;
+  font-size:clamp(28px,4vw,44px);
+  line-height:1.35;
+}
+.report-full-text h2,
+.full-text h2,
+.fulltext h2,
+.detail-text h2,
+article.report-body h2,
+main.report-body h2{
+  margin:52px 0 24px;
+  padding:8px 0 8px 14px;
+  border-left:4px solid #3b82f6;
+  font-size:clamp(21px,2.7vw,30px);
+  line-height:1.4;
+}
+.report-full-text h3,
+.full-text h3,
+.fulltext h3,
+.detail-text h3,
+article.report-body h3,
+main.report-body h3{
+  margin:32px 0 14px;
+  font-size:19px;
+  line-height:1.5;
+}
+.report-full-text p,
+.full-text p,
+.fulltext p,
+.detail-text p,
+article.report-body p,
+main.report-body p{
+  margin:0 0 22px;
+}
+.report-full-text li,
+.full-text li,
+.fulltext li,
+.detail-text li,
+article.report-body li,
+main.report-body li{
+  margin:0 0 14px;
+  padding-left:6px;
+}
+
+/* Mobile */
+@media (max-width:760px){
+  :root{
+    --mr-section-gap:36px;
+    --mr-card-gap:20px;
+    --mr-block-gap:18px;
+  }
+  .dashboard{
+    padding:22px 16px 56px;
+  }
+  .card{
+    padding:20px !important;
+  }
+  .section-heading{
+    margin-top:42px !important;
+    margin-bottom:20px !important;
+  }
+  .decision-card{
+    padding:22px !important;
+  }
+  .decision-card .trade-plan,
+  .decision-card .metrics-row,
+  .decision-card .outlook-row{
+    grid-template-columns:1fr !important;
+  }
+  .modal{
+    width:calc(100vw - 20px);
+  }
+  .modal-body{
+    padding:22px 18px 40px !important;
+  }
+  .diagram-text,
+  .report-full-text,
+  .full-text,
+  .fulltext,
+  .detail-text,
+  [data-view="fulltext"],
+  [data-view="detail-text"],
+  article.report-body,
+  main.report-body{
+    padding:28px 18px 52px;
+    font-size:15px;
+    line-height:1.85;
+  }
+}
