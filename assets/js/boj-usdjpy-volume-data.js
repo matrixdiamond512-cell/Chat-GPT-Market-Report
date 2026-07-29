@@ -1,6 +1,7 @@
 window.BOJ_USDJPY_VOLUME_DATA = (() => {
   const sourceUrl = "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/index.htm";
   const pdfBaseUrl = "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/";
+  const priceSourceName = "ユーザー提供のUSD/JPY日足スクリーンショット";
   const csv = `date,pub,pdf,spot,chg,chgPct,avg20,vs20,vs20Pct
 2026-07-28,2026-07-29,fx260729.pdf,2254,-211,-8.56,3192,-938,-29.39
 2026-07-27,2026-07-28,fx260728.pdf,2465,-477,-16.21,3180,-715,-22.48
@@ -72,10 +73,56 @@ window.BOJ_USDJPY_VOLUME_DATA = (() => {
 2026-04-17,2026-04-20,fx260420.pdf,2664,-646,-19.52,,,
 2026-04-16,2026-04-17,fx260417.pdf,3310,517,18.51,,,
 2026-04-15,2026-04-16,fx260416.pdf,2793,,,,,`;
+  const priceCsv = `date,close,open,high,low,priceChangePct
+2026-07-29,163.60,163.87,163.91,163.28,-0.16
+2026-07-28,163.87,163.71,163.96,163.64,0.07
+2026-07-27,163.75,163.70,163.82,163.32,-0.06
+2026-07-24,163.85,163.86,163.97,163.64,-0.01
+2026-07-23,163.86,163.14,164.00,162.99,0.44
+2026-07-22,163.14,163.17,163.24,162.79,-0.02
+2026-07-21,163.18,162.51,163.25,162.43,0.42
+2026-07-20,162.50,162.45,162.61,162.24,0.07
+2026-07-17,162.39,162.39,162.52,162.13,0.00
+2026-07-16,162.39,162.19,162.56,161.98,0.12
+2026-07-15,162.19,162.22,162.43,161.89,-0.04
+2026-07-14,162.25,162.44,162.48,161.63,-0.12
+2026-07-13,162.44,161.69,162.50,161.61,0.46
+2026-07-10,161.70,162.38,162.40,161.27,-0.42
+2026-07-09,162.39,162.59,162.67,162.25,-0.12
+2026-07-08,162.59,162.11,162.71,162.06,0.30
+2026-07-07,162.11,162.09,162.20,161.68,0.01
+2026-07-06,162.09,161.36,162.44,161.27,0.44
+2026-07-03,161.38,161.10,161.53,160.52,0.17
+2026-07-02,161.10,162.61,162.64,160.64,-0.90
+2026-07-01,162.57,162.53,162.85,162.29,0.00
+2026-06-30,162.57,161.94,162.68,161.87,0.38
+2026-06-29,161.95,161.76,161.99,161.70,0.12
+2026-06-26,161.76,161.79,161.88,161.52,-0.02
+2026-06-25,161.79,161.76,161.95,161.56,0.00
+2026-06-24,161.79,161.53,161.85,161.49,0.13
+2026-06-23,161.58,161.54,161.75,161.27,0.01
+2026-06-22,161.57,161.26,161.93,161.07,0.16
+2026-06-19,161.31,161.38,161.51,160.99,-0.04
+2026-06-18,161.38,160.67,161.82,160.48,0.46
+2026-06-17,160.64,160.39,160.81,160.12,0.12
+2026-06-16,160.45,160.32,160.49,160.05,0.07
+2026-06-15,160.33,160.23,160.40,159.73,0.06
+2026-06-12,160.23,159.93,160.38,159.89,0.18
+2026-06-11,159.94,160.51,160.63,159.64,-0.38
+2026-06-10,160.55,160.36,160.58,160.23,0.11
+2026-06-09,160.37,160.14,160.45,160.05,0.12
+2026-06-08,160.18,160.18,160.40,159.89,-0.09
+2026-06-05,160.32,160.02,160.35,159.83,0.19`;
+  const n = (value) => value === "" || value == null ? null : Number(value);
+  const priceRecords = priceCsv.trim().split("\n").slice(1).map((line) => {
+    const [date, close, open, high, low, priceChangePct] = line.split(",");
+    return { date, close: n(close), open: n(open), high: n(high), low: n(low), priceChangePct: n(priceChangePct) };
+  });
+  const priceByDate = Object.fromEntries(priceRecords.map((row) => [row.date, row]));
   const records = csv.trim().split("\n").slice(1).map((line) => {
     const [date, pub, pdf, spot, chg, chgPct, avg20, vs20, vs20Pct] = line.split(",");
-    const n = (value) => value === "" || value == null ? null : Number(value);
-    return { date, pub, pdf, spot: n(spot), chg: n(chg), chgPct: n(chgPct), avg20: n(avg20), vs20: n(vs20), vs20Pct: n(vs20Pct) };
+    const price = priceByDate[date] || {};
+    return { date, pub, pdf, spot: n(spot), chg: n(chg), chgPct: n(chgPct), avg20: n(avg20), vs20: n(vs20), vs20Pct: n(vs20Pct), close: price.close ?? null, open: price.open ?? null, high: price.high ?? null, low: price.low ?? null, priceChangePct: price.priceChangePct ?? null };
   });
-  return { sourceName: "日本銀行 外国為替市況（日次）", sourceUrl, pdfBaseUrl, generatedAt: "2026-07-30", unit: "百万ドル", records };
+  return { sourceName: "日本銀行 外国為替市況（日次）", sourceUrl, pdfBaseUrl, priceSourceName, generatedAt: "2026-07-30", unit: "百万ドル", records, priceRecords };
 })();
