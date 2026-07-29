@@ -3,37 +3,53 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
   <title>東京市場ドル円出来高分析</title>
-  <link rel="stylesheet" href="usdjpy-volume.css?v=20260729-1">
+  <link rel="stylesheet" href="usdjpy-volume.css?v=20260729-2">
 </head>
 <body>
   <main class="volume-page">
     <header class="volume-header">
       <div>
-        <p class="eyebrow">MARKET REPORT</p>
+        <p class="eyebrow">TOKYO USD/JPY SPOT VOLUME</p>
         <h1>東京市場ドル円出来高分析</h1>
-        <p>出来高・仲値・実需・投機・価格反応を分けて確認する専用ページ</p>
+        <p>出来高の増減、20営業日平均との差、日柄要因を分けて確認する専用ページ</p>
       </div>
       <a class="back-btn" href="index.html">ダッシュボードへ戻る</a>
     </header>
 
-    <section class="notice">
-      <strong>専用分析ページ</strong>
-      <p>このページは、東京市場USD/JPYスポット出来高、前日比、20営業日平均との差、仲値、実需・投機フロー、価格との整合性、欧州時間への引き継ぎを扱います。数値データは連携済みデータのみ表示し、未取得値は推測しません。</p>
+    <section class="toolbar" aria-label="分析日選択">
+      <label>分析日<select id="dateSelect"><option>読み込み中</option></select></label>
+      <button id="latestButton" type="button">最新日に戻る</button>
+      <span id="dataStatus">出来高データを読み込んでいます</span>
     </section>
 
-    <section class="grid three">
-      <article class="card"><h2>出来高サマリー</h2><dl><dt>前営業日出来高</dt><dd>取得データ待ち</dd><dt>前日比</dt><dd>取得データ待ち</dd><dt>20営業日平均との差</dt><dd>取得データ待ち</dd></dl></article>
-      <article class="card"><h2>仲値・実需分析</h2><ul><li>9:55前後のドル需要</li><li>ゴトー日・月末月初</li><li>輸入企業・輸出企業フロー</li><li>原油購入などのドル需要</li></ul></article>
-      <article class="card"><h2>投機・需給分析</h2><ul><li>円ショートの偏り</li><li>オプション・注文状況</li><li>米日金利差との整合性</li><li>介入警戒によるポジション調整</li></ul></article>
+    <section id="summary" class="metric-grid" aria-live="polite"></section>
+
+    <section class="analysis-grid">
+      <article class="card"><h2>出来高水準の評価</h2><div id="levelAnalysis"></div></article>
+      <article class="card"><h2>前営業日からの変化</h2><div id="changeAnalysis"></div></article>
+      <article class="card"><h2>20営業日平均との差</h2><div id="averageAnalysis"></div></article>
+      <article class="card"><h2>日柄・仲値の確認</h2><div id="calendarAnalysis"></div></article>
+      <article class="card"><h2>実需・投機フローの読み方</h2><div id="flowAnalysis"></div></article>
+      <article class="card"><h2>次に照合する材料</h2><div id="checkAnalysis"></div></article>
     </section>
 
-    <section class="grid two">
-      <article class="card"><h2>価格と出来高の整合性</h2><p>出来高増加を、上昇・下落・往来のどの局面で伴ったかを確認し、実需主導か投機主導かを単独では断定せずに評価します。</p></article>
-      <article class="card"><h2>欧州時間への引き継ぎ</h2><p>東京時間の高値・安値、仲値後の反応、出来高の集中時間帯、残ったポジションの偏りを整理します。</p></article>
+    <section class="card history-card">
+      <div class="section-title"><div><p class="eyebrow dark">HISTORY</p><h2>東京市場USD/JPYスポット出来高履歴</h2></div><p>単位：百万ドル</p></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>日付</th><th>出来高</th><th>前日比</th><th>20営業日平均との差</th><th>日柄</th><th>評価</th></tr></thead>
+          <tbody id="historyBody"><tr><td colspan="6">読み込み中</td></tr></tbody>
+        </table>
+      </div>
     </section>
 
-    <section class="card full"><h2>今後表示する分析項目</h2><div class="item-grid"><span>東京市場USD/JPYスポット出来高</span><span>前日比</span><span>20営業日平均との差</span><span>時間帯別出来高</span><span>仲値需要</span><span>ゴトー日分析</span><span>月末月初分析</span><span>実需フロー</span><span>投機フロー</span><span>価格との整合性</span><span>東京時間高値・安値</span><span>欧州時間への引き継ぎ</span></div></section>
+    <section class="card note-card">
+      <h2>判断上の注意</h2>
+      <p>出来高単独ではドル円の方向を断定しません。価格変動、米日金利差、仲値前後の値動き、輸入・輸出企業の実需、NYオプション、注文状況、IMM/CFTC、原油輸入に伴うドル需要と組み合わせて評価します。</p>
+    </section>
   </main>
+  <script src="usdjpy-volume.js?v=20260729-1"></script>
 </body>
 </html>
