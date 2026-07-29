@@ -2,9 +2,24 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>マーケットレポート｜WEB版完成版</title>
-  <
+  <title>マーケットレポート｜WEBダッシュボード</title>
+  <link rel="stylesheet" href="dashboard-v4.css?v=20260729-1">
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">▥</span><div><strong>MARKET REPORT</strong><small>マーケットレポート WEBダッシュボード</small></div></div>
+      <div class="page-title"><strong>マーケットレポート WEBダッシュボード</strong><span>市場テーマ・需給・資金フロー・6市場見通し</span></div>
+      <div class="updated" id="updatedAt">読み込み中</div>
+    </header>
+    <nav class="tabs" id="tabs" aria-label="ダッシュボード内ナビゲーション"></nav>
+    <main id="dashboard" class="dashboard"><div class="loading">マーケットデータを読み込んでいます…</div></main>
+  </div>
+  <noscript>このダッシュボードの表示にはJavaScriptが必要です。</noscript>
+  <script src="dashboard-v4.js?v=20260729-1"></script>
+</body>
+</html>
