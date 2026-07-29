@@ -1,55 +1,27 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-  <title>東京市場ドル円出来高分析</title>
-  <link rel="stylesheet" href="usdjpy-volume.css?v=20260729-2">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>東京市場ドル円出来高分析｜2026/07/29</title>
+<style>
+:root{--navy:#062452;--blue:#1559b7;--line:#d8e1ef;--soft:#f5f8fc;--text:#0f1f38;--muted:#5e6c82;--green:#0a7a35;--red:#c72222}*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;line-height:1.6}.head{background:var(--navy);color:#fff;padding:14px 28px}.head h1{margin:0;font-size:24px}.head p{margin:2px 0 0;color:#d7e6ff}.nav{display:flex;gap:4px;overflow:auto;background:#f7f9fc;border-bottom:1px solid var(--line);padding:8px 24px}.nav a{color:#082a5b;text-decoration:none;font-weight:700;padding:8px 14px;border-radius:6px;white-space:nowrap}.nav a[aria-current=page]{background:var(--blue);color:white}.page{max-width:1180px;margin:auto;padding:24px}.metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}.metric{border:1px solid var(--line);border-radius:8px;padding:14px;background:#fff;text-align:center}.metric b{display:block;font-size:24px;color:#07306c}.metric span{color:var(--muted);font-size:13px}.card{border:1px solid var(--line);border-radius:8px;padding:16px;background:#fff;box-shadow:0 1px 4px #0000000a;margin-top:16px}.card h2{font-size:18px;color:#07306c;margin:0 0 10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.chart{width:100%;height:auto;border:1px solid var(--line);border-radius:8px;background:#fbfdff}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:8px}table{width:100%;border-collapse:collapse;min-width:820px}th,td{border-bottom:1px solid var(--line);padding:9px;text-align:left}th{background:#eef3fa;color:#07306c}.up{color:var(--green);font-weight:800}.down{color:var(--red);font-weight:800}.note{color:var(--muted);font-size:13px}@media(max-width:880px){.metrics{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.head{padding:12px 16px}.page{padding:16px}}@media(max-width:520px){.metrics{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-  <main class="volume-page">
-    <header class="volume-header">
-      <div>
-        <p class="eyebrow">TOKYO USD/JPY SPOT VOLUME</p>
-        <h1>東京市場ドル円出来高分析</h1>
-        <p>出来高の増減、20営業日平均との差、日柄要因を分けて確認する専用ページ</p>
-      </div>
-      <a class="back-btn" href="index.html">ダッシュボードへ戻る</a>
-    </header>
-
-    <section class="toolbar" aria-label="分析日選択">
-      <label>分析日<select id="dateSelect"><option>読み込み中</option></select></label>
-      <button id="latestButton" type="button">最新日に戻る</button>
-      <span id="dataStatus">出来高データを読み込んでいます</span>
-    </section>
-
-    <section id="summary" class="metric-grid" aria-live="polite"></section>
-
-    <section class="analysis-grid">
-      <article class="card"><h2>出来高水準の評価</h2><div id="levelAnalysis"></div></article>
-      <article class="card"><h2>前営業日からの変化</h2><div id="changeAnalysis"></div></article>
-      <article class="card"><h2>20営業日平均との差</h2><div id="averageAnalysis"></div></article>
-      <article class="card"><h2>日柄・仲値の確認</h2><div id="calendarAnalysis"></div></article>
-      <article class="card"><h2>実需・投機フローの読み方</h2><div id="flowAnalysis"></div></article>
-      <article class="card"><h2>次に照合する材料</h2><div id="checkAnalysis"></div></article>
-    </section>
-
-    <section class="card history-card">
-      <div class="section-title"><div><p class="eyebrow dark">HISTORY</p><h2>東京市場USD/JPYスポット出来高履歴</h2></div><p>単位：百万ドル</p></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>日付</th><th>出来高</th><th>前日比</th><th>20営業日平均との差</th><th>日柄</th><th>評価</th></tr></thead>
-          <tbody id="historyBody"><tr><td colspan="6">読み込み中</td></tr></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="card note-card">
-      <h2>判断上の注意</h2>
-      <p>出来高単独ではドル円の方向を断定しません。価格変動、米日金利差、仲値前後の値動き、輸入・輸出企業の実需、NYオプション、注文状況、IMM/CFTC、原油輸入に伴うドル需要と組み合わせて評価します。</p>
-    </section>
-  </main>
-  <script src="usdjpy-volume.js?v=20260729-1"></script>
+<header class="head"><h1>東京市場ドル円出来高分析｜2026/07/29（水）</h1><p>東京時間（8:00〜15:00）のUSD/JPYスポット出来高・仲値・実需・投機フローを分析</p></header>
+<nav class="nav"><a href="index.html">ダッシュボード</a><a href="report.html">マーケットレポート本文</a><a href="usdjpy-volume.html" aria-current="page">東京市場ドル円出来高分析</a><a href="events.html">重要イベント</a><a href="stocks.html">株式市場分析</a></nav>
+<main class="page">
+<section class="metrics"><div class="metric"><b>63,650</b><span>本日の出来高（百万ドル）</span></div><div class="metric"><b class="down">-2,230</b><span>前日比</span></div><div class="metric"><b class="up">+4,470</b><span>20日平均との差</span></div><div class="metric"><b>需要優勢</b><span>総合評価</span></div><div class="metric"><b class="up">上昇</b><span>仲値評価</span></div><div class="metric"><b>実需優勢</b><span>フロー判断</span></div></section>
+<section class="card"><h2>東京市場USD/JPYスポット出来高の推移（直近20営業日）</h2><svg class="chart" viewBox="0 0 1100 360" role="img" aria-label="出来高とUSDJPY価格の推移"><rect x="0" y="0" width="1100" height="360" fill="#fbfdff"/><g stroke="#d8e1ef"><line x1="70" y1="40" x2="1040" y2="40"/><line x1="70" y1="115" x2="1040" y2="115"/><line x1="70" y1="190" x2="1040" y2="190"/><line x1="70" y1="265" x2="1040" y2="265"/></g><g fill="#1559b7"><rect x="90" y="111" width="28" height="184"/><rect x="145" y="84" width="28" height="211"/><rect x="200" y="142" width="28" height="153"/><rect x="255" y="63" width="28" height="232"/><rect x="310" y="98" width="28" height="197"/><rect x="365" y="129" width="28" height="166"/><rect x="420" y="159" width="28" height="136"/><rect x="475" y="90" width="28" height="205"/><rect x="530" y="105" width="28" height="190"/><rect x="585" y="130" width="28" height="165"/><rect x="640" y="154" width="28" height="141"/><rect x="695" y="165" width="28" height="130"/><rect x="750" y="105" width="28" height="190"/><rect x="805" y="80" width="28" height="215"/><rect x="860" y="132" width="28" height="163"/><rect x="915" y="70" width="28" height="225"/><rect x="970" y="84" width="28" height="211"/></g><polyline fill="none" stroke="#0a7a35" stroke-width="4" points="104,245 159,238 214,230 269,205 324,214 379,198 434,220 489,186 544,170 599,178 654,160 709,143 764,150 819,130 874,116 929,88 984,112"/><text x="70" y="25" fill="#07306c" font-weight="700">出来高（棒） / USDJPY（緑線）</text><text x="90" y="326" font-size="12">7/2</text><text x="250" y="326" font-size="12">7/9</text><text x="470" y="326" font-size="12">7/15</text><text x="695" y="326" font-size="12">7/21</text><text x="970" y="326" font-size="12">7/29</text></svg><p class="note">出来高は添付画面・21:00版分析値をもとに復元。外部データ未取得部分は推測しません。</p></section>
+<section class="grid"><article class="card"><h2>仲値分析</h2><p>東京始値 148.78、高値 149.20、安値 148.40、終値 149.10。仲値に対して上昇しており、円安方向へ推移。実需の買いが仲値以降も継続した可能性があります。</p></article><article class="card"><h2>実需・投機フロー</h2><p>輸入企業のドル買いが主導。輸出企業の売りは限定的で、機関投資家の中長期ドル買いも継続。短期筋は買いで追随、海外勢は欧州勢参入前の調整。</p></article></section>
+<section class="grid"><article class="card"><h2>価格と出来高の整合性</h2><p><b>価格上昇 × 出来高増加</b> の形で、買いの勢いが強い局面。20日平均との差 +4,470百万ドル、+7.60%。上昇は実需中心と評価します。</p></article><article class="card"><h2>欧州時間への引き継ぎ</h2><ul><li>上抜け：149.30を明確に突破できるか</li><li>下抜け：148.70を割り込むか</li><li>サポート：147.60〜148.70</li><li>レジスタンス：149.30〜150.00</li></ul></article></section>
+<section class="card"><h2>20営業日出来高比較</h2><div class="table-wrap"><table><thead><tr><th>日付</th><th>出来高</th><th>前日比</th><th>20日平均との差</th><th>始値</th><th>高値</th><th>安値</th><th>終値</th><th>コメント</th></tr></thead><tbody>
+<tr><td>2026/07/29</td><td>63,650</td><td class="down">-2,230</td><td class="up">+4,470</td><td>148.78</td><td>149.20</td><td>148.40</td><td>149.10</td><td>仲値上昇、実需の買い優勢</td></tr>
+<tr><td>2026/07/28</td><td>65,880</td><td class="down">-1,550</td><td class="up">+6,700</td><td>147.85</td><td>148.90</td><td>147.60</td><td>148.70</td><td>ドル買い優勢、上昇</td></tr>
+<tr><td>2026/07/27</td><td>61,430</td><td class="up">+450</td><td class="up">+2,250</td><td>147.60</td><td>147.80</td><td>146.90</td><td>147.30</td><td>戻り売りで上値重い</td></tr>
+<tr><td>2026/07/24</td><td>54,880</td><td class="down">-4,430</td><td class="down">-4,300</td><td>146.30</td><td>147.10</td><td>145.90</td><td>146.40</td><td>方向感乏しい</td></tr>
+<tr><td>2026/07/23</td><td>59,120</td><td class="down">-1,750</td><td>-60</td><td>146.80</td><td>147.40</td><td>146.20</td><td>146.60</td><td>仲値前後で買い戻し</td></tr>
+</tbody></table></div></section>
+</main>
 </body>
 </html>
