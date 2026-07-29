@@ -11,6 +11,17 @@
   const detail = (label, value, wide = false) => `<div class="market-detail${wide ? ' market-detail--wide' : ''}"><strong>${esc(label)}</strong><p>${esc(value || 'レポートに記載なし')}</p></div>`;
   const outlook = (label, value) => `<div class="outlook-row"><b>${esc(label)}</b><span>${esc(value || 'レポートに記載なし')}</span></div>`;
 
+  const marketKey = name => {
+    const text = String(name || '').toLowerCase();
+    if (/usd.?jpy|ドル.?円/.test(text)) return 'usdjpy';
+    if (/eur.?usd|ユーロ.?ドル/.test(text)) return 'eurusd';
+    if (/日経|nikkei/.test(text)) return 'nikkei';
+    if (/金|gold/.test(text)) return 'gold';
+    if (/原油|wti|oil/.test(text)) return 'oil';
+    if (/btc|bitcoin|ビットコイン/.test(text)) return 'btc';
+    return '';
+  };
+
   function boughtReason(market) {
     return firstText(market.boughtReason, market.buyReason, market.bullishReason, market.upReason, market.positiveDriver);
   }
@@ -27,13 +38,34 @@
     return firstText(market.keyEvent, market.event, market.focusEvent, market.nextEvent);
   }
 
+  function applyEventImpacts(detail) {
+    const impacts = detail?.impacts || {};
+    document.querySelectorAll('.ticker-card[data-market-key]').forEach(card => {
+      const key = card.dataset.marketKey;
+      const impact = impacts[key];
+      let badge = card.querySelector('.event-impact-badge');
+      if (!impact) {
+        badge?.remove();
+        return;
+      }
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.className = 'event-impact-badge';
+        card.querySelector('.ticker-top')?.insertAdjacentElement('afterend', badge);
+      }
+      badge.className = `event-impact-badge is-${impact.state || 'neutral'}`;
+      badge.innerHTML = `<span>イベント影響</span><strong>${esc(impact.label || '中立')}</strong><small>${esc(impact.reason || '')}</small>`;
+    });
+  }
+
   function renderMarketCards(report) {
     const root = document.getElementById('dashboardMarkets');
     if (!root || !report) return;
     const markets = arr(report.markets).slice(0, 6);
     root.innerHTML = markets.map(market => {
       const state = directionClass(market.direction);
-      return `<article class="ticker-card market-${state}">
+      const key = marketKey(market.name);
+      return `<article class="ticker-card market-${state}" data-market-key="${esc(key)}">
         <div class="ticker-top">
           <h3>${esc(market.name || '市場')}</h3>
           <span class="direction ${state}">${esc(market.direction || '中立')}</span>
@@ -52,12 +84,13 @@
         </div>
       </article>`;
     }).join('') || '<p class="empty">6市場データがありません。</p>';
+    if (window.__latestEventImpactSummary) applyEventImpacts(window.__latestEventImpactSummary);
   }
 
   function loadModule(src, marker) {
     if (document.querySelector(`script[data-${marker}]`)) return;
     const script = document.createElement('script');
-    script.src = `${src}?v=1&cache=${Date.now()}`;
+    script.src = `${src}?v=2&cache=${Date.now()}`;
     script.dataset[marker.replace(/-([a-z])/g, (_, c) => c.toUpperCase())] = 'true';
     script.async = true;
     document.head.appendChild(script);
@@ -79,9 +112,8 @@
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadLatestReport, {once: true});
-  } else {
-    loadLatestReport();
-  }
+  window.addEventListener('market-event-impact', event => applyEventImpacts(event.detail));
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', loadLatestReport, {once:true});
+  else loadLatestReport();
 })();
