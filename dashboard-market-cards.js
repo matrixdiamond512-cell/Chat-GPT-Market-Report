@@ -54,6 +54,15 @@
     }).join('') || '<p class="empty">6市場データがありません。</p>';
   }
 
+  function loadDecisionScoreModule() {
+    if (document.querySelector('script[data-market-score]')) return;
+    const script = document.createElement('script');
+    script.src = `dashboard-market-score.js?v=1&cache=${Date.now()}`;
+    script.dataset.marketScore = 'true';
+    script.async = true;
+    document.head.appendChild(script);
+  }
+
   async function loadLatestReport() {
     try {
       const response = await fetch(`reports.json?dashboard=${Date.now()}`, {cache: 'no-store'});
@@ -62,6 +71,7 @@
       if (!Array.isArray(reports) || !reports.length) return;
       reports.sort((a, b) => `${b.date || ''} ${b.time || ''}`.localeCompare(`${a.date || ''} ${a.time || ''}`));
       renderMarketCards(reports[0]);
+      loadDecisionScoreModule();
     } catch (error) {
       const root = document.getElementById('dashboardMarkets');
       if (root && !root.children.length) root.innerHTML = `<p class="empty">${esc(error.message)}</p>`;
