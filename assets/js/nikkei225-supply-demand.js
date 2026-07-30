@@ -1,0 +1,1 @@
+window.SUPPLY_DEMAND_CONFIG={pageTitle:'日経225需給分析',dataUrl:'data/nikkei225-supply-demand.json'};
