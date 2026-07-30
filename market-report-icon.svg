@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Market Report</title>
+  <desc id="desc">パステルカラーのレポート用紙にMRとMarket Reportを配置したアイコン</desc>
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffdf7"/>
+      <stop offset="0.55" stop-color="#f8f7f2"/>
+      <stop offset="1" stop-color="#edf4f7"/>
+    </linearGradient>
+    <linearGradient id="mGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c8b8e8"/>
+      <stop offset="1" stop-color="#a99ad8"/>
+    </linearGradient>
+    <linearGradient id="rGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9fbce1"/>
+      <stop offset="1" stop-color="#789fcf"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="20" stdDeviation="22" flood-color="#59657a" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+  <rect x="52" y="52" width="920" height="920" rx="205" fill="#eef2f2"/>
+  <g filter="url(#shadow)">
+    <rect x="86" y="78" width="852" height="852" rx="170" fill="url(#paper)" stroke="#d7d7cf" stroke-width="4"/>
+    <path d="M235 82v844" stroke="#e9a4ae" stroke-width="7" opacity="0.88"/>
+    <g stroke="#b9d3df" stroke-width="5" opacity="0.72">
+      <path d="M105 255h812"/><path d="M105 375h812"/><path d="M105 495h812"/>
+      <path d="M105 615h812"/><path d="M105 735h812"/><path d="M105 855h812"/>
+    </g>
+    <g fill="#c7ccd1" stroke="#a9afb6" stroke-width="3">
+      <circle cx="110" cy="212" r="18"/><circle cx="110" cy="350" r="18"/><circle cx="110" cy="488" r="18"/>
+      <circle cx="110" cy="626" r="18"/><circle cx="110" cy="764" r="18"/>
+    </g>
+    <g text-anchor="middle" font-family="Georgia, 'Times New Roman', serif">
+      <text x="455" y="482" font-size="310" font-weight="700" fill="url(#mGrad)" opacity="0.96">M</text>
+      <text x="608" y="482" font-size="310" font-weight="700" fill="url(#rGrad)" opacity="0.96">R</text>
+      <path d="M365 385c135 95 282 108 405 78-79 35-182 91-286 165" fill="none" stroke="#7f8eb2" stroke-width="18" stroke-linecap="round" opacity="0.95"/>
+      <text x="512" y="690" font-size="91" fill="#394150" letter-spacing="-2">Market Report</text>
+    </g>
+    <path d="M300 748h424" stroke="#c8a74a" stroke-width="7" stroke-linecap="round"/>
+    <g transform="translate(512 748)" fill="#c8a74a">
+      <path d="M0-26C7-7 7-7 26 0 7 7 7 7 0 26-7 7-7 7-26 0-7-7-7-7 0-26Z"/>
+      <circle r="5" fill="#fff8df"/>
+    </g>
+  </g>
+</svg>
