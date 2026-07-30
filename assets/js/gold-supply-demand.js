@@ -1,0 +1,1 @@
+window.SUPPLY_DEMAND_CONFIG={pageTitle:'ゴールド需給分析',dataUrl:'data/gold-supply-demand.json'};
