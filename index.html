@@ -1,37 +1,127 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
-<meta name="theme-color" content="#f7f3eb">
-<meta name="application-name" content="Market Report">
-<meta name="apple-mobile-web-app-title" content="Market Report">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="manifest" href="site.webmanifest">
-<link rel="icon" type="image/svg+xml" href="market-report-icon.svg">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-<link rel="shortcut icon" href="favicon.ico">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<title>マーケットレポート｜2026/07/29 21:00 ダッシュボード</title>
-<style>
-:root{--navy:#062452;--blue:#1559b7;--line:#d8e1ef;--soft:#f5f8fc;--text:#0f1f38;--muted:#5e6c82;--green:#0a7a35;--red:#c72222;--amber:#b46b00}*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;line-height:1.55}.head{background:linear-gradient(90deg,#051a3d,#08346f);color:#fff;padding:12px 24px}.head-main{display:flex;justify-content:space-between;gap:16px;align-items:center}.head h1{margin:0;font-size:28px;letter-spacing:0}.head p{margin:2px 0 0;color:#d7e6ff}.actions{display:flex;gap:8px;align-items:center}.btn{border:1px solid #8fb2e6;background:#0e5cc5;color:#fff;border-radius:6px;padding:8px 12px;text-decoration:none;font-weight:700}.select{border:1px solid #7b97c4;border-radius:6px;padding:8px;background:#08275b;color:#fff}.nav{display:flex;gap:4px;overflow:auto;background:#f7f9fc;border-bottom:1px solid var(--line);padding:8px 24px}.nav a{color:#082a5b;text-decoration:none;font-weight:700;padding:8px 14px;border-radius:6px;white-space:nowrap}.nav a[aria-current=page]{background:var(--blue);color:white}.page{max-width:1440px;margin:auto;padding:14px}.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px}.card{border:1px solid var(--line);border-radius:8px;background:#fff;box-shadow:0 1px 4px #0000000a;overflow:hidden;min-width:0}.card h2{margin:0;background:#082a5b;color:#fff;font-size:16px;text-align:center;padding:6px 8px;line-height:1.35}.card-body{padding:12px;min-width:0}.span3{grid-column:span 3}.span4{grid-column:span 4}.span5{grid-column:span 5}.span6{grid-column:span 6}.span8{grid-column:span 8}.span12{grid-column:span 12}.table-wrap{overflow:auto;max-width:100%}table{width:100%;border-collapse:collapse;min-width:520px}th,td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}th{background:#eef3fa;color:#07306c}.up{color:var(--green);font-weight:800}.down{color:var(--red);font-weight:800}.flat{color:#555;font-weight:800}.big-theme{text-align:center;font-size:22px;font-weight:900;margin:8px 0 12px}.check{margin:6px 0}.check:before{content:"✓";display:inline-grid;place-items:center;width:18px;height:18px;background:#0f4d9f;color:white;border-radius:4px;margin-right:7px;font-size:12px}.mini-list{margin:0;padding-left:18px}.market{display:grid;grid-template-columns:82px minmax(0,1fr);gap:8px;border-bottom:1px solid var(--line);padding:8px 0}.badge{display:inline-block;border-radius:999px;padding:2px 8px;font-weight:800;font-size:12px}.b-green{background:#e7f5eb;color:#087332}.b-red{background:#ffe7e7;color:#b00020}.b-blue{background:#e8f1ff;color:#0b50a5}.b-amber{background:#fff1cf;color:#8a5400}.scenario{border-left:4px solid #1559b7}.scenario.alt{border-left-color:#d98700}.scenario.risk{border-left-color:#c72222}.scenario.next{border-left-color:#2a64b7}.bottom{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-top:12px}.callout{border:1px solid #1559b7;border-radius:8px;padding:12px;background:#f7fbff}.stock-link{border:1px solid #1559b7;border-radius:8px;padding:12px;text-decoration:none;color:#07306c;font-weight:800;display:block}.note{font-size:12px;color:var(--muted)}.rates-card .card-body{font-size:14px}.rates-card p{margin:0 0 8px}.rates-card ul{margin:0;padding-left:18px}
-@media(max-width:1100px){.span3,.span4,.span5,.span6,.span8,.span12{grid-column:span 6}.head-main{align-items:flex-start;flex-direction:column}}
-@media(max-width:720px){.head{padding:12px 14px}.head h1{font-size:22px}.page{padding:10px}.nav{padding:8px 10px}.actions{flex-wrap:wrap}.grid{grid-template-columns:1fr}.span3,.span4,.span5,.span6,.span8,.span12{grid-column:1/-1}.bottom{grid-template-columns:1fr}.card h2{text-align:left;font-size:15px}.big-theme{text-align:left;font-size:18px}table{min-width:460px}.rates-card .card-body{font-size:15px}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+  <meta name="theme-color" content="#f7f3eb">
+  <meta name="application-name" content="Market Report">
+  <meta name="apple-mobile-web-app-title" content="Market Report">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="site.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="market-report-icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <title>WEBマーケットレポート｜トップページダッシュボード</title>
+  <link rel="stylesheet" href="assets/css/top-dashboard.css">
 </head>
 <body>
-<header class="head"><div class="head-main"><div><h1>マーケットレポート｜2026/07/29（水）21:00</h1><p>ダッシュボード / 最終更新: 2026/07/29 21:00 JST</p></div><div class="actions"><a class="btn" href="report.html">本文を見る</a><select class="select"><option>2026/07/29 21:00</option><option>2026/07/29 16:00</option><option>2026/07/29 12:00</option><option>2026/07/29 07:00</option></select></div></div></header>
-<nav class="nav"><a href="index.html" aria-current="page">ダッシュボード</a><a href="report.html">マーケットレポート本文</a><a href="usdjpy-volume.html">東京市場ドル円出来高</a><a href="events.html">重要イベント</a><a href="stocks.html">株式市場分析</a><a href="usdjpy-supply-demand.html">USD/JPY需給</a><a href="gold-supply-demand.html">ゴールド需給</a><a href="nikkei225-supply-demand.html">日経225需給</a></nav>
-<main class="page">
-<section class="grid"><article class="card span4"><h2>1. 主要市場データ</h2><div class="card-body table-wrap"><table><thead><tr><th>銘柄</th><th>現在値</th><th>前日比</th><th>評価</th></tr></thead><tbody><tr><td>金先物</td><td>4,026.30ドル</td><td class="down">-1.24%</td><td>高金利警戒で弱い</td></tr><tr><td>WTI原油</td><td>81.74ドル</td><td class="down">-1.05%</td><td>79ドル台から反発</td></tr><tr><td>日経225先物</td><td>62,240円</td><td class="down">-0.25%</td><td>戻り売り優勢</td></tr><tr><td>USD/JPY</td><td>163.67円</td><td class="flat">横ばい</td><td>高止まり</td></tr><tr><td>EUR/USD</td><td>1.1400</td><td class="up">+0.25%</td><td>小幅上昇</td></tr><tr><td>BTCUSD</td><td>63,826ドル</td><td class="down">-1.12%</td><td>弱含み</td></tr></tbody></table></div></article><article class="card span5"><h2>2. 今日の相場テーマ</h2><div class="card-body"><div class="big-theme">FOMC前に米金利とドルを確認。AI決算・原油反発がリスク資産を左右。</div><p class="check">据え置き予想でも声明・会見のトーンを重視</p><p class="check">Microsoft・Meta決算でAI投資の収益性を確認</p><p class="check">WTIは79ドル台から81ドル台へ反発</p><p class="check">日経225先物とBTCは戻りが鈍い</p></div></article><article class="card span3"><h2>3. 16:00からの主な変化</h2><div class="card-body"><div class="market"><b>金</b><span class="down">弱含み継続</span></div><div class="market"><b>WTI</b><span class="up">反発。供給不安と買い戻し</span></div><div class="market"><b>日経225</b><span class="down">戻り売り優勢</span></div><div class="market"><b>USD/JPY</b><span>163円台後半で高止まり</span></div><div class="market"><b>BTC</b><span class="down">64,000ドル回復できず</span></div></div></article></section>
-<section class="grid" style="margin-top:12px"><article class="card span3"><h2>4. 材料と値動きの整合性</h2><div class="card-body"><ul class="mini-list"><li>FOMCタカ派警戒 → 金・BTCが弱い</li><li>米金利高止まり → USD/JPYが高止まり</li><li>AI採算警戒 → 日経225先物の戻りが鈍い</li><li>中東・供給不安再評価 → WTI反発</li></ul></div></article><article class="card span3"><h2>5. 主導市場</h2><div class="card-body"><p><span class="badge b-blue">米金利・ドル</span> が中心。次に <span class="badge b-amber">原油</span> と <span class="badge b-red">米ハイテク株</span>。</p><p>米金利上昇は、金・BTC・Nasdaq・半導体株に逆風。</p></div></article><article class="card span3"><h2>6. 重要ニュース</h2><div class="card-body"><ul class="mini-list"><li>FOMC結果: 7/30 03:00</li><li>FRB議長会見: 7/30 03:30</li><li>Microsoft・Meta決算</li><li>WTI原油が81ドル台へ反発</li><li>半導体株は好決算でも選別色</li></ul></div></article><article class="card span3 rates-card"><h2>7. 金利</h2><div class="card-body"><p>米10年債のリアルタイム同時刻値は取得不能。前営業日終値は4.598%。</p><ul class="mini-list"><li>今夜は米2年債の反応を重視</li><li>米2年債上昇ならタカ派警戒</li><li>原油上昇＋米金利上昇はリスク資産に逆風</li></ul></div></article></section>
-<section class="grid" style="margin-top:12px"><article class="card span4"><h2>8. クロスアセット資金フロー</h2><div class="card-body"><p><span class="badge b-green">流入</span> ドル、短期国債、WTIショートカバー、ディフェンシブ株</p><p><span class="badge b-red">流出</span> AI・半導体株、高PER成長株、金短期ロング、BTC</p></div></article><article class="card span4"><h2>9. 需給・ポジション</h2><div class="card-body"><ul class="mini-list"><li>日経225先物: 63,000円付近で戻り売り</li><li>USD/JPY: 163円台後半で円ショート維持</li><li>BTC: 64,000ドル回復が焦点</li><li>原油: ショートカバーが入るが反転確認は未了</li></ul></div></article><article class="card span4"><h2>10. 今後の主なイベント</h2><div class="card-body"><ul class="mini-list"><li>7/29 21:15 米ADP雇用統計</li><li>7/29 23:30 米GDP速報値</li><li>7/30 03:00 FOMC政策金利</li><li>7/30 03:30 FRB議長会見</li><li>7/31 21:30 米PCEデフレーター</li></ul></div></article></section>
-<section class="card" style="margin-top:12px"><h2>11. 6市場の見通し・注目水準・背景</h2><div class="card-body grid"><div class="span4"><b>金</b><p class="down">弱気。4,020ドル台、FOMC前の高金利警戒。</p></div><div class="span4"><b>WTI原油</b><p>中立〜反発確認。79ドル台から81ドル台へ戻す。</p></div><div class="span4"><b>日経225先物</b><p class="down">弱気。62,000円台前半、戻り売り優勢。</p></div><div class="span4"><b>USD/JPY</b><p>高止まり。163円台後半、164円は警戒水準。</p></div><div class="span4"><b>EUR/USD</b><p>1.14近辺。FOMC前のドル整理。</p></div><div class="span4"><b>BTCUSD</b><p class="down">弱気。64,000ドル回復できず。</p></div></div></section>
-<section class="grid" style="margin-top:12px"><article class="card span3 scenario"><h2>12. メインシナリオ</h2><div class="card-body">FOMC前のポジション調整継続。ドル高・金利高止まりで、株式・金・BTCは上値が重い。</div></article><article class="card span3 scenario alt"><h2>13. 代替シナリオ</h2><div class="card-body">FOMCがハト派、またはAI決算が投資回収を示せば、Nasdaq・日経225先物・BTCに短期反発。</div></article><article class="card span3 scenario risk"><h2>14. 崩れる条件</h2><div class="card-body">原油急伸と米金利上昇が同時進行し、ドル高と高PER株売りが加速する場合。</div></article><article class="card span3 scenario next"><h2>15. 次の時間帯への引き継ぎ</h2><div class="card-body">FOMC、FRB会見、Microsoft・Meta決算反応、WTI反発の持続性を確認。</div></article></section>
-<section class="bottom"><div class="callout"><b>16. 総括</b><br>全面リスクオンではなく、FOMC前のポジション圧縮と金利上昇に弱い資産からの退避が中心。方向を決め打ちせず、重要イベント後の同時反応を確認。</div><a class="stock-link" href="stocks.html">株式市場分析ページへ<br><span class="note">米国株・日本株・半導体・AI関連の評価を確認</span></a></section>
-<p class="note">データは2026/07/29 21:00マーケットレポート正本・添付画面に基づく復元版。本文にない数値は推測せず取得不能として扱います。</p>
-</main>
+  <header class="top-header">
+    <div class="header-inner">
+      <div>
+        <h1>WEBマーケットレポート｜トップページダッシュボード</h1>
+        <p id="reportStatus">最新レポートを読み込み中</p>
+      </div>
+      <a class="header-link" href="report.html">本文</a>
+    </div>
+  </header>
+
+  <nav class="site-nav" aria-label="ページナビゲーション">
+    <a href="index.html" aria-current="page"><span>✓</span>ダッシュボード</a>
+    <a href="report.html">マーケットレポート本文</a>
+    <a href="usdjpy-volume.html">東京市場ドル円出来高</a>
+    <a href="events.html">重要イベント</a>
+    <a href="stocks.html">株式市場分析</a>
+    <a href="usdjpy-supply-demand.html">USD/JPY需給</a>
+    <a href="gold-supply-demand.html">ゴールド需給</a>
+    <a href="nikkei225-supply-demand.html">日経225需給</a>
+  </nav>
+
+  <main class="page-shell">
+    <section class="control-bar" aria-label="表示レポート選択">
+      <div class="time-tabs" id="timeTabs"></div>
+      <div class="date-picker">
+        <button type="button" class="icon-button" id="prevDate" aria-label="前の日">‹</button>
+        <input type="date" id="dateInput" aria-label="表示日">
+        <button type="button" class="icon-button" id="nextDate" aria-label="次の日">›</button>
+      </div>
+    </section>
+
+    <section class="date-strip" id="dateStrip" aria-label="直近1か月の日付"></section>
+
+    <section class="market-card-grid" id="marketCards" aria-label="主要市場"></section>
+
+    <section class="dashboard-grid">
+      <div class="left-stack">
+        <article class="panel compact-panel">
+          <h2>今日の相場テーマ</h2>
+          <ul id="themeList"></ul>
+        </article>
+        <article class="panel compact-panel">
+          <h2>前回からの変化</h2>
+          <ul id="changeList"></ul>
+        </article>
+        <article class="panel compact-panel">
+          <h2>材料と値動きの整合性</h2>
+          <ul id="consistencyList"></ul>
+        </article>
+        <article class="panel compact-panel">
+          <h2>今日の主導市場</h2>
+          <p id="leadingMarket"></p>
+        </article>
+      </div>
+
+      <article class="panel flow-panel">
+        <h2>クロスアセット資金フロー</h2>
+        <div class="table-wrap">
+          <table class="flow-table">
+            <thead>
+              <tr>
+                <th>資産</th>
+                <th>方向</th>
+                <th>強さ</th>
+                <th>前回比</th>
+                <th>主因</th>
+              </tr>
+            </thead>
+            <tbody id="flowRows"></tbody>
+          </table>
+        </div>
+        <div class="flow-map" aria-label="今回の主な資金移動">
+          <h3>今回の主な資金移動</h3>
+          <div class="flow-chain" id="flowChain"></div>
+        </div>
+      </article>
+
+      <div class="right-stack">
+        <article class="panel news-panel">
+          <h2>主要ニュース</h2>
+          <ul id="newsList"></ul>
+          <a href="events.html">ニュース一覧へ</a>
+        </article>
+        <article class="panel relation-panel">
+          <h2>通貨・為替・株式・商品・暗号資産の連動</h2>
+          <div class="relation-grid" id="relationGrid"></div>
+        </article>
+        <article class="panel position-panel">
+          <h2>需給・ポジション</h2>
+          <div class="position-layout">
+            <ul id="positionList"></ul>
+            <div class="position-matrix" id="positionMatrix"></div>
+          </div>
+          <a href="usdjpy-supply-demand.html">需給ページへ</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="outlook-grid" id="outlookCards" aria-label="6市場の見通し"></section>
+
+    <p class="footnote" id="dataFootnote">データ取得状況を確認中です。</p>
+  </main>
+
+  <script src="assets/js/top-dashboard.js"></script>
 </body>
 </html>
