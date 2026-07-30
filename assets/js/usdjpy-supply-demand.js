@@ -1,0 +1,1 @@
+window.SUPPLY_DEMAND_CONFIG={pageTitle:'USD/JPY需給分析',dataUrl:'data/usdjpy-supply-demand.json'};
