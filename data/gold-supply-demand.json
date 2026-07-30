@@ -1,0 +1,32 @@
+{
+  "market":"XAU/USD",
+  "pageTitle":"ゴールド（XAU/USD）需給分析ダッシュボード",
+  "subtitle":"市場参加者の動向から需給バランスを総合判断",
+  "asOfDate":"取得不能",
+  "asOfTime":"取得不能",
+  "updatedAt":"取得不能",
+  "sourceStatus":"データ未連携",
+  "summary":[
+    {"label":"XAU/USD現物","value":"取得不能","sub":"USD/oz","status":"unavailable","reason":"現物価格データ未連携"},
+    {"label":"COMEX金先物","value":"取得不能","sub":"限月未設定","status":"unavailable","reason":"先物データ未連携"},
+    {"label":"ドル指数","value":"取得不能","status":"unavailable","reason":"DXYデータ未連携"},
+    {"label":"米10年実質金利","value":"取得不能","status":"unavailable","reason":"FRED等のデータ未連携"},
+    {"label":"世界金ETFフロー","value":"取得不能","status":"unavailable","reason":"ETF公式データ未連携"}
+  ],
+  "overallAssessment":{"title":"需給総合判定（短期）","label":"判定待ち","bias":"neutral","score":"算定対象外","confidence":"低","status":"unavailable","reason":"現物、先物、建玉、ETF、COT、実質金利のデータが未連携のため判定しません。"},
+  "sections":[
+    {"title":"1. 主要指標サマリー","type":"metrics","span":6,"items":[{"label":"金現物価格","value":"取得不能","status":"unavailable","reason":"XAU/USD未連携"},{"label":"COMEX金先物","value":"取得不能","status":"unavailable","reason":"先物価格未連携"},{"label":"ドル指数","value":"取得不能","status":"unavailable","reason":"DXY未連携"},{"label":"米10年名目金利","value":"取得不能","status":"unavailable","reason":"金利データ未連携"},{"label":"米10年実質金利","value":"取得不能","status":"unavailable","reason":"実質金利未連携"},{"label":"需給スコア","value":"算定対象外","status":"unavailable","reason":"採点項目未連携"}]},
+    {"title":"2. 金ETF・投資資金フロー","type":"table","span":3,"columns":["項目","値","変化","判定"],"rows":[{"項目":"GLD保有量","値":{"value":"取得不能","status":"unavailable"},"変化":"取得不能","判定":"公式データ連携後に表示"},{"項目":"IAU関連フロー","値":{"value":"取得不能","status":"unavailable"},"変化":"取得不能","判定":"取得可能な公式値のみ表示"},{"項目":"世界金ETFフロー","値":{"value":"取得不能","status":"unavailable"},"変化":"取得不能","判定":"週次・月次の基準日を表示"}]},
+    {"title":"3. COMEX先物市場の出来高・総建玉","type":"chart","span":6,"placeholder":"COMEX出来高・総建玉グラフ","reason":"実データ連携後、出来高と建玉をJSONから描画します。"},
+    {"title":"4. CFTC建玉明細","type":"table","span":3,"columns":["区分","枚数","前週比","5週平均比"],"rows":[{"区分":"Managed Moneyロング","枚数":{"value":"取得不能","status":"unavailable"},"前週比":"取得不能","5週平均比":"取得不能"},{"区分":"Managed Moneyショート","枚数":{"value":"取得不能","status":"unavailable"},"前週比":"取得不能","5週平均比":"取得不能"},{"区分":"ネットポジション","枚数":{"value":"取得不能","status":"unavailable"},"前週比":"取得不能","5週平均比":"取得不能"}]},
+    {"title":"5. COTネットポジション推移","type":"chart","span":4,"placeholder":"COTネット推移グラフ","reason":"週次CFTCデータを連携後に表示します。"},
+    {"title":"6. 中央銀行・公的部門の需要","type":"table","span":4,"columns":["項目","値","基準日","見方"],"rows":[{"項目":"中央銀行の金購入量","値":{"value":"取得不能","status":"unavailable"},"基準日":"取得不能","見方":"月次・四半期データとして区別"},{"項目":"公的部門需要","値":{"value":"取得不能","status":"unavailable"},"基準日":"取得不能","見方":"長期需給の支援材料候補"}]},
+    {"title":"7. 物理的需要・地域別プレミアム","type":"table","span":4,"columns":["地域・項目","値","前回比","評価"],"rows":[{"地域・項目":"中国プレミアム","値":{"value":"取得不能","status":"unavailable"},"前回比":"取得不能","評価":"現物需要の強弱を確認"},{"地域・項目":"インドプレミアム","値":{"value":"取得不能","status":"unavailable"},"前回比":"取得不能","評価":"季節需要を確認"},{"地域・項目":"宝飾品需要","値":{"value":"取得不能","status":"unavailable"},"前回比":"取得不能","評価":"月次・四半期データとして表示"}]},
+    {"title":"8. 金の需給バランス（総合）","type":"table","span":4,"columns":["項目","需給インパクト","状態"],"rows":[{"項目":"ETFフロー","需給インパクト":"未判定","状態":{"value":"取得不能","status":"unavailable"}},{"項目":"先物出来高・建玉","需給インパクト":"未判定","状態":{"value":"取得不能","status":"unavailable"}},{"項目":"CFTCネットポジション","需給インパクト":"未判定","状態":{"value":"取得不能","status":"unavailable"}},{"項目":"実質金利","需給インパクト":"未判定","状態":{"value":"取得不能","status":"unavailable"}},{"項目":"ドル指数","需給インパクト":"未判定","状態":{"value":"取得不能","status":"unavailable"}}]},
+    {"title":"9. 需給ポイントまとめ","type":"list","span":4,"items":["ETF流入、COTネット増加、実質金利低下、ドル安は買い材料候補です。","単一項目では総合方向を断定しません。","週次・月次・四半期データは基準日を分けて表示します。"]},
+    {"title":"10. 価格・建玉の判定ロジック","type":"matrix","span":4,"items":[{"title":"価格上昇＋建玉増加","note":"新規ロング流入の可能性"},{"title":"価格上昇＋建玉減少","note":"ショートカバー中心の可能性"},{"title":"価格下落＋建玉増加","note":"新規ショート流入の可能性"},{"title":"価格下落＋建玉減少","note":"ロング清算の可能性"}]},
+    {"title":"11. 需給カレンダーとイベントインパクト","type":"table","span":4,"columns":["イベント","日付","内容","ゴールドへの影響"],"rows":[{"イベント":"FOMC","日付":"取得不能","内容":"政策金利・声明","ゴールドへの影響":"金利低下なら買い材料候補"},{"イベント":"米雇用統計","日付":"取得不能","内容":"NFP・失業率","ゴールドへの影響":"弱ければ買い材料候補"},{"イベント":"米CPI","日付":"取得不能","内容":"インフレ指標","ゴールドへの影響":"実質金利への影響を確認"}]},
+    {"title":"12. 需給シナリオ","type":"scenarios","span":8,"items":[{"title":"強気シナリオ","bias":"buy","points":["条件：ドル安、実質金利低下、ETF流入","目標ゾーン：データ連携後に表示","崩れる条件：実質金利上昇、ETF流出"]},{"title":"中立シナリオ","bias":"neutral","points":["条件：ドル・金利が横ばい","目標ゾーン：データ連携後に表示","崩れる条件：出来高と建玉の同方向変化"]},{"title":"弱気シナリオ","bias":"sell","points":["条件：ドル高、実質金利上昇、利益確定売り","下値目標：データ連携後に表示","崩れる条件：ETF流入と現物需要回復"]}]},
+    {"title":"13. 短期・中期・長期の方向性と注目点","type":"table","span":4,"columns":["期間","方向性","注目点"],"rows":[{"期間":"短期（1週間以内）","方向性":"未判定","注目点":"実質金利、ドル指数、ETFフロー"},{"期間":"中期（1〜4週間）","方向性":"未判定","注目点":"COT、COMEX建玉、イベント通過後の継続性"},{"期間":"長期（3か月以上）","方向性":"未判定","注目点":"中央銀行需要、現物需要、供給要因"}]}
+  ]
+}
