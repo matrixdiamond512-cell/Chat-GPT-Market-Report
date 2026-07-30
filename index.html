@@ -9,31 +9,25 @@
   <meta name="apple-mobile-web-app-title" content="Market Report">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="manifest" href="site.webmanifest">
-  <link rel="icon" type="image/svg+xml" href="market-report-icon.svg">
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-  <link rel="shortcut icon" href="favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-  <title>WEBマーケットレポート｜トップページダッシュボード</title>
+  <title>WEBマーケットレポート</title>
   <link rel="stylesheet" href="assets/css/top-dashboard.css">
 </head>
 <body>
   <header class="top-header">
     <div class="header-inner">
       <div>
-        <h1>WEBマーケットレポート｜トップページダッシュボード</h1>
+        <h1>WEBマーケットレポート</h1>
         <p id="reportStatus">最新レポートを読み込み中</p>
       </div>
-      <a class="header-link" href="report.html">本文</a>
+      <a class="header-link" href="report.html" aria-label="マーケットレポート本文へ">★ 本文へ</a>
     </div>
   </header>
 
   <nav class="site-nav" aria-label="ページナビゲーション">
-    <a href="index.html" aria-current="page"><span>✓</span>ダッシュボード</a>
+    <a href="index.html" aria-current="page">ダッシュボード</a>
     <a href="report.html">マーケットレポート本文</a>
     <a href="usdjpy-volume.html">東京市場ドル円出来高</a>
-    <a href="events.html">重要イベント</a>
+    <a href="events.html">重要イベント一覧</a>
     <a href="stocks.html">株式市場分析</a>
     <a href="usdjpy-supply-demand.html">USD/JPY需給</a>
     <a href="gold-supply-demand.html">ゴールド需給</a>
@@ -50,23 +44,20 @@
       </div>
     </section>
 
-    <section class="date-strip" id="dateStrip" aria-label="直近1か月の日付"></section>
-
-    <section class="market-card-grid" id="marketCards" aria-label="主要市場"></section>
+    <section class="market-summary panel" aria-label="6市場サマリー">
+      <h2>6市場サマリー（なぜ買われたか／売られたか）</h2>
+      <div class="market-card-grid" id="marketCards"></div>
+    </section>
 
     <section class="dashboard-grid">
       <div class="left-stack">
         <article class="panel compact-panel">
-          <h2>今日の相場テーマ</h2>
+          <h2>今日の相場テーマ（相場への影響）</h2>
           <ul id="themeList"></ul>
         </article>
         <article class="panel compact-panel">
           <h2>前回からの変化</h2>
           <ul id="changeList"></ul>
-        </article>
-        <article class="panel compact-panel">
-          <h2>材料と値動きの整合性</h2>
-          <ul id="consistencyList"></ul>
         </article>
         <article class="panel compact-panel">
           <h2>今日の主導市場</h2>
@@ -90,21 +81,16 @@
             <tbody id="flowRows"></tbody>
           </table>
         </div>
-        <div class="flow-map" aria-label="今回の主な資金移動">
-          <h3>今回の主な資金移動</h3>
-          <div class="flow-chain" id="flowChain"></div>
+        <div class="flow-note">
+          <h3>資金フローの要点</h3>
+          <p id="flowSummary"></p>
         </div>
       </article>
 
       <div class="right-stack">
         <article class="panel news-panel">
-          <h2>主要ニュース</h2>
+          <h2>主要ニュース（相場への影響）</h2>
           <ul id="newsList"></ul>
-          <a href="events.html">ニュース一覧へ</a>
-        </article>
-        <article class="panel relation-panel">
-          <h2>通貨・為替・株式・商品・暗号資産の連動</h2>
-          <div class="relation-grid" id="relationGrid"></div>
         </article>
         <article class="panel position-panel">
           <h2>需給・ポジション</h2>
@@ -117,7 +103,51 @@
       </div>
     </section>
 
-    <section class="outlook-grid" id="outlookCards" aria-label="6市場の見通し"></section>
+    <section class="event-panel panel">
+      <div class="section-title-row">
+        <h2>今後の重要イベント（簡易）</h2>
+        <a href="events.html">重要イベントへ</a>
+      </div>
+      <div class="table-wrap">
+        <table class="event-table">
+          <thead>
+            <tr>
+              <th>日時（日本時間）</th>
+              <th>イベント</th>
+              <th>国・地域</th>
+              <th>重要度</th>
+              <th>次のイベントまで</th>
+            </tr>
+          </thead>
+          <tbody id="eventRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="market-lens-grid" id="marketLensCards" aria-label="市場別の要点"></section>
+
+    <section class="scenario-grid" aria-label="シナリオと結論">
+      <article class="panel scenario-card main-scenario">
+        <h2>メインシナリオ</h2>
+        <p id="mainScenario"></p>
+      </article>
+      <article class="panel scenario-card alt-scenario">
+        <h2>代替シナリオ</h2>
+        <p id="alternativeScenario"></p>
+      </article>
+      <article class="panel scenario-card break-scenario">
+        <h2>崩れる条件</h2>
+        <p id="breakConditions"></p>
+      </article>
+      <article class="panel scenario-card handover-card">
+        <h2>次の時間帯への引き継ぎ</h2>
+        <ul id="handoverList"></ul>
+      </article>
+      <article class="panel scenario-card conclusion-card">
+        <h2>結論・市場スタンス</h2>
+        <p id="conclusionText"></p>
+      </article>
+    </section>
 
     <p class="footnote" id="dataFootnote">データ取得状況を確認中です。</p>
   </main>
