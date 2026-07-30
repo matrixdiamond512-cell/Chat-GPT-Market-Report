@@ -1,7 +1,7 @@
 window.BOJ_USDJPY_VOLUME_DATA = (() => {
   const sourceUrl = "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/index.htm";
   const pdfBaseUrl = "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/";
-  const priceSourceName = "ユーザー提供のUSD/JPY日足スクリーンショット";
+  const priceSourceName = "Investing.com USD/JPY日足OHLC";
   const csv = `date,pub,pdf,spot,chg,chgPct,avg20,vs20,vs20Pct
 2026-07-28,2026-07-29,fx260729.pdf,2254,-211,-8.56,3192,-938,-29.39
 2026-07-27,2026-07-28,fx260728.pdf,2465,-477,-16.21,3180,-715,-22.48
