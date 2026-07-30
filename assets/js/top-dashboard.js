@@ -265,20 +265,20 @@ function findOutlookSentence(report, definition) {
       const nextMarket = after.search(/\s(?:金|WTI原油|日経225先物|USD\/JPY|EUR\/USD|BTCUSD)：/);
       const segment = nextMarket >= 0 ? after.slice(0, nextMarket) : after;
       const sentences = segment.split(/。/).map((item) => item.trim()).filter(Boolean).slice(0, 2);
-      if (sentences.length) return cleanText(`${sentences.join("。")}。`, 104);
+      if (sentences.length) return cleanText(`${sentences.join("。")}。`, 78);
     }
   }
 
   const market = reportMarket(report, definition);
-  return cleanText(market?.material || market?.direction || "", 76);
+  return cleanText(market?.material || market?.direction || "", 64);
 }
 
 function marketReason(report, definition, metric) {
   const outlook = findOutlookSentence(report, definition);
   if (outlook) return outlook;
-  if (metric.raw) return cleanText(metric.raw.replace(/^.*?：/, ""), 92);
+  if (metric.raw) return cleanText(metric.raw.replace(/^.*?：/, ""), 68);
   const market = reportMarket(report, definition);
-  return cleanText(market?.material || "理由：本文に市場別理由がありません", 92);
+  return cleanText(market?.material || "理由：本文に市場別理由がありません", 68);
 }
 
 function consistencyForMarket(report, definition) {
@@ -303,7 +303,7 @@ function consistencyForMarket(report, definition) {
     verdict = "整合";
     cls = "match";
   }
-  return { verdict, cls, reason: cleanText(text, 54) };
+  return { verdict, cls, reason: cleanText(text, 44) };
 }
 
 function extractLevels(report, definition) {
@@ -320,7 +320,7 @@ function riskForMarket(report, definition) {
   const market = reportMarket(report, definition);
   const raw = market?.risk || market?.breakCondition || "";
   const usable = raw && raw.length < 170 && !/個別見通し|ヘッダーなし|TSV|マーケットレポート/.test(raw);
-  if (usable) return cleanText(raw, 56);
+  if (usable) return cleanText(raw, 42);
   const text = allText(report);
   const rules = {
     gold: /米10年債|金利/.test(text) ? "米金利上昇・ドル高" : "金利材料の急変",
@@ -330,13 +330,13 @@ function riskForMarket(report, definition) {
     eurusd: /ドル/.test(text) ? "ドル材料の急変" : "欧州材料の悪化",
     btc: /VIX|米株/.test(text) ? "VIX上昇・米株安" : "リスクオフ再燃"
   };
-  return rules[definition.key] || cleanText(report.breakConditions || "理由：市場別リスク記載なし", 56);
+  return rules[definition.key] || cleanText(report.breakConditions || "理由：市場別リスク記載なし", 42);
 }
 
 function splitTheme(report) {
-  const theme = cleanText(report.theme || "", 320);
+  const theme = cleanText(report.theme || "", 250);
   const sentences = theme.split(/。/).map((item) => item.trim()).filter(Boolean);
-  return sentences.slice(0, 4).map((item) => `${item}。`);
+  return sentences.slice(0, 3).map((item) => `${item}。`);
 }
 
 function topList(items, limit = 3, max = 120) {
@@ -496,7 +496,7 @@ function renderFlow(report) {
     </tr>`;
   }).join("");
 
-  const flowItems = topList(report.crossAssetFlow, 3, 140);
+  const flowItems = topList(report.crossAssetFlow, 2, 112);
   $("flowSummary").textContent = flowItems.length
     ? flowItems.join(" ")
     : "理由：クロスアセット資金フローがJSONにありません";
@@ -512,7 +512,7 @@ function newsImpact(text) {
 }
 
 function renderNews(report) {
-  const news = topList(report.news, 5, 96);
+  const news = topList(report.news, 5, 78);
   $("newsList").innerHTML = news.length ? news.map((item) => {
     const time = item.match(/\b([0-2]\d:[0-5]\d)\b/)?.[1] || "確認";
     const impact = newsImpact(item);
@@ -525,7 +525,7 @@ function renderNews(report) {
 }
 
 function renderPositions(report) {
-  renderList("positionList", topList(report.positioning, 4, 100), "理由：需給・ポジション項目がJSONにありません");
+  renderList("positionList", topList(report.positioning, 3, 78), "理由：需給・ポジション項目がJSONにありません");
   const rows = ["株式", "原油", "ドル", "金", "BTC"];
   const headers = ["", "弱気", "中立", "強気"];
   const cell = (asset, side) => positionBias(report, asset) === side ? "•" : "";
@@ -624,10 +624,10 @@ function conclusionFrom(report) {
 }
 
 function renderScenarios(report) {
-  $("mainScenario").textContent = cleanText(report.mainScenario || "理由：メインシナリオがJSONにありません", 180);
-  $("alternativeScenario").textContent = cleanText(report.alternativeScenario || "理由：代替シナリオがJSONにありません", 180);
-  $("breakConditions").textContent = cleanText(report.breakConditions || "理由：崩れる条件がJSONにありません", 180);
-  renderList("handoverList", topList(report.handover, 3, 110), "理由：引き継ぎ項目がJSONにありません");
+  $("mainScenario").textContent = cleanText(report.mainScenario || "理由：メインシナリオがJSONにありません", 138);
+  $("alternativeScenario").textContent = cleanText(report.alternativeScenario || "理由：代替シナリオがJSONにありません", 138);
+  $("breakConditions").textContent = cleanText(report.breakConditions || "理由：崩れる条件がJSONにありません", 138);
+  renderList("handoverList", topList(report.handover, 3, 88), "理由：引き継ぎ項目がJSONにありません");
   $("conclusionText").textContent = conclusionFrom(report);
 }
 
@@ -648,7 +648,7 @@ function render() {
   renderControls(report);
   renderMarketCards(report);
   renderList("themeList", splitTheme(report), "理由：相場テーマがJSONにありません");
-  renderList("changeList", topList(report.changes, 2, 118), "理由：前回からの変化がJSONにありません");
+  renderList("changeList", topList(report.changes, 2, 96), "理由：前回からの変化がJSONにありません");
   $("leadingMarket").textContent = cleanText(report.leadingMarket || "取得不能。理由：主導市場コメントがJSONにありません", 170);
   renderFlow(report);
   renderNews(report);
