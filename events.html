@@ -1,26 +1,446 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>重要イベント｜マーケットレポート</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<title>重要イベント｜WEBマーケットレポート</title>
 <style>
-:root{--navy:#062452;--blue:#1559b7;--line:#d8e1ef;--soft:#f5f8fc;--text:#0f1f38;--muted:#5e6c82;--green:#0a7a35;--red:#c72222}*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;line-height:1.6}.head{background:var(--navy);color:#fff;padding:14px 28px}.head h1{margin:0;font-size:24px}.head p{margin:2px 0 0;color:#d7e6ff}.nav{display:flex;gap:4px;overflow:auto;background:#f7f9fc;border-bottom:1px solid var(--line);padding:8px 24px}.nav a{color:#082a5b;text-decoration:none;font-weight:700;padding:8px 14px;border-radius:6px;white-space:nowrap}.nav a[aria-current=page]{background:var(--blue);color:white}.page{max-width:1180px;margin:auto;padding:24px}.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}.card{border:1px solid var(--line);border-radius:8px;padding:16px;background:#fff;box-shadow:0 1px 4px #0000000a}.card h2{font-size:18px;color:#07306c;margin:0 0 10px}.num{font-size:28px;font-weight:900;color:#07306c}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:8px}table{width:100%;border-collapse:collapse;min-width:780px}th,td{border-bottom:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}th{background:#eef3fa;color:#07306c}.tag{display:inline-block;border-radius:999px;padding:2px 9px;font-weight:700;font-size:12px}.high{background:#ffe8e8;color:#b00020}.mid{background:#fff1cf;color:#8a5400}.done{background:#e9f7ee;color:#0a7a35}.todo{background:#e8f1ff;color:#0b50a5}@media(max-width:760px){.head{padding:12px 16px}.page{padding:16px}.summary{grid-template-columns:1fr}}
+:root{--navy:#061d4c;--navy2:#092c74;--blue:#0b63e5;--line:#cbd8ec;--soft:#f6f9fe;--text:#071b4a;--muted:#65748c;--green:#008453;--red:#e00022;--orange:#e38300;--panel:#ffffff;--shadow:0 1px 5px rgba(7,27,74,.06)}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;line-height:1.44}
+.topbar{background:linear-gradient(180deg,#061a43,#071f56);color:#fff}
+.top-inner{display:flex;align-items:center;justify-content:space-between;gap:20px;max-width:1680px;margin:0 auto;padding:10px 22px}
+.brand{margin:0;font-size:26px;line-height:1.1;font-weight:1000;letter-spacing:0}
+.top-meta{display:flex;align-items:center;gap:14px;font-size:13px;font-weight:850;color:#dfe9ff;white-space:nowrap}
+.update-btn{border:1px solid #7fa1dc;border-radius:6px;background:#0b2a63;color:#fff;padding:7px 13px;font-weight:900}
+.nav{display:grid;grid-template-columns:repeat(8,minmax(132px,1fr));max-width:1680px;margin:0 auto;border-top:1px solid rgba(255,255,255,.08)}
+.nav a{display:flex;align-items:center;justify-content:center;min-height:42px;padding:9px 12px;border-left:1px solid rgba(255,255,255,.12);background:rgba(5,30,75,.6);color:#fff;text-decoration:none;font-size:14px;font-weight:1000;white-space:nowrap}
+.nav a[aria-current=page]{background:linear-gradient(180deg,#126cff,#0b55d6)}
+.page{max-width:1680px;margin:0 auto;padding:12px 22px 28px}
+.page-head{display:flex;align-items:baseline;gap:22px;margin:0 0 10px}
+.page-head h2{margin:0;color:var(--navy);font-size:32px;line-height:1.1;font-weight:1000}
+.page-head p{margin:0;color:#243b65;font-size:15px;font-weight:850}
+.grid-top{display:grid;grid-template-columns:minmax(0,2fr) minmax(360px,.95fr);gap:12px;margin-bottom:10px}
+.grid-mid{display:grid;grid-template-columns:minmax(0,1.42fr) minmax(0,1fr);gap:12px;margin-bottom:10px}
+.grid-small{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,.9fr) minmax(0,.9fr);gap:12px;margin-bottom:10px}
+.panel{min-width:0;border:1px solid var(--line);border-radius:7px;background:var(--panel);box-shadow:var(--shadow);overflow:hidden}
+.panel-title{display:flex;align-items:center;gap:9px;margin:0;padding:7px 12px;color:var(--navy);font-size:16px;font-weight:1000;line-height:1.2;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,#f6f9ff)}
+.badge-num{display:inline-grid;place-items:center;min-width:26px;height:26px;border-radius:5px;background:#0a57ca;color:#fff;font-weight:1000}
+.panel-body{padding:10px 12px}
+.event-hero{display:grid;grid-template-columns:minmax(310px,.98fr) minmax(0,.72fr) minmax(0,.7fr);gap:18px}
+.event-name{display:flex;align-items:center;gap:12px;margin:0 0 12px;font-size:20px;font-weight:1000}
+.flag{position:relative;display:inline-block;flex:0 0 auto;width:34px;height:23px;border:1px solid #bdcbe0;border-radius:2px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.flag-us{background:repeating-linear-gradient(to bottom,#e83845 0 9%,#fff 9% 18%)}
+.flag-us:before{content:"";position:absolute;left:0;top:0;width:46%;height:54%;background:#1e4f9a}
+.flag-jp{background:#fff}
+.flag-jp:before{content:"";position:absolute;left:50%;top:50%;width:13px;height:13px;transform:translate(-50%,-50%);border-radius:50%;background:#d80027}
+.flag-eu{background:#2453a6}
+.flag-eu:before{content:"★";position:absolute;inset:0;display:grid;place-items:center;color:#ffd84d;font-size:13px}
+.facts{display:grid;gap:0;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.fact{display:grid;grid-template-columns:148px minmax(0,1fr);gap:10px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line);font-size:14px}
+.fact:last-child{border-bottom:0}
+.fact b{color:var(--navy)}
+.fact strong{font-size:18px}
+.countdown{color:#0757c9;font-size:18px;font-weight:1000}
+.mini-col h4{margin:0 0 8px;color:#0b55c8;font-size:14px}
+.check-list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.check-list li{position:relative;padding-left:22px;font-size:13px;font-weight:850}
+.check-list li:before{content:"✓";position:absolute;left:0;top:0;color:#0c62d5;font-weight:1000}
+.order-list{display:grid;gap:7px;margin:0;padding:0;list-style:none}
+.order-list li{display:grid;grid-template-columns:28px 1fr 1.3fr;gap:10px;align-items:center;font-size:13px;font-weight:850}
+.order-list span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#0d5ace;color:#fff;font-weight:1000}
+.order-list small{color:#344b72;font-size:12px;font-weight:800}
+.order-note{margin:9px 0 0;padding:8px 10px;border-radius:6px;background:#eaf2ff;color:#123b78;font-size:12px;font-weight:850}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th,td{border:1px solid var(--line);padding:6px 8px;font-size:12.5px;vertical-align:middle}
+th{background:#eef4fc;color:var(--navy);font-weight:1000;text-align:center}
+td:first-child{font-weight:900}
+.scenario th:nth-child(2){background:#fff0f0;color:#d0001d}
+.scenario th:nth-child(3){background:#f6f9ff;color:#0b3472}
+.scenario th:nth-child(4){background:#eef7ff;color:#0b55c8}
+.up{color:var(--green);font-weight:1000}
+.down{color:var(--red);font-weight:1000}
+.flat{color:#0b55c8;font-weight:1000}
+.warn{color:var(--orange);font-weight:1000}
+.muted{color:var(--muted)}
+.result-table{min-width:520px}
+.reaction-table{min-width:520px}
+.impact-table{min-width:880px}
+.compare-table{min-width:560px}
+.radio-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
+.question{padding:9px 10px;border:1px solid var(--line);border-radius:7px;background:#fbfdff}
+.question h4{margin:0 0 7px;color:#0b55c8;font-size:13px}
+.choice{display:inline-flex;align-items:center;gap:7px;margin:3px 8px 3px 0;font-size:12px;font-weight:850}
+.dot{display:inline-block;width:13px;height:13px;border:2px solid #a9b7ca;border-radius:50%;background:#fff}
+.dot.on{border-color:#0b62d6;background:radial-gradient(circle,#0b62d6 0 42%,#fff 45%)}
+.watch-list{display:grid;gap:7px;margin:0;padding:0;list-style:none}
+.watch-list li{position:relative;padding-left:22px;font-size:12.5px;font-weight:850}
+.watch-list li:before{content:"✓";position:absolute;left:0;color:#0b62d6;font-weight:1000}
+.events-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 8px}
+.events-head h3{margin:0;color:var(--navy);font-size:21px;font-weight:1000}
+.events-head small{color:var(--muted);font-weight:850}
+.event-list-table{min-width:1400px}
+.event-list-table td,.event-list-table th{font-size:12px;padding:5px 7px}
+.status{display:inline-flex;align-items:center;justify-content:center;min-width:56px;padding:3px 8px;border-radius:999px;font-weight:1000;font-size:11px}
+.status.before{background:#e9f2ff;color:#0b55c8}
+.status.soon{background:#fff3d7;color:#956000}
+.status.done{background:#eaf7ef;color:#087045}
+.detail-btn{border:1px solid #6d9be7;border-radius:5px;background:#fff;color:#0b4fb8;padding:4px 10px;font-size:12px;font-weight:1000;cursor:pointer}
+.detail-btn[aria-pressed=true]{background:#0b5fe8;color:#fff}
+.note{margin:10px 0 0;color:var(--muted);font-size:12px;font-weight:750}
+@media(max-width:1180px){.grid-top,.grid-mid,.grid-small{grid-template-columns:1fr}.event-hero{grid-template-columns:1fr}.nav{gap:0;overflow-x:auto}.nav a{min-width:132px}.radio-grid{grid-template-columns:1fr}}
+@media(max-width:760px){.top-inner{display:grid;padding:10px 12px}.brand{font-size:22px}.top-meta{font-size:12px}.page{padding:10px 12px 24px}.page-head{display:block}.page-head h2{font-size:27px}.page-head p{margin-top:6px;font-size:13px}.fact{grid-template-columns:1fr}.order-list li{grid-template-columns:28px 1fr}.order-list small{grid-column:2}.panel-title{font-size:14px}th,td{font-size:12px}}
 </style>
 </head>
 <body>
-<header class="head"><h1>重要イベント｜2026/07/29 21:00基準</h1><p>FOMC・米決算・経済指標・原油関連を、売買判断で確認する順に整理</p></header>
-<nav class="nav"><a href="index.html">ダッシュボード</a><a href="report.html">マーケットレポート本文</a><a href="usdjpy-volume.html">東京市場ドル円出来高</a><a href="events.html" aria-current="page">重要イベント</a><a href="stocks.html">株式市場分析</a><a href="usdjpy-supply-demand.html">USD/JPY需給</a><a href="gold-supply-demand.html">ゴールド需給</a><a href="nikkei225-supply-demand.html">日経225需給</a></nav>
+<header class="topbar">
+  <div class="top-inner">
+    <h1 class="brand">WEBマーケットレポート</h1>
+    <div class="top-meta"><span>最終更新　2025/05/21 08:50</span><button class="update-btn" type="button">更新</button></div>
+  </div>
+  <nav class="nav" aria-label="ページナビゲーション">
+    <a href="index.html">ダッシュボード</a>
+    <a href="report.html">マーケットレポート本文</a>
+    <a href="usdjpy-volume.html">東京市場ドル円出来高</a>
+    <a href="events.html" aria-current="page">重要イベント</a>
+    <a href="stocks.html">株式市場分析</a>
+    <a href="usdjpy-supply-demand.html">USD/JPY需給</a>
+    <a href="gold-supply-demand.html">ゴールド需給</a>
+    <a href="nikkei225-supply-demand.html">日経225需給</a>
+  </nav>
+</header>
+
 <main class="page">
-<section class="summary"><article class="card"><div class="num">3</div><b>最重要</b><p>FOMC、FRB議長会見、Microsoft・Meta決算</p></article><article class="card"><div class="num">21:15</div><b>次の確認</b><p>米ADP雇用統計、GDP速報値、PCE関連</p></article><article class="card"><div class="num">API</div><b>外部カレンダー</b><p>GitHub側で生成される経済指標データがある場合は、今後このページへ優先反映する設計。</p></article></section>
-<section class="card"><h2>イベント一覧</h2><div class="table-wrap"><table><thead><tr><th>日時</th><th>イベント</th><th>重要度</th><th>市場への見方</th><th>確認ポイント</th></tr></thead><tbody>
-<tr><td>7/29 21:15</td><td>米 ADP雇用統計（7月）</td><td><span class="tag mid">中</span></td><td>米金利・ドルの短期反応を確認</td><td>雇用鈍化ならドル高一服、強ければFOMC前の金利警戒継続</td></tr>
-<tr><td>7/29 23:30</td><td>米 GDP速報値</td><td><span class="tag high">高</span></td><td>株式・金利・為替の同時反応</td><td>強い成長＋物価圧力なら高PER株・金・BTCに逆風</td></tr>
-<tr><td>7/30 03:00</td><td>FOMC政策金利発表</td><td><span class="tag high">最重要</span></td><td>据え置き予想でも声明文のトーンが焦点</td><td>インフレ、原油高、追加利上げ余地への言及</td></tr>
-<tr><td>7/30 03:30</td><td>FRB議長会見</td><td><span class="tag high">最重要</span></td><td>米2年債・USD/JPY・Nasdaqを確認</td><td>タカ派ならドル高・金利上昇、ハト派ならリスク資産反発余地</td></tr>
-<tr><td>7/30 未明</td><td>Microsoft・Meta決算</td><td><span class="tag high">高</span></td><td>AI投資の採算確認</td><td>売上成長、設備投資、利益率、フリーキャッシュフロー</td></tr>
-<tr><td>7/31 21:30</td><td>米 PCEデフレーター</td><td><span class="tag high">高</span></td><td>FOMC後の金利見通しを補強</td><td>インフレ粘着性が強ければ利下げ期待後退</td></tr>
-</tbody></table></div></section>
-<section class="card" style="margin-top:16px"><h2>売買判断への使い方</h2><p>イベント前は方向を決め打ちせず、米2年債、10年債、USD/JPY、Nasdaq、日経225先物、金、BTC、WTIの同時反応を確認します。FOMCと米大型ハイテク決算が同じ時間帯に重なるため、単一指標だけで判断しない運用とします。</p></section>
+  <div class="page-head">
+    <h2>重要イベント</h2>
+    <p>重要イベントの発表前の準備と、発表後の市場解釈・影響見通しを確認するページです。</p>
+  </div>
+
+  <section class="grid-top">
+    <article class="panel">
+      <h3 class="panel-title"><span class="badge-num">1</span>次の重要イベント</h3>
+      <div class="panel-body event-hero">
+        <div>
+          <h4 class="event-name"><span class="flag flag-us" id="eventFlag" aria-label="米国"></span><span id="eventName">FOMC議事要旨（5月6-7日分）</span></h4>
+          <div class="facts">
+            <div class="fact"><b>発表日時（日本時間）</b><strong id="eventTime">2025/05/21（水）03:00</strong></div>
+            <div class="fact"><b>カウントダウン</b><span class="countdown" id="eventCountdown">発表済み</span></div>
+            <div class="fact"><b>コンセンサス（要点）</b><span id="eventConsensus">タカ派色の後退の有無を確認</span></div>
+            <div class="fact"><b>前回値（要点）</b><span id="eventPrevious">タカ派的な慎重姿勢が継続</span></div>
+          </div>
+        </div>
+        <div class="mini-col">
+          <h4>注目市場</h4>
+          <ul class="check-list" id="focusMarkets"></ul>
+        </div>
+        <div class="mini-col">
+          <h4>市場が織り込むもの</h4>
+          <ul class="check-list" id="pricedIn"></ul>
+        </div>
+      </div>
+    </article>
+
+    <article class="panel">
+      <h3 class="panel-title">確認順序（発表直後に見る順番）</h3>
+      <div class="panel-body">
+        <ol class="order-list">
+          <li><span>1</span><b>米2年債利回り</b><small>政策金利見通しの初動</small></li>
+          <li><span>2</span><b>USD/JPY</b><small>金利差への感応度</small></li>
+          <li><span>3</span><b>株価指数先物（米・日）</b><small>リスク選好の初動確認</small></li>
+          <li><span>4</span><b>米10年債利回り</b><small>成長・インフレ・期間プレミアム</small></li>
+          <li><span>5</span><b>金・BTC・WTI</b><small>有事通貨・リスクヘッジ</small></li>
+        </ol>
+        <p class="order-note">まず2年債で政策金利見通しを確認し、10年債で反応の広がり・持続性を確認する。</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="grid-mid">
+    <article class="panel">
+      <h3 class="panel-title"><span class="badge-num">2</span>発表前シナリオ（市場の予想反応）</h3>
+      <div class="table-wrap">
+        <table class="scenario" id="scenarioTable">
+          <thead><tr><th>市場</th><th>予想より強い（タカ派強化）</th><th>予想通り</th><th>予想より弱い（ハト派化）</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="note">※ 最初に米2年債を確認し、次に米10年債で反応の広がり・持続性を確認します。</p>
+    </article>
+
+    <article class="panel">
+      <h3 class="panel-title"><span class="badge-num">3</span>発表結果（発表直後の確認）</h3>
+      <div class="table-wrap">
+        <table class="result-table" id="resultTable"><tbody></tbody></table>
+      </div>
+      <div class="table-wrap">
+        <table class="reaction-table" id="reactionTable"><tbody></tbody></table>
+      </div>
+    </article>
+  </section>
+
+  <section class="grid-small">
+    <article class="panel">
+      <h3 class="panel-title"><span class="badge-num">4</span>発表後の市場への影響見通し</h3>
+      <div class="table-wrap">
+        <table class="impact-table" id="outlookTable">
+          <thead><tr><th>市場</th><th>初動</th><th>今後の見通し</th><th>継続条件</th><th>反転条件</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="panel">
+      <h3 class="panel-title"><span class="badge-num">5</span>想定と実際の反応比較</h3>
+      <div class="table-wrap">
+        <table class="compare-table" id="compareTable">
+          <thead><tr><th>市場</th><th>事前想定</th><th>実際の反応</th><th>判定</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="panel">
+      <h3 class="panel-title"><span class="badge-num">6</span>結論と次の監視点</h3>
+      <div class="panel-body">
+        <div class="radio-grid">
+          <div class="question"><h4>イベントは市場のナラティブを変えたか？</h4><span class="choice"><i class="dot"></i>変えた</span><span class="choice"><i class="dot on" id="narrativeDot"></i><span id="narrativeLabel">まだ判断できない</span></span></div>
+          <div class="question"><h4>市場の反応は一貫しているか？</h4><span class="choice"><i class="dot"></i>一貫している</span><span class="choice"><i class="dot on" id="mixedDot"></i><span id="reactionLabel">一部に乖離あり</span></span></div>
+        </div>
+        <h4 style="margin:0 0 8px;color:#0b55c8;font-size:13px">次に注目すべきポイント</h4>
+        <ul class="watch-list" id="watchList"></ul>
+      </div>
+    </article>
+  </section>
+
+  <section class="panel">
+    <div class="panel-body">
+      <div class="events-head">
+        <h3>重要イベント一覧（今後1週間）</h3>
+        <small>一覧から「詳細」を押すと、上段の分析内容を切り替えます。</small>
+      </div>
+      <div class="table-wrap">
+        <table class="event-list-table">
+          <thead><tr><th>日時（日本時間）</th><th>イベント</th><th>予想</th><th>前回</th><th>主な影響市場</th><th>注目理由</th><th>状態</th><th>詳細</th></tr></thead>
+          <tbody id="eventList"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 </main>
+
+<script>
+const events = [
+  {
+    id:"fomc-minutes", flag:"🇺🇸", country:"米国", name:"FOMC議事要旨（5月6-7日分）", time:"2025/05/21（水）03:00", iso:"2025-05-21T03:00:00+09:00", status:"発表前",
+    consensus:"タカ派色の後退の有無を確認", previous:"タカ派的な慎重姿勢が継続",
+    forecast:"年内利下げ回数：1回（約25bp）", previousValue:"年内1回（約25bp）",
+    affected:"金利・USD/JPY・株式・金・BTC", reason:"FRBの政策方向と経済認識の詳細を確認",
+    focus:["米金利（2年・10年）","USD/JPY","米国株（先物）","金・BTC"],
+    priced:["年内利下げ回数：1回（約25bp）","初回利下げ時期：9月（確率 約60%）","ターミナル金利：3.75〜4.00%","QT継続の方針確認"],
+    scenarios:[
+      ["市場の解釈","インフレ懸念・利下げ後退","現行方針の確認","利下げ前倒しの確信・強化"],
+      ["米2年債","上昇（利上げ・高止まり期待）","小動き（レンジ）","低下（利下げ前倒し期待）"],
+      ["米10年債","上昇（成長・インフレ懸念）","小動き（レンジ）","低下（成長・インフレ鈍化懸念）"],
+      ["USD/JPY","上昇（ドル買い）","小動き（レンジ）","下落（ドル売り）"],
+      ["米国株（先物）","下落（金利引き締め懸念）","小動き（レンジ）","上昇（利下げ期待）"],
+      ["日経225先物","下落（円安一服でも金利上昇重し）","小動き（レンジ）","上昇（円安進行＋リスク選好）"],
+      ["金","下落（実質金利上昇で重し）","小動き（レンジ）","上昇（実質金利低下で下支え）"],
+      ["BTC","下落（流動性懸念・リスクオフ）","小動き（レンジ）","上昇（流動性期待・リスクオン）"]
+    ],
+    result:{actual:"—", consensus:"—", previous:"—", revised:"—", surprise:"—"},
+    reactions:[["初動（〜1分）","—"],["5分後","—"],["30分後","—"],["1時間後","—"]],
+    outlook:[
+      ["米2年債","方向性の初動反応","政策金利見通しに沿って推移","インフレ鈍化・FRBタカ派継続","インフレ鈍化・利下げ期待強化"],
+      ["米10年債","広がり・持続性を確認","成長・インフレ・財政で揺れる","成長懸念・財政懸念の再燃","成長鈍化・インフレ沈静化"],
+      ["USD/JPY","金利差の即時反応","金利差とリスク選好で決まる","米金利上昇・日銀タカ派後退","米金利低下・リスクオフ強化"],
+      ["Nasdaq（先物）","ハイテク主導で反応","金利・成長期待で左右","利下げ期待後退・景気強すぎ","利下げ期待・需給上方修正"],
+      ["日経225先物","円安・株・熱狂に連動","円安・金利環境・外需に左右","円通貨安・景況感上振れ","円高進行・米株急落"],
+      ["金","実質金利のリアルタイム反応","実質金利とリスク回避で決定","実質金利上昇・ドル高","実質金利低下・リスク回避"],
+      ["WTI（原油）","需給・リスクで反応","原油材料に加えリスク選好で決定","需要見通し上方・供給増加","需要見通し下方・供給緩和"],
+      ["BTC","流動性・リスクで反応","緩和期待・流動性期待で決定","利下げ期待後退・リスクオフ","引き締め長期化・リスクオフ"]
+    ],
+    comparison:[["米2年債","↑（上昇）","—","—"],["米10年債","↑（上昇）","—","—"],["USD/JPY","↑（上昇）","—","—"],["米国株（先物）","↓（下落）","—","—"],["日経225先物","↓（下落）","—","—"],["金","↓（下落）","—","—"],["BTC","↓（下落）","—","—"]],
+    conclusion:{narrative:"まだ判断できない", reaction:"一部に乖離あり", watch:["今後のインフレ指標で利下げ確度の変化を確認","雇用・賃金の強さが続くかを追跡","米国株・国債需給の悪化リスク","リスク資産のセンチメント","地政学リスクの再燃有無"]}
+  },
+  {
+    id:"frb-chair", flag:"🇺🇸", country:"米国", name:"FRB議長パウエル会見", time:"2025/05/22（木）23:00", iso:"2025-05-22T23:00:00+09:00", status:"発表前",
+    consensus:"議事要旨後の政策スタンス確認", previous:"慎重姿勢を維持",
+    forecast:"発言トーンは中立〜ややタカ派", previousValue:"タカ派寄り",
+    affected:"USD/JPY・株式・金", reason:"議事要旨後の政策スタンスを直接確認",
+    focus:["米2年債","USD/JPY","Nasdaq先物","金"],
+    priced:["年内利下げ1回を中心に織り込み","インフレ再加速への警戒","市場はハト派確認を期待"],
+    scenarios:[
+      ["市場の解釈","タカ派姿勢の再確認","慎重姿勢を維持","利下げ余地を示唆"],
+      ["米2年債","上昇","小動き","低下"],
+      ["米10年債","上昇","小動き","低下"],
+      ["USD/JPY","上昇","小動き","下落"],
+      ["米国株（先物）","下落","小動き","上昇"],
+      ["日経225先物","下落","小動き","上昇"],
+      ["金","下落","小動き","上昇"],
+      ["BTC","下落","小動き","上昇"]
+    ],
+    result:{actual:"—", consensus:"—", previous:"—", revised:"—", surprise:"—"},
+    reactions:[["初動（〜1分）","—"],["5分後","—"],["30分後","—"],["1時間後","—"]],
+    outlook:[
+      ["米2年債","発言のタカ派度に反応","政策金利見通しが中心","利下げ慎重発言","雇用・物価鈍化の重視"],
+      ["米10年債","成長・インフレ観を確認","2年債との方向差を確認","財政・インフレ懸念","成長鈍化重視"],
+      ["USD/JPY","金利差で反応","米金利の持続性次第","米金利上昇","米金利低下"],
+      ["Nasdaq（先物）","金利で反応","大型ハイテクの金利耐性を見る","金利上昇","金利低下"],
+      ["日経225先物","米株と円相場を確認","外需株の反応が焦点","円高・米株安","円安・米株高"],
+      ["金","実質金利で反応","ドル指数も確認","実質金利上昇","実質金利低下"],
+      ["WTI（原油）","反応は限定的","景気認識が需要見通しへ波及","景気強気発言","景気減速懸念"],
+      ["BTC","流動性期待で反応","金利低下なら追い風","高金利長期化","緩和期待"]
+    ],
+    comparison:[["米2年債","↑（タカ派なら上昇）","—","—"],["米10年債","↑（広がり確認）","—","—"],["USD/JPY","↑（ドル買い）","—","—"],["米国株（先物）","↓（金利重し）","—","—"],["日経225先物","↓（米株安なら重し）","—","—"],["金","↓（実質金利上昇）","—","—"],["BTC","↓（流動性低下）","—","—"]],
+    conclusion:{narrative:"まだ判断できない", reaction:"一部に乖離あり", watch:["発言後の2年債方向","株式が金利上昇を消化できるか","ドル円が直近高値を抜けるか","金とBTCの同時反応","翌日の米指標との整合性"]}
+  },
+  {
+    id:"pce", flag:"🇺🇸", country:"米国", name:"米PCEデフレーター（4月）", time:"2025/05/26（月）23:00", iso:"2025-05-26T23:00:00+09:00", status:"発表前",
+    consensus:"前年比 +2.2%", previous:"前年比 +2.3%",
+    forecast:"前月比 +0.2% / コア +0.2%", previousValue:"前月比 +0.3%",
+    affected:"金利・USD/JPY・株式", reason:"FRBが重視するインフレ指標",
+    focus:["米2年債","米10年債","USD/JPY","金"],
+    priced:["インフレ鈍化はある程度織り込み","小幅な上振れは反応限定","大幅上振れなら金利上昇リスク"],
+    scenarios:[
+      ["市場の解釈","インフレ再燃・利下げ後退","鈍化基調を確認","利下げ期待が強まる"],
+      ["米2年債","上昇","小動き","低下"],
+      ["米10年債","上昇","小動き","低下"],
+      ["USD/JPY","上昇","小動き","下落"],
+      ["米国株（先物）","下落","小動き〜上昇","上昇"],
+      ["日経225先物","下落","小動き","上昇"],
+      ["金","下落","小動き","上昇"],
+      ["BTC","下落","小動き","上昇"]
+    ],
+    result:{actual:"—", consensus:"—", previous:"—", revised:"—", surprise:"—"},
+    reactions:[["初動（〜1分）","—"],["5分後","—"],["30分後","—"],["1時間後","—"]],
+    outlook:[
+      ["米2年債","インフレ差に即反応","利下げ時期の見直し","コア上振れ","コア下振れ"],
+      ["米10年債","インフレと成長を確認","2年債との差を重視","粘着インフレ","需要鈍化"],
+      ["USD/JPY","金利差で反応","米金利方向を追随","米金利上昇","米金利低下"],
+      ["Nasdaq（先物）","金利低下なら支え","高PER株の反応を見る","金利上昇","金利低下"],
+      ["日経225先物","米株と円相場に連動","半導体・輸出株の反応","米株安","円安・米株高"],
+      ["金","実質金利で反応","ドル指数も確認","実質金利上昇","実質金利低下"],
+      ["WTI（原油）","間接影響","需要見通しへの波及確認","景気強すぎ","景気鈍化"],
+      ["BTC","流動性期待","金利低下なら上昇余地","高金利長期化","緩和期待"]
+    ],
+    comparison:[["米2年債","データ次第","—","—"],["米10年債","データ次第","—","—"],["USD/JPY","データ次第","—","—"],["米国株（先物）","データ次第","—","—"],["日経225先物","データ次第","—","—"],["金","データ次第","—","—"],["BTC","データ次第","—","—"]],
+    conclusion:{narrative:"まだ判断できない", reaction:"詳細待ち", watch:["コアPCEの上振れ・下振れ","2年債の初動と持続性","ドル円の高値更新有無","Nasdaq先物の反応","金・BTCが金利低下を織り込むか"]}
+  }
+];
+
+const weekRows = [
+  ["05/21（水）03:00","FOMC議事要旨（5月6-7日分）","年内利下げ回数：1回（約25bp）","年内1回（約25bp）","金利・USD/JPY・株式・金・BTC","FRBの政策方向・経済認識の詳細を確認","発表前","fomc-minutes"],
+  ["05/22（木）23:00","FRB議長パウエル会見","発言トーン確認","慎重姿勢","USD/JPY・株式・金","議事要旨後の政策スタンスを直接確認","発表前","frb-chair"],
+  ["05/23（金）21:30","米雇用統計関連（5月）","非農業部門雇用者数：+130K","+177K","USD/JPY・金利・株式・原油","労働市場の強さが利下げ観測を左右","発表前","pce"],
+  ["05/23（金）21:30","米国失業率（5月）","4.2%","4.2%","USD/JPY・金利・株式","失業率の動向で景気・利下げ見通しに影響","発表前","pce"],
+  ["05/24（土）03:00","米国CPI（4月）","前年比：+2.4%","+2.4%","金利・USD/JPY・株式・金","インフレ動向が利下げ時期を左右","発表前","pce"],
+  ["05/26（月）23:00","米国PCEデフレーター（4月）","前年比：+2.2%","+2.3%","金利・USD/JPY・株式","FRBが重視するインフレ指標","発表前","pce"],
+  ["05/28（水）23:00","米国GDP（1Q・改定値）","前期比年率：+1.3%","+1.6%","USD/JPY・株式・金利","成長鈍化の程度を再確認","発表前","pce"],
+  ["05/28（水）23:00","米国耐久財受注（4月）","前月比：-0.6%","+9.2%","USD/JPY・株式","設備投資・景気動向の先行指標","発表前","pce"],
+  ["05/29（木）23:00","米国ISM製造業景況指数（5月）","48.5","49.2","USD/JPY・株式・原油","景況感の改善・悪化を確認","発表前","pce"],
+  ["05/30（金）21:30","米個人所得・支出（4月）","個人消費（前月比）：+0.3%","+0.7%","USD/JPY・株式","個人消費の強さが景気持続性を左右","発表前","pce"],
+  ["05/30（金）22:45","Microsoft 決算（4-6月期）","EPS：$3.22（予想）","$2.94","米国株（ハイテク）・USD/JPY","AI・クラウド需要の先行指標","発表前","frb-chair"],
+  ["05/30（金）23:00","Meta Platforms 決算（4-6月期）","EPS：$4.85（予想）","$4.71","米国株（ハイテク）・USD/JPY","広告需要・AI投資の状況を確認","発表前","frb-chair"],
+  ["05/30（金）21:15（翌日）","ECB政策金利発表（6月）","預金ファシリティ金利：2.25%","2.25%","EUR/USD・欧州株・金利","利下げ継続の有無と今後の見通し","発表前","pce"]
+];
+
+const cls = text => /上昇|買い|強化|プラス|↑/.test(text) ? "up" : /下落|低下|売り|弱い|↓/.test(text) ? "down" : /小動き|レンジ|限定/.test(text) ? "flat" : "";
+const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));
+
+function renderList(selectedId) {
+  const body = document.getElementById("eventList");
+  body.innerHTML = weekRows.map((row, index) => {
+    const [time,name,forecast,previous,affected,reason,status,id] = row;
+    const key = `row-${index}`;
+    const statusClass = status === "発表済み" ? "done" : status === "発表直前" ? "soon" : "before";
+    return `<tr><td>${esc(time)}</td><td>${esc(name)}</td><td>${esc(forecast)}</td><td>${esc(previous)}</td><td>${esc(affected)}</td><td>${esc(reason)}</td><td><span class="status ${statusClass}">${esc(status)}</span></td><td><button class="detail-btn" type="button" data-event="${key}" aria-pressed="${key === selectedId}">詳細</button></td></tr>`;
+  }).join("");
+  body.querySelectorAll("button").forEach(button => button.addEventListener("click", () => renderEvent(button.dataset.event)));
+}
+
+function rows(selector, data) {
+  document.querySelector(selector).innerHTML = data.map(row => `<tr>${row.map((cell,index) => `<td class="${index ? cls(cell) : ""}">${esc(cell)}</td>`).join("")}</tr>`).join("");
+}
+
+function updateCountdown(event) {
+  const target = new Date(event.iso);
+  const el = document.getElementById("eventCountdown");
+  if (Number.isNaN(target.getTime())) { el.textContent = "日時未定"; return; }
+  const diff = target.getTime() - Date.now();
+  if (diff <= 0) { el.textContent = "発表済み"; return; }
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  el.textContent = `${h}時間 ${String(m).padStart(2,"0")}分 ${String(s).padStart(2,"0")}秒`;
+}
+
+let timer = null;
+function isoFromListTime(label) {
+  const match = String(label).match(/(\d{2})\/(\d{2}).*?(\d{2}):(\d{2})/);
+  return match ? `2025-${match[1]}-${match[2]}T${match[3]}:${match[4]}:00+09:00` : "";
+}
+
+function eventFromKey(key) {
+  if (!String(key).startsWith("row-")) return events.find(item => item.id === key) || events[0];
+  const index = Number(String(key).slice(4));
+  const row = weekRows[index] || weekRows[0];
+  const [time,name,forecast,previous,affected,reason,,templateId] = row;
+  const base = events.find(item => item.id === templateId) || events[0];
+  if (base.name === name) return {...base, id:key};
+  const flag = /ECB|欧州|EUR/.test(name + affected) ? "🇪🇺" : /日本|日銀/.test(name + affected) ? "🇯🇵" : "🇺🇸";
+  return {
+    ...base,
+    id:key,
+    flag,
+    country:flag === "🇪🇺" ? "欧州" : flag === "🇯🇵" ? "日本" : "米国",
+    name,
+    time:time.startsWith("20") ? time : `2025/${time}`,
+    iso:isoFromListTime(time),
+    consensus:forecast,
+    previous,
+    forecast,
+    previousValue:previous,
+    affected,
+    reason,
+    focus:affected.split("・").filter(Boolean).slice(0,4),
+    priced:[forecast,reason,"発表直後は米2年債、USD/JPY、株価指数先物の順に確認"]
+  };
+}
+
+function applyFlag(flag) {
+  const el = document.getElementById("eventFlag");
+  const className = flag === "🇪🇺" ? "flag flag-eu" : flag === "🇯🇵" ? "flag flag-jp" : "flag flag-us";
+  const label = flag === "🇪🇺" ? "欧州" : flag === "🇯🇵" ? "日本" : "米国";
+  el.className = className;
+  el.setAttribute("aria-label", label);
+}
+
+function renderEvent(id) {
+  const event = eventFromKey(id);
+  applyFlag(event.flag);
+  document.getElementById("eventName").textContent = event.name;
+  document.getElementById("eventTime").textContent = event.time;
+  document.getElementById("eventConsensus").textContent = event.consensus;
+  document.getElementById("eventPrevious").textContent = event.previous;
+  document.getElementById("focusMarkets").innerHTML = event.focus.map(item => `<li>${esc(item)}</li>`).join("");
+  document.getElementById("pricedIn").innerHTML = event.priced.map(item => `<li>${esc(item)}</li>`).join("");
+  rows("#scenarioTable tbody", event.scenarios);
+  rows("#resultTable tbody", [["項目","内容"],["実績値（要点）",event.result.actual],["市場予想（要点）",event.result.consensus],["前回値（要点）",event.result.previous],["改定値（要点）",event.result.revised],["サプライズ",event.result.surprise]]);
+  rows("#reactionTable tbody", [["時間経過","市場の反応（確認メモ）"],...event.reactions]);
+  rows("#outlookTable tbody", event.outlook);
+  rows("#compareTable tbody", event.comparison);
+  document.getElementById("narrativeLabel").textContent = event.conclusion.narrative;
+  document.getElementById("reactionLabel").textContent = event.conclusion.reaction;
+  document.getElementById("watchList").innerHTML = event.conclusion.watch.map(item => `<li>${esc(item)}</li>`).join("");
+  renderList(event.id);
+  if (timer) clearInterval(timer);
+  updateCountdown(event);
+  timer = setInterval(() => updateCountdown(event), 1000);
+}
+
+renderEvent("row-0");
+</script>
 </body>
 </html>
