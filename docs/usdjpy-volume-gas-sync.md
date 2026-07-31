@@ -11,6 +11,7 @@ Googleスプレッドシートの東京市場USD/JPYスポット出来高デー�
 - 対象ページ: `usdjpy-volume.html`
 - 出力JSON: `data/usdjpy-volume.json`
 - GASファイル: `apps-script/UsdJpyVolumeJsonSync.gs`
+- GAS補助ファイル: `apps-script/UsdJpyVolumeJsonStatus.gs`
 - 使用データ: 日銀PDFのUSD/JPYスポット出来高のみ
 - 使用しないデータ: スワップ出来高
 
@@ -61,6 +62,7 @@ Googleスプレッドシートの東京市場USD/JPYスポット出来高デー�
 
 - `previewUsdJpyVolumeJson()`: JSONをプレビューする。GitHubは更新しない。
 - `syncUsdJpyVolumeJsonToGitHub()`: `data/usdjpy-volume.json` をGitHubへ反映する。
+- `showUsdJpyVolumeJsonSyncStatus()`: GitHubトークン、対象シート、価格範囲設定、前回実行結果を確認する。
 - `buildUsdJpyVolumeJson_()`: JSON文字列を作る内部関数。
 
 ## バリデーション
@@ -75,11 +77,15 @@ Googleスプレッドシートの東京市場USD/JPYスポット出来高デー�
 
 1. スプレッドシートに `USDJPY_Volume` シートを用意する。
 2. 必須列を入れる。
-3. GASに `UsdJpyVolumeJsonSync.gs` を追加する。
-4. 既存のGitHub連携スクリプト `MarketReportWebSync.gs` と同じプロジェクトに置く。
-5. `previewUsdJpyVolumeJson()` を実行して、最新対象日・公表日・件数・JSON構造を確認する。
-6. 問題なければ `syncUsdJpyVolumeJsonToGitHub()` を手動実行する。
-7. 公開ページで `usdjpy-volume.html` を確認する。
+3. `data/usdjpy-volume-sheet-template.csv` をインポートまたは貼り付けて初期データにする。
+4. GASに `UsdJpyVolumeJsonSync.gs` と `UsdJpyVolumeJsonStatus.gs` を追加する。
+5. 既存のGitHub連携スクリプト `MarketReportWebSync.gs` と同じプロジェクトに置く。
+6. `MarketReportMenu.gs` の最新版も反映する。
+7. `installMarketReportWebMenu()` を実行して、メニューを表示する。
+8. メニューから `USD/JPY出来高JSON設定を確認` を実行する。
+9. `previewUsdJpyVolumeJson()` を実行して、最新対象日・公表日・件数・JSON構造を確認する。
+10. 問題なければ `syncUsdJpyVolumeJsonToGitHub()` を手動実行する。
+11. 公開ページで `usdjpy-volume.html` を確認する。
 
 ## 注意
 
