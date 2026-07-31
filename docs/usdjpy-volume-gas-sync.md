@@ -77,7 +77,7 @@ Googleスプレッドシートの東京市場USD/JPYスポット出来高デー�
 
 1. スプレッドシートに `USDJPY_Volume` シートを用意する。
 2. 必須列を入れる。
-3. `data/usdjpy-volume-sheet-template.csv` をインポートまたは貼り付けて初期データにする。
+3. `data/usdjpy-volume-sheet-template.csv` をインポートまたは貼り付けて初期データにする。テンプレートはGASが認識しやすい英字ヘッダーを使っている。
 4. GASに `UsdJpyVolumeJsonSync.gs` と `UsdJpyVolumeJsonStatus.gs` を追加する。
 5. 既存のGitHub連携スクリプト `MarketReportWebSync.gs` と同じプロジェクトに置く。
 6. `MarketReportMenu.gs` の最新版も反映する。
