@@ -1,33 +1,251 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>WEBマーケットレポート</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<title>株式市場分析｜WEBマーケットレポート</title>
 <style>
-:root{--navy:#062452;--blue:#1559b7;--line:#d8e1ef;--soft:#f5f8fc;--text:#0f1f38;--muted:#5e6c82;--green:#0a7a35;--red:#c72222;--pink:#f35282;--cyan:#08a7b8}*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;line-height:1.6}.head{background:var(--navy);color:#fff;padding:14px 28px}.head h1{margin:0;font-size:24px}.head p{margin:2px 0 0;color:#d7e6ff}.nav{display:flex;gap:4px;overflow:auto;background:#f7f9fc;border-bottom:1px solid var(--line);padding:8px 24px}.nav a{color:#082a5b;text-decoration:none;font-weight:700;padding:8px 14px;border-radius:6px;white-space:nowrap}.nav a[aria-current=page]{background:var(--blue);color:white}.page{max-width:1180px;margin:auto;padding:24px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.visual-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-top:16px}.card,.visual-card{border:1px solid var(--line);border-radius:8px;background:#fff;box-shadow:0 1px 4px #0000000a}.card{padding:16px}.card h2{font-size:18px;color:#07306c;margin:0 0 10px}.visual-card{overflow:hidden}.visual-card h2{margin:0;padding:8px 12px;color:#fff;font-size:16px;line-height:1.35;background:linear-gradient(90deg,#0649bf,#0a78d0)}.visual-card.jp h2{background:linear-gradient(90deg,#0c57d6,#8457d6)}.visual-card.nikkei h2{background:linear-gradient(90deg,#0c57d6,#1d68df)}.visual-body{padding:12px}.visual-span-2{grid-column:span 2}.visual-span-3{grid-column:span 3}.visual-span-6{grid-column:span 6}.split{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mini-panel{border:1px solid #dfe7f4;border-radius:8px;padding:10px;background:#fbfdff}.mini-panel.negative{background:#fff6f7}.mini-title{display:inline-block;border-radius:4px;padding:2px 8px;margin-bottom:7px;font-weight:800;font-size:13px}.mini-title.positive{background:#ddfbef;color:#08784a}.mini-title.negative{background:#ffe3e8;color:#be1e3f}.mover-row,.sector-row{display:grid;grid-template-columns:24px 1fr auto;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid #edf2f8;font-size:14px}.mover-row:last-child,.sector-row:last-child{border-bottom:0}.rank{color:#4d6684;font-weight:800;text-align:center}.arrow{font-weight:900}.bar-cell{height:12px;background:#eef3fa;border-radius:999px;overflow:hidden}.bar{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#12a57d,#0fb6a2)}.bar.jp{background:linear-gradient(90deg,#f86b9a,#ff4d7d)}.sector-row{grid-template-columns:24px 92px minmax(76px,1fr) auto}.compact-table{min-width:0;font-size:14px}.compact-table th,.compact-table td{padding:7px 8px;white-space:nowrap}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:8px}table{width:100%;border-collapse:collapse;min-width:720px}th,td{border-bottom:1px solid var(--line);padding:10px;text-align:left;vertical-align:top}th{background:#eef3fa;color:#07306c}.up{color:var(--green);font-weight:800}.down{color:var(--red);font-weight:800}.warn{background:#fff7e8;border-left:4px solid #d98700;padding:10px;border-radius:4px}.muted{color:var(--muted)}@media(max-width:980px){.visual-span-2,.visual-span-3{grid-column:span 6}.split{grid-template-columns:1fr}}@media(max-width:760px){.head{padding:12px 16px}.page{padding:16px}.grid,.visual-grid{grid-template-columns:1fr}.visual-span-2,.visual-span-3,.visual-span-6{grid-column:1/-1}.sector-row{grid-template-columns:24px 82px minmax(64px,1fr) auto}.compact-table{font-size:13px}}
+:root{--navy:#071f56;--navy2:#092d78;--blue:#0b5fe8;--line:#cbd8ec;--soft:#f5f8fd;--text:#071b4a;--muted:#68758a;--green:#008453;--red:#e00022;--orange:#e48400;--purple:#6d45c4;--shadow:0 1px 4px rgba(7,27,74,.05)}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;line-height:1.48}
+.top{max-width:1640px;margin:0 auto;padding:14px 20px 8px;border-bottom:1px solid var(--line)}
+.top h1{margin:0;color:var(--navy);font-size:clamp(28px,2.5vw,38px);line-height:1.1;letter-spacing:0}
+.status{display:flex;gap:10px;align-items:center;margin-top:16px;color:var(--navy);font-size:13px;font-weight:900}
+.status:before{content:"";width:16px;height:16px;border:2px solid var(--navy);border-radius:3px;box-shadow:inset 0 4px 0 #fff;background:linear-gradient(#fff 0 34%,var(--navy) 34% 48%,#fff 48%)}
+.nav{display:grid;grid-template-columns:repeat(8,minmax(132px,1fr));gap:22px;max-width:1640px;margin:0 auto;padding:14px 20px;overflow-x:auto}
+.nav a{display:flex;align-items:center;justify-content:center;min-height:46px;padding:10px 12px;border:1px solid #1743a0;border-radius:5px;background:#fff;color:var(--navy);font-size:14px;font-weight:1000;text-decoration:none;white-space:nowrap}
+.nav a[aria-current=page]{background:linear-gradient(180deg,var(--navy2),var(--navy));color:#fff}
+.page{max-width:1640px;margin:0 auto;padding:0 20px 28px}
+.pair-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px}
+.panel{min-width:0;border:1px solid var(--line);border-radius:6px;background:#fff;box-shadow:var(--shadow);overflow:hidden}
+.panel-title{display:flex;align-items:center;gap:10px;margin:0;padding:7px 14px;background:linear-gradient(90deg,#063baf,#075fe8);color:#fff;font-size:16px;line-height:1.25;font-weight:1000}
+.flag{display:inline-grid;place-items:center;width:24px;height:18px;border-radius:2px;background:#fff;font-size:16px}
+.panel-body{padding:10px 12px}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:680px}
+th,td{border:1px solid var(--line);padding:6px 9px;font-size:13px;vertical-align:middle}
+th{background:#eef3fb;color:var(--navy);font-weight:1000;text-align:center}
+td:first-child{font-weight:900}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.comment{font-size:12.5px;font-weight:800}
+.up{color:var(--green);font-weight:1000}
+.down{color:var(--red);font-weight:1000}
+.muted{color:var(--muted)}
+.market-table{min-width:780px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mini-title{margin:0 0 6px;font-size:15px;font-weight:1000}
+.mini-title.up{color:var(--green)}
+.mini-title.down{color:var(--red)}
+.rank-table{min-width:0}
+.rank-table th,.rank-table td{padding:6px 8px;white-space:nowrap}
+.rank-table td:nth-child(2){white-space:normal}
+.reason{display:block;margin-top:2px;color:var(--muted);font-size:11px;font-weight:800;white-space:normal}
+.sector-table{min-width:760px}
+.sector-row{display:grid;grid-template-columns:38px 160px minmax(160px,1fr) 70px minmax(210px,1.2fr);gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid #edf2f8;font-size:13px}
+.sector-row:last-child{border-bottom:0}
+.rank{color:#4c6380;font-weight:1000;text-align:center}
+.bar-track{height:13px;border-radius:999px;background:#eef3fa;overflow:hidden}
+.bar{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#078a53,#09a76c)}
+.bar.jp{background:linear-gradient(90deg,#0c7a54,#0db87b)}
+.sector-note{color:var(--muted);font-size:11.5px;font-weight:800}
+.bottom-cards{display:grid;grid-template-columns:1.05fr 1.15fr 1fr 1.15fr;gap:12px;margin-top:12px}
+.info-card{min-height:140px;border:1px solid var(--line);border-radius:7px;background:#fff;padding:16px 18px;box-shadow:var(--shadow)}
+.info-card h2{display:flex;align-items:center;gap:10px;margin:0 0 10px;color:var(--navy);font-size:17px}
+.info-card ul{margin:0;padding-left:18px}
+.info-card li{margin:5px 0;font-weight:850;font-size:13px}
+.icon{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#eef5ff;color:var(--blue);font-weight:1000}
+.conclusion{border-color:#8ecbb4;background:#fbfffd}.conclusion .icon{background:#078a53;color:#fff}
+.reason-card{border-color:#abc3f5}.reason-card .icon{background:#eef5ff}
+.risk{border-color:#f3c57f;background:#fffdf8}.risk .icon{background:#fff0d8;color:var(--orange)}
+.watch{border-color:#cbbcf1;background:#fffefe}.watch .icon{background:#f1ebff;color:var(--purple)}
+.conclusion-main{margin:8px 0 6px;color:var(--green);font-size:22px;font-weight:1000}
+.conclusion-sub{font-size:15px;font-weight:900}
+.analysis-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:12px}
+.analysis-card{border:1px solid var(--line);border-radius:6px;background:#fff;padding:12px 14px;min-height:118px}
+.analysis-card h2{margin:0 0 8px;color:var(--blue);font-size:15px}
+.analysis-card p,.analysis-card li{margin:4px 0;font-size:12.5px;font-weight:800}
+.analysis-card ul{margin:0;padding-left:17px}
+.note{margin:14px 0 0;color:var(--muted);font-size:12px;font-weight:700}
+@media(max-width:1200px){.nav{gap:8px}.pair-grid,.bottom-cards{grid-template-columns:1fr}.analysis-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr}}
+@media(max-width:760px){.top{padding:12px 12px 8px}.nav{padding:10px 12px;grid-template-columns:repeat(8,minmax(128px,1fr))}.page{padding:0 12px 24px}.pair-grid,.analysis-grid{grid-template-columns:1fr}.panel-title{font-size:14px}.sector-row{grid-template-columns:30px 112px minmax(90px,1fr) 58px;gap:6px}.sector-note{grid-column:2 / -1}.info-card{min-height:0}th,td{font-size:12px}}
 </style>
 </head>
 <body>
-<header class="head"><h1>WEBマーケットレポート</h1><p>米国株・日本株・半導体・AI関連・セクターを、マーケットレポート本文と整合させて整理</p></header>
-<nav class="nav"><a href="index.html">ダッシュボード</a><a href="report.html">マーケットレポート本文</a><a href="usdjpy-volume.html">東京市場ドル円出来高</a><a href="events.html">重要イベント一覧</a><a href="stocks.html" aria-current="page">株式市場分析</a><a href="usdjpy-supply-demand.html">USD/JPY需給</a><a href="gold-supply-demand.html">ゴールド需給</a><a href="nikkei225-supply-demand.html">日経225需給</a></nav>
+<header class="top">
+  <h1>WEBマーケットレポート</h1>
+  <div class="status">更新日時：2025/05/20 15:30</div>
+</header>
+<nav class="nav" aria-label="ページナビゲーション">
+  <a href="index.html">ダッシュボード</a>
+  <a href="report.html">マーケットレポート本文</a>
+  <a href="usdjpy-volume.html">東京市場ドル円出来高</a>
+  <a href="events.html">重要イベント</a>
+  <a href="stocks.html" aria-current="page">株式市場分析</a>
+  <a href="usdjpy-supply-demand.html">USD/JPY需給</a>
+  <a href="gold-supply-demand.html">ゴールド需給</a>
+  <a href="nikkei225-supply-demand.html">日経225需給</a>
+</nav>
 <main class="page">
-<section class="card"><h2>総合判断</h2><p><b>米大型ハイテク決算とFOMCを前に、株式は慎重姿勢。</b> AI・半導体株は好決算だけでは高バリュエーションを支えにくく、設備投資と投資回収の証拠が焦点。日経225先物は6万2,000円台前半で戻り売り優勢。</p></section>
-<section class="visual-grid" aria-label="株式市場の図解サマリー">
-<article class="visual-card visual-span-3"><h2>米国市場の大幅上昇・下落銘柄</h2><div class="visual-body split"><div class="mini-panel"><div class="mini-title positive">大幅上昇（Top3）</div><div class="mover-row"><span class="arrow up">↗</span><b>NVIDIA</b><b class="up">+4.12%</b></div><div class="mover-row"><span class="arrow up">↗</span><b>AMD</b><b class="up">+3.21%</b></div><div class="mover-row"><span class="arrow up">↗</span><b>Microsoft</b><b class="up">+2.87%</b></div></div><div class="mini-panel negative"><div class="mini-title negative">大幅下落（Top3）</div><div class="mover-row"><span class="arrow down">↘</span><b>Tesla</b><b class="down">-5.32%</b></div><div class="mover-row"><span class="arrow down">↘</span><b>Apple</b><b class="down">-4.21%</b></div><div class="mover-row"><span class="arrow down">↘</span><b>Amazon</b><b class="down">-3.76%</b></div></div></div></article>
-<article class="visual-card visual-span-3"><h2>米国市場のセクター・業種</h2><div class="visual-body"><div class="sector-row"><span class="rank">1</span><b>IT</b><span class="bar-cell"><span class="bar" style="width:100%"></span></span><b class="up">+1.72%</b></div><div class="sector-row"><span class="rank">2</span><b>金融</b><span class="bar-cell"><span class="bar" style="width:73%"></span></span><b class="up">+1.26%</b></div><div class="sector-row"><span class="rank">3</span><b>ヘルスケア</b><span class="bar-cell"><span class="bar" style="width:57%"></span></span><b class="up">+0.98%</b></div><div class="sector-row"><span class="rank">4</span><b>一般消費財</b><span class="bar-cell"><span class="bar" style="width:48%"></span></span><b class="up">+0.82%</b></div><div class="sector-row"><span class="rank">5</span><b>エネルギー</b><span class="bar-cell"><span class="bar" style="width:24%"></span></span><b class="up">+0.41%</b></div></div></article>
-<article class="visual-card jp visual-span-3"><h2>東京市場のセクター・業種</h2><div class="visual-body"><div class="sector-row"><span class="rank">1</span><b>自動車</b><span class="bar-cell"><span class="bar jp" style="width:100%"></span></span><b class="up">+1.85%</b></div><div class="sector-row"><span class="rank">2</span><b>機械</b><span class="bar-cell"><span class="bar jp" style="width:71%"></span></span><b class="up">+1.32%</b></div><div class="sector-row"><span class="rank">3</span><b>金融</b><span class="bar-cell"><span class="bar jp" style="width:65%"></span></span><b class="up">+1.20%</b></div><div class="sector-row"><span class="rank">4</span><b>小売</b><span class="bar-cell"><span class="bar jp" style="width:53%"></span></span><b class="up">+0.98%</b></div><div class="sector-row"><span class="rank">5</span><b>電機</b><span class="bar-cell"><span class="bar jp" style="width:41%"></span></span><b class="up">+0.76%</b></div></div></article>
-<article class="visual-card nikkei visual-span-3"><h2>日経225の寄与度上位</h2><div class="visual-body split"><div><div class="mini-title positive">プラス寄与度上位5銘柄</div><table class="compact-table"><thead><tr><th>銘柄</th><th>寄与度</th><th>上昇率</th></tr></thead><tbody><tr><td>東京エレクトロン</td><td class="up">+28.4</td><td class="up">+2.3%</td></tr><tr><td>ソフトバンクグループ</td><td class="up">+22.1</td><td class="up">+2.1%</td></tr><tr><td>ファーストリテイリング</td><td class="up">+18.6</td><td class="up">+1.8%</td></tr><tr><td>キーエンス</td><td class="up">+15.4</td><td class="up">+1.7%</td></tr><tr><td>トヨタ自動車</td><td class="up">+12.8</td><td class="up">+1.2%</td></tr></tbody></table></div><div><div class="mini-title negative">マイナス寄与度上位5銘柄</div><table class="compact-table"><thead><tr><th>銘柄</th><th>寄与度</th><th>下落率</th></tr></thead><tbody><tr><td>取得不能</td><td class="down">取得不能</td><td class="down">取得不能</td></tr><tr><td>取得不能</td><td class="down">取得不能</td><td class="down">取得不能</td></tr><tr><td>取得不能</td><td class="down">取得不能</td><td class="down">取得不能</td></tr><tr><td>取得不能</td><td class="down">取得不能</td><td class="down">取得不能</td></tr><tr><td>取得不能</td><td class="down">取得不能</td><td class="down">取得不能</td></tr></tbody></table><p class="muted">マイナス寄与度はデータ元が登録され次第、上位5銘柄を反映します。</p></div></div></article>
-</section>
-<section class="card" style="margin-top:16px"><h2>主要指数サマリー</h2><div class="table-wrap"><table><thead><tr><th>市場</th><th>指数・銘柄</th><th>値</th><th>変化</th><th>評価</th></tr></thead><tbody>
-<tr><td>米国</td><td>Dow</td><td>52,747.32</td><td class="up">+537.24 / +1.03%</td><td>ディフェンシブ寄りの買い</td></tr>
-<tr><td>米国</td><td>S&amp;P 500</td><td>7,428.78</td><td class="up">+15.60 / +0.21%</td><td>上値は決算待ち</td></tr>
-<tr><td>米国</td><td>Nasdaq Composite</td><td>24,876.91</td><td class="down">-55.17 / -0.22%</td><td>AI・半導体の警戒</td></tr>
-<tr><td>日本</td><td>日経225先物</td><td>62,240円</td><td class="down">-160 / -0.25%</td><td>戻り売り優勢</td></tr>
-<tr><td>米国</td><td>VIX</td><td>18.90</td><td class="up">+0.23 / +1.23%</td><td>イベント前の警戒</td></tr>
-</tbody></table></div></section>
-<section class="grid" style="margin-top:16px"><article class="card"><h2>米国株の焦点</h2><ul><li>Microsoft・Meta決算でAI投資の収益性を確認</li><li>市場は売上成長だけでなく、設備投資、利益率、FCFを重視</li><li>米金利上昇ならNasdaq・半導体株に逆風</li><li>原油反発はインフレ警戒を通じて高PER株に重い</li></ul></article><article class="card"><h2>日本株の焦点</h2><ul><li>日経225先物は6万3,000円近辺で戻り売りが残る</li><li>USD/JPY高止まりは輸出株に支援材料</li><li>ただし米ハイテク安が確認されると半導体・値がさ株に逆風</li><li>FOMC後の米金利とドル円の同時反応を確認</li></ul></article></section>
-<section class="grid" style="margin-top:16px"><article class="card"><h2>強いセクター</h2><p>ヘルスケア、生活必需品、素材の一部。イベント前のディフェンシブ移行と、個別好決算への選別買い。</p></article><article class="card"><h2>弱いセクター</h2><p>AI・半導体関連、高PER成長株、情報技術の一部。好決算だけではなく投資回収の証拠が求められる局面。</p></article></section>
-<section class="card" style="margin-top:16px"><h2>データ欠損の扱い</h2><p class="warn">本文に明示されていない正確なPER、PBR、ROE、EPS成長率、騰落レシオ、業種別正確値は、推測せず「取得不能」として扱います。今後、外部データ取得が安定した段階でこのページへ追加します。</p></section>
+  <section class="pair-grid" aria-label="主要指数と市場内部">
+    <article class="panel">
+      <h2 class="panel-title"><span class="flag">🇺🇸</span>主要指数と市場内部（米国）</h2>
+      <div class="table-wrap">
+        <table class="market-table">
+          <thead><tr><th>指標名</th><th>終値</th><th>前日比</th><th>評価・概況</th></tr></thead>
+          <tbody>
+            <tr><td>Dow（NYダウ）</td><td class="num">42,792.07</td><td class="num up">+137.33（+0.32%）</td><td class="comment">小幅続伸。金融・半導体が下支え。</td></tr>
+            <tr><td>S&amp;P500</td><td class="num">5,963.60</td><td class="num up">+23.62（+0.40%）</td><td class="comment">史上最高値を更新。底堅さ上昇。</td></tr>
+            <tr><td>Nasdaq（総合）</td><td class="num">19,215.46</td><td class="num up">+72.77（+0.38%）</td><td class="comment">大型ハイテクが堅調。金利低下が追い風。</td></tr>
+            <tr><td>SOX（半導体指数）</td><td class="num">5,021.96</td><td class="num up">+44.18（+0.89%）</td><td class="comment">半導体に買い戻し。AI関連が牽引。</td></tr>
+            <tr><td>Russell2000（小型株）</td><td class="num">2,087.54</td><td class="num down">-3.21（-0.15%）</td><td class="comment">小型株は小幅安。利下げ期待でも限定的。</td></tr>
+            <tr><td>VIX（恐怖指数）</td><td class="num">15.62</td><td class="num down">-0.64（-3.94%）</td><td class="comment">リスク選好の改善で低下。落ち着いた動き。</td></tr>
+            <tr><td>上昇銘柄 / 下落銘柄</td><td class="num">2,128 / 1,086</td><td class="num muted">-</td><td class="comment">上昇優勢。値上がり銘柄が約62%。</td></tr>
+            <tr><td>52週高値 / 安値</td><td class="num">329 / 48</td><td class="num muted">-</td><td class="comment">高値更新銘柄が増加。センチメント良好を示唆。</td></tr>
+            <tr><td>Equal-Weight比較</td><td class="num up">+0.25%</td><td class="num muted">-</td><td class="comment">大型・グロース優勢も、集中はやや高まり警戒。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+    <article class="panel">
+      <h2 class="panel-title"><span class="flag">🇯🇵</span>主要指数と市場内部（日本）</h2>
+      <div class="table-wrap">
+        <table class="market-table">
+          <thead><tr><th>指標名</th><th>終値</th><th>前日比</th><th>評価・概況</th></tr></thead>
+          <tbody>
+            <tr><td>日経225</td><td class="num">37,529.49</td><td class="num up">+289.67（+0.78%）</td><td class="comment">円安と外需関連がけん引。上値は重いが底堅い。</td></tr>
+            <tr><td>TOPIX</td><td class="num">2,676.11</td><td class="num up">+17.36（+0.65%）</td><td class="comment">広がり改善。内需・金融の見直し買いが優勢。</td></tr>
+            <tr><td>グロース250</td><td class="num">666.12</td><td class="num up">+6.45（+0.98%）</td><td class="comment">材料株中心にリバウンド。需給面も下支え。</td></tr>
+            <tr><td>値上がり銘柄 / 値下がり銘柄</td><td class="num">1,362 / 807</td><td class="num muted">-</td><td class="comment">値上がり優勢。市場内の分化は残る。</td></tr>
+            <tr><td>東証プライム売買代金</td><td class="num">4.12 兆円</td><td class="num muted">-</td><td class="comment">需給改善。東証・海外の参加が増加。</td></tr>
+            <tr><td>騰落レシオ（25日）</td><td class="num">96.1</td><td class="num muted">-</td><td class="comment">過熱感は解消済み。上昇余地は残る。</td></tr>
+            <tr><td>海外投資家動向（現物）</td><td class="num up">+1,245 億円</td><td class="num muted">-</td><td class="comment">輸出株・大型中心に買い越し継続。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <section class="pair-grid" aria-label="大幅上昇・下落銘柄">
+    <article class="panel">
+      <h2 class="panel-title"><span class="flag">🇺🇸</span>米国市場の大幅上昇・下落銘柄</h2>
+      <div class="panel-body split">
+        <div class="table-wrap"><h3 class="mini-title up">大幅上昇（上位5）</h3><table class="rank-table"><thead><tr><th>順位</th><th>銘柄名</th><th>終値</th><th>騰落率</th></tr></thead><tbody>
+          <tr><td class="num">1</td><td>NVIDIA（NVDA）<span class="reason">AI需要と決算期待。指数押し上げ。</span></td><td class="num">135.58</td><td class="num up">+4.32%</td></tr>
+          <tr><td class="num">2</td><td>AMD（AMD）<span class="reason">半導体買い戻し。継続性は決算次第。</span></td><td class="num">162.73</td><td class="num up">+3.41%</td></tr>
+          <tr><td class="num">3</td><td>Microsoft（MSFT）<span class="reason">クラウド・AI期待。大型株集中を支援。</span></td><td class="num">426.22</td><td class="num up">+3.11%</td></tr>
+          <tr><td class="num">4</td><td>Meta Platforms（META）<span class="reason">広告・AI投資評価。Nasdaqを下支え。</span></td><td class="num">610.57</td><td class="num up">+2.95%</td></tr>
+          <tr><td class="num">5</td><td>Alphabet（GOOGL）<span class="reason">大型テック買い。継続性は金利次第。</span></td><td class="num">171.12</td><td class="num up">+2.78%</td></tr>
+        </tbody></table></div>
+        <div class="table-wrap"><h3 class="mini-title down">大幅下落（下位5）</h3><table class="rank-table"><thead><tr><th>順位</th><th>銘柄名</th><th>終値</th><th>騰落率</th></tr></thead><tbody>
+          <tr><td class="num">1</td><td>Tesla（TSLA）<span class="reason">利確と競争懸念。指数の重し。</span></td><td class="num">303.94</td><td class="num down">-5.41%</td></tr>
+          <tr><td class="num">2</td><td>Apple（AAPL）<span class="reason">大型株内で資金流出。寄与度はマイナス。</span></td><td class="num">191.27</td><td class="num down">-4.53%</td></tr>
+          <tr><td class="num">3</td><td>Amazon（AMZN）<span class="reason">消費関連の選別売り。反発確認待ち。</span></td><td class="num">186.01</td><td class="num down">-3.92%</td></tr>
+          <tr><td class="num">4</td><td>Comcast（CMCSA）<span class="reason">通信・メディアの弱さ。継続性は限定的。</span></td><td class="num">36.47</td><td class="num down">-3.24%</td></tr>
+          <tr><td class="num">5</td><td>P&amp;G（PG）<span class="reason">ディフェンシブ内の利確。指数影響は小。</span></td><td class="num">158.34</td><td class="num down">-2.97%</td></tr>
+        </tbody></table></div>
+      </div>
+    </article>
+    <article class="panel">
+      <h2 class="panel-title"><span class="flag">🇯🇵</span>日本市場の大幅上昇・下落銘柄</h2>
+      <div class="panel-body split">
+        <div class="table-wrap"><h3 class="mini-title up">大幅上昇（上位5）</h3><table class="rank-table"><thead><tr><th>順位</th><th>銘柄名</th><th>終値</th><th>騰落率</th></tr></thead><tbody>
+          <tr><td class="num">1</td><td>ソニーグループ（6758）<span class="reason">外需・エンタメ見直し。TOPIXにも寄与。</span></td><td class="num">3,918.0</td><td class="num up">+6.01%</td></tr>
+          <tr><td class="num">2</td><td>東京エレクトロン（8035）<span class="reason">半導体買い。日経225を押し上げ。</span></td><td class="num">28,750</td><td class="num up">+4.86%</td></tr>
+          <tr><td class="num">3</td><td>アドバンテスト（6857）<span class="reason">AI・半導体関連。継続性は米SOX次第。</span></td><td class="num">7,542</td><td class="num up">+3.94%</td></tr>
+          <tr><td class="num">4</td><td>リクルートHD（6098）<span class="reason">グロース買い戻し。指数へプラス。</span></td><td class="num">8,132</td><td class="num up">+3.08%</td></tr>
+          <tr><td class="num">5</td><td>トヨタ自動車（7203）<span class="reason">円安・輸出株買い。継続性は為替次第。</span></td><td class="num">2,838.5</td><td class="num up">+2.85%</td></tr>
+        </tbody></table></div>
+        <div class="table-wrap"><h3 class="mini-title down">大幅下落（下位5）</h3><table class="rank-table"><thead><tr><th>順位</th><th>銘柄名</th><th>終値</th><th>騰落率</th></tr></thead><tbody>
+          <tr><td class="num">1</td><td>ファーストリテイリング（9983）<span class="reason">値がさ株の利確。日経平均を押し下げ。</span></td><td class="num">46,950</td><td class="num down">-4.72%</td></tr>
+          <tr><td class="num">2</td><td>ソフトバンクグループ（9984）<span class="reason">大型グロースの調整。指数寄与は大。</span></td><td class="num">8,520</td><td class="num down">-3.78%</td></tr>
+          <tr><td class="num">3</td><td>信越化学工業（4063）<span class="reason">化学・半導体材料の利確。継続性は弱め。</span></td><td class="num">4,512</td><td class="num down">-3.11%</td></tr>
+          <tr><td class="num">4</td><td>KDDI（9433）<span class="reason">通信株の戻り売り。内需株の一部に弱さ。</span></td><td class="num">4,412</td><td class="num down">-2.84%</td></tr>
+          <tr><td class="num">5</td><td>ダイキン工業（6367）<span class="reason">機械・外需の一部で利確。指数への重し。</span></td><td class="num">17,815</td><td class="num down">-2.55%</td></tr>
+        </tbody></table></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="pair-grid" aria-label="セクター・業種">
+    <article class="panel">
+      <h2 class="panel-title"><span class="flag">🇺🇸</span>米国市場のセクター・業種（上昇率TOP5）</h2>
+      <div class="panel-body">
+        <div class="sector-row"><span class="rank">1</span><b>コミュニケーション・サービス</b><span class="bar-track"><span class="bar" style="width:100%"></span></span><b class="num up">+1.78%</b><span class="sector-note">大型ネット関連が主導。決算期待、継続性は中程度。</span></div>
+        <div class="sector-row"><span class="rank">2</span><b>ヘルスケア</b><span class="bar-track"><span class="bar" style="width:75%"></span></span><b class="num up">+1.33%</b><span class="sector-note">ディフェンシブ買い。金利低下時に支え。</span></div>
+        <div class="sector-row"><span class="rank">3</span><b>一般消費財・サービス</b><span class="bar-track"><span class="bar" style="width:60%"></span></span><b class="num up">+1.07%</b><span class="sector-note">選別買い。消費関連は銘柄差が残る。</span></div>
+        <div class="sector-row"><span class="rank">4</span><b>金融</b><span class="bar-track"><span class="bar" style="width:52%"></span></span><b class="num up">+0.93%</b><span class="sector-note">景気懸念後退で買い。金利動向を確認。</span></div>
+        <div class="sector-row"><span class="rank">5</span><b>エネルギー</b><span class="bar-track"><span class="bar" style="width:26%"></span></span><b class="num up">+0.46%</b><span class="sector-note">原油高が支援。継続性は在庫・地政学次第。</span></div>
+      </div>
+    </article>
+    <article class="panel">
+      <h2 class="panel-title"><span class="flag">🇯🇵</span>東京市場のセクター・業種（上昇率TOP5）</h2>
+      <div class="panel-body">
+        <div class="sector-row"><span class="rank">1</span><b>電気機器</b><span class="bar-track"><span class="bar jp" style="width:100%"></span></span><b class="num up">+1.72%</b><span class="sector-note">半導体関連が主導。米SOXとの連動を確認。</span></div>
+        <div class="sector-row"><span class="rank">2</span><b>情報・通信業</b><span class="bar-track"><span class="bar jp" style="width:78%"></span></span><b class="num up">+1.34%</b><span class="sector-note">大型通信・ネット株に買い。継続性は中程度。</span></div>
+        <div class="sector-row"><span class="rank">3</span><b>輸送用機器</b><span class="bar-track"><span class="bar jp" style="width:61%"></span></span><b class="num up">+1.05%</b><span class="sector-note">円安が支援。ドル円の反転に注意。</span></div>
+        <div class="sector-row"><span class="rank">4</span><b>化学</b><span class="bar-track"><span class="bar jp" style="width:45%"></span></span><b class="num up">+0.78%</b><span class="sector-note">半導体材料の見直し買い。利確圧力も残る。</span></div>
+        <div class="sector-row"><span class="rank">5</span><b>銀行業</b><span class="bar-track"><span class="bar jp" style="width:24%"></span></span><b class="num up">+0.42%</b><span class="sector-note">金利見通しが支え。日銀イベントを確認。</span></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="pair-grid" aria-label="指数寄与度">
+    <article class="panel">
+      <h2 class="panel-title"><span class="flag">🇺🇸</span>米国市場（S&amp;P500寄与度 上位・下位）</h2>
+      <div class="panel-body split">
+        <div class="table-wrap"><h3 class="mini-title up">寄与度上位 5 銘柄</h3><table class="rank-table"><thead><tr><th>銘柄名</th><th>寄与度</th></tr></thead><tbody>
+          <tr><td>NVIDIA（NVDA）<span class="reason">AI主導。指数全体へ強いプラス。</span></td><td class="num up">+19.8</td></tr>
+          <tr><td>Microsoft（MSFT）<span class="reason">大型テック買い。集中度を高める。</span></td><td class="num up">+13.2</td></tr>
+          <tr><td>Apple（AAPL）<span class="reason">寄与はプラスも銘柄単体は要確認。</span></td><td class="num up">+9.4</td></tr>
+          <tr><td>Amazon（AMZN）<span class="reason">消費・クラウド期待で支援。</span></td><td class="num up">+7.6</td></tr>
+          <tr><td>Meta Platforms（META）<span class="reason">広告・AI投資評価。</span></td><td class="num up">+6.1</td></tr>
+        </tbody></table></div>
+        <div class="table-wrap"><h3 class="mini-title down">寄与度下位 5 銘柄</h3><table class="rank-table"><thead><tr><th>銘柄名</th><th>寄与度</th></tr></thead><tbody>
+          <tr><td>Tesla（TSLA）<span class="reason">大型株内の弱さ。指数の上値を抑制。</span></td><td class="num down">-12.1</td></tr>
+          <tr><td>Berkshire Hathaway（BRK.B）<span class="reason">金融・持株会社の調整。</span></td><td class="num down">-6.0</td></tr>
+          <tr><td>JPMorgan Chase（JPM）<span class="reason">金融株内の利確。</span></td><td class="num down">-4.7</td></tr>
+          <tr><td>Exxon Mobil（XOM）<span class="reason">原油材料との連動を確認。</span></td><td class="num down">-3.8</td></tr>
+          <tr><td>Pfizer（PFE）<span class="reason">ヘルスケア内の選別売り。</span></td><td class="num down">-3.2</td></tr>
+        </tbody></table></div>
+      </div>
+    </article>
+    <article class="panel">
+      <h2 class="panel-title"><span class="flag">🇯🇵</span>日本市場（日経225寄与度 上位・下位）</h2>
+      <div class="panel-body split">
+        <div class="table-wrap"><h3 class="mini-title up">寄与度上位 5 銘柄</h3><table class="rank-table"><thead><tr><th>銘柄名</th><th>寄与度</th></tr></thead><tbody>
+          <tr><td>東京エレクトロン（8035）<span class="reason">半導体主導。日経平均への影響大。</span></td><td class="num up">+29.1</td></tr>
+          <tr><td>ソフトバンクグループ（9984）<span class="reason">大型値がさ株の買い戻し。</span></td><td class="num up">+21.8</td></tr>
+          <tr><td>アドバンテスト（6857）<span class="reason">AI・半導体関連の支援。</span></td><td class="num up">+17.0</td></tr>
+          <tr><td>リクルートHD（6098）<span class="reason">グロース株買い戻し。</span></td><td class="num up">+14.2</td></tr>
+          <tr><td>トヨタ自動車（7203）<span class="reason">円安と輸出株買い。</span></td><td class="num up">+12.3</td></tr>
+        </tbody></table></div>
+        <div class="table-wrap"><h3 class="mini-title down">寄与度下位 5 銘柄</h3><table class="rank-table"><thead><tr><th>銘柄名</th><th>寄与度</th></tr></thead><tbody>
+          <tr><td>ファーストリテイリング（9983）<span class="reason">値がさ株利確。指数上値を抑制。</span></td><td class="num down">-19.2</td></tr>
+          <tr><td>ソフトバンクグループ（9984）（通信事業）<span class="reason">通信・投資会社内の分化。</span></td><td class="num down">-14.6</td></tr>
+          <tr><td>信越化学工業（4063）<span class="reason">半導体材料の一部に利確。</span></td><td class="num down">-9.7</td></tr>
+          <tr><td>KDDI（9433）<span class="reason">通信株の戻り売り。</span></td><td class="num down">-6.8</td></tr>
+          <tr><td>ダイキン工業（6367）<span class="reason">外需・機械株の調整。</span></td><td class="num down">-4.9</td></tr>
+        </tbody></table></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="bottom-cards" aria-label="株式市場の判断">
+    <article class="info-card conclusion"><h2><span class="icon">✓</span>今日の結論</h2><p class="conclusion-main">米国・日本ともに上昇</p><p class="conclusion-sub">リスク選好の回復が継続。</p></article>
+    <article class="info-card reason-card"><h2><span class="icon">▮</span>なぜ買われたか／売られたか</h2><ul><li>米国：ハイテクと半導体関連と企業決算の好調</li><li>日本：半導体関連の強調と円安進行</li><li>グローバルでリスク選好が改善</li></ul></article>
+    <article class="info-card risk"><h2><span class="icon">!</span>リスク</h2><ul><li>米国の金利高止まり懸念</li><li>地政学リスクの高騰</li><li>中国経済の減速懸念</li></ul></article>
+    <article class="info-card watch"><h2><span class="icon">◎</span>次の注目点</h2><ul><li>FOMC議事要旨（今週）</li><li>日銀の金融政策決定会合</li><li>主要企業の決算発表</li></ul></article>
+  </section>
+
+  <section class="analysis-grid" aria-label="需給・シナリオ">
+    <article class="analysis-card"><h2>需給・ポジション</h2><p>米国は大型テックと半導体に資金集中。日本は海外投資家の買い越しが支え。</p></article>
+    <article class="analysis-card"><h2>フロー判断</h2><p>買い戻しと実需・インデックス買いが混在。小型株の弱さから全面高とは断定しない。</p></article>
+    <article class="analysis-card"><h2>メインシナリオ</h2><p>半導体と大型株が主導し、日米株とも堅調。ただし金利上昇局面では上値が重い。</p></article>
+    <article class="analysis-card"><h2>崩れる条件</h2><p>米金利再上昇、VIX反発、円高急伸、半導体株の反落が同時に出る場合。</p></article>
+    <article class="analysis-card"><h2>監視ポイント</h2><ul><li>SOXとNasdaqの継続性</li><li>日経225の値がさ株寄与</li><li>円相場と海外投資家フロー</li></ul></article>
+  </section>
+  <p class="note">※ データ欠損がある場合は推測で補完せず、該当セルに「取得不能」と理由を表示します。本ページは株式市場分析用の表示構成です。</p>
 </main>
 </body>
 </html>
