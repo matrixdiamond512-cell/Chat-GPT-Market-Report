@@ -67,6 +67,7 @@ const FLOW_ASSETS = ["株式", "債券（米国）", "ドル", "円", "商品（
 
 let reports = [];
 let selectedReport = null;
+let dashboardMeta = null;
 
 const $ = (id) => document.getElementById(id);
 
@@ -350,7 +351,10 @@ function renderList(id, values, fallback) {
 
 function renderHeader(report) {
   const created = `${dateToJp(report.date)} ${report.time || ""}`.trim();
-  $("reportStatus").textContent = `作成日時：${created}　更新：${report.time || "取得不能"}`;
+  const generated = dashboardMeta && dashboardMeta.generatedAt
+    ? dashboardMeta.generatedAt.replace("T", " ").replace("+09:00", "")
+    : report.time || "取得不能";
+  $("reportStatus").textContent = `作成日時：${created}　更新：${generated}`;
   document.title = `WEBマーケットレポート｜${created}`;
 }
 
@@ -661,12 +665,11 @@ function render() {
 
 async function init() {
   try {
-    const response = await fetch(`reports.json?ts=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) throw new Error("reports.jsonを取得できませんでした");
-    const data = await response.json();
-    reports = asArray(data)
+    const data = await loadDashboardReports();
+    reports = asArray(data.reports)
       .filter((report) => /^\d{4}-\d{2}-\d{2}$/.test(report.date || ""))
       .sort((a, b) => reportKey(b).localeCompare(reportKey(a)));
+    dashboardMeta = data.meta || null;
 
     if (!reports.length) throw new Error("表示できるレポートがありません");
 
@@ -679,6 +682,51 @@ async function init() {
     $("reportStatus").textContent = "データ取得エラー";
     document.querySelector(".page-shell").innerHTML = `<div class="empty-state">${esc(error.message)}。理由：reports.jsonの公開または形式を確認してください。</div>`;
   }
+}
+
+async function loadDashboardReports() {
+  const errors = [];
+  try {
+    const response = await fetch(`data/dashboard.json?ts=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`data/dashboard.json HTTP ${response.status}`);
+    const payload = await response.json();
+    const dashboardReports = normalizeDashboardReports(payload);
+    if (dashboardReports.length) {
+      return {
+        reports: dashboardReports,
+        meta: {
+          generatedAt: payload.generatedAt || "",
+          dataAsOf: payload.dataAsOf || "",
+          status: payload.status || ""
+        }
+      };
+    }
+    throw new Error("data/dashboard.jsonに表示できるレポートがありません");
+  } catch (error) {
+    errors.push(error.message);
+  }
+
+  try {
+    const response = await fetch(`reports.json?ts=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`reports.json HTTP ${response.status}`);
+    const payload = await response.json();
+    const reportList = normalizeDashboardReports(payload);
+    if (reportList.length) return { reports: reportList, meta: { status: "fallback-reports-json" } };
+    throw new Error("reports.jsonに表示できるレポートがありません");
+  } catch (error) {
+    errors.push(error.message);
+  }
+
+  throw new Error(`ダッシュボードJSONを取得できませんでした。理由：${errors.join(" / ")}`);
+}
+
+function normalizeDashboardReports(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== "object") return [];
+  if (Array.isArray(payload.reports)) return payload.reports;
+  if (payload.latestReport) return [payload.latestReport];
+  if (payload.currentReport) return [payload.currentReport];
+  return [];
 }
 
 init();
