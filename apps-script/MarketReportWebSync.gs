@@ -8,7 +8,12 @@ function publishLatestMarketReportFromDrive(){
   const file=findLatestMarketReportDoc_();
   const report=buildWebReportFromGoogleDoc_(file);
   const result=publishWebReportObject_(report);
-  SpreadsheetApp.getUi().alert('WEB版へ反映しました。\n元文書: '+file.getName()+'\nコミット: '+result.commitSha);
+  SpreadsheetApp.getUi().alert(
+    'WEB版へ反映しました。\n' +
+    '元文書: '+file.getName()+'\n' +
+    'レポート: '+result.commitSha+'\n' +
+    'ダッシュボード: '+(result.dashboardCommitSha || '未更新')
+  );
   return result;
 }
 
@@ -38,7 +43,10 @@ function publishWebReportObject_(report){
     const next=reports.filter(x=>(x.date+' '+x.time)!==key);
     next.push(report);next.sort((a,b)=>(b.date+' '+b.time).localeCompare(a.date+' '+a.time));
     const result=putGitHubJsonFile_(WEB_REPORT_CONFIG.targetPath,JSON.stringify(next,null,2)+'\n',current.sha,'Publish market report '+key);
-    return{ok:true,title:report.title,date:report.date,time:report.time,commitSha:result.commit.sha,pagesUrl:WEB_REPORT_CONFIG.pagesUrl};
+    const dashboardResult=typeof syncDashboardJsonToGitHubFromReports_==='function'
+      ? syncDashboardJsonToGitHubFromReports_(next)
+      : null;
+    return{ok:true,title:report.title,date:report.date,time:report.time,commitSha:result.commit.sha,dashboardCommitSha:dashboardResult?dashboardResult.commitSha:'',pagesUrl:WEB_REPORT_CONFIG.pagesUrl};
   }finally{lock.releaseLock();}
 }
 
