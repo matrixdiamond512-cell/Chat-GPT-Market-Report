@@ -62,7 +62,7 @@ function buildDashboardJsonFromReports_(reports) {
 }
 
 function dashboardBuildPayloadFromReports_(reports) {
-  var normalizedReports = dashboardNormalizeReports_(reports);
+  var normalizedReports = dashboardNormalizeReports_(reports).map(dashboardPrepareReportForDashboard_);
   if (!normalizedReports.length) throw new Error('ダッシュボードに使えるマーケットレポートがありません。');
 
   var latest = normalizedReports[0];
@@ -117,6 +117,234 @@ function dashboardNormalizeReports_(reports) {
     .sort(function(a, b) {
       return (b.date + ' ' + b.time).localeCompare(a.date + ' ' + a.time);
     });
+}
+
+function dashboardPrepareReportForDashboard_(report) {
+  var prepared = dashboardClonePlainObject_(report);
+  var metricLines = dashboardCollectMarketMetricLines_(report);
+  var markets = dashboardMarketsByName_(prepared.markets);
+
+  prepared.markets = dashboardMarketDefinitions_().map(function(definition) {
+    var original = markets[definition.name] || { name: definition.name };
+    var metricLine = dashboardFirst_(metricLines[definition.name]);
+    return {
+      name: definition.name,
+      direction: dashboardCleanDirection_(original.direction),
+      price: metricLine,
+      change: dashboardCleanMarketField_(original.change, definition, 80, false),
+      material: dashboardCleanMarketField_(original.material, definition, 120, true) || '本文参照',
+      positioning: dashboardCleanMarketField_(original.positioning, definition, 120, true),
+      levels: dashboardCleanMarketField_(original.levels, definition, 120, true),
+      mainScenario: dashboardCleanMarketField_(original.mainScenario, definition, 160, true),
+      alternativeScenario: dashboardCleanMarketField_(original.alternativeScenario, definition, 160, true),
+      breakCondition: dashboardCleanMarketField_(original.breakCondition, definition, 160, true),
+      risk: dashboardCleanMarketField_(original.risk, definition, 120, true)
+    };
+  });
+
+  return prepared;
+}
+
+function dashboardClonePlainObject_(value) {
+  return JSON.parse(JSON.stringify(value || {}));
+}
+
+function dashboardMarketsByName_(markets) {
+  var result = {};
+  (Array.isArray(markets) ? markets : []).forEach(function(market) {
+    if (market && market.name) result[String(market.name)] = market;
+  });
+  return result;
+}
+
+function dashboardMarketDefinitions_() {
+  return [
+    {
+      name: '金',
+      metricLabelRegex: '(?:金現物|金価格|金（XAU\\/USD）|ゴールド)',
+      mentionRegex: /金現物|金価格|金は|金の|ゴールド|XAU\/USD/
+    },
+    {
+      name: '原油',
+      metricLabelRegex: '(?:WTI原油|原油（WTI）|原油)',
+      mentionRegex: /WTI|原油/
+    },
+    {
+      name: '日経225先物',
+      metricLabelRegex: '(?:日経225先物[^：:\\n]{0,24})',
+      mentionRegex: /日経225|日本株|東京市場/
+    },
+    {
+      name: 'USD/JPY',
+      metricLabelRegex: '(?:USD\\/JPY|ドル円)',
+      mentionRegex: /USD\/JPY|ドル円|円相場|円ショート|ドル買い|円買い/
+    },
+    {
+      name: 'EUR/USD',
+      metricLabelRegex: '(?:EUR\\/USD|ユーロドル)',
+      mentionRegex: /EUR\/USD|ユーロドル|ユーロ/
+    },
+    {
+      name: 'BTCUSD',
+      metricLabelRegex: '(?:BTCUSD|BTC\\/USD|BTC|ビットコイン)',
+      mentionRegex: /BTCUSD|BTC\/USD|BTC|ビットコイン|暗号資産/
+    }
+  ];
+}
+
+function dashboardCollectMarketMetricLines_(report) {
+  var result = {};
+  var definitions = dashboardMarketDefinitions_();
+  definitions.forEach(function(definition) {
+    result[definition.name] = [];
+  });
+
+  dashboardCollectTextCandidates_(report).forEach(function(text) {
+    definitions.forEach(function(definition) {
+      var line = dashboardMetricLineFromText_(text, definition);
+      if (line && result[definition.name].indexOf(line) === -1) {
+        result[definition.name].push(line);
+      }
+    });
+  });
+
+  return result;
+}
+
+function dashboardCollectTextCandidates_(report) {
+  var values = [
+    report.theme,
+    report.leadingMarket,
+    report.mainScenario,
+    report.alternativeScenario,
+    report.breakConditions
+  ];
+  [
+    report.changes,
+    report.consistency,
+    report.positioning,
+    report.news,
+    report.crossAssetFlow,
+    report.handover,
+    report.events,
+    report.riskManagement
+  ].forEach(function(items) {
+    (Array.isArray(items) ? items : []).forEach(function(item) {
+      values.push(dashboardTextOf_(item));
+    });
+  });
+  (Array.isArray(report.markets) ? report.markets : []).forEach(function(market) {
+    [
+      'direction',
+      'price',
+      'change',
+      'material',
+      'positioning',
+      'levels',
+      'mainScenario',
+      'alternativeScenario',
+      'breakCondition',
+      'risk'
+    ].forEach(function(key) {
+      values.push(market && market[key]);
+    });
+  });
+  return values.map(dashboardNormalizeInlineText_).filter(Boolean);
+}
+
+function dashboardTextOf_(value) {
+  if (typeof value === 'string') return value;
+  if (!value) return '';
+  return value.text || value.summary || value.title || '';
+}
+
+function dashboardMetricLineFromText_(value, definition) {
+  var text = dashboardNormalizeInlineText_(value);
+  if (!text) return '';
+
+  var pattern = new RegExp(
+    '(' + definition.metricLabelRegex + '\\s*[：:]\\s*[\\s\\S]*?)' +
+    '(?=\\s*(?:' + dashboardAllMetricLabelRegex_() + ')\\s*[：:]|。|$)',
+    'i'
+  );
+  var match = text.match(pattern);
+  if (!match) return '';
+
+  var line = dashboardTrimMetricLineTail_(dashboardNormalizeInlineText_(match[1]));
+  if (!dashboardIsUsableMetricLine_(line, definition)) return '';
+  return dashboardTrimText_(line, 150);
+}
+
+function dashboardTrimMetricLineTail_(line) {
+  return dashboardNormalizeInlineText_(line).replace(
+    /\s(?:日経VI|東証プライム|東証|騰落レシオ|日経225現物終値|米10年|日本10年|VIX|NYダウ|S&P500|Nasdaq|Russell)[^：:]{0,30}[：:][\s\S]*$/i,
+    ''
+  );
+}
+
+function dashboardAllMetricLabelRegex_() {
+  return '(?:金現物|金価格|金（XAU\\/USD）|ゴールド|WTI原油|原油（WTI）|原油|日経225先物[^：:\\n]{0,24}|USD\\/JPY|ドル円|EUR\\/USD|ユーロドル|BTCUSD|BTC\\/USD|BTC|ビットコイン)';
+}
+
+function dashboardIsUsableMetricLine_(line, definition) {
+  if (!line) return false;
+  if (dashboardStartsWithOtherMetricLabel_(line, definition)) return false;
+  if (!definition.mentionRegex.test(line)) return false;
+  var valuePart = line.replace(/^[^：:]+[：:]\s*/, '');
+  if (!/[0-9]/.test(valuePart) && valuePart.indexOf('取得不能') === -1) return false;
+  if (/VIX/.test(line) && definition.name !== 'BTCUSD') return false;
+  return true;
+}
+
+function dashboardCleanDirection_(value) {
+  var text = dashboardNormalizeInlineText_(value);
+  if (!text) return '中立・方向確認';
+  if (text.length > 28) return '中立・方向確認';
+  if (/上昇|強|買い|流入|下落|弱|売り|流出|中立|横ばい|もみ合い|方向確認|警戒/.test(text)) return text;
+  return '中立・方向確認';
+}
+
+function dashboardCleanMarketField_(value, definition, maxLength, requireMention) {
+  var text = dashboardNormalizeInlineText_(value);
+  if (!text) return '';
+  if (text.length > maxLength) return '';
+  if (text.indexOf('取得不能') !== -1) return '';
+  if (/マーケットレポート｜|復旧日時|Google Docsファイル名|当時の図解原本|TSV|ヘッダーなし/.test(text)) return '';
+  if (dashboardStartsWithOtherMetricLabel_(text, definition)) return '';
+  if (requireMention && !definition.mentionRegex.test(text)) return '';
+  if (/VIX/.test(text) && definition.name !== 'BTCUSD') return '';
+  return dashboardTrimText_(text, maxLength);
+}
+
+function dashboardStartsWithOtherMetricLabel_(value, definition) {
+  var text = dashboardNormalizeInlineText_(value);
+  var definitions = dashboardMarketDefinitions_();
+  for (var i = 0; i < definitions.length; i += 1) {
+    var other = definitions[i];
+    if (other.name === definition.name) continue;
+    var pattern = new RegExp('^\\s*' + other.metricLabelRegex + '\\s*[：:]', 'i');
+    if (pattern.test(text)) return true;
+  }
+  return false;
+}
+
+function dashboardNormalizeInlineText_(value) {
+  return String(value || '')
+    .replace(/\r\n?/g, '\n')
+    .replace(/\u00a0/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/^[・\s]+/, '')
+    .trim();
+}
+
+function dashboardTrimText_(value, maxLength) {
+  var text = dashboardNormalizeInlineText_(value);
+  if (!text || text.length <= maxLength) return text;
+  return text.slice(0, maxLength - 3) + '...';
+}
+
+function dashboardFirst_(values) {
+  return values && values.length ? values[0] : '';
 }
 
 function dashboardIsStale_(dateText) {
