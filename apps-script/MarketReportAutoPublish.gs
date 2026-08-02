@@ -7,6 +7,7 @@ const MARKET_REPORT_AUTO_CONFIG = {
     { name: 'autoPublishMarketReport1600', hour: 16 },
     { name: 'autoPublishMarketReport2100', hour: 21 }
   ],
+  minute: 30,
   lastResultProperty: 'MARKET_REPORT_AUTO_LAST_RESULT'
 };
 
@@ -17,6 +18,7 @@ function installMarketReportAutoPublishTriggers() {
     ScriptApp.newTrigger(item.name)
       .timeBased()
       .atHour(item.hour)
+      .nearMinute(MARKET_REPORT_AUTO_CONFIG.minute)
       .everyDays(1)
       .inTimezone(MARKET_REPORT_AUTO_CONFIG.timezone)
       .create();
@@ -24,8 +26,8 @@ function installMarketReportAutoPublishTriggers() {
 
   SpreadsheetApp.getUi().alert(
     'WEB版の自動公開トリガーを設定しました。\n' +
-    '平日: 07:00・12:00・16:00・21:00\n' +
-    '土曜: 07:00・09:00\n' +
+    '平日: 07:30・12:30・16:30・21:30\n' +
+    '土曜: 07:30・09:30\n' +
     '日曜: 公開なし\n\n' +
     'Google Apps Scriptの時刻トリガーは、指定時刻から多少遅れて実行される場合があります。'
   );
@@ -106,6 +108,7 @@ function autoPublishScheduledMarketReport_(hour) {
       reportDate: report.date,
       reportTime: report.time,
       commitSha: result.commitSha,
+      dashboardCommitSha: result.dashboardCommitSha || '',
       pagesUrl: result.pagesUrl
     });
   } catch (error) {
