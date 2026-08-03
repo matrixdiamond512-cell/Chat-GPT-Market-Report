@@ -25,7 +25,9 @@ const USDJPY_BOJ_SPOT_IMPORT_CONFIG = {
 };
 
 function previewUsdJpySpotVolumeImport() {
-  const summary = usdJpyBojImportSpotVolume_(true);
+  const summary = typeof usdJpyVolumeAutoImportBojPdfSpotVolume_ === 'function'
+    ? usdJpyVolumeAutoImportBojPdfSpotVolume_(true)
+    : usdJpyBojImportSpotVolume_(true);
   const rows = summary.rowsToAdd.concat(summary.rowsToUpdate).slice(0, USDJPY_BOJ_SPOT_IMPORT_CONFIG.maxPreviewRows);
   const html = HtmlService.createHtmlOutput(
     '<div style="font-family:sans-serif;padding:16px">' +
@@ -48,7 +50,9 @@ function previewUsdJpySpotVolumeImport() {
 }
 
 function importUsdJpySpotVolumeFromBoj() {
-  const summary = usdJpyBojImportSpotVolume_(false);
+  const summary = typeof usdJpyVolumeAutoImportBojPdfSpotVolume_ === 'function'
+    ? usdJpyVolumeAutoImportBojPdfSpotVolume_(false)
+    : usdJpyBojImportSpotVolume_(false);
   usdJpyVolumeAlert_(
     '日銀USD/JPYスポット出来高を取り込みました。\n' +
     '取得件数: ' + summary.fetchedCount + '\n' +
@@ -62,8 +66,12 @@ function importUsdJpySpotVolumeFromBoj() {
 }
 
 function importUsdJpySpotVolumeFromBojAndSyncJson() {
-  const importSummary = usdJpyBojImportSpotVolume_(false);
-  const syncSummary = syncUsdJpyVolumeJsonToGitHub();
+  const importSummary = typeof usdJpyVolumeAutoImportBojPdfSpotVolume_ === 'function'
+    ? usdJpyVolumeAutoImportBojPdfSpotVolume_(false)
+    : usdJpyBojImportSpotVolume_(false);
+  const syncSummary = typeof syncUsdJpyVolumeJsonToGitHubFlexible === 'function'
+    ? syncUsdJpyVolumeJsonToGitHubFlexible()
+    : syncUsdJpyVolumeJsonToGitHub();
   usdJpyVolumeAlert_(
     '日銀出来高の取込とJSON反映が完了しました。\n' +
     '追加: ' + importSummary.addCount + '\n' +

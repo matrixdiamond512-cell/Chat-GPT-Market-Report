@@ -50,7 +50,9 @@ function syncUsdJpyVolumeJsonToGitHubFlexible() {
 }
 
 function importUsdJpySpotVolumeFromBojAndSyncJsonFlexible() {
-  const importSummary = usdJpyBojImportSpotVolume_(false);
+  const importSummary = typeof usdJpyVolumeAutoImportBojPdfSpotVolume_ === 'function'
+    ? usdJpyVolumeAutoImportBojPdfSpotVolume_(false)
+    : usdJpyBojImportSpotVolume_(false);
   const syncSummary = syncUsdJpyVolumeJsonToGitHubFlexible();
   return { importSummary: importSummary, syncSummary: syncSummary };
 }
