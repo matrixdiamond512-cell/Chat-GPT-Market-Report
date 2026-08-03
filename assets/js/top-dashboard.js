@@ -644,13 +644,58 @@ function importanceFromEvent(text) {
   return "★";
 }
 
+function splitEventText(value = "") {
+  const text = cleanText(value, 1200)
+    .replace(/^今後の重要イベント[:：\s]*/, "")
+    .replace(/。$/, "");
+  if (!text) return [];
+
+  if (text.length < 70 || !/、/.test(text)) return [text];
+
+  return text
+    .split(/、/)
+    .map((item) => item.replace(/[。,\s]+$/, "").trim())
+    .filter((item) => item.length >= 2);
+}
+
+function isDashboardEventItem(item = "") {
+  if (/今日の相場テーマ|6市場の見通し|メインシナリオ|代替シナリオ|特に注目する材料|総合判断|最終判断/.test(item)) {
+    return false;
+  }
+  if (/^(金|原油|WTI原油|日経225先物|USD\/JPY|EUR\/USD|BTCUSD|BTC)[:：\s]/.test(item)) {
+    return false;
+  }
+  return /\b[0-2]\d:[0-5]\d\b|FOMC|FRB|PCE|CPI|雇用|ISM|PMI|GDP|政策|会見|決算|在庫|OPEC|協議|ホルムズ|介入|日銀|指標|経済・物価|発言|観測/.test(item);
+}
+
+function dashboardEventItems(report) {
+  return uniq(asArray(report.events)
+    .map(textOf)
+    .flatMap(splitEventText)
+    .map((item) => cleanText(item, 46))
+    .filter(isDashboardEventItem))
+    .slice(0, 6);
+}
+
+function eventTiming(report, item) {
+  const time = item.match(/\b([0-2]\d:[0-5]\d)\b/)?.[1];
+  const date = item.match(/(\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}\/\d{1,2})/)?.[1];
+  if (date && time) return `${date} ${time}`;
+  if (time) return `${dateToJp(report.date)} ${time}`;
+  if (/協議|再開|発言|観測|方針|地政学|介入/.test(item)) return "随時";
+  return "予定確認";
+}
+
+function eventDisplayName(item = "") {
+  return cleanText(item.replace(/^\b[0-2]\d:[0-5]\d\s*/, ""), 46);
+}
+
 function renderEvents(report) {
-  const events = topList(report.events, 5, 90);
-  $("eventRows").innerHTML = events.length ? events.map((item, index) => {
-    const time = item.match(/\b([0-2]\d:[0-5]\d)\b/)?.[1] || (index === 0 ? report.time || "確認" : "確認");
+  const events = dashboardEventItems(report);
+  $("eventRows").innerHTML = events.length ? events.map((item) => {
     return `<tr>
-      <td>${esc(`${dateToJp(report.date)} ${time}`)}</td>
-      <td>${esc(item)}</td>
+      <td>${esc(eventTiming(report, item))}</td>
+      <td>${esc(eventDisplayName(item))}</td>
       <td>${esc(regionFromEvent(item))}</td>
       <td>${esc(importanceFromEvent(item))}</td>
       <td>取得不能</td>

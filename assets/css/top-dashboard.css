@@ -631,7 +631,33 @@ td:last-child {
 }
 
 .event-table {
-  min-width: 760px;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.event-table th:nth-child(1),
+.event-table td:nth-child(1) {
+  width: 150px;
+}
+
+.event-table th:nth-child(3),
+.event-table td:nth-child(3) {
+  width: 72px;
+}
+
+.event-table th:nth-child(4),
+.event-table td:nth-child(4) {
+  width: 72px;
+}
+
+.event-table th:nth-child(5),
+.event-table td:nth-child(5) {
+  width: 104px;
+}
+
+.event-table td:nth-child(2) {
+  text-align: left;
+  overflow-wrap: anywhere;
 }
 
 .market-lens-grid {
