@@ -38,16 +38,37 @@ function publishWebReportObject_(report){
   const lock=LockService.getScriptLock();lock.waitLock(30000);
   try{
     const current=getGitHubJsonFile_(WEB_REPORT_CONFIG.targetPath);
-    const reports=Array.isArray(current.data)?current.data:[];
+    const reports=normalizeWebReportList_(current.data);
     const key=report.date+' '+report.time;
-    const next=reports.filter(x=>(x.date+' '+x.time)!==key);
-    next.push(report);next.sort((a,b)=>(b.date+' '+b.time).localeCompare(a.date+' '+a.time));
+    const next=upsertWebReportList_(reports,report);
     const result=putGitHubJsonFile_(WEB_REPORT_CONFIG.targetPath,JSON.stringify(next,null,2)+'\n',current.sha,'Publish market report '+key);
     const dashboardResult=typeof syncDashboardJsonToGitHubFromReports_==='function'
       ? syncDashboardJsonToGitHubFromReports_(next)
       : null;
     return{ok:true,title:report.title,date:report.date,time:report.time,commitSha:result.commit.sha,dashboardCommitSha:dashboardResult?dashboardResult.commitSha:'',pagesUrl:WEB_REPORT_CONFIG.pagesUrl};
   }finally{lock.releaseLock();}
+}
+
+function normalizeWebReportList_(data){
+  let list=[];
+  if(Array.isArray(data)){
+    list=data;
+  }else if(data&&Array.isArray(data.reports)){
+    list=data.reports;
+  }else if(data&&data.latestReport){
+    list=[data.latestReport];
+  }else if(data&&data.date&&data.time){
+    list=[data];
+  }
+  return list.filter(x=>x&&/^\d{4}-\d{2}-\d{2}$/.test(String(x.date||''))&&/^\d{2}:\d{2}$/.test(String(x.time||'')));
+}
+
+function upsertWebReportList_(reports,report){
+  const key=report.date+' '+report.time;
+  const next=normalizeWebReportList_(reports).filter(x=>(x.date+' '+x.time)!==key);
+  next.push(report);
+  next.sort((a,b)=>(b.date+' '+b.time).localeCompare(a.date+' '+a.time));
+  return next;
 }
 
 function parseAndValidateWebReport_(text){
