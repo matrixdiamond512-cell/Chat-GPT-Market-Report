@@ -279,7 +279,7 @@ function render(data, reports) {
   root.innerHTML = `
     <section class="page-head">
       <div>
-        <h2>${esc(data.pageTitle || "市場温度ダッシュボード")}</h2>
+        <h2>${esc(data.pageTitle || "市場温度")}</h2>
         <p>${esc(data.subtitle || "市場内部の温度を確認します")}</p>
       </div>
       <span class="data-pill">${esc(data.meta?.sourceStatus || "データ状態確認中")} / 算出対象 ${overall.used}/${overall.total}</span>
