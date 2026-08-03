@@ -68,6 +68,8 @@ const FLOW_ASSETS = ["株式", "債券（米国）", "ドル", "円", "商品（
 let reports = [];
 let selectedReport = null;
 let dashboardMeta = null;
+let dashboardCalendarEvents = [];
+let dashboardCalendarMeta = null;
 
 const $ = (id) => document.getElementById(id);
 
@@ -644,6 +646,55 @@ function importanceFromEvent(text) {
   return "★";
 }
 
+function importanceStars(value, title = "") {
+  const numeric = Number(value);
+  if (Number.isFinite(numeric)) return "★".repeat(Math.max(1, Math.min(3, numeric)));
+  const text = `${value || ""} ${title}`;
+  if (/high|最重要|重要度3|★★★|FOMC|日銀|PCE|CPI|雇用/.test(text)) return "★★★";
+  if (/low|低|重要度1|★$/.test(text)) return "★";
+  return "★★";
+}
+
+function normalizeCalendarEvent(event) {
+  const title = cleanText(event?.title || event?.event || event?.name || "", 56);
+  const datetime = String(event?.datetimeJst || event?.datetime || "");
+  const date = String(event?.date || datetime.slice(0, 10) || "").trim();
+  const time = String(event?.time || datetime.slice(11, 16) || "").trim();
+  if (!title || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+
+  return {
+    date,
+    time: /^\d{1,2}:\d{2}$/.test(time) ? time.padStart(5, "0") : "未定",
+    title,
+    country: cleanText(event?.country || event?.region || regionFromEvent(title), 14),
+    importance: importanceStars(event?.importance, title),
+    forecast: cleanText(event?.forecast ?? event?.estimate ?? event?.consensus ?? "", 32),
+    previous: cleanText(event?.previous ?? event?.prev ?? "", 32),
+    actual: cleanText(event?.actual ?? "", 32)
+  };
+}
+
+function calendarRowsForReport(report) {
+  const rows = dashboardCalendarEvents
+    .filter((event) => event.date >= report.date)
+    .sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`));
+  const sameDate = rows.filter((event) => event.date === report.date);
+  return (sameDate.length ? sameDate : rows).slice(0, 6);
+}
+
+function eventDetail(row) {
+  const parts = [
+    row.forecast ? `予想 ${row.forecast}` : "",
+    row.previous ? `前回 ${row.previous}` : "",
+    row.actual ? `結果 ${row.actual}` : ""
+  ].filter(Boolean);
+  if (parts.length) return `<small class="event-detail">${esc(parts.join(" / "))}</small>`;
+  if (dashboardCalendarMeta?.status && dashboardCalendarMeta.status !== "ok") {
+    return `<small class="event-detail">外部カレンダー未接続</small>`;
+  }
+  return "";
+}
+
 function splitEventText(value = "") {
   const text = cleanText(value, 1200)
     .replace(/^今後の重要イベント[:：\s]*/, "")
@@ -686,19 +737,57 @@ function eventTiming(report, item) {
   return "予定確認";
 }
 
+function fallbackEventNextText(item) {
+  if (/協議|再開|発言|観測|方針|地政学|介入/.test(item)) return "継続監視";
+  if (/\b[0-2]\d:[0-5]\d\b/.test(item)) return "時刻指定";
+  return "時刻未定";
+}
+
+function calendarEventTiming(row) {
+  const date = dateToJp(row.date);
+  return row.time && row.time !== "未定" ? `${date} ${row.time}` : `${date} 未定`;
+}
+
+function calendarNextText(row, report) {
+  if (!row.time || row.time === "未定") return "時刻未定";
+  const eventDate = new Date(`${row.date}T${row.time}:00+09:00`);
+  const baseDate = new Date(`${report.date}T${report.time || "00:00"}:00+09:00`);
+  if (Number.isNaN(eventDate.getTime()) || Number.isNaN(baseDate.getTime())) return "予定確認";
+  const diff = eventDate.getTime() - baseDate.getTime();
+  if (diff <= 0) return "発表済み";
+  const hours = Math.floor(diff / 3600000);
+  if (hours >= 24) return `${Math.floor(hours / 24)}日後`;
+  return `${hours}時間後`;
+}
+
 function eventDisplayName(item = "") {
   return cleanText(item.replace(/^\b[0-2]\d:[0-5]\d\s*/, ""), 46);
 }
 
 function renderEvents(report) {
+  const calendarRows = calendarRowsForReport(report);
+  if (calendarRows.length) {
+    $("eventRows").innerHTML = calendarRows.map((row) => `<tr>
+      <td>${esc(calendarEventTiming(row))}</td>
+      <td><span class="event-title">${esc(row.title)}</span>${eventDetail(row)}</td>
+      <td>${esc(row.country || regionFromEvent(row.title))}</td>
+      <td>${esc(row.importance)}</td>
+      <td>${esc(calendarNextText(row, report))}</td>
+    </tr>`).join("");
+    return;
+  }
+
   const events = dashboardEventItems(report);
-  $("eventRows").innerHTML = events.length ? events.map((item) => {
+  $("eventRows").innerHTML = events.length ? events.map((item, index) => {
+    const fallbackNote = index === 0 && dashboardCalendarMeta?.status === "not_configured"
+      ? '<small class="event-detail">外部カレンダー未接続。本文イベントから表示</small>'
+      : "";
     return `<tr>
       <td>${esc(eventTiming(report, item))}</td>
-      <td>${esc(eventDisplayName(item))}</td>
+      <td><span class="event-title">${esc(eventDisplayName(item))}</span>${fallbackNote}</td>
       <td>${esc(regionFromEvent(item))}</td>
       <td>${esc(importanceFromEvent(item))}</td>
-      <td>取得不能</td>
+      <td>${esc(fallbackEventNextText(item))}</td>
     </tr>`;
   }).join("") : `<tr><td>取得不能</td><td>理由：重要イベント項目がJSONにありません</td><td>未連携</td><td>-</td><td>-</td></tr>`;
 }
@@ -784,11 +873,16 @@ function render() {
 
 async function init() {
   try {
-    const data = await loadDashboardReports();
+    const [data, calendarPayload] = await Promise.all([
+      loadDashboardReports(),
+      loadDashboardEventCalendar()
+    ]);
     reports = asArray(data.reports)
       .filter((report) => /^\d{4}-\d{2}-\d{2}$/.test(report.date || ""))
       .sort((a, b) => reportKey(b).localeCompare(reportKey(a)));
     dashboardMeta = data.meta || null;
+    dashboardCalendarMeta = calendarPayload || null;
+    dashboardCalendarEvents = asArray(calendarPayload?.events).map(normalizeCalendarEvent).filter(Boolean);
 
     if (!reports.length) throw new Error("表示できるレポートがありません");
 
@@ -800,6 +894,16 @@ async function init() {
   } catch (error) {
     $("reportStatus").textContent = "データ取得エラー";
     document.querySelector(".page-shell").innerHTML = `<div class="empty-state">${esc(error.message)}。理由：reports.jsonの公開または形式を確認してください。</div>`;
+  }
+}
+
+async function loadDashboardEventCalendar() {
+  try {
+    const response = await fetch(`economic-calendar.json?ts=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`economic-calendar.json HTTP ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    return { status: "unavailable", events: [], error: error.message };
   }
 }
 
