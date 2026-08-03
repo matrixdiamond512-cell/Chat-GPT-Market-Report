@@ -682,6 +682,15 @@ function calendarRowsForReport(report) {
   return (sameDate.length ? sameDate : rows).slice(0, 6);
 }
 
+function calendarUnavailableNotice() {
+  const status = dashboardCalendarMeta?.status || "";
+  if (!status || status === "ok") return "";
+  if (status === "not_configured") return "\u5916\u90e8\u30ab\u30ec\u30f3\u30c0\u30fcAPI\u672a\u8a2d\u5b9a";
+  if (status === "auth_error") return "Trading Economics API\u8a8d\u8a3c\u30a8\u30e9\u30fc";
+  if (status === "partial") return "\u5916\u90e8\u30ab\u30ec\u30f3\u30c0\u30fc\u3092\u4e00\u90e8\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093";
+  return "\u5916\u90e8\u30ab\u30ec\u30f3\u30c0\u30fc\u53d6\u5f97\u30a8\u30e9\u30fc";
+}
+
 function eventDetail(row) {
   const parts = [
     row.forecast ? `予想 ${row.forecast}` : "",
@@ -689,9 +698,8 @@ function eventDetail(row) {
     row.actual ? `結果 ${row.actual}` : ""
   ].filter(Boolean);
   if (parts.length) return `<small class="event-detail">${esc(parts.join(" / "))}</small>`;
-  if (dashboardCalendarMeta?.status && dashboardCalendarMeta.status !== "ok") {
-    return `<small class="event-detail">外部カレンダー未接続</small>`;
-  }
+  const notice = calendarUnavailableNotice();
+  if (notice) return `<small class="event-detail">${esc(notice)}</small>`;
   return "";
 }
 
@@ -779,8 +787,9 @@ function renderEvents(report) {
 
   const events = dashboardEventItems(report);
   $("eventRows").innerHTML = events.length ? events.map((item, index) => {
-    const fallbackNote = index === 0 && dashboardCalendarMeta?.status === "not_configured"
-      ? '<small class="event-detail">外部カレンダー未接続。本文イベントから表示</small>'
+    const notice = calendarUnavailableNotice();
+    const fallbackNote = index === 0 && notice
+      ? `<small class="event-detail">${esc(notice)}\u3002\u672c\u6587\u30a4\u30d9\u30f3\u30c8\u304b\u3089\u8868\u793a</small>`
       : "";
     return `<tr>
       <td>${esc(eventTiming(report, item))}</td>
