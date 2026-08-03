@@ -615,9 +615,33 @@ function renderFlowList(id, items, type, emptyText) {
 function renderFlow(report) {
   const inflow = explicitFlowItems(report, "in");
   const outflow = explicitFlowItems(report, "out");
-  renderFlowList("flowInItems", inflow.length ? inflow : inferredFlowItems(report, "up"), "in", "流入資産がJSONにありません");
-  renderFlowList("flowOutItems", outflow.length ? outflow : inferredFlowItems(report, "down"), "out", "流出資産がJSONにありません");
-  renderFlowList("flowFeatureItems", flowFeatures(report), "feature", "フローの特徴がJSONにありません");
+  const inItems = inflow.length ? inflow : inferredFlowItems(report, "up");
+  const outItems = outflow.length ? outflow : inferredFlowItems(report, "down");
+  const featureItems = flowFeatures(report);
+
+  if ($("flowInItems") || $("flowOutItems") || $("flowFeatureItems")) {
+    renderFlowList("flowInItems", inItems, "in", "流入資産がJSONにありません");
+    renderFlowList("flowOutItems", outItems, "out", "流出資産がJSONにありません");
+    renderFlowList("flowFeatureItems", featureItems, "feature", "フローの特徴がJSONにありません");
+    return;
+  }
+
+  if ($("flowRows")) {
+    $("flowRows").innerHTML = [
+      ...inItems.map((item) => ({ asset: item, direction: "流入", cls: "up" })),
+      ...outItems.map((item) => ({ asset: item, direction: "流出", cls: "down" }))
+    ].map((item) => `<tr>
+      <th>${esc(item.asset)}</th>
+      <td class="${item.cls}">${esc(item.direction)}</td>
+      <td>本文</td>
+      <td class="${item.cls}">更新</td>
+      <td>クロスアセット資金フローから抽出</td>
+    </tr>`).join("");
+  }
+
+  if ($("flowSummary")) {
+    $("flowSummary").textContent = featureItems.join(" ");
+  }
 }
 
 function newsImpact(text) {
