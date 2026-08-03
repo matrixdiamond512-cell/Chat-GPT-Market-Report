@@ -17,7 +17,23 @@ var USDJPY_VOLUME_PAGE_AUTO_CONFIG = {
 
 function updateUsdJpyVolumePageFromSources() {
   var lock = LockService.getScriptLock();
-  lock.waitLock(30000);
+  if (!lock.tryLock(5000)) {
+    var skipped = {
+      ok: true,
+      skipped: true,
+      executedAt: usdJpyVolumeAutoIsoJst_(new Date()),
+      reason: '別のUSD/JPYページ更新処理が実行中のため、今回の実行はスキップしました。'
+    };
+    PropertiesService.getScriptProperties().setProperty(
+      USDJPY_VOLUME_PAGE_AUTO_CONFIG.lastResultProperty,
+      JSON.stringify(skipped)
+    );
+    usdJpyVolumeAutoAlert_(
+      '別のUSD/JPYページ更新処理がまだ実行中です。\n' +
+      '今回の実行はスキップしました。数分後にもう一度実行してください。'
+    );
+    return skipped;
+  }
 
   try {
     var bojSummary = usdJpyVolumeAutoImportBojPdfSpotVolume_(false);
