@@ -126,6 +126,7 @@ td:first-child{font-weight:900}
           <h4 class="event-name"><span class="flag flag-us" id="eventFlag" aria-label="米国"></span><span id="eventName">FOMC議事要旨（5月6-7日分）</span></h4>
           <div class="facts">
             <div class="fact"><b>発表日時（日本時間）</b><strong id="eventTime">2025/05/21（水）03:00</strong></div>
+            <div class="fact"><b>重要度</b><span id="eventImportance">★★★</span></div>
             <div class="fact"><b>カウントダウン</b><span class="countdown" id="eventCountdown">発表済み</span></div>
             <div class="fact"><b>コンセンサス（要点）</b><span id="eventConsensus">タカ派色の後退の有無を確認</span></div>
             <div class="fact"><b>前回値（要点）</b><span id="eventPrevious">タカ派的な慎重姿勢が継続</span></div>
@@ -222,7 +223,7 @@ td:first-child{font-weight:900}
       </div>
       <div class="table-wrap">
         <table class="event-list-table">
-          <thead><tr><th>日時（日本時間）</th><th>イベント</th><th>予想</th><th>前回</th><th>主な影響市場</th><th>注目理由</th><th>状態</th><th>詳細</th></tr></thead>
+          <thead><tr><th>日時（日本時間）</th><th>イベント</th><th>重要度</th><th>予想</th><th>前回</th><th>主な影響市場</th><th>注目理由</th><th>状態</th><th>詳細</th></tr></thead>
           <tbody id="eventList"></tbody>
         </table>
       </div>
@@ -355,7 +356,7 @@ function renderList(selectedId) {
     const [time,name,forecast,previous,affected,reason,status,id] = row;
     const key = `row-${index}`;
     const statusClass = status === "発表済み" ? "done" : status === "発表直前" ? "soon" : "before";
-    return `<tr><td>${esc(time)}</td><td>${esc(name)}</td><td>${esc(forecast)}</td><td>${esc(previous)}</td><td>${esc(affected)}</td><td>${esc(reason)}</td><td><span class="status ${statusClass}">${esc(status)}</span></td><td><button class="detail-btn" type="button" data-event="${key}" aria-pressed="${key === selectedId}">詳細</button></td></tr>`;
+    return `<tr><td>${esc(time)}</td><td>${esc(name)}</td><td>${esc(dynamicImportance(name))}</td><td>${esc(forecast)}</td><td>${esc(previous)}</td><td>${esc(affected)}</td><td>${esc(reason)}</td><td><span class="status ${statusClass}">${esc(status)}</span></td><td><button class="detail-btn" type="button" data-event="${key}" aria-pressed="${key === selectedId}">詳細</button></td></tr>`;
   }).join("");
   body.querySelectorAll("button").forEach(button => button.addEventListener("click", () => renderEvent(button.dataset.event)));
 }
@@ -445,6 +446,21 @@ loadDynamicEventPage();
 
 async function loadDynamicEventPage() {
   try {
+    const eventPayload = await fetchDedicatedEvents();
+    const dedicatedEvents = normalizeDedicatedEvents(eventPayload);
+    if (dedicatedEvents.length) {
+      const meta = document.querySelector(".top-meta span");
+      if (meta) meta.textContent = `最終更新　${formatPayloadDateTime(eventPayload)}`;
+      document.querySelector(".events-head small").textContent = "data/events.json から表示しています。市場予想は手入力補完できます。";
+      renderDynamicEventList(dedicatedEvents, 0);
+      renderDynamicEvent(dedicatedEvents[0]);
+      return;
+    }
+  } catch (error) {
+    console.warn("data/events.jsonの読み込みに失敗しました", error);
+  }
+
+  try {
     const loadedReports = await fetchEventReports();
     const reportList = normalizeEventReports(loadedReports)
       .filter(report => /^\d{4}-\d{2}-\d{2}$/.test(report.date || ""))
@@ -463,6 +479,101 @@ async function loadDynamicEventPage() {
   } catch (error) {
     console.warn("重要イベントの動的読み込みに失敗しました", error);
   }
+}
+
+async function fetchDedicatedEvents() {
+  const response = await fetch(`data/events.json?ts=${Date.now()}`, { cache: "no-store" });
+  if (!response.ok) throw new Error(`data/events.json HTTP ${response.status}`);
+  return await response.json();
+}
+
+function normalizeDedicatedEvents(payload) {
+  const events = dynamicArray(payload?.events);
+  return events.map((event, index) => {
+    const title = dynamicText(event.title || event.name || event.event, 72);
+    const datetime = String(event.datetimeJst || event.datetime || "");
+    const date = String(event.date || datetime.slice(0, 10) || payload?.dataAsOf?.slice?.(0, 10) || "").trim();
+    const clock = String(event.time || datetime.slice(11, 16) || "").trim();
+    const time = /^\d{1,2}:\d{2}$/.test(clock)
+      ? `${formatDateJp(date)} ${clock.padStart(5, "0")}`
+      : dynamicText(event.timingLabel || event.timing || event.when || "予定確認", 16);
+    if (!title || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+
+    const country = dynamicText(event.country || event.region || dynamicRegion(title), 14);
+    const affected = dynamicArray(event.affectedMarkets || event.affected || dynamicAffected(title)).join("・");
+    const importance = Number.isFinite(Number(event.importance)) ? Number(event.importance) : 2;
+    const forecast = dynamicText(event.forecast || event.consensus || "手入力待ち", 40);
+    const previous = dynamicText(event.previous || event.prev || "手入力待ち", 40);
+    const actual = dynamicText(event.actual || event.result || "", 40);
+    const sourceNote = dynamicText(event.sourceNote || event.reason || "重要イベント専用JSONから表示", 80);
+    const iso = /^\d{1,2}:\d{2}$/.test(clock) ? `${date}T${clock.padStart(5, "0")}:00+09:00` : "";
+
+    return {
+      id: event.id || `event-${index}`,
+      flag: country === "日本" ? "🇯🇵" : country === "欧州" ? "🇪🇺" : "🇺🇸",
+      country,
+      name: title,
+      time,
+      iso,
+      consensus: forecast,
+      previous,
+      forecast,
+      previousValue: previous,
+      actual,
+      affected,
+      reason: sourceNote,
+      importance: "★".repeat(Math.max(1, Math.min(3, importance))),
+      focus: dynamicArray(event.focusMarkets || event.affectedMarkets || affected.split("・")).filter(Boolean).slice(0, 4),
+      priced: dynamicArray(event.pricedIn || [
+        event.marketConsensus || "予想・前回・結果を確認",
+        "発表後は米2年債、USD/JPY、株価指数先物を優先確認",
+        "市場反応は価格データで後から補完"
+      ]),
+      scenarios: event.scenarios || [
+        ["市場の解釈", "予想より強い／タカ派", "予想通り", "予想より弱い／ハト派"],
+        ["米2年債", "上昇しやすい", "小動き", "低下しやすい"],
+        ["USD/JPY", "ドル買い・円売り", "小動き", "ドル売り・円買い"],
+        ["株価指数先物", "金利上昇なら重い", "小動き", "金利低下なら支え"],
+        ["金", "実質金利上昇なら重い", "小動き", "実質金利低下なら支え"]
+      ],
+      result: {
+        actual: actual || "—",
+        consensus: forecast || "—",
+        previous: previous || "—",
+        revised: dynamicText(event.revised || "—", 32),
+        surprise: dynamicText(event.surprise || "—", 32)
+      },
+      reactions: normalizeEventReactions(event.postReleaseReactions || event.reactions),
+      outlook: event.outlook || [
+        ["米2年債", "政策金利見通しに反応", "反応の持続性を確認", "タカ派材料", "ハト派材料"],
+        ["USD/JPY", "金利差・円需給で反応", "米金利と介入警戒を確認", "米金利上昇", "米金利低下・介入警戒"],
+        ["日経225先物", "米株と円相場に連動", "輸出株の反応を確認", "円安・米株高", "円高・米株安"],
+        ["金", "実質金利とドルに反応", "安全資産需要も確認", "実質金利上昇", "実質金利低下"]
+      ],
+      comparison: event.comparison || [["米2年債", "データ次第", "—", "—"], ["USD/JPY", "データ次第", "—", "—"], ["株価指数先物", "データ次第", "—", "—"], ["金", "データ次第", "—", "—"]],
+      conclusion: event.conclusion || {
+        narrative: actual ? "結果確認済み" : "まだ判断できない",
+        reaction: actual ? "市場反応を確認" : "詳細待ち",
+        watch: dynamicArray(event.watchPoints || ["発表時刻の確認", "米2年債とUSD/JPYの初動", "株価指数先物の反応", "金・原油・BTCへの波及"])
+      }
+    };
+  }).filter(Boolean);
+}
+
+function normalizeEventReactions(reactions) {
+  const rows = dynamicArray(reactions).map(item => {
+    if (Array.isArray(item)) return item;
+    if (item && typeof item === "object") return [item.time || item.label || "確認", item.note || item.value || "—"];
+    return ["確認", item || "—"];
+  });
+  return rows.length ? rows : [["初動（〜1分）", "—"], ["5分後", "—"], ["30分後", "—"], ["1時間後", "—"]];
+}
+
+function formatPayloadDateTime(payload) {
+  const value = payload?.generatedAt || payload?.dataAsOf || "";
+  const match = String(value).match(/^(\d{4}-\d{2}-\d{2})T?(\d{2}:\d{2})?/);
+  if (!match) return value || "未取得";
+  return `${formatDateJp(match[1])}${match[2] ? ` ${match[2]}` : ""}`;
 }
 
 async function fetchEventReports() {
@@ -650,7 +761,7 @@ function renderDynamicEventList(dynamicEvents, selectedIndex = 0) {
   body.innerHTML = dynamicEvents.map((event, index) => {
     const status = event.iso && new Date(event.iso).getTime() - Date.now() < 0 ? "発表済み" : event.iso ? "発表前" : "監視中";
     const statusClass = status === "発表済み" ? "done" : status === "監視中" ? "soon" : "before";
-    return `<tr><td>${esc(event.time)}</td><td>${esc(event.name)}</td><td>${esc(event.forecast)}</td><td>${esc(event.previousValue)}</td><td>${esc(event.affected)}</td><td>${esc(event.reason)}</td><td><span class="status ${statusClass}">${esc(status)}</span></td><td><button class="detail-btn" type="button" data-dynamic-index="${index}" aria-pressed="${index === selectedIndex}">詳細</button></td></tr>`;
+    return `<tr><td>${esc(event.time)}</td><td>${esc(event.name)}</td><td>${esc(event.importance)}</td><td>${esc(event.forecast)}</td><td>${esc(event.previousValue)}</td><td>${esc(event.affected)}</td><td>${esc(event.reason)}</td><td><span class="status ${statusClass}">${esc(status)}</span></td><td><button class="detail-btn" type="button" data-dynamic-index="${index}" aria-pressed="${index === selectedIndex}">詳細</button></td></tr>`;
   }).join("");
   body.querySelectorAll("button").forEach(button => button.addEventListener("click", () => {
     const index = Number(button.dataset.dynamicIndex || 0);
@@ -663,6 +774,7 @@ function renderDynamicEvent(event) {
   applyFlag(event.flag);
   document.getElementById("eventName").textContent = event.name;
   document.getElementById("eventTime").textContent = event.time;
+  document.getElementById("eventImportance").textContent = event.importance || dynamicImportance(event.name);
   document.getElementById("eventConsensus").textContent = event.consensus;
   document.getElementById("eventPrevious").textContent = event.previous;
   document.getElementById("focusMarkets").innerHTML = event.focus.map(item => `<li>${esc(item)}</li>`).join("");

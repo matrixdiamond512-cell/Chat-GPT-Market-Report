@@ -660,23 +660,32 @@ function normalizeCalendarEvent(event) {
   const datetime = String(event?.datetimeJst || event?.datetime || "");
   const date = String(event?.date || datetime.slice(0, 10) || "").trim();
   const time = String(event?.time || datetime.slice(11, 16) || "").trim();
+  const timingLabel = cleanText(event?.timingLabel || event?.timing || event?.when || "", 16);
   if (!title || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
 
   return {
     date,
-    time: /^\d{1,2}:\d{2}$/.test(time) ? time.padStart(5, "0") : "未定",
+    time: /^\d{1,2}:\d{2}$/.test(time) ? time.padStart(5, "0") : timingLabel || "未定",
     title,
     country: cleanText(event?.country || event?.region || regionFromEvent(title), 14),
     importance: importanceStars(event?.importance, title),
     forecast: cleanText(event?.forecast ?? event?.estimate ?? event?.consensus ?? "", 32),
     previous: cleanText(event?.previous ?? event?.prev ?? "", 32),
-    actual: cleanText(event?.actual ?? "", 32)
+    actual: cleanText(event?.actual ?? event?.result ?? "", 32),
+    detail: cleanText(event?.reason || event?.sourceNote || "", 56)
   };
 }
 
 function calendarRowsForReport(report) {
   const rows = dashboardCalendarEvents
-    .filter((event) => event.date >= report.date)
+    .filter((event) => {
+      if (event.date > report.date) return true;
+      if (event.date < report.date) return false;
+      if (/^\d{2}:\d{2}$/.test(event.time || "") && /^\d{2}:\d{2}$/.test(report.time || "")) {
+        return event.time >= report.time;
+      }
+      return true;
+    })
     .sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`));
   const sameDate = rows.filter((event) => event.date === report.date);
   return (sameDate.length ? sameDate : rows).slice(0, 6);
@@ -692,11 +701,11 @@ function calendarUnavailableNotice() {
 }
 
 function eventDetail(row) {
-  if (row.detail) return `<small class="event-detail">${esc(row.detail)}</small>`;
   const parts = [
     row.forecast ? `予想 ${row.forecast}` : "",
     row.previous ? `前回 ${row.previous}` : "",
-    row.actual ? `結果 ${row.actual}` : ""
+    row.actual ? `結果 ${row.actual}` : "",
+    row.detail || ""
   ].filter(Boolean);
   if (parts.length) return `<small class="event-detail">${esc(parts.join(" / "))}</small>`;
   const notice = calendarUnavailableNotice();
@@ -905,11 +914,14 @@ function fallbackEventNextText(item) {
 }
 
 function calendarEventTiming(row) {
+  if (row.time === "随時" || row.time === "予定確認") return row.time;
   const date = dateToJp(row.date);
   return row.time && row.time !== "未定" ? `${date} ${row.time}` : `${date} 未定`;
 }
 
 function calendarNextText(row, report) {
+  if (row.time === "随時") return "継続監視";
+  if (row.time === "予定確認") return "時刻未定";
   if (!row.time || row.time === "未定") return "時刻未定";
   const eventDate = new Date(`${row.date}T${row.time}:00+09:00`);
   const baseDate = new Date(`${report.date}T${report.time || "00:00"}:00+09:00`);
@@ -939,18 +951,6 @@ function reportEventNextText(row, report) {
 }
 
 function renderEvents(report) {
-  const reportRows = mergedReportEventRows(report);
-  if (reportRows.length) {
-    $("eventRows").innerHTML = reportRows.map((row) => `<tr>
-      <td>${esc(reportEventTiming(row, report))}</td>
-      <td><span class="event-title">${esc(row.title)}</span>${eventDetail(row)}</td>
-      <td>${esc(row.country || regionFromEvent(row.title))}</td>
-      <td>${esc(row.importance)}</td>
-      <td>${esc(reportEventNextText(row, report))}</td>
-    </tr>`).join("");
-    return;
-  }
-
   const calendarRows = calendarRowsForReport(report);
   if (calendarRows.length) {
     $("eventRows").innerHTML = calendarRows.map((row) => `<tr>
@@ -959,6 +959,18 @@ function renderEvents(report) {
       <td>${esc(row.country || regionFromEvent(row.title))}</td>
       <td>${esc(row.importance)}</td>
       <td>${esc(calendarNextText(row, report))}</td>
+    </tr>`).join("");
+    return;
+  }
+
+  const reportRows = mergedReportEventRows(report);
+  if (reportRows.length) {
+    $("eventRows").innerHTML = reportRows.map((row) => `<tr>
+      <td>${esc(reportEventTiming(row, report))}</td>
+      <td><span class="event-title">${esc(row.title)}</span>${eventDetail(row)}</td>
+      <td>${esc(row.country || regionFromEvent(row.title))}</td>
+      <td>${esc(row.importance)}</td>
+      <td>${esc(reportEventNextText(row, report))}</td>
     </tr>`).join("");
     return;
   }
@@ -1065,8 +1077,9 @@ async function init() {
       .filter((report) => /^\d{4}-\d{2}-\d{2}$/.test(report.date || ""))
       .sort((a, b) => reportKey(b).localeCompare(reportKey(a)));
     dashboardMeta = data.meta || null;
-    dashboardCalendarMeta = { status: "report_only", provider: "MARKET_REPORT_JSON" };
-    dashboardCalendarEvents = [];
+    const calendar = await loadDashboardEventCalendar();
+    dashboardCalendarMeta = calendar;
+    dashboardCalendarEvents = asArray(calendar.events).map(normalizeCalendarEvent).filter(Boolean);
 
     if (!reports.length) throw new Error("表示できるレポートがありません");
 
@@ -1083,11 +1096,17 @@ async function init() {
 
 async function loadDashboardEventCalendar() {
   try {
-    const response = await fetch(`economic-calendar.json?ts=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) throw new Error(`economic-calendar.json HTTP ${response.status}`);
+    const response = await fetch(`data/events.json?ts=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`data/events.json HTTP ${response.status}`);
     return await response.json();
   } catch (error) {
-    return { status: "unavailable", events: [], error: error.message };
+    try {
+      const response = await fetch(`economic-calendar.json?ts=${Date.now()}`, { cache: "no-store" });
+      if (!response.ok) throw new Error(`economic-calendar.json HTTP ${response.status}`);
+      return await response.json();
+    } catch (fallbackError) {
+      return { status: "unavailable", events: [], error: `${error.message} / ${fallbackError.message}` };
+    }
   }
 }
 
