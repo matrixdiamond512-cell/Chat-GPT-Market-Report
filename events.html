@@ -441,6 +441,248 @@ function renderEvent(id) {
 }
 
 renderEvent("row-0");
+loadDynamicEventPage();
+
+async function loadDynamicEventPage() {
+  try {
+    const loadedReports = await fetchEventReports();
+    const reportList = normalizeEventReports(loadedReports)
+      .filter(report => /^\d{4}-\d{2}-\d{2}$/.test(report.date || ""))
+      .sort((a, b) => `${b.date} ${b.time || ""}`.localeCompare(`${a.date} ${a.time || ""}`));
+    if (!reportList.length) return;
+
+    const baseReport = reportList[0];
+    const dynamicEvents = buildDynamicEvents(reportList, baseReport);
+    if (!dynamicEvents.length) return;
+
+    const meta = document.querySelector(".top-meta span");
+    if (meta) meta.textContent = `最終更新　${formatReportDateTime(baseReport)}`;
+    document.querySelector(".events-head small").textContent = "マーケットレポート本文から抽出した重要イベントです。";
+    renderDynamicEventList(dynamicEvents, 0);
+    renderDynamicEvent(dynamicEvents[0]);
+  } catch (error) {
+    console.warn("重要イベントの動的読み込みに失敗しました", error);
+  }
+}
+
+async function fetchEventReports() {
+  try {
+    const response = await fetch(`data/dashboard.json?ts=${Date.now()}`, { cache: "no-store" });
+    if (response.ok) return await response.json();
+  } catch (error) {
+    console.warn(error);
+  }
+  const fallback = await fetch(`reports.json?ts=${Date.now()}`, { cache: "no-store" });
+  if (!fallback.ok) throw new Error(`reports.json HTTP ${fallback.status}`);
+  return await fallback.json();
+}
+
+function normalizeEventReports(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== "object") return [];
+  if (Array.isArray(payload.reports)) return payload.reports;
+  if (payload.latestReport) return [payload.latestReport];
+  return [];
+}
+
+function dynamicArray(value) {
+  return Array.isArray(value) ? value : value ? [value] : [];
+}
+
+function dynamicText(value, max = 120) {
+  const text = String(value ?? "")
+    .replace(/\s+/g, " ")
+    .replace(/^[・\s]+/, "")
+    .trim();
+  return text.length > max ? `${text.slice(0, max)}...` : text;
+}
+
+function splitDynamicEventText(value = "") {
+  const text = dynamicText(value, 1200).replace(/^今後の重要イベント[:：\s]*/, "").replace(/。$/, "");
+  if (!text) return [];
+  const numbered = text
+    .replace(/(?:^|\s)(\d+[.)．]|[①-⑳])/g, "\n$1")
+    .split(/\n+/)
+    .map(item => item.trim())
+    .filter(Boolean);
+  const chunks = numbered.length > 1 ? numbered : [text];
+  return chunks
+    .flatMap(item => item.length >= 56 && /、/.test(item) ? item.split(/、/) : [item])
+    .map(item => item.replace(/[。,\s]+$/, "").trim())
+    .filter(item => item.length >= 2);
+}
+
+function isDynamicEventItem(item = "") {
+  if (/今日の相場テーマ|6市場の見通し|メインシナリオ|代替シナリオ|総合判断|最終判断/.test(item)) return false;
+  if (/^(金|原油|WTI原油|日経225先物|USD\/JPY|EUR\/USD|BTCUSD|BTC)[:：\s]/.test(item)) return false;
+  return /\b[0-2]?\d:[0-5]\d\b|FOMC|FRB|PCE|CPI|雇用|ISM|PMI|GDP|政策|会見|決算|在庫|OPEC|協議|ホルムズ|介入|日銀|指標|発言|観測/.test(item);
+}
+
+function dynamicEventTime(item = "") {
+  const match = String(item).match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
+  return match ? `${match[1].padStart(2, "0")}:${match[2]}` : "";
+}
+
+function dynamicEventTitle(item = "") {
+  return dynamicText(String(item)
+    .replace(/^\d{4}[-/]\d{1,2}[-/]\d{1,2}\s*/, "")
+    .replace(/^\d{1,2}\/\d{1,2}\s*/, "")
+    .replace(/^\b[0-2]?\d:[0-5]\d\s*/, "")
+    .replace(/^(米国|日本|欧州|中国|複数)\s+/, "")
+    .replace(/^随時\s*/, "")
+    .replace(/^予定確認\s*/, ""), 64);
+}
+
+function dynamicRegion(text = "") {
+  if (/米|FOMC|FRB|PCE|CPI|雇用|ISM/.test(text)) return "米国";
+  if (/日銀|日本|東京/.test(text)) return "日本";
+  if (/ECB|ユーロ|欧州|ドイツ/.test(text)) return "欧州";
+  if (/中国/.test(text)) return "中国";
+  return "複数";
+}
+
+function dynamicImportance(text = "") {
+  if (/FOMC|日銀|PCE|CPI|雇用|政策|会見/.test(text)) return "★★★";
+  if (/PMI|ISM|GDP|在庫|決算/.test(text)) return "★★";
+  return "★";
+}
+
+function dynamicAffected(text = "") {
+  if (/原油|OPEC|イラン|ホルムズ|在庫/.test(text)) return "原油・金・株式・USD/JPY";
+  if (/日銀|介入|円/.test(text)) return "USD/JPY・日経225先物・日本株";
+  if (/FRB|FOMC|PCE|CPI|雇用|ISM|GDP/.test(text)) return "金利・USD/JPY・株式・金";
+  if (/決算|AMD|Eli Lilly|Microsoft|Meta/.test(text)) return "米国株・日経225先物・USD/JPY";
+  return "USD/JPY・株式・金利";
+}
+
+function dynamicIso(date, time) {
+  return time && /^\d{2}:\d{2}$/.test(time) ? `${date}T${time}:00+09:00` : "";
+}
+
+function isUpcomingDynamicEvent(event, baseReport) {
+  if (!event.iso) return event.sourceTime === baseReport.time;
+  const eventDate = new Date(event.iso);
+  const baseDate = new Date(`${baseReport.date}T${baseReport.time || "00:00"}:00+09:00`);
+  if (Number.isNaN(eventDate.getTime()) || Number.isNaN(baseDate.getTime())) return true;
+  return eventDate.getTime() >= baseDate.getTime();
+}
+
+function buildDynamicEvents(reportList, baseReport) {
+  const rows = reportList
+    .filter(report => report.date === baseReport.date)
+    .flatMap(report => [
+      ...dynamicArray(report.events),
+      ...dynamicArray(report.importantEvents),
+      ...dynamicArray(report.calendarEvents)
+    ].flatMap(item => splitDynamicEventText(typeof item === "object" ? (item.title || item.text || item.summary || "") : item)
+      .filter(isDynamicEventItem)
+      .map(text => {
+        const time = dynamicEventTime(text);
+        const title = dynamicEventTitle(text);
+        const affected = dynamicAffected(text);
+        return {
+          name: title,
+          time: time ? `${formatDateJp(report.date)} ${time}` : (/協議|発言|観測|介入/.test(text) ? "随時" : "予定確認"),
+          iso: dynamicIso(report.date, time),
+          sourceTime: report.time || "",
+          country: dynamicRegion(text),
+          flag: dynamicRegion(text) === "日本" ? "🇯🇵" : dynamicRegion(text) === "欧州" ? "🇪🇺" : "🇺🇸",
+          consensus: "マーケットレポート本文から確認",
+          previous: "未取得",
+          forecast: "確認中",
+          previousValue: "未取得",
+          affected,
+          reason: "本文の重要イベント欄・引き継ぎ欄から抽出",
+          importance: dynamicImportance(text),
+          focus: affected.split("・").filter(Boolean).slice(0, 4),
+          priced: ["発表時刻・ヘッドラインの有無を確認", "米2年債、USD/JPY、株価指数先物の順に反応を見る", "レポート本文からの抽出のため予想・前回は未取得"],
+          scenarios: [
+            ["市場の解釈", "予想より強い／リスク高", "予想通り", "予想より弱い／リスク低"],
+            ["米2年債", "上昇しやすい", "小動き", "低下しやすい"],
+            ["USD/JPY", "ドル買い・円売り", "小動き", "ドル売り・円買い"],
+            ["株価指数先物", "金利上昇なら重い", "小動き", "金利低下なら支え"],
+            ["金", "実質金利上昇なら重い", "小動き", "実質金利低下なら支え"]
+          ],
+          result: {actual: "—", consensus: "—", previous: "—", revised: "—", surprise: "—"},
+          reactions: [["初動（〜1分）","—"],["5分後","—"],["30分後","—"],["1時間後","—"]],
+          outlook: [
+            ["米2年債", "政策金利見通しに反応", "反応の持続性を確認", "タカ派材料", "ハト派材料"],
+            ["USD/JPY", "金利差と介入警戒で反応", "米金利と円需給を確認", "米金利上昇", "米金利低下・介入警戒"],
+            ["日経225先物", "米株と円相場に連動", "輸出株の反応を確認", "円安・米株高", "円高・米株安"],
+            ["金", "実質金利とドルに反応", "安全資産需要も確認", "実質金利上昇", "実質金利低下"]
+          ],
+          comparison: [["米2年債","データ次第","—","—"],["USD/JPY","データ次第","—","—"],["株価指数先物","データ次第","—","—"],["金","データ次第","—","—"]],
+          conclusion: {narrative:"まだ判断できない", reaction:"詳細待ち", watch:["発表時刻の確認", "米2年債とUSD/JPYの初動", "株価指数先物の反応", "原油・金・BTCへの波及"]}
+        };
+      })));
+
+  const seen = new Set();
+  return rows
+    .filter(event => event.name && isUpcomingDynamicEvent(event, baseReport))
+    .sort((a, b) => {
+      if (a.iso && b.iso) return new Date(a.iso) - new Date(b.iso);
+      if (a.iso) return -1;
+      if (b.iso) return 1;
+      return 0;
+    })
+    .filter(event => {
+      const key = `${event.time}|${event.country}|${event.name}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 12);
+}
+
+function formatDateJp(date = "") {
+  const parsed = new Date(`${date}T00:00:00+09:00`);
+  if (Number.isNaN(parsed.getTime())) return date;
+  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+  return `${date.replaceAll("-", "/")}（${weekdays[parsed.getDay()]}）`;
+}
+
+function formatReportDateTime(report) {
+  return `${formatDateJp(report.date)} ${report.time || ""}`.trim();
+}
+
+function renderDynamicEventList(dynamicEvents, selectedIndex = 0) {
+  const body = document.getElementById("eventList");
+  body.innerHTML = dynamicEvents.map((event, index) => {
+    const status = event.iso && new Date(event.iso).getTime() - Date.now() < 0 ? "発表済み" : event.iso ? "発表前" : "監視中";
+    const statusClass = status === "発表済み" ? "done" : status === "監視中" ? "soon" : "before";
+    return `<tr><td>${esc(event.time)}</td><td>${esc(event.name)}</td><td>${esc(event.forecast)}</td><td>${esc(event.previousValue)}</td><td>${esc(event.affected)}</td><td>${esc(event.reason)}</td><td><span class="status ${statusClass}">${esc(status)}</span></td><td><button class="detail-btn" type="button" data-dynamic-index="${index}" aria-pressed="${index === selectedIndex}">詳細</button></td></tr>`;
+  }).join("");
+  body.querySelectorAll("button").forEach(button => button.addEventListener("click", () => {
+    const index = Number(button.dataset.dynamicIndex || 0);
+    renderDynamicEvent(dynamicEvents[index]);
+    renderDynamicEventList(dynamicEvents, index);
+  }));
+}
+
+function renderDynamicEvent(event) {
+  applyFlag(event.flag);
+  document.getElementById("eventName").textContent = event.name;
+  document.getElementById("eventTime").textContent = event.time;
+  document.getElementById("eventConsensus").textContent = event.consensus;
+  document.getElementById("eventPrevious").textContent = event.previous;
+  document.getElementById("focusMarkets").innerHTML = event.focus.map(item => `<li>${esc(item)}</li>`).join("");
+  document.getElementById("pricedIn").innerHTML = event.priced.map(item => `<li>${esc(item)}</li>`).join("");
+  rows("#scenarioTable tbody", event.scenarios);
+  rows("#resultTable tbody", [["項目","内容"],["実績値（要点）",event.result.actual],["市場予想（要点）",event.result.consensus],["前回値（要点）",event.result.previous],["改定値（要点）",event.result.revised],["サプライズ",event.result.surprise]]);
+  rows("#reactionTable tbody", [["時間経過","市場の反応（確認メモ）"],...event.reactions]);
+  rows("#outlookTable tbody", event.outlook);
+  rows("#compareTable tbody", event.comparison);
+  document.getElementById("narrativeLabel").textContent = event.conclusion.narrative;
+  document.getElementById("reactionLabel").textContent = event.conclusion.reaction;
+  document.getElementById("watchList").innerHTML = event.conclusion.watch.map(item => `<li>${esc(item)}</li>`).join("");
+  if (timer) clearInterval(timer);
+  if (event.iso) {
+    updateCountdown({iso: event.iso});
+    timer = setInterval(() => updateCountdown({iso: event.iso}), 1000);
+  } else {
+    document.getElementById("eventCountdown").textContent = event.time === "随時" ? "継続監視" : "時刻確認中";
+  }
+}
 </script>
 </body>
 </html>

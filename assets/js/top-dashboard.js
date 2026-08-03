@@ -767,6 +767,7 @@ function eventTitleFromText(item = "") {
     .replace(/^\d{4}[-/]\d{1,2}[-/]\d{1,2}\s*/, "")
     .replace(/^\d{1,2}\/\d{1,2}\s*/, "")
     .replace(/^\b[0-2]?\d:[0-5]\d\s*/, "")
+    .replace(/^(米国|日本|欧州|中国|複数)\s+/, "")
     .replace(/^随時\s*/, "")
     .replace(/^予定確認\s*/, ""), 56);
 }
@@ -841,6 +842,53 @@ function reportEventRows(report) {
   }).slice(0, 6);
 }
 
+function reportEventDateTime(row, report) {
+  if (!row?.time || !/^\d{2}:\d{2}$/.test(row.time)) return null;
+  const date = row.date || report.date;
+  const timestamp = new Date(`${date}T${row.time}:00+09:00`);
+  return Number.isNaN(timestamp.getTime()) ? null : timestamp;
+}
+
+function isFutureTimedReportRow(row, baseReport) {
+  const eventDate = reportEventDateTime(row, baseReport);
+  if (!eventDate) return false;
+  const baseDate = new Date(`${baseReport.date}T${baseReport.time || "00:00"}:00+09:00`);
+  if (Number.isNaN(baseDate.getTime())) return true;
+  return eventDate.getTime() >= baseDate.getTime();
+}
+
+function dedupeReportEventRows(rows) {
+  const seen = new Set();
+  return rows.filter((row) => {
+    const key = `${row.date || ""}|${row.time || ""}|${row.country || ""}|${row.title || ""}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function mergedReportEventRows(report) {
+  const currentRows = reportEventRows(report);
+  const sameDayRows = reports
+    .filter((item) => item.date === report.date && item !== report)
+    .flatMap((item) => reportEventRows(item));
+  const futureTimedRows = sameDayRows
+    .filter((row) => isFutureTimedReportRow(row, report))
+    .sort((a, b) => {
+      const aDate = reportEventDateTime(a, report);
+      const bDate = reportEventDateTime(b, report);
+      return (aDate?.getTime() || 0) - (bDate?.getTime() || 0);
+    });
+  const currentTimedRows = currentRows.filter((row) => reportEventDateTime(row, report));
+  const currentFloatingRows = currentRows.filter((row) => !reportEventDateTime(row, report));
+
+  return dedupeReportEventRows([
+    ...currentTimedRows,
+    ...futureTimedRows,
+    ...currentFloatingRows
+  ]).slice(0, 6);
+}
+
 function eventTiming(report, item) {
   const time = item.match(/\b([0-2]\d:[0-5]\d)\b/)?.[1];
   const date = item.match(/(\d{4}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}\/\d{1,2})/)?.[1];
@@ -885,13 +933,13 @@ function reportEventTiming(row, report) {
 }
 
 function reportEventNextText(row, report) {
-  if (row.next) return row.next;
   if (row.time && /^\d{2}:\d{2}$/.test(row.time)) return calendarNextText(row, report);
+  if (row.next) return row.next;
   return fallbackEventNextText(row.title);
 }
 
 function renderEvents(report) {
-  const reportRows = reportEventRows(report);
+  const reportRows = mergedReportEventRows(report);
   if (reportRows.length) {
     $("eventRows").innerHTML = reportRows.map((row) => `<tr>
       <td>${esc(reportEventTiming(row, report))}</td>
