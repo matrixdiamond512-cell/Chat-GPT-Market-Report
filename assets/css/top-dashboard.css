@@ -420,6 +420,7 @@ input {
   display: flex;
   flex-direction: column;
   height: auto;
+  min-height: 0;
 }
 
 .compact-panel,
@@ -496,6 +497,106 @@ td:last-child {
 
 .flow-table {
   min-width: 620px;
+}
+
+.flow-card-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.12fr);
+  gap: 8px;
+  align-items: stretch;
+}
+
+.flow-column {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #c9d9ef;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.flow-column h3 {
+  margin: 0;
+  padding: 7px 8px;
+  border-bottom: 1px solid #dbe5f2;
+  font-size: 12px;
+  font-weight: 1000;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.flow-column-in {
+  border-color: #b8dfc9;
+  background: linear-gradient(180deg, #f3fbf6 0, #fff 42%);
+}
+
+.flow-column-in h3 {
+  color: #08743f;
+  background: #e8f7ef;
+}
+
+.flow-column-out {
+  border-color: #f1c5c5;
+  background: linear-gradient(180deg, #fff6f6 0, #fff 42%);
+}
+
+.flow-column-out h3 {
+  color: #c51f28;
+  background: #fff0f0;
+}
+
+.flow-column-feature {
+  border-color: #efd6a0;
+  background: linear-gradient(180deg, #fffaf0 0, #fff 46%);
+}
+
+.flow-column-feature h3 {
+  color: #8a5a00;
+  background: #fff3d6;
+}
+
+.flow-column ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 9px 10px 10px;
+  list-style: none;
+}
+
+.flow-column li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 6px;
+  align-items: start;
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.flow-symbol {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 1000;
+  line-height: 1.1;
+}
+
+.flow-symbol.in {
+  color: var(--green);
+}
+
+.flow-symbol.out {
+  color: var(--red);
+}
+
+.flow-symbol.feature {
+  color: #9a6b00;
+}
+
+.flow-empty {
+  color: var(--muted);
 }
 
 .flow-note {
@@ -814,7 +915,7 @@ td:last-child {
 
   .flow-panel {
     grid-column: span 2;
-    min-height: 480px;
+    min-height: 0;
   }
 
   .market-lens-grid,
@@ -892,6 +993,10 @@ td:last-child {
 }
 
 @media (max-width: 640px) {
+  .flow-card-grid {
+    grid-template-columns: 1fr;
+  }
+
   .time-tabs {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

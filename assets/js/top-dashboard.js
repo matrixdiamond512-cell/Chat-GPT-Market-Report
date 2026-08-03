@@ -563,23 +563,61 @@ function flowDirection(report, asset) {
   return { direction: "取得不能", strength: "未判定", compare: "未判定", reason: "JSONに明示なし", basis: "未連携", trend: "missing" };
 }
 
-function renderFlow(report) {
-  $("flowRows").innerHTML = FLOW_ASSETS.map((asset) => {
-    const flow = flowDirection(report, asset);
-    const directionClass = flow.trend === "up" ? "up" : flow.trend === "down" ? "down" : flow.trend === "missing" ? "missing" : "flat";
-    return `<tr>
-      <th>${esc(asset)}</th>
-      <td class="${directionClass}">${esc(flow.direction)}</td>
-      <td>${esc(flow.strength)}</td>
-      <td class="${directionClass}">${esc(flow.compare)}</td>
-      <td>${esc(flow.reason)} / ${esc(flow.basis)}</td>
-    </tr>`;
-  }).join("");
+function splitFlowAssets(value = "") {
+  return cleanText(value, 360)
+    .replace(/^(?:資金)?流入(?:候補)?[：:]/, "")
+    .replace(/^資金流出・巻き戻し候補[：:]/, "")
+    .replace(/^(?:資金)?流出(?:候補)?[：:]/, "")
+    .replace(/。.*$/, "")
+    .split(/[、,，]/)
+    .map((item) => cleanText(item.replace(/^(候補|主な候補)\s*/, ""), 26))
+    .filter(Boolean);
+}
 
-  const flowItems = topList(report.crossAssetFlow, 2, 112);
-  $("flowSummary").textContent = flowItems.length
-    ? flowItems.join(" ")
-    : "理由：クロスアセット資金フローがJSONにありません";
+function explicitFlowItems(report, type) {
+  const rows = asArray(report.crossAssetFlow).map(textOf).map((value) => cleanText(value, 420)).filter(Boolean);
+  const pattern = type === "in"
+    ? /^(?:資金)?流入(?:候補)?[：:]/
+    : /^(?:資金)?流出(?:候補)?[：:]|^資金流出・巻き戻し候補[：:]/;
+  return rows
+    .filter((row) => pattern.test(row))
+    .flatMap(splitFlowAssets);
+}
+
+function inferredFlowItems(report, trend) {
+  return FLOW_ASSETS
+    .map((asset) => ({ asset, flow: flowDirection(report, asset) }))
+    .filter((item) => item.flow.trend === trend)
+    .map((item) => item.asset);
+}
+
+function flowFeatures(report) {
+  const rows = asArray(report.crossAssetFlow).map(textOf).map((value) => cleanText(value, 420)).filter(Boolean);
+  const features = rows
+    .filter((row) => !/^(?:資金)?流入(?:候補)?[：:]|^(?:資金)?流出(?:候補)?[：:]|^資金流出・巻き戻し候補[：:]/.test(row))
+    .flatMap((row) => row.split("。"))
+    .map((row) => cleanText(row, 54))
+    .filter(Boolean);
+  return features.length ? features.slice(0, 3) : ["本文のクロスアセット資金フローから自動判定しています"];
+}
+
+function renderFlowList(id, items, type, emptyText) {
+  const node = $(id);
+  if (!node) return;
+  const symbol = type === "out" ? "↓" : type === "feature" ? "・" : "↑";
+  const cls = type === "out" ? "out" : type === "feature" ? "feature" : "in";
+  const values = uniq(items).slice(0, 6);
+  node.innerHTML = values.length
+    ? values.map((item) => `<li><span class="flow-symbol ${cls}">${symbol}</span><span>${esc(item)}</span></li>`).join("")
+    : `<li class="flow-empty"><span class="flow-symbol feature">・</span><span>${esc(emptyText)}</span></li>`;
+}
+
+function renderFlow(report) {
+  const inflow = explicitFlowItems(report, "in");
+  const outflow = explicitFlowItems(report, "out");
+  renderFlowList("flowInItems", inflow.length ? inflow : inferredFlowItems(report, "up"), "in", "流入資産がJSONにありません");
+  renderFlowList("flowOutItems", outflow.length ? outflow : inferredFlowItems(report, "down"), "out", "流出資産がJSONにありません");
+  renderFlowList("flowFeatureItems", flowFeatures(report), "feature", "フローの特徴がJSONにありません");
 }
 
 function newsImpact(text) {

@@ -68,23 +68,19 @@
 
       <article class="panel flow-panel">
         <h2>クロスアセット資金フロー</h2>
-        <div class="table-wrap">
-          <table class="flow-table">
-            <thead>
-              <tr>
-                <th>資産</th>
-                <th>方向</th>
-                <th>強さ</th>
-                <th>前回比</th>
-                <th>主因</th>
-              </tr>
-            </thead>
-            <tbody id="flowRows"></tbody>
-          </table>
-        </div>
-        <div class="flow-note">
-          <h3>資金フローの要点</h3>
-          <p id="flowSummary"></p>
+        <div class="flow-card-grid" aria-live="polite">
+          <section class="flow-column flow-column-in">
+            <h3>資金が流入している資産</h3>
+            <ul id="flowInItems"></ul>
+          </section>
+          <section class="flow-column flow-column-out">
+            <h3>資金が流出している資産</h3>
+            <ul id="flowOutItems"></ul>
+          </section>
+          <section class="flow-column flow-column-feature">
+            <h3>フローの特徴</h3>
+            <ul id="flowFeatureItems"></ul>
+          </section>
         </div>
       </article>
 
