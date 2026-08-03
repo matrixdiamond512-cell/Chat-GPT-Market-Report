@@ -3,8 +3,8 @@ var USDJPY_VOLUME_PAGE_AUTO_CONFIG = {
   handler: 'updateUsdJpyVolumePageFromSources',
   triggerHours: [7, 12, 16, 21],
   triggerMinute: 30,
-  maxBojPublications: 5,
-  priceMonthsBack: 5,
+  maxBojPublications: 20,
+  priceMonthsBack: 24,
   priceSheetName: 'USDJPY_Price',
   volumeSheetName: 'USDJPY_Volume',
   closeSheetNames: ['終値一覧', '前日終値一覧'],
@@ -23,6 +23,7 @@ function updateUsdJpyVolumePageFromSources() {
     var bojSummary = usdJpyVolumeAutoImportBojPdfSpotVolume_(false);
     var priceSummary = usdJpyVolumeAutoImportPrice_(false);
     var sheetSyncSummary = usdJpyVolumeAutoSyncPriceToReportSheets_();
+    var derivedSummary = usdJpyVolumeAutoRefreshVolumeDerivedColumns_();
     var githubSummary = syncUsdJpyVolumeJsonToGitHubFlexible();
     var result = {
       ok: true,
@@ -30,6 +31,7 @@ function updateUsdJpyVolumePageFromSources() {
       boj: bojSummary,
       price: priceSummary,
       sheetSync: sheetSyncSummary,
+      volumeDerived: derivedSummary,
       github: githubSummary
     };
     PropertiesService.getScriptProperties().setProperty(
@@ -40,6 +42,7 @@ function updateUsdJpyVolumePageFromSources() {
       'USD/JPYページを更新しました。\n' +
       '出来高対象日: ' + (githubSummary.latestTargetDate || '') + '\n' +
       '日銀公表日: ' + (githubSummary.latestPublicationDate || '') + '\n' +
+      '保存行数: ' + derivedSummary.rowCount + '\n' +
       '価格取得元: ' + priceSummary.sourceName + '\n' +
       'GitHubコミット: ' + (githubSummary.commitSha || '')
     );
@@ -141,12 +144,15 @@ function importUsdJpyInvestingPrice() {
 
 function syncUsdJpyInvestingPriceToReportSheets() {
   var summary = usdJpyVolumeAutoSyncPriceToReportSheets_();
+  var derivedSummary = usdJpyVolumeAutoRefreshVolumeDerivedColumns_();
   usdJpyVolumeAutoAlert_(
     'USD/JPY価格を出来高シートと終値一覧へ同期しました。\n' +
     '出来高シート更新: ' + summary.volumeUpdated + '\n' +
     '終値一覧更新: ' + summary.closeSheetUpdated + '\n' +
+    '計算列保存: ' + derivedSummary.updatedCells + '\n' +
     '最新日: ' + (summary.latestDate || '')
   );
+  summary.volumeDerived = derivedSummary;
   return summary;
 }
 
@@ -179,9 +185,22 @@ function usdJpyVolumeAutoImportBojPdfSpotVolume_(previewOnly) {
     .slice(-config.maxBojPublications);
   var rowsToAdd = [];
   var rowsToUpdate = [];
+  var unchangedRows = [];
 
   publications.forEach(function(publication) {
     var targetDate = usdJpyVolumeAutoPreviousWeekday_(publication.date);
+    var current = existing[targetDate];
+    if (current && usdJpyVolumeAutoSavedBojRowIsCurrent_(current.row, index, publication)) {
+      unchangedRows.push({
+        targetDate: targetDate,
+        publicationDate: publication.date,
+        sourcePdfName: publication.pdfName,
+        sourcePdfUrl: publication.url,
+        spotVolume: usdJpyVolumeAutoNumber_(current.row[index.spotVolume])
+      });
+      return;
+    }
+
     var text = usdJpyVolumeAutoFetchPdfText_(publication.url, publication.pdfName);
     var spotVolume = usdJpyVolumeAutoParseBojSpotVolume_(text);
     var next = {
@@ -191,7 +210,6 @@ function usdJpyVolumeAutoImportBojPdfSpotVolume_(previewOnly) {
       sourcePdfUrl: publication.url,
       spotVolume: spotVolume
     };
-    var current = existing[targetDate];
     if (!current) {
       rowsToAdd.push(next);
     } else if (usdJpyVolumeAutoVolumeNeedsUpdate_(current.row, index, next)) {
@@ -213,6 +231,7 @@ function usdJpyVolumeAutoImportBojPdfSpotVolume_(previewOnly) {
     fetchedPublications: publications.length,
     addCount: rowsToAdd.length,
     updateCount: rowsToUpdate.length,
+    unchangedCount: unchangedRows.length,
     latestPublicationDate: latest ? latest.date : '',
     latestTargetDate: latest ? usdJpyVolumeAutoPreviousWeekday_(latest.date) : '',
     rowsToAdd: rowsToAdd,
@@ -301,6 +320,89 @@ function usdJpyVolumeAutoSyncPriceToReportSheets_() {
     latestDate: priceList[priceList.length - 1].date,
     volumeUpdated: volumeUpdated,
     closeSheetUpdated: closeSheetUpdated
+  };
+}
+
+function usdJpyVolumeAutoRefreshVolumeDerivedColumns_() {
+  var sheet = usdJpyVolumeAutoEnsureSheet_(USDJPY_VOLUME_PAGE_AUTO_CONFIG.volumeSheetName, [
+    '対象日',
+    '公表日',
+    '元PDF',
+    '元PDF URL',
+    'USD/JPYスポット出来高',
+    '出来高前営業日比',
+    '出来高前営業日比率',
+    '20営業日平均',
+    '20日平均との差',
+    '20日平均比',
+    'USD/JPY終値',
+    'USD/JPY始値',
+    'USD/JPY高値',
+    'USD/JPY安値',
+    'USD/JPY変化率'
+  ]);
+  var values = sheet.getDataRange().getValues();
+  if (values.length < 2) {
+    return {
+      ok: true,
+      rowCount: 0,
+      updatedCells: 0,
+      oldestDate: '',
+      latestDate: ''
+    };
+  }
+
+  var headers = values[0].map(function(value) { return String(value || '').trim(); });
+  var index = usdJpyVolumeAutoResolveVolumeIndexes_(headers, sheet);
+  values = sheet.getDataRange().getValues();
+  var records = [];
+  for (var i = 1; i < values.length; i += 1) {
+    var targetDate = usdJpyVolumeAutoDateKey_(values[i][index.targetDate]);
+    var spotVolume = usdJpyVolumeAutoNumber_(values[i][index.spotVolume]);
+    if (!targetDate || spotVolume === null) continue;
+    records.push({
+      rowNumber: i + 1,
+      targetDate: targetDate,
+      spotVolume: spotVolume
+    });
+  }
+  records.sort(function(a, b) { return a.targetDate.localeCompare(b.targetDate); });
+
+  var updatedCells = 0;
+  records.forEach(function(record, indexInList) {
+    var previous = indexInList > 0 ? records[indexInList - 1] : null;
+    var volumeChange = previous ? usdJpyVolumeAutoRound_(record.spotVolume - previous.spotVolume, 0) : '';
+    var volumeChangePct = previous && previous.spotVolume ?
+      usdJpyVolumeAutoRound_(volumeChange / previous.spotVolume * 100, 2) :
+      '';
+    var avg20 = '';
+    var vs20 = '';
+    var vs20Pct = '';
+    if (indexInList >= 19) {
+      var window = records.slice(indexInList - 19, indexInList + 1);
+      avg20 = usdJpyVolumeAutoRound_(
+        window.reduce(function(sum, item) { return sum + item.spotVolume; }, 0) / window.length,
+        0
+      );
+      vs20 = usdJpyVolumeAutoRound_(record.spotVolume - avg20, 0);
+      vs20Pct = avg20 ? usdJpyVolumeAutoRound_(vs20 / avg20 * 100, 2) : '';
+    }
+
+    updatedCells += usdJpyVolumeAutoSetCellIfChanged_(sheet, record.rowNumber, index.volumeChange, volumeChange);
+    updatedCells += usdJpyVolumeAutoSetCellIfChanged_(sheet, record.rowNumber, index.volumeChangePct, volumeChangePct);
+    updatedCells += usdJpyVolumeAutoSetCellIfChanged_(sheet, record.rowNumber, index.avg20, avg20);
+    updatedCells += usdJpyVolumeAutoSetCellIfChanged_(sheet, record.rowNumber, index.vs20, vs20);
+    updatedCells += usdJpyVolumeAutoSetCellIfChanged_(sheet, record.rowNumber, index.vs20Pct, vs20Pct);
+  });
+
+  usdJpyVolumeAutoSortSheetByDate_(sheet, index.targetDate + 1);
+  return {
+    ok: true,
+    rowCount: records.length,
+    updatedCells: updatedCells,
+    oldestDate: records.length ? records[0].targetDate : '',
+    latestDate: records.length ? records[records.length - 1].targetDate : '',
+    note: 'USDJPY_Volumeシートに、WEB表と同じ出来高前営業日比・20営業日平均・平均との差を保存しました。履歴行は削除しません。'
   };
 }
 
@@ -721,6 +823,11 @@ function usdJpyVolumeAutoResolveVolumeIndexes_(headers, sheet) {
     sourcePdfName: ['元PDF', 'sourcePdfName', 'source_pdf_name', 'PDF名'],
     sourcePdfUrl: ['元PDF URL', 'sourcePdfUrl', 'source_pdf_url', 'PDF URL'],
     spotVolume: ['USD/JPYスポット出来高', 'スポット出来高', 'spotVolume', 'spot_volume', '出来高'],
+    volumeChange: ['出来高前営業日比', 'volumeChange', 'volume_change', '前営業日比'],
+    volumeChangePct: ['出来高前営業日比率', 'volumeChangePct', 'volume_change_pct', '前営業日比率'],
+    avg20: ['20営業日平均', 'avg20', '20日平均', '20日移動平均'],
+    vs20: ['20日平均との差', 'vs20', '20営業日平均との差'],
+    vs20Pct: ['20日平均比', 'vs20Pct', 'vs20_pct', '20営業日平均比'],
     close: ['USD/JPY終値', '終値', 'close'],
     open: ['USD/JPY始値', '始値', 'open'],
     high: ['USD/JPY高値', '高値', 'high'],
@@ -797,6 +904,13 @@ function usdJpyVolumeAutoVolumeNeedsUpdate_(row, index, next) {
     String(row[index.sourcePdfName] || '').trim() !== next.sourcePdfName ||
     String(row[index.sourcePdfUrl] || '').trim() !== next.sourcePdfUrl ||
     usdJpyVolumeAutoNumber_(row[index.spotVolume]) !== next.spotVolume;
+}
+
+function usdJpyVolumeAutoSavedBojRowIsCurrent_(row, index, publication) {
+  return usdJpyVolumeAutoDateKey_(row[index.publicationDate]) === publication.date &&
+    String(row[index.sourcePdfName] || '').trim() === publication.pdfName &&
+    String(row[index.sourcePdfUrl] || '').trim() === publication.url &&
+    usdJpyVolumeAutoNumber_(row[index.spotVolume]) !== null;
 }
 
 function usdJpyVolumeAutoPriceChanged_(before, next) {
