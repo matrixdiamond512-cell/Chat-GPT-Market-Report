@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+  <title>金利・債券市場分析｜WEBマーケットレポート</title>
+  <link rel="stylesheet" href="assets/css/rates-bonds.css">
+</head>
+<body>
+<header class="top-header"><div><h1>WEBマーケットレポート</h1><p>金利・債券市場を、方向・理由・需給・波及で整理</p></div><div class="update"><strong id="updatedAt">読込中</strong><span id="nextUpdate"></span></div></header>
+<nav class="site-nav" aria-label="ページナビゲーション">
+<a href="index.html">ダッシュボード</a><a href="report.html">本文</a><a href="events.html">重要イベント</a><a href="rates-bonds.html" aria-current="page">金利・債券市場</a><a href="stocks.html">株式市場分析</a><a href="usdjpy-supply-demand.html">USD/JPY需給</a><a href="gold-supply-demand.html">ゴールド需給</a><a href="nikkei225-supply-demand.html">日経225需給</a>
+</nav>
+<main class="shell">
+<section class="hero panel"><div><span class="eyebrow">① 今日の結論</span><h2 id="headline"></h2><p id="summaryDetail"></p><p class="notice" id="notice"></p></div><div class="card-grid" id="summaryCards"></div></section>
+<section class="two-col"><article class="panel"><h2>② 主要金利ダッシュボード</h2><div class="table-wrap"><table><thead><tr><th>指標</th><th>現在値</th><th>前日比</th><th>1週</th><th>判定</th><th>主な意味</th></tr></thead><tbody id="ratesRows"></tbody></table></div></article><article class="panel"><h2>③ 米10年債利回りの変化要因</h2><div class="decomp-grid" id="decomposition"></div><div class="formula">名目金利 ＝ 実質金利 ＋ 期待インフレ ＋ タームプレミアム</div></article></section>
+<section class="two-col"><article class="panel"><h2>④ イールドカーブ</h2><div id="curveSummary" class="callout"></div><div class="curve-chart" id="curveChart"></div><div class="table-wrap"><table><thead><tr><th>スプレッド</th><th>現在</th><th>前日比</th><th>1週</th></tr></thead><tbody id="curveRows"></tbody></table></div></article><article class="panel"><h2>⑤ 債券市場の需給状況</h2><div class="metric-list" id="supplyDemand"></div></article></section>
+<section class="two-col"><article class="panel"><h2>⑥ 中央銀行の政策期待</h2><div class="metric-list" id="policy"></div></article><article class="panel"><h2>⑦ 金利から各市場への波及</h2><div class="impact-grid" id="impacts"></div></article></section>
+<section class="bottom-grid"><article class="panel leading"><h2>⑧ 今日の主導金利</h2><strong id="leadingRate"></strong><p id="leadingReason"></p></article><article class="panel scenario"><h2>⑨ シナリオと崩れる条件</h2><h3>メインシナリオ</h3><p id="mainScenario"></p><h3>代替シナリオ</h3><p id="altScenario"></p><h3>崩れる条件</h3><ul id="invalidation"></ul></article></section>
+<footer><p id="sources"></p><p>数値は変動します。売買判断では必ず最新の一次情報を確認してください。</p></footer>
+</main>
+<script src="assets/js/rates-bonds.js"></script>
+</body></html>
