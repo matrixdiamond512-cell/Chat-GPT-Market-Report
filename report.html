@@ -104,7 +104,7 @@ body{
 .time-tab:disabled{color:#a0adbf;background:#f6f8fb;cursor:not-allowed}
 .date-controls{display:flex;align-items:center;gap:8px}
 .date-picker{
-  min-width:230px;
+  min-width:180px;
   height:36px;
   border:1px solid #b8c8df;
   border-radius:6px;
@@ -112,6 +112,18 @@ body{
   font-size:14px;
   font-weight:1000;
   text-align:center;
+  padding:0 10px;
+  background:#fff;
+  color-scheme:light;
+  cursor:pointer;
+}
+.date-picker::-webkit-calendar-picker-indicator{cursor:pointer}
+.date-label{
+  min-width:142px;
+  color:#173968;
+  font-size:13px;
+  font-weight:950;
+  white-space:nowrap;
 }
 .icon-btn{
   width:36px;
@@ -272,6 +284,7 @@ body{
   .status{display:grid}
   .date-controls{width:100%}
   .date-picker{min-width:0;width:100%}
+  .date-label{display:none}
   .time-tab{min-width:72px;flex:1 1 72px}
   .report-head{padding:22px 18px 18px}
   .report-title{font-size:22px}
@@ -314,7 +327,8 @@ body{
     <div id="timeTabs" class="time-tabs" aria-label="時間帯"></div>
     <div class="date-controls" aria-label="日付選択">
       <button id="prevDate" class="icon-btn" type="button" aria-label="前の日">‹</button>
-      <select id="dateSelect" class="date-picker"></select>
+      <input id="datePicker" class="date-picker" type="date" aria-label="日付をカレンダーで選択">
+      <span id="dateLabel" class="date-label"></span>
       <button id="nextDate" class="icon-btn" type="button" aria-label="次の日">›</button>
     </div>
   </div>
@@ -376,8 +390,18 @@ function reportsForDate(dateText){
     .sort((a,b) => REPORT_TIMES.indexOf(a.time) - REPORT_TIMES.indexOf(b.time));
 }
 
+function resolveAvailableDate(dateText){
+  const dates = uniqueDates();
+  if (!dates.length) return dateText;
+  if (dates.includes(dateText)) return dateText;
+  const ascending = dates.slice().sort();
+  const nearestPast = ascending.filter((date) => date <= dateText).at(-1);
+  return nearestPast || ascending[0];
+}
+
 function selectReport(dateText, timeText){
-  const sameDate = reportsForDate(dateText);
+  const resolvedDate = resolveAvailableDate(dateText);
+  const sameDate = reportsForDate(resolvedDate);
   selectedReport = sameDate.find((report) => report.time === timeText) || sameDate.at(-1) || reports[0];
   render();
   const url = new URL(location.href);
@@ -388,12 +412,12 @@ function selectReport(dateText, timeText){
 
 function renderControls(report){
   const dates = uniqueDates();
-  const dateSelect = $("dateSelect");
-  dateSelect.innerHTML = dates.map((date) => {
-    const selected = date === report.date ? " selected" : "";
-    return `<option value="${esc(date)}"${selected}>${esc(dateToJp(date))}</option>`;
-  }).join("");
-  dateSelect.onchange = () => selectReport(dateSelect.value, report.time);
+  const datePicker = $("datePicker");
+  datePicker.value = report.date || "";
+  datePicker.min = dates.at(-1) || "";
+  datePicker.max = dates[0] || "";
+  datePicker.onchange = () => selectReport(datePicker.value, report.time);
+  $("dateLabel").textContent = dateToJp(report.date);
 
   const availableTimes = new Set(reportsForDate(report.date).map((item) => item.time));
   $("timeTabs").innerHTML = REPORT_TIMES.map((time) => {
