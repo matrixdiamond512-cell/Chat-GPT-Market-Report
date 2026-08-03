@@ -3,32 +3,652 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>マーケットレポート本文｜2026/07/29 21:00</title>
+<meta http-equiv="Cache-Control" content="no-cache,no-store,must-revalidate">
+<title>マーケットレポート本文｜WEBマーケットレポート</title>
 <style>
-:root{--navy:#062452;--blue:#1559b7;--line:#d8e1ef;--soft:#f5f8fc;--text:#0f1f38;--muted:#5e6c82;--green:#0a7a35;--red:#c72222}*{box-sizing:border-box}body{margin:0;background:#fff;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;line-height:1.65}.head{background:var(--navy);color:#fff;padding:14px 28px}.head h1{margin:0;font-size:24px}.head p{margin:2px 0 0;color:#d7e6ff}.nav{display:flex;gap:4px;overflow:auto;background:#f7f9fc;border-bottom:1px solid var(--line);padding:8px 24px}.nav a{color:#082a5b;text-decoration:none;font-weight:700;padding:8px 14px;border-radius:6px;white-space:nowrap}.nav a[aria-current=page]{background:var(--blue);color:white}.page{max-width:1180px;margin:auto;padding:24px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}.btn{border:1px solid #b8c8df;background:#fff;border-radius:6px;padding:8px 12px;color:#0b3572;text-decoration:none;font-weight:700}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{border:1px solid var(--line);border-radius:8px;background:#fff;padding:16px;box-shadow:0 1px 4px #0000000a}.card h2{font-size:18px;color:#07306c;margin:0 0 10px}.lead{font-size:20px;font-weight:800}.pill{display:inline-block;border-radius:999px;padding:2px 9px;background:#e8f1ff;color:#0b50a5;font-weight:700;margin-right:6px}.docframe{width:100%;height:760px;border:1px solid var(--line);border-radius:8px;background:#f8fafc}.report-text{white-space:pre-wrap;font-size:15px;background:#fbfcfe}.up{color:var(--green);font-weight:700}.down{color:var(--red);font-weight:700}@media(max-width:760px){.head{padding:12px 16px}.page{padding:16px}.grid{grid-template-columns:1fr}.docframe{height:620px}}
+:root{
+  --navy:#061d4c;
+  --navy-2:#092c74;
+  --blue:#0b63e5;
+  --line:#cbd8ec;
+  --soft:#f6f9fe;
+  --text:#071b4a;
+  --muted:#65748c;
+  --green:#008453;
+  --red:#e00022;
+  --orange:#e38300;
+  --panel:#fff;
+  --shadow:0 1px 6px rgba(7,27,74,.07);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:#fff;
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;
+  line-height:1.5;
+}
+.topbar{background:linear-gradient(180deg,#061a43,#071f56);color:#fff}
+.top-inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  max-width:1680px;
+  margin:0 auto;
+  padding:10px 22px;
+}
+.brand{margin:0;font-size:28px;line-height:1.1;font-weight:1000;letter-spacing:0}
+.top-meta{display:flex;align-items:center;gap:12px;font-size:13px;font-weight:850;color:#dfe9ff;white-space:nowrap}
+.top-meta a,.update-btn{
+  border:1px solid #7fa1dc;
+  border-radius:6px;
+  background:#0b2a63;
+  color:#fff;
+  padding:7px 12px;
+  font-weight:900;
+  text-decoration:none;
+}
+.nav{
+  display:grid;
+  grid-template-columns:repeat(8,minmax(132px,1fr));
+  max-width:1680px;
+  margin:0 auto;
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.nav a{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:42px;
+  padding:9px 12px;
+  border-left:1px solid rgba(255,255,255,.12);
+  background:rgba(5,30,75,.62);
+  color:#fff;
+  text-decoration:none;
+  font-size:14px;
+  font-weight:1000;
+  white-space:nowrap;
+}
+.nav a[aria-current=page]{background:linear-gradient(180deg,#126cff,#0b55d6)}
+.page{max-width:1680px;margin:0 auto;padding:14px 22px 30px}
+.status{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:0 0 10px;
+  color:#173968;
+  font-size:13px;
+  font-weight:850;
+}
+.status small{color:var(--muted);font-weight:800}
+.control-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:14px;
+  align-items:center;
+  margin:0 0 12px;
+}
+.time-tabs{display:flex;gap:10px;flex-wrap:wrap}
+.time-tab,.date-btn{
+  min-width:92px;
+  height:38px;
+  border:1px solid #b8c8df;
+  border-radius:6px;
+  background:#fff;
+  color:#071b4a;
+  font-size:14px;
+  font-weight:1000;
+  cursor:pointer;
+}
+.time-tab.is-active,.date-btn.is-active{background:#0b63e5;border-color:#0b63e5;color:#fff}
+.time-tab:disabled{color:#9aa8bc;background:#f6f8fb;cursor:not-allowed}
+.date-controls{display:flex;align-items:center;gap:8px}
+.date-picker{
+  min-width:250px;
+  height:38px;
+  border:1px solid #b8c8df;
+  border-radius:6px;
+  color:#071b4a;
+  font-size:15px;
+  font-weight:1000;
+  text-align:center;
+}
+.icon-btn{
+  width:38px;
+  height:38px;
+  border:1px solid #b8c8df;
+  border-radius:6px;
+  background:#fff;
+  color:#0b3572;
+  font-size:18px;
+  font-weight:1000;
+  cursor:pointer;
+}
+.hero{
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:#fff;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  margin-bottom:12px;
+}
+.hero-head{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:16px;
+  align-items:start;
+  padding:14px 16px;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#fff,#f7faff);
+}
+.hero h1{margin:0 0 4px;color:var(--navy);font-size:28px;line-height:1.15;font-weight:1000}
+.hero .sub{margin:0;color:#173968;font-size:14px;font-weight:850}
+.hero-tags{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.tag{
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  padding:3px 9px;
+  border:1px solid #bcd1ee;
+  border-radius:999px;
+  background:#edf5ff;
+  color:#0a4eaa;
+  font-size:12px;
+  font-weight:900;
+}
+.hero-body{padding:14px 16px}
+.theme{
+  margin:0;
+  color:#061d4c;
+  font-size:18px;
+  font-weight:950;
+  line-height:1.65;
+}
+.grid-main{
+  display:grid;
+  grid-template-columns:minmax(0,1.12fr) minmax(0,.88fr);
+  gap:12px;
+}
+.grid-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.panel{
+  min-width:0;
+  border:1px solid var(--line);
+  border-radius:7px;
+  background:var(--panel);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.panel-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:0;
+  padding:8px 12px;
+  color:var(--navy);
+  font-size:16px;
+  font-weight:1000;
+  line-height:1.2;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#fff,#f6f9ff);
+}
+.panel-title span{min-width:0;overflow-wrap:anywhere}
+.panel-body{padding:11px 12px}
+.text-block{
+  margin:0;
+  font-size:14px;
+  font-weight:850;
+  color:#081f50;
+  line-height:1.65;
+  overflow-wrap:anywhere;
+}
+.list{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.list li{
+  position:relative;
+  padding-left:17px;
+  font-size:13.5px;
+  font-weight:850;
+  line-height:1.58;
+  overflow-wrap:anywhere;
+}
+.list li:before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:.66em;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:#0b63e5;
+}
+.market-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.market-card{
+  border:1px solid #d5e1f1;
+  border-radius:7px;
+  background:#fff;
+  padding:11px;
+  min-width:0;
+}
+.market-card h3{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin:0 0 8px;
+  color:#052767;
+  font-size:15px;
+  font-weight:1000;
+}
+.market-card h3 small{color:#0b63e5;font-size:12px;font-weight:1000}
+.kv{display:grid;gap:5px;margin:0}
+.kv div{display:grid;grid-template-columns:74px minmax(0,1fr);gap:8px;font-size:12.5px;font-weight:850;line-height:1.45}
+.kv dt{color:#0b63e5;font-weight:1000}
+.kv dd{margin:0;overflow-wrap:anywhere}
+.scenario-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.scenario-box{
+  min-width:0;
+  border:1px solid #d5e1f1;
+  border-radius:7px;
+  background:#fbfdff;
+  padding:10px 11px;
+}
+.scenario-box h3{margin:0 0 6px;font-size:14px;font-weight:1000;color:#082a5b}
+.scenario-box.main{border-color:#9fd0b6;background:#f3fbf6}
+.scenario-box.alt{border-color:#f1c777;background:#fff9ef}
+.scenario-box.break{border-color:#f3aaa7;background:#fff5f4}
+.doc-link{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:32px;
+  padding:6px 10px;
+  border:1px solid #b8c8df;
+  border-radius:6px;
+  color:#0b3572;
+  text-decoration:none;
+  font-size:13px;
+  font-weight:900;
+  background:#fff;
+}
+.fulltext{
+  margin:0;
+  max-height:520px;
+  overflow:auto;
+  white-space:pre-wrap;
+  color:#0b1f45;
+  font-size:13px;
+  font-weight:750;
+  line-height:1.7;
+}
+.empty{
+  border:1px dashed #b8c8df;
+  border-radius:7px;
+  padding:18px;
+  background:#f8fbff;
+  color:#173968;
+  font-weight:900;
+}
+.footnote{
+  margin:12px 0 0;
+  color:#51647f;
+  font-size:12px;
+  font-weight:800;
+}
+.positive{color:var(--green)}
+.negative{color:var(--red)}
+@media(max-width:1180px){
+  .nav{grid-template-columns:repeat(4,minmax(132px,1fr))}
+  .grid-main,.grid-two,.scenario-grid{grid-template-columns:1fr}
+  .market-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .top-inner{align-items:flex-start;flex-direction:column;padding:10px 14px}
+  .brand{font-size:24px}
+  .top-meta{width:100%;justify-content:space-between;white-space:normal}
+  .nav{display:flex;overflow:auto}
+  .nav a{min-width:132px}
+  .page{padding:12px 10px 24px}
+  .status,.control-row,.hero-head{grid-template-columns:1fr;display:grid}
+  .date-controls{width:100%}
+  .date-picker{min-width:0;width:100%}
+  .time-tab{min-width:74px;flex:1 1 74px}
+  .hero h1{font-size:22px}
+  .theme{font-size:15px}
+  .market-grid{grid-template-columns:1fr}
+  .kv div{grid-template-columns:62px minmax(0,1fr)}
+}
 </style>
 </head>
 <body>
-<header class="head"><h1>マーケットレポート本文｜2026/07/29（水）21:00</h1><p>Google Docs正本を基準に、WEB掲載用として本文・要点・参照リンクを整理</p></header>
-<nav class="nav"><a href="index.html">ダッシュボード</a><a href="report.html" aria-current="page">マーケットレポート本文</a><a href="usdjpy-volume.html">東京市場ドル円出来高</a><a href="events.html">重要イベント</a><a href="stocks.html">株式市場分析</a><a href="usdjpy-supply-demand.html">USD/JPY需給</a><a href="gold-supply-demand.html">ゴールド需給</a><a href="nikkei225-supply-demand.html">日経225需給</a></nav>
+<header class="topbar">
+  <div class="top-inner">
+    <h1 class="brand">WEBマーケットレポート</h1>
+    <div class="top-meta">
+      <span id="lastUpdated">読込中</span>
+      <button class="update-btn" type="button" onclick="location.reload()">更新</button>
+    </div>
+  </div>
+  <nav class="nav" aria-label="ページ移動">
+    <a href="index.html">ダッシュボード</a>
+    <a href="report.html" aria-current="page">マーケットレポート本文</a>
+    <a href="usdjpy-volume.html">東京市場ドル円出来高</a>
+    <a href="events.html">重要イベント一覧</a>
+    <a href="stocks.html">株式市場分析</a>
+    <a href="usdjpy-supply-demand.html">USD/JPY需給</a>
+    <a href="gold-supply-demand.html">ゴールド需給</a>
+    <a href="nikkei225-supply-demand.html">日経225需給</a>
+  </nav>
+</header>
+
 <main class="page">
-<div class="toolbar"><a class="btn" href="https://docs.google.com/document/d/1HB9NmMQWtlf_vBj2ZdeJfcsOXOFclZuW74bMhJJUHCQ/edit" target="_blank" rel="noopener">Google Docs正本を開く</a><button class="btn" onclick="print()">印刷・PDF保存</button><button class="btn" onclick="navigator.clipboard&&navigator.clipboard.writeText(location.href)">URL共有</button></div>
-<section class="card"><h2>結論</h2><p class="lead">FOMC直前の米金利・ドル方向確認と、AI・半導体株の評価修正が中心テーマ。株式と暗号資産には慎重、原油は下落一服、為替はイベント待ち。</p><p><span class="pill">中心テーマ</span>FOMC前のポジション調整、Microsoft・Meta決算、原油反発、ドル円高止まり。</p></section>
-<section class="grid" style="margin-top:16px"><article class="card"><h2>主要市場データ</h2><p>金先物：4,026.30ドル <span class="down">-1.24%</span><br>WTI原油：81.74ドル <span class="down">-1.05%</span><br>日経225先物：62,240円 <span class="down">-0.25%</span><br>USD/JPY：163.67円前後<br>EUR/USD：1.1400前後<br>BTCUSD：63,826ドル前後 <span class="down">-1.12%</span></p></article><article class="card"><h2>材料と値動きの整合性</h2><p>FOMCのタカ派警戒で金・BTCが弱く、米金利高止まり観測でUSD/JPYは163円台後半。WTIは79ドル台から81ドル台へ反発したが、株式・BTCの反発にはつながっていない。</p></article></section>
-<section class="card" style="margin-top:16px"><h2>Google Docs正本プレビュー</h2><iframe class="docframe" src="https://docs.google.com/document/d/1HB9NmMQWtlf_vBj2ZdeJfcsOXOFclZuW74bMhJJUHCQ/preview"></iframe></section>
-<section class="card report-text" style="margin-top:16px"><h2>WEB掲載用本文抜粋</h2>マーケットレポート｜2026/07/29（水）21:00
+  <div class="status">
+    <div id="reportStatus">reports.json から最新本文を読み込みます。</div>
+    <small>本文はGoogle Docs公開結果を反映します</small>
+  </div>
 
-1. 結論
-21:00時点の中心テーマは、FOMC直前の米金利・ドルの方向確認と、AI・半導体株の評価修正がNY市場で続くかです。16:00以降、日経225先物は6万2,000円台前半で弱含み、金も前日比1%超安の水準を維持。一方、WTI原油は東京時間の79ドル台から81ドル台へ戻しており、地政学プレミアムとショートカバーが意識される動きに変わっています。
+  <div class="control-row">
+    <div id="timeTabs" class="time-tabs" aria-label="時間帯"></div>
+    <div class="date-controls" aria-label="日付選択">
+      <button id="prevDate" class="icon-btn" type="button" aria-label="前の日">‹</button>
+      <select id="dateSelect" class="date-picker"></select>
+      <button id="nextDate" class="icon-btn" type="button" aria-label="次の日">›</button>
+    </div>
+  </div>
 
-2. 今日の相場テーマ
-FOMC前の金利・ドル警戒、AI投資の収益性確認、原油の方向転換が主な論点です。MicrosoftとMetaの決算では、AI関連売上だけでなく設備投資、利益率、フリーキャッシュフローが焦点です。
-
-3. 16:00からの変化
-日経225先物は戻り売り優勢、金は4,020ドル台で弱含み、WTI原油は79.34ドルから81.74ドルへ反発。為替はUSD/JPYが163円台後半を維持し、EUR/USDは1.14近辺、BTCUSDは6万3,000ドル台で弱含みです。
-
-4. 最終判断
-FOMC前のイベント待ちとポジション圧縮が中心です。原油の急反発は株式市場に単純な追い風ではなく、インフレと金利高止まりを通じて日経225先物、金、BTCには逆風となる可能性があります。方向を決め打ちせず、FOMC結果とFRB議長会見、Microsoft・Meta決算反応を確認します。</section>
+  <div id="app" class="empty">本文データを読み込んでいます。</div>
+  <p class="footnote">本レポートは投資判断の参考情報であり、特定の投資を推奨するものではありません。</p>
 </main>
+
+<script>
+const REPORT_TIMES = ["07:00","12:00","16:00","21:00"];
+let reports = [];
+let selectedReport = null;
+
+const $ = (id) => document.getElementById(id);
+const esc = (value) => String(value ?? "")
+  .replace(/&/g,"&amp;")
+  .replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;")
+  .replace(/"/g,"&quot;");
+
+function asArray(value){
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (value === null || value === undefined || value === "") return [];
+  return [value];
+}
+
+function compactText(value, max = 220){
+  const text = String(value ?? "").replace(/\s+/g," ").trim();
+  if (!text) return "";
+  return text.length > max ? `${text.slice(0,max)}…` : text;
+}
+
+function dateToJp(dateText){
+  if (!dateText) return "日付未設定";
+  const date = new Date(`${dateText}T00:00:00+09:00`);
+  if (Number.isNaN(date.getTime())) return dateText;
+  const days = ["日","月","火","水","木","金","土"];
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,"0");
+  const d = String(date.getDate()).padStart(2,"0");
+  return `${y}/${m}/${d}（${days[date.getDay()]}）`;
+}
+
+function reportKey(report){
+  return `${report.date || ""} ${report.time || ""}`;
+}
+
+function sortReports(list){
+  return list
+    .filter((report) => report && report.date)
+    .sort((a,b) => reportKey(b).localeCompare(reportKey(a)));
+}
+
+function uniqueDates(){
+  return [...new Set(reports.map((report) => report.date))].sort().reverse();
+}
+
+function reportsForDate(dateText){
+  return reports
+    .filter((report) => report.date === dateText)
+    .sort((a,b) => REPORT_TIMES.indexOf(a.time) - REPORT_TIMES.indexOf(b.time));
+}
+
+function selectReport(dateText, timeText){
+  const sameDate = reportsForDate(dateText);
+  selectedReport = sameDate.find((report) => report.time === timeText) || sameDate.at(-1) || reports[0];
+  render();
+  const url = new URL(location.href);
+  url.searchParams.set("date", selectedReport.date || "");
+  url.searchParams.set("time", selectedReport.time || "");
+  history.replaceState(null,"",url);
+}
+
+function renderControls(report){
+  const dates = uniqueDates();
+  const dateSelect = $("dateSelect");
+  dateSelect.innerHTML = dates.map((date) => {
+    const selected = date === report.date ? " selected" : "";
+    return `<option value="${esc(date)}"${selected}>${esc(dateToJp(date))}</option>`;
+  }).join("");
+  dateSelect.onchange = () => selectReport(dateSelect.value, report.time);
+
+  const availableTimes = new Set(reportsForDate(report.date).map((item) => item.time));
+  $("timeTabs").innerHTML = REPORT_TIMES.map((time) => {
+    const active = time === report.time ? " is-active" : "";
+    const disabled = availableTimes.has(time) ? "" : " disabled";
+    return `<button type="button" class="time-tab${active}" data-time="${esc(time)}"${disabled}>${esc(time)}</button>`;
+  }).join("");
+  $("timeTabs").querySelectorAll("button:not(:disabled)").forEach((button) => {
+    button.addEventListener("click", () => selectReport(report.date, button.dataset.time));
+  });
+
+  const index = dates.indexOf(report.date);
+  $("prevDate").disabled = index < 0 || index >= dates.length - 1;
+  $("nextDate").disabled = index <= 0;
+  $("prevDate").onclick = () => index >= 0 && index < dates.length - 1 && selectReport(dates[index + 1], report.time);
+  $("nextDate").onclick = () => index > 0 && selectReport(dates[index - 1], report.time);
+}
+
+function renderList(values, fallback){
+  const items = asArray(values).map((item) => compactText(item, 520)).filter(Boolean);
+  const rows = items.length ? items : [fallback];
+  return `<ul class="list">${rows.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>`;
+}
+
+function renderText(value, fallback){
+  const text = compactText(value, 1200) || fallback;
+  return `<p class="text-block">${esc(text)}</p>`;
+}
+
+function renderMarketCard(market){
+  const rows = [
+    ["方向", market.direction],
+    ["価格", market.price],
+    ["前日比", market.change],
+    ["材料", market.material],
+    ["水準", market.levels],
+    ["リスク", market.risk]
+  ].filter(([,value]) => String(value ?? "").trim());
+  return `
+    <article class="market-card">
+      <h3><span>${esc(market.name || "市場")}</span><small>${esc(compactText(market.direction || "", 24))}</small></h3>
+      <dl class="kv">
+        ${rows.length ? rows.map(([key,value]) => `
+          <div><dt>${esc(key)}</dt><dd>${esc(compactText(value, 180))}</dd></div>
+        `).join("") : `<div><dt>状況</dt><dd>本文JSONに個別見通しがありません</dd></div>`}
+      </dl>
+    </article>
+  `;
+}
+
+function sourceDocLink(report){
+  const source = report.sourceDocument || {};
+  const url = source.url || source.previewUrl || report.sourceUrl || "";
+  if (!url) return "";
+  return `<a class="doc-link" href="${esc(url)}" target="_blank" rel="noopener">Google Docs元文書を開く</a>`;
+}
+
+function renderScenario(title, body, className){
+  return `
+    <article class="scenario-box ${className}">
+      <h3>${esc(title)}</h3>
+      ${renderText(body, "本文JSONに情報がありません")}
+    </article>
+  `;
+}
+
+function renderReport(report){
+  const markets = asArray(report.markets).filter((item) => item && typeof item === "object");
+  const updated = report.updatedAt || report.generatedAt || report.publishedAt || "";
+  $("lastUpdated").textContent = `表示中: ${dateToJp(report.date)} ${report.time || ""}`;
+  $("reportStatus").textContent = updated
+    ? `本文JSON読込済み / データ更新: ${updated}`
+    : "本文JSON読込済み";
+
+  const fullText = report.fullText || [
+    report.title,
+    report.theme,
+    ...asArray(report.changes),
+    ...asArray(report.consistency),
+    report.leadingMarket,
+    ...asArray(report.crossAssetFlow),
+    ...asArray(report.positioning),
+    ...asArray(report.news),
+    report.mainScenario,
+    report.alternativeScenario,
+    report.breakConditions,
+    ...asArray(report.handover)
+  ].filter(Boolean).join("\n\n");
+
+  $("app").className = "";
+  $("app").innerHTML = `
+    <section class="hero">
+      <div class="hero-head">
+        <div>
+          <h1>${esc(report.title || `マーケットレポート｜${dateToJp(report.date)} ${report.time || ""}`)}</h1>
+          <p class="sub">作成日時: ${esc(dateToJp(report.date))} ${esc(report.time || "")} / JSONから自動表示</p>
+        </div>
+        <div class="hero-tags">
+          ${asArray(report.tags).slice(0,8).map((tag) => `<span class="tag">${esc(tag)}</span>`).join("")}
+          ${sourceDocLink(report)}
+        </div>
+      </div>
+      <div class="hero-body">
+        <p class="theme">${esc(compactText(report.theme, 900) || "本文JSONに相場テーマがありません")}</p>
+      </div>
+    </section>
+
+    <section class="grid-main">
+      <div class="grid-two">
+        <article class="panel">
+          <h2 class="panel-title"><span>前回からの主な変化</span></h2>
+          <div class="panel-body">${renderList(report.changes, "本文JSONに変化情報がありません")}</div>
+        </article>
+        <article class="panel">
+          <h2 class="panel-title"><span>材料と値動きの整合性</span></h2>
+          <div class="panel-body">${renderList(report.consistency, "本文JSONに整合性コメントがありません")}</div>
+        </article>
+      </div>
+      <article class="panel">
+        <h2 class="panel-title"><span>今日の主導市場</span></h2>
+        <div class="panel-body">${renderText(report.leadingMarket, "本文JSONに主導市場コメントがありません")}</div>
+      </article>
+    </section>
+
+    <section class="grid-main" style="margin-top:12px">
+      <article class="panel">
+        <h2 class="panel-title"><span>個別市場の見通し</span></h2>
+        <div class="panel-body">
+          <div class="market-grid">
+            ${markets.length ? markets.map(renderMarketCard).join("") : `<div class="empty">本文JSONに個別見通しがありません。</div>`}
+          </div>
+        </div>
+      </article>
+      <div class="grid-two">
+        <article class="panel">
+          <h2 class="panel-title"><span>クロスアセット資金フロー</span></h2>
+          <div class="panel-body">${renderList(report.crossAssetFlow, "本文JSONに資金フロー情報がありません")}</div>
+        </article>
+        <article class="panel">
+          <h2 class="panel-title"><span>需給・ポジション</span></h2>
+          <div class="panel-body">${renderList(report.positioning, "本文JSONに需給・ポジション情報がありません")}</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:12px">
+      <h2 class="panel-title"><span>シナリオ</span></h2>
+      <div class="panel-body">
+        <div class="scenario-grid">
+          ${renderScenario("メインシナリオ", report.mainScenario, "main")}
+          ${renderScenario("代替シナリオ", report.alternativeScenario, "alt")}
+          ${renderScenario("崩れる条件", report.breakConditions, "break")}
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-main" style="margin-top:12px">
+      <div class="grid-two">
+        <article class="panel">
+          <h2 class="panel-title"><span>重要ニュース</span></h2>
+          <div class="panel-body">${renderList(report.news, "本文JSONに重要ニュースがありません")}</div>
+        </article>
+        <article class="panel">
+          <h2 class="panel-title"><span>重要イベント</span></h2>
+          <div class="panel-body">${renderList(report.events, "本文JSONに重要イベントがありません")}</div>
+        </article>
+      </div>
+      <div class="grid-two">
+        <article class="panel">
+          <h2 class="panel-title"><span>次の時間帯への引き継ぎ</span></h2>
+          <div class="panel-body">${renderList(report.handover, "本文JSONに引き継ぎ情報がありません")}</div>
+        </article>
+        <article class="panel">
+          <h2 class="panel-title"><span>リスク管理</span></h2>
+          <div class="panel-body">${renderList(report.riskManagement, "本文JSONにリスク管理情報がありません")}</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:12px">
+      <h2 class="panel-title"><span>本文全文</span></h2>
+      <div class="panel-body"><pre class="fulltext">${esc(fullText || "本文JSONに全文データがありません")}</pre></div>
+    </section>
+  `;
+}
+
+function render(){
+  if (!selectedReport) return;
+  renderControls(selectedReport);
+  renderReport(selectedReport);
+}
+
+async function init(){
+  try {
+    const response = await fetch(`reports.json?ts=${Date.now()}`, { cache:"no-store" });
+    if (!response.ok) throw new Error(`reports.json HTTP ${response.status}`);
+    const data = await response.json();
+    const list = Array.isArray(data) ? data : Array.isArray(data.reports) ? data.reports : [];
+    reports = sortReports(list);
+    if (!reports.length) throw new Error("reports.jsonに表示できる本文データがありません");
+
+    const params = new URLSearchParams(location.search);
+    const date = params.get("date");
+    const time = params.get("time");
+    selectedReport = reports.find((report) => report.date === date && report.time === time) || reports[0];
+    render();
+  } catch (error) {
+    $("lastUpdated").textContent = "読込エラー";
+    $("reportStatus").textContent = "本文JSONを読み込めませんでした";
+    $("app").className = "empty";
+    $("app").innerHTML = `マーケットレポート本文を表示できません。理由: ${esc(error.message)}。reports.jsonの公開状態を確認してください。`;
+  }
+}
+
+init();
+</script>
 </body>
 </html>
