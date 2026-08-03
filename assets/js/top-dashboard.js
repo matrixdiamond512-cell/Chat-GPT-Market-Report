@@ -7,7 +7,7 @@ const MARKET_DEFINITIONS = [
     display: "金（XAU/USD）",
     icon: "Au",
     iconClass: "gold",
-    patterns: [/金現物：/, /金価格：/, /金（XAU\/USD）：/],
+    patterns: [/金現物：/, /金価格：/, /金（XAU\/USD）：/, /金：/],
     unit: "USD/oz",
     route: "gold-supply-demand.html"
   },
@@ -105,7 +105,101 @@ function uniq(values) {
 }
 
 function normalizeMinus(value = "") {
-  return String(value).replace(/−/g, "-").trim();
+  return String(value).replace(/[−－]/g, "-").trim();
+}
+
+const MARKET_SEGMENT_RE = /(?:^|\s)(金（XAU\/USD）|金現物|金価格|金|WTI原油|原油（WTI）|原油|日経225先物(?:（[^）]+）)?|USD\/JPY|EUR\/USD|BTCUSD|BTC|VIX|日経VI)：/g;
+
+function splitMarketSegments(value = "") {
+  const text = cleanText(value, 4000);
+  const matches = [...text.matchAll(MARKET_SEGMENT_RE)];
+  if (!matches.length) return [text];
+  return matches.map((match, index) => {
+    const start = match.index + (match[0].startsWith(" ") ? 1 : 0);
+    const end = matches[index + 1]?.index ?? text.length;
+    return text.slice(start, end).trim();
+  }).filter(Boolean);
+}
+
+function isDefinitionLine(line, definition) {
+  return definition.patterns.some((pattern) => pattern.test(line));
+}
+
+function lineAfterLabel(line = "") {
+  const index = line.indexOf("：");
+  return index >= 0 ? line.slice(index + 1).trim() : line.trim();
+}
+
+function extractPriceValue(line, definition) {
+  const after = lineAfterLabel(normalizeMinus(line))
+    .replace(/\d{1,2}:\d{2}時点/g, "")
+    .replace(/前日比.*$/, "")
+    .replace(/約/g, "")
+    .trim();
+  if (!after || /取得不能|未確認/.test(after)) return "";
+
+  const patterns = {
+    gold: /([1-9]\d{0,2},\d{3}(?:\.\d+)?|[3-9]\d{3}(?:\.\d+)?)(?=\s*(?:ドル|USD|、|,|（|\s|$))/,
+    oil: /([1-9]\d(?:\.\d+)?|1\d{2}(?:\.\d+)?)(?=\s*(?:ドル|USD|、|,|（|\s|$))/,
+    nikkei: /([1-9]\d{1,2},\d{3}(?:\.\d+)?|[1-9]\d{4,})(?=\s*(?:円|、|,|（|\s|$))/,
+    usdjpy: /([1-9]\d{2}(?:\.\d+)?)(?=\s*(?:円|、|,|（|～|\s|$))/,
+    eurusd: /(1\.\d{3,5})(?=\s*(?:ドル|USD|、|,|（|\s|$))/,
+    btc: /([1-9]\d{1,2},\d{3}(?:\.\d+)?|[1-9]\d{4,})(?=\s*(?:ドル|USD|、|,|（|\s|$))/
+  };
+
+  const match = after.match(patterns[definition.key]);
+  return match ? match[1] : "";
+}
+
+function extractChangeText(line = "", market = {}) {
+  const candidates = [market.change, line].filter(Boolean).map(normalizeMinus);
+  for (const text of candidates) {
+    const withLabel = text.match(/前日比\s*([+\-]?\d[\d,.]*)\s*(?:円|ドル|USD|pt)?\s*、\s*([+\-]?\d[\d,.]*\s*(?:％|%)?)/);
+    if (withLabel) {
+      return `${withLabel[1]}　${withLabel[2].replace("%", "％")}`;
+    }
+
+    const inParen = text.match(/[（(]\s*([+\-]?\d[\d,.]*)\s*(?:円|ドル|USD|pt)?\s*、\s*([+\-]?\d[\d,.]*\s*(?:％|%)?)/);
+    if (inParen) {
+      return `${inParen[1]}　${inParen[2].replace("%", "％")}`;
+    }
+
+    const signedPair = text.match(/([+\-]\d[\d,.]*)\s*(?:円|ドル|USD|pt)?\s*、\s*([+\-]\d[\d,.]*\s*(?:％|%))/);
+    if (signedPair) {
+      return `${signedPair[1]}　${signedPair[2].replace("%", "％")}`;
+    }
+
+    const single = text.match(/前日比\s*([+\-]?\d[\d,.]*)\s*(?:円|ドル|USD|pt)?/);
+    if (single) {
+      return single[1];
+    }
+  }
+  return "";
+}
+
+function metricSourceValues(report, definition) {
+  const market = reportMarket(report, definition);
+  return [
+    market?.price,
+    market?.change,
+    market?.material,
+    market?.positioning,
+    market?.levels,
+    market?.risk,
+    market?.mainScenario,
+    market?.alternativeScenario,
+    ...sourceLines(report),
+    ...asArray(report.positioning).map(textOf),
+    ...asArray(report.crossAssetFlow).map(textOf)
+  ];
+}
+
+function metricSegments(report, definition) {
+  return uniq(metricSourceValues(report, definition)
+    .filter(Boolean)
+    .flatMap(splitMarketSegments)
+    .map((line) => cleanText(line, 240))
+    .filter((line) => isDefinitionLine(line, definition)));
 }
 
 function dateToJp(dateText) {
@@ -187,13 +281,15 @@ function reportMarket(report, definition) {
 }
 
 function findMetricLine(report, definition) {
-  return sourceLines(report).find((line) => definition.patterns.some((pattern) => pattern.test(line))) || "";
+  return metricSegments(report, definition).find((line) => (
+    /取得不能|未確認/.test(line) || extractPriceValue(line, definition)
+  )) || "";
 }
 
 function parseMetric(report, definition) {
+  const market = reportMarket(report, definition) || {};
   const line = findMetricLine(report, definition);
   if (!line) {
-    const market = reportMarket(report, definition);
     return {
       value: "取得不能",
       unit: "",
@@ -203,52 +299,23 @@ function parseMetric(report, definition) {
     };
   }
 
-  if (definition.key === "usdjpy") {
-    const match = line.match(/終値\s*([\d,.]+).*?（\s*([+\-−]?\d[\d,.]*)、\s*([+\-−]?\d[\d,.]*％)/);
-    if (match) {
-      const change = `${normalizeMinus(match[2])}　${normalizeMinus(match[3])}`;
-      return {
-        value: match[1],
-        unit: definition.unit,
-        change,
-        trend: trendFromText(change),
-        raw: line
-      };
-    }
-  }
-
-  if (definition.key === "oil") {
-    const range = line.match(/約\s*([^、。]+?ドル)/);
-    if (range) {
-      return {
-        value: range[1].replace("ドル", ""),
-        unit: definition.unit,
-        change: "前日比：取得不能",
-        trend: trendFromText(line),
-        raw: line
-      };
-    }
-  }
-
-  const metric = line.match(/：\s*([^（。]+?)(?:ドル|円|USD|pt|％|%)?（\s*([^、）]+)(?:、\s*([^）]+))?/);
-  if (metric) {
-    const value = metric[1].replace(/^(始値|高値|安値|終値)/, "").trim();
-    const change = [metric[2], metric[3]].filter(Boolean).map(normalizeMinus).join("　");
+  const value = extractPriceValue(line, definition);
+  const change = extractChangeText(line, market);
+  if (value) {
     return {
       value,
       unit: definition.unit,
       change: change || "前日比：取得不能",
-      trend: trendFromText(change || line),
+      trend: trendFromText(change || market.direction || line),
       raw: line
     };
   }
 
-  const simple = line.match(/：\s*([^。]+)/);
   return {
-    value: simple ? cleanText(simple[1].replace("約", ""), 24) : "取得不能",
-    unit: definition.unit,
-    change: "前日比：取得不能",
-    trend: trendFromText(line),
+    value: "取得不能",
+    unit: "",
+    change: cleanText(lineAfterLabel(line) || market.direction || "理由：価格として読める数値なし", 38),
+    trend: /取得不能|未確認/.test(line) ? "missing" : trendFromText(market.direction || line),
     raw: line
   };
 }
@@ -275,10 +342,17 @@ function findOutlookSentence(report, definition) {
 }
 
 function marketReason(report, definition, metric) {
+  const market = reportMarket(report, definition);
+  const direct = [market?.material, market?.positioning].find((item) => (
+    item &&
+    item !== "本文参照" &&
+    item.length <= 150 &&
+    !/前営業日終値|主要市場データ|Dow：|VIX：|Fear & Greed/.test(item)
+  ));
+  if (direct) return cleanText(direct, 68);
   const outlook = findOutlookSentence(report, definition);
   if (outlook) return outlook;
-  if (metric.raw) return cleanText(metric.raw.replace(/^.*?：/, ""), 68);
-  const market = reportMarket(report, definition);
+  if (metric.raw && metric.raw.length <= 130) return cleanText(metric.raw.replace(/^.*?：/, ""), 68);
   return cleanText(market?.material || "理由：本文に市場別理由がありません", 68);
 }
 
