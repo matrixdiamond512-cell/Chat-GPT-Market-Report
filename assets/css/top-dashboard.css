@@ -638,7 +638,7 @@ td:last-child {
 }
 
 .event-table {
-  min-width: 0;
+  min-width: 760px;
   table-layout: fixed;
 }
 
@@ -664,7 +664,8 @@ td:last-child {
 
 .event-table td:nth-child(2) {
   text-align: left;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: keep-all;
 }
 
 .event-title {
@@ -933,5 +934,70 @@ td:last-child {
 
   table {
     min-width: 620px;
+  }
+
+  .event-panel .table-wrap {
+    overflow-x: visible;
+  }
+
+  .event-table {
+    display: block;
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .event-table thead {
+    display: none;
+  }
+
+  .event-table tbody {
+    display: grid;
+    gap: 8px;
+  }
+
+  .event-table tr {
+    display: grid;
+    gap: 3px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: #fff;
+  }
+
+  .event-table td {
+    display: grid;
+    grid-template-columns: 86px minmax(0, 1fr);
+    gap: 8px;
+    width: auto !important;
+    padding: 2px 0;
+    border: 0;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .event-table td::before {
+    color: var(--muted);
+    font-weight: 900;
+  }
+
+  .event-table td:nth-child(1)::before {
+    content: "日時";
+  }
+
+  .event-table td:nth-child(2)::before {
+    content: "イベント";
+  }
+
+  .event-table td:nth-child(3)::before {
+    content: "国・地域";
+  }
+
+  .event-table td:nth-child(4)::before {
+    content: "重要度";
+  }
+
+  .event-table td:nth-child(5)::before {
+    content: "次まで";
   }
 }

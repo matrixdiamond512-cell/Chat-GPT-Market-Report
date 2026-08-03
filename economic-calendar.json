@@ -1,31 +1,10 @@
 {
-  "status": "not_configured",
-  "updatedAt": "2026-08-03T22:19:47+09:00",
+  "status": "report_only",
+  "updatedAt": null,
   "timezone": "Asia/Tokyo",
-  "provider": "Trading Economics",
-  "range": {
-    "from": "2026-08-02",
-    "to": "2026-08-10"
-  },
-  "filters": {
-    "importance": 3,
-    "countries": [
-      "united states",
-      "japan",
-      "euro area",
-      "germany",
-      "france",
-      "united kingdom",
-      "china",
-      "canada",
-      "australia",
-      "new zealand"
-    ]
-  },
+  "provider": "MARKET_REPORT_JSON",
+  "range": null,
   "events": [],
-  "errors": [
-    {
-      "message": "TRADING_ECONOMICS_API_KEY is not set."
-    }
-  ]
+  "errors": [],
+  "note": "重要イベントは有料外部APIを使わず、data/dashboard.json または reports.json の events から表示します。"
 }

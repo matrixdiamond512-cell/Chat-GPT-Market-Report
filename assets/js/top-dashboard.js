@@ -684,14 +684,15 @@ function calendarRowsForReport(report) {
 
 function calendarUnavailableNotice() {
   const status = dashboardCalendarMeta?.status || "";
-  if (!status || status === "ok") return "";
-  if (status === "not_configured") return "\u5916\u90e8\u30ab\u30ec\u30f3\u30c0\u30fcAPI\u672a\u8a2d\u5b9a";
+  if (!status || status === "ok" || status === "report_only") return "";
+  if (status === "not_configured") return "\u5916\u90e8\u30ab\u30ec\u30f3\u30c0\u30fc\u306f\u4f7f\u308f\u305a\u3001\u672c\u6587\u30a4\u30d9\u30f3\u30c8\u304b\u3089\u8868\u793a";
   if (status === "auth_error") return "Trading Economics API\u8a8d\u8a3c\u30a8\u30e9\u30fc";
   if (status === "partial") return "\u5916\u90e8\u30ab\u30ec\u30f3\u30c0\u30fc\u3092\u4e00\u90e8\u53d6\u5f97\u3067\u304d\u307e\u305b\u3093";
   return "\u5916\u90e8\u30ab\u30ec\u30f3\u30c0\u30fc\u53d6\u5f97\u30a8\u30e9\u30fc";
 }
 
 function eventDetail(row) {
+  if (row.detail) return `<small class="event-detail">${esc(row.detail)}</small>`;
   const parts = [
     row.forecast ? `予想 ${row.forecast}` : "",
     row.previous ? `前回 ${row.previous}` : "",
@@ -703,16 +704,37 @@ function eventDetail(row) {
   return "";
 }
 
+function normalizeEventTime(value = "") {
+  const match = String(value || "").match(/\b([01]?\d|2[0-3]):([0-5]\d)\b/);
+  return match ? `${match[1].padStart(2, "0")}:${match[2]}` : "";
+}
+
+function normalizeEventDate(value = "", fallbackDate = "") {
+  const text = String(value || "");
+  const iso = text.match(/(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (iso) return `${iso[1]}-${iso[2].padStart(2, "0")}-${iso[3].padStart(2, "0")}`;
+  const monthDay = text.match(/(?:^|[^\d])(\d{1,2})\/(\d{1,2})(?:[^\d]|$)/);
+  if (monthDay && /^\d{4}-\d{2}-\d{2}$/.test(fallbackDate || "")) {
+    return `${fallbackDate.slice(0, 4)}-${monthDay[1].padStart(2, "0")}-${monthDay[2].padStart(2, "0")}`;
+  }
+  return /^\d{4}-\d{2}-\d{2}$/.test(fallbackDate || "") ? fallbackDate : "";
+}
+
 function splitEventText(value = "") {
   const text = cleanText(value, 1200)
     .replace(/^今後の重要イベント[:：\s]*/, "")
     .replace(/。$/, "");
   if (!text) return [];
 
-  if (text.length < 70 || !/、/.test(text)) return [text];
+  const numbered = text
+    .replace(/(?:^|\s)(\d+[.)．]|[①-⑳])/g, "\n$1")
+    .split(/\n+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const chunks = numbered.length > 1 ? numbered : [text];
 
-  return text
-    .split(/、/)
+  return chunks
+    .flatMap((item) => item.length >= 56 && /、/.test(item) ? item.split(/、/) : [item])
     .map((item) => item.replace(/[。,\s]+$/, "").trim())
     .filter((item) => item.length >= 2);
 }
@@ -728,12 +750,95 @@ function isDashboardEventItem(item = "") {
 }
 
 function dashboardEventItems(report) {
-  return uniq(asArray(report.events)
+  return uniq([
+    ...asArray(report.events),
+    ...asArray(report.importantEvents),
+    ...asArray(report.calendarEvents)
+  ]
     .map(textOf)
     .flatMap(splitEventText)
     .map((item) => cleanText(item, 46))
     .filter(isDashboardEventItem))
     .slice(0, 6);
+}
+
+function eventTitleFromText(item = "") {
+  return cleanText(String(item)
+    .replace(/^\d{4}[-/]\d{1,2}[-/]\d{1,2}\s*/, "")
+    .replace(/^\d{1,2}\/\d{1,2}\s*/, "")
+    .replace(/^\b[0-2]?\d:[0-5]\d\s*/, "")
+    .replace(/^随時\s*/, "")
+    .replace(/^予定確認\s*/, ""), 56);
+}
+
+function reportEventRowFromText(item, report) {
+  const title = eventTitleFromText(item);
+  if (!title) return null;
+  const time = normalizeEventTime(item);
+  const date = normalizeEventDate(item, report.date);
+  return {
+    date,
+    time: time || (/協議|再開|発言|観測|方針|地政学|介入/.test(item) ? "随時" : "予定確認"),
+    title,
+    country: regionFromEvent(item),
+    importance: importanceFromEvent(item),
+    next: fallbackEventNextText(item)
+  };
+}
+
+function reportEventRowFromObject(event, report) {
+  if (!event || typeof event !== "object") return null;
+  const rawTitle = event.title || event.event || event.name || event.text || event.summary || "";
+  const title = cleanText(rawTitle, 56);
+  if (!title) return null;
+
+  const rawDate = event.date || event.datetimeJst || event.datetime || event.time || "";
+  const rawTime = event.time || event.datetimeJst || event.datetime || "";
+  const date = normalizeEventDate(rawDate, report.date);
+  const time = normalizeEventTime(rawTime) || cleanText(event.timing || event.when || "", 16) || "予定確認";
+  const detail = [
+    event.impact || event.markets || event.marketImpact ? `影響：${cleanText(asArray(event.impact || event.markets || event.marketImpact).join("・"), 42)}` : "",
+    event.forecast || event.consensus ? `予想 ${cleanText(event.forecast || event.consensus, 24)}` : "",
+    event.previous ? `前回 ${cleanText(event.previous, 24)}` : "",
+    event.note ? cleanText(event.note, 46) : ""
+  ].filter(Boolean).join(" / ");
+
+  return {
+    date,
+    time,
+    title,
+    country: cleanText(event.country || event.region || regionFromEvent(title), 14),
+    importance: importanceStars(event.importance || event.priority, title),
+    next: cleanText(event.next || event.countdown || "", 18),
+    detail
+  };
+}
+
+function reportEventRows(report) {
+  const sourceEvents = [
+    ...asArray(report.events),
+    ...asArray(report.importantEvents),
+    ...asArray(report.calendarEvents)
+  ];
+  const rows = sourceEvents.flatMap((item) => {
+    if (item && typeof item === "object") {
+      const row = reportEventRowFromObject(item, report);
+      return row ? [row] : [];
+    }
+    return splitEventText(textOf(item))
+      .map((text) => cleanText(text, 46))
+      .filter(isDashboardEventItem)
+      .map((text) => reportEventRowFromText(text, report))
+      .filter(Boolean);
+  });
+
+  const seen = new Set();
+  return rows.filter((row) => {
+    const key = `${row.time}|${row.country}|${row.title}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 6);
 }
 
 function eventTiming(report, item) {
@@ -772,7 +877,32 @@ function eventDisplayName(item = "") {
   return cleanText(item.replace(/^\b[0-2]\d:[0-5]\d\s*/, ""), 46);
 }
 
+function reportEventTiming(row, report) {
+  if (row.time && /^\d{2}:\d{2}$/.test(row.time)) {
+    return `${dateToJp(row.date || report.date)} ${row.time}`;
+  }
+  return row.time || "予定確認";
+}
+
+function reportEventNextText(row, report) {
+  if (row.next) return row.next;
+  if (row.time && /^\d{2}:\d{2}$/.test(row.time)) return calendarNextText(row, report);
+  return fallbackEventNextText(row.title);
+}
+
 function renderEvents(report) {
+  const reportRows = reportEventRows(report);
+  if (reportRows.length) {
+    $("eventRows").innerHTML = reportRows.map((row) => `<tr>
+      <td>${esc(reportEventTiming(row, report))}</td>
+      <td><span class="event-title">${esc(row.title)}</span>${eventDetail(row)}</td>
+      <td>${esc(row.country || regionFromEvent(row.title))}</td>
+      <td>${esc(row.importance)}</td>
+      <td>${esc(reportEventNextText(row, report))}</td>
+    </tr>`).join("");
+    return;
+  }
+
   const calendarRows = calendarRowsForReport(report);
   if (calendarRows.length) {
     $("eventRows").innerHTML = calendarRows.map((row) => `<tr>
@@ -882,16 +1012,13 @@ function render() {
 
 async function init() {
   try {
-    const [data, calendarPayload] = await Promise.all([
-      loadDashboardReports(),
-      loadDashboardEventCalendar()
-    ]);
+    const data = await loadDashboardReports();
     reports = asArray(data.reports)
       .filter((report) => /^\d{4}-\d{2}-\d{2}$/.test(report.date || ""))
       .sort((a, b) => reportKey(b).localeCompare(reportKey(a)));
     dashboardMeta = data.meta || null;
-    dashboardCalendarMeta = calendarPayload || null;
-    dashboardCalendarEvents = asArray(calendarPayload?.events).map(normalizeCalendarEvent).filter(Boolean);
+    dashboardCalendarMeta = { status: "report_only", provider: "MARKET_REPORT_JSON" };
+    dashboardCalendarEvents = [];
 
     if (!reports.length) throw new Error("表示できるレポートがありません");
 
