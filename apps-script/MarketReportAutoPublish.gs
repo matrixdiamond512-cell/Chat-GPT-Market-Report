@@ -1,6 +1,8 @@
 const MARKET_REPORT_AUTO_CONFIG = {
   timezone: 'Asia/Tokyo',
   minute: 30,
+  lookbackDays: 4,
+  reportHours: [7, 12, 16, 21],
   scheduleHandlers: [
     { name: 'autoPublishMarketReport0700', hour: 7 },
     { name: 'autoPublishMarketReport1200', hour: 12 },
@@ -29,7 +31,7 @@ function installMarketReportAutoPublishTriggers() {
   SpreadsheetApp.getUi().alert(
     'WEB版「マーケットレポート本文」の定時公開トリガーを設定しました。\n' +
     '平日: 07:30 / 12:30 / 16:30 / 21:30\n\n' +
-    '各時刻に最新のGoogle Docsを確認し、未反映ならreports.jsonへ公開します。'
+    'この関数はトリガー設定だけを行います。本文公開は各時刻に自動実行されます。'
   );
 }
 
@@ -54,6 +56,25 @@ function showMarketReportAutoPublishStatus() {
     '登録済み: ' + (activeInstalled.length ? activeInstalled.join(' / ') : 'なし') + '\n' +
     '旧トリガー: ' + (legacyInstalled.length ? legacyInstalled.join(' / ') : 'なし') + '\n\n' +
     '最終実行結果:\n' + lastResult
+  );
+}
+
+function testMarketReportAutoFindLatestDoc() {
+  const file = findLatestMarketReportDocForAutoPublish_();
+
+  if (!file) {
+    SpreadsheetApp.getUi().alert(
+      'マーケットレポートGoogle Docsが見つかりませんでした。\n' +
+      '確認した名前の例: マーケットレポート_YYYY-MM-DD_07-00'
+    );
+    return;
+  }
+
+  SpreadsheetApp.getUi().alert(
+    '最新候補のGoogle Docsを確認できました。\n\n' +
+    'ファイル名: ' + file.getName() + '\n' +
+    '更新日時: ' + formatMarketReportAutoDateTime_(file.getLastUpdated()) + '\n\n' +
+    'この確認関数はWEB公開しません。'
   );
 }
 
@@ -134,32 +155,45 @@ function autoPublishScheduledMarketReport_(hour) {
 }
 
 function findLatestMarketReportDocForAutoPublish_() {
-  if (typeof findLatestMarketReportDoc_ === 'function') {
-    try {
-      return findLatestMarketReportDoc_();
-    } catch (error) {
-      if (String(error.message || '').indexOf('見つかりません') === -1) throw error;
-    }
-  }
-
-  const prefix = (typeof WEB_REPORT_CONFIG === 'object' && WEB_REPORT_CONFIG.prefix) || 'マーケットレポート_';
-  const files = DriveApp.searchFiles(
-    'mimeType = "' + MimeType.GOOGLE_DOCS + '" and title contains "' + prefix + '" and trashed = false'
-  );
+  const candidates = buildMarketReportAutoCandidateNames_();
   let latest = null;
 
-  while (files.hasNext()) {
-    const file = files.next();
-    if (!/^マーケットレポート_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}/.test(file.getName())) continue;
-    if (!latest || file.getLastUpdated().getTime() > latest.getLastUpdated().getTime()) latest = file;
-  }
+  candidates.forEach(name => {
+    const files = DriveApp.getFilesByName(name);
+
+    while (files.hasNext()) {
+      const file = files.next();
+      if (file.isTrashed()) continue;
+      if (file.getMimeType() !== MimeType.GOOGLE_DOCS) continue;
+      if (!latest || file.getLastUpdated().getTime() > latest.getLastUpdated().getTime()) {
+        latest = file;
+      }
+    }
+  });
 
   return latest;
 }
 
+function buildMarketReportAutoCandidateNames_() {
+  const now = new Date();
+  const names = [];
+
+  for (let i = 0; i < MARKET_REPORT_AUTO_CONFIG.lookbackDays; i += 1) {
+    const date = new Date(now.getTime());
+    date.setDate(date.getDate() - i);
+    const dateText = Utilities.formatDate(date, MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd');
+
+    MARKET_REPORT_AUTO_CONFIG.reportHours.forEach(hour => {
+      names.push('マーケットレポート_' + dateText + '_' + ('0' + hour).slice(-2) + '-00');
+    });
+  }
+
+  return names;
+}
+
 function isScheduledMarketReportSlot_(day, hour) {
   if (day === 6 || day === 7) return false;
-  return [7, 12, 16, 21].includes(hour);
+  return MARKET_REPORT_AUTO_CONFIG.reportHours.includes(hour);
 }
 
 function deleteMarketReportAutoPublishTriggers_() {
