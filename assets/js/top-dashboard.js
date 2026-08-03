@@ -678,6 +678,7 @@ function normalizeCalendarEvent(event) {
 
 function calendarRowsForReport(report) {
   const rows = dashboardCalendarEvents
+    .filter((event) => /^\d{2}:\d{2}$/.test(event.time || ""))
     .filter((event) => {
       if (event.date > report.date) return true;
       if (event.date < report.date) return false;
@@ -944,6 +945,10 @@ function reportEventTiming(row, report) {
   return row.time || "予定確認";
 }
 
+function isTimedEventRow(row) {
+  return /^\d{2}:\d{2}$/.test(row?.time || "");
+}
+
 function reportEventNextText(row, report) {
   if (row.time && /^\d{2}:\d{2}$/.test(row.time)) return calendarNextText(row, report);
   if (row.next) return row.next;
@@ -963,7 +968,7 @@ function renderEvents(report) {
     return;
   }
 
-  const reportRows = mergedReportEventRows(report);
+  const reportRows = mergedReportEventRows(report).filter(isTimedEventRow);
   if (reportRows.length) {
     $("eventRows").innerHTML = reportRows.map((row) => `<tr>
       <td>${esc(reportEventTiming(row, report))}</td>
@@ -975,7 +980,7 @@ function renderEvents(report) {
     return;
   }
 
-  const events = dashboardEventItems(report);
+  const events = dashboardEventItems(report).filter((item) => /\b[0-2]\d:[0-5]\d\b/.test(item));
   $("eventRows").innerHTML = events.length ? events.map((item, index) => {
     const notice = calendarUnavailableNotice();
     const fallbackNote = index === 0 && notice
@@ -988,7 +993,7 @@ function renderEvents(report) {
       <td>${esc(importanceFromEvent(item))}</td>
       <td>${esc(fallbackEventNextText(item))}</td>
     </tr>`;
-  }).join("") : `<tr><td>取得不能</td><td>理由：重要イベント項目がJSONにありません</td><td>未連携</td><td>-</td><td>-</td></tr>`;
+  }).join("") : `<tr><td>予定なし</td><td>時刻が確定している重要イベントはありません</td><td>-</td><td>-</td><td>-</td></tr>`;
 }
 
 function lensItems(report) {

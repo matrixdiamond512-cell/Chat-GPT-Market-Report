@@ -448,12 +448,13 @@ async function loadDynamicEventPage() {
   try {
     const eventPayload = await fetchDedicatedEvents();
     const dedicatedEvents = normalizeDedicatedEvents(eventPayload);
-    if (dedicatedEvents.length) {
+    const importantEvents = dedicatedEvents.filter(isTimedDynamicEvent);
+    if (importantEvents.length) {
       const meta = document.querySelector(".top-meta span");
       if (meta) meta.textContent = `最終更新　${formatPayloadDateTime(eventPayload)}`;
-      document.querySelector(".events-head small").textContent = "data/events.json から表示しています。市場予想は手入力補完できます。";
-      renderDynamicEventList(dedicatedEvents, 0);
-      renderDynamicEvent(dedicatedEvents[0]);
+      document.querySelector(".events-head small").textContent = "時刻が確定している重要イベントのみ表示しています。市場予想は手入力補完できます。";
+      renderDynamicEventList(importantEvents, 0);
+      renderDynamicEvent(importantEvents[0]);
       return;
     }
   } catch (error) {
@@ -520,6 +521,8 @@ function normalizeDedicatedEvents(payload) {
       forecast,
       previousValue: previous,
       actual,
+      category: event.category || (iso ? "scheduled_event" : "monitoring_headline"),
+      isTimed: Boolean(iso),
       affected,
       reason: sourceNote,
       importance: "★".repeat(Math.max(1, Math.min(3, importance))),
@@ -558,6 +561,10 @@ function normalizeDedicatedEvents(payload) {
       }
     };
   }).filter(Boolean);
+}
+
+function isTimedDynamicEvent(event) {
+  return Boolean(event?.isTimed || event?.iso);
 }
 
 function normalizeEventReactions(reactions) {
@@ -729,7 +736,7 @@ function buildDynamicEvents(reportList, baseReport) {
 
   const seen = new Set();
   return rows
-    .filter(event => event.name && isUpcomingDynamicEvent(event, baseReport))
+    .filter(event => event.name && event.iso && isUpcomingDynamicEvent(event, baseReport))
     .sort((a, b) => {
       if (a.iso && b.iso) return new Date(a.iso) - new Date(b.iso);
       if (a.iso) return -1;
