@@ -3,7 +3,9 @@ var DASHBOARD_JSON_CONFIG = {
   reportsPath: 'reports.json',
   timezone: 'Asia/Tokyo',
   maxReports: 120,
-  lastResultProperty: 'DASHBOARD_JSON_LAST_RESULT'
+  lastResultProperty: 'DASHBOARD_JSON_LAST_RESULT',
+  priceSheetName: '終値一覧',
+  priceSourceId: 'CLOSE_PRICE_SHEET'
 };
 
 function previewDashboardJson() {
@@ -62,8 +64,13 @@ function buildDashboardJsonFromReports_(reports) {
 }
 
 function dashboardBuildPayloadFromReports_(reports) {
-  var normalizedReports = dashboardNormalizeReports_(reports).map(dashboardPrepareReportForDashboard_);
-  if (!normalizedReports.length) throw new Error('ダッシュボードに使えるマーケットレポートがありません。');
+  var priceSource = dashboardFetchPriceSheetSource_();
+  var sourceReports = dashboardNormalizeReports_(reports);
+  if (!sourceReports.length) throw new Error('ダッシュボードに使えるマーケットレポートがありません。');
+
+  var normalizedReports = sourceReports.map(function(report, index) {
+    return dashboardPrepareReportForDashboard_(report, priceSource, index === 0);
+  });
 
   var latest = normalizedReports[0];
   var generatedAt = dashboardIsoJst_(new Date());
@@ -78,20 +85,41 @@ function dashboardBuildPayloadFromReports_(reports) {
     isStale: dashboardIsStale_(latest.date),
     staleReason: dashboardIsStale_(latest.date) ? '最新レポートの日付が現在日から3日以上離れています。' : '',
     currentReportKey: latestKey,
-    sources: [
-      {
-        id: 'MARKET_REPORTS_JSON',
-        name: 'マーケットレポート本文の構造化JSON',
-        path: DASHBOARD_JSON_CONFIG.reportsPath,
-        asOf: latestKey,
-        status: 'ok',
-        note: 'Google Docsのマーケットレポート本文をGASで構造化したデータ。トップページはこのJSONを優先して表示します。'
-      }
-    ],
-    errors: [],
+    sources: dashboardBuildDashboardSources_(latestKey, priceSource),
+    errors: dashboardBuildDashboardErrors_(priceSource),
     latestReport: latest,
     reports: normalizedReports.slice(0, DASHBOARD_JSON_CONFIG.maxReports)
   };
+}
+
+function dashboardBuildDashboardSources_(latestKey, priceSource) {
+  return [
+    {
+      id: 'MARKET_REPORTS_JSON',
+      name: 'マーケットレポート本文の構造化JSON',
+      path: DASHBOARD_JSON_CONFIG.reportsPath,
+      asOf: latestKey,
+      status: 'ok',
+      note: 'Google Docsのマーケットレポート本文をGASで構造化したデータ。トップページ本文要素はこのJSONを優先して表示します。'
+    },
+    {
+      id: DASHBOARD_JSON_CONFIG.priceSourceId,
+      name: 'スプレッドシート価格データ',
+      sheetName: DASHBOARD_JSON_CONFIG.priceSheetName,
+      asOf: priceSource && priceSource.asOf ? priceSource.asOf : '',
+      status: priceSource && priceSource.status ? priceSource.status : 'unavailable',
+      note: '金・原油・日経225先物・USD/JPY・EUR/USD・BTCUSDの価格、前日比、騰落率は終値一覧を優先して反映します。'
+    }
+  ];
+}
+
+function dashboardBuildDashboardErrors_(priceSource) {
+  if (!priceSource || priceSource.status === 'ok') return [];
+  if (priceSource.status === 'unavailable') return [];
+  return [
+    '終値一覧の価格データを反映できませんでした: ' +
+      (priceSource.error || priceSource.status)
+  ];
 }
 
 function dashboardFetchReportsJson_() {
@@ -119,7 +147,7 @@ function dashboardNormalizeReports_(reports) {
     });
 }
 
-function dashboardPrepareReportForDashboard_(report) {
+function dashboardPrepareReportForDashboard_(report, priceSource, useLatestPriceFallback) {
   var prepared = dashboardClonePlainObject_(report);
   var metricLines = dashboardCollectMarketMetricLines_(report);
   var markets = dashboardMarketsByName_(prepared.markets);
@@ -142,7 +170,249 @@ function dashboardPrepareReportForDashboard_(report) {
     };
   });
 
+  dashboardApplyPriceSheetMetrics_(prepared, priceSource, !!useLatestPriceFallback);
   return prepared;
+}
+
+function dashboardFetchPriceSheetSource_() {
+  var source = {
+    id: DASHBOARD_JSON_CONFIG.priceSourceId,
+    sheetName: DASHBOARD_JSON_CONFIG.priceSheetName,
+    status: 'unavailable',
+    asOf: '',
+    byDate: {},
+    latest: null,
+    error: ''
+  };
+
+  try {
+    if (typeof SpreadsheetApp === 'undefined') return source;
+    var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    if (!spreadsheet) {
+      source.status = 'missing';
+      source.error = 'アクティブなスプレッドシートを取得できません。';
+      return source;
+    }
+
+    var sheet = spreadsheet.getSheetByName(DASHBOARD_JSON_CONFIG.priceSheetName);
+    if (!sheet) {
+      source.status = 'missing';
+      source.error = 'シート「' + DASHBOARD_JSON_CONFIG.priceSheetName + '」が見つかりません。';
+      return source;
+    }
+
+    var lastRow = sheet.getLastRow();
+    var lastColumn = sheet.getLastColumn();
+    if (lastRow < 2 || lastColumn < 1) {
+      source.status = 'empty';
+      source.error = '終値一覧にデータ行がありません。';
+      return source;
+    }
+
+    var values = sheet.getRange(1, 1, lastRow, lastColumn).getDisplayValues();
+    var headers = values[0] || [];
+    var index = dashboardHeaderIndex_(headers);
+    if (!Object.prototype.hasOwnProperty.call(index, '日付')) {
+      source.status = 'error';
+      source.error = '終値一覧に日付列が見つかりません。';
+      return source;
+    }
+
+    for (var rowIndex = values.length - 1; rowIndex >= 1; rowIndex -= 1) {
+      var row = values[rowIndex] || [];
+      var date = dashboardNormalizeDateKey_(row[index['日付']]);
+      if (!date) continue;
+
+      var metricRow = dashboardBuildPriceMetricRow_(date, row, index);
+      if (!Object.keys(metricRow.markets).length) continue;
+      if (!source.byDate[date]) source.byDate[date] = metricRow;
+      if (!source.latest) source.latest = metricRow;
+    }
+
+    if (!source.latest) {
+      source.status = 'empty';
+      source.error = '終値一覧から市場価格データを作成できませんでした。';
+      return source;
+    }
+
+    source.status = 'ok';
+    source.asOf = source.latest.date;
+    return source;
+  } catch (error) {
+    source.status = 'error';
+    source.error = error.message;
+    return source;
+  }
+}
+
+function dashboardHeaderIndex_(headers) {
+  var index = {};
+  (headers || []).forEach(function(header, columnIndex) {
+    var key = dashboardNormalizeInlineText_(header);
+    if (key && !Object.prototype.hasOwnProperty.call(index, key)) {
+      index[key] = columnIndex;
+    }
+  });
+  return index;
+}
+
+function dashboardNormalizeDateKey_(value) {
+  var text = String(value || '').trim();
+  if (!text) return '';
+
+  var match = text.match(/(\d{4})[\/.\-年](\d{1,2})[\/.\-月](\d{1,2})/);
+  if (!match) return '';
+
+  var year = match[1];
+  var month = ('0' + match[2]).slice(-2);
+  var day = ('0' + match[3]).slice(-2);
+  return year + '-' + month + '-' + day;
+}
+
+function dashboardBuildPriceMetricRow_(date, row, index) {
+  var markets = {};
+
+  dashboardAddPriceMetric_(
+    markets,
+    '金',
+    '金（XAU/USD）',
+    dashboardReadSheetValue_(row, index, 'ゴールド終値'),
+    dashboardReadSheetValue_(row, index, 'ゴールド前日比'),
+    dashboardReadSheetValue_(row, index, 'ゴールド騰落率'),
+    'ドル'
+  );
+
+  dashboardAddPriceMetric_(
+    markets,
+    '原油',
+    'WTI原油',
+    dashboardReadSheetValue_(row, index, 'WTI原油終値'),
+    dashboardReadSheetValue_(row, index, 'WTI原油前日比'),
+    dashboardReadSheetValue_(row, index, 'WTI原油騰落率'),
+    'ドル'
+  );
+
+  dashboardAddPriceMetric_(
+    markets,
+    '日経225先物',
+    '日経225先物（大阪取引所）',
+    dashboardReadSheetValue_(row, index, '日経225先物大阪終値'),
+    dashboardReadSheetValue_(row, index, '日経225先物大阪前日比'),
+    dashboardReadSheetValue_(row, index, '日経225先物大阪騰落率'),
+    '円'
+  );
+
+  dashboardAddPriceMetric_(
+    markets,
+    'USD/JPY',
+    'USD/JPY',
+    dashboardChooseFirstSheetValue_(row, index, ['USDJPY終値（Investing.com）', 'USDJPY終値']),
+    dashboardReadSheetValue_(row, index, 'USDJPY前日比'),
+    dashboardReadSheetValue_(row, index, 'USDJPY騰落率'),
+    '円'
+  );
+
+  dashboardAddPriceMetric_(
+    markets,
+    'EUR/USD',
+    'EUR/USD',
+    dashboardReadSheetValue_(row, index, 'EURUSD終値'),
+    dashboardReadSheetValue_(row, index, 'EURUSD前日比'),
+    dashboardReadSheetValue_(row, index, 'EURUSD騰落率'),
+    ''
+  );
+
+  dashboardAddPriceMetric_(
+    markets,
+    'BTCUSD',
+    'BTCUSD',
+    dashboardReadSheetValue_(row, index, 'BTCUSD終値'),
+    dashboardReadSheetValue_(row, index, 'BTCUSD前日比'),
+    dashboardReadSheetValue_(row, index, 'BTCUSD騰落率'),
+    'ドル'
+  );
+
+  return {
+    date: date,
+    markets: markets
+  };
+}
+
+function dashboardAddPriceMetric_(markets, marketName, label, close, change, pct, unit) {
+  close = dashboardCleanSheetValue_(close);
+  if (!close) return;
+
+  var changePair = dashboardFormatSignedPair_(change, pct);
+  markets[marketName] = {
+    price: label + '：' + close + unit + (changePair ? '（' + changePair + '）' : ''),
+    change: changePair
+  };
+}
+
+function dashboardReadSheetValue_(row, index, header) {
+  if (!Object.prototype.hasOwnProperty.call(index, header)) return '';
+  return dashboardCleanSheetValue_(row[index[header]]);
+}
+
+function dashboardChooseFirstSheetValue_(row, index, headers) {
+  for (var i = 0; i < headers.length; i += 1) {
+    var value = dashboardReadSheetValue_(row, index, headers[i]);
+    if (value) return value;
+  }
+  return '';
+}
+
+function dashboardApplyPriceSheetMetrics_(prepared, priceSource, useLatestPriceFallback) {
+  if (!priceSource || priceSource.status !== 'ok') return;
+
+  var exactRow = priceSource.byDate[prepared.date];
+  var priceRow = exactRow || (useLatestPriceFallback ? priceSource.latest : null);
+  if (!priceRow || !priceRow.markets) return;
+
+  var markets = dashboardMarketsByName_(prepared.markets);
+  dashboardMarketDefinitions_().forEach(function(definition) {
+    var market = markets[definition.name];
+    var metric = priceRow.markets[definition.name];
+    if (!market || !metric || !metric.price) return;
+
+    market.price = metric.price;
+    market.change = metric.change || market.change;
+    market.priceSource = {
+      id: DASHBOARD_JSON_CONFIG.priceSourceId,
+      sheetName: priceSource.sheetName,
+      asOf: priceRow.date,
+      match: exactRow ? 'date' : 'latest'
+    };
+  });
+
+  prepared.marketDataAsOf = priceRow.date;
+  prepared.marketDataSource = priceSource.sheetName;
+}
+
+function dashboardFormatSignedPair_(change, pct) {
+  var values = [];
+  var cleanChange = dashboardCleanSheetValue_(change);
+  var cleanPct = dashboardNormalizePercentText_(pct);
+  if (cleanChange) values.push(cleanChange);
+  if (cleanPct) values.push(cleanPct);
+  return values.join('、');
+}
+
+function dashboardNormalizePercentText_(value) {
+  var text = dashboardCleanSheetValue_(value);
+  if (!text) return '';
+  text = text.replace(/%/g, '％');
+  if (text.indexOf('％') === -1) text += '％';
+  return text;
+}
+
+function dashboardCleanSheetValue_(value) {
+  var text = dashboardNormalizeInlineText_(value);
+  if (!text) return '';
+  if (/^(?:-|--|―|N\/A|NA|null|undefined)$/i.test(text)) return '';
+  if (/^#/.test(text)) return '';
+  if (/休場|取得不能|該当なし/.test(text)) return '';
+  return text;
 }
 
 function dashboardClonePlainObject_(value) {
