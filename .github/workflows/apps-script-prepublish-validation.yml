@@ -1,0 +1,88 @@
+name: Apps Script Pre-Publish Validation
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'apps-script/MarketReportAutoPublish.gs'
+      - 'apps-script/MarketReportPrePublishValidation.gs'
+      - '.github/workflows/apps-script-prepublish-validation.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps-script/MarketReportAutoPublish.gs'
+      - 'apps-script/MarketReportPrePublishValidation.gs'
+      - '.github/workflows/apps-script-prepublish-validation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Syntax-check Apps Script files
+        run: |
+          cp apps-script/MarketReportAutoPublish.gs /tmp/MarketReportAutoPublish.js
+          cp apps-script/MarketReportPrePublishValidation.gs /tmp/MarketReportPrePublishValidation.js
+          node --check /tmp/MarketReportAutoPublish.js
+          node --check /tmp/MarketReportPrePublishValidation.js
+
+      - name: Unit-test validator behavior
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const vm = require('vm');
+          const code = fs.readFileSync('apps-script/MarketReportPrePublishValidation.gs', 'utf8');
+          const context = {
+            console,
+            Utilities: { formatDate: () => '2026-08-04 09:30:00' },
+            SpreadsheetApp: { getUi: () => ({ alert: () => {} }) },
+          };
+          vm.createContext(context);
+          vm.runInContext(code, context);
+
+          const market = name => ({
+            name,
+            direction: '中立',
+            price: '取得不能（構造化元本文に価格記載なし）',
+            material: '材料',
+            positioning: '需給',
+            levels: '水準',
+            mainScenario: 'メイン',
+            alternativeScenario: '代替',
+            breakCondition: '崩れる条件',
+            risk: 'リスク',
+          });
+          const report = {
+            date: '2026-08-04',
+            time: '07:00',
+            title: 'マーケットレポート｜2026/08/04（火）07:00',
+            theme: 'テーマ',
+            leadingMarket: '主導市場',
+            mainScenario: 'メイン',
+            alternativeScenario: '代替',
+            breakConditions: '崩れる条件',
+            riskManagement: ['リスク管理'],
+            markets: ['金','原油','日経225先物','USD/JPY','EUR/USD','BTCUSD'].map(market),
+          };
+
+          const ok = context.validateMarketReportBeforePublish_(report, 7);
+          if (!ok.ok || ok.warnings.length !== 6) throw new Error('valid report should pass with six warnings');
+
+          const broken = JSON.parse(JSON.stringify(report));
+          broken.markets[0].price = '';
+          let failed = false;
+          try { context.validateMarketReportBeforePublish_(broken, 7); }
+          catch (error) { failed = /公開前検証に失敗/.test(String(error.message)); }
+          if (!failed) throw new Error('blank required market field must fail');
+          NODE
