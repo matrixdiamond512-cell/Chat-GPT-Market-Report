@@ -10,13 +10,19 @@ on:
       - scripts/structure_reports.py
       - scripts/validate_market_reports.py
       - .github/workflows/structure-market-reports.yml
+  pull_request:
+    paths:
+      - reports.json
+      - scripts/structure_reports.py
+      - scripts/validate_market_reports.py
+      - .github/workflows/structure-market-reports.yml
 
 permissions:
   contents: write
 
 concurrency:
-  group: structure-market-reports-main
-  cancel-in-progress: false
+  group: structure-market-reports-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   structure:
@@ -71,6 +77,7 @@ jobs:
         run: python scripts/validate_market_reports.py --file reports.json
 
       - name: Commit structured reports
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
           if git diff --quiet -- reports.json; then
             echo 'reports.json is already fully structured and validated.'
