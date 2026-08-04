@@ -123,6 +123,12 @@ const TEMPERATURE_MINI_DEFINITIONS = [
       [35, "注意圏"],
       [Infinity, "危険圏"]
     ],
+    ranges: [
+      { range: "0-15", label: "正常", tone: "calm" },
+      { range: "15-25", label: "警戒", tone: "watch" },
+      { range: "25-35", label: "注意", tone: "caution" },
+      { range: "35-", label: "危険", tone: "danger" }
+    ],
     patterns: [/VIX(?:指数)?[：:\s]+(取得不能[^。\n]*|[0-9,.]+)/i]
   },
   {
@@ -136,6 +142,12 @@ const TEMPERATURE_MINI_DEFINITIONS = [
       [25, "警戒圏"],
       [35, "注意圏"],
       [Infinity, "危険圏"]
+    ],
+    ranges: [
+      { range: "0-15", label: "正常", tone: "calm" },
+      { range: "15-25", label: "警戒", tone: "watch" },
+      { range: "25-35", label: "注意", tone: "caution" },
+      { range: "35-", label: "危険", tone: "danger" }
     ],
     patterns: [/日経VI[：:\s]+(取得不能[^。\n]*|[0-9,.]+)/]
   },
@@ -151,6 +163,13 @@ const TEMPERATURE_MINI_DEFINITIONS = [
       [50, "NEUTRAL"],
       [74, "GREED"],
       [Infinity, "EXTREME GREED"]
+    ],
+    ranges: [
+      { range: "0-24", label: "E.FEAR", tone: "danger" },
+      { range: "25-49", label: "FEAR", tone: "caution" },
+      { range: "50", label: "NEUTRAL", tone: "neutral" },
+      { range: "51-74", label: "GREED", tone: "calm" },
+      { range: "75-", label: "E.GREED", tone: "greed" }
     ],
     patterns: [/Fear\s*&\s*Greed(?:\s*Index)?[：:\s]+(取得不能[^。\n]*|[0-9,.]+)/i]
   }
@@ -331,6 +350,9 @@ function renderTemperatureMini(report) {
     const title = Number.isFinite(metric.value)
       ? `${definition.label}: ${valueText} / ${metric.label}`
       : `${definition.label}: ${metric.label}`;
+    const rangeItems = definition.ranges.map((item) => `<span class="temperature-range-chip range-${item.tone}">
+      <b>${esc(item.range)}</b>${esc(item.label)}
+    </span>`).join("");
     return `<article class="temperature-mini-card temperature-${definition.accent}" title="${esc(title)}">
       <div class="temperature-mini-head">
         <div>
@@ -345,6 +367,9 @@ function renderTemperatureMini(report) {
       <div class="temperature-mini-foot">
         <b>${esc(metric.label)}</b>
         <span>${esc(metric.note || `${dateToJp(report.date)} ${report.time}`)}</span>
+      </div>
+      <div class="temperature-card-ranges" aria-label="${esc(definition.label)}の判定レンジ">
+        ${rangeItems}
       </div>
     </article>`;
   }).join("");

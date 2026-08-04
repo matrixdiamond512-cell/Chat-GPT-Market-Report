@@ -480,28 +480,63 @@ input {
   font-weight: 800;
 }
 
-.temperature-mini-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 10px;
-  align-items: center;
-  margin-top: 9px;
-  padding-top: 9px;
+.temperature-card-ranges {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1.45;
 }
 
-.temperature-mini-legend span {
-  flex: 0 0 auto;
-  color: var(--navy);
-}
-
-.temperature-mini-legend p {
+.temperature-range-chip {
+  display: flex;
   min-width: 0;
-  margin: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  padding: 4px 5px;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.temperature-range-chip b {
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.range-calm {
+  border-color: #99d6b2;
+  background: #ecfff4;
+  color: #007a35;
+}
+
+.range-watch,
+.range-neutral {
+  border-color: #ead984;
+  background: #fffbe2;
+  color: #8a6b00;
+}
+
+.range-caution {
+  border-color: #ffc982;
+  background: #fff4df;
+  color: #a15300;
+}
+
+.range-danger {
+  border-color: #ffaaaa;
+  background: #fff0f0;
+  color: #c41414;
+}
+
+.range-greed {
+  border-color: #74c47b;
+  background: #eaffeb;
+  color: #136d18;
 }
 
 .left-stack,
