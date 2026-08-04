@@ -8,6 +8,7 @@ on:
     paths:
       - reports.json
       - scripts/structure_reports.py
+      - scripts/validate_market_reports.py
       - .github/workflows/structure-market-reports.yml
 
 permissions:
@@ -66,15 +67,18 @@ jobs:
               raise SystemExit('Some structured reports do not contain all six markets.')
           PY
 
+      - name: Strictly validate latest report before commit
+        run: python scripts/validate_market_reports.py --file reports.json
+
       - name: Commit structured reports
         run: |
           if git diff --quiet -- reports.json; then
-            echo 'reports.json is already fully structured.'
+            echo 'reports.json is already fully structured and validated.'
             exit 0
           fi
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add reports.json
-          git commit -m 'Structure imported market report content for web dashboard'
+          git commit -m 'Structure and validate imported market report content'
           git push
