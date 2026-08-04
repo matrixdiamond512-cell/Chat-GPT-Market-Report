@@ -1,6 +1,7 @@
 const MARKET_REPORT_AUTO_CONFIG = {
   timezone: 'Asia/Tokyo',
   minute: 30,
+  retryMinute: 30,
   lookbackDays: 4,
   reportHours: [7, 12, 16, 21],
   scheduleHandlers: [
@@ -9,10 +10,17 @@ const MARKET_REPORT_AUTO_CONFIG = {
     { name: 'autoPublishMarketReport1600', hour: 16 },
     { name: 'autoPublishMarketReport2100', hour: 21 }
   ],
+  retryHandlers: [
+    { name: 'autoPublishMarketReport0830Retry', hour: 8 },
+    { name: 'autoPublishMarketReport1330Retry', hour: 13 },
+    { name: 'autoPublishMarketReport1730Retry', hour: 17 },
+    { name: 'autoPublishMarketReport2230Retry', hour: 22 }
+  ],
   legacyHandlers: [
     { name: 'autoPublishMarketReport0900', hour: 9 }
   ],
-  lastResultProperty: 'MARKET_REPORT_AUTO_LAST_RESULT'
+  lastResultProperty: 'MARKET_REPORT_AUTO_LAST_RESULT',
+  publishedPrefix: 'MARKET_REPORT_AUTO_PUBLISHED_'
 };
 
 function installMarketReportAutoPublishTriggers() {
@@ -28,20 +36,33 @@ function installMarketReportAutoPublishTriggers() {
       .create();
   });
 
+  MARKET_REPORT_AUTO_CONFIG.retryHandlers.forEach(item => {
+    ScriptApp.newTrigger(item.name)
+      .timeBased()
+      .atHour(item.hour)
+      .nearMinute(MARKET_REPORT_AUTO_CONFIG.retryMinute)
+      .everyDays(1)
+      .inTimezone(MARKET_REPORT_AUTO_CONFIG.timezone)
+      .create();
+  });
+
   SpreadsheetApp.getUi().alert(
-    'WEB版「マーケットレポート本文」の定時公開トリガーを設定しました。\n' +
-    '平日: 07:30 / 12:30 / 16:30 / 21:30\n\n' +
-    'この関数はトリガー設定だけを行います。本文公開は各時刻に自動実行されます。'
+    'Market report auto publish triggers were installed.\n' +
+    'Main: 07:30 / 12:30 / 16:30 / 21:30\n' +
+    'Retry once: 08:30 / 13:30 / 17:30 / 22:30\n\n' +
+    'This is not a 5-minute monitor. It only checks once more when a report is late.'
   );
 }
 
 function uninstallMarketReportAutoPublishTriggers() {
   const deleted = deleteMarketReportAutoPublishTriggers_();
-  SpreadsheetApp.getUi().alert('WEB版「マーケットレポート本文」の定時公開トリガーを削除しました。削除数: ' + deleted);
+  SpreadsheetApp.getUi().alert('Market report auto publish triggers were deleted. Count: ' + deleted);
 }
 
 function showMarketReportAutoPublishStatus() {
-  const activeHandlers = MARKET_REPORT_AUTO_CONFIG.scheduleHandlers.map(item => item.name);
+  const activeHandlers = MARKET_REPORT_AUTO_CONFIG.scheduleHandlers
+    .concat(MARKET_REPORT_AUTO_CONFIG.retryHandlers)
+    .map(item => item.name);
   const allHandlers = getMarketReportAutoPublishHandlerNames_();
   const installedTriggers = ScriptApp.getProjectTriggers()
     .filter(trigger => allHandlers.includes(trigger.getHandlerFunction()));
@@ -49,13 +70,13 @@ function showMarketReportAutoPublishStatus() {
   const activeInstalled = installedNames.filter(name => activeHandlers.includes(name));
   const legacyInstalled = installedNames.filter(name => !activeHandlers.includes(name));
   const lastResult = PropertiesService.getScriptProperties()
-    .getProperty(MARKET_REPORT_AUTO_CONFIG.lastResultProperty) || '実行履歴はまだありません。';
+    .getProperty(MARKET_REPORT_AUTO_CONFIG.lastResultProperty) || 'No run history yet.';
 
   SpreadsheetApp.getUi().alert(
-    '有効な定時公開トリガー: ' + activeInstalled.length + '/' + activeHandlers.length + '件\n' +
-    '登録済み: ' + (activeInstalled.length ? activeInstalled.join(' / ') : 'なし') + '\n' +
-    '旧トリガー: ' + (legacyInstalled.length ? legacyInstalled.join(' / ') : 'なし') + '\n\n' +
-    '最終実行結果:\n' + lastResult
+    'Active triggers: ' + activeInstalled.length + '/' + activeHandlers.length + '\n' +
+    'Installed: ' + (activeInstalled.length ? activeInstalled.join(' / ') : 'none') + '\n' +
+    'Legacy: ' + (legacyInstalled.length ? legacyInstalled.join(' / ') : 'none') + '\n\n' +
+    'Last result:\n' + lastResult
   );
 }
 
@@ -64,24 +85,39 @@ function testMarketReportAutoFindLatestDoc() {
 
   if (!file) {
     SpreadsheetApp.getUi().alert(
-      'マーケットレポートGoogle Docsが見つかりませんでした。\n' +
-      '確認した名前の例: マーケットレポート_YYYY-MM-DD_07-00'
+      'No market report Google Docs file was found.\n' +
+      'Example name: ' + marketReportAutoDocName_(
+        Utilities.formatDate(new Date(), MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd'),
+        7
+      )
     );
     return;
   }
 
   SpreadsheetApp.getUi().alert(
-    '最新候補のGoogle Docsを確認できました。\n\n' +
-    'ファイル名: ' + file.getName() + '\n' +
-    '更新日時: ' + formatMarketReportAutoDateTime_(file.getLastUpdated()) + '\n\n' +
-    'この確認関数はWEB公開しません。'
+    'Latest market report Google Docs file was found.\n\n' +
+    'File name: ' + file.getName() + '\n' +
+    'Updated at: ' + formatMarketReportAutoDateTime_(file.getLastUpdated()) + '\n\n' +
+    'This test does not publish anything.'
   );
+}
+
+function testMarketReportAutoFind1600Doc() {
+  const file = findMarketReportDocForAutoPublishSlot_(16);
+  SpreadsheetApp.getUi().alert(file
+    ? '16:00 file found:\n' + file.getName() + '\nUpdated at: ' + formatMarketReportAutoDateTime_(file.getLastUpdated())
+    : '16:00 file was not found for today.');
 }
 
 function autoPublishMarketReport0700() { return autoPublishScheduledMarketReport_(7); }
 function autoPublishMarketReport1200() { return autoPublishScheduledMarketReport_(12); }
 function autoPublishMarketReport1600() { return autoPublishScheduledMarketReport_(16); }
 function autoPublishMarketReport2100() { return autoPublishScheduledMarketReport_(21); }
+
+function autoPublishMarketReport0830Retry() { return autoPublishDueMarketReports_('retry-0830'); }
+function autoPublishMarketReport1330Retry() { return autoPublishDueMarketReports_('retry-1330'); }
+function autoPublishMarketReport1730Retry() { return autoPublishDueMarketReports_('retry-1730'); }
+function autoPublishMarketReport2230Retry() { return autoPublishDueMarketReports_('retry-2230'); }
 
 // Old trigger compatibility. If an old 09:30 trigger remains, it exits safely.
 function autoPublishMarketReport0900() { return autoPublishScheduledMarketReport_(9); }
@@ -94,46 +130,99 @@ function autoPublishScheduledMarketReport_(hour) {
     return saveMarketReportAutoResult_({
       ok: true,
       skipped: true,
-      reason: '運用対象外の曜日または時刻です',
+      reason: 'Outside scheduled weekday slots.',
       slot: formatMarketReportAutoSlot_(now, hour)
     });
   }
+
+  return publishMarketReportSlot_(hour, 'scheduled', true);
+}
+
+function autoPublishDueMarketReports_(reason) {
+  const now = new Date();
+  const day = Number(Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'u'));
+
+  if (day === 6 || day === 7) {
+    return saveMarketReportAutoResult_({
+      ok: true,
+      skipped: true,
+      reason: 'Weekend retry skipped.',
+      mode: reason
+    });
+  }
+
+  const currentHour = Number(Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'H'));
+  const currentMinute = Number(Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'm'));
+  const results = [];
+
+  MARKET_REPORT_AUTO_CONFIG.reportHours.forEach(hour => {
+    if (hour < currentHour || (hour === currentHour && currentMinute >= MARKET_REPORT_AUTO_CONFIG.minute)) {
+      results.push(publishMarketReportSlot_(hour, reason, false));
+    }
+  });
+
+  const published = results.filter(item => item && item.ok && !item.skipped);
+  const errors = results.filter(item => item && item.ok === false);
+
+  const summary = {
+    ok: errors.length === 0,
+    skipped: published.length === 0,
+    mode: reason,
+    publishedCount: published.length,
+    checkedCount: results.length,
+    results: results
+  };
+
+  saveMarketReportAutoResult_(summary);
+
+  if (errors.length) {
+    throw new Error('Market report retry failed. See last result for details.');
+  }
+
+  return summary;
+}
+
+function publishMarketReportSlot_(hour, mode, throwOnError) {
+  const now = new Date();
 
   try {
     const file = findMarketReportDocForAutoPublishSlot_(hour);
 
     if (!file) {
-      return saveMarketReportAutoResult_({
+      return saveMarketReportSlotResult_({
         ok: true,
         skipped: true,
-        reason: 'マーケットレポートGoogle Docsがまだ見つかりません',
+        mode: mode,
+        reason: 'Google Docs file for this slot was not found yet.',
         slot: formatMarketReportAutoSlot_(now, hour)
-      });
+      }, mode);
     }
 
     const fileVersion = String(file.getLastUpdated().getTime());
-    const publishedVersionKey = 'MARKET_REPORT_AUTO_PUBLISHED_' + file.getId();
+    const publishedVersionKey = MARKET_REPORT_AUTO_CONFIG.publishedPrefix + file.getId();
     const props = PropertiesService.getScriptProperties();
 
     if (props.getProperty(publishedVersionKey) === fileVersion) {
-      return saveMarketReportAutoResult_({
+      return saveMarketReportSlotResult_({
         ok: true,
         skipped: true,
-        reason: 'このGoogle Docs版はすでにWEB公開済みです',
+        mode: mode,
+        reason: 'This Google Docs version is already published.',
         slot: formatMarketReportAutoSlot_(now, hour),
         fileName: file.getName(),
         fileUpdatedAt: formatMarketReportAutoDateTime_(file.getLastUpdated())
-      });
+      }, mode);
     }
 
     const report = buildWebReportFromGoogleDoc_(file);
-    const validation = validateMarketReportBeforePublish_(report, hour);
+    const validation = runMarketReportAutoValidation_(report, hour);
     const result = publishWebReportObject_(report);
     props.setProperty(publishedVersionKey, fileVersion);
 
-    return saveMarketReportAutoResult_({
+    return saveMarketReportSlotResult_({
       ok: true,
       skipped: false,
+      mode: mode,
       slot: formatMarketReportAutoSlot_(now, hour),
       fileName: file.getName(),
       fileUpdatedAt: formatMarketReportAutoDateTime_(file.getLastUpdated()),
@@ -143,17 +232,56 @@ function autoPublishScheduledMarketReport_(hour) {
       commitSha: result.commitSha,
       dashboardCommitSha: result.dashboardCommitSha || '',
       pagesUrl: result.pagesUrl
-    });
+    }, mode);
   } catch (error) {
-    saveMarketReportAutoResult_({
+    const payload = saveMarketReportSlotResult_({
       ok: false,
       skipped: false,
+      mode: mode,
       slot: formatMarketReportAutoSlot_(now, hour),
       error: error.message,
       stack: error.stack || ''
-    });
-    throw error;
+    }, mode);
+
+    if (throwOnError) throw error;
+    return payload;
   }
+}
+
+function saveMarketReportSlotResult_(result, mode) {
+  if (mode === 'scheduled') {
+    saveMarketReportAutoResult_(result);
+  }
+  return result;
+}
+
+function runMarketReportAutoValidation_(report, expectedHour) {
+  if (typeof validateMarketReportBeforePublish_ === 'function') {
+    return validateMarketReportBeforePublish_(report, expectedHour);
+  }
+
+  const warnings = ['validateMarketReportBeforePublish_ was not found. Basic validation was used.'];
+
+  if (!report || typeof report !== 'object') {
+    throw new Error('Market report object was not created.');
+  }
+
+  if (!report.date) warnings.push('Report date is missing.');
+  if (!report.time) warnings.push('Report time is missing.');
+  if (!report.title) warnings.push('Report title is missing.');
+
+  if (expectedHour !== undefined && report.time) {
+    const expectedTime = ('0' + expectedHour).slice(-2) + ':00';
+    if (String(report.time) !== expectedTime) {
+      warnings.push('Report time is ' + report.time + ', expected ' + expectedTime + '.');
+    }
+  }
+
+  return {
+    ok: true,
+    fallback: true,
+    warnings: warnings
+  };
 }
 
 function findLatestMarketReportDocForAutoPublish_() {
@@ -162,7 +290,8 @@ function findLatestMarketReportDocForAutoPublish_() {
   let latestInfo = null;
 
   candidates.forEach(info => {
-    const file = findMarketReportAutoBestFileByName_(info.name);
+    const file = findMarketReportAutoBestFileByName_(info.name) ||
+      findMarketReportAutoBestFileByPattern_(info.date, Number(info.time.slice(0, 2)));
     if (!file) return;
 
     if (
@@ -182,7 +311,8 @@ function findMarketReportDocForAutoPublishSlot_(hour) {
   const now = new Date();
   const dateText = Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd');
   const name = marketReportAutoDocName_(dateText, hour);
-  return findMarketReportAutoBestFileByName_(name);
+  return findMarketReportAutoBestFileByName_(name) ||
+    findMarketReportAutoBestFileByPattern_(dateText, hour);
 }
 
 function findMarketReportAutoBestFileByName_(name) {
@@ -199,6 +329,59 @@ function findMarketReportAutoBestFileByName_(name) {
   }
 
   return best;
+}
+
+function findMarketReportAutoBestFileByPattern_(dateText, hour) {
+  const tokens = [
+    dateText,
+    dateText.replace(/-/g, '/'),
+    dateText.replace(/-/g, '')
+  ];
+  let best = null;
+
+  tokens.forEach(token => {
+    const files = searchMarketReportAutoFilesContaining_(token);
+    while (files.hasNext()) {
+      const file = files.next();
+      if (file.isTrashed()) continue;
+      if (file.getMimeType() !== MimeType.GOOGLE_DOCS) continue;
+      if (!isMarketReportAutoSlotName_(file.getName(), dateText, hour)) continue;
+      if (!best || file.getLastUpdated().getTime() > best.getLastUpdated().getTime()) {
+        best = file;
+      }
+    }
+  });
+
+  return best;
+}
+
+function searchMarketReportAutoFilesContaining_(token) {
+  return DriveApp.searchFiles(
+    "title contains '" + escapeMarketReportAutoDriveQuery_(token) + "' and " +
+    "mimeType = 'application/vnd.google-apps.document' and trashed = false"
+  );
+}
+
+function isMarketReportAutoSlotName_(name, dateText, hour) {
+  const normalized = String(name)
+    .replace(/\uff1a/g, ':')
+    .replace(/\u2010|\u2011|\u2012|\u2013|\u2014|\u2212/g, '-');
+  const dateSlash = dateText.replace(/-/g, '/');
+  const dateCompact = dateText.replace(/-/g, '');
+  const hourText = ('0' + hour).slice(-2);
+  const hasDate = normalized.indexOf(dateText) !== -1 ||
+    normalized.indexOf(dateSlash) !== -1 ||
+    normalized.indexOf(dateCompact) !== -1;
+  const hasTime = normalized.indexOf('_' + hourText + '-00') !== -1 ||
+    normalized.indexOf(hourText + '-00') !== -1 ||
+    normalized.indexOf(hourText + ':00') !== -1 ||
+    normalized.indexOf(hourText + '\u6642') !== -1;
+
+  return hasDate && hasTime;
+}
+
+function escapeMarketReportAutoDriveQuery_(text) {
+  return String(text).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
 function buildMarketReportAutoCandidateNames_() {
@@ -256,6 +439,7 @@ function deleteMarketReportAutoPublishTriggers_() {
 
 function getMarketReportAutoPublishHandlerNames_() {
   return MARKET_REPORT_AUTO_CONFIG.scheduleHandlers
+    .concat(MARKET_REPORT_AUTO_CONFIG.retryHandlers)
     .concat(MARKET_REPORT_AUTO_CONFIG.legacyHandlers)
     .map(item => item.name);
 }

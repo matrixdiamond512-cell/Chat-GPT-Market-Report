@@ -676,6 +676,150 @@ function flowFeatures(report) {
   return features.length ? features.slice(0, 3) : ["本文のクロスアセット資金フローから自動判定しています"];
 }
 
+// More tolerant parser for the dashboard cross-asset flow cards.
+// It accepts "流入:", "資金が流入している資産:", "売られている資産:" and mixed one-line flow summaries.
+function flowLabelAlternatives_(type) {
+  return type === "in"
+    ? [
+        "資金が流入している資産",
+        "資金流入資産",
+        "資金流入候補",
+        "資金流入",
+        "流入資産",
+        "流入候補",
+        "流入",
+        "買われている資産",
+        "買われる資産",
+        "買い候補"
+      ]
+    : [
+        "資金が流出している資産",
+        "資金流出・巻き戻し候補",
+        "資金流出資産",
+        "資金流出候補",
+        "資金流出",
+        "流出資産",
+        "流出候補",
+        "流出",
+        "売られている資産",
+        "売られる資産",
+        "売り候補",
+        "巻き戻し候補"
+      ];
+}
+
+function escapeFlowRegex_(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function flowLabelRegex_(type) {
+  return new RegExp("(" + flowLabelAlternatives_(type).map(escapeFlowRegex_).join("|") + ")\\s*[：:]", "g");
+}
+
+function allFlowLabelsRegex_() {
+  return new RegExp(
+    "(" +
+      flowLabelAlternatives_("in").concat(flowLabelAlternatives_("out")).map(escapeFlowRegex_).join("|") +
+    ")\\s*[：:]",
+    "g"
+  );
+}
+
+function splitFlowAssets(value = "") {
+  return cleanText(value, 900)
+    .replace(allFlowLabelsRegex_(), "")
+    .split(/[、,\n\r]/)
+    .map((item) => cleanText(
+      item
+        .replace(/^[・\-–—\s]+/, "")
+        .replace(/^(主な資産|候補|資産|市場)\s*[：:]?\s*/, "")
+        .replace(/。.*$/, ""),
+      42
+    ))
+    .filter((item) => item && !/^(なし|取得不能|不明)$/.test(item))
+    .filter((item) => item.length <= 42);
+}
+
+function flowSegments_(row, type) {
+  const text = cleanText(row, 1200);
+  const labels = [];
+  const allPattern = allFlowLabelsRegex_();
+  let match;
+
+  while ((match = allPattern.exec(text)) !== null) {
+    const label = match[1];
+    const labelType = flowLabelAlternatives_("in").includes(label) ? "in" : "out";
+    labels.push({ type: labelType, index: match.index, end: allPattern.lastIndex });
+  }
+
+  if (!labels.length) return [];
+
+  return labels
+    .filter((label) => label.type === type)
+    .map((label) => {
+      const next = labels.find((candidate) => candidate.index > label.index);
+      return text.slice(label.end, next ? next.index : text.length);
+    });
+}
+
+function explicitFlowItems(report, type) {
+  const rows = asArray(report.crossAssetFlow)
+    .map(textOf)
+    .map((value) => cleanText(value, 1200))
+    .filter(Boolean);
+
+  return uniq(rows.flatMap((row) => flowSegments_(row, type)).flatMap(splitFlowAssets));
+}
+
+function flowFeatures(report) {
+  const rows = asArray(report.crossAssetFlow)
+    .map(textOf)
+    .map((value) => cleanText(value, 1200))
+    .filter(Boolean);
+  const labeledSegments = rows.flatMap((row) => flowSegments_(row, "in").concat(flowSegments_(row, "out")));
+  const labeledText = labeledSegments.join(" ");
+  const features = rows
+    .map((row) => row.replace(labeledText, ""))
+    .flatMap((row) => row.split(/[。\n\r]/))
+    .map((row) => cleanText(row, 120))
+    .filter(Boolean)
+    .filter((row) => !allFlowLabelsRegex_().test(row));
+
+  return features.length ? uniq(features).slice(0, 4) : ["本文のクロスアセット資金フローから自動判定しています。"];
+}
+
+function semanticFlowItems(report, type) {
+  const text = [
+    ...asArray(report.crossAssetFlow).map(textOf),
+    report.theme,
+    report.changes,
+    report.consistency,
+    report.positioning,
+    report.leadingMarket
+  ].flatMap(asArray).map(textOf).join(" ");
+  const checks = type === "in"
+    ? [
+        [/米国債|債券.*買|金利.*低下|利回り.*低下/, "債券（米国）"],
+        [/金.*買|ゴールド.*上昇|安全資産|質への逃避/, "金"],
+        [/円高|円買い|円ショート.*巻き戻し|キャリー.*巻き戻し/, "円"],
+        [/米国株.*上昇|S&P.*上昇|Nasdaq.*上昇|リスクオン/, "米国株"],
+        [/BTC.*上昇|暗号資産.*流入|BTC.*流入/, "暗号資産"],
+        [/原油.*上昇|WTI.*上昇/, "原油"]
+      ]
+    : [
+        [/原油急落|原油安|原油.*下落|WTI.*急落|WTI.*下落|原油.*売/, "原油"],
+        [/エネルギー株.*(売|下落|逆風)|原油安.*エネルギー株/, "エネルギー株"],
+        [/輸出株.*(売|下落|逆風)|円高.*輸出株|日本輸出株/, "日本輸出株"],
+        [/AI.*(売|弱|警戒|下落)|半導体.*(売|弱|警戒|下落)/, "AI・半導体株の一部"],
+        [/円ショート|ドルロング|キャリー.*巻き戻し/, "円ショート・ドルロング"],
+        [/金.*下落|ゴールド.*下落|金.*売/, "金"],
+        [/BTC.*下落|暗号資産.*流出|BTC.*売/, "暗号資産"],
+        [/株.*下落|米国株.*売|株式.*流出/, "株式"]
+      ];
+
+  return checks.filter(([pattern]) => pattern.test(text)).map(([, label]) => label);
+}
+
 function renderFlowList(id, items, type, emptyText) {
   const node = $(id);
   if (!node) return;
@@ -690,8 +834,10 @@ function renderFlowList(id, items, type, emptyText) {
 function renderFlow(report) {
   const inflow = explicitFlowItems(report, "in");
   const outflow = explicitFlowItems(report, "out");
-  const inItems = inflow.length ? inflow : inferredFlowItems(report, "up");
-  const outItems = outflow.length ? outflow : inferredFlowItems(report, "down");
+  const inferredIn = uniq(inferredFlowItems(report, "up").concat(semanticFlowItems(report, "in")));
+  const inferredOut = uniq(inferredFlowItems(report, "down").concat(semanticFlowItems(report, "out")));
+  const inItems = inflow.length ? inflow : inferredIn;
+  const outItems = outflow.length ? outflow : inferredOut;
   const featureItems = flowFeatures(report);
 
   if ($("flowInItems") || $("flowOutItems") || $("flowFeatureItems")) {

@@ -508,7 +508,7 @@ td:last-child {
 
 .flow-column {
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid #c9d9ef;
   border-radius: 6px;
   background: #fff;
@@ -570,7 +570,14 @@ td:last-child {
   color: var(--navy);
   font-size: 12px;
   font-weight: 900;
-  line-height: 1.35;
+  line-height: 1.45;
+  min-width: 0;
+}
+
+.flow-column li span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 .flow-symbol {
