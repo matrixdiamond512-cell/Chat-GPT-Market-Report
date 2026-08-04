@@ -450,6 +450,51 @@ function fallbackNewsItems(report) {
   return uniq(candidates).slice(0, 5).map((item) => cleanText(item, 78));
 }
 
+function handoverSectionLines(fullText = "") {
+  const lines = String(fullText || "")
+    .split(/\n+/)
+    .map((line) => cleanText(line.replace(/^[・\-\s]+/, ""), 180))
+    .filter(Boolean);
+  const start = lines.findIndex((line) => /次の時間帯への引き継ぎ|NY時間への引き継ぎ|欧州時間への引き継ぎ|東京時間への引き継ぎ/.test(line));
+  if (start < 0) return [];
+
+  const found = [];
+  for (let i = start + 1; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (/^\d{1,2}[.．]\s/.test(line) && found.length) break;
+    if (/^(最重要チェックポイント|チェックポイント)[:：]?/.test(line)) break;
+    if (/^(次の時間帯への引き継ぎ|NY時間への引き継ぎ|欧州時間への引き継ぎ|東京時間への引き継ぎ)$/.test(line)) continue;
+    found.push(line);
+    if (found.length >= 5) break;
+  }
+
+  return found.flatMap(splitNewsSentences).map((item) => cleanText(item, 88)).filter(Boolean);
+}
+
+function fallbackHandoverItems(report) {
+  const explicit = topList(report.handover, 3, 88);
+  if (explicit.length) return explicit;
+
+  const fromFullText = handoverSectionLines(report.fullText);
+  if (fromFullText.length) return uniq(fromFullText).slice(0, 3);
+
+  const keyword = /USD\/JPY|円|ドル|日経|Nasdaq|S&P|BTC|金|原油|WTI|米10年|金利|ISM|FOMC|FRB|日銀|欧州|NY|東京|イベント|リスク|注目/;
+  const candidates = [
+    report.mainScenario,
+    report.alternativeScenario,
+    ...asArray(report.changes).map(textOf),
+    report.theme,
+    ...asArray(report.events).map(textOf),
+    ...asArray(report.riskManagement).map(textOf),
+    report.breakConditions
+  ]
+    .filter(Boolean)
+    .flatMap(splitNewsSentences)
+    .filter((item) => keyword.test(item));
+
+  return uniq(candidates).slice(0, 3).map((item) => cleanText(item, 88));
+}
+
 function renderList(id, values, fallback) {
   const rows = values.length ? values : [fallback];
   $(id).innerHTML = rows.map((item) => `<li>${esc(item)}</li>`).join("");
@@ -1135,7 +1180,7 @@ function renderScenarios(report) {
   $("mainScenario").textContent = cleanText(report.mainScenario || "理由：メインシナリオがJSONにありません", 138);
   $("alternativeScenario").textContent = cleanText(report.alternativeScenario || "理由：代替シナリオがJSONにありません", 138);
   $("breakConditions").textContent = cleanText(report.breakConditions || "理由：崩れる条件がJSONにありません", 138);
-  renderList("handoverList", topList(report.handover, 3, 88), "理由：引き継ぎ項目がJSONにありません");
+  renderList("handoverList", fallbackHandoverItems(report), "理由：引き継ぎ項目がJSONにありません");
   $("conclusionText").textContent = conclusionFrom(report);
 }
 
