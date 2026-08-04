@@ -100,7 +100,7 @@ function autoPublishScheduledMarketReport_(hour) {
   }
 
   try {
-    const file = findLatestMarketReportDocForAutoPublish_();
+    const file = findMarketReportDocForAutoPublishSlot_(hour);
 
     if (!file) {
       return saveMarketReportAutoResult_({
@@ -157,28 +157,57 @@ function autoPublishScheduledMarketReport_(hour) {
 }
 
 function findLatestMarketReportDocForAutoPublish_() {
-  const candidates = buildMarketReportAutoCandidateNames_();
+  const candidates = buildMarketReportAutoCandidateInfos_();
   let latest = null;
+  let latestInfo = null;
 
-  candidates.forEach(name => {
-    const files = DriveApp.getFilesByName(name);
+  candidates.forEach(info => {
+    const file = findMarketReportAutoBestFileByName_(info.name);
+    if (!file) return;
 
-    while (files.hasNext()) {
-      const file = files.next();
-      if (file.isTrashed()) continue;
-      if (file.getMimeType() !== MimeType.GOOGLE_DOCS) continue;
-      if (!latest || file.getLastUpdated().getTime() > latest.getLastUpdated().getTime()) {
-        latest = file;
-      }
+    if (
+      !latestInfo ||
+      info.key > latestInfo.key ||
+      (info.key === latestInfo.key && file.getLastUpdated().getTime() > latest.getLastUpdated().getTime())
+    ) {
+      latest = file;
+      latestInfo = info;
     }
   });
 
   return latest;
 }
 
-function buildMarketReportAutoCandidateNames_() {
+function findMarketReportDocForAutoPublishSlot_(hour) {
   const now = new Date();
-  const names = [];
+  const dateText = Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd');
+  const name = marketReportAutoDocName_(dateText, hour);
+  return findMarketReportAutoBestFileByName_(name);
+}
+
+function findMarketReportAutoBestFileByName_(name) {
+  const files = DriveApp.getFilesByName(name);
+  let best = null;
+
+  while (files.hasNext()) {
+    const file = files.next();
+    if (file.isTrashed()) continue;
+    if (file.getMimeType() !== MimeType.GOOGLE_DOCS) continue;
+    if (!best || file.getLastUpdated().getTime() > best.getLastUpdated().getTime()) {
+      best = file;
+    }
+  }
+
+  return best;
+}
+
+function buildMarketReportAutoCandidateNames_() {
+  return buildMarketReportAutoCandidateInfos_().map(info => info.name);
+}
+
+function buildMarketReportAutoCandidateInfos_() {
+  const now = new Date();
+  const candidates = [];
 
   for (let i = 0; i < MARKET_REPORT_AUTO_CONFIG.lookbackDays; i += 1) {
     const date = new Date(now.getTime());
@@ -186,11 +215,24 @@ function buildMarketReportAutoCandidateNames_() {
     const dateText = Utilities.formatDate(date, MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd');
 
     MARKET_REPORT_AUTO_CONFIG.reportHours.forEach(hour => {
-      names.push('マーケットレポート_' + dateText + '_' + ('0' + hour).slice(-2) + '-00');
+      const time = ('0' + hour).slice(-2) + ':00';
+      candidates.push({
+        name: marketReportAutoDocName_(dateText, hour),
+        date: dateText,
+        time: time,
+        key: dateText + ' ' + time
+      });
     });
   }
 
-  return names;
+  return candidates;
+}
+
+function marketReportAutoDocName_(dateText, hour) {
+  const prefix = (typeof WEB_REPORT_CONFIG !== 'undefined' && WEB_REPORT_CONFIG.prefix)
+    ? WEB_REPORT_CONFIG.prefix
+    : '\u30de\u30fc\u30b1\u30c3\u30c8\u30ec\u30dd\u30fc\u30c8_';
+  return prefix + dateText + '_' + ('0' + hour).slice(-2) + '-00';
 }
 
 function isScheduledMarketReportSlot_(day, hour) {
