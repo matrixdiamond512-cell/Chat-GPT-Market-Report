@@ -110,6 +110,52 @@ function normalizeMinus(value = "") {
   return String(value).replace(/[−－]/g, "-").trim();
 }
 
+const TEMPERATURE_MINI_DEFINITIONS = [
+  {
+    id: "market.vix",
+    label: "VIX",
+    subtitle: "恐怖指数（米国・S&P500）",
+    accent: "blue",
+    max: 50,
+    thresholds: [
+      [15, "正常圏（落ち着き）"],
+      [25, "警戒圏"],
+      [35, "注意圏"],
+      [Infinity, "危険圏"]
+    ],
+    patterns: [/VIX(?:指数)?[：:\s]+(取得不能[^。\n]*|[0-9,.]+)/i]
+  },
+  {
+    id: "market.nikkei_vi",
+    label: "日経VI",
+    subtitle: "恐怖指数（日経225）",
+    accent: "purple",
+    max: 50,
+    thresholds: [
+      [15, "正常圏（落ち着き）"],
+      [25, "警戒圏"],
+      [35, "注意圏"],
+      [Infinity, "危険圏"]
+    ],
+    patterns: [/日経VI[：:\s]+(取得不能[^。\n]*|[0-9,.]+)/]
+  },
+  {
+    id: "sentiment.cnn_fear_greed",
+    label: "Fear & Greed",
+    subtitle: "市場心理指数（CNN）",
+    accent: "green",
+    max: 100,
+    thresholds: [
+      [24, "EXTREME FEAR"],
+      [49, "FEAR"],
+      [50, "NEUTRAL"],
+      [74, "GREED"],
+      [Infinity, "EXTREME GREED"]
+    ],
+    patterns: [/Fear\s*&\s*Greed(?:\s*Index)?[：:\s]+(取得不能[^。\n]*|[0-9,.]+)/i]
+  }
+];
+
 const MARKET_SEGMENT_RE = /(?:^|\s)(金（XAU\/USD）|金現物|金価格|金|WTI原油|原油（WTI）|原油|日経225先物(?:（[^）]+）)?|USD\/JPY|EUR\/USD|BTCUSD|BTC|VIX|日経VI)：/g;
 
 function splitMarketSegments(value = "") {
@@ -218,6 +264,9 @@ function reportKey(report) {
 
 function allText(report) {
   return [
+    report.fullText,
+    report.rawText,
+    report.body,
     report.theme,
     report.leadingMarket,
     report.mainScenario,
@@ -243,6 +292,62 @@ function allText(report) {
       market.breakCondition
     ])
   ].filter(Boolean).join(" ");
+}
+
+function temperatureValueFromReport(report, definition) {
+  const text = allText(report);
+  for (const pattern of definition.patterns) {
+    const match = text.match(pattern);
+    if (!match) continue;
+    const raw = match[1] || "";
+    if (/取得不能|未確認|確認できず/.test(raw)) {
+      return { value: null, label: "取得不能", note: cleanText(raw, 48) };
+    }
+    const value = Number(String(raw).replace(/,/g, ""));
+    if (Number.isFinite(value)) return { value, label: temperatureBandLabel(value, definition), note: "" };
+  }
+  return { value: null, label: "未取得", note: "本文に数値なし" };
+}
+
+function temperatureBandLabel(value, definition) {
+  const found = definition.thresholds.find(([limit]) => value <= limit);
+  return found ? found[1] : "判定保留";
+}
+
+function temperaturePercent(value, definition) {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(100, (value / definition.max) * 100));
+}
+
+function renderTemperatureMini(report) {
+  const container = $("temperatureMiniCards");
+  if (!container) return;
+  container.innerHTML = TEMPERATURE_MINI_DEFINITIONS.map((definition) => {
+    const metric = temperatureValueFromReport(report, definition);
+    const pct = temperaturePercent(metric.value, definition);
+    const valueText = Number.isFinite(metric.value)
+      ? metric.value.toLocaleString("ja-JP", { maximumFractionDigits: metric.value >= 10 ? 1 : 2 })
+      : "未取得";
+    const title = Number.isFinite(metric.value)
+      ? `${definition.label}: ${valueText} / ${metric.label}`
+      : `${definition.label}: ${metric.label}`;
+    return `<article class="temperature-mini-card temperature-${definition.accent}" title="${esc(title)}">
+      <div class="temperature-mini-head">
+        <div>
+          <h3>${esc(definition.label)}</h3>
+          <p>${esc(definition.subtitle)}</p>
+        </div>
+        <strong>${esc(valueText)}</strong>
+      </div>
+      <div class="temperature-mini-bar" aria-hidden="true">
+        <span style="width:${pct}%"></span>
+      </div>
+      <div class="temperature-mini-foot">
+        <b>${esc(metric.label)}</b>
+        <span>${esc(metric.note || `${dateToJp(report.date)} ${report.time}`)}</span>
+      </div>
+    </article>`;
+  }).join("");
 }
 
 function sourceLines(report) {
@@ -1367,6 +1472,7 @@ function render() {
   renderHeader(report);
   renderControls(report);
   renderMarketCards(report);
+  renderTemperatureMini(report);
   renderList("themeList", splitTheme(report), "理由：相場テーマがJSONにありません");
   renderList("changeList", topList(report.changes, 2, 96), "理由：前回からの変化がJSONにありません");
   $("leadingMarket").textContent = cleanText(report.leadingMarket || "取得不能。理由：主導市場コメントがJSONにありません", 170);

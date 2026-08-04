@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>WEBマーケットレポート</title>
-  <link rel="stylesheet" href="assets/css/top-dashboard.css?v=20260804-cardtext1">
+  <link rel="stylesheet" href="assets/css/top-dashboard.css?v=20260805-temp1">
   <link rel="stylesheet" href="assets/css/site-common.css?v=20260804-ui1">
 </head>
 <body>
@@ -50,6 +50,16 @@
     <section class="market-summary panel" aria-label="6市場サマリー">
       <h2>6市場サマリー（なぜ買われたか／売られたか）</h2>
       <div class="market-card-grid" id="marketCards"></div>
+    </section>
+
+    <section class="panel temperature-mini-panel" aria-label="市場温度ミニパネル">
+      <div class="section-title-row">
+        <h2>市場温度（VIX・日経VI・Fear &amp; Greed）</h2>
+        <a href="market-temperature.html">市場温度へ</a>
+      </div>
+      <div class="temperature-mini-grid" id="temperatureMiniCards">
+        <div class="temperature-mini-loading">市場温度を読み込み中です。</div>
+      </div>
     </section>
 
     <section class="dashboard-grid">
@@ -151,7 +161,7 @@
     <p class="footnote" id="dataFootnote">データ取得状況を確認中です。</p>
   </main>
 
-  <script src="assets/js/top-dashboard.js?v=20260804-cardtext1"></script>
+  <script src="assets/js/top-dashboard.js?v=20260805-temp1"></script>
   <script src="assets/js/site-common.js?v=20260804-ui1"></script>
 </body>
 </html>

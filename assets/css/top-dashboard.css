@@ -394,6 +394,92 @@ input {
   align-items: start;
 }
 
+.temperature-mini-panel {
+  margin-top: 12px;
+  padding: 12px 14px;
+}
+
+.temperature-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.temperature-mini-card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.temperature-mini-head,
+.temperature-mini-foot {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.temperature-mini-head h3 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 16px;
+  line-height: 1.1;
+}
+
+.temperature-mini-head p,
+.temperature-mini-foot span {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.temperature-mini-head strong {
+  color: var(--navy);
+  font-size: 24px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.temperature-mini-bar {
+  height: 8px;
+  margin: 9px 0 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #edf2f8;
+}
+
+.temperature-mini-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--blue);
+}
+
+.temperature-mini-foot b {
+  min-width: max-content;
+  color: var(--green);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.temperature-purple .temperature-mini-bar span {
+  background: #7b46c5;
+}
+
+.temperature-green .temperature-mini-bar span {
+  background: var(--green);
+}
+
+.temperature-mini-loading {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .left-stack,
 .right-stack {
   display: grid;
@@ -950,6 +1036,7 @@ td:last-child {
 
   .market-card-grid,
   .dashboard-grid,
+  .temperature-mini-grid,
   .market-lens-grid,
   .scenario-grid {
     grid-template-columns: 1fr;
