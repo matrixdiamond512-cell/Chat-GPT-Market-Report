@@ -609,6 +609,45 @@ function topList(items, limit = 3, max = 120) {
   return asArray(items).map(textOf).filter(Boolean).map((item) => cleanText(item, max)).slice(0, limit);
 }
 
+function proseSegments(value = "", limit = 4, max = 180) {
+  const text = cleanText(value, 2400);
+  if (!text) return [];
+  const sentences = text.match(/[^。！？!?]+[。！？!?]?/g) || [text];
+  return sentences
+    .map((item) => cleanText(item, max))
+    .filter(Boolean)
+    .slice(0, limit);
+}
+
+function proseItems(values, limit = 4, max = 180) {
+  return asArray(values)
+    .map(textOf)
+    .filter(Boolean)
+    .flatMap((item) => proseSegments(item, 4, max))
+    .slice(0, limit);
+}
+
+function proseHtml(value, limit = 4, max = 180) {
+  const parts = proseSegments(value, limit, max);
+  return parts.map((part) => `<p>${esc(part)}</p>`).join("");
+}
+
+function renderProseList(id, values, fallback) {
+  const element = $(id);
+  const items = values.filter(Boolean);
+  element.classList.add("prose-list");
+  element.innerHTML = items.length
+    ? items.map((value) => `<li>${proseHtml(value, 2, 180) || `<p>${esc(value)}</p>`}</li>`).join("")
+    : `<li class="missing"><p>${esc(fallback)}</p></li>`;
+}
+
+function renderProseBlock(id, value, fallback, limit = 4, max = 180) {
+  const element = $(id);
+  const html = proseHtml(value || "", limit, max);
+  element.classList.add("prose-block");
+  element.innerHTML = html || `<p class="missing">${esc(fallback)}</p>`;
+}
+
 function splitNewsSentences(value = "") {
   return cleanText(value, 1200)
     .split(/。|\n|(?=\d{1,2}:\d{2}\s)/)
@@ -1533,13 +1572,13 @@ function conclusionFrom(report) {
 }
 
 function renderScenarios(report) {
-  $("mainScenario").textContent = cleanText(report.mainScenario || "理由：メインシナリオがJSONにありません", 138);
-  $("alternativeScenario").textContent = cleanText(report.alternativeScenario || "理由：代替シナリオがJSONにありません", 138);
+  renderProseBlock("mainScenario", report.mainScenario, "理由：メインシナリオがJSONにありません", 3, 180);
+  renderProseBlock("alternativeScenario", report.alternativeScenario, "理由：代替シナリオがJSONにありません", 3, 180);
   const breakText = breakConditionsFromReport(report, 180);
-  $("breakConditions").textContent = breakText || "理由：崩れる条件を本文から取得できませんでした";
+  renderProseBlock("breakConditions", breakText, "理由：崩れる条件を本文から取得できませんでした", 4, 180);
   $("breakConditions").classList.toggle("missing", !breakText);
   renderList("handoverList", fallbackHandoverItems(report), "理由：引き継ぎ項目がJSONにありません");
-  $("conclusionText").textContent = conclusionFrom(report);
+  renderProseBlock("conclusionText", conclusionFrom(report), "理由：結論に必要な項目がJSONにありません", 4, 180);
 }
 
 function renderFootnote(report) {
@@ -1559,9 +1598,9 @@ function render() {
   renderControls(report);
   renderMarketCards(report);
   renderTemperatureMini(report);
-  renderList("themeList", splitTheme(report), "理由：相場テーマがJSONにありません");
-  renderList("changeList", topList(report.changes, 2, 96), "理由：前回からの変化がJSONにありません");
-  $("leadingMarket").textContent = cleanText(report.leadingMarket || "取得不能。理由：主導市場コメントがJSONにありません", 170);
+  renderProseList("themeList", proseItems([report.theme], 5, 180), "理由：相場テーマがJSONにありません");
+  renderProseList("changeList", proseItems(report.changes, 4, 170), "理由：前回からの変化がJSONにありません");
+  renderProseBlock("leadingMarket", report.leadingMarket, "取得不能。理由：主導市場コメントがJSONにありません", 4, 180);
   renderFlow(report);
   renderNews(report);
   renderPositions(report);

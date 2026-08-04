@@ -588,6 +588,45 @@ input {
   font-weight: 800;
 }
 
+.compact-panel .prose-list,
+.scenario-card .prose-list {
+  display: grid;
+  gap: 10px;
+  padding-left: 0;
+  list-style: none;
+}
+
+.compact-panel .prose-list li,
+.scenario-card .prose-list li {
+  margin: 0;
+  padding: 0 0 0 12px;
+  border-left: 3px solid #2f80ed;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.75;
+}
+
+.prose-block {
+  display: grid;
+  gap: 8px;
+  color: var(--navy);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.75;
+}
+
+.prose-block p,
+.prose-list p {
+  margin: 0;
+}
+
+.prose-block p + p,
+.prose-list p + p {
+  padding-top: 7px;
+  border-top: 1px dashed #d9e4f4;
+}
+
 .compact-panel p,
 .scenario-card p,
 .flow-note p {
@@ -598,10 +637,8 @@ input {
 }
 
 #leadingMarket {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 6;
+  padding-left: 12px;
+  border-left: 3px solid #2f80ed;
 }
 
 .table-wrap {
