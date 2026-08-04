@@ -78,14 +78,16 @@ td:first-child{font-weight:900}
 .watch-list{display:grid;gap:7px;margin:0;padding:0;list-style:none}
 .watch-list li{position:relative;padding-left:22px;font-size:12.5px;font-weight:850}
 .watch-list li:before{content:"✓";position:absolute;left:0;color:#0b62d6;font-weight:1000}
-  .events-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 8px}
-  .events-head h3{margin:0;color:var(--navy);font-size:21px;font-weight:1000}
-  .events-head small{color:var(--muted);font-weight:850}
-  .event-date-tabs{display:flex;gap:8px;align-items:center;overflow-x:auto;margin:0 0 10px;padding:4px 0 8px;border-bottom:1px solid var(--line)}
-  .event-date-tab{flex:0 0 auto;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--navy);padding:7px 12px;font-size:13px;font-weight:1000;cursor:pointer}
-  .event-date-tab[aria-pressed=true]{border-color:#0b63e5;background:#0b63e5;color:#fff}
-  .event-date-tab small{display:block;margin-top:2px;font-size:11px;font-weight:850;color:inherit;opacity:.82}
-  .event-list-table{min-width:1400px}
+.event-date-controls{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid var(--line)}
+.event-date-picker{min-width:180px;height:36px;border:1px solid #b8c8df;border-radius:6px;background:#fff;color:var(--navy);font-size:14px;font-weight:1000;text-align:center;padding:0 10px;color-scheme:light;cursor:pointer}
+.event-date-picker::-webkit-calendar-picker-indicator{cursor:pointer}
+.event-date-label{min-width:142px;color:#173968;font-size:13px;font-weight:950;white-space:nowrap}
+.event-date-nav{width:36px;height:36px;border:1px solid #b8c8df;border-radius:6px;background:#fff;color:#0b4fb8;font-size:22px;font-weight:1000;line-height:1;cursor:pointer}
+.event-date-nav:disabled{color:#a0adbf;background:#f6f8fb;cursor:not-allowed}
+.events-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 8px}
+.events-head h3{margin:0;color:var(--navy);font-size:21px;font-weight:1000}
+.events-head small{color:var(--muted);font-weight:850}
+.event-list-table{min-width:1400px}
 .event-list-table td,.event-list-table th{font-size:12px;padding:5px 7px}
 .status{display:inline-flex;align-items:center;justify-content:center;min-width:56px;padding:3px 8px;border-radius:999px;font-weight:1000;font-size:11px}
 .status.before{background:#e9f2ff;color:#0b55c8}
@@ -95,7 +97,7 @@ td:first-child{font-weight:900}
 .detail-btn[aria-pressed=true]{background:#0b5fe8;color:#fff}
 .note{margin:10px 0 0;color:var(--muted);font-size:12px;font-weight:750}
 @media(max-width:1180px){.grid-top,.grid-mid,.grid-small{grid-template-columns:1fr}.event-hero{grid-template-columns:1fr}.nav{gap:0;overflow-x:auto}.nav a{min-width:132px}.radio-grid{grid-template-columns:1fr}}
-@media(max-width:760px){.top-inner{display:grid;padding:10px 12px}.brand{font-size:22px}.top-meta{font-size:12px}.page{padding:10px 12px 24px}.page-head{display:block}.page-head h2{font-size:27px}.page-head p{margin-top:6px;font-size:13px}.fact{grid-template-columns:1fr}.order-list li{grid-template-columns:28px 1fr}.order-list small{grid-column:2}.panel-title{font-size:14px}th,td{font-size:12px}}
+@media(max-width:760px){.top-inner{display:grid;padding:10px 12px}.brand{font-size:22px}.top-meta{font-size:12px}.page{padding:10px 12px 24px}.page-head{display:block}.page-head h2{font-size:27px}.page-head p{margin-top:6px;font-size:13px}.event-date-controls{justify-content:stretch;display:grid;grid-template-columns:36px minmax(0,1fr) 36px}.event-date-picker{min-width:0;width:100%}.event-date-label{grid-column:1 / -1;text-align:center}.fact{grid-template-columns:1fr}.order-list li{grid-template-columns:28px 1fr}.order-list small{grid-column:2}.panel-title{font-size:14px}th,td{font-size:12px}}
 </style>
 <link rel="stylesheet" href="assets/css/site-common.css?v=20260804-ui1">
 </head>
@@ -125,7 +127,12 @@ td:first-child{font-weight:900}
     <p>重要イベントの発表前の準備と、発表後の市場解釈・影響見通しを確認するページです。</p>
   </div>
 
-  <div class="event-date-tabs" id="eventDateTabs" aria-label="重要イベントの日付選択"></div>
+  <div class="event-date-controls" aria-label="重要イベントの日付選択">
+    <button id="prevEventDate" class="event-date-nav" type="button" aria-label="前の日">‹</button>
+    <input id="eventDatePicker" class="event-date-picker" type="date" aria-label="日付をカレンダーで選択">
+    <span id="eventDateLabel" class="event-date-label"></span>
+    <button id="nextEventDate" class="event-date-nav" type="button" aria-label="次の日">›</button>
+  </div>
 
   <section class="grid-top">
     <article class="panel">
@@ -602,8 +609,8 @@ function dynamicEventDates(dynamicEvents) {
 
 function renderDynamicEventDay(allEvents, selectedDate, selectedIndex = 0) {
   const dates = dynamicEventDates(allEvents);
-  const activeDate = selectedDate || dates[0] || "";
-  renderEventDateTabs(allEvents, activeDate);
+  const activeDate = resolveEventDate(selectedDate || dates[0] || "", dates);
+  renderEventDateControls(allEvents, activeDate);
 
   const dayEvents = allEvents
     .filter(event => event.date === activeDate)
@@ -617,19 +624,48 @@ function renderDynamicEventDay(allEvents, selectedDate, selectedIndex = 0) {
   const index = Math.min(Math.max(selectedIndex, 0), dayEvents.length - 1);
   renderDynamicEventList(dayEvents, index);
   renderDynamicEvent(dayEvents[index]);
+  updateEventDateUrl(activeDate);
 }
 
-function renderEventDateTabs(allEvents, selectedDate) {
-  const container = document.getElementById("eventDateTabs");
-  if (!container) return;
+function renderEventDateControls(allEvents, selectedDate) {
   const dates = dynamicEventDates(allEvents);
-  container.innerHTML = dates.map(date => {
-    const count = allEvents.filter(event => event.date === date).length;
-    return `<button class="event-date-tab" type="button" data-event-date="${esc(date)}" aria-pressed="${date === selectedDate}">${esc(formatDateJp(date))}<small>${count}件</small></button>`;
-  }).join("");
-  container.querySelectorAll("button").forEach(button => button.addEventListener("click", () => {
-    renderDynamicEventDay(allEvents, button.dataset.eventDate || "", 0);
-  }));
+  const picker = document.getElementById("eventDatePicker");
+  const label = document.getElementById("eventDateLabel");
+  const prev = document.getElementById("prevEventDate");
+  const next = document.getElementById("nextEventDate");
+  const count = allEvents.filter(event => event.date === selectedDate).length;
+  const index = dates.indexOf(selectedDate);
+
+  if (picker) {
+    picker.value = selectedDate;
+    picker.min = dates.at(-1) || selectedDate;
+    picker.max = dates[0] || selectedDate;
+    picker.onchange = () => renderDynamicEventDay(allEvents, picker.value, 0);
+  }
+  if (label) label.textContent = `${formatDateJp(selectedDate)} / ${count}件`;
+  if (prev) {
+    prev.disabled = index < 0 || index >= dates.length - 1;
+    prev.onclick = () => index >= 0 && index < dates.length - 1 && renderDynamicEventDay(allEvents, dates[index + 1], 0);
+  }
+  if (next) {
+    next.disabled = index <= 0;
+    next.onclick = () => index > 0 && renderDynamicEventDay(allEvents, dates[index - 1], 0);
+  }
+}
+
+function resolveEventDate(date, dates) {
+  if (!dates.length) return date || "";
+  if (dates.includes(date)) return date;
+  const ascending = dates.slice().sort();
+  const nearestPast = ascending.filter(candidate => candidate <= date).at(-1);
+  return nearestPast || ascending[0] || dates[0];
+}
+
+function updateEventDateUrl(date) {
+  if (!date) return;
+  const url = new URL(window.location.href);
+  url.searchParams.set("date", date);
+  history.replaceState(null, "", url);
 }
 
 function compareDynamicEvents(a, b) {
