@@ -420,6 +420,36 @@ function topList(items, limit = 3, max = 120) {
   return asArray(items).map(textOf).filter(Boolean).map((item) => cleanText(item, max)).slice(0, limit);
 }
 
+function splitNewsSentences(value = "") {
+  return cleanText(value, 1200)
+    .split(/。|\n|(?=\d{1,2}:\d{2}\s)/)
+    .map((item) => cleanText(item.replace(/^[・\-\s]+/, ""), 120))
+    .filter((item) => item.length >= 10);
+}
+
+function fallbackNewsItems(report) {
+  const explicit = topList(report.news, 5, 78);
+  if (explicit.length) return explicit;
+
+  const keyword = /原油|WTI|金利|米10年|米2年|日銀|FOMC|FRB|CPI|PCE|ISM|雇用|介入|USD\/JPY|円|ドル|Nasdaq|S&P|日経|BTC|金|中東|イラン|OPEC|決算|AI|PMI|VIX/;
+  const candidates = [
+    report.theme,
+    ...asArray(report.changes).map(textOf),
+    ...asArray(report.consistency).map(textOf),
+    ...asArray(report.events).map(textOf),
+    ...asArray(report.markets).flatMap((market) => [
+      market.material,
+      market.risk,
+      market.breakCondition
+    ])
+  ]
+    .filter(Boolean)
+    .flatMap(splitNewsSentences)
+    .filter((item) => keyword.test(item));
+
+  return uniq(candidates).slice(0, 5).map((item) => cleanText(item, 78));
+}
+
 function renderList(id, values, fallback) {
   const rows = values.length ? values : [fallback];
   $(id).innerHTML = rows.map((item) => `<li>${esc(item)}</li>`).join("");
@@ -654,7 +684,7 @@ function newsImpact(text) {
 }
 
 function renderNews(report) {
-  const news = topList(report.news, 5, 78);
+  const news = fallbackNewsItems(report);
   $("newsList").innerHTML = news.length ? news.map((item) => {
     const time = item.match(/\b([0-2]\d:[0-5]\d)\b/)?.[1] || "確認";
     const impact = newsImpact(item);
