@@ -1000,8 +1000,8 @@ function calendarUnavailableNotice() {
 }
 
 function eventDetail(row) {
-  const forecast = row.forecast && !/手入力待ち|該当なし/.test(row.forecast) ? `予想 ${row.forecast}` : "";
-  const previous = row.previous && !/手入力待ち|該当なし/.test(row.previous) ? `前回 ${row.previous}` : "";
+  const forecast = row.forecast && !/手入力待ち|未取得|該当なし/.test(row.forecast) ? `予想 ${row.forecast}` : "";
+  const previous = row.previous && !/手入力待ち|未取得|該当なし/.test(row.previous) ? `前回 ${row.previous}` : "";
   const parts = [
     forecast,
     previous,

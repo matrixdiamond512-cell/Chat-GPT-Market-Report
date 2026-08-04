@@ -177,8 +177,8 @@ function eventsNormalizeEventObject_(item, report) {
     title: title,
     category: item.category || (time ? 'scheduled_event' : 'scheduled_check'),
     importance: eventsImportanceNumber_(item.importance || title),
-    forecast: eventsCleanText_(item.forecast || item.estimate || item.consensus || '手入力待ち', 60),
-    previous: eventsCleanText_(item.previous || item.prev || '手入力待ち', 60),
+    forecast: eventsCleanText_(item.forecast || item.estimate || item.consensus || '未取得', 60),
+    previous: eventsCleanText_(item.previous || item.prev || '未取得', 60),
     actual: eventsCleanText_(item.actual || item.result || '', 60),
     resultComparison: eventsCleanText_(item.resultComparison || item.surprise || '', 80),
     resultExplanation: eventsCleanText_(item.resultExplanation || item.marketInterpretation || '', 180),
@@ -218,8 +218,8 @@ function eventsBuildEventFromText_(text, report, rows) {
     title: title,
     category: category,
     importance: eventsImportanceNumber_(text),
-    forecast: '手入力待ち',
-    previous: '手入力待ち',
+    forecast: '未取得',
+    previous: '未取得',
     actual: '',
     resultComparison: '',
     resultExplanation: '',
@@ -238,8 +238,8 @@ function eventsBuildEventFromText_(text, report, rows) {
 
 function eventsWithDefaults_(event) {
   event.id = event.id || eventsStableId_(event);
-  event.forecast = eventsCleanText_(event.forecast || '手入力待ち', 60);
-  event.previous = eventsCleanText_(event.previous || '手入力待ち', 60);
+  event.forecast = eventsCleanMissingLabel_(event.forecast || '未取得');
+  event.previous = eventsCleanMissingLabel_(event.previous || '未取得');
   event.actual = eventsCleanText_(event.actual || '', 60);
   event.resultComparison = eventsCleanText_(event.resultComparison || '', 80);
   event.resultExplanation = eventsCleanText_(event.resultExplanation || '', 180);
@@ -582,6 +582,11 @@ function eventsCleanText_(value, max) {
     .trim();
   if (max && text.length > max) return text.slice(0, max) + '...';
   return text;
+}
+
+function eventsCleanMissingLabel_(value) {
+  var text = eventsCleanText_(value || '未取得', 60);
+  return /^(手入力待ち|該当なし|なし|-|—)$/.test(text) ? '未取得' : text;
 }
 
 function eventsIsBlank_(value) {

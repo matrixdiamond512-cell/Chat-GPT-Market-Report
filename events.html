@@ -597,8 +597,8 @@ function normalizeDedicatedEvents(payload) {
     const country = dynamicText(event.country || event.region || dynamicRegion(title), 14);
     const affected = dynamicArray(event.affectedMarkets || event.affected || dynamicAffected(title)).join("・");
     const importance = Number.isFinite(Number(event.importance)) ? Number(event.importance) : 2;
-    const forecast = dynamicText(event.forecast || event.consensus || "手入力待ち", 40);
-    const previous = dynamicText(event.previous || event.prev || "手入力待ち", 40);
+    const forecast = missingEventValue(event.forecast || event.consensus, 40);
+    const previous = missingEventValue(event.previous || event.prev, 40);
     const actual = dynamicText(event.actual || event.result || "", 40);
     const sourceNote = dynamicText(event.sourceNote || event.reason || "重要イベント専用JSONから表示", 80);
     const iso = /^\d{1,2}:\d{2}$/.test(clock) ? `${date}T${clock.padStart(5, "0")}:00+09:00` : "";
@@ -805,6 +805,11 @@ function dynamicText(value, max = 120) {
     .replace(/^[・\s]+/, "")
     .trim();
   return text.length > max ? `${text.slice(0, max)}...` : text;
+}
+
+function missingEventValue(value, max = 40) {
+  const text = dynamicText(value, max);
+  return /^(手入力待ち|該当なし|なし|-|—)$/.test(text) ? "未取得" : (text || "未取得");
 }
 
 function splitDynamicEventText(value = "") {
