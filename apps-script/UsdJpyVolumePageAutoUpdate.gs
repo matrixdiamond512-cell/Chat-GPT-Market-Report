@@ -3,7 +3,9 @@ var USDJPY_VOLUME_PAGE_AUTO_CONFIG = {
   handler: 'updateUsdJpyVolumePageFromSources',
   triggerHours: [7, 12, 16, 21],
   triggerMinute: 30,
-  maxBojPublications: 20,
+  lockWaitMs: 30000,
+  maxBojPublications: 120,
+  maxBojOcrPerRun: 4,
   priceMonthsBack: 24,
   priceSheetName: 'USDJPY_Price',
   volumeSheetName: 'USDJPY_Volume',
@@ -17,7 +19,7 @@ var USDJPY_VOLUME_PAGE_AUTO_CONFIG = {
 
 function updateUsdJpyVolumePageFromSources() {
   var lock = LockService.getScriptLock();
-  if (!lock.tryLock(5000)) {
+  if (!lock.tryLock(USDJPY_VOLUME_PAGE_AUTO_CONFIG.lockWaitMs || 30000)) {
     var skipped = {
       ok: true,
       skipped: true,
@@ -202,6 +204,8 @@ function usdJpyVolumeAutoImportBojPdfSpotVolume_(previewOnly) {
   var rowsToAdd = [];
   var rowsToUpdate = [];
   var unchangedRows = [];
+  var pendingRows = [];
+  var processedPdfCount = 0;
 
   publications.forEach(function(publication) {
     var targetDate = usdJpyVolumeAutoPreviousWeekday_(publication.date);
@@ -216,11 +220,26 @@ function usdJpyVolumeAutoImportBojPdfSpotVolume_(previewOnly) {
       });
       return;
     }
+    pendingRows.push({
+      publication: publication,
+      targetDate: targetDate,
+      current: current
+    });
+  });
 
+  pendingRows.sort(function(a, b) {
+    return b.publication.date.localeCompare(a.publication.date);
+  });
+
+  var rowsDeferred = pendingRows.slice(config.maxBojOcrPerRun || pendingRows.length);
+  pendingRows.slice(0, config.maxBojOcrPerRun || pendingRows.length).forEach(function(item) {
+    var publication = item.publication;
+    var current = item.current;
     var text = usdJpyVolumeAutoFetchPdfText_(publication.url, publication.pdfName);
     var spotVolume = usdJpyVolumeAutoParseBojSpotVolume_(text);
+    processedPdfCount += 1;
     var next = {
-      targetDate: targetDate,
+      targetDate: item.targetDate,
       publicationDate: publication.date,
       sourcePdfName: publication.pdfName,
       sourcePdfUrl: publication.url,
@@ -245,6 +264,8 @@ function usdJpyVolumeAutoImportBojPdfSpotVolume_(previewOnly) {
     source: '日本銀行 外国為替市況PDF',
     fetchedCount: publications.length,
     fetchedPublications: publications.length,
+    processedPdfCount: processedPdfCount,
+    deferredCount: rowsDeferred.length,
     addCount: rowsToAdd.length,
     updateCount: rowsToUpdate.length,
     unchangedCount: unchangedRows.length,
