@@ -335,12 +335,12 @@ function findOutlookSentence(report, definition) {
       const nextMarket = after.search(/\s(?:金|WTI原油|日経225先物|USD\/JPY|EUR\/USD|BTCUSD)：/);
       const segment = nextMarket >= 0 ? after.slice(0, nextMarket) : after;
       const sentences = segment.split(/。/).map((item) => item.trim()).filter(Boolean).slice(0, 2);
-      if (sentences.length) return cleanText(`${sentences.join("。")}。`, 78);
+      if (sentences.length) return cleanText(`${sentences.join("。")}。`, 160);
     }
   }
 
   const market = reportMarket(report, definition);
-  return cleanText(market?.material || market?.direction || "", 64);
+  return cleanText(market?.material || market?.direction || "", 140);
 }
 
 function marketReason(report, definition, metric) {
@@ -351,11 +351,11 @@ function marketReason(report, definition, metric) {
     item.length <= 150 &&
     !/前営業日終値|主要市場データ|Dow：|VIX：|Fear & Greed/.test(item)
   ));
-  if (direct) return cleanText(direct, 68);
+  if (direct) return cleanText(direct, 150);
   const outlook = findOutlookSentence(report, definition);
   if (outlook) return outlook;
-  if (metric.raw && metric.raw.length <= 130) return cleanText(metric.raw.replace(/^.*?：/, ""), 68);
-  return cleanText(market?.material || "理由：本文に市場別理由がありません", 68);
+  if (metric.raw && metric.raw.length <= 180) return cleanText(metric.raw.replace(/^.*?：/, ""), 150);
+  return cleanText(market?.material || "理由：本文に市場別理由がありません", 150);
 }
 
 function consistencyForMarket(report, definition) {
@@ -380,7 +380,7 @@ function consistencyForMarket(report, definition) {
     verdict = "整合";
     cls = "match";
   }
-  return { verdict, cls, reason: cleanText(text, 44) };
+  return { verdict, cls, reason: cleanText(text, 140) };
 }
 
 function extractLevels(report, definition) {
@@ -397,7 +397,7 @@ function riskForMarket(report, definition) {
   const market = reportMarket(report, definition);
   const raw = market?.risk || market?.breakCondition || "";
   const usable = raw && raw.length < 170 && !/個別見通し|ヘッダーなし|TSV|マーケットレポート/.test(raw);
-  if (usable) return cleanText(raw, 42);
+  if (usable) return cleanText(raw, 110);
   const text = allText(report);
   const rules = {
     gold: /米10年債|金利/.test(text) ? "米金利上昇・ドル高" : "金利材料の急変",
@@ -407,7 +407,7 @@ function riskForMarket(report, definition) {
     eurusd: /ドル/.test(text) ? "ドル材料の急変" : "欧州材料の悪化",
     btc: /VIX|米株/.test(text) ? "VIX上昇・米株安" : "リスクオフ再燃"
   };
-  return rules[definition.key] || cleanText(report.breakConditions || "理由：市場別リスク記載なし", 42);
+  return rules[definition.key] || cleanText(report.breakConditions || "理由：市場別リスク記載なし", 110);
 }
 
 function splitTheme(report) {
