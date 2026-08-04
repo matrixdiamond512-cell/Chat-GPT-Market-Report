@@ -1,0 +1,50 @@
+name: Market Report Validation
+
+on:
+  workflow_dispatch:
+    inputs:
+      require_current_slot:
+        description: Fail when the latest scheduled report is missing
+        required: false
+        default: true
+        type: boolean
+  schedule:
+    # Every 15 minutes. The Python runner evaluates Asia/Tokyo schedule slots.
+    - cron: "*/15 * * * *"
+  push:
+    paths:
+      - "reports.json"
+      - "scripts/validate_market_reports.py"
+      - ".github/workflows/market-report-validation.yml"
+  pull_request:
+    paths:
+      - "reports.json"
+      - "scripts/validate_market_reports.py"
+      - ".github/workflows/market-report-validation.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: market-report-validation
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate report structure
+        run: python scripts/validate_market_reports.py --file reports.json
+
+      - name: Check latest scheduled slot
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.require_current_slot)
+        run: python scripts/validate_market_reports.py --file reports.json --require-current-slot
