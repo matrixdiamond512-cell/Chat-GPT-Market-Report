@@ -8,12 +8,14 @@ on:
     paths:
       - reports.json
       - scripts/structure_reports.py
+      - scripts/complete_report_schema.py
       - scripts/validate_market_reports.py
       - .github/workflows/structure-market-reports.yml
   pull_request:
     paths:
       - reports.json
       - scripts/structure_reports.py
+      - scripts/complete_report_schema.py
       - scripts/validate_market_reports.py
       - .github/workflows/structure-market-reports.yml
 
@@ -44,6 +46,9 @@ jobs:
 
       - name: Fill dashboard fields from full report text
         run: python scripts/structure_reports.py reports.json
+
+      - name: Complete required schema transparently
+        run: python scripts/complete_report_schema.py reports.json
 
       - name: Validate structured JSON
         run: python -m json.tool reports.json > /dev/null
