@@ -313,6 +313,65 @@ function allText(report) {
   ].filter(Boolean).join(" ");
 }
 
+function extractFullTextSection(report, headingPatterns, stopPatterns, max = 220) {
+  const text = String(report.fullText || report.rawText || report.body || "");
+  if (!text) return "";
+  const normalized = text.replace(/\r/g, "").trim();
+
+  for (const headingPattern of headingPatterns) {
+    const headingMatch = normalized.match(headingPattern);
+    if (!headingMatch) continue;
+
+    const start = (headingMatch.index || 0) + headingMatch[0].length;
+    let section = normalized.slice(start).replace(/^[\s:：・-]+/, "").trim();
+    let stopIndex = section.length;
+
+    for (const stopPattern of stopPatterns) {
+      const stopMatch = section.match(stopPattern);
+      if (stopMatch && stopMatch.index > 0) {
+        stopIndex = Math.min(stopIndex, stopMatch.index);
+      }
+    }
+
+    section = section.slice(0, stopIndex).trim();
+    const lines = section
+      .split(/\n+/)
+      .map((line) => line.replace(/^[・\-*]\s*/, "").trim())
+      .filter(Boolean)
+      .filter((line) => !/^\d{1,2}[.．]\s/.test(line));
+
+    const cleaned = cleanText(lines.join(" "), max);
+    if (cleaned) return cleaned;
+  }
+
+  return "";
+}
+
+function breakConditionsFromReport(report, max = 180) {
+  const explicit = cleanText(report.breakConditions || report.breakCondition || report.scenarioBreakConditions || "", max);
+  if (explicit) return explicit;
+
+  const fromFullText = extractFullTextSection(
+    report,
+    [
+      /\n\s*(?:\d{1,2}[.．]\s*)?シナリオが崩れる条件(?:・リスク管理)?\s*\n/,
+      /\n\s*(?:\d{1,2}[.．]\s*)?崩れる条件(?:・リスク管理)?\s*\n/,
+      /\n\s*(?:\d{1,2}[.．]\s*)?シナリオが崩れる条件(?:・リスク管理)?[:：]\s*/
+    ],
+    [
+      /\n\s*(?:\d{1,2}[.．]\s*)?(?:翌東京時間への引き継ぎ|次の時間帯への引き継ぎ|引き継ぎ|結論|最終判断)\s*\n/,
+      /\n\s*(?:メインシナリオ|代替シナリオ|今日の結論)\s*\n/
+    ],
+    max
+  );
+  if (fromFullText) return fromFullText;
+
+  const marketBreaks = asArray(report.markets)
+    .map((market) => cleanText(market.breakCondition || "", 90))
+    .filter(Boolean);
+  return marketBreaks.length ? marketBreaks.slice(0, 3).join(" / ") : "";
+}
+
 function temperatureValueFromReport(report, definition) {
   const text = allText(report);
   for (const pattern of definition.patterns) {
@@ -1465,7 +1524,7 @@ function renderMarketLens(report) {
 function conclusionFrom(report) {
   const lead = cleanText(report.leadingMarket || "", 70);
   const main = cleanText(report.mainScenario || "", 86);
-  const risk = cleanText(topList(report.riskManagement, 1, 90)[0] || report.breakConditions || "", 86);
+  const risk = cleanText(topList(report.riskManagement, 1, 90)[0] || breakConditionsFromReport(report, 110) || "", 86);
   const parts = [];
   if (lead) parts.push(`主導市場：${lead}`);
   if (main) parts.push(`基本姿勢：${main}`);
@@ -1476,7 +1535,9 @@ function conclusionFrom(report) {
 function renderScenarios(report) {
   $("mainScenario").textContent = cleanText(report.mainScenario || "理由：メインシナリオがJSONにありません", 138);
   $("alternativeScenario").textContent = cleanText(report.alternativeScenario || "理由：代替シナリオがJSONにありません", 138);
-  $("breakConditions").textContent = cleanText(report.breakConditions || "理由：崩れる条件がJSONにありません", 138);
+  const breakText = breakConditionsFromReport(report, 180);
+  $("breakConditions").textContent = breakText || "理由：崩れる条件を本文から取得できませんでした";
+  $("breakConditions").classList.toggle("missing", !breakText);
   renderList("handoverList", fallbackHandoverItems(report), "理由：引き継ぎ項目がJSONにありません");
   $("conclusionText").textContent = conclusionFrom(report);
 }
