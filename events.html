@@ -382,49 +382,72 @@ function rows(selector, data) {
 }
 
 const REQUIRED_SCENARIO_ROWS = [
+  ["米2年債", "上昇しやすい", "小動き", "低下しやすい"],
   ["米10年債", "上昇しやすい", "小動き", "低下しやすい"],
-  ["EUR/USD", "ドル高で下落しやすい", "小動き", "ドル安で上昇しやすい"],
   ["ダウ先物", "金利上昇なら重い", "小動き", "金利低下なら支え"],
   ["ナスダック先物", "高金利なら重い", "小動き", "金利低下なら支え"],
+  ["日経225先物", "米株安・円高なら重い", "小動き", "米株高・円安なら支え"],
+  ["USD/JPY", "ドル高で上昇しやすい", "小動き", "ドル安で下落しやすい"],
+  ["EUR/USD", "ドル高で下落しやすい", "小動き", "ドル安で上昇しやすい"],
+  ["金", "金利上昇なら重い", "小動き", "金利低下なら支え"],
   ["原油", "景気強含みなら支え", "小動き", "景気減速なら重い"]
 ];
 
 const REQUIRED_OUTLOOK_ROWS = [
+  ["米2年債", "政策金利見通しに反応", "初動は2年債で確認", "利下げ期待後退", "利下げ期待拡大"],
   ["米10年債", "成長・インフレ・財政で反応", "2年債との方向差と持続性を確認", "インフレ再燃・国債需給悪化", "成長鈍化・利下げ期待"],
-  ["EUR/USD", "ドル指数と米金利に反応", "ドル全面高かユーロ固有材料かを確認", "米金利上昇・ドル高", "米金利低下・ドル安"],
   ["ダウ先物", "景気敏感株の反応を確認", "金利上昇を企業業績で吸収できるかを見る", "景気悪化・金利上昇", "景気底堅さ・金利低下"],
   ["ナスダック先物", "高PER・AI株の金利感応度を確認", "米10年債と実質金利への耐性を見る", "実質金利上昇", "金利低下・AI株買い戻し"],
+  ["日経225先物", "米株・円相場に反応", "米株先物とUSD/JPYの組み合わせを見る", "米株安・円高", "米株高・円安"],
+  ["USD/JPY", "米金利差とドル指数に反応", "米2年債・米10年債との連動を確認", "米金利上昇・ドル高", "米金利低下・ドル安"],
+  ["EUR/USD", "ドル指数と米金利に反応", "ドル全面高かユーロ固有材料かを確認", "米金利上昇・ドル高", "米金利低下・ドル安"],
+  ["金", "実質金利とドルに反応", "金利低下でも上がらない時は需給を確認", "実質金利上昇・ドル高", "実質金利低下・ドル安"],
   ["原油", "需要見通しと地政学材料を確認", "景気指標と供給材料のどちらが主導かを見る", "需要上振れ・供給不安", "需要鈍化・供給懸念後退"]
 ];
 
 function normalizeMarketLabel(label = "") {
   const value = String(label || "");
+  if (/米2年|2年債/.test(value)) return "米2年債";
   if (/米10年/.test(value)) return "米10年債";
+  if (/日経225|Nikkei/.test(value)) return "日経225先物";
+  if (/USD\/?JPY|ドル円/.test(value)) return "USD/JPY";
   if (/EUR\/?USD|ユーロ/.test(value)) return "EUR/USD";
   if (/Dow|ダウ/.test(value)) return "ダウ先物";
   if (/Nasdaq|ナスダック/.test(value)) return "ナスダック先物";
+  if (/^(金|Gold|ゴールド|XAU)/.test(value)) return "金";
   if (/WTI|原油/.test(value)) return "原油";
   return value;
 }
 
 function enrichRowsWithRequiredMarkets(data, requiredRows) {
   const sourceRows = Array.isArray(data) ? data.map(row => Array.isArray(row) ? row.slice() : [row]) : [];
-  const seen = new Set();
-  const normalized = sourceRows.map(row => {
+  const requiredOrder = new Map(requiredRows.map((row, index) => [row[0], index]));
+  const byRequiredMarket = new Map();
+  const extras = [];
+
+  sourceRows.forEach(row => {
     const market = normalizeMarketLabel(row[0]);
     if (market) {
       row[0] = market;
-      seen.add(market);
     }
-    return row;
+    if (requiredOrder.has(market)) {
+      if (!byRequiredMarket.has(market)) byRequiredMarket.set(market, row);
+    } else {
+      extras.push(row);
+    }
   });
+
   requiredRows.forEach(row => {
-    if (!seen.has(row[0])) {
-      normalized.push(row.slice());
-      seen.add(row[0]);
+    if (!byRequiredMarket.has(row[0])) {
+      byRequiredMarket.set(row[0], row.slice());
     }
   });
-  return normalized;
+
+  const orderedRequiredRows = requiredRows
+    .map(row => byRequiredMarket.get(row[0]))
+    .filter(Boolean);
+
+  return orderedRequiredRows.concat(extras);
 }
 
 function scenarioRowsForEvent(event) {
