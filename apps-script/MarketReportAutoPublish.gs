@@ -127,6 +127,7 @@ function autoPublishScheduledMarketReport_(hour) {
     }
 
     const report = buildWebReportFromGoogleDoc_(file);
+    const validation = validateMarketReportBeforePublish_(report, hour);
     const result = publishWebReportObject_(report);
     props.setProperty(publishedVersionKey, fileVersion);
 
@@ -138,6 +139,7 @@ function autoPublishScheduledMarketReport_(hour) {
       fileUpdatedAt: formatMarketReportAutoDateTime_(file.getLastUpdated()),
       reportDate: report.date,
       reportTime: report.time,
+      validationWarnings: validation.warnings || [],
       commitSha: result.commitSha,
       dashboardCommitSha: result.dashboardCommitSha || '',
       pagesUrl: result.pagesUrl
