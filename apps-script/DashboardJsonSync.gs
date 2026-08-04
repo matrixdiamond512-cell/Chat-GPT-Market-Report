@@ -24,11 +24,18 @@ function syncDashboardJsonToGitHub() {
   try {
     var reports = dashboardFetchReportsJson_();
     var result = syncDashboardJsonToGitHubFromReports_(reports);
+    var eventsLine = '';
+    if (result.eventsStatus === 'ok') {
+      eventsLine = '\n重要イベント: 反映済み';
+    } else if (result.eventsStatus) {
+      eventsLine = '\n重要イベント: ' + result.eventsStatus + (result.eventsError ? '\n理由: ' + result.eventsError : '');
+    }
     dashboardAlert_(
       'ダッシュボードJSONをGitHubへ反映しました。\n' +
       '対象: ' + result.latestKey + '\n' +
       '件数: ' + result.reportCount + '\n' +
-      'コミット: ' + result.commitSha
+      'コミット: ' + result.commitSha +
+      eventsLine
     );
     return result;
   } catch (error) {
@@ -50,12 +57,28 @@ function syncDashboardJsonToGitHubFromReports_(reports) {
     current.sha,
     'Update dashboard JSON from market reports'
   );
+  var eventsResult = null;
+  if (typeof syncEventsJsonToGitHubFromReports_ === 'function') {
+    try {
+      eventsResult = syncEventsJsonToGitHubFromReports_(reports);
+    } catch (eventError) {
+      eventsResult = {
+        ok: false,
+        error: eventError.message
+      };
+      Logger.log('重要イベントJSONの自動反映に失敗: ' + eventError.message);
+    }
+  }
   return dashboardSaveResult_({
     ok: true,
     targetPath: DASHBOARD_JSON_CONFIG.targetPath,
     latestKey: payload.currentReportKey,
     reportCount: payload.reports.length,
-    commitSha: result.commit.sha
+    commitSha: result.commit.sha,
+    eventsStatus: eventsResult ? (eventsResult.ok ? 'ok' : 'error') : 'not_installed',
+    eventsTargetPath: eventsResult && eventsResult.targetPath ? eventsResult.targetPath : '',
+    eventsCommitSha: eventsResult && eventsResult.commitSha ? eventsResult.commitSha : '',
+    eventsError: eventsResult && eventsResult.error ? eventsResult.error : ''
   });
 }
 

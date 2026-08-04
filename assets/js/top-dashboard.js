@@ -955,22 +955,37 @@ function normalizeCalendarEvent(event) {
     forecast: cleanText(event?.forecast ?? event?.estimate ?? event?.consensus ?? "", 32),
     previous: cleanText(event?.previous ?? event?.prev ?? "", 32),
     actual: cleanText(event?.actual ?? event?.result ?? "", 32),
+    resultComparison: cleanText(event?.resultComparison || event?.surprise || "", 42),
+    resultExplanation: cleanText(event?.resultExplanation || event?.marketReaction || "", 80),
+    status: cleanText(event?.status || "", 20),
+    category: cleanText(event?.category || "", 28),
     detail: cleanText(event?.reason || event?.sourceNote || "", 56)
   };
 }
 
 function calendarRowsForReport(report) {
+  const baseDate = new Date(`${report.date}T${report.time || "00:00"}:00+09:00`);
+  const recentPastLimit = new Date(baseDate.getTime() - 3 * 24 * 3600000);
   const rows = dashboardCalendarEvents
-    .filter((event) => /^\d{2}:\d{2}$/.test(event.time || ""))
+    .filter((event) => event.category !== "monitoring_headline")
     .filter((event) => {
+      const hasResult = Boolean(event.actual || event.resultComparison || event.resultExplanation || event.status === "released");
       if (event.date > report.date) return true;
-      if (event.date < report.date) return false;
+      if (event.date < report.date) {
+        const eventDate = new Date(`${event.date}T${/^\d{2}:\d{2}$/.test(event.time || "") ? event.time : "00:00"}:00+09:00`);
+        return hasResult && !Number.isNaN(eventDate.getTime()) && eventDate >= recentPastLimit;
+      }
       if (/^\d{2}:\d{2}$/.test(event.time || "") && /^\d{2}:\d{2}$/.test(report.time || "")) {
-        return event.time >= report.time;
+        return event.time >= report.time || hasResult || event.status === "needs_result";
       }
       return true;
     })
-    .sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`));
+    .sort((a, b) => {
+      const aSame = a.date === report.date ? 0 : a.date > report.date ? 1 : 2;
+      const bSame = b.date === report.date ? 0 : b.date > report.date ? 1 : 2;
+      if (aSame !== bSame) return aSame - bSame;
+      return `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`);
+    });
   const sameDate = rows.filter((event) => event.date === report.date);
   return (sameDate.length ? sameDate : rows).slice(0, 6);
 }
@@ -985,10 +1000,14 @@ function calendarUnavailableNotice() {
 }
 
 function eventDetail(row) {
+  const forecast = row.forecast && !/手入力待ち|該当なし/.test(row.forecast) ? `予想 ${row.forecast}` : "";
+  const previous = row.previous && !/手入力待ち|該当なし/.test(row.previous) ? `前回 ${row.previous}` : "";
   const parts = [
-    row.forecast ? `予想 ${row.forecast}` : "",
-    row.previous ? `前回 ${row.previous}` : "",
+    forecast,
+    previous,
     row.actual ? `結果 ${row.actual}` : "",
+    row.resultComparison ? `比較 ${row.resultComparison}` : "",
+    row.resultExplanation ? `説明 ${row.resultExplanation}` : "",
     row.detail || ""
   ].filter(Boolean);
   if (parts.length) return `<small class="event-detail">${esc(parts.join(" / "))}</small>`;
@@ -1204,6 +1223,8 @@ function calendarEventTiming(row) {
 }
 
 function calendarNextText(row, report) {
+  if (row.status === "released" || row.actual || row.resultComparison || row.resultExplanation) return "結果保存";
+  if (row.status === "needs_result") return "結果待ち";
   if (row.time === "随時") return "継続監視";
   if (row.time === "予定確認") return "時刻未定";
   if (!row.time || row.time === "未定") return "時刻未定";
