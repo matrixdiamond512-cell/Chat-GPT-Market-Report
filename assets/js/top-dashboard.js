@@ -3,6 +3,7 @@ const REPORT_TIMES = ["07:00", "12:00", "16:00", "21:00"];
 const MARKET_DEFINITIONS = [
   {
     key: "gold",
+    dataKey: "gold",
     label: "金",
     display: "金（XAU/USD）",
     icon: "Au",
@@ -13,6 +14,7 @@ const MARKET_DEFINITIONS = [
   },
   {
     key: "oil",
+    dataKey: "wti",
     label: "原油",
     display: "WTI原油（CL）",
     icon: "CL",
@@ -23,6 +25,7 @@ const MARKET_DEFINITIONS = [
   },
   {
     key: "nikkei",
+    dataKey: "nikkei225_futures_ose",
     label: "日経225先物",
     display: "日経225先物（大阪取引所）",
     icon: "NK",
@@ -33,6 +36,7 @@ const MARKET_DEFINITIONS = [
   },
   {
     key: "usdjpy",
+    dataKey: "usdjpy",
     label: "USD/JPY",
     display: "USD/JPY",
     icon: "$",
@@ -43,6 +47,7 @@ const MARKET_DEFINITIONS = [
   },
   {
     key: "eurusd",
+    dataKey: "eurusd",
     label: "EUR/USD",
     display: "EUR/USD",
     icon: "€",
@@ -53,6 +58,7 @@ const MARKET_DEFINITIONS = [
   },
   {
     key: "btc",
+    dataKey: "btcusd",
     label: "BTCUSD",
     display: "BTCUSD",
     icon: "BTC",
@@ -108,6 +114,76 @@ function uniq(values) {
 
 function normalizeMinus(value = "") {
   return String(value).replace(/[−－]/g, "-").trim();
+}
+
+function finiteNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function shortDateTime(value = "") {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return cleanText(value, 18);
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hour = String(date.getHours()).padStart(2, "0");
+  const minute = String(date.getMinutes()).padStart(2, "0");
+  return `${month}/${day} ${hour}:${minute}`;
+}
+
+function marketDataFor(report, definition) {
+  const payload = report?.marketData || dashboardMeta?.marketData;
+  const key = definition.dataKey || definition.key;
+  return payload?.markets?.[key] || null;
+}
+
+function trendFromMarketData(item) {
+  if (!item) return "missing";
+  if (item.verificationStatus === "unavailable") return "missing";
+  const change = finiteNumber(item.change);
+  const changePercent = finiteNumber(item.changePercent);
+  const value = change ?? changePercent;
+  if (value > 0) return "up";
+  if (value < 0) return "down";
+  return "flat";
+}
+
+function marketDataStatusText(item) {
+  if (!item) return "";
+  if (item.verificationStatus === "fallback") {
+    return `前回確認値：${shortDateTime(item.lastVerifiedAt || item.asOf)}`;
+  }
+  if (item.verificationStatus === "verified") {
+    return `確認済み：${cleanText(item.sourceName || item.sourceId || "市場データ", 22)}`;
+  }
+  return `取得失敗：${cleanText(item.error || item.note || "理由未確認", 26)}`;
+}
+
+function metricFromMarketData(report, definition) {
+  const item = marketDataFor(report, definition);
+  if (!item) return null;
+  const value = finiteNumber(item.value);
+  if (value === null) {
+    return {
+      value: "取得不能",
+      unit: "",
+      change: cleanText(item.error || item.note || "理由：市場データを取得できませんでした", 44),
+      trend: "missing",
+      raw: "marketData",
+      sourceNote: marketDataStatusText(item),
+      sourceClass: "missing"
+    };
+  }
+  return {
+    value: item.displayValue || value.toLocaleString("ja-JP", { maximumFractionDigits: 5 }),
+    unit: item.unit || definition.unit,
+    change: item.changeText || (item.fallbackUsed ? "前回確認値" : "前日比：取得不能"),
+    trend: trendFromMarketData(item),
+    raw: "marketData",
+    sourceNote: marketDataStatusText(item),
+    sourceClass: item.fallbackUsed ? "fallback" : "verified"
+  };
 }
 
 const TEMPERATURE_MINI_DEFINITIONS = [
@@ -373,6 +449,28 @@ function breakConditionsFromReport(report, max = 180) {
 }
 
 function temperatureValueFromReport(report, definition) {
+  const marketDataKey = definition.id === "market.vix"
+    ? "vix"
+    : definition.id === "market.nikkei_vi"
+      ? "nikkei_vi"
+      : "fear_greed";
+  const item = (report?.marketData || dashboardMeta?.marketData)?.markets?.[marketDataKey];
+  if (item) {
+    const value = finiteNumber(item.value);
+    if (value !== null) {
+      return {
+        value,
+        label: item.classification || temperatureBandLabel(value, definition),
+        note: marketDataStatusText(item)
+      };
+    }
+    return {
+      value: null,
+      label: "取得不能",
+      note: cleanText(item.error || item.note || "市場データ未取得", 48)
+    };
+  }
+
   const text = allText(report);
   for (const pattern of definition.patterns) {
     const match = text.match(pattern);
@@ -478,6 +576,9 @@ function findMetricLine(report, definition) {
 }
 
 function parseMetric(report, definition) {
+  const verifiedMetric = metricFromMarketData(report, definition);
+  if (verifiedMetric) return verifiedMetric;
+
   const market = reportMarket(report, definition) || {};
   const line = findMetricLine(report, definition);
   if (!line) {
@@ -814,6 +915,7 @@ function renderMarketCards(report) {
         <h3>${esc(definition.display)}</h3>
         <p class="market-value">${esc(metric.value)}${metric.unit ? `<small>${esc(metric.unit)}</small>` : ""}</p>
         <p class="change-line ${trendClass}">${esc(metric.change)}</p>
+        ${metric.sourceNote ? `<p class="market-source-line ${esc(metric.sourceClass || "")}">${esc(metric.sourceNote)}</p>` : ""}
         <dl>
           <dt>${esc(reasonLabel)}</dt><dd>${esc(reason)}</dd>
           <dt>注目点</dt><dd>${esc(levels)}</dd>
@@ -1658,12 +1760,23 @@ async function loadDashboardReports() {
     const payload = await response.json();
     const dashboardReports = normalizeDashboardReports(payload);
     if (dashboardReports.length) {
+      const marketData = payload.marketData || payload.latestReport?.marketData || null;
+      const currentReportKey = payload.currentReportKey || "";
+      const enrichedReports = dashboardReports.map((report, index) => {
+        const key = `${report.date || ""} ${report.time || ""}`;
+        if (marketData && (index === 0 || key === currentReportKey) && !report.marketData) {
+          return { ...report, marketData };
+        }
+        return report;
+      });
       return {
-        reports: dashboardReports,
+        reports: enrichedReports,
         meta: {
           generatedAt: payload.generatedAt || "",
           dataAsOf: payload.dataAsOf || "",
-          status: payload.status || ""
+          status: payload.status || "",
+          marketData,
+          marketDataUpdatedAt: payload.marketDataUpdatedAt || marketData?.generatedAt || ""
         }
       };
     }

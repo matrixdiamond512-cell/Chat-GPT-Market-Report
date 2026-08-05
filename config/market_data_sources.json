@@ -1,0 +1,281 @@
+{
+  "schemaVersion": "1.0.0",
+  "timezone": "Asia/Tokyo",
+  "notes": [
+    "Dashboard market cards must prefer this independent market data layer over numbers parsed from report text.",
+    "Do not substitute a different market type under the original label. For example, do not display CME/CFD data as Osaka Exchange Nikkei 225 futures.",
+    "Free sources are used first. Each value must keep source id, source url, market type, session, unit, and verification status."
+  ],
+  "symbols": {
+    "gold": {
+      "displayName": "金",
+      "dashboardKey": "gold",
+      "unit": "USD/oz",
+      "marketType": "continuous_futures",
+      "session": "global",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_gc_f",
+          "name": "Yahoo Finance Gold Futures",
+          "kind": "yahoo_chart",
+          "symbol": "GC=F",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF",
+          "sourceUrl": "https://finance.yahoo.com/quote/GC=F/",
+          "priority": 1,
+          "marketType": "continuous_futures",
+          "session": "global",
+          "note": "COMEX gold futures continuous front contract. Do not label as spot XAU/USD."
+        },
+        {
+          "id": "stooq_xauusd",
+          "name": "Stooq XAU/USD",
+          "kind": "stooq_quote",
+          "symbol": "xauusd",
+          "url": "https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
+          "sourceUrl": "https://stooq.com/q/?s=xauusd",
+          "priority": 2,
+          "marketType": "spot",
+          "session": "global",
+          "note": "Fallback only. This is spot XAU/USD, not COMEX futures."
+        }
+      ]
+    },
+    "wti": {
+      "displayName": "WTI原油",
+      "dashboardKey": "oil",
+      "unit": "USD/bbl",
+      "marketType": "continuous_futures",
+      "session": "global",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_cl_f",
+          "name": "Yahoo Finance WTI Crude Oil Futures",
+          "kind": "yahoo_chart",
+          "symbol": "CL=F",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/CL%3DF",
+          "sourceUrl": "https://finance.yahoo.com/quote/CL=F/",
+          "priority": 1,
+          "marketType": "continuous_futures",
+          "session": "global",
+          "note": "NYMEX WTI crude oil continuous front contract."
+        },
+        {
+          "id": "stooq_cl_f",
+          "name": "Stooq WTI Crude Oil Futures",
+          "kind": "stooq_quote",
+          "symbol": "cl.f",
+          "url": "https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
+          "sourceUrl": "https://stooq.com/q/?s=cl.f",
+          "priority": 2,
+          "marketType": "continuous_futures",
+          "session": "global"
+        }
+      ]
+    },
+    "nikkei225_futures_ose": {
+      "displayName": "日経225先物（大阪取引所）",
+      "dashboardKey": "nikkei",
+      "unit": "円",
+      "marketType": "futures_ose",
+      "session": "day_through",
+      "required": true,
+      "sources": [
+        {
+          "id": "jpx_ose_futures_quote",
+          "name": "JPX/OSE Futures Quotes",
+          "kind": "jpx_html",
+          "url": "https://port.jpx.co.jp/jpxhp/main/index.aspx?disptype=day_through&f=e_future",
+          "sourceUrl": "https://port.jpx.co.jp/jpxhp/main/index.aspx?disptype=day_through&f=e_future",
+          "priority": 1,
+          "marketType": "futures_ose",
+          "session": "day_through",
+          "note": "JPX/OSE delayed quote. At least 15 minutes delayed according to JPX quick quote disclaimer."
+        },
+        {
+          "id": "nikkei_nk225f_profile",
+          "name": "Nikkei 225 Futures Index",
+          "kind": "nikkei_profile",
+          "url": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=3&idx=nk225f",
+          "sourceUrl": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=3&idx=nk225f",
+          "priority": 2,
+          "marketType": "ose_futures_index",
+          "session": "daily_index",
+          "referenceOnly": true,
+          "note": "Reference only because it is an index tracking nearest OSE futures, not a direct OSE futures quote."
+        }
+      ]
+    },
+    "usdjpy": {
+      "displayName": "USD/JPY",
+      "dashboardKey": "usdjpy",
+      "unit": "円",
+      "marketType": "spot",
+      "session": "continuous",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_jpy_x",
+          "name": "Yahoo Finance USD/JPY",
+          "kind": "yahoo_chart",
+          "symbol": "JPY=X",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/JPY%3DX",
+          "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
+          "priority": 1,
+          "marketType": "spot",
+          "session": "continuous"
+        },
+        {
+          "id": "stooq_usdjpy",
+          "name": "Stooq USD/JPY",
+          "kind": "stooq_quote",
+          "symbol": "usdjpy",
+          "url": "https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
+          "sourceUrl": "https://stooq.com/q/?s=usdjpy",
+          "priority": 2,
+          "marketType": "spot",
+          "session": "continuous"
+        }
+      ]
+    },
+    "eurusd": {
+      "displayName": "EUR/USD",
+      "dashboardKey": "eurusd",
+      "unit": "USD",
+      "marketType": "spot",
+      "session": "continuous",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_eurusd_x",
+          "name": "Yahoo Finance EUR/USD",
+          "kind": "yahoo_chart",
+          "symbol": "EURUSD=X",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/EURUSD%3DX",
+          "sourceUrl": "https://finance.yahoo.com/quote/EURUSD=X/",
+          "priority": 1,
+          "marketType": "spot",
+          "session": "continuous"
+        },
+        {
+          "id": "stooq_eurusd",
+          "name": "Stooq EUR/USD",
+          "kind": "stooq_quote",
+          "symbol": "eurusd",
+          "url": "https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
+          "sourceUrl": "https://stooq.com/q/?s=eurusd",
+          "priority": 2,
+          "marketType": "spot",
+          "session": "continuous"
+        }
+      ]
+    },
+    "btcusd": {
+      "displayName": "BTCUSD",
+      "dashboardKey": "btc",
+      "unit": "USD",
+      "marketType": "spot_crypto",
+      "session": "continuous",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_btc_usd",
+          "name": "Yahoo Finance Bitcoin USD",
+          "kind": "yahoo_chart",
+          "symbol": "BTC-USD",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD",
+          "sourceUrl": "https://finance.yahoo.com/quote/BTC-USD/",
+          "priority": 1,
+          "marketType": "spot_crypto",
+          "session": "continuous"
+        },
+        {
+          "id": "stooq_btcusd",
+          "name": "Stooq BTC/USD",
+          "kind": "stooq_quote",
+          "symbol": "btcusd",
+          "url": "https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
+          "sourceUrl": "https://stooq.com/q/?s=btcusd",
+          "priority": 2,
+          "marketType": "spot_crypto",
+          "session": "continuous"
+        }
+      ]
+    },
+    "vix": {
+      "displayName": "VIX",
+      "dashboardKey": "vix",
+      "unit": "pt",
+      "marketType": "index",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "cboe_vix_history",
+          "name": "Cboe VIX Historical Data",
+          "kind": "cboe_history_csv",
+          "url": "https://cdn.cboe.com/api/global/us_indices/daily_prices/VIX_History.csv",
+          "sourceUrl": "https://www.cboe.com/tradable_products/vix/vix_historical_data/",
+          "priority": 1,
+          "marketType": "index",
+          "session": "daily",
+          "note": "Official Cboe daily historical CSV. Not an intraday realtime value."
+        },
+        {
+          "id": "yahoo_vix",
+          "name": "Yahoo Finance VIX",
+          "kind": "yahoo_chart",
+          "symbol": "^VIX",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EVIX",
+          "sourceUrl": "https://finance.yahoo.com/quote/%5EVIX/",
+          "priority": 2,
+          "marketType": "index",
+          "session": "delayed"
+        }
+      ]
+    },
+    "nikkei_vi": {
+      "displayName": "日経VI",
+      "dashboardKey": "nikkei_vi",
+      "unit": "pt",
+      "marketType": "index",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "nikkei_nk225vi_profile",
+          "name": "Nikkei 225 VI official profile",
+          "kind": "nikkei_profile",
+          "url": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
+          "sourceUrl": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
+          "priority": 1,
+          "marketType": "index",
+          "session": "daily",
+          "note": "Nikkei official index page. Realtime calculation is every 5 seconds, but fetched value is treated as delayed/page value."
+        }
+      ]
+    },
+    "fear_greed": {
+      "displayName": "Fear & Greed Index",
+      "dashboardKey": "fear_greed",
+      "unit": "score",
+      "marketType": "sentiment",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "cnn_fear_greed_graphdata",
+          "name": "CNN Fear & Greed graphdata",
+          "kind": "cnn_fear_greed",
+          "url": "https://production.dataviz.cnn.io/index/fearandgreed/graphdata",
+          "sourceUrl": "https://edition-prod-cf.sitemirror.cnn.com/markets/fear-and-greed",
+          "priority": 1,
+          "marketType": "sentiment",
+          "session": "daily",
+          "note": "CNN sentiment index data endpoint used only when accessible. If unavailable, keep previous verified value."
+        }
+      ]
+    }
+  }
+}

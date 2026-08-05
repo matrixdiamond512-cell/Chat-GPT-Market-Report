@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0.0",
+  "timezone": "Asia/Tokyo",
+  "defaults": {
+    "staleHours": 36,
+    "maxSourceDivergencePercent": 1.5,
+    "maxRetries": 3,
+    "connectTimeoutSeconds": 10,
+    "readTimeoutSeconds": 20
+  },
+  "symbols": {
+    "gold": {
+      "min": 1000,
+      "max": 8000,
+      "maxChangePercent": 12,
+      "decimalPlaces": 2,
+      "staleHours": 36
+    },
+    "wti": {
+      "min": 1,
+      "max": 250,
+      "maxChangePercent": 25,
+      "decimalPlaces": 2,
+      "staleHours": 36
+    },
+    "nikkei225_futures_ose": {
+      "min": 10000,
+      "max": 100000,
+      "maxChangePercent": 20,
+      "decimalPlaces": 0,
+      "staleHours": 36,
+      "allowReferenceOnly": false
+    },
+    "usdjpy": {
+      "min": 80,
+      "max": 250,
+      "maxChangePercent": 8,
+      "decimalPlaces": 2,
+      "staleHours": 12
+    },
+    "eurusd": {
+      "min": 0.5,
+      "max": 2,
+      "maxChangePercent": 8,
+      "decimalPlaces": 5,
+      "staleHours": 12
+    },
+    "btcusd": {
+      "min": 1000,
+      "max": 500000,
+      "maxChangePercent": 30,
+      "decimalPlaces": 0,
+      "staleHours": 12
+    },
+    "vix": {
+      "min": 0,
+      "max": 100,
+      "maxChangePercent": 80,
+      "decimalPlaces": 2,
+      "staleHours": 84
+    },
+    "nikkei_vi": {
+      "min": 0,
+      "max": 100,
+      "maxChangePercent": 80,
+      "decimalPlaces": 2,
+      "staleHours": 84
+    },
+    "fear_greed": {
+      "min": 0,
+      "max": 100,
+      "maxChangePercent": 100,
+      "decimalPlaces": 0,
+      "staleHours": 84
+    }
+  }
+}

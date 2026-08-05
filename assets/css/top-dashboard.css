@@ -310,6 +310,33 @@ input {
   overflow-wrap: anywhere;
 }
 
+.market-source-line {
+  display: inline-flex;
+  max-width: 100%;
+  margin: 0 0 7px;
+  padding: 2px 6px;
+  border: 1px solid #c8ddff;
+  border-radius: 999px;
+  background: #f3f8ff;
+  color: #1151aa;
+  font-size: 10.5px;
+  font-weight: 1000;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.market-source-line.fallback {
+  border-color: #ead4a8;
+  background: #fff8ea;
+  color: #9a5a00;
+}
+
+.market-source-line.missing {
+  border-color: #f1b7b3;
+  background: #fff1f0;
+  color: #b42318;
+}
+
 .direction-mark {
   display: grid;
   place-items: center;
