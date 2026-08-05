@@ -10,28 +10,55 @@ function syncUsdJpyVolumeJsonToGitHubFlexible() {
   const lock = LockService.getDocumentLock();
   lock.waitLock(30000);
   try {
-    const json = buildUsdJpyVolumeJsonFlexible_();
-    const current = getGitHubJsonFile_(USDJPY_VOLUME_JSON_CONFIG.targetPath);
-    const result = putGitHubJsonFile_(
-      USDJPY_VOLUME_JSON_CONFIG.targetPath,
-      json,
-      current.sha,
-      'Update USDJPY volume JSON from BOJ spot data'
+    return syncUsdJpyVolumeJsonToGitHubFlexibleUnlocked_({ showAlert: true });
+  } catch (error) {
+    usdJpyVolumeAlert_('USD/JPY出来高JSONを反映できませんでした。\n' + error.message);
+    throw error;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * DocumentLockを取得済みの共通スケジューラーや統合更新処理から呼ぶ本体。
+ * Apps ScriptのLockは再入可能ではないため、ここでは新しいLockを取得しない。
+ */
+function syncUsdJpyVolumeJsonToGitHubFlexibleUnlocked_(options) {
+  const settings = options || {};
+  const json = buildUsdJpyVolumeJsonFlexible_();
+  const payload = JSON.parse(json);
+  const latestPublicationDate = payload.components.bojSpotVolume.latestPublicationDate;
+
+  if (settings.expectedPublicationDate && latestPublicationDate !== settings.expectedPublicationDate) {
+    throw new Error(
+      '日銀の最新公表日とJSONの公表日が一致しません。' +
+      ' 日銀: ' + settings.expectedPublicationDate +
+      ' / JSON: ' + (latestPublicationDate || 'なし')
     );
-    const payload = JSON.parse(json);
-    const summary = {
-      ok: true,
-      targetPath: USDJPY_VOLUME_JSON_CONFIG.targetPath,
-      latestTargetDate: payload.components.bojSpotVolume.latestTargetDate,
-      latestPublicationDate: payload.components.bojSpotVolume.latestPublicationDate,
-      priceStatus: payload.components.usdjpyOhlc.status,
-      recordCount: payload.data.records.length,
-      commitSha: result.commit.sha
-    };
-    PropertiesService.getScriptProperties().setProperty(
-      USDJPY_VOLUME_JSON_CONFIG.properties.lastResult,
-      JSON.stringify(summary)
-    );
+  }
+
+  const current = getGitHubJsonFile_(USDJPY_VOLUME_JSON_CONFIG.targetPath);
+  const result = putGitHubJsonFile_(
+    USDJPY_VOLUME_JSON_CONFIG.targetPath,
+    json,
+    current.sha,
+    'Update USDJPY volume JSON from BOJ spot data'
+  );
+  const summary = {
+    ok: true,
+    targetPath: USDJPY_VOLUME_JSON_CONFIG.targetPath,
+    latestTargetDate: payload.components.bojSpotVolume.latestTargetDate,
+    latestPublicationDate: latestPublicationDate,
+    priceStatus: payload.components.usdjpyOhlc.status,
+    recordCount: payload.data.records.length,
+    commitSha: result.commit.sha
+  };
+  PropertiesService.getScriptProperties().setProperty(
+    USDJPY_VOLUME_JSON_CONFIG.properties.lastResult,
+    JSON.stringify(summary)
+  );
+
+  if (settings.showAlert !== false) {
     usdJpyVolumeAlert_(
       'USD/JPY出来高JSONをGitHubへ反映しました。\n' +
       '対象日: ' + summary.latestTargetDate + '\n' +
@@ -40,13 +67,8 @@ function syncUsdJpyVolumeJsonToGitHubFlexible() {
       '件数: ' + summary.recordCount + '\n' +
       'コミット: ' + summary.commitSha
     );
-    return summary;
-  } catch (error) {
-    usdJpyVolumeAlert_('USD/JPY出来高JSONを反映できませんでした。\n' + error.message);
-    throw error;
-  } finally {
-    lock.releaseLock();
   }
+  return summary;
 }
 
 function importUsdJpySpotVolumeFromBojAndSyncJsonFlexible() {

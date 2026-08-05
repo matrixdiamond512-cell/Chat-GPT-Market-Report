@@ -18,68 +18,217 @@ var USDJPY_VOLUME_PAGE_AUTO_CONFIG = {
 };
 
 function updateUsdJpyVolumePageFromSources() {
-  var lock = LockService.getScriptLock();
-  if (!lock.tryLock(USDJPY_VOLUME_PAGE_AUTO_CONFIG.lockWaitMs || 30000)) {
+  var lock = LockService.getDocumentLock();
+  if (lock && !lock.tryLock(5000)) {
     var skipped = {
       ok: true,
       skipped: true,
       executedAt: usdJpyVolumeAutoIsoJst_(new Date()),
-      reason: '別のUSD/JPYページ更新処理が実行中のため、今回の実行はスキップしました。'
+      reason: '共通自動更新または別の手動更新が実行中です。数分後にもう一度実行してください。'
     };
-    PropertiesService.getScriptProperties().setProperty(
-      USDJPY_VOLUME_PAGE_AUTO_CONFIG.lastResultProperty,
-      JSON.stringify(skipped)
-    );
+    usdJpyVolumeAutoSaveResult_(skipped);
     usdJpyVolumeAutoAlert_(
-      '別のUSD/JPYページ更新処理がまだ実行中です。\n' +
-      '今回の実行はスキップしました。数分後にもう一度実行してください。'
+      '現在、別のWEB版更新処理が実行中です。\n' +
+      '処理が終わってから「東京市場ドル円出来高を今すぐ更新」をもう一度実行してください。'
     );
     return skipped;
   }
 
   try {
-    var bojSummary = usdJpyVolumeAutoImportBojPdfSpotVolume_(false);
-    var priceSummary = usdJpyVolumeAutoImportPrice_(false);
-    var sheetSyncSummary = usdJpyVolumeAutoSyncPriceToReportSheets_();
-    var derivedSummary = usdJpyVolumeAutoRefreshVolumeDerivedColumns_();
-    var githubSummary = syncUsdJpyVolumeJsonToGitHubFlexible();
-    var result = {
-      ok: true,
-      executedAt: usdJpyVolumeAutoIsoJst_(new Date()),
-      boj: bojSummary,
-      price: priceSummary,
-      sheetSync: sheetSyncSummary,
-      volumeDerived: derivedSummary,
-      github: githubSummary
-    };
-    PropertiesService.getScriptProperties().setProperty(
-      USDJPY_VOLUME_PAGE_AUTO_CONFIG.lastResultProperty,
-      JSON.stringify(result)
-    );
-    usdJpyVolumeAutoAlert_(
-      'USD/JPYページを更新しました。\n' +
-      '出来高対象日: ' + (githubSummary.latestTargetDate || '') + '\n' +
-      '日銀公表日: ' + (githubSummary.latestPublicationDate || '') + '\n' +
-      '保存行数: ' + derivedSummary.rowCount + '\n' +
-      '価格取得元: ' + priceSummary.sourceName + '\n' +
-      'GitHubコミット: ' + (githubSummary.commitSha || '')
-    );
+    return usdJpyVolumeRunUnifiedUpdate_({ mode: 'manual', showAlert: true });
+  } finally {
+    if (lock) lock.releaseLock();
+  }
+}
+
+/** 共通スケジューラーがDocumentLockを取得した状態で呼ぶ入口。 */
+function runUsdJpyVolumeUpdateForMaster_() {
+  return usdJpyVolumeRunUnifiedUpdate_({ mode: 'master', showAlert: false });
+}
+
+function usdJpyVolumeRunUnifiedUpdate_(options) {
+  var settings = options || {};
+  var result = {
+    ok: false,
+    skipped: false,
+    mode: settings.mode || 'manual',
+    executedAt: usdJpyVolumeAutoIsoJst_(new Date()),
+    warnings: []
+  };
+
+  try {
+    result.boj = usdJpyVolumeAutoImportBojPdfSpotVolume_(false);
+
+    try {
+      result.price = usdJpyVolumeAutoImportPrice_(false);
+    } catch (priceError) {
+      result.price = { ok: false, error: priceError.message };
+      result.warnings.push('USD/JPY日足価格: ' + priceError.message);
+    }
+
+    try {
+      result.sheetSync = usdJpyVolumeAutoSyncPriceToReportSheets_();
+    } catch (sheetSyncError) {
+      result.sheetSync = { ok: false, error: sheetSyncError.message };
+      result.warnings.push('価格のシート同期: ' + sheetSyncError.message);
+    }
+
+    result.volumeDerived = usdJpyVolumeAutoRefreshVolumeDerivedColumns_();
+
+    if (typeof syncUsdJpyVolumeJsonToGitHubFlexibleUnlocked_ !== 'function') {
+      throw new Error(
+        'ロック競合を防ぐJSON反映関数がありません。' +
+        'UsdJpyVolumeJsonFlexibleSync.gsを最新版に差し替えてください。'
+      );
+    }
+
+    result.github = syncUsdJpyVolumeJsonToGitHubFlexibleUnlocked_({
+      showAlert: false,
+      expectedPublicationDate: result.boj.latestPublicationDate
+    });
+    result.ok = true;
+    result.completedAt = usdJpyVolumeAutoIsoJst_(new Date());
+    usdJpyVolumeAutoSaveResult_(result);
+
+    if (settings.showAlert !== false) {
+      var priceSource = result.price && result.price.ok !== false
+        ? result.price.sourceName
+        : '更新失敗（保存済み価格を維持）';
+      usdJpyVolumeAutoAlert_(
+        '東京市場ドル円スポット出来高を更新しました。\n\n' +
+        '出来高対象日: ' + (result.github.latestTargetDate || '') + '\n' +
+        '日銀公表日: ' + (result.github.latestPublicationDate || '') + '\n' +
+        '保存行数: ' + result.volumeDerived.rowCount + '\n' +
+        '価格取得元: ' + priceSource + '\n' +
+        'GitHubコミット: ' + (result.github.commitSha || '') +
+        (result.warnings.length ? '\n\n注意:\n' + result.warnings.join('\n') : '')
+      );
+    }
     return result;
   } catch (error) {
-    var failed = {
-      ok: false,
-      executedAt: usdJpyVolumeAutoIsoJst_(new Date()),
-      error: error.message
-    };
-    PropertiesService.getScriptProperties().setProperty(
-      USDJPY_VOLUME_PAGE_AUTO_CONFIG.lastResultProperty,
-      JSON.stringify(failed)
-    );
-    usdJpyVolumeAutoAlert_('USD/JPYページ更新に失敗しました。\n' + error.message);
+    result.ok = false;
+    result.error = error.message;
+    result.stack = error.stack || '';
+    result.completedAt = usdJpyVolumeAutoIsoJst_(new Date());
+    usdJpyVolumeAutoSaveResult_(result);
+    if (settings.showAlert !== false) {
+      usdJpyVolumeAutoAlert_(
+        '東京市場ドル円スポット出来高の更新に失敗しました。\n\n' +
+        '理由: ' + error.message + '\n\n' +
+        '「東京市場ドル円出来高の状態を確認」で、止まった場所を確認できます。'
+      );
+    }
     throw error;
-  } finally {
-    lock.releaseLock();
   }
+}
+
+function usdJpyVolumeAutoSaveResult_(result) {
+  PropertiesService.getScriptProperties().setProperty(
+    USDJPY_VOLUME_PAGE_AUTO_CONFIG.lastResultProperty,
+    JSON.stringify(result)
+  );
+  return result;
+}
+
+function showUsdJpyVolumeUnifiedStatus() {
+  var status = {
+    checkedAt: usdJpyVolumeAutoIsoJst_(new Date()),
+    official: { ok: false },
+    sheet: { ok: false },
+    publicJson: { ok: false },
+    triggers: { master: 0, oldIndividual: 0 },
+    lastResult: null
+  };
+
+  try {
+    var publications = usdJpyVolumeAutoFetchBojPublications_();
+    var officialIndex = publications.length - 1;
+    var officialLatest = publications[officialIndex];
+    status.official = {
+      ok: true,
+      publicationDate: officialLatest.date,
+      targetDate: usdJpyVolumeAutoTargetDateForPublication_(publications, officialIndex)
+    };
+  } catch (officialError) {
+    status.official.error = officialError.message;
+  }
+
+  try {
+    var sheetPayload = buildUsdJpyVolumePayloadFlexible_();
+    status.sheet = {
+      ok: true,
+      publicationDate: sheetPayload.components.bojSpotVolume.latestPublicationDate,
+      targetDate: sheetPayload.components.bojSpotVolume.latestTargetDate,
+      records: sheetPayload.data.records.length
+    };
+  } catch (sheetError) {
+    status.sheet.error = sheetError.message;
+  }
+
+  try {
+    var publicUrl = 'https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/data/usdjpy-volume.json?t=' +
+      new Date().getTime();
+    var publicResponse = UrlFetchApp.fetch(publicUrl, { muteHttpExceptions: true, headers: { Accept: 'application/json' } });
+    if (publicResponse.getResponseCode() !== 200) {
+      throw new Error('HTTP ' + publicResponse.getResponseCode());
+    }
+    var publicPayload = JSON.parse(publicResponse.getContentText('UTF-8'));
+    status.publicJson = {
+      ok: true,
+      publicationDate: publicPayload.components.bojSpotVolume.latestPublicationDate,
+      targetDate: publicPayload.components.bojSpotVolume.latestTargetDate,
+      generatedAt: publicPayload.generatedAt || ''
+    };
+  } catch (publicError) {
+    status.publicJson.error = publicError.message;
+  }
+
+  var masterNames = typeof marketReportMasterHandlerNames_ === 'function'
+    ? marketReportMasterHandlerNames_()
+    : [];
+  ScriptApp.getProjectTriggers().forEach(function(trigger) {
+    var handler = trigger.getHandlerFunction();
+    if (masterNames.indexOf(handler) >= 0) status.triggers.master += 1;
+    if (handler === USDJPY_VOLUME_PAGE_AUTO_CONFIG.handler) status.triggers.oldIndividual += 1;
+  });
+
+  var lastResultText = PropertiesService.getScriptProperties()
+    .getProperty(USDJPY_VOLUME_PAGE_AUTO_CONFIG.lastResultProperty);
+  if (lastResultText) {
+    try {
+      status.lastResult = JSON.parse(lastResultText);
+    } catch (ignore) {
+      status.lastResult = { error: lastResultText };
+    }
+  }
+
+  var current = status.official.ok && status.sheet.ok && status.publicJson.ok &&
+    status.official.publicationDate === status.sheet.publicationDate &&
+    status.sheet.publicationDate === status.publicJson.publicationDate;
+  status.ok = current;
+
+  var lastSummary = status.lastResult
+    ? ((status.lastResult.ok ? '成功' : '失敗') + ' / ' + (status.lastResult.completedAt || status.lastResult.executedAt || '時刻不明'))
+    : '実行履歴なし';
+  var message =
+    '東京市場ドル円スポット出来高 更新状態\n\n' +
+    '総合判定: ' + (current ? '最新です' : '更新が必要です') + '\n\n' +
+    '日銀最新公表日: ' + (status.official.publicationDate || '取得失敗') + '\n' +
+    'シート最新公表日: ' + (status.sheet.publicationDate || '取得失敗') + '\n' +
+    'WEB最新公表日: ' + (status.publicJson.publicationDate || '取得失敗') + '\n\n' +
+    '共通トリガー: ' + status.triggers.master + '/8\n' +
+    '古い個別トリガー: ' + status.triggers.oldIndividual + '\n' +
+    '前回更新: ' + lastSummary;
+
+  if (!current) {
+    message += '\n\n「東京市場ドル円出来高を今すぐ更新」を実行してください。';
+  }
+  if (status.official.error) message += '\n日銀確認エラー: ' + status.official.error;
+  if (status.sheet.error) message += '\nシート確認エラー: ' + status.sheet.error;
+  if (status.publicJson.error) message += '\nWEB確認エラー: ' + status.publicJson.error;
+
+  usdJpyVolumeAutoAlert_(message);
+  return status;
 }
 
 function installUsdJpyVolumePageScheduledTriggers() {
@@ -207,8 +356,8 @@ function usdJpyVolumeAutoImportBojPdfSpotVolume_(previewOnly) {
   var pendingRows = [];
   var processedPdfCount = 0;
 
-  publications.forEach(function(publication) {
-    var targetDate = usdJpyVolumeAutoPreviousWeekday_(publication.date);
+  publications.forEach(function(publication, publicationIndex) {
+    var targetDate = usdJpyVolumeAutoTargetDateForPublication_(publications, publicationIndex);
     var current = existing[targetDate];
     if (current && usdJpyVolumeAutoSavedBojRowIsCurrent_(current.row, index, publication)) {
       unchangedRows.push({
@@ -270,11 +419,23 @@ function usdJpyVolumeAutoImportBojPdfSpotVolume_(previewOnly) {
     updateCount: rowsToUpdate.length,
     unchangedCount: unchangedRows.length,
     latestPublicationDate: latest ? latest.date : '',
-    latestTargetDate: latest ? usdJpyVolumeAutoPreviousWeekday_(latest.date) : '',
+    latestTargetDate: latest ?
+      usdJpyVolumeAutoTargetDateForPublication_(publications, publications.length - 1) : '',
     rowsToAdd: rowsToAdd,
     rowsToUpdate: rowsToUpdate,
     missingPriceDates: []
   };
+}
+
+/**
+ * 「前営業日」は単純な月曜から金曜ではなく、日銀が前回公表した市場日を使う。
+ * これにより祝日や大型連休でも対象日と公表日がずれない。
+ */
+function usdJpyVolumeAutoTargetDateForPublication_(publications, index) {
+  if (index > 0 && publications[index - 1] && publications[index - 1].date) {
+    return publications[index - 1].date;
+  }
+  return usdJpyVolumeAutoPreviousWeekday_(publications[index].date);
 }
 
 function usdJpyVolumeAutoImportPrice_(previewOnly) {

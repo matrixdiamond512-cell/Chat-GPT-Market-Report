@@ -15,7 +15,8 @@ const TOKYO_FLOW_CONFIG = {
   }
 };
 
-function onOpen() {
+// 旧メニューを手動で確認するときだけ呼ぶ。通常のonOpenはMarketReportMenu.gsに一本化する。
+function createTokyoFlowLegacyMenu_() {
   SpreadsheetApp.getUi()
     .createMenu('マーケットレポート')
     .addItem('東京USDJPYフローをGitHubへ反映', 'syncTokyoFlowToGitHub')

@@ -25,7 +25,8 @@ var VERIFIED_MARKET_DATA_HEADERS = [
   '市場区分', 'セッション', '判定区分', '注記', 'エラー'
 ];
 
-function syncVerifiedMarketDataToChatGptSheets() {
+// 旧実装。公開入口はVerifiedMarketDataAutoSync.gsに一本化する。
+function syncVerifiedMarketDataToChatGptSheetsLegacy_() {
   var lock = LockService.getDocumentLock();
   if (lock && !lock.tryLock(5000)) {
     return verifiedMarketDataSaveResult_({
@@ -54,7 +55,7 @@ function syncVerifiedMarketDataToChatGptSheets() {
   }
 }
 
-function previewVerifiedMarketDataForChatGpt() {
+function previewVerifiedMarketDataForChatGptLegacy_() {
   var payload = verifiedMarketDataFetchLatest_();
   var rows = verifiedMarketDataRows_(payload);
   var preview = {
