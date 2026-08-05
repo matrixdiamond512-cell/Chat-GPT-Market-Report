@@ -1,12 +1,67 @@
-/* 2026-08-06 hotfix: show the full demand/supply and positioning text. */
+/* 2026-08-06 03:27 JST
+ * Dashboard-wide full-text fix.
+ * Analysis text must wrap and expand instead of being clipped or line-clamped.
+ */
+
+.compact-panel,
+.flow-panel,
+.news-panel,
+.position-panel,
+.scenario-card,
+.market-lens-card {
+  height: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.compact-panel li,
+.position-panel li,
+.scenario-card li,
+.market-lens-card li,
+.flow-column li,
+.prose-block,
+.prose-list,
+.news-impact,
+.news-panel li > span:nth-child(2) {
+  max-height: none;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  text-overflow: clip;
+}
+
 .position-panel li {
   display: list-item;
   overflow: visible;
   -webkit-box-orient: initial;
   -webkit-line-clamp: unset;
   line-clamp: unset;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: normal;
   line-height: 1.65;
+}
+
+.news-panel li > span:nth-child(2),
+.compact-panel .prose-list li,
+.scenario-card .prose-list li {
+  overflow: visible;
+  -webkit-box-orient: initial;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+}
+
+.news-impact {
+  display: block;
+  overflow: visible;
+}
+
+#themeList,
+#changeList,
+#positionList,
+#handoverList,
+#leadingMarket,
+#mainScenario,
+#alternativeScenario,
+#breakConditions,
+#conclusionText {
+  max-height: none;
+  overflow: visible;
 }
