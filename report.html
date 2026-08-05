@@ -432,6 +432,72 @@ function isGenericPlaceholderText(valueText){
   return false;
 }
 
+const MARKET_ALIASES = [
+  { canonical: "金", names: ["金", "ゴールド", "XAU/USD", "XAUUSD", "Gold"] },
+  { canonical: "原油", names: ["原油", "WTI", "WTI原油", "Brent", "ブレント"] },
+  { canonical: "日経225先物", names: ["日経225先物", "日経先物", "大阪取引所", "日経平均"] },
+  { canonical: "USD/JPY", names: ["USD/JPY", "USDJPY", "ドル円"] },
+  { canonical: "EUR/USD", names: ["EUR/USD", "EURUSD", "ユーロドル"] },
+  { canonical: "BTCUSD", names: ["BTCUSD", "BTC/USD", "BTC", "ビットコイン"] }
+];
+
+function marketCanonicalName(name = ""){
+  const value = text(name);
+  const found = MARKET_ALIASES.find((market) => (
+    market.canonical === value || market.names.some((alias) => value.includes(alias))
+  ));
+  return found?.canonical || value;
+}
+
+function aliasMentioned(valueText, alias){
+  if (alias === "金") {
+    let index = valueText.indexOf("金");
+    while (index >= 0) {
+      const previous = valueText[index - 1] || "";
+      const next = valueText[index + 1] || "";
+      if (!/[米資]/.test(previous) && next !== "利") return true;
+      index = valueText.indexOf("金", index + 1);
+    }
+    return false;
+  }
+  return new RegExp(alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i").test(valueText);
+}
+
+function mentionedMarketNames(value = ""){
+  const valueText = text(value);
+  return MARKET_ALIASES
+    .filter((market) => market.names.some((alias) => aliasMentioned(valueText, alias)))
+    .map((market) => market.canonical);
+}
+
+function isReportLevelReuse(value, report){
+  const valueText = text(value);
+  if (!valueText) return false;
+  const reportLevelValues = [
+    report?.mainScenario,
+    report?.alternativeScenario,
+    report?.breakConditions,
+    report?.breakCondition,
+    report?.leadingMarket,
+    ...asArray(report?.positioning),
+    ...asArray(report?.riskManagement),
+    ...asArray(report?.crossAssetFlow),
+    ...asArray(report?.handover)
+  ].map(text).filter(Boolean);
+  return reportLevelValues.some((item) => item === valueText);
+}
+
+function isMarketSpecificText(value, market, report){
+  const valueText = text(value);
+  if (isBrokenStructuredText(valueText, report)) return false;
+  if (isReportLevelReuse(valueText, report)) return false;
+  const mentioned = mentionedMarketNames(valueText);
+  const canonical = marketCanonicalName(market?.name || "");
+  if (mentioned.length >= 3) return false;
+  if (mentioned.length && !mentioned.includes(canonical)) return false;
+  return true;
+}
+
 function isBrokenStructuredText(value, report){
   const valueText = text(value);
   if (isGenericPlaceholderText(valueText)) return true;
@@ -443,10 +509,49 @@ function isBrokenStructuredText(value, report){
   return headingHits >= 2;
 }
 
-function marketField(value, report, max = 260){
-  if (isBrokenStructuredText(value, report)) return "";
+function marketField(value, report, max = 260, market = null){
+  if (market && !isMarketSpecificText(value, market, report)) return "";
+  if (!market && isBrokenStructuredText(value, report)) return "";
   const valueText = text(value);
   return valueText.length > max ? `${valueText.slice(0, max)}…` : valueText;
+}
+
+function sectionLinesFromFullText(report, headingPatterns, stopPatterns){
+  const section = sectionFromFullText(report, headingPatterns, stopPatterns);
+  return section
+    .split(/\n+/)
+    .map((line) => text(line).replace(/^[・\-*]\s*/,""))
+    .filter(Boolean);
+}
+
+function marketOutlookMap(report){
+  const lines = sectionLinesFromFullText(
+    report,
+    [
+      /\n\s*(?:\d{1,2}[.．]\s*)?(?:6市場の見通し|個別市場の見通し|個別市場見通し)\s*\n/,
+      /\n\s*(?:\d{1,2}[.．]\s*)?(?:6市場の見通し|個別市場の見通し|個別市場見通し)[:：]\s*/
+    ],
+    [
+      /\n\s*(?:\d{1,2}[.．]\s*)?(?:メインシナリオ|代替シナリオ|崩れる条件|シナリオが崩れる条件|欧州時間への引き継ぎ|次の時間帯への引き継ぎ|結論|最終判断)\s*\n/
+    ]
+  );
+  const map = new Map();
+  for (const line of lines) {
+    const match = line.match(/^(金|ゴールド|WTI(?:原油)?|原油|日経225先物(?:（[^）]+）)?|日経先物|USD\/JPY|EUR\/USD|BTCUSD|BTC)[:：]\s*(.+)$/i);
+    if (!match) continue;
+    const canonical = marketCanonicalName(match[1]);
+    const body = text(match[2]);
+    if (body) map.set(canonical, body);
+  }
+  return map;
+}
+
+function marketHeadingStatus(market, outlook){
+  const outlookLead = text(outlook).split(/[。.!！?？]/)[0];
+  const fallback = text(market?.direction || "");
+  const value = outlookLead || fallback;
+  if (!value || value === "中立・方向確認") return "";
+  return value.length > 28 ? `${value.slice(0, 28)}…` : value;
 }
 
 function dateToJp(dateText){
@@ -548,25 +653,30 @@ function renderSection(number, title, html){
 function renderMarketList(report){
   const list = asArray(report.markets).filter((item) => item && typeof item === "object");
   if (!list.length) return `<p>本文JSONに個別市場の見通しがありません。</p>`;
+  const outlookMap = marketOutlookMap(report);
 
   return `
     <div class="market-list">
       ${list.map((market) => {
+        const canonical = marketCanonicalName(market.name || "");
+        const outlook = outlookMap.get(canonical) || "";
+        const headingStatus = marketHeadingStatus(market, outlook);
         const rows = [
-          ["方向", marketField(market.direction, report, 80)],
-          ["価格", marketField(market.price, report, 160)],
-          ["前日比", marketField(market.change, report, 80)],
-          ["材料", marketField(market.material, report, 180)],
-          ["ポジション", marketField(market.positioning, report, 220)],
-          ["水準", marketField(market.levels, report, 180)],
-          ["メイン", marketField(market.mainScenario, report, 220)],
-          ["代替", marketField(market.alternativeScenario, report, 220)],
-          ["崩れる条件", marketField(market.breakCondition, report, 220)],
-          ["リスク", marketField(market.risk, report, 220)]
+          ["見通し", outlook],
+          ["方向", outlook ? "" : marketField(market.direction, report, 80, market)],
+          ["価格", marketField(market.price, report, 160, market)],
+          ["前日比", marketField(market.change, report, 80, market)],
+          ["材料", marketField(market.material, report, 180, market)],
+          ["ポジション", marketField(market.positioning, report, 220, market)],
+          ["水準", marketField(market.levels, report, 180, market)],
+          ["メイン", marketField(market.mainScenario, report, 220, market)],
+          ["代替", marketField(market.alternativeScenario, report, 220, market)],
+          ["崩れる条件", marketField(market.breakCondition, report, 220, market)],
+          ["リスク", marketField(market.risk, report, 220, market)]
         ].filter(([,value]) => text(value));
         return `
           <article class="market-item">
-            <h3>${esc(market.name || "市場")}<small>${esc(text(market.direction))}</small></h3>
+            <h3>${esc(market.name || "市場")}${headingStatus ? `<small>${esc(headingStatus)}</small>` : ""}</h3>
             <dl>
               ${rows.length
                 ? rows.map(([key,value]) => `<dt>${esc(key)}</dt><dd>${paragraphHtml(value)}</dd>`).join("")
