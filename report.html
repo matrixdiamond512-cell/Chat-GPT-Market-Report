@@ -209,9 +209,12 @@ body{
   line-height:1.9;
   overflow-wrap:anywhere;
 }
+.section p + p{
+  margin-top:12px;
+}
 .section ul{
   display:grid;
-  gap:7px;
+  gap:12px;
   margin:0;
   padding-left:1.2em;
 }
@@ -255,6 +258,9 @@ body{
   font-weight:750;
   line-height:1.75;
   overflow-wrap:anywhere;
+}
+.market-item dd p + p{
+  margin-top:8px;
 }
 .empty{
   border:1px dashed #b8c8df;
@@ -362,6 +368,76 @@ function text(value){
   return String(value ?? "").replace(/\s+/g," ").trim();
 }
 
+function paragraphParts(value, fallback = ""){
+  const raw = String(value ?? "").replace(/\r/g,"").trim() || String(fallback || "").trim();
+  if (!raw) return [];
+  const blocks = raw
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean);
+  const source = blocks.length ? blocks : [raw];
+  return source.flatMap((block) => {
+    const compact = text(block);
+    if (compact.length <= 220) return [compact];
+    const sentences = compact.match(/[^。！？!?]+[。！？!?]?/g) || [compact];
+    return sentences.map((sentence) => text(sentence)).filter(Boolean);
+  }).filter(Boolean);
+}
+
+function paragraphHtml(value, fallback = ""){
+  const parts = paragraphParts(value, fallback);
+  return parts.length
+    ? parts.map((part) => `<p>${esc(part)}</p>`).join("")
+    : `<p>${esc(fallback)}</p>`;
+}
+
+function sectionFromFullText(report, headingPatterns, stopPatterns){
+  const fullText = String(report?.fullText || "").replace(/\r/g,"").trim();
+  if (!fullText) return "";
+  for (const headingPattern of headingPatterns) {
+    const match = fullText.match(headingPattern);
+    if (!match) continue;
+    let body = fullText.slice((match.index || 0) + match[0].length).replace(/^[\s:：・-]+/,"").trim();
+    let end = body.length;
+    for (const stopPattern of stopPatterns) {
+      const stop = body.match(stopPattern);
+      if (stop && stop.index > 0) end = Math.min(end, stop.index);
+    }
+    body = body.slice(0, end).trim();
+    if (body) return body;
+  }
+  return "";
+}
+
+function breakConditionsValue(report){
+  return text(report.breakConditions) || text(report.breakCondition) || sectionFromFullText(
+    report,
+    [
+      /\n\s*(?:\d{1,2}[.．]\s*)?シナリオが崩れる条件(?:・リスク管理)?\s*\n/,
+      /\n\s*(?:\d{1,2}[.．]\s*)?崩れる条件(?:・リスク管理)?\s*\n/
+    ],
+    [
+      /\n\s*(?:\d{1,2}[.．]\s*)?(?:翌東京時間への引き継ぎ|次の時間帯への引き継ぎ|引き継ぎ|結論|最終判断)\s*\n/
+    ]
+  );
+}
+
+function isBrokenStructuredText(value, report){
+  const valueText = text(value);
+  if (!valueText || valueText === "本文参照") return true;
+  if (valueText.length > 520) return true;
+  const fullText = text(report?.fullText || "");
+  if (fullText && valueText.length > 260 && fullText.includes(valueText.slice(0, 220))) return true;
+  const headingHits = (valueText.match(/今日の相場テーマ|前営業日|主要市場データ|メインシナリオ|代替シナリオ|シナリオが崩れる条件|次の時間帯への引き継ぎ|最終判断/g) || []).length;
+  return headingHits >= 2;
+}
+
+function marketField(value, report, max = 260){
+  if (isBrokenStructuredText(value, report)) return "";
+  const valueText = text(value);
+  return valueText.length > max ? `${valueText.slice(0, max)}…` : valueText;
+}
+
 function dateToJp(dateText){
   if (!dateText) return "日付未設定";
   const date = new Date(`${dateText}T00:00:00+09:00`);
@@ -440,14 +516,13 @@ function renderControls(report){
 }
 
 function renderParagraph(value, fallback){
-  const body = text(value) || fallback;
-  return `<p>${esc(body)}</p>`;
+  return paragraphHtml(value, fallback);
 }
 
 function renderList(values, fallback){
-  const items = asArray(values).map(text).filter(Boolean);
+  const items = asArray(values).map(text).filter(Boolean).filter((item) => item.length <= 520);
   if (!items.length) return `<p>${esc(fallback)}</p>`;
-  return `<ul>${items.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>`;
+  return `<ul>${items.map((item) => `<li>${paragraphHtml(item)}</li>`).join("")}</ul>`;
 }
 
 function renderSection(number, title, html){
@@ -459,30 +534,32 @@ function renderSection(number, title, html){
   `;
 }
 
-function renderMarketList(markets){
-  const list = asArray(markets).filter((item) => item && typeof item === "object");
+function renderMarketList(report){
+  const list = asArray(report.markets).filter((item) => item && typeof item === "object");
   if (!list.length) return `<p>本文JSONに個別市場の見通しがありません。</p>`;
 
   return `
     <div class="market-list">
       ${list.map((market) => {
         const rows = [
-          ["方向", market.direction],
-          ["価格", market.price],
-          ["前日比", market.change],
-          ["材料", market.material],
-          ["ポジション", market.positioning],
-          ["水準", market.levels],
-          ["メイン", market.mainScenario],
-          ["代替", market.alternativeScenario],
-          ["崩れる条件", market.breakCondition],
-          ["リスク", market.risk]
+          ["方向", marketField(market.direction, report, 80)],
+          ["価格", marketField(market.price, report, 160)],
+          ["前日比", marketField(market.change, report, 80)],
+          ["材料", marketField(market.material, report, 180)],
+          ["ポジション", marketField(market.positioning, report, 220)],
+          ["水準", marketField(market.levels, report, 180)],
+          ["メイン", marketField(market.mainScenario, report, 220)],
+          ["代替", marketField(market.alternativeScenario, report, 220)],
+          ["崩れる条件", marketField(market.breakCondition, report, 220)],
+          ["リスク", marketField(market.risk, report, 220)]
         ].filter(([,value]) => text(value));
         return `
           <article class="market-item">
             <h3>${esc(market.name || "市場")}<small>${esc(text(market.direction))}</small></h3>
             <dl>
-              ${rows.map(([key,value]) => `<dt>${esc(key)}</dt><dd>${esc(text(value))}</dd>`).join("")}
+              ${rows.length
+                ? rows.map(([key,value]) => `<dt>${esc(key)}</dt><dd>${paragraphHtml(value)}</dd>`).join("")
+                : `<dt>状態</dt><dd><p>構造化データが長文化しているため、この市場の詳細表示を省略しました。</p></dd>`}
             </dl>
           </article>
         `;
@@ -518,10 +595,10 @@ function renderReport(report){
       ${renderSection(5, "重要ニュース", renderList(report.news, "本文JSONに重要ニュースがありません。"))}
       ${renderSection(6, "クロスアセット資金フロー", renderList(report.crossAssetFlow, "本文JSONに資金フロー情報がありません。"))}
       ${renderSection(7, "需給・ポジション", renderList(report.positioning, "本文JSONに需給・ポジション情報がありません。"))}
-      ${renderSection(8, "個別市場の見通し", renderMarketList(report.markets))}
+      ${renderSection(8, "個別市場の見通し", renderMarketList(report))}
       ${renderSection(9, "メインシナリオ", renderParagraph(report.mainScenario, "本文JSONにメインシナリオがありません。"))}
       ${renderSection(10, "代替シナリオ", renderParagraph(report.alternativeScenario, "本文JSONに代替シナリオがありません。"))}
-      ${renderSection(11, "崩れる条件", renderParagraph(report.breakConditions, "本文JSONに崩れる条件がありません。"))}
+      ${renderSection(11, "崩れる条件", renderParagraph(breakConditionsValue(report), "本文JSONに崩れる条件がありません。"))}
       ${renderSection(12, "重要イベント", renderList(report.events, "本文JSONに重要イベントがありません。"))}
       ${renderSection(13, "次の時間帯への引き継ぎ", renderList(report.handover, "本文JSONに引き継ぎ情報がありません。"))}
       ${renderSection(14, "リスク管理", renderList(report.riskManagement, "本文JSONにリスク管理情報がありません。"))}
