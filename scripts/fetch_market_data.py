@@ -262,12 +262,21 @@ def fetch_yahoo_chart(source: dict[str, Any]) -> dict[str, Any]:
     valid = [(timestamps[i], closes[i]) for i in range(min(len(timestamps), len(closes))) if closes[i] is not None]
     if value is None and valid:
         value = valid[-1][1]
-    if previous is None and len(valid) >= 2:
-        previous = valid[-2][1]
 
     if value is None:
         raise FetchError("PARSE_ERROR", f"Yahoo chart had no numeric value for {symbol}")
     as_of = parse_epoch(meta.get("regularMarketTime") or (valid[-1][0] if valid else None))
+    as_of_date = parse_iso(as_of)
+    if valid and as_of_date:
+        completed = [
+            close for timestamp, close in valid
+            if dt.datetime.fromtimestamp(timestamp, UTC).astimezone(JST).date()
+            < as_of_date.astimezone(JST).date()
+        ]
+        if completed:
+            previous = completed[-1]
+        elif len(valid) >= 2:
+            previous = valid[-2][1]
     return candidate(source, value, previous_close=previous, as_of=as_of, raw_reference=symbol)
 
 
@@ -508,6 +517,25 @@ def validate_candidate(
     return True, "OK", ""
 
 
+def sanitize_candidate_change(validation: dict[str, Any], cand: dict[str, Any]) -> str:
+    """Discard implausible previous-close metadata without discarding the current value."""
+    value = safe_float(cand.get("value"))
+    previous = safe_float(cand.get("previousClose"))
+    max_change = validation.get("maxChangePercent")
+    if value is None or previous in (None, 0) or max_change is None:
+        return ""
+    change_percent = abs(value / previous - 1) * 100
+    if change_percent <= float(max_change):
+        return ""
+    cand["previousClose"] = None
+    cand["change"] = None
+    cand["changePercent"] = None
+    return (
+        f"discarded previous close {previous} because implied change "
+        f"{change_percent:.2f}% exceeded {max_change}%"
+    )
+
+
 def parse_iso(value: Any) -> dt.datetime | None:
     if not value:
         return None
@@ -620,6 +648,7 @@ def fetch_symbol(
     retries: int,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     errors: list[dict[str, Any]] = []
+    valid_candidates: list[dict[str, Any]] = []
     for source in sorted(symbol_config.get("sources", []), key=lambda item: item.get("priority", 99)):
         if source.get("referenceOnly") and not validation.get("allowReferenceOnly", False):
             errors.append(
@@ -647,9 +676,21 @@ def fetch_symbol(
             try:
                 raw = fetcher(source)
                 raw["referenceOnly"] = source.get("referenceOnly", False)
+                change_warning = sanitize_candidate_change(validation, raw)
+                if change_warning:
+                    errors.append(
+                        {
+                            "symbol": symbol_id,
+                            "sourceId": source["id"],
+                            "code": "INVALID_PREVIOUS_CLOSE",
+                            "message": change_warning,
+                            "attempt": attempt + 1,
+                        }
+                    )
                 ok, code, reason = validate_candidate(symbol_id, symbol_config, validation, raw, previous_verified)
                 if ok:
-                    return format_market(symbol_id, symbol_config, validation, raw), errors
+                    valid_candidates.append(raw)
+                    break
                 errors.append(
                     {
                         "symbol": symbol_id,
@@ -684,7 +725,36 @@ def fetch_symbol(
                 )
                 break
 
-    return fallback_market(symbol_id, symbol_config, previous_verified, errors), errors
+    if not valid_candidates:
+        return fallback_market(symbol_id, symbol_config, previous_verified, errors), errors
+
+    primary = valid_candidates[0]
+    comparable = [
+        item for item in valid_candidates[1:]
+        if item.get("marketType") == primary.get("marketType")
+        and item.get("session") == primary.get("session")
+    ]
+    max_divergence = validation.get("maxSourceDivergencePercent")
+    if comparable and max_divergence is not None:
+        primary_value = safe_float(primary.get("value"))
+        check_value = safe_float(comparable[0].get("value"))
+        if primary_value not in (None, 0) and check_value is not None:
+            divergence = abs(primary_value / check_value - 1) * 100
+            if divergence > float(max_divergence):
+                errors.append(
+                    {
+                        "symbol": symbol_id,
+                        "sourceId": f"{primary.get('sourceId')}|{comparable[0].get('sourceId')}",
+                        "code": "SOURCE_DIVERGENCE",
+                        "message": (
+                            f"source values diverged by {divergence:.2f}% "
+                            f"> {max_divergence}%"
+                        ),
+                    }
+                )
+                return fallback_market(symbol_id, symbol_config, previous_verified, errors), errors
+
+    return format_market(symbol_id, symbol_config, validation, primary), errors
 
 
 def merge_last_verified(existing: dict[str, Any], latest: dict[str, Any]) -> dict[str, Any]:

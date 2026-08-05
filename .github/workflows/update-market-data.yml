@@ -4,9 +4,22 @@ on:
   workflow_dispatch:
     inputs:
       report_slot:
-        description: "Report slot label, for example 07:00 / 12:00 / 16:00 / 21:00"
+        description: "Report slot label, or auto"
         required: false
-        default: "manual"
+        default: "auto"
+  push:
+    branches:
+      - main
+    paths:
+      - "reports.json"
+      - ".github/workflows/update-market-data.yml"
+      - "scripts/fetch_market_data.py"
+      - "scripts/resolve_market_report_slot.py"
+      - "scripts/build_market_json.py"
+      - "scripts/build_market_sheet_exports.py"
+      - "scripts/write_market_data_to_sheets.py"
+      - "config/market_data_sources.json"
+      - "config/market_data_validation.json"
   schedule:
     # UTC. Japan time: 05:55, 06:50, 11:50, 15:50, 20:50.
     - cron: "55 20 * * 0-4"
@@ -20,7 +33,7 @@ permissions:
 
 concurrency:
   group: update-independent-market-data
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   update:
@@ -41,19 +54,11 @@ jobs:
         id: slot
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "slot=${{ inputs.report_slot }}" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          HOUR_MIN="$(TZ=Asia/Tokyo date +%H:%M)"
-          case "$HOUR_MIN" in
-            05:55) SLOT="06:00" ;;
-            06:50) SLOT="07:00" ;;
-            11:50) SLOT="12:00" ;;
-            15:50) SLOT="16:00" ;;
-            20:50) SLOT="21:00" ;;
-            *) SLOT="$HOUR_MIN" ;;
-          esac
+          SLOT="$(python scripts/resolve_market_report_slot.py \
+            --event-name "${{ github.event_name }}" \
+            --event-schedule "${{ github.event.schedule }}" \
+            --requested-slot "${{ inputs.report_slot }}" \
+            --reports-file reports.json)"
           echo "slot=$SLOT" >> "$GITHUB_OUTPUT"
 
       - name: Fetch and validate market data

@@ -134,7 +134,15 @@ function shortDateTime(value = "") {
 
 function marketDataFor(report, definition) {
   const key = definition.dataKey || definition.key;
-  const latestItem = dashboardMeta?.marketData?.markets?.[key];
+  const latestData = dashboardMeta?.marketData;
+  const generatedDate = String(latestData?.generatedAt || "").slice(0, 10);
+  const latestMatchesReport = Boolean(
+    latestData
+    && REPORT_TIMES.includes(latestData.reportSlot)
+    && latestData.reportSlot === report?.time
+    && generatedDate === report?.date
+  );
+  const latestItem = latestMatchesReport ? latestData?.markets?.[key] : null;
   const reportItem = report?.marketData?.markets?.[key];
   return latestItem || reportItem || null;
 }
@@ -492,8 +500,7 @@ function temperatureValueFromReport(report, definition) {
     : definition.id === "market.nikkei_vi"
       ? "nikkei_vi"
       : "fear_greed";
-  const item = dashboardMeta?.marketData?.markets?.[marketDataKey]
-    || report?.marketData?.markets?.[marketDataKey];
+  const item = marketDataFor(report, { key: marketDataKey, dataKey: marketDataKey });
   if (item) {
     const value = finiteNumber(item.value);
     if (value !== null) {
@@ -1884,11 +1891,15 @@ async function loadDashboardReports() {
     const payload = await response.json();
     const dashboardReports = normalizeDashboardReports(payload);
     if (dashboardReports.length) {
-      const marketData = payload.marketData || payload.latestReport?.marketData || null;
-      const currentReportKey = payload.currentReportKey || "";
-      const enrichedReports = dashboardReports.map((report, index) => {
+      const embeddedMarketData = payload.marketData || payload.latestReport?.marketData || null;
+      const independentMarketData = await loadIndependentMarketData();
+      const marketData = newerMarketData(embeddedMarketData, independentMarketData);
+      const marketDataReportKey = REPORT_TIMES.includes(marketData?.reportSlot)
+        ? `${String(marketData?.generatedAt || "").slice(0, 10)} ${marketData.reportSlot}`
+        : "";
+      const enrichedReports = dashboardReports.map((report) => {
         const key = `${report.date || ""} ${report.time || ""}`;
-        if (marketData && (index === 0 || key === currentReportKey) && !report.marketData) {
+        if (marketData && key === marketDataReportKey && !report.marketData) {
           return { ...report, marketData };
         }
         return report;
@@ -1921,6 +1932,26 @@ async function loadDashboardReports() {
   }
 
   throw new Error(`ダッシュボードJSONを取得できませんでした。理由：${errors.join(" / ")}`);
+}
+
+async function loadIndependentMarketData() {
+  try {
+    const response = await fetch(`data/market/latest.json?ts=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) return null;
+    const payload = await response.json();
+    if (!payload || typeof payload !== "object" || payload.overallStatus === "blocked") return null;
+    if (!payload.markets || typeof payload.markets !== "object") return null;
+    return payload;
+  } catch (error) {
+    return null;
+  }
+}
+
+function newerMarketData(...candidates) {
+  return candidates
+    .filter((item) => item && typeof item === "object")
+    .sort((a, b) => String(b.generatedAt || "").localeCompare(String(a.generatedAt || "")))[0]
+    || null;
 }
 
 function normalizeDashboardReports(payload) {
