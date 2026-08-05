@@ -185,6 +185,8 @@ def should_include(raw: dict[str, Any], config: dict[str, Any]) -> bool:
         return False
     if impact in set(config.get("includedImpacts", [])):
         return True
+    if impact == "Low" and re.search(r"Trade Balance", title, re.I):
+        return country == "CNY"
     return any(re.search(pattern, title, re.I) for pattern in config.get("curatedLowImpactPatterns", []))
 
 

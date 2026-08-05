@@ -55,6 +55,8 @@ class EconomicCalendarTest(unittest.TestCase):
         self.assertFalse(calendar.should_include(self.raw_event(impact="Low", title="Minor Housing Data"), self.config))
         self.assertTrue(calendar.should_include(self.raw_event(impact="Low", title="10-y Bond Auction"), self.config))
         self.assertTrue(calendar.should_include(self.raw_event(impact="Low", title="FOMC Member Daly Speaks"), self.config))
+        self.assertTrue(calendar.should_include(self.raw_event(impact="Low", title="Trade Balance", country="CNY"), self.config))
+        self.assertFalse(calendar.should_include(self.raw_event(impact="Low", title="Trade Balance", country="AUD"), self.config))
 
     def test_importance_override_and_market_order(self):
         event = self.build_in_temp([

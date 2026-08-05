@@ -743,6 +743,10 @@ function initialEventDate(dynamicEvents, payload) {
   const params = new URLSearchParams(window.location.search);
   const requested = params.get("date");
   if (requested && dynamicEvents.some(event => event.date === requested)) return requested;
+  const nextEvent = dynamicEvents
+    .filter(event => event.iso && new Date(event.iso).getTime() >= Date.now())
+    .sort(compareDynamicEvents)[0];
+  if (nextEvent?.date) return nextEvent.date;
   const dataAsOfDate = String(payload?.dataAsOf || "").slice(0, 10);
   if (dataAsOfDate && dynamicEvents.some(event => event.date === dataAsOfDate)) return dataAsOfDate;
   return dynamicEventDates(dynamicEvents)[0] || "";
