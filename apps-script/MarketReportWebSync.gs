@@ -27,14 +27,189 @@ function previewLatestMarketReportFromDrive() {
   const file = findLatestMarketReportDoc_();
   const report = buildWebReportFromGoogleDoc_(file);
   const html = HtmlService.createHtmlOutput(
-    '<p><b>元文書:</b> ' + escapeWebHtml_(file.getName()) + '</p>' +
-    '<pre style="white-space:pre-wrap;font-size:12px">' +
-    escapeWebHtml_(JSON.stringify(report, null, 2)) +
-    '</pre>'
-  ).setWidth(840).setHeight(680);
+    buildWebReportReadablePreviewHtml_(file, report)
+  ).setWidth(1040).setHeight(760);
 
   SpreadsheetApp.getUi().showModalDialog(html, '最新Google Docs → WEB版プレビュー');
   return report;
+}
+
+function buildWebReportReadablePreviewHtml_(file, report) {
+  return [
+    '<!doctype html>',
+    '<html>',
+    '<head>',
+    '<base target="_top">',
+    '<style>',
+    'body{margin:0;background:#f6f9ff;color:#061b45;font-family:Arial,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;font-size:14px;line-height:1.75;}',
+    '.wrap{padding:18px 20px 24px;}',
+    '.hero{background:#08265f;color:#fff;border-radius:8px;padding:16px 18px;margin-bottom:14px;}',
+    '.hero h1{font-size:22px;line-height:1.35;margin:0 0 8px;}',
+    '.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12px;color:#dbe8ff;}',
+    '.meta a{color:#fff;text-decoration:underline;}',
+    '.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}',
+    '.section{background:#fff;border:1px solid #c9d8ef;border-radius:8px;padding:14px 16px;margin-bottom:12px;}',
+    '.section h2{border-left:4px solid #1264df;font-size:17px;line-height:1.35;margin:0 0 10px;padding-left:9px;color:#003b95;}',
+    'p{margin:0 0 10px;}',
+    'ul{margin:0;padding-left:20px;}',
+    'li{margin:0 0 7px;}',
+    '.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}',
+    '.summary div{background:#fff;border:1px solid #c9d8ef;border-radius:8px;padding:10px 12px;}',
+    '.summary span{display:block;color:#3d5c8d;font-size:12px;font-weight:700;}',
+    '.summary strong{display:block;font-size:16px;margin-top:3px;}',
+    '.market-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}',
+    '.market-card{background:#fff;border:1px solid #c9d8ef;border-radius:8px;padding:12px 14px;}',
+    '.market-card h3{display:flex;align-items:baseline;gap:10px;margin:0 0 10px;font-size:16px;color:#002766;}',
+    '.market-card h3 span{font-size:12px;color:#0d7a3b;background:#e9f8ef;border:1px solid #a9dfbd;border-radius:999px;padding:1px 8px;}',
+    '.field{display:grid;grid-template-columns:86px 1fr;gap:8px;border-top:1px solid #e6edf8;padding-top:8px;margin-top:8px;}',
+    '.field b{color:#0057cf;}',
+    '.field p{margin-bottom:7px;}',
+    '.muted{color:#6b7a90;}',
+    '.raw{white-space:pre-wrap;background:#06142e;color:#e8f0ff;border-radius:8px;padding:12px;font-size:12px;line-height:1.55;max-height:360px;overflow:auto;}',
+    'details{margin-top:12px;}',
+    'summary{cursor:pointer;font-weight:700;color:#003b95;}',
+    '@media(max-width:760px){.grid,.market-grid,.summary{grid-template-columns:1fr}.wrap{padding:12px}.field{grid-template-columns:1fr}.hero h1{font-size:18px}}',
+    '</style>',
+    '</head>',
+    '<body>',
+    '<div class="wrap">',
+    '<div class="hero">',
+    '<h1>' + escapeWebHtml_(report.title || 'マーケットレポート') + '</h1>',
+    '<div class="meta">',
+    '<span>元文書: ' + escapeWebHtml_(file.getName()) + '</span>',
+    '<span>日付: ' + escapeWebHtml_(report.date || '-') + '</span>',
+    '<span>時間: ' + escapeWebHtml_(report.time || '-') + '</span>',
+    '<span><a href="' + escapeWebHtml_(file.getUrl()) + '">Google Docsを開く</a></span>',
+    '</div>',
+    '</div>',
+    '<div class="summary">',
+    previewSummaryItemHtml_('テーマ', report.theme ? '取得あり' : '未取得'),
+    previewSummaryItemHtml_('ニュース', previewCountLabel_(report.news)),
+    previewSummaryItemHtml_('資金フロー', previewCountLabel_(report.crossAssetFlow)),
+    previewSummaryItemHtml_('市場別見通し', previewCountLabel_(report.markets)),
+    '</div>',
+    '<div class="section"><h2>今日の相場テーマ</h2>' + previewParagraphHtml_(report.theme) + '</div>',
+    '<div class="grid">',
+    previewSectionHtml_('前回からの変化', report.changes),
+    previewSectionHtml_('重要ニュース', report.news),
+    previewSectionHtml_('クロスアセット資金フロー', report.crossAssetFlow),
+    previewSectionHtml_('次の時間帯への引き継ぎ', report.handover),
+    '</div>',
+    '<div class="section"><h2>市場別見通し</h2>' + previewMarketCardsHtml_(report.markets) + '</div>',
+    '<div class="grid">',
+    previewTextSectionHtml_('メインシナリオ', report.mainScenario),
+    previewTextSectionHtml_('代替シナリオ', report.alternativeScenario),
+    previewTextSectionHtml_('崩れる条件', report.breakConditions),
+    previewSectionHtml_('イベント', report.events),
+    '</div>',
+    '<details>',
+    '<summary>JSON全体を見る（確認用）</summary>',
+    '<pre class="raw">' + escapeWebHtml_(JSON.stringify(report, null, 2)) + '</pre>',
+    '</details>',
+    '</div>',
+    '</body>',
+    '</html>'
+  ].join('');
+}
+
+function previewSummaryItemHtml_(label, value) {
+  return '<div><span>' + escapeWebHtml_(label) + '</span><strong>' + escapeWebHtml_(value || '-') + '</strong></div>';
+}
+
+function previewCountLabel_(value) {
+  if (Array.isArray(value)) return String(value.length) + '件';
+  return previewText_(value) ? '取得あり' : '未取得';
+}
+
+function previewSectionHtml_(title, value) {
+  return '<div class="section"><h2>' + escapeWebHtml_(title) + '</h2>' + previewListHtml_(value) + '</div>';
+}
+
+function previewTextSectionHtml_(title, value) {
+  return '<div class="section"><h2>' + escapeWebHtml_(title) + '</h2>' + previewParagraphHtml_(value) + '</div>';
+}
+
+function previewListHtml_(value) {
+  if (Array.isArray(value)) {
+    const items = value.map(previewText_).filter(Boolean);
+    if (!items.length) return '<p class="muted">未取得</p>';
+    return '<ul>' + items.map(item => '<li>' + previewParagraphInlineHtml_(item) + '</li>').join('') + '</ul>';
+  }
+
+  const text = previewText_(value);
+  if (!text) return '<p class="muted">未取得</p>';
+  return previewParagraphHtml_(text);
+}
+
+function previewMarketCardsHtml_(markets) {
+  if (!Array.isArray(markets) || !markets.length) {
+    return '<p class="muted">市場別見通しが取得できていません。</p>';
+  }
+
+  return '<div class="market-grid">' + markets.map(market => {
+    const name = previewText_(market && market.name) || '名称未取得';
+    const direction = previewText_(market && market.direction) || '方向未取得';
+    return [
+      '<div class="market-card">',
+      '<h3>' + escapeWebHtml_(name) + '<span>' + escapeWebHtml_(direction) + '</span></h3>',
+      previewMarketFieldHtml_('価格', market && market.price),
+      previewMarketFieldHtml_('前日比', market && market.change),
+      previewMarketFieldHtml_('材料', market && market.material),
+      previewMarketFieldHtml_('ポジション', market && market.positioning),
+      previewMarketFieldHtml_('水準', market && market.levels),
+      previewMarketFieldHtml_('メイン', market && market.mainScenario),
+      previewMarketFieldHtml_('代替', market && market.alternativeScenario),
+      previewMarketFieldHtml_('崩れる条件', market && market.breakCondition),
+      previewMarketFieldHtml_('リスク', market && market.risk),
+      '</div>'
+    ].join('');
+  }).join('') + '</div>';
+}
+
+function previewMarketFieldHtml_(label, value) {
+  const text = previewText_(value);
+  if (!text) return '';
+  return '<div class="field"><b>' + escapeWebHtml_(label) + '</b><div>' + previewParagraphHtml_(text) + '</div></div>';
+}
+
+function previewParagraphHtml_(value) {
+  const text = previewText_(value);
+  if (!text) return '<p class="muted">未取得</p>';
+  return previewParagraphs_(text)
+    .map(paragraph => '<p>' + escapeWebHtml_(paragraph) + '</p>')
+    .join('');
+}
+
+function previewParagraphInlineHtml_(value) {
+  const paragraphs = previewParagraphs_(value);
+  if (!paragraphs.length) return '<span class="muted">未取得</span>';
+  return paragraphs.map(paragraph => escapeWebHtml_(paragraph)).join('<br>');
+}
+
+function previewParagraphs_(value) {
+  const text = previewText_(value);
+  if (!text) return [];
+
+  const lines = text.split(/\n+/).map(line => line.trim()).filter(Boolean);
+  const result = [];
+  lines.forEach(line => {
+    const sentences = line.split('。').map(part => part.trim()).filter(Boolean);
+    if (sentences.length <= 1) {
+      result.push(line);
+      return;
+    }
+    for (let i = 0; i < sentences.length; i += 2) {
+      result.push(sentences.slice(i, i + 2).join('。') + '。');
+    }
+  });
+  return result;
+}
+
+function previewText_(value) {
+  if (value === null || value === undefined) return '';
+  if (Array.isArray(value)) return value.map(previewText_).filter(Boolean).join('\n');
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value).replace(/\s+/g, ' ').trim();
 }
 
 function publishLatestMarketReportFromDrive() {
