@@ -564,7 +564,12 @@ def build_payload(
         if key in current_keys or not item.get("time"):
             continue
         item_date = str(item.get("date", ""))
-        has_saved_result = any(item.get(field) not in (None, "", [], {}) for field in PRESERVED_FIELDS)
+        has_saved_result = bool(
+            item.get("actual")
+            or item.get("status") == "released"
+            or item.get("resultSavedAt")
+            or item.get("resultSource")
+        )
         if item_date >= now.date().isoformat() and not has_saved_result:
             continue
         retained.append(item)

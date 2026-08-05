@@ -114,6 +114,8 @@ class EconomicCalendarTest(unittest.TestCase):
             "title": "古い推測予定",
             "category": "speech",
             "sourceType": "market_report_extraction",
+            "resultExplanation": "発表後に自動更新します。",
+            "comparison": [["米2年債", "データ次第", "未計測", "確認中"]],
         }
         payload = self.build_in_temp([self.raw_event()], [old])
         self.assertNotIn("古い推測予定", [item["title"] for item in payload["events"]])
