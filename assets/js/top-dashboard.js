@@ -133,16 +133,54 @@ function shortDateTime(value = "") {
 }
 
 function marketDataFor(report, definition) {
-  const payload = report?.marketData || dashboardMeta?.marketData;
   const key = definition.dataKey || definition.key;
-  return payload?.markets?.[key] || null;
+  const latestItem = dashboardMeta?.marketData?.markets?.[key];
+  const reportItem = report?.marketData?.markets?.[key];
+  return latestItem || reportItem || null;
+}
+
+function marketDataChange(item) {
+  const value = finiteNumber(item?.value);
+  const previous = finiteNumber(item?.previousClose);
+  const storedChange = finiteNumber(item?.change);
+  const storedPercent = finiteNumber(item?.changePercent);
+  const change = value !== null && previous !== null ? value - previous : storedChange;
+  const changePercent = value !== null && previous !== null && previous !== 0
+    ? ((value / previous) - 1) * 100
+    : storedPercent;
+  return { change, changePercent };
+}
+
+function formatMarketDataChange(item) {
+  const { change, changePercent } = marketDataChange(item);
+  if (change === null && changePercent === null) {
+    return item?.fallbackUsed ? "前回確認値" : cleanText(item?.changeText || "前日比：取得不能", 42);
+  }
+  const value = finiteNumber(item?.value);
+  const absValue = value !== null ? Math.abs(value) : null;
+  const fractionDigits = absValue !== null && absValue < 10 ? 5 : absValue !== null && absValue < 1000 ? 2 : 0;
+  const parts = [];
+  if (change !== null) {
+    parts.push(change.toLocaleString("ja-JP", {
+      signDisplay: "always",
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits
+    }));
+  }
+  if (changePercent !== null && Math.abs(changePercent) <= 100) {
+    parts.push(`${changePercent.toLocaleString("ja-JP", {
+      signDisplay: "always",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}%`);
+  }
+  return parts.join(" / ") || cleanText(item?.changeText || "", 42) || (item?.fallbackUsed ? "前回確認値" : "前日比：取得不能");
 }
 
 function trendFromMarketData(item) {
   if (!item) return "missing";
   if (item.verificationStatus === "unavailable") return "missing";
-  const change = finiteNumber(item.change);
-  const changePercent = finiteNumber(item.changePercent);
+  const { change, changePercent } = marketDataChange(item);
   const value = change ?? changePercent;
   if (value > 0) return "up";
   if (value < 0) return "down";
@@ -178,7 +216,7 @@ function metricFromMarketData(report, definition) {
   return {
     value: item.displayValue || value.toLocaleString("ja-JP", { maximumFractionDigits: 5 }),
     unit: item.unit || definition.unit,
-    change: item.changeText || (item.fallbackUsed ? "前回確認値" : "前日比：取得不能"),
+    change: formatMarketDataChange(item),
     trend: trendFromMarketData(item),
     raw: "marketData",
     sourceNote: marketDataStatusText(item),
@@ -454,7 +492,8 @@ function temperatureValueFromReport(report, definition) {
     : definition.id === "market.nikkei_vi"
       ? "nikkei_vi"
       : "fear_greed";
-  const item = (report?.marketData || dashboardMeta?.marketData)?.markets?.[marketDataKey];
+  const item = dashboardMeta?.marketData?.markets?.[marketDataKey]
+    || report?.marketData?.markets?.[marketDataKey];
   if (item) {
     const value = finiteNumber(item.value);
     if (value !== null) {

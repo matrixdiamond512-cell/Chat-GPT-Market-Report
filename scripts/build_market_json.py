@@ -46,7 +46,11 @@ def attach_market_data(dashboard: dict[str, Any], market_data: dict[str, Any]) -
     sources.append(source_entry)
     result["sources"] = sources
 
-    errors = list(result.get("errors") or [])
+    errors = [
+        error
+        for error in list(result.get("errors") or [])
+        if not (isinstance(error, str) and error.startswith("市場データ取得基盤:"))
+    ]
     if market_data.get("overallStatus") != "verified":
         errors.append(
             "市場データ取得基盤: "
