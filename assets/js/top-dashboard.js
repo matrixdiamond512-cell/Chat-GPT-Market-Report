@@ -794,17 +794,30 @@ function extractLevels(report, definition) {
   return range ? `注目 ${range[0]}` : "取得不能";
 }
 
+function hasCurrentReportEvent(report, pattern) {
+  const eventText = asArray(report.events).map(textOf).join(" ");
+  return pattern.test(eventText);
+}
+
+function hasUnconfirmedBojTimingText(report, text) {
+  if (!/日銀.{0,18}(?:会合|決定会合).{0,12}(?:前|後)/.test(String(text || ""))) return false;
+  return !hasCurrentReportEvent(report, /日銀|金融政策決定会合/);
+}
+
 function riskForMarket(report, definition) {
   const market = reportMarket(report, definition);
   const raw = market?.risk || market?.breakCondition || "";
-  const usable = raw && raw.length < 170 && !/個別見通し|ヘッダーなし|TSV|マーケットレポート/.test(raw);
+  const usable = raw
+    && raw.length < 170
+    && !/個別見通し|ヘッダーなし|TSV|マーケットレポート/.test(raw)
+    && !hasUnconfirmedBojTimingText(report, raw);
   if (usable) return cleanText(raw, 110);
   const text = allText(report);
   const rules = {
     gold: /米10年債|金利/.test(text) ? "米金利上昇・ドル高" : "金利材料の急変",
     oil: /82ドル割れ/.test(text) ? "82ドル割れで短期ロング解消" : "在庫・地政学材料の反転",
     nikkei: /61,900/.test(text) ? "61,900円割れ・円急騰" : "米株安と円高の同時進行",
-    usdjpy: /163.20/.test(text) ? "163.20円割れ・日銀後の円急騰" : "日銀会合後の円買い",
+    usdjpy: /163.20/.test(text) ? "163.20円割れ・円急騰" : "米金利急低下・円買い戻し",
     eurusd: /ドル/.test(text) ? "ドル材料の急変" : "欧州材料の悪化",
     btc: /VIX|米株/.test(text) ? "VIX上昇・米株安" : "リスクオフ再燃"
   };
@@ -1063,7 +1076,7 @@ function flowDirection(report, asset) {
   }
   if (asset === "円") {
     if (has(/円ショート縮小|円買い戻し|日銀会合/)) {
-      return { direction: "流入", strength: "やや強い", compare: "強化", reason: "日銀会合前の円買い戻し", basis: "本文から推定", trend: "up" };
+      return { direction: "流入", strength: "やや強い", compare: "強化", reason: "円買い戻し・金利差縮小警戒", basis: "本文から推定", trend: "up" };
     }
   }
   if (asset === "商品（原油・金）") {
@@ -1748,12 +1761,12 @@ function lensItems(report) {
   const jpRate = metricLine(/日本10年債利回り/);
   const stock = topList(report.consistency, 1, 90)[0] || "株式市場の詳細は株式市場分析ページで確認";
   const commodity = topList(report.crossAssetFlow, 2, 90).find((line) => /金|原油|WTI/.test(line)) || "商品市場の方向は金・原油カードで確認";
-  const fx = /ドル全面高にはなっておらず/.test(text) ? "ドルは全面高ではなく、円需給と日銀材料が焦点" : "ドル円とユーロドルの反応を同時確認";
+  const fx = /ドル全面高にはなっておらず/.test(text) ? "ドルは全面高ではなく、円需給と米金利差が焦点" : "ドル円とユーロドルの反応を同時確認";
   const crypto = /BTC/.test(text) ? "BTCは株式リスク選好とETF資金の継続を確認" : "暗号資産はBTCカードで確認";
   const watch = [
     "米PCEデフレーターの結果",
     "中東情勢・原油在庫の方向",
-    "日銀会合後の円需給"
+    "USD/JPYの急変と円需給"
   ];
 
   return [
