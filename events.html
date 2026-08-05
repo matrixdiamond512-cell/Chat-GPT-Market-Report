@@ -84,6 +84,14 @@ td:first-child{font-weight:900}
 .event-date-label{min-width:142px;color:#173968;font-size:13px;font-weight:950;white-space:nowrap}
 .event-date-nav{width:36px;height:36px;border:1px solid #b8c8df;border-radius:6px;background:#fff;color:#0b4fb8;font-size:22px;font-weight:1000;line-height:1;cursor:pointer}
 .event-date-nav:disabled{color:#a0adbf;background:#f6f8fb;cursor:not-allowed}
+.event-filter-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-4px 0 12px;flex-wrap:wrap}
+.event-source-status{color:#4b5f7e;font-size:12px;font-weight:850}
+.event-source-status.stale{color:#a46000}
+.country-filters{display:flex;gap:6px;flex-wrap:wrap}
+.country-filter{min-height:32px;padding:5px 13px;border:1px solid #b8c8df;border-radius:5px;background:#fff;color:#173968;font-size:12px;font-weight:950;cursor:pointer}
+.country-filter[aria-pressed=true]{border-color:#0b63e5;background:#0b63e5;color:#fff}
+.source-link{color:#0b55c8;font-weight:900;text-decoration:none}
+.source-link:hover{text-decoration:underline}
 .events-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 8px}
 .events-head h3{margin:0;color:var(--navy);font-size:21px;font-weight:1000}
 .events-head small{color:var(--muted);font-weight:850}
@@ -97,7 +105,7 @@ td:first-child{font-weight:900}
 .detail-btn[aria-pressed=true]{background:#0b5fe8;color:#fff}
 .note{margin:10px 0 0;color:var(--muted);font-size:12px;font-weight:750}
 @media(max-width:1180px){.grid-top,.grid-mid,.grid-small{grid-template-columns:1fr}.event-hero{grid-template-columns:1fr}.nav{gap:0;overflow-x:auto}.nav a{min-width:132px}.radio-grid{grid-template-columns:1fr}}
-@media(max-width:760px){.top-inner{display:grid;padding:10px 12px}.brand{font-size:22px}.top-meta{font-size:12px}.page{padding:10px 12px 24px}.page-head{display:block}.page-head h2{font-size:27px}.page-head p{margin-top:6px;font-size:13px}.event-date-controls{justify-content:stretch;display:grid;grid-template-columns:36px minmax(0,1fr) 36px}.event-date-picker{min-width:0;width:100%}.event-date-label{grid-column:1 / -1;text-align:center}.fact{grid-template-columns:1fr}.order-list li{grid-template-columns:28px 1fr}.order-list small{grid-column:2}.panel-title{font-size:14px}th,td{font-size:12px}}
+@media(max-width:760px){.top-inner{display:grid;padding:10px 12px}.brand{font-size:22px}.top-meta{font-size:12px}.page{padding:10px 12px 24px}.page-head{display:block}.page-head h2{font-size:27px}.page-head p{margin-top:6px;font-size:13px}.event-date-controls{justify-content:stretch;display:grid;grid-template-columns:36px minmax(0,1fr) 36px;grid-template-areas:"prev picker next" "label label label"}.event-date-nav:first-child{grid-area:prev}.event-date-picker{grid-area:picker;min-width:0;width:100%}.event-date-label{grid-area:label;text-align:center}.event-date-nav:last-child{grid-area:next}.event-filter-bar{align-items:flex-start}.event-source-status{width:100%}.country-filters{overflow-x:auto;flex-wrap:nowrap;width:100%;padding-bottom:3px}.country-filter{flex:0 0 auto}.fact{grid-template-columns:1fr}.order-list li{grid-template-columns:28px 1fr}.order-list small{grid-column:2}.panel-title{font-size:14px}th,td{font-size:12px}}
 </style>
 <link rel="stylesheet" href="assets/css/site-common.css?v=20260804-ui1">
 </head>
@@ -133,6 +141,18 @@ td:first-child{font-weight:900}
     <span id="eventDateLabel" class="event-date-label"></span>
     <button id="nextEventDate" class="event-date-nav" type="button" aria-label="次の日">›</button>
   </div>
+  <div class="event-filter-bar">
+    <div id="eventSourceStatus" class="event-source-status">経済カレンダーを読み込み中</div>
+    <div class="country-filters" aria-label="国・地域で絞り込み">
+      <button class="country-filter" type="button" data-event-country="all" aria-pressed="true">すべて</button>
+      <button class="country-filter" type="button" data-event-country="米国" aria-pressed="false">米国</button>
+      <button class="country-filter" type="button" data-event-country="日本" aria-pressed="false">日本</button>
+      <button class="country-filter" type="button" data-event-country="欧州" aria-pressed="false">欧州</button>
+      <button class="country-filter" type="button" data-event-country="中国" aria-pressed="false">中国</button>
+      <button class="country-filter" type="button" data-event-country="英国" aria-pressed="false">英国</button>
+      <button class="country-filter" type="button" data-event-country="other" aria-pressed="false">その他</button>
+    </div>
+  </div>
 
   <section class="grid-top">
     <article class="panel">
@@ -146,6 +166,7 @@ td:first-child{font-weight:900}
             <div class="fact"><b>カウントダウン</b><span class="countdown" id="eventCountdown">発表済み</span></div>
             <div class="fact"><b>コンセンサス（要点）</b><span id="eventConsensus">タカ派色の後退の有無を確認</span></div>
             <div class="fact"><b>前回値（要点）</b><span id="eventPrevious">タカ派的な慎重姿勢が継続</span></div>
+            <div class="fact"><b>公式確認先</b><a id="eventOfficialSource" class="source-link" href="#" target="_blank" rel="noopener">確認先を読み込み中</a></div>
           </div>
         </div>
         <div class="mini-col">
@@ -239,7 +260,7 @@ td:first-child{font-weight:900}
       </div>
       <div class="table-wrap">
         <table class="event-list-table">
-          <thead><tr><th>日時（日本時間）</th><th>イベント</th><th>重要度</th><th>予想</th><th>前回</th><th>主な影響市場</th><th>注目理由</th><th>状態</th><th>詳細</th></tr></thead>
+          <thead><tr><th>日時（日本時間）</th><th>イベント</th><th>重要度</th><th>予想</th><th>前回</th><th>結果</th><th>主な影響市場</th><th>注目理由</th><th>状態</th><th>詳細</th></tr></thead>
           <tbody id="eventList"></tbody>
         </table>
       </div>
@@ -534,7 +555,6 @@ function renderEvent(id) {
   timer = setInterval(() => updateCountdown(event), 1000);
 }
 
-renderEvent("row-0");
 loadDynamicEventPage();
 
 async function loadDynamicEventPage() {
@@ -545,10 +565,12 @@ async function loadDynamicEventPage() {
     if (importantEvents.length) {
       const meta = document.querySelector(".top-meta span");
       if (meta) meta.textContent = `最終更新　${formatPayloadDateTime(eventPayload)}`;
+      renderEventSourceStatus(eventPayload);
       document.querySelector(".events-head h3").textContent = "重要イベント履歴（日付別）";
       document.querySelector(".events-head small").textContent = "日付を選ぶと、その日の予定・結果・比較・説明を表示します。";
+      setupEventCountryFilter(importantEvents);
       const selectedDate = initialEventDate(importantEvents, eventPayload);
-      renderDynamicEventDay(importantEvents, selectedDate, 0);
+      renderDynamicEventDay(importantEvents, selectedDate, -1);
       return;
     }
   } catch (error) {
@@ -577,9 +599,18 @@ async function loadDynamicEventPage() {
 }
 
 async function fetchDedicatedEvents() {
-  const response = await fetch(`data/events.json?ts=${Date.now()}`, { cache: "no-store" });
-  if (!response.ok) throw new Error(`data/events.json HTTP ${response.status}`);
-  return await response.json();
+  const paths = ["data/events/latest.json", "data/events.json"];
+  let lastError;
+  for (const path of paths) {
+    try {
+      const response = await fetch(`${path}?ts=${Date.now()}`, { cache: "no-store" });
+      if (!response.ok) throw new Error(`${path} HTTP ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error("重要イベントJSONを取得できません");
 }
 
 function normalizeDedicatedEvents(payload) {
@@ -620,6 +651,7 @@ function normalizeDedicatedEvents(payload) {
       status: event.status || "",
       resultComparison: dynamicText(event.resultComparison || event.surprise || "", 80),
       resultExplanation: dynamicText(event.resultExplanation || event.marketReaction || event.reason || "", 160),
+      officialSource: event.officialSource && typeof event.officialSource === "object" ? event.officialSource : null,
       category: event.category || (iso ? "scheduled_event" : "monitoring_headline"),
       isTimed: Boolean(iso),
       affected,
@@ -670,6 +702,43 @@ function isDisplayDynamicEvent(event) {
   return Boolean(event?.date && event?.name && event?.category !== "monitoring_headline");
 }
 
+let activeEventCountry = "all";
+let dynamicEventSource = [];
+
+function filterDynamicEvents(eventRows) {
+  if (activeEventCountry === "all") return eventRows;
+  const primary = new Set(["米国", "日本", "欧州", "中国", "英国"]);
+  if (activeEventCountry === "other") return eventRows.filter(event => !primary.has(event.country));
+  return eventRows.filter(event => event.country === activeEventCountry);
+}
+
+function setupEventCountryFilter(eventRows) {
+  dynamicEventSource = eventRows;
+  document.querySelectorAll("[data-event-country]").forEach(button => {
+    button.onclick = () => {
+      activeEventCountry = button.dataset.eventCountry || "all";
+      document.querySelectorAll("[data-event-country]").forEach(item => {
+        item.setAttribute("aria-pressed", String(item === button));
+      });
+      const filtered = filterDynamicEvents(dynamicEventSource);
+      const dates = dynamicEventDates(filtered);
+      const requested = document.getElementById("eventDatePicker")?.value || dates[0] || "";
+      renderDynamicEventDay(dynamicEventSource, resolveEventDate(requested, dates), -1);
+    };
+  });
+}
+
+function renderEventSourceStatus(payload) {
+  const element = document.getElementById("eventSourceStatus");
+  if (!element) return;
+  const source = payload?.sources?.find?.(item => item.id === "forex_factory") || payload?.sources?.[0] || {};
+  const stale = Boolean(payload?.isStale || payload?.status === "stale");
+  element.classList.toggle("stale", stale);
+  element.textContent = stale
+    ? `前回確認値を表示中 / ${formatPayloadDateTime(payload)} / ${source.name || "取得元確認中"}`
+    : `自動更新済み / ${formatPayloadDateTime(payload)} / ${source.name || "経済カレンダー"}`;
+}
+
 function initialEventDate(dynamicEvents, payload) {
   const params = new URLSearchParams(window.location.search);
   const requested = params.get("date");
@@ -685,20 +754,26 @@ function dynamicEventDates(dynamicEvents) {
 }
 
 function renderDynamicEventDay(allEvents, selectedDate, selectedIndex = 0) {
-  const dates = dynamicEventDates(allEvents);
+  const visibleEvents = filterDynamicEvents(allEvents);
+  const dates = dynamicEventDates(visibleEvents);
   const activeDate = resolveEventDate(selectedDate || dates[0] || "", dates);
-  renderEventDateControls(allEvents, activeDate);
+  renderEventDateControls(visibleEvents, activeDate);
 
-  const dayEvents = allEvents
+  const dayEvents = visibleEvents
     .filter(event => event.date === activeDate)
     .sort(compareDynamicEvents);
 
   if (!dayEvents.length) {
-    document.getElementById("eventList").innerHTML = `<tr><td>予定なし</td><td>この日付の重要イベントはありません</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
+    document.getElementById("eventList").innerHTML = `<tr><td>予定なし</td><td>この日付の重要イベントはありません</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
     return;
   }
 
-  const index = Math.min(Math.max(selectedIndex, 0), dayEvents.length - 1);
+  const now = Date.now();
+  const nextIndex = dayEvents.findIndex(event => event.iso && new Date(event.iso).getTime() >= now);
+  const automaticIndex = nextIndex >= 0 ? nextIndex : dayEvents.length - 1;
+  const index = selectedIndex >= 0
+    ? Math.min(selectedIndex, dayEvents.length - 1)
+    : automaticIndex;
   renderDynamicEventList(dayEvents, index);
   renderDynamicEvent(dayEvents[index]);
   updateEventDateUrl(activeDate);
@@ -717,16 +792,16 @@ function renderEventDateControls(allEvents, selectedDate) {
     picker.value = selectedDate;
     picker.min = dates.at(-1) || selectedDate;
     picker.max = dates[0] || selectedDate;
-    picker.onchange = () => renderDynamicEventDay(allEvents, picker.value, 0);
+    picker.onchange = () => renderDynamicEventDay(allEvents, picker.value, -1);
   }
   if (label) label.textContent = `${formatDateJp(selectedDate)} / ${count}件`;
   if (prev) {
     prev.disabled = index < 0 || index >= dates.length - 1;
-    prev.onclick = () => index >= 0 && index < dates.length - 1 && renderDynamicEventDay(allEvents, dates[index + 1], 0);
+    prev.onclick = () => index >= 0 && index < dates.length - 1 && renderDynamicEventDay(allEvents, dates[index + 1], -1);
   }
   if (next) {
     next.disabled = index <= 0;
-    next.onclick = () => index > 0 && renderDynamicEventDay(allEvents, dates[index - 1], 0);
+    next.onclick = () => index > 0 && renderDynamicEventDay(allEvents, dates[index - 1], -1);
   }
 }
 
@@ -752,7 +827,7 @@ function compareDynamicEvents(a, b) {
 }
 
 function dynamicEventStatus(event) {
-  if (event.status === "released" || event.actual || event.resultExplanation) return "結果保存";
+  if (event.status === "released" || event.actual) return "結果保存";
   if (event.status === "needs_result") return "結果待ち";
   if (event.iso && new Date(event.iso).getTime() - Date.now() < 0) return "結果待ち";
   if (event.iso) return "発表前";
@@ -965,7 +1040,8 @@ function renderDynamicEventList(dynamicEvents, selectedIndex = 0) {
   body.innerHTML = dynamicEvents.map((event, index) => {
     const status = dynamicEventStatus(event);
     const statusClass = status === "結果保存" ? "done" : status === "結果待ち" || status === "予定確認" ? "soon" : "before";
-    return `<tr><td>${esc(event.time)}</td><td>${esc(event.name)}</td><td>${esc(event.importance)}</td><td>${esc(event.forecast)}</td><td>${esc(event.previousValue)}</td><td>${esc(event.affected)}</td><td>${esc(event.reason)}</td><td><span class="status ${statusClass}">${esc(status)}</span></td><td><button class="detail-btn" type="button" data-dynamic-index="${index}" aria-pressed="${index === selectedIndex}">詳細</button></td></tr>`;
+    const actual = event.actual || (status === "結果待ち" ? "確認中" : "発表前");
+    return `<tr><td>${esc(event.time)}</td><td>${esc(event.name)}</td><td>${esc(event.importance)}</td><td>${esc(event.forecast)}</td><td>${esc(event.previousValue)}</td><td>${esc(actual)}</td><td>${esc(event.affected)}</td><td>${esc(event.reason)}</td><td><span class="status ${statusClass}">${esc(status)}</span></td><td><button class="detail-btn" type="button" data-dynamic-index="${index}" aria-pressed="${index === selectedIndex}">詳細</button></td></tr>`;
   }).join("");
   body.querySelectorAll("button").forEach(button => button.addEventListener("click", () => {
     const index = Number(button.dataset.dynamicIndex || 0);
@@ -981,6 +1057,12 @@ function renderDynamicEvent(event) {
   document.getElementById("eventImportance").textContent = event.importance || dynamicImportance(event.name);
   document.getElementById("eventConsensus").textContent = event.consensus;
   document.getElementById("eventPrevious").textContent = event.previous;
+  const officialLink = document.getElementById("eventOfficialSource");
+  if (officialLink) {
+    const source = event.officialSource || {};
+    officialLink.textContent = source.name || "取得元カレンダー";
+    officialLink.href = source.url || "https://www.forexfactory.com/calendar";
+  }
   document.getElementById("focusMarkets").innerHTML = event.focus.map(item => `<li>${esc(item)}</li>`).join("");
   document.getElementById("pricedIn").innerHTML = event.priced.map(item => `<li>${esc(item)}</li>`).join("");
   rows("#scenarioTable tbody", scenarioRowsForEvent(event));

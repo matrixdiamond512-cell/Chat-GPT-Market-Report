@@ -1430,7 +1430,7 @@ function calendarRowsForReport(report) {
   const rows = dashboardCalendarEvents
     .filter((event) => event.category !== "monitoring_headline")
     .filter((event) => {
-      const hasResult = Boolean(event.actual || event.resultComparison || event.resultExplanation || event.status === "released");
+      const hasResult = Boolean(event.actual || event.resultComparison || event.status === "released");
       if (event.date > report.date) return true;
       if (event.date < report.date) {
         const eventDate = new Date(`${event.date}T${/^\d{2}:\d{2}$/.test(event.time || "") ? event.time : "00:00"}:00+09:00`);
@@ -1461,6 +1461,7 @@ function calendarUnavailableNotice() {
 }
 
 function eventDetail(row) {
+  const hasResult = Boolean(row.actual || row.resultComparison || row.status === "released");
   const forecast = row.forecast && !/手入力待ち|未取得|該当なし/.test(row.forecast) ? `予想 ${row.forecast}` : "";
   const previous = row.previous && !/手入力待ち|未取得|該当なし/.test(row.previous) ? `前回 ${row.previous}` : "";
   const parts = [
@@ -1468,7 +1469,7 @@ function eventDetail(row) {
     previous,
     row.actual ? `結果 ${row.actual}` : "",
     row.resultComparison ? `比較 ${row.resultComparison}` : "",
-    row.resultExplanation ? `説明 ${row.resultExplanation}` : "",
+    hasResult && row.resultExplanation ? `説明 ${row.resultExplanation}` : "",
     row.detail || ""
   ].filter(Boolean);
   if (parts.length) return `<small class="event-detail">${esc(parts.join(" / "))}</small>`;
@@ -1684,7 +1685,7 @@ function calendarEventTiming(row) {
 }
 
 function calendarNextText(row, report) {
-  if (row.status === "released" || row.actual || row.resultComparison || row.resultExplanation) return "結果保存";
+  if (row.status === "released" || row.actual || row.resultComparison) return "結果保存";
   if (row.status === "needs_result") return "結果待ち";
   if (row.time === "随時") return "継続監視";
   if (row.time === "予定確認") return "時刻未定";
@@ -1868,19 +1869,18 @@ async function init() {
 }
 
 async function loadDashboardEventCalendar() {
-  try {
-    const response = await fetch(`data/events.json?ts=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) throw new Error(`data/events.json HTTP ${response.status}`);
-    return await response.json();
-  } catch (error) {
+  const paths = ["data/events/upcoming.json", "data/events/latest.json", "data/events.json", "economic-calendar.json"];
+  const errors = [];
+  for (const path of paths) {
     try {
-      const response = await fetch(`economic-calendar.json?ts=${Date.now()}`, { cache: "no-store" });
-      if (!response.ok) throw new Error(`economic-calendar.json HTTP ${response.status}`);
+      const response = await fetch(`${path}?ts=${Date.now()}`, { cache: "no-store" });
+      if (!response.ok) throw new Error(`${path} HTTP ${response.status}`);
       return await response.json();
-    } catch (fallbackError) {
-      return { status: "unavailable", events: [], error: `${error.message} / ${fallbackError.message}` };
+    } catch (error) {
+      errors.push(error.message);
     }
   }
+  return { status: "unavailable", events: [], error: errors.join(" / ") };
 }
 
 async function loadDashboardReports() {

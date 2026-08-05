@@ -1,0 +1,1232 @@
+{
+  "schemaVersion": "2.0.0",
+  "pageId": "events",
+  "generatedAt": "2026-08-05T23:29:52+09:00",
+  "dataAsOf": "2026-08-05T23:29:52+09:00",
+  "timezone": "Asia/Tokyo",
+  "status": "ok",
+  "isStale": false,
+  "sources": [
+    {
+      "id": "forex_factory_weekly",
+      "name": "Forex Factory weekly calendar",
+      "url": "https://www.forexfactory.com/calendar",
+      "status": "ok",
+      "note": "時刻・通貨・重要度・予想・前回値を取得。元JSONは公開保存しません。"
+    },
+    {
+      "id": "tradingview_economic_calendar",
+      "name": "TradingView Economic Calendar",
+      "url": "https://www.tradingview.com/economic-calendar/",
+      "status": "ok",
+      "note": "実績値を10件照合。生データは公開保存しません。"
+    },
+    {
+      "id": "official_source_map",
+      "name": "主要イベント公式照合先",
+      "status": "available"
+    }
+  ],
+  "errors": [],
+  "date": "2026-08-04",
+  "events": [
+    {
+      "id": "event-4ad594188c7159",
+      "sourceKey": "2026-08-04|12:35|JPY|10-y bond auction",
+      "date": "2026-08-04",
+      "time": "12:35",
+      "datetimeJst": "2026-08-04T12:35:00+09:00",
+      "scheduledAtSource": "2026-08-03T23:35:00-04:00",
+      "scheduledAtUtc": "2026-08-04T03:35:00Z",
+      "country": "日本",
+      "currency": "JPY",
+      "title": "日本 10-y 国債入札",
+      "eventNameOriginal": "10-y Bond Auction",
+      "category": "bond_auction",
+      "impactOriginal": "Low",
+      "ffImportance": 1,
+      "importance": 2,
+      "importanceLabel": "中",
+      "forecast": "",
+      "previous": "2.73|3.1",
+      "actual": "2.84%",
+      "revised": "",
+      "resultComparison": "",
+      "resultExplanation": "実績 2.84% は予想 なし に対して比較保留。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
+      "isTimed": true,
+      "isImportantEvent": true,
+      "affectedMarkets": [
+        "日本金利",
+        "USD/JPY",
+        "日経225先物"
+      ],
+      "focusMarkets": [
+        "日本金利",
+        "USD/JPY",
+        "日経225先物"
+      ],
+      "pricedIn": [
+        "市場予想：予想なし",
+        "前回値：2.73|3.1",
+        "発表直後は米2年債、米10年債、株価指数先物、為替の順に確認"
+      ],
+      "scenarios": [
+        [
+          "米2年債",
+          "上昇しやすい",
+          "小動き",
+          "低下しやすい"
+        ],
+        [
+          "米10年債",
+          "上昇しやすい",
+          "小動き",
+          "低下しやすい"
+        ],
+        [
+          "ダウ先物",
+          "金利上昇なら重い",
+          "小動き",
+          "金利低下なら支え"
+        ],
+        [
+          "ナスダック先物",
+          "高金利なら重い",
+          "小動き",
+          "金利低下なら支え"
+        ],
+        [
+          "日経225先物",
+          "円高なら重い",
+          "小動き",
+          "円安なら支え"
+        ],
+        [
+          "USD/JPY",
+          "円高で下落しやすい",
+          "小動き",
+          "円安で上昇しやすい"
+        ],
+        [
+          "EUR/USD",
+          "ドル高で下落しやすい",
+          "小動き",
+          "ドル安で上昇しやすい"
+        ],
+        [
+          "金",
+          "実質金利上昇なら重い",
+          "小動き",
+          "実質金利低下なら支え"
+        ],
+        [
+          "原油",
+          "景気上振れなら支え",
+          "小動き",
+          "景気減速なら重い"
+        ]
+      ],
+      "outlook": [
+        [
+          "米2年債",
+          "政策金利見通しに反応",
+          "初動と翌営業日の持続性を確認",
+          "利下げ期待後退",
+          "利下げ期待拡大"
+        ],
+        [
+          "米10年債",
+          "成長・インフレ・国債需給に反応",
+          "2年債との方向差を確認",
+          "インフレ再燃・需給悪化",
+          "成長鈍化・利下げ期待"
+        ],
+        [
+          "ダウ先物",
+          "景気敏感株の反応を確認",
+          "金利と業績期待の綱引きを確認",
+          "景気悪化・金利上昇",
+          "景気底堅さ・金利低下"
+        ],
+        [
+          "ナスダック先物",
+          "高PER株の金利感応度を確認",
+          "実質金利への耐性を見る",
+          "実質金利上昇",
+          "金利低下・買い戻し"
+        ],
+        [
+          "日経225先物",
+          "米株と円相場に反応",
+          "USD/JPYとの組み合わせを見る",
+          "米株安・円高",
+          "米株高・円安"
+        ],
+        [
+          "USD/JPY",
+          "米金利差とドルに反応",
+          "米2年・10年債との連動を確認",
+          "米金利上昇・ドル高",
+          "米金利低下・ドル安"
+        ],
+        [
+          "EUR/USD",
+          "ドルと欧州固有材料に反応",
+          "ドル全面高かを確認",
+          "米金利上昇・ドル高",
+          "米金利低下・ドル安"
+        ],
+        [
+          "金",
+          "実質金利とドルに反応",
+          "安全資産需要との整合性を確認",
+          "実質金利上昇・ドル高",
+          "実質金利低下・ドル安"
+        ],
+        [
+          "原油",
+          "需要見通しと供給材料に反応",
+          "景気と在庫のどちらが主導か確認",
+          "需要上振れ・供給不安",
+          "需要鈍化・供給懸念後退"
+        ]
+      ],
+      "postReleaseReactions": [],
+      "comparison": [
+        [
+          "米2年債",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "米10年債",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "ダウ先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "ナスダック先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "日経225先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "USD/JPY",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "EUR/USD",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "金",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "原油",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ]
+      ],
+      "conclusion": {
+        "narrative": "結果確認済み",
+        "reaction": "市場反応を確認",
+        "watch": [
+          "米2年債の初動",
+          "米10年債への波及",
+          "ダウ・ナスダック先物",
+          "USD/JPYとEUR/USD",
+          "日経225先物・金・原油"
+        ]
+      },
+      "officialSource": {
+        "id": "japan_mof",
+        "name": "Japan Ministry of Finance JGB auction calendar",
+        "url": "https://www.mof.go.jp/english/policy/jgbs/auction/calendar/index.htm"
+      },
+      "sourceType": "forex_factory_weekly",
+      "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+      "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
+      "createdAt": "2026-08-05T23:03:06+09:00",
+      "updatedAt": "2026-08-05T23:29:52+09:00",
+      "resultSavedAt": "2026-08-05T23:29:52+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "Ministry of Finance",
+        "url": "http://www.mof.go.jp"
+      }
+    },
+    {
+      "id": "event-c991f1a1473a9b",
+      "sourceKey": "2026-08-04|21:30|CAD|trade balance",
+      "date": "2026-08-04",
+      "time": "21:30",
+      "datetimeJst": "2026-08-04T21:30:00+09:00",
+      "scheduledAtSource": "2026-08-04T08:30:00-04:00",
+      "scheduledAtUtc": "2026-08-04T12:30:00Z",
+      "country": "カナダ",
+      "currency": "CAD",
+      "title": "カナダ 貿易収支",
+      "eventNameOriginal": "Trade Balance",
+      "category": "trade",
+      "impactOriginal": "Low",
+      "ffImportance": 1,
+      "importance": 1,
+      "importanceLabel": "低",
+      "forecast": "3.0B",
+      "previous": "4.2B",
+      "actual": "3.86B",
+      "revised": "",
+      "resultComparison": "市場予想を上回る",
+      "resultExplanation": "実績 3.86B は予想 3.0B に対して市場予想を上回る。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
+      "isTimed": true,
+      "isImportantEvent": false,
+      "affectedMarkets": [
+        "米2年債",
+        "米10年債",
+        "USD/JPY",
+        "ダウ先物",
+        "ナスダック先物",
+        "日経225先物",
+        "金"
+      ],
+      "focusMarkets": [
+        "米2年債",
+        "米10年債",
+        "USD/JPY",
+        "ダウ先物",
+        "ナスダック先物"
+      ],
+      "pricedIn": [
+        "市場予想：3.0B",
+        "前回値：4.2B",
+        "発表直後は米2年債、米10年債、株価指数先物、為替の順に確認"
+      ],
+      "scenarios": [
+        [
+          "米2年債",
+          "上昇しやすい",
+          "小動き",
+          "低下しやすい"
+        ],
+        [
+          "米10年債",
+          "上昇しやすい",
+          "小動き",
+          "低下しやすい"
+        ],
+        [
+          "ダウ先物",
+          "金利上昇なら重い",
+          "小動き",
+          "金利低下なら支え"
+        ],
+        [
+          "ナスダック先物",
+          "高金利なら重い",
+          "小動き",
+          "金利低下なら支え"
+        ],
+        [
+          "日経225先物",
+          "米株安・円高なら重い",
+          "小動き",
+          "米株高・円安なら支え"
+        ],
+        [
+          "USD/JPY",
+          "ドル高で上昇しやすい",
+          "小動き",
+          "ドル安で下落しやすい"
+        ],
+        [
+          "EUR/USD",
+          "ドル高で下落しやすい",
+          "小動き",
+          "ドル安で上昇しやすい"
+        ],
+        [
+          "金",
+          "実質金利上昇なら重い",
+          "小動き",
+          "実質金利低下なら支え"
+        ],
+        [
+          "原油",
+          "景気上振れなら支え",
+          "小動き",
+          "景気減速なら重い"
+        ]
+      ],
+      "outlook": [
+        [
+          "米2年債",
+          "政策金利見通しに反応",
+          "初動と翌営業日の持続性を確認",
+          "利下げ期待後退",
+          "利下げ期待拡大"
+        ],
+        [
+          "米10年債",
+          "成長・インフレ・国債需給に反応",
+          "2年債との方向差を確認",
+          "インフレ再燃・需給悪化",
+          "成長鈍化・利下げ期待"
+        ],
+        [
+          "ダウ先物",
+          "景気敏感株の反応を確認",
+          "金利と業績期待の綱引きを確認",
+          "景気悪化・金利上昇",
+          "景気底堅さ・金利低下"
+        ],
+        [
+          "ナスダック先物",
+          "高PER株の金利感応度を確認",
+          "実質金利への耐性を見る",
+          "実質金利上昇",
+          "金利低下・買い戻し"
+        ],
+        [
+          "日経225先物",
+          "米株と円相場に反応",
+          "USD/JPYとの組み合わせを見る",
+          "米株安・円高",
+          "米株高・円安"
+        ],
+        [
+          "USD/JPY",
+          "米金利差とドルに反応",
+          "米2年・10年債との連動を確認",
+          "米金利上昇・ドル高",
+          "米金利低下・ドル安"
+        ],
+        [
+          "EUR/USD",
+          "ドルと欧州固有材料に反応",
+          "ドル全面高かを確認",
+          "米金利上昇・ドル高",
+          "米金利低下・ドル安"
+        ],
+        [
+          "金",
+          "実質金利とドルに反応",
+          "安全資産需要との整合性を確認",
+          "実質金利上昇・ドル高",
+          "実質金利低下・ドル安"
+        ],
+        [
+          "原油",
+          "需要見通しと供給材料に反応",
+          "景気と在庫のどちらが主導か確認",
+          "需要上振れ・供給不安",
+          "需要鈍化・供給懸念後退"
+        ]
+      ],
+      "postReleaseReactions": [],
+      "comparison": [
+        [
+          "米2年債",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "米10年債",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "ダウ先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "ナスダック先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "日経225先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "USD/JPY",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "EUR/USD",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "金",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "原油",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ]
+      ],
+      "conclusion": {
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を上回る",
+        "watch": [
+          "米2年債の初動",
+          "米10年債への波及",
+          "ダウ・ナスダック先物",
+          "USD/JPYとEUR/USD",
+          "日経225先物・金・原油"
+        ]
+      },
+      "officialSource": {
+        "id": "forex_factory",
+        "name": "Forex Factory Economic Calendar",
+        "url": "https://www.forexfactory.com/calendar"
+      },
+      "sourceType": "forex_factory_weekly",
+      "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+      "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
+      "createdAt": "2026-08-05T23:03:06+09:00",
+      "updatedAt": "2026-08-05T23:29:52+09:00",
+      "resultSavedAt": "2026-08-05T23:29:52+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "Statistics Canada",
+        "url": "https://www.statcan.gc.ca"
+      }
+    },
+    {
+      "date": "2026-08-04",
+      "time": "21:30",
+      "datetimeJst": "2026-08-04T21:30:00+09:00",
+      "timingLabel": "",
+      "country": "複数",
+      "title": "カナダ6月国際商品貿易",
+      "category": "scheduled_event",
+      "importance": 1,
+      "forecast": "未取得",
+      "previous": "未取得",
+      "actual": "",
+      "resultComparison": "",
+      "resultExplanation": "",
+      "affectedMarkets": [
+        "USD/JPY",
+        "株式",
+        "金利"
+      ],
+      "reason": "21:30 カナダ6月国際商品貿易",
+      "sourceType": "market_report_extraction",
+      "sourceReportKey": "2026-08-04 12:00",
+      "sourceNote": "マーケットレポート本文から抽出",
+      "watchPoints": [
+        "発表時刻の確認",
+        "米金利",
+        "USD/JPY",
+        "株価指数先物"
+      ],
+      "postReleaseReactions": [],
+      "comparison": [],
+      "id": "event-lhjkmp",
+      "createdAt": "2026-08-05T17:27:12+09:00",
+      "updatedAt": "2026-08-05T17:27:12+09:00",
+      "isTimed": true,
+      "isImportantEvent": true,
+      "status": "needs_result"
+    },
+    {
+      "id": "event-33f0e209003d91",
+      "sourceKey": "2026-08-04|21:30|USD|trade balance",
+      "date": "2026-08-04",
+      "time": "21:30",
+      "datetimeJst": "2026-08-04T21:30:00+09:00",
+      "scheduledAtSource": "2026-08-04T08:30:00-04:00",
+      "scheduledAtUtc": "2026-08-04T12:30:00Z",
+      "country": "米国",
+      "currency": "USD",
+      "title": "米国 貿易収支",
+      "eventNameOriginal": "Trade Balance",
+      "category": "trade",
+      "impactOriginal": "Low",
+      "ffImportance": 1,
+      "importance": 1,
+      "importanceLabel": "低",
+      "forecast": "-73.0B",
+      "previous": "-77.6B",
+      "actual": "-73.3B",
+      "revised": "",
+      "resultComparison": "市場予想を下回る",
+      "resultExplanation": "実績 -73.3B は予想 -73.0B に対して市場予想を下回る。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
+      "isTimed": true,
+      "isImportantEvent": false,
+      "affectedMarkets": [
+        "米2年債",
+        "米10年債",
+        "USD/JPY",
+        "ダウ先物",
+        "ナスダック先物",
+        "日経225先物",
+        "金"
+      ],
+      "focusMarkets": [
+        "米2年債",
+        "米10年債",
+        "USD/JPY",
+        "ダウ先物",
+        "ナスダック先物"
+      ],
+      "pricedIn": [
+        "市場予想：-73.0B",
+        "前回値：-77.6B",
+        "発表直後は米2年債、米10年債、株価指数先物、為替の順に確認"
+      ],
+      "scenarios": [
+        [
+          "米2年債",
+          "上昇しやすい",
+          "小動き",
+          "低下しやすい"
+        ],
+        [
+          "米10年債",
+          "上昇しやすい",
+          "小動き",
+          "低下しやすい"
+        ],
+        [
+          "ダウ先物",
+          "金利上昇なら重い",
+          "小動き",
+          "金利低下なら支え"
+        ],
+        [
+          "ナスダック先物",
+          "高金利なら重い",
+          "小動き",
+          "金利低下なら支え"
+        ],
+        [
+          "日経225先物",
+          "米株安・円高なら重い",
+          "小動き",
+          "米株高・円安なら支え"
+        ],
+        [
+          "USD/JPY",
+          "ドル高で上昇しやすい",
+          "小動き",
+          "ドル安で下落しやすい"
+        ],
+        [
+          "EUR/USD",
+          "ドル高で下落しやすい",
+          "小動き",
+          "ドル安で上昇しやすい"
+        ],
+        [
+          "金",
+          "実質金利上昇なら重い",
+          "小動き",
+          "実質金利低下なら支え"
+        ],
+        [
+          "原油",
+          "景気上振れなら支え",
+          "小動き",
+          "景気減速なら重い"
+        ]
+      ],
+      "outlook": [
+        [
+          "米2年債",
+          "政策金利見通しに反応",
+          "初動と翌営業日の持続性を確認",
+          "利下げ期待後退",
+          "利下げ期待拡大"
+        ],
+        [
+          "米10年債",
+          "成長・インフレ・国債需給に反応",
+          "2年債との方向差を確認",
+          "インフレ再燃・需給悪化",
+          "成長鈍化・利下げ期待"
+        ],
+        [
+          "ダウ先物",
+          "景気敏感株の反応を確認",
+          "金利と業績期待の綱引きを確認",
+          "景気悪化・金利上昇",
+          "景気底堅さ・金利低下"
+        ],
+        [
+          "ナスダック先物",
+          "高PER株の金利感応度を確認",
+          "実質金利への耐性を見る",
+          "実質金利上昇",
+          "金利低下・買い戻し"
+        ],
+        [
+          "日経225先物",
+          "米株と円相場に反応",
+          "USD/JPYとの組み合わせを見る",
+          "米株安・円高",
+          "米株高・円安"
+        ],
+        [
+          "USD/JPY",
+          "米金利差とドルに反応",
+          "米2年・10年債との連動を確認",
+          "米金利上昇・ドル高",
+          "米金利低下・ドル安"
+        ],
+        [
+          "EUR/USD",
+          "ドルと欧州固有材料に反応",
+          "ドル全面高かを確認",
+          "米金利上昇・ドル高",
+          "米金利低下・ドル安"
+        ],
+        [
+          "金",
+          "実質金利とドルに反応",
+          "安全資産需要との整合性を確認",
+          "実質金利上昇・ドル高",
+          "実質金利低下・ドル安"
+        ],
+        [
+          "原油",
+          "需要見通しと供給材料に反応",
+          "景気と在庫のどちらが主導か確認",
+          "需要上振れ・供給不安",
+          "需要鈍化・供給懸念後退"
+        ]
+      ],
+      "postReleaseReactions": [],
+      "comparison": [
+        [
+          "米2年債",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "米10年債",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "ダウ先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "ナスダック先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "日経225先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "USD/JPY",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "EUR/USD",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "金",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "原油",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ]
+      ],
+      "conclusion": {
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を下回る",
+        "watch": [
+          "米2年債の初動",
+          "米10年債への波及",
+          "ダウ・ナスダック先物",
+          "USD/JPYとEUR/USD",
+          "日経225先物・金・原油"
+        ]
+      },
+      "officialSource": {
+        "id": "forex_factory",
+        "name": "Forex Factory Economic Calendar",
+        "url": "https://www.forexfactory.com/calendar"
+      },
+      "sourceType": "forex_factory_weekly",
+      "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+      "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
+      "createdAt": "2026-08-05T23:03:06+09:00",
+      "updatedAt": "2026-08-05T23:29:52+09:00",
+      "resultSavedAt": "2026-08-05T23:29:52+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "Bureau of Economics Analysis",
+        "url": "https://www.bea.gov"
+      }
+    },
+    {
+      "date": "2026-08-04",
+      "time": "21:30",
+      "datetimeJst": "2026-08-04T21:30:00+09:00",
+      "timingLabel": "",
+      "country": "米国",
+      "title": "米国6月貿易収支",
+      "category": "scheduled_event",
+      "importance": 2,
+      "forecast": "未取得",
+      "previous": "未取得",
+      "actual": "",
+      "resultComparison": "",
+      "resultExplanation": "",
+      "affectedMarkets": [
+        "USD/JPY",
+        "株式",
+        "金利"
+      ],
+      "reason": "21:30 米国6月貿易収支",
+      "sourceType": "market_report_extraction",
+      "sourceReportKey": "2026-08-04 12:00",
+      "sourceNote": "マーケットレポート本文から抽出",
+      "watchPoints": [
+        "発表時刻の確認",
+        "米金利",
+        "USD/JPY",
+        "株価指数先物"
+      ],
+      "postReleaseReactions": [],
+      "comparison": [],
+      "id": "event-hmmvep",
+      "createdAt": "2026-08-05T17:27:12+09:00",
+      "updatedAt": "2026-08-05T17:27:12+09:00",
+      "isTimed": true,
+      "isImportantEvent": true,
+      "status": "needs_result"
+    },
+    {
+      "id": "event-fadc4d68e6d032",
+      "sourceKey": "2026-08-04|23:00|USD|jolts job openings",
+      "date": "2026-08-04",
+      "time": "23:00",
+      "datetimeJst": "2026-08-04T23:00:00+09:00",
+      "scheduledAtSource": "2026-08-04T10:00:00-04:00",
+      "scheduledAtUtc": "2026-08-04T14:00:00Z",
+      "country": "米国",
+      "currency": "USD",
+      "title": "米JOLTS求人件数",
+      "eventNameOriginal": "JOLTS Job Openings",
+      "category": "employment",
+      "impactOriginal": "Medium",
+      "ffImportance": 2,
+      "importance": 2,
+      "importanceLabel": "中",
+      "forecast": "7.44M",
+      "previous": "7.59M",
+      "actual": "7.359M",
+      "revised": "",
+      "resultComparison": "市場予想を下回る",
+      "resultExplanation": "実績 7.359M は予想 7.44M に対して市場予想を下回る。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
+      "isTimed": true,
+      "isImportantEvent": true,
+      "affectedMarkets": [
+        "米2年債",
+        "米10年債",
+        "USD/JPY",
+        "ダウ先物",
+        "ナスダック先物",
+        "日経225先物",
+        "金"
+      ],
+      "focusMarkets": [
+        "米2年債",
+        "米10年債",
+        "USD/JPY",
+        "ダウ先物",
+        "ナスダック先物"
+      ],
+      "pricedIn": [
+        "市場予想：7.44M",
+        "前回値：7.59M",
+        "発表直後は米2年債、米10年債、株価指数先物、為替の順に確認"
+      ],
+      "scenarios": [
+        [
+          "米2年債",
+          "上昇しやすい",
+          "小動き",
+          "低下しやすい"
+        ],
+        [
+          "米10年債",
+          "上昇しやすい",
+          "小動き",
+          "低下しやすい"
+        ],
+        [
+          "ダウ先物",
+          "金利上昇なら重い",
+          "小動き",
+          "金利低下なら支え"
+        ],
+        [
+          "ナスダック先物",
+          "高金利なら重い",
+          "小動き",
+          "金利低下なら支え"
+        ],
+        [
+          "日経225先物",
+          "米株安・円高なら重い",
+          "小動き",
+          "米株高・円安なら支え"
+        ],
+        [
+          "USD/JPY",
+          "ドル高で上昇しやすい",
+          "小動き",
+          "ドル安で下落しやすい"
+        ],
+        [
+          "EUR/USD",
+          "ドル高で下落しやすい",
+          "小動き",
+          "ドル安で上昇しやすい"
+        ],
+        [
+          "金",
+          "実質金利上昇なら重い",
+          "小動き",
+          "実質金利低下なら支え"
+        ],
+        [
+          "原油",
+          "景気上振れなら支え",
+          "小動き",
+          "景気減速なら重い"
+        ]
+      ],
+      "outlook": [
+        [
+          "米2年債",
+          "政策金利見通しに反応",
+          "初動と翌営業日の持続性を確認",
+          "利下げ期待後退",
+          "利下げ期待拡大"
+        ],
+        [
+          "米10年債",
+          "成長・インフレ・国債需給に反応",
+          "2年債との方向差を確認",
+          "インフレ再燃・需給悪化",
+          "成長鈍化・利下げ期待"
+        ],
+        [
+          "ダウ先物",
+          "景気敏感株の反応を確認",
+          "金利と業績期待の綱引きを確認",
+          "景気悪化・金利上昇",
+          "景気底堅さ・金利低下"
+        ],
+        [
+          "ナスダック先物",
+          "高PER株の金利感応度を確認",
+          "実質金利への耐性を見る",
+          "実質金利上昇",
+          "金利低下・買い戻し"
+        ],
+        [
+          "日経225先物",
+          "米株と円相場に反応",
+          "USD/JPYとの組み合わせを見る",
+          "米株安・円高",
+          "米株高・円安"
+        ],
+        [
+          "USD/JPY",
+          "米金利差とドルに反応",
+          "米2年・10年債との連動を確認",
+          "米金利上昇・ドル高",
+          "米金利低下・ドル安"
+        ],
+        [
+          "EUR/USD",
+          "ドルと欧州固有材料に反応",
+          "ドル全面高かを確認",
+          "米金利上昇・ドル高",
+          "米金利低下・ドル安"
+        ],
+        [
+          "金",
+          "実質金利とドルに反応",
+          "安全資産需要との整合性を確認",
+          "実質金利上昇・ドル高",
+          "実質金利低下・ドル安"
+        ],
+        [
+          "原油",
+          "需要見通しと供給材料に反応",
+          "景気と在庫のどちらが主導か確認",
+          "需要上振れ・供給不安",
+          "需要鈍化・供給懸念後退"
+        ]
+      ],
+      "postReleaseReactions": [],
+      "comparison": [
+        [
+          "米2年債",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "米10年債",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "ダウ先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "ナスダック先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "日経225先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "USD/JPY",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "EUR/USD",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "金",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "原油",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ]
+      ],
+      "conclusion": {
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を下回る",
+        "watch": [
+          "米2年債の初動",
+          "米10年債への波及",
+          "ダウ・ナスダック先物",
+          "USD/JPYとEUR/USD",
+          "日経225先物・金・原油"
+        ]
+      },
+      "officialSource": {
+        "id": "bls",
+        "name": "U.S. Bureau of Labor Statistics release calendar",
+        "url": "https://www.bls.gov/schedule/"
+      },
+      "sourceType": "forex_factory_weekly",
+      "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+      "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
+      "createdAt": "2026-08-05T23:03:06+09:00",
+      "updatedAt": "2026-08-05T23:29:52+09:00",
+      "resultSavedAt": "2026-08-05T23:29:52+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "Bureau of Labour Statistics",
+        "url": "http://www.bls.gov"
+      }
+    },
+    {
+      "date": "2026-08-04",
+      "time": "23:00",
+      "datetimeJst": "2026-08-04T23:00:00+09:00",
+      "timingLabel": "",
+      "country": "米国",
+      "title": "米国6月JOLTS求人件数",
+      "category": "scheduled_event",
+      "importance": 3,
+      "forecast": "未取得",
+      "previous": "759.4万人",
+      "actual": "",
+      "resultComparison": "",
+      "resultExplanation": "",
+      "affectedMarkets": [
+        "米金利",
+        "USD/JPY",
+        "米国株",
+        "日経225先物",
+        "金"
+      ],
+      "reason": "JOLTS求人件数は前回759.4万人。強い結果なら米金利上昇とドル買い",
+      "sourceType": "market_report_extraction",
+      "sourceReportKey": "2026-08-04 12:00",
+      "sourceNote": "マーケットレポート本文から抽出",
+      "watchPoints": [
+        "米2年債利回り",
+        "USD/JPY",
+        "米株先物",
+        "金・BTC"
+      ],
+      "postReleaseReactions": [],
+      "comparison": [],
+      "id": "event-t8rc0b",
+      "createdAt": "2026-08-05T17:27:12+09:00",
+      "updatedAt": "2026-08-05T17:27:12+09:00",
+      "isTimed": true,
+      "isImportantEvent": true,
+      "status": "needs_result"
+    },
+    {
+      "date": "2026-08-04",
+      "time": "23:00",
+      "datetimeJst": "2026-08-04T23:00:00+09:00",
+      "timingLabel": "",
+      "country": "米国",
+      "title": "米国6月耐久財受注・確報値",
+      "category": "scheduled_event",
+      "importance": 2,
+      "forecast": "未取得",
+      "previous": "未取得",
+      "actual": "",
+      "resultComparison": "",
+      "resultExplanation": "",
+      "affectedMarkets": [
+        "USD/JPY",
+        "株式",
+        "金利"
+      ],
+      "reason": "23:00 米国6月耐久財受注・確報値",
+      "sourceType": "market_report_extraction",
+      "sourceReportKey": "2026-08-04 12:00",
+      "sourceNote": "マーケットレポート本文から抽出",
+      "watchPoints": [
+        "発表時刻の確認",
+        "米金利",
+        "USD/JPY",
+        "株価指数先物"
+      ],
+      "postReleaseReactions": [],
+      "comparison": [],
+      "id": "event-6c3ls2",
+      "createdAt": "2026-08-05T17:27:12+09:00",
+      "updatedAt": "2026-08-05T17:27:12+09:00",
+      "isTimed": true,
+      "isImportantEvent": true,
+      "status": "needs_result"
+    },
+    {
+      "date": "2026-08-04",
+      "time": "23:00",
+      "datetimeJst": "2026-08-04T23:00:00+09:00",
+      "timingLabel": "",
+      "country": "米国",
+      "title": "米国6月製造業新規受注",
+      "category": "scheduled_event",
+      "importance": 1,
+      "forecast": "未取得",
+      "previous": "未取得",
+      "actual": "",
+      "resultComparison": "",
+      "resultExplanation": "",
+      "affectedMarkets": [
+        "USD/JPY",
+        "株式",
+        "金利"
+      ],
+      "reason": "23:00 米国6月製造業新規受注",
+      "sourceType": "market_report_extraction",
+      "sourceReportKey": "2026-08-04 12:00",
+      "sourceNote": "マーケットレポート本文から抽出",
+      "watchPoints": [
+        "発表時刻の確認",
+        "米金利",
+        "USD/JPY",
+        "株価指数先物"
+      ],
+      "postReleaseReactions": [],
+      "comparison": [],
+      "id": "event-yx0anh",
+      "createdAt": "2026-08-05T17:27:12+09:00",
+      "updatedAt": "2026-08-05T17:27:12+09:00",
+      "isTimed": true,
+      "isImportantEvent": true,
+      "status": "needs_result"
+    }
+  ]
+}

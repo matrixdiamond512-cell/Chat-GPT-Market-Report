@@ -1,12 +1,34 @@
 {
   "schemaVersion": "2.0.0",
-  "status": "ok",
-  "updatedAt": "2026-08-05T23:29:52+09:00",
+  "pageId": "events",
+  "generatedAt": "2026-08-05T23:29:52+09:00",
+  "dataAsOf": "2026-08-05T23:29:52+09:00",
   "timezone": "Asia/Tokyo",
-  "provider": "forex_factory_weekly",
-  "range": {
-    "days": 7
-  },
+  "status": "ok",
+  "isStale": false,
+  "sources": [
+    {
+      "id": "forex_factory_weekly",
+      "name": "Forex Factory weekly calendar",
+      "url": "https://www.forexfactory.com/calendar",
+      "status": "ok",
+      "note": "時刻・通貨・重要度・予想・前回値を取得。元JSONは公開保存しません。"
+    },
+    {
+      "id": "tradingview_economic_calendar",
+      "name": "TradingView Economic Calendar",
+      "url": "https://www.tradingview.com/economic-calendar/",
+      "status": "ok",
+      "note": "実績値を10件照合。生データは公開保存しません。"
+    },
+    {
+      "id": "official_source_map",
+      "name": "主要イベント公式照合先",
+      "status": "available"
+    }
+  ],
+  "errors": [],
+  "rangeDays": 7,
   "events": [
     {
       "id": "event-dff361984f0ef7",
@@ -5424,6 +5446,5 @@
       "createdAt": "2026-08-05T23:03:06+09:00",
       "updatedAt": "2026-08-05T23:29:52+09:00"
     }
-  ],
-  "errors": []
+  ]
 }

@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "1.0.0",
+  "timezone": "Asia/Tokyo",
+  "provider": {
+    "id": "forex_factory_weekly",
+    "name": "Forex Factory weekly calendar",
+    "url": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+    "calendarUrl": "https://www.forexfactory.com/calendar"
+  },
+  "resultProvider": {
+    "id": "tradingview_economic_calendar",
+    "name": "TradingView Economic Calendar",
+    "url": "https://economic-calendar.tradingview.com/events",
+    "calendarUrl": "https://www.tradingview.com/economic-calendar/",
+    "countries": ["US", "JP", "EU", "CN", "GB", "AU", "CA", "CH", "NZ"]
+  },
+  "currencies": ["USD", "JPY", "EUR", "CNY", "GBP", "AUD", "CAD", "CHF", "NZD", "All"],
+  "primaryCurrencies": ["USD", "JPY", "EUR", "CNY", "All"],
+  "includedImpacts": ["High", "Medium", "Holiday"],
+  "curatedLowImpactPatterns": [
+    "Bond Auction",
+    "FOMC Member",
+    "Fed Chair",
+    "BOJ Gov",
+    "Monetary Policy",
+    "Crude Oil Inventories",
+    "API Weekly Statistical Bulletin",
+    "OPEC",
+    "Bank Holiday",
+    "Trade Balance"
+  ],
+  "retentionDays": 365,
+  "maxEvents": 2500,
+  "staleAfterHours": 36,
+  "upcomingDays": 7,
+  "officialSources": {
+    "forex_factory": {
+      "name": "Forex Factory Economic Calendar",
+      "url": "https://www.forexfactory.com/calendar"
+    },
+    "bls": {
+      "name": "U.S. Bureau of Labor Statistics release calendar",
+      "url": "https://www.bls.gov/schedule/"
+    },
+    "adp": {
+      "name": "ADP National Employment Report",
+      "url": "https://adpemploymentreport.com/"
+    },
+    "bea": {
+      "name": "U.S. Bureau of Economic Analysis release schedule",
+      "url": "https://www.bea.gov/news/schedule"
+    },
+    "federal_reserve": {
+      "name": "Federal Reserve FOMC calendar",
+      "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+    },
+    "boj": {
+      "name": "Bank of Japan Monetary Policy Meetings",
+      "url": "https://www.boj.or.jp/en/mopo/mpmsche_minu/index.htm"
+    },
+    "ecb": {
+      "name": "ECB monetary policy calendar",
+      "url": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html"
+    },
+    "eia": {
+      "name": "U.S. EIA Weekly Petroleum Status Report schedule",
+      "url": "https://www.eia.gov/petroleum/supply/weekly/schedule.php"
+    },
+    "us_treasury": {
+      "name": "U.S. Treasury auction information",
+      "url": "https://www.treasurydirect.gov/auctions/upcoming/"
+    },
+    "japan_mof": {
+      "name": "Japan Ministry of Finance JGB auction calendar",
+      "url": "https://www.mof.go.jp/english/policy/jgbs/auction/calendar/index.htm"
+    },
+    "opec": {
+      "name": "OPEC",
+      "url": "https://www.opec.org/"
+    }
+  }
+}
