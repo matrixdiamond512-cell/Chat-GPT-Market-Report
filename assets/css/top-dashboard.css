@@ -83,7 +83,7 @@ input {
 
 .site-nav {
   display: grid;
-  grid-template-columns: repeat(10, minmax(118px, 1fr));
+  grid-template-columns: repeat(9, minmax(118px, 1fr));
   max-width: 1720px;
   margin: 0 auto;
   padding: 0 20px;
@@ -421,9 +421,100 @@ input {
   align-items: start;
 }
 
-.temperature-mini-panel {
-  margin-top: 12px;
+.market-environment-section {
+  margin-top: 14px;
+  padding: 14px 0 2px;
+  border-top: 2px solid var(--navy);
+}
+
+.market-environment-section .section-title-row {
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.market-environment-section .section-title-row h2 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 20px;
+}
+
+.market-environment-section .section-title-row p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.environment-color-key {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.environment-color-key span {
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.environment-summary-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.environment-verdict,
+.environment-note {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
   padding: 12px 14px;
+}
+
+.environment-verdict {
+  border-left: 5px solid var(--line-strong);
+  background: var(--soft-blue);
+}
+
+.environment-verdict span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.environment-verdict strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--navy);
+  font-size: 25px;
+  line-height: 1.2;
+}
+
+.environment-verdict p,
+.environment-note ul {
+  margin: 7px 0 0;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.environment-note h3 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 14px;
+}
+
+.environment-note ul {
+  padding-left: 18px;
+}
+
+.environment-note li + li {
+  margin-top: 4px;
 }
 
 .temperature-mini-grid {
@@ -436,7 +527,7 @@ input {
   min-width: 0;
   border: 1px solid var(--line);
   border-radius: 6px;
-  padding: 10px 12px;
+  padding: 11px 12px;
   background: #fff;
 }
 
@@ -487,59 +578,102 @@ input {
 
 .temperature-mini-foot b {
   min-width: max-content;
-  color: var(--green);
+  color: var(--navy);
   font-size: 12px;
   line-height: 1.35;
 }
 
-.temperature-purple .temperature-mini-bar span {
-  background: #7b46c5;
+.temperature-source {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.35;
 }
 
-.temperature-green .temperature-mini-bar span {
-  background: var(--green);
+.temperature-tone-extreme-fear .temperature-mini-bar span,
+.environment-color-key .key-extreme-fear {
+  background: #d62433;
 }
 
-.temperature-tone-calm .temperature-mini-bar span {
-  background: #007a35;
+.temperature-tone-fear .temperature-mini-bar span,
+.environment-color-key .key-fear {
+  background: #f47a24;
 }
 
-.temperature-tone-watch .temperature-mini-bar span,
-.temperature-tone-neutral .temperature-mini-bar span {
-  background: #c79a00;
+.temperature-tone-neutral .temperature-mini-bar span,
+.environment-color-key .key-neutral {
+  background: #f2c94c;
 }
 
-.temperature-tone-caution .temperature-mini-bar span {
-  background: #e17900;
+.temperature-tone-greed .temperature-mini-bar span,
+.environment-color-key .key-greed {
+  background: #7ac943;
 }
 
-.temperature-tone-danger .temperature-mini-bar span {
-  background: #d21e1e;
+.temperature-tone-extreme-greed .temperature-mini-bar span,
+.environment-color-key .key-extreme-greed {
+  background: #15803d;
 }
 
-.temperature-tone-greed .temperature-mini-bar span {
-  background: #2d9f2f;
+.environment-color-key .key-extreme-fear,
+.environment-color-key .key-fear,
+.environment-color-key .key-extreme-greed {
+  color: #fff;
 }
 
-.temperature-tone-calm .temperature-mini-foot b {
-  color: #007a35;
+.environment-color-key .key-neutral,
+.environment-color-key .key-greed {
+  color: #13233e;
 }
 
-.temperature-tone-watch .temperature-mini-foot b,
+.environment-verdict.tone-extreme-fear {
+  border-left-color: #d62433;
+  background: #fff2f3;
+}
+
+.environment-verdict.tone-fear {
+  border-left-color: #f47a24;
+  background: #fff6ed;
+}
+
+.environment-verdict.tone-neutral {
+  border-left-color: #e0b625;
+  background: #fffbed;
+}
+
+.environment-verdict.tone-greed {
+  border-left-color: #7ac943;
+  background: #f5ffed;
+}
+
+.environment-verdict.tone-extreme-greed {
+  border-left-color: #15803d;
+  background: #effbf3;
+}
+
+.environment-verdict.tone-unknown {
+  border-left-color: #8e9bb0;
+}
+
+.temperature-tone-extreme-fear .temperature-mini-foot b {
+  color: #b71927;
+}
+
+.temperature-tone-fear .temperature-mini-foot b {
+  color: #b94700;
+}
+
 .temperature-tone-neutral .temperature-mini-foot b {
-  color: #8a6b00;
-}
-
-.temperature-tone-caution .temperature-mini-foot b {
-  color: #a15300;
-}
-
-.temperature-tone-danger .temperature-mini-foot b {
-  color: #c41414;
+  color: #7d6500;
 }
 
 .temperature-tone-greed .temperature-mini-foot b {
-  color: #136d18;
+  color: #477d16;
+}
+
+.temperature-tone-extreme-greed .temperature-mini-foot b {
+  color: #0d6b30;
 }
 
 .temperature-mini-loading {
@@ -551,7 +685,7 @@ input {
 
 .temperature-card-ranges {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 4px;
   margin-top: 8px;
   padding-top: 8px;
@@ -566,8 +700,8 @@ input {
   gap: 4px;
   border: 1px solid transparent;
   border-radius: 5px;
-  padding: 4px 5px;
-  font-size: 10px;
+  padding: 4px 3px;
+  font-size: 9px;
   font-weight: 900;
   line-height: 1.15;
 }
@@ -577,35 +711,91 @@ input {
   white-space: nowrap;
 }
 
-.range-calm {
-  border-color: #99d6b2;
-  background: #ecfff4;
-  color: #007a35;
+.range-extreme-fear {
+  border-color: #d62433;
+  background: #d62433;
+  color: #fff;
 }
 
-.range-watch,
+.range-fear {
+  border-color: #e26313;
+  background: #f47a24;
+  color: #fff;
+}
+
 .range-neutral {
-  border-color: #ead984;
-  background: #fffbe2;
-  color: #8a6b00;
-}
-
-.range-caution {
-  border-color: #ffc982;
-  background: #fff4df;
-  color: #a15300;
-}
-
-.range-danger {
-  border-color: #ffaaaa;
-  background: #fff0f0;
-  color: #c41414;
+  border-color: #d8ae1d;
+  background: #f2c94c;
+  color: #4f4100;
 }
 
 .range-greed {
-  border-color: #74c47b;
-  background: #eaffeb;
-  color: #136d18;
+  border-color: #65ad31;
+  background: #7ac943;
+  color: #183b05;
+}
+
+.range-extreme-greed {
+  border-color: #116b35;
+  background: #15803d;
+  color: #fff;
+}
+
+.breadth-status {
+  align-self: flex-start;
+  border-radius: 4px;
+  padding: 4px 7px;
+  background: var(--soft-blue);
+  color: var(--navy);
+  font-size: 11px;
+}
+
+.breadth-values {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 12px 0 8px;
+}
+
+.breadth-values span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 850;
+  text-align: center;
+}
+
+.breadth-values b {
+  display: block;
+  color: var(--navy);
+  font-size: 17px;
+}
+
+.breadth-bar {
+  display: flex;
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #edf2f8;
+}
+
+.breadth-up {
+  background: #15803d;
+}
+
+.breadth-flat {
+  background: #f2c94c;
+}
+
+.breadth-down {
+  background: #d62433;
+}
+
+.breadth-missing {
+  min-height: 38px;
+  margin: 12px 0 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .left-stack,
@@ -1189,6 +1379,20 @@ td:last-child {
   }
 }
 
+@media (max-width: 1320px) {
+  .temperature-mini-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .environment-summary-grid {
+    grid-template-columns: 1.2fr 1fr;
+  }
+
+  .environment-summary-grid > :last-child {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 980px) {
   .top-header {
     padding: 12px 12px 8px;
@@ -1215,10 +1419,24 @@ td:last-child {
 
   .market-card-grid,
   .dashboard-grid,
+  .environment-summary-grid,
   .temperature-mini-grid,
   .market-lens-grid,
   .scenario-grid {
     grid-template-columns: 1fr;
+  }
+
+  .environment-summary-grid > :last-child {
+    grid-column: auto;
+  }
+
+  .market-environment-section .section-title-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .environment-color-key {
+    justify-content: flex-start;
   }
 
   .market-card,

@@ -7,7 +7,7 @@
 - ダッシュボード画面は `data/dashboard.json` を読み、`assets/js/top-dashboard.js` が6市場カードと市場温度カードを描画している。
 - `data/dashboard.json` は主に `reports.json` とGoogle Sheetsの終値一覧から作られている。
 - そのため、マーケットレポート本文や終値一覧に値がない項目は、画面でも「取得不能」になりやすい。
-- 既存の `data/market-temperature.json` と `data/rates-bonds.json` はページ構造用の初期JSONであり、実データ連携済みではない。
+- 独立した市場温度ページと `data/market-temperature.json` は廃止した。市場心理の要点は検証済み共通市場データを参照してダッシュボードへ表示する。`data/rates-bonds.json` は金利・債券市場ページの構造用初期JSONである。
 - 既存の `data/usdjpy-volume.json` は日銀外国為替市況とUSD/JPY日足OHLCを持っており、今回の市場カード基盤とは別の専門ページデータとして扱う。
 
 ## 今回追加する層

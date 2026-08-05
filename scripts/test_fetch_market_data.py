@@ -1,9 +1,33 @@
 import unittest
+from unittest import mock
 
 import scripts.fetch_market_data as market_data
 
 
 class FetchMarketDataValidationTests(unittest.TestCase):
+    def test_coinmarketcap_crypto_fear_greed_keeps_previous_daily_value(self):
+        source = {
+            "id": "cmc",
+            "name": "CoinMarketCap Crypto Fear and Greed Index",
+            "url": "https://example.test/fear-greed",
+            "sourceUrl": "https://coinmarketcap.com/charts/fear-and-greed-index/",
+            "marketType": "crypto_sentiment",
+            "session": "daily",
+        }
+        response = """{
+          "status": {"error_code": 0},
+          "data": [
+            {"timestamp": "1785888000", "value": 74, "value_classification": "Greed"},
+            {"timestamp": "1785801600", "value": 68, "value_classification": "Greed"}
+          ]
+        }"""
+        with mock.patch.object(market_data, "http_text", return_value=response):
+            result = market_data.fetch_coinmarketcap_fear_greed(source)
+        self.assertEqual(result["value"], 74)
+        self.assertEqual(result["previousClose"], 68)
+        self.assertEqual(result["classification"], "Greed")
+        self.assertEqual(result["marketType"], "crypto_sentiment")
+
     def test_implausible_previous_close_is_removed(self):
         candidate = {
             "value": 157.8,

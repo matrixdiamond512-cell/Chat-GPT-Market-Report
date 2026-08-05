@@ -350,6 +350,51 @@ def fetch_cnn_fear_greed(source: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+def fetch_coinmarketcap_fear_greed(source: dict[str, Any]) -> dict[str, Any]:
+    text = http_text(
+        source["url"],
+        headers={"Accept": "application/json", "Referer": "https://coinmarketcap.com/"},
+    )
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise FetchError("PARSE_ERROR", "CoinMarketCap response was not JSON") from exc
+
+    status = payload.get("status") or {}
+    if safe_float(status.get("error_code")) not in (None, 0):
+        raise FetchError(
+            "SOURCE_ERROR",
+            f"CoinMarketCap error {status.get('error_code')}: {status.get('error_message') or ''}",
+        )
+
+    rows = payload.get("data") or []
+    if isinstance(rows, dict):
+        rows = [rows]
+    rows = sorted(
+        [row for row in rows if isinstance(row, dict)],
+        key=lambda row: safe_float(row.get("timestamp")) or 0,
+        reverse=True,
+    )
+    if not rows:
+        raise FetchError("PARSE_ERROR", "CoinMarketCap returned no Fear and Greed rows")
+
+    latest = rows[0]
+    previous = rows[1] if len(rows) > 1 else {}
+    value = safe_float(latest.get("value"))
+    if value is None:
+        raise FetchError("PARSE_ERROR", "CoinMarketCap Fear and Greed value was not numeric")
+    timestamp = latest.get("timestamp") or latest.get("update_time")
+    as_of = parse_epoch(timestamp) if timestamp else iso()
+    return candidate(
+        source,
+        value,
+        previous_close=safe_float(previous.get("value")),
+        as_of=as_of,
+        raw_reference="v3/fear-and-greed/historical data[0]",
+        classification=str(latest.get("value_classification") or ""),
+    )
+
+
 def fetch_nikkei_profile(source: dict[str, Any]) -> dict[str, Any]:
     html_text = http_text(source["url"])
     text = strip_tags(html_text)
@@ -469,6 +514,7 @@ FETCHERS = {
     "stooq_quote": fetch_stooq_quote,
     "cboe_history_csv": fetch_cboe_history_csv,
     "cnn_fear_greed": fetch_cnn_fear_greed,
+    "coinmarketcap_fear_greed": fetch_coinmarketcap_fear_greed,
     "nikkei_profile": fetch_nikkei_profile,
     "jpx_html": fetch_jpx_html,
 }

@@ -33,7 +33,7 @@ GitHub Actions の `update-market-data.yml` が市場データを取得・検証
 
 認証情報がない場合も、同じActionsが次のCSVを生成します。
 
-- `data/market/chatgpt_input.csv`: 最新の9項目
+- `data/market/chatgpt_input.csv`: 最新の10項目（暗号資産のFear & Greedを含む）
 - `data/market/verified_history.csv`: 検証済み履歴
 
 Google Sheetsの2シートはこのCSVを `IMPORTDATA` で読み込めます。サービスアカウント方式は即時同期、CSV方式は認証不要の予備経路です。

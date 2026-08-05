@@ -276,6 +276,27 @@
           "note": "CNN sentiment index data endpoint used only when accessible. If unavailable, keep previous verified value."
         }
       ]
+    },
+    "crypto_fear_greed": {
+      "displayName": "Crypto Fear & Greed",
+      "dashboardKey": "crypto_fear_greed",
+      "unit": "score",
+      "marketType": "crypto_sentiment",
+      "session": "daily",
+      "required": false,
+      "sources": [
+        {
+          "id": "coinmarketcap_crypto_fear_greed",
+          "name": "CoinMarketCap Crypto Fear and Greed Index",
+          "kind": "coinmarketcap_fear_greed",
+          "url": "https://pro-api.coinmarketcap.com/public-api/v3/fear-and-greed/historical?start=1&limit=2",
+          "sourceUrl": "https://coinmarketcap.com/ja/charts/fear-and-greed-index/",
+          "priority": 1,
+          "marketType": "crypto_sentiment",
+          "session": "daily",
+          "note": "CoinMarketCapのキーレス公式API。株式Fear & Greedとは別IDで管理する。"
+        }
+      ]
     }
   }
 }

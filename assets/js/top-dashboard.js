@@ -76,6 +76,7 @@ let selectedReport = null;
 let dashboardMeta = null;
 let dashboardCalendarEvents = [];
 let dashboardCalendarMeta = null;
+let stockAnalysisData = null;
 
 const $ = (id) => document.getElementById(id);
 
@@ -239,17 +240,12 @@ const TEMPERATURE_MINI_DEFINITIONS = [
     subtitle: "恐怖指数（米国・S&P500）",
     accent: "blue",
     max: 50,
-    thresholds: [
-      [15, "正常圏（落ち着き）"],
-      [25, "警戒圏"],
-      [35, "注意圏"],
-      [Infinity, "危険圏"]
-    ],
     ranges: [
-      { range: "0-15", label: "正常", tone: "calm" },
-      { range: "15-25", label: "警戒", tone: "watch" },
-      { range: "25-35", label: "注意", tone: "caution" },
-      { range: "35-", label: "危険", tone: "danger" }
+      { range: "0-15", label: "安定", tone: "extreme-greed" },
+      { range: "15-20", label: "落ち着き", tone: "greed" },
+      { range: "20-25", label: "注意", tone: "neutral" },
+      { range: "25-35", label: "警戒", tone: "fear" },
+      { range: "35-", label: "強い警戒", tone: "extreme-fear" }
     ],
     patterns: [/VIX(?:指数)?[：:\s]+(取得不能[^。\n]*|[0-9,.]+)/i]
   },
@@ -258,42 +254,45 @@ const TEMPERATURE_MINI_DEFINITIONS = [
     label: "日経VI",
     subtitle: "恐怖指数（日経225）",
     accent: "purple",
-    max: 50,
-    thresholds: [
-      [15, "正常圏（落ち着き）"],
-      [25, "警戒圏"],
-      [35, "注意圏"],
-      [Infinity, "危険圏"]
-    ],
+    max: 60,
     ranges: [
-      { range: "0-15", label: "正常", tone: "calm" },
-      { range: "15-25", label: "警戒", tone: "watch" },
-      { range: "25-35", label: "注意", tone: "caution" },
-      { range: "35-", label: "危険", tone: "danger" }
+      { range: "0-15", label: "安定", tone: "extreme-greed" },
+      { range: "15-20", label: "落ち着き", tone: "greed" },
+      { range: "20-25", label: "注意", tone: "neutral" },
+      { range: "25-35", label: "警戒", tone: "fear" },
+      { range: "35-", label: "強い警戒", tone: "extreme-fear" }
     ],
     patterns: [/日経VI[：:\s]+(取得不能[^。\n]*|[0-9,.]+)/]
   },
   {
     id: "sentiment.cnn_fear_greed",
-    label: "Fear & Greed",
+    label: "Fear & Greed（株式）",
     subtitle: "市場心理指数（CNN）",
     accent: "green",
     max: 100,
-    thresholds: [
-      [24, "EXTREME FEAR"],
-      [49, "FEAR"],
-      [50, "NEUTRAL"],
-      [74, "GREED"],
-      [Infinity, "EXTREME GREED"]
-    ],
     ranges: [
-      { range: "0-24", label: "E.FEAR", tone: "danger" },
-      { range: "25-49", label: "FEAR", tone: "caution" },
-      { range: "50", label: "NEUTRAL", tone: "neutral" },
-      { range: "51-74", label: "GREED", tone: "calm" },
-      { range: "75-", label: "E.GREED", tone: "greed" }
+      { range: "0-24", label: "E.FEAR", tone: "extreme-fear" },
+      { range: "25-44", label: "FEAR", tone: "fear" },
+      { range: "45-55", label: "NEUTRAL", tone: "neutral" },
+      { range: "56-74", label: "GREED", tone: "greed" },
+      { range: "75-", label: "E.GREED", tone: "extreme-greed" }
     ],
     patterns: [/Fear\s*&\s*Greed(?:\s*Index)?[：:\s]+(取得不能[^。\n]*|[0-9,.]+)/i]
+  },
+  {
+    id: "sentiment.crypto_fear_greed",
+    label: "Crypto Fear & Greed",
+    subtitle: "暗号資産心理（CoinMarketCap）",
+    accent: "crypto",
+    max: 100,
+    ranges: [
+      { range: "0-24", label: "E.FEAR", tone: "extreme-fear" },
+      { range: "25-44", label: "FEAR", tone: "fear" },
+      { range: "45-55", label: "NEUTRAL", tone: "neutral" },
+      { range: "56-74", label: "GREED", tone: "greed" },
+      { range: "75-", label: "E.GREED", tone: "extreme-greed" }
+    ],
+    patterns: [/Crypto\s+Fear\s*&\s*Greed[：:\s]+(取得不能[^。\n]*|[0-9,.]+)/i]
   }
 ];
 
@@ -495,19 +494,24 @@ function breakConditionsFromReport(report, max = 180) {
 }
 
 function temperatureValueFromReport(report, definition) {
-  const marketDataKey = definition.id === "market.vix"
-    ? "vix"
-    : definition.id === "market.nikkei_vi"
-      ? "nikkei_vi"
-      : "fear_greed";
+  const marketDataKey = {
+    "market.vix": "vix",
+    "market.nikkei_vi": "nikkei_vi",
+    "sentiment.cnn_fear_greed": "fear_greed",
+    "sentiment.crypto_fear_greed": "crypto_fear_greed"
+  }[definition.id];
   const item = marketDataFor(report, { key: marketDataKey, dataKey: marketDataKey });
   if (item) {
     const value = finiteNumber(item.value);
     if (value !== null) {
+      const { change } = marketDataChange(item);
       return {
         value,
         label: temperatureBandLabel(value, definition) || item.classification || "",
-        note: marketDataStatusText(item)
+        note: marketDataStatusText(item),
+        change,
+        asOf: item.asOf || item.lastVerifiedAt || "",
+        sourceName: item.sourceName || item.sourceId || ""
       };
     }
     return {
@@ -537,17 +541,18 @@ function temperatureBandLabel(value, definition) {
 
 function temperatureBand(value, definition) {
   if (!Number.isFinite(value)) return { label: "判定保留", tone: "unknown" };
-  if (definition.id === "sentiment.cnn_fear_greed") {
-    if (value <= 24) return { label: "EXTREME FEAR", tone: "danger" };
-    if (value <= 49) return { label: "FEAR", tone: "caution" };
-    if (value <= 50) return { label: "NEUTRAL", tone: "neutral" };
-    if (value <= 74) return { label: "GREED", tone: "calm" };
-    return { label: "EXTREME GREED", tone: "greed" };
+  if (definition.id === "sentiment.cnn_fear_greed" || definition.id === "sentiment.crypto_fear_greed") {
+    if (value <= 24) return { label: "EXTREME FEAR", tone: "extreme-fear" };
+    if (value <= 44) return { label: "FEAR", tone: "fear" };
+    if (value <= 55) return { label: "NEUTRAL", tone: "neutral" };
+    if (value <= 74) return { label: "GREED", tone: "greed" };
+    return { label: "EXTREME GREED", tone: "extreme-greed" };
   }
-  if (value <= 15) return { label: "正常圏（落ち着き）", tone: "calm" };
-  if (value <= 25) return { label: "警戒圏", tone: "watch" };
-  if (value <= 35) return { label: "注意圏", tone: "caution" };
-  return { label: "危険圏", tone: "danger" };
+  if (value <= 15) return { label: "安定", tone: "extreme-greed" };
+  if (value <= 20) return { label: "落ち着き", tone: "greed" };
+  if (value <= 25) return { label: "注意", tone: "neutral" };
+  if (value <= 35) return { label: "警戒", tone: "fear" };
+  return { label: "強い警戒", tone: "extreme-fear" };
 }
 
 function temperatureTone(value, definition) {
@@ -559,11 +564,165 @@ function temperaturePercent(value, definition) {
   return Math.max(0, Math.min(100, (value / definition.max) * 100));
 }
 
+function parseDateOnly(value = "") {
+  const match = String(value).match(/(\d{4})[-/]?(\d{2})[-/]?(\d{2})/);
+  if (!match) return null;
+  const date = new Date(`${match[1]}-${match[2]}-${match[3]}T00:00:00+09:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function stockBreadthFor(region, report) {
+  const rows = asArray(stockAnalysisData?.marketInternals?.[region]?.rows);
+  const row = rows.find((item) => /値上がり.*値下がり|上昇銘柄.*下落銘柄/.test(String(item?.[0] || "")));
+  const dataDate = parseDateOnly(stockAnalysisData?.dataAsOf || stockAnalysisData?.updatedAt);
+  const reportDate = parseDateOnly(report?.date);
+  const ageDays = dataDate && reportDate ? Math.abs(reportDate - dataDate) / 86400000 : Infinity;
+  if (!row || ageDays > 4) {
+    return {
+      status: "unavailable",
+      reason: row && dataDate
+        ? `株式市場分析の基準日 ${dateToJp(dataDate.toISOString().slice(0, 10))} は表示日と一致しません`
+        : "株式市場分析の騰落データが未連携です"
+    };
+  }
+  const numbers = String(row[1] || "").match(/[\d,]+/g)?.map((value) => Number(value.replace(/,/g, ""))) || [];
+  const advancers = numbers[0];
+  const decliners = numbers[1];
+  const unchanged = numbers[2] ?? null;
+  if (!Number.isFinite(advancers) || !Number.isFinite(decliners)) {
+    return { status: "unavailable", reason: "値上がり・値下がり銘柄数を確認できません" };
+  }
+  const total = advancers + decliners + (unchanged || 0);
+  return {
+    status: "available",
+    advancers,
+    decliners,
+    unchanged,
+    total,
+    ratio: decliners > 0 ? advancers / decliners : null,
+    asOf: dataDate?.toISOString().slice(0, 10) || "",
+    source: stockAnalysisData?.sourceStatus || "株式市場分析"
+  };
+}
+
+function breadthTone(data) {
+  if (data.status !== "available" || !Number.isFinite(data.ratio)) return "unknown";
+  if (data.ratio >= 2) return "extreme-greed";
+  if (data.ratio >= 1.25) return "greed";
+  if (data.ratio >= 0.8) return "neutral";
+  if (data.ratio >= 0.5) return "fear";
+  return "extreme-fear";
+}
+
+function breadthLabel(data) {
+  const tone = breadthTone(data);
+  return {
+    "extreme-greed": "値上がりが広く優勢",
+    greed: "値上がり優勢",
+    neutral: "拮抗",
+    fear: "値下がり優勢",
+    "extreme-fear": "値下がりが広く優勢",
+    unknown: "判定保留"
+  }[tone];
+}
+
+function renderBreadthCard(region, report) {
+  const data = stockBreadthFor(region, report);
+  const isUs = region === "us";
+  const title = isUs ? "アメリカ株の広がり" : "日本株の広がり";
+  const detail = isUs ? "NYSE・NASDAQ等の市場内部" : "東証プライムの市場内部";
+  if (data.status !== "available") {
+    return `<article class="temperature-mini-card breadth-card temperature-tone-unknown">
+      <div class="temperature-mini-head"><div><h3>${title}</h3><p>${detail}</p></div><strong>未取得</strong></div>
+      <p class="breadth-missing">${esc(data.reason)}</p>
+      <p class="temperature-source">株式市場分析ページの検証済みデータを参照</p>
+    </article>`;
+  }
+  const tone = breadthTone(data);
+  const unchanged = Number.isFinite(data.unchanged) ? data.unchanged.toLocaleString("ja-JP") : "－";
+  const advPct = data.total ? (data.advancers / data.total) * 100 : 0;
+  const flatPct = data.total && Number.isFinite(data.unchanged) ? (data.unchanged / data.total) * 100 : 0;
+  const decPct = Math.max(0, 100 - advPct - flatPct);
+  return `<article class="temperature-mini-card breadth-card temperature-tone-${tone}">
+    <div class="temperature-mini-head">
+      <div><h3>${title}</h3><p>${detail}</p></div><b class="breadth-status">${breadthLabel(data)}</b>
+    </div>
+    <div class="breadth-values">
+      <span><b>${data.advancers.toLocaleString("ja-JP")}</b>値上がり</span>
+      <span><b>${unchanged}</b>変わらず</span>
+      <span><b>${data.decliners.toLocaleString("ja-JP")}</b>値下がり</span>
+    </div>
+    <div class="breadth-bar" aria-label="値上がり ${advPct.toFixed(0)}%、変わらず ${flatPct.toFixed(0)}%、値下がり ${decPct.toFixed(0)}%">
+      <span class="breadth-up" style="width:${advPct}%"></span>
+      <span class="breadth-flat" style="width:${flatPct}%"></span>
+      <span class="breadth-down" style="width:${decPct}%"></span>
+    </div>
+    <div class="temperature-mini-foot"><b>騰落比 ${Number.isFinite(data.ratio) ? data.ratio.toFixed(2) : "－"}倍</b><span>基準 ${esc(dateToJp(data.asOf))}</span></div>
+    <p class="temperature-source">${esc(data.source)}｜詳細は株式市場分析</p>
+  </article>`;
+}
+
+function environmentVerdict(metrics, report) {
+  const values = Object.fromEntries(metrics.map(({ definition, metric }) => [definition.id, metric.value]));
+  const usable = Object.values(values).filter(Number.isFinite).length;
+  if (usable < 3) {
+    return {
+      label: "判定保留",
+      tone: "unknown",
+      reason: `必須データ4項目中${usable}項目取得。欠損を推測で補いません。`
+    };
+  }
+  let riskOn = 0;
+  let riskOff = 0;
+  if (Number.isFinite(values["market.vix"])) {
+    if (values["market.vix"] <= 20) riskOn++;
+    if (values["market.vix"] >= 25) riskOff++;
+  }
+  if (Number.isFinite(values["market.nikkei_vi"])) {
+    if (values["market.nikkei_vi"] <= 20) riskOn++;
+    if (values["market.nikkei_vi"] >= 25) riskOff++;
+  }
+  for (const id of ["sentiment.cnn_fear_greed", "sentiment.crypto_fear_greed"]) {
+    if (!Number.isFinite(values[id])) continue;
+    if (values[id] >= 56) riskOn++;
+    if (values[id] <= 44) riskOff++;
+  }
+  if (riskOff >= 3) return { label: "リスクオフ", tone: "extreme-fear", reason: "複数の心理・ボラティリティ指標が警戒方向で一致しています。" };
+  if (riskOff >= 2) return { label: "警戒", tone: "fear", reason: "複数指標に警戒が見られます。専門ページの根拠を確認してください。" };
+  if (riskOn >= 3) return { label: "ややリスクオン", tone: "greed", reason: "株式・暗号資産の心理とボラティリティはおおむね良好です。" };
+  return { label: "中立", tone: "neutral", reason: "指標の方向が分かれており、一方向の判断は避けます。" };
+}
+
+function renderEnvironmentSummary(report, metrics) {
+  const container = $("environmentSummary");
+  if (!container) return;
+  const verdict = environmentVerdict(metrics, report);
+  const available = metrics.filter(({ metric }) => Number.isFinite(metric.value));
+  const views = available.slice(0, 3).map(({ definition, metric }) => `${definition.label}は${metric.label}`);
+  const crypto = metrics.find(({ definition }) => definition.id === "sentiment.crypto_fear_greed")?.metric;
+  if (Number.isFinite(crypto?.value) && (crypto.value <= 24 || crypto.value >= 75)) {
+    views.push(`暗号資産心理は${crypto.value >= 75 ? "過熱" : "強い恐怖"}に注意`);
+  }
+  const conditions = [
+    "VIXまたは日経VIが次の警戒帯へ移る",
+    "株式の値上がり・値下がり優勢が反転する",
+    "Crypto Fear & Greedが極端な恐怖・強欲へ入る"
+  ];
+  container.innerHTML = `<article class="environment-verdict tone-${verdict.tone}">
+      <span>総合判定</span><strong>${esc(verdict.label)}</strong><p>${esc(verdict.reason)}</p>
+    </article>
+    <article class="environment-note"><h3>今日の見方</h3><ul>${(views.length ? views : ["取得済み指標が不足しています"]).map((item) => `<li>${esc(item)}</li>`).join("")}</ul></article>
+    <article class="environment-note"><h3>判定が変わる条件</h3><ul>${conditions.map((item) => `<li>${esc(item)}</li>`).join("")}</ul></article>`;
+}
+
 function renderTemperatureMini(report) {
   const container = $("temperatureMiniCards");
   if (!container) return;
-  container.innerHTML = TEMPERATURE_MINI_DEFINITIONS.map((definition) => {
-    const metric = temperatureValueFromReport(report, definition);
+  const metrics = TEMPERATURE_MINI_DEFINITIONS.map((definition) => ({
+    definition,
+    metric: temperatureValueFromReport(report, definition)
+  }));
+  const cards = metrics.map(({ definition, metric }) => {
     const pct = temperaturePercent(metric.value, definition);
     const tone = temperatureTone(metric.value, definition);
     const valueText = Number.isFinite(metric.value)
@@ -575,6 +734,10 @@ function renderTemperatureMini(report) {
     const rangeItems = definition.ranges.map((item) => `<span class="temperature-range-chip range-${item.tone}">
       <b>${esc(item.range)}</b>${esc(item.label)}
     </span>`).join("");
+    const changeText = Number.isFinite(metric.change)
+      ? `前日から${metric.change > 0 ? "+" : ""}${metric.change.toLocaleString("ja-JP", { maximumFractionDigits: 1 })}`
+      : "前日変化：取得不能";
+    const basisText = metric.asOf ? `基準 ${shortDateTime(metric.asOf)}` : "基準日時：取得不能";
     return `<article class="temperature-mini-card temperature-${definition.accent} temperature-tone-${tone}" title="${esc(title)}">
       <div class="temperature-mini-head">
         <div>
@@ -588,13 +751,17 @@ function renderTemperatureMini(report) {
       </div>
       <div class="temperature-mini-foot">
         <b>${esc(metric.label)}</b>
-        <span>${esc(metric.note || `${dateToJp(report.date)} ${report.time}`)}</span>
+        <span>${esc(changeText)}</span>
       </div>
+      <p class="temperature-source">${esc(basisText)}｜${esc(metric.note || "取得元未確認")}</p>
       <div class="temperature-card-ranges" aria-label="${esc(definition.label)}の判定レンジ">
         ${rangeItems}
       </div>
     </article>`;
-  }).join("");
+  });
+  const breadthCards = [renderBreadthCard("us", report), renderBreadthCard("japan", report)];
+  container.innerHTML = [...cards, ...breadthCards].join("");
+  renderEnvironmentSummary(report, metrics);
 }
 
 function sourceLines(report) {
@@ -1854,6 +2021,7 @@ async function init() {
     const calendar = await loadDashboardEventCalendar();
     dashboardCalendarMeta = calendar;
     dashboardCalendarEvents = asArray(calendar.events).map(normalizeCalendarEvent).filter(Boolean);
+    stockAnalysisData = await loadStockAnalysisData();
 
     if (!reports.length) throw new Error("表示できるレポートがありません");
 
@@ -1942,6 +2110,17 @@ async function loadIndependentMarketData() {
     if (!payload || typeof payload !== "object" || payload.overallStatus === "blocked") return null;
     if (!payload.markets || typeof payload.markets !== "object") return null;
     return payload;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function loadStockAnalysisData() {
+  try {
+    const response = await fetch(`data/stocks.json?ts=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) return null;
+    const payload = await response.json();
+    return payload && typeof payload === "object" ? payload : null;
   } catch (error) {
     return null;
   }
