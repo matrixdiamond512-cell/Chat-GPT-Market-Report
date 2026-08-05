@@ -63,16 +63,13 @@ function installVerifiedMarketDataAutoSync() {
     .create();
 
   var result = syncVerifiedMarketDataIfChanged(true);
-  SpreadsheetApp.getUi().alert(
-    '市場データの自動追随を設定しました。\n' +
-    '5分ごとに更新時刻だけを確認し、GitHubのデータが変わった時だけシートを更新します。'
-  );
+  console.log('Verified market data auto sync is enabled.');
   return result;
 }
 
 function uninstallVerifiedMarketDataAutoSync() {
   var deleted = removeVerifiedMarketDataAutoSyncTriggers_();
-  SpreadsheetApp.getUi().alert('削除した自動追随トリガー: ' + deleted);
+  console.log('Deleted auto-sync triggers: ' + deleted);
   return deleted;
 }
 
@@ -87,7 +84,7 @@ function showVerifiedMarketDataAutoSyncStatus() {
       (properties.getProperty(VMD_SYNC_CONFIG.lastSnapshotProperty) || '未実行') + '\n\n' +
     '最終結果:\n' +
       (properties.getProperty(VMD_SYNC_CONFIG.lastResultProperty) || '実行履歴はありません。');
-  SpreadsheetApp.getUi().alert(message);
+  console.log(message);
   return message;
 }
 

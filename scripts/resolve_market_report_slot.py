@@ -73,8 +73,11 @@ def resolve_slot(
     requested = requested_slot.strip()
     if event_name == "workflow_dispatch" and requested in REPORT_SLOTS:
         return requested
-    if event_name == "schedule" and event_schedule in SCHEDULE_TO_SLOT:
-        return SCHEDULE_TO_SLOT[event_schedule]
+    if event_name == "schedule":
+        # Scheduled GitHub Actions can start much later than their cron time.
+        # Resolve from the actual Japan time so a delayed 15:50 run cannot
+        # overwrite a 21:00 snapshot with the stale 16:00 slot label.
+        return slot_for_time(now or dt.datetime.now(JST))
     if event_name == "push":
         report_slot = latest_report_slot(reports_file)
         if report_slot:

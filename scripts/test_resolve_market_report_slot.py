@@ -9,8 +9,28 @@ from scripts.resolve_market_report_slot import JST, resolve_slot
 
 class ResolveMarketReportSlotTests(unittest.TestCase):
     def test_schedule_maps_to_report_slot(self):
+        now = dt.datetime(2026, 8, 5, 20, 50, tzinfo=JST)
         self.assertEqual(
-            resolve_slot("schedule", "50 11 * * 1-5", "auto", Path("missing")),
+            resolve_slot(
+                "schedule",
+                "50 11 * * 1-5",
+                "auto",
+                Path("missing"),
+                now,
+            ),
+            "21:00",
+        )
+
+    def test_delayed_schedule_uses_actual_japan_time(self):
+        now = dt.datetime(2026, 8, 5, 22, 13, tzinfo=JST)
+        self.assertEqual(
+            resolve_slot(
+                "schedule",
+                "50 6 * * 1-5",
+                "auto",
+                Path("missing"),
+                now,
+            ),
             "21:00",
         )
 
