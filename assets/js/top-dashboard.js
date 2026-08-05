@@ -460,7 +460,7 @@ function temperatureValueFromReport(report, definition) {
     if (value !== null) {
       return {
         value,
-        label: item.classification || temperatureBandLabel(value, definition),
+        label: temperatureBandLabel(value, definition) || item.classification || "",
         note: marketDataStatusText(item)
       };
     }
@@ -486,8 +486,26 @@ function temperatureValueFromReport(report, definition) {
 }
 
 function temperatureBandLabel(value, definition) {
-  const found = definition.thresholds.find(([limit]) => value <= limit);
-  return found ? found[1] : "判定保留";
+  return temperatureBand(value, definition).label;
+}
+
+function temperatureBand(value, definition) {
+  if (!Number.isFinite(value)) return { label: "判定保留", tone: "unknown" };
+  if (definition.id === "sentiment.cnn_fear_greed") {
+    if (value <= 24) return { label: "EXTREME FEAR", tone: "danger" };
+    if (value <= 49) return { label: "FEAR", tone: "caution" };
+    if (value <= 50) return { label: "NEUTRAL", tone: "neutral" };
+    if (value <= 74) return { label: "GREED", tone: "calm" };
+    return { label: "EXTREME GREED", tone: "greed" };
+  }
+  if (value <= 15) return { label: "正常圏（落ち着き）", tone: "calm" };
+  if (value <= 25) return { label: "警戒圏", tone: "watch" };
+  if (value <= 35) return { label: "注意圏", tone: "caution" };
+  return { label: "危険圏", tone: "danger" };
+}
+
+function temperatureTone(value, definition) {
+  return temperatureBand(value, definition).tone;
 }
 
 function temperaturePercent(value, definition) {
@@ -501,6 +519,7 @@ function renderTemperatureMini(report) {
   container.innerHTML = TEMPERATURE_MINI_DEFINITIONS.map((definition) => {
     const metric = temperatureValueFromReport(report, definition);
     const pct = temperaturePercent(metric.value, definition);
+    const tone = temperatureTone(metric.value, definition);
     const valueText = Number.isFinite(metric.value)
       ? metric.value.toLocaleString("ja-JP", { maximumFractionDigits: metric.value >= 10 ? 1 : 2 })
       : "未取得";
@@ -510,7 +529,7 @@ function renderTemperatureMini(report) {
     const rangeItems = definition.ranges.map((item) => `<span class="temperature-range-chip range-${item.tone}">
       <b>${esc(item.range)}</b>${esc(item.label)}
     </span>`).join("");
-    return `<article class="temperature-mini-card temperature-${definition.accent}" title="${esc(title)}">
+    return `<article class="temperature-mini-card temperature-${definition.accent} temperature-tone-${tone}" title="${esc(title)}">
       <div class="temperature-mini-head">
         <div>
           <h3>${esc(definition.label)}</h3>
