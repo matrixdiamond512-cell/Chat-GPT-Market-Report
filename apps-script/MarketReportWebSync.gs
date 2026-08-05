@@ -220,7 +220,7 @@ function findLatestMarketReportDoc_() {
 }
 
 function marketReportDocInfoFromName_(fileName) {
-  const match = String(fileName || '').match(/_(\d{4})-(\d{1,2})-(\d{1,2})_(\d{1,2})-(\d{2})$/);
+  const match = String(fileName || '').match(/^マーケットレポート_(\d{4})-(\d{1,2})-(\d{1,2})_(\d{1,2})-(\d{2})$/);
   if (!match) return null;
 
   const date = match[1] + '-' + pad2_(match[2]) + '-' + pad2_(match[3]);
