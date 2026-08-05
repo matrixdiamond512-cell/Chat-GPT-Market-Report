@@ -105,7 +105,7 @@ function cleanText(value = "", max = 120) {
     .replace(/^[・\s]+/, "")
     .trim();
   if (!text) return "";
-  return text.length > max ? `${text.slice(0, max)}...` : text;
+  return Number.isFinite(max) && max > 0 && text.length > max ? `${text.slice(0, max)}...` : text;
 }
 
 function uniq(values) {
@@ -854,7 +854,7 @@ function fallbackNewsItems(report) {
 function handoverSectionLines(fullText = "") {
   const lines = String(fullText || "")
     .split(/\n+/)
-    .map((line) => cleanText(line.replace(/^[・\-\s]+/, ""), 180))
+    .map((line) => cleanText(line.replace(/^[・\-\s]+/, ""), Infinity))
     .filter(Boolean);
   const start = lines.findIndex((line) => /次の時間帯への引き継ぎ|NY時間への引き継ぎ|欧州時間への引き継ぎ|東京時間への引き継ぎ/.test(line));
   if (start < 0) return [];
@@ -869,11 +869,11 @@ function handoverSectionLines(fullText = "") {
     if (found.length >= 5) break;
   }
 
-  return found.flatMap(splitNewsSentences).map((item) => cleanText(item, 88)).filter(Boolean);
+  return found.flatMap(splitNewsSentences).map((item) => cleanText(item, Infinity)).filter(Boolean);
 }
 
 function fallbackHandoverItems(report) {
-  const explicit = topList(report.handover, 3, 88);
+  const explicit = topList(report.handover, 3, Infinity);
   if (explicit.length) return explicit;
 
   const fromFullText = handoverSectionLines(report.fullText);
@@ -893,7 +893,7 @@ function fallbackHandoverItems(report) {
     .flatMap(splitNewsSentences)
     .filter((item) => keyword.test(item));
 
-  return uniq(candidates).slice(0, 3).map((item) => cleanText(item, 88));
+  return uniq(candidates).slice(0, 3).map((item) => cleanText(item, Infinity));
 }
 
 function renderList(id, values, fallback) {
@@ -1735,9 +1735,9 @@ function renderMarketLens(report) {
 }
 
 function conclusionFrom(report) {
-  const lead = cleanText(report.leadingMarket || "", 70);
-  const main = cleanText(report.mainScenario || "", 86);
-  const risk = cleanText(topList(report.riskManagement, 1, 90)[0] || breakConditionsFromReport(report, 110) || "", 86);
+  const lead = cleanText(report.leadingMarket || "", Infinity);
+  const main = cleanText(report.mainScenario || "", Infinity);
+  const risk = cleanText(topList(report.riskManagement, 1, Infinity)[0] || breakConditionsFromReport(report, Infinity) || "", Infinity);
   const parts = [];
   if (lead) parts.push(`主導市場：${lead}`);
   if (main) parts.push(`基本姿勢：${main}`);
@@ -1746,13 +1746,13 @@ function conclusionFrom(report) {
 }
 
 function renderScenarios(report) {
-  renderProseBlock("mainScenario", report.mainScenario, "理由：メインシナリオがJSONにありません", 3, 180);
-  renderProseBlock("alternativeScenario", report.alternativeScenario, "理由：代替シナリオがJSONにありません", 3, 180);
+  renderProseBlock("mainScenario", report.mainScenario, "理由：メインシナリオがJSONにありません", 3, Infinity);
+  renderProseBlock("alternativeScenario", report.alternativeScenario, "理由：代替シナリオがJSONにありません", 3, Infinity);
   const breakText = breakConditionsFromReport(report, 180);
-  renderProseBlock("breakConditions", breakText, "理由：崩れる条件を本文から取得できませんでした", 4, 180);
+  renderProseBlock("breakConditions", breakText, "理由：崩れる条件を本文から取得できませんでした", 4, Infinity);
   $("breakConditions").classList.toggle("missing", !breakText);
   renderList("handoverList", fallbackHandoverItems(report), "理由：引き継ぎ項目がJSONにありません");
-  renderProseBlock("conclusionText", conclusionFrom(report), "理由：結論に必要な項目がJSONにありません", 4, 180);
+  renderProseBlock("conclusionText", conclusionFrom(report), "理由：結論に必要な項目がJSONにありません", 4, Infinity);
 }
 
 function renderFootnote(report) {
