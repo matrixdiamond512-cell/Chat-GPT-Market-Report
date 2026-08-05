@@ -1050,12 +1050,17 @@ function renderProseBlock(id, value, fallback, limit = 4, max = 180) {
 function splitNewsSentences(value = "") {
   return cleanText(value, 1200)
     .split(/。|\n|(?=\d{1,2}:\d{2}\s)/)
-    .map((item) => cleanText(item.replace(/^[・\-\s]+/, ""), 120))
+    .map((item) => cleanText(item.replace(/^[・\-\s]+/, ""), Infinity))
     .filter((item) => item.length >= 10);
 }
 
 function fallbackNewsItems(report) {
-  const explicit = topList(report.news, 5, 78);
+  const explicit = uniq(
+    asArray(report.news)
+      .map(textOf)
+      .filter(Boolean)
+      .flatMap(splitNewsSentences)
+  ).slice(0, 5);
   if (explicit.length) return explicit;
 
   const keyword = /原油|WTI|金利|米10年|米2年|日銀|FOMC|FRB|CPI|PCE|ISM|雇用|介入|USD\/JPY|円|ドル|Nasdaq|S&P|日経|BTC|金|中東|イラン|OPEC|決算|AI|PMI|VIX/;
@@ -1074,7 +1079,7 @@ function fallbackNewsItems(report) {
     .flatMap(splitNewsSentences)
     .filter((item) => keyword.test(item));
 
-  return uniq(candidates).slice(0, 5).map((item) => cleanText(item, 78));
+  return uniq(candidates).slice(0, 5).map((item) => cleanText(item, Infinity));
 }
 
 function handoverSectionLines(fullText = "") {
