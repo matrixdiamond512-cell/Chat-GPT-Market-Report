@@ -5,13 +5,18 @@ var MARKET_REPORT_PREPUBLISH_CONFIG = {
     'mainScenario', 'alternativeScenario', 'breakConditions', 'riskManagement'
   ],
   requiredMarketFields: [
-    'name', 'direction', 'price', 'material', 'positioning', 'levels',
+    'name', 'direction'
+  ],
+  recommendedMarketFields: [
+    'price', 'outlook', 'material', 'positioning', 'levels',
     'mainScenario', 'alternativeScenario', 'breakCondition', 'risk'
   ],
   unavailablePatterns: [
     /^取得不能(?:（.*）)?$/,
     /^未取得(?:（.*）)?$/,
     /^本文参照$/,
+    /^個別記載なし$/,
+    /^個別見通し参照$/,
     /^記載なし$/
   ]
 };
@@ -88,6 +93,21 @@ function validateMarketReportBeforePublish_(report, expectedHour) {
         var value = market[field];
         if (marketReportPrePublishIsBlank_(value)) {
           errors.push(name + ': 必須項目が空です: ' + field);
+          return;
+        }
+        if (marketReportPrePublishIsUnavailable_(value)) {
+          warnings.push(name + ': ' + field + ' = ' + String(value));
+        }
+      });
+
+      MARKET_REPORT_PREPUBLISH_CONFIG.recommendedMarketFields.forEach(function(field) {
+        if (!Object.prototype.hasOwnProperty.call(market, field)) {
+          warnings.push(name + ': 推奨項目不足: ' + field);
+          return;
+        }
+        var value = market[field];
+        if (marketReportPrePublishIsBlank_(value)) {
+          warnings.push(name + ': 推奨項目が空です: ' + field);
           return;
         }
         if (marketReportPrePublishIsUnavailable_(value)) {

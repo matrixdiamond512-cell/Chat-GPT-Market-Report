@@ -632,39 +632,92 @@ function parseMetric(report, definition) {
 }
 
 function findOutlookSentence(report, definition) {
+  const market = reportMarket(report, definition);
+  if (isUsableMarketText(market?.outlook, definition)) {
+    return cleanText(market.outlook, 160);
+  }
+
   const text = allText(report);
-  const start = text.indexOf("個別見通し");
+  const sectionLabels = ["6市場の見通し", "個別市場の見通し", "個別市場見通し", "個別見通し"];
+  const starts = sectionLabels.map((label) => text.indexOf(label)).filter((index) => index >= 0);
+  const start = starts.length ? Math.min(...starts) : -1;
   const scoped = start >= 0 ? text.slice(start, start + 1800) : text;
-  const labels = uniq([definition.label, definition.display, definition.key === "oil" ? "WTI原油" : ""]);
+  const aliases = {
+    gold: ["金", "ゴールド", "XAU/USD"],
+    oil: ["WTI", "WTI原油", "原油"],
+    nikkei: ["日経225先物", "日経225先物（大阪取引所）", "日経先物"],
+    usdjpy: ["USD/JPY", "ドル円", "USDJPY"],
+    eurusd: ["EUR/USD", "ユーロドル", "EURUSD"],
+    btc: ["BTCUSD", "BTC/USD", "BTC", "ビットコイン"]
+  }[definition.key] || [];
+  const labels = uniq([definition.label, definition.display, ...aliases]);
 
   for (const label of labels) {
     const index = scoped.indexOf(`${label}：`);
     if (index >= 0) {
       const after = scoped.slice(index + label.length + 1);
-      const nextMarket = after.search(/\s(?:金|WTI原油|日経225先物|USD\/JPY|EUR\/USD|BTCUSD)：/);
+      const nextMarket = after.search(/\s(?:金|ゴールド|WTI|WTI原油|原油|日経225先物|USD\/JPY|ドル円|EUR\/USD|ユーロドル|BTCUSD|BTC)：/);
       const segment = nextMarket >= 0 ? after.slice(0, nextMarket) : after;
       const sentences = segment.split(/。/).map((item) => item.trim()).filter(Boolean).slice(0, 2);
       if (sentences.length) return cleanText(`${sentences.join("。")}。`, 160);
     }
   }
 
-  const market = reportMarket(report, definition);
-  return cleanText(market?.material || market?.direction || "", 140);
+  if (isUsableMarketText(market?.material, definition)) return cleanText(market.material, 140);
+  return cleanText(market?.direction || "", 140);
 }
 
 function marketReason(report, definition, metric) {
   const market = reportMarket(report, definition);
-  const direct = [market?.material, market?.positioning].find((item) => (
-    item &&
-    item !== "本文参照" &&
-    item.length <= 150 &&
-    !/前営業日終値|主要市場データ|Dow：|VIX：|Fear & Greed/.test(item)
+  const direct = [market?.outlook, market?.material, market?.positioning].find((item) => (
+    isUsableMarketText(item, definition) && item.length <= 150
   ));
   if (direct) return cleanText(direct, 150);
   const outlook = findOutlookSentence(report, definition);
   if (outlook) return outlook;
   if (metric.raw && metric.raw.length <= 180) return cleanText(metric.raw.replace(/^.*?：/, ""), 150);
   return cleanText(market?.material || "理由：本文に市場別理由がありません", 150);
+}
+
+function isUsableMarketText(value, definition) {
+  const item = cleanText(value || "", 220);
+  if (!item) return false;
+  if (/^(本文参照|個別記載なし|個別見通し参照|記載なし)$/.test(item)) return false;
+  if (/^対象\s*[：:]/.test(item)) return false;
+  if (/前営業日終値|主要市場データ|Dow：|VIX：|Fear & Greed/.test(item)) return false;
+  const mentioned = mentionedMarketsInDashboardText(item);
+  if (mentioned.length >= 3) return false;
+  if (mentioned.length && !mentioned.includes(definition.key)) return false;
+  return true;
+}
+
+function mentionedMarketsInDashboardText(value) {
+  const text = String(value || "");
+  const groups = {
+    gold: ["金", "ゴールド", "XAU/USD", "XAUUSD"],
+    oil: ["WTI原油", "原油", "WTI", "Brent", "ブレント"],
+    nikkei: ["日経225先物", "日経先物", "日経平均"],
+    usdjpy: ["USD/JPY", "USDJPY", "ドル円"],
+    eurusd: ["EUR/USD", "EURUSD", "ユーロドル"],
+    btc: ["BTCUSD", "BTC/USD", "BTC", "ビットコイン"]
+  };
+  return Object.entries(groups)
+    .filter(([, aliases]) => aliases.some((alias) => dashboardAliasMentioned(text, alias)))
+    .map(([key]) => key);
+}
+
+function dashboardAliasMentioned(value, alias) {
+  if (alias === "金") {
+    let index = value.indexOf("金");
+    while (index >= 0) {
+      const previous = value[index - 1] || "";
+      const next = value[index + 1] || "";
+      if (!/[米資]/.test(previous) && next !== "利") return true;
+      index = value.indexOf("金", index + 1);
+    }
+    return false;
+  }
+  return new RegExp(escapeFlowRegex_(alias), "i").test(value);
 }
 
 function consistencyForMarket(report, definition) {

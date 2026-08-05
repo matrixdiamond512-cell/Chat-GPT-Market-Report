@@ -427,6 +427,7 @@ function isGenericPlaceholderText(valueText){
   if (!compact) return true;
   const normalized = compact.replace(/[：:]/g, ":");
   if (/^対象:/.test(normalized)) return true;
+  if (/^(本文参照|個別記載なし|個別見通し参照|記載なし)$/.test(compact)) return true;
   if (/^取得不能/.test(compact) && /(構造化元本文|記載なし|JSON|取得不可|確認できません|未確認)/.test(compact)) return true;
   if (/(JSONにありません|JSONにない|項目がありません|データなし)/.test(compact)) return true;
   return false;
@@ -659,7 +660,8 @@ function renderMarketList(report){
     <div class="market-list">
       ${list.map((market) => {
         const canonical = marketCanonicalName(market.name || "");
-        const outlook = outlookMap.get(canonical) || "";
+        const structuredOutlook = isGenericPlaceholderText(market.outlook) ? "" : text(market.outlook);
+        const outlook = outlookMap.get(canonical) || structuredOutlook;
         const headingStatus = marketHeadingStatus(market, outlook);
         const rows = [
           ["見通し", outlook],

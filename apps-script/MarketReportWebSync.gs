@@ -305,34 +305,222 @@ function parseMarkets_(text) {
 }
 
 function parseMarketsLenient_(text) {
-  const definitions = [
+  const definitions = marketDefinitions_();
+  const outlooks = marketOutlookMap_(text, definitions);
+  const metrics = marketMetricMap_(text, definitions);
+  const positionings = marketLineMapFromSection_(
+    text,
+    ['需給・ポジション', '需給とポジション', 'ポジショニング・需給'],
+    definitions
+  );
+
+  return definitions.map(definition => {
+    const block = cleanMarketBlock_(smartMarketBlock_(text, definition.aliases), definition, definitions);
+    const outlook = outlooks[definition.name] || '';
+    const metric = metrics[definition.name] || '';
+    const fallback = marketSpecificSentence_(text, definition, definitions);
+    const material = cleanMarketField_(
+      fieldValueFlexible_(block, ['材料', '主な材料', '背景', '判断']),
+      definition,
+      definitions,
+      220
+    ) || outlook || fallback;
+    const positioning = cleanMarketField_(
+      fieldValueFlexible_(block, ['需給', 'ポジション', 'ポジショニング']) || positionings[definition.name],
+      definition,
+      definitions,
+      220
+    );
+    const levels = cleanMarketField_(
+      fieldValueFlexible_(block, ['注目水準', '水準', 'サポート・レジスタンス', '注意水準']) || extractMarketLevelText_(outlook),
+      definition,
+      definitions,
+      180
+    );
+
+    return {
+      name: definition.name,
+      outlook: outlook,
+      direction: cleanMarketField_(fieldValueFlexible_(block, ['方向', '方向性', '短期見通し', '見通し']), definition, definitions, 80) ||
+        inferDirection_(outlook || material || block || metric, definition.name),
+      price: cleanMarketField_(fieldValueFlexible_(block, ['現状', '価格', '現在値', '確認値', '終値']), definition, definitions, 180) || metric,
+      change: cleanMarketField_(fieldValueFlexible_(block, ['前日比', '変化', '騰落率']), definition, definitions, 80),
+      material: material,
+      positioning: positioning,
+      levels: levels,
+      mainScenario: cleanMarketField_(fieldValueFlexible_(block, ['メインシナリオ', '基本シナリオ']), definition, definitions, 220),
+      alternativeScenario: cleanMarketField_(fieldValueFlexible_(block, ['代替シナリオ', 'サブシナリオ']), definition, definitions, 220),
+      breakCondition: cleanMarketField_(fieldValueFlexible_(block, ['崩れる条件', '見方を変える条件']), definition, definitions, 220),
+      risk: cleanMarketField_(fieldValueFlexible_(block, ['リスク', '注意点']), definition, definitions, 180)
+    };
+  });
+}
+
+function marketDefinitions_() {
+  return [
     { name: '金', aliases: ['金', 'ゴールド', 'XAU/USD', 'XAUUSD', '金（スポット）', '金スポット'] },
-    { name: '原油', aliases: ['WTI原油', '原油', 'WTI', 'Brent', 'ブレント'] },
+    { name: '原油', aliases: ['WTI原油', '原油', 'WTI', 'WTI原油（CL）', 'Brent', 'ブレント'] },
     { name: '日経225先物', aliases: ['日経225先物（大阪取引所）', '日経225先物', '日経先物', '日経平均先物'] },
     { name: 'USD/JPY', aliases: ['USD/JPY', 'ドル円', 'USDJPY'] },
     { name: 'EUR/USD', aliases: ['EUR/USD', 'ユーロドル', 'EURUSD'] },
     { name: 'BTCUSD', aliases: ['BTCUSD', 'BTC/USD', 'ビットコイン', 'BTC'] }
   ];
+}
 
-  return definitions.map(definition => {
-    const block = smartMarketBlock_(text, definition.aliases);
-    const fallback = extractMarketSentence_(text, definition.name);
-    const material = fieldValueFlexible_(block, ['材料', '主な材料', '背景', '判断']) || fallback || '本文参照';
-
-    return {
-      name: definition.name,
-      direction: fieldValueFlexible_(block, ['方向', '方向性', '短期見通し', '見通し']) || inferDirection_(block || fallback, definition.name),
-      price: fieldValueFlexible_(block, ['現状', '価格', '現在値', '確認値', '終値']),
-      change: fieldValueFlexible_(block, ['前日比', '変化', '騰落率']),
-      material: material,
-      positioning: fieldValueFlexible_(block, ['需給', 'ポジション', 'ポジショニング']),
-      levels: fieldValueFlexible_(block, ['注目水準', '水準', 'サポート・レジスタンス', '注意水準']),
-      mainScenario: fieldValueFlexible_(block, ['メインシナリオ', '基本シナリオ']) || material,
-      alternativeScenario: fieldValueFlexible_(block, ['代替シナリオ', 'サブシナリオ']),
-      breakCondition: fieldValueFlexible_(block, ['崩れる条件', '見方を変える条件']),
-      risk: fieldValueFlexible_(block, ['リスク', '注意点'])
-    };
+function marketOutlookMap_(text, definitions) {
+  const block = smartSectionBlock_(text, ['6市場の見通し', '個別市場の見通し', '個別市場見通し', '個別見通し']);
+  const map = {};
+  splitMeaningfulLines_(block).forEach(line => {
+    const parsed = parseMarketLabeledLine_(line, definitions);
+    if (parsed && parsed.body) map[parsed.definition.name] = parsed.body;
   });
+  return map;
+}
+
+function marketMetricMap_(text, definitions) {
+  const source = [
+    smartSectionBlock_(text, ['主要市場データ', '前営業日終値・主要市場データ', '前営業日終値', '市場データ']),
+    String(text || '').split('\n').slice(0, 35).join('\n')
+  ].join('\n');
+  const map = {};
+  definitions.forEach(definition => {
+    map[definition.name] = extractMetricLineForMarket_(source, definition, definitions);
+  });
+  return map;
+}
+
+function marketLineMapFromSection_(text, headings, definitions) {
+  const block = smartSectionBlock_(text, headings);
+  const map = {};
+  splitMeaningfulLines_(block).forEach(line => {
+    const parsed = parseMarketLabeledLine_(line, definitions);
+    if (parsed && parsed.body) {
+      map[parsed.definition.name] = parsed.body;
+      return;
+    }
+    definitions.forEach(definition => {
+      if (!map[definition.name] && isMarketSpecificText_(line, definition, definitions)) {
+        map[definition.name] = line;
+      }
+    });
+  });
+  return map;
+}
+
+function parseMarketLabeledLine_(line, definitions) {
+  const normalized = String(line || '').replace(/^\s*(?:[-・●■◆◇▶▷※]|\d+[.)．、]|[①-⑳])\s*/, '').trim();
+  const match = normalized.match(/^([^：:]{1,32})[：:]\s*(.+)$/);
+  if (!match) return null;
+  const definition = marketDefinitionFromLabel_(match[1], definitions);
+  if (!definition) return null;
+  return {
+    definition: definition,
+    body: match[2].replace(/\s+/g, ' ').trim()
+  };
+}
+
+function marketDefinitionFromLabel_(label, definitions) {
+  const normalized = normalizeHeading_(label).toLowerCase();
+  return definitions.filter(definition => definition.aliases.some(alias => {
+    const aliasText = normalizeHeading_(alias).toLowerCase();
+    return normalized === aliasText || normalized.indexOf(aliasText) >= 0 || aliasText.indexOf(normalized) >= 0;
+  }))[0] || null;
+}
+
+function extractMetricLineForMarket_(source, definition, definitions) {
+  const labels = definition.aliases
+    .slice()
+    .sort((a, b) => b.length - a.length)
+    .map(escapeRegExp_)
+    .join('|');
+  const allLabels = definitions
+    .reduce((items, item) => items.concat(item.aliases), [])
+    .sort((a, b) => b.length - a.length)
+    .map(escapeRegExp_)
+    .join('|');
+  const pattern = new RegExp('((?:' + labels + ')\\s*[：:]\\s*[\\s\\S]*?)(?=\\s*(?:' + allLabels + ')\\s*[：:]|\\n|$)', 'i');
+  const match = String(source || '').replace(/\r/g, '').match(pattern);
+  if (!match) return '';
+  const line = trimMarketMetricTail_(match[1].replace(/\s+/g, ' ').trim());
+  if (!/[0-9]|取得不能|未確認/.test(line)) return '';
+  return line.length > 180 ? line.slice(0, 177) + '...' : line;
+}
+
+function trimMarketMetricTail_(line) {
+  return String(line || '')
+    .replace(/。?\s*(?:米10年債利回り|日本10年国債利回り|日経VI|VIX|Fear\s*&\s*Greed|東証プライム|騰落レシオ|NYダウ|S&P500|Nasdaq|Russell)[\s\S]*$/i, '')
+    .trim();
+}
+
+function cleanMarketBlock_(block, definition, definitions) {
+  const value = String(block || '').trim();
+  if (!value) return '';
+  if (value.length > 700) return '';
+  if (isGenericMarketField_(value)) return '';
+  if (!isMarketSpecificText_(value, definition, definitions)) return '';
+  const headingHits = (value.match(/主要市場データ|今日の相場テーマ|前回からの変化|材料と値動き|メインシナリオ|代替シナリオ|崩れる条件|結論/g) || []).length;
+  return headingHits >= 2 ? '' : value;
+}
+
+function cleanMarketField_(value, definition, definitions, maxLength) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!text || isGenericMarketField_(text)) return '';
+  if (text.length > maxLength) return '';
+  if (!isMarketSpecificText_(text, definition, definitions)) return '';
+  return text;
+}
+
+function isGenericMarketField_(value) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!text) return true;
+  if (/^対象\s*[：:]/.test(text)) return true;
+  if (/^(本文参照|個別記載なし|個別見通し参照|記載なし)$/.test(text)) return true;
+  if (/JSONにありません|JSONにない|項目がありません/.test(text)) return true;
+  if (/マーケットレポート｜|Google Docsファイル名|TSV|ヘッダーなし/.test(text)) return true;
+  return false;
+}
+
+function isMarketSpecificText_(value, definition, definitions) {
+  const text = String(value || '').trim();
+  if (!text) return false;
+  const mentioned = mentionedMarketsInText_(text, definitions);
+  if (mentioned.length >= 3) return false;
+  if (mentioned.length && mentioned.indexOf(definition.name) < 0) return false;
+  return true;
+}
+
+function mentionedMarketsInText_(value, definitions) {
+  const text = String(value || '');
+  return definitions
+    .filter(definition => definition.aliases.some(alias => aliasMentionedForMarket_(text, alias)))
+    .map(definition => definition.name);
+}
+
+function aliasMentionedForMarket_(value, alias) {
+  if (alias === '金') {
+    let index = value.indexOf('金');
+    while (index >= 0) {
+      const previous = value[index - 1] || '';
+      const next = value[index + 1] || '';
+      if (!/[米資]/.test(previous) && next !== '利') return true;
+      index = value.indexOf('金', index + 1);
+    }
+    return false;
+  }
+  return new RegExp(escapeRegExp_(alias), 'i').test(value);
+}
+
+function marketSpecificSentence_(text, definition, definitions) {
+  return extractKeywordSentences_(text, definition.aliases, 6)
+    .filter(sentence => mentionedMarketsInText_(sentence, definitions).indexOf(definition.name) >= 0)
+    .filter(sentence => isMarketSpecificText_(sentence, definition, definitions))[0] || '';
+}
+
+function extractMarketLevelText_(text) {
+  const value = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!value) return '';
+  const numbers = value.match(/[0-9][0-9,.]*(?:～[0-9][0-9,.]*)?(?:円|ドル|％|%|台|前後)?/g);
+  return numbers && numbers.length ? numbers.slice(0, 3).join(' / ') : '';
 }
 
 function enrichSparseReport_(report, text) {
@@ -359,9 +547,8 @@ function enrichSparseReport_(report, text) {
   }
 
   report.markets = report.markets.map(market => {
-    if (!market.material) market.material = extractMarketSentence_(text, market.name) || '本文参照';
-    if (!market.direction || market.direction === '取得不能') market.direction = inferDirection_(market.material + ' ' + text, market.name);
-    if (!market.breakCondition) market.breakCondition = report.breakConditions || '重要材料と直近水準の突破で見方を再評価';
+    if (!market.material) market.material = market.outlook || extractMarketSentence_(text, market.name) || '';
+    if (!market.direction || market.direction === '取得不能') market.direction = inferDirection_(market.outlook || market.material || market.price, market.name);
     return market;
   });
 }
@@ -499,8 +686,8 @@ function inferLeadingMarket_(text) {
 
 function inferDirection_(text, marketName) {
   const source = String(text || '');
-  if (/上昇|強含み|反発|買い優勢|底堅い|強気|支え/.test(source)) return '上昇・強含み';
-  if (/下落|弱含み|反落|売り優勢|上値が重い|弱気|逆風/.test(source)) return '下落・弱含み';
+  if (/上昇|上向き|強含み|反発|買い優勢|底堅い|強気|支え/.test(source)) return '上昇・強含み';
+  if (/下落|下向き|弱含み|反落|売り優勢|上値が重い|上値重い|弱気|逆風/.test(source)) return '下落・弱含み';
   return '中立・方向確認';
 }
 

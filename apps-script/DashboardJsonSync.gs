@@ -173,20 +173,30 @@ function dashboardNormalizeReports_(reports) {
 function dashboardPrepareReportForDashboard_(report, priceSource, useLatestPriceFallback) {
   var prepared = dashboardClonePlainObject_(report);
   var metricLines = dashboardCollectMarketMetricLines_(report);
-  var markets = dashboardMarketsByName_(prepared.markets);
+  var reparsedMarkets = [];
+  if (typeof parseMarketsLenient_ === 'function' && prepared.fullText) {
+    try {
+      reparsedMarkets = parseMarketsLenient_(prepared.fullText);
+    } catch (error) {
+      reparsedMarkets = [];
+    }
+  }
+  var markets = dashboardMarketsByName_(reparsedMarkets.length ? reparsedMarkets : prepared.markets);
 
   prepared.markets = dashboardMarketDefinitions_().map(function(definition) {
     var original = markets[definition.name] || { name: definition.name };
     var metricLine = dashboardFirst_(metricLines[definition.name]);
+    var outlook = dashboardCleanOutlookField_(original.outlook, 180);
     return {
       name: definition.name,
       direction: dashboardCleanDirection_(original.direction),
       price: metricLine,
       change: dashboardCleanMarketField_(original.change, definition, 80, false),
-      material: dashboardCleanMarketField_(original.material, definition, 120, true) || '本文参照',
+      outlook: outlook,
+      material: dashboardCleanMarketField_(original.material, definition, 120, true) || outlook || '本文参照',
       positioning: dashboardCleanMarketField_(original.positioning, definition, 120, true),
       levels: dashboardCleanMarketField_(original.levels, definition, 120, true),
-      mainScenario: dashboardCleanMarketField_(original.mainScenario, definition, 160, true),
+      mainScenario: dashboardCleanMarketField_(original.mainScenario, definition, 160, true) || outlook,
       alternativeScenario: dashboardCleanMarketField_(original.alternativeScenario, definition, 160, true),
       breakCondition: dashboardCleanMarketField_(original.breakCondition, definition, 160, true),
       risk: dashboardCleanMarketField_(original.risk, definition, 120, true)
@@ -454,8 +464,8 @@ function dashboardMarketDefinitions_() {
   return [
     {
       name: '金',
-      metricLabelRegex: '(?:金現物|金価格|金（XAU\\/USD）|ゴールド)',
-      mentionRegex: /金現物|金価格|金は|金の|ゴールド|XAU\/USD/
+      metricLabelRegex: '(?:金現物|金価格|金（XAU\\/USD）|ゴールド|金)',
+      mentionRegex: /金[:：]|金現物|金価格|金は|金の|ゴールド|XAU\/USD/
     },
     {
       name: '原油',
@@ -531,6 +541,7 @@ function dashboardCollectTextCandidates_(report) {
       'direction',
       'price',
       'change',
+      'outlook',
       'material',
       'positioning',
       'levels',
@@ -602,10 +613,22 @@ function dashboardCleanMarketField_(value, definition, maxLength, requireMention
   if (!text) return '';
   if (text.length > maxLength) return '';
   if (text.indexOf('取得不能') !== -1) return '';
+  if (/^(本文参照|個別記載なし|個別見通し参照|記載なし)$/.test(text)) return '';
+  if (/^対象\s*[：:]/.test(text)) return '';
   if (/マーケットレポート｜|復旧日時|Google Docsファイル名|当時の図解原本|TSV|ヘッダーなし/.test(text)) return '';
   if (dashboardStartsWithOtherMetricLabel_(text, definition)) return '';
   if (requireMention && !definition.mentionRegex.test(text)) return '';
   if (/VIX/.test(text) && definition.name !== 'BTCUSD') return '';
+  return dashboardTrimText_(text, maxLength);
+}
+
+function dashboardCleanOutlookField_(value, maxLength) {
+  var text = dashboardNormalizeInlineText_(value);
+  if (!text) return '';
+  if (text.length > maxLength) return '';
+  if (/^(本文参照|個別記載なし|個別見通し参照|記載なし)$/.test(text)) return '';
+  if (/^対象\s*[：:]/.test(text)) return '';
+  if (/マーケットレポート｜|復旧日時|Google Docsファイル名|当時の図解原本|TSV|ヘッダーなし/.test(text)) return '';
   return dashboardTrimText_(text, maxLength);
 }
 
