@@ -18,6 +18,7 @@ STOCKS_PATH = ROOT / "data" / "stocks.json"
 METRICS_PATH = ROOT / "data" / "nikkei-metrics.json"
 JST = dt.timezone(dt.timedelta(hours=9))
 
+# The public stocks page must always contain all five rows below.
 ORDER = [
     "日経VI",
     "日経225予想PER",
