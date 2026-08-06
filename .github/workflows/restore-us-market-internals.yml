@@ -1,24 +1,27 @@
-name: Restore US market internals table
+name: Update US stock table and daily archive
 
 on:
   workflow_dispatch:
   push:
     paths:
       - "scripts/restore_us_market_internals_table.py"
+      - "scripts/archive_stocks_snapshot.py"
       - ".github/workflows/restore-us-market-internals.yml"
   schedule:
-    - cron: "50 21 * * 1-5"
+    # 06:50 JST Monday-Friday. This captures the completed U.S. session.
+    - cron: "50 21 * * 0-4"
 
 permissions:
   contents: write
 
 concurrency:
-  group: restore-us-market-internals
+  group: stocks-page-daily-state
   cancel-in-progress: false
 
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,18 +33,38 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Restore NYSE NASDAQ and 200-day rows
+      - name: Validate scripts
+        run: |
+          python -m py_compile scripts/archive_stocks_snapshot.py
+          python -m py_compile scripts/restore_us_market_internals_table.py
+
+      - name: Update completed US session only
         run: python scripts/restore_us_market_internals_table.py
 
-      - name: Commit updated table data
+      - name: Validate independent market dates
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('data/stocks.json').read_text(encoding='utf-8'))
+          dates = data.get('marketDates') or {}
+          if not dates.get('us') or not dates.get('japan'):
+              raise SystemExit('Both U.S. and Tokyo market dates are required')
+          history = Path('data/history/stocks') / (data.get('snapshotDate') or '')
+          print('US data date:', dates['us'])
+          print('Tokyo data date:', dates['japan'])
+          PY
+
+      - name: Commit updated US table and archive
         shell: bash
         run: |
-          if git diff --quiet -- data/stocks.json data/market/us-stock-breadth.json; then
+          if git diff --quiet -- data/stocks.json data/market/us-stock-breadth.json data/history/stocks; then
             echo "No data changes"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/stocks.json data/market/us-stock-breadth.json
-          git commit -m "Restore US market internals table rows"
+          git add data/stocks.json data/market/us-stock-breadth.json data/history/stocks
+          git commit -m "Update completed US session and stock archive"
+          git pull --rebase
           git push
