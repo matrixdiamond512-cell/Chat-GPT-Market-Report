@@ -21,8 +21,11 @@ on:
     paths:
       - "reports.json"
       - ".github/workflows/update-market-data.yml"
+      - ".github/workflows/market-data-07-anchor.yml"
+      - ".github/workflows/market-data-07-fallback.yml"
       - "scripts/fetch_market_data.py"
       - "scripts/run_market_data_acquisition.py"
+      - "scripts/run_market_data_window.py"
       - "scripts/resolve_market_report_slot.py"
       - "scripts/build_market_json.py"
       - "scripts/build_market_sheet_exports.py"
@@ -30,11 +33,9 @@ on:
       - "config/market_data_sources.json"
       - "config/market_data_validation.json"
   schedule:
-    # UTC cron / Japan time schedule.
-    # 07:00 report: Monday-Saturday. 05:55 preload, then 06:30-06:55 every 5 minutes.
-    - cron: "55 20 * * 0-5"
-    - cron: "30,35,40,45,50,55 21 * * 0-5"
-    # Weekday 12:00 / 16:00 / 21:00 reports: start 30 minutes before, every 5 minutes.
+    # The 07:00 report is handled by two independently registered workflows:
+    # market-data-07-anchor.yml and market-data-07-fallback.yml.
+    # Weekday 12:00 / 16:00 / 21:00 reports start 30 minutes before and retry every 5 minutes.
     - cron: "30,35,40,45,50,55 2 * * 1-5"
     - cron: "30,35,40,45,50,55 6 * * 1-5"
     - cron: "30,35,40,45,50,55 11 * * 1-5"
@@ -87,6 +88,7 @@ jobs:
         run: |
           python -m py_compile scripts/fetch_market_data.py
           python -m py_compile scripts/run_market_data_acquisition.py
+          python -m py_compile scripts/run_market_data_window.py
           python -m py_compile scripts/resolve_market_report_slot.py
 
       - name: Fetch, retry, and preserve best verified market data
