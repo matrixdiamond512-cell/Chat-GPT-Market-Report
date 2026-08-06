@@ -11,10 +11,12 @@ on:
       - "scripts/postprocess_economic_calendar.py"
       - "scripts/repair_missing_event_results.py"
       - "scripts/validate_weekly_claims_result.py"
+      - "scripts/clean_legacy_event_records.py"
       - "scripts/test_fetch_economic_calendar.py"
       - "scripts/test_postprocess_economic_calendar.py"
       - "scripts/test_repair_missing_event_results.py"
       - "scripts/test_validate_weekly_claims_result.py"
+      - "scripts/test_clean_legacy_event_records.py"
       - "config/economic_calendar.json"
       - "data/events/event_dictionary.json"
   schedule:
@@ -49,6 +51,9 @@ jobs:
       - name: Fetch, normalize, and retain event results
         run: python scripts/fetch_economic_calendar.py --print-summary
 
+      - name: Remove legacy market-report event rows
+        run: python -m scripts.clean_legacy_event_records --print-summary
+
       - name: Normalize qualitative events
         run: python scripts/postprocess_economic_calendar.py --no-official-fetch --print-summary
 
@@ -61,6 +66,7 @@ jobs:
       - name: Run calendar tests
         run: |
           python -m unittest scripts.test_fetch_economic_calendar -v
+          python -m unittest scripts.test_clean_legacy_event_records -v
           python -m unittest scripts.test_postprocess_economic_calendar -v
           python -m unittest scripts.test_repair_missing_event_results -v
           python -m unittest scripts.test_validate_weekly_claims_result -v
