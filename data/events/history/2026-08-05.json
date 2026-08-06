@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-08-06T22:22:07+09:00",
-  "publishedAt": "2026-08-06T22:22:07+09:00",
-  "dataAsOf": "2026-08-06T22:22:07+09:00",
+  "generatedAt": "2026-08-06T23:18:55+09:00",
+  "publishedAt": "2026-08-06T23:18:55+09:00",
+  "dataAsOf": "2026-08-06T23:18:55+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -28,6 +28,12 @@
       "status": "available"
     },
     {
+      "id": "legacy_event_cleanup",
+      "name": "旧マーケットレポート由来イベントの除外",
+      "status": "ok",
+      "note": "正規カレンダー以外の旧レコードを12件除外。"
+    },
+    {
       "id": "event_result_repair",
       "name": "重要イベント実績値の補完取得",
       "status": "ok",
@@ -37,7 +43,7 @@
       "id": "weekly_claims_validation",
       "name": "米新規失業保険申請件数の公式検証",
       "status": "ok",
-      "note": "公式PDFで訂正・検証 1件、誤照合値を除外 0件。"
+      "note": "公式PDFで訂正・検証 0件、誤照合値を除外 0件。"
     }
   ],
   "errors": [],
@@ -286,7 +292,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:22:07+09:00"
+      "updatedAt": "2026-08-06T23:18:55+09:00"
     },
     {
       "id": "event-2cf5f90087ace2",
@@ -533,8 +539,8 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:22:07+09:00",
-      "resultSavedAt": "2026-08-06T22:22:07+09:00",
+      "updatedAt": "2026-08-06T23:18:55+09:00",
+      "resultSavedAt": "2026-08-06T23:18:55+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Stats NZ",
@@ -786,8 +792,8 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:22:07+09:00",
-      "resultSavedAt": "2026-08-06T22:22:07+09:00",
+      "updatedAt": "2026-08-06T23:18:55+09:00",
+      "resultSavedAt": "2026-08-06T23:18:55+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Stats NZ",
@@ -1037,7 +1043,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:22:07+09:00"
+      "updatedAt": "2026-08-06T23:18:55+09:00"
     },
     {
       "id": "event-1b284e8e1409d4",
@@ -1284,7 +1290,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:22:07+09:00",
+      "updatedAt": "2026-08-06T23:18:56+09:00",
       "resultSavedAt": "2026-08-06T22:05:00+09:00",
       "resultSource": {
         "id": "federal_reserve",
@@ -1539,8 +1545,8 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:22:07+09:00",
-      "resultSavedAt": "2026-08-06T22:22:07+09:00",
+      "updatedAt": "2026-08-06T23:18:55+09:00",
+      "resultSavedAt": "2026-08-06T23:18:55+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Automatic Data Processing, Inc.",
@@ -1792,8 +1798,8 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:22:07+09:00",
-      "resultSavedAt": "2026-08-06T22:22:07+09:00",
+      "updatedAt": "2026-08-06T23:18:55+09:00",
+      "resultSavedAt": "2026-08-06T23:18:55+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Institute for Supply Management",
@@ -2043,8 +2049,8 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:22:07+09:00",
-      "resultSavedAt": "2026-08-06T22:22:07+09:00",
+      "updatedAt": "2026-08-06T23:18:55+09:00",
+      "resultSavedAt": "2026-08-06T23:18:55+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "U.S. Energy Information Administration",

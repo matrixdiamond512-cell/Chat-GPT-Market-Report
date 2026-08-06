@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-08-06T22:22:07+09:00",
-  "publishedAt": "2026-08-06T22:22:07+09:00",
-  "dataAsOf": "2026-08-06T22:22:07+09:00",
+  "generatedAt": "2026-08-06T23:18:55+09:00",
+  "publishedAt": "2026-08-06T23:18:55+09:00",
+  "dataAsOf": "2026-08-06T23:18:55+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -28,6 +28,12 @@
       "status": "available"
     },
     {
+      "id": "legacy_event_cleanup",
+      "name": "旧マーケットレポート由来イベントの除外",
+      "status": "ok",
+      "note": "正規カレンダー以外の旧レコードを12件除外。"
+    },
+    {
       "id": "event_result_repair",
       "name": "重要イベント実績値の補完取得",
       "status": "ok",
@@ -37,7 +43,7 @@
       "id": "weekly_claims_validation",
       "name": "米新規失業保険申請件数の公式検証",
       "status": "ok",
-      "note": "公式PDFで訂正・検証 1件、誤照合値を除外 0件。"
+      "note": "公式PDFで訂正・検証 0件、誤照合値を除外 0件。"
     }
   ],
   "errors": [],
@@ -282,8 +288,8 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:22:07+09:00",
-      "resultSavedAt": "2026-08-06T22:22:07+09:00",
+      "updatedAt": "2026-08-06T23:18:55+09:00",
+      "resultSavedAt": "2026-08-06T23:18:55+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Ministry of Finance",
@@ -544,44 +550,6 @@
       }
     },
     {
-      "date": "2026-08-04",
-      "time": "21:30",
-      "datetimeJst": "2026-08-04T21:30:00+09:00",
-      "timingLabel": "",
-      "country": "複数",
-      "title": "カナダ6月国際商品貿易",
-      "category": "scheduled_event",
-      "importance": 1,
-      "forecast": "未取得",
-      "previous": "未取得",
-      "actual": "",
-      "resultComparison": "",
-      "resultExplanation": "",
-      "affectedMarkets": [
-        "USD/JPY",
-        "株式",
-        "金利"
-      ],
-      "reason": "21:30 カナダ6月国際商品貿易",
-      "sourceType": "market_report_extraction",
-      "sourceReportKey": "2026-08-04 12:00",
-      "sourceNote": "マーケットレポート本文から抽出",
-      "watchPoints": [
-        "発表時刻の確認",
-        "米金利",
-        "USD/JPY",
-        "株価指数先物"
-      ],
-      "postReleaseReactions": [],
-      "comparison": [],
-      "id": "event-lhjkmp",
-      "createdAt": "2026-08-05T17:27:12+09:00",
-      "updatedAt": "2026-08-05T17:27:12+09:00",
-      "isTimed": true,
-      "isImportantEvent": true,
-      "status": "needs_result"
-    },
-    {
       "id": "event-33f0e209003d91",
       "sourceKey": "2026-08-04|21:30|USD|trade balance",
       "date": "2026-08-04",
@@ -835,44 +803,6 @@
       }
     },
     {
-      "date": "2026-08-04",
-      "time": "21:30",
-      "datetimeJst": "2026-08-04T21:30:00+09:00",
-      "timingLabel": "",
-      "country": "米国",
-      "title": "米国6月貿易収支",
-      "category": "scheduled_event",
-      "importance": 2,
-      "forecast": "未取得",
-      "previous": "未取得",
-      "actual": "",
-      "resultComparison": "",
-      "resultExplanation": "",
-      "affectedMarkets": [
-        "USD/JPY",
-        "株式",
-        "金利"
-      ],
-      "reason": "21:30 米国6月貿易収支",
-      "sourceType": "market_report_extraction",
-      "sourceReportKey": "2026-08-04 12:00",
-      "sourceNote": "マーケットレポート本文から抽出",
-      "watchPoints": [
-        "発表時刻の確認",
-        "米金利",
-        "USD/JPY",
-        "株価指数先物"
-      ],
-      "postReleaseReactions": [],
-      "comparison": [],
-      "id": "event-hmmvep",
-      "createdAt": "2026-08-05T17:27:12+09:00",
-      "updatedAt": "2026-08-05T17:27:12+09:00",
-      "isTimed": true,
-      "isImportantEvent": true,
-      "status": "needs_result"
-    },
-    {
       "id": "event-fadc4d68e6d032",
       "sourceKey": "2026-08-04|23:00|USD|jolts job openings",
       "date": "2026-08-04",
@@ -1117,142 +1047,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:22:07+09:00",
-      "resultSavedAt": "2026-08-06T22:22:07+09:00",
+      "updatedAt": "2026-08-06T23:18:55+09:00",
+      "resultSavedAt": "2026-08-06T23:18:55+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Bureau of Labour Statistics",
         "url": "http://www.bls.gov"
       }
-    },
-    {
-      "date": "2026-08-04",
-      "time": "23:00",
-      "datetimeJst": "2026-08-04T23:00:00+09:00",
-      "timingLabel": "",
-      "country": "米国",
-      "title": "米国6月JOLTS求人件数",
-      "category": "scheduled_event",
-      "importance": 3,
-      "forecast": "未取得",
-      "previous": "759.4万人",
-      "actual": "3232000",
-      "resultComparison": "",
-      "resultExplanation": "実績 3232000 は予想 未取得 に対して比較保留。名称差・国コード差を補正してTradingView実績データから照合しました。",
-      "affectedMarkets": [
-        "米金利",
-        "USD/JPY",
-        "米国株",
-        "日経225先物",
-        "金"
-      ],
-      "reason": "JOLTS求人件数は前回759.4万人。強い結果なら米金利上昇とドル買い",
-      "sourceType": "market_report_extraction",
-      "sourceReportKey": "2026-08-04 12:00",
-      "sourceNote": "マーケットレポート本文から抽出",
-      "watchPoints": [
-        "米2年債利回り",
-        "USD/JPY",
-        "米株先物",
-        "金・BTC"
-      ],
-      "postReleaseReactions": [],
-      "comparison": [],
-      "id": "event-t8rc0b",
-      "createdAt": "2026-08-05T17:27:12+09:00",
-      "updatedAt": "2026-08-06T22:18:33+09:00",
-      "isTimed": true,
-      "isImportantEvent": true,
-      "status": "released",
-      "revised": "",
-      "resultExpected": true,
-      "resultType": "numeric",
-      "resultSource": {
-        "id": "tradingview_repair",
-        "name": "Bureau of Labour Statistics",
-        "url": "http://www.bls.gov"
-      },
-      "resultSavedAt": "2026-08-06T22:18:33+09:00",
-      "conclusion": {
-        "narrative": "結果確認済み",
-        "reaction": "市場反応を確認"
-      }
-    },
-    {
-      "date": "2026-08-04",
-      "time": "23:00",
-      "datetimeJst": "2026-08-04T23:00:00+09:00",
-      "timingLabel": "",
-      "country": "米国",
-      "title": "米国6月耐久財受注・確報値",
-      "category": "scheduled_event",
-      "importance": 2,
-      "forecast": "未取得",
-      "previous": "未取得",
-      "actual": "",
-      "resultComparison": "",
-      "resultExplanation": "",
-      "affectedMarkets": [
-        "USD/JPY",
-        "株式",
-        "金利"
-      ],
-      "reason": "23:00 米国6月耐久財受注・確報値",
-      "sourceType": "market_report_extraction",
-      "sourceReportKey": "2026-08-04 12:00",
-      "sourceNote": "マーケットレポート本文から抽出",
-      "watchPoints": [
-        "発表時刻の確認",
-        "米金利",
-        "USD/JPY",
-        "株価指数先物"
-      ],
-      "postReleaseReactions": [],
-      "comparison": [],
-      "id": "event-6c3ls2",
-      "createdAt": "2026-08-05T17:27:12+09:00",
-      "updatedAt": "2026-08-05T17:27:12+09:00",
-      "isTimed": true,
-      "isImportantEvent": true,
-      "status": "needs_result"
-    },
-    {
-      "date": "2026-08-04",
-      "time": "23:00",
-      "datetimeJst": "2026-08-04T23:00:00+09:00",
-      "timingLabel": "",
-      "country": "米国",
-      "title": "米国6月製造業新規受注",
-      "category": "scheduled_event",
-      "importance": 1,
-      "forecast": "未取得",
-      "previous": "未取得",
-      "actual": "",
-      "resultComparison": "",
-      "resultExplanation": "",
-      "affectedMarkets": [
-        "USD/JPY",
-        "株式",
-        "金利"
-      ],
-      "reason": "23:00 米国6月製造業新規受注",
-      "sourceType": "market_report_extraction",
-      "sourceReportKey": "2026-08-04 12:00",
-      "sourceNote": "マーケットレポート本文から抽出",
-      "watchPoints": [
-        "発表時刻の確認",
-        "米金利",
-        "USD/JPY",
-        "株価指数先物"
-      ],
-      "postReleaseReactions": [],
-      "comparison": [],
-      "id": "event-yx0anh",
-      "createdAt": "2026-08-05T17:27:12+09:00",
-      "updatedAt": "2026-08-05T17:27:12+09:00",
-      "isTimed": true,
-      "isImportantEvent": true,
-      "status": "needs_result"
     }
   ]
 }
