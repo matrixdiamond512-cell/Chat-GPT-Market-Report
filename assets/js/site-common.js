@@ -60,6 +60,17 @@
     return "scheduled";
   }
 
+  function isCanonicalRawEvent(event) {
+    if (!event || typeof event !== "object") return false;
+    var sourceType = clean(event.sourceType);
+    var sourceKey = clean(event.sourceKey);
+    var title = clean(event.title || event.name || event.event);
+    var narrativeTitle = /^(最重要イベント|重要イベントは|これから発表|本日の重要|注目点は)/.test(title);
+    if (narrativeTitle || title.length > 120) return false;
+    if (sourceType) return sourceType === "forex_factory_weekly" && Boolean(sourceKey);
+    return Boolean(sourceKey && event.date && event.time);
+  }
+
   function ensureEvent(event) {
     var state = eventState(event);
     event.focus = list(event.focus).length ? event.focus : list(event.affected && String(event.affected).split("・"));
@@ -93,12 +104,48 @@
     var original = window.normalizeDedicatedEvents;
     if (typeof original !== "function" || original.__practicalWrapped) return;
     var wrapped = function (payload) {
-      var events = original(payload);
+      var safePayload = payload;
+      if (payload && Array.isArray(payload.events)) {
+        safePayload = Object.assign({}, payload, { events: payload.events.filter(isCanonicalRawEvent) });
+      }
+      var events = original(safePayload);
       return Array.isArray(events) ? events.map(ensureEvent) : [];
     };
     wrapped.__practicalWrapped = true;
     window.normalizeDedicatedEvents = wrapped;
     try { normalizeDedicatedEvents = wrapped; } catch (error) { }
+  }
+
+  function syncHero(event) {
+    if (!event) return;
+    var state = eventState(event);
+    var panel = document.querySelector(".grid-top>.panel:first-child");
+    var heading = panel && panel.querySelector(".panel-title");
+    if (heading) heading.innerHTML = '<span class="badge-num">1</span>' + (state === "scheduled" ? "次の重要イベント" : "選択中イベント");
+
+    var name = document.getElementById("eventName");
+    var time = document.getElementById("eventTime");
+    var importance = document.getElementById("eventImportance");
+    var consensus = document.getElementById("eventConsensus");
+    var previous = document.getElementById("eventPrevious");
+    if (name) name.textContent = event.name || "イベント名取得不能";
+    if (time) time.textContent = event.time || "発表日時取得不能";
+    if (importance) importance.textContent = event.importance || "—";
+    if (consensus) consensus.textContent = event.consensus || event.forecast || "予想なし";
+    if (previous) previous.textContent = event.previous || event.previousValue || "前回値なし";
+  }
+
+  function wrapRenderer() {
+    var original = window.renderDynamicEvent;
+    if (typeof original !== "function" || original.__integrityWrapped) return;
+    var wrapped = function (event) {
+      var result = original(event);
+      syncHero(event);
+      return result;
+    };
+    wrapped.__integrityWrapped = true;
+    window.renderDynamicEvent = wrapped;
+    try { renderDynamicEvent = wrapped; } catch (error) { }
   }
 
   function addStyles() {
@@ -142,22 +189,9 @@
   function countryFlag(country) {
     var key = clean(country);
     var flags = {
-      "米国":"🇺🇸",
-      "日本":"🇯🇵",
-      "欧州":"🇪🇺",
-      "ユーロ圏":"🇪🇺",
-      "中国":"🇨🇳",
-      "英国":"🇬🇧",
-      "カナダ":"🇨🇦",
-      "豪州":"🇦🇺",
-      "オーストラリア":"🇦🇺",
-      "ニュージーランド":"🇳🇿",
-      "スイス":"🇨🇭",
-      "スペイン":"🇪🇸",
-      "フランス":"🇫🇷",
-      "ドイツ":"🇩🇪",
-      "イタリア":"🇮🇹",
-      "複数":"🌐"
+      "米国":"🇺🇸","日本":"🇯🇵","欧州":"🇪🇺","ユーロ圏":"🇪🇺","中国":"🇨🇳","英国":"🇬🇧",
+      "カナダ":"🇨🇦","豪州":"🇦🇺","オーストラリア":"🇦🇺","ニュージーランド":"🇳🇿","スイス":"🇨🇭",
+      "スペイン":"🇪🇸","フランス":"🇫🇷","ドイツ":"🇩🇪","イタリア":"🇮🇹","複数":"🌐"
     };
     return flags[key] || "🌐";
   }
@@ -203,7 +237,6 @@
     var eventsForDay = currentDayEvents();
     table.querySelectorAll("tbody tr").forEach(function (row) {
       if (row.querySelector(".event-country-cell")) return;
-
       var button = row.querySelector("[data-dynamic-index]");
       var index = button ? Number(button.getAttribute("data-dynamic-index")) : -1;
       var event = Number.isInteger(index) && index >= 0 ? eventsForDay[index] : null;
@@ -249,8 +282,13 @@
     top.appendChild(midPanels[1]);
     var reactionTable = document.getElementById("reactionTable");
     if (reactionTable && reactionTable.parentElement) reactionTable.parentElement.id = "reactionTableParent";
-    page.insertBefore(makeMarketsPanel(), listSection);
-    small.remove();
+    if (!page.querySelector(".practical-markets-panel")) page.insertBefore(makeMarketsPanel(), listSection);
+
+    /* Keep the legacy analysis nodes in the DOM. The original renderer writes to
+       them even though this practical layout hides them. Removing the nodes made
+       the dedicated calendar render throw, which incorrectly activated the old
+       market-report fallback and mixed one event's title with another event's data. */
+    small.setAttribute("aria-hidden", "true");
 
     var subtitle = page.querySelector(".page-head p");
     if (subtitle) subtitle.textContent = "これから発表される重要イベントと、発表後の予想値・実績値の差を確認します。";
@@ -259,10 +297,12 @@
     var help = listSection.querySelector(".events-head small");
     if (help) help.textContent = "行の「詳細」を押すと、上段のイベント情報が切り替わります。";
 
-    var note = document.createElement("p");
-    note.className = "practical-note";
-    note.textContent = "空欄は表示せず、取得できない場合は理由を表示します。取得していない市場反応や推測値は表示しません。";
-    listSection.appendChild(note);
+    if (!listSection.querySelector(".practical-note")) {
+      var note = document.createElement("p");
+      note.className = "practical-note";
+      note.textContent = "空欄は表示せず、取得できない場合は理由を表示します。取得していない市場反応や推測値は表示しません。";
+      listSection.appendChild(note);
+    }
 
     page.classList.add("events-practical");
     page.dataset.practicalEventsReady = "1";
@@ -280,6 +320,7 @@
   }
 
   wrapNormalizer();
+  wrapRenderer();
   rebuild();
   keepPracticalPageComplete();
   new MutationObserver(keepPracticalPageComplete).observe(document.body, {childList:true,subtree:true,characterData:true});
