@@ -1,8 +1,8 @@
 {
   "schemaVersion": "1.0.0",
   "pageId": "dashboard",
-  "generatedAt": "2026-08-06T12:39:48+09:00",
-  "publishedAt": "2026-08-06T12:39:48+09:00",
+  "generatedAt": "2026-08-06T13:24:18+09:00",
+  "publishedAt": "2026-08-06T13:24:18+09:00",
   "dataAsOf": "2026-08-06T12:00:00+09:00",
   "status": "ok",
   "isStale": false,
@@ -21,7 +21,7 @@
       "id": "CLOSE_PRICE_SHEET",
       "name": "スプレッドシート価格データ",
       "sheetName": "終値一覧",
-      "asOf": "2024-11-22",
+      "asOf": "2026-08-05",
       "status": "ok",
       "note": "金・原油・日経225先物・USD/JPY・EUR/USD・BTCUSDの価格、前日比、騰落率は終値一覧を優先して反映します。"
     }
@@ -137,8 +137,8 @@
       {
         "name": "金",
         "direction": "上昇・強含み",
-        "price": "金：取得不能",
-        "change": "",
+        "price": "金（XAU/USD）：4253.36ドル（157.96、+3.86％）",
+        "change": "157.96、+3.86％",
         "outlook": "",
         "material": "本文参照",
         "positioning": "",
@@ -146,13 +146,19 @@
         "mainScenario": "",
         "alternativeScenario": "",
         "breakCondition": "",
-        "risk": ""
+        "risk": "",
+        "priceSource": {
+          "id": "CLOSE_PRICE_SHEET",
+          "sheetName": "終値一覧",
+          "asOf": "2026-08-05",
+          "match": "latest"
+        }
       },
       {
         "name": "原油",
         "direction": "中立・方向確認",
-        "price": "WTI原油：74.96ドル、ほぼ横ばい",
-        "change": "",
+        "price": "WTI原油：75.77ドル（-0.21、-0.28％）",
+        "change": "-0.21、-0.28％",
         "outlook": "",
         "material": "WTI原油：74.96ドル、ほぼ横ばい",
         "positioning": "半導体株主導で売られており、指数寄与度の高い銘柄の下落が先物売りを増幅している。日経平均が1.57％安である一方、銀行、内需、原油安メリット株まで一様に売られているわけではない。",
@@ -160,13 +166,19 @@
         "mainScenario": "",
         "alternativeScenario": "",
         "breakCondition": "",
-        "risk": ""
+        "risk": "",
+        "priceSource": {
+          "id": "CLOSE_PRICE_SHEET",
+          "sheetName": "終値一覧",
+          "asOf": "2026-08-05",
+          "match": "latest"
+        }
       },
       {
         "name": "日経225先物",
         "direction": "中立・方向確認",
-        "price": "日経225先物（大阪取引所）：取得不能",
-        "change": "",
+        "price": "日経225先物（大阪取引所）：66280円（2380、+3.72％）",
+        "change": "2380、+3.72％",
         "outlook": "",
         "material": "本文参照",
         "positioning": "日経225先物",
@@ -174,13 +186,19 @@
         "mainScenario": "",
         "alternativeScenario": "",
         "breakCondition": "",
-        "risk": ""
+        "risk": "",
+        "priceSource": {
+          "id": "CLOSE_PRICE_SHEET",
+          "sheetName": "終値一覧",
+          "asOf": "2026-08-05",
+          "match": "latest"
+        }
       },
       {
         "name": "USD/JPY",
         "direction": "中立・方向確認",
-        "price": "USD/JPY：154.22円（-1.07、-69.00％）",
-        "change": "-1.07、-69.00％",
+        "price": "USD/JPY：152.67円（0.2420013、+0.15％）",
+        "change": "0.2420013、+0.15％",
         "outlook": "",
         "material": "USD/JPY：157.65円付近、ほぼ横ばい",
         "positioning": "",
@@ -192,15 +210,15 @@
         "priceSource": {
           "id": "CLOSE_PRICE_SHEET",
           "sheetName": "終値一覧",
-          "asOf": "2024-11-22",
+          "asOf": "2026-08-05",
           "match": "latest"
         }
       },
       {
         "name": "EUR/USD",
         "direction": "中立・方向確認",
-        "price": "EUR/USD：取得不能",
-        "change": "",
+        "price": "EUR/USD：1.153242826（0.000292826、+0.03％）",
+        "change": "0.000292826、+0.03％",
         "outlook": "",
         "material": "本文参照",
         "positioning": "",
@@ -208,13 +226,19 @@
         "mainScenario": "",
         "alternativeScenario": "",
         "breakCondition": "",
-        "risk": ""
+        "risk": "",
+        "priceSource": {
+          "id": "CLOSE_PRICE_SHEET",
+          "sheetName": "終値一覧",
+          "asOf": "2026-08-05",
+          "match": "latest"
+        }
       },
       {
         "name": "BTCUSD",
         "direction": "中立・方向確認",
-        "price": "BTCUSD：63,436ドル前後、約2.7％安",
-        "change": "",
+        "price": "BTCUSD：64055.95313ドル（-210.14687、-0.33％）",
+        "change": "-210.14687、-0.33％",
         "outlook": "",
         "material": "BTCUSD：63,436ドル前後、約2.7％安",
         "positioning": "",
@@ -222,7 +246,13 @@
         "mainScenario": "",
         "alternativeScenario": "",
         "breakCondition": "",
-        "risk": ""
+        "risk": "",
+        "priceSource": {
+          "id": "CLOSE_PRICE_SHEET",
+          "sheetName": "終値一覧",
+          "asOf": "2026-08-05",
+          "match": "latest"
+        }
       }
     ],
     "sources": [],
@@ -235,7 +265,7 @@
     },
     "structuredFromFullText": true,
     "structureVersion": 7,
-    "marketDataAsOf": "2024-11-22",
+    "marketDataAsOf": "2026-08-05",
     "marketDataSource": "終値一覧"
   },
   "reports": [
@@ -349,8 +379,8 @@
         {
           "name": "金",
           "direction": "上昇・強含み",
-          "price": "金：取得不能",
-          "change": "",
+          "price": "金（XAU/USD）：4253.36ドル（157.96、+3.86％）",
+          "change": "157.96、+3.86％",
           "outlook": "",
           "material": "本文参照",
           "positioning": "",
@@ -358,13 +388,19 @@
           "mainScenario": "",
           "alternativeScenario": "",
           "breakCondition": "",
-          "risk": ""
+          "risk": "",
+          "priceSource": {
+            "id": "CLOSE_PRICE_SHEET",
+            "sheetName": "終値一覧",
+            "asOf": "2026-08-05",
+            "match": "latest"
+          }
         },
         {
           "name": "原油",
           "direction": "中立・方向確認",
-          "price": "WTI原油：74.96ドル、ほぼ横ばい",
-          "change": "",
+          "price": "WTI原油：75.77ドル（-0.21、-0.28％）",
+          "change": "-0.21、-0.28％",
           "outlook": "",
           "material": "WTI原油：74.96ドル、ほぼ横ばい",
           "positioning": "半導体株主導で売られており、指数寄与度の高い銘柄の下落が先物売りを増幅している。日経平均が1.57％安である一方、銀行、内需、原油安メリット株まで一様に売られているわけではない。",
@@ -372,13 +408,19 @@
           "mainScenario": "",
           "alternativeScenario": "",
           "breakCondition": "",
-          "risk": ""
+          "risk": "",
+          "priceSource": {
+            "id": "CLOSE_PRICE_SHEET",
+            "sheetName": "終値一覧",
+            "asOf": "2026-08-05",
+            "match": "latest"
+          }
         },
         {
           "name": "日経225先物",
           "direction": "中立・方向確認",
-          "price": "日経225先物（大阪取引所）：取得不能",
-          "change": "",
+          "price": "日経225先物（大阪取引所）：66280円（2380、+3.72％）",
+          "change": "2380、+3.72％",
           "outlook": "",
           "material": "本文参照",
           "positioning": "日経225先物",
@@ -386,13 +428,19 @@
           "mainScenario": "",
           "alternativeScenario": "",
           "breakCondition": "",
-          "risk": ""
+          "risk": "",
+          "priceSource": {
+            "id": "CLOSE_PRICE_SHEET",
+            "sheetName": "終値一覧",
+            "asOf": "2026-08-05",
+            "match": "latest"
+          }
         },
         {
           "name": "USD/JPY",
           "direction": "中立・方向確認",
-          "price": "USD/JPY：154.22円（-1.07、-69.00％）",
-          "change": "-1.07、-69.00％",
+          "price": "USD/JPY：152.67円（0.2420013、+0.15％）",
+          "change": "0.2420013、+0.15％",
           "outlook": "",
           "material": "USD/JPY：157.65円付近、ほぼ横ばい",
           "positioning": "",
@@ -404,15 +452,15 @@
           "priceSource": {
             "id": "CLOSE_PRICE_SHEET",
             "sheetName": "終値一覧",
-            "asOf": "2024-11-22",
+            "asOf": "2026-08-05",
             "match": "latest"
           }
         },
         {
           "name": "EUR/USD",
           "direction": "中立・方向確認",
-          "price": "EUR/USD：取得不能",
-          "change": "",
+          "price": "EUR/USD：1.153242826（0.000292826、+0.03％）",
+          "change": "0.000292826、+0.03％",
           "outlook": "",
           "material": "本文参照",
           "positioning": "",
@@ -420,13 +468,19 @@
           "mainScenario": "",
           "alternativeScenario": "",
           "breakCondition": "",
-          "risk": ""
+          "risk": "",
+          "priceSource": {
+            "id": "CLOSE_PRICE_SHEET",
+            "sheetName": "終値一覧",
+            "asOf": "2026-08-05",
+            "match": "latest"
+          }
         },
         {
           "name": "BTCUSD",
           "direction": "中立・方向確認",
-          "price": "BTCUSD：63,436ドル前後、約2.7％安",
-          "change": "",
+          "price": "BTCUSD：64055.95313ドル（-210.14687、-0.33％）",
+          "change": "-210.14687、-0.33％",
           "outlook": "",
           "material": "BTCUSD：63,436ドル前後、約2.7％安",
           "positioning": "",
@@ -434,7 +488,13 @@
           "mainScenario": "",
           "alternativeScenario": "",
           "breakCondition": "",
-          "risk": ""
+          "risk": "",
+          "priceSource": {
+            "id": "CLOSE_PRICE_SHEET",
+            "sheetName": "終値一覧",
+            "asOf": "2026-08-05",
+            "match": "latest"
+          }
         }
       ],
       "sources": [],
@@ -447,7 +507,7 @@
       },
       "structuredFromFullText": true,
       "structureVersion": 7,
-      "marketDataAsOf": "2024-11-22",
+      "marketDataAsOf": "2026-08-05",
       "marketDataSource": "終値一覧"
     },
     {
