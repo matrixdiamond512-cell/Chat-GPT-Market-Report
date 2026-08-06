@@ -1,41 +1,56 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-08-07T02:34:00+09:00",
-  "status": "degraded",
+  "generatedAt": "2026-08-07T02:45:00+09:00",
+  "status": "ok",
   "markets": {
     "us": {
       "title": "米国市場のセクター・業種",
       "flag": "US",
-      "status": "pending_first_verified_fetch",
+      "status": "verified",
       "asOf": "2026-08-05",
-      "sourceLabel": "初回検証済み取得待ち",
+      "sourceLabel": "Google Finance（Select Sector SPDR ETF）",
       "gainers": [
-        {"rank": 1, "name": "コミュニケーション・サービス", "change": "+1.78%", "changePct": 1.78, "note": "既存表示値。次回自動取得で検証値へ更新。"},
-        {"rank": 2, "name": "ヘルスケア", "change": "+1.33%", "changePct": 1.33, "note": "既存表示値。次回自動取得で検証値へ更新。"},
-        {"rank": 3, "name": "一般消費財・サービス", "change": "+1.07%", "changePct": 1.07, "note": "既存表示値。次回自動取得で検証値へ更新。"},
-        {"rank": 4, "name": "金融", "change": "+0.93%", "changePct": 0.93, "note": "既存表示値。次回自動取得で検証値へ更新。"},
-        {"rank": 5, "name": "エネルギー", "change": "+0.46%", "changePct": 0.46, "note": "既存表示値。次回自動取得で検証値へ更新。"}
+        {"rank": 1, "name": "ヘルスケア", "code": "XLV", "changePct": 1.27082, "change": "+1.27%", "asOf": "2026-08-05", "note": "Select Sector SPDR ETF終値の前営業日比"},
+        {"rank": 2, "name": "素材", "code": "XLB", "changePct": 1.230769, "change": "+1.23%", "asOf": "2026-08-05", "note": "Select Sector SPDR ETF終値の前営業日比"},
+        {"rank": 3, "name": "一般消費財・サービス", "code": "XLY", "changePct": 0.295883, "change": "+0.30%", "asOf": "2026-08-05", "note": "Select Sector SPDR ETF終値の前営業日比"},
+        {"rank": 4, "name": "金融", "code": "XLF", "changePct": 0.207326, "change": "+0.21%", "asOf": "2026-08-05", "note": "Select Sector SPDR ETF終値の前営業日比"},
+        {"rank": 5, "name": "不動産", "code": "XLRE", "changePct": 0.066416, "change": "+0.07%", "asOf": "2026-08-05", "note": "Select Sector SPDR ETF終値の前営業日比"}
       ],
-      "losers": [],
-      "all": [],
-      "lastErrors": ["初回の検証済み下落率データがまだ生成されていません。"]
+      "losers": [
+        {"rank": 1, "name": "エネルギー", "code": "XLE", "changePct": -2.067669, "change": "-2.07%", "asOf": "2026-08-05", "note": "Select Sector SPDR ETF終値の前営業日比"},
+        {"rank": 2, "name": "コミュニケーション・サービス", "code": "XLC", "changePct": -1.04427, "change": "-1.04%", "asOf": "2026-08-05", "note": "Select Sector SPDR ETF終値の前営業日比"},
+        {"rank": 3, "name": "公益事業", "code": "XLU", "changePct": -1.020177, "change": "-1.02%", "asOf": "2026-08-05", "note": "Select Sector SPDR ETF終値の前営業日比"},
+        {"rank": 4, "name": "情報技術", "code": "XLK", "changePct": -0.529695, "change": "-0.53%", "asOf": "2026-08-05", "note": "Select Sector SPDR ETF終値の前営業日比"},
+        {"rank": 5, "name": "生活必需品", "code": "XLP", "changePct": -0.046855, "change": "-0.05%", "asOf": "2026-08-05", "note": "Select Sector SPDR ETF終値の前営業日比"}
+      ],
+      "lastErrors": []
     },
     "japan": {
       "title": "東京市場のセクター・業種",
       "flag": "JP",
-      "status": "pending_first_verified_fetch",
+      "status": "verified",
       "asOf": "2026-08-06",
-      "sourceLabel": "初回検証済み取得待ち",
+      "sourceLabel": "株探 東証33業種指数",
       "gainers": [
-        {"rank": 1, "name": "電気機器", "change": "+1.72%", "changePct": 1.72, "note": "既存表示値。次回自動取得で検証値へ更新。"},
-        {"rank": 2, "name": "情報・通信業", "change": "+1.34%", "changePct": 1.34, "note": "既存表示値。次回自動取得で検証値へ更新。"},
-        {"rank": 3, "name": "輸送用機器", "change": "+1.05%", "changePct": 1.05, "note": "既存表示値。次回自動取得で検証値へ更新。"},
-        {"rank": 4, "name": "化学", "change": "+0.78%", "changePct": 0.78, "note": "既存表示値。次回自動取得で検証値へ更新。"},
-        {"rank": 5, "name": "銀行業", "change": "+0.42%", "changePct": 0.42, "note": "既存表示値。次回自動取得で検証値へ更新。"}
+        {"rank": 1, "name": "繊維製品", "code": "0255", "changePct": 5.35, "change": "+5.35%", "asOf": "2026-08-06", "note": "東証33業種指数の前日比"},
+        {"rank": 2, "name": "医薬品", "code": "0258", "changePct": 2.9, "change": "+2.90%", "asOf": "2026-08-06", "note": "東証33業種指数の前日比"},
+        {"rank": 3, "name": "その他製品", "code": "0269", "changePct": 2.61, "change": "+2.61%", "asOf": "2026-08-06", "note": "東証33業種指数の前日比"},
+        {"rank": 4, "name": "食料品", "code": "0254", "changePct": 2.46, "change": "+2.46%", "asOf": "2026-08-06", "note": "東証33業種指数の前日比"},
+        {"rank": 5, "name": "水産・農林業", "code": "0251", "changePct": 2.34, "change": "+2.34%", "asOf": "2026-08-06", "note": "東証33業種指数の前日比"}
       ],
-      "losers": [],
-      "all": [],
-      "lastErrors": ["初回の検証済み下落率データがまだ生成されていません。"]
+      "losers": [
+        {"rank": 1, "name": "非鉄金属", "code": "0263", "changePct": -5.62, "change": "-5.62%", "asOf": "2026-08-06", "note": "東証33業種指数の前日比"},
+        {"rank": 2, "name": "ガラス・土石製品", "code": "0261", "changePct": -2.09, "change": "-2.09%", "asOf": "2026-08-06", "note": "東証33業種指数の前日比"},
+        {"rank": 3, "name": "電気機器", "code": "0266", "changePct": -1.98, "change": "-1.98%", "asOf": "2026-08-06", "note": "東証33業種指数の前日比"},
+        {"rank": 4, "name": "金属製品", "code": "0264", "changePct": -1.4, "change": "-1.40%", "asOf": "2026-08-06", "note": "東証33業種指数の前日比"},
+        {"rank": 5, "name": "情報・通信業", "code": "0275", "changePct": -0.57, "change": "-0.57%", "asOf": "2026-08-06", "note": "東証33業種指数の前日比"}
+      ],
+      "lastErrors": []
     }
-  }
+  },
+  "errors": {"us": [], "japan": []},
+  "sources": [
+    {"id": "US_SELECT_SECTOR_ETF", "name": "Google Finance historical close data", "url": "https://www.google.com/finance/"},
+    {"id": "JPX_33_INDUSTRY_KABUTAN", "name": "株探 東証33業種指数ページ", "url": "https://s.kabutan.jp/stocks/0251/"}
+  ]
 }
