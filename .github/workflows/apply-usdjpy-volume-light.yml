@@ -22,6 +22,10 @@ jobs:
         run: |
           cat .github/tmp/usdjpy_light_patch_1.b64 .github/tmp/usdjpy_light_patch_2.b64 .github/tmp/usdjpy_light_patch_3.b64 | base64 --decode > /tmp/patch_usdjpy.py
           python /tmp/patch_usdjpy.py
+      - name: Check JavaScript syntax
+        run: |
+          cp apps-script/UsdJpyVolumePageAutoUpdate.gs /tmp/UsdJpyVolumePageAutoUpdate.js
+          node --check /tmp/UsdJpyVolumePageAutoUpdate.js
       - name: Commit source update
         run: |
           git config user.name 'github-actions[bot]'
