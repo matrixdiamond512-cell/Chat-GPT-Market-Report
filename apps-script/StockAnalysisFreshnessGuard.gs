@@ -8,6 +8,15 @@ var STOCK_ANALYSIS_FRESHNESS_CONFIG = {
   lastResultProperty: 'STOCK_ANALYSIS_SAFE_UPDATE_LAST_RESULT'
 };
 
+var STOCK_BREADTH_ROOT_FIX_CONFIG = {
+  headerScanRows: 12,
+  maximumLookbackDays: 10,
+  dateHeaders: ['日付', '年月日', '基準日', '取引日', '営業日', 'date'],
+  advancerHeaders: ['東証プライム値上がり銘柄数', 'プライム値上がり銘柄数', '値上がり銘柄数', '値上がり'],
+  declinerHeaders: ['東証プライム値下がり銘柄数', 'プライム値下がり銘柄数', '値下がり銘柄数', '値下がり'],
+  ratioHeaders: ['騰落レシオ', '騰落レシオ（25日）', '25日騰落レシオ']
+};
+
 function updateStockAnalysisPageSafelyForMaster_() {
   if (
     typeof stockAnalysisBuildPayloadFromSheet_ !== 'function' ||
@@ -21,7 +30,7 @@ function updateStockAnalysisPageSafelyForMaster_() {
     });
   }
   try {
-    var payload = stockAnalysisBuildPayloadFromSheet_();
+    var payload = stockAnalysisBuildFreshPayload_();
     var freshness = stockAnalysisCheckFreshness_(payload);
     if (!freshness.ok) {
       return stockAnalysisSaveStandaloneResult_({
@@ -40,7 +49,7 @@ function updateStockAnalysisPageSafelyForMaster_() {
       targetPath,
       json,
       current.sha,
-      'Update stock analysis JSON from verified Google Sheets data'
+      'Update stock analysis JSON from verified latest Google Sheets row'
     );
     return stockAnalysisSaveStandaloneResult_({
       ok: true,
@@ -49,6 +58,8 @@ function updateStockAnalysisPageSafelyForMaster_() {
       updatedAt: payload.updatedAt || '',
       dataAsOf: payload.dataAsOf || '',
       dataAgeDays: freshness.dataAgeDays,
+      breadthSourceSheet: payload.breadthValidation ? payload.breadthValidation.sheetName : '',
+      breadthSourceRow: payload.breadthValidation ? payload.breadthValidation.rowNumber : null,
       commitSha: result.commit.sha,
       pagesUrl: STOCK_ANALYSIS_JSON_CONFIG.pagesUrl
     });
@@ -60,6 +71,174 @@ function updateStockAnalysisPageSafelyForMaster_() {
       reason: '株式市場分析の安全更新に失敗しました。'
     });
   }
+}
+
+function stockAnalysisBuildFreshPayload_() {
+  var payload = stockAnalysisBuildPayloadFromSheet_();
+  var breadth = stockAnalysisFindLatestBreadthRow_();
+  if (!breadth) return payload;
+
+  stockAnalysisApplyLatestBreadth_(payload, breadth);
+  return payload;
+}
+
+function stockAnalysisFindLatestBreadthRow_() {
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  var sheets = spreadsheet.getSheets();
+  var todayKey = Utilities.formatDate(new Date(), STOCK_ANALYSIS_FRESHNESS_CONFIG.timezone, 'yyyy-MM-dd');
+  var candidates = [];
+
+  sheets.forEach(function(sheet) {
+    var range = sheet.getDataRange();
+    if (!range || range.getNumRows() < 2 || range.getNumColumns() < 3) return;
+
+    var values = range.getValues();
+    var displays = range.getDisplayValues();
+    var maxHeaderRow = Math.min(STOCK_BREADTH_ROOT_FIX_CONFIG.headerScanRows, values.length);
+
+    for (var headerIndex = 0; headerIndex < maxHeaderRow; headerIndex += 1) {
+      var headers = displays[headerIndex].map(stockAnalysisNormalizeHeader_);
+      var dateColumn = stockAnalysisFindHeaderColumn_(headers, STOCK_BREADTH_ROOT_FIX_CONFIG.dateHeaders);
+      var advancerColumn = stockAnalysisFindHeaderColumn_(headers, STOCK_BREADTH_ROOT_FIX_CONFIG.advancerHeaders);
+      var declinerColumn = stockAnalysisFindHeaderColumn_(headers, STOCK_BREADTH_ROOT_FIX_CONFIG.declinerHeaders);
+      var ratioColumn = stockAnalysisFindHeaderColumn_(headers, STOCK_BREADTH_ROOT_FIX_CONFIG.ratioHeaders);
+
+      if (dateColumn < 0 || advancerColumn < 0 || declinerColumn < 0) continue;
+
+      for (var rowIndex = headerIndex + 1; rowIndex < values.length; rowIndex += 1) {
+        var dateKey = stockAnalysisCellDateKey_(values[rowIndex][dateColumn], displays[rowIndex][dateColumn]);
+        if (!dateKey || dateKey > todayKey) continue;
+
+        var ageDays = stockAnalysisCalendarDayDiff_(dateKey, todayKey);
+        if (ageDays < 0 || ageDays > STOCK_BREADTH_ROOT_FIX_CONFIG.maximumLookbackDays) continue;
+
+        var advancers = stockAnalysisCellNumber_(values[rowIndex][advancerColumn], displays[rowIndex][advancerColumn]);
+        var decliners = stockAnalysisCellNumber_(values[rowIndex][declinerColumn], displays[rowIndex][declinerColumn]);
+        var ratio = ratioColumn >= 0
+          ? stockAnalysisCellNumber_(values[rowIndex][ratioColumn], displays[rowIndex][ratioColumn])
+          : null;
+
+        if (!isFinite(advancers) || !isFinite(decliners)) continue;
+        if (advancers < 0 || decliners < 0 || advancers + decliners <= 0) continue;
+        if (ratio !== null && (!isFinite(ratio) || ratio < 0 || ratio > 1000)) ratio = null;
+
+        candidates.push({
+          dateKey: dateKey,
+          ageDays: ageDays,
+          advancers: Math.round(advancers),
+          decliners: Math.round(decliners),
+          ratio: ratio,
+          sheetName: sheet.getName(),
+          rowNumber: rowIndex + 1,
+          headerRowNumber: headerIndex + 1
+        });
+      }
+    }
+  });
+
+  candidates.sort(function(a, b) {
+    if (a.dateKey !== b.dateKey) return b.dateKey.localeCompare(a.dateKey);
+    if (a.sheetName === '終値一覧' && b.sheetName !== '終値一覧') return -1;
+    if (b.sheetName === '終値一覧' && a.sheetName !== '終値一覧') return 1;
+    return b.rowNumber - a.rowNumber;
+  });
+
+  return candidates.length ? candidates[0] : null;
+}
+
+function stockAnalysisApplyLatestBreadth_(payload, breadth) {
+  if (!payload || typeof payload !== 'object') throw new Error('株式市場分析ペイロードが不正です。');
+  if (!payload.marketInternals) payload.marketInternals = {};
+  if (!payload.marketInternals.japan) payload.marketInternals.japan = {};
+  if (!Array.isArray(payload.marketInternals.japan.rows)) payload.marketInternals.japan.rows = [];
+
+  var rows = payload.marketInternals.japan.rows;
+  var breadthIndex = -1;
+  var ratioIndex = -1;
+
+  rows.forEach(function(row, index) {
+    var label = Array.isArray(row) ? String(row[0] || '') : '';
+    if (/値上がり.*値下がり|上昇銘柄.*下落銘柄/.test(label)) breadthIndex = index;
+    if (/騰落レシオ/.test(label)) ratioIndex = index;
+  });
+
+  var breadthRow = [
+    '値上がり銘柄 / 値下がり銘柄',
+    breadth.advancers.toLocaleString('ja-JP') + ' / ' + breadth.decliners.toLocaleString('ja-JP'),
+    '-',
+    breadth.advancers > breadth.decliners ? '値上がり優勢。' : breadth.advancers < breadth.decliners ? '値下がり優勢。' : '値上がり・値下がりが拮抗。'
+  ];
+  if (breadthIndex >= 0) rows[breadthIndex] = breadthRow;
+  else rows.push(breadthRow);
+
+  if (breadth.ratio !== null) {
+    var ratioRow = ['騰落レシオ（25日）', stockAnalysisFormatRatio_(breadth.ratio), '-', '東証プライム市場内部の確認値。'];
+    if (ratioIndex >= 0) rows[ratioIndex] = ratioRow;
+    else rows.push(ratioRow);
+  }
+
+  var now = new Date();
+  payload.updatedAt = Utilities.formatDate(now, STOCK_ANALYSIS_FRESHNESS_CONFIG.timezone, 'yyyy/MM/dd HH:mm');
+  payload.generatedAt = Utilities.formatDate(now, STOCK_ANALYSIS_FRESHNESS_CONFIG.timezone, "yyyy-MM-dd'T'HH:mm:ssXXX");
+  payload.publishedAt = payload.generatedAt;
+  payload.dataAsOf = breadth.dateKey + 'T15:30:00+09:00';
+  payload.sourceStatus = 'Google Sheetsの最新営業日行から検証更新';
+  payload.breadthValidation = {
+    status: 'verified',
+    date: breadth.dateKey,
+    sheetName: breadth.sheetName,
+    rowNumber: breadth.rowNumber,
+    headerRowNumber: breadth.headerRowNumber,
+    advancers: breadth.advancers,
+    decliners: breadth.decliners,
+    advanceDeclineRatio: breadth.ratio,
+    checkedAt: payload.generatedAt
+  };
+}
+
+function stockAnalysisNormalizeHeader_(value) {
+  return String(value || '')
+    .replace(/[\s　]/g, '')
+    .replace(/[（）()]/g, '')
+    .replace(/％/g, '%')
+    .toLowerCase();
+}
+
+function stockAnalysisFindHeaderColumn_(normalizedHeaders, candidates) {
+  var normalizedCandidates = candidates.map(stockAnalysisNormalizeHeader_);
+  for (var i = 0; i < normalizedCandidates.length; i += 1) {
+    var exact = normalizedHeaders.indexOf(normalizedCandidates[i]);
+    if (exact >= 0) return exact;
+  }
+  for (var column = 0; column < normalizedHeaders.length; column += 1) {
+    for (var j = 0; j < normalizedCandidates.length; j += 1) {
+      if (normalizedHeaders[column].indexOf(normalizedCandidates[j]) >= 0) return column;
+    }
+  }
+  return -1;
+}
+
+function stockAnalysisCellDateKey_(rawValue, displayValue) {
+  if (Object.prototype.toString.call(rawValue) === '[object Date]' && !isNaN(rawValue.getTime())) {
+    return Utilities.formatDate(rawValue, STOCK_ANALYSIS_FRESHNESS_CONFIG.timezone, 'yyyy-MM-dd');
+  }
+  return stockAnalysisExtractDateKey_(displayValue || rawValue);
+}
+
+function stockAnalysisCellNumber_(rawValue, displayValue) {
+  if (typeof rawValue === 'number' && isFinite(rawValue)) return rawValue;
+  var text = String(displayValue || rawValue || '')
+    .replace(/,/g, '')
+    .replace(/%/g, '')
+    .replace(/％/g, '')
+    .trim();
+  if (!text || !/^-?\d+(?:\.\d+)?$/.test(text)) return null;
+  var number = Number(text);
+  return isFinite(number) ? number : null;
+}
+
+function stockAnalysisFormatRatio_(value) {
+  return Number(value).toLocaleString('ja-JP', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function updateStockAnalysisPageSafelyScheduled() {
@@ -212,7 +391,7 @@ function showStockAnalysisFreshnessStatus() {
     SpreadsheetApp.getUi().alert('株式市場分析の基礎関数が見つかりません。');
     return { ok: false, reason: 'stockAnalysisBuildPayloadFromSheet_ is not defined' };
   }
-  var payload = stockAnalysisBuildPayloadFromSheet_();
+  var payload = stockAnalysisBuildFreshPayload_();
   var result = stockAnalysisCheckFreshness_(payload);
   var message = result.ok
     ? '株式市場分析データは公開可能です。\n基準日: ' + result.dataAsOf + '\n経過日数: ' + result.dataAgeDays + '日'
