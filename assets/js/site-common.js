@@ -112,8 +112,13 @@
       '.events-practical .practical-markets-panel{margin-bottom:10px}',
       '.events-practical .practical-markets-table{min-width:680px}',
       '.events-practical .practical-markets-table th:first-child{width:25%}',
-      '.events-practical .event-list-table th:nth-child(7),.events-practical .event-list-table td:nth-child(7),.events-practical .event-list-table th:nth-child(8),.events-practical .event-list-table td:nth-child(8){display:none}',
-      '.events-practical .event-list-table{min-width:980px}',
+      '.events-practical .event-list-table th:nth-child(8),.events-practical .event-list-table td:nth-child(8),.events-practical .event-list-table th:nth-child(9),.events-practical .event-list-table td:nth-child(9){display:none}',
+      '.events-practical .event-list-table{min-width:1080px}',
+      '.events-practical .event-country-heading{width:126px;min-width:126px}',
+      '.events-practical .event-country-cell{width:126px;min-width:126px;font-weight:900}',
+      '.events-practical .event-country-inner{display:flex;align-items:center;gap:7px;white-space:nowrap}',
+      '.events-practical .event-country-flag{font-size:18px;line-height:1}',
+      '.events-practical .event-country-name{color:#173968;font-weight:950}',
       '.events-practical .scenario th:nth-child(2){color:#d0001d;background:#fff1f2}',
       '.events-practical .scenario th:nth-child(3){color:#0b55c8;background:#f4f8ff}',
       '.events-practical .scenario th:nth-child(4){color:#087045;background:#eef9f3}',
@@ -132,6 +137,99 @@
     section.className = "panel practical-markets-panel";
     section.innerHTML = '<h3 class="panel-title"><span class="badge-num">4</span>確認すべき市場</h3><div class="table-wrap"><table class="practical-markets-table"><thead><tr><th>イベント分類</th><th>主に確認する市場</th></tr></thead><tbody><tr><td>米雇用指標</td><td>米2年債・USD/JPY・米株先物</td></tr><tr><td>CPI・PCE</td><td>米2年債・米10年債・ドル・金・ナスダック先物</td></tr><tr><td>FOMC・FRB発言</td><td>米金利・ドル・米株先物・金</td></tr><tr><td>日銀関連</td><td>USD/JPY・日本金利・日経225先物</td></tr><tr><td>ECB関連</td><td>EUR/USD・欧州金利・欧州株</td></tr><tr><td>原油在庫・OPEC</td><td>WTI・エネルギー株・インフレ期待</td></tr><tr><td>国債入札</td><td>対象国の金利・為替・株価指数</td></tr></tbody></table></div>';
     return section;
+  }
+
+  function countryFlag(country) {
+    var key = clean(country);
+    var flags = {
+      "米国":"🇺🇸",
+      "日本":"🇯🇵",
+      "欧州":"🇪🇺",
+      "ユーロ圏":"🇪🇺",
+      "中国":"🇨🇳",
+      "英国":"🇬🇧",
+      "カナダ":"🇨🇦",
+      "豪州":"🇦🇺",
+      "オーストラリア":"🇦🇺",
+      "ニュージーランド":"🇳🇿",
+      "スイス":"🇨🇭",
+      "スペイン":"🇪🇸",
+      "フランス":"🇫🇷",
+      "ドイツ":"🇩🇪",
+      "イタリア":"🇮🇹",
+      "複数":"🌐"
+    };
+    return flags[key] || "🌐";
+  }
+
+  function currentDayEvents() {
+    var source = [];
+    var active = "all";
+    try {
+      if (typeof dynamicEventSource !== "undefined" && Array.isArray(dynamicEventSource)) source = dynamicEventSource.slice();
+      if (typeof activeEventCountry !== "undefined") active = activeEventCountry || "all";
+    } catch (error) { }
+
+    if (active !== "all") {
+      var primary = ["米国","日本","欧州","中国","英国"];
+      source = active === "other"
+        ? source.filter(function (event) { return primary.indexOf(event.country) === -1; })
+        : source.filter(function (event) { return event.country === active; });
+    }
+
+    var picker = document.getElementById("eventDatePicker");
+    var date = picker ? picker.value : "";
+    source = source.filter(function (event) { return !date || event.date === date; });
+    source.sort(function (a, b) {
+      var aKey = String(a.date || "") + " " + String(a.clock || (a.iso ? a.iso.slice(11,16) : "99:99")) + " " + String(a.name || "");
+      var bKey = String(b.date || "") + " " + String(b.clock || (b.iso ? b.iso.slice(11,16) : "99:99")) + " " + String(b.name || "");
+      return aKey.localeCompare(bKey);
+    });
+    return source;
+  }
+
+  function addCountryColumn() {
+    var table = document.querySelector(".event-list-table");
+    if (!table) return;
+
+    var headerRow = table.querySelector("thead tr");
+    if (headerRow && !headerRow.querySelector(".event-country-heading")) {
+      var heading = document.createElement("th");
+      heading.className = "event-country-heading";
+      heading.textContent = "国・地域";
+      headerRow.insertBefore(heading, headerRow.children[1] || null);
+    }
+
+    var eventsForDay = currentDayEvents();
+    table.querySelectorAll("tbody tr").forEach(function (row) {
+      if (row.querySelector(".event-country-cell")) return;
+
+      var button = row.querySelector("[data-dynamic-index]");
+      var index = button ? Number(button.getAttribute("data-dynamic-index")) : -1;
+      var event = Number.isInteger(index) && index >= 0 ? eventsForDay[index] : null;
+
+      if (!event && row.children.length > 1) {
+        var eventName = clean(row.children[1].textContent);
+        event = eventsForDay.find(function (item) { return clean(item.name) === eventName; }) || null;
+      }
+
+      var country = clean(event && event.country) || "—";
+      var cell = document.createElement("td");
+      cell.className = "event-country-cell";
+      var inner = document.createElement("span");
+      inner.className = "event-country-inner";
+      var flag = document.createElement("span");
+      flag.className = "event-country-flag";
+      flag.setAttribute("aria-hidden", "true");
+      flag.textContent = country === "—" ? "" : countryFlag(country);
+      var name = document.createElement("span");
+      name.className = "event-country-name";
+      name.textContent = country;
+      inner.appendChild(flag);
+      inner.appendChild(name);
+      cell.appendChild(inner);
+      row.insertBefore(cell, row.children[1] || null);
+    });
   }
 
   function rebuild() {
@@ -176,8 +274,13 @@
     if (heading && heading.textContent !== "日付別重要イベント一覧") heading.textContent = "日付別重要イベント一覧";
   }
 
+  function keepPracticalPageComplete() {
+    enforceHeading();
+    addCountryColumn();
+  }
+
   wrapNormalizer();
   rebuild();
-  enforceHeading();
-  new MutationObserver(enforceHeading).observe(document.body, {childList:true,subtree:true,characterData:true});
+  keepPracticalPageComplete();
+  new MutationObserver(keepPracticalPageComplete).observe(document.body, {childList:true,subtree:true,characterData:true});
 })();
