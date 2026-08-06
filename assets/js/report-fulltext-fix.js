@@ -1,4 +1,62 @@
-/* Market-data table parser hardening. Loaded after report-fulltext.js. */
+/* Market report full-text hardening. Loaded after report-fulltext.js. */
+
+/*
+ * Google Docs report headings are written as:
+ *   【1. 前営業日終値・主要市場データ】
+ * The base parser historically recognized only "1. ...", so the complete
+ * document was treated as one body block and the market-data table renderer
+ * was never called. Recognize both bracketed and plain headings.
+ */
+parseDocument = function parseDocumentWithBracketHeadings(rawText, fallbackTitle) {
+  const lines = String(rawText || "").replace(/\r/g, "").split("\n");
+  let cursor = 0;
+  while (cursor < lines.length && !lines[cursor].trim()) cursor += 1;
+
+  let documentTitle = fallbackTitle;
+  if (cursor < lines.length && /^マーケットレポート[｜|]/.test(lines[cursor].trim())) {
+    documentTitle = lines[cursor].trim();
+    cursor += 1;
+  }
+
+  const preface = [];
+  const sections = [];
+  let current = null;
+  const plainHeadingPattern = /^\s*(\d{1,2})[．.]\s*(.+?)\s*$/;
+  const bracketHeadingPattern = /^\s*【\s*(?:(\d{1,2})[．.]\s*)?(.+?)\s*】\s*$/;
+
+  const startSection = (number, title) => {
+    if (current) sections.push(current);
+    current = {
+      number: number || "",
+      title: String(title || "").trim(),
+      lines: []
+    };
+  };
+
+  for (; cursor < lines.length; cursor += 1) {
+    const line = lines[cursor];
+    const trimmed = line.trim();
+    const bracketHeading = trimmed.match(bracketHeadingPattern);
+    const plainHeading = trimmed.match(plainHeadingPattern);
+
+    if (bracketHeading) {
+      startSection(bracketHeading[1], bracketHeading[2]);
+      continue;
+    }
+    if (plainHeading) {
+      startSection(plainHeading[1], plainHeading[2]);
+      continue;
+    }
+
+    if (current) current.lines.push(line);
+    else preface.push(line);
+  }
+
+  if (current) sections.push(current);
+  if (!sections.length) sections.push({ number: "", title: "本文", lines });
+  return { title: documentTitle, preface, sections };
+};
+
 parseMarketLine = function parseMarketLineSafely(line) {
   const compact = String(line || "").trim().replace(/^[-・]\s*/, "");
   const separatorIndex = compact.search(/[：:]/);
@@ -10,7 +68,7 @@ parseMarketLine = function parseMarketLineSafely(line) {
   if (/^(作成時点|作成日時|対象|注記|注意|出典|補足|参考|理由)$/.test(label)) return null;
   if (/[。！？!?]/.test(label)) return null;
 
-  const recognized = /^(?:Dow|NYダウ|ダウ|Nasdaq(?:総合)?|NASDAQ(?:総合)?|S&P\s*500|日経225(?:現物|先物.*)?|日経平均.*|CME日経225先物.*|日経先物.*|USD\/JPY|USDJPY|ドル円|EUR\/USD|EURUSD|ユーロドル|金.*|ゴールド|WTI原油|原油.*|BTCUSD|BTC\/USD|Bitcoin|ビットコイン|VIX.*|日経VI|米.*債.*|日本.*国債.*|Fear\s*&\s*Greed.*|Crypto\s+Fear\s*&\s*Greed.*|日経225.*(?:EPS|PER|PBR)|PER|PBR|EPS|25日.*乖離率|200日.*乖離率|値上がり銘柄数|値下がり銘柄数|騰落レシオ|東証プライム.*)$/i.test(label);
+  const recognized = /^(?:Dow|NYダウ|ダウ|Nasdaq(?:総合)?|NASDAQ(?:総合)?|S&P\s*500|Russell\s*2000|Russell2000|日経225(?:現物|先物.*)?|日経平均.*|CME日経225先物.*|日経先物.*|USD\/JPY|USDJPY|ドル円|EUR\/USD|EURUSD|ユーロドル|金.*|ゴールド|WTI原油|原油.*|BTCUSD|BTC\/USD|Bitcoin|ビットコイン|VIX.*|日経VI|米.*債.*|日本.*国債.*|Fear\s*&\s*Greed.*|Crypto\s+Fear\s*&\s*Greed.*|日経225.*(?:EPS|PER|PBR)|PER|PBR|EPS|25日.*乖離率|200日.*乖離率|値上がり銘柄数|値下がり銘柄数|騰落レシオ|東証プライム.*)$/i.test(label);
 
   if (!recognized && label.length > 30) return null;
 
@@ -18,6 +76,61 @@ parseMarketLine = function parseMarketLineSafely(line) {
   const valueStatus = firstStop >= 0 ? body.slice(0, firstStop).trim() : body;
   const note = firstStop >= 0 ? body.slice(firstStop + 1).trim() : "";
   return { label, valueStatus, note };
+};
+
+function splitMarketValue(valueStatus, note) {
+  const source = String(valueStatus || "").trim();
+  const result = {
+    value: source || "—",
+    change: "—",
+    rate: "—",
+    note: String(note || "").trim()
+  };
+
+  const bracket = source.match(/^(.+?)（(.+)）$/);
+  if (!bracket) return result;
+
+  result.value = bracket[1].trim() || "—";
+  const details = bracket[2].split("、").map((item) => item.trim()).filter(Boolean);
+  if (details.length >= 1) result.change = details[0].replace(/^前日比\s*/, "") || "—";
+  if (details.length >= 2) result.rate = details.slice(1).join("、") || "—";
+  return result;
+}
+
+renderMarketDataSection = function renderMarketDataSectionFourColumns(lines) {
+  const markdownTable = parseMarkdownTable(lines);
+  if (markdownTable) {
+    const remainder = lines.filter((line) => !/^\s*\|.*\|\s*$/.test(line));
+    return `${renderMarkdownTable(markdownTable)}${renderRichText(remainder)}`;
+  }
+
+  const rows = [];
+  const remainder = [];
+  for (const line of lines) {
+    const parsed = parseMarketLine(line);
+    if (!parsed) {
+      remainder.push(line);
+      continue;
+    }
+    rows.push({ ...parsed, ...splitMarketValue(parsed.valueStatus, parsed.note) });
+  }
+
+  const table = rows.length ? `<div class="market-table-wrap"><table class="market-table">
+    <thead><tr>
+      <th>市場・指標</th>
+      <th>終値・値</th>
+      <th>前日比</th>
+      <th>騰落率・区分</th>
+    </tr></thead>
+    <tbody>${rows.map((row) => `<tr>
+      <th scope="row">${esc(row.label)}</th>
+      <td>${esc(row.value || "—")}</td>
+      <td>${esc(row.change || "—")}</td>
+      <td>${esc(row.rate || row.note || "—")}</td>
+    </tr>`).join("")}</tbody>
+  </table></div>` : "";
+
+  return `${table}${renderRichText(remainder)}`;
 };
 
 (() => {
@@ -52,6 +165,9 @@ parseMarketLine = function parseMarketLineSafely(line) {
 
     if (staleCurrentDaySelection || defaultOpenedOnOlderReport) {
       selectReport(latest.date, latest.time);
+    } else if (current && typeof render === "function") {
+      /* Re-render once so reports loaded before this patch also use the table parser. */
+      render();
     }
     window.clearInterval(timer);
   }, 100);
