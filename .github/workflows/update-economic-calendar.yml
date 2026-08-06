@@ -8,15 +8,14 @@ on:
     paths:
       - ".github/workflows/update-economic-calendar.yml"
       - "scripts/fetch_economic_calendar.py"
+      - "scripts/postprocess_economic_calendar.py"
+      - "scripts/test_fetch_economic_calendar.py"
+      - "scripts/test_postprocess_economic_calendar.py"
       - "config/economic_calendar.json"
       - "data/events/event_dictionary.json"
   schedule:
-    # UTC. Japan time: 00:30, 06:00, 12:00, 18:00, 22:30.
-    - cron: "30 15 * * *"
-    - cron: "0 21 * * *"
-    - cron: "0 3 * * *"
-    - cron: "0 9 * * *"
-    - cron: "30 13 * * *"
+    # UTC/JSTとも毎時07分・37分。重要指標の発表後を長時間空けない。
+    - cron: "7,37 * * * *"
 
 permissions:
   contents: write
@@ -28,7 +27,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,8 +42,13 @@ jobs:
       - name: Fetch, normalize, and retain event results
         run: python scripts/fetch_economic_calendar.py --print-summary
 
+      - name: Normalize qualitative events
+        run: python scripts/postprocess_economic_calendar.py --print-summary
+
       - name: Run calendar tests
-        run: python -m unittest scripts.test_fetch_economic_calendar -v
+        run: |
+          python -m unittest scripts.test_fetch_economic_calendar -v
+          python -m unittest scripts.test_postprocess_economic_calendar -v
 
       - name: Validate public JSON
         run: |
