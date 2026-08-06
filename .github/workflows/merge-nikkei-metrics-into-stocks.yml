@@ -1,0 +1,70 @@
+name: Merge Nikkei metrics into stocks page data
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "data/nikkei-metrics.json"
+      - "scripts/merge_nikkei_metrics_into_stocks.py"
+      - ".github/workflows/merge-nikkei-metrics-into-stocks.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: merge-nikkei-metrics-into-stocks
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Merge Nikkei metrics directly into stocks data
+        run: python scripts/merge_nikkei_metrics_into_stocks.py
+
+      - name: Validate Japan market table
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          required = {
+              "日経VI",
+              "日経225予想PER",
+              "日経225予想EPS",
+              "日経225 25日乖離率",
+              "日経225 200日乖離率",
+          }
+          data = json.loads(Path("data/stocks.json").read_text(encoding="utf-8"))
+          rows = (((data.get("marketInternals") or {}).get("japan") or {}).get("rows") or [])
+          names = {str(row[0]) for row in rows if isinstance(row, list) and row}
+          missing = required - names
+          if missing:
+              raise SystemExit("Japan market table is missing: " + ", ".join(sorted(missing)))
+          print("Validated Japan market metrics:", ", ".join(sorted(required)))
+          PY
+
+      - name: Commit stocks data
+        run: |
+          if git diff --quiet -- data/stocks.json; then
+            echo "data/stocks.json already contains the required Japan market metrics."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/stocks.json
+          git commit -m "Merge Nikkei metrics into stocks page data"
+          git pull --rebase
+          git push
