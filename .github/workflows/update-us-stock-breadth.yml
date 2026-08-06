@@ -7,6 +7,12 @@ on:
         description: "US market date YYYY-MM-DD; blank uses previous JST date"
         required: false
         default: ""
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/update-us-stock-breadth.yml"
+      - "scripts/fetch_us_stock_breadth.py"
   schedule:
     # 21:30 UTC Monday-Friday = 06:30 JST Tuesday-Saturday.
     # Runs after the regular US cash-market close.
