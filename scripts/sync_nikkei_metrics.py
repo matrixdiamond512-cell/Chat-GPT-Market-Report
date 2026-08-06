@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Sync Nikkei 225 valuation and moving-average deviation metrics.
+"""Sync Nikkei VI and Nikkei 225 valuation/technical metrics.
 
 Reads the latest complete row from the Google Sheets ``終値一覧`` tab, then:
-- adds PER, EPS, 25-day deviation, and 200-day deviation rows to data/stocks.json;
+- adds Nikkei VI, PER, EPS, 25-day deviation, and 200-day deviation rows to data/stocks.json;
 - writes data/nikkei-metrics.json for audit/debugging;
 - merges the same rows into the Stock_Analysis_JSON sheet so later GAS syncs keep them.
 """
@@ -21,14 +21,27 @@ STOCKS_PATH = ROOT / "data" / "stocks.json"
 OUTPUT_PATH = ROOT / "data" / "nikkei-metrics.json"
 JST = dt.timezone(dt.timedelta(hours=9))
 
-METRIC_HEADERS = {
-    "日経225予想PER": "日経225予想PER",
-    "日経225予想EPS": "日経225予想EPS",
-    "日経225 25日乖離率": "日経225_25日乖離率",
-    "日経225 200日乖離率": "日経225_200日乖離率",
+METRIC_ORDER = (
+    "日経VI",
+    "日経225予想PER",
+    "日経225予想EPS",
+    "日経225 25日乖離率",
+    "日経225 200日乖離率",
+)
+
+METRIC_SPECS: dict[str, dict[str, str]] = {
+    "日経VI": {
+        "value": "日経VI終値",
+        "change": "日経VI前日比",
+        "change_pct": "日経VI騰落率",
+    },
+    "日経225予想PER": {"value": "日経225予想PER"},
+    "日経225予想EPS": {"value": "日経225予想EPS"},
+    "日経225 25日乖離率": {"value": "日経225_25日乖離率"},
+    "日経225 200日乖離率": {"value": "日経225_200日乖離率"},
 }
 
-METRIC_NAMES = set(METRIC_HEADERS)
+METRIC_NAMES = set(METRIC_ORDER)
 
 
 def now_jst() -> dt.datetime:
@@ -45,7 +58,7 @@ def parse_date(value: str) -> dt.date | None:
 
 def usable(value: Any) -> bool:
     text = str(value or "").strip()
-    return bool(text and not re.search(r"取得不能|対象外|未確認|未取得|入力待ち", text))
+    return bool(text and not re.search(r"取得不能|対象外|未確認|未取得|入力待ち|休場", text))
 
 
 def numeric(value: Any) -> float | None:
@@ -60,6 +73,13 @@ def format_number(value: Any, digits: int = 2) -> str:
     return f"{number:,.{digits}f}"
 
 
+def format_signed_number(value: Any, digits: int = 2) -> str:
+    number = numeric(value)
+    if number is None:
+        return str(value or "")
+    return f"{number:+.{digits}f}"
+
+
 def format_percent(value: Any) -> str:
     number = numeric(value)
     if number is None:
@@ -70,6 +90,20 @@ def format_percent(value: Any) -> str:
 def evaluation(metric: str, raw_value: Any, as_of: str) -> str:
     value = numeric(raw_value)
     suffix = f"基準日 {as_of}。"
+    if metric == "日経VI":
+        if value is None:
+            text = "日本株の予想変動率を確認。"
+        elif value >= 40:
+            text = "極めて高い警戒水準。先物・オプション主導の急変に注意。"
+        elif value >= 35:
+            text = "高い警戒水準。値幅拡大と急反転に注意。"
+        elif value >= 25:
+            text = "警戒域。日本株のボラティリティ上昇に注意。"
+        elif value < 20:
+            text = "低位で推移。市場の警戒感は限定的。"
+        else:
+            text = "中立圏。方向だけでなく変化率も確認。"
+        return text + suffix
     if metric == "日経225予想PER":
         return "予想利益に対する株価水準。EPSと指数水準を合わせて確認。" + suffix
     if metric == "日経225予想EPS":
@@ -100,6 +134,8 @@ def evaluation(metric: str, raw_value: Any, as_of: str) -> str:
 
 
 def display_value(metric: str, raw_value: Any) -> str:
+    if metric == "日経VI":
+        return format_number(raw_value)
     if metric == "日経225予想PER":
         return format_number(raw_value) + "倍"
     if metric == "日経225予想EPS":
@@ -107,29 +143,46 @@ def display_value(metric: str, raw_value: Any) -> str:
     return format_percent(raw_value)
 
 
-def metric_rows(values: dict[str, Any], as_of: str) -> list[list[str]]:
+def display_change(metric: str, item: dict[str, Any]) -> str:
+    if metric != "日経VI":
+        return "—"
+    change = format_signed_number(item.get("change"))
+    change_pct = format_percent(item.get("change_pct"))
+    return f"{change}（{change_pct}）"
+
+
+def metric_row(metric: str, item: dict[str, Any], as_of: str) -> list[str]:
+    raw = item.get("value")
     return [
-        [metric, display_value(metric, values[metric]), "—", evaluation(metric, values[metric], as_of)]
-        for metric in (
-            "日経225予想PER",
-            "日経225予想EPS",
-            "日経225 25日乖離率",
-            "日経225 200日乖離率",
-        )
+        metric,
+        display_value(metric, raw),
+        display_change(metric, item),
+        evaluation(metric, raw, as_of),
     ]
 
 
-def merge_rows(data: dict[str, Any], rows_to_add: list[list[str]]) -> dict[str, Any]:
+def merge_rows(data: dict[str, Any], values: dict[str, dict[str, Any]], as_of: str) -> dict[str, Any]:
     japan = data.setdefault("marketInternals", {}).setdefault("japan", {})
     rows = [
         row for row in (japan.get("rows") or [])
         if not (isinstance(row, list) and row and str(row[0]).strip() in METRIC_NAMES)
     ]
-    insert_at = next(
-        (index + 1 for index, row in enumerate(rows) if isinstance(row, list) and row and str(row[0]).strip() == "騰落レシオ（25日）"),
+
+    nikkei_vi_row = metric_row("日経VI", values["日経VI"], as_of)
+    vi_insert_at = next(
+        (index + 1 for index, row in enumerate(rows)
+         if isinstance(row, list) and row and str(row[0]).strip() == "グロース250"),
+        min(3, len(rows)),
+    )
+    rows.insert(vi_insert_at, nikkei_vi_row)
+
+    valuation_rows = [metric_row(metric, values[metric], as_of) for metric in METRIC_ORDER[1:]]
+    valuation_insert_at = next(
+        (index + 1 for index, row in enumerate(rows)
+         if isinstance(row, list) and row and str(row[0]).strip() == "騰落レシオ（25日）"),
         len(rows),
     )
-    japan["rows"] = rows[:insert_at] + rows_to_add + rows[insert_at:]
+    japan["rows"] = rows[:valuation_insert_at] + valuation_rows + rows[valuation_insert_at:]
     return data
 
 
@@ -152,34 +205,45 @@ def write_stock_analysis_json(worksheet: Any, data: dict[str, Any]) -> None:
         worksheet.batch_clear([f"B3:B{worksheet.row_count}"])
 
 
-def load_latest_metrics(workbook: Any) -> tuple[dict[str, Any], str, int]:
+def required_headers() -> list[str]:
+    headers = ["日付"]
+    for metric in METRIC_ORDER:
+        for header in METRIC_SPECS[metric].values():
+            if header not in headers:
+                headers.append(header)
+    return headers
+
+
+def load_latest_metrics(workbook: Any) -> tuple[dict[str, dict[str, Any]], str, int]:
     worksheet = workbook.worksheet("終値一覧")
     table = worksheet.get_all_values()
     if not table:
         raise RuntimeError("終値一覧 sheet is empty")
     headers = [str(value or "").strip() for value in table[0]]
-    required_headers = ["日付", *METRIC_HEADERS.values()]
-    missing = [header for header in required_headers if header not in headers]
+    required = required_headers()
+    missing = [header for header in required if header not in headers]
     if missing:
         raise RuntimeError("終値一覧に必要な列がありません: " + ", ".join(missing))
 
-    indexes = {header: headers.index(header) for header in required_headers}
+    indexes = {header: headers.index(header) for header in required}
     candidates: list[tuple[dt.date, int, list[str]]] = []
     for row_number, row in enumerate(table[1:], start=2):
         date_value = row[indexes["日付"]] if len(row) > indexes["日付"] else ""
         parsed = parse_date(date_value)
         if not parsed:
             continue
-        if all(len(row) > indexes[header] and usable(row[indexes[header]]) for header in METRIC_HEADERS.values()):
+        if all(len(row) > indexes[header] and usable(row[indexes[header]]) for header in required[1:]):
             candidates.append((parsed, row_number, row))
     if not candidates:
-        raise RuntimeError("4指標がすべてそろった日付行がありません")
+        raise RuntimeError("日経VI・PER・EPS・25日乖離率・200日乖離率がそろった日付行がありません")
 
     parsed_date, row_number, row = max(candidates, key=lambda item: item[0])
-    values = {
-        metric: row[indexes[header]]
-        for metric, header in METRIC_HEADERS.items()
-    }
+    values: dict[str, dict[str, Any]] = {}
+    for metric in METRIC_ORDER:
+        values[metric] = {
+            key: row[indexes[header]]
+            for key, header in METRIC_SPECS[metric].items()
+        }
     return values, parsed_date.isoformat(), row_number
 
 
@@ -201,38 +265,38 @@ def main() -> int:
     )
     workbook = gspread.authorize(credentials).open_by_key(spreadsheet_id)
     values, as_of, source_row = load_latest_metrics(workbook)
-    rows_to_add = metric_rows(values, as_of)
 
     stocks = json.loads(STOCKS_PATH.read_text(encoding="utf-8"))
-    merge_rows(stocks, rows_to_add)
+    merge_rows(stocks, values, as_of)
     timestamp = now_jst().isoformat()
     stocks["updatedAt"] = timestamp
-    stocks["sourceStatus"] = "Google Sheetsから更新＋日経バリュエーション自動連携"
+    stocks["sourceStatus"] = "Google Sheetsから更新＋日経VI・日経バリュエーション自動連携"
     stocks["nikkeiMetricsAsOf"] = as_of
     STOCKS_PATH.write_text(json.dumps(stocks, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     stock_sheet = workbook.worksheet("Stock_Analysis_JSON")
     stock_sheet_data = read_stock_analysis_json(stock_sheet)
     if stock_sheet_data is not None:
-        merge_rows(stock_sheet_data, rows_to_add)
+        merge_rows(stock_sheet_data, values, as_of)
         stock_sheet_data["updatedAt"] = now_jst().strftime("%Y/%m/%d %H:%M")
-        stock_sheet_data["sourceStatus"] = "Google Sheetsから更新＋日経バリュエーション自動連携"
+        stock_sheet_data["sourceStatus"] = "Google Sheetsから更新＋日経VI・日経バリュエーション自動連携"
         stock_sheet_data["nikkeiMetricsAsOf"] = as_of
         write_stock_analysis_json(stock_sheet, stock_sheet_data)
 
     payload = {
-        "schemaVersion": "1.0.0",
+        "schemaVersion": "1.1.0",
         "generatedAt": timestamp,
         "dataAsOf": as_of,
         "sourceSheet": "終値一覧",
         "sourceRow": source_row,
         "metrics": {
             metric: {
-                "raw": str(values[metric]),
-                "display": display_value(metric, values[metric]),
-                "evaluation": evaluation(metric, values[metric], as_of),
+                "raw": str(values[metric].get("value", "")),
+                "display": display_value(metric, values[metric].get("value")),
+                "change": display_change(metric, values[metric]),
+                "evaluation": evaluation(metric, values[metric].get("value"), as_of),
             }
-            for metric in METRIC_HEADERS
+            for metric in METRIC_ORDER
         },
     }
     OUTPUT_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
