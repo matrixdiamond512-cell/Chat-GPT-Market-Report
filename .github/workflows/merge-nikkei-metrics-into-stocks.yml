@@ -1,4 +1,4 @@
-name: Merge Nikkei metrics into stocks page data
+name: Update Tokyo stock table and daily archive
 
 on:
   workflow_dispatch:
@@ -7,19 +7,20 @@ on:
     paths:
       - "data/nikkei-metrics.json"
       - "scripts/merge_nikkei_metrics_into_stocks.py"
+      - "scripts/archive_stocks_snapshot.py"
       - ".github/workflows/merge-nikkei-metrics-into-stocks.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: merge-nikkei-metrics-into-stocks
+  group: stocks-page-daily-state
   cancel-in-progress: false
 
 jobs:
   merge:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,10 +32,15 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Merge Nikkei metrics directly into stocks data
+      - name: Validate scripts
+        run: |
+          python -m py_compile scripts/archive_stocks_snapshot.py
+          python -m py_compile scripts/merge_nikkei_metrics_into_stocks.py
+
+      - name: Advance completed Tokyo session only
         run: python scripts/merge_nikkei_metrics_into_stocks.py
 
-      - name: Validate Japan market table
+      - name: Validate Japan market table and independent dates
         run: |
           python - <<'PY'
           import json
@@ -53,18 +59,22 @@ jobs:
           missing = required - names
           if missing:
               raise SystemExit("Japan market table is missing: " + ", ".join(sorted(missing)))
-          print("Validated Japan market metrics:", ", ".join(sorted(required)))
+          dates = data.get("marketDates") or {}
+          if not dates.get("us") or not dates.get("japan"):
+              raise SystemExit("Both U.S. and Tokyo market dates are required")
+          print("US data date retained:", dates["us"])
+          print("Tokyo data date advanced:", dates["japan"])
           PY
 
-      - name: Commit stocks data
+      - name: Commit Tokyo table and archive
         run: |
-          if git diff --quiet -- data/stocks.json; then
-            echo "data/stocks.json already contains the required Japan market metrics."
+          if git diff --quiet -- data/stocks.json data/history/stocks; then
+            echo "Tokyo data and archive are already current."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/stocks.json
-          git commit -m "Merge Nikkei metrics into stocks page data"
+          git add data/stocks.json data/history/stocks
+          git commit -m "Update completed Tokyo session and stock archive"
           git pull --rebase
           git push
