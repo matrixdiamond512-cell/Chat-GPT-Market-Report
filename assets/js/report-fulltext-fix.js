@@ -19,3 +19,40 @@ parseMarketLine = function parseMarketLineSafely(line) {
   const note = firstStop >= 0 ? body.slice(firstStop + 1).trim() : "";
   return { label, valueStatus, note };
 };
+
+(() => {
+  "use strict";
+  let attempts = 0;
+  const timer = window.setInterval(() => {
+    attempts += 1;
+    const list = typeof reports !== "undefined" && Array.isArray(reports) ? reports : [];
+    if (!list.length || typeof selectReport !== "function") {
+      if (attempts >= 40) window.clearInterval(timer);
+      return;
+    }
+
+    const latest = [...list]
+      .filter((item) => item && item.date && item.time)
+      .sort((a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`))[0];
+    if (!latest) {
+      window.clearInterval(timer);
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const requestedDate = params.get("date");
+    const requestedTime = params.get("time");
+    const current = typeof selectedReport !== "undefined" ? selectedReport : null;
+    const staleCurrentDaySelection = requestedDate === latest.date
+      && requestedTime
+      && `${requestedDate} ${requestedTime}` < `${latest.date} ${latest.time}`;
+    const defaultOpenedOnOlderReport = !requestedDate
+      && current
+      && `${current.date} ${current.time || ""}` < `${latest.date} ${latest.time}`;
+
+    if (staleCurrentDaySelection || defaultOpenedOnOlderReport) {
+      selectReport(latest.date, latest.time);
+    }
+    window.clearInterval(timer);
+  }, 100);
+})();
