@@ -2,6 +2,8 @@
   "use strict";
 
   const DATA_PATH = "data/market/us-stock-breadth.json";
+  let cachedPayload = null;
+  let renderQueued = false;
 
   function esc(value) {
     return String(value ?? "")
@@ -28,11 +30,13 @@
   }
 
   function findUsBreadthCard() {
-    return [...document.querySelectorAll("article, section, div")]
-      .find((node) => {
-        const heading = node.querySelector?.("h2, h3");
-        return heading && heading.textContent.trim() === "アメリカ株の広がり";
-      }) || null;
+    const headings = [...document.querySelectorAll("h2, h3")];
+    const heading = headings.find((node) => node.textContent.trim() === "アメリカ株の広がり");
+    if (!heading) return null;
+    return heading.closest("article")
+      || heading.closest(".environment-summary-card")
+      || heading.closest(".panel")
+      || heading.parentElement;
   }
 
   function exchangeBlock(name, row) {
@@ -62,7 +66,7 @@
     const style = document.createElement("style");
     style.id = "usBreadthSplitStyle";
     style.textContent = `
-      .us-breadth-split-card{display:grid;gap:10px}
+      .us-breadth-split-card{display:grid!important;gap:10px}
       .us-breadth-split-title{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
       .us-breadth-split-title h2,.us-breadth-split-title h3{margin:0}
       .us-breadth-split-title p{margin:2px 0 0;font-size:12px;color:#50627a}
@@ -88,9 +92,12 @@
     const nyse = payload?.exchanges?.NYSE;
     const nasdaq = payload?.exchanges?.NASDAQ;
     if (!card || !nyse || !nasdaq) return false;
+    if (card.dataset.usBreadthSplitKey === `${payload.marketDate}|${nyse.advancers}|${nasdaq.advancers}`
+      && card.querySelector(".us-breadth-exchanges")) return true;
 
     installStyle();
     card.classList.add("us-breadth-split-card");
+    card.dataset.usBreadthSplitKey = `${payload.marketDate}|${nyse.advancers}|${nasdaq.advancers}`;
     card.innerHTML = `
       <div class="us-breadth-split-title">
         <div>
@@ -110,15 +117,34 @@
     return true;
   }
 
+  function scheduleRender() {
+    if (!cachedPayload || renderQueued) return;
+    renderQueued = true;
+    window.requestAnimationFrame(() => {
+      renderQueued = false;
+      render(cachedPayload);
+    });
+  }
+
+  function watchDashboardRerenders() {
+    const root = document.getElementById("environmentSummary") || document.body;
+    const observer = new MutationObserver(() => scheduleRender());
+    observer.observe(root, { childList: true, subtree: true });
+    window.addEventListener("popstate", scheduleRender);
+    window.addEventListener("us-stock-breadth-loaded", scheduleRender);
+  }
+
   async function loadAndRender() {
     try {
       const response = await fetch(`${DATA_PATH}?ts=${Date.now()}`, { cache: "no-store" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const payload = await response.json();
+      cachedPayload = await response.json();
+      installStyle();
+      watchDashboardRerenders();
       let attempts = 0;
       const timer = window.setInterval(() => {
         attempts += 1;
-        if (render(payload) || attempts >= 60) window.clearInterval(timer);
+        if (render(cachedPayload) || attempts >= 120) window.clearInterval(timer);
       }, 250);
     } catch (error) {
       console.warn("US breadth split card load failed", error);
