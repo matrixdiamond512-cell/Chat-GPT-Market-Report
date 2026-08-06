@@ -40,6 +40,6 @@ jobs:
         run: |
           python scripts/run_market_data_window.py \
             --slot "07:00" \
-            --times "05:55,06:30,06:35,06:40,06:45,06:50,06:55" \
+            --times "06:00,06:30,06:35,06:40,06:45,06:50,06:55" \
             --trigger-source "health_check" \
             --max-catchup-minutes 120
