@@ -1,0 +1,47 @@
+name: Restore US market internals table
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/restore_us_market_internals_table.py"
+      - ".github/workflows/restore-us-market-internals.yml"
+  schedule:
+    - cron: "50 21 * * 1-5"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: restore-us-market-internals
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Restore NYSE NASDAQ and 200-day rows
+        run: python scripts/restore_us_market_internals_table.py
+
+      - name: Commit updated table data
+        shell: bash
+        run: |
+          if git diff --quiet -- data/stocks.json data/market/us-stock-breadth.json; then
+            echo "No data changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/stocks.json data/market/us-stock-breadth.json
+          git commit -m "Restore US market internals table rows"
+          git push
