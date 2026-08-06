@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-08-06T22:10:48+09:00",
-  "publishedAt": "2026-08-06T22:10:48+09:00",
-  "dataAsOf": "2026-08-06T22:10:48+09:00",
+  "generatedAt": "2026-08-06T22:18:32+09:00",
+  "publishedAt": "2026-08-06T22:18:32+09:00",
+  "dataAsOf": "2026-08-06T22:18:32+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -28,24 +28,13 @@
       "status": "available"
     },
     {
-      "id": "official_result_fallback",
-      "name": "公式発表元による実績値補完",
-      "status": "warning",
-      "note": "公式発表元から0件を補完。取得エラー2件。"
+      "id": "event_result_repair",
+      "name": "重要イベント実績値の補完取得",
+      "status": "ok",
+      "note": "代替カレンダー照合 3件、公式PDF補完 0件、取得不能理由明記 1件。"
     }
   ],
-  "errors": [
-    {
-      "code": "OFFICIAL_RESULT_FALLBACK_FAILED",
-      "message": "米新規失業保険申請件数: HTTPError: HTTP Error 403: Forbidden",
-      "at": "2026-08-06T22:10:48+09:00"
-    },
-    {
-      "code": "OFFICIAL_RESULT_FALLBACK_FAILED",
-      "message": "欧州 Spanish 10-y 国債入札: URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>",
-      "at": "2026-08-06T22:10:48+09:00"
-    }
-  ],
+  "errors": [],
   "date": "2026-08-04",
   "events": [
     {
@@ -287,13 +276,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:10:48+09:00",
+      "updatedAt": "2026-08-06T22:18:32+09:00",
+      "resultSavedAt": "2026-08-06T22:18:32+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Ministry of Finance",
         "url": "http://www.mof.go.jp"
-      },
-      "resultSavedAt": "2026-08-06T22:10:48+09:00"
+      }
     },
     {
       "id": "event-c991f1a1473a9b",
@@ -1122,13 +1111,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:10:48+09:00",
+      "updatedAt": "2026-08-06T22:18:32+09:00",
+      "resultSavedAt": "2026-08-06T22:18:32+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Bureau of Labour Statistics",
         "url": "http://www.bls.gov"
-      },
-      "resultSavedAt": "2026-08-06T22:10:48+09:00"
+      }
     },
     {
       "date": "2026-08-04",
@@ -1141,9 +1130,9 @@
       "importance": 3,
       "forecast": "未取得",
       "previous": "759.4万人",
-      "actual": "",
+      "actual": "3232000",
       "resultComparison": "",
-      "resultExplanation": "",
+      "resultExplanation": "実績 3232000 は予想 未取得 に対して比較保留。名称差・国コード差を補正してTradingView実績データから照合しました。",
       "affectedMarkets": [
         "米金利",
         "USD/JPY",
@@ -1165,10 +1154,23 @@
       "comparison": [],
       "id": "event-t8rc0b",
       "createdAt": "2026-08-05T17:27:12+09:00",
-      "updatedAt": "2026-08-05T17:27:12+09:00",
+      "updatedAt": "2026-08-06T22:18:33+09:00",
       "isTimed": true,
       "isImportantEvent": true,
-      "status": "needs_result"
+      "status": "released",
+      "revised": "",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "tradingview_repair",
+        "name": "Bureau of Labour Statistics",
+        "url": "http://www.bls.gov"
+      },
+      "resultSavedAt": "2026-08-06T22:18:33+09:00",
+      "conclusion": {
+        "narrative": "結果確認済み",
+        "reaction": "市場反応を確認"
+      }
     },
     {
       "date": "2026-08-04",

@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-08-06T22:10:48+09:00",
-  "publishedAt": "2026-08-06T22:10:48+09:00",
-  "dataAsOf": "2026-08-06T22:10:48+09:00",
+  "generatedAt": "2026-08-06T22:18:32+09:00",
+  "publishedAt": "2026-08-06T22:18:32+09:00",
+  "dataAsOf": "2026-08-06T22:18:32+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -28,24 +28,13 @@
       "status": "available"
     },
     {
-      "id": "official_result_fallback",
-      "name": "公式発表元による実績値補完",
-      "status": "warning",
-      "note": "公式発表元から0件を補完。取得エラー2件。"
+      "id": "event_result_repair",
+      "name": "重要イベント実績値の補完取得",
+      "status": "ok",
+      "note": "代替カレンダー照合 3件、公式PDF補完 0件、取得不能理由明記 1件。"
     }
   ],
-  "errors": [
-    {
-      "code": "OFFICIAL_RESULT_FALLBACK_FAILED",
-      "message": "米新規失業保険申請件数: HTTPError: HTTP Error 403: Forbidden",
-      "at": "2026-08-06T22:10:48+09:00"
-    },
-    {
-      "code": "OFFICIAL_RESULT_FALLBACK_FAILED",
-      "message": "欧州 Spanish 10-y 国債入札: URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>",
-      "at": "2026-08-06T22:10:48+09:00"
-    }
-  ],
+  "errors": [],
   "date": "2026-08-03",
   "events": [
     {
@@ -293,13 +282,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:10:48+09:00",
+      "updatedAt": "2026-08-06T22:18:33+09:00",
+      "resultSavedAt": "2026-08-06T22:05:00+09:00",
       "resultSource": {
         "id": "forex_factory",
         "name": "Forex Factory Economic Calendar",
         "url": "https://www.forexfactory.com/calendar"
       },
-      "resultSavedAt": "2026-08-06T22:05:00+09:00",
       "resultExpected": false,
       "resultType": "qualitative"
     },
@@ -664,7 +653,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:10:48+09:00"
+      "updatedAt": "2026-08-06T22:18:32+09:00"
     },
     {
       "id": "event-9327e56dbf71e8",
@@ -911,13 +900,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:10:48+09:00",
+      "updatedAt": "2026-08-06T22:18:33+09:00",
+      "resultSavedAt": "2026-08-06T22:05:00+09:00",
       "resultSource": {
         "id": "forex_factory",
         "name": "Forex Factory Economic Calendar",
         "url": "https://www.forexfactory.com/calendar"
       },
-      "resultSavedAt": "2026-08-06T22:05:00+09:00",
       "resultExpected": false,
       "resultType": "qualitative"
     },
@@ -1316,13 +1305,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:10:48+09:00",
+      "updatedAt": "2026-08-06T22:18:32+09:00",
+      "resultSavedAt": "2026-08-06T22:18:32+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Institute for Supply Management",
         "url": "https://www.ismworld.org"
-      },
-      "resultSavedAt": "2026-08-06T22:10:48+09:00"
+      }
     },
     {
       "id": "event-5003605c94efbe",
@@ -1569,13 +1558,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:10:48+09:00",
+      "updatedAt": "2026-08-06T22:18:32+09:00",
+      "resultSavedAt": "2026-08-06T22:18:32+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Institute for Supply Management",
         "url": "https://www.ismworld.org"
-      },
-      "resultSavedAt": "2026-08-06T22:10:48+09:00"
+      }
     }
   ]
 }

@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-08-06T22:10:48+09:00",
-  "publishedAt": "2026-08-06T22:10:48+09:00",
-  "dataAsOf": "2026-08-06T22:10:48+09:00",
+  "generatedAt": "2026-08-06T22:18:32+09:00",
+  "publishedAt": "2026-08-06T22:18:32+09:00",
+  "dataAsOf": "2026-08-06T22:18:32+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -28,24 +28,13 @@
       "status": "available"
     },
     {
-      "id": "official_result_fallback",
-      "name": "公式発表元による実績値補完",
-      "status": "warning",
-      "note": "公式発表元から0件を補完。取得エラー2件。"
+      "id": "event_result_repair",
+      "name": "重要イベント実績値の補完取得",
+      "status": "ok",
+      "note": "代替カレンダー照合 3件、公式PDF補完 0件、取得不能理由明記 1件。"
     }
   ],
-  "errors": [
-    {
-      "code": "OFFICIAL_RESULT_FALLBACK_FAILED",
-      "message": "米新規失業保険申請件数: HTTPError: HTTP Error 403: Forbidden",
-      "at": "2026-08-06T22:10:48+09:00"
-    },
-    {
-      "code": "OFFICIAL_RESULT_FALLBACK_FAILED",
-      "message": "欧州 Spanish 10-y 国債入札: URLError: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1010)>",
-      "at": "2026-08-06T22:10:48+09:00"
-    }
-  ],
+  "errors": [],
   "date": "2026-08-06",
   "events": [
     {
@@ -293,13 +282,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:10:48+09:00",
+      "updatedAt": "2026-08-06T22:18:33+09:00",
+      "resultSavedAt": "2026-08-06T22:05:00+09:00",
       "resultSource": {
         "id": "federal_reserve",
         "name": "Federal Reserve FOMC calendar",
         "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
       },
-      "resultSavedAt": "2026-08-06T22:05:00+09:00",
       "resultExpected": false,
       "resultType": "qualitative"
     },
@@ -548,13 +537,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:10:48+09:00",
+      "updatedAt": "2026-08-06T22:18:33+09:00",
+      "resultSavedAt": "2026-08-06T22:05:00+09:00",
       "resultSource": {
         "id": "forex_factory",
         "name": "Forex Factory Economic Calendar",
         "url": "https://www.forexfactory.com/calendar"
       },
-      "resultSavedAt": "2026-08-06T22:05:00+09:00",
       "resultExpected": false,
       "resultType": "qualitative"
     },
@@ -803,13 +792,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:10:48+09:00",
+      "updatedAt": "2026-08-06T22:18:33+09:00",
+      "resultSavedAt": "2026-08-06T22:05:00+09:00",
       "resultSource": {
         "id": "federal_reserve",
         "name": "Federal Reserve FOMC calendar",
         "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
       },
-      "resultSavedAt": "2026-08-06T22:05:00+09:00",
       "resultExpected": false,
       "resultType": "qualitative"
     },
@@ -1052,13 +1041,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:10:48+09:00",
+      "updatedAt": "2026-08-06T22:18:32+09:00",
+      "resultSavedAt": "2026-08-06T22:18:32+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Ministry of Finance",
         "url": "http://www.mof.go.jp"
-      },
-      "resultSavedAt": "2026-08-06T22:10:48+09:00"
+      }
     },
     {
       "id": "event-adbc38a770c7e0",
@@ -1079,11 +1068,11 @@
       "importanceLabel": "中",
       "forecast": "",
       "previous": "3.40|1.8",
-      "actual": "",
+      "actual": "3.005%",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
-      "status": "result_pending",
+      "resultExplanation": "実績 3.005% は予想 なし に対して比較保留。名称差・国コード差を補正してTradingView実績データから照合しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1285,8 +1274,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "結果確認中",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1304,7 +1293,15 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-06T20:37:20+09:00",
-      "updatedAt": "2026-08-06T22:10:48+09:00"
+      "updatedAt": "2026-08-06T22:18:33+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "tradingview_repair",
+        "name": "Tesoro Público",
+        "url": "http://www.tesoro.es"
+      },
+      "resultSavedAt": "2026-08-06T22:18:33+09:00"
     },
     {
       "id": "event-62ba808a133d01",
@@ -1328,7 +1325,7 @@
       "actual": "",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
+      "resultExplanation": "取得不能（代替カレンダーと公式発表元の双方で入札結果を照合できません）",
       "status": "result_pending",
       "isTimed": true,
       "isImportantEvent": true,
@@ -1550,7 +1547,8 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-06T20:37:20+09:00",
-      "updatedAt": "2026-08-06T22:10:48+09:00"
+      "updatedAt": "2026-08-06T22:18:33+09:00",
+      "resultFetchStatus": "unavailable"
     },
     {
       "id": "event-ba23dc7ac56a2f",
@@ -1571,11 +1569,11 @@
       "importanceLabel": "中",
       "forecast": "203K",
       "previous": "197K",
-      "actual": "",
+      "actual": "1801K",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
-      "status": "result_pending",
+      "resultComparison": "市場予想を上回る",
+      "resultExplanation": "実績 1801K は予想 203K に対して市場予想を上回る。名称差・国コード差を補正してTradingView実績データから照合しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1778,8 +1776,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "結果確認中",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を上回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1797,7 +1795,15 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-06T22:10:48+09:00"
+      "updatedAt": "2026-08-06T22:18:33+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "tradingview_repair",
+        "name": "Department of Labour",
+        "url": "http://www.dol.gov"
+      },
+      "resultSavedAt": "2026-08-06T22:18:33+09:00"
     }
   ]
 }
