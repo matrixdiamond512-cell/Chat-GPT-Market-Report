@@ -1,0 +1,80 @@
+name: Update Nikkei valuation metrics
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "35 21 * * 0-4" # 06:35 JST, Monday-Friday
+    - cron: "35 7 * * 1-5"  # 16:35 JST, Monday-Friday
+  push:
+    branches: [main]
+    paths:
+      - "scripts/sync_nikkei_metrics.py"
+      - ".github/workflows/update-nikkei-metrics.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-nikkei-metrics
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Google Sheets dependencies
+        run: python -m pip install --disable-pip-version-check gspread google-auth
+
+      - name: Sync Nikkei metrics
+        env:
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python scripts/sync_nikkei_metrics.py
+
+      - name: Validate output
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          required = {
+              "日経225予想PER",
+              "日経225予想EPS",
+              "日経225 25日乖離率",
+              "日経225 200日乖離率",
+          }
+          payload = json.loads(Path("data/nikkei-metrics.json").read_text(encoding="utf-8"))
+          if set((payload.get("metrics") or {}).keys()) != required:
+              raise SystemExit("nikkei-metrics.json is missing required metrics")
+          stocks = json.loads(Path("data/stocks.json").read_text(encoding="utf-8"))
+          rows = (((stocks.get("marketInternals") or {}).get("japan") or {}).get("rows") or [])
+          names = {str(row[0]) for row in rows if isinstance(row, list) and row}
+          missing = required - names
+          if missing:
+              raise SystemExit("data/stocks.json is missing: " + ", ".join(sorted(missing)))
+          print("Validated Nikkei metrics for", payload.get("dataAsOf"))
+          PY
+
+      - name: Commit updated data
+        run: |
+          if git diff --quiet -- data/stocks.json data/nikkei-metrics.json; then
+            echo "Nikkei metrics are already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/stocks.json data/nikkei-metrics.json
+          git commit -m "Update Nikkei valuation metrics"
+          git pull --rebase
+          git push
