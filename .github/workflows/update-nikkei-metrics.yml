@@ -49,6 +49,7 @@ jobs:
           from pathlib import Path
 
           required = {
+              "日経VI",
               "日経225予想PER",
               "日経225予想EPS",
               "日経225 25日乖離率",
@@ -63,7 +64,7 @@ jobs:
           missing = required - names
           if missing:
               raise SystemExit("data/stocks.json is missing: " + ", ".join(sorted(missing)))
-          print("Validated Nikkei metrics for", payload.get("dataAsOf"))
+          print("Validated Nikkei VI and valuation metrics for", payload.get("dataAsOf"))
           PY
 
       - name: Commit updated data
@@ -75,6 +76,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/stocks.json data/nikkei-metrics.json
-          git commit -m "Update Nikkei valuation metrics"
+          git commit -m "Update Nikkei VI and valuation metrics"
           git pull --rebase
           git push
