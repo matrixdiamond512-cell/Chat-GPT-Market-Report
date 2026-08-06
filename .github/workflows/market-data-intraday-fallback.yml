@@ -1,0 +1,84 @@
+name: Intraday market data fallback windows
+
+on:
+  workflow_dispatch:
+    inputs:
+      report_slot:
+        description: "Report slot"
+        required: true
+        type: choice
+        options:
+          - "12:00"
+          - "16:00"
+          - "21:00"
+  schedule:
+    # JST weekdays: two independent fallbacks per report window.
+    - cron: "42 2 * * 1-5"
+    - cron: "52 2 * * 1-5"
+    - cron: "42 6 * * 1-5"
+    - cron: "52 6 * * 1-5"
+    - cron: "42 11 * * 1-5"
+    - cron: "52 11 * * 1-5"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-data-intraday-window
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Google Sheets dependencies
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
+
+      - name: Resolve report slot and acquisition times
+        id: window
+        shell: bash
+        run: |
+          SCHEDULE="${{ github.event.schedule }}"
+          SLOT="${{ inputs.report_slot }}"
+          case "$SCHEDULE" in
+            "42 2 * * 1-5"|"52 2 * * 1-5") SLOT="12:00" ;;
+            "42 6 * * 1-5"|"52 6 * * 1-5") SLOT="16:00" ;;
+            "42 11 * * 1-5"|"52 11 * * 1-5") SLOT="21:00" ;;
+          esac
+          case "$SLOT" in
+            "12:00") TIMES="11:30,11:35,11:40,11:45,11:50,11:55" ;;
+            "16:00") TIMES="15:30,15:35,15:40,15:45,15:50,15:55" ;;
+            "21:00") TIMES="20:30,20:35,20:40,20:45,20:50,20:55" ;;
+            *) echo "Unsupported slot: $SLOT" >&2; exit 1 ;;
+          esac
+          echo "slot=$SLOT" >> "$GITHUB_OUTPUT"
+          echo "times=$TIMES" >> "$GITHUB_OUTPUT"
+
+      - name: Validate acquisition programs
+        run: |
+          python -m py_compile scripts/fetch_market_data.py
+          python -m py_compile scripts/run_market_data_acquisition.py
+          python -m py_compile scripts/run_market_data_window.py
+
+      - name: Recover missing acquisition attempts
+        env:
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          ACQUISITION_TRIGGER_SOURCE: intraday_fallback_window
+        run: |
+          python scripts/run_market_data_window.py \
+            --slot "${{ steps.window.outputs.slot }}" \
+            --times "${{ steps.window.outputs.times }}" \
+            --trigger-source "intraday_fallback_window" \
+            --max-catchup-minutes 90
