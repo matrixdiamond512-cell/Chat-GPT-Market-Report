@@ -10,9 +10,11 @@ on:
       - "scripts/fetch_economic_calendar.py"
       - "scripts/postprocess_economic_calendar.py"
       - "scripts/repair_missing_event_results.py"
+      - "scripts/validate_weekly_claims_result.py"
       - "scripts/test_fetch_economic_calendar.py"
       - "scripts/test_postprocess_economic_calendar.py"
       - "scripts/test_repair_missing_event_results.py"
+      - "scripts/test_validate_weekly_claims_result.py"
       - "config/economic_calendar.json"
       - "data/events/event_dictionary.json"
   schedule:
@@ -53,11 +55,15 @@ jobs:
       - name: Repair missing numeric results
         run: python -m scripts.repair_missing_event_results --print-summary
 
+      - name: Validate weekly unemployment claims
+        run: python -m scripts.validate_weekly_claims_result --print-summary
+
       - name: Run calendar tests
         run: |
           python -m unittest scripts.test_fetch_economic_calendar -v
           python -m unittest scripts.test_postprocess_economic_calendar -v
           python -m unittest scripts.test_repair_missing_event_results -v
+          python -m unittest scripts.test_validate_weekly_claims_result -v
 
       - name: Validate public JSON
         run: |
