@@ -24,7 +24,6 @@ var MARKET_REPORT_MASTER_SCHEDULER_CONFIG = {
     'autoPublishMarketReport0900',
     'pollLatestMarketReportAndPublish',
     'continueHistoricalMarketReportImport',
-    'updateUsdJpyVolumePageFromSources',
     'syncDashboardJsonToGitHub'
   ]
 };
@@ -46,7 +45,7 @@ function installMarketReportMasterSchedulerTriggers() {
   } catch (error) {
     var remaining = marketReportMasterTriggerNames_();
     SpreadsheetApp.getUi().alert(
-      '共通トリガーの設定に失敗しました。\n' +
+      '本文・ダッシュボード用トリガーの設定に失敗しました。\n' +
       '理由: ' + error.message + '\n\n' +
       '削除済みトリガー: ' + cleanup.deletedCount + '\n' +
       '作成済みトリガー: ' + created.length + '\n' +
@@ -56,10 +55,10 @@ function installMarketReportMasterSchedulerTriggers() {
     throw error;
   }
   SpreadsheetApp.getUi().alert(
-    '本文・ダッシュボード用の共通トリガーを設定しました。\n\n' +
+    '本文・ダッシュボード用の自動更新を設定しました。\n\n' +
     '通常: 07:30 / 12:30 / 16:30 / 21:30\n' +
     '再チェック: 08:30 / 13:30 / 17:30 / 22:30\n\n' +
-    '重要イベントと株式市場分析は対象外です。\n' +
+    '東京市場ドル円出来高・重要イベント・株式市場分析は対象外です。\n' +
     '削除した共通管理トリガー: ' + cleanup.deletedCount + '\n' +
     '作成した共通トリガー: ' + created.length
   );
@@ -69,8 +68,8 @@ function installMarketReportMasterSchedulerTriggers() {
 function uninstallMarketReportMasterSchedulerTriggers() {
   var deleted = deleteMarketReportMasterTriggers_();
   SpreadsheetApp.getUi().alert(
-    '本文・ダッシュボード用の共通トリガーを削除しました。\n' +
-    '重要イベントと株式市場分析の独立トリガーは削除していません。\n' +
+    '本文・ダッシュボード用の自動更新を削除しました。\n' +
+    '東京市場ドル円出来高・重要イベント・株式市場分析の独立トリガーは削除していません。\n' +
     '削除数: ' + deleted
   );
   return deleted;
@@ -80,7 +79,7 @@ function cleanupOldMarketReportPageTriggersForMasterScheduler() {
   var cleanup = deleteMarketReportMasterManagedTriggers_();
   SpreadsheetApp.getUi().alert(
     '本文・ダッシュボード系の古いトリガーを整理しました。\n' +
-    '重要イベントと株式市場分析は対象外です。\n' +
+    '東京市場ドル円出来高・重要イベント・株式市場分析は対象外です。\n' +
     '削除数: ' + cleanup.deletedCount + '\n\n' +
     '削除したトリガー:\n' + (cleanup.deletedHandlers.length ? cleanup.deletedHandlers.join('\n') : 'なし')
   );
@@ -102,11 +101,11 @@ function showMarketReportMasterSchedulerStatus() {
   var lastResult = PropertiesService.getScriptProperties()
     .getProperty(MARKET_REPORT_MASTER_SCHEDULER_CONFIG.lastResultProperty) || 'まだ実行履歴はありません。';
   SpreadsheetApp.getUi().alert(
-    '本文・ダッシュボード共通トリガー: ' + masterInstalled.length + '/' + masterHandlers.length + '\n' +
+    '本文・ダッシュボード自動更新: ' + masterInstalled.length + '/' + masterHandlers.length + '\n' +
     '設定済み: ' + (masterInstalled.length ? masterInstalled.join(' / ') : 'なし') + '\n\n' +
-    '残っている共通管理対象の旧トリガー: ' + oldInstalled.length + '\n' +
+    '残っている管理対象の旧トリガー: ' + oldInstalled.length + '\n' +
     (oldInstalled.length ? oldInstalled.join(' / ') + '\n\n' : '\n') +
-    '重要イベント・株式市場分析はこの状態表示の対象外です。\n' +
+    '東京市場ドル円出来高・重要イベント・株式市場分析はこの状態表示の対象外です。\n' +
     '全トリガー数: ' + allTriggers.length + '\n\n' +
     'Last result:\n' + lastResult
   );
@@ -168,7 +167,7 @@ function runMarketReportBodyAndDashboardNow() {
       '本文: ' + reportStatus + '\n' +
       '本文コミット: ' + (reportResult.commitSha || '新規コミットなし') + '\n' +
       'ダッシュボードコミット: ' + dashboardCommitSha + '\n\n' +
-      '重要イベントと株式市場分析は更新していません。'
+      '東京市場ドル円出来高・重要イベント・株式市場分析は更新していません。'
     );
     return result;
   } catch (error) {
@@ -189,7 +188,7 @@ function marketReportMasterResolveCurrentSlotHour_(date) {
 function runMarketReportMasterScheduler_(slotHour, mode, isRetry) {
   var lock = LockService.getDocumentLock();
   if (lock && !lock.tryLock(5000)) {
-    return saveMarketReportMasterResult_({ ok: true, skipped: true, mode: mode, slotHour: slotHour, reason: '別の共通スケジューラーが実行中のためスキップしました。' });
+    return saveMarketReportMasterResult_({ ok: true, skipped: true, mode: mode, slotHour: slotHour, reason: '別の本文・ダッシュボード更新が実行中のためスキップしました。' });
   }
   var result = { ok: true, skipped: false, mode: mode, slotHour: slotHour, retry: !!isRetry, modules: [] };
   try {
@@ -198,12 +197,6 @@ function runMarketReportMasterScheduler_(slotHour, mode, isRetry) {
       result.skipped = true;
       result.reason = '週末のため本文・ダッシュボード自動更新をスキップしました。';
       return saveMarketReportMasterResult_(result);
-    }
-    if (slotHour === 21) {
-      runMarketReportMasterModule_(result, 'usdjpy_volume', '東京市場ドル円スポット出来高更新', function() {
-        if (typeof runUsdJpyVolumeUpdateForMaster_ !== 'function') return { ok: true, skipped: true, reason: 'ドル円出来高の統合更新関数が未導入です。' };
-        return runUsdJpyVolumeUpdateForMaster_();
-      });
     }
     runMarketReportMasterModule_(result, 'market_report', 'マーケットレポート本文・ダッシュボード公開', function() {
       if (typeof publishMarketReportSlot_ !== 'function') throw new Error('publishMarketReportSlot_ が見つかりません。');
