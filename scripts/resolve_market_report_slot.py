@@ -12,12 +12,17 @@ from typing import Any
 
 JST = dt.timezone(dt.timedelta(hours=9))
 REPORT_SLOTS = ("07:00", "12:00", "16:00", "21:00")
+
+# GitHub cron strings are UTC. These schedules implement staged acquisition:
+# - 07:00: Monday-Saturday (including the early 05:55 preload)
+# - 12:00 / 16:00 / 21:00: weekdays only
+# There is no Saturday 09:00 summary report.
 SCHEDULE_TO_SLOT = {
-    "55 20 * * 0-4": "07:00",
-    "50 21 * * 0-4": "07:00",
-    "50 2 * * 1-5": "12:00",
-    "50 6 * * 1-5": "16:00",
-    "50 11 * * 1-5": "21:00",
+    "55 20 * * 0-5": "07:00",
+    "30,35,40,45,50,55 21 * * 0-5": "07:00",
+    "30,35,40,45,50,55 2 * * 1-5": "12:00",
+    "30,35,40,45,50,55 6 * * 1-5": "16:00",
+    "30,35,40,45,50,55 11 * * 1-5": "21:00",
 }
 
 
@@ -53,7 +58,12 @@ def latest_report_slot(path: Path) -> str:
 
 
 def slot_for_time(now: dt.datetime) -> str:
-    hour_minute = now.astimezone(JST).strftime("%H:%M")
+    current = now.astimezone(JST)
+    hour_minute = current.strftime("%H:%M")
+    weekday = current.weekday()  # Monday=0, Sunday=6
+
+    if weekday == 5:  # Saturday has only the 07:00 report.
+        return "07:00"
     if hour_minute < "09:30":
         return "07:00"
     if hour_minute < "14:30":
@@ -74,9 +84,11 @@ def resolve_slot(
     if event_name == "workflow_dispatch" and requested in REPORT_SLOTS:
         return requested
     if event_name == "schedule":
-        # Scheduled GitHub Actions can start much later than their cron time.
-        # Resolve from the actual Japan time so a delayed 15:50 run cannot
-        # overwrite a 21:00 snapshot with the stale 16:00 slot label.
+        # Use the declared cron mapping rather than the delayed job start time.
+        # This prevents a delayed 16:00 acquisition from being mislabeled 21:00.
+        scheduled_slot = SCHEDULE_TO_SLOT.get(event_schedule.strip())
+        if scheduled_slot:
+            return scheduled_slot
         return slot_for_time(now or dt.datetime.now(JST))
     if event_name == "push":
         report_slot = latest_report_slot(reports_file)
