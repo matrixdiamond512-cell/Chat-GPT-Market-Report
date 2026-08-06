@@ -3,7 +3,7 @@ name: 07:00 market data fallback windows
 on:
   workflow_dispatch:
   schedule:
-    # Independent backup registration. If the 05:50 primary schedule is missed,
+    # Independent backup registration. If the 05:58 primary schedule is missed,
     # 06:25 covers the remaining window. 06:47 is the emergency final fallback.
     - cron: "25 21 * * 0-5"
     - cron: "47 21 * * 0-5"
@@ -47,6 +47,6 @@ jobs:
         run: |
           python scripts/run_market_data_window.py \
             --slot "07:00" \
-            --times "05:55,06:30,06:35,06:40,06:45,06:50,06:55" \
+            --times "06:00,06:30,06:35,06:40,06:45,06:50,06:55" \
             --trigger-source "fallback_window" \
             --max-catchup-minutes 90
