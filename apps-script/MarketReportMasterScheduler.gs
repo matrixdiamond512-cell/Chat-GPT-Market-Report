@@ -131,14 +131,102 @@ function runMarketReportMaster1730Retry() { return runMarketReportMasterSchedule
 function runMarketReportMaster2130() { return runMarketReportMasterScheduler_(21, 'main-2130', false); }
 function runMarketReportMaster2230Retry() { return runMarketReportMasterScheduler_(21, 'retry-2230', true); }
 
+/**
+ * メニュー「本文・ダッシュボードを今すぐ更新」専用。
+ * 株式市場分析、ドル円出来高、重要イベントは実行しない。
+ */
 function runMarketReportMasterNow() {
+  return runMarketReportBodyAndDashboardNow();
+}
+
+function runMarketReportBodyAndDashboardNow() {
   var now = new Date();
-  var hour = Number(Utilities.formatDate(now, MARKET_REPORT_MASTER_SCHEDULER_CONFIG.timezone, 'H'));
-  var slotHour = 7;
-  if (hour >= 21) slotHour = 21;
-  else if (hour >= 16) slotHour = 16;
-  else if (hour >= 12) slotHour = 12;
-  return runMarketReportMasterScheduler_(slotHour, 'manual', false);
+  var slotHour = marketReportMasterResolveCurrentSlotHour_(now);
+  var result;
+
+  try {
+    if (typeof publishMarketReportSlot_ !== 'function') {
+      throw new Error('publishMarketReportSlot_ が見つかりません。');
+    }
+
+    var reportResult = publishMarketReportSlot_(slotHour, 'manual-body-dashboard', false);
+    if (!reportResult || reportResult.ok === false) {
+      throw new Error(reportResult && reportResult.error
+        ? reportResult.error
+        : 'マーケットレポート本文の更新に失敗しました。');
+    }
+
+    var dashboardCommitSha = reportResult.dashboardCommitSha || '';
+    var dashboardLatestKey = '';
+
+    // 本文が既に公開済みでスキップされた場合でも、ダッシュボードだけは最新reports.jsonから再生成する。
+    if (!dashboardCommitSha) {
+      if (
+        typeof dashboardFetchReportsJson_ === 'function' &&
+        typeof syncDashboardJsonToGitHubFromReports_ === 'function'
+      ) {
+        var dashboardResult = syncDashboardJsonToGitHubFromReports_(dashboardFetchReportsJson_());
+        dashboardCommitSha = dashboardResult.commitSha || '';
+        dashboardLatestKey = dashboardResult.latestKey || '';
+      } else {
+        throw new Error('ダッシュボード軽量更新関数が見つかりません。');
+      }
+    }
+
+    result = saveMarketReportMasterResult_({
+      ok: true,
+      skipped: false,
+      mode: 'manual-body-dashboard',
+      slotHour: slotHour,
+      reportSkipped: !!reportResult.skipped,
+      reportReason: reportResult.reason || '',
+      fileName: reportResult.fileName || '',
+      reportDate: reportResult.reportDate || '',
+      reportTime: reportResult.reportTime || '',
+      commitSha: reportResult.commitSha || '',
+      dashboardCommitSha: dashboardCommitSha,
+      latestKey: dashboardLatestKey
+    });
+
+    var reportStatus = reportResult.skipped
+      ? '更新なし（' + (reportResult.reason || '既に公開済み') + '）'
+      : '更新済み';
+
+    SpreadsheetApp.getUi().alert(
+      '本文・ダッシュボードを更新しました。\n\n' +
+      '対象枠: ' + ('0' + slotHour).slice(-2) + ':00\n' +
+      '本文: ' + reportStatus + '\n' +
+      '本文コミット: ' + (reportResult.commitSha || '新規コミットなし') + '\n' +
+      'ダッシュボードコミット: ' + dashboardCommitSha + '\n\n' +
+      '株式市場分析はこのメニューでは更新していません。'
+    );
+    return result;
+  } catch (error) {
+    result = saveMarketReportMasterResult_({
+      ok: false,
+      skipped: false,
+      mode: 'manual-body-dashboard',
+      slotHour: slotHour,
+      error: error.message,
+      stack: error.stack || ''
+    });
+    SpreadsheetApp.getUi().alert(
+      '本文・ダッシュボードの更新に失敗しました。\n\n理由: ' + error.message
+    );
+    return result;
+  }
+}
+
+function marketReportMasterResolveCurrentSlotHour_(date) {
+  var hour = Number(Utilities.formatDate(
+    date || new Date(),
+    MARKET_REPORT_MASTER_SCHEDULER_CONFIG.timezone,
+    'H'
+  ));
+  if (hour >= 21) return 21;
+  if (hour >= 16) return 16;
+  if (hour >= 12) return 12;
+  return 7;
 }
 
 function runMarketReportMasterScheduler_(slotHour, mode, isRetry) {
@@ -170,21 +258,20 @@ function runMarketReportMasterScheduler_(slotHour, mode, isRetry) {
       return saveMarketReportMasterResult_(result);
     }
 
-    // 日銀の出来高は日次公表なので、21:30と22:30の再確認だけで更新する。
-    // タイムアウト時にも出来高更新が後回しにならないよう、21時枠では最初に実行する。
     if (slotHour === 21) {
       runMarketReportMasterModule_(result, 'usdjpy_volume', '東京市場ドル円スポット出来高更新', function() {
         if (typeof runUsdJpyVolumeUpdateForMaster_ !== 'function') {
           return {
-            ok: false,
+            ok: true,
             skipped: true,
-            reason: 'UsdJpyVolumePageAutoUpdate.gsが旧版です。統合更新関数を追加してください。'
+            reason: 'ドル円出来高の統合更新関数が未導入です。'
           };
         }
         return runUsdJpyVolumeUpdateForMaster_();
       });
     }
 
+    // publishWebReportObject_ が reports.json と dashboard.json の両方を更新する。
     runMarketReportMasterModule_(result, 'market_report', 'マーケットレポート本文・ダッシュボード公開', function() {
       if (typeof publishMarketReportSlot_ !== 'function') {
         throw new Error('publishMarketReportSlot_ が見つかりません。');
@@ -193,20 +280,26 @@ function runMarketReportMasterScheduler_(slotHour, mode, isRetry) {
       return publishMarketReportSlot_(slotHour, 'master-' + mode, false);
     });
 
-    runMarketReportMasterModule_(result, 'dashboard_events', 'ダッシュボード・重要イベント更新', function() {
-      if (typeof syncDashboardJsonToGitHub === 'function') return syncDashboardJsonToGitHub();
-      if (typeof syncEventsJsonToGitHub === 'function') return syncEventsJsonToGitHub();
-      throw new Error('syncDashboardJsonToGitHub / syncEventsJsonToGitHub が見つかりません。');
+    // 旧処理はここでdashboardを再更新し、重要イベントを実行していなかった。
+    // dashboardは本文公開時に更新済みなので、ここでは重要イベントだけを処理する。
+    runMarketReportMasterModule_(result, 'important_events', '重要イベント更新', function() {
+      if (typeof syncEventsJsonToGitHub !== 'function') {
+        return { ok: true, skipped: true, reason: '重要イベント更新関数が未導入です。' };
+      }
+      return syncEventsJsonToGitHub();
     });
 
     if (!isRetry) {
       runMarketReportMasterModule_(result, 'stock_analysis', '株式市場分析更新', function() {
-        if (typeof updateStockAnalysisPageFromSheet !== 'function') {
-          return { ok: true, skipped: true, reason: '株式市場分析更新関数が未導入です。' };
+        if (typeof updateStockAnalysisPageSafelyForMaster_ !== 'function') {
+          return {
+            ok: true,
+            skipped: true,
+            reason: '株式市場分析の鮮度検証関数が未導入のため、安全のため更新を停止しました。'
+          };
         }
-        return updateStockAnalysisPageFromSheet();
+        return updateStockAnalysisPageSafelyForMaster_();
       });
-
     }
 
     result.ok = result.modules.every(function(module) { return module.ok !== false; });
@@ -310,7 +403,7 @@ function compactMarketReportMasterResult_(value) {
     'ok', 'skipped', 'reason', 'mode', 'slot', 'fileName', 'reportDate', 'reportTime',
     'latestKey', 'commitSha', 'dashboardCommitSha', 'eventsCommitSha', 'targetPath',
     'latestTargetDate', 'latestPublicationDate', 'publishedCount', 'checkedCount',
-    'error'
+    'dataAsOf', 'dataAgeDays', 'error'
   ].forEach(function(key) {
     if (value[key] !== undefined && value[key] !== '') compact[key] = value[key];
   });
