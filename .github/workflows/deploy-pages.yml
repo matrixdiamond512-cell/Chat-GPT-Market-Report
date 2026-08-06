@@ -28,7 +28,7 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Normalize and cache-bust US breadth renderer
+      - name: Normalize dashboard extensions and cache bust
         shell: bash
         env:
           DEPLOY_SHA: ${{ github.sha }}
@@ -41,20 +41,28 @@ jobs:
           path = Path('index.html')
           text = path.read_text(encoding='utf-8')
           sha = os.environ.get('DEPLOY_SHA', 'latest')[:12]
-          tag = f'<script src="assets/js/us-breadth-split-card-v2.js?v={sha}"></script>'
+
+          us_tag = f'<script src="assets/js/us-breadth-split-card-v2.js?v={sha}"></script>'
+          crypto_remove_tag = f'<script src="assets/js/remove-crypto-fear-greed.js?v={sha}"></script>'
 
           text = re.sub(
               r'\s*<script src="assets/js/us-breadth-split-card(?:-v2)?\.js\?v=[^"]+"></script>',
               '',
               text,
           )
+          text = re.sub(
+              r'\s*<script src="assets/js/remove-crypto-fear-greed\.js\?v=[^"]+"></script>',
+              '',
+              text,
+          )
 
           marker = '<script src="assets/js/position-fulltext-fix.js'
           pos = text.find(marker)
+          injected = '  ' + us_tag + '\n  ' + crypto_remove_tag + '\n  '
           if pos >= 0:
-              text = text[:pos] + '  ' + tag + '\n  ' + text[pos:]
+              text = text[:pos] + injected + text[pos:]
           else:
-              text = text.replace('</body>', '  ' + tag + '\n</body>')
+              text = text.replace('</body>', injected + '</body>')
 
           path.write_text(text, encoding='utf-8')
           PY
