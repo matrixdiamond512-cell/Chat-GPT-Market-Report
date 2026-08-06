@@ -23,6 +23,10 @@ on:
       - ".github/workflows/update-market-data.yml"
       - ".github/workflows/market-data-07-anchor.yml"
       - ".github/workflows/market-data-07-fallback.yml"
+      - ".github/workflows/market-data-07-health.yml"
+      - ".github/workflows/market-data-intraday-anchor.yml"
+      - ".github/workflows/market-data-intraday-fallback.yml"
+      - ".github/workflows/market-data-intraday-health.yml"
       - "scripts/fetch_market_data.py"
       - "scripts/run_market_data_acquisition.py"
       - "scripts/run_market_data_window.py"
@@ -32,14 +36,6 @@ on:
       - "scripts/write_market_data_to_sheets.py"
       - "config/market_data_sources.json"
       - "config/market_data_validation.json"
-  schedule:
-    # The 07:00 report is handled by two independently registered workflows:
-    # market-data-07-anchor.yml and market-data-07-fallback.yml.
-    # Weekday 12:00 / 16:00 / 21:00 reports start 30 minutes before and retry every 5 minutes.
-    - cron: "30,35,40,45,50,55 2 * * 1-5"
-    - cron: "30,35,40,45,50,55 6 * * 1-5"
-    - cron: "30,35,40,45,50,55 11 * * 1-5"
-    # Saturday 09:00 summary report is intentionally not scheduled.
 
 permissions:
   contents: write
