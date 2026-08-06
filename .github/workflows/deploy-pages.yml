@@ -28,6 +28,24 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
+      - name: Inject latest US breadth split card
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+          tag = '<script src="assets/js/us-breadth-split-card-v2.js?v=20260807-0225"></script>'
+          if tag not in text:
+              marker = '<script src="assets/js/site-common.js'
+              pos = text.find(marker)
+              if pos >= 0:
+                  text = text[:pos] + tag + '\n  ' + text[pos:]
+              else:
+                  text = text.replace('</body>', '  ' + tag + '\n</body>')
+              path.write_text(text, encoding='utf-8')
+          PY
+
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
