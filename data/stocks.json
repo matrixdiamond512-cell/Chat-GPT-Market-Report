@@ -3,8 +3,8 @@
   "pageId": "stocks",
   "pageTitle": "株式市場分析",
   "generatedAt": "2026-08-06T19:04:43+09:00",
-  "updatedAt": "2025/05/20 15:30",
-  "dataAsOf": "2025-05-20T15:30:00+09:00",
+  "updatedAt": "2026-08-06T21:38:28+09:00",
+  "dataAsOf": "2026-08-05T16:00:00-04:00",
   "status": "ok",
   "sourceStatus": "Google Sheetsから更新",
   "sources": [
@@ -86,6 +86,30 @@
           "+0.25%",
           "-",
           "大型・グロース優勢も、集中はやや高まり警戒。"
+        ],
+        [
+          "NYSE 値上がり / 値下がり",
+          "856 / 1,226",
+          "-",
+          "基準日 2026-08-05"
+        ],
+        [
+          "NASDAQ 値上がり / 値下がり",
+          "1,338 / 1,848",
+          "-",
+          "基準日 2026-08-05"
+        ],
+        [
+          "NYSE 52週高値 / 安値",
+          "0 / 0",
+          "-",
+          "基準日 2026-08-05"
+        ],
+        [
+          "NASDAQ 52週高値 / 安値",
+          "0 / 0",
+          "-",
+          "基準日 2026-08-05"
         ]
       ]
     },
@@ -552,5 +576,45 @@
     }
   ],
   "note": "データ欠損がある場合は推測で補完せず、該当セルに「取得不能」と理由を表示します。本ページは株式市場分析用の表示構成です。",
-  "publishedAt": "2026-08-06T19:04:43+09:00"
+  "publishedAt": "2026-08-06T19:04:43+09:00",
+  "usBreadth": {
+    "schemaVersion": "1.0.0",
+    "marketDate": "2026-08-05",
+    "fetchedAt": "2026-08-06T21:38:28+09:00",
+    "status": "verified",
+    "source": {
+      "name": "TradingView America Stock Screener",
+      "url": "https://www.tradingview.com/markets/stocks-usa/market-movers-all-stocks/",
+      "method": "exchange-filtered America scanner"
+    },
+    "exchanges": {
+      "NYSE": {
+        "advancers": 856,
+        "decliners": 1226,
+        "unchanged": 45,
+        "total": 2127,
+        "newHigh52Week": 0,
+        "newLow52Week": 0,
+        "advanceDeclineRatio": 0.698206,
+        "previousDayChange": null,
+        "average20Day": null,
+        "versus20DayAveragePercent": null
+      },
+      "NASDAQ": {
+        "advancers": 1338,
+        "decliners": 1848,
+        "unchanged": 124,
+        "total": 3310,
+        "newHigh52Week": 0,
+        "newLow52Week": 0,
+        "advanceDeclineRatio": 0.724026,
+        "previousDayChange": null,
+        "average20Day": null,
+        "versus20DayAveragePercent": null
+      }
+    },
+    "combinedAdvanceRate": 0.416477,
+    "judgement": "下落優勢",
+    "note": "値上がり・値下がりは前日比change、52週高値・安値は終値と52週高安の一致で集計。"
+  }
 }
