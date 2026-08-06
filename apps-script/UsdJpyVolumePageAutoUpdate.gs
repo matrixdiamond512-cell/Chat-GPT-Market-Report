@@ -4,9 +4,9 @@ var USDJPY_VOLUME_PAGE_AUTO_CONFIG = {
   triggerHours: [7, 12, 16, 21],
   triggerMinute: 30,
   lockWaitMs: 30000,
-  maxBojPublications: 120,
-  maxBojOcrPerRun: 4,
-  priceMonthsBack: 24,
+  maxBojPublications: 40,
+  maxBojOcrPerRun: 1,
+  priceMonthsBack: 2,
   priceSheetName: 'USDJPY_Price',
   volumeSheetName: 'USDJPY_Volume',
   closeSheetNames: ['終値一覧', '前日終値一覧'],
@@ -48,59 +48,60 @@ function runUsdJpyVolumeUpdateForMaster_() {
 
 function usdJpyVolumeRunUnifiedUpdate_(options) {
   var settings = options || {};
+  var startedAt = new Date().getTime();
   var result = {
     ok: false,
     skipped: false,
     mode: settings.mode || 'manual',
+    lightMode: true,
     executedAt: usdJpyVolumeAutoIsoJst_(new Date()),
     warnings: []
   };
 
   try {
-    result.boj = usdJpyVolumeAutoImportBojPdfSpotVolume_(false);
+    result.boj = usdJpyVolumeAutoImportLatestBojSpotVolumeLight_(false);
 
     try {
-      result.price = usdJpyVolumeAutoImportPrice_(false);
+      result.price = usdJpyVolumeAutoImportTargetPriceLight_(result.boj.latestTargetDate);
+      result.sheetSync = usdJpyVolumeAutoSyncTargetPriceLight_(result.boj.latestTargetDate);
     } catch (priceError) {
       result.price = { ok: false, error: priceError.message };
-      result.warnings.push('USD/JPY日足価格: ' + priceError.message);
+      result.sheetSync = { ok: false, error: priceError.message };
+      result.warnings.push('USD/JPY価格: ' + priceError.message);
     }
 
-    try {
-      result.sheetSync = usdJpyVolumeAutoSyncPriceToReportSheets_();
-    } catch (sheetSyncError) {
-      result.sheetSync = { ok: false, error: sheetSyncError.message };
-      result.warnings.push('価格のシート同期: ' + sheetSyncError.message);
-    }
-
-    result.volumeDerived = usdJpyVolumeAutoRefreshVolumeDerivedColumns_();
+    result.volumeDerived = usdJpyVolumeAutoRefreshLatestVolumeDerivedColumnsLight_();
 
     if (typeof syncUsdJpyVolumeJsonToGitHubFlexibleUnlocked_ !== 'function') {
-      throw new Error(
-        'ロック競合を防ぐJSON反映関数がありません。' +
-        'UsdJpyVolumeJsonFlexibleSync.gsを最新版に差し替えてください。'
-      );
+      throw new Error('UsdJpyVolumeJsonFlexibleSync.gsを最新版に差し替えてください。');
     }
 
-    result.github = syncUsdJpyVolumeJsonToGitHubFlexibleUnlocked_({
-      showAlert: false,
-      expectedPublicationDate: result.boj.latestPublicationDate
-    });
+    if (new Date().getTime() - startedAt >= 240000) {
+      result.github = usdJpyVolumeAutoScheduleJsonPublishLight_(result.boj.latestPublicationDate);
+    } else {
+      result.github = syncUsdJpyVolumeJsonToGitHubFlexibleUnlocked_({
+        showAlert: false,
+        expectedPublicationDate: result.boj.latestPublicationDate
+      });
+    }
+
     result.ok = true;
     result.completedAt = usdJpyVolumeAutoIsoJst_(new Date());
+    result.elapsedSeconds = Math.round((new Date().getTime() - startedAt) / 1000);
     usdJpyVolumeAutoSaveResult_(result);
 
     if (settings.showAlert !== false) {
-      var priceSource = result.price && result.price.ok !== false
-        ? result.price.sourceName
-        : '更新失敗（保存済み価格を維持）';
+      var githubText = result.github && result.github.deferred
+        ? '1分後に自動反映予定'
+        : (result.github.commitSha || '');
       usdJpyVolumeAutoAlert_(
-        '東京市場ドル円スポット出来高を更新しました。\n\n' +
-        '出来高対象日: ' + (result.github.latestTargetDate || '') + '\n' +
-        '日銀公表日: ' + (result.github.latestPublicationDate || '') + '\n' +
-        '保存行数: ' + result.volumeDerived.rowCount + '\n' +
-        '価格取得元: ' + priceSource + '\n' +
-        'GitHubコミット: ' + (result.github.commitSha || '') +
+        '東京市場ドル円スポット出来高を軽量更新しました。\n\n' +
+        '出来高対象日: ' + (result.boj.latestTargetDate || '') + '\n' +
+        '日銀公表日: ' + (result.boj.latestPublicationDate || '') + '\n' +
+        'PDF処理数: ' + (result.boj.processedPdfCount || 0) + '\n' +
+        '価格更新: ' + (result.price && result.price.skipped ? '保存済み' : '更新') + '\n' +
+        'GitHub: ' + githubText + '\n' +
+        '処理時間: ' + result.elapsedSeconds + '秒' +
         (result.warnings.length ? '\n\n注意:\n' + result.warnings.join('\n') : '')
       );
     }
@@ -108,18 +109,270 @@ function usdJpyVolumeRunUnifiedUpdate_(options) {
   } catch (error) {
     result.ok = false;
     result.error = error.message;
-    result.stack = error.stack || '';
     result.completedAt = usdJpyVolumeAutoIsoJst_(new Date());
+    result.elapsedSeconds = Math.round((new Date().getTime() - startedAt) / 1000);
     usdJpyVolumeAutoSaveResult_(result);
     if (settings.showAlert !== false) {
-      usdJpyVolumeAutoAlert_(
-        '東京市場ドル円スポット出来高の更新に失敗しました。\n\n' +
-        '理由: ' + error.message + '\n\n' +
-        '「東京市場ドル円出来高の状態を確認」で、止まった場所を確認できます。'
-      );
+      usdJpyVolumeAutoAlert_('東京市場ドル円スポット出来高の軽量更新に失敗しました。\n\n理由: ' + error.message);
     }
     throw error;
   }
+}
+
+function usdJpyVolumeAutoImportLatestBojSpotVolumeLight_(previewOnly) {
+  var config = USDJPY_VOLUME_PAGE_AUTO_CONFIG;
+  var sheet = usdJpyVolumeAutoEnsureSheet_(config.volumeSheetName, [
+    '対象日', '公表日', '元PDF', '元PDF URL', 'USD/JPYスポット出来高',
+    '出来高前営業日比', '出来高前営業日比率', '20営業日平均',
+    '20日平均との差', '20日平均比', 'USD/JPY終値', 'USD/JPY始値',
+    'USD/JPY高値', 'USD/JPY安値', 'USD/JPY変化率'
+  ]);
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
+    .map(function(value) { return String(value || '').trim(); });
+  usdJpyVolumeAutoRejectSwapHeaders_(headers);
+  var index = usdJpyVolumeAutoResolveVolumeIndexes_(headers, sheet);
+  var publications = usdJpyVolumeAutoFetchBojPublications_();
+  var latestIndex = publications.length - 1;
+  var latest = publications[latestIndex];
+  var targetDate = usdJpyVolumeAutoTargetDateForPublication_(publications, latestIndex);
+  var rowNumber = usdJpyVolumeAutoFindRowByDateLight_(sheet, index.targetDate, targetDate);
+  var lastColumn = sheet.getLastColumn();
+  var row = rowNumber ? sheet.getRange(rowNumber, 1, 1, lastColumn).getValues()[0] : null;
+
+  if (row && usdJpyVolumeAutoSavedBojRowIsCurrent_(row, index, latest)) {
+    return {
+      ok: true, lightMode: true, processedPdfCount: 0,
+      addCount: 0, updateCount: 0, unchangedCount: 1,
+      latestPublicationDate: latest.date, latestTargetDate: targetDate,
+      skippedReason: '最新公表日のスポット出来高は保存済みです。'
+    };
+  }
+
+  var text = usdJpyVolumeAutoFetchPdfText_(latest.url, latest.pdfName);
+  var spotVolume = usdJpyVolumeAutoParseBojSpotVolume_(text);
+  var next = row ? row.slice() : new Array(lastColumn).fill('');
+  next[index.targetDate] = targetDate;
+  next[index.publicationDate] = latest.date;
+  next[index.sourcePdfName] = latest.pdfName;
+  next[index.sourcePdfUrl] = latest.url;
+  next[index.spotVolume] = spotVolume;
+
+  if (!previewOnly) {
+    var writeRow = rowNumber || sheet.getLastRow() + 1;
+    sheet.getRange(writeRow, 1, 1, lastColumn).setValues([next]);
+    if (!rowNumber) usdJpyVolumeAutoSortSheetByDate_(sheet, index.targetDate + 1);
+  }
+
+  return {
+    ok: true, lightMode: true, processedPdfCount: 1,
+    addCount: rowNumber ? 0 : 1, updateCount: rowNumber ? 1 : 0,
+    unchangedCount: 0, latestPublicationDate: latest.date,
+    latestTargetDate: targetDate, spotVolume: spotVolume
+  };
+}
+
+function usdJpyVolumeAutoFindRowByDateLight_(sheet, zeroBasedDateColumn, targetDate) {
+  var lastRow = sheet.getLastRow();
+  if (lastRow < 2 || zeroBasedDateColumn < 0) return 0;
+  var values = sheet.getRange(2, zeroBasedDateColumn + 1, lastRow - 1, 1).getValues();
+  for (var i = values.length - 1; i >= 0; i -= 1) {
+    if (usdJpyVolumeAutoDateKey_(values[i][0]) === targetDate) return i + 2;
+  }
+  return 0;
+}
+
+function usdJpyVolumeAutoImportTargetPriceLight_(targetDate) {
+  var sheet = usdJpyVolumeAutoEnsureSheet_(USDJPY_VOLUME_PAGE_AUTO_CONFIG.priceSheetName, [
+    '日付', 'USD/JPY終値', 'USD/JPY始値', 'USD/JPY高値', 'USD/JPY安値',
+    'USD/JPY変化率', '取得元', '取得日時'
+  ]);
+  var values = sheet.getDataRange().getValues();
+  var headers = values[0].map(function(value) { return String(value || '').trim(); });
+  var index = usdJpyVolumeAutoHeaderIndex_(headers);
+  var rowNumber = 0;
+  var saved = null;
+  for (var i = 1; i < values.length; i += 1) {
+    if (usdJpyVolumeAutoDateKey_(values[i][index['日付']]) !== targetDate) continue;
+    rowNumber = i + 1;
+    saved = values[i];
+    break;
+  }
+  if (saved && [
+    index['USD/JPY終値'], index['USD/JPY始値'], index['USD/JPY高値'], index['USD/JPY安値']
+  ].every(function(column) { return usdJpyVolumeAutoNumber_(saved[column]) !== null; })) {
+    return { ok: true, lightMode: true, skipped: true, latestDate: targetDate, sourceName: String(saved[index['取得元']] || '保存済み') };
+  }
+
+  var originalMonths = USDJPY_VOLUME_PAGE_AUTO_CONFIG.priceMonthsBack;
+  USDJPY_VOLUME_PAGE_AUTO_CONFIG.priceMonthsBack = 2;
+  var fetched;
+  try {
+    fetched = usdJpyVolumeAutoFetchPriceRows_();
+  } finally {
+    USDJPY_VOLUME_PAGE_AUTO_CONFIG.priceMonthsBack = originalMonths;
+  }
+  var target = fetched.rows.filter(function(item) { return item.date === targetDate; })[0];
+  if (!target) throw new Error('出来高対象日 ' + targetDate + ' のUSD/JPY日足OHLCを取得できませんでした。');
+
+  var fetchedAt = usdJpyVolumeAutoIsoJst_(new Date());
+  var next = saved ? saved.slice() : new Array(headers.length).fill('');
+  next[index['日付']] = target.date;
+  next[index['USD/JPY終値']] = target.close;
+  next[index['USD/JPY始値']] = target.open;
+  next[index['USD/JPY高値']] = target.high;
+  next[index['USD/JPY安値']] = target.low;
+  next[index['USD/JPY変化率']] = target.priceChangePct;
+  next[index['取得元']] = fetched.sourceName;
+  next[index['取得日時']] = fetchedAt;
+  sheet.getRange(rowNumber || sheet.getLastRow() + 1, 1, 1, headers.length).setValues([next]);
+  if (!rowNumber) usdJpyVolumeAutoSortSheetByDate_(sheet, index['日付'] + 1);
+  return { ok: true, lightMode: true, skipped: false, latestDate: targetDate, sourceName: fetched.sourceName };
+}
+
+function usdJpyVolumeAutoSyncTargetPriceLight_(targetDate) {
+  var priceSheet = usdJpyVolumeAutoEnsureSheet_(USDJPY_VOLUME_PAGE_AUTO_CONFIG.priceSheetName, [
+    '日付', 'USD/JPY終値', 'USD/JPY始値', 'USD/JPY高値', 'USD/JPY安値',
+    'USD/JPY変化率', '取得元', '取得日時'
+  ]);
+  var priceRows = usdJpyVolumeAutoReadPriceSheet_(priceSheet);
+  var price = priceRows.byDate[targetDate];
+  if (!price) throw new Error('USDJPY_Priceに対象日の価格がありません: ' + targetDate);
+
+  var volumeUpdated = usdJpyVolumeAutoSyncOnePriceToVolumeLight_(price);
+  var closeUpdated = usdJpyVolumeAutoSyncOnePriceToCloseSheetsLight_(price, priceRows.byDate);
+  return { ok: true, lightMode: true, latestDate: targetDate, volumeUpdated: volumeUpdated, closeSheetUpdated: closeUpdated };
+}
+
+function usdJpyVolumeAutoSyncOnePriceToVolumeLight_(price) {
+  var sheet = usdJpyVolumeAutoEnsureSheet_(USDJPY_VOLUME_PAGE_AUTO_CONFIG.volumeSheetName, [
+    '対象日', '公表日', '元PDF', '元PDF URL', 'USD/JPYスポット出来高',
+    'USD/JPY終値', 'USD/JPY始値', 'USD/JPY高値', 'USD/JPY安値', 'USD/JPY変化率'
+  ]);
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0]
+    .map(function(value) { return String(value || '').trim(); });
+  var index = usdJpyVolumeAutoResolveVolumeIndexes_(headers, sheet);
+  var rowNumber = usdJpyVolumeAutoFindRowByDateLight_(sheet, index.targetDate, price.date);
+  if (!rowNumber) return 0;
+  var row = sheet.getRange(rowNumber, 1, 1, sheet.getLastColumn()).getValues()[0];
+  var before = JSON.stringify(row);
+  row[index.close] = price.close;
+  row[index.open] = price.open;
+  row[index.high] = price.high;
+  row[index.low] = price.low;
+  row[index.priceChangePct] = price.priceChangePct;
+  if (JSON.stringify(row) === before) return 0;
+  sheet.getRange(rowNumber, 1, 1, row.length).setValues([row]);
+  return 1;
+}
+
+function usdJpyVolumeAutoSyncOnePriceToCloseSheetsLight_(price, byDate) {
+  var dates = Object.keys(byDate).sort();
+  var position = dates.indexOf(price.date);
+  var previous = position > 0 ? byDate[dates[position - 1]] : null;
+  var change = previous && previous.close ? usdJpyVolumeAutoRound_(price.close - previous.close, 4) : '';
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheets = USDJPY_VOLUME_PAGE_AUTO_CONFIG.closeSheetNames
+    .map(function(name) { return ss.getSheetByName(name); }).filter(Boolean);
+  var updated = 0;
+  sheets.forEach(function(sheet) {
+    var headers = usdJpyVolumeAutoEnsureColumns_(sheet, [
+      '日付', 'USDJPY終値（Investing.com）', 'USDJPY前日比', 'USDJPY騰落率',
+      'USDJPY始値（Investing.com）', 'USDJPY高値（Investing.com）',
+      'USDJPY安値（Investing.com）', 'USDJPY価格取得元', 'USDJPY価格取得日時'
+    ]);
+    var index = usdJpyVolumeAutoHeaderIndex_(headers);
+    var rowNumber = usdJpyVolumeAutoFindRowByDateLight_(sheet, index['日付'], price.date);
+    var row = rowNumber
+      ? sheet.getRange(rowNumber, 1, 1, sheet.getLastColumn()).getValues()[0]
+      : new Array(sheet.getLastColumn()).fill('');
+    var before = JSON.stringify(row);
+    row[index['日付']] = price.date;
+    row[index['USDJPY終値（Investing.com）']] = price.close;
+    row[index['USDJPY前日比']] = change;
+    row[index['USDJPY騰落率']] = price.priceChangePct;
+    row[index['USDJPY始値（Investing.com）']] = price.open;
+    row[index['USDJPY高値（Investing.com）']] = price.high;
+    row[index['USDJPY安値（Investing.com）']] = price.low;
+    row[index['USDJPY価格取得元']] = price.sourceName || '';
+    row[index['USDJPY価格取得日時']] = price.fetchedAt || '';
+    if (JSON.stringify(row) === before) return;
+    sheet.getRange(rowNumber || sheet.getLastRow() + 1, 1, 1, row.length).setValues([row]);
+    if (!rowNumber) usdJpyVolumeAutoSortSheetByDate_(sheet, index['日付'] + 1);
+    updated += 1;
+  });
+  return updated;
+}
+
+function usdJpyVolumeAutoRefreshLatestVolumeDerivedColumnsLight_() {
+  var sheet = usdJpyVolumeAutoEnsureSheet_(USDJPY_VOLUME_PAGE_AUTO_CONFIG.volumeSheetName, [
+    '対象日', '公表日', '元PDF', '元PDF URL', 'USD/JPYスポット出来高',
+    '出来高前営業日比', '出来高前営業日比率', '20営業日平均',
+    '20日平均との差', '20日平均比'
+  ]);
+  var values = sheet.getDataRange().getValues();
+  if (values.length < 2) return { ok: true, lightMode: true, rowCount: 0, updatedCells: 0 };
+  var headers = values[0].map(function(value) { return String(value || '').trim(); });
+  var index = usdJpyVolumeAutoResolveVolumeIndexes_(headers, sheet);
+  values = sheet.getDataRange().getValues();
+  var records = [];
+  for (var i = 1; i < values.length; i += 1) {
+    var date = usdJpyVolumeAutoDateKey_(values[i][index.targetDate]);
+    var volume = usdJpyVolumeAutoNumber_(values[i][index.spotVolume]);
+    if (date && volume !== null) records.push({ rowNumber: i + 1, targetDate: date, spotVolume: volume });
+  }
+  records.sort(function(a, b) { return a.targetDate.localeCompare(b.targetDate); });
+  if (!records.length) return { ok: true, lightMode: true, rowCount: 0, updatedCells: 0 };
+  var n = records.length - 1;
+  var latest = records[n];
+  var previous = n > 0 ? records[n - 1] : null;
+  var change = previous ? usdJpyVolumeAutoRound_(latest.spotVolume - previous.spotVolume, 0) : '';
+  var changePct = previous && previous.spotVolume ? usdJpyVolumeAutoRound_(change / previous.spotVolume * 100, 2) : '';
+  var avg20 = '';
+  var vs20 = '';
+  var vs20Pct = '';
+  if (n >= 19) {
+    var window = records.slice(n - 19, n + 1);
+    avg20 = usdJpyVolumeAutoRound_(window.reduce(function(sum, item) { return sum + item.spotVolume; }, 0) / 20, 0);
+    vs20 = usdJpyVolumeAutoRound_(latest.spotVolume - avg20, 0);
+    vs20Pct = avg20 ? usdJpyVolumeAutoRound_(vs20 / avg20 * 100, 2) : '';
+  }
+  var row = values[latest.rowNumber - 1].slice();
+  var updates = [[index.volumeChange, change], [index.volumeChangePct, changePct], [index.avg20, avg20], [index.vs20, vs20], [index.vs20Pct, vs20Pct]];
+  var changed = 0;
+  updates.forEach(function(pair) {
+    if (pair[0] >= 0 && String(row[pair[0]]) !== String(pair[1])) { row[pair[0]] = pair[1]; changed += 1; }
+  });
+  if (changed) sheet.getRange(latest.rowNumber, 1, 1, row.length).setValues([row]);
+  return { ok: true, lightMode: true, rowCount: records.length, updatedCells: changed, latestDate: latest.targetDate };
+}
+
+function usdJpyVolumeAutoScheduleJsonPublishLight_(expectedPublicationDate) {
+  var props = PropertiesService.getScriptProperties();
+  props.setProperty('USDJPY_VOLUME_LIGHT_PENDING_PUBLICATION', expectedPublicationDate || '');
+  usdJpyVolumeAutoDeleteJsonContinuationTriggersLight_();
+  ScriptApp.newTrigger('continueUsdJpyVolumeJsonPublishLight').timeBased().after(60000).create();
+  return { ok: true, deferred: true, expectedPublicationDate: expectedPublicationDate || '' };
+}
+
+function continueUsdJpyVolumeJsonPublishLight() {
+  var lock = LockService.getDocumentLock();
+  if (lock && !lock.tryLock(30000)) throw new Error('別の更新処理が実行中です。');
+  try {
+    var props = PropertiesService.getScriptProperties();
+    var expected = props.getProperty('USDJPY_VOLUME_LIGHT_PENDING_PUBLICATION') || '';
+    var result = syncUsdJpyVolumeJsonToGitHubFlexibleUnlocked_({ showAlert: false, expectedPublicationDate: expected });
+    props.deleteProperty('USDJPY_VOLUME_LIGHT_PENDING_PUBLICATION');
+    return result;
+  } finally {
+    usdJpyVolumeAutoDeleteJsonContinuationTriggersLight_();
+    if (lock) lock.releaseLock();
+  }
+}
+
+function usdJpyVolumeAutoDeleteJsonContinuationTriggersLight_() {
+  ScriptApp.getProjectTriggers()
+    .filter(function(trigger) { return trigger.getHandlerFunction() === 'continueUsdJpyVolumeJsonPublishLight'; })
+    .forEach(function(trigger) { ScriptApp.deleteTrigger(trigger); });
 }
 
 function usdJpyVolumeAutoSaveResult_(result) {
