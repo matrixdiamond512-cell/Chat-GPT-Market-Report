@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2.0.0",
+  "schemaVersion": "1.0.0",
   "pageId": "stocks",
   "pageTitle": "株式市場分析",
   "generatedAt": "2026-08-04T00:00:00+09:00",
@@ -349,76 +349,285 @@
   },
   "sectors": {
     "us": {
-      "title": "米国市場のセクター・業種（上昇率TOP5）",
+      "title": "米国市場のセクター・業種",
       "flag": "US",
       "rows": [
         {
-          "rank": 1,
-          "name": "コミュニケーション・サービス",
-          "change": "+1.78%",
-          "note": "大型ネット関連が主導。決算期待、継続性は中程度。"
-        },
-        {
-          "rank": 2,
-          "name": "ヘルスケア",
-          "change": "+1.33%",
-          "note": "ディフェンシブ買い。金利低下時に支え。"
-        },
-        {
-          "rank": 3,
-          "name": "一般消費財・サービス",
-          "change": "+1.07%",
-          "note": "選別買い。消費関連は銘柄差が残る。"
-        },
-        {
-          "rank": 4,
-          "name": "金融",
-          "change": "+0.93%",
-          "note": "景気懸念後退で買い。金利動向を確認。"
-        },
-        {
-          "rank": 5,
           "name": "エネルギー",
-          "change": "+0.46%",
-          "note": "原油高が支援。継続性は在庫・地政学次第。"
+          "code": "XLE",
+          "changePct": 1.483159,
+          "change": "+1.48%",
+          "asOf": "2026-08-06",
+          "note": "XLE調整後終値の前営業日比"
+        },
+        {
+          "name": "コミュニケーション・サービス",
+          "code": "XLC",
+          "changePct": 0.279605,
+          "change": "+0.28%",
+          "asOf": "2026-08-06",
+          "note": "XLC調整後終値の前営業日比"
+        },
+        {
+          "name": "ヘルスケア",
+          "code": "XLV",
+          "changePct": 0.176653,
+          "change": "+0.18%",
+          "asOf": "2026-08-06",
+          "note": "XLV調整後終値の前営業日比"
+        },
+        {
+          "name": "生活必需品",
+          "code": "XLP",
+          "changePct": -0.257824,
+          "change": "-0.26%",
+          "asOf": "2026-08-06",
+          "note": "XLP調整後終値の前営業日比"
+        },
+        {
+          "name": "情報技術",
+          "code": "XLK",
+          "changePct": -0.31198,
+          "change": "-0.31%",
+          "asOf": "2026-08-06",
+          "note": "XLK調整後終値の前営業日比"
         }
-      ]
+      ],
+      "gainers": [
+        {
+          "name": "エネルギー",
+          "code": "XLE",
+          "changePct": 1.483159,
+          "change": "+1.48%",
+          "asOf": "2026-08-06",
+          "note": "XLE調整後終値の前営業日比"
+        },
+        {
+          "name": "コミュニケーション・サービス",
+          "code": "XLC",
+          "changePct": 0.279605,
+          "change": "+0.28%",
+          "asOf": "2026-08-06",
+          "note": "XLC調整後終値の前営業日比"
+        },
+        {
+          "name": "ヘルスケア",
+          "code": "XLV",
+          "changePct": 0.176653,
+          "change": "+0.18%",
+          "asOf": "2026-08-06",
+          "note": "XLV調整後終値の前営業日比"
+        },
+        {
+          "name": "生活必需品",
+          "code": "XLP",
+          "changePct": -0.257824,
+          "change": "-0.26%",
+          "asOf": "2026-08-06",
+          "note": "XLP調整後終値の前営業日比"
+        },
+        {
+          "name": "情報技術",
+          "code": "XLK",
+          "changePct": -0.31198,
+          "change": "-0.31%",
+          "asOf": "2026-08-06",
+          "note": "XLK調整後終値の前営業日比"
+        }
+      ],
+      "losers": [
+        {
+          "name": "素材",
+          "code": "XLB",
+          "changePct": -0.892859,
+          "change": "-0.89%",
+          "asOf": "2026-08-06",
+          "note": "XLB調整後終値の前営業日比"
+        },
+        {
+          "name": "不動産",
+          "code": "XLRE",
+          "changePct": -0.86283,
+          "change": "-0.86%",
+          "asOf": "2026-08-06",
+          "note": "XLRE調整後終値の前営業日比"
+        },
+        {
+          "name": "資本財・サービス",
+          "code": "XLI",
+          "changePct": -0.853239,
+          "change": "-0.85%",
+          "asOf": "2026-08-06",
+          "note": "XLI調整後終値の前営業日比"
+        },
+        {
+          "name": "公益事業",
+          "code": "XLU",
+          "changePct": -0.641316,
+          "change": "-0.64%",
+          "asOf": "2026-08-06",
+          "note": "XLU調整後終値の前営業日比"
+        },
+        {
+          "name": "一般消費財・サービス",
+          "code": "XLY",
+          "changePct": -0.455159,
+          "change": "-0.46%",
+          "asOf": "2026-08-06",
+          "note": "XLY調整後終値の前営業日比"
+        }
+      ],
+      "dataAsOf": "2026-08-06",
+      "sourceLabel": "Select Sector SPDR ETF",
+      "status": "verified"
     },
     "japan": {
-      "title": "東京市場のセクター・業種（上昇率TOP5）",
+      "title": "東京市場のセクター・業種",
       "flag": "JP",
       "rows": [
         {
           "rank": 1,
-          "name": "電気機器",
-          "change": "+1.72%",
-          "note": "半導体関連が主導。米SOXとの連動を確認。"
+          "name": "繊維製品",
+          "code": "0255",
+          "changePct": 5.35,
+          "change": "+5.35%",
+          "asOf": "2026-08-06",
+          "note": "東証33業種指数の前日比"
         },
         {
           "rank": 2,
-          "name": "情報・通信業",
-          "change": "+1.34%",
-          "note": "大型通信・ネット株に買い。継続性は中程度。"
+          "name": "医薬品",
+          "code": "0258",
+          "changePct": 2.9,
+          "change": "+2.90%",
+          "asOf": "2026-08-06",
+          "note": "東証33業種指数の前日比"
         },
         {
           "rank": 3,
-          "name": "輸送用機器",
-          "change": "+1.05%",
-          "note": "円安が支援。ドル円の反転に注意。"
+          "name": "その他製品",
+          "code": "0269",
+          "changePct": 2.61,
+          "change": "+2.61%",
+          "asOf": "2026-08-06",
+          "note": "東証33業種指数の前日比"
         },
         {
           "rank": 4,
-          "name": "化学",
-          "change": "+0.78%",
-          "note": "半導体材料の見直し買い。利確圧力も残る。"
+          "name": "食料品",
+          "code": "0254",
+          "changePct": 2.46,
+          "change": "+2.46%",
+          "asOf": "2026-08-06",
+          "note": "東証33業種指数の前日比"
         },
         {
           "rank": 5,
-          "name": "銀行業",
-          "change": "+0.42%",
-          "note": "金利見通しが支え。日銀イベントを確認。"
+          "name": "水産・農林業",
+          "code": "0251",
+          "changePct": 2.34,
+          "change": "+2.34%",
+          "asOf": "2026-08-06",
+          "note": "東証33業種指数の前日比"
         }
-      ]
+      ],
+      "gainers": [
+        {
+          "rank": 1,
+          "name": "繊維製品",
+          "code": "0255",
+          "changePct": 5.35,
+          "change": "+5.35%",
+          "asOf": "2026-08-06",
+          "note": "東証33業種指数の前日比"
+        },
+        {
+          "rank": 2,
+          "name": "医薬品",
+          "code": "0258",
+          "changePct": 2.9,
+          "change": "+2.90%",
+          "asOf": "2026-08-06",
+          "note": "東証33業種指数の前日比"
+        },
+        {
+          "rank": 3,
+          "name": "その他製品",
+          "code": "0269",
+          "changePct": 2.61,
+          "change": "+2.61%",
+          "asOf": "2026-08-06",
+          "note": "東証33業種指数の前日比"
+        },
+        {
+          "rank": 4,
+          "name": "食料品",
+          "code": "0254",
+          "changePct": 2.46,
+          "change": "+2.46%",
+          "asOf": "2026-08-06",
+          "note": "東証33業種指数の前日比"
+        },
+        {
+          "rank": 5,
+          "name": "水産・農林業",
+          "code": "0251",
+          "changePct": 2.34,
+          "change": "+2.34%",
+          "asOf": "2026-08-06",
+          "note": "東証33業種指数の前日比"
+        }
+      ],
+      "losers": [
+        {
+          "rank": 1,
+          "name": "非鉄金属",
+          "code": "0263",
+          "changePct": -5.62,
+          "change": "-5.62%",
+          "asOf": "2026-08-06",
+          "note": "東証33業種指数の前日比"
+        },
+        {
+          "rank": 2,
+          "name": "ガラス・土石製品",
+          "code": "0261",
+          "changePct": -2.09,
+          "change": "-2.09%",
+          "asOf": "2026-08-06",
+          "note": "東証33業種指数の前日比"
+        },
+        {
+          "rank": 3,
+          "name": "電気機器",
+          "code": "0266",
+          "changePct": -1.98,
+          "change": "-1.98%",
+          "asOf": "2026-08-06",
+          "note": "東証33業種指数の前日比"
+        },
+        {
+          "rank": 4,
+          "name": "金属製品",
+          "code": "0264",
+          "changePct": -1.4,
+          "change": "-1.40%",
+          "asOf": "2026-08-06",
+          "note": "東証33業種指数の前日比"
+        },
+        {
+          "rank": 5,
+          "name": "情報・通信業",
+          "code": "0275",
+          "changePct": -0.57,
+          "change": "-0.57%",
+          "asOf": "2026-08-06",
+          "note": "東証33業種指数の前日比"
+        }
+      ],
+      "dataAsOf": "2026-08-06",
+      "sourceLabel": "株探 東証33業種指数",
+      "status": "preserved_after_fetch_error"
     }
   },
   "contributions": {
@@ -697,18 +906,15 @@
     "note": "米国主要指数、NYSE/NASDAQ騰落、52週高安、200日線上下を同一取引日で保存。"
   },
   "marketDates": {
-    "us": "2026-08-06",
-    "japan": "2026-08-05"
+    "japan": "2026-08-05",
+    "us": "2026-08-06"
   },
   "marketUpdatedAt": {
     "japan": "2026-08-07T08:55:37+09:00",
     "us": "2026-08-07T08:55:55+09:00"
   },
   "nikkeiMetricsAsOf": "2026-08-05",
-  "snapshotDate": "2026-08-07",
-  "savedAt": "2026-08-07T08:55:55+09:00",
-  "snapshotPolicy": {
-    "type": "independent-market-session-dates",
-    "description": "米国市場と東京市場は、それぞれの取引終了後に独立更新。未更新側は直前の確定データを保持する。"
-  }
+  "historyDate": "2026-08-07",
+  "historyGeneratedAt": "2026-08-07T08:57:07+09:00",
+  "isHistorySnapshot": true
 }
