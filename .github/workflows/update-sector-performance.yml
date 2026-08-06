@@ -1,0 +1,81 @@
+name: Update sector performance
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "20 21 * * 0-4" # 06:20 JST, Monday-Friday
+    - cron: "20 7 * * 1-5"  # 16:20 JST, Monday-Friday
+  push:
+    branches: [main]
+    paths:
+      - "scripts/fetch_sector_performance.py"
+      - "assets/js/stock-sector-decliners.js"
+      - "stocks.html"
+      - ".github/workflows/update-sector-performance.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-sector-performance
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Google Sheets dependencies
+        run: python -m pip install --disable-pip-version-check gspread google-auth
+
+      - name: Fetch sectors and update Google Sheets
+        env:
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python scripts/fetch_sector_performance.py
+
+      - name: Validate output
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("data/sector-performance.json")
+          payload = json.loads(path.read_text(encoding="utf-8"))
+          markets = payload.get("markets") or {}
+          if not {"us", "japan"}.issubset(markets):
+              raise SystemExit("sector-performance.json is missing a market section")
+          available = 0
+          for key in ("us", "japan"):
+              section = markets[key]
+              gainers = section.get("gainers") or []
+              losers = section.get("losers") or []
+              if len(gainers) >= 5 and len(losers) >= 5:
+                  available += 1
+          if available == 0:
+              raise SystemExit("Neither market returned complete Top 5 sector data")
+          print("Validated sector markets:", available)
+          PY
+
+      - name: Commit updated sector data
+        run: |
+          if git diff --quiet -- data/sector-performance.json; then
+            echo "Sector data is already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/sector-performance.json
+          git commit -m "Update sector performance data"
+          git pull --rebase
+          git push
