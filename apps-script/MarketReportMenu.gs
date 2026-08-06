@@ -70,15 +70,57 @@ function createMarketReportWebMenu_() {
 }
 
 function runImportantEventsStandaloneNow() {
-  if (typeof syncEventsJsonToGitHub !== 'function') {
-    SpreadsheetApp.getUi().alert('重要イベントの更新関数 syncEventsJsonToGitHub が見つかりません。');
-    return { ok: false, skipped: false, error: 'syncEventsJsonToGitHub is not defined' };
+  var config = getMarketReportWebConfigForMenu_();
+  var token = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
+  if (!token) {
+    SpreadsheetApp.getUi().alert(
+      '重要イベントの更新を起動できませんでした。\n\n理由: GITHUB_TOKEN が設定されていません。'
+    );
+    return { ok: false, queued: false, error: 'GITHUB_TOKEN is not configured' };
   }
+
+  var workflow = 'update-economic-calendar.yml';
+  var apiUrl =
+    'https://api.github.com/repos/' +
+    encodeURIComponent(config.owner) + '/' +
+    encodeURIComponent(config.repo) +
+    '/actions/workflows/' + encodeURIComponent(workflow) + '/dispatches';
+
   try {
-    return syncEventsJsonToGitHub();
+    var response = UrlFetchApp.fetch(apiUrl, {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify({ ref: config.branch || 'main' }),
+      headers: {
+        Authorization: 'Bearer ' + token,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28'
+      },
+      muteHttpExceptions: true
+    });
+    var statusCode = response.getResponseCode();
+    if (statusCode !== 204) {
+      throw new Error(
+        'GitHub Actionsの起動に失敗しました。HTTP ' + statusCode + '\n' +
+        String(response.getContentText() || '').slice(0, 500)
+      );
+    }
+
+    SpreadsheetApp.getUi().alert(
+      '重要イベントの更新処理を起動しました。\n' +
+      '取得元: Forex Factory / TradingView / 主要公式発表元\n' +
+      'WEBページの最終更新時刻で反映を確認してください。'
+    );
+    return {
+      ok: true,
+      queued: true,
+      workflow: workflow,
+      branch: config.branch || 'main',
+      statusCode: statusCode
+    };
   } catch (error) {
     SpreadsheetApp.getUi().alert('重要イベントの更新に失敗しました。\n\n理由: ' + error.message);
-    return { ok: false, skipped: false, error: error.message };
+    return { ok: false, queued: false, error: error.message };
   }
 }
 
