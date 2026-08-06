@@ -25,16 +25,13 @@ var MARKET_REPORT_MASTER_SCHEDULER_CONFIG = {
     'pollLatestMarketReportAndPublish',
     'continueHistoricalMarketReportImport',
     'updateUsdJpyVolumePageFromSources',
-    'updateStockAnalysisPageFromSheet',
-    'syncDashboardJsonToGitHub',
-    'syncEventsJsonToGitHub'
+    'syncDashboardJsonToGitHub'
   ]
 };
 
 function installMarketReportMasterSchedulerTriggers() {
   var cleanup = deleteMarketReportMasterManagedTriggers_();
   var created = [];
-
   try {
     MARKET_REPORT_MASTER_SCHEDULER_CONFIG.slots.forEach(function(slot) {
       ScriptApp.newTrigger(slot.handler)
@@ -58,28 +55,32 @@ function installMarketReportMasterSchedulerTriggers() {
     );
     throw error;
   }
-
   SpreadsheetApp.getUi().alert(
-    '共通トリガーを設定しました。\n\n' +
+    '本文・ダッシュボード用の共通トリガーを設定しました。\n\n' +
     '通常: 07:30 / 12:30 / 16:30 / 21:30\n' +
     '再チェック: 08:30 / 13:30 / 17:30 / 22:30\n\n' +
-    '削除した個別トリガー: ' + cleanup.deletedCount + '\n' +
+    '重要イベントと株式市場分析は対象外です。\n' +
+    '削除した共通管理トリガー: ' + cleanup.deletedCount + '\n' +
     '作成した共通トリガー: ' + created.length
   );
-
   return showMarketReportMasterSchedulerStatus();
 }
 
 function uninstallMarketReportMasterSchedulerTriggers() {
   var deleted = deleteMarketReportMasterTriggers_();
-  SpreadsheetApp.getUi().alert('共通トリガーを削除しました。削除数: ' + deleted);
+  SpreadsheetApp.getUi().alert(
+    '本文・ダッシュボード用の共通トリガーを削除しました。\n' +
+    '重要イベントと株式市場分析の独立トリガーは削除していません。\n' +
+    '削除数: ' + deleted
+  );
   return deleted;
 }
 
 function cleanupOldMarketReportPageTriggersForMasterScheduler() {
   var cleanup = deleteMarketReportMasterManagedTriggers_();
   SpreadsheetApp.getUi().alert(
-    '個別ページ用の古いトリガーを整理しました。\n' +
+    '本文・ダッシュボード系の古いトリガーを整理しました。\n' +
+    '重要イベントと株式市場分析は対象外です。\n' +
     '削除数: ' + cleanup.deletedCount + '\n\n' +
     '削除したトリガー:\n' + (cleanup.deletedHandlers.length ? cleanup.deletedHandlers.join('\n') : 'なし')
   );
@@ -92,34 +93,24 @@ function showMarketReportMasterSchedulerStatus() {
   var masterInstalled = [];
   var oldInstalled = [];
   var allNames = [];
-
   allTriggers.forEach(function(trigger) {
     var name = trigger.getHandlerFunction();
     allNames.push(name);
     if (masterHandlers.indexOf(name) >= 0) masterInstalled.push(name);
-    if (MARKET_REPORT_MASTER_SCHEDULER_CONFIG.oldManagedHandlers.indexOf(name) >= 0) {
-      oldInstalled.push(name);
-    }
+    if (MARKET_REPORT_MASTER_SCHEDULER_CONFIG.oldManagedHandlers.indexOf(name) >= 0) oldInstalled.push(name);
   });
-
   var lastResult = PropertiesService.getScriptProperties()
     .getProperty(MARKET_REPORT_MASTER_SCHEDULER_CONFIG.lastResultProperty) || 'まだ実行履歴はありません。';
-
   SpreadsheetApp.getUi().alert(
-    '共通トリガー: ' + masterInstalled.length + '/' + masterHandlers.length + '\n' +
+    '本文・ダッシュボード共通トリガー: ' + masterInstalled.length + '/' + masterHandlers.length + '\n' +
     '設定済み: ' + (masterInstalled.length ? masterInstalled.join(' / ') : 'なし') + '\n\n' +
-    '残っている個別トリガー: ' + oldInstalled.length + '\n' +
+    '残っている共通管理対象の旧トリガー: ' + oldInstalled.length + '\n' +
     (oldInstalled.length ? oldInstalled.join(' / ') + '\n\n' : '\n') +
+    '重要イベント・株式市場分析はこの状態表示の対象外です。\n' +
     '全トリガー数: ' + allTriggers.length + '\n\n' +
     'Last result:\n' + lastResult
   );
-
-  return {
-    masterInstalled: masterInstalled,
-    oldInstalled: oldInstalled,
-    allTriggers: allNames,
-    lastResult: lastResult
-  };
+  return { masterInstalled: masterInstalled, oldInstalled: oldInstalled, allTriggers: allNames, lastResult: lastResult };
 }
 
 function runMarketReportMaster0730() { return runMarketReportMasterScheduler_(7, 'main-0730', false); }
@@ -131,10 +122,6 @@ function runMarketReportMaster1730Retry() { return runMarketReportMasterSchedule
 function runMarketReportMaster2130() { return runMarketReportMasterScheduler_(21, 'main-2130', false); }
 function runMarketReportMaster2230Retry() { return runMarketReportMasterScheduler_(21, 'retry-2230', true); }
 
-/**
- * メニュー「本文・ダッシュボードを今すぐ更新」専用。
- * 株式市場分析、ドル円出来高、重要イベントは実行しない。
- */
 function runMarketReportMasterNow() {
   return runMarketReportBodyAndDashboardNow();
 }
@@ -143,28 +130,16 @@ function runMarketReportBodyAndDashboardNow() {
   var now = new Date();
   var slotHour = marketReportMasterResolveCurrentSlotHour_(now);
   var result;
-
   try {
-    if (typeof publishMarketReportSlot_ !== 'function') {
-      throw new Error('publishMarketReportSlot_ が見つかりません。');
-    }
-
+    if (typeof publishMarketReportSlot_ !== 'function') throw new Error('publishMarketReportSlot_ が見つかりません。');
     var reportResult = publishMarketReportSlot_(slotHour, 'manual-body-dashboard', false);
     if (!reportResult || reportResult.ok === false) {
-      throw new Error(reportResult && reportResult.error
-        ? reportResult.error
-        : 'マーケットレポート本文の更新に失敗しました。');
+      throw new Error(reportResult && reportResult.error ? reportResult.error : 'マーケットレポート本文の更新に失敗しました。');
     }
-
     var dashboardCommitSha = reportResult.dashboardCommitSha || '';
     var dashboardLatestKey = '';
-
-    // 本文が既に公開済みでスキップされた場合でも、ダッシュボードだけは最新reports.jsonから再生成する。
     if (!dashboardCommitSha) {
-      if (
-        typeof dashboardFetchReportsJson_ === 'function' &&
-        typeof syncDashboardJsonToGitHubFromReports_ === 'function'
-      ) {
+      if (typeof dashboardFetchReportsJson_ === 'function' && typeof syncDashboardJsonToGitHubFromReports_ === 'function') {
         var dashboardResult = syncDashboardJsonToGitHubFromReports_(dashboardFetchReportsJson_());
         dashboardCommitSha = dashboardResult.commitSha || '';
         dashboardLatestKey = dashboardResult.latestKey || '';
@@ -172,7 +147,6 @@ function runMarketReportBodyAndDashboardNow() {
         throw new Error('ダッシュボード軽量更新関数が見つかりません。');
       }
     }
-
     result = saveMarketReportMasterResult_({
       ok: true,
       skipped: false,
@@ -187,42 +161,25 @@ function runMarketReportBodyAndDashboardNow() {
       dashboardCommitSha: dashboardCommitSha,
       latestKey: dashboardLatestKey
     });
-
-    var reportStatus = reportResult.skipped
-      ? '更新なし（' + (reportResult.reason || '既に公開済み') + '）'
-      : '更新済み';
-
+    var reportStatus = reportResult.skipped ? '更新なし（' + (reportResult.reason || '既に公開済み') + '）' : '更新済み';
     SpreadsheetApp.getUi().alert(
       '本文・ダッシュボードを更新しました。\n\n' +
       '対象枠: ' + ('0' + slotHour).slice(-2) + ':00\n' +
       '本文: ' + reportStatus + '\n' +
       '本文コミット: ' + (reportResult.commitSha || '新規コミットなし') + '\n' +
       'ダッシュボードコミット: ' + dashboardCommitSha + '\n\n' +
-      '株式市場分析はこのメニューでは更新していません。'
+      '重要イベントと株式市場分析は更新していません。'
     );
     return result;
   } catch (error) {
-    result = saveMarketReportMasterResult_({
-      ok: false,
-      skipped: false,
-      mode: 'manual-body-dashboard',
-      slotHour: slotHour,
-      error: error.message,
-      stack: error.stack || ''
-    });
-    SpreadsheetApp.getUi().alert(
-      '本文・ダッシュボードの更新に失敗しました。\n\n理由: ' + error.message
-    );
+    result = saveMarketReportMasterResult_({ ok: false, skipped: false, mode: 'manual-body-dashboard', slotHour: slotHour, error: error.message, stack: error.stack || '' });
+    SpreadsheetApp.getUi().alert('本文・ダッシュボードの更新に失敗しました。\n\n理由: ' + error.message);
     return result;
   }
 }
 
 function marketReportMasterResolveCurrentSlotHour_(date) {
-  var hour = Number(Utilities.formatDate(
-    date || new Date(),
-    MARKET_REPORT_MASTER_SCHEDULER_CONFIG.timezone,
-    'H'
-  ));
+  var hour = Number(Utilities.formatDate(date || new Date(), MARKET_REPORT_MASTER_SCHEDULER_CONFIG.timezone, 'H'));
   if (hour >= 21) return 21;
   if (hour >= 16) return 16;
   if (hour >= 12) return 12;
@@ -232,76 +189,27 @@ function marketReportMasterResolveCurrentSlotHour_(date) {
 function runMarketReportMasterScheduler_(slotHour, mode, isRetry) {
   var lock = LockService.getDocumentLock();
   if (lock && !lock.tryLock(5000)) {
-    return saveMarketReportMasterResult_({
-      ok: true,
-      skipped: true,
-      mode: mode,
-      slotHour: slotHour,
-      reason: '別の共通スケジューラーが実行中のためスキップしました。'
-    });
+    return saveMarketReportMasterResult_({ ok: true, skipped: true, mode: mode, slotHour: slotHour, reason: '別の共通スケジューラーが実行中のためスキップしました。' });
   }
-
-  var result = {
-    ok: true,
-    skipped: false,
-    mode: mode,
-    slotHour: slotHour,
-    retry: !!isRetry,
-    modules: []
-  };
-
+  var result = { ok: true, skipped: false, mode: mode, slotHour: slotHour, retry: !!isRetry, modules: [] };
   try {
     var day = Number(Utilities.formatDate(new Date(), MARKET_REPORT_MASTER_SCHEDULER_CONFIG.timezone, 'u'));
     if (day === 6 || day === 7) {
       result.skipped = true;
-      result.reason = '週末のため自動更新をスキップしました。';
+      result.reason = '週末のため本文・ダッシュボード自動更新をスキップしました。';
       return saveMarketReportMasterResult_(result);
     }
-
     if (slotHour === 21) {
       runMarketReportMasterModule_(result, 'usdjpy_volume', '東京市場ドル円スポット出来高更新', function() {
-        if (typeof runUsdJpyVolumeUpdateForMaster_ !== 'function') {
-          return {
-            ok: true,
-            skipped: true,
-            reason: 'ドル円出来高の統合更新関数が未導入です。'
-          };
-        }
+        if (typeof runUsdJpyVolumeUpdateForMaster_ !== 'function') return { ok: true, skipped: true, reason: 'ドル円出来高の統合更新関数が未導入です。' };
         return runUsdJpyVolumeUpdateForMaster_();
       });
     }
-
-    // publishWebReportObject_ が reports.json と dashboard.json の両方を更新する。
     runMarketReportMasterModule_(result, 'market_report', 'マーケットレポート本文・ダッシュボード公開', function() {
-      if (typeof publishMarketReportSlot_ !== 'function') {
-        throw new Error('publishMarketReportSlot_ が見つかりません。');
-      }
+      if (typeof publishMarketReportSlot_ !== 'function') throw new Error('publishMarketReportSlot_ が見つかりません。');
       if (isRetry) return publishDueMarketReportsForMaster_(slotHour, mode);
       return publishMarketReportSlot_(slotHour, 'master-' + mode, false);
     });
-
-    // 旧処理はここでdashboardを再更新し、重要イベントを実行していなかった。
-    // dashboardは本文公開時に更新済みなので、ここでは重要イベントだけを処理する。
-    runMarketReportMasterModule_(result, 'important_events', '重要イベント更新', function() {
-      if (typeof syncEventsJsonToGitHub !== 'function') {
-        return { ok: true, skipped: true, reason: '重要イベント更新関数が未導入です。' };
-      }
-      return syncEventsJsonToGitHub();
-    });
-
-    if (!isRetry) {
-      runMarketReportMasterModule_(result, 'stock_analysis', '株式市場分析更新', function() {
-        if (typeof updateStockAnalysisPageSafelyForMaster_ !== 'function') {
-          return {
-            ok: true,
-            skipped: true,
-            reason: '株式市場分析の鮮度検証関数が未導入のため、安全のため更新を停止しました。'
-          };
-        }
-        return updateStockAnalysisPageSafelyForMaster_();
-      });
-    }
-
     result.ok = result.modules.every(function(module) { return module.ok !== false; });
     return saveMarketReportMasterResult_(result);
   } catch (error) {
@@ -318,9 +226,7 @@ function runMarketReportMasterScheduler_(slotHour, mode, isRetry) {
 function publishDueMarketReportsForMaster_(slotHour, mode) {
   var reports = [];
   MARKET_REPORT_MASTER_SCHEDULER_CONFIG.reportHours.forEach(function(hour) {
-    if (hour <= slotHour) {
-      reports.push(publishMarketReportSlot_(hour, 'master-' + mode, false));
-    }
+    if (hour <= slotHour) reports.push(publishMarketReportSlot_(hour, 'master-' + mode, false));
   });
   return {
     ok: reports.every(function(item) { return item && item.ok !== false; }),
@@ -334,32 +240,15 @@ function runMarketReportMasterModule_(summary, name, label, runner) {
   var startedAt = new Date();
   try {
     var value = runner();
-    summary.modules.push({
-      name: name,
-      label: label,
-      ok: !value || value.ok !== false,
-      skipped: !!(value && value.skipped),
-      durationSec: Math.round((new Date().getTime() - startedAt.getTime()) / 1000),
-      result: compactMarketReportMasterResult_(value)
-    });
+    summary.modules.push({ name: name, label: label, ok: !value || value.ok !== false, skipped: !!(value && value.skipped), durationSec: Math.round((new Date().getTime() - startedAt.getTime()) / 1000), result: compactMarketReportMasterResult_(value) });
   } catch (error) {
-    summary.modules.push({
-      name: name,
-      label: label,
-      ok: false,
-      skipped: false,
-      durationSec: Math.round((new Date().getTime() - startedAt.getTime()) / 1000),
-      error: error.message,
-      stack: error.stack || ''
-    });
+    summary.modules.push({ name: name, label: label, ok: false, skipped: false, durationSec: Math.round((new Date().getTime() - startedAt.getTime()) / 1000), error: error.message, stack: error.stack || '' });
   }
 }
 
 function deleteMarketReportMasterManagedTriggers_() {
-  var masterHandlers = marketReportMasterHandlerNames_();
-  var managedHandlers = masterHandlers.concat(MARKET_REPORT_MASTER_SCHEDULER_CONFIG.oldManagedHandlers);
+  var managedHandlers = marketReportMasterHandlerNames_().concat(MARKET_REPORT_MASTER_SCHEDULER_CONFIG.oldManagedHandlers);
   var deleted = [];
-
   ScriptApp.getProjectTriggers().forEach(function(trigger) {
     var handler = trigger.getHandlerFunction();
     if (managedHandlers.indexOf(handler) >= 0) {
@@ -367,11 +256,7 @@ function deleteMarketReportMasterManagedTriggers_() {
       deleted.push(handler);
     }
   });
-
-  return {
-    deletedCount: deleted.length,
-    deletedHandlers: deleted
-  };
+  return { deletedCount: deleted.length, deletedHandlers: deleted };
 }
 
 function deleteMarketReportMasterTriggers_() {
@@ -391,20 +276,13 @@ function marketReportMasterHandlerNames_() {
 }
 
 function marketReportMasterTriggerNames_() {
-  return ScriptApp.getProjectTriggers().map(function(trigger) {
-    return trigger.getHandlerFunction();
-  });
+  return ScriptApp.getProjectTriggers().map(function(trigger) { return trigger.getHandlerFunction(); });
 }
 
 function compactMarketReportMasterResult_(value) {
   if (!value || typeof value !== 'object') return value;
   var compact = {};
-  [
-    'ok', 'skipped', 'reason', 'mode', 'slot', 'fileName', 'reportDate', 'reportTime',
-    'latestKey', 'commitSha', 'dashboardCommitSha', 'eventsCommitSha', 'targetPath',
-    'latestTargetDate', 'latestPublicationDate', 'publishedCount', 'checkedCount',
-    'dataAsOf', 'dataAgeDays', 'error'
-  ].forEach(function(key) {
+  ['ok', 'skipped', 'reason', 'mode', 'slot', 'fileName', 'reportDate', 'reportTime', 'latestKey', 'commitSha', 'dashboardCommitSha', 'targetPath', 'latestTargetDate', 'latestPublicationDate', 'publishedCount', 'checkedCount', 'error'].forEach(function(key) {
     if (value[key] !== undefined && value[key] !== '') compact[key] = value[key];
   });
   return compact;
@@ -413,15 +291,8 @@ function compactMarketReportMasterResult_(value) {
 function saveMarketReportMasterResult_(result) {
   var payload = {};
   Object.keys(result || {}).forEach(function(key) { payload[key] = result[key]; });
-  payload.executedAt = Utilities.formatDate(
-    new Date(),
-    MARKET_REPORT_MASTER_SCHEDULER_CONFIG.timezone,
-    'yyyy-MM-dd HH:mm:ss'
-  );
-  PropertiesService.getScriptProperties().setProperty(
-    MARKET_REPORT_MASTER_SCHEDULER_CONFIG.lastResultProperty,
-    JSON.stringify(payload, null, 2)
-  );
+  payload.executedAt = Utilities.formatDate(new Date(), MARKET_REPORT_MASTER_SCHEDULER_CONFIG.timezone, 'yyyy-MM-dd HH:mm:ss');
+  PropertiesService.getScriptProperties().setProperty(MARKET_REPORT_MASTER_SCHEDULER_CONFIG.lastResultProperty, JSON.stringify(payload, null, 2));
   console.log(JSON.stringify(payload));
   return payload;
 }
