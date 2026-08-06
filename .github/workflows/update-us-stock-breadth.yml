@@ -14,6 +14,7 @@ on:
       - ".github/workflows/update-us-stock-breadth.yml"
       - "scripts/fetch_us_stock_breadth.py"
       - "scripts/fix_us_stock_breadth_52w.py"
+      - "scripts/recalculate_us_stock_breadth_history.py"
       - "scripts/build_us_stock_breadth_csv.py"
   schedule:
     - cron: "30 21 * * 1-5"
@@ -46,6 +47,8 @@ jobs:
         run: python scripts/fetch_us_stock_breadth.py
       - name: Correct 52-week high and low counts
         run: python scripts/fix_us_stock_breadth_52w.py
+      - name: Recalculate prior-day and 20-day comparisons
+        run: python scripts/recalculate_us_stock_breadth_history.py
       - name: Build public CSV history for Google Sheets
         run: python scripts/build_us_stock_breadth_csv.py
       - name: Validate generated files
