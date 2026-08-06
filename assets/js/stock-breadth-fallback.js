@@ -112,6 +112,49 @@
     return latestJapanBreadth(report) || primary;
   };
 
+  function autoSelectLatestPublishedReport() {
+    let attempts = 0;
+    const timer = window.setInterval(() => {
+      attempts += 1;
+      const list = typeof reports !== "undefined" && Array.isArray(reports) ? reports : [];
+      if (!list.length || typeof selectReport !== "function") {
+        if (attempts >= 40) window.clearInterval(timer);
+        return;
+      }
+
+      const latest = [...list]
+        .filter((item) => item && item.date && item.time)
+        .sort((a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`))[0];
+      if (!latest) {
+        window.clearInterval(timer);
+        return;
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const requestedDate = params.get("date");
+      const requestedTime = params.get("time");
+      const current = typeof selectedReport !== "undefined" ? selectedReport : null;
+
+      const staleLatestDateSelection = Boolean(
+        requestedDate === latest.date
+        && requestedTime
+        && requestedTime < latest.time
+      );
+      const noExplicitSelectionButOldReport = Boolean(
+        !requestedDate
+        && current
+        && `${current.date} ${current.time || ""}` < `${latest.date} ${latest.time}`
+      );
+
+      if (staleLatestDateSelection || noExplicitSelectionButOldReport) {
+        selectReport(latest.date, latest.time);
+      }
+      window.clearInterval(timer);
+    }, 250);
+  }
+
+  autoSelectLatestPublishedReport();
+
   fetch(`data/market/us-stock-breadth.json?t=${Date.now()}`, { cache: "no-store" })
     .then((response) => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
