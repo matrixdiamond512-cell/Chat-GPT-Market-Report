@@ -139,13 +139,86 @@ jobs:
           git pull --rebase
           git push
 
-      - name: Install Google Sheets sync dependencies
-        if: steps.market_status.outputs.overall_status != 'blocked'
-        run: python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
-
-      - name: Persist verified staged data to Google Sheets when configured
-        if: steps.market_status.outputs.overall_status != 'blocked'
+      - name: Sync staged data to Google Sheets and record result
+        id: sheets_sync
+        if: always()
+        continue-on-error: true
         env:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-        run: python scripts/write_market_data_to_sheets.py
+          ACQUISITION_STATUS: ${{ steps.market_status.outputs.overall_status }}
+        shell: bash
+        run: |
+          STATUS="${ACQUISITION_STATUS:-blocked}"
+          if [ "$STATUS" = "blocked" ]; then
+            CODE=0
+            OUTPUT="Google Sheets persistence skipped: staged market data is blocked."
+          else
+            set +e
+            OUTPUT="$(python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt 2>&1 && python scripts/write_market_data_to_sheets.py 2>&1)"
+            CODE=$?
+            set -e
+          fi
+
+          export SYNC_CODE="$CODE"
+          export SYNC_OUTPUT="$OUTPUT"
+          python - <<'PYCODE'
+          import datetime as dt
+          import json
+          import os
+          from pathlib import Path
+
+          code = int(os.environ.get("SYNC_CODE", "1"))
+          output = os.environ.get("SYNC_OUTPUT", "")
+          if "staged market data is blocked" in output:
+              outcome = "skipped_blocked"
+          elif "persistence skipped" in output:
+              outcome = "skipped_unconfigured"
+          elif code == 0:
+              outcome = "success"
+          else:
+              outcome = "failed"
+          payload = {
+              "recordedAt": dt.datetime.now(dt.timezone(dt.timedelta(hours=9))).replace(microsecond=0).isoformat(),
+              "outcome": outcome,
+              "exitCode": code,
+              "message": output[-2000:],
+          }
+          path = Path("data/market/sheets_sync_status.json")
+          path.parent.mkdir(parents=True, exist_ok=True)
+          path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          PYCODE
+          printf '%s\n' "$OUTPUT"
+          exit "$CODE"
+
+      - name: Commit Google Sheets sync status
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f data/market/sheets_sync_status.json ]; then
+            echo "Sheets sync status file was not created."
+            exit 1
+          fi
+          if git diff --quiet -- data/market/sheets_sync_status.json; then
+            echo "Sheets sync status is already up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market/sheets_sync_status.json
+          git commit -m "Record market data Sheets sync status"
+          git pull --rebase
+          git push
+
+      - name: Fail when configured Google Sheets sync failed
+        if: always()
+        run: |
+          python - <<'PYCODE'
+          import json
+          from pathlib import Path
+          payload = json.loads(Path("data/market/sheets_sync_status.json").read_text(encoding="utf-8"))
+          if payload.get("outcome") == "failed":
+              raise SystemExit("Google Sheets sync failed: " + str(payload.get("message") or ""))
+          print("Google Sheets sync outcome:", payload.get("outcome"))
+          PYCODE
