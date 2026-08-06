@@ -1,6 +1,7 @@
 (() => {
   "use strict";
 
+  const STOCKS_URL = "data/stocks.json";
   const NIKKEI_URL = "data/nikkei-metrics.json";
   const SECTOR_URL = "data/sector-performance.json";
   const HISTORY_INDEX_URL = "data/history/stocks/index.json";
@@ -15,9 +16,11 @@
     "日経225 200日乖離率"
   ];
 
+  let latestStocksPayload = null;
   let nikkeiPayload = null;
   let sectorPayload = null;
   let historyIndex = null;
+  let historyPayload = null;
   let busy = false;
 
   const arr = value => Array.isArray(value) ? value : [];
@@ -35,6 +38,9 @@
     return match ? Number(match[0]) : 0;
   };
   const flag = code => code === "US" ? "🇺🇸" : code === "JP" ? "🇯🇵" : "";
+  const displayDate = value => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ""))
+    ? String(value).replace(/-/g, "/")
+    : "取得不能";
 
   function injectStyles() {
     if (document.getElementById("stocks-overlay-style")) return;
@@ -49,13 +55,14 @@
       .sector-mover-source{color:#68758a;font-size:10.5px;font-weight:800}
       .sector-row .bar.down-bar,.sector-row .bar.jp.down-bar{background:linear-gradient(90deg,#d60021,#f15b70)}
       .sector-data-missing{margin:8px 0;padding:10px;border:1px dashed #b8c8df;border-radius:6px;background:#f8fbff;color:#49617e;font-size:12px;font-weight:850}
-      .stocks-date-control{display:flex;align-items:center;justify-content:center;gap:8px;max-width:1640px;margin:0 auto 12px;padding:2px 20px 8px}
+      .stocks-date-control{display:flex;align-items:center;justify-content:center;gap:8px;max-width:1640px;margin:0 auto 8px;padding:2px 20px 8px}
       .stocks-date-button{display:grid;place-items:center;width:42px;height:42px;border:1px solid #bfd0e9;border-radius:7px;background:#fff;color:#073674;font-size:25px;font-weight:1000;cursor:pointer}
       .stocks-date-button:disabled{color:#9aabc1;background:#f3f6fa;cursor:not-allowed}
       .stocks-date-input{width:270px;height:42px;border:1px solid #bfd0e9;border-radius:7px;background:#fff;color:#001f56;padding:0 14px;font:1000 16px/1 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;text-align:center;color-scheme:light}
-      .stocks-date-status{max-width:1640px;margin:-8px auto 10px;padding:0 20px;color:#68758a;font-size:11px;font-weight:800;text-align:center}
+      .stocks-date-status{max-width:1640px;margin:-5px auto 10px;padding:0 20px;color:#314a6b;font-size:12px;font-weight:900;text-align:center;line-height:1.6}
+      .stocks-market-date{margin-left:auto;padding:2px 8px;border:1px solid rgba(255,255,255,.7);border-radius:999px;background:rgba(255,255,255,.14);font-size:11px;font-weight:1000;white-space:nowrap}
       .stocks-history-error{border:1px dashed #d5a8aa;border-radius:7px;padding:18px;background:#fff7f7;color:#8b1b25;font-weight:900}
-      @media(max-width:760px){.sector-mover-source{display:none}.stocks-date-control{padding-left:12px;padding-right:12px}.stocks-date-input{width:min(68vw,270px)}}
+      @media(max-width:760px){.sector-mover-source{display:none}.stocks-date-control{padding-left:12px;padding-right:12px}.stocks-date-input{width:min(68vw,270px)}.panel-title{flex-wrap:wrap}.stocks-market-date{margin-left:34px}}
     `;
     document.head.appendChild(style);
   }
@@ -66,6 +73,43 @@
     return response.json();
   }
 
+  function marketDatesOf(data) {
+    const explicit = data?.marketDates || {};
+    return {
+      us: explicit.us || data?.marketInternals?.us?.dataDate || data?.usBreadth?.marketDate || "",
+      japan: explicit.japan || data?.marketInternals?.japan?.dataDate || data?.nikkeiMetricsAsOf || ""
+    };
+  }
+
+  function mainMarketPanels() {
+    const section = Array.from(document.querySelectorAll("section"))
+      .find(node => (node.getAttribute("aria-label") || "").includes("主要指数と市場内部"));
+    return section ? Array.from(section.querySelectorAll("article.panel")) : [];
+  }
+
+  function applyMarketDateLabels(data) {
+    if (!data) return false;
+    const dates = marketDatesOf(data);
+    const panels = mainMarketPanels();
+    if (panels.length < 2) return false;
+    [[panels[0], dates.us, "米国市場"], [panels[1], dates.japan, "東京市場"]].forEach(([panel, date, label]) => {
+      const title = panel?.querySelector(".panel-title");
+      if (!title) return;
+      title.querySelector(".stocks-market-date")?.remove();
+      title.insertAdjacentHTML("beforeend", `<span class="stocks-market-date">${esc(label)} 基準日 ${esc(displayDate(date))}</span>`);
+    });
+    const status = document.querySelector("[data-updated]");
+    if (status) {
+      const prefix = requestedDate ? `保存日 ${displayDate(requestedDate)}` : `更新日時 ${data.updatedAt || data.savedAt || "取得不能"}`;
+      status.textContent = `${prefix} / 米国市場 ${displayDate(dates.us)} / 東京市場 ${displayDate(dates.japan)}`;
+    }
+    const calendarStatus = document.querySelector(".stocks-date-status");
+    if (calendarStatus) {
+      calendarStatus.textContent = `${requestedDate ? `保存済み株式市場分析 ${displayDate(requestedDate)}` : "最新表示"}｜米国市場データ ${displayDate(dates.us)}｜東京市場データ ${displayDate(dates.japan)}`;
+    }
+    return true;
+  }
+
   function metricHtml(name, item) {
     const value = item?.display || item?.raw || "取得不能";
     const change = item?.change || "—";
@@ -74,39 +118,32 @@
   }
 
   function japanMarketBody() {
-    const sections = Array.from(document.querySelectorAll("section"));
-    const section = sections.find(node => (node.getAttribute("aria-label") || "").includes("主要指数と市場内部"));
-    if (!section) return null;
-    const panels = Array.from(section.querySelectorAll("article.panel"));
+    const panels = mainMarketPanels();
     const panel = panels.find(node => /日本/.test(node.querySelector(".panel-title")?.textContent || "")) || panels[1];
     return panel?.querySelector("tbody") || null;
   }
 
   function applyNikkeiMetrics() {
-    if (!nikkeiPayload?.metrics || busy) return false;
+    if (requestedDate || !nikkeiPayload?.metrics || busy) return false;
     const tbody = japanMarketBody();
     if (!tbody) return false;
     const panel = tbody.closest(".panel");
     const key = String(nikkeiPayload.generatedAt || nikkeiPayload.dataAsOf || "1");
     if (panel?.dataset.nikkeiMetricsApplied === key && tbody.querySelector('[data-stock-metric="日経VI"]')) return true;
-
     busy = true;
     try {
       Array.from(tbody.rows).forEach(row => {
         const name = row.cells[0]?.textContent.trim() || "";
         if (METRIC_ORDER.includes(name) || row.hasAttribute("data-stock-metric")) row.remove();
       });
-
       const growthRow = Array.from(tbody.rows).find(row => row.cells[0]?.textContent.trim() === "グロース250");
       const vi = metricHtml("日経VI", nikkeiPayload.metrics["日経VI"] || {});
       if (growthRow) growthRow.insertAdjacentHTML("afterend", vi);
       else tbody.insertAdjacentHTML("afterbegin", vi);
-
       const valuationHtml = METRIC_ORDER.slice(1).map(name => metricHtml(name, nikkeiPayload.metrics[name] || {})).join("");
       const ratioRow = Array.from(tbody.rows).find(row => row.cells[0]?.textContent.trim() === "騰落レシオ（25日）");
       if (ratioRow) ratioRow.insertAdjacentHTML("afterend", valuationHtml);
       else tbody.insertAdjacentHTML("beforeend", valuationHtml);
-
       if (panel) panel.dataset.nikkeiMetricsApplied = key;
       return true;
     } finally {
@@ -128,12 +165,12 @@
   }
 
   function applySectors() {
-    if (!sectorPayload?.markets || busy) return false;
-    const section = Array.from(document.querySelectorAll("section")).find(node => (node.getAttribute("aria-label") || "").includes("セクター・業種"));
+    if (requestedDate || !sectorPayload?.markets || busy) return false;
+    const section = Array.from(document.querySelectorAll("section"))
+      .find(node => (node.getAttribute("aria-label") || "").includes("セクター・業種"));
     if (!section) return false;
     const panels = Array.from(section.querySelectorAll("article.panel"));
     if (panels.length < 2) return false;
-
     ["us", "japan"].forEach((key, index) => {
       const market = sectorPayload.markets[key];
       const panel = panels[index];
@@ -150,12 +187,38 @@
   }
 
   function applyLatest() {
+    if (requestedDate) return;
     applyNikkeiMetrics();
     applySectors();
+    applyMarketDateLabels(latestStocksPayload);
+  }
+
+  const panel = (s, body) => `<article class="panel"><h2 class="panel-title"><span class="flag">${flag(s?.flag)}</span>${esc((s?.title || "取得不能").replace("（上昇率TOP5）", ""))}</h2>${body}</article>`;
+  const table = (cols, rows, cn = "") => `<div class="table-wrap"><table class="${cn}"><thead><tr>${arr(cols).map(x => `<th>${esc(x)}</th>`).join("")}</tr></thead><tbody>${arr(rows).map(row => `<tr>${arr(row).map((cell, index) => `<td class="${index === 1 || index === 2 ? `num ${cls(cell)}` : index === 3 ? "comment" : ""}">${esc(cell)}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
+  const market = s => panel(s, table(s?.columns, s?.rows, "market-table"));
+  const rankRows = (items, type) => arr(items).map(item => `<tr>${type === "mover" ? `<td class="num">${esc(item.rank)}</td>` : ""}<td>${esc(item.name)}${item.reason ? `<span class="reason">${esc(item.reason)}</span>` : ""}</td>${type === "mover" ? `<td class="num">${esc(item.close)}</td><td class="num ${cls(item.change)}">${esc(item.change)}</td>` : `<td class="num ${cls(item.contribution)}">${esc(item.contribution)}</td>`}</tr>`).join("");
+  const moverTable = (title, items, kind) => `<div class="table-wrap"><h3 class="mini-title ${kind}">${title}</h3><table class="rank-table"><thead><tr><th>順位</th><th>銘柄名</th><th>終値</th><th>騰落率</th></tr></thead><tbody>${rankRows(items, "mover")}</tbody></table></div>`;
+  const movers = s => panel(s, `<div class="panel-body split">${moverTable("大幅上昇（上位5）", s?.gainers, "up")}${moverTable("大幅下落（下位5）", s?.losers, "down")}</div>`);
+  const snapshotSector = s => panel(s, `<div class="panel-body">${sectorGroup(s?.gainers || s?.rows, "up", s?.sourceLabel)}${sectorGroup(s?.losers, "down", s?.sourceLabel)}</div>`);
+  const contributionTable = (title, items, kind) => `<div class="table-wrap"><h3 class="mini-title ${kind}">${title}</h3><table class="rank-table"><thead><tr><th>銘柄名</th><th>寄与度</th></tr></thead><tbody>${rankRows(items, "contribution")}</tbody></table></div>`;
+  const contributions = s => panel(s, `<div class="panel-body split">${contributionTable("寄与度上位 5 銘柄", s?.top, "up")}${contributionTable("寄与度下位 5 銘柄", s?.bottom, "down")}</div>`);
+  const listHtml = items => `<ul>${arr(items).map(item => `<li>${esc(item)}</li>`).join("")}</ul>`;
+  const card = (item, className, icon, body) => `<article class="info-card ${className}"><h2><span class="icon">${icon}</span>${esc(item?.title)}</h2>${body}</article>`;
+  const judgement = value => { const conclusion = value?.conclusion || {}; return `<section class="bottom-cards">${card(conclusion, "conclusion", "✓", `<p class="conclusion-main">${esc(conclusion.main)}</p><p class="conclusion-sub">${esc(conclusion.sub)}</p>`)}${card(value?.reason, "reason-card", "▮", listHtml(value?.reason?.items))}${card(value?.risk, "risk", "!", listHtml(value?.risk?.items))}${card(value?.watch, "watch", "◎", listHtml(value?.watch?.items))}</section>`; };
+  const analyses = items => `<section class="analysis-grid">${arr(items).map(item => `<article class="analysis-card"><h2>${esc(item.title)}</h2>${item.items ? listHtml(item.items) : `<p>${esc(item.body)}</p>`}</article>`).join("")}</section>`;
+
+  function renderSnapshot(data) {
+    const root = document.querySelector("[data-stocks-root]");
+    if (!root) return;
+    root.innerHTML = `<section class="pair-grid" aria-label="主要指数と市場内部">${market(data?.marketInternals?.us)}${market(data?.marketInternals?.japan)}</section><section class="pair-grid" aria-label="大幅上昇・下落銘柄">${movers(data?.movers?.us)}${movers(data?.movers?.japan)}</section><section class="pair-grid" aria-label="セクター・業種">${snapshotSector(data?.sectors?.us)}${snapshotSector(data?.sectors?.japan)}</section><section class="pair-grid" aria-label="指数寄与度">${contributions(data?.contributions?.us)}${contributions(data?.contributions?.japan)}</section>${judgement(data?.judgement)}${analyses(data?.analysisCards)}<p class="note">${esc(data?.note)}</p>`;
+    applyMarketDateLabels(data);
   }
 
   function entries() {
-    return arr(historyIndex?.dates).map(item => typeof item === "string" ? { date: item } : item).filter(item => /^\d{4}-\d{2}-\d{2}$/.test(item.date || "")).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    return arr(historyIndex?.dates)
+      .map(item => typeof item === "string" ? { date: item } : item)
+      .filter(item => /^\d{4}-\d{2}-\d{2}$/.test(item.date || ""))
+      .sort((a, b) => String(b.date).localeCompare(String(a.date)));
   }
 
   function go(date) {
@@ -169,7 +232,8 @@
     const root = document.querySelector("[data-stocks-root]");
     if (!root || document.querySelector("[data-stocks-calendar]")) return;
     const list = entries();
-    const selected = requestedDate || historyIndex?.latestDate || list[0]?.date || nikkeiPayload?.dataAsOf || "";
+    const fallbackDate = marketDatesOf(latestStocksPayload).japan || marketDatesOf(latestStocksPayload).us || "";
+    const selected = requestedDate || historyIndex?.latestDate || list[0]?.date || fallbackDate;
     const index = list.findIndex(item => item.date === selected);
     const older = index >= 0 ? list[index + 1]?.date : list.find(item => item.date < selected)?.date;
     const newer = index > 0 ? list[index - 1]?.date : list.slice().reverse().find(item => item.date > selected)?.date;
@@ -180,7 +244,6 @@
     root.parentNode.insertBefore(control, root);
     const status = document.createElement("div");
     status.className = "stocks-date-status";
-    status.textContent = requestedDate ? `保存済み株式市場分析：${selected.replace(/-/g, "/")}` : list.length ? `最新表示。保存済み履歴はカレンダーから選択できます（最新保存日 ${selected.replace(/-/g, "/")}）` : "最新表示。履歴データは次回保存から追加されます。";
     root.parentNode.insertBefore(status, root);
     control.querySelector("[data-stock-prev]")?.addEventListener("click", () => go(older));
     control.querySelector("[data-stock-next]")?.addEventListener("click", () => go(newer));
@@ -191,28 +254,36 @@
     if (!requestedDate) return false;
     const root = document.querySelector("[data-stocks-root]");
     try {
-      const data = await loadJson(`${HISTORY_BASE_URL}${requestedDate}.json`);
-      const markets = [data?.marketInternals?.us, data?.marketInternals?.japan];
-      if (!root || !markets[1]) return false;
-      root.innerHTML = `<section class="pair-grid" aria-label="主要指数と市場内部">${markets.map(market => `<article class="panel"><h2 class="panel-title"><span class="flag">${flag(market?.flag)}</span>${esc(market?.title || "取得不能")}</h2><div class="table-wrap"><table class="market-table"><thead><tr>${arr(market?.columns).map(col => `<th>${esc(col)}</th>`).join("")}</tr></thead><tbody>${arr(market?.rows).map(row => `<tr>${arr(row).map((cell, idx) => `<td class="${idx === 1 || idx === 2 ? `num ${cls(cell)}` : idx === 3 ? "comment" : ""}">${esc(cell)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></article>`).join("")}</section>`;
-      document.querySelector("[data-updated]").textContent = `表示日：${requestedDate.replace(/-/g, "/")} / データ状態：履歴保存済み`;
+      historyPayload = await loadJson(`${HISTORY_BASE_URL}${requestedDate}.json`);
+      renderSnapshot(historyPayload);
       return true;
-    } catch (_) {
-      if (root) root.insertAdjacentHTML("afterbegin", `<div class="stocks-history-error">${requestedDate.replace(/-/g, "/")}の保存データがありません。最新表示を確認してください。</div>`);
+    } catch (error) {
+      if (root) root.innerHTML = `<div class="stocks-history-error">${displayDate(requestedDate)}の保存データがありません。理由：${esc(error.message)}</div>`;
       return false;
     }
   }
 
   async function init() {
     injectStyles();
-    const results = await Promise.allSettled([loadJson(NIKKEI_URL), loadJson(SECTOR_URL), loadJson(HISTORY_INDEX_URL)]);
-    if (results[0].status === "fulfilled") nikkeiPayload = results[0].value;
-    if (results[1].status === "fulfilled") sectorPayload = results[1].value;
-    if (results[2].status === "fulfilled") historyIndex = results[2].value;
-    injectCalendar();
-    await loadHistory();
-    applyLatest();
+    const results = await Promise.allSettled([
+      loadJson(STOCKS_URL),
+      loadJson(NIKKEI_URL),
+      loadJson(SECTOR_URL),
+      loadJson(HISTORY_INDEX_URL)
+    ]);
+    if (results[0].status === "fulfilled") latestStocksPayload = results[0].value;
+    if (results[1].status === "fulfilled") nikkeiPayload = results[1].value;
+    if (results[2].status === "fulfilled") sectorPayload = results[2].value;
+    if (results[3].status === "fulfilled") historyIndex = results[3].value;
 
+    injectCalendar();
+    if (requestedDate) {
+      await loadHistory();
+      applyMarketDateLabels(historyPayload);
+      return;
+    }
+
+    applyLatest();
     const root = document.querySelector("[data-stocks-root]") || document.body;
     const observer = new MutationObserver(() => {
       if (!busy) setTimeout(applyLatest, 0);
