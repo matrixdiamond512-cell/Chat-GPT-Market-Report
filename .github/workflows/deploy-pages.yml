@@ -28,22 +28,35 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Inject latest US breadth split card
+      - name: Normalize and cache-bust US breadth renderer
         shell: bash
+        env:
+          DEPLOY_SHA: ${{ github.sha }}
         run: |
           python - <<'PY'
+          import os
+          import re
           from pathlib import Path
+
           path = Path('index.html')
           text = path.read_text(encoding='utf-8')
-          tag = '<script src="assets/js/us-breadth-split-card-v2.js?v=20260807-0225"></script>'
-          if tag not in text:
-              marker = '<script src="assets/js/site-common.js'
-              pos = text.find(marker)
-              if pos >= 0:
-                  text = text[:pos] + tag + '\n  ' + text[pos:]
-              else:
-                  text = text.replace('</body>', '  ' + tag + '\n</body>')
-              path.write_text(text, encoding='utf-8')
+          sha = os.environ.get('DEPLOY_SHA', 'latest')[:12]
+          tag = f'<script src="assets/js/us-breadth-split-card-v2.js?v={sha}"></script>'
+
+          text = re.sub(
+              r'\s*<script src="assets/js/us-breadth-split-card(?:-v2)?\.js\?v=[^"]+"></script>',
+              '',
+              text,
+          )
+
+          marker = '<script src="assets/js/position-fulltext-fix.js'
+          pos = text.find(marker)
+          if pos >= 0:
+              text = text[:pos] + '  ' + tag + '\n  ' + text[pos:]
+          else:
+              text = text.replace('</body>', '  ' + tag + '\n</body>')
+
+          path.write_text(text, encoding='utf-8')
           PY
 
       - name: Upload static site
