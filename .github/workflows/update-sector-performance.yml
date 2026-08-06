@@ -55,16 +55,16 @@ jobs:
           markets = payload.get("markets") or {}
           if not {"us", "japan"}.issubset(markets):
               raise SystemExit("sector-performance.json is missing a market section")
-          available = 0
+          incomplete = []
           for key in ("us", "japan"):
               section = markets[key]
               gainers = section.get("gainers") or []
               losers = section.get("losers") or []
-              if len(gainers) >= 5 and len(losers) >= 5:
-                  available += 1
-          if available == 0:
-              raise SystemExit("Neither market returned complete Top 5 sector data")
-          print("Validated sector markets:", available)
+              if len(gainers) < 5 or len(losers) < 5:
+                  incomplete.append(key)
+          if incomplete:
+              raise SystemExit("Incomplete sector Top 5 data: " + ", ".join(incomplete))
+          print("Validated complete sector Top 5 data for US and Japan")
           PY
 
       - name: Commit updated sector data
