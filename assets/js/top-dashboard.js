@@ -2058,53 +2058,76 @@ async function loadDashboardEventCalendar() {
 
 async function loadDashboardReports() {
   const errors = [];
+  let dashboardPayload = null;
+  let dashboardReports = [];
+  let historyReports = [];
+
   try {
     const response = await fetch(`data/dashboard.json?ts=${Date.now()}`, { cache: "no-store" });
     if (!response.ok) throw new Error(`data/dashboard.json HTTP ${response.status}`);
-    const payload = await response.json();
-    const dashboardReports = normalizeDashboardReports(payload);
-    if (dashboardReports.length) {
-      const embeddedMarketData = payload.marketData || payload.latestReport?.marketData || null;
-      const independentMarketData = await loadIndependentMarketData();
-      const marketData = newerMarketData(embeddedMarketData, independentMarketData);
-      const marketDataReportKey = REPORT_TIMES.includes(marketData?.reportSlot)
-        ? `${String(marketData?.generatedAt || "").slice(0, 10)} ${marketData.reportSlot}`
-        : "";
-      const enrichedReports = dashboardReports.map((report) => {
-        const key = `${report.date || ""} ${report.time || ""}`;
-        if (marketData && key === marketDataReportKey && !report.marketData) {
-          return { ...report, marketData };
-        }
-        return report;
-      });
-      return {
-        reports: enrichedReports,
-        meta: {
-          generatedAt: payload.generatedAt || "",
-          dataAsOf: payload.dataAsOf || "",
-          status: payload.status || "",
-          marketData,
-          marketDataUpdatedAt: payload.marketDataUpdatedAt || marketData?.generatedAt || ""
-        }
-      };
-    }
-    throw new Error("data/dashboard.jsonに表示できるレポートがありません");
+    dashboardPayload = await response.json();
+    dashboardReports = normalizeDashboardReports(dashboardPayload);
   } catch (error) {
     errors.push(error.message);
   }
 
+  // dashboard.json は最新1件だけに軽量化する。
+  // 過去分とGoogle Docs由来のfullTextは reports.json から結合する。
   try {
     const response = await fetch(`reports.json?ts=${Date.now()}`, { cache: "no-store" });
     if (!response.ok) throw new Error(`reports.json HTTP ${response.status}`);
     const payload = await response.json();
-    const reportList = normalizeDashboardReports(payload);
-    if (reportList.length) return { reports: reportList, meta: { status: "fallback-reports-json" } };
-    throw new Error("reports.jsonに表示できるレポートがありません");
+    historyReports = normalizeDashboardReports(payload);
   } catch (error) {
     errors.push(error.message);
   }
 
-  throw new Error(`ダッシュボードJSONを取得できませんでした。理由：${errors.join(" / ")}`);
+  const mergedByKey = new Map();
+  historyReports.forEach((report) => {
+    mergedByKey.set(reportKey(report), report);
+  });
+  dashboardReports.forEach((report) => {
+    const key = reportKey(report);
+    const history = mergedByKey.get(key) || {};
+    mergedByKey.set(key, {
+      ...history,
+      ...report,
+      fullText: report.fullText || history.fullText || ""
+    });
+  });
+
+  const reportList = [...mergedByKey.values()]
+    .filter((report) => /^\d{4}-\d{2}-\d{2}$/.test(report?.date || ""))
+    .sort((a, b) => reportKey(b).localeCompare(reportKey(a)));
+
+  if (!reportList.length) {
+    throw new Error(`ダッシュボードJSONを取得できませんでした。理由：${errors.join(" / ")}`);
+  }
+
+  const embeddedMarketData = dashboardPayload?.marketData || dashboardPayload?.latestReport?.marketData || null;
+  const independentMarketData = await loadIndependentMarketData();
+  const marketData = newerMarketData(embeddedMarketData, independentMarketData);
+  const marketDataReportKey = REPORT_TIMES.includes(marketData?.reportSlot)
+    ? `${String(marketData?.generatedAt || "").slice(0, 10)} ${marketData.reportSlot}`
+    : "";
+  const enrichedReports = reportList.map((report) => {
+    const key = `${report.date || ""} ${report.time || ""}`;
+    if (marketData && key === marketDataReportKey && !report.marketData) {
+      return { ...report, marketData };
+    }
+    return report;
+  });
+
+  return {
+    reports: enrichedReports,
+    meta: {
+      generatedAt: dashboardPayload?.generatedAt || "",
+      dataAsOf: dashboardPayload?.dataAsOf || "",
+      status: dashboardPayload?.status || (historyReports.length ? "fallback-reports-json" : ""),
+      marketData,
+      marketDataUpdatedAt: dashboardPayload?.marketDataUpdatedAt || marketData?.generatedAt || ""
+    }
+  };
 }
 
 async function loadIndependentMarketData() {

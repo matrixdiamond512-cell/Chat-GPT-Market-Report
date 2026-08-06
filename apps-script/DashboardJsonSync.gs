@@ -1,9 +1,9 @@
-// Root-fix version: 2026-08-06 13:22 JST
+// Root-fix version: 2026-08-06 14:06 JST
 var DASHBOARD_JSON_CONFIG = {
   targetPath: 'data/dashboard.json',
   reportsPath: 'reports.json',
   timezone: 'Asia/Tokyo',
-  maxReports: 120,
+  maxReports: 1,
   lastResultProperty: 'DASHBOARD_JSON_LAST_RESULT',
   priceSheetName: '終値一覧',
   priceSourceId: 'CLOSE_PRICE_SHEET',
@@ -88,21 +88,17 @@ function buildDashboardJsonFromReports_(reports) {
 }
 
 function dashboardBuildPayloadFromReports_(reports) {
-  var priceSource = dashboardFetchPriceSheetSource_();
   var sourceReports = dashboardNormalizeReports_(reports);
-  if (!sourceReports.length) {
-    throw new Error('ダッシュボードに使えるマーケットレポートがありません。');
-  }
+  if (!sourceReports.length) throw new Error('ダッシュボードに使えるマーケットレポートがありません。');
 
-  var normalizedReports = sourceReports.map(function(report, index) {
-    return dashboardPrepareReportForDashboard_(report, priceSource, index === 0);
-  });
-
-  var latest = normalizedReports[0];
+  // dashboard.json は最新レポートだけを保持する。
+  // 過去レポート全文は reports.json をブラウザ側で結合して表示するため、
+  // ここで120件分を複製・再加工しない。これによりGASの実行時間超過を防ぐ。
+  var latestSource = sourceReports[0];
+  var priceSource = dashboardFetchPriceSheetSource_(latestSource.date);
+  var latest = dashboardPrepareReportForDashboard_(latestSource, priceSource, true);
   var generatedAt = dashboardIsoJst_(new Date());
   var latestKey = latest.date + ' ' + latest.time;
-  var isStale = dashboardIsStale_(latest.date);
-
   return {
     schemaVersion: '1.1.0',
     pageId: 'dashboard',
@@ -110,13 +106,13 @@ function dashboardBuildPayloadFromReports_(reports) {
     publishedAt: generatedAt,
     dataAsOf: latest.date + 'T' + latest.time + ':00+09:00',
     status: 'ok',
-    isStale: isStale,
-    staleReason: isStale ? '最新レポートの日付が現在日から3日以上離れています。' : '',
+    isStale: dashboardIsStale_(latest.date),
+    staleReason: dashboardIsStale_(latest.date) ? '最新レポートの日付が現在日から3日以上離れています。' : '',
     currentReportKey: latestKey,
     sources: dashboardBuildDashboardSources_(latestKey, priceSource),
     errors: dashboardBuildDashboardErrors_(priceSource),
     latestReport: latest,
-    reports: normalizedReports.slice(0, DASHBOARD_JSON_CONFIG.maxReports)
+    reports: [latest]
   };
 }
 
@@ -207,7 +203,7 @@ function dashboardPrepareReportForDashboard_(report, priceSource, useLatestPrice
   return prepared;
 }
 
-function dashboardFetchPriceSheetSource_() {
+function dashboardFetchPriceSheetSource_(reportDate) {
   var source = {
     id: DASHBOARD_JSON_CONFIG.priceSourceId,
     sheetName: DASHBOARD_JSON_CONFIG.priceSheetName,
@@ -242,8 +238,8 @@ function dashboardFetchPriceSheetSource_() {
       return source;
     }
 
-    var values = sheet.getRange(1, 1, lastRow, lastColumn).getDisplayValues();
-    var headers = values[0] || [];
+    // 全シートを一括取得せず、ヘッダー・日付列・必要な行だけ読む。
+    var headers = sheet.getRange(1, 1, 1, lastColumn).getDisplayValues()[0] || [];
     var index = dashboardHeaderIndex_(headers);
     if (!Object.prototype.hasOwnProperty.call(index, '日付')) {
       source.status = 'error';
@@ -251,23 +247,59 @@ function dashboardFetchPriceSheetSource_() {
       return source;
     }
 
-    for (var rowIndex = values.length - 1; rowIndex >= 1; rowIndex -= 1) {
-      var row = values[rowIndex] || [];
-      var date = dashboardNormalizeDateKey_(row[index['日付']]);
+    var dateColumn = index['日付'] + 1;
+    var dateValues = sheet.getRange(2, dateColumn, lastRow - 1, 1).getDisplayValues();
+    var latestDate = '';
+    var latestRowNumber = 0;
+    var reportRowNumber = 0;
+
+    // 同一日付が複数ある場合は、下側の行を優先する。
+    for (var offset = dateValues.length - 1; offset >= 0; offset -= 1) {
+      var date = dashboardNormalizeDateKey_(dateValues[offset][0]);
       if (!date) continue;
+      var rowNumber = offset + 2;
 
-      var metricRow = dashboardBuildPriceMetricRow_(date, row, index);
-      if (!Object.keys(metricRow.markets).length) continue;
-
-      if (!source.byDate[date]) source.byDate[date] = metricRow;
-      if (!source.latest || date > source.latest.date) {
-        source.latest = source.byDate[date];
+      if (!reportRowNumber && date === reportDate) reportRowNumber = rowNumber;
+      if (!latestDate || date > latestDate) {
+        latestDate = date;
+        latestRowNumber = rowNumber;
       }
     }
 
+    if (!latestDate || !latestRowNumber) {
+      source.status = 'empty';
+      source.error = '終値一覧から有効な日付を取得できませんでした。';
+      return source;
+    }
+
+    if (reportRowNumber) {
+      var reportMetricRow = dashboardReadMetricRowAtSheetRow_(
+        sheet,
+        reportRowNumber,
+        lastColumn,
+        index,
+        reportDate
+      );
+      if (Object.keys(reportMetricRow.markets).length) source.byDate[reportDate] = reportMetricRow;
+    }
+
+    if (latestDate === reportDate && source.byDate[reportDate]) {
+      source.latest = source.byDate[reportDate];
+    } else {
+      var latestMetricRow = dashboardReadMetricRowAtSheetRow_(
+        sheet,
+        latestRowNumber,
+        lastColumn,
+        index,
+        latestDate
+      );
+      if (Object.keys(latestMetricRow.markets).length) source.latest = latestMetricRow;
+    }
+
+    if (!source.latest && source.byDate[reportDate]) source.latest = source.byDate[reportDate];
     if (!source.latest) {
       source.status = 'empty';
-      source.error = '終値一覧から市場価格データを作成できませんでした。';
+      source.error = '終値一覧の最新日付行から市場価格データを作成できませんでした。';
       return source;
     }
 
@@ -279,6 +311,11 @@ function dashboardFetchPriceSheetSource_() {
     source.error = error.message;
     return source;
   }
+}
+
+function dashboardReadMetricRowAtSheetRow_(sheet, rowNumber, lastColumn, index, date) {
+  var row = sheet.getRange(rowNumber, 1, 1, lastColumn).getDisplayValues()[0] || [];
+  return dashboardBuildPriceMetricRow_(date, row, index);
 }
 
 function dashboardHeaderIndex_(headers) {
