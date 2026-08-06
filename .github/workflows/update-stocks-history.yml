@@ -1,0 +1,87 @@
+name: Update stock analysis history
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "50 21 * * 0-4" # 06:50 JST, Monday-Friday
+    - cron: "50 3 * * 1-5"  # 12:50 JST, Monday-Friday
+    - cron: "50 7 * * 1-5"  # 16:50 JST, Monday-Friday
+    - cron: "50 12 * * 1-5" # 21:50 JST, Monday-Friday
+  push:
+    branches: [main]
+    paths:
+      - "data/stocks.json"
+      - "data/sector-performance.json"
+      - "data/nikkei-metrics.json"
+      - "scripts/snapshot_stocks_history.py"
+      - ".github/workflows/update-stocks-history.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-stocks-history
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Create stock history snapshot
+        run: python scripts/snapshot_stocks_history.py
+
+      - name: Validate stock history
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          index_path = Path("data/history/stocks/index.json")
+          index = json.loads(index_path.read_text(encoding="utf-8"))
+          latest = index.get("latestDate")
+          if not latest:
+              raise SystemExit("stock history index has no latestDate")
+          snapshot_path = Path("data/history/stocks") / f"{latest}.json"
+          snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
+          if snapshot.get("historyDate") != latest:
+              raise SystemExit("stock history snapshot date mismatch")
+          sectors = snapshot.get("sectors") or {}
+          if not {"us", "japan"}.issubset(sectors):
+              raise SystemExit("stock history snapshot is missing sector markets")
+          rows = (((snapshot.get("marketInternals") or {}).get("japan") or {}).get("rows") or [])
+          names = {str(row[0]) for row in rows if isinstance(row, list) and row}
+          required = {
+              "日経225予想PER",
+              "日経225予想EPS",
+              "日経225 25日乖離率",
+              "日経225 200日乖離率",
+          }
+          missing = required - names
+          if missing:
+              raise SystemExit("stock history snapshot is missing: " + ", ".join(sorted(missing)))
+          print("Validated stock history snapshot:", latest)
+          PY
+
+      - name: Commit stock history
+        run: |
+          if git diff --quiet -- data/history/stocks; then
+            echo "Stock history is already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/history/stocks
+          git commit -m "Update stock analysis history"
+          git pull --rebase
+          git push
