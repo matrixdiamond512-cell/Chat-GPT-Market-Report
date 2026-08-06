@@ -1,40 +1,44 @@
 {
-  "schemaVersion": "1.0.0",
-  "marketDate": "2026-08-05",
-  "fetchedAt": "2026-08-06T21:45:29+09:00",
+  "schemaVersion": "1.1.0",
+  "marketDate": "2026-08-06",
+  "fetchedAt": "2026-08-07T08:39:09+09:00",
   "status": "verified",
   "source": {
     "name": "TradingView America Stock Screener",
     "url": "https://www.tradingview.com/markets/stocks-usa/market-movers-all-stocks/",
-    "method": "exchange-filtered America scanner"
+    "method": "exchange-filtered scanner including 200-day SMA"
   },
   "exchanges": {
     "NYSE": {
-      "advancers": 856,
-      "decliners": 1226,
-      "unchanged": 45,
+      "advancers": 759,
+      "decliners": 1327,
+      "unchanged": 41,
       "total": 2127,
       "newHigh52Week": 0,
       "newLow52Week": 0,
-      "advanceDeclineRatio": 0.698206,
-      "previousDayChange": null,
-      "average20Day": null,
-      "versus20DayAveragePercent": null
+      "aboveSMA200": 1161,
+      "belowSMA200": 863,
+      "equalSMA200": 0,
+      "sma200Valid": 2024,
+      "sma200Column": "SMA200",
+      "advanceDeclineRatio": 0.571967
     },
     "NASDAQ": {
-      "advancers": 1338,
-      "decliners": 1848,
-      "unchanged": 124,
-      "total": 3310,
+      "advancers": 1476,
+      "decliners": 1710,
+      "unchanged": 129,
+      "total": 3315,
       "newHigh52Week": 0,
       "newLow52Week": 0,
-      "advanceDeclineRatio": 0.724026,
-      "previousDayChange": null,
-      "average20Day": null,
-      "versus20DayAveragePercent": null
+      "aboveSMA200": 1458,
+      "belowSMA200": 1582,
+      "equalSMA200": 0,
+      "sma200Valid": 3040,
+      "sma200Column": "SMA200",
+      "advanceDeclineRatio": 0.863158
     }
   },
-  "combinedAdvanceRate": 0.416477,
+  "combinedAdvanceRate": 0.423938,
   "judgement": "下落優勢",
-  "note": "値上がり・値下がりは前日比change、52週高値・安値は当日高安と52週高安の一致で集計。"
+  "note": "NYSEとNASDAQを分け、値上がり・値下がり銘柄数と200日移動平均線の上・下を集計。"
 }
