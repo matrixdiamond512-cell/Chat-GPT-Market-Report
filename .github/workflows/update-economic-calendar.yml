@@ -51,7 +51,7 @@ jobs:
         run: python scripts/postprocess_economic_calendar.py --no-official-fetch --print-summary
 
       - name: Repair missing numeric results
-        run: python scripts/repair_missing_event_results.py --print-summary
+        run: python -m scripts.repair_missing_event_results --print-summary
 
       - name: Run calendar tests
         run: |
