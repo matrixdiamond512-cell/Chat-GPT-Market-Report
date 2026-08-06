@@ -3,9 +3,10 @@ name: 07:00 market data primary window
 on:
   workflow_dispatch:
   schedule:
-    # 05:50 JST, Monday-Saturday. The runner stays alive and executes
-    # 05:55, 06:30, 06:35, 06:40, 06:45, 06:50, and 06:55 itself.
-    - cron: "50 20 * * 0-5"
+    # 05:58 JST, Monday-Saturday. The runner starts before the first check,
+    # but market data acquisition begins at 06:00 after more closing values settle.
+    # It then executes 06:30, 06:35, 06:40, 06:45, 06:50, and 06:55 itself.
+    - cron: "58 20 * * 0-5"
 
 permissions:
   contents: write
@@ -46,6 +47,6 @@ jobs:
         run: |
           python scripts/run_market_data_window.py \
             --slot "07:00" \
-            --times "05:55,06:30,06:35,06:40,06:45,06:50,06:55" \
+            --times "06:00,06:30,06:35,06:40,06:45,06:50,06:55" \
             --trigger-source "primary_window" \
             --max-catchup-minutes 90
