@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Restore and maintain exchange-specific US breadth rows in stocks.json.
+"""Update the complete U.S. market-internals table after the U.S. close.
 
-This script changes only the US market-internals table data. It preserves all
-other stock-analysis sections and recently improved page rendering.
+Only the U.S. side is advanced. The Tokyo side is left untouched. The resulting
+page is archived under the current Japan calendar date with independent U.S. and
+Tokyo data dates, so a Tokyo-close update and a U.S.-close update can coexist.
 """
 from __future__ import annotations
 
@@ -13,35 +14,81 @@ import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import quote
 from urllib.request import Request, urlopen
+from zoneinfo import ZoneInfo
+
+from archive_stocks_snapshot import archive_snapshot
 
 ROOT = Path(__file__).resolve().parents[1]
 STOCKS_PATH = ROOT / "data" / "stocks.json"
 BREADTH_PATH = ROOT / "data" / "market" / "us-stock-breadth.json"
 SCANNER_URL = "https://scanner.tradingview.com/america/scan"
+YAHOO_CHART = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range=14d&interval=1d&events=history"
 JST = timezone(timedelta(hours=9))
+NEW_YORK = ZoneInfo("America/New_York")
+
+INDEX_SPECS = [
+    ("Dow（NYダウ）", "^DJI", 2),
+    ("S&P500", "^GSPC", 2),
+    ("Nasdaq（総合）", "^IXIC", 2),
+    ("SOX（半導体指数）", "^SOX", 2),
+    ("Russell2000（小型株）", "^RUT", 2),
+    ("VIX（恐怖指数）", "^VIX", 2),
+]
 
 
-def post_json(payload: dict[str, Any], attempts: int = 3) -> dict[str, Any]:
-    body = json.dumps(payload).encode("utf-8")
-    last_error: Exception | None = None
+def request_json(url: str, *, payload: dict[str, Any] | None = None, attempts: int = 3) -> dict[str, Any]:
+    body = json.dumps(payload).encode("utf-8") if payload is not None else None
+    error: Exception | None = None
     for attempt in range(attempts):
         try:
             request = Request(
-                SCANNER_URL,
+                url,
                 data=body,
                 headers={
                     "Content-Type": "application/json",
-                    "User-Agent": "Mozilla/5.0 MarketReportUSInternals/1.0",
+                    "User-Agent": "Mozilla/5.0 MarketReportStocks/2.0",
+                    "Accept": "application/json,text/plain,*/*",
                 },
-                method="POST",
+                method="POST" if body is not None else "GET",
             )
             with urlopen(request, timeout=45) as response:
                 return json.loads(response.read().decode("utf-8"))
         except Exception as exc:  # pragma: no cover - network retry path
-            last_error = exc
+            error = exc
             time.sleep(2**attempt)
-    raise RuntimeError(f"TradingView scanner request failed: {last_error}")
+    raise RuntimeError(f"request failed: {url}: {error}")
+
+
+def fetch_daily_quote(symbol: str) -> dict[str, Any]:
+    url = YAHOO_CHART.format(symbol=quote(symbol, safe=""))
+    raw = request_json(url)
+    result = ((raw.get("chart") or {}).get("result") or [None])[0]
+    if not result:
+        raise RuntimeError(f"Yahoo chart returned no result: {symbol}")
+    timestamps = result.get("timestamp") or []
+    closes = (((result.get("indicators") or {}).get("quote") or [{}])[0].get("close") or [])
+    records: list[tuple[int, float]] = []
+    for timestamp, close in zip(timestamps, closes):
+        if isinstance(timestamp, (int, float)) and isinstance(close, (int, float)) and math.isfinite(float(close)):
+            records.append((int(timestamp), float(close)))
+    if len(records) < 2:
+        raise RuntimeError(f"Yahoo chart has fewer than two valid closes: {symbol}")
+    previous_ts, previous_close = records[-2]
+    latest_ts, latest_close = records[-1]
+    market_date = datetime.fromtimestamp(latest_ts, timezone.utc).astimezone(NEW_YORK).date().isoformat()
+    change = latest_close - previous_close
+    change_pct = change / previous_close * 100 if previous_close else 0.0
+    return {
+        "symbol": symbol,
+        "marketDate": market_date,
+        "timestamp": latest_ts,
+        "close": latest_close,
+        "previousClose": previous_close,
+        "change": change,
+        "changePercent": change_pct,
+    }
 
 
 def scanner_payload(exchange: str, sma_column: str) -> dict[str, Any]:
@@ -54,15 +101,8 @@ def scanner_payload(exchange: str, sma_column: str) -> dict[str, Any]:
         "markets": ["america"],
         "symbols": {"query": {"types": []}, "tickers": []},
         "columns": [
-            "name",
-            "close",
-            "change",
-            "High.52W",
-            "Low.52W",
-            sma_column,
-            "exchange",
-            "type",
-            "subtype",
+            "name", "close", "change", "High.52W", "Low.52W", sma_column,
+            "exchange", "type", "subtype",
         ],
         "sort": {"sortBy": "name", "sortOrder": "asc"},
         "range": [0, 10000],
@@ -74,7 +114,7 @@ def fetch_exchange(exchange: str) -> dict[str, Any]:
     sma_column = "SMA200"
     for candidate in ("SMA200", "SMA200|1D"):
         try:
-            trial = post_json(scanner_payload(exchange, candidate))
+            trial = request_json(SCANNER_URL, payload=scanner_payload(exchange, candidate))
             rows = trial.get("data") or []
             if rows and any(
                 len((row.get("d") or [])) > 5
@@ -89,17 +129,13 @@ def fetch_exchange(exchange: str) -> dict[str, Any]:
     if raw is None:
         raise RuntimeError(f"{exchange}: 200-day moving-average data unavailable")
 
-    advancers = decliners = unchanged = 0
-    highs = lows = 0
-    above_200 = below_200 = equal_200 = 0
-    valid_change = valid_sma = 0
-
+    advancers = decliners = unchanged = highs = lows = 0
+    above_200 = below_200 = equal_200 = valid_change = valid_sma = 0
     for row in raw.get("data") or []:
         values = row.get("d") or []
         if len(values) < 6:
             continue
         close, change, high52, low52, sma200 = values[1:6]
-
         if isinstance(change, (int, float)) and math.isfinite(float(change)):
             valid_change += 1
             if change > 0:
@@ -108,15 +144,12 @@ def fetch_exchange(exchange: str) -> dict[str, Any]:
                 decliners += 1
             else:
                 unchanged += 1
-
         if isinstance(close, (int, float)) and math.isfinite(float(close)):
             close_value = float(close)
-            if isinstance(high52, (int, float)) and high52:
-                if close_value >= float(high52) * (1 - 1e-7):
-                    highs += 1
-            if isinstance(low52, (int, float)) and low52:
-                if close_value <= float(low52) * (1 + 1e-7):
-                    lows += 1
+            if isinstance(high52, (int, float)) and high52 and close_value >= float(high52) * (1 - 1e-7):
+                highs += 1
+            if isinstance(low52, (int, float)) and low52 and close_value <= float(low52) * (1 + 1e-7):
+                lows += 1
             if isinstance(sma200, (int, float)) and math.isfinite(float(sma200)):
                 valid_sma += 1
                 difference = close_value - float(sma200)
@@ -127,10 +160,8 @@ def fetch_exchange(exchange: str) -> dict[str, Any]:
                     below_200 += 1
                 else:
                     equal_200 += 1
-
     if valid_change == 0 or valid_sma == 0:
         raise RuntimeError(f"{exchange}: no valid breadth rows")
-
     return {
         "advancers": advancers,
         "decliners": decliners,
@@ -147,11 +178,25 @@ def fetch_exchange(exchange: str) -> dict[str, Any]:
     }
 
 
-def previous_us_weekday(now_jst: datetime) -> str:
-    day = (now_jst - timedelta(days=1)).date()
-    while day.weekday() >= 5:
-        day -= timedelta(days=1)
-    return day.isoformat()
+def format_close(value: float, decimals: int = 2) -> str:
+    return f"{value:,.{decimals}f}"
+
+
+def format_change(change: float, change_pct: float, decimals: int = 2) -> str:
+    sign = "+" if change >= 0 else ""
+    return f"{sign}{change:,.{decimals}f}（{sign}{change_pct:.2f}%）"
+
+
+def index_comment(name: str, change_pct: float) -> str:
+    direction = "上昇" if change_pct > 0 else "下落" if change_pct < 0 else "横ばい"
+    if name.startswith("VIX"):
+        meaning = "警戒感は後退" if change_pct < 0 else "警戒感は上昇" if change_pct > 0 else "警戒感は横ばい"
+        return f"前日比{direction}。{meaning}。"
+    if name.startswith("SOX"):
+        return f"前日比{direction}。半導体株全体の方向を確認。"
+    if name.startswith("Russell"):
+        return f"前日比{direction}。小型株への資金の広がりを確認。"
+    return f"前日比{direction}。指数の終値ベースで確認。"
 
 
 def breadth_comment(row: dict[str, Any]) -> str:
@@ -179,20 +224,28 @@ def sma_comment(row: dict[str, Any]) -> str:
     return f"200日線上 {rate:.1f}%。{tone}"
 
 
-def update_files(nyse: dict[str, Any], nasdaq: dict[str, Any]) -> None:
-    now = datetime.now(JST)
-    market_date = os.getenv("US_INTERNALS_MARKET_DATE", "").strip() or previous_us_weekday(now)
+def update_files(
+    quotes: dict[str, dict[str, Any]],
+    nyse: dict[str, Any],
+    nasdaq: dict[str, Any],
+    equal_weight_difference: float,
+) -> None:
+    now = datetime.now(JST).replace(microsecond=0)
+    dates = {quote_data["marketDate"] for quote_data in quotes.values()}
+    if len(dates) != 1:
+        raise RuntimeError(f"U.S. index dates are inconsistent: {sorted(dates)}")
+    market_date = os.getenv("US_INTERNALS_MARKET_DATE", "").strip() or dates.pop()
 
     payload = {
-        "schemaVersion": "1.1.0",
+        "schemaVersion": "2.0.0",
         "marketDate": market_date,
-        "fetchedAt": now.isoformat(timespec="seconds"),
+        "fetchedAt": now.isoformat(),
         "status": "verified",
         "source": {
-            "name": "TradingView America Stock Screener",
-            "url": "https://www.tradingview.com/markets/stocks-usa/market-movers-all-stocks/",
-            "method": "exchange-filtered scanner including 200-day SMA",
+            "name": "Yahoo Finance daily chart + TradingView America Stock Screener",
+            "method": "completed daily closes and exchange-filtered breadth including SMA200",
         },
+        "indices": quotes,
         "exchanges": {"NYSE": nyse, "NASDAQ": nasdaq},
         "combinedAdvanceRate": round(
             (nyse["advancers"] + nasdaq["advancers"])
@@ -202,32 +255,23 @@ def update_files(nyse: dict[str, Any], nasdaq: dict[str, Any]) -> None:
         "judgement": "上昇優勢"
         if nyse["advancers"] + nasdaq["advancers"] > nyse["decliners"] + nasdaq["decliners"]
         else "下落優勢",
-        "note": "NYSEとNASDAQを分け、値上がり・値下がり銘柄数と200日移動平均線の上・下を集計。",
+        "note": "米国主要指数、NYSE/NASDAQ騰落、52週高安、200日線上下を同一取引日で保存。",
     }
+    BREADTH_PATH.parent.mkdir(parents=True, exist_ok=True)
     BREADTH_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     stocks = json.loads(STOCKS_PATH.read_text(encoding="utf-8"))
     us = stocks.setdefault("marketInternals", {}).setdefault("us", {})
-    rows = us.setdefault("rows", [])
-    labels_to_replace = {
-        "上昇銘柄 / 下落銘柄",
-        "NYSE 値上がり / 値下がり",
-        "NASDAQ 値上がり / 値下がり",
-        "NYSE 200日線上 / 下",
-        "NASDAQ 200日線上 / 下",
-        "NYSE 200日線より上 / 下",
-        "NASDAQ 200日線より上 / 下",
-    }
-    preserved = [
-        row for row in rows
-        if not (isinstance(row, list) and row and str(row[0]) in labels_to_replace)
-    ]
-    insert_at = next(
-        (index + 1 for index, row in enumerate(preserved)
-         if isinstance(row, list) and row and str(row[0]).startswith("VIX")),
-        len(preserved),
-    )
-    restored_rows = [
+    rows: list[list[str]] = []
+    for label, symbol, decimals in INDEX_SPECS:
+        q = quotes[symbol]
+        rows.append([
+            label,
+            format_close(q["close"], decimals),
+            format_change(q["change"], q["changePercent"], decimals),
+            f"{index_comment(label, q['changePercent'])} 基準日 {market_date}",
+        ])
+    rows.extend([
         [
             "NYSE 値上がり / 値下がり",
             f'{nyse["advancers"]:,} / {nyse["decliners"]:,}',
@@ -252,19 +296,52 @@ def update_files(nyse: dict[str, Any], nasdaq: dict[str, Any]) -> None:
             "-",
             f'{sma_comment(nasdaq)} 基準日 {market_date}',
         ],
-    ]
-    us["rows"] = preserved[:insert_at] + restored_rows + preserved[insert_at:]
-    stocks["updatedAt"] = now.strftime("%Y/%m/%d %H:%M")
-    stocks["dataAsOf"] = market_date + "T16:00:00-04:00"
+        [
+            "52週高値 / 安値",
+            f'{nyse["newHigh52Week"] + nasdaq["newHigh52Week"]:,} / {nyse["newLow52Week"] + nasdaq["newLow52Week"]:,}',
+            "-",
+            f"NYSE・NASDAQ合算。基準日 {market_date}",
+        ],
+        [
+            "Equal-Weight比較",
+            f'{equal_weight_difference:+.2f}pt',
+            "-",
+            f"RSP騰落率－SPY騰落率。プラスは均等加重優位。基準日 {market_date}",
+        ],
+    ])
+
+    us["title"] = "主要指数と市場内部（米国）"
+    us["flag"] = "US"
+    us["columns"] = ["指標名", "終値", "前日比", "評価・概況"]
+    us["rows"] = rows
+    us["dataDate"] = market_date
+    us["updatedAt"] = now.isoformat()
+
+    stocks.setdefault("marketDates", {})["us"] = market_date
+    stocks.setdefault("marketUpdatedAt", {})["us"] = now.isoformat()
+    stocks["updatedAt"] = now.isoformat()
     stocks["usBreadth"] = payload
+    stocks["sourceStatus"] = "米国市場と東京市場を独立更新・市場別基準日を明示"
     STOCKS_PATH.write_text(json.dumps(stocks, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    archive_snapshot(STOCKS_PATH)
 
 
 def main() -> int:
+    quotes = {symbol: fetch_daily_quote(symbol) for _, symbol, _ in INDEX_SPECS}
+    rsp = fetch_daily_quote("RSP")
+    spy = fetch_daily_quote("SPY")
+    target_date = quotes["^DJI"]["marketDate"]
+    if rsp["marketDate"] != target_date or spy["marketDate"] != target_date:
+        raise RuntimeError("Equal-weight comparison date does not match U.S. index date")
     nyse = fetch_exchange("NYSE")
     nasdaq = fetch_exchange("NASDAQ")
-    update_files(nyse, nasdaq)
-    print(json.dumps({"NYSE": nyse, "NASDAQ": nasdaq}, ensure_ascii=False))
+    update_files(quotes, nyse, nasdaq, rsp["changePercent"] - spy["changePercent"])
+    print(json.dumps({
+        "marketDate": target_date,
+        "NYSE": nyse,
+        "NASDAQ": nasdaq,
+    }, ensure_ascii=False))
     return 0
 
 
