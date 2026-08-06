@@ -2,7 +2,7 @@ function installMarketReportWebMenu() {
   createMarketReportWebMenu_();
   SpreadsheetApp.getUi().alert(
     'WEB版マーケットレポートメニューを設定しました。\n' +
-    '本文・ダッシュボード、重要イベント、株式市場分析は別メニューです。\n' +
+    '本文・ダッシュボード、東京市場ドル円出来高、重要イベント、株式市場分析は別メニューです。\n' +
     '次回以降もスプレッドシートを開くと自動表示されます。'
   );
 }
@@ -23,11 +23,6 @@ function createMarketReportWebMenu_() {
     .addItem('ダッシュボードJSONをプレビュー', 'previewDashboardJson')
     .addItem('ダッシュボードJSONをGitHubへ反映', 'syncDashboardJsonToGitHub')
     .addSeparator()
-    .addItem('USD/JPY出来高JSONをプレビュー', 'previewUsdJpyVolumeJsonFlexible')
-    .addItem('日銀スポット出来高の取得内容を確認', 'previewUsdJpySpotVolumeImport')
-    .addItem('USD/JPY日足価格の取得内容を確認', 'previewUsdJpyInvestingPriceImport')
-    .addItem('USD/JPY出来高JSON設定を確認', 'showUsdJpyVolumeJsonSyncStatus')
-    .addSeparator()
     .addItem('JSONを貼り付けて公開', 'showWebReportSidebar')
     .addItem('GitHub設定を確認', 'showMarketReportWebConfigStatus');
 
@@ -35,15 +30,27 @@ function createMarketReportWebMenu_() {
     .addItem('最新Google Docsをプレビュー', 'previewLatestMarketReportFromDrive')
     .addItem('最新Google DocsをWEB公開', 'publishLatestMarketReportFromDrive')
     .addSeparator()
-    .addItem('東京市場ドル円出来高を今すぐ更新', 'updateUsdJpyVolumePageFromSources')
-    .addItem('東京市場ドル円出来高の状態を確認', 'showUsdJpyVolumeUnifiedStatus')
-    .addSeparator()
     .addItem('本文・ダッシュボードを今すぐ更新', 'runMarketReportMasterNow')
     .addItem('本文・ダッシュボード自動更新を設定・修復', 'installMarketReportMasterSchedulerTriggers')
     .addItem('本文・ダッシュボード自動更新の状態', 'showMarketReportMasterSchedulerStatus')
     .addSeparator()
     .addItem('WEB版を開く', 'showMarketReportWebPage')
     .addSubMenu(advancedMenu)
+    .addToUi();
+
+  ui.createMenu('東京市場ドル円出来高')
+    .addItem('東京市場ドル円出来高を今すぐ更新', 'updateUsdJpyVolumePageFromSources')
+    .addItem('更新状態を確認', 'showUsdJpyVolumeUnifiedStatus')
+    .addSeparator()
+    .addItem('定時更新を設定', 'installUsdJpyVolumePageScheduledTriggers')
+    .addItem('定時更新の状態を確認', 'showUsdJpyVolumePageScheduledStatus')
+    .addItem('定時更新を削除', 'uninstallUsdJpyVolumePageScheduledTriggers')
+    .addSeparator()
+    .addItem('出来高JSONをプレビュー', 'previewUsdJpyVolumeJsonFlexible')
+    .addItem('日銀スポット出来高の取得内容を確認', 'previewUsdJpySpotVolumeImport')
+    .addItem('USD/JPY日足価格の取得内容を確認', 'previewUsdJpyInvestingPriceImport')
+    .addItem('出来高JSON設定を確認', 'showUsdJpyVolumeJsonSyncStatus')
+    .addItem('東京市場ドル円出来高ページを開く', 'showUsdJpyVolumeWebPage')
     .addToUi();
 
   ui.createMenu('重要イベント')
@@ -102,6 +109,13 @@ function runStockAnalysisStandaloneNow() {
     );
   }
   return result;
+}
+
+function showUsdJpyVolumeWebPage() {
+  showStandaloneMarketPage_(
+    '東京市場ドル円出来高',
+    'https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/usdjpy-volume.html'
+  );
 }
 
 function showImportantEventsWebPage() {
