@@ -5,15 +5,42 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>日経225需給分析｜マーケットレポート</title>
 <link rel="stylesheet" href="assets/css/supply-demand.css">
-<link rel="stylesheet" href="assets/css/nikkei225-supply-demand.css">
+<link rel="stylesheet" href="assets/css/nikkei225-supply-demand.css?v=20260808-01">
 <link rel="stylesheet" href="assets/css/site-common.css?v=20260804-ui1">
 </head>
 <body class="nikkei-page">
-<header class="sd-head"><div class="sd-head-row"><div><span class="sd-kicker">マーケットレポート</span><h1 class="sd-title" data-page-title>日経225需給分析</h1><p class="sd-theme" data-page-subtitle>出来高・建玉・投資主体から需要の強弱と転換ポイントを確認</p></div><div class="sd-meta" aria-label="データ基準"><div><span>分析基準</span><b data-as-of>取得不能</b></div><div><span>最終更新</span><b data-updated>取得不能</b></div><div><span>データ状態</span><b data-source-status>取得不能</b></div></div></div></header>
-<nav class="nav" aria-label="ページナビゲーション"><a href="index.html">ダッシュボード</a><a href="report.html">マーケットレポート本文</a><a href="usdjpy-volume.html">東京市場ドル円出来高</a><a href="events.html">重要イベント</a><a href="rates-bonds.html">金利・債券市場</a><a href="stocks.html">株式市場分析</a><a href="usdjpy-supply-demand.html">USD/JPY需給</a><a href="gold-supply-demand.html">ゴールド需給</a><a href="nikkei225-supply-demand.html" aria-current="page">日経225需給</a></nav>
-<main class="sd-page" data-dashboard><section class="empty-panel">日経225需給データを読み込み中です。</section></main>
-<script src="assets/js/nikkei225-supply-demand.js"></script>
-<script src="assets/js/supply-demand.js"></script>
+<header class="sd-head">
+  <div class="sd-head-row">
+    <div>
+      <span class="sd-kicker">マーケットレポート</span>
+      <h1 class="sd-title">日経225需給分析</h1>
+      <p class="sd-theme">先物・裁定・オプション・投資主体から、新規買い・買い戻し・新規売り・手仕舞いを判定</p>
+    </div>
+    <div class="nikkei-head-actions">
+      <div class="sd-meta" aria-label="データ基準">
+        <div><span>データ状態</span><b data-source-status>読み込み中</b></div>
+        <div><span>最終更新</span><b data-updated>読み込み中</b></div>
+        <div><span>基準日</span><b data-as-of>読み込み中</b></div>
+      </div>
+      <button class="site-refresh-button" type="button" data-reload>再読込</button>
+    </div>
+  </div>
+</header>
+<nav class="nav" aria-label="ページナビゲーション">
+  <a href="index.html">ダッシュボード</a>
+  <a href="report.html">マーケットレポート本文</a>
+  <a href="usdjpy-volume.html">東京市場ドル円出来高</a>
+  <a href="events.html">重要イベント</a>
+  <a href="rates-bonds.html">金利・債券市場</a>
+  <a href="stocks.html">株式市場分析</a>
+  <a href="usdjpy-supply-demand.html">USD/JPY需給</a>
+  <a href="gold-supply-demand.html">ゴールド需給</a>
+  <a href="nikkei225-supply-demand.html" aria-current="page">日経225需給</a>
+</nav>
+<main class="nikkei-dashboard" data-nikkei-dashboard>
+  <section class="nikkei-loading">日経225需給データを読み込み中です。</section>
+</main>
+<script src="assets/js/nikkei225-supply-demand.js?v=20260808-01"></script>
 <script src="assets/js/site-common.js?v=20260804-ui1"></script>
 </body>
 </html>
