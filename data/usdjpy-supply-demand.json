@@ -1,36 +1,35 @@
 {
-  "market":"USD/JPY",
-  "pageTitle":"USD/JPY 需給分析ダッシュボード",
-  "subtitle":"需給・ポジション・フローで相場の方向性と変動要因を総合判断",
-  "asOfDate":"取得不能",
-  "asOfTime":"取得不能",
-  "updatedAt":"取得不能",
-  "sourceStatus":"データ未連携",
-  "summary":[
-    {"label":"USD/JPY終値","value":"取得不能","sub":"終値一覧を参照","status":"unavailable","reason":"終値一覧の当日データ未連携"},
-    {"label":"東京スポット出来高","value":"取得不能","sub":"百万USD","status":"unavailable","reason":"日銀スポット出来高データ未連携"},
-    {"label":"日米10年金利差","value":"取得不能","status":"unavailable","reason":"金利データ未連携"},
-    {"label":"CFTC円先物ネット","value":"取得不能","sub":"枚","status":"unavailable","reason":"週次CFTCデータ未連携"},
-    {"label":"介入警戒度","value":"取得不能","sub":"低・やや低・中・やや高・高","status":"unavailable","reason":"判定材料未連携"}
-  ],
-  "overallAssessment":{"title":"日次需給総合判定","label":"判定待ち","bias":"neutral","score":"算定対象外","confidence":"低","status":"unavailable","reason":"価格、出来高、金利、CFTC、オプション、注文情報が未連携のため判定しません。"},
-  "sections":[
-    {"title":"1. USD/JPY市場サマリー","type":"metrics","span":4,"items":[{"label":"始値","value":"取得不能","status":"unavailable","reason":"日次OHLC未連携"},{"label":"高値","value":"取得不能","status":"unavailable","reason":"日次OHLC未連携"},{"label":"安値","value":"取得不能","status":"unavailable","reason":"日次OHLC未連携"},{"label":"終値","value":"取得不能","status":"unavailable","reason":"日次OHLC未連携"},{"label":"値幅","value":"取得不能","status":"unavailable","reason":"高値・安値が必要"},{"label":"終値位置","value":"取得不能","status":"unavailable","reason":"高値・安値・終値が必要"}]},
-    {"title":"2. 東京市場スポット出来高","type":"metrics","span":4,"items":[{"label":"スポット出来高","value":"取得不能","sub":"百万USD","status":"unavailable","reason":"日銀データ未連携"},{"label":"前日比","value":"取得不能","status":"unavailable","reason":"前営業日データが必要"},{"label":"20営業日平均","value":"取得不能","status":"unavailable","reason":"履歴が必要"},{"label":"平均との差","value":"取得不能","status":"unavailable","reason":"平均値未算出"},{"label":"出来高評価","value":"取得不能","status":"unavailable","reason":"評価ルール未適用"},{"label":"価格方向","value":"取得不能","status":"unavailable","reason":"価格データ未連携"}]},
-    {"title":"3. ゴトー日・仲値・実需","type":"table","span":4,"columns":["項目","値","状態","備考"],"rows":[{"項目":"ゴトー日","値":{"value":"取得不能","status":"unavailable","reason":"終値一覧の手入力列を参照"},"状態":"未連携","備考":"暦日だけで自動判定しない"},{"項目":"仲値","値":{"value":"取得不能","status":"unavailable"},"状態":"未連携","備考":"東京時間の確認値が必要"},{"項目":"実需の傾向","値":{"value":"取得不能","status":"unavailable"},"状態":"未連携","備考":"輸入・輸出・ヘッジ需要を分離"}]},
-    {"title":"4. 金利・ボラティリティ","type":"table","span":4,"columns":["指標","値","前日比","USD/JPYへの読み方"],"rows":[{"指標":"米10年債利回り","値":{"value":"取得不能","status":"unavailable"},"前日比":"取得不能","USD/JPYへの読み方":"上昇はドル買い材料候補"},{"指標":"日本10年債利回り","値":{"value":"取得不能","status":"unavailable"},"前日比":"取得不能","USD/JPYへの読み方":"上昇は円買い材料候補"},{"指標":"日米10年金利差","値":{"value":"取得不能","status":"unavailable"},"前日比":"取得不能","USD/JPYへの読み方":"拡大はドル買い材料候補"},{"指標":"VIX","値":{"value":"取得不能","status":"unavailable"},"前日比":"取得不能","USD/JPYへの読み方":"急上昇は円買いに注意"}]},
-    {"title":"5. 投機筋・ポジション（CFTC円先物・IMM）","type":"table","span":4,"columns":["区分","枚数","前週比","USD/JPY換算方向"],"rows":[{"区分":"円先物ロング","枚数":{"value":"取得不能","status":"unavailable"},"前週比":"取得不能","USD/JPY換算方向":"増加はUSD/JPY下落要因"},{"区分":"円先物ショート","枚数":{"value":"取得不能","status":"unavailable"},"前週比":"取得不能","USD/JPY換算方向":"増加はUSD/JPY上昇要因"},{"区分":"ネットポジション","枚数":{"value":"取得不能","status":"unavailable"},"前週比":"取得不能","USD/JPY換算方向":"円買い・円売りを逆方向換算"}]},
-    {"title":"6. 国内個人ポジション","type":"table","span":4,"columns":["項目","値","前回比","評価"],"rows":[{"項目":"円売り比率","値":{"value":"取得不能","status":"unavailable"},"前回比":"取得不能","評価":"偏りが大きい場合は反対売買に注意"},{"項目":"円買い比率","値":{"value":"取得不能","status":"unavailable"},"前回比":"取得不能","評価":"取得できる場合のみ表示"}]},
-    {"title":"7. NYオプション・バリア","type":"table","span":4,"columns":["区分","水準","規模","見方"],"rows":[{"区分":"NYカット","水準":{"value":"取得不能","status":"unavailable"},"規模":"取得不能","見方":"現在値との距離を確認"},{"区分":"上側バリア","水準":{"value":"取得不能","status":"unavailable"},"規模":"取得不能","見方":"上値抵抗候補"},{"区分":"下側バリア","水準":{"value":"取得不能","status":"unavailable"},"規模":"取得不能","見方":"下値支持候補"}]},
-    {"title":"8. 注文・ストップロス水準","type":"table","span":4,"columns":["種類","水準","方向","備考"],"rows":[{"種類":"売り注文","水準":{"value":"取得不能","status":"unavailable"},"方向":"上値抵抗","備考":"確認済み情報のみ表示"},{"種類":"買い注文","水準":{"value":"取得不能","status":"unavailable"},"方向":"下値支持","備考":"確認済み情報のみ表示"},{"種類":"ストップロス","水準":{"value":"取得不能","status":"unavailable"},"方向":"変動拡大","備考":"未確認情報は使用しない"}]},
-    {"title":"9. 日米株価・リスク選好","type":"table","span":4,"columns":["市場","値","変化","USD/JPYへの影響"],"rows":[{"市場":"日経225","値":{"value":"取得不能","status":"unavailable"},"変化":"取得不能","USD/JPYへの影響":"株高は円売り材料候補"},{"市場":"米国株主要指数","値":{"value":"取得不能","status":"unavailable"},"変化":"取得不能","USD/JPYへの影響":"株安なら円買い注意"}]},
-    {"title":"10. 仲値需給・実需フロー予測","type":"matrix","span":4,"items":[{"title":"ドル買い要因（円売り）","note":"輸入企業、投資家の外貨買い、金利差拡大を確認","status":"unavailable"},{"title":"ドル売り要因（円買い）","note":"輸出企業、短期利確、リスク回避の円買いを確認","status":"unavailable"},{"title":"総合判断","note":"実需・投機・金利・出来高が同方向か確認","status":"unavailable"},{"title":"崩れる条件","note":"金利差縮小、株安、介入警戒上昇などを確認","status":"unavailable"}]},
-    {"title":"11. ベーシス・スワップ","type":"table","span":4,"columns":["項目","値","前日比","読み方"],"rows":[{"項目":"USD/JPY 3Mスワップ","値":{"value":"取得不能","status":"unavailable"},"前日比":"取得不能","読み方":"円売りコストを確認"},{"項目":"クロス円ベーシス","値":{"value":"取得不能","status":"unavailable"},"前日比":"取得不能","読み方":"ドル調達圧力を確認"}]},
-    {"title":"12. 価格×出来高の需給判定","type":"matrix","span":4,"items":[{"title":"価格上昇＋出来高増加","note":"新規ドル買い優勢の可能性"},{"title":"価格上昇＋出来高減少","note":"買い戻し、または薄商い上昇の可能性"},{"title":"価格下落＋出来高増加","note":"新規円買い優勢の可能性"},{"title":"価格下落＋出来高減少","note":"ドルロング解消、または調整の可能性"}]},
-    {"title":"13. 当日の主要材料・イベント","type":"table","span":4,"columns":["時間","イベント","影響度","想定方向"],"rows":[{"時間":"取得不能","イベント":"イベントJSON未連携","影響度":"取得不能","想定方向":"連携後に表示"}]},
-    {"title":"14. 時間帯別の需給の見方","type":"table","span":4,"columns":["時間帯","確認項目","見方"],"rows":[{"時間帯":"07:00（朝）","確認項目":"仲値・実需・ポジション","見方":"東京開始前の需給を確認"},{"時間帯":"12:00（昼）","確認項目":"仲値通過後、出来高","見方":"実需主導か投機主導かを確認"},{"時間帯":"16:00（夕）","確認項目":"欧州勢参入、金利、株価","見方":"欧州時間への引き継ぎを確認"},{"時間帯":"21:00（夜）","確認項目":"米市場、イベント、オプション","見方":"総合需給を再判定"}]},
-    {"title":"15. 日次需給総合判定","type":"table","span":4,"columns":["判定区分","状態","説明"],"rows":[{"判定区分":"強いドル買い","状態":"未判定","説明":"複数要因がドル買い方向で一致"},{"判定区分":"ドル買い優勢","状態":"未判定","説明":"ドル買い材料がやや優勢"},{"判定区分":"中立","状態":"未判定","説明":"方向感が分かれる"},{"判定区分":"円買い優勢","状態":"未判定","説明":"円買い材料がやや優勢"},{"判定区分":"強い円買い","状態":"未判定","説明":"複数要因が円買い方向で一致"}]},
-    {"title":"16. 為替介入警戒","type":"table","span":4,"columns":["項目","状態","根拠"],"rows":[{"項目":"警戒度","状態":{"value":"取得不能","status":"unavailable"},"根拠":"政府・日銀発言、値動き速度、節目を確認"},{"項目":"想定介入水準","状態":{"value":"取得不能","status":"unavailable"},"根拠":"確認済み事実と分析を分離"},{"項目":"警戒材料","状態":{"value":"取得不能","status":"unavailable"},"根拠":"未確認情報で断定しない"}]},
-    {"title":"17. 需給コメント・まとめ","type":"list","span":4,"items":["東京スポット出来高、金利差、CFTC、オプション、注文情報がそろうまで総合判定は保留します。","取得不能の項目は理由を表示し、推測で補完しません。","CFTC円先物は、円先物の方向とUSD/JPYへの換算方向を分けて表示します。"]}
-  ]
+  "schemaVersion": "3.0.0",
+  "pageId": "usdjpy-supply-demand",
+  "generatedAt": "2026-08-07T23:49:00+09:00",
+  "mode": "integrated-realistic",
+  "tradersWebFx": {
+    "name": "トレーダーズ・ウェブFX 無料ページ",
+    "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
+    "sourceUpdatedAt": "2026-08-07T06:22:00+09:00",
+    "publicScope": "一般公開はUSD/JPYの直近6時台情報",
+    "redistributionMode": "link-only",
+    "note": "公開GitHub Pagesでは第三者サイトのオーダー本文を再配信せず、基準日時と参照リンクのみ表示する。"
+  },
+  "cftc": {
+    "name": "CFTC Commitments of Traders - Japanese Yen",
+    "url": "https://www.cftc.gov/dea/futures/deacmesf.htm",
+    "status": "stale",
+    "asOf": "2026-07-21",
+    "long": 107590,
+    "short": 259715,
+    "net": -152125,
+    "previousNet": -122663,
+    "note": "CFTC公式で確認できた値。最新週としては古いため参考表示し、総合判定の必須入力にはしない。"
+  },
+  "rules": {
+    "hideUnavailableOptionalBlocks": true,
+    "coreSources": [
+      "data/market/latest.json",
+      "data/rates-bonds.json",
+      "data/usdjpy-volume.json",
+      "data/events.json"
+    ],
+    "assessment": "価格方向、日米10年金利差の変化、東京スポット出来高の強弱を中核とし、CFTCは鮮度が十分な場合のみ方向判定へ加える。"
+  }
 }
