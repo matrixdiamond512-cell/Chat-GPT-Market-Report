@@ -1,5 +1,6 @@
 // 金利・債券市場 専用更新処理
 // MarketReportMenu.gs から呼び出す。
+// GitHub Actions APIを直接呼ばず、トリガーファイルの更新でActionsを起動する。
 
 function runRatesBondsStandaloneNow() {
   var config = getMarketReportWebConfigForMenu_();
@@ -12,40 +13,17 @@ function runRatesBondsStandaloneNow() {
     return { ok: false, queued: false, error: 'GITHUB_TOKEN is not configured' };
   }
 
-  var workflow = 'update-rates-bonds.yml';
   var branch = config.branch || 'main';
-  var apiUrl =
-    'https://api.github.com/repos/' +
-    encodeURIComponent(config.owner) + '/' +
-    encodeURIComponent(config.repo) +
-    '/actions/workflows/' + encodeURIComponent(workflow) + '/dispatches';
+  var triggerPath = 'data/rates-bonds-trigger.json';
+  var requestedAt = Utilities.formatDate(
+    new Date(),
+    'Asia/Tokyo',
+    "yyyy-MM-dd'T'HH:mm:ssXXX"
+  );
 
   try {
-    var response = UrlFetchApp.fetch(apiUrl, {
-      method: 'post',
-      contentType: 'application/json',
-      payload: JSON.stringify({ ref: branch }),
-      headers: {
-        Authorization: 'Bearer ' + token,
-        Accept: 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28'
-      },
-      muteHttpExceptions: true
-    });
+    var result = updateRatesBondsTriggerFile_(config, token, branch, triggerPath, requestedAt);
 
-    var statusCode = response.getResponseCode();
-    if (statusCode !== 204) {
-      throw new Error(
-        'GitHub Actionsの起動に失敗しました。HTTP ' + statusCode + '\n' +
-        String(response.getContentText() || '').slice(0, 500)
-      );
-    }
-
-    var requestedAt = Utilities.formatDate(
-      new Date(),
-      'Asia/Tokyo',
-      "yyyy-MM-dd'T'HH:mm:ssXXX"
-    );
     PropertiesService.getScriptProperties().setProperty(
       'RATES_BONDS_LAST_MANUAL_REQUEST_AT',
       requestedAt
@@ -53,7 +31,7 @@ function runRatesBondsStandaloneNow() {
 
     SpreadsheetApp.getUi().alert(
       '金利・債券市場の更新処理を起動しました。\n' +
-      'GitHub Actions: ' + workflow + '\n' +
+      '起動方式: GitHubトリガーファイル更新\n' +
       '取得対象: FRED / 財務省 / Bundesbank / U.S. Treasury 等\n' +
       '更新対象: data/rates-bonds.json\n\n' +
       '反映後は「更新状態を確認」で最終更新時刻を確認してください。'
@@ -62,10 +40,10 @@ function runRatesBondsStandaloneNow() {
     return {
       ok: true,
       queued: true,
-      workflow: workflow,
       branch: branch,
+      triggerPath: triggerPath,
       requestedAt: requestedAt,
-      statusCode: statusCode
+      commitSha: result.commitSha || null
     };
   } catch (error) {
     SpreadsheetApp.getUi().alert(
@@ -73,6 +51,92 @@ function runRatesBondsStandaloneNow() {
     );
     return { ok: false, queued: false, error: error.message };
   }
+}
+
+function updateRatesBondsTriggerFile_(config, token, branch, triggerPath, requestedAt) {
+  var baseUrl =
+    'https://api.github.com/repos/' +
+    encodeURIComponent(config.owner) + '/' +
+    encodeURIComponent(config.repo) +
+    '/contents/' + encodeGitHubPathForRatesBonds_(triggerPath);
+
+  var headers = {
+    Authorization: 'Bearer ' + token,
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+
+  var getResponse = UrlFetchApp.fetch(baseUrl + '?ref=' + encodeURIComponent(branch), {
+    method: 'get',
+    headers: headers,
+    muteHttpExceptions: true
+  });
+
+  var getStatus = getResponse.getResponseCode();
+  if (getStatus !== 200 && getStatus !== 404) {
+    throw new Error(
+      'GitHubトリガーファイルの確認に失敗しました。HTTP ' + getStatus + '\n' +
+      String(getResponse.getContentText() || '').slice(0, 500)
+    );
+  }
+
+  var currentSha = null;
+  if (getStatus === 200) {
+    var current = JSON.parse(getResponse.getContentText());
+    currentSha = current.sha || null;
+  }
+
+  var triggerData = {
+    requestedAt: requestedAt,
+    requestedBy: 'Google Sheets menu',
+    purpose: 'rates-bonds-manual-update'
+  };
+
+  var payload = {
+    message: 'Trigger rates and bonds update ' + requestedAt,
+    content: Utilities.base64Encode(
+      JSON.stringify(triggerData, null, 2) + '\n',
+      Utilities.Charset.UTF_8
+    ),
+    branch: branch
+  };
+  if (currentSha) payload.sha = currentSha;
+
+  var putResponse = UrlFetchApp.fetch(baseUrl, {
+    method: 'put',
+    contentType: 'application/json',
+    payload: JSON.stringify(payload),
+    headers: headers,
+    muteHttpExceptions: true
+  });
+
+  var putStatus = putResponse.getResponseCode();
+  if (putStatus !== 200 && putStatus !== 201) {
+    var body = String(putResponse.getContentText() || '').slice(0, 500);
+    if (putStatus === 403) {
+      throw new Error(
+        'GitHubファイル更新権限がありません。GITHUB_TOKEN に Contents の Read and write 権限が必要です。\n' +
+        'HTTP 403\n' + body
+      );
+    }
+    throw new Error(
+      'GitHubトリガーファイルの更新に失敗しました。HTTP ' + putStatus + '\n' + body
+    );
+  }
+
+  var updated = JSON.parse(putResponse.getContentText());
+  return {
+    ok: true,
+    commitSha: updated.commit && updated.commit.sha ? updated.commit.sha : null,
+    contentSha: updated.content && updated.content.sha ? updated.content.sha : null
+  };
+}
+
+function encodeGitHubPathForRatesBonds_(path) {
+  return String(path || '')
+    .split('/')
+    .map(function(part) { return encodeURIComponent(part); })
+    .join('/');
 }
 
 function showRatesBondsUpdateStatus() {
