@@ -1,32 +1,130 @@
 {
-  "market":"Nikkei 225",
-  "pageTitle":"日経225 需給分析レポート",
-  "subtitle":"出来高・建玉・投資主体から需給の強弱と転換ポイントを確認",
-  "asOfDate":"取得不能",
-  "asOfTime":"取得不能",
-  "updatedAt":"取得不能",
-  "sourceStatus":"データ未連携",
-  "summary":[
-    {"label":"日経225現物","value":"取得不能","status":"unavailable","reason":"現物終値未連携"},
-    {"label":"日経225先物","value":"取得不能","status":"unavailable","reason":"大阪取引所データ未連携"},
-    {"label":"先物出来高","value":"取得不能","sub":"日中＋ナイト区分","status":"unavailable","reason":"出来高データ未連携"},
-    {"label":"建玉残高","value":"取得不能","status":"unavailable","reason":"建玉データ未連携"},
-    {"label":"売買代金シグナル","value":"取得不能","status":"unavailable","reason":"東証プライム売買代金未連携"}
-  ],
-  "overallAssessment":{"title":"日次需給総合判定","label":"判定待ち","bias":"neutral","score":"算定対象外","confidence":"低","status":"unavailable","reason":"現物、先物、出来高、建玉、投資主体、裁定、ETF、オプションが未連携のため判定しません。"},
-  "sections":[
-    {"title":"1. 主要指標サマリー","type":"table","span":12,"columns":["日付","日経225終値","前日比","日経225先物","ベーシス","売買代金","先物出来高","建玉","シグナル"],"rows":[{"日付":"取得不能","日経225終値":{"value":"取得不能","status":"unavailable"},"前日比":"取得不能","日経225先物":"取得不能","ベーシス":"取得不能","売買代金":"取得不能","先物出来高":"取得不能","建玉":"取得不能","シグナル":"データ連携後に表示"}]},
-    {"title":"2. 海外投資家の現物・先物動向","type":"table","span":4,"columns":["区分","差引","前週","評価"],"rows":[{"区分":"現物","差引":{"value":"取得不能","status":"unavailable"},"前週":"取得不能","評価":"週次統計を当日の主体と断定しない"},{"区分":"日経225先物","差引":{"value":"取得不能","status":"unavailable"},"前週":"取得不能","評価":"ヘッジ・裁定の可能性を確認"},{"区分":"TOPIX先物","差引":{"value":"取得不能","status":"unavailable"},"前週":"取得不能","評価":"現物との方向不一致に注意"}]},
-    {"title":"3. 日経225先物の出来高・建玉","type":"chart","span":4,"placeholder":"出来高・建玉推移グラフ","reason":"日中・ナイト・建玉の実データ連携後に描画します。"},
-    {"title":"4. 東証プライム市場内部","type":"table","span":4,"columns":["項目","値","前日比","評価"],"rows":[{"項目":"売買代金","値":{"value":"取得不能","status":"unavailable"},"前日比":"取得不能","評価":"参加強度を確認"},{"項目":"売買高","値":{"value":"取得不能","status":"unavailable"},"前日比":"取得不能","評価":"市場内部の広がりを確認"},{"項目":"値上がり銘柄数","値":{"value":"取得不能","status":"unavailable"},"前日比":"取得不能","評価":"指数と内部の整合性を確認"},{"項目":"値下がり銘柄数","値":{"value":"取得不能","status":"unavailable"},"前日比":"取得不能","評価":"下落の広がりを確認"}]},
-    {"title":"5. 裁定取引・裁定買い残","type":"table","span":4,"columns":["項目","残高","前週比","見方"],"rows":[{"項目":"裁定買い残","残高":{"value":"取得不能","status":"unavailable"},"前週比":"取得不能","見方":"解消売りリスクを確認"},{"項目":"裁定売り残","残高":{"value":"取得不能","status":"unavailable"},"前週比":"取得不能","見方":"買い戻し余地を確認"}]},
-    {"title":"6. ETF・インデックス資金フロー","type":"table","span":4,"columns":["区分","フロー","基準日","評価"],"rows":[{"区分":"日経225連動ETF","フロー":{"value":"取得不能","status":"unavailable"},"基準日":"取得不能","評価":"インデックス買い・売りを確認"},{"区分":"TOPIX連動ETF","フロー":{"value":"取得不能","status":"unavailable"},"基準日":"取得不能","評価":"大型株全体の需給を確認"},{"区分":"REIT ETF","フロー":{"value":"取得不能","status":"unavailable"},"基準日":"取得不能","評価":"リスク選好の補助情報"}]},
-    {"title":"7. ボラティリティ・センチメント","type":"table","span":4,"columns":["指標","値","変化","見方"],"rows":[{"指標":"日経VI","値":{"value":"取得不能","status":"unavailable"},"変化":"取得不能","見方":"急上昇はヘッジ需要増に注意"},{"指標":"VIX","値":{"value":"取得不能","status":"unavailable"},"変化":"取得不能","見方":"米株リスクを確認"},{"指標":"Fear & Greed","値":{"value":"取得不能","status":"unavailable"},"変化":"取得不能","見方":"取得可能な場合のみ表示"}]},
-    {"title":"8. 需給バランス総合表","type":"table","span":4,"columns":["項目","需給インパクト","状態"],"rows":[{"項目":"海外投資家","需給インパクト":"未判定","状態":{"value":"取得不能","status":"unavailable"}},{"項目":"先物出来高・建玉","需給インパクト":"未判定","状態":{"value":"取得不能","status":"unavailable"}},{"項目":"裁定取引","需給インパクト":"未判定","状態":{"value":"取得不能","status":"unavailable"}},{"項目":"ETFフロー","需給インパクト":"未判定","状態":{"value":"取得不能","status":"unavailable"}},{"項目":"オプション・SQ","需給インパクト":"未判定","状態":{"value":"取得不能","status":"unavailable"}}]},
-    {"title":"9. SQ・MSQカレンダーと需給インパクト","type":"table","span":4,"columns":["項目","値","需給への影響"],"rows":[{"項目":"SQ種別","値":{"value":"取得不能","status":"unavailable"},"需給への影響":"SQ接近時は建玉集中とロールを確認"},{"項目":"SQ算出日","値":{"value":"取得不能","status":"unavailable"},"需給への影響":"対象限月を表示"},{"項目":"SQまで営業日数","値":{"value":"取得不能","status":"unavailable"},"需給への影響":"需給の歪みに注意"}]},
-    {"title":"10. オプション需給","type":"table","span":4,"columns":["項目","水準","見方"],"rows":[{"項目":"最大Call建玉","水準":{"value":"取得不能","status":"unavailable"},"見方":"上値抵抗候補。ただし断定しない"},{"項目":"最大Put建玉","水準":{"value":"取得不能","status":"unavailable"},"見方":"下値支持候補。ただし断定しない"},{"項目":"Put/Call","水準":{"value":"取得不能","status":"unavailable"},"見方":"ヘッジ需要を確認"}]},
-    {"title":"11. ベーシス推移","type":"chart","span":4,"placeholder":"現物・先物ベーシス推移","reason":"先物価格と現物価格の連携後に表示します。"},
-    {"title":"12. 先物価格・出来高・建玉の読み方","type":"matrix","span":4,"items":[{"title":"価格上昇＋建玉増加","note":"新規買い優勢の可能性"},{"title":"価格上昇＋建玉減少","note":"ショートカバーの可能性"},{"title":"価格下落＋建玉増加","note":"新規売り優勢の可能性"},{"title":"価格下落＋建玉減少","note":"ロング清算の可能性"}]},
-    {"title":"13. 強気・中立・弱気シナリオ","type":"scenarios","span":8,"items":[{"title":"強気シナリオ","bias":"buy","points":["条件：出来高増加＋価格上昇＋建玉増加","目標ゾーン：データ連携後に表示","崩れる条件：建玉減少、裁定解消売り"]},{"title":"中立シナリオ","bias":"neutral","points":["条件：出来高横ばい、価格方向が限定的","想定：レンジ相場","崩れる条件：出来高急増と価格ブレイク"]},{"title":"弱気シナリオ","bias":"sell","points":["条件：出来高増加＋価格下落＋建玉増加","下値目標：データ連携後に表示","注意：海外勢先物売り、裁定解消"]}]}
+  "schemaVersion": "2.0.0",
+  "pageId": "nikkei225-supply-demand",
+  "pageTitle": "日経225需給分析",
+  "generatedAt": "2026-08-08T02:29:00+09:00",
+  "sourceStatus": "構造実装済み・専門データ連携待ち",
+  "spot": {
+    "value": null,
+    "asOfDate": null,
+    "status": "unavailable",
+    "sourceName": "株式市場分析データ",
+    "sourceUrl": "data/stocks.json"
+  },
+  "futures": {
+    "price": null,
+    "priceChange": null,
+    "priceChangePercent": null,
+    "volume": null,
+    "volumeChangePercent": null,
+    "openInterest": null,
+    "openInterestChange": null,
+    "miniVolume": null,
+    "miniVolumeChangePercent": null,
+    "miniOpenInterest": null,
+    "miniOpenInterestChange": null,
+    "asOfDate": null,
+    "status": "unavailable",
+    "sourceName": "JPX / 大阪取引所 日経225先物",
+    "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/index.html"
+  },
+  "sessions": {
+    "dayChange": null,
+    "dayDriver": null,
+    "nightChange": null,
+    "nightDriver": null,
+    "comment": "東京時間と海外時間を分け、どの時間帯が先物を主導したか確認します。",
+    "asOfDate": null,
+    "status": "unavailable",
+    "sourceName": "JPX / 大阪取引所",
+    "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/index.html"
+  },
+  "arbitrage": {
+    "buyBalance": null,
+    "buyChange": null,
+    "sellBalance": null,
+    "sellChange": null,
+    "asOfDate": null,
+    "status": "unavailable",
+    "comment": "裁定買い残の増減から、先物高が現物買いへ波及しているかを確認します。前々営業日データとして表示します。",
+    "sourceName": "JPX 裁定取引の状況",
+    "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/"
+  },
+  "options": {
+    "nextSqDate": null,
+    "businessDaysToSq": null,
+    "putCallRatio": null,
+    "iv": null,
+    "ivChange": null,
+    "asOfDate": null,
+    "status": "unavailable",
+    "comment": "Put/Call・IV・SQ接近を分けて確認し、オプション市場だけで価格目標を断定しません。",
+    "sourceName": "JPX 日経225オプション",
+    "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/01.html"
+  },
+  "participantFlow": {
+    "buyers": [],
+    "sellers": [],
+    "asOfDate": null,
+    "status": "unavailable",
+    "sourceName": "JPX 取引参加者別取引高（手口上位一覧）",
+    "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/participant-volume/index.html"
+  },
+  "foreignInvestors": {
+    "cashNet": null,
+    "nikkeiFuturesNet": null,
+    "topixFuturesNet": null,
+    "cashNote": "現物の方向を確認",
+    "nikkeiNote": "ヘッジ・短期売買を確認",
+    "topixNote": "大型株全体との整合性を確認",
+    "asOfDate": null,
+    "status": "unavailable",
+    "comment": "週次データを当日の主体と断定せず、現物と先物の組み合わせからポジション構造を読みます。",
+    "sourceName": "JPX 投資部門別売買状況",
+    "sourceUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/index.html"
+  },
+  "participantOpenInterest": {
+    "buyers": [],
+    "sellers": [],
+    "asOfDate": null,
+    "status": "unavailable",
+    "comment": "上位参加者への集中度と前週からの増減を確認します。",
+    "sourceName": "JPX 取引参加者別建玉残高",
+    "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/open-interest/"
+  },
+  "shortSelling": {
+    "ratio": null,
+    "avg5": null,
+    "avg20": null,
+    "asOfDate": null,
+    "status": "unavailable",
+    "comment": "空売り比率は単独で弱気判定せず、5日平均・20日平均との比較で圧力の強弱を見ます。",
+    "sourceName": "JPX 空売り集計",
+    "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/"
+  },
+  "margin": {
+    "buyBalance": null,
+    "sellBalance": null,
+    "ratio": null,
+    "asOfDate": null,
+    "status": "unavailable",
+    "comment": "信用需給は日経225そのものではなく、日本株個人投資家の補助指標として扱います。",
+    "sourceName": "JPX 信用取引現在高",
+    "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/margin/03.html"
+  },
+  "assessment": {
+    "overall": "判定保留",
+    "shortTerm": "判定待ち",
+    "arbitrage": "判定待ち",
+    "options": "判定待ち",
+    "foreign": "判定待ち",
+    "reason": "日経225先物の価格は市場データ基盤から参照します。建玉・裁定・オプション・投資主体は基準日と更新頻度を分け、取得できるまで推測で総合判定しません。",
+    "comment": "現時点では、先物価格と専門的な需給データを別管理しています。建玉が取得できれば価格×建玉で新規買い・買い戻し・新規売り・手仕舞いを判定し、裁定・オプション・海外投資家の週次データを重ねて総合判断します。日次、前々営業日、週次のデータを同じ鮮度として扱わないことを最優先ルールとします。"
+  },
+  "watchpoints": [
+    "先物建玉の増加継続が本物の上昇か確認",
+    "裁定買い残が増えるかどうか",
+    "SQ接近でオプション主導の振れに注意",
+    "海外投資家の週次データで現物買い継続を確認"
   ]
 }
