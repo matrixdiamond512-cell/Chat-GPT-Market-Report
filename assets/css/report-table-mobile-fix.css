@@ -1,0 +1,217 @@
+/* Force the 28-row market-data section to remain a real table on mobile.
+ * This file is loaded last so older responsive/card rules cannot split cells
+ * into an unreadable sequence.
+ */
+.market-table-wrap {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior-inline: contain !important;
+  border: 1px solid #cbd8ea !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+}
+
+.market-table-five {
+  display: table !important;
+  width: 100% !important;
+  min-width: 900px !important;
+  table-layout: auto !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  background: #fff !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.market-table-five thead {
+  display: table-header-group !important;
+}
+
+.market-table-five tbody {
+  display: table-row-group !important;
+}
+
+.market-table-five tr {
+  display: table-row !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+.market-table-five th,
+.market-table-five td {
+  display: table-cell !important;
+  float: none !important;
+  position: static !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 10px 12px !important;
+  border-right: 1px solid #dce5f1 !important;
+  border-bottom: 1px solid #dce5f1 !important;
+  text-align: left !important;
+  vertical-align: middle !important;
+  line-height: 1.45 !important;
+  color: #0b1f45 !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.market-table-five th::before,
+.market-table-five th::after,
+.market-table-five td::before,
+.market-table-five td::after,
+.market-table-five tr::before,
+.market-table-five tr::after {
+  display: none !important;
+  content: none !important;
+}
+
+.market-table-five thead th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 5 !important;
+  color: #082a5b !important;
+  background: #eef5ff !important;
+  font-weight: 1000 !important;
+  white-space: nowrap !important;
+}
+
+.market-table-five tbody th {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 3 !important;
+  min-width: 210px !important;
+  max-width: 240px !important;
+  color: #082a5b !important;
+  background: #f7faff !important;
+  font-weight: 1000 !important;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+  box-shadow: 2px 0 0 #dce5f1 !important;
+}
+
+.market-table-five thead th:first-child {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 7 !important;
+  min-width: 210px !important;
+  box-shadow: 2px 0 0 #cbd8ea !important;
+}
+
+.market-table-five td:nth-child(2) {
+  min-width: 135px !important;
+  white-space: nowrap !important;
+  font-weight: 850 !important;
+}
+
+.market-table-five td:nth-child(3) {
+  min-width: 125px !important;
+  white-space: nowrap !important;
+}
+
+.market-table-five td:nth-child(4) {
+  min-width: 100px !important;
+  white-space: nowrap !important;
+}
+
+.market-table-five td:nth-child(5) {
+  min-width: 280px !important;
+  max-width: 420px !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  color: #405575 !important;
+}
+
+.market-table-five tbody tr:nth-child(even) td {
+  background: #fbfdff !important;
+}
+
+.market-table-five tbody tr:last-child th,
+.market-table-five tbody tr:last-child td {
+  border-bottom: 0 !important;
+}
+
+.market-table-five th:last-child,
+.market-table-five td:last-child {
+  border-right: 0 !important;
+}
+
+.market-data-validation {
+  margin: 10px 0 18px !important;
+  padding: 9px 12px !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+  font-weight: 850 !important;
+}
+
+.market-data-validation.is-ok {
+  border: 1px solid #b8dfca !important;
+  background: #f3fbf6 !important;
+  color: #17633a !important;
+}
+
+.market-data-validation.is-error {
+  border: 1px solid #efc3c3 !important;
+  background: #fff7f7 !important;
+  color: #9b1c1c !important;
+}
+
+@media (max-width: 720px) {
+  .market-table-wrap {
+    margin: 4px 0 16px !important;
+    border-radius: 7px !important;
+  }
+
+  .market-table-wrap::after {
+    content: "横にスクロールできます" !important;
+    display: block !important;
+    position: sticky !important;
+    left: 0 !important;
+    width: max-content !important;
+    padding: 5px 9px !important;
+    color: #526987 !important;
+    background: #f5f8fd !important;
+    border-top: 1px solid #dce5f1 !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+  }
+
+  .market-table-five {
+    min-width: 860px !important;
+  }
+
+  .market-table-five th,
+  .market-table-five td {
+    padding: 9px 10px !important;
+    font-size: 12.5px !important;
+  }
+
+  .market-table-five tbody th,
+  .market-table-five thead th:first-child {
+    min-width: 185px !important;
+    max-width: 205px !important;
+  }
+
+  .market-table-five td:nth-child(2) {
+    min-width: 125px !important;
+  }
+
+  .market-table-five td:nth-child(3) {
+    min-width: 115px !important;
+  }
+
+  .market-table-five td:nth-child(4) {
+    min-width: 90px !important;
+  }
+
+  .market-table-five td:nth-child(5) {
+    min-width: 250px !important;
+  }
+}
