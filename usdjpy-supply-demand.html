@@ -6,7 +6,7 @@
 <meta name="description" content="USD/JPYの価格、東京市場スポット出来高、日米金利差、CFTC、重要イベントを統合して需給を確認するページ">
 <title>USD/JPY需給分析｜マーケットレポート</title>
 <link rel="stylesheet" href="assets/css/supply-demand.css">
-<link rel="stylesheet" href="assets/css/usdjpy-supply-demand.css?v=20260807-real2">
+<link rel="stylesheet" href="assets/css/usdjpy-supply-demand.css?v=20260808-ui1">
 <link rel="stylesheet" href="assets/css/site-common.css?v=20260804-ui1">
 </head>
 <body class="usdjpy-page">
@@ -40,7 +40,7 @@
 <main class="usd-page">
   <section class="usd-kpis" aria-label="需給サマリー">
     <article class="usd-kpi"><span>USD/JPY 現在値</span><strong id="kpi-price">—</strong><small id="kpi-price-change">—</small></article>
-    <article class="usd-kpi"><span>東京スポット出来高</span><strong id="kpi-volume">—</strong><small id="kpi-volume-sub">—</small></article>
+    <article class="usd-kpi"><span>東京市場ドル円スポット出来高</span><strong id="kpi-volume">—</strong><small id="kpi-volume-sub">—</small></article>
     <article class="usd-kpi"><span>日米10年金利差</span><strong id="kpi-spread">—</strong><small id="kpi-spread-sub">—</small></article>
     <article class="usd-kpi"><span>CFTC円先物ネット</span><strong id="kpi-cftc">—</strong><small id="kpi-cftc-sub">—</small></article>
     <article class="usd-kpi usd-kpi-judgement"><span>総合判定</span><strong id="kpi-judgement">算定中</strong><small id="kpi-confidence">信頼度：—</small></article>
@@ -56,11 +56,11 @@
     </article>
 
     <article class="usd-panel usd-volume-panel">
-      <h2>2. 価格 × 東京市場スポット出来高</h2>
+      <h2>2. 価格 × 東京市場ドル円スポット出来高</h2>
       <div class="usd-panel-body">
         <div class="usd-table-wrap">
           <table class="usd-table">
-            <thead><tr><th>対象日</th><th>USD/JPY終値</th><th>スポット出来高<br><small>百万USD</small></th><th>20日平均差</th><th>評価</th></tr></thead>
+            <thead><tr><th>対象日</th><th>USD/JPY終値</th><th>スポット出来高<br><small>億ドル</small></th><th>20営業日平均との差</th><th>評価</th></tr></thead>
             <tbody id="volume-rows"><tr><td colspan="5">読込中</td></tr></tbody>
           </table>
         </div>
@@ -98,17 +98,16 @@
       <h2>5. オーダー / ストップ / NYカット <small>Traders Web FX 無料ページ</small></h2>
       <div class="usd-panel-body">
         <div class="usd-order-source">
-          <div><span>情報源</span><b>トレーダーズ・ウェブFX 無料ページ</b></div>
+          <div><span>取得状況</span><b id="tradersweb-status">確認中</b></div>
           <div><span>無料ページ基準日時</span><b id="tradersweb-asof">—</b></div>
+          <div><span>最終取得確認</span><b id="tradersweb-checked">—</b></div>
           <div><span>公開範囲</span><b>直近6時台のUSD/JPY情報</b></div>
         </div>
-        <div class="usd-order-grid">
-          <div><b>売り注文</b><span>上値抵抗の確認</span></div>
-          <div><b>買い注文</b><span>下値支持の確認</span></div>
-          <div><b>ストップ</b><span>ブレイク時の加速確認</span></div>
-          <div><b>NYカットOP</b><span>収れん・防戦の確認</span></div>
+        <div class="usd-subcard usd-subcard-muted">
+          <h3>Traders Web FX 無料ページ参照状況</h3>
+          <p id="tradersweb-source-note">無料ページの取得状況を確認しています。</p>
         </div>
-        <p class="usd-order-note">無料ページの情報は、ページ内に表示した基準日・時刻の情報として扱います。リアルタイム情報とは区別し、古い情報を最新値のように表示しません。</p>
+        <p class="usd-order-note">基準日時と最終確認日時を分けて表示します。前営業日の情報が残っている場合でも、その日時をそのまま表示し、リアルタイム情報のようには扱いません。</p>
         <a id="tradersweb-link" class="usd-source-button" href="https://www.traderswebfx.jp/order/currency/USDJPY" target="_blank" rel="noopener noreferrer">トレーダーズ・ウェブFX 無料ページでオーダー情報を確認 →</a>
       </div>
     </article>
@@ -133,18 +132,19 @@
       <article class="usd-scenario usd-scenario-main"><span>メインシナリオ</span><h3 id="scenario-main-title">算定中</h3><p id="scenario-main-text">データを読み込んでいます。</p><ul id="scenario-main-points"></ul></article>
       <article class="usd-scenario usd-scenario-alt"><span>代替シナリオ</span><h3 id="scenario-alt-title">算定中</h3><p id="scenario-alt-text">—</p><ul id="scenario-alt-points"></ul></article>
       <article class="usd-scenario usd-scenario-risk"><span>崩れる条件</span><h3 id="scenario-risk-title">監視ポイント</h3><p id="scenario-risk-text">—</p><ul id="scenario-risk-points"></ul></article>
-      <article class="usd-watch"><h3>注目ポイント</h3><ul id="watch-list"><li>米金利と日米金利差</li><li>東京スポット出来高</li><li>CFTCの偏り</li><li>オーダー情報の基準日時</li><li>重要イベント後の反応</li></ul></article>
+      <article class="usd-watch"><h3>注目ポイント</h3><ul id="watch-list"><li>米金利と日米金利差</li><li>東京市場ドル円スポット出来高</li><li>CFTCの偏り</li><li>Traders Web FXの基準日時</li><li>重要イベント後の反応</li></ul></article>
     </div>
   </section>
 
   <footer class="usd-footer">
     <div><b>中核データ</b><span>market/latest.json / rates-bonds.json / usdjpy-volume.json / CFTC / events.json</span></div>
-    <div><b>補助情報</b><span>Traders Web FX 無料ページ（基準日・時刻を明示）</span></div>
+    <div><b>補助情報</b><span>Traders Web FX 無料ページ（基準日時・取得確認日時を明示）</span></div>
     <div><b>運用原則</b><span>安定取得できるデータを常設。取得困難な実需・ベーシス等は必須化しない。</span></div>
   </footer>
 </main>
 
 <script src="assets/js/usdjpy-supply-demand.js?v=20260807-real2"></script>
+<script src="assets/js/usdjpy-supply-demand-ui-fix.js?v=20260808-ui1"></script>
 <script src="assets/js/site-common.js?v=20260804-ui1"></script>
 </body>
 </html>
