@@ -15,7 +15,7 @@ permissions:
 jobs:
   inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,11 +50,61 @@ jobs:
           python -m json.tool data/github-pages-status.json > /dev/null
           python -m json.tool data/github-pages-build-latest.json > /dev/null || true
 
+      - name: Validate live public content
+        shell: bash
+        run: |
+          PAGE_URL='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/nikkei225-supply-demand.html'
+          DATA_URL='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/data/nikkei225-supply-demand.json'
+          : > /tmp/live-page.html
+          : > /tmp/live-data.json
+          for i in $(seq 1 12); do
+            curl -fsSL --retry 2 --retry-delay 2 "$PAGE_URL" -o /tmp/live-page.html || true
+            curl -fsSL --retry 2 --retry-delay 2 "$DATA_URL" -o /tmp/live-data.json || true
+            if grep -q '先物・裁定・オプション・投資主体' /tmp/live-page.html \
+               && grep -q 'nikkei225-basis-options-display.js' /tmp/live-page.html \
+               && python -m json.tool /tmp/live-data.json > /dev/null 2>&1; then
+              break
+            fi
+            sleep 5
+          done
+          python - <<'PY'
+          import json, datetime, pathlib
+          html=pathlib.Path('/tmp/live-page.html').read_text(encoding='utf-8',errors='replace')
+          try:
+              d=json.loads(pathlib.Path('/tmp/live-data.json').read_text(encoding='utf-8'))
+          except Exception:
+              d={}
+          opt=d.get('options') or {}; spot=d.get('spot') or {}; fut=d.get('futures') or {}
+          same=bool(spot.get('asOfDate') and fut.get('asOfDate') and str(spot.get('asOfDate'))[:10]==str(fut.get('asOfDate'))[:10])
+          sv=spot.get('value'); fv=fut.get('price')
+          diff=(float(fv)-float(sv)) if same and sv is not None and fv is not None else None
+          out={
+              'checkedAt':datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9))).isoformat(timespec='seconds'),
+              'pageUrl':'https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/nikkei225-supply-demand.html',
+              'htmlHasCurrentTheme':'先物・裁定・オプション・投資主体' in html,
+              'htmlHasBasisOptionsScript':'nikkei225-basis-options-display.js' in html,
+              'publicDataGeneratedAt':d.get('generatedAt'),
+              'publicSpotValue':sv,
+              'publicSpotAsOfDate':spot.get('asOfDate'),
+              'publicFuturesPrice':fv,
+              'publicFuturesAsOfDate':fut.get('asOfDate'),
+              'sameTradeDate':same,
+              'cashFuturesSimpleDifference':diff,
+              'publicIv':opt.get('iv'),
+              'publicIvStatus':opt.get('ivStatus'),
+              'publicIvAsOfDate':opt.get('ivAsOfDate'),
+              'publicPutCallStatus':opt.get('putCallStatus'),
+              'liveValidationPassed':bool('先物・裁定・オプション・投資主体' in html and 'nikkei225-basis-options-display.js' in html and d and opt.get('ivStatus')=='verified' and same)
+          }
+          pathlib.Path('data/github-pages-public-validation.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print(json.dumps(out,ensure_ascii=False,indent=2))
+          PY
+
       - name: Commit final diagnostic
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/github-pages-status.json data/github-pages-build-latest.json
+          git add data/github-pages-status.json data/github-pages-build-latest.json data/github-pages-public-validation.json
           if git diff --cached --quiet; then exit 0; fi
           git commit -m 'Update GitHub Pages diagnostic'
           git pull --rebase origin main
