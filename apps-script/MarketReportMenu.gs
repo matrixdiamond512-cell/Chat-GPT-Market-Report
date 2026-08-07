@@ -2,7 +2,7 @@ function installMarketReportWebMenu() {
   createMarketReportWebMenu_();
   SpreadsheetApp.getUi().alert(
     'WEB版マーケットレポートメニューを設定しました。\n' +
-    '本文・ダッシュボード、東京市場ドル円出来高、重要イベント、株式市場分析は別メニューです。\n' +
+    '本文・ダッシュボード、東京市場ドル円出来高、重要イベント、金利・債券市場、株式市場分析は別メニューです。\n' +
     '次回以降もスプレッドシートを開くと自動表示されます。'
   );
 }
@@ -56,6 +56,13 @@ function createMarketReportWebMenu_() {
   ui.createMenu('重要イベント')
     .addItem('重要イベントを今すぐ更新', 'runImportantEventsStandaloneNow')
     .addItem('重要イベントページを開く', 'showImportantEventsWebPage')
+    .addToUi();
+
+  ui.createMenu('金利・債券市場')
+    .addItem('金利・債券市場を今すぐ更新', 'runRatesBondsStandaloneNow')
+    .addItem('更新状態を確認', 'showRatesBondsUpdateStatus')
+    .addSeparator()
+    .addItem('金利・債券市場ページを開く', 'showRatesBondsWebPage')
     .addToUi();
 
   ui.createMenu('株式市場分析')
