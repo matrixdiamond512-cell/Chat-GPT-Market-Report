@@ -2,14 +2,14 @@
   "schemaVersion": "2.1.0",
   "pageId": "nikkei225-supply-demand",
   "pageTitle": "日経225需給分析",
-  "generatedAt": "2026-08-08T03:13:43+09:00",
+  "generatedAt": "2026-08-08T03:18:54+09:00",
   "spot": {
     "sourceName": "株式市場分析データ",
     "sourceUrl": "data/stocks.json",
     "value": 37529.49,
     "asOfDate": "2026-08-05",
     "status": "verified",
-    "fetchedAt": "2026-08-08T03:12:21+09:00"
+    "fetchedAt": "2026-08-08T03:17:41+09:00"
   },
   "futures": {
     "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -28,18 +28,27 @@
     "volumeChangePercent": null,
     "miniVolumeChangePercent": null,
     "status": "verified",
-    "fetchedAt": "2026-08-08T03:13:34+09:00",
+    "fetchedAt": "2026-08-08T03:18:46+09:00",
     "previousOpenInterest": 192608,
     "miniPreviousOpenInterest": 318748,
     "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260807open_interest.xlsx"
   },
   "sessions": {
-    "sourceName": "JPX / 大阪取引所",
+    "sourceName": "JPX デリバティブ取引市況（ナイト・日通し）",
     "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
-    "comment": "日中とナイトを分けて確認します。",
-    "status": "unavailable",
-    "error": "セッション始値/終値列を安全に特定できるまで自動算出を保留",
-    "fetchedAt": "2026-08-08T03:12:25+09:00"
+    "comment": "JPX公式のセッション別出来高を使用。価格差が同一基準で確認できないため、日中/ナイトの価格変化は推測しません。",
+    "dayChange": null,
+    "nightChange": null,
+    "dayVolume": 26279,
+    "nightVolume": 10403,
+    "daySharePercent": 71.64004143721716,
+    "nightSharePercent": 28.35995856278284,
+    "dayDriver": "日中出来高",
+    "nightDriver": "ナイト出来高",
+    "asOfDate": "2026-08-07",
+    "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260807_derivatives_market_data_night.xlsx",
+    "status": "verified",
+    "fetchedAt": "2026-08-08T03:18:54+09:00"
   },
   "arbitrage": {
     "sourceName": "JPX 裁定取引の状況",
@@ -52,7 +61,7 @@
     "sellChange": 2082,
     "buyChange": -36534,
     "status": "verified",
-    "fetchedAt": "2026-08-08T03:13:29+09:00"
+    "fetchedAt": "2026-08-08T03:18:44+09:00"
   },
   "options": {
     "sourceName": "JPX 日経225オプション",
@@ -66,7 +75,7 @@
     "asOfDate": "2026-08-08",
     "status": "calculated",
     "error": "Put/Call・IVはJPX列構造を確認できるまで推測せず空欄",
-    "fetchedAt": "2026-08-08T03:12:28+09:00"
+    "fetchedAt": "2026-08-08T03:17:47+09:00"
   },
   "participantFlow": {
     "sourceName": "JPX 取引参加者別取引高（手口上位一覧）",
@@ -74,7 +83,7 @@
     "comment": "手口は最終投資家を直接示すものではありません。",
     "status": "unavailable",
     "error": "日経225先物の買い/売り列を安全に特定できません",
-    "fetchedAt": "2026-08-08T03:12:28+09:00"
+    "fetchedAt": "2026-08-08T03:17:47+09:00"
   },
   "foreignInvestors": {
     "sourceName": "JPX 投資部門別売買状況",
@@ -90,7 +99,7 @@
     "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000001rg1m-att/stock_val_1_260705.pdf",
     "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000001ri3p-att/Tousi_DV_W_20260727_20260731.csv",
     "status": "verified",
-    "fetchedAt": "2026-08-08T03:13:43+09:00"
+    "fetchedAt": "2026-08-08T03:18:53+09:00"
   },
   "participantOpenInterest": {
     "sourceName": "JPX 取引参加者別建玉残高",
@@ -98,7 +107,7 @@
     "comment": "上位参加者への集中度を確認します。",
     "status": "unavailable",
     "error": "日経225先物の買い/売り列を安全に特定できません",
-    "fetchedAt": "2026-08-08T03:13:19+09:00"
+    "fetchedAt": "2026-08-08T03:18:35+09:00"
   },
   "shortSelling": {
     "sourceName": "JPX 空売り集計",
@@ -111,7 +120,7 @@
     "avg20": null,
     "sampleCount": 5,
     "status": "verified",
-    "fetchedAt": "2026-08-08T03:13:33+09:00"
+    "fetchedAt": "2026-08-08T03:18:45+09:00"
   },
   "margin": {
     "sourceName": "JPX 信用取引現在高",
@@ -125,7 +134,7 @@
     "ratio": 8.507309502146947,
     "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/margin/tvdivq0000001rhv-att/mtgaisan2026073100.pdf",
     "status": "verified",
-    "fetchedAt": "2026-08-08T03:13:37+09:00"
+    "fetchedAt": "2026-08-08T03:18:47+09:00"
   },
   "assessment": {
     "overall": "中立",
@@ -142,13 +151,13 @@
     "SQ接近でオプション主導の振れに注意",
     "海外投資家の週次データで現物買い継続を確認"
   ],
-  "sourceStatus": "7/10項目連携（基準日を個別表示）",
+  "sourceStatus": "8/10項目連携（基準日を個別表示）",
   "diagnostics": {
     "policy": "primary-source-first-no-fabrication",
     "statuses": {
       "spot": "verified",
       "futures": "verified",
-      "sessions": "unavailable",
+      "sessions": "verified",
       "arbitrage": "verified",
       "options": "calculated",
       "participantFlow": "unavailable",
@@ -163,6 +172,7 @@
       "JPX short-selling PDF"
     ],
     "oiParser": "verified JPX horizontal blocks at columns 0 and 7",
-    "foreignParser": "JPX Prime cash value + product 301/investor 60 derivative value"
+    "foreignParser": "JPX Prime cash value + product 301/investor 60 derivative value",
+    "sessionParser": "JPX night volume + verified whole-day Nikkei 225 futures volume"
   }
 }
