@@ -1,10 +1,47 @@
 /*
- * Hard guarantee for the WEB market report body:
- * every section titled "主要市場データ" is rendered as a table even when the
- * Google Docs source arrives as plain Japanese prose instead of a native table.
+ * WEB market report market-data renderer.
+ * 07:00: fixed 24-item morning overview.
+ * 12:00 / 16:00 / 21:00: fixed 6-market intraday overview.
+ * Always renders a real HTML table; never exposes pipe-delimited rows as prose.
  */
 (() => {
   "use strict";
+
+  const MORNING_ITEMS = [
+    "Dow",
+    "Nasdaq",
+    "S&P500",
+    "Russell 2000",
+    "日経225現物",
+    "CME日経225先物",
+    "日経225先物（大阪取引所）",
+    "USD/JPY",
+    "EUR/USD",
+    "金",
+    "WTI原油",
+    "BTCUSD",
+    "VIX",
+    "日経VI",
+    "Fear & Greed Index",
+    "米10年国債利回り",
+    "日本10年国債利回り",
+    "東証プライム値上がり銘柄数",
+    "東証プライム値下がり銘柄数",
+    "騰落レシオ",
+    "日経225予想PER",
+    "日経225予想EPS",
+    "25日移動平均乖離率",
+    "200日移動平均乖離率"
+  ];
+
+  const INTRADAY_ITEMS = [
+    "金",
+    "WTI原油",
+    "日経225先物（大阪取引所）",
+    "USD/JPY",
+    "EUR/USD",
+    "BTCUSD"
+  ];
 
   const escHtml = (value = "") => String(value)
     .replace(/&/g, "&amp;")
@@ -13,149 +50,246 @@
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
+  function currentReportTime() {
+    try {
+      return String(selectedReport?.time || "");
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function allowedItems() {
+    return currentReportTime() === "07:00" ? MORNING_ITEMS : INTRADAY_ITEMS;
+  }
+
   function normalizeLabel(label) {
-    const value = String(label || "").trim();
-    if (/^金先物$/.test(value)) return "金先物";
-    if (/^(WTI原油|原油|WTI)$/.test(value)) return "WTI原油";
-    if (/^日経225先物/.test(value)) return "日経225先物（大阪取引所）";
-    if (/^(USD\/JPY|USDJPY|ドル円)$/.test(value)) return "USD/JPY";
-    if (/^(EUR\/USD|EURUSD|ユーロドル)$/.test(value)) return "EUR/USD";
-    if (/^(BTCUSD|BTC\/USD)$/.test(value)) return "BTCUSD";
+    const value = String(label || "").trim().replace(/\s+/g, " ");
+
+    if (/^(Dow|NYダウ|ダウ|NYダウ平均)$/i.test(value)) return "Dow";
+    if (/^(Nasdaq|NASDAQ|Nasdaq総合|NASDAQ総合)$/i.test(value)) return "Nasdaq";
+    if (/^S&P\s*500$/i.test(value)) return "S&P500";
+    if (/^Russell\s*2000$/i.test(value)) return "Russell 2000";
+
+    if (/^(日経225現物|日経225|日経平均|日経平均現物)$/.test(value)) return "日経225現物";
+    if (/^CME.*日経225先物|^CME日経225/.test(value)) return "CME日経225先物";
+    if (/^(日経225先物|日経225先物（大阪取引所）|日経225先物\(大阪取引所\)|日経先物)$/.test(value)) return "日経225先物（大阪取引所）";
+
+    if (/^(USD\/JPY|USDJPY|ドル円)$/i.test(value)) return "USD/JPY";
+    if (/^(EUR\/USD|EURUSD|ユーロドル)$/i.test(value)) return "EUR/USD";
+    if (/^(金|金先物|金価格|金現物|ゴールド)$/i.test(value)) return "金";
+    if (/^(WTI原油|原油|原油価格|WTI)$/i.test(value)) return "WTI原油";
+    if (/^(BTCUSD|BTC\/USD|Bitcoin|ビットコイン)$/i.test(value)) return "BTCUSD";
+
+    if (/^VIX(?:指数)?$/i.test(value)) return "VIX";
+    if (/^日経VI$/.test(value)) return "日経VI";
+    if (/^Fear\s*&\s*Greed(?:\s*Index)?$/i.test(value)) return "Fear & Greed Index";
+    if (/^(米10年債利回り|米10年債|米国10年債利回り|米10年国債利回り)$/.test(value)) return "米10年国債利回り";
+    if (/^(日本10年国債利回り|日本10年債利回り|日本10年国債)$/.test(value)) return "日本10年国債利回り";
+
+    if (/^(東証プライム値上がり銘柄数|値上がり銘柄数（プライム）|プライム値上がり銘柄数)$/.test(value)) return "東証プライム値上がり銘柄数";
+    if (/^(東証プライム値下がり銘柄数|値下がり銘柄数（プライム）|プライム値下がり銘柄数)$/.test(value)) return "東証プライム値下がり銘柄数";
+    if (/^騰落レシオ/.test(value)) return "騰落レシオ";
+    if (/^(日経225予想PER|日経225 PER|日経225PER|PER)$/.test(value)) return "日経225予想PER";
+    if (/^(日経225予想EPS|日経225 EPS|日経225EPS|EPS)$/.test(value)) return "日経225予想EPS";
+    if (/^(日経225 )?25日(?:移動平均)?乖離率$/.test(value)) return "25日移動平均乖離率";
+    if (/^(日経225 )?200日(?:移動平均)?乖離率$/.test(value)) return "200日移動平均乖離率";
+
     return value;
   }
 
+  function emptyRow(label, reason = "主要市場データ入力に該当行なし") {
+    return {
+      label,
+      value: `取得不能（${reason}）`,
+      change: "—",
+      rate: "—",
+      time: "—",
+      marketType: "—",
+      note: "—"
+    };
+  }
+
+  function splitChangeRate(value) {
+    const source = String(value || "").trim();
+    const match = source.match(/^(.+?)\s*\/\s*([+-]?\d+(?:\.\d+)?%)$/);
+    if (!match) return { change: source || "—", rate: "—" };
+    return { change: match[1].trim() || "—", rate: match[2].trim() || "—" };
+  }
+
+  function row(label, value, change, rate, time, marketType, note) {
+    return {
+      label: normalizeLabel(label),
+      value: String(value || "—").trim() || "—",
+      change: String(change || "—").trim() || "—",
+      rate: String(rate || "—").trim() || "—",
+      time: String(time || "—").trim() || "—",
+      marketType: String(marketType || "—").trim() || "—",
+      note: String(note || "—").trim() || "—"
+    };
+  }
+
+  function parsePipeLine(line) {
+    const source = String(line || "").trim();
+    if (!/[|｜]/.test(source)) return null;
+
+    const cells = source.split(/[|｜]/).map((cell) => cell.trim()).filter((cell, index, list) => {
+      if (cell) return true;
+      return index > 0 && index < list.length - 1;
+    });
+    if (cells.length < 2) return null;
+
+    const first = String(cells[0] || "").trim();
+    if (/^(市場|市場・指標|市場・資産|指標)$/.test(first)) return null;
+    if (/^[-: ]+$/.test(first)) return null;
+
+    const label = normalizeLabel(first);
+    if (![...MORNING_ITEMS, ...INTRADAY_ITEMS].includes(label)) return null;
+
+    if (cells.length >= 7) {
+      return row(label, cells[1], cells[2], cells[3], cells[4], cells[5], cells.slice(6).join(" / "));
+    }
+
+    if (cells.length >= 5) {
+      const cr = splitChangeRate(cells[2]);
+      return row(label, cells[1], cr.change, cr.rate, cells[3], cells[4], cells.slice(5).join(" / ") || "—");
+    }
+
+    if (cells.length === 4) {
+      const cr = splitChangeRate(cells[2]);
+      return row(label, cells[1], cr.change, cr.rate, cells[3], "—", "—");
+    }
+
+    return row(label, cells[1], "—", "—", "—", "—", "—");
+  }
+
   function parseStandardMarketLine(line) {
-    const value = String(line || "").trim();
-    const match = value.match(/^(.+?)[：:]\s*(.+?)、\s*前日比\s*([^、。]+)、\s*([+-]?\d+(?:\.\d+)?%)。\s*(.*)$/);
+    const value = String(line || "").trim().replace(/^[-・]\s*/, "");
+    const match = value.match(/^(.+?)[：:]\s*(.+?)、\s*前日比\s*([^、。]+)、\s*([+-]?\d+(?:\.\d+)?%)。?\s*(.*)$/);
     if (!match) return null;
 
     const label = normalizeLabel(match[1]);
-    if (!/^(金先物|WTI原油|日経225先物（大阪取引所）|USD\/JPY|EUR\/USD|BTCUSD)$/.test(label)) return null;
+    if (![...MORNING_ITEMS, ...INTRADAY_ITEMS].includes(label)) return null;
 
-    return [
-      label,
-      match[2].trim() || "—",
-      match[3].trim() || "—",
-      match[4].trim() || "—",
-      match[5].trim() || "—"
-    ];
+    const tail = match[5].trim();
+    const timeMatch = tail.match(/([0-9]{1,2}:[0-9]{2})(?:\s*JST)?/);
+    return row(label, match[2], match[3], match[4], timeMatch ? timeMatch[1] : "—", "—", tail || "—");
   }
 
-  function parseCompositeIndicators(line) {
-    const value = String(line || "").trim();
+  function parseExistingTable(section) {
     const rows = [];
+    section.querySelectorAll("table tbody tr").forEach((tr) => {
+      const cells = [...tr.querySelectorAll("th,td")].map((cell) => (cell.textContent || "").trim());
+      if (cells.length < 2) return;
+      const label = normalizeLabel(cells[0]);
+      if (![...MORNING_ITEMS, ...INTRADAY_ITEMS].includes(label)) return;
 
-    const vix = value.match(/VIXは前営業日ベース\s*([0-9]+(?:\.[0-9]+)?)/);
-    if (vix) rows.push(["VIX", vix[1], "—", "—", "前営業日ベース"]);
+      if (cells.length >= 7) {
+        rows.push(row(label, cells[1], cells[2], cells[3], cells[4], cells[5], cells[6]));
+        return;
+      }
+      if (cells.length >= 5) {
+        rows.push(row(label, cells[1], cells[2], cells[3], "—", "—", cells[4]));
+        return;
+      }
+      rows.push(row(label, cells[1], cells[2] || "—", cells[3] || "—", "—", "—", "—"));
+    });
+    return rows;
+  }
 
-    const nikkeiVi = value.match(/日経VIは(?:\s*([0-9]{1,2}:[0-9]{2})時点)?\s*([0-9]+(?:\.[0-9]+)?)/);
-    if (nikkeiVi) rows.push(["日経VI", nikkeiVi[2], "—", "—", nikkeiVi[1] ? `${nikkeiVi[1]} JST` : "取得時点値"]);
-
-    const us10y = value.match(/米(?:国)?10年国債利回りは\s*([0-9]+(?:\.[0-9]+)?%)(前後)?/);
-    if (us10y) rows.push(["米10年国債利回り", us10y[1], "—", "—", us10y[2] ? "前後" : "取得時点値"]);
-
-    const jp10y = value.match(/日本10年国債利回りは\s*([0-9]+(?:\.[0-9]+)?%)([^。]*)/);
-    if (jp10y) rows.push(["日本10年国債利回り", jp10y[1], "—", "—", (jp10y[2] || "取得時点値").trim().replace(/^まで/, "") || "取得時点値"]);
-
-    let trailing = "";
-    if (rows.length) {
-      const sentences = value.split("。").map((item) => item.trim()).filter(Boolean);
-      if (sentences.length >= 3) trailing = sentences.slice(2).join("。") + "。";
-    }
-
-    return { rows, trailing };
+  function parsePrimeBreadthLine(line) {
+    const source = String(line || "").trim();
+    const labelMatch = source.match(/^(?:騰落銘柄数（プライム）|東証プライム騰落銘柄数)[：:]?\s*(.*)$/);
+    if (!labelMatch) return [];
+    const body = labelMatch[1];
+    const up = body.match(/値上がり\s*([0-9,]+)/);
+    const down = body.match(/値下がり\s*([0-9,]+)/);
+    const result = [];
+    if (up) result.push(row("東証プライム値上がり銘柄数", up[1], "—", "—", "—", "東証プライム", "—"));
+    if (down) result.push(row("東証プライム値下がり銘柄数", down[1], "—", "—", "—", "東証プライム", "—"));
+    return result;
   }
 
   function sourceLines(section) {
-    const contentNodes = [...section.children].filter((node) => node.tagName !== "H2");
     const lines = [];
-    for (const node of contentNodes) {
-      const raw = node.textContent || "";
-      raw.split(/\n+/).forEach((part) => {
+    [...section.querySelectorAll(":scope > p, :scope > ul > li, :scope > ol > li, :scope > div:not(.market-table-wrap)")].forEach((node) => {
+      String(node.textContent || "").split(/\n+/).forEach((part) => {
         const value = part.trim();
         if (value) lines.push(value);
       });
-    }
+    });
     return lines;
   }
 
+  function collectRows(section) {
+    const found = new Map();
+    const add = (item) => {
+      if (!item || !item.label) return;
+      const label = normalizeLabel(item.label);
+      if (!found.has(label)) found.set(label, { ...item, label });
+    };
+
+    parseExistingTable(section).forEach(add);
+
+    sourceLines(section).forEach((line) => {
+      add(parsePipeLine(line));
+      add(parseStandardMarketLine(line));
+      parsePrimeBreadthLine(line).forEach(add);
+    });
+
+    return found;
+  }
+
+  function collectNotes(section) {
+    return sourceLines(section).filter((line) => {
+      if (parsePipeLine(line) || parseStandardMarketLine(line) || parsePrimeBreadthLine(line).length) return false;
+      if (/^(市場|市場・指標|市場・資産).*([|｜])/.test(line)) return false;
+      if (/^[-:|｜ ]+$/.test(line)) return false;
+      return /レポート作成時点|最終検証済み|スナップショット|同時刻値|リアルタイム値|取得時刻/.test(line);
+    });
+  }
+
   function buildTable(rows) {
-    const headers = ["市場・指標", "値", "前日比", "騰落率", "取得時刻・注記"];
-    return `<div class="market-table-wrap"><table class="market-table market-table-five intraday-market-table">
+    const headers = ["市場", "最終検証済み値", "前日比", "騰落率", "対象時点", "市場区分", "備考・検証状態"];
+    return `<div class="market-table-wrap"><table class="market-table market-table-seven time-profile-market-table">
       <thead><tr>${headers.map((cell) => `<th>${escHtml(cell)}</th>`).join("")}</tr></thead>
-      <tbody>${rows.map((row) => `<tr>
-        <th scope="row">${escHtml(row[0] || "—")}</th>
-        <td>${escHtml(row[1] || "—")}</td>
-        <td>${escHtml(row[2] || "—")}</td>
-        <td>${escHtml(row[3] || "—")}</td>
-        <td>${escHtml(row[4] || "—")}</td>
+      <tbody>${rows.map((item) => `<tr>
+        <th scope="row">${escHtml(item.label)}</th>
+        <td>${escHtml(item.value)}</td>
+        <td>${escHtml(item.change)}</td>
+        <td>${escHtml(item.rate)}</td>
+        <td>${escHtml(item.time)}</td>
+        <td>${escHtml(item.marketType)}</td>
+        <td>${escHtml(item.note)}</td>
       </tr>`).join("")}</tbody>
     </table></div>`;
   }
 
   function convertSection(section) {
-    if (!section || section.dataset.marketTableHardfixed === "1") return;
+    if (!section) return;
     const heading = section.querySelector(":scope > h2");
     if (!heading || !/主要市場データ/.test(heading.textContent || "")) return;
 
-    // Leave already-correct tables alone.
-    if (section.querySelector("table.market-table")) {
-      section.dataset.marketTableHardfixed = "1";
-      return;
-    }
+    const profileKey = `${currentReportTime()}-${section.textContent.length}`;
+    if (section.dataset.marketTableProfile === profileKey && section.querySelector("table.time-profile-market-table")) return;
 
-    const lines = sourceLines(section);
-    if (!lines.length) return;
-
-    const rows = [];
-    const notes = [];
-    let intro = "";
-
-    for (const line of lines) {
-      const standard = parseStandardMarketLine(line);
-      if (standard) {
-        rows.push(standard);
-        continue;
-      }
-
-      const composite = parseCompositeIndicators(line);
-      if (composite.rows.length) {
-        rows.push(...composite.rows);
-        if (composite.trailing) notes.push(composite.trailing);
-        continue;
-      }
-
-      if (!intro && /レポート作成時点|スナップショット|同時刻値|取得時刻/.test(line)) {
-        intro = line;
-      } else {
-        notes.push(line);
-      }
-    }
-
-    // Avoid touching unrelated prose if parsing failed.
-    if (rows.length < 3) return;
+    const allowed = allowedItems();
+    const found = collectRows(section);
+    const notes = collectNotes(section);
+    const output = allowed.map((label) => found.get(label) || emptyRow(label));
 
     [...section.children].forEach((node) => {
       if (node !== heading) node.remove();
     });
 
-    if (intro) {
-      const p = document.createElement("p");
-      p.className = "market-data-intro";
-      p.textContent = intro;
-      section.appendChild(p);
-    }
-
-    section.insertAdjacentHTML("beforeend", buildTable(rows));
-
     if (notes.length) {
-      const note = document.createElement("p");
-      note.className = "market-data-note";
-      note.textContent = notes.join(" ");
-      section.appendChild(note);
+      const intro = document.createElement("p");
+      intro.className = "market-data-intro";
+      intro.textContent = notes.join(" ");
+      section.appendChild(intro);
     }
 
-    section.dataset.marketTableHardfixed = "1";
+    section.insertAdjacentHTML("beforeend", buildTable(output));
+    section.dataset.marketTableProfile = `${currentReportTime()}-${section.textContent.length}`;
   }
 
   function applyAll() {
