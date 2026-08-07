@@ -3,33 +3,32 @@
   "pageId": "rates-bonds",
   "pageTitle": "金利・債券市場分析",
   "subtitle": "米・日・欧の金利、イールドカーブ、実質金利、入札需給、他市場への波及を一画面で確認",
-  "generatedAt": "2026-08-07T13:00:08+09:00",
+  "generatedAt": "2026-08-07T13:01:58+09:00",
   "meta": {
     "page": "rates-bonds",
     "asOfDate": "2026-08-06",
     "asOfTime": "各市場の公表時点",
-    "updatedAt": "2026-08-07T13:00:08+09:00",
-    "status": "partial",
+    "updatedAt": "2026-08-07T13:01:58+09:00",
+    "status": "confirmed",
     "sourceStatus": "自動取得",
     "isStale": false,
     "staleReason": null,
-    "missingData": [
-      "米2年債利回り",
-      "米5年債利回り",
-      "米10年債利回り",
-      "米30年債利回り",
-      "米10年実質金利",
-      "米10年期待インフレ率",
-      "米10年タームプレミアム"
-    ]
+    "missingData": []
   },
   "summary": {
-    "headline": "主要金利データを一部取得",
-    "theme": "取得できた公式データだけで分析し、欠損値は推測しません。",
-    "conclusion": "米2年は横ばい、米10年は横ばい、実質金利は横ばい。現時点では日本10年国債の動きを主導シグナルとして、USD/JPY・金・日経225先物の追随を確認する。",
-    "consistency": "材料と値動きの整合性は取得済み系列の範囲で判定。"
+    "headline": "米2年 4.180%（-2.0bp）、米10年 4.630%（+0.0bp）",
+    "theme": "短期金利は低下、長期金利は横ばい。米2年－10年は前日比+2.0bpスティープ化。長短金利差が拡大。",
+    "conclusion": "米2年は低下、米10年は横ばい、実質金利は上昇。現時点では日本10年国債の動きを主導シグナルとして、USD/JPY・金・日経225先物の追随を確認する。",
+    "consistency": "米10年横ばいの内訳確認：実質金利上昇、期待インフレ上昇。金・株・為替の反応がこの方向と一致するかを下段で確認。"
   },
   "cards": [
+    {
+      "label": "米金利",
+      "direction": "横ばい",
+      "status": "confirmed",
+      "reason": "米10年 4.630% / 前日比 +0.0bp",
+      "asOf": "2026-08-05"
+    },
     {
       "label": "日本金利",
       "direction": "低下",
@@ -39,103 +38,110 @@
     },
     {
       "label": "米イールドカーブ",
-      "direction": "フラット化",
+      "direction": "スティープ化",
       "status": "calculated",
-      "reason": "10年－2年 120.8bp / 順イールド",
-      "asOf": null
+      "reason": "10年－2年 45.0bp / 順イールド",
+      "asOf": "2026-08-05"
+    },
+    {
+      "label": "実質金利",
+      "direction": "上昇",
+      "status": "confirmed",
+      "reason": "米10年実質 2.410% / 前日比 +1.0bp",
+      "asOf": "2026-08-05"
     }
   ],
   "rates": [
     {
       "name": "米2年債利回り",
-      "value": null,
+      "value": 4.18,
       "unit": "%",
-      "changeBp": null,
-      "weekChangeBp": null,
-      "direction": null,
-      "asOf": null,
-      "status": "unavailable",
+      "changeBp": -2.0,
+      "weekChangeBp": -4.0,
+      "direction": "低下",
+      "asOf": "2026-08-05",
+      "status": "confirmed",
       "source": "FRED DGS2",
       "meaning": "金融政策・FF金利見通しを最も反映しやすい年限",
-      "missingReason": "今回の自動取得で取得できず"
+      "missingReason": null
     },
     {
       "name": "米5年債利回り",
-      "value": null,
+      "value": 4.33,
       "unit": "%",
-      "changeBp": null,
-      "weekChangeBp": null,
-      "direction": null,
-      "asOf": null,
-      "status": "unavailable",
+      "changeBp": 0.0,
+      "weekChangeBp": -4.0,
+      "direction": "横ばい",
+      "asOf": "2026-08-05",
+      "status": "confirmed",
       "source": "FRED DGS5",
       "meaning": "中期の政策・景気・インフレ期待を確認",
-      "missingReason": "今回の自動取得で取得できず"
+      "missingReason": null
     },
     {
       "name": "米10年債利回り",
-      "value": null,
+      "value": 4.63,
       "unit": "%",
-      "changeBp": null,
-      "weekChangeBp": null,
-      "direction": null,
-      "asOf": null,
-      "status": "unavailable",
+      "changeBp": 0.0,
+      "weekChangeBp": -4.0,
+      "direction": "横ばい",
+      "asOf": "2026-08-05",
+      "status": "confirmed",
       "source": "FRED DGS10",
       "meaning": "株式・為替・金の基準となる長期金利",
-      "missingReason": "今回の自動取得で取得できず"
+      "missingReason": null
     },
     {
       "name": "米30年債利回り",
-      "value": null,
+      "value": 5.17,
       "unit": "%",
-      "changeBp": null,
-      "weekChangeBp": null,
-      "direction": null,
-      "asOf": null,
-      "status": "unavailable",
+      "changeBp": -1.0,
+      "weekChangeBp": -3.0,
+      "direction": "低下",
+      "asOf": "2026-08-05",
+      "status": "confirmed",
       "source": "FRED DGS30",
       "meaning": "財政・国債供給・長期インフレリスクを確認",
-      "missingReason": "今回の自動取得で取得できず"
+      "missingReason": null
     },
     {
       "name": "米10年実質金利",
-      "value": null,
+      "value": 2.41,
       "unit": "%",
-      "changeBp": null,
-      "weekChangeBp": null,
-      "direction": null,
-      "asOf": null,
-      "status": "unavailable",
+      "changeBp": 1.0,
+      "weekChangeBp": 0.0,
+      "direction": "上昇",
+      "asOf": "2026-08-05",
+      "status": "confirmed",
       "source": "FRED DFII10",
       "meaning": "金・高PER株・BTCへの割引率/保有コストを確認",
-      "missingReason": "今回の自動取得で取得できず"
+      "missingReason": null
     },
     {
       "name": "米10年期待インフレ率",
-      "value": null,
+      "value": 2.26,
       "unit": "%",
-      "changeBp": null,
-      "weekChangeBp": null,
-      "direction": null,
-      "asOf": null,
-      "status": "unavailable",
+      "changeBp": 4.0,
+      "weekChangeBp": -1.0,
+      "direction": "上昇",
+      "asOf": "2026-08-06",
+      "status": "confirmed",
       "source": "FRED T10YIE",
       "meaning": "市場のインフレ期待を確認",
-      "missingReason": "今回の自動取得で取得できず"
+      "missingReason": null
     },
     {
       "name": "米10年タームプレミアム",
-      "value": null,
+      "value": 0.868,
       "unit": "%",
-      "changeBp": null,
-      "weekChangeBp": null,
-      "direction": null,
-      "asOf": null,
-      "status": "unavailable",
+      "changeBp": 3.5,
+      "weekChangeBp": 3.0,
+      "direction": "上昇",
+      "asOf": "2026-07-31",
+      "status": "confirmed",
       "source": "FRED THREEFYTP10",
       "meaning": "長期保有リスクに対する上乗せ金利を確認",
-      "missingReason": "今回の自動取得で取得できず"
+      "missingReason": null
     },
     {
       "name": "日本2年国債利回り",
@@ -205,25 +211,68 @@
   ],
   "decomposition": {
     "formula": "米10年債利回りを、実質金利・期待インフレ・タームプレミアムなどの動きに分けて確認",
-    "point": "米10年の変化要因は取得済み系列のみで判定。未取得部分は推測しない。",
-    "status": "partial",
-    "factors": []
+    "point": "米10年は前日比+0.0bp。実質金利+1.0bp、期待インフレ+4.0bp。単純差分は-5.0bpだが、これをタームプレミアムと断定しない。",
+    "status": "confirmed",
+    "factors": [
+      {
+        "name": "実質金利",
+        "value": 1.0,
+        "unit": "bp",
+        "direction": "上昇",
+        "status": "confirmed",
+        "interpretation": "前日比。出所: FRED DFII10"
+      },
+      {
+        "name": "期待インフレ",
+        "value": 4.0,
+        "unit": "bp",
+        "direction": "上昇",
+        "status": "confirmed",
+        "interpretation": "前日比。出所: FRED T10YIE"
+      },
+      {
+        "name": "タームプレミアム",
+        "value": 3.5,
+        "unit": "bp",
+        "direction": "上昇",
+        "status": "confirmed",
+        "interpretation": "前日比。出所: FRED THREEFYTP10"
+      }
+    ]
   },
   "curve": {
-    "summary": "米2年－10年は前日比-3.6bpフラット化。長短金利差が縮小。",
+    "summary": "米2年－10年は前日比+2.0bpスティープ化。長短金利差が拡大。",
     "status": "calculated",
     "rows": [
       {
         "spread": "米10年－2年",
-        "status": "unavailable"
+        "value": 45.0,
+        "unit": "bp",
+        "changeBp": 2.0,
+        "weekChangeBp": 0.0,
+        "shape": "順イールド",
+        "reading": "スティープ化",
+        "status": "calculated"
       },
       {
         "spread": "米30年－5年",
-        "status": "unavailable"
+        "value": 84.0,
+        "unit": "bp",
+        "changeBp": -1.0,
+        "weekChangeBp": 1.0,
+        "shape": "順イールド",
+        "reading": "形状は概ね不変",
+        "status": "calculated"
       },
       {
         "spread": "米30年－10年",
-        "status": "unavailable"
+        "value": 54.0,
+        "unit": "bp",
+        "changeBp": -1.0,
+        "weekChangeBp": 1.0,
+        "shape": "順イールド",
+        "reading": "形状は概ね不変",
+        "status": "calculated"
       },
       {
         "spread": "日本10年－2年",
@@ -249,23 +298,23 @@
     "usCurve": [
       {
         "tenor": "2年",
-        "value": null,
-        "status": "unavailable"
+        "value": 4.18,
+        "status": "confirmed"
       },
       {
         "tenor": "5年",
-        "value": null,
-        "status": "unavailable"
+        "value": 4.33,
+        "status": "confirmed"
       },
       {
         "tenor": "10年",
-        "value": null,
-        "status": "unavailable"
+        "value": 4.63,
+        "status": "confirmed"
       },
       {
         "tenor": "30年",
-        "value": null,
-        "status": "unavailable"
+        "value": 5.17,
+        "status": "confirmed"
       }
     ],
     "jpCurve": [
@@ -298,7 +347,7 @@
         "name": "直近米国債入札（30-Year）",
         "value": null,
         "unit": "倍",
-        "status": "confirmed",
+        "status": "unavailable",
         "source": "U.S. Treasury FiscalData",
         "note": "入札日 2026-08-13 / 最高落札利回り 取得不能%"
       }
@@ -307,6 +356,22 @@
   "policyExpectations": {
     "summary": "確率推定を無理に表示せず、公式政策金利と短期国債利回りから市場期待の方向を確認。",
     "rows": [
+      {
+        "policy": "FF金利目標レンジ",
+        "value": "3.50－3.75%",
+        "change": "政策金利の現行レンジ",
+        "status": "confirmed",
+        "source": "FRED DFEDTARL / DFEDTARU",
+        "note": "次回会合の確率ではなく、現在の公式目標レンジ。米2年債の動きと併せて市場期待を読む。"
+      },
+      {
+        "policy": "米2年債が示す政策期待",
+        "value": "4.180%",
+        "change": "前日比 -2.0bp",
+        "status": "confirmed",
+        "source": "FRED DGS2",
+        "note": "FedWatchの確率値ではない。短期金利期待の方向確認用。"
+      },
       {
         "policy": "日本2年債が示す政策期待",
         "value": "1.565%",
@@ -340,7 +405,7 @@
       ],
       "actualStatus": "上昇（+0.52%）",
       "status": "confirmed",
-      "note": "米2年横ばい・日本10年低下とUSD/JPYの反応を併せて確認。"
+      "note": "米2年低下・日本10年低下とUSD/JPYの反応を併せて確認。"
     },
     {
       "market": "EUR/USD",
@@ -364,7 +429,7 @@
       ],
       "actualStatus": "横ばい（-0.00%）／概ね整合",
       "status": "confirmed",
-      "note": "米10年実質金利横ばいと金横ばいを併せて確認。"
+      "note": "米10年実質金利上昇と金横ばいを併せて確認。"
     },
     {
       "market": "BTCUSD",
@@ -376,7 +441,7 @@
       ],
       "actualStatus": "横ばい（-0.00%）／概ね整合",
       "status": "confirmed",
-      "note": "米10年実質金利横ばいとBTCUSD横ばいを併せて確認。"
+      "note": "米10年実質金利上昇とBTCUSD横ばいを併せて確認。"
     }
   ],
   "leadingRate": {
@@ -389,7 +454,7 @@
   "scenarios": {
     "main": {
       "title": "メインシナリオ",
-      "body": "米2年は横ばい、米10年は横ばい、実質金利は横ばい。現時点では日本10年国債の動きを主導シグナルとして、USD/JPY・金・日経225先物の追随を確認する。",
+      "body": "米2年は低下、米10年は横ばい、実質金利は上昇。現時点では日本10年国債の動きを主導シグナルとして、USD/JPY・金・日経225先物の追随を確認する。",
       "status": "calculated"
     },
     "alternative": {
@@ -414,7 +479,7 @@
   "sources": [
     {
       "name": "FRED / Federal Reserve",
-      "status": "unavailable",
+      "status": "confirmed",
       "note": "米2・5・10・30年、10年実質金利、10年期待インフレ、10年タームプレミアム、FF目標レンジ"
     },
     {
@@ -429,7 +494,7 @@
     },
     {
       "name": "U.S. Treasury FiscalData",
-      "status": "confirmed",
+      "status": "partial",
       "note": "米国債入札結果。取得できた場合のみ需給欄へ表示。"
     },
     {
@@ -438,10 +503,5 @@
       "note": "USD/JPY、EUR/USD、金、BTCUSD、日経225先物との整合性判定に使用。"
     }
   ],
-  "errors": [
-    {
-      "level": "warning",
-      "message": "FRED取得失敗: new-line character seen in unquoted field - do you need to open the file with newline=''?"
-    }
-  ]
+  "errors": []
 }
