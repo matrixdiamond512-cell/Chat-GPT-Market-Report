@@ -1,26 +1,57 @@
 {
-  "schemaVersion": "3.0.0",
+  "schemaVersion": "3.1.0",
   "pageId": "usdjpy-supply-demand",
-  "generatedAt": "2026-08-07T23:49:00+09:00",
+  "generatedAt": "2026-08-08T00:09:36+09:00",
   "mode": "integrated-realistic",
+  "sourceStatus": {
+    "tradersWebFx": "confirmed",
+    "cftc": "confirmed",
+    "core": "referenced-existing-json"
+  },
   "tradersWebFx": {
     "name": "トレーダーズ・ウェブFX 無料ページ",
     "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
     "sourceUpdatedAt": "2026-08-07T06:22:00+09:00",
+    "status": "confirmed",
     "publicScope": "一般公開はUSD/JPYの直近6時台情報",
     "redistributionMode": "link-only",
-    "note": "公開GitHub Pagesでは第三者サイトのオーダー本文を再配信せず、基準日時と参照リンクのみ表示する。"
+    "note": "公開ページでは第三者サイトのオーダー本文を再配信せず、基準日時と参照リンクのみ表示する。",
+    "checkedAt": "2026-08-08T00:09:39+09:00"
   },
   "cftc": {
     "name": "CFTC Commitments of Traders - Japanese Yen",
-    "url": "https://www.cftc.gov/dea/futures/deacmesf.htm",
-    "status": "stale",
-    "asOf": "2026-07-21",
-    "long": 107590,
-    "short": 259715,
-    "net": -152125,
-    "previousNet": -122663,
-    "note": "CFTC公式で確認できた値。最新週としては古いため参考表示し、総合判定の必須入力にはしない。"
+    "url": "https://www.cftc.gov/dea/newcot/deafut.txt",
+    "status": "confirmed",
+    "asOf": "2026-07-28",
+    "long": 101271,
+    "short": 264683,
+    "net": -163412,
+    "previousNet": -152125,
+    "note": "CFTC公式のJapanese Yen・Non-Commercial Long/Shortを使用。",
+    "checkedAt": "2026-08-08T00:09:39+09:00"
+  },
+  "coreSnapshot": {
+    "market": {
+      "generatedAt": "2026-08-07T21:27:28+09:00",
+      "asOf": "2026-08-07T21:27:36+09:00",
+      "verificationStatus": "verified"
+    },
+    "ratesBonds": {
+      "generatedAt": "2026-08-08T00:09:14+09:00",
+      "asOfDate": "2026-08-07",
+      "status": "confirmed"
+    },
+    "usdJpyVolume": {
+      "generatedAt": "2026-08-07T21:34:51+09:00",
+      "targetDate": "2026-08-06",
+      "publicationDate": "2026-08-07",
+      "status": "ok"
+    },
+    "events": {
+      "generatedAt": "2026-08-07T22:18:22+09:00",
+      "dataAsOf": "2026-08-07T22:18:22+09:00",
+      "status": "ok"
+    }
   },
   "rules": {
     "hideUnavailableOptionalBlocks": true,
@@ -30,6 +61,7 @@
       "data/usdjpy-volume.json",
       "data/events.json"
     ],
-    "assessment": "価格方向、日米10年金利差の変化、東京スポット出来高の強弱を中核とし、CFTCは鮮度が十分な場合のみ方向判定へ加える。"
+    "assessment": "価格方向、日米10年金利差の変化、東京スポット出来高の強弱を中核とし、CFTCは鮮度が十分な場合のみ方向判定へ加える。",
+    "tradersWebFx": "無料ページの基準日・時刻を表示し、オーダー本文は再配信しない。"
   }
 }
