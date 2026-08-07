@@ -2,9 +2,9 @@
   "schemaVersion": "2.0.0",
   "pageTitle": "ゴールド需給分析",
   "subtitle": "COMEX先物・投機筋・ETF・中国/インド現物需要から総合判定",
-  "generatedAt": "2026-08-08T00:53:00+09:00",
+  "generatedAt": "2026-08-08T01:09:39+09:00",
   "comex": {
-    "status": "verified",
+    "status": "stale",
     "asOfDate": "2026-08-06",
     "volume": 201455,
     "openInterest": 389008,
@@ -14,60 +14,67 @@
     "interpretation": null,
     "sourceName": "CME Group Daily Bulletin",
     "sourceUrl": "https://www.cmegroup.com/daily_bulletin/current/Section02B_Summary_Volume_And_Open_Interest_Metals_Futures_And_Options.pdf",
-    "note": "CME Daily Bulletin PG02BのGC COMEX GOLD FUTURES。価格×建玉判定は同一基準日の価格取得後に実施。"
+    "note": "CME Daily Bulletin PG02BのGC COMEX GOLD FUTURES。価格×建玉判定は同一基準日の価格取得後に実施。",
+    "error": "CME取得失敗: ReadTimeout: HTTPSConnectionPool(host='www.cmegroup.com', port=443): Read timed out. (read timeout=45)"
   },
   "cftc": {
-    "status": "stale",
-    "asOfDate": "2026-07-21",
-    "managedMoneyLong": 141487,
-    "managedMoneyShort": 16656,
-    "managedMoneyNet": 124831,
-    "managedMoneyNetChange": 4052,
-    "openInterest": 383368,
-    "judgement": "前回確認値（自動更新待ち）",
+    "status": "verified",
+    "asOfDate": "2026-07-28",
+    "managedMoneyLong": 135093,
+    "managedMoneyShort": 15298,
+    "managedMoneyNet": 119795,
+    "managedMoneyNetChange": -5036,
+    "openInterest": 384603,
+    "judgement": "投機筋の売り増加",
     "sourceName": "CFTC Disaggregated COT - Futures Only",
-    "sourceUrl": "https://publicreporting.cftc.gov/Commitments-of-Traders/Disaggregated-Futures-Only/72hh-3qpy"
+    "sourceUrl": "https://publicreporting.cftc.gov/Commitments-of-Traders/Disaggregated-Futures-Only/72hh-3qpy",
+    "fetchedAt": "2026-08-08T01:10:25+09:00"
   },
   "etf": {
     "gld": {
-      "status": "unavailable",
-      "error": "公式Historical Archive自動取得の初回実行待ち"
+      "status": "verified",
+      "asOfDate": "2026-08-06",
+      "tonnes": 1014.72,
+      "changeTonnes": 0.57000000000005,
+      "sourceName": "SPDR Gold Shares Historical Archive",
+      "sourceUrl": "https://www.spdrgoldshares.com/usa/gld/",
+      "fetchedAt": "2026-08-08T01:10:26+09:00"
     },
     "iau": {
-      "status": "stale",
-      "asOfDate": "2026-07-28",
-      "tonnes": 461.88,
-      "changeTonnes": null,
+      "status": "verified",
+      "asOfDate": "2026-08-06",
+      "tonnes": 459.01,
+      "changeTonnes": -2.8700000000000045,
       "sourceName": "iShares Gold Trust",
       "sourceUrl": "https://www.ishares.com/us/products/239561/ishares-gold-trust-fund",
-      "note": "公式ページで確認した前回値。自動取得後に更新。"
+      "fetchedAt": "2026-08-08T01:10:27+09:00"
     },
     "global": {
       "status": "unavailable",
-      "error": "World Gold Council週次・月次公開値の自動取得確認待ち"
+      "error": "WGC世界ETFは週次/月次の公開値を自動取得できる場合のみ更新"
     }
   },
   "physical": {
-    "status": "unavailable",
+    "status": "stale",
     "china": {
-      "status": "unavailable",
+      "status": "stale",
       "premiumUsdOz": null,
-      "change": null
+      "change": null,
+      "asOfDate": null
     },
     "india": {
-      "status": "unavailable",
+      "status": "stale",
       "premiumUsdOz": null,
-      "change": null
+      "change": null,
+      "asOfDate": null
     },
     "sourceName": "World Gold Council Local gold price premium/discount",
     "sourceUrl": "https://www.gold.org/goldhub/data/gold-premium",
-    "error": "公開XLSX取得可否の自動確認待ち"
+    "error": "WGC現物プレミアム取得保留: HTTPError: 403 Client Error: Forbidden for url: https://www.gold.org/download/file/11657/gold-premiums.xlsx"
   },
   "curve": {
     "status": "unavailable",
-    "state": null,
-    "spreadUsdOz": null,
-    "error": "安定した無料公開データ取得経路の確認待ち"
+    "error": "先物カーブは安定した無料公開データ連携を確認後に更新"
   },
   "centralBank": {
     "status": "stale",
@@ -79,33 +86,67 @@
   },
   "environment": {
     "realYield10y": {
-      "status": "unavailable",
-      "error": "FRED DFII10自動取得の初回実行待ち"
+      "status": "verified",
+      "asOfDate": "2026-08-05",
+      "value": 2.41,
+      "change": 0.010000000000000231,
+      "sourceName": "FRED DFII10",
+      "sourceUrl": "https://fred.stlouisfed.org/series/DFII10",
+      "label": "米10年実質金利",
+      "fetchedAt": "2026-08-08T01:10:27+09:00"
     },
     "dollarBroad": {
-      "status": "unavailable",
-      "error": "FRED DTWEXBGS自動取得の初回実行待ち"
+      "status": "verified",
+      "asOfDate": "2026-07-31",
+      "value": 119.7034,
+      "change": 0.028100000000009118,
+      "sourceName": "FRED DTWEXBGS",
+      "sourceUrl": "https://fred.stlouisfed.org/series/DTWEXBGS",
+      "label": "米ドル実効指数（Broad）",
+      "fetchedAt": "2026-08-08T01:10:28+09:00"
     },
     "usdjpy": {
-      "status": "unavailable",
-      "error": "data/market/latest.jsonからページ表示時・自動処理時に連携"
+      "status": "verified",
+      "asOfDateTime": "2026-08-07T21:27:36+09:00",
+      "value": 158.331,
+      "change": 0.7309938964843639,
+      "changePercent": 0.46382859655742514,
+      "sourceName": "Yahoo Finance USD/JPY",
+      "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/"
     }
   },
   "assessment": {
-    "shortTerm": "判定待ち",
+    "shortTerm": "売り優勢",
     "structural": "買い需要あり（確認項目限定）",
-    "score": null,
-    "components": []
+    "score": 15,
+    "components": [
+      {
+        "name": "CFTC",
+        "score": -1.0
+      },
+      {
+        "name": "ETF",
+        "score": -1.0
+      },
+      {
+        "name": "実質金利",
+        "score": -1.0
+      },
+      {
+        "name": "ドル",
+        "score": -1.0
+      }
+    ]
   },
   "dataStatus": {
-    "connected": 3,
+    "connected": 5,
     "total": 7
   },
   "aiSummary": [
-    "金価格は検証済み市場データ基盤から表示し、COMEX出来高・建玉とは各データの基準日を分けて管理します。",
-    "COMEX GCの出来高・建玉はCME Daily Bulletinから取得します。価格×建玉判定は同じ基準日の価格を取得できた場合だけ行います。",
-    "CFTC Managed Moneyは週次、GLD・IAUは日次で更新し、投機筋とETF資金フローを短期需給の中心にします。",
-    "中国・インド現物プレミアムはWGC公開値を取得できる場合のみ表示し、取得不能時は推測しません。",
-    "中央銀行需要は月次の構造的需要として扱い、日次の売買シグナルとは分離します。"
+    "金先物は前回比+3.07%です。COMEXの出来高・建玉は別の基準日で表示し、日付を合わせられた場合だけ価格×建玉判定を行います。",
+    "COMEX出来高・建玉は取得待ちです。取得不能時は推測値を表示しません。",
+    "CFTC Managed Moneyのネットは119,795枚、前週比-5,036枚です。週次データとして短期需給に反映します。",
+    "主要金ETF保有量は GLD 1014.72t / IAU 459.01t。金融需要の実流入・流出を先物と分けて確認します。",
+    "中国・インドの現物プレミアムはWGCの公開更新を確認できる場合だけ表示します。ログイン等で取得できない場合は前回値を捏造せず保留します。"
   ]
 }
