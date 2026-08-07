@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Hardened rates/bonds builder.
 
-This wrapper keeps the existing page schema while fetching each FRED series
-individually. FRED's combined graph CSV can contain formatting that Python's
-CSV reader rejects; individual two-column series are simpler and more robust.
+Fetches each FRED series individually and prevents analysis from comparing
+series as if they were same-day observations when their latest publication
+dates differ.
 """
 
 from __future__ import annotations
@@ -11,7 +11,6 @@ from __future__ import annotations
 import datetime as dt
 import json
 import urllib.parse
-from pathlib import Path
 
 import build_rates_bonds_json as core
 
@@ -21,7 +20,6 @@ FRED_BASE = "https://fred.stlouisfed.org/graph/fredgraph.csv"
 
 def parse_fred_series(text: str, series: str) -> list[tuple[dt.date, float]]:
     points: list[tuple[dt.date, float]] = []
-    # Normalize all newline conventions and avoid csv.Sniffer/quoted-field issues.
     normalized = text.replace("\r\n", "\n").replace("\r", "\n")
     for raw_line in normalized.split("\n"):
         line = raw_line.strip().lstrip("\ufeff")
@@ -65,29 +63,76 @@ def patch_payload(payload: dict) -> dict:
     us2 = by_name.get("米2年債利回り") or {}
     us10 = by_name.get("米10年債利回り") or {}
     real10 = by_name.get("米10年実質金利") or {}
+    breakeven10 = by_name.get("米10年期待インフレ率") or {}
+    term10 = by_name.get("米10年タームプレミアム") or {}
     jp10 = by_name.get("日本10年国債利回り") or {}
 
-    # Never describe an unavailable rate as "横ばい".
     def direction_text(row: dict, missing: str = "取得不能") -> str:
         return str(row.get("direction")) if row.get("status") != "unavailable" and row.get("direction") else missing
 
+    # Never describe an unavailable rate as flat.
     if us2.get("status") == "unavailable" or us10.get("status") == "unavailable":
         payload.setdefault("summary", {})["theme"] = (
             f"米2年は{direction_text(us2)}、米10年は{direction_text(us10)}、"
             f"日本10年は{direction_text(jp10)}。取得できた公式データだけで分析する。"
         )
 
-    # Cross-asset notes must not imply a missing U.S. rate was flat.
-    for item in payload.get("crossAssetImpact") or []:
-        market = item.get("market")
-        if market in {"日経225先物", "EUR/USD"} and us10.get("status") == "unavailable":
-            item["note"] = "米10年金利は取得不能。取得済みの他市場データだけで方向を表示し、金利との整合性は断定しない。"
-        if market == "USD/JPY" and us2.get("status") == "unavailable":
-            item["note"] = "米2年金利は取得不能。日本金利とUSD/JPYの値動きのみ確認し、日米金利差の整合性は断定しない。"
-        if market in {"金", "BTCUSD"} and real10.get("status") == "unavailable":
-            item["note"] = "米10年実質金利は取得不能。価格方向のみ表示し、実質金利との整合性は断定しない。"
+    # Do not call asynchronous FRED observations a same-day decomposition.
+    decomposition = payload.get("decomposition") or {}
+    factor_rows = decomposition.get("factors") or []
+    factor_date_map = {
+        "実質金利": real10.get("asOf"),
+        "期待インフレ": breakeven10.get("asOf"),
+        "タームプレミアム": term10.get("asOf"),
+    }
+    for factor in factor_rows:
+        factor_date = factor_date_map.get(factor.get("name"))
+        if factor_date:
+            factor["interpretation"] = f"前日比 / 基準日 {factor_date}。{factor.get('interpretation', '')}"
 
-    # Auction rows with no metric are not confirmed values.
+    decomposition_dates = [
+        row.get("asOf") for row in (us10, real10, breakeven10)
+        if row.get("status") != "unavailable" and row.get("asOf")
+    ]
+    if decomposition_dates and len(set(decomposition_dates)) > 1:
+        decomposition["formula"] = "米10年金利の構成要因（公表日をそろえた場合のみ同日分解）"
+        decomposition["point"] = (
+            f"公表日が異なるため同日分解は行わない。"
+            f"米10年={us10.get('asOf') or '取得不能'}、"
+            f"実質金利={real10.get('asOf') or '取得不能'}、"
+            f"期待インフレ={breakeven10.get('asOf') or '取得不能'}、"
+            f"タームプレミアム={term10.get('asOf') or '取得不能'}。"
+            "各系列の方向は確認するが、差分を一つの要因として断定しない。"
+        )
+        payload.setdefault("summary", {})["consistency"] = (
+            "米10年・実質金利・期待インフレは最新公表日が一致していないため、"
+            "同日内訳としては扱わない。各系列の基準日を確認しながら株・為替・金との反応を見る。"
+        )
+
+    # Cross-asset notes should state when rate and market timestamps differ.
+    market_asof = ((core.load_json(core.MARKET_LATEST, {}).get("markets") or {}))
+    market_rate_map = {
+        "日経225先物": ("nikkei225_futures_ose", us10),
+        "USD/JPY": ("usdjpy", us2),
+        "EUR/USD": ("eurusd", us10),
+        "金": ("gold", real10),
+        "BTCUSD": ("btcusd", real10),
+    }
+    for item in payload.get("crossAssetImpact") or []:
+        market_name = item.get("market")
+        market_key, rate_row = market_rate_map.get(market_name, (None, {}))
+        if rate_row.get("status") == "unavailable":
+            item["note"] = f"対応する金利データは取得不能。{market_name}の価格方向のみ表示し、金利との整合性は断定しない。"
+            continue
+        market_stamp = ((market_asof.get(market_key) or {}).get("asOf")) if market_key else None
+        rate_date = rate_row.get("asOf")
+        if market_stamp and rate_date and not str(market_stamp).startswith(str(rate_date)):
+            item["note"] = (
+                f"金利基準日 {rate_date}、{market_name}基準時刻 {market_stamp}。"
+                "同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+            )
+
+    # Auction rows with no actual metric are not confirmed values.
     supply = payload.get("supplyDemand") or {}
     for item in supply.get("items") or []:
         if item.get("value") is None:
