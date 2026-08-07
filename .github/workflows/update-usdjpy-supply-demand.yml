@@ -1,0 +1,71 @@
+name: Update USDJPY supply demand page
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/update-usdjpy-supply-demand.yml"
+      - "scripts/build_usdjpy_supply_demand.py"
+      - "data/usdjpy-supply-demand-trigger/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-usdjpy-supply-demand-page
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate builder
+        run: python -m py_compile scripts/build_usdjpy_supply_demand.py
+
+      - name: Build USDJPY supply-demand JSON
+        run: python scripts/build_usdjpy_supply_demand.py
+
+      - name: Validate generated JSON
+        run: |
+          python -m json.tool data/usdjpy-supply-demand.json > /dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path('data/usdjpy-supply-demand.json').read_text(encoding='utf-8'))
+          assert data.get('pageId') == 'usdjpy-supply-demand'
+          assert data.get('generatedAt')
+          assert data.get('tradersWebFx', {}).get('url')
+          assert data.get('coreSnapshot') is not None
+          print('generatedAt:', data.get('generatedAt'))
+          print('Traders Web FX:', data.get('tradersWebFx', {}).get('sourceUpdatedAt'))
+          print('CFTC:', data.get('cftc', {}).get('asOf'), data.get('cftc', {}).get('status'))
+          PY
+
+      - name: Commit refreshed integration metadata
+        shell: bash
+        run: |
+          if git diff --quiet -- data/usdjpy-supply-demand.json; then
+            echo "USDJPY supply-demand data is already up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/usdjpy-supply-demand.json
+          git commit -m "Update USDJPY supply-demand data"
+          git pull --rebase
+          git push
