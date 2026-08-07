@@ -2,6 +2,9 @@ name: Update USDJPY supply demand page
 
 on:
   workflow_dispatch:
+  schedule:
+    # 06:35 JST Monday-Friday = 21:35 UTC Sunday-Thursday
+    - cron: "35 21 * * 0-4"
   push:
     branches:
       - main
@@ -51,7 +54,10 @@ jobs:
           assert data.get('tradersWebFx', {}).get('url')
           assert data.get('coreSnapshot') is not None
           print('generatedAt:', data.get('generatedAt'))
-          print('Traders Web FX:', data.get('tradersWebFx', {}).get('sourceUpdatedAt'))
+          print('Traders Web FX status:', data.get('tradersWebFx', {}).get('status'))
+          print('Traders Web FX page confirmed:', data.get('tradersWebFx', {}).get('pageConfirmed'))
+          print('Traders Web FX source time:', data.get('tradersWebFx', {}).get('sourceUpdatedAt'))
+          print('Traders Web FX checked at:', data.get('tradersWebFx', {}).get('checkedAt'))
           print('CFTC:', data.get('cftc', {}).get('asOf'), data.get('cftc', {}).get('status'))
           PY
 
