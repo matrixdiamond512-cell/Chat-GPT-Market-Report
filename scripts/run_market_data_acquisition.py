@@ -304,7 +304,7 @@ def main() -> int:
     args = parser.parse_args()
 
     slot = str(args.slot or "").strip()
-    if slot not in {"07:00", "12:00", "16:00", "21:00"}:
+    if slot not in {"08:00", "12:00", "16:00", "21:00"}:
         raise SystemExit(f"Unsupported report slot: {slot!r}")
 
     payload = build_staged_payload(slot, args.mode)
