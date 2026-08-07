@@ -20,8 +20,9 @@ on:
       - "config/economic_calendar.json"
       - "data/events/event_dictionary.json"
   schedule:
-    # UTC/JSTとも毎時07分・37分。重要指標の発表後を長時間空けない。
-    - cron: "7,37 * * * *"
+    # 5分ごとに更新。重要指標の発表後、次回実行で実績値・改定値を再取得する。
+    # GitHub Actions の schedule は開始が数分遅れる場合があるため、ページ側では最終更新時刻も表示する。
+    - cron: "*/5 * * * *"
 
 permissions:
   contents: write
