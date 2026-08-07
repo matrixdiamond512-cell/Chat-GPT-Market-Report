@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "3.1.0",
+  "schemaVersion": "3.1.1",
   "pageId": "usdjpy-supply-demand",
-  "generatedAt": "2026-08-08T00:26:03+09:00",
+  "generatedAt": "2026-08-08T01:31:49+09:00",
   "mode": "integrated-realistic",
   "sourceStatus": {
     "tradersWebFx": "confirmed",
@@ -12,11 +12,14 @@
     "name": "トレーダーズ・ウェブFX 無料ページ",
     "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
     "sourceUpdatedAt": "2026-08-07T06:22:00+09:00",
+    "checkedAt": "2026-08-08T01:31:51+09:00",
     "status": "confirmed",
+    "pageConfirmed": true,
     "publicScope": "一般公開はUSD/JPYの直近6時台情報",
-    "redistributionMode": "link-only",
-    "note": "公開ページでは第三者サイトのオーダー本文を再配信せず、基準日時と参照リンクのみ表示する。",
-    "checkedAt": "2026-08-08T00:26:07+09:00"
+    "redistributionMode": "source-metadata-and-link",
+    "note": "無料ページの公開状況・基準日時を取得して表示する。注文水準本文は提供元の利用条件を尊重し、このページには転載しない。",
+    "sourceDate": "2026-08-07",
+    "sourceTime": "06:22"
   },
   "cftc": {
     "name": "CFTC Commitments of Traders - Japanese Yen",
@@ -28,12 +31,12 @@
     "net": -163412,
     "previousNet": -152125,
     "note": "CFTC公式のJapanese Yen・Non-Commercial Long/Shortを使用。",
-    "checkedAt": "2026-08-08T00:26:07+09:00"
+    "checkedAt": "2026-08-08T01:31:51+09:00"
   },
   "coreSnapshot": {
     "market": {
-      "generatedAt": "2026-08-07T21:27:28+09:00",
-      "asOf": "2026-08-07T21:27:36+09:00",
+      "generatedAt": "2026-08-08T01:10:52+09:00",
+      "asOf": "2026-08-08T01:10:59+09:00",
       "verificationStatus": "verified"
     },
     "ratesBonds": {
@@ -48,8 +51,8 @@
       "status": "ok"
     },
     "events": {
-      "generatedAt": "2026-08-07T22:18:22+09:00",
-      "dataAsOf": "2026-08-07T22:18:22+09:00",
+      "generatedAt": "2026-08-08T01:14:14+09:00",
+      "dataAsOf": "2026-08-08T01:14:14+09:00",
       "status": "ok"
     }
   },
@@ -62,6 +65,6 @@
       "data/events.json"
     ],
     "assessment": "価格方向、日米10年金利差の変化、東京スポット出来高の強弱を中核とし、CFTCは鮮度が十分な場合のみ方向判定へ加える。",
-    "tradersWebFx": "無料ページの基準日・時刻を表示し、オーダー本文は再配信しない。"
+    "tradersWebFx": "無料ページの取得確認、基準日・時刻、最終確認時刻を表示する。注文水準本文は転載せず参照リンクを表示する。"
   }
 }
