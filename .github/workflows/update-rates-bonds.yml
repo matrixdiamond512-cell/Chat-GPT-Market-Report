@@ -1,0 +1,77 @@
+name: Update rates and bonds page
+
+on:
+  workflow_dispatch:
+  schedule:
+    # JST 06:50 on weekdays (previous UTC day 21:50)
+    - cron: "50 21 * * 0-4"
+    # JST 11:50 / 15:50 / 20:50 on weekdays
+    - cron: "50 2 * * 1-5"
+    - cron: "50 6 * * 1-5"
+    - cron: "50 11 * * 1-5"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/update-rates-bonds.yml"
+      - "scripts/build_rates_bonds_json.py"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-rates-bonds-page
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate builder
+        run: python -m py_compile scripts/build_rates_bonds_json.py
+
+      - name: Build rates and bonds JSON
+        run: python scripts/build_rates_bonds_json.py
+
+      - name: Validate generated JSON
+        run: |
+          python -m json.tool data/rates-bonds.json > /dev/null
+          python -m json.tool data/rates-bonds-history.json > /dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          data = json.loads(Path("data/rates-bonds.json").read_text(encoding="utf-8"))
+          rates = [x for x in data.get("rates", []) if x.get("status") == "confirmed" and x.get("value") is not None]
+          print("confirmed rates:", len(rates))
+          print("page status:", data.get("meta", {}).get("status"))
+          print("as of:", data.get("meta", {}).get("asOfDate"))
+          if not rates:
+              raise SystemExit("No confirmed rates were generated; keep the previous published JSON instead.")
+          PY
+
+      - name: Commit verified page data
+        shell: bash
+        run: |
+          if git diff --quiet -- data/rates-bonds.json data/rates-bonds-history.json; then
+            echo "Rates and bonds data is already up to date."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/rates-bonds.json data/rates-bonds-history.json
+          git commit -m "Update rates and bonds data"
+          git pull --rebase
+          git push
