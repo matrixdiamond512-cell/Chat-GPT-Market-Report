@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "scripts/update_tokyo_stock_table_from_sheet.py"
+      - "scripts/export_tokyo_stock_table.py"
       - ".github/workflows/update-tokyo-stock-table.yml"
   schedule:
     # 16:10 JST Monday-Friday, after the Tokyo cash close data is available.
@@ -43,10 +44,13 @@ jobs:
         run: |
           python -m py_compile scripts/archive_stocks_snapshot.py
           python -m py_compile scripts/update_tokyo_stock_table_from_sheet.py
+          python -m py_compile scripts/export_tokyo_stock_table.py
 
-      # On workflow changes this also performs the initial completed-session backfill.
       - name: Update completed Tokyo session only
         run: python scripts/update_tokyo_stock_table_from_sheet.py
+
+      - name: Export independently dated Tokyo table
+        run: python scripts/export_tokyo_stock_table.py
 
       - name: Validate retained U.S. date and Tokyo date
         run: |
@@ -55,25 +59,28 @@ jobs:
           import re
           from pathlib import Path
           data = json.loads(Path('data/stocks.json').read_text(encoding='utf-8'))
+          overlay = json.loads(Path('data/market/tokyo-stock-table.json').read_text(encoding='utf-8'))
           dates = data.get('marketDates') or {}
           date_re = re.compile(r'^\d{4}-\d{2}-\d{2}$')
           if not date_re.fullmatch(str(dates.get('us') or '')):
               raise SystemExit('U.S. market date is missing')
           if not date_re.fullmatch(str(dates.get('japan') or '')):
               raise SystemExit('Tokyo market date is missing')
+          if overlay.get('dataDate') != dates.get('japan'):
+              raise SystemExit('Tokyo overlay date does not match the Tokyo market date')
           print('U.S. market date retained:', dates['us'])
           print('Tokyo market date updated:', dates['japan'])
           PY
 
       - name: Commit Tokyo table and archive
         run: |
-          if git diff --quiet -- data/stocks.json data/nikkei-metrics.json data/history/stocks; then
+          if git diff --quiet -- data/stocks.json data/nikkei-metrics.json data/market/tokyo-stock-table.json data/history/stocks; then
             echo "Tokyo table is already current."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/stocks.json data/nikkei-metrics.json data/history/stocks
+          git add data/stocks.json data/nikkei-metrics.json data/market/tokyo-stock-table.json data/history/stocks
           git commit -m "Update completed Tokyo session and stock archive"
           git pull --rebase
           git push
