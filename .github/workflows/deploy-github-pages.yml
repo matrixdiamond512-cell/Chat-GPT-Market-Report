@@ -3,6 +3,11 @@ name: Rebuild WEB Market Report GitHub Pages
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - "data/github-pages-status.json"
+      - "data/github-pages-build-latest.json"
+      - ".github/pages-inspect-trigger.txt"
+      - ".github/workflows/inspect-github-pages.yml"
   workflow_dispatch:
 
 permissions:
