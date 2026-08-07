@@ -1,74 +1,73 @@
 {
-  "schemaVersion": "2.0.0",
+  "schemaVersion": "2.1.0",
   "pageId": "nikkei225-supply-demand",
   "pageTitle": "日経225需給分析",
-  "generatedAt": "2026-08-08T02:29:00+09:00",
-  "sourceStatus": "構造実装済み・専門データ連携待ち",
+  "generatedAt": "2026-08-08T02:45:39+09:00",
   "spot": {
-    "value": null,
-    "asOfDate": null,
-    "status": "unavailable",
     "sourceName": "株式市場分析データ",
-    "sourceUrl": "data/stocks.json"
+    "sourceUrl": "data/stocks.json",
+    "value": 37529.49,
+    "asOfDate": "2026-08-05",
+    "status": "verified",
+    "fetchedAt": "2026-08-08T02:45:39+09:00"
   },
   "futures": {
-    "price": null,
-    "priceChange": null,
-    "priceChangePercent": null,
-    "volume": null,
-    "volumeChangePercent": null,
-    "openInterest": null,
-    "openInterestChange": null,
-    "miniVolume": null,
-    "miniVolumeChangePercent": null,
-    "miniOpenInterest": null,
-    "miniOpenInterestChange": null,
-    "asOfDate": null,
-    "status": "unavailable",
     "sourceName": "JPX / 大阪取引所 日経225先物",
-    "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/index.html"
+    "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
+    "price": 66130.0,
+    "priceChange": 470.0,
+    "priceChangePercent": 0.7158087115443301,
+    "asOfDate": "2026-08-07",
+    "priceAsOf": "2026-08-08T00:55:00+09:00",
+    "volume": 10403,
+    "openInterest": null,
+    "miniVolume": null,
+    "miniOpenInterest": null,
+    "openInterestChange": null,
+    "miniOpenInterestChange": null,
+    "volumeChangePercent": null,
+    "miniVolumeChangePercent": null,
+    "status": "partial",
+    "fetchedAt": "2026-08-08T02:45:41+09:00",
+    "error": "openInterest列を安全に特定できません"
   },
   "sessions": {
-    "dayChange": null,
-    "dayDriver": null,
-    "nightChange": null,
-    "nightDriver": null,
-    "comment": "東京時間と海外時間を分け、どの時間帯が先物を主導したか確認します。",
-    "asOfDate": null,
-    "status": "unavailable",
     "sourceName": "JPX / 大阪取引所",
-    "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/index.html"
+    "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
+    "comment": "日中とナイトを分けて確認します。",
+    "status": "unavailable",
+    "error": "セッション始値/終値列を安全に特定できるまで自動算出を保留",
+    "fetchedAt": "2026-08-08T02:45:41+09:00"
   },
   "arbitrage": {
-    "buyBalance": null,
-    "buyChange": null,
-    "sellBalance": null,
-    "sellChange": null,
-    "asOfDate": null,
-    "status": "unavailable",
-    "comment": "裁定買い残の増減から、先物高が現物買いへ波及しているかを確認します。前々営業日データとして表示します。",
     "sourceName": "JPX 裁定取引の状況",
-    "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/"
+    "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/",
+    "comment": "裁定買い残の増減から現物への買い波及を確認。前々営業日データとして表示。",
+    "status": "unavailable",
+    "error": "裁定買い残・売り残のラベル付き数値を特定できません",
+    "fetchedAt": "2026-08-08T02:45:44+09:00"
   },
   "options": {
-    "nextSqDate": null,
-    "businessDaysToSq": null,
+    "sourceName": "JPX 日経225オプション",
+    "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/01.html",
+    "comment": "Put/Call・IV・SQ接近を分け、オプションだけで価格目標を断定しません。",
+    "nextSqDate": "2026-08-14",
+    "businessDaysToSq": 4,
     "putCallRatio": null,
     "iv": null,
     "ivChange": null,
-    "asOfDate": null,
-    "status": "unavailable",
-    "comment": "Put/Call・IV・SQ接近を分けて確認し、オプション市場だけで価格目標を断定しません。",
-    "sourceName": "JPX 日経225オプション",
-    "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/01.html"
+    "asOfDate": "2026-08-08",
+    "status": "calculated",
+    "error": "Put/Call・IVはJPX列構造を確認できるまで推測せず空欄",
+    "fetchedAt": "2026-08-08T02:45:44+09:00"
   },
   "participantFlow": {
-    "buyers": [],
-    "sellers": [],
-    "asOfDate": null,
-    "status": "unavailable",
     "sourceName": "JPX 取引参加者別取引高（手口上位一覧）",
-    "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/participant-volume/index.html"
+    "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/participant-volume/",
+    "comment": "手口は最終投資家を直接示すものではありません。",
+    "status": "unavailable",
+    "error": "日経225先物の買い/売り列を安全に特定できません",
+    "fetchedAt": "2026-08-08T02:45:44+09:00"
   },
   "foreignInvestors": {
     "cashNet": null,
@@ -78,53 +77,66 @@
     "nikkeiNote": "ヘッジ・短期売買を確認",
     "topixNote": "大型株全体との整合性を確認",
     "asOfDate": null,
-    "status": "unavailable",
-    "comment": "週次データを当日の主体と断定せず、現物と先物の組み合わせからポジション構造を読みます。",
+    "status": "stale",
+    "comment": "週次データを当日の主体と断定せず、現物と先物の組み合わせを読みます。",
     "sourceName": "JPX 投資部門別売買状況",
-    "sourceUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/index.html"
+    "sourceUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/",
+    "error": "海外投資家の現物・先物差引を安全に特定できません",
+    "fetchedAt": "2026-08-08T02:46:34+09:00"
   },
   "participantOpenInterest": {
-    "buyers": [],
-    "sellers": [],
-    "asOfDate": null,
-    "status": "unavailable",
-    "comment": "上位参加者への集中度と前週からの増減を確認します。",
     "sourceName": "JPX 取引参加者別建玉残高",
-    "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/open-interest/"
+    "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/open-interest/",
+    "comment": "上位参加者への集中度を確認します。",
+    "status": "unavailable",
+    "error": "日経225先物の買い/売り列を安全に特定できません",
+    "fetchedAt": "2026-08-08T02:46:34+09:00"
   },
   "shortSelling": {
-    "ratio": null,
-    "avg5": null,
-    "avg20": null,
-    "asOfDate": null,
-    "status": "unavailable",
-    "comment": "空売り比率は単独で弱気判定せず、5日平均・20日平均との比較で圧力の強弱を見ます。",
     "sourceName": "JPX 空売り集計",
-    "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/"
+    "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/",
+    "comment": "空売り比率は5日・20日平均と比較します。",
+    "status": "unavailable",
+    "error": "空売り比率を安全に特定できません",
+    "fetchedAt": "2026-08-08T02:46:37+09:00"
   },
   "margin": {
-    "buyBalance": null,
-    "sellBalance": null,
-    "ratio": null,
-    "asOfDate": null,
-    "status": "unavailable",
-    "comment": "信用需給は日経225そのものではなく、日本株個人投資家の補助指標として扱います。",
     "sourceName": "JPX 信用取引現在高",
-    "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/margin/03.html"
+    "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/margin/03.html",
+    "comment": "信用需給は日本株個人投資家の補助指標です。",
+    "status": "unavailable",
+    "error": "信用買い残・売り残を安全に特定できません",
+    "fetchedAt": "2026-08-08T02:46:39+09:00"
   },
   "assessment": {
     "overall": "判定保留",
     "shortTerm": "判定待ち",
     "arbitrage": "判定待ち",
-    "options": "判定待ち",
+    "options": "中立（SQ日程のみ）",
     "foreign": "判定待ち",
-    "reason": "日経225先物の価格は市場データ基盤から参照します。建玉・裁定・オプション・投資主体は基準日と更新頻度を分け、取得できるまで推測で総合判定しません。",
-    "comment": "現時点では、先物価格と専門的な需給データを別管理しています。建玉が取得できれば価格×建玉で新規買い・買い戻し・新規売り・手仕舞いを判定し、裁定・オプション・海外投資家の週次データを重ねて総合判断します。日次、前々営業日、週次のデータを同じ鮮度として扱わないことを最優先ルールとします。"
+    "reason": "短期先物=判定待ち、裁定=判定待ち、オプション=中立（SQ日程のみ）、海外投資家=判定待ち。各データの鮮度を分離して判定。",
+    "comment": "価格×建玉を中心に、裁定・オプション・海外投資家を補助線として重ねます。"
   },
   "watchpoints": [
     "先物建玉の増加継続が本物の上昇か確認",
     "裁定買い残が増えるかどうか",
     "SQ接近でオプション主導の振れに注意",
     "海外投資家の週次データで現物買い継続を確認"
-  ]
+  ],
+  "sourceStatus": "2/10項目連携（基準日を個別表示）",
+  "diagnostics": {
+    "policy": "primary-source-first-no-fabrication",
+    "statuses": {
+      "spot": "verified",
+      "futures": "partial",
+      "sessions": "unavailable",
+      "arbitrage": "unavailable",
+      "options": "calculated",
+      "participantFlow": "unavailable",
+      "foreignInvestors": "stale",
+      "participantOpenInterest": "unavailable",
+      "shortSelling": "unavailable",
+      "margin": "unavailable"
+    }
+  }
 }
