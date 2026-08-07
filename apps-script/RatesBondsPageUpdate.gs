@@ -1,8 +1,11 @@
 // 金利・債券市場 専用更新処理
 // MarketReportMenu.gs から呼び出す。
 // GitHub Actions APIを直接呼ばず、トリガーファイルの更新でActionsを起動する。
+// V2: 旧版の同名関数との衝突を避けるため、専用ハンドラ名を使用する。
 
-function runRatesBondsStandaloneNow() {
+var RATES_BONDS_PAGE_UPDATE_VERSION = '2.1.0-trigger-file';
+
+function runRatesBondsPageUpdateNowV2() {
   var config = getMarketReportWebConfigForMenu_();
   var token = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
 
@@ -22,7 +25,7 @@ function runRatesBondsStandaloneNow() {
   );
 
   try {
-    var result = updateRatesBondsTriggerFile_(config, token, branch, triggerPath, requestedAt);
+    var result = updateRatesBondsTriggerFileV2_(config, token, branch, triggerPath, requestedAt);
 
     PropertiesService.getScriptProperties().setProperty(
       'RATES_BONDS_LAST_MANUAL_REQUEST_AT',
@@ -32,6 +35,7 @@ function runRatesBondsStandaloneNow() {
     SpreadsheetApp.getUi().alert(
       '金利・債券市場の更新処理を起動しました。\n' +
       '起動方式: GitHubトリガーファイル更新\n' +
+      'コード版: ' + RATES_BONDS_PAGE_UPDATE_VERSION + '\n' +
       '取得対象: FRED / 財務省 / Bundesbank / U.S. Treasury 等\n' +
       '更新対象: data/rates-bonds.json\n\n' +
       '反映後は「更新状態を確認」で最終更新時刻を確認してください。'
@@ -43,22 +47,25 @@ function runRatesBondsStandaloneNow() {
       branch: branch,
       triggerPath: triggerPath,
       requestedAt: requestedAt,
-      commitSha: result.commitSha || null
+      commitSha: result.commitSha || null,
+      version: RATES_BONDS_PAGE_UPDATE_VERSION
     };
   } catch (error) {
     SpreadsheetApp.getUi().alert(
-      '金利・債券市場の更新に失敗しました。\n\n理由: ' + error.message
+      '金利・債券市場の更新に失敗しました。\n\n' +
+      'コード版: ' + RATES_BONDS_PAGE_UPDATE_VERSION + '\n' +
+      '理由: ' + error.message
     );
-    return { ok: false, queued: false, error: error.message };
+    return { ok: false, queued: false, error: error.message, version: RATES_BONDS_PAGE_UPDATE_VERSION };
   }
 }
 
-function updateRatesBondsTriggerFile_(config, token, branch, triggerPath, requestedAt) {
+function updateRatesBondsTriggerFileV2_(config, token, branch, triggerPath, requestedAt) {
   var baseUrl =
     'https://api.github.com/repos/' +
     encodeURIComponent(config.owner) + '/' +
     encodeURIComponent(config.repo) +
-    '/contents/' + encodeGitHubPathForRatesBonds_(triggerPath);
+    '/contents/' + encodeGitHubPathForRatesBondsV2_(triggerPath);
 
   var headers = {
     Authorization: 'Bearer ' + token,
@@ -89,7 +96,8 @@ function updateRatesBondsTriggerFile_(config, token, branch, triggerPath, reques
   var triggerData = {
     requestedAt: requestedAt,
     requestedBy: 'Google Sheets menu',
-    purpose: 'rates-bonds-manual-update'
+    purpose: 'rates-bonds-manual-update',
+    updaterVersion: RATES_BONDS_PAGE_UPDATE_VERSION
   };
 
   var payload = {
@@ -132,14 +140,14 @@ function updateRatesBondsTriggerFile_(config, token, branch, triggerPath, reques
   };
 }
 
-function encodeGitHubPathForRatesBonds_(path) {
+function encodeGitHubPathForRatesBondsV2_(path) {
   return String(path || '')
     .split('/')
     .map(function(part) { return encodeURIComponent(part); })
     .join('/');
 }
 
-function showRatesBondsUpdateStatus() {
+function showRatesBondsPageUpdateStatusV2() {
   var config = getMarketReportWebConfigForMenu_();
   var branch = config.branch || 'main';
   var url =
@@ -179,6 +187,7 @@ function showRatesBondsUpdateStatus() {
 
     SpreadsheetApp.getUi().alert(
       '金利・債券市場 更新状態\n\n' +
+      'コード版: ' + RATES_BONDS_PAGE_UPDATE_VERSION + '\n' +
       'ページ状態: ' + (meta.status || '取得不能') + '\n' +
       '基準日: ' + asOfDate + '\n' +
       '最終更新: ' + updatedAt + '\n' +
@@ -194,24 +203,28 @@ function showRatesBondsUpdateStatus() {
       updatedAt: meta.updatedAt || data.generatedAt || null,
       confirmedCount: confirmedCount,
       missingData: missing,
-      requestedAt: requestedAt || null
+      requestedAt: requestedAt || null,
+      version: RATES_BONDS_PAGE_UPDATE_VERSION
     };
   } catch (error) {
     SpreadsheetApp.getUi().alert(
-      '金利・債券市場の更新状態を取得できませんでした。\n\n理由: ' + error.message
+      '金利・債券市場の更新状態を取得できませんでした。\n\n' +
+      'コード版: ' + RATES_BONDS_PAGE_UPDATE_VERSION + '\n' +
+      '理由: ' + error.message
     );
-    return { ok: false, error: error.message };
+    return { ok: false, error: error.message, version: RATES_BONDS_PAGE_UPDATE_VERSION };
   }
 }
 
-function showRatesBondsWebPage() {
+function openRatesBondsWebPageV2() {
   var url = 'https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/rates-bonds.html';
   var html = HtmlService.createHtmlOutput(
     '<div style="font-family:sans-serif;padding:18px">' +
       '<p>金利・債券市場ページを開きます。</p>' +
       '<p><a href="' + url + '" target="_blank" rel="noopener">' + url + '</a></p>' +
+      '<p>コード版: ' + RATES_BONDS_PAGE_UPDATE_VERSION + '</p>' +
     '</div>'
-  ).setWidth(560).setHeight(180);
+  ).setWidth(560).setHeight(200);
 
   SpreadsheetApp.getUi().showModalDialog(html, '金利・債券市場');
 }
