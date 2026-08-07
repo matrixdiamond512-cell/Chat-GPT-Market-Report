@@ -2,6 +2,11 @@
  * Decimal values such as 77.29, 15.15, 29.78 and 4.670% must never be
  * interpreted as numbered section headings. A plain numbered heading is
  * valid only when whitespace follows the period, for example "1. 市場概況".
+ *
+ * Also prevent the entire report from being rendered twice when Google Docs
+ * exports the body without recognizable numbered headings. In that fallback
+ * case, the body belongs to the single "本文" section and must not also remain
+ * in the preface.
  */
 parseDocument = function parseDocumentWithoutDecimalHeadings(rawText, fallbackTitle) {
   const lines = String(rawText || "").replace(/\r/g, "").split("\n");
@@ -52,6 +57,15 @@ parseDocument = function parseDocumentWithoutDecimalHeadings(rawText, fallbackTi
   }
 
   if (current) sections.push(current);
-  if (!sections.length) sections.push({ number: "", title: "本文", lines });
+
+  // If no numbered/bracketed section was detected, the old implementation
+  // kept the same lines in both `preface` and `sections`, which displayed the
+  // complete report twice. Move the body into the single fallback section.
+  if (!sections.length) {
+    const bodyLines = preface.slice();
+    preface.length = 0;
+    sections.push({ number: "", title: "本文", lines: bodyLines });
+  }
+
   return { title: documentTitle, preface, sections };
 };
