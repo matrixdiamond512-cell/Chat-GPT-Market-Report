@@ -57,6 +57,10 @@ parseDocument = function parseDocumentWithBracketHeadings(rawText, fallbackTitle
   return { title: documentTitle, preface, sections };
 };
 
+function isRecognizedMarketLabel(label) {
+  return /^(?:Dow|NYダウ|ダウ|Nasdaq(?:総合)?|NASDAQ(?:総合)?|S&P\s*500|Russell\s*2000|Russell2000|日経225(?:現物|先物.*)?|日経平均.*|CME日経225先物.*|日経先物.*|USD\/JPY|USDJPY|ドル円|EUR\/USD|EURUSD|ユーロドル|金.*|ゴールド|WTI原油|原油.*|BTCUSD|BTC\/USD|Bitcoin|ビットコイン|VIX.*|日経VI|米.*債.*|日本.*国債.*|Fear\s*&\s*Greed.*|日経225.*(?:EPS|PER|PBR)|PER|PBR|EPS|25日.*乖離率|200日.*乖離率|値上がり銘柄数|値下がり銘柄数|騰落レシオ|東証プライム.*)$/i.test(String(label || "").trim());
+}
+
 parseMarketLine = function parseMarketLineSafely(line) {
   const compact = String(line || "").trim().replace(/^[-・]\s*/, "");
   const separatorIndex = compact.search(/[：:]/);
@@ -67,10 +71,7 @@ parseMarketLine = function parseMarketLineSafely(line) {
   if (!label || !body) return null;
   if (/^(作成時点|作成日時|対象|注記|注意|出典|補足|参考|理由)$/.test(label)) return null;
   if (/[。！？!?]/.test(label)) return null;
-
-  const recognized = /^(?:Dow|NYダウ|ダウ|Nasdaq(?:総合)?|NASDAQ(?:総合)?|S&P\s*500|Russell\s*2000|Russell2000|日経225(?:現物|先物.*)?|日経平均.*|CME日経225先物.*|日経先物.*|USD\/JPY|USDJPY|ドル円|EUR\/USD|EURUSD|ユーロドル|金.*|ゴールド|WTI原油|原油.*|BTCUSD|BTC\/USD|Bitcoin|ビットコイン|VIX.*|日経VI|米.*債.*|日本.*国債.*|Fear\s*&\s*Greed.*|Crypto\s+Fear\s*&\s*Greed.*|日経225.*(?:EPS|PER|PBR)|PER|PBR|EPS|25日.*乖離率|200日.*乖離率|値上がり銘柄数|値下がり銘柄数|騰落レシオ|東証プライム.*)$/i.test(label);
-
-  if (!recognized && label.length > 30) return null;
+  if (!isRecognizedMarketLabel(label) && label.length > 30) return null;
 
   const firstStop = body.indexOf("。");
   const valueStatus = firstStop >= 0 ? body.slice(0, firstStop).trim() : body;
@@ -97,11 +98,63 @@ function splitMarketValue(valueStatus, note) {
   return result;
 }
 
+/*
+ * DocumentApp.getBody().getText() flattens a native Google Docs table into
+ * one cell per line. Example:
+ *   市場・指標 / 終値・値 / 前日比 / 騰落率・区分
+ *   VIX / 15.15 / -0.66 / -4.17%
+ * Rebuild the original four-column rows so the WEB page never shows orphaned
+ * labels and numbers as unrelated paragraphs.
+ */
+function parseFlattenedDocsMarketTable(lines) {
+  const indexed = lines
+    .map((line, index) => ({ value: String(line || "").trim(), index }))
+    .filter((item) => item.value);
+  const expectedHeader = ["市場・指標", "終値・値", "前日比", "騰落率・区分"];
+
+  let headerStart = -1;
+  for (let i = 0; i <= indexed.length - expectedHeader.length; i += 1) {
+    if (expectedHeader.every((header, offset) => indexed[i + offset].value === header)) {
+      headerStart = i;
+      break;
+    }
+  }
+  if (headerStart < 0) return null;
+
+  const consumedIndexes = new Set();
+  for (let offset = 0; offset < expectedHeader.length; offset += 1) {
+    consumedIndexes.add(indexed[headerStart + offset].index);
+  }
+
+  const rows = [];
+  let cursor = headerStart + expectedHeader.length;
+  while (cursor + 3 < indexed.length) {
+    const label = indexed[cursor].value;
+    if (!isRecognizedMarketLabel(label)) break;
+
+    const rowItems = indexed.slice(cursor, cursor + 4);
+    rows.push(rowItems.map((item) => item.value || "—"));
+    rowItems.forEach((item) => consumedIndexes.add(item.index));
+    cursor += 4;
+  }
+
+  if (!rows.length) return null;
+  return {
+    table: { header: expectedHeader, rows },
+    remainder: lines.filter((line, index) => !consumedIndexes.has(index))
+  };
+}
+
 renderMarketDataSection = function renderMarketDataSectionFourColumns(lines) {
   const markdownTable = parseMarkdownTable(lines);
   if (markdownTable) {
     const remainder = lines.filter((line) => !/^\s*\|.*\|\s*$/.test(line));
     return `${renderMarkdownTable(markdownTable)}${renderRichText(remainder)}`;
+  }
+
+  const flattenedTable = parseFlattenedDocsMarketTable(lines);
+  if (flattenedTable) {
+    return `${renderMarkdownTable(flattenedTable.table)}${renderRichText(flattenedTable.remainder)}`;
   }
 
   const rows = [];
