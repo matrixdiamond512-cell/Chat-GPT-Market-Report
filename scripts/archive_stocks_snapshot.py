@@ -18,6 +18,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 STOCKS_PATH = ROOT / "data" / "stocks.json"
+TOKYO_OVERLAY_PATH = ROOT / "data" / "market" / "tokyo-stock-table.json"
 HISTORY_DIR = ROOT / "data" / "history" / "stocks"
 INDEX_PATH = HISTORY_DIR / "index.json"
 JST = timezone(timedelta(hours=9))
@@ -54,6 +55,30 @@ def infer_market_date(stocks: dict[str, Any], key: str) -> str:
 
 def market_table(stocks: dict[str, Any], key: str) -> dict[str, Any]:
     return ((stocks.get("marketInternals") or {}).get(key) or {})
+
+
+def apply_newer_tokyo_overlay(stocks: dict[str, Any], page_date: str) -> None:
+    try:
+        overlay = json.loads(TOKYO_OVERLAY_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return
+    overlay_snapshot_date = valid_date(overlay.get("snapshotDate"))
+    overlay_data_date = valid_date(overlay.get("dataDate"))
+    current_data_date = infer_market_date(stocks, "japan")
+    table = overlay.get("table")
+    if overlay_snapshot_date != page_date or not overlay_data_date or not isinstance(table, dict):
+        return
+    if current_data_date and overlay_data_date < current_data_date:
+        return
+    if not table.get("rows"):
+        return
+
+    stocks.setdefault("marketInternals", {})["japan"] = copy.deepcopy(table)
+    stocks.setdefault("marketDates", {})["japan"] = overlay_data_date
+    stocks.setdefault("marketUpdatedAt", {})["japan"] = str(
+        overlay.get("fetchedAt") or table.get("updatedAt") or ""
+    )
+    stocks["nikkeiMetricsAsOf"] = overlay_data_date
 
 
 def validate_market(stocks: dict[str, Any], key: str, date_text: str) -> None:
@@ -148,6 +173,7 @@ def archive_snapshot(
         raise RuntimeError("snapshot date is invalid")
 
     stocks = json.loads(stocks_path.read_text(encoding="utf-8"))
+    apply_newer_tokyo_overlay(stocks, page_date)
     market_dates = {
         key: infer_market_date(stocks, key)
         for key in MARKET_KEYS
