@@ -1,9 +1,9 @@
 // USD/JPY需給分析 専用更新処理
 // MarketReportMenu.gs から呼び出す。
 // Apps Script側では重いデータ取得を行わず、GitHubに1回だけトリガーファイルを作成する。
-// GitHub Actions側で既存JSONを集約し、CFTCとTraders Web FX無料ページの基準日時を更新する。
+// GitHub Actions側で既存JSONを集約し、CFTCとTraders Web FX無料ページの主要注文水準を更新する。
 
-var USDJPY_SUPPLY_DEMAND_PAGE_UPDATE_VERSION = '1.0.0-single-put';
+var USDJPY_SUPPLY_DEMAND_PAGE_UPDATE_VERSION = '1.1.0-key-levels';
 
 function runUsdJpySupplyDemandPageUpdateNowV1() {
   var config = getMarketReportWebConfigForMenu_();
@@ -48,10 +48,11 @@ function runUsdJpySupplyDemandPageUpdateNowV1() {
       '起動方式: GitHubトリガーファイルを1回作成\n' +
       'コード版: ' + USDJPY_SUPPLY_DEMAND_PAGE_UPDATE_VERSION + '\n' +
       '中核データ: market/latest.json / rates-bonds.json / usdjpy-volume.json / events.json\n' +
-      '補助更新: CFTC円先物 / Traders Web FX無料ページ基準日時\n' +
+      '補助更新: CFTC円先物\n' +
+      'Traders Web FX: 売り注文 / 買い注文 / ストップ / NYカット主要水準\n' +
       '更新対象: data/usdjpy-supply-demand.json\n\n' +
       'Apps Script側では重い取得処理を行いません。\n' +
-      '反映後は「更新状態を確認」で最終更新時刻を確認してください。'
+      '反映後は「更新状態・注文水準を確認」で取得件数と基準日時を確認してください。'
     );
 
     return {
@@ -88,7 +89,7 @@ function createUsdJpySupplyDemandTriggerFileV1_(config, token, branch, triggerPa
     requestedAt: requestedAt,
     requestedBy: 'Google Sheets menu',
     page: 'usdjpy-supply-demand',
-    mode: 'lightweight-integration-refresh',
+    mode: 'lightweight-integration-and-order-level-refresh',
     version: USDJPY_SUPPLY_DEMAND_PAGE_UPDATE_VERSION
   };
 
@@ -156,17 +157,33 @@ function showUsdJpySupplyDemandPageUpdateStatusV1() {
 
     var data = JSON.parse(response.getContentText());
     var tw = data.tradersWebFx || {};
+    var levels = tw.keyLevels || {};
     var cftc = data.cftc || {};
     var sourceStatus = data.sourceStatus || {};
     var requestedAt = PropertiesService.getScriptProperties().getProperty(
       'USDJPY_SUPPLY_DEMAND_LAST_MANUAL_REQUEST_AT'
     );
 
+    var sellCount = Array.isArray(levels.sellOrders) ? levels.sellOrders.length : 0;
+    var buyCount = Array.isArray(levels.buyOrders) ? levels.buyOrders.length : 0;
+    var stopCount = Array.isArray(levels.stops) ? levels.stops.length : 0;
+    var optionCount = Array.isArray(levels.nyCutOptions) ? levels.nyCutOptions.length : 0;
+    var rowCount = Number(levels.extractedRowCount || 0);
+    var freshnessText = getUsdJpySupplyDemandFreshnessLabelV1_(tw.freshness);
+
     SpreadsheetApp.getUi().alert(
       'USD/JPY需給分析 更新状態\n\n' +
       '最終集約更新: ' + (data.generatedAt || '取得不能') + '\n' +
       'Traders Web FX 基準日時: ' + (tw.sourceUpdatedAt || '取得不能') + '\n' +
+      'Traders Web FX 最終取得確認: ' + (tw.checkedAt || '取得不能') + '\n' +
       'Traders Web FX 状態: ' + (sourceStatus.tradersWebFx || tw.status || '取得不能') + '\n' +
+      '鮮度: ' + freshnessText + '\n' +
+      '基準時点レート: ' + (levels.referenceSpot ? levels.referenceSpot + '円' : '取得不能') + '\n' +
+      '抽出行数: ' + (rowCount || '取得不能') + '\n' +
+      '売り注文: ' + sellCount + '件\n' +
+      '買い注文: ' + buyCount + '件\n' +
+      'ストップ: ' + stopCount + '件\n' +
+      'NYカット: ' + optionCount + '件\n\n' +
       'CFTC基準日: ' + (cftc.asOf || '取得不能') + '\n' +
       'CFTC状態: ' + (sourceStatus.cftc || cftc.status || '取得不能') + '\n' +
       '中核JSON: ' + (sourceStatus.core || '取得不能') + '\n' +
@@ -177,7 +194,15 @@ function showUsdJpySupplyDemandPageUpdateStatusV1() {
       ok: true,
       generatedAt: data.generatedAt || null,
       tradersWebFxAsOf: tw.sourceUpdatedAt || null,
+      tradersWebFxCheckedAt: tw.checkedAt || null,
       tradersWebFxStatus: sourceStatus.tradersWebFx || tw.status || null,
+      tradersWebFxFreshness: tw.freshness || null,
+      referenceSpot: levels.referenceSpot || null,
+      extractedRowCount: rowCount,
+      sellOrderCount: sellCount,
+      buyOrderCount: buyCount,
+      stopCount: stopCount,
+      nyCutOptionCount: optionCount,
       cftcAsOf: cftc.asOf || null,
       cftcStatus: sourceStatus.cftc || cftc.status || null,
       requestedAt: requestedAt || null
@@ -188,6 +213,13 @@ function showUsdJpySupplyDemandPageUpdateStatusV1() {
     );
     return { ok: false, error: error.message };
   }
+}
+
+function getUsdJpySupplyDemandFreshnessLabelV1_(freshness) {
+  if (freshness === 'today') return '当日データ';
+  if (freshness === 'previous-session') return '前営業日データ';
+  if (freshness === 'stale') return '古いデータ・要注意';
+  return '判定不能';
 }
 
 function openUsdJpySupplyDemandWebPageV1() {
