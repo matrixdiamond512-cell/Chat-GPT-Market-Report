@@ -68,8 +68,76 @@ jobs:
             git push
           fi
 
-      - name: Sync Gold_Demand sheets
+      - name: Sync Gold_Demand sheets and record result
+        id: sheets_sync
+        if: always()
+        continue-on-error: true
         env:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-        run: python scripts/write_gold_supply_demand_to_sheets.py
+        shell: bash
+        run: |
+          set +e
+          OUTPUT="$(python scripts/write_gold_supply_demand_to_sheets.py 2>&1)"
+          CODE=$?
+          set -e
+          export SYNC_CODE="$CODE"
+          export SYNC_OUTPUT="$OUTPUT"
+          python - <<'PYCODE'
+          import datetime as dt
+          import json
+          import os
+          from pathlib import Path
+
+          code = int(os.environ.get("SYNC_CODE", "1"))
+          output = os.environ.get("SYNC_OUTPUT", "")
+          lower = output.lower()
+          if "sync skipped" in lower or "persistence skipped" in lower:
+              outcome = "skipped_unconfigured"
+          elif code == 0:
+              outcome = "success"
+          else:
+              outcome = "failed"
+          payload = {
+              "recordedAt": dt.datetime.now(dt.timezone(dt.timedelta(hours=9))).replace(microsecond=0).isoformat(),
+              "outcome": outcome,
+              "exitCode": code,
+              "message": output[-3000:],
+          }
+          path = Path("data/gold-supply-demand-sync-status.json")
+          path.parent.mkdir(parents=True, exist_ok=True)
+          path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          PYCODE
+          printf '%s\n' "$OUTPUT"
+          exit "$CODE"
+
+      - name: Commit Gold_Demand Sheets sync status
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f data/gold-supply-demand-sync-status.json ]; then
+            echo "Gold Sheets sync status file was not created."
+            exit 1
+          fi
+          if git diff --quiet -- data/gold-supply-demand-sync-status.json; then
+            echo "Gold Sheets sync status is already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/gold-supply-demand-sync-status.json
+          git commit -m "Record gold Sheets sync status"
+          git pull --rebase
+          git push
+
+      - name: Fail when configured Gold_Demand Sheets sync failed
+        if: always()
+        run: |
+          python - <<'PYCODE'
+          import json
+          from pathlib import Path
+          payload = json.loads(Path("data/gold-supply-demand-sync-status.json").read_text(encoding="utf-8"))
+          if payload.get("outcome") == "failed":
+              raise SystemExit("Gold_Demand Sheets sync failed: " + str(payload.get("message") or ""))
+          print("Gold_Demand Sheets sync outcome:", payload.get("outcome"))
+          PYCODE
