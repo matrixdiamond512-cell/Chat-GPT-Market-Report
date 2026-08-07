@@ -1,0 +1,45 @@
+name: 08:00 market data health check
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 07:55 JST, Monday-Saturday. This checks the committed daily audit before
+    # the 08:00 report and runs only attempts missed by the primary/fallback paths.
+    - cron: "55 22 * * 0-5"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-data-08-window
+  cancel-in-progress: false
+
+jobs:
+  verify-and-recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Google Sheets dependencies
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
+
+      - name: Verify audit and recover missing attempts
+        env:
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          ACQUISITION_TRIGGER_SOURCE: health_check
+        run: |
+          python scripts/run_market_data_window.py \
+            --slot "08:00" \
+            --times "06:30,07:00,07:20,07:30,07:40,07:45,07:50" \
+            --trigger-source "health_check" \
+            --max-catchup-minutes 120
