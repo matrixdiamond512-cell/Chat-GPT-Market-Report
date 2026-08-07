@@ -25,12 +25,20 @@ def main() -> int:
     market = json.loads(Path(MARKET_JSON).read_text(encoding="utf-8"))
     rows = build_rows(gold, market)
 
-    # Column I (zero-based 8) is the visible status field.
     normalized = []
     for raw in rows:
         row = list(raw)
+        # Column I (zero-based 8) is the visible status field.
         if len(row) > 8:
             row[8] = STATUS_JA.get(str(row[8]), row[8])
+        # A blank China/India premium is not a prior confirmed numeric value.
+        if len(row) > 8 and row[0] == "中国・インド現物需要" and row[2] in (None, ""):
+            row[8] = "取得待ち"
+        # Keep the central-bank reference as a month label, not a Sheets date serial.
+        if len(row) > 5 and row[0] == "中央銀行":
+            period = str(row[5] or "")
+            if len(period) == 7 and period[4] == "-":
+                row[5] = f"{period[:4]}年{int(period[5:7])}月"
         normalized.append(row)
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
