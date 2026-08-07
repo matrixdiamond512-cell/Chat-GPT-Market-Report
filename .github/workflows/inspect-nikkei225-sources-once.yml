@@ -22,7 +22,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m pip install --disable-pip-version-check -r scripts/requirements-nikkei225-supply-demand.txt
-      - run: python scripts/inspect_nikkei225_sources.py
+      - name: Inspect current public JPX source layouts
+        run: python scripts/inspect_nikkei225_sources.py
       - run: python -m json.tool data/nikkei225-source-inspection.json > /dev/null
       - shell: bash
         run: |
