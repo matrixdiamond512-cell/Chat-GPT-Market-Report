@@ -2,14 +2,14 @@
   "schemaVersion": "2.1.0",
   "pageId": "nikkei225-supply-demand",
   "pageTitle": "日経225需給分析",
-  "generatedAt": "2026-08-08T03:05:36+09:00",
+  "generatedAt": "2026-08-08T03:09:28+09:00",
   "spot": {
     "sourceName": "株式市場分析データ",
     "sourceUrl": "data/stocks.json",
     "value": 37529.49,
     "asOfDate": "2026-08-05",
     "status": "verified",
-    "fetchedAt": "2026-08-08T03:04:44+09:00"
+    "fetchedAt": "2026-08-08T03:08:14+09:00"
   },
   "futures": {
     "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -28,7 +28,7 @@
     "volumeChangePercent": null,
     "miniVolumeChangePercent": null,
     "status": "verified",
-    "fetchedAt": "2026-08-08T03:05:34+09:00",
+    "fetchedAt": "2026-08-08T03:09:21+09:00",
     "previousOpenInterest": 192608,
     "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260807open_interest.xlsx"
   },
@@ -38,7 +38,7 @@
     "comment": "日中とナイトを分けて確認します。",
     "status": "unavailable",
     "error": "セッション始値/終値列を安全に特定できるまで自動算出を保留",
-    "fetchedAt": "2026-08-08T03:04:47+09:00"
+    "fetchedAt": "2026-08-08T03:08:17+09:00"
   },
   "arbitrage": {
     "sourceName": "JPX 裁定取引の状況",
@@ -51,7 +51,7 @@
     "sellChange": 2082,
     "buyChange": -36534,
     "status": "verified",
-    "fetchedAt": "2026-08-08T03:05:33+09:00"
+    "fetchedAt": "2026-08-08T03:09:20+09:00"
   },
   "options": {
     "sourceName": "JPX 日経225オプション",
@@ -65,7 +65,7 @@
     "asOfDate": "2026-08-08",
     "status": "calculated",
     "error": "Put/Call・IVはJPX列構造を確認できるまで推測せず空欄",
-    "fetchedAt": "2026-08-08T03:04:49+09:00"
+    "fetchedAt": "2026-08-08T03:08:20+09:00"
   },
   "participantFlow": {
     "sourceName": "JPX 取引参加者別取引高（手口上位一覧）",
@@ -73,22 +73,23 @@
     "comment": "手口は最終投資家を直接示すものではありません。",
     "status": "unavailable",
     "error": "日経225先物の買い/売り列を安全に特定できません",
-    "fetchedAt": "2026-08-08T03:04:50+09:00"
+    "fetchedAt": "2026-08-08T03:08:20+09:00"
   },
   "foreignInvestors": {
-    "cashNet": null,
-    "nikkeiFuturesNet": null,
-    "topixFuturesNet": null,
-    "cashNote": "現物の方向を確認",
-    "nikkeiNote": "ヘッジ・短期売買を確認",
-    "topixNote": "大型株全体との整合性を確認",
-    "asOfDate": null,
-    "status": "stale",
-    "comment": "週次データを当日の主体と断定せず、現物と先物の組み合わせを読みます。",
     "sourceName": "JPX 投資部門別売買状況",
     "sourceUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/",
-    "error": "海外投資家の現物・先物差引を安全に特定できません",
-    "fetchedAt": "2026-08-08T03:05:25+09:00"
+    "cashNote": "東証プライム現物の海外投資家売買（金額ベース）",
+    "nikkeiNote": "日経225先物の海外投資家売買（金額ベース）",
+    "topixNote": "TOPIX先物は商品コード検証後に追加",
+    "comment": "週次の現物と日経225先物を同一期間で比較。日次の売買主体とは断定しません。",
+    "cashNet": -4903.37149,
+    "nikkeiFuturesNet": 1169.61321776,
+    "topixFuturesNet": null,
+    "asOfDate": "2026-07-31",
+    "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000001rg1m-att/stock_val_1_260705.pdf",
+    "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000001ri3p-att/Tousi_DV_W_20260727_20260731.csv",
+    "status": "verified",
+    "fetchedAt": "2026-08-08T03:09:28+09:00"
   },
   "participantOpenInterest": {
     "sourceName": "JPX 取引参加者別建玉残高",
@@ -96,7 +97,7 @@
     "comment": "上位参加者への集中度を確認します。",
     "status": "unavailable",
     "error": "日経225先物の買い/売り列を安全に特定できません",
-    "fetchedAt": "2026-08-08T03:05:25+09:00"
+    "fetchedAt": "2026-08-08T03:09:11+09:00"
   },
   "shortSelling": {
     "sourceName": "JPX 空売り集計",
@@ -109,7 +110,7 @@
     "avg20": null,
     "sampleCount": 5,
     "status": "verified",
-    "fetchedAt": "2026-08-08T03:05:34+09:00"
+    "fetchedAt": "2026-08-08T03:09:20+09:00"
   },
   "margin": {
     "sourceName": "JPX 信用取引現在高",
@@ -123,15 +124,15 @@
     "ratio": 8.507309502146947,
     "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/margin/tvdivq0000001rhv-att/mtgaisan2026073100.pdf",
     "status": "verified",
-    "fetchedAt": "2026-08-08T03:05:36+09:00"
+    "fetchedAt": "2026-08-08T03:09:23+09:00"
   },
   "assessment": {
-    "overall": "やや買い優勢",
+    "overall": "中立",
     "shortTerm": "強気（新規買い）",
     "arbitrage": "やや弱い",
     "options": "中立（SQ日程のみ）",
-    "foreign": "判定待ち",
-    "reason": "短期先物=強気（新規買い）、裁定=やや弱い、オプション=中立（SQ日程のみ）、海外投資家=判定待ち。各データの鮮度を分離して判定。",
+    "foreign": "現物売り・先物買い",
+    "reason": "短期先物=強気（新規買い）、裁定=やや弱い、オプション=中立（SQ日程のみ）、海外投資家=現物売り・先物買い。各データの鮮度を分離して判定。",
     "comment": "価格×建玉を中心に、裁定・オプション・海外投資家を補助線として重ねます。"
   },
   "watchpoints": [
@@ -140,7 +141,7 @@
     "SQ接近でオプション主導の振れに注意",
     "海外投資家の週次データで現物買い継続を確認"
   ],
-  "sourceStatus": "6/10項目連携（基準日を個別表示）",
+  "sourceStatus": "7/10項目連携（基準日を個別表示）",
   "diagnostics": {
     "policy": "primary-source-first-no-fabrication",
     "statuses": {
@@ -150,7 +151,7 @@
       "arbitrage": "verified",
       "options": "calculated",
       "participantFlow": "unavailable",
-      "foreignInvestors": "stale",
+      "foreignInvestors": "verified",
       "participantOpenInterest": "unavailable",
       "shortSelling": "verified",
       "margin": "verified"
@@ -160,6 +161,7 @@
       "JPX arbitrage PDF",
       "JPX short-selling PDF"
     ],
-    "oiParser": "verified current JPX horizontal-block layout"
+    "oiParser": "verified current JPX horizontal-block layout",
+    "foreignParser": "JPX Prime cash value + product 301/investor 60 derivative value"
   }
 }
