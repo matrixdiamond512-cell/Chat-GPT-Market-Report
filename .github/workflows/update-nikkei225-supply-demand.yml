@@ -14,6 +14,7 @@ on:
       - "scripts/enrich_nikkei225_foreign.py"
       - "scripts/enrich_nikkei225_sessions.py"
       - "scripts/enrich_nikkei225_participants.py"
+      - "scripts/enrich_nikkei225_options.py"
       - "scripts/requirements-nikkei225-supply-demand.txt"
       - ".github/workflows/update-nikkei225-supply-demand.yml"
       - ".github/nikkei225-supply-demand-trigger.txt"
@@ -57,6 +58,7 @@ jobs:
           python -m py_compile scripts/enrich_nikkei225_foreign.py
           python -m py_compile scripts/enrich_nikkei225_sessions.py
           python -m py_compile scripts/enrich_nikkei225_participants.py
+          python -m py_compile scripts/enrich_nikkei225_options.py
       - name: Build base Nikkei 225 supply-demand JSON
         run: python scripts/update_nikkei225_supply_demand.py
       - name: Apply verified JPX-format parsers
@@ -71,6 +73,8 @@ jobs:
         run: python scripts/enrich_nikkei225_sessions.py
       - name: Add participant turnover and OI leaders
         run: python scripts/enrich_nikkei225_participants.py
+      - name: Add Nikkei 225 option Put-Call volume
+        run: python scripts/enrich_nikkei225_options.py
       - name: Validate JSON
         run: python -m json.tool data/nikkei225-supply-demand.json > /dev/null
       - name: Show data status
@@ -80,7 +84,7 @@ jobs:
           d=json.load(open('data/nikkei225-supply-demand.json',encoding='utf-8'))
           print(d.get('sourceStatus'))
           print(json.dumps(d.get('diagnostics',{}),ensure_ascii=False,indent=2))
-          for k in ('futures','sessions','arbitrage','participantFlow','foreignInvestors','participantOpenInterest','shortSelling','margin'):
+          for k in ('futures','sessions','arbitrage','options','participantFlow','foreignInvestors','participantOpenInterest','shortSelling','margin'):
               x=d.get(k,{})
               if x.get('error'):
                   print(f"{k}: {x['error']}")
