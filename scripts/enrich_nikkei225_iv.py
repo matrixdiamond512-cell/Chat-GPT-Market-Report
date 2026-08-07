@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Add JPX Nikkei 225 option base volatility from theoretical-price data.
 
-JPX's option theoretical-price files contain both issue-level settlement
-volatility and a base volatility.  This script intentionally exposes the
-base volatility as the single dashboard IV value and records the definition,
-rather than silently choosing one strike's volatility.
+Current JPX format (Apr. 13 2026 onward) is a 17-column record beginning with
+Product Code.  Nikkei 225 Options use NK225E.  The single dashboard IV is the
+JPX Base Volatility field, explicitly labelled as such; issue-level put/call
+settlement volatilities are kept separate and are not averaged into a made-up
+market IV.
 """
 from __future__ import annotations
 import csv,json,re
@@ -17,17 +18,14 @@ import update_nikkei225_supply_demand as u
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'data/nikkei225-supply-demand.json'
 PAGE='https://www.jpx.co.jp/markets/derivatives/option-price/'
-GUIDE='https://www.jpx.co.jp/markets/derivatives/option-price/01.html'
 BASE='https://www.jpx.co.jp'
 
 
 def walk_strings(x):
     if isinstance(x,dict):
-        for v in x.values():
-            yield from walk_strings(v)
+        for v in x.values(): yield from walk_strings(v)
     elif isinstance(x,list):
-        for v in x:
-            yield from walk_strings(v)
+        for v in x: yield from walk_strings(v)
     elif isinstance(x,str):
         yield x
 
@@ -38,15 +36,11 @@ def discover_csvs():
     found=[]
     for a in soup.find_all('a',href=True):
         z=urljoin(PAGE,a['href'])
-        if re.search(r'\.csv(?:\?|$)',z,re.I):
-            found.append(z)
-    # JPX list pages often load current files from JSON endpoints embedded in HTML.
+        if re.search(r'\.csv(?:\?|$)',z,re.I): found.append(z)
     json_urls=[]
     for m in re.finditer(r'(?P<p>/automation/[^"\'<>\s]+\.json)',html,re.I):
         json_urls.append(urljoin(BASE,m.group('p')))
-    seen=set()
-    queue=list(dict.fromkeys(json_urls))
-    depth=0
+    seen=set(); queue=list(dict.fromkeys(json_urls)); depth=0
     while queue and depth<4:
         nextq=[]
         for ju in queue:
@@ -58,12 +52,7 @@ def discover_csvs():
                 if re.search(r'\.csv(?:\?|$)',s,re.I): found.append(urljoin(BASE,s))
                 elif re.search(r'\.json(?:\?|$)',s,re.I): nextq.append(urljoin(BASE,s))
         queue=nextq; depth+=1
-    # Never use the header sample itself as market data.
-    out=[]
-    for z in dict.fromkeys(found):
-        if z.lower().endswith('/head.csv'): continue
-        out.append(z)
-    return out
+    return [z for z in dict.fromkeys(found) if not z.lower().endswith('/head.csv')]
 
 
 def date_score(url):
@@ -80,45 +69,56 @@ def to_pct(v):
 def parse_file(url):
     text=u.decode(u.get(url).content)
     rows=list(csv.reader(text.splitlines()))
-    if not rows: raise ValueError('empty theoretical-price csv')
-    # JPX guide order from Apr. 13 2026:
-    # underlying/index name, contract month, issue code, premium close,
-    # theoretical price, settlement-calculation volatility, underlying close,
-    # base volatility.
-    best=None
+    candidates=[]
     for r in rows:
-        if len(r)<8: continue
-        name=u.txt(r[0])
-        if not re.search(r'(日経\s*225|NIKKEI\s*225|日経平均)',name,re.I): continue
-        basev=to_pct(r[7]); issuev=to_pct(r[5]); underlying=u.n(r[6]); month=u.txt(r[1]); code=u.txt(r[2])
-        if basev is None: continue
+        # JPX current record:
+        # 0 Product Code, 1 Product Type, 2 Contract Month, 3 Strike Price,
+        # 4 Reserve, 5 Put Issue Code, 6 Put Close, 7 Reserve,
+        # 8 Put Theo, 9 Put Vol, 10 Call Issue Code, 11 Call Close,
+        # 12 Reserve, 13 Call Theo, 14 Call Vol,
+        # 15 Underlying Close, 16 Base Volatility.
+        if len(r)<17 or u.txt(r[0]).upper()!='NK225E':
+            continue
+        month=u.txt(r[2]); strike=u.n(r[3]); putv=to_pct(r[9]); callv=to_pct(r[14])
+        underlying=u.n(r[15]); basev=to_pct(r[16])
+        if basev is None:
+            continue
         key=re.sub(r'\D','',month)
-        item={'underlyingName':name,'contractMonth':month,'issueCode':code,'baseVolatility':basev,'settlementVolatility':issuev,'underlyingClose':underlying}
-        if best is None or (key and key < best[0]): best=(key,item)
-    if not best: raise ValueError('Nikkei 225 base volatility row not found')
-    return best[1]
+        candidates.append((key,{
+            'productCode':'NK225E','contractMonth':month,'strikePrice':strike,
+            'putSettlementVolatility':putv,'callSettlementVolatility':callv,
+            'underlyingClose':underlying,'baseVolatility':basev
+        }))
+    if not candidates:
+        raise ValueError('NK225E 17-column base-volatility row not found')
+    # nearest listed contract first; base volatility is a product-level reference
+    # repeated across strikes, so one row is sufficient once contract is fixed.
+    candidates.sort(key=lambda x:x[0] or '99999999')
+    return candidates[0][1]
 
 
 def main():
     d=json.loads(OUT.read_text(encoding='utf-8')); prev=d.get('options') or {}
     out=dict(prev)
     out.update({'sourceName':'JPX 日経225オプション / オプション理論価格等情報','sourceUrl':PAGE})
+    files=[]
     try:
-        files=discover_csvs()
+        files=sorted(discover_csvs(),key=date_score,reverse=True)
         if not files: raise ValueError('JPX option-price data CSV was not discovered')
-        files=sorted(files,key=date_score,reverse=True)
         last=None
-        for url in files[:12]:
+        for url in files[:16]:
             try:
                 x=parse_file(url); last=(url,x); break
             except Exception:
                 continue
-        if not last: raise ValueError('latest JPX theoretical-price CSVs had no Nikkei 225 base-volatility row')
+        if not last:
+            raise ValueError('latest JPX theoretical-price CSVs had no NK225E current-format row')
         url,x=last
         out['iv']=x['baseVolatility']
-        out['ivDefinition']='JPX基準ボラティリティ（単一ダッシュボード値として採用）'
+        out['ivDefinition']='JPX基準ボラティリティ（NK225E・期近限月）'
         out['baseVolatility']=x['baseVolatility']
-        out['referenceSettlementVolatility']=x['settlementVolatility']
+        out['referencePutSettlementVolatility']=x['putSettlementVolatility']
+        out['referenceCallSettlementVolatility']=x['callSettlementVolatility']
         out['ivContractMonth']=x['contractMonth']
         out['ivUnderlyingClose']=x['underlyingClose']
         out['ivStatus']='verified'
@@ -127,18 +127,16 @@ def main():
         if ds:
             try: out['ivAsOfDate']=datetime.strptime(ds,'%Y%m%d').date().isoformat()
             except Exception: pass
-        out['fetchedAt']=u.now()
-        # Keep Put/Call status independent; remove only the old IV-specific reason.
-        if out.get('ivReason'): out.pop('ivReason',None)
+        out['fetchedAt']=u.now(); out.pop('ivReason',None)
     except Exception as exc:
         out['ivStatus']='unavailable'
         out['ivReason']=f'JPX基準ボラティリティ取得失敗: {type(exc).__name__}: {exc}'
+        out['ivCandidateFiles']=files[:8]
         out['fetchedAt']=u.now()
     d['options']=out
-    d.setdefault('diagnostics',{})['ivParser']='JPX option-price dynamic JSON/CSV discovery; single IV = JPX base volatility, not arbitrary strike IV'
+    d.setdefault('diagnostics',{})['ivParser']='JPX current 17-column theoretical-price CSV; NK225E; dashboard IV = Base Volatility'
     d['generatedAt']=u.now()
     OUT.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-    print(json.dumps({'iv':out.get('iv'),'ivStatus':out.get('ivStatus'),'ivDefinition':out.get('ivDefinition'),'ivReason':out.get('ivReason')},ensure_ascii=False))
+    print(json.dumps({'iv':out.get('iv'),'ivStatus':out.get('ivStatus'),'ivDefinition':out.get('ivDefinition'),'ivReason':out.get('ivReason'),'ivSourceFileUrl':out.get('ivSourceFileUrl')},ensure_ascii=False))
 
-if __name__=='__main__':
-    main()
+if __name__=='__main__': main()
