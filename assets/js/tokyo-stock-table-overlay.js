@@ -1,7 +1,8 @@
 (() => {
   "use strict";
 
-  const DATA_URL = "data/market/tokyo-stock-table.json";
+  const CURRENT_URL = "data/market/tokyo-stock-table.json";
+  const INDEX_URL = "data/history/stocks/index.json";
   const requestedDate = new URLSearchParams(location.search).get("date") || "";
   let payload = null;
   let applying = false;
@@ -20,6 +21,21 @@
   const displayDate = value => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ""))
     ? String(value).replace(/-/g, "/")
     : "取得不能";
+
+  async function loadJson(url) {
+    const response = await fetch(`${url}${url.includes("?") ? "&" : "?"}ts=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`${url} HTTP ${response.status}`);
+    return response.json();
+  }
+
+  async function resolvePayload() {
+    if (!requestedDate) return loadJson(CURRENT_URL);
+    const index = await loadJson(INDEX_URL);
+    const entry = (Array.isArray(index?.dates) ? index.dates : [])
+      .find(item => item?.date === requestedDate);
+    if (!entry?.japanOverlay) return null;
+    return loadJson(entry.japanOverlay);
+  }
 
   function eligible() {
     if (!payload?.table || !payload?.dataDate) return false;
@@ -82,9 +98,7 @@
 
   async function start() {
     try {
-      const response = await fetch(`${DATA_URL}?ts=${Date.now()}`, { cache: "no-store" });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      payload = await response.json();
+      payload = await resolvePayload();
       if (!eligible()) return;
       apply();
       const root = document.querySelector("[data-stocks-root]") || document.body;
