@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Run a resilient multi-attempt market-data acquisition window.
 
-This script is used by the 07:00 primary and fallback workflows.  A single
+This script is used by the 08:00 primary and fallback workflows. A single
 runner stays alive across the requested Japan-time schedule, records every
 attempt in a committed daily audit log, writes the best staged data to Google
 Sheets when configured, and commits each attempt before waiting for the next
-one.  Separate primary/fallback workflows share a concurrency group, so a
+one. Separate primary/fallback workflows share a concurrency group, so a
 fallback run waits for the primary and then exits after confirming the audit.
 """
 
@@ -204,7 +204,7 @@ def perform_attempt(slot: str, scheduled_time: str, trigger_source: str, audit: 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--slot", required=True, choices=("07:00", "12:00", "16:00", "21:00"))
+    parser.add_argument("--slot", required=True, choices=("08:00", "12:00", "16:00", "21:00"))
     parser.add_argument("--times", required=True, type=parse_times)
     parser.add_argument("--trigger-source", default=os.environ.get("ACQUISITION_TRIGGER_SOURCE", "window"))
     parser.add_argument("--max-catchup-minutes", type=int, default=90)
