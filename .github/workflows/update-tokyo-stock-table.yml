@@ -44,6 +44,7 @@ jobs:
           python -m py_compile scripts/archive_stocks_snapshot.py
           python -m py_compile scripts/update_tokyo_stock_table_from_sheet.py
 
+      # On workflow changes this also performs the initial completed-session backfill.
       - name: Update completed Tokyo session only
         run: python scripts/update_tokyo_stock_table_from_sheet.py
 
