@@ -20,17 +20,37 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Read Pages configuration and latest build
+
+      - name: Poll Pages configuration and latest build
         env:
           GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
           mkdir -p data
-          gh api -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2026-03-10' \
-            "repos/${GITHUB_REPOSITORY}/pages" > data/github-pages-status.json
-          gh api -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2026-03-10' \
-            "repos/${GITHUB_REPOSITORY}/pages/builds/latest" > data/github-pages-build-latest.json || true
+          for i in $(seq 1 18); do
+            gh api -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2026-03-10' \
+              "repos/${GITHUB_REPOSITORY}/pages" > data/github-pages-status.json
+            gh api -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2026-03-10' \
+              "repos/${GITHUB_REPOSITORY}/pages/builds/latest" > data/github-pages-build-latest.json || true
+            STATUS=$(python - <<'PY'
+          import json
+          try:
+              d=json.load(open('data/github-pages-build-latest.json'))
+              print(d.get('status','unknown'))
+          except Exception:
+              print('unknown')
+          PY
+            )
+            echo "Pages build status: $STATUS (attempt $i/18)"
+            if [ "$STATUS" != "building" ] && [ "$STATUS" != "queued" ] && [ "$STATUS" != "unknown" ]; then
+              break
+            fi
+            sleep 10
+          done
           python -m json.tool data/github-pages-status.json > /dev/null
-      - name: Commit diagnostic
+          python -m json.tool data/github-pages-build-latest.json > /dev/null || true
+
+      - name: Commit final diagnostic
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
