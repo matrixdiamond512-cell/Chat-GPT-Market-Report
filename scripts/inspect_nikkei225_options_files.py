@@ -16,8 +16,9 @@ for key,url in files.items():
     selected=[]
     for i,r in enumerate(rows):
         blob=' | '.join(u.txt(x) for x in r)
-        if i<8 or re.search(r'Nikkei|日経|NK225|225',blob,re.I):
+        keep=(key=='summary') or i<3 or re.search(r'NIKKEI 225|NK225|日経225|日経２２５',blob,re.I)
+        if keep:
             selected.append({'row':i+1,'cells':[[j,u.txt(v)] for j,v in enumerate(r) if u.txt(v)]})
-            if len(selected)>=300:break
+            if len(selected)>=500:break
     out['files'][key]={'url':url,'rowCount':len(rows),'rows':selected}
 OUT.write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf-8');print(OUT)
