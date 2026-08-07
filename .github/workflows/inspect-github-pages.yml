@@ -1,0 +1,41 @@
+name: Inspect GitHub Pages configuration
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/pages-inspect-trigger.txt"
+      - ".github/workflows/inspect-github-pages.yml"
+
+permissions:
+  contents: write
+  pages: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Read Pages configuration and latest build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p data
+          gh api -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2026-03-10' \
+            "repos/${GITHUB_REPOSITORY}/pages" > data/github-pages-status.json
+          gh api -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2026-03-10' \
+            "repos/${GITHUB_REPOSITORY}/pages/builds/latest" > data/github-pages-build-latest.json || true
+          python -m json.tool data/github-pages-status.json > /dev/null
+      - name: Commit diagnostic
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/github-pages-status.json data/github-pages-build-latest.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m 'Update GitHub Pages diagnostic'
+          git pull --rebase origin main
+          git push origin main
