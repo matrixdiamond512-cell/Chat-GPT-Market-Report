@@ -1,0 +1,66 @@
+name: Update Stock Session Analysis
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Session to update
+        required: true
+        default: auto
+        type: choice
+        options:
+          - auto
+          - tokyo
+          - us
+          - both
+  schedule:
+    # Tokyo open: 08:55, 09:05, 09:15 JST on weekdays.
+    - cron: '55 23 * * 0-4'
+    - cron: '5,15 0 * * 1-5'
+    # U.S. premarket: 20:30, 20:45, 20:55 JST on weekdays.
+    - cron: '30,45,55 11 * * 1-5'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/update-stock-sessions.yml'
+      - 'scripts/update_stock_sessions.py'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-stock-sessions
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Update session data
+        env:
+          STOCK_SESSION_MODE: ${{ github.event.inputs.mode || 'auto' }}
+        run: python scripts/update_stock_sessions.py --mode "$STOCK_SESSION_MODE"
+      - name: Validate JSON and Python
+        run: |
+          python -m py_compile scripts/update_stock_sessions.py
+          python -m json.tool data/stock-sessions.json >/dev/null
+          python -m json.tool data/stocks.json >/dev/null
+      - name: Commit updated data
+        run: |
+          if git diff --quiet -- data/stock-sessions.json data/stocks.json; then
+            echo "No data changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/stock-sessions.json data/stocks.json
+          git commit -m "Update stock session analysis"
+          git pull --rebase origin main
+          git push origin HEAD:main
