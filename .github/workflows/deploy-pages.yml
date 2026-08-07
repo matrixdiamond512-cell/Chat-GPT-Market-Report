@@ -72,6 +72,18 @@ jobs:
               f'<script src="assets/js/stock-sector-decliners.js?v={sha}"></script>',
               stocks_text,
           )
+          stocks_text = re.sub(
+              r'\s*<script src="assets/js/tokyo-stock-table-overlay\.js\?v=[^"]+"></script>',
+              '',
+              stocks_text,
+          )
+          overlay_tag = f'<script src="assets/js/tokyo-stock-table-overlay.js?v={sha}"></script>'
+          site_marker = '<script src="assets/js/site-common.js'
+          site_pos = stocks_text.find(site_marker)
+          if site_pos >= 0:
+              stocks_text = stocks_text[:site_pos] + overlay_tag + '\n' + stocks_text[site_pos:]
+          else:
+              stocks_text = stocks_text.replace('</body>', overlay_tag + '\n</body>')
           stocks_path.write_text(stocks_text, encoding='utf-8')
           PY
 
