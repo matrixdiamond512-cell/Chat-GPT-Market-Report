@@ -54,8 +54,8 @@ function createMarketReportWebMenu_() {
     .addToUi();
 
   ui.createMenu('USD/JPY需給分析')
-    .addItem('USD/JPY需給分析を今すぐ更新', 'runUsdJpySupplyDemandPageUpdateNowV1')
-    .addItem('更新状態を確認', 'showUsdJpySupplyDemandPageUpdateStatusV1')
+    .addItem('USD/JPY需給分析を今すぐ更新（注文水準含む）', 'runUsdJpySupplyDemandPageUpdateNowV1')
+    .addItem('更新状態・注文水準を確認', 'showUsdJpySupplyDemandPageUpdateStatusV1')
     .addSeparator()
     .addItem('USD/JPY需給分析ページを開く', 'openUsdJpySupplyDemandWebPageV1')
     .addToUi();
