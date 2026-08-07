@@ -1,0 +1,52 @@
+name: 08:00 market data primary window
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 06:28 JST, Monday-Saturday. The first report-specific snapshot runs at 06:30,
+    # after the OSE night session has closed and more closing values have settled.
+    # Later attempts run at 07:00, 07:20, 07:30, 07:40, 07:45, and 07:50.
+    - cron: "28 21 * * 0-5"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-data-08-window
+  cancel-in-progress: false
+
+jobs:
+  acquire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 105
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Google Sheets dependencies
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
+
+      - name: Validate acquisition programs
+        run: |
+          python -m py_compile scripts/fetch_market_data.py
+          python -m py_compile scripts/run_market_data_acquisition.py
+          python -m py_compile scripts/run_market_data_window.py
+
+      - name: Run the full 08:00 acquisition window
+        env:
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          ACQUISITION_TRIGGER_SOURCE: primary_window
+        run: |
+          python scripts/run_market_data_window.py \
+            --slot "08:00" \
+            --times "06:30,07:00,07:20,07:30,07:40,07:45,07:50" \
+            --trigger-source "primary_window" \
+            --max-catchup-minutes 120
