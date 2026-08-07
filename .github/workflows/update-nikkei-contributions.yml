@@ -1,0 +1,93 @@
+name: Update Nikkei 225 contributions
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "10 7 * * 1-5" # 16:10 JST, Monday-Friday
+  push:
+    branches: [main]
+    paths:
+      - "scripts/fetch_nikkei_contributions.py"
+      - ".github/workflows/update-nikkei-contributions.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-nikkei-contributions
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check requests beautifulsoup4 gspread google-auth
+
+      - name: Fetch and sync Nikkei contribution ranking
+        env:
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python scripts/fetch_nikkei_contributions.py
+
+      - name: Validate contribution data
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(Path('data/nikkei-contributions.json').read_text(encoding='utf-8'))
+          if payload.get('status') != 'verified':
+              raise SystemExit('nikkei-contributions.json is not verified')
+          top = payload.get('top') or []
+          bottom = payload.get('bottom') or []
+          if len(top) != 5 or len(bottom) != 5:
+              raise SystemExit('contribution ranking must contain 5 top and 5 bottom rows')
+          top_codes = {str(x.get('code') or '') for x in top}
+          bottom_codes = {str(x.get('code') or '') for x in bottom}
+          if '' in top_codes or '' in bottom_codes:
+              raise SystemExit('missing stock code')
+          dup = top_codes & bottom_codes
+          if dup:
+              raise SystemExit('duplicate codes across top/bottom: ' + ','.join(sorted(dup)))
+          if not all(float(x['contribution']) > 0 for x in top):
+              raise SystemExit('top contribution contains non-positive value')
+          if not all(float(x['contribution']) < 0 for x in bottom):
+              raise SystemExit('bottom contribution contains non-negative value')
+
+          stocks = json.loads(Path('data/stocks.json').read_text(encoding='utf-8'))
+          jp = ((stocks.get('contributions') or {}).get('japan') or {})
+          if jp.get('status') != 'verified' or jp.get('asOf') != payload.get('asOf'):
+              raise SystemExit('data/stocks.json contribution block is not synced')
+          print('Verified Nikkei contributions for', payload.get('asOf'))
+          PY
+
+      - name: Save stock-analysis history snapshot
+        run: |
+          if [ -f scripts/snapshot_stocks_history.py ]; then
+            python scripts/snapshot_stocks_history.py
+          fi
+
+      - name: Commit verified data
+        run: |
+          git add data/nikkei-contributions.json data/stocks.json data/history/stocks 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "Contribution data is already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update verified Nikkei 225 contributions"
+          git pull --rebase
+          git push
