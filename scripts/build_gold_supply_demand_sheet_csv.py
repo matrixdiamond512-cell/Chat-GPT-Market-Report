@@ -38,7 +38,7 @@ def main() -> int:
         if len(row) > 5 and row[0] == "中央銀行":
             period = str(row[5] or "")
             if len(period) == 7 and period[4] == "-":
-                row[5] = f"{period[:4]}年{int(period[5:7])}月"
+                row[5] = f"{period[:4]}年{int(period[5:7])}月基準"
         normalized.append(row)
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
