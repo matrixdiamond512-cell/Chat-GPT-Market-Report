@@ -7,8 +7,8 @@ on:
     paths:
       - "data/market/latest.json"
       - "scripts/update_gold_supply_demand.py"
+      - "scripts/build_gold_supply_demand_sheet_csv.py"
       - "scripts/write_gold_supply_demand_to_sheets.py"
-      - "scripts/write_gold_supply_demand_to_sheets_v2.py"
       - "scripts/requirements-gold-supply-demand.txt"
       - ".github/workflows/update-gold-supply-demand.yml"
   schedule:
@@ -23,13 +23,13 @@ permissions:
   contents: write
 
 concurrency:
-  group: update-gold-supply-demand-v2
+  group: update-gold-supply-demand-csv-v3
   cancel-in-progress: false
 
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,98 +48,38 @@ jobs:
         run: |
           python -m py_compile scripts/update_gold_supply_demand.py
           python -m py_compile scripts/write_gold_supply_demand_to_sheets.py
-          python -m py_compile scripts/write_gold_supply_demand_to_sheets_v2.py
+          python -m py_compile scripts/build_gold_supply_demand_sheet_csv.py
 
       - name: Build gold supply-demand JSON
         run: python scripts/update_gold_supply_demand.py
 
-      - name: Validate JSON
-        run: python -m json.tool data/gold-supply-demand.json > /dev/null
+      - name: Build Gold_Demand CSV
+        run: python scripts/build_gold_supply_demand_sheet_csv.py
 
-      - name: Commit gold data
-        shell: bash
+      - name: Validate outputs
         run: |
-          if git diff --quiet -- data/gold-supply-demand.json; then
-            echo "Gold supply-demand JSON is already up to date."
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add data/gold-supply-demand.json
-            git commit -m "Update gold supply-demand data"
-            git pull --rebase
-            git push
-          fi
-
-      - name: Sync Gold_Demand sheets and record result
-        id: sheets_sync
-        if: always()
-        continue-on-error: true
-        env:
-          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-        shell: bash
-        run: |
-          set +e
-          OUTPUT="$(python scripts/write_gold_supply_demand_to_sheets_v2.py 2>&1)"
-          CODE=$?
-          set -e
-          export SYNC_CODE="$CODE"
-          export SYNC_OUTPUT="$OUTPUT"
+          python -m json.tool data/gold-supply-demand.json > /dev/null
+          test -s data/gold-supply-demand-sheet.csv
           python - <<'PYCODE'
-          import datetime as dt
-          import json
-          import os
+          import csv
           from pathlib import Path
-
-          code = int(os.environ.get("SYNC_CODE", "1"))
-          output = os.environ.get("SYNC_OUTPUT", "")
-          lower = output.lower()
-          if "sync skipped" in lower or "persistence skipped" in lower:
-              outcome = "skipped_unconfigured"
-          elif code == 0:
-              outcome = "success"
-          else:
-              outcome = "failed"
-          payload = {
-              "recordedAt": dt.datetime.now(dt.timezone(dt.timedelta(hours=9))).replace(microsecond=0).isoformat(),
-              "outcome": outcome,
-              "exitCode": code,
-              "message": output[-3000:],
-          }
-          path = Path("data/gold-supply-demand-sync-status.json")
-          path.parent.mkdir(parents=True, exist_ok=True)
-          path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+          with Path('data/gold-supply-demand-sheet.csv').open(encoding='utf-8-sig', newline='') as f:
+              rows = list(csv.reader(f))
+          if not rows or len(rows[0]) != 12:
+              raise SystemExit('Gold_Demand CSV must have exactly 12 columns')
+          print('Gold_Demand CSV rows:', len(rows), 'columns:', len(rows[0]))
           PYCODE
-          printf '%s\n' "$OUTPUT"
-          exit "$CODE"
 
-      - name: Commit Gold_Demand Sheets sync status
-        if: always()
+      - name: Commit gold data and sheet CSV
         shell: bash
         run: |
-          if [ ! -f data/gold-supply-demand-sync-status.json ]; then
-            echo "Gold Sheets sync status file was not created."
-            exit 1
-          fi
-          if git diff --quiet -- data/gold-supply-demand-sync-status.json; then
-            echo "Gold Sheets sync status is already up to date."
+          if git diff --quiet -- data/gold-supply-demand.json data/gold-supply-demand-sheet.csv; then
+            echo "Gold supply-demand outputs are already up to date."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/gold-supply-demand-sync-status.json
-          git commit -m "Record gold Sheets sync status"
+          git add data/gold-supply-demand.json data/gold-supply-demand-sheet.csv
+          git commit -m "Update gold supply-demand data and sheet CSV"
           git pull --rebase
           git push
-
-      - name: Fail when configured Gold_Demand Sheets sync failed
-        if: always()
-        run: |
-          python - <<'PYCODE'
-          import json
-          from pathlib import Path
-          payload = json.loads(Path("data/gold-supply-demand-sync-status.json").read_text(encoding="utf-8"))
-          if payload.get("outcome") == "failed":
-              raise SystemExit("Gold_Demand Sheets sync failed: " + str(payload.get("message") or ""))
-          print("Gold_Demand Sheets sync outcome:", payload.get("outcome"))
-          PYCODE
