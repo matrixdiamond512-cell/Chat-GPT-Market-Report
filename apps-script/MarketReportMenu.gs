@@ -59,10 +59,10 @@ function createMarketReportWebMenu_() {
     .addToUi();
 
   ui.createMenu('金利・債券市場')
-    .addItem('金利・債券市場を今すぐ更新', 'runRatesBondsStandaloneNow')
-    .addItem('更新状態を確認', 'showRatesBondsUpdateStatus')
+    .addItem('金利・債券市場を今すぐ更新', 'runRatesBondsPageUpdateNowV2')
+    .addItem('更新状態を確認', 'showRatesBondsPageUpdateStatusV2')
     .addSeparator()
-    .addItem('金利・債券市場ページを開く', 'showRatesBondsWebPage')
+    .addItem('金利・債券市場ページを開く', 'openRatesBondsWebPageV2')
     .addToUi();
 
   ui.createMenu('株式市場分析')
