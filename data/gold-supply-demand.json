@@ -2,7 +2,7 @@
   "schemaVersion": "2.0.0",
   "pageTitle": "ゴールド需給分析",
   "subtitle": "COMEX先物・投機筋・ETF・中国/インド現物需要から総合判定",
-  "generatedAt": "2026-08-08T02:22:12+09:00",
+  "generatedAt": "2026-08-08T08:51:23+09:00",
   "comex": {
     "status": "stale",
     "asOfDate": "2026-08-06",
@@ -19,16 +19,16 @@
   },
   "cftc": {
     "status": "verified",
-    "asOfDate": "2026-07-28",
-    "managedMoneyLong": 135093,
-    "managedMoneyShort": 15298,
-    "managedMoneyNet": 119795,
-    "managedMoneyNetChange": -5036,
-    "openInterest": 384603,
-    "judgement": "投機筋の売り増加",
+    "asOfDate": "2026-08-04",
+    "managedMoneyLong": 139809,
+    "managedMoneyShort": 9043,
+    "managedMoneyNet": 130766,
+    "managedMoneyNetChange": 10971,
+    "openInterest": 371551,
+    "judgement": "投機筋の買い増加",
     "sourceName": "CFTC Disaggregated COT - Futures Only",
     "sourceUrl": "https://publicreporting.cftc.gov/Commitments-of-Traders/Disaggregated-Futures-Only/72hh-3qpy",
-    "fetchedAt": "2026-08-08T02:22:58+09:00"
+    "fetchedAt": "2026-08-08T08:52:09+09:00"
   },
   "etf": {
     "gld": {
@@ -38,16 +38,16 @@
       "changeTonnes": 0.57000000000005,
       "sourceName": "SPDR Gold Shares Historical Archive",
       "sourceUrl": "https://www.spdrgoldshares.com/usa/gld/",
-      "fetchedAt": "2026-08-08T02:22:59+09:00"
+      "fetchedAt": "2026-08-08T08:52:09+09:00"
     },
     "iau": {
       "status": "verified",
-      "asOfDate": "2026-08-06",
-      "tonnes": 459.01,
-      "changeTonnes": -2.8700000000000045,
+      "asOfDate": "2026-08-07",
+      "tonnes": 457.89,
+      "changeTonnes": -1.1200000000000045,
       "sourceName": "iShares Gold Trust",
       "sourceUrl": "https://www.ishares.com/us/products/239561/ishares-gold-trust-fund",
-      "fetchedAt": "2026-08-08T02:22:59+09:00"
+      "fetchedAt": "2026-08-08T08:52:10+09:00"
     },
     "global": {
       "status": "unavailable",
@@ -87,13 +87,13 @@
   "environment": {
     "realYield10y": {
       "status": "verified",
-      "asOfDate": "2026-08-05",
-      "value": 2.41,
-      "change": 0.010000000000000231,
+      "asOfDate": "2026-08-06",
+      "value": 2.43,
+      "change": 0.020000000000000018,
       "sourceName": "FRED DFII10",
       "sourceUrl": "https://fred.stlouisfed.org/series/DFII10",
       "label": "米10年実質金利",
-      "fetchedAt": "2026-08-08T02:22:59+09:00"
+      "fetchedAt": "2026-08-08T08:52:10+09:00"
     },
     "dollarBroad": {
       "status": "verified",
@@ -103,14 +103,14 @@
       "sourceName": "FRED DTWEXBGS",
       "sourceUrl": "https://fred.stlouisfed.org/series/DTWEXBGS",
       "label": "米ドル実効指数（Broad）",
-      "fetchedAt": "2026-08-08T02:23:00+09:00"
+      "fetchedAt": "2026-08-08T08:52:10+09:00"
     },
     "usdjpy": {
       "status": "verified",
-      "asOfDateTime": "2026-08-08T01:10:59+09:00",
-      "value": 157.492,
-      "change": -0.10800610351563478,
-      "changePercent": -0.06853178891674805,
+      "asOfDateTime": "2026-08-08T05:59:57+09:00",
+      "value": 157.745,
+      "change": -0.6639965820312455,
+      "changePercent": -0.41916595418076685,
       "sourceName": "Yahoo Finance USD/JPY",
       "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/"
     }
@@ -118,11 +118,11 @@
   "assessment": {
     "shortTerm": "売り優勢",
     "structural": "買い需要あり（確認項目限定）",
-    "score": 15,
+    "score": 32,
     "components": [
       {
         "name": "CFTC",
-        "score": -1.0
+        "score": 1.0
       },
       {
         "name": "ETF",
@@ -145,8 +145,8 @@
   "aiSummary": [
     "金先物は前回比+0.00%です。COMEXの出来高・建玉は別の基準日で表示し、日付を合わせられた場合だけ価格×建玉判定を行います。",
     "COMEXは2026-08-06の前回確認値を保持しています。出来高201,455枚、建玉389,008枚、建玉前日比-2,323枚です。今回取得に失敗した場合も推測値へ置き換えません。",
-    "CFTC Managed Moneyのネットは119,795枚、前週比-5,036枚です。週次データとして短期需給に反映します。",
-    "主要金ETF保有量は GLD 1014.72t / IAU 459.01t。金融需要の実流入・流出を先物と分けて確認します。",
+    "CFTC Managed Moneyのネットは130,766枚、前週比+10,971枚です。週次データとして短期需給に反映します。",
+    "主要金ETF保有量は GLD 1014.72t / IAU 457.89t。金融需要の実流入・流出を先物と分けて確認します。",
     "中国・インドの現物プレミアムはWGCの公開更新を確認できる場合だけ表示します。ログイン等で取得できない場合は前回値を捏造せず保留します。"
   ]
 }
