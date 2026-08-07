@@ -17,59 +17,57 @@
   if (!root) return;
 
   const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   })[char]);
-
-  const text = (value, fallback = "取得不能") => {
+  const arr = (value) => Array.isArray(value) ? value : [];
+  const text = (value, fallback = "—") => {
     if (value === null || value === undefined || value === "" || Number.isNaN(value)) return fallback;
     return String(value);
   };
-
-  const arr = (value) => Array.isArray(value) ? value : [];
+  const plainValue = (value, fallback = "—") => esc(text(value, fallback));
   const statusLabel = (status) => STATUS_LABELS[status] || text(status, "取得不能");
   const badge = (status) => `<span class="status-badge ${esc(status || "unavailable")}">${esc(statusLabel(status || "unavailable"))}</span>`;
+  const available = (item) => item && item.status !== "unavailable" && item.status !== "stale";
+  const hasValue = (item, key = "value") => item && item[key] !== null && item[key] !== undefined && item[key] !== "";
 
   const toneClass = (item) => {
-    const status = item && typeof item === "object" ? item.status : "";
-    if (status === "unavailable" || status === "stale") return "muted";
-    const value = text(item && typeof item === "object" ? (item.direction || item.value || item.changeBp) : item, "");
-    if (/低下|下落|縮小|弱|売り|悪化|-/.test(value)) return "down";
-    if (/上昇|拡大|強|買い|改善|\+/.test(value)) return "up";
-    if (/警戒|注意|中/.test(value)) return "warn";
+    if (!item || item.status === "unavailable" || item.status === "stale") return "muted";
+    const value = text(item.direction ?? item.changeBp ?? item.value, "");
+    if (/低下|下落|縮小|弱|売り|悪化/.test(value)) return "down";
+    if (/上昇|拡大|強|買い|改善/.test(value)) return "up";
+    if (/警戒|注意|逆イールド/.test(value)) return "warn";
+    if (typeof item.changeBp === "number") return item.changeBp > 0 ? "up" : item.changeBp < 0 ? "down" : "muted";
     return "muted";
   };
 
-  const valueWithUnit = (item, valueKey = "value") => {
-    if (!item || typeof item !== "object") return esc(text(item));
-    const value = item[valueKey];
-    if (value === null || value === undefined || value === "" || Number.isNaN(value)) {
-      return esc(`取得不能${item.missingReason ? `（${item.missingReason}）` : ""}`);
-    }
-    return esc(`${value}${item.unit || ""}`);
+  const valueWithUnit = (item, key = "value", fallback = "—") => {
+    if (!item || !hasValue(item, key)) return esc(fallback);
+    return esc(`${item[key]}${item.unit || ""}`);
   };
 
-  const plainValue = (value, fallback = "取得不能") => esc(text(value, fallback));
+  const signedBp = (value) => {
+    if (value === null || value === undefined || value === "") return "—";
+    const num = Number(value);
+    if (!Number.isFinite(num)) return esc(value);
+    return `${num > 0 ? "+" : ""}${num.toFixed(1)}`;
+  };
 
   function renderHeader(data) {
     const meta = data.meta || {};
     const title = data.pageTitle || "金利・債券市場分析";
-    const updated = meta.updatedAt || data.updatedAt || "実データ連携前";
+    const updated = meta.updatedAt || data.generatedAt || "—";
     document.title = `${title}｜WEBマーケットレポート`;
     if (updatedNode) updatedNode.textContent = `最終更新：${updated}`;
     return `
       <div class="page-head">
         <div>
           <h2>${esc(title)}</h2>
-          <p>${esc(data.subtitle || "金利の動き、理由、需給、各市場への影響を確認します。")}</p>
+          <p>${esc(data.subtitle || "米・日・欧の金利と債券市場を一画面で確認")}</p>
         </div>
         <div class="meta-line" aria-label="データ状態">
-          <span>基準日：${plainValue(meta.asOfDate, "取得不能")} ${plainValue(meta.asOfTime, "")}</span>
-          <span>更新：${plainValue(updated, "実データ連携前")}</span>
-          <span>状態：${esc(statusLabel(meta.status || "unavailable"))}</span>
+          <span>基準日：${plainValue(meta.asOfDate)} ${plainValue(meta.asOfTime, "")}</span>
+          <span>更新：${plainValue(updated)}</span>
+          <span>データ状態：${esc(statusLabel(meta.status || "unavailable"))}</span>
         </div>
       </div>
     `;
@@ -81,19 +79,19 @@
     const missing = arr(meta.missingData);
     return `
       <section class="panel conclusion-panel span-12">
-        <h2 class="panel-title"><span class="badge-num">1</span>今日の結論</h2>
+        <h2 class="panel-title"><span class="badge-num">1</span>今日の金利・債券市場の結論</h2>
         <div class="panel-body conclusion-body">
           <div>
-            <h3 class="headline">${plainValue(summary.headline, "金利・債券市場データは連携待ちです。")}</h3>
-            <p class="lead-text">${plainValue(summary.theme, "実データ連携後に本日の主要テーマを表示します。")}</p>
-            <p class="lead-text">${plainValue(summary.conclusion, "確認済みデータが入るまで市場判断は行いません。")}</p>
-            <div class="note-box">${plainValue(summary.consistency, "材料と値動きの整合性は未判定です。")}</div>
+            <h3 class="headline">${plainValue(summary.headline, "主要金利を取得中")}</h3>
+            <p class="lead-text">${plainValue(summary.theme, "取得済みデータから方向を判定します。")}</p>
+            <p class="lead-text">${plainValue(summary.conclusion, "未取得値は推測しません。")}</p>
+            <div class="note-box"><b>材料と値動きの整合性：</b>${plainValue(summary.consistency, "判定待ち")}</div>
           </div>
           <div class="status-stack">
             <div class="status-row"><b>データ状態</b><span>${badge(meta.status || "unavailable")}</span></div>
-            <div class="status-row"><b>stale</b><span>${meta.isStale ? "はい" : "いいえ"}</span></div>
-            <div class="status-row"><b>理由</b><span>${plainValue(meta.staleReason, "取得不能")}</span></div>
-            <div class="status-row"><b>未接続</b><span>${missing.length ? esc(missing.slice(0, 4).join("、")) : "なし"}</span></div>
+            <div class="status-row"><b>基準日</b><span>${plainValue(meta.asOfDate)}</span></div>
+            <div class="status-row"><b>取得方式</b><span>${plainValue(meta.sourceStatus, "自動取得")}</span></div>
+            <div class="status-row"><b>未取得</b><span>${missing.length ? esc(missing.slice(0, 4).join("、")) + (missing.length > 4 ? ` ほか${missing.length - 4}件` : "") : "なし"}</span></div>
           </div>
         </div>
       </section>
@@ -101,17 +99,18 @@
   }
 
   function renderCards(data) {
+    const cards = arr(data.cards).filter(available);
+    if (!cards.length) return "";
     return `
       <section class="panel span-12">
-        <h2 class="panel-title"><span class="badge-num">2</span>4つのサマリーカード</h2>
+        <h2 class="panel-title"><span class="badge-num">2</span>市場の要点</h2>
         <div class="panel-body summary-cards">
-          ${arr(data.cards).map((card) => `
+          ${cards.map((card) => `
             <article class="summary-card">
               <h3>${plainValue(card.label)}</h3>
-              <strong class="${toneClass(card)}">${plainValue(card.direction, "取得不能")}</strong>
-              ${badge(card.status || "unavailable")}
-              <p>${plainValue(card.reason, "理由未設定")}</p>
-              <p>基準：${plainValue(card.asOf, "取得不能")}</p>
+              <strong class="${toneClass(card)}">${plainValue(card.direction)}</strong>
+              <p>${plainValue(card.reason)}</p>
+              <p class="small-meta">基準：${plainValue(card.asOf)}</p>
             </article>
           `).join("")}
         </div>
@@ -120,40 +119,71 @@
   }
 
   function renderRates(data) {
+    const rows = arr(data.rates).filter((row) => available(row) && hasValue(row));
+    if (!rows.length) return "";
+    const groupOf = (name) => name.startsWith("米") ? "米国" : name.startsWith("日本") ? "日本" : name.startsWith("ドイツ") ? "欧州" : "その他";
     return `
-      <section class="panel span-7">
+      <section class="panel span-12">
         <h2 class="panel-title"><span class="badge-num">3</span>主要金利ダッシュボード</h2>
         <div class="panel-body">
           <div class="table-wrap">
             <table class="rates-table">
-              <thead>
-                <tr>
-                  <th>指標</th>
-                  <th>現在値</th>
-                  <th>前日比bp</th>
-                  <th>1週間変化bp</th>
-                  <th>方向</th>
-                  <th>基準日時</th>
-                  <th>状態</th>
-                  <th>意味</th>
-                </tr>
-              </thead>
+              <thead><tr><th>地域</th><th>指標</th><th>現在値</th><th>前日比</th><th>1週間</th><th>方向</th><th>基準日</th><th>市場での意味</th></tr></thead>
               <tbody>
-                ${arr(data.rates).map((row) => `
+                ${rows.map((row) => `
                   <tr>
+                    <td class="region-cell">${groupOf(row.name)}</td>
                     <td>${plainValue(row.name)}</td>
                     <td class="num ${toneClass(row)}">${valueWithUnit(row)}</td>
-                    <td class="num ${toneClass({ value: row.changeBp, status: row.status })}">${plainValue(row.changeBp)}</td>
-                    <td class="num ${toneClass({ value: row.weekChangeBp, status: row.status })}">${plainValue(row.weekChangeBp)}</td>
-                    <td>${plainValue(row.direction)}</td>
+                    <td class="num ${toneClass({ changeBp: row.changeBp, status: row.status })}">${signedBp(row.changeBp)} bp</td>
+                    <td class="num">${signedBp(row.weekChangeBp)} bp</td>
+                    <td class="${toneClass(row)}">${plainValue(row.direction)}</td>
                     <td>${plainValue(row.asOf)}</td>
-                    <td>${badge(row.status || "unavailable")}</td>
-                    <td>${plainValue(row.meaning, row.missingReason || "取得不能")}</td>
+                    <td>${plainValue(row.meaning)}</td>
                   </tr>
                 `).join("")}
               </tbody>
             </table>
           </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function curveScale(points) {
+    const valid = points.filter((p) => available(p) && hasValue(p));
+    if (!valid.length) return "";
+    const values = valid.map((p) => Number(p.value)).filter(Number.isFinite);
+    if (!values.length) return "";
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = Math.max(max - min, 0.1);
+    return `
+      <div class="curve-strip">
+        ${valid.map((p) => {
+          const pos = ((Number(p.value) - min) / range) * 74 + 8;
+          return `<div class="curve-point" style="--curve-pos:${pos}%"><span class="curve-dot"></span><b>${plainValue(p.tenor)}</b><strong>${Number(p.value).toFixed(3)}%</strong></div>`;
+        }).join("")}
+      </div>
+    `;
+  }
+
+  function renderCurve(data) {
+    const curve = data.curve || {};
+    const rows = arr(curve.rows).filter((row) => available(row) && hasValue(row));
+    const usCurve = arr(curve.usCurve).filter((row) => available(row) && hasValue(row));
+    const jpCurve = arr(curve.jpCurve).filter((row) => available(row) && hasValue(row));
+    if (!rows.length && !usCurve.length && !jpCurve.length) return "";
+    return `
+      <section class="panel span-7">
+        <h2 class="panel-title"><span class="badge-num">4</span>イールドカーブ</h2>
+        <div class="panel-body">
+          <p class="plain-note curve-summary">${plainValue(curve.summary)}</p>
+          <div class="curve-visual-grid">
+            ${usCurve.length ? `<article class="curve-panel"><h3>米国債</h3>${curveScale(usCurve)}</article>` : ""}
+            ${jpCurve.length ? `<article class="curve-panel"><h3>日本国債</h3>${curveScale(jpCurve)}</article>` : ""}
+          </div>
+          ${rows.length ? `<div class="table-wrap"><table class="curve-table"><thead><tr><th>スプレッド</th><th>現在値</th><th>前日変化</th><th>1週間変化</th><th>形状</th><th>変化の読み方</th></tr></thead><tbody>${rows.map((row) => `<tr><td>${plainValue(row.spread)}</td><td class="num">${plainValue(row.value)} bp</td><td class="num">${signedBp(row.changeBp)} bp</td><td class="num">${signedBp(row.weekChangeBp)} bp</td><td class="${/逆イールド/.test(row.shape || "") ? "warn" : ""}">${plainValue(row.shape)}</td><td>${plainValue(row.reading)}</td></tr>`).join("")}</tbody></table></div>` : ""}
         </div>
       </section>
     `;
@@ -161,54 +191,23 @@
 
   function renderDecomposition(data) {
     const section = data.decomposition || {};
+    const factors = arr(section.factors).filter(available);
+    if (!factors.length) return "";
     return `
       <section class="panel span-5">
-        <h2 class="panel-title"><span class="badge-num">4</span>米10年債利回りの変化要因</h2>
+        <h2 class="panel-title"><span class="badge-num">5</span>米10年金利の変化要因</h2>
         <div class="panel-body">
-          <p class="plain-note"><b>${plainValue(section.formula, "米10年債利回り = 実質金利 + 期待インフレ率 + タームプレミアム")}</b></p>
+          <p class="plain-note"><b>${plainValue(section.formula)}</b></p>
           <div class="factor-grid">
-            ${arr(section.factors).map((factor) => `
+            ${factors.map((factor) => `
               <article class="factor-card">
                 <h3>${plainValue(factor.name)}</h3>
                 <strong class="factor-value ${toneClass(factor)}">${valueWithUnit(factor)}</strong>
-                ${badge(factor.status || "unavailable")}
-                <p>${plainValue(factor.interpretation, "連携後に判定")}</p>
+                <p>${plainValue(factor.interpretation)}</p>
               </article>
             `).join("")}
           </div>
-          <div class="note-box">${plainValue(section.point, "変化要因は未判定です。")}</div>
-        </div>
-      </section>
-    `;
-  }
-
-  function renderCurve(data) {
-    const curve = data.curve || {};
-    return `
-      <section class="panel span-6">
-        <h2 class="panel-title"><span class="badge-num">5</span>イールドカーブ</h2>
-        <div class="panel-body">
-          <p class="plain-note">${plainValue(curve.summary, "カーブデータは未接続です。")}</p>
-          <div class="table-wrap">
-            <table class="curve-table">
-              <thead>
-                <tr><th>スプレッド</th><th>現在値</th><th>前日変化</th><th>1週間変化</th><th>判定</th><th>市場の読み方</th><th>状態</th></tr>
-              </thead>
-              <tbody>
-                ${arr(curve.rows).map((row) => `
-                  <tr>
-                    <td>${plainValue(row.spread)}</td>
-                    <td class="num">${plainValue(row.value)}</td>
-                    <td class="num">${plainValue(row.changeBp)}</td>
-                    <td class="num">${plainValue(row.weekChangeBp)}</td>
-                    <td>${plainValue(row.shape, "未判定")}</td>
-                    <td>${plainValue(row.reading, "取得不能")}</td>
-                    <td>${badge(row.status || "unavailable")}</td>
-                  </tr>
-                `).join("")}
-              </tbody>
-            </table>
-          </div>
+          <div class="note-box">${plainValue(section.point)}</div>
         </div>
       </section>
     `;
@@ -216,21 +215,15 @@
 
   function renderSupplyDemand(data) {
     const section = data.supplyDemand || {};
+    const items = arr(section.items).filter((item) => available(item) && hasValue(item));
+    if (!items.length) return "";
     return `
       <section class="panel span-6">
-        <h2 class="panel-title"><span class="badge-num">6</span>債券市場の需給状況</h2>
+        <h2 class="panel-title"><span class="badge-num">6</span>債券需給・米国債入札</h2>
         <div class="panel-body">
-          <p class="plain-note">${plainValue(section.summary, "需給データは未接続です。")}</p>
+          <p class="plain-note">${plainValue(section.summary)}</p>
           <div class="supply-grid">
-            ${arr(section.items).map((item) => `
-              <article class="mini-card">
-                <h3>${plainValue(item.name)}</h3>
-                <p><b>${valueWithUnit(item)}</b></p>
-                ${badge(item.status || "unavailable")}
-                <p>${plainValue(item.note, "取得不能")}</p>
-                <p>出所：${plainValue(item.source, "未設定")}</p>
-              </article>
-            `).join("")}
+            ${items.map((item) => `<article class="mini-card"><h3>${plainValue(item.name)}</h3><p class="metric-line"><b>${valueWithUnit(item)}</b></p><p>${plainValue(item.note)}</p><p class="small-meta">出所：${plainValue(item.source)}</p></article>`).join("")}
           </div>
         </div>
       </section>
@@ -239,50 +232,27 @@
 
   function renderPolicy(data) {
     const section = data.policyExpectations || {};
+    const rows = arr(section.rows).filter(available);
+    if (!rows.length) return "";
     return `
-      <section class="panel span-5">
-        <h2 class="panel-title"><span class="badge-num">7</span>中央銀行の政策期待</h2>
+      <section class="panel span-6">
+        <h2 class="panel-title"><span class="badge-num">7</span>政策金利・短期金利期待</h2>
         <div class="panel-body">
-          <p class="plain-note">${plainValue(section.summary, "政策織り込みデータは未接続です。")}</p>
-          <div class="table-wrap">
-            <table class="policy-table">
-              <thead><tr><th>項目</th><th>現在の織り込み</th><th>前日比</th><th>状態</th><th>出所</th><th>注意点</th></tr></thead>
-              <tbody>
-                ${arr(section.rows).map((row) => `
-                  <tr>
-                    <td>${plainValue(row.policy)}</td>
-                    <td>${plainValue(row.value)}</td>
-                    <td>${plainValue(row.change)}</td>
-                    <td>${badge(row.status || "unavailable")}</td>
-                    <td>${plainValue(row.source, "未設定")}</td>
-                    <td>${plainValue(row.note, "取得不能時は推測しない")}</td>
-                  </tr>
-                `).join("")}
-              </tbody>
-            </table>
-          </div>
+          <p class="plain-note">${plainValue(section.summary)}</p>
+          <div class="table-wrap"><table class="policy-table"><thead><tr><th>項目</th><th>現在</th><th>変化</th><th>出所</th><th>読み方</th></tr></thead><tbody>${rows.map((row) => `<tr><td>${plainValue(row.policy)}</td><td>${plainValue(row.value)}</td><td>${plainValue(row.change)}</td><td>${plainValue(row.source)}</td><td>${plainValue(row.note)}</td></tr>`).join("")}</tbody></table></div>
         </div>
       </section>
     `;
   }
 
   function renderImpact(data) {
+    const items = arr(data.crossAssetImpact).filter(available);
+    if (!items.length) return "";
     return `
-      <section class="panel span-7">
-        <h2 class="panel-title"><span class="badge-num">8</span>金利から各市場への波及</h2>
-        <div class="panel-body impact-grid">
-          ${arr(data.crossAssetImpact).map((item) => `
-            <article class="impact-card">
-              <h3>${plainValue(item.market)}</h3>
-              <p><b>主な金利：</b>${plainValue(item.driver)}</p>
-              <ul class="path-list">
-                ${arr(item.path).map((step) => `<li>${plainValue(step)}</li>`).join("")}
-              </ul>
-              ${badge(item.status || "unavailable")}
-              <p><b>実際の反応：</b>${plainValue(item.actualStatus, "未判定")}</p>
-              <p>${plainValue(item.note, "実データ連携後に判定")}</p>
-            </article>
-          `).join("")}
+      <section class="panel span-12">
+        <h2 class="panel-title"><span class="badge-num">8</span>金利から各市場への波及と実際の反応</h2>
+        <div class="panel-body impact-grid impact-five">
+          ${items.map((item) => `<article class="impact-card"><h3>${plainValue(item.market)}</h3><p><b>主な金利：</b>${plainValue(item.driver)}</p><ul class="path-list">${arr(item.path).map((step) => `<li>${plainValue(step)}</li>`).join("")}</ul><p class="actual-reaction"><b>実際：</b>${plainValue(item.actualStatus)}</p><p>${plainValue(item.note)}</p></article>`).join("")}
         </div>
       </section>
     `;
@@ -291,105 +261,46 @@
   function renderLeadingAndScenarios(data) {
     const leading = data.leadingRate || {};
     const scenarios = data.scenarios || {};
+    const main = scenarios.main || {};
+    const alt = scenarios.alternative || {};
     return `
       <section class="panel span-4">
         <h2 class="panel-title"><span class="badge-num">9</span>今日の主導金利</h2>
-        <div class="panel-body">
-          <article class="leading-card">
-            <h3>${plainValue(leading.name)}</h3>
-            ${badge(leading.status || "unavailable")}
-            <p>${plainValue(leading.reason, "主導金利は未判定です。")}</p>
-            <p><b>前回からの変化：</b>${plainValue(leading.changeFromPrevious, "未判定")}</p>
-            <p><b>主導が変わる条件：</b>${plainValue(leading.switchCondition, "取得不能")}</p>
-          </article>
-        </div>
+        <div class="panel-body"><article class="leading-card"><h3>${plainValue(leading.name)}</h3><p>${plainValue(leading.reason)}</p><p><b>前日から：</b>${plainValue(leading.changeFromPrevious)}</p><p><b>主導が変わる条件：</b>${plainValue(leading.switchCondition)}</p></article></div>
       </section>
       <section class="panel span-8">
-        <h2 class="panel-title"><span class="badge-num">10</span>シナリオと崩れる条件</h2>
+        <h2 class="panel-title"><span class="badge-num">10</span>シナリオと見方を変える条件</h2>
         <div class="panel-body">
-          <div class="scenario-grid">
-            <article class="scenario-card">
-              <h3>${plainValue((scenarios.main || {}).title, "メインシナリオ")}</h3>
-              ${badge((scenarios.main || {}).status || "unavailable")}
-              <p>${plainValue((scenarios.main || {}).body, "実データ連携後に表示します。")}</p>
-            </article>
-            <article class="scenario-card">
-              <h3>${plainValue((scenarios.alternative || {}).title, "代替シナリオ")}</h3>
-              ${badge((scenarios.alternative || {}).status || "unavailable")}
-              <p>${plainValue((scenarios.alternative || {}).body, "実データ連携後に表示します。")}</p>
-            </article>
-          </div>
-          <div class="scenario-grid" style="margin-top:8px">
-            <article class="scenario-card">
-              <h3>崩れる条件</h3>
-              <ul class="watch-list">${arr(scenarios.breakConditions).map((item) => `<li>${plainValue(item)}</li>`).join("")}</ul>
-            </article>
-            <article class="scenario-card">
-              <h3>次の監視ポイント</h3>
-              <ul class="watch-list">${arr(scenarios.watchPoints).map((item) => `<li>${plainValue(item)}</li>`).join("")}</ul>
-            </article>
-          </div>
+          <div class="scenario-grid"><article class="scenario-card"><h3>${plainValue(main.title, "メインシナリオ")}</h3><p>${plainValue(main.body)}</p></article><article class="scenario-card"><h3>${plainValue(alt.title, "代替シナリオ")}</h3><p>${plainValue(alt.body)}</p></article></div>
+          <div class="scenario-grid scenario-lists"><article class="scenario-card"><h3>シナリオが崩れる条件</h3><ul class="watch-list">${arr(scenarios.breakConditions).map((item) => `<li>${plainValue(item)}</li>`).join("")}</ul></article><article class="scenario-card"><h3>次に見るポイント</h3><ul class="watch-list">${arr(scenarios.watchPoints).map((item) => `<li>${plainValue(item)}</li>`).join("")}</ul></article></div>
         </div>
       </section>
     `;
   }
 
   function renderSources(data) {
-    const meta = data.meta || {};
+    const sources = arr(data.sources);
+    const errors = arr(data.errors);
     return `
-      <section class="panel span-12">
-        <h2 class="panel-title"><span class="badge-num">11</span>データ出所・注意書き</h2>
+      <section class="panel span-12 source-panel">
+        <h2 class="panel-title"><span class="badge-num">11</span>データ出所・更新ルール</h2>
         <div class="panel-body">
-          <div class="table-wrap">
-            <table class="source-table">
-              <thead><tr><th>情報源</th><th>状態</th><th>注意点</th></tr></thead>
-              <tbody>
-                ${arr(data.sources).map((source) => `
-                  <tr>
-                    <td>${plainValue(source.name)}</td>
-                    <td>${badge(source.status || "planned")}</td>
-                    <td>${plainValue(source.note, "未設定")}</td>
-                  </tr>
-                `).join("")}
-              </tbody>
-            </table>
-          </div>
-          ${arr(data.errors).length ? `<div class="note-box">${arr(data.errors).map((error) => plainValue(error.message, "")).join(" / ")}</div>` : ""}
-          <div class="footnotes">
-            <span>未接続データ：${meta.missingData && meta.missingData.length ? esc(meta.missingData.join("、")) : "なし"}</span>
-            <span>本ページは投資判断の参考情報であり、特定の投資を推奨するものではありません。</span>
-          </div>
+          <div class="source-chips">${sources.map((source) => `<span class="source-chip ${esc(source.status || "unavailable")}"><b>${plainValue(source.name)}</b><small>${plainValue(source.note)}</small></span>`).join("")}</div>
+          ${errors.length ? `<details class="data-details"><summary>今回取得できなかった補助データ</summary><ul>${errors.map((error) => `<li>${plainValue(error.message)}</li>`).join("")}</ul></details>` : ""}
+          <div class="footnotes"><span>未取得項目は推測値で埋めません。取得済みの公式・検証済みデータだけで分析します。</span><span>投資判断の参考情報であり、特定の投資を推奨するものではありません。</span></div>
         </div>
       </section>
     `;
   }
 
   function render(data) {
-    root.innerHTML = `
-      ${renderHeader(data)}
-      <div class="rb-grid">
-        ${renderConclusion(data)}
-        ${renderCards(data)}
-        ${renderRates(data)}
-        ${renderDecomposition(data)}
-        ${renderCurve(data)}
-        ${renderSupplyDemand(data)}
-        ${renderPolicy(data)}
-        ${renderImpact(data)}
-        ${renderLeadingAndScenarios(data)}
-        ${renderSources(data)}
-      </div>
-    `;
+    root.innerHTML = `${renderHeader(data)}<div class="rb-grid">${renderConclusion(data)}${renderCards(data)}${renderRates(data)}${renderCurve(data)}${renderDecomposition(data)}${renderSupplyDemand(data)}${renderPolicy(data)}${renderImpact(data)}${renderLeadingAndScenarios(data)}${renderSources(data)}</div>`;
   }
 
   function renderError(error) {
     const message = error && error.message ? error.message : "理由不明";
     if (updatedNode) updatedNode.textContent = "最終更新：読み込み失敗";
-    root.innerHTML = `
-      <section class="data-error">
-        金利・債券市場データを表示できません。理由：${esc(message)}。data/rates-bonds.jsonを確認してください。
-      </section>
-    `;
+    root.innerHTML = `<section class="data-error"><b>金利・債券市場データを表示できません。</b><br>理由：${esc(message)}<br>更新処理が次回成功するまで、古い値や推測値では埋めません。</section>`;
   }
 
   fetch(`${DATA_URL}?v=${Date.now()}`, { cache: "no-store" })
