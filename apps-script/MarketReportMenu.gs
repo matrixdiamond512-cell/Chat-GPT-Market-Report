@@ -2,7 +2,7 @@ function installMarketReportWebMenu() {
   createMarketReportWebMenu_();
   SpreadsheetApp.getUi().alert(
     'WEB版マーケットレポートメニューを設定しました。\n' +
-    '本文・ダッシュボード、東京市場ドル円出来高、重要イベント、金利・債券市場、株式市場分析は別メニューです。\n' +
+    '本文・ダッシュボード、東京市場ドル円出来高、USD/JPY需給分析、重要イベント、金利・債券市場、株式市場分析は別メニューです。\n' +
     '次回以降もスプレッドシートを開くと自動表示されます。'
   );
 }
@@ -51,6 +51,13 @@ function createMarketReportWebMenu_() {
     .addItem('USD/JPY日足価格の取得内容を確認', 'previewUsdJpyInvestingPriceImport')
     .addItem('出来高JSON設定を確認', 'showUsdJpyVolumeJsonSyncStatus')
     .addItem('東京市場ドル円出来高ページを開く', 'showUsdJpyVolumeWebPage')
+    .addToUi();
+
+  ui.createMenu('USD/JPY需給分析')
+    .addItem('USD/JPY需給分析を今すぐ更新', 'runUsdJpySupplyDemandPageUpdateNowV1')
+    .addItem('更新状態を確認', 'showUsdJpySupplyDemandPageUpdateStatusV1')
+    .addSeparator()
+    .addItem('USD/JPY需給分析ページを開く', 'openUsdJpySupplyDemandWebPageV1')
     .addToUi();
 
   ui.createMenu('重要イベント')
