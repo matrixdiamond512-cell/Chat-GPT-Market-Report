@@ -10,6 +10,7 @@ on:
       - "scripts/update_nikkei225_supply_demand.py"
       - "scripts/enrich_nikkei225_supply_demand.py"
       - "scripts/fix_nikkei225_verified_data.py"
+      - "scripts/enrich_nikkei225_margin.py"
       - "scripts/requirements-nikkei225-supply-demand.txt"
       - ".github/workflows/update-nikkei225-supply-demand.yml"
       - ".github/nikkei225-supply-demand-trigger.txt"
@@ -55,6 +56,7 @@ jobs:
           python -m py_compile scripts/update_nikkei225_supply_demand.py
           python -m py_compile scripts/enrich_nikkei225_supply_demand.py
           python -m py_compile scripts/fix_nikkei225_verified_data.py
+          python -m py_compile scripts/enrich_nikkei225_margin.py
 
       - name: Build base Nikkei 225 supply-demand JSON
         run: python scripts/update_nikkei225_supply_demand.py
@@ -64,6 +66,9 @@ jobs:
 
       - name: Finalize current JPX OI layout and validation
         run: python scripts/fix_nikkei225_verified_data.py
+
+      - name: Add weekly margin balances
+        run: python scripts/enrich_nikkei225_margin.py
 
       - name: Validate JSON
         run: python -m json.tool data/nikkei225-supply-demand.json > /dev/null
