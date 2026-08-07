@@ -8,6 +8,7 @@ on:
       - "data/market/latest.json"
       - "scripts/update_gold_supply_demand.py"
       - "scripts/write_gold_supply_demand_to_sheets.py"
+      - "scripts/write_gold_supply_demand_to_sheets_v2.py"
       - "scripts/requirements-gold-supply-demand.txt"
       - ".github/workflows/update-gold-supply-demand.yml"
   schedule:
@@ -47,6 +48,7 @@ jobs:
         run: |
           python -m py_compile scripts/update_gold_supply_demand.py
           python -m py_compile scripts/write_gold_supply_demand_to_sheets.py
+          python -m py_compile scripts/write_gold_supply_demand_to_sheets_v2.py
 
       - name: Build gold supply-demand JSON
         run: python scripts/update_gold_supply_demand.py
@@ -78,7 +80,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          OUTPUT="$(python scripts/write_gold_supply_demand_to_sheets.py 2>&1)"
+          OUTPUT="$(python scripts/write_gold_supply_demand_to_sheets_v2.py 2>&1)"
           CODE=$?
           set -e
           export SYNC_CODE="$CODE"
