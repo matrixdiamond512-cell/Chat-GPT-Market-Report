@@ -32,12 +32,19 @@ def fetch_text(url: str, timeout: int = 25) -> str:
     req = urllib.request.Request(
         url,
         headers={
-            "User-Agent": "Mozilla/5.0 (compatible; Chat-GPT-Market-Report/1.0)",
-            "Accept": "text/html,text/plain,application/xhtml+xml,*/*;q=0.8",
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/151.0 Safari/537.36"
+            ),
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "ja,en-US;q=0.8,en;q=0.6",
         },
     )
     with urllib.request.urlopen(req, timeout=timeout) as res:
-        return res.read().decode("utf-8", errors="replace")
+        raw = res.read()
+        charset = res.headers.get_content_charset() or "utf-8"
+        return raw.decode(charset, errors="replace")
 
 
 def html_to_text(raw: str) -> str:
@@ -53,20 +60,31 @@ def fetch_traders_web(previous: dict) -> dict:
         "name": "トレーダーズ・ウェブFX 無料ページ",
         "url": TRADERS_WEB_URL,
         "sourceUpdatedAt": previous.get("sourceUpdatedAt"),
+        "checkedAt": previous.get("checkedAt"),
         "status": "stale",
+        "pageConfirmed": False,
         "publicScope": "一般公開はUSD/JPYの直近6時台情報",
-        "redistributionMode": "link-only",
-        "note": "公開ページでは第三者サイトのオーダー本文を再配信せず、基準日時と参照リンクのみ表示する。",
+        "redistributionMode": "source-metadata-and-link",
+        "note": (
+            "無料ページの公開状況・基準日時を取得して表示する。"
+            "注文水準本文は提供元の利用条件を尊重し、このページには転載しない。"
+        ),
     }
     try:
         raw = fetch_text(TRADERS_WEB_URL)
         text = html_to_text(raw)
+        page_confirmed = "ドル円" in text and "USD/JPY" in text and "FXオーダー" in text
+        if not page_confirmed:
+            raise ValueError("USD/JPY無料オーダーページ本文を確認できませんでした")
+
         m = re.search(
-            r"(20\d{2})[/-](\d{1,2})[/-](\d{1,2})\s+(\d{1,2}):(\d{2})\s*更新",
+            r"(20\d{2})\s*[/-]\s*(\d{1,2})\s*[/-]\s*(\d{1,2})\s+"
+            r"(\d{1,2})\s*:\s*(\d{2})\s*更新",
             text,
         )
         if not m:
             raise ValueError("無料ページの更新日時を抽出できませんでした")
+
         dt = datetime(
             int(m.group(1)),
             int(m.group(2)),
@@ -75,9 +93,17 @@ def fetch_traders_web(previous: dict) -> dict:
             int(m.group(5)),
             tzinfo=JST,
         )
-        result["sourceUpdatedAt"] = dt.isoformat(timespec="seconds")
-        result["status"] = "confirmed"
-        result["checkedAt"] = now_jst().isoformat(timespec="seconds")
+        result.update(
+            {
+                "sourceUpdatedAt": dt.isoformat(timespec="seconds"),
+                "sourceDate": dt.strftime("%Y-%m-%d"),
+                "sourceTime": dt.strftime("%H:%M"),
+                "status": "confirmed",
+                "pageConfirmed": True,
+                "checkedAt": now_jst().isoformat(timespec="seconds"),
+            }
+        )
+        result.pop("error", None)
     except Exception as exc:
         result["checkedAt"] = now_jst().isoformat(timespec="seconds")
         result["error"] = str(exc)
@@ -188,7 +214,7 @@ def main() -> None:
     snapshot = core_snapshot()
 
     data = {
-        "schemaVersion": "3.1.0",
+        "schemaVersion": "3.1.1",
         "pageId": "usdjpy-supply-demand",
         "generatedAt": generated,
         "mode": "integrated-realistic",
@@ -208,20 +234,32 @@ def main() -> None:
                 "data/usdjpy-volume.json",
                 "data/events.json",
             ],
-            "assessment": "価格方向、日米10年金利差の変化、東京スポット出来高の強弱を中核とし、CFTCは鮮度が十分な場合のみ方向判定へ加える。",
-            "tradersWebFx": "無料ページの基準日・時刻を表示し、オーダー本文は再配信しない。",
+            "assessment": (
+                "価格方向、日米10年金利差の変化、東京スポット出来高の強弱を中核とし、"
+                "CFTCは鮮度が十分な場合のみ方向判定へ加える。"
+            ),
+            "tradersWebFx": (
+                "無料ページの取得確認、基準日・時刻、最終確認時刻を表示する。"
+                "注文水準本文は転載せず参照リンクを表示する。"
+            ),
         },
     }
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({
-        "generatedAt": generated,
-        "tradersWebFx": traders.get("sourceUpdatedAt"),
-        "tradersWebStatus": traders.get("status"),
-        "cftcAsOf": cftc.get("asOf"),
-        "cftcStatus": cftc.get("status"),
-    }, ensure_ascii=False))
+    print(
+        json.dumps(
+            {
+                "generatedAt": generated,
+                "tradersWebFx": traders.get("sourceUpdatedAt"),
+                "tradersWebStatus": traders.get("status"),
+                "tradersWebPageConfirmed": traders.get("pageConfirmed"),
+                "cftcAsOf": cftc.get("asOf"),
+                "cftcStatus": cftc.get("status"),
+            },
+            ensure_ascii=False,
+        )
+    )
 
 
 if __name__ == "__main__":
