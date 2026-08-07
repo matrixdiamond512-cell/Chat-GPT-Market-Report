@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "3.1.1",
+  "schemaVersion": "3.2.0",
   "pageId": "usdjpy-supply-demand",
-  "generatedAt": "2026-08-08T01:33:02+09:00",
+  "generatedAt": "2026-08-08T01:35:00+09:00",
   "mode": "integrated-realistic",
   "sourceStatus": {
     "tradersWebFx": "confirmed",
@@ -12,14 +12,62 @@
     "name": "トレーダーズ・ウェブFX 無料ページ",
     "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
     "sourceUpdatedAt": "2026-08-07T06:22:00+09:00",
-    "checkedAt": "2026-08-08T01:33:05+09:00",
+    "checkedAt": "2026-08-08T01:35:00+09:00",
     "status": "confirmed",
     "pageConfirmed": true,
     "publicScope": "一般公開はUSD/JPYの直近6時台情報",
-    "redistributionMode": "source-metadata-and-link",
-    "note": "無料ページの公開状況・基準日時を取得して表示する。注文水準本文は提供元の利用条件を尊重し、このページには転載しない。",
+    "redistributionMode": "key-levels-excerpt-with-attribution",
+    "note": "無料公開データから需給判断に必要な主要水準のみ抜粋し、基準日時と出典を明示する。",
     "sourceDate": "2026-08-07",
-    "sourceTime": "06:22"
+    "sourceTime": "06:22",
+    "freshness": "previous-session",
+    "ageHours": 19.2,
+    "keyLevels": {
+      "referenceSpot": "158.43",
+      "referenceSpotDescription": "8/7 6:00現在（高値158.55円 - 安値157.56円）",
+      "sellOrders": [
+        {
+          "price": "158.70-80",
+          "description": "売り小さめ"
+        },
+        {
+          "price": "159.00",
+          "description": "売りやや小さめ、OP12日NYカット / OP13日NYカット大きめ"
+        }
+      ],
+      "buyOrders": [
+        {
+          "price": "157.10-40",
+          "description": "買い小さめ"
+        },
+        {
+          "price": "157.00",
+          "description": "買い小さめ、OP7・12・13日NYカット"
+        }
+      ],
+      "stops": [
+        {
+          "price": "157.50",
+          "description": "割り込むとストップロス売り小さめ"
+        }
+      ],
+      "nyCutOptions": [
+        {
+          "price": "158.00",
+          "description": "OP7日NYカット"
+        },
+        {
+          "price": "159.00",
+          "description": "OP12日NYカット / OP13日NYカット大きめ"
+        },
+        {
+          "price": "157.00",
+          "description": "OP7・12・13日NYカット"
+        }
+      ],
+      "extractedRowCount": 14,
+      "displayMode": "key-levels-excerpt"
+    }
   },
   "cftc": {
     "name": "CFTC Commitments of Traders - Japanese Yen",
@@ -65,6 +113,6 @@
       "data/events.json"
     ],
     "assessment": "価格方向、日米10年金利差の変化、東京スポット出来高の強弱を中核とし、CFTCは鮮度が十分な場合のみ方向判定へ加える。",
-    "tradersWebFx": "無料ページの取得確認、基準日・時刻、最終確認時刻を表示する。注文水準本文は転載せず参照リンクを表示する。"
+    "tradersWebFx": "無料ページから主要な売り・買い・ストップ・NYカット水準を抜粋し、基準日時・鮮度・出典を明示する。"
   }
 }
