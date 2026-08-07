@@ -15,6 +15,7 @@ on:
     paths:
       - ".github/workflows/update-rates-bonds.yml"
       - "scripts/build_rates_bonds_json.py"
+      - "scripts/build_rates_bonds_json_v2.py"
 
 permissions:
   contents: write
@@ -38,11 +39,13 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Validate builder
-        run: python -m py_compile scripts/build_rates_bonds_json.py
+      - name: Validate builders
+        run: |
+          python -m py_compile scripts/build_rates_bonds_json.py
+          python -m py_compile scripts/build_rates_bonds_json_v2.py
 
       - name: Build rates and bonds JSON
-        run: python scripts/build_rates_bonds_json.py
+        run: python scripts/build_rates_bonds_json_v2.py
 
       - name: Validate generated JSON
         run: |
@@ -57,6 +60,7 @@ jobs:
           print("confirmed rates:", len(rates))
           print("page status:", data.get("meta", {}).get("status"))
           print("as of:", data.get("meta", {}).get("asOfDate"))
+          print("missing:", data.get("meta", {}).get("missingData"))
           if not rates:
               raise SystemExit("No confirmed rates were generated; keep the previous published JSON instead.")
           PY
