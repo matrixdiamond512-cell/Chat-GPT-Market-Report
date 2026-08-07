@@ -7,6 +7,7 @@ on:
     paths:
       - "data/market/latest.json"
       - "scripts/update_gold_supply_demand.py"
+      - "scripts/postprocess_gold_supply_demand.py"
       - "scripts/build_gold_supply_demand_sheet_csv.py"
       - "scripts/write_gold_supply_demand_to_sheets.py"
       - "scripts/requirements-gold-supply-demand.txt"
@@ -23,7 +24,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: update-gold-supply-demand-csv-v3
+  group: update-gold-supply-demand-csv-v4
   cancel-in-progress: false
 
 jobs:
@@ -47,11 +48,15 @@ jobs:
       - name: Validate scripts
         run: |
           python -m py_compile scripts/update_gold_supply_demand.py
+          python -m py_compile scripts/postprocess_gold_supply_demand.py
           python -m py_compile scripts/write_gold_supply_demand_to_sheets.py
           python -m py_compile scripts/build_gold_supply_demand_sheet_csv.py
 
       - name: Build gold supply-demand JSON
         run: python scripts/update_gold_supply_demand.py
+
+      - name: Normalize display statuses
+        run: python scripts/postprocess_gold_supply_demand.py
 
       - name: Build Gold_Demand CSV
         run: python scripts/build_gold_supply_demand_sheet_csv.py
