@@ -98,14 +98,20 @@ def update_index(snapshot_date: str, snapshot: dict[str, Any], saved_at: str) ->
 
     existing_entries = index.get("dates") or []
     entries: list[dict[str, Any]] = []
+    existing_same_date: dict[str, Any] = {}
     for item in existing_entries:
         if isinstance(item, str):
             item = {"date": item}
-        if isinstance(item, dict) and valid_date(item.get("date")) != snapshot_date:
+        if not isinstance(item, dict):
+            continue
+        if valid_date(item.get("date")) == snapshot_date:
+            existing_same_date = dict(item)
+        else:
             entries.append(item)
 
     market_dates = snapshot.get("marketDates") or {}
-    entries.append({
+    entry = {
+        **existing_same_date,
         "date": snapshot_date,
         "savedAt": saved_at,
         "usDataDate": market_dates.get("us", ""),
@@ -114,7 +120,11 @@ def update_index(snapshot_date: str, snapshot: dict[str, Any], saved_at: str) ->
             f"米国 {market_dates.get('us', '取得不能')} / "
             f"東京 {market_dates.get('japan', '取得不能')}"
         ),
-    })
+    }
+    overlay_path = HISTORY_DIR / "overlays" / f"{snapshot_date}-japan.json"
+    if overlay_path.exists():
+        entry["japanOverlay"] = f"data/history/stocks/overlays/{snapshot_date}-japan.json"
+    entries.append(entry)
     entries.sort(key=lambda item: str(item.get("date", "")), reverse=True)
 
     index.update({
