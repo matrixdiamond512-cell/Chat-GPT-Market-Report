@@ -11,15 +11,17 @@ from typing import Any
 
 
 JST = dt.timezone(dt.timedelta(hours=9))
-REPORT_SLOTS = ("07:00", "12:00", "16:00", "21:00")
+REPORT_SLOTS = ("08:00", "12:00", "16:00", "21:00")
 
 # GitHub cron strings are UTC. These schedules implement staged acquisition:
-# - 07:00: Monday-Saturday (including the early 05:55 preload)
+# - 08:00: Monday-Saturday
 # - 12:00 / 16:00 / 21:00: weekdays only
 # There is no Saturday 09:00 summary report.
 SCHEDULE_TO_SLOT = {
-    "55 20 * * 0-5": "07:00",
-    "30,35,40,45,50,55 21 * * 0-5": "07:00",
+    "28 21 * * 0-5": "08:00",
+    "55 21 * * 0-5": "08:00",
+    "42 22 * * 0-5": "08:00",
+    "55 22 * * 0-5": "08:00",
     "30,35,40,45,50,55 2 * * 1-5": "12:00",
     "30,35,40,45,50,55 6 * * 1-5": "16:00",
     "30,35,40,45,50,55 11 * * 1-5": "21:00",
@@ -62,10 +64,10 @@ def slot_for_time(now: dt.datetime) -> str:
     hour_minute = current.strftime("%H:%M")
     weekday = current.weekday()  # Monday=0, Sunday=6
 
-    if weekday == 5:  # Saturday has only the 07:00 report.
-        return "07:00"
+    if weekday == 5:  # Saturday has only the 08:00 regular report.
+        return "08:00"
     if hour_minute < "09:30":
-        return "07:00"
+        return "08:00"
     if hour_minute < "14:30":
         return "12:00"
     if hour_minute < "19:30":
