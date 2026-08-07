@@ -1,4 +1,4 @@
-name: Deploy WEB Market Report to GitHub Pages
+name: Rebuild WEB Market Report GitHub Pages
 
 on:
   push:
@@ -8,27 +8,20 @@ on:
 permissions:
   contents: read
   pages: write
-  id-token: write
 
 concurrency:
-  group: github-pages
+  group: github-pages-rebuild
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  rebuild:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
 
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Validate public entry files
+      - name: Validate current main publication files
         shell: bash
         run: |
           test -f index.html
@@ -36,12 +29,14 @@ jobs:
           test -f data/nikkei225-supply-demand.json
           python -m json.tool data/nikkei225-supply-demand.json > /dev/null
           grep -q '先物・裁定・オプション・投資主体' nikkei225-supply-demand.html
+          grep -q 'nikkei225-basis-options-display.js' nikkei225-supply-demand.html
 
-      - name: Upload static site
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Request GitHub Pages rebuild using configured source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh api --method POST \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2026-03-10' \
+            "repos/${GITHUB_REPOSITORY}/pages/builds"
