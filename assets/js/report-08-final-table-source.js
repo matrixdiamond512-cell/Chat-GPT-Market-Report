@@ -129,16 +129,38 @@
     </tr>`).join("");
   }
 
+  function expectedSignature(rows) {
+    return JSON.stringify(rows.map((item) => [item.label, item.value, item.change, item.rate, item.direction]));
+  }
+
+  function actualSignature(table) {
+    if (!table) return "";
+    const values = [...table.querySelectorAll("tbody tr")].map((tr) => {
+      const cells = [...tr.querySelectorAll("th,td")].map((cell) => String(cell.textContent || "").trim());
+      if (cells.length < 5) return null;
+      return [normalizeLabel(cells[0]), cells[1], cells[2], cells[3], cells[4]];
+    }).filter(Boolean);
+    return JSON.stringify(values);
+  }
+
   function apply() {
     const report = currentReport();
     const baseRows = rowsFromFullText(report);
     if (!baseRows || baseRows.length !== 28) return;
     const rows = mergeReference(report, baseRows);
+    const expected = expectedSignature(rows);
+
     document.querySelectorAll("#app .section").forEach((section) => {
       const heading = section.querySelector(":scope > h2");
       if (!heading || !/主要市場データ/.test(heading.textContent || "")) return;
       const table = section.querySelector("table.morning-28-market-table, table.market-table");
       if (!table) return;
+
+      if (actualSignature(table) === expected && table.querySelectorAll("tbody tr").length === 28) {
+        section.dataset.finalMorningSource = referencePayload ? "fullText+verified-reference" : "fullText";
+        return;
+      }
+
       const thead = table.querySelector("thead");
       if (thead) thead.innerHTML = "<tr><th>項目</th><th>終値・値</th><th>前日比</th><th>騰落率</th><th>方向感</th></tr>";
       const tbody = table.querySelector("tbody");
