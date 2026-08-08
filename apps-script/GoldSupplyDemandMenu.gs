@@ -2,27 +2,22 @@
 // メニュー表示は MarketReportMenu.gs の共通 onOpen から呼び出す。
 // ゴールド専用のインストール型 onOpen トリガーは作成しない。
 
-var GOLD_SUPPLY_DEMAND_MENU_VERSION = '1.1.0';
+var GOLD_SUPPLY_DEMAND_MENU_VERSION = '1.1.1';
 var GOLD_SUPPLY_DEMAND_MENU_HANDLER = 'createGoldSupplyDemandMenuV1_';
 
 function installGoldSupplyDemandMenuV1() {
-  // 旧版で作成されたゴールド専用トリガーがあれば削除する。
-  var deleted = cleanupGoldSupplyDemandMenuLegacyTriggersV1_();
-
-  // 現在の画面には即時表示する。次回以降は MarketReportMenu.gs の共通 onOpen が表示する。
+  // メニュー表示だけを即時実行する。
+  // トリガーの作成・削除や blocking alert は行わないため、Apps Script エディタから実行してもすぐ終了する。
   createGoldSupplyDemandMenuV1_();
 
-  SpreadsheetApp.getUi().alert(
-    'ゴールド需給分析メニューを設定しました。\n' +
-    'コード版: ' + GOLD_SUPPLY_DEMAND_MENU_VERSION + '\n' +
-    '旧ゴールド専用トリガー削除数: ' + deleted + '\n\n' +
-    '表示項目:\n' +
-    '・ゴールド需給を今すぐ更新\n' +
-    '・更新状態を確認\n' +
-    '・ゴールド需給分析ページを開く\n\n' +
-    '新しいトリガーは作成していません。\n' +
-    '次回以降は既存の共通 onOpen から自動表示されます。'
-  );
+  var spreadsheet = SpreadsheetApp.getActive();
+  if (spreadsheet) {
+    spreadsheet.toast(
+      'ゴールド需給分析メニューを表示しました。コード版: ' + GOLD_SUPPLY_DEMAND_MENU_VERSION,
+      'ゴールド需給分析',
+      5
+    );
+  }
 }
 
 function createGoldSupplyDemandMenuV1_() {
@@ -48,10 +43,28 @@ function cleanupGoldSupplyDemandMenuLegacyTriggersV1_() {
   return deleted;
 }
 
+// 旧版で作られたゴールド専用 onOpen トリガーを整理したい場合だけ、手動でこの関数を実行する。
+function cleanupGoldSupplyDemandMenuLegacyTriggersV1() {
+  var deleted = cleanupGoldSupplyDemandMenuLegacyTriggersV1_();
+  var spreadsheet = SpreadsheetApp.getActive();
+  if (spreadsheet) {
+    spreadsheet.toast(
+      '旧ゴールド専用トリガーを削除しました。削除数: ' + deleted,
+      'ゴールド需給分析',
+      5
+    );
+  }
+  return deleted;
+}
+
 function uninstallGoldSupplyDemandMenuV1() {
   var deleted = cleanupGoldSupplyDemandMenuLegacyTriggersV1_();
-  SpreadsheetApp.getUi().alert(
-    '旧ゴールド需給分析メニュー用トリガーを削除しました。\n削除数: ' + deleted + '\n\n' +
-    '現在のメニュー表示は共通 onOpen 方式のため、この操作では共通 onOpen は削除しません。'
-  );
+  var spreadsheet = SpreadsheetApp.getActive();
+  if (spreadsheet) {
+    spreadsheet.toast(
+      '旧ゴールド需給分析メニュー用トリガーを削除しました。削除数: ' + deleted,
+      'ゴールド需給分析',
+      5
+    );
+  }
 }
