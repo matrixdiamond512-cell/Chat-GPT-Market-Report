@@ -1,0 +1,54 @@
+{
+  "checkedAt": "2026-08-08T19:26:58+09:00",
+  "reportDate": "2026-08-08",
+  "reportSlot": "08:00",
+  "ready": false,
+  "expectedRowCount": 28,
+  "actualRowCount": 28,
+  "expectedColumns": [
+    "項目",
+    "終値・値",
+    "前日比",
+    "騰落率",
+    "方向感"
+  ],
+  "labels": [
+    "NYダウ",
+    "NASDAQ総合",
+    "S&P500",
+    "Russell 2000",
+    "日経225現物",
+    "CME日経225先物・円建て",
+    "CME日経225先物・ドル建て",
+    "日経225先物（大阪取引所）",
+    "USD/JPY",
+    "EUR/USD",
+    "COMEX金先物",
+    "WTI原油",
+    "BTCUSD",
+    "VIX",
+    "日経VI",
+    "Fear & Greed Index",
+    "米10年債利回り",
+    "日本10年国債利回り",
+    "日経225予想PER",
+    "日経225 PBR",
+    "日経225予想EPS",
+    "日経225 25日移動平均乖離率",
+    "日経225 200日移動平均乖離率",
+    "東証プライム売買代金",
+    "東証プライム売買高",
+    "東証プライム値上がり銘柄数",
+    "東証プライム値下がり銘柄数",
+    "東証プライム25日騰落レシオ"
+  ],
+  "blockingReasons": [
+    "CME日経225先物・円建て: report says 取得不能 although verified reference value exists (66,315)",
+    "CME日経225先物・ドル建て: report says 取得不能 although verified reference value exists (66,345)",
+    "東証プライム売買高: report says 取得不能 although verified reference value exists (未公表（JPX公式8/7日報は翌営業日掲載）)"
+  ],
+  "warnings": [
+    "東証プライム売買高: verified unavailable should be labeled 未公表 rather than generic failure"
+  ],
+  "rule": "08:00 report is publishable only after the canonical 28-item / 5-column table passes this QA gate."
+}
