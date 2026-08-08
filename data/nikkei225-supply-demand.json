@@ -2,7 +2,7 @@
   "schemaVersion": "2.1.0",
   "pageId": "nikkei225-supply-demand",
   "pageTitle": "日経225需給分析",
-  "generatedAt": "2026-08-09T04:39:24+09:00",
+  "generatedAt": "2026-08-09T04:45:32+09:00",
   "spot": {
     "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
     "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
@@ -11,7 +11,7 @@
     "value": 65606.71,
     "asOfDate": "2026-08-07",
     "status": "verified",
-    "fetchedAt": "2026-08-09T04:39:24+09:00"
+    "fetchedAt": "2026-08-09T04:45:32+09:00"
   },
   "futures": {
     "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -30,7 +30,7 @@
     "volumeChangePercent": null,
     "miniVolumeChangePercent": null,
     "status": "verified",
-    "fetchedAt": "2026-08-09T04:37:52+09:00",
+    "fetchedAt": "2026-08-09T04:43:51+09:00",
     "previousOpenInterest": 192608,
     "miniPreviousOpenInterest": 318748,
     "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260807open_interest.xlsx"
@@ -50,7 +50,7 @@
     "asOfDate": "2026-08-07",
     "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260807_derivatives_market_data_night.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-08-09T04:39:18+09:00"
+    "fetchedAt": "2026-08-09T04:45:27+09:00"
   },
   "arbitrage": {
     "sourceName": "JPX 裁定取引の状況",
@@ -63,7 +63,7 @@
     "sellChange": 2082,
     "buyChange": -36534,
     "status": "verified",
-    "fetchedAt": "2026-08-09T04:37:51+09:00"
+    "fetchedAt": "2026-08-09T04:43:46+09:00"
   },
   "options": {
     "sourceName": "JPX 日経225オプション / オプション理論価格等情報",
@@ -76,7 +76,7 @@
     "ivChange": null,
     "asOfDate": "2026-08-09",
     "status": "calculated",
-    "fetchedAt": "2026-08-09T04:39:24+09:00",
+    "fetchedAt": "2026-08-09T04:45:32+09:00",
     "putVolume": null,
     "callVolume": null,
     "putCallStatus": "unavailable",
@@ -152,7 +152,7 @@
     ],
     "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202608/20260807_volume_by_participant_whole_day.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-08-09T04:39:20+09:00"
+    "fetchedAt": "2026-08-09T04:45:28+09:00"
   },
   "foreignInvestors": {
     "sourceName": "JPX 投資部門別売買状況",
@@ -166,13 +166,453 @@
     "futuresPriceDefinition": "各週の基準日と同日の取引所発表清算値（帳入値）。実際の最終約定価格とは異なる場合があります。",
     "cashNet": -4903.37149,
     "nikkeiFuturesNet": 1169.61321776,
-    "nikkeiFuturesPrice": 63720.0,
+    "nikkeiFuturesPrice": 41200.0,
     "topixFuturesNet": null,
     "asOfDate": "2026-07-31",
     "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000001rg1m-att/stock_val_1_260705.pdf",
     "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000001ri3p-att/Tousi_DV_W_20260727_20260731.csv",
     "direction": "現物売り・先物買い",
     "series": [
+      {
+        "asOfDate": "2025-08-08",
+        "cashNet": -373.24415,
+        "nikkeiFuturesNet": -861.38824,
+        "nikkeiFuturesPrice": 41820.0,
+        "direction": "現物・先物とも売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/um3qrc0000021b6b-att/stock_val_1_250801.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/um3qrc0000021bf0-att/Tousi_DV_W_202508_1_0804_0808.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-08-15",
+        "cashNet": 5550.3188,
+        "nikkeiFuturesNet": 4823.81005,
+        "nikkeiFuturesPrice": 43470.0,
+        "direction": "現物・先物とも買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/um3qrc0000021n2d-att/stock_val_1_250802.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/um3qrc0000021mlq-att/Tousi_DV_W_202508_2_0812_0815.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-08-22",
+        "cashNet": -1875.49994,
+        "nikkeiFuturesNet": 2264.83885,
+        "nikkeiFuturesPrice": 42570.0,
+        "direction": "現物売り・先物買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/um3qrc000002256r-att/stock_val_1_250803.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/um3qrc00000224rt-att/Tousi_DV_W_202508_3_0818_0822.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-08-29",
+        "cashNet": -2866.90236,
+        "nikkeiFuturesNet": -2462.18388,
+        "nikkeiFuturesPrice": 42690.0,
+        "direction": "現物・先物とも売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/um3qrc0000022p2v-att/stock_val_1_250804.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/um3qrc0000022oi1-att/Tousi_DV_W_202508_4_0825_0829.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-09-05",
+        "cashNet": 1631.79673,
+        "nikkeiFuturesNet": -596.92394,
+        "nikkeiFuturesPrice": 43070.0,
+        "direction": "現物買い・先物売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/um3qrc00000238ub-att/stock_val_1_250901.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/um3qrc00000239x8-att/Tousi_DV_W_202509_1_0901_0905.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-09-12",
+        "cashNet": -6533.133,
+        "nikkeiFuturesNet": 5286.17145,
+        "nikkeiFuturesPrice": 44480.0,
+        "direction": "現物売り・先物買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/um3qrc0000023r76-att/stock_val_1_250902.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/um3qrc0000023sdt-att/Tousi_DV_W_202509_2_0908_0912.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-09-19",
+        "cashNet": -2893.47197,
+        "nikkeiFuturesNet": 2297.30508,
+        "nikkeiFuturesPrice": 44730.0,
+        "direction": "現物売り・先物買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/um3qrc0000026a3f-att/stock_val_1_250903.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/um3qrc00000269z6-att/Tousi_DV_W_202509_3_0916_0919.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-09-26",
+        "cashNet": -5312.65005,
+        "nikkeiFuturesNet": -2246.01885,
+        "nikkeiFuturesPrice": 45050.0,
+        "direction": "現物・先物とも売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/um3qrc0000026py5-att/stock_val_1_250904.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/um3qrc0000026pnz-att/Tousi_DV_W_202509_4_0922_0926.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-10-03",
+        "cashNet": 12786.36968,
+        "nikkeiFuturesNet": -2910.28228,
+        "nikkeiFuturesPrice": 45940.0,
+        "direction": "現物買い・先物売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/um3qrc00000276of-att/stock_val_1_251001.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/um3qrc00000276ae-att/Tousi_DV_W_202510_1_0929_1003.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-10-10",
+        "cashNet": 10716.07049,
+        "nikkeiFuturesNet": -154.86831,
+        "nikkeiFuturesPrice": 47620.0,
+        "direction": "現物買い・先物売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/um3qrc0000027ph7-att/stock_val_1_251002.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/um3qrc0000027p53-att/Tousi_DV_W_202510_2_1006_1010.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-10-17",
+        "cashNet": 1832.52322,
+        "nikkeiFuturesNet": -3280.99467,
+        "nikkeiFuturesPrice": 47550.0,
+        "direction": "現物買い・先物売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/um3qrc0000028455-att/stock_val_1_251003.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/um3qrc00000283t7-att/Tousi_DV_W_202510_3_1014_1017.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-10-24",
+        "cashNet": 6501.82808,
+        "nikkeiFuturesNet": 296.78196,
+        "nikkeiFuturesPrice": 49320.0,
+        "direction": "現物・先物とも買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000304a-att/stock_val_1_251004.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt0000002zio-att/Tousi_DV_W_202510_4_1020_1024.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-10-31",
+        "cashNet": 3716.50523,
+        "nikkeiFuturesNet": -2658.09022,
+        "nikkeiFuturesPrice": 52470.0,
+        "direction": "現物買い・先物売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt0000003juw-att/stock_val_1_251005.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt0000003je8-att/Tousi_DV_W_202510_5_1027_1031.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-11-07",
+        "cashNet": -3213.70409,
+        "nikkeiFuturesNet": 2683.6438,
+        "nikkeiFuturesPrice": 50310.0,
+        "direction": "現物売り・先物買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt0000003yg7-att/stock_val_1_251101.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt0000003yag-att/Tousi_DV_W_202511_1_1104_1107.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-11-14",
+        "cashNet": 5218.85223,
+        "nikkeiFuturesNet": 135.1822,
+        "nikkeiFuturesPrice": 50330.0,
+        "direction": "現物・先物とも買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt0000004j26-att/stock_val_1_251102.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt0000004ikc-att/Tousi_DV_W_202511_2_1110_1114.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-11-21",
+        "cashNet": -4032.43124,
+        "nikkeiFuturesNet": 653.51437,
+        "nikkeiFuturesPrice": 48780.0,
+        "direction": "現物売り・先物買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt0000009goe-att/stock_val_1_251103.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt0000009foe-att/Tousi_DV_W_202511_3_1117_1121.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-11-28",
+        "cashNet": -1388.28994,
+        "nikkeiFuturesNet": -561.44235,
+        "nikkeiFuturesPrice": 50250.0,
+        "direction": "現物・先物とも売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000c1et-att/stock_val_1_251104.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000c18e-att/Tousi_DV_W_202511_4_1125_1128.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-12-05",
+        "cashNet": 489.16475,
+        "nikkeiFuturesNet": 2411.25748,
+        "nikkeiFuturesPrice": 50480.0,
+        "direction": "現物・先物とも買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000ce3t-att/stock_val_1_251201.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000cdls-att/Tousi_DV_W_202512_1_1201_1205.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-12-12",
+        "cashNet": 2020.55472,
+        "nikkeiFuturesNet": 124.12832,
+        "nikkeiFuturesPrice": 50760.0,
+        "direction": "現物・先物とも買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000cvwa-att/stock_val_1_251202.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000cvsr-att/Tousi_DV_W_202512_2_1208_1212.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-12-19",
+        "cashNet": -4322.27807,
+        "nikkeiFuturesNet": -1468.17631,
+        "nikkeiFuturesPrice": 49560.0,
+        "direction": "現物・先物とも売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000dfdh-att/stock_val_1_251203.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000dele-att/Tousi_DV_W_202512_3_1215_1219.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-12-26",
+        "cashNet": -374.71712,
+        "nikkeiFuturesNet": 774.13386,
+        "nikkeiFuturesPrice": 50720.0,
+        "direction": "現物売り・先物買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000g4c0-att/stock_val_1_251204.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000g3c6-att/Tousi_DV_W_202512_4_1222_1226.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2025-12-30",
+        "cashNet": -20.02089,
+        "nikkeiFuturesNet": 273.30755,
+        "nikkeiFuturesPrice": 50400.0,
+        "direction": "現物売り・先物買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000gbo4-att/stock_val_1_251205.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000gb1f-att/Tousi_DV_W_202512_5_1229_1230.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-01-09",
+        "cashNet": 12127.66146,
+        "nikkeiFuturesNet": -1003.39251,
+        "nikkeiFuturesPrice": 52080.0,
+        "direction": "現物買い・先物売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000gsey-att/stock_val_1_260101.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000gsld-att/Tousi_DV_W_202601_1_0105_0109.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-01-16",
+        "cashNet": 7504.93712,
+        "nikkeiFuturesNet": -1161.46221,
+        "nikkeiFuturesPrice": 54060.0,
+        "direction": "現物買い・先物売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000h4to-att/stock_val_1_260102.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000h4ws-att/Tousi_DV_W_202601_2_0113_0116.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-01-23",
+        "cashNet": 2127.82519,
+        "nikkeiFuturesNet": -2557.20641,
+        "nikkeiFuturesPrice": 53700.0,
+        "direction": "現物買い・先物売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000hmjv-att/stock_val_1_260103.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000hm74-att/Tousi_DV_W_202601_3_0119_0123.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-01-30",
+        "cashNet": 1870.26279,
+        "nikkeiFuturesNet": -1785.62383,
+        "nikkeiFuturesPrice": 53390.0,
+        "direction": "現物買い・先物売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000kcrr-att/stock_val_1_260104.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000kd25-att/Tousi_DV_W_202601_4_0126_0130.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-02-06",
+        "cashNet": 2486.67393,
+        "nikkeiFuturesNet": 1219.5078,
+        "nikkeiFuturesPrice": 54410.0,
+        "direction": "現物・先物とも買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000kwud-att/stock_val_1_260201.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000kvnh-att/Tousi_DV_W_202602_1_0202_0206.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-02-13",
+        "cashNet": 11918.06644,
+        "nikkeiFuturesNet": 4362.01009,
+        "nikkeiFuturesPrice": 56990.0,
+        "direction": "現物・先物とも買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000nl75-att/stock_val_1_260202.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000nl3p-att/Tousi_DV_W_202602_2_0209_0213.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-02-20",
+        "cashNet": 5233.89703,
+        "nikkeiFuturesNet": -1013.90792,
+        "nikkeiFuturesPrice": 56840.0,
+        "direction": "現物買い・先物売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000o9ob-att/stock_val_1_260203.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000o94v-att/Tousi_DV_W_202602_3_0216_0220.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-02-27",
+        "cashNet": 7454.09937,
+        "nikkeiFuturesNet": 640.57406,
+        "nikkeiFuturesPrice": 59100.0,
+        "direction": "現物・先物とも買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000oo7j-att/stock_val_1_260204.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000onuj-att/Tousi_DV_W_202602_4_0224_0227.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-03-06",
+        "cashNet": 2261.30451,
+        "nikkeiFuturesNet": -3587.36102,
+        "nikkeiFuturesPrice": 55730.0,
+        "direction": "現物買い・先物売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000p48c-att/stock_val_1_260301.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000p3xw-att/Tousi_DV_W_202603_1_0302_0306.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-03-13",
+        "cashNet": -4728.97397,
+        "nikkeiFuturesNet": 2840.51081,
+        "nikkeiFuturesPrice": 53370.0,
+        "direction": "現物売り・先物買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000pmrn-att/stock_val_1_260302.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000pn7i-att/Tousi_DV_W_202603_2_0309_0313.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-03-19",
+        "cashNet": -4918.96033,
+        "nikkeiFuturesNet": -1851.90414,
+        "nikkeiFuturesPrice": 52990.0,
+        "direction": "現物・先物とも売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000sc10-att/stock_val_1_260303.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000s98x-att/Tousi_DV_W_202603_3_0316_0319.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-03-27",
+        "cashNet": -15086.29733,
+        "nikkeiFuturesNet": -4576.9316,
+        "nikkeiFuturesPrice": 52880.0,
+        "direction": "現物・先物とも売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000sxdw-att/stock_val_1_260304.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000swl4-att/Tousi_DV_W_202603_4_0323_0327.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-04-03",
+        "cashNet": 19093.24265,
+        "nikkeiFuturesNet": -3634.90706,
+        "nikkeiFuturesPrice": 53200.0,
+        "direction": "現物買い・先物売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000000xp6y-att/stock_val_1_260401.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000000xpfu-att/Tousi_DV_W_202604_1_0330_0403.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-04-10",
+        "cashNet": 16351.74762,
+        "nikkeiFuturesNet": 475.34153,
+        "nikkeiFuturesPrice": 56860.0,
+        "direction": "現物・先物とも買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt0000010rya-att/stock_val_1_260402.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt0000010rm7-att/Tousi_DV_W_202604_2_0406_0410.pdf",
+        "derivativesSourceFormat": "JPX PDF legacy format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-04-17",
+        "cashNet": 9849.59388,
+        "nikkeiFuturesNet": 3630.2392829,
+        "nikkeiFuturesPrice": 58800.0,
+        "direction": "現物・先物とも買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt0000013geb-att/stock_val_1_260403.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt0000013g8t-att/Tousi_DV_W_20260413_20260417.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-04-24",
+        "cashNet": 8265.35901,
+        "nikkeiFuturesNet": 4927.00598758,
+        "nikkeiFuturesPrice": 59720.0,
+        "direction": "現物・先物とも買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt0000013zuk-att/stock_val_1_260404.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt0000013zqj-att/Tousi_DV_W_20260420_20260424.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-05-01",
+        "cashNet": 3886.71302,
+        "nikkeiFuturesNet": -912.0338722,
+        "nikkeiFuturesPrice": 59420.0,
+        "direction": "現物買い・先物売り",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt0000014dcj-att/stock_val_1_260405.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt0000014d16-att/Tousi_DV_W_20260427_20260501.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
+      {
+        "asOfDate": "2026-05-08",
+        "cashNet": 12096.53731,
+        "nikkeiFuturesNet": 1343.9009115,
+        "nikkeiFuturesPrice": 62840.0,
+        "direction": "現物・先物とも買い",
+        "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt0000016t28-att/stock_val_1_260501.pdf",
+        "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt0000016roc-att/Tousi_DV_W_20260507_20260508.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
+        "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
+      },
       {
         "asOfDate": "2026-05-15",
         "cashNet": 5346.38487,
@@ -181,6 +621,7 @@
         "direction": "現物買い・先物売り",
         "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt0000019i5k-att/stock_val_1_260502.pdf",
         "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt0000019gpj-att/Tousi_DV_W_20260511_20260515.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
         "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
       },
       {
@@ -191,6 +632,7 @@
         "direction": "現物買い・先物売り",
         "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000001eenn-att/stock_val_1_260503.pdf",
         "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000001efuo-att/Tousi_DV_W_20260518_20260522.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
         "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
       },
       {
@@ -201,6 +643,7 @@
         "direction": "現物売り・先物買い",
         "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000001eur3-att/stock_val_1_260504.pdf",
         "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000001euwj-att/Tousi_DV_W_20260525_20260529.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
         "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
       },
       {
@@ -211,6 +654,7 @@
         "direction": "現物・先物とも売り",
         "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000001f92k-att/stock_val_1_260601.pdf",
         "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000001f9om-att/Tousi_DV_W_20260601_20260605.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
         "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
       },
       {
@@ -221,6 +665,7 @@
         "direction": "現物・先物とも売り",
         "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000001fkjq-att/stock_val_1_260602.pdf",
         "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000001fkyg-att/Tousi_DV_W_20260608_20260612.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
         "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
       },
       {
@@ -231,6 +676,7 @@
         "direction": "現物・先物とも買い",
         "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000001i8z5-att/stock_val_1_260603.pdf",
         "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000001i94p-att/Tousi_DV_W_20260615_20260619.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
         "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
       },
       {
@@ -241,6 +687,7 @@
         "direction": "現物・先物とも売り",
         "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000001iqby-att/stock_val_1_260604.pdf",
         "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000001ipvs-att/Tousi_DV_W_20260622_20260626.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
         "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
       },
       {
@@ -251,6 +698,7 @@
         "direction": "現物買い・先物売り",
         "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000001j18z-att/stock_val_1_260701.pdf",
         "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000001j1df-att/Tousi_DV_W_20260629_20260703.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
         "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
       },
       {
@@ -261,52 +709,63 @@
         "direction": "現物・先物とも買い",
         "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000001jgrz-att/stock_val_1_260702.pdf",
         "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000001jgm8-att/Tousi_DV_W_20260706_20260710.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
         "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
       },
       {
         "asOfDate": "2026-07-17",
         "cashNet": -2587.05138,
         "nikkeiFuturesNet": 826.05966748,
-        "nikkeiFuturesPrice": 64060.0,
+        "nikkeiFuturesPrice": 39930.0,
         "direction": "現物売り・先物買い",
         "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000001jxje-att/stock_val_1_260703.pdf",
         "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000001jxd6-att/Tousi_DV_W_20260713_20260717.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
         "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
       },
       {
         "asOfDate": "2026-07-24",
         "cashNet": 3738.4561,
         "nikkeiFuturesNet": -645.61493024,
-        "nikkeiFuturesPrice": 64560.0,
+        "nikkeiFuturesPrice": 41870.0,
         "direction": "現物買い・先物売り",
         "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000001otd5-att/stock_val_1_260704.pdf",
         "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000001otfr-att/Tousi_DV_W_20260721_20260724.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
         "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
       },
       {
         "asOfDate": "2026-07-31",
         "cashNet": -4903.37149,
         "nikkeiFuturesNet": 1169.61321776,
-        "nikkeiFuturesPrice": 63720.0,
+        "nikkeiFuturesPrice": 41200.0,
         "direction": "現物売り・先物買い",
         "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000001rg1m-att/stock_val_1_260705.pdf",
         "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000001ri3p-att/Tousi_DV_W_20260727_20260731.csv",
+        "derivativesSourceFormat": "JPX CSV current format",
         "futuresPriceSourceUrl": "https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/"
       }
     ],
-    "historyWeeks": 12,
-    "historyTargetWeeks": 12,
+    "historyWeeks": 52,
+    "historyTargetWeeks": 52,
     "historyStatus": "verified",
-    "priceHistoryWeeks": 12,
+    "priceHistoryWeeks": 52,
     "priceHistoryStatus": "verified",
-    "historyPolicy": "current-plus-official-archive-same-week-only-no-fabrication",
+    "derivativesCurrentFormatWeeks": 16,
+    "derivativesLegacyFormatWeeks": 36,
+    "historyPolicy": "52-weeks-current-plus-official-archives-same-week-only-no-fabrication",
     "archiveSources": {
-      "cash": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/00-00-archives-00.html",
-      "derivatives": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/00-archives-00.html"
+      "cash": [
+        "https://www.jpx.co.jp/markets/statistics-equities/investor-type/00-00-archives-00.html",
+        "https://www.jpx.co.jp/markets/statistics-equities/investor-type/00-00-archives-01.html"
+      ],
+      "derivatives": [
+        "https://www.jpx.co.jp/markets/statistics-derivatives/sector/00-archives-00.html",
+        "https://www.jpx.co.jp/markets/statistics-derivatives/sector/00-archives-01.html"
+      ]
     },
-    "status": "stale",
-    "fetchedAt": "2026-08-09T04:39:17+09:00",
-    "error": "JPX海外投資家取得失敗: ValueError: 52-week history incomplete: 47/52; missing=[]"
+    "status": "verified",
+    "fetchedAt": "2026-08-09T04:45:25+09:00"
   },
   "participantOpenInterest": {
     "sourceName": "JPX 取引参加者別建玉残高",
@@ -420,7 +879,7 @@
     ],
     "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20260731_indexfut_oi_by_tp.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-08-09T04:39:21+09:00"
+    "fetchedAt": "2026-08-09T04:45:29+09:00"
   },
   "shortSelling": {
     "sourceName": "JPX 空売り集計",
@@ -433,7 +892,7 @@
     "avg20": null,
     "sampleCount": 5,
     "status": "verified",
-    "fetchedAt": "2026-08-09T04:37:51+09:00"
+    "fetchedAt": "2026-08-09T04:43:50+09:00"
   },
   "margin": {
     "sourceName": "JPX 信用取引現在高",
@@ -447,7 +906,7 @@
     "ratio": 8.507309502146947,
     "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/margin/tvdivq0000001rhv-att/mtgaisan2026073100.pdf",
     "status": "verified",
-    "fetchedAt": "2026-08-09T04:37:53+09:00"
+    "fetchedAt": "2026-08-09T04:43:54+09:00"
   },
   "assessment": {
     "overall": "中立",
@@ -464,7 +923,7 @@
     "SQ接近でオプション主導の振れに注意",
     "海外投資家の週次データで現物買い継続を確認"
   ],
-  "sourceStatus": "8確認済み + 1計算済み / 10主要セクション（内部欠損は個別表示）",
+  "sourceStatus": "9確認済み + 1計算済み / 10主要セクション（内部欠損は個別表示）",
   "diagnostics": {
     "policy": "primary-source-first-no-fabrication",
     "statuses": {
@@ -474,7 +933,7 @@
       "arbitrage": "verified",
       "options": "calculated",
       "participantFlow": "verified",
-      "foreignInvestors": "stale",
+      "foreignInvestors": "verified",
       "participantOpenInterest": "verified",
       "shortSelling": "verified",
       "margin": "verified"
@@ -485,12 +944,16 @@
       "JPX short-selling PDF"
     ],
     "oiParser": "verified JPX horizontal blocks at columns 0 and 7",
-    "foreignParser": "JPX Prime cash + Nikkei 225 futures exact 52 matched weeks; current CSV + legacy official PDF page-1 parser; Kabutan settlement prices on same dates",
+    "foreignParser": "JPX Prime page-1 cash + Nikkei 225 futures exact 52 matched weeks; current CSV + legacy official PDF; Kabutan settlement prices on same dates",
     "foreign52Debug": {
-      "cashParsedWeeks": 47,
+      "cashLinkCount": 80,
+      "cashParsedWeeks": 80,
+      "cashFailureCount": 0,
+      "cashFailureFiles": [],
       "derivativesParsedWeeks": 82,
-      "matchedWeeks": 47,
-      "missingDerivativeDatesWithinLatest52CashWeeks": []
+      "matchedWeeks": 80,
+      "missingDerivativeDatesWithinLatest52CashWeeks": [],
+      "missingPriceDates": []
     },
     "sessionParser": "JPX night volume + verified whole-day Nikkei 225 futures volume",
     "participantParser": "JPX dynamic JSON -> daily WholeDay turnover leaders + weekly IndexFutures sell/buy net OI",
@@ -511,7 +974,7 @@
     "status": "verified",
     "releaseFrequency": "weekly",
     "lookbackWeeks": 26,
-    "fetchedAt": "2026-08-09T04:39:25+09:00",
+    "fetchedAt": "2026-08-09T04:45:33+09:00",
     "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
     "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
     "priceStatus": "available",
