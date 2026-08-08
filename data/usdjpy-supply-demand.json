@@ -61,11 +61,11 @@
     "judgement": "円売り越し縮小",
     "judgementSub": "ドル買い圧力が弱まる方向",
     "lookbackWeeks": 26,
-    "verifiedPoints": 23,
+    "verifiedPoints": 26,
     "priceStatus": "unavailable",
     "priceSourceName": "Yahoo!ファイナンス USD/JPY時系列",
     "priceSourceUrl": "https://finance.yahoo.co.jp/quote/USDJPY=X/history",
-    "note": "CFTC公式Japanese Yen・Non-Commercial Long/Shortを使用。直近26週レンジを表示し、未取得週は欠損として残す。",
+    "note": "CFTC Japanese Yen・Non-Commercial Long/Shortを直近26週で表示。CFTC公式資料を軸に、履歴値はCFTCアーカイブとCOT履歴表示で照合する。",
     "comment": "8月4日時点の円先物Netは-45,473枚。前週の-163,412枚から+117,939枚改善し、円売り越しが大幅に縮小。ドル円の上昇を支えていた投機的な円売り圧力は急速に弱まったため、日米金利差とオーダー需給を併せて巻き戻し継続の有無を確認する。",
     "checkedAt": "2026-08-09T02:07:00+09:00",
     "series": [
@@ -73,14 +73,14 @@
       {"date":"2026-02-17","label":"24週前","long":143172,"short":130217,"net":12955,"price":null,"status":"verified"},
       {"date":"2026-02-24","label":"23週前","long":149364,"short":137825,"net":11539,"price":null,"status":"verified"},
       {"date":"2026-03-03","label":"22週前","long":134945,"short":151520,"net":-16575,"price":null,"status":"verified"},
-      {"date":"2026-03-10","label":"21週前","long":null,"short":null,"net":null,"price":null,"status":"missing"},
-      {"date":"2026-03-17","label":"20週前","long":null,"short":null,"net":null,"price":null,"status":"missing"},
+      {"date":"2026-03-10","label":"21週前","long":119411,"short":160798,"net":-41387,"price":null,"status":"verified"},
+      {"date":"2026-03-17","label":"20週前","long":106819,"short":174599,"net":-67780,"price":null,"status":"verified"},
       {"date":"2026-03-24","label":"19週前","long":98271,"short":161077,"net":-62806,"price":null,"status":"verified"},
       {"date":"2026-03-31","label":"18週前","long":95356,"short":168228,"net":-72872,"price":null,"status":"verified"},
       {"date":"2026-04-07","label":"17週前","long":91560,"short":185302,"net":-93742,"price":null,"status":"verified"},
       {"date":"2026-04-14","label":"16週前","long":102114,"short":185322,"net":-83208,"price":null,"status":"verified"},
       {"date":"2026-04-21","label":"15週前","long":101386,"short":195846,"net":-94460,"price":null,"status":"verified"},
-      {"date":"2026-04-28","label":"14週前","long":null,"short":null,"net":null,"price":null,"status":"missing"},
+      {"date":"2026-04-28","label":"14週前","long":106530,"short":208589,"net":-102059,"price":null,"status":"verified"},
       {"date":"2026-05-05","label":"13週前","long":109035,"short":170773,"net":-61738,"price":null,"status":"verified"},
       {"date":"2026-05-12","label":"12週前","long":100155,"short":175257,"net":-75102,"price":null,"status":"verified"},
       {"date":"2026-05-19","label":"11週前","long":106603,"short":200508,"net":-93905,"price":null,"status":"verified"},
@@ -124,7 +124,7 @@
       "CFTC Japanese Yen futures"
     ],
     "assessment": "価格方向、日米10年金利差の変化、東京スポット出来高、CFTC円先物の26週ポジション推移を中核とし、オーダー情報を補助材料として総合判断する。",
-    "cftc": "Japanese Yen / Non-CommercialのLong・Short・Netを直近26週レンジで表示し、Netプラスを円買い越し、Netマイナスを円売り越しとして読む。",
+    "cftc": "Japanese Yen / Non-CommercialのLong・Short・Netを直近26週で表示し、Netプラスを円買い越し、Netマイナスを円売り越しとして読む。",
     "tradersWebFx": "無料ページから主要な売り・買い・ストップ・NYカット水準を抜粋し、基準日時・鮮度・出典を明示する。"
   }
 }
