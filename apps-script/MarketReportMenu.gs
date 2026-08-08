@@ -1,20 +1,14 @@
 function installMarketReportWebMenu() {
   createMarketReportWebMenu_();
-  if (typeof createGoldSupplyDemandMenuV1_ === 'function') {
-    createGoldSupplyDemandMenuV1_();
-  }
-  SpreadsheetApp.getUi().alert(
-    'WEB版マーケットレポートメニューを設定しました。\n' +
-    '本文・ダッシュボード、東京市場ドル円出来高、USD/JPY需給分析、重要イベント、金利・債券市場、株式市場分析、ゴールド需給分析は別メニューです。\n' +
-    '次回以降もスプレッドシートを開くと自動表示されます。'
+  SpreadsheetApp.getActive().toast(
+    'WEB版マーケットレポートのメニューを更新しました。',
+    'WEB版マーケットレポート',
+    4
   );
 }
 
 function onOpen(e) {
   createMarketReportWebMenu_();
-  if (typeof createGoldSupplyDemandMenuV1_ === 'function') {
-    createGoldSupplyDemandMenuV1_();
-  }
 }
 
 function createMarketReportWebMenu_() {
@@ -32,6 +26,12 @@ function createMarketReportWebMenu_() {
     .addItem('JSONを貼り付けて公開', 'showWebReportSidebar')
     .addItem('GitHub設定を確認', 'showMarketReportWebConfigStatus');
 
+  var goldSubMenu = ui.createMenu('ゴールド需給分析')
+    .addItem('ゴールド需給を今すぐ更新', 'runGoldSupplyDemandPageUpdateNowV1')
+    .addItem('更新状態を確認', 'showGoldSupplyDemandPageUpdateStatusV1')
+    .addSeparator()
+    .addItem('ゴールド需給分析ページを開く', 'openGoldSupplyDemandWebPageV1');
+
   ui.createMenu('WEB版マーケットレポート')
     .addItem('最新Google Docsをプレビュー', 'previewLatestMarketReportFromDrive')
     .addItem('最新Google DocsをWEB公開', 'publishLatestMarketReportFromDrive')
@@ -39,6 +39,8 @@ function createMarketReportWebMenu_() {
     .addItem('本文・ダッシュボードを今すぐ更新', 'runMarketReportMasterNow')
     .addItem('本文・ダッシュボード自動更新を設定・修復', 'installMarketReportMasterSchedulerTriggers')
     .addItem('本文・ダッシュボード自動更新の状態', 'showMarketReportMasterSchedulerStatus')
+    .addSeparator()
+    .addSubMenu(goldSubMenu)
     .addSeparator()
     .addItem('WEB版を開く', 'showMarketReportWebPage')
     .addSubMenu(advancedMenu)
@@ -86,6 +88,13 @@ function createMarketReportWebMenu_() {
     .addItem('株式市場分析の定時更新状態', 'showStockAnalysisStandaloneTriggerStatus')
     .addItem('株式市場分析の定時更新を削除', 'uninstallStockAnalysisStandaloneTriggers')
     .addItem('株式市場分析ページを開く', 'showStockAnalysisWebPage')
+    .addToUi();
+
+  ui.createMenu('ゴールド需給分析')
+    .addItem('ゴールド需給を今すぐ更新', 'runGoldSupplyDemandPageUpdateNowV1')
+    .addItem('更新状態を確認', 'showGoldSupplyDemandPageUpdateStatusV1')
+    .addSeparator()
+    .addItem('ゴールド需給分析ページを開く', 'openGoldSupplyDemandWebPageV1')
     .addToUi();
 }
 
