@@ -8,17 +8,17 @@ on:
       - "scripts/fetch_us_stock_movers_sp500_contributions.py"
       - ".github/workflows/update-us-stock-movers-contributions.yml"
   schedule:
-    # U.S. cash close is 05:00 JST during DST. Retry to absorb source publication lag.
-    - cron: "40 21 * * 1-5" # 06:40 JST Tue-Sat
-    - cron: "0 22 * * 1-5"  # 07:00 JST Tue-Sat
-    - cron: "20 22 * * 1-5" # 07:20 JST Tue-Sat
+    # U.S. cash close is 05:00 JST during DST. Run after breadth and retry for publication lag.
+    - cron: "45 21 * * 1-5" # 06:45 JST Tue-Sat
+    - cron: "5 22 * * 1-5"  # 07:05 JST Tue-Sat
+    - cron: "25 22 * * 1-5" # 07:25 JST Tue-Sat
 
 permissions:
   contents: write
 
 concurrency:
-  group: stocks-page-daily-state
-  cancel-in-progress: false
+  group: update-us-stock-movers-contributions
+  cancel-in-progress: true
 
 jobs:
   update:
@@ -61,7 +61,6 @@ jobs:
           JST = timezone(timedelta(hours=9))
           log_path = Path('/tmp/us-stock-pipeline.log')
           log = log_path.read_text(encoding='utf-8', errors='replace') if log_path.exists() else ''
-          # Keep diagnostics useful but small; redact lines that could contain credential-like terms.
           safe = []
           for line in log.splitlines():
               lower = line.lower()
