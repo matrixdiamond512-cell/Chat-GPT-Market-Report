@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Parse JPX weekly foreign-investor cash and Nikkei 225 futures flows.
 
-The dashboard needs both the latest matching week and a matched history. Cash and
-Nikkei 225 futures are never combined across different weekly period ends. No
-missing week is fabricated. Previously verified matched weeks are retained so the
-history can grow to 12 weeks even when the current JPX page exposes only a few weeks.
+The dashboard always targets the latest 12 verified matching weeks. Current and
+JPX official archive pages are scanned together. Cash and Nikkei 225 futures are
+never combined across different weekly period ends, and missing weeks are never
+fabricated.
 """
 from __future__ import annotations
 import csv,io,json,re
@@ -14,6 +14,8 @@ from typing import Any
 import update_nikkei225_supply_demand as u
 ROOT=Path(__file__).resolve().parents[1]; OUT=ROOT/'data/nikkei225-supply-demand.json'
 HISTORY_WEEKS=12
+CASH_ARCHIVE='https://www.jpx.co.jp/markets/statistics-equities/investor-type/00-00-archives-00.html'
+SECTOR_ARCHIVE='https://www.jpx.co.jp/markets/statistics-derivatives/sector/00-archives-00.html'
 
 def cash_pdf(url:str)->dict[str,Any]|None:
     _,text=u.doc(url)
@@ -29,17 +31,17 @@ def cash_pdf(url:str)->dict[str,Any]|None:
 def derivative_csv(url:str)->dict[str,Any]|None:
     text=u.decode(u.get(url).content); rows=list(csv.reader(io.StringIO(text)))
     if not rows:return None
-    best=None
     for r in rows[1:]:
         if len(r)<12:continue
+        # Current JPX format: product type 301 = Nikkei 225 Futures,
+        # investor type 60 = Foreigners, Volume/Value 2 = monetary value.
         if r[0].strip()=='301' and r[5].strip()=='60' and r[6].strip()=='2':
             sell=u.n(r[7]); buy=u.n(r[9])
             if sell is None or buy is None:continue
             try:asof=datetime.strptime(r[4].strip(),'%Y%m%d').date().isoformat()
             except:asof=None
-            best={'nikkeiFuturesNet':(buy-sell)/100_000_000,'asOfDate':asof,'derivativesSourceFileUrl':url}
-            break
-    return best
+            return {'nikkeiFuturesNet':(buy-sell)/100_000_000,'asOfDate':asof,'derivativesSourceFileUrl':url}
+    return None
 
 def direction(cash:float|None,fut:float|None)->str:
     if cash is None or fut is None:return '判定待ち'
@@ -65,21 +67,40 @@ def valid_old_series(prev:dict[str,Any])->dict[str,dict[str,Any]]:
         }
     return out
 
+def all_links(pages:list[str],pattern:str)->list[str]:
+    seen=set(); out=[]
+    for page in pages:
+        try:
+            for url,_ in u.links(page):
+                if re.search(pattern,url,re.I) and url not in seen:
+                    seen.add(url); out.append(url)
+        except Exception:
+            pass
+    return out
+
 def main():
-    d=json.loads(OUT.read_text(encoding='utf-8')); prev=d.get('foreignInvestors') or {}; base={'sourceName':'JPX 投資部門別売買状況','sourceUrl':u.URLS['sector'],'cashNote':'東証プライム現物の海外投資家売買（金額ベース）','nikkeiNote':'日経225先物の海外投資家売買（金額ベース）','topixNote':'TOPIX先物は商品コード検証後に追加','comment':'週次の現物と日経225先物を同一期間で比較。日次の売買主体とは断定しません。'}
+    d=json.loads(OUT.read_text(encoding='utf-8')); prev=d.get('foreignInvestors') or {}
+    base={
+        'sourceName':'JPX 投資部門別売買状況',
+        'sourceUrl':u.URLS['sector'],
+        'cashNote':'東証プライム現物の海外投資家売買（金額ベース）',
+        'nikkeiNote':'日経225先物の海外投資家売買（金額ベース）',
+        'topixNote':'TOPIX先物は商品コード検証後に追加',
+        'comment':'週次の現物と日経225先物を同一期間で比較。日次の売買主体とは断定しません。'
+    }
     try:
-        cashlinks=[url for url,_ in u.links(u.URLS['cash']) if re.search(r'stock_val_1_\d+\.pdf(?:\?|$)',url,re.I)]
+        cashlinks=all_links([u.URLS['cash'],CASH_ARCHIVE],r'stock_val_1_\d+\.pdf(?:\?|$)')
         cr=[]
-        for url in cashlinks[:32]:
+        for url in cashlinks:
             try:
                 x=cash_pdf(url)
                 if x:cr.append(x)
             except Exception:pass
         cr.sort(key=lambda x:x['asOfDate'],reverse=True)
 
-        sectorlinks=[url for url,_ in u.links(u.URLS['sector']) if re.search(r'Tousi_DV_W_20\d{6}_20\d{6}\.csv(?:\?|$)',url,re.I)]
+        sectorlinks=all_links([u.URLS['sector'],SECTOR_ARCHIVE],r'Tousi_DV_W_20\d{6}_20\d{6}\.csv(?:\?|$)')
         dr=[]
-        for url in sectorlinks[:32]:
+        for url in sectorlinks:
             try:
                 x=derivative_csv(url)
                 if x:dr.append(x)
@@ -104,6 +125,8 @@ def main():
                 'derivativesSourceFileUrl':f['derivativesSourceFileUrl'],
             }
         series=[merged[k] for k in sorted(merged)][-HISTORY_WEEKS:]
+        if len(series)<HISTORY_WEEKS:
+            raise ValueError(f'12-week history incomplete: {len(series)}/{HISTORY_WEEKS}')
         latest=series[-1]
         d['foreignInvestors']={
             **base,
@@ -117,13 +140,21 @@ def main():
             'series':series,
             'historyWeeks':len(series),
             'historyTargetWeeks':HISTORY_WEEKS,
-            'historyStatus':'verified' if len(series)>=HISTORY_WEEKS else 'partial',
-            'historyPolicy':'matched-current-plus-retained-verified-no-fabrication',
+            'historyStatus':'verified',
+            'historyPolicy':'current-plus-official-archive-same-week-only-no-fabrication',
+            'archiveSources':{'cash':CASH_ARCHIVE,'derivatives':SECTOR_ARCHIVE},
             'status':'verified',
             'fetchedAt':u.now(),
         }
     except Exception as exc:
         d['foreignInvestors']=u.stale(prev,base,f'JPX海外投資家取得失敗: {type(exc).__name__}: {exc}')
     d['assessment']=u.assessment(d.get('futures') or {},d.get('arbitrage') or {},d.get('options') or {},d.get('foreignInvestors') or {})
-    keys=('spot','futures','sessions','arbitrage','options','participantFlow','foreignInvestors','participantOpenInterest','shortSelling','margin'); statuses={k:(d.get(k) or {}).get('status','unavailable') for k in keys}; d['sourceStatus']=f"{sum(v in {'verified','calculated'} for v in statuses.values())}/10項目連携（基準日を個別表示）"; d.setdefault('diagnostics',{})['statuses']=statuses; d['diagnostics']['foreignParser']='JPX Prime cash + Nikkei 225 futures monetary value; same-date matching; retained verified history capped at 12 weeks'; d['generatedAt']=u.now(); OUT.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n',encoding='utf-8'); print(json.dumps(d['foreignInvestors'],ensure_ascii=False))
+    keys=('spot','futures','sessions','arbitrage','options','participantFlow','foreignInvestors','participantOpenInterest','shortSelling','margin')
+    statuses={k:(d.get(k) or {}).get('status','unavailable') for k in keys}
+    d['sourceStatus']=f"{sum(v in {'verified','calculated'} for v in statuses.values())}/10項目連携（基準日を個別表示）"
+    d.setdefault('diagnostics',{})['statuses']=statuses
+    d['diagnostics']['foreignParser']='JPX Prime cash + Nikkei 225 futures; current + official archive pages; exact 12 matched weeks'
+    d['generatedAt']=u.now()
+    OUT.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+    print(json.dumps(d['foreignInvestors'],ensure_ascii=False))
 if __name__=='__main__':main()
