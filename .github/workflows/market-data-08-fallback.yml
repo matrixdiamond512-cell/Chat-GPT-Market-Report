@@ -1,12 +1,21 @@
-name: 08:00 market data fallback windows
+name: 08:00 market data fallback checks
 
 on:
   workflow_dispatch:
+    inputs:
+      recovery_time:
+        description: "Fallback acquisition label"
+        required: false
+        default: "07:42"
+        type: choice
+        options:
+          - "06:55"
+          - "07:42"
   schedule:
-    # Independent backups for the 08:00 report window.
-    # 06:55 JST recovers a missed primary start; 07:42 JST is the emergency final fallback.
-    - cron: "55 21 * * 0-5"
-    - cron: "42 22 * * 0-5"
+    # Independent backups. They refresh stale live quotes and retry any missing
+    # symbols without replaying the seven primary timestamps.
+    - cron: "55 21 * * 0-5" # 06:55 JST
+    - cron: "42 22 * * 0-5" # 07:42 JST
 
 permissions:
   contents: write
@@ -18,7 +27,7 @@ concurrency:
 jobs:
   recover:
     runs-on: ubuntu-latest
-    timeout-minutes: 70
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,15 +47,29 @@ jobs:
           python -m py_compile scripts/fetch_market_data.py
           python -m py_compile scripts/run_market_data_acquisition.py
           python -m py_compile scripts/run_market_data_window.py
+          python -m py_compile scripts/verify_market_report_readiness.py
 
-      - name: Recover missing 08:00 acquisition attempts
+      - name: Resolve recovery time
+        id: recovery
+        shell: bash
+        run: |
+          case "${{ github.event.schedule }}" in
+            "55 21 * * 0-5") TIME="06:55" ;;
+            "42 22 * * 0-5") TIME="07:42" ;;
+            *) TIME="${{ inputs.recovery_time }}" ;;
+          esac
+          if [ -z "$TIME" ]; then TIME="07:42"; fi
+          echo "time=$TIME" >> "$GITHUB_OUTPUT"
+
+      - name: Run one fallback acquisition
         env:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-          ACQUISITION_TRIGGER_SOURCE: fallback_window
+          ACQUISITION_TRIGGER_SOURCE: fallback_check
         run: |
           python scripts/run_market_data_window.py \
             --slot "08:00" \
-            --times "06:30,07:00,07:20,07:30,07:40,07:45,07:50" \
-            --trigger-source "fallback_window" \
-            --max-catchup-minutes 120
+            --times "${{ steps.recovery.outputs.time }}" \
+            --trigger-source "fallback_check" \
+            --max-catchup-minutes 15 \
+            --mode auto
