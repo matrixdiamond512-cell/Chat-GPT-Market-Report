@@ -39,12 +39,48 @@ jobs:
         run: python -m pip install --disable-pip-version-check requests beautifulsoup4 google-auth
 
       - name: Fetch verified S&P movers and contribution estimates
+        id: fetch
+        continue-on-error: true
         env:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-        run: python scripts/fetch_us_stock_movers_sp500_contributions.py
+        run: |
+          set -o pipefail
+          python scripts/fetch_us_stock_movers_sp500_contributions.py 2>&1 | tee /tmp/us-stock-pipeline.log
+
+      - name: Write pipeline status
+        if: always()
+        env:
+          FETCH_OUTCOME: ${{ steps.fetch.outcome }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+          JST = timezone(timedelta(hours=9))
+          log_path = Path('/tmp/us-stock-pipeline.log')
+          log = log_path.read_text(encoding='utf-8', errors='replace') if log_path.exists() else ''
+          # Keep diagnostics useful but small; redact lines that could contain credential-like terms.
+          safe = []
+          for line in log.splitlines():
+              lower = line.lower()
+              if any(token in lower for token in ('private_key', 'client_email', 'credential', 'authorization:', 'bearer ')):
+                  continue
+              safe.append(line[:500])
+          payload = {
+              'schemaVersion': '1.0.0',
+              'updatedAt': datetime.now(JST).replace(microsecond=0).isoformat(),
+              'status': 'ok' if os.environ.get('FETCH_OUTCOME') == 'success' else 'failed',
+              'logTail': safe[-25:],
+          }
+          path = Path('data/market/us-stock-pipeline-status.json')
+          path.parent.mkdir(parents=True, exist_ok=True)
+          path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
 
       - name: Validate generated data
+        if: steps.fetch.outcome == 'success'
         run: |
           python - <<'PY'
           import json
@@ -73,20 +109,30 @@ jobs:
           PY
 
       - name: Save stock-analysis history snapshot
+        if: steps.fetch.outcome == 'success'
         run: |
           if [ -f scripts/snapshot_stocks_history.py ]; then
             python scripts/snapshot_stocks_history.py
           fi
 
-      - name: Commit verified data
+      - name: Commit result or diagnostic
+        if: always()
         run: |
-          git add data/market/us-stock-movers.json data/market/sp500-contributions.json data/stocks.json data/history/stocks 2>/dev/null || true
+          git add data/market/us-stock-pipeline-status.json data/market/us-stock-movers.json data/market/sp500-contributions.json data/stocks.json data/history/stocks 2>/dev/null || true
           if git diff --cached --quiet; then
-            echo "U.S. mover/contribution data is already current."
-            exit 0
+            echo "U.S. stock pipeline files are already current."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            if [ "${{ steps.fetch.outcome }}" = "success" ]; then
+              git commit -m "Update verified US stock movers and S&P contributions"
+            else
+              git commit -m "Record US stock mover pipeline failure"
+            fi
+            git pull --rebase
+            git push
           fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Update verified US stock movers and S&P contributions"
-          git pull --rebase
-          git push
+
+      - name: Fail workflow after diagnostic is saved
+        if: steps.fetch.outcome != 'success'
+        run: exit 1
