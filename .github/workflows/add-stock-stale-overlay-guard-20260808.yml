@@ -1,0 +1,44 @@
+name: Add stock stale overlay guard 2026-08-08
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/add-stock-stale-overlay-guard-20260808.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Prevent older Nikkei metric overlay from replacing newer stock data
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('assets/js/stock-sector-decliners.js')
+          text=p.read_text(encoding='utf-8')
+          old='''  function applyNikkeiMetrics() {\n    if (requestedDate || !nikkeiPayload?.metrics || busy) return false;\n    const tbody = japanMarketBody();\n'''
+          new='''  function applyNikkeiMetrics() {\n    if (requestedDate || !nikkeiPayload?.metrics || busy) return false;\n    const mainJapanDate = marketDatesOf(latestStocksPayload || {}).japan;\n    const overlayDate = dateOnly(nikkeiPayload?.dataAsOf);\n    if (mainJapanDate && overlayDate && overlayDate < mainJapanDate) {\n      console.warn(`Skip stale Nikkei metrics overlay: ${overlayDate} < ${mainJapanDate}`);\n      return false;\n    }\n    const tbody = japanMarketBody();\n'''
+          if old not in text:
+              raise SystemExit('target applyNikkeiMetrics snippet not found')
+          text=text.replace(old,new,1)
+          p.write_text(text,encoding='utf-8')
+          PY
+      - name: Validate JavaScript guard text
+        run: grep -F "Skip stale Nikkei metrics overlay" assets/js/stock-sector-decliners.js
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/js/stock-sector-decliners.js
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Prevent stale Nikkei overlay from replacing newer stock data"
+          git pull --rebase
+          git push
