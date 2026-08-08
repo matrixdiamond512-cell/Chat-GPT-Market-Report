@@ -2,7 +2,7 @@
 'use strict';
 
 const DATA_URL='data/gold-supply-demand.json';
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const n=v=>{const x=Number(v);return Number.isFinite(x)?x:null};
 const fmt=(v,d=0)=>n(v)===null?'取得待ち':Number(v).toLocaleString('ja-JP',{minimumFractionDigits:d,maximumFractionDigits:d});
 const signed=(v,d=0,suffix='')=>n(v)===null?'—':`${Number(v)>0?'+':''}${fmt(v,d)}${suffix}`;
@@ -103,13 +103,13 @@ async function install(){
   return true;
 }
 
-function waitForBaseRender(){
-  if(install())return;
+async function waitForBaseRender(){
+  if(await install())return;
   const root=document.querySelector('[data-gold-dashboard]')||document.body;
   const observer=new MutationObserver(async()=>{if(await install())observer.disconnect();});
   observer.observe(root,{childList:true,subtree:true});
   setTimeout(()=>observer.disconnect(),15000);
 }
 
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',waitForBaseRender,{once:true});else waitForBaseRender();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{void waitForBaseRender();},{once:true});else void waitForBaseRender();
 })();
