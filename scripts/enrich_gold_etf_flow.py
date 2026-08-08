@@ -269,9 +269,12 @@ def main() -> int:
             "combinedChangeTonnes": gc + ic,
             "aligned": True,
         })
+    etf["gldHistory"] = gld_rows[-90:]
+    etf["iauHistory"] = iau_rows[-90:]
     etf["historyDaily"] = aligned[-90:]
     etf["historyDaysCount"] = len(etf["historyDaily"])
     etf["historyStatus"] = "verified" if etf["historyDaily"] else "collecting"
+    etf["historyFallback"] = "GLD" if not etf["historyDaily"] and etf["gldHistory"] else None
     etf["global"] = fetch_wgc_global(etf.get("global") if isinstance(etf.get("global"), dict) else None)
 
     HISTORY.write_text(json.dumps(history, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -281,6 +284,7 @@ def main() -> int:
         "gldHistory": len(gld_rows),
         "iauHistory": len(iau_rows),
         "alignedHistory": len(etf["historyDaily"]),
+        "historyFallback": etf.get("historyFallback"),
         "globalStatus": (etf.get("global") or {}).get("status"),
         "globalAsOf": (etf.get("global") or {}).get("asOfDate"),
     }, ensure_ascii=False))
