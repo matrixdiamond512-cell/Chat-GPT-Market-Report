@@ -1,0 +1,71 @@
+/* Gold supply-demand position color convention
+   Long = pink / Short = blue / Net = green */
+:root{
+  --position-long:#ee8fa8;
+  --position-long-soft:#fff4f7;
+  --position-long-line:#efb2c2;
+  --position-short:#5f9fe5;
+  --position-short-soft:#f3f8ff;
+  --position-short-line:#a9c9ef;
+  --position-net:#159447;
+  --position-net-soft:#f1faf4;
+  --position-net-line:#b9ddc5;
+}
+
+/* COMEX price x OI matrix
+   1: short covering, 2: new longs, 3: long liquidation, 4: new shorts */
+.gold-matrix .gold-matrix-cell:nth-child(1),
+.gold-matrix .gold-matrix-cell:nth-child(4){
+  background:var(--position-short-soft);
+  border-color:var(--position-short-line);
+}
+.gold-matrix .gold-matrix-cell:nth-child(1) strong,
+.gold-matrix .gold-matrix-cell:nth-child(4) strong{
+  color:#1b579d;
+}
+.gold-matrix .gold-matrix-cell:nth-child(2),
+.gold-matrix .gold-matrix-cell:nth-child(3){
+  background:var(--position-long-soft);
+  border-color:var(--position-long-line);
+}
+.gold-matrix .gold-matrix-cell:nth-child(2) strong,
+.gold-matrix .gold-matrix-cell:nth-child(3) strong{
+  color:#c94f73;
+}
+.gold-matrix .gold-matrix-cell:nth-child(1).active,
+.gold-matrix .gold-matrix-cell:nth-child(4).active{
+  box-shadow:inset 0 0 0 2px var(--position-short);
+}
+.gold-matrix .gold-matrix-cell:nth-child(2).active,
+.gold-matrix .gold-matrix-cell:nth-child(3).active{
+  box-shadow:inset 0 0 0 2px var(--position-long);
+}
+
+/* CFTC KPI cards */
+.gold-cftc-kpi.long{
+  background:var(--position-long-soft);
+  border-color:var(--position-long-line);
+}
+.gold-cftc-kpi.short{
+  background:var(--position-short-soft);
+  border-color:var(--position-short-line);
+}
+.gold-cftc-kpi.long .label,
+.gold-cftc-kpi.long .value{
+  color:#c94f73;
+}
+.gold-cftc-kpi.short .label,
+.gold-cftc-kpi.short .value{
+  color:#1b579d;
+}
+
+/* CFTC chart series */
+.gold-cftc-bar-long{fill:var(--position-long);opacity:.9}
+.gold-cftc-bar-short{fill:var(--position-short);opacity:.9}
+.gold-cftc-net-line{stroke:var(--position-net)}
+.gold-cftc-point-net{fill:var(--position-net)}
+
+/* Legend */
+.gold-cftc-legend i.long{background:var(--position-long)}
+.gold-cftc-legend i.short{background:var(--position-short)}
+.gold-cftc-legend i.net{background:var(--position-net)}
