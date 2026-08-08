@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
-"""Fetch verified S&P 500 stock movers and estimated contribution rankings.
+"""Fetch verified S&P 500 movers and estimated contribution rankings.
 
-Data sources:
-- Slickcharts S&P 500 holdings/weights (SPY holdings based)
-- TradingView America scanner for current completed-session close/change
+Primary source: Slickcharts S&P 500 Companies by Weight.
+The page contains company, symbol, weight, price, daily change and daily % change.
+The companion return-details page states the market-close date used by the current data.
 
-The S&P contribution number is explicitly an estimate in basis points (bp):
-    contribution_bp = holding_weight_percent * daily_change_percent
-This is equivalent to the stock's estimated contribution to the index daily return
-in basis points when the holding weight is treated as the index weight proxy.
+Contribution values are estimates, not official S&P DJI contribution data:
+    estimated contribution (bp) = weight (%) * daily change (%)
 
 Safety rules:
-- use the market date already verified by the US breadth pipeline;
-- require a large majority of S&P symbols to match TradingView scanner data;
+- Slickcharts close date must equal the verified U.S. market date in the breadth/stocks data;
+- require at least 490 unique S&P component rows and plausible aggregate weight;
+- compare the holdings-weighted return with the verified S&P 500 daily return when available;
 - require five positive and five negative movers/contributors;
-- never present the estimate as an official S&P Dow Jones Indices contribution;
-- never overwrite newer stocks.json data with an older market date;
-- if the current verified date is already stored with identical values, do not churn files.
+- never overwrite a newer U.S. market date;
+- label all contribution figures as estimates and never as official S&P DJI data.
 """
 from __future__ import annotations
 
@@ -40,9 +38,8 @@ CONTRIB_PATH = ROOT / "data" / "market" / "sp500-contributions.json"
 JST = timezone(timedelta(hours=9))
 
 SLICKCHARTS_URL = "https://www.slickcharts.com/sp500"
-TRADINGVIEW_URL = "https://scanner.tradingview.com/america/scan"
-SOURCE_HOLDINGS = "Slickcharts S&P 500 Companies by Weight (SPY holdings based)"
-SOURCE_PRICES = "TradingView America Stock Screener"
+SLICKCHARTS_RETURN_DETAILS_URL = "https://www.slickcharts.com/sp500/returns/details"
+SOURCE_NAME = "Slickcharts S&P 500 Companies by Weight (SPY holdings based)"
 USER_AGENT = "Mozilla/5.0 (compatible; Chat-GPT-Market-Report/1.0; +https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report)"
 
 
@@ -57,50 +54,64 @@ def load_json(path: Path, default: Any) -> Any:
         return default
 
 
-def normalize_symbol(value: str) -> str:
-    return re.sub(r"[^A-Z0-9]", "", str(value or "").upper())
-
-
 def parse_number(value: Any) -> float | None:
-    text = str(value or "").replace(",", "").replace("−", "-").strip()
+    text = str(value or "").replace(",", "").replace("−", "-").replace("＋", "+").strip()
     match = re.search(r"[-+]?\d+(?:\.\d+)?", text)
     if not match:
         return None
     try:
-        number = float(match.group(0))
-        return number if math.isfinite(number) else None
+        result = float(match.group(0))
+        return result if math.isfinite(result) else None
     except ValueError:
         return None
 
 
+def http_get(url: str) -> str:
+    response = requests.get(
+        url,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        },
+        timeout=45,
+    )
+    response.raise_for_status()
+    return response.text
+
+
 def verified_market_date(stocks: dict[str, Any]) -> str:
     breadth = load_json(BREADTH_PATH, {})
-    date = str(breadth.get("marketDate") or "")[:10]
-    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
-        return date
-    date = str((stocks.get("marketDates") or {}).get("us") or "")[:10]
-    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
-        return date
+    breadth_date = str(breadth.get("marketDate") or "")[:10]
+    stock_date = str((stocks.get("marketDates") or {}).get("us") or "")[:10]
+    valid = lambda value: bool(re.fullmatch(r"\d{4}-\d{2}-\d{2}", value))
+    if valid(breadth_date) and valid(stock_date) and breadth_date != stock_date:
+        raise RuntimeError(f"verified U.S. market dates disagree: breadth={breadth_date}, stocks={stock_date}")
+    if valid(breadth_date):
+        return breadth_date
+    if valid(stock_date):
+        return stock_date
     raise RuntimeError("verified U.S. market date is unavailable")
 
 
-def fetch_sp500_holdings() -> list[dict[str, Any]]:
-    response = requests.get(
-        SLICKCHARTS_URL,
-        headers={"User-Agent": USER_AGENT, "Accept-Language": "en-US,en;q=0.9"},
-        timeout=40,
-    )
-    response.raise_for_status()
-    soup = BeautifulSoup(response.text, "html.parser")
+def slickcharts_market_date() -> str:
+    text = BeautifulSoup(http_get(SLICKCHARTS_RETURN_DETAILS_URL), "html.parser").get_text(" ", strip=True)
+    match = re.search(r"market\s+close\s+on\s+(20\d{2}-\d{2}-\d{2})", text, flags=re.I)
+    if not match:
+        raise RuntimeError("Slickcharts market-close date was not found")
+    return match.group(1)
 
+
+def fetch_components() -> list[dict[str, Any]]:
+    soup = BeautifulSoup(http_get(SLICKCHARTS_URL), "html.parser")
     table = None
     for candidate in soup.find_all("table"):
-        header = " ".join(list(candidate.stripped_strings)[:30])
-        if "Symbol" in header and "Weight" in header and "% Chg" in header:
+        header = " ".join(list(candidate.stripped_strings)[:40])
+        if all(token in header for token in ("Company", "Symbol", "Weight", "Price", "Chg")):
             table = candidate
             break
     if table is None:
-        raise RuntimeError("Slickcharts S&P 500 holdings table was not found")
+        raise RuntimeError("Slickcharts S&P 500 component table was not found")
 
     rows: list[dict[str, Any]] = []
     for tr in table.find_all("tr"):
@@ -110,93 +121,65 @@ def fetch_sp500_holdings() -> list[dict[str, Any]]:
         company = " ".join(cells[1].stripped_strings).strip()
         symbol = " ".join(cells[2].stripped_strings).strip().upper()
         weight = parse_number(" ".join(cells[3].stripped_strings))
-        if not company or not symbol or weight is None or weight <= 0:
+        price = parse_number(" ".join(cells[4].stripped_strings))
+        day_change = parse_number(" ".join(cells[5].stripped_strings))
+        change_pct = parse_number(" ".join(cells[6].stripped_strings))
+        if not company or not symbol or None in (weight, price, day_change, change_pct):
+            continue
+        if weight <= 0 or price <= 0:
             continue
         rows.append({
             "company": company,
             "symbol": symbol,
-            "key": normalize_symbol(symbol),
-            "weightPct": weight,
+            "weightPct": float(weight),
+            "close": float(price),
+            "dayChange": float(day_change),
+            "changePct": float(change_pct),
+            "contributionBps": float(weight) * float(change_pct),
         })
 
-    unique = {row["key"]: row for row in rows if row["key"]}
+    unique: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        unique[row["symbol"]] = row
     rows = list(unique.values())
     if len(rows) < 490:
-        raise RuntimeError(f"S&P 500 holdings coverage too low: {len(rows)} symbols")
+        raise RuntimeError(f"Slickcharts S&P 500 component coverage too low: {len(rows)}")
     total_weight = sum(row["weightPct"] for row in rows)
     if not 95 <= total_weight <= 105:
-        raise RuntimeError(f"S&P holding weights total is implausible: {total_weight:.2f}%")
+        raise RuntimeError(f"S&P component weight total is implausible: {total_weight:.2f}%")
     return rows
 
 
-def fetch_tradingview_rows() -> dict[str, dict[str, Any]]:
-    payload = {
-        "filter": [
-            {"left": "type", "operation": "equal", "right": "stock"},
-        ],
-        "options": {"lang": "en"},
-        "markets": ["america"],
-        "symbols": {"query": {"types": []}, "tickers": []},
-        "columns": ["name", "description", "close", "change", "exchange", "type", "subtype"],
-        "sort": {"sortBy": "name", "sortOrder": "asc"},
-        "range": [0, 10000],
+def sp500_verified_return_pct(stocks: dict[str, Any]) -> float | None:
+    us = (stocks.get("marketInternals") or {}).get("us") or {}
+    for row in us.get("rows") or []:
+        if not isinstance(row, list) or len(row) < 3:
+            continue
+        if str(row[0]).strip() != "S&P500":
+            continue
+        match = re.search(r"\(([-+−＋]?\d+(?:\.\d+)?)%\)", str(row[2]))
+        if match:
+            return float(match.group(1).replace("−", "-").replace("＋", "+"))
+    return None
+
+
+def validate_weighted_return(rows: list[dict[str, Any]], stocks: dict[str, Any]) -> dict[str, Any]:
+    weighted_pct = sum(row["contributionBps"] for row in rows) / 100.0
+    verified_pct = sp500_verified_return_pct(stocks)
+    difference = None if verified_pct is None else weighted_pct - verified_pct
+    # SPY holdings weights and index weights are close but not identical, and displayed component
+    # returns are rounded. A 0.20 percentage-point tolerance catches stale-day mismatches without
+    # pretending the estimate is official index attribution.
+    if difference is not None and abs(difference) > 0.20:
+        raise RuntimeError(
+            f"Slickcharts weighted return does not match verified S&P 500 session: "
+            f"estimate={weighted_pct:.3f}%, verified={verified_pct:.3f}%, diff={difference:.3f}pt"
+        )
+    return {
+        "estimatedWeightedReturnPct": round(weighted_pct, 4),
+        "verifiedSP500ReturnPct": verified_pct,
+        "differencePt": None if difference is None else round(difference, 4),
     }
-    response = requests.post(
-        TRADINGVIEW_URL,
-        headers={"User-Agent": USER_AGENT, "Content-Type": "application/json"},
-        json=payload,
-        timeout=50,
-    )
-    response.raise_for_status()
-    raw = response.json()
-    result: dict[str, dict[str, Any]] = {}
-    allowed = {"NASDAQ", "NYSE", "AMEX", "NYSE ARCA", "NYSEARCA"}
-    for item in raw.get("data") or []:
-        values = item.get("d") or []
-        if len(values) < 7:
-            continue
-        symbol, description, close, change, exchange = values[:5]
-        key = normalize_symbol(str(symbol or ""))
-        close_num = close if isinstance(close, (int, float)) and math.isfinite(float(close)) else None
-        change_num = change if isinstance(change, (int, float)) and math.isfinite(float(change)) else None
-        if not key or close_num is None or change_num is None:
-            continue
-        exchange_text = str(exchange or "").upper().strip()
-        if exchange_text and exchange_text not in allowed:
-            continue
-        result.setdefault(key, {
-            "symbol": str(symbol),
-            "description": str(description or symbol),
-            "close": float(close_num),
-            "changePct": float(change_num),
-            "exchange": str(exchange or ""),
-        })
-    if len(result) < 3000:
-        raise RuntimeError(f"TradingView U.S. scanner coverage too low: {len(result)} rows")
-    return result
-
-
-def combine(holdings: list[dict[str, Any]], scanner: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
-    rows: list[dict[str, Any]] = []
-    for holding in holdings:
-        quote = scanner.get(holding["key"])
-        if not quote:
-            continue
-        change_pct = float(quote["changePct"])
-        weight_pct = float(holding["weightPct"])
-        rows.append({
-            "symbol": holding["symbol"],
-            "company": holding["company"],
-            "close": float(quote["close"]),
-            "changePct": change_pct,
-            "weightPct": weight_pct,
-            "contributionBps": weight_pct * change_pct,
-            "exchange": quote.get("exchange") or "",
-        })
-    if len(rows) < 480:
-        missing = len(holdings) - len(rows)
-        raise RuntimeError(f"S&P/TradingView matched coverage too low: {len(rows)} matched, {missing} missing")
-    return rows
 
 
 def fmt_price(value: float) -> str:
@@ -205,62 +188,70 @@ def fmt_price(value: float) -> str:
     return f"{value:.2f}".rstrip("0").rstrip(".")
 
 
+def fmt_day_change(value: float) -> str:
+    return f"{value:+,.2f}".rstrip("0").rstrip(".")
+
+
 def mover_public(row: dict[str, Any], rank: int, market_date: str) -> dict[str, Any]:
-    change = float(row["changePct"])
     return {
         "rank": rank,
         "symbol": row["symbol"],
         "name": f'{row["company"]}（{row["symbol"]}）',
-        "close": fmt_price(float(row["close"])),
-        "change": f"{change:+.2f}%",
+        "close": fmt_price(row["close"]),
+        "dayChange": fmt_day_change(row["dayChange"]),
+        "change": f'{row["changePct"]:+.2f}%',
         "reason": f"S&P500構成銘柄の前日比騰落率。基準日 {market_date}。材料要因は別途ニュース確認。",
     }
 
 
 def contribution_public(row: dict[str, Any], rank: int, market_date: str) -> dict[str, Any]:
-    bps = float(row["contributionBps"])
+    bps = row["contributionBps"]
     return {
         "rank": rank,
         "symbol": row["symbol"],
         "name": f'{row["company"]}（{row["symbol"]}）',
-        "close": fmt_price(float(row["close"])),
-        "change": f'{float(row["changePct"]):+.2f}%',
-        "weight": f'{float(row["weightPct"]):.2f}%',
+        "close": fmt_price(row["close"]),
+        "change": f'{row["changePct"]:+.2f}%',
+        "weight": f'{row["weightPct"]:.2f}%',
         "contribution": f"{bps:+.2f}bp",
         "contributionBps": round(bps, 4),
-        "reason": f"Slickcharts構成比×当日騰落率による推計。基準日 {market_date}。",
+        "reason": f"Slickcharts構成比×当日騰落率による推計。基準日 {market_date}。公式S&P寄与度ではない。",
     }
 
 
-def build_payloads(rows: list[dict[str, Any]], market_date: str, fetched_at: str) -> tuple[dict[str, Any], dict[str, Any]]:
+def build_payloads(
+    rows: list[dict[str, Any]], market_date: str, fetched_at: str, validation: dict[str, Any]
+) -> tuple[dict[str, Any], dict[str, Any]]:
     gainers = sorted((r for r in rows if r["changePct"] > 0), key=lambda r: r["changePct"], reverse=True)[:5]
     losers = sorted((r for r in rows if r["changePct"] < 0), key=lambda r: r["changePct"])[:5]
-    top_contrib = sorted((r for r in rows if r["contributionBps"] > 0), key=lambda r: r["contributionBps"], reverse=True)[:5]
-    bottom_contrib = sorted((r for r in rows if r["contributionBps"] < 0), key=lambda r: r["contributionBps"])[:5]
-    if min(len(gainers), len(losers), len(top_contrib), len(bottom_contrib)) < 5:
-        raise RuntimeError("U.S. mover/contribution rankings did not produce five rows each")
+    top = sorted((r for r in rows if r["contributionBps"] > 0), key=lambda r: r["contributionBps"], reverse=True)[:5]
+    bottom = sorted((r for r in rows if r["contributionBps"] < 0), key=lambda r: r["contributionBps"])[:5]
+    if min(len(gainers), len(losers), len(top), len(bottom)) < 5:
+        raise RuntimeError("S&P mover/contribution rankings did not produce five rows each")
 
     movers = {
-        "schemaVersion": "1.0.0",
+        "schemaVersion": "1.1.0",
         "status": "verified",
         "dataDate": market_date,
         "updatedAt": fetched_at,
         "universe": "S&P 500 constituents",
-        "source": {"holdings": SOURCE_HOLDINGS, "prices": SOURCE_PRICES},
+        "source": {"name": SOURCE_NAME, "url": SLICKCHARTS_URL, "basisDateUrl": SLICKCHARTS_RETURN_DETAILS_URL},
+        "validation": validation,
         "gainers": [mover_public(row, i, market_date) for i, row in enumerate(gainers, 1)],
         "losers": [mover_public(row, i, market_date) for i, row in enumerate(losers, 1)],
     }
     contributions = {
-        "schemaVersion": "1.0.0",
+        "schemaVersion": "1.1.0",
         "status": "verified-estimate",
         "dataDate": market_date,
         "updatedAt": fetched_at,
         "unit": "bp",
-        "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × TradingView daily change(%)",
         "official": False,
-        "source": {"holdings": SOURCE_HOLDINGS, "prices": SOURCE_PRICES},
-        "top": [contribution_public(row, i, market_date) for i, row in enumerate(top_contrib, 1)],
-        "bottom": [contribution_public(row, i, market_date) for i, row in enumerate(bottom_contrib, 1)],
+        "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
+        "source": {"name": SOURCE_NAME, "url": SLICKCHARTS_URL, "basisDateUrl": SLICKCHARTS_RETURN_DETAILS_URL},
+        "validation": validation,
+        "top": [contribution_public(row, i, market_date) for i, row in enumerate(top, 1)],
+        "bottom": [contribution_public(row, i, market_date) for i, row in enumerate(bottom, 1)],
     }
     return movers, contributions
 
@@ -269,11 +260,9 @@ def same_rankings(old: dict[str, Any], new: dict[str, Any], keys: tuple[str, ...
     if old.get("dataDate") != new.get("dataDate"):
         return False
     for key in keys:
-        old_rows = old.get(key) or []
-        new_rows = new.get(key) or []
-        def signature(rows: list[dict[str, Any]]) -> list[tuple[Any, ...]]:
-            return [(r.get("symbol"), r.get("close"), r.get("change"), r.get("contribution"), r.get("weight")) for r in rows]
-        if signature(old_rows) != signature(new_rows):
+        def signature(items: list[dict[str, Any]]) -> list[tuple[Any, ...]]:
+            return [(x.get("symbol"), x.get("close"), x.get("change"), x.get("contribution"), x.get("weight")) for x in items]
+        if signature(old.get(key) or []) != signature(new.get(key) or []):
             return False
     return True
 
@@ -289,7 +278,8 @@ def merge_into_stocks(stocks: dict[str, Any], movers: dict[str, Any], contributi
         "status": "verified",
         "dataDate": market_date,
         "updatedAt": movers["updatedAt"],
-        "source": f"{SOURCE_PRICES} / {SOURCE_HOLDINGS}",
+        "source": SOURCE_NAME,
+        "validation": movers["validation"],
         "gainers": movers["gainers"],
         "losers": movers["losers"],
     }
@@ -302,7 +292,8 @@ def merge_into_stocks(stocks: dict[str, Any], movers: dict[str, Any], contributi
         "unit": "bp",
         "official": False,
         "method": contributions["method"],
-        "source": f"{SOURCE_HOLDINGS} / {SOURCE_PRICES}",
+        "source": SOURCE_NAME,
+        "validation": contributions["validation"],
         "top": contributions["top"],
         "bottom": contributions["bottom"],
     }
@@ -337,22 +328,20 @@ def main() -> int:
     stocks = load_json(STOCKS_PATH, {})
     if not stocks:
         raise SystemExit("data/stocks.json is unavailable")
-    market_date = verified_market_date(stocks)
-    current_us = str((stocks.get("marketDates") or {}).get("us") or "")[:10]
-    if current_us and current_us != market_date:
-        raise SystemExit(f"US breadth/stocks market-date mismatch: breadth={market_date}, stocks={current_us}")
+    expected_date = verified_market_date(stocks)
+    source_date = slickcharts_market_date()
+    if source_date != expected_date:
+        raise SystemExit(f"Slickcharts is not on the verified U.S. session: source={source_date}, expected={expected_date}")
 
-    holdings = fetch_sp500_holdings()
-    scanner = fetch_tradingview_rows()
-    rows = combine(holdings, scanner)
+    rows = fetch_components()
+    validation = validate_weighted_return(rows, stocks)
     fetched_at = now_jst().isoformat()
-    movers, contributions = build_payloads(rows, market_date, fetched_at)
+    movers, contributions = build_payloads(rows, expected_date, fetched_at, validation)
 
     old_movers = load_json(MOVERS_PATH, {})
     old_contrib = load_json(CONTRIB_PATH, {})
-    already_current = same_rankings(old_movers, movers, ("gainers", "losers")) and same_rankings(old_contrib, contributions, ("top", "bottom"))
-    if already_current:
-        print(json.dumps({"status": "already-current", "marketDate": market_date}, ensure_ascii=False))
+    if same_rankings(old_movers, movers, ("gainers", "losers")) and same_rankings(old_contrib, contributions, ("top", "bottom")):
+        print(json.dumps({"status": "already-current", "marketDate": expected_date, "validation": validation}, ensure_ascii=False))
         return 0
 
     merge_into_stocks(stocks, movers, contributions)
@@ -363,10 +352,12 @@ def main() -> int:
     sync_stock_analysis_json(stocks)
     print(json.dumps({
         "status": "verified",
-        "marketDate": market_date,
-        "matchedSymbols": len(rows),
-        "topMover": movers["gainers"][0]["name"],
+        "marketDate": expected_date,
+        "componentCount": len(rows),
+        "topGainer": movers["gainers"][0]["name"],
+        "topLoser": movers["losers"][0]["name"],
         "topContribution": contributions["top"][0]["name"],
+        "validation": validation,
     }, ensure_ascii=False))
     return 0
 
