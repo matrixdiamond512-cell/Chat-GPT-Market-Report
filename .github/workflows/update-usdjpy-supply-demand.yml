@@ -11,6 +11,7 @@ on:
     paths:
       - ".github/workflows/update-usdjpy-supply-demand.yml"
       - "scripts/build_usdjpy_supply_demand.py"
+      - "scripts/enrich_usdjpy_price_history.py"
       - "scripts/enrich_usdjpy_tradersweb_levels.py"
       - "data/usdjpy-supply-demand-trigger/**"
 
@@ -39,10 +40,14 @@ jobs:
       - name: Validate builders
         run: |
           python -m py_compile scripts/build_usdjpy_supply_demand.py
+          python -m py_compile scripts/enrich_usdjpy_price_history.py
           python -m py_compile scripts/enrich_usdjpy_tradersweb_levels.py
 
       - name: Build USDJPY supply-demand JSON
         run: python scripts/build_usdjpy_supply_demand.py
+
+      - name: Ensure USDJPY historical price line
+        run: python scripts/enrich_usdjpy_price_history.py
 
       - name: Extract Traders Web FX key levels
         run: python scripts/enrich_usdjpy_tradersweb_levels.py
@@ -57,18 +62,24 @@ jobs:
           data = json.loads(Path('data/usdjpy-supply-demand.json').read_text(encoding='utf-8'))
           tw = data.get('tradersWebFx', {})
           levels = tw.get('keyLevels', {})
+          cftc = data.get('cftc', {})
+          series = cftc.get('series', [])
+          price_points = sum(isinstance(x.get('price'), (int, float)) for x in series)
           assert data.get('pageId') == 'usdjpy-supply-demand'
           assert data.get('generatedAt')
           assert tw.get('url')
           assert tw.get('pageConfirmed') is True
           assert levels.get('extractedRowCount', 0) > 0
           assert data.get('coreSnapshot') is not None
+          assert cftc.get('priceStatus') == 'available'
+          assert price_points >= 2
           print('generatedAt:', data.get('generatedAt'))
           print('Traders Web FX status:', tw.get('status'))
           print('Traders Web FX source time:', tw.get('sourceUpdatedAt'))
           print('Traders Web FX checked at:', tw.get('checkedAt'))
           print('Traders Web FX rows:', levels.get('extractedRowCount'))
-          print('CFTC:', data.get('cftc', {}).get('asOf'), data.get('cftc', {}).get('status'))
+          print('CFTC:', cftc.get('asOf'), cftc.get('status'))
+          print('USDJPY price points:', price_points, cftc.get('priceSourceName'))
           PY
 
       - name: Commit refreshed integration metadata
