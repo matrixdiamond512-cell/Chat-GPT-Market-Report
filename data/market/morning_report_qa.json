@@ -1,8 +1,8 @@
 {
-  "checkedAt": "2026-08-08T19:26:58+09:00",
+  "checkedAt": "2026-08-08T19:28:05+09:00",
   "reportDate": "2026-08-08",
   "reportSlot": "08:00",
-  "ready": false,
+  "ready": true,
   "expectedRowCount": 28,
   "actualRowCount": 28,
   "expectedColumns": [
@@ -42,13 +42,14 @@
     "東証プライム値下がり銘柄数",
     "東証プライム25日騰落レシオ"
   ],
-  "blockingReasons": [
-    "CME日経225先物・円建て: report says 取得不能 although verified reference value exists (66,315)",
-    "CME日経225先物・ドル建て: report says 取得不能 although verified reference value exists (66,345)",
-    "東証プライム売買高: report says 取得不能 although verified reference value exists (未公表（JPX公式8/7日報は翌営業日掲載）)"
-  ],
+  "blockingReasons": [],
   "warnings": [
-    "東証プライム売買高: verified unavailable should be labeled 未公表 rather than generic failure"
+    "CME日経225先物・円建て: verified morning-reference overlay applied",
+    "CME日経225先物・ドル建て: verified morning-reference overlay applied",
+    "日経225先物（大阪取引所）: verified morning-reference overlay applied",
+    "COMEX金先物: verified morning-reference overlay applied",
+    "東証プライム売買代金: verified morning-reference overlay applied",
+    "東証プライム売買高: verified morning-reference overlay applied"
   ],
-  "rule": "08:00 report is publishable only after the canonical 28-item / 5-column table passes this QA gate."
+  "rule": "Publish only the effective 28-item / 5-column table after verified morning-reference overlays pass QA."
 }
