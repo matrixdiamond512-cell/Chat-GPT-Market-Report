@@ -32,11 +32,11 @@ on:
 permissions:
   contents: write
 
-# Runs are short. Serialize only the actual repository write section so two
-# delayed cron events cannot push over each other. A late event expires after
-# 20 minutes instead of replaying old timestamps just before/after publication.
+# Each scheduled time gets its own concurrency key. A delayed 06:30 run must
+# not queue or block 07:00/07:20/... attempts. Repository writes are protected
+# by git pull --rebase in run_market_data_window.py.
 concurrency:
-  group: market-data-08-window
+  group: market-data-08-primary-${{ github.event.schedule || inputs.scheduled_time || github.run_id }}
   cancel-in-progress: false
 
 jobs:
