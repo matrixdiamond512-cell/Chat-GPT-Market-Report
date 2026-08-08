@@ -23,8 +23,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: stocks-page-daily-state
-  cancel-in-progress: false
+  group: update-us-stock-breadth
+  cancel-in-progress: true
 
 jobs:
   update:
