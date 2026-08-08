@@ -7,6 +7,10 @@ on:
     paths:
       - ".github/pages-inspect-trigger.txt"
       - ".github/workflows/validate-nikkei225-foreign-flow.yml"
+      - "nikkei225-supply-demand.html"
+      - "assets/js/nikkei225-foreign-flow-display.js"
+      - "assets/css/nikkei225-foreign-flow.css"
+      - "data/nikkei225-supply-demand.json"
 
 permissions:
   contents: write
@@ -30,23 +34,42 @@ jobs:
           : > /tmp/data.json
           : > /tmp/foreign.js
           : > /tmp/foreign.css
-          for i in $(seq 1 36); do
+          for i in $(seq 1 48); do
             CB="$(date +%s)-$i"
             curl -fsSL --retry 2 --retry-delay 2 "${PAGE}?v=${CB}" -o /tmp/page.html || true
             curl -fsSL --retry 2 --retry-delay 2 "${DATA}?v=${CB}" -o /tmp/data.json || true
             curl -fsSL --retry 2 --retry-delay 2 "${JS}?v=${CB}" -o /tmp/foreign.js || true
             curl -fsSL --retry 2 --retry-delay 2 "${CSS}?v=${CB}" -o /tmp/foreign.css || true
-            if grep -q 'nikkei225-foreign-flow-display.js' /tmp/page.html \
-              && grep -q 'nikkei225-foreign-flow.css' /tmp/page.html \
-              && grep -q '海外投資家の週次需給推移' /tmp/foreign.js \
-              && grep -q 'nikkei-foreign-card' /tmp/foreign.css \
+            if grep -q 'nikkei225-foreign-flow-display.js?v=20260809-02' /tmp/page.html \
+              && grep -q 'nikkei225-foreign-flow.css?v=20260809-02' /tmp/page.html \
+              && grep -q '週次ネットフロー＋日経225先物価格' /tmp/foreign.js \
+              && grep -q 'nikkei-foreign-price-line' /tmp/foreign.js \
+              && grep -q 'nikkei-foreign-price-line' /tmp/foreign.css \
               && python - <<'PY'
           import json,sys
           try:
               d=json.load(open('/tmp/data.json'))
               f=d.get('foreignInvestors') or {}
               s=f.get('series') or []
-              ok=(f.get('status')=='verified' and f.get('historyStatus')=='verified' and f.get('historyWeeks')==12 and f.get('historyTargetWeeks')==12 and len(s)==12 and f.get('cashNet') is not None and f.get('nikkeiFuturesNet') is not None and all(x.get('asOfDate') and x.get('cashNet') is not None and x.get('nikkeiFuturesNet') is not None for x in s))
+              ok=(
+                  f.get('status')=='verified'
+                  and f.get('historyStatus')=='verified'
+                  and f.get('historyWeeks')==12
+                  and f.get('historyTargetWeeks')==12
+                  and f.get('priceHistoryStatus')=='verified'
+                  and f.get('priceHistoryWeeks')==12
+                  and len(s)==12
+                  and f.get('cashNet') is not None
+                  and f.get('nikkeiFuturesNet') is not None
+                  and f.get('nikkeiFuturesPrice') is not None
+                  and all(
+                      x.get('asOfDate')
+                      and x.get('cashNet') is not None
+                      and x.get('nikkeiFuturesNet') is not None
+                      and x.get('nikkeiFuturesPrice') is not None
+                      for x in s
+                  )
+              )
           except Exception:
               ok=False
           sys.exit(0 if ok else 1)
@@ -67,26 +90,50 @@ jobs:
               d={}
           f=d.get('foreignInvestors') or {}
           s=f.get('series') or []
-          series_ok=bool(f.get('status')=='verified' and f.get('historyStatus')=='verified' and f.get('historyWeeks')==12 and f.get('historyTargetWeeks')==12 and len(s)==12 and all(x.get('asOfDate') and x.get('cashNet') is not None and x.get('nikkeiFuturesNet') is not None for x in s))
-          display_ok=bool('nikkei225-foreign-flow-display.js' in html and 'nikkei225-foreign-flow.css' in html and '海外投資家の週次需給推移' in js and 'nikkei-foreign-card' in css)
+          series_ok=bool(
+              f.get('status')=='verified'
+              and f.get('historyStatus')=='verified'
+              and f.get('historyWeeks')==12
+              and f.get('historyTargetWeeks')==12
+              and len(s)==12
+              and all(x.get('asOfDate') and x.get('cashNet') is not None and x.get('nikkeiFuturesNet') is not None for x in s)
+          )
+          price_ok=bool(
+              f.get('priceHistoryStatus')=='verified'
+              and f.get('priceHistoryWeeks')==12
+              and f.get('nikkeiFuturesPrice') is not None
+              and all(x.get('nikkeiFuturesPrice') is not None for x in s)
+          )
+          display_ok=bool(
+              'nikkei225-foreign-flow-display.js?v=20260809-02' in html
+              and 'nikkei225-foreign-flow.css?v=20260809-02' in html
+              and '週次ネットフロー＋日経225先物価格' in js
+              and 'nikkei-foreign-price-line' in js
+              and 'nikkei-foreign-price-line' in css
+              and '日経225先物価格（右軸）' in js
+          )
           out={
               'checkedAt':datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9))).isoformat(timespec='seconds'),
               'pageUrl':'https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/nikkei225-supply-demand.html',
-              'htmlHasForeignFlowScript':'nikkei225-foreign-flow-display.js' in html,
-              'htmlHasForeignFlowCss':'nikkei225-foreign-flow.css' in html,
-              'publicForeignFlowScriptHasTitle':'海外投資家の週次需給推移' in js,
-              'publicForeignFlowCssHasCard':'nikkei-foreign-card' in css,
+              'htmlHasForeignFlowScript':'nikkei225-foreign-flow-display.js?v=20260809-02' in html,
+              'htmlHasForeignFlowCss':'nikkei225-foreign-flow.css?v=20260809-02' in html,
+              'publicForeignFlowScriptHasTitle':'週次ネットフロー＋日経225先物価格' in js,
+              'publicForeignFlowCssHasPriceLine':'nikkei-foreign-price-line' in css,
               'publicForeignStatus':f.get('status'),
               'publicForeignAsOfDate':f.get('asOfDate'),
               'publicForeignCashNet':f.get('cashNet'),
               'publicForeignNikkeiFuturesNet':f.get('nikkeiFuturesNet'),
+              'publicForeignNikkeiFuturesPrice':f.get('nikkeiFuturesPrice'),
               'publicForeignDirection':f.get('direction'),
               'publicForeignHistoryWeeks':f.get('historyWeeks'),
               'publicForeignHistoryTargetWeeks':f.get('historyTargetWeeks'),
               'publicForeignHistoryStatus':f.get('historyStatus'),
+              'publicForeignPriceHistoryWeeks':f.get('priceHistoryWeeks'),
+              'publicForeignPriceHistoryStatus':f.get('priceHistoryStatus'),
               'foreignSeriesValidationPassed':series_ok,
+              'foreignPriceValidationPassed':price_ok,
               'foreignDisplayValidationPassed':display_ok,
-              'liveValidationPassed':bool(series_ok and display_ok)
+              'liveValidationPassed':bool(series_ok and price_ok and display_ok)
           }
           pathlib.Path('data/nikkei225-foreign-flow-public-validation.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           print(json.dumps(out,ensure_ascii=False,indent=2))
