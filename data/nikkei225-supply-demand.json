@@ -2,7 +2,7 @@
   "schemaVersion": "2.1.0",
   "pageId": "nikkei225-supply-demand",
   "pageTitle": "日経225需給分析",
-  "generatedAt": "2026-08-09T01:17:46+09:00",
+  "generatedAt": "2026-08-09T01:53:48+09:00",
   "spot": {
     "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
     "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
@@ -11,7 +11,7 @@
     "value": 65606.71,
     "asOfDate": "2026-08-07",
     "status": "verified",
-    "fetchedAt": "2026-08-09T01:17:46+09:00"
+    "fetchedAt": "2026-08-09T01:53:48+09:00"
   },
   "futures": {
     "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -30,7 +30,7 @@
     "volumeChangePercent": null,
     "miniVolumeChangePercent": null,
     "status": "verified",
-    "fetchedAt": "2026-08-09T01:17:32+09:00",
+    "fetchedAt": "2026-08-09T01:53:33+09:00",
     "previousOpenInterest": 192608,
     "miniPreviousOpenInterest": 318748,
     "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260807open_interest.xlsx"
@@ -50,7 +50,7 @@
     "asOfDate": "2026-08-07",
     "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260807_derivatives_market_data_night.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-08-09T01:17:41+09:00"
+    "fetchedAt": "2026-08-09T01:53:42+09:00"
   },
   "arbitrage": {
     "sourceName": "JPX 裁定取引の状況",
@@ -63,7 +63,7 @@
     "sellChange": 2082,
     "buyChange": -36534,
     "status": "verified",
-    "fetchedAt": "2026-08-09T01:17:31+09:00"
+    "fetchedAt": "2026-08-09T01:53:32+09:00"
   },
   "options": {
     "sourceName": "JPX 日経225オプション / オプション理論価格等情報",
@@ -76,7 +76,7 @@
     "ivChange": null,
     "asOfDate": "2026-08-09",
     "status": "calculated",
-    "fetchedAt": "2026-08-09T01:17:46+09:00",
+    "fetchedAt": "2026-08-09T01:53:48+09:00",
     "putVolume": null,
     "callVolume": null,
     "putCallStatus": "unavailable",
@@ -152,7 +152,7 @@
     ],
     "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202608/20260807_volume_by_participant_whole_day.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-08-09T01:17:42+09:00"
+    "fetchedAt": "2026-08-09T01:53:43+09:00"
   },
   "foreignInvestors": {
     "sourceName": "JPX 投資部門別売買状況",
@@ -168,7 +168,7 @@
     "cashSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/investor-type/t13vrt000001rg1m-att/stock_val_1_260705.pdf",
     "derivativesSourceFileUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/sector/t13vrt000001ri3p-att/Tousi_DV_W_20260727_20260731.csv",
     "status": "verified",
-    "fetchedAt": "2026-08-09T01:17:39+09:00"
+    "fetchedAt": "2026-08-09T01:53:40+09:00"
   },
   "participantOpenInterest": {
     "sourceName": "JPX 取引参加者別建玉残高",
@@ -282,7 +282,7 @@
     ],
     "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20260731_indexfut_oi_by_tp.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-08-09T01:17:43+09:00"
+    "fetchedAt": "2026-08-09T01:53:44+09:00"
   },
   "shortSelling": {
     "sourceName": "JPX 空売り集計",
@@ -295,7 +295,7 @@
     "avg20": null,
     "sampleCount": 5,
     "status": "verified",
-    "fetchedAt": "2026-08-09T01:17:31+09:00"
+    "fetchedAt": "2026-08-09T01:53:32+09:00"
   },
   "margin": {
     "sourceName": "JPX 信用取引現在高",
@@ -309,7 +309,7 @@
     "ratio": 8.507309502146947,
     "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/margin/tvdivq0000001rhv-att/mtgaisan2026073100.pdf",
     "status": "verified",
-    "fetchedAt": "2026-08-09T01:17:34+09:00"
+    "fetchedAt": "2026-08-09T01:53:35+09:00"
   },
   "assessment": {
     "overall": "中立",
@@ -353,5 +353,245 @@
     "spotParser": "Yahoo Finance chart JSON ^N225 daily close; basis requires same as-of date as OSE futures",
     "optionParser": "JPX daily summary probe for NK225E; no fabrication when index-option row is absent",
     "ivParser": "JPX current 17-column theoretical-price CSV; NK225E; dashboard IV = Base Volatility; spot = Underlying Close"
+  },
+  "speculativePositioning": {
+    "sourceName": "CFTC Traders in Financial Futures (TFF) - Futures Only",
+    "sourceUrl": "https://publicreporting.cftc.gov/Commitments-of-Traders/TFF-Futures-Only/gpe5-46if",
+    "apiUrl": "https://publicreporting.cftc.gov/resource/gpe5-46if.json",
+    "contract": "NIKKEI STOCK AVERAGE YEN DENOM - CHICAGO MERCANTILE EXCHANGE",
+    "cftcContractMarketCode": "240743",
+    "classification": "Leveraged Funds",
+    "classificationNote": "金融先物のためTFFのLeveraged Fundsを使用。ゴールド等のDisaggregated COTにあるManaged Moneyとは分類体系が異なります。",
+    "comment": "CFTC週次ポジションはCME円建て日経225先物のLeveraged Fundsを示す中期補助指標です。大阪取引所の日経225先物建玉、JPX投資部門別、参加者別建玉とは別データとして扱います。",
+    "asOfDate": "2026-08-04",
+    "status": "verified",
+    "releaseFrequency": "weekly",
+    "lookbackWeeks": 26,
+    "fetchedAt": "2026-08-09T01:53:48+09:00",
+    "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
+    "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
+    "priceStatus": "available",
+    "pricePointCount": 26,
+    "priceReason": null,
+    "latest": {
+      "net": 3154,
+      "netChange": -872,
+      "long": 6246,
+      "longChange": -1482,
+      "short": 3092,
+      "shortChange": -610,
+      "judgement": "買い越し縮小",
+      "judgementSub": "ロング・ショートとも減少"
+    },
+    "series": [
+      {
+        "label": "25週前",
+        "week": "2026-02-10",
+        "long": 10225,
+        "short": 8867,
+        "net": 1358,
+        "price": 57650.5390625
+      },
+      {
+        "label": "24週前",
+        "week": "2026-02-17",
+        "long": 10304,
+        "short": 5825,
+        "net": 4479,
+        "price": 56566.48828125
+      },
+      {
+        "label": "23週前",
+        "week": "2026-02-24",
+        "long": 11307,
+        "short": 6273,
+        "net": 5034,
+        "price": 57321.08984375
+      },
+      {
+        "label": "22週前",
+        "week": "2026-03-03",
+        "long": 11503,
+        "short": 6878,
+        "net": 4625,
+        "price": 56279.05078125
+      },
+      {
+        "label": "21週前",
+        "week": "2026-03-10",
+        "long": 8298,
+        "short": 7560,
+        "net": 738,
+        "price": 54248.390625
+      },
+      {
+        "label": "20週前",
+        "week": "2026-03-17",
+        "long": 12265,
+        "short": 3690,
+        "net": 8575,
+        "price": 53700.390625
+      },
+      {
+        "label": "19週前",
+        "week": "2026-03-24",
+        "long": 10535,
+        "short": 8086,
+        "net": 2449,
+        "price": 52252.28125
+      },
+      {
+        "label": "18週前",
+        "week": "2026-03-31",
+        "long": 10198,
+        "short": 3990,
+        "net": 6208,
+        "price": 51063.71875
+      },
+      {
+        "label": "17週前",
+        "week": "2026-04-07",
+        "long": 11127,
+        "short": 3198,
+        "net": 7929,
+        "price": 53429.55859375
+      },
+      {
+        "label": "16週前",
+        "week": "2026-04-14",
+        "long": 12203,
+        "short": 4000,
+        "net": 8203,
+        "price": 57877.390625
+      },
+      {
+        "label": "15週前",
+        "week": "2026-04-21",
+        "long": 11195,
+        "short": 5113,
+        "net": 6082,
+        "price": 59349.171875
+      },
+      {
+        "label": "14週前",
+        "week": "2026-04-28",
+        "long": 10281,
+        "short": 7160,
+        "net": 3121,
+        "price": 59917.4609375
+      },
+      {
+        "label": "13週前",
+        "week": "2026-05-05",
+        "long": 10351,
+        "short": 8133,
+        "net": 2218,
+        "price": 59513.12109375
+      },
+      {
+        "label": "12週前",
+        "week": "2026-05-12",
+        "long": 9102,
+        "short": 6666,
+        "net": 2436,
+        "price": 62742.5703125
+      },
+      {
+        "label": "11週前",
+        "week": "2026-05-19",
+        "long": 10542,
+        "short": 9167,
+        "net": 1375,
+        "price": 60550.58984375
+      },
+      {
+        "label": "10週前",
+        "week": "2026-05-26",
+        "long": 9622,
+        "short": 8685,
+        "net": 937,
+        "price": 64996.08984375
+      },
+      {
+        "label": "9週前",
+        "week": "2026-06-02",
+        "long": 11370,
+        "short": 9734,
+        "net": 1636,
+        "price": 66734.2421875
+      },
+      {
+        "label": "8週前",
+        "week": "2026-06-09",
+        "long": 9693,
+        "short": 11702,
+        "net": -2009,
+        "price": 65416.62890625
+      },
+      {
+        "label": "7週前",
+        "week": "2026-06-16",
+        "long": 7506,
+        "short": 11699,
+        "net": -4193,
+        "price": 69404.5
+      },
+      {
+        "label": "6週前",
+        "week": "2026-06-23",
+        "long": 7183,
+        "short": 10670,
+        "net": -3487,
+        "price": 69788.3828125
+      },
+      {
+        "label": "5週前",
+        "week": "2026-06-30",
+        "long": 5902,
+        "short": 4728,
+        "net": 1174,
+        "price": 70062.3203125
+      },
+      {
+        "label": "4週前",
+        "week": "2026-07-07",
+        "long": 7332,
+        "short": 5620,
+        "net": 1712,
+        "price": 68256.9609375
+      },
+      {
+        "label": "3週前",
+        "week": "2026-07-14",
+        "long": 6108,
+        "short": 3120,
+        "net": 2988,
+        "price": 67743.5
+      },
+      {
+        "label": "2週前",
+        "week": "2026-07-21",
+        "long": 5707,
+        "short": 3172,
+        "net": 2535,
+        "price": 66232.1875
+      },
+      {
+        "label": "1週前",
+        "week": "2026-07-28",
+        "long": 7728,
+        "short": 3702,
+        "net": 4026,
+        "price": 62364.921875
+      },
+      {
+        "label": "今週",
+        "week": "2026-08-04",
+        "long": 6246,
+        "short": 3092,
+        "net": 3154,
+        "price": 63957.53125
+      }
+    ]
   }
 }
