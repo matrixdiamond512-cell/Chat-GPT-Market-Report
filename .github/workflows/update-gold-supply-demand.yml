@@ -8,6 +8,7 @@ on:
       - "data/market/latest.json"
       - "data/gold-supply-demand-trigger/**"
       - "scripts/update_gold_supply_demand.py"
+      - "scripts/enrich_gold_etf_flow.py"
       - "scripts/enrich_gold_cftc_history.py"
       - "scripts/postprocess_gold_supply_demand.py"
       - "scripts/build_gold_supply_demand_sheet_csv.py"
@@ -50,6 +51,7 @@ jobs:
       - name: Validate scripts
         run: |
           python -m py_compile scripts/update_gold_supply_demand.py
+          python -m py_compile scripts/enrich_gold_etf_flow.py
           python -m py_compile scripts/enrich_gold_cftc_history.py
           python -m py_compile scripts/postprocess_gold_supply_demand.py
           python -m py_compile scripts/write_gold_supply_demand_to_sheets.py
@@ -57,6 +59,9 @@ jobs:
 
       - name: Build gold supply-demand JSON
         run: python scripts/update_gold_supply_demand.py
+
+      - name: Add ETF flow history and WGC global snapshot
+        run: python scripts/enrich_gold_etf_flow.py
 
       - name: Add 26-week CFTC positioning history
         run: python scripts/enrich_gold_cftc_history.py
@@ -70,6 +75,7 @@ jobs:
       - name: Validate outputs
         run: |
           python -m json.tool data/gold-supply-demand.json > /dev/null
+          python -m json.tool data/gold-etf-flow-history.json > /dev/null
           test -s data/gold-supply-demand-sheet.csv
           python - <<'PYCODE'
           import csv
@@ -83,20 +89,27 @@ jobs:
           history = ((data.get('cftc') or {}).get('historyWeeks') or [])
           if history and len(history) < 2:
               raise SystemExit('CFTC history must contain at least 2 rows when present')
+          etf = data.get('etf') or {}
+          etf_history = etf.get('historyDaily') or []
+          for row in etf_history:
+              if not row.get('asOfDate') or row.get('combinedChangeTonnes') is None:
+                  raise SystemExit('ETF aligned history row is incomplete')
           print('Gold_Demand CSV rows:', len(rows), 'columns:', len(rows[0]))
           print('CFTC history weeks:', len(history))
+          print('ETF aligned history days:', len(etf_history))
+          print('Global ETF status:', (etf.get('global') or {}).get('status'))
           PYCODE
 
       - name: Commit gold data and sheet CSV
         shell: bash
         run: |
-          if git diff --quiet -- data/gold-supply-demand.json data/gold-supply-demand-sheet.csv; then
+          if git diff --quiet -- data/gold-supply-demand.json data/gold-etf-flow-history.json data/gold-supply-demand-sheet.csv; then
             echo "Gold supply-demand outputs are already up to date."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/gold-supply-demand.json data/gold-supply-demand-sheet.csv
+          git add data/gold-supply-demand.json data/gold-etf-flow-history.json data/gold-supply-demand-sheet.csv
           git commit -m "Update gold supply-demand data and sheet CSV"
           git pull --rebase
           git push
