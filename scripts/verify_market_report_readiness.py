@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """Verify that market data is ready before a scheduled market report is published.
 
-The check deliberately validates the committed GitHub market-data layer first.
-Google Sheets is a persistence/consumption layer, not the only copy of verified
-market data. If Sheets synchronization is unavailable, report generation may
-fall back to data/market/latest.json or data/market/chatgpt_input.csv instead of
-incorrectly declaring verified market values unavailable.
+The check validates the committed GitHub market-data layer first. For 08:00 it
+also requires the morning CME/OSE reference layer, so missing morning futures
+cannot silently become generic '取得不能' rows in the published report.
 """
 
 from __future__ import annotations
@@ -20,6 +18,11 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 JST = dt.timezone(dt.timedelta(hours=9))
+MORNING_REFERENCE_REQUIRED = (
+    "CME日経225先物・円建て",
+    "CME日経225先物・ドル建て",
+    "日経225先物（大阪取引所）",
+)
 
 
 def load_json(path: Path, default: Any) -> Any:
@@ -49,6 +52,50 @@ def is_number(value: Any) -> bool:
     except (TypeError, ValueError):
         return False
     return math.isfinite(number)
+
+
+def validate_morning_reference(now: dt.datetime, slot: str, blocking: list[str], warnings: list[str]) -> dict[str, Any]:
+    if slot != "08:00":
+        return {}
+
+    path = ROOT / "data" / "market" / "morning-reference.json"
+    reference = load_json(path, {})
+    if not reference:
+        blocking.append("08:00 morning-reference.json is missing or unreadable")
+        return {}
+
+    expected_date = now.date().isoformat()
+    if reference.get("reportDate") != expected_date:
+        blocking.append(
+            f"morning reference reportDate mismatch: expected {expected_date}, got {reference.get('reportDate') or 'empty'}"
+        )
+    if reference.get("reportSlot") != "08:00":
+        blocking.append(
+            f"morning reference slot mismatch: expected 08:00, got {reference.get('reportSlot') or 'empty'}"
+        )
+
+    generated = parse_time(reference.get("generatedAt"))
+    if generated is None:
+        blocking.append("morning reference generatedAt is missing or invalid")
+    elif generated.date() != now.date():
+        blocking.append(f"morning reference was generated on {generated.date().isoformat()}, not today")
+
+    items = reference.get("items") or {}
+    for label in MORNING_REFERENCE_REQUIRED:
+        item = items.get(label)
+        if not isinstance(item, dict):
+            blocking.append(f"morning reference missing required item: {label}")
+            continue
+        value = str(item.get("value") or "").strip()
+        status = str(item.get("status") or "")
+        if not value:
+            blocking.append(f"morning reference value empty: {label}")
+        if not status.startswith("verified"):
+            blocking.append(f"morning reference not verified: {label} status={status or 'empty'}")
+        if label.startswith("CME") and "CME公式清算値" not in str(item.get("note") or ""):
+            warnings.append(f"{label}: keep source distinction clear; reference is not CME official settlement")
+
+    return reference
 
 
 def main() -> int:
@@ -140,6 +187,8 @@ def main() -> int:
     if missing_from_payload:
         blocking.append("payload missingRequired is not empty: " + ", ".join(map(str, missing_from_payload)))
 
+    morning_reference = validate_morning_reference(now, args.slot, blocking, warnings)
+
     ready = not blocking
     result = {
         "checkedAt": now.isoformat(),
@@ -150,15 +199,18 @@ def main() -> int:
         "ageMinutes": round(age_minutes, 1) if age_minutes is not None else None,
         "maxAgeMinutes": args.max_age_minutes,
         "requiredMarkets": required_ids,
+        "morningReferenceRequired": list(MORNING_REFERENCE_REQUIRED) if args.slot == "08:00" else [],
+        "morningReferenceDate": morning_reference.get("referenceDate") if morning_reference else None,
         "blockingReasons": blocking,
         "warnings": warnings,
         "reportSourcePriority": [
             "ChatGPT_Market_Input when the expected report slot is present and current",
             "data/market/latest.json when Google Sheets is missing, stale, or not synchronized",
             "data/market/chatgpt_input.csv as the equivalent tabular GitHub fallback",
+            "data/market/morning-reference.json for 08:00 CME/OSE reference values",
             "last verified value only with explicit timestamp/fallback note",
         ],
-        "rule": "Do not output '取得不能' merely because Google Sheets has no matching row when the committed GitHub market-data layer contains a current verified value.",
+        "rule": "Do not output '取得不能' merely because one persistence/display layer has no matching row when a current verified source value exists.",
     }
 
     output_path = Path(args.output)
