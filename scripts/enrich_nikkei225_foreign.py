@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Build a verified 52-week foreign-investor flow and Nikkei futures-price series.
 
-The dashboard compares TSE Prime cash flow and Nikkei 225 futures flow only when
-both refer to the same weekly period end.  No missing week is estimated.
+TSE Prime cash flow and Nikkei 225 futures flow are compared only when they use
+the same weekly period end. Missing weeks are never estimated.
 
-JPX changed the derivatives weekly file format in April 2026.  Current-format
-CSV files and legacy JPX PDFs are therefore parsed separately.  Legacy PDFs put
-the numerical table before the visible title in PDF text-extraction order, so
-the large Nikkei 225 Futures table is read from page 1 as a whole instead of
-slicing after the title.
+JPX weekly derivatives changed format in April 2026, so current CSV and legacy
+PDF files are parsed separately. Legacy cash PDFs are also read structurally:
+the current-week Trading Value is the numeric token immediately before the
+second ratio in each Sales/Purchases row, making the parser independent of
+whether a Balance cell is printed.
 """
 from __future__ import annotations
 
@@ -41,31 +41,50 @@ SECTOR_ARCHIVES = [
 KABUTAN_FUTURES_HISTORY = 'https://s.kabutan.jp/futures/%E6%97%A5%E7%B5%8C225%E5%85%88%E7%89%A9/historical_prices/daily/'
 
 
+def _value_before_second_ratio(line: str) -> float | None:
+    """Get the current-period Trading Value from a two-period JPX row."""
+    tokens = re.findall(r'▲?[+-]?[\d,]+(?:\.\d+)?', line)
+    ratio_indexes = [i for i, tok in enumerate(tokens) if '.' in tok.replace(',', '')]
+    if len(ratio_indexes) < 2 or ratio_indexes[1] < 1:
+        return None
+    return u.n(tokens[ratio_indexes[1] - 1].replace('▲', ''))
+
+
 def cash_pdf(url: str) -> dict[str, Any] | None:
-    _, text = u.doc(url)
-    hm = re.search(
-        r'(20\d{2})年\d{1,2}月第\d+週.*?\(\s*\d{1,2}/\d{1,2}\s*[-〜～]\s*(\d{1,2})/(\d{1,2})\s*\)',
+    """Parse TSE Prime Foreigners current-week cash Trading Value from page 1."""
+    raw = u.get(url).content
+    reader = PdfReader(io.BytesIO(raw))
+    if not reader.pages:
+        return None
+    text = reader.pages[0].extract_text() or ''
+    if not re.search(r'(?:東証プライム|TSE\s*Prime)', text, re.I):
+        return None
+    if not re.search(r'(?:海外投資家|Foreigners)', text, re.I):
+        return None
+
+    dm = re.search(
+        r'(20\d{2})年\s*\d{1,2}月.*?\(\s*(\d{1,2})/(\d{1,2})\s*[-〜～]\s*(\d{1,2})/(\d{1,2})\s*\)',
         text,
         re.S,
     )
-    if not hm:
+    if not dm:
         return None
-    y, mo, dy = int(hm.group(1)), int(hm.group(2)), int(hm.group(3))
-    sm = re.search(
-        r'海外投資家\s+売り\s+Sales\s+([\d,]+)\s+[\d.]+(?:\s+[▲+-]?\s*[\d,]+)?\s+([\d,]+)\s+[\d.]+',
-        text,
-    )
-    pm = re.search(
-        r'Foreigners\s+買い\s+Purchases\s+([\d,]+)\s+[\d.]+(?:\s+[▲+-]?\s*[\d,]+)?\s+([\d,]+)\s+[\d.]+',
-        text,
-    )
-    if not sm or not pm:
+    y, end_m, end_d = int(dm.group(1)), int(dm.group(4)), int(dm.group(5))
+
+    lines = [re.sub(r'\s+', ' ', x).strip() for x in text.splitlines()]
+    sales_line = next((x for x in lines if re.search(r'海外投資家(?:計)?', x) and re.search(r'売り\s*Sales', x, re.I)), None)
+    buy_line = next((x for x in lines if re.search(r'Foreigners?', x, re.I) and re.search(r'買い\s*Purchases', x, re.I)), None)
+    if sales_line is None or buy_line is None:
         return None
-    sales = float(sm.group(2).replace(',', ''))
-    purchases = float(pm.group(2).replace(',', ''))
+
+    sales = _value_before_second_ratio(sales_line)
+    purchases = _value_before_second_ratio(buy_line)
+    if sales is None or purchases is None:
+        return None
+    # TSE Prime Trading Value PDF unit is 1,000 yen.
     return {
         'cashNet': (purchases - sales) / 100_000,
-        'asOfDate': date(y, mo, dy).isoformat(),
+        'asOfDate': date(y, end_m, end_d).isoformat(),
         'cashSourceFileUrl': url,
     }
 
@@ -76,8 +95,6 @@ def derivative_new_csv(url: str) -> dict[str, Any] | None:
     for r in rows[1:]:
         if len(r) < 12:
             continue
-        # Product 301 = Nikkei 225 Futures, investor 60 = Foreigners,
-        # 2 = monetary value in the post-April-2026 format.
         if r[0].strip() == '301' and r[5].strip() == '60' and r[6].strip() == '2':
             sell = u.n(r[7])
             buy = u.n(r[9])
@@ -96,29 +113,13 @@ def derivative_new_csv(url: str) -> dict[str, Any] | None:
     return None
 
 
-def _trading_value(line: str) -> float | None:
-    """Get Trading Value from one legacy PDF Sales/Purchases line.
-
-    A legacy row is Volume | Ratio | [Balance] | Value | Ratio | [Balance].
-    Balance may be omitted, so Trading Value is the token immediately before the
-    second decimal ratio rather than a fixed numeric column.
-    """
-    tokens = re.findall(r'▲?[+-]?[\d,]+(?:\.\d+)?', line)
-    ratio_indexes = [i for i, tok in enumerate(tokens) if '.' in tok.replace(',', '')]
-    if len(ratio_indexes) < 2 or ratio_indexes[1] < 1:
-        return None
-    return u.n(tokens[ratio_indexes[1] - 1].replace('▲', ''))
-
-
 def derivative_old_pdf(url: str) -> dict[str, Any] | None:
     raw = u.get(url).content
     reader = PdfReader(io.BytesIO(raw))
     if not reader.pages:
         return None
-
-    # JPX legacy layout: page 1 is the large Nikkei 225 Futures table.  pypdf
-    # extracts the numerical rows before the title/labels on the same page, so
-    # use the whole first page; cutting from the title would discard the data.
+    # In the legacy PDF the large Nikkei 225 Futures table is page 1. pypdf
+    # extracts its numeric rows before the title, so use the entire page.
     text = reader.pages[0].extract_text() or ''
     if not re.search(r'Nikkei\s*225\s*Futures', text, re.I):
         return None
@@ -135,7 +136,6 @@ def derivative_old_pdf(url: str) -> dict[str, Any] | None:
     if dm:
         y, end_m, end_d = int(dm.group(1)), int(dm.group(5)), int(dm.group(6))
     else:
-        # Legacy filename: Tousi_DV_W_YYYYMM_w_MMDD_MMDD.pdf
         fm = re.search(r'Tousi_DV_W_(20\d{2})(\d{2})_\d+_\d{4}_(\d{2})(\d{2})', url, re.I)
         if not fm:
             return None
@@ -144,18 +144,14 @@ def derivative_old_pdf(url: str) -> dict[str, Any] | None:
     lines = [re.sub(r'\s+', ' ', x).strip() for x in text.splitlines()]
     sales = [x for x in lines if re.match(r'^(?:売り\s+Sales|Sales\b)', x, re.I)]
     purchases = [x for x in lines if re.match(r'^(?:買い\s+Purchases|Purchases\b)', x, re.I)]
-
-    # Overall rows are indexes 0-2. Brokerage breakdown then follows as:
-    # Institutions=3, Individuals=4, Foreigners=5, Securities Cos.=6.
+    # Overall rows = indexes 0-2; Brokerage breakdown: Institutions=3,
+    # Individuals=4, Foreigners=5, Securities Cos.=6.
     if len(sales) < 6 or len(purchases) < 6:
         return None
-    sell_value = _trading_value(sales[5])
-    buy_value = _trading_value(purchases[5])
+    sell_value = _value_before_second_ratio(sales[5])
+    buy_value = _value_before_second_ratio(purchases[5])
     if sell_value is None or buy_value is None:
         return None
-
-    # Legacy large Nikkei 225 Futures Trading Value unit is 1,000 yen.
-    # (buy - sell) * 1,000 yen / 100,000,000 yen per oku = /100,000.
     return {
         'nikkeiFuturesNet': (buy_value - sell_value) / 100_000,
         'asOfDate': date(y, end_m, end_d).isoformat(),
@@ -183,9 +179,7 @@ def valid_old_series(prev: dict[str, Any]) -> dict[str, dict[str, Any]]:
     for row in prev.get('series') or []:
         if not isinstance(row, dict):
             continue
-        dt = row.get('asOfDate')
-        cash = row.get('cashNet')
-        fut = row.get('nikkeiFuturesNet')
+        dt, cash, fut = row.get('asOfDate'), row.get('cashNet'), row.get('nikkeiFuturesNet')
         if not dt or cash is None or fut is None:
             continue
         out[str(dt)[:10]] = {
@@ -222,8 +216,6 @@ def all_links(pages: list[str], pattern: str, limit: int = 80) -> list[str]:
 
 def kabutan_futures_prices(target_dates: list[str]) -> dict[str, float]:
     wanted = {str(x)[:10] for x in target_dates}
-    # A 52-week window is shorter than one calendar year, so month/day pairs
-    # are unique inside the requested period.
     by_md = {(int(x[5:7]), int(x[8:10])): x for x in wanted}
     found: dict[str, float] = {}
     for page in range(1, 25):
@@ -261,18 +253,20 @@ def main() -> None:
         'futuresPriceSourceUrl': KABUTAN_FUTURES_HISTORY,
         'futuresPriceDefinition': '各週の基準日と同日の取引所発表清算値（帳入値）。実際の最終約定価格とは異なる場合があります。',
     }
-
     debug: dict[str, Any] = {}
     try:
         cashlinks = all_links([u.URLS['cash'], *CASH_ARCHIVES], r'stock_val_1_\d+\.pdf(?:\?|$)', 80)
         cr: list[dict[str, Any]] = []
+        cash_failures: list[str] = []
         for url in cashlinks:
             try:
                 x = cash_pdf(url)
                 if x:
                     cr.append(x)
+                else:
+                    cash_failures.append(url.rsplit('/',1)[-1])
             except Exception:
-                pass
+                cash_failures.append(url.rsplit('/',1)[-1])
         cr.sort(key=lambda x: x['asOfDate'], reverse=True)
 
         sector_pages = [u.URLS['sector'], *SECTOR_ARCHIVES]
@@ -295,21 +289,22 @@ def main() -> None:
                 pass
         dr.sort(key=lambda x: x.get('asOfDate') or '', reverse=True)
 
-        if not cr or not dr:
-            raise ValueError(f'cash={len(cr)} derivative={len(dr)}')
         by_cash = {x['asOfDate']: x for x in cr if x.get('asOfDate')}
         by_deriv = {x['asOfDate']: x for x in dr if x.get('asOfDate')}
         target_cash_dates = sorted(by_cash)[-HISTORY_WEEKS:]
         missing_deriv = [x for x in target_cash_dates if x not in by_deriv]
         matched = sorted(set(by_cash) & set(by_deriv))
         debug = {
+            'cashLinkCount': len(cashlinks),
             'cashParsedWeeks': len(by_cash),
+            'cashFailureCount': len(cash_failures),
+            'cashFailureFiles': cash_failures[:12],
             'derivativesParsedWeeks': len(by_deriv),
             'matchedWeeks': len(matched),
             'missingDerivativeDatesWithinLatest52CashWeeks': missing_deriv,
         }
         if len(matched) < HISTORY_WEEKS:
-            raise ValueError(f'52-week history incomplete: {len(matched)}/52; missing={missing_deriv}')
+            raise ValueError(f'52-week history incomplete: {len(matched)}/52; cash={len(by_cash)}, deriv={len(by_deriv)}, missingDeriv={missing_deriv}')
 
         merged = valid_old_series(prev)
         for dt in matched:
@@ -326,7 +321,6 @@ def main() -> None:
                 'derivativesSourceFormat': f.get('derivativesSourceFormat'),
                 'futuresPriceSourceUrl': old.get('futuresPriceSourceUrl'),
             }
-
         series = [merged[k] for k in sorted(merged)][-HISTORY_WEEKS:]
         if len(series) != HISTORY_WEEKS:
             raise ValueError(f'52-week merged series incomplete: {len(series)}/52')
@@ -371,14 +365,12 @@ def main() -> None:
     except Exception as exc:
         d['foreignInvestors'] = u.stale(prev, base, f'JPX海外投資家取得失敗: {type(exc).__name__}: {exc}')
 
-    d['assessment'] = u.assessment(
-        d.get('futures') or {}, d.get('arbitrage') or {}, d.get('options') or {}, d.get('foreignInvestors') or {}
-    )
+    d['assessment'] = u.assessment(d.get('futures') or {}, d.get('arbitrage') or {}, d.get('options') or {}, d.get('foreignInvestors') or {})
     keys = ('spot','futures','sessions','arbitrage','options','participantFlow','foreignInvestors','participantOpenInterest','shortSelling','margin')
     statuses = {k: (d.get(k) or {}).get('status','unavailable') for k in keys}
     d['sourceStatus'] = f"{sum(v in {'verified','calculated'} for v in statuses.values())}/10項目連携（基準日を個別表示）"
     d.setdefault('diagnostics', {})['statuses'] = statuses
-    d['diagnostics']['foreignParser'] = 'JPX Prime cash + Nikkei 225 futures exact 52 matched weeks; current CSV + legacy official PDF page-1 parser; Kabutan settlement prices on same dates'
+    d['diagnostics']['foreignParser'] = 'JPX Prime page-1 cash + Nikkei 225 futures exact 52 matched weeks; current CSV + legacy official PDF; Kabutan settlement prices on same dates'
     d['diagnostics']['foreign52Debug'] = debug
     d['generatedAt'] = u.now()
     OUT.write_text(json.dumps(d, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
