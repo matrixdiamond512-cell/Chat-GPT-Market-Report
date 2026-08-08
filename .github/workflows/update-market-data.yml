@@ -1,6 +1,10 @@
 name: Update independent market data
 
 on:
+  # Manual utility only. Scheduled acquisitions are handled by the dedicated
+  # report-window workflows. Code/config pushes must never refresh or retag the
+  # live market snapshot because the latest published report may belong to a
+  # different slot (for example yesterday's 21:00 report).
   workflow_dispatch:
     inputs:
       report_slot:
@@ -15,27 +19,6 @@ on:
         options:
           - auto
           - full
-  push:
-    branches:
-      - main
-    paths:
-      - "reports.json"
-      - ".github/workflows/update-market-data.yml"
-      - ".github/workflows/market-data-08-anchor.yml"
-      - ".github/workflows/market-data-08-fallback.yml"
-      - ".github/workflows/market-data-08-health.yml"
-      - ".github/workflows/market-data-intraday-anchor.yml"
-      - ".github/workflows/market-data-intraday-fallback.yml"
-      - ".github/workflows/market-data-intraday-health.yml"
-      - "scripts/fetch_market_data.py"
-      - "scripts/run_market_data_acquisition.py"
-      - "scripts/run_market_data_window.py"
-      - "scripts/resolve_market_report_slot.py"
-      - "scripts/build_market_json.py"
-      - "scripts/build_market_sheet_exports.py"
-      - "scripts/write_market_data_to_sheets.py"
-      - "config/market_data_sources.json"
-      - "config/market_data_validation.json"
 
 permissions:
   contents: write
@@ -75,7 +58,7 @@ jobs:
         shell: bash
         run: |
           MODE="auto"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.acquisition_mode }}" = "full" ]; then
+          if [ "${{ inputs.acquisition_mode }}" = "full" ]; then
             MODE="full"
           fi
           echo "mode=$MODE" >> "$GITHUB_OUTPUT"
@@ -86,6 +69,7 @@ jobs:
           python -m py_compile scripts/run_market_data_acquisition.py
           python -m py_compile scripts/run_market_data_window.py
           python -m py_compile scripts/resolve_market_report_slot.py
+          python -m py_compile scripts/verify_market_report_readiness.py
 
       - name: Fetch, retry, and preserve best verified market data
         run: |
