@@ -2,7 +2,7 @@
   "schemaVersion": "2.0.0",
   "pageTitle": "ゴールド需給分析",
   "subtitle": "COMEX先物・投機筋・ETF・中国/インド現物需要から総合判定",
-  "generatedAt": "2026-08-08T23:33:50+09:00",
+  "generatedAt": "2026-08-09T01:08:26+09:00",
   "comex": {
     "status": "stale",
     "asOfDate": "2026-08-06",
@@ -28,7 +28,7 @@
     "judgement": "投機筋の買い増加",
     "sourceName": "CFTC Disaggregated COT - Futures Only",
     "sourceUrl": "https://publicreporting.cftc.gov/Commitments-of-Traders/Disaggregated-Futures-Only/72hh-3qpy",
-    "fetchedAt": "2026-08-08T23:34:36+09:00",
+    "fetchedAt": "2026-08-09T01:09:11+09:00",
     "historyWeeks": [
       {
         "asOfDate": "2026-02-10",
@@ -322,7 +322,7 @@
     "managedMoneyLongChange": 4716,
     "managedMoneyShortChange": -6255,
     "goldPrice": 4095.4,
-    "historyFetchedAt": "2026-08-08T14:34:38+00:00"
+    "historyFetchedAt": "2026-08-08T16:09:16+00:00"
   },
   "etf": {
     "gld": {
@@ -332,7 +332,7 @@
       "changeTonnes": 0.57000000000005,
       "sourceName": "SPDR Gold Shares Historical Archive",
       "sourceUrl": "https://www.spdrgoldshares.com/usa/gld/",
-      "fetchedAt": "2026-08-08T23:34:36+09:00"
+      "fetchedAt": "2026-08-09T01:09:12+09:00"
     },
     "iau": {
       "status": "verified",
@@ -341,12 +341,25 @@
       "changeTonnes": -1.1200000000000045,
       "sourceName": "iShares Gold Trust",
       "sourceUrl": "https://www.ishares.com/us/products/239561/ishares-gold-trust-fund",
-      "fetchedAt": "2026-08-08T23:34:37+09:00"
+      "fetchedAt": "2026-08-09T01:09:12+09:00"
     },
     "global": {
-      "status": "unavailable",
-      "error": "WGC世界ETFは週次/月次の公開値を自動取得できる場合のみ更新"
-    }
+      "status": "verified",
+      "asOfDate": "2026-07-31",
+      "period": "2026-07",
+      "tonnes": 4068.0,
+      "changeTonnes": 23.0,
+      "ytdChangeTonnes": null,
+      "monthlyFlowUsdBillion": null,
+      "frequency": "monthly",
+      "sourceName": "World Gold Council Gold ETF Flows",
+      "sourceUrl": "https://www.gold.org/goldhub/research/gold-etfs-holdings-and-flows/2026/08",
+      "fetchedAt": "2026-08-09T01:09:16+09:00",
+      "note": "WGC公式月次レポート本文から公開値を抽出。週次チャートがログイン必須の場合は月次公開値を使用。"
+    },
+    "historyDaily": [],
+    "historyDaysCount": 0,
+    "historyStatus": "collecting"
   },
   "physical": {
     "status": "unavailable",
@@ -387,7 +400,7 @@
       "sourceName": "FRED DFII10",
       "sourceUrl": "https://fred.stlouisfed.org/series/DFII10",
       "label": "米10年実質金利",
-      "fetchedAt": "2026-08-08T23:34:37+09:00"
+      "fetchedAt": "2026-08-09T01:09:15+09:00"
     },
     "dollarBroad": {
       "status": "verified",
@@ -397,7 +410,7 @@
       "sourceName": "FRED DTWEXBGS",
       "sourceUrl": "https://fred.stlouisfed.org/series/DTWEXBGS",
       "label": "米ドル実効指数（Broad）",
-      "fetchedAt": "2026-08-08T23:34:37+09:00"
+      "fetchedAt": "2026-08-09T01:09:15+09:00"
     },
     "usdjpy": {
       "status": "verified",
