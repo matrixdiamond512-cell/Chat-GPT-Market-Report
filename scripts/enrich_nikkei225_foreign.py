@@ -218,6 +218,9 @@ def kabutan_futures_prices(target_dates: list[str]) -> dict[str, float]:
     wanted = {str(x)[:10] for x in target_dates}
     by_md = {(int(x[5:7]), int(x[8:10])): x for x in wanted}
     found: dict[str, float] = {}
+    # Pages are newest first. Month/day repeats in older years, so the first
+    # match is the correct year for this latest-52-week window and must never
+    # be overwritten by the same month/day from the previous year.
     for page in range(1, 25):
         url = KABUTAN_FUTURES_HISTORY if page == 1 else f'{KABUTAN_FUTURES_HISTORY}?page={page}'
         soup = BeautifulSoup(u.get(url).text, 'html.parser')
@@ -229,7 +232,7 @@ def kabutan_futures_prices(target_dates: list[str]) -> dict[str, float]:
             if not m:
                 continue
             target = by_md.get((int(m.group(1)), int(m.group(2))))
-            if not target:
+            if not target or target in found:
                 continue
             close = u.n(cells[4])
             if close is not None:
