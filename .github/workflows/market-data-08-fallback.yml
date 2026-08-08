@@ -21,7 +21,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: market-data-08-window
+  group: market-data-08-fallback-${{ github.event.schedule || inputs.recovery_time || github.run_id }}
   cancel-in-progress: false
 
 jobs:
