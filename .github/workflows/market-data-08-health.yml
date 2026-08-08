@@ -39,6 +39,7 @@ jobs:
           python -m py_compile scripts/run_market_data_acquisition.py
           python -m py_compile scripts/run_market_data_window.py
           python -m py_compile scripts/verify_market_report_readiness.py
+          python -m py_compile scripts/fetch_morning_reference.py
 
       - name: Force final 07:55 market-data refresh
         env:
@@ -52,6 +53,28 @@ jobs:
             --trigger-source "final_readiness" \
             --max-catchup-minutes 10 \
             --mode full
+
+      - name: Recover CME/OSE morning reference
+        shell: bash
+        run: |
+          set +e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
+          REPORT_DATE="$(TZ=Asia/Tokyo date +%F)"
+          python scripts/fetch_morning_reference.py --report-date "$REPORT_DATE" --slot "08:00"
+          CODE=$?
+          if [ "$CODE" -eq 0 ]; then
+            git add data/market/morning-reference.json
+            if ! git diff --cached --quiet; then
+              git commit -m "Recover 08:00 CME/OSE morning reference"
+              git pull --rebase
+              git push
+            fi
+          else
+            echo "CME/OSE reference recovery failed; keep last verified reference and continue readiness check."
+          fi
+          set -e
 
       - name: Verify report data readiness and record result
         shell: bash
