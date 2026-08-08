@@ -1,15 +1,17 @@
 /*
- * 08:00 dashboard six-market canonical-value bridge.
- * The morning dashboard must match the final 28-item market-data table embedded
- * in the report fullText. This deliberately takes precedence over stale/older
- * dashboard marketData snapshots for the six summary cards only.
+ * 08:00 dashboard six-market canonical bridge.
+ * The dashboard must match the final 28-item market table and the final six-market
+ * outlook section embedded in report fullText. These report-final values take
+ * precedence over stale/older dashboard snapshots for 08:00 cards.
  */
 (() => {
   "use strict";
 
-  if (typeof parseMetric !== "function") return;
+  if (typeof parseMetric !== "function" || typeof reportMarket !== "function") return;
 
   const baseParseMetric = parseMetric;
+  const baseReportMarket = reportMarket;
+
   const LABEL_BY_KEY = {
     gold: "COMEX金先物",
     oil: "WTI原油",
@@ -19,6 +21,19 @@
     btc: "BTCUSD"
   };
 
+  const OUTLOOK_LABEL_BY_KEY = {
+    gold: "金",
+    oil: "WTI原油",
+    nikkei: "日経225先物（大阪取引所）",
+    usdjpy: "USD/JPY",
+    eurusd: "EUR/USD",
+    btc: "BTCUSD"
+  };
+
+  function reportText(report) {
+    return String(report?.fullText || report?.rawText || report?.body || "").replace(/\r/g, "");
+  }
+
   function stripNumber(label = "") {
     return String(label)
       .replace(/^[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘]\s*/, "")
@@ -27,8 +42,7 @@
 
   function morningTableRows(report) {
     if (!report || report.time !== "08:00") return new Map();
-    const text = String(report.fullText || report.rawText || report.body || "")
-      .replace(/\r/g, "");
+    const text = reportText(report);
     if (!text) return new Map();
 
     const lines = text.split("\n").map((line) => line.trim());
@@ -55,14 +69,49 @@
     return rows;
   }
 
+  function sixMarketOutlooks(report) {
+    const found = new Map();
+    if (!report || report.time !== "08:00") return found;
+    const lines = reportText(report).split("\n").map((line) => line.trim()).filter(Boolean);
+    const start = lines.findIndex((line) => /(?:個別6市場の見通し|6市場の見通し)/.test(line));
+    if (start < 0) return found;
+
+    const labels = new Set(Object.values(OUTLOOK_LABEL_BY_KEY));
+    let current = null;
+    for (let i = start + 1; i < lines.length; i += 1) {
+      const line = lines[i];
+      if (/^\d{1,2}[.．]\s*/.test(line) && found.size) break;
+      if (labels.has(line)) {
+        current = { name: line, direction: "", material: "", levels: "", breakCondition: "", risk: "", outlook: "" };
+        found.set(line, current);
+        continue;
+      }
+      if (!current) continue;
+      let m = line.match(/^方向[：:]\s*(.+)$/);
+      if (m) { current.direction = m[1].trim(); continue; }
+      m = line.match(/^材料[：:]\s*(.+)$/);
+      if (m) { current.material = m[1].trim(); continue; }
+      m = line.match(/^注目(?:点)?[：:]\s*(.+)$/);
+      if (m) { current.levels = m[1].trim(); continue; }
+      m = line.match(/^崩れる条件[：:]\s*(.+)$/);
+      if (m) { current.breakCondition = m[1].trim(); current.risk = m[1].trim(); continue; }
+    }
+
+    found.forEach((item) => {
+      item.outlook = [item.direction, item.material, item.levels].filter(Boolean).join("。") + "。";
+    });
+    return found;
+  }
+
   function trendFromRow(row) {
-    const direction = String(row?.direction || "");
     if (/取得不能|未確認/.test(row?.value || "")) return "missing";
-    if (/上昇|高|強|買い|強気|ユーロ高/.test(direction)) return "up";
-    if (/下落|安|弱|売り|円高|ドル安/.test(direction)) return "down";
-    const change = String(row?.change || "").replace(/[−－]/g, "-");
-    if (/^\+/.test(change)) return "up";
-    if (/^-/.test(change)) return "down";
+    const change = String(row?.change || "").replace(/[−－]/g, "-").trim();
+    const rate = String(row?.rate || "").replace(/[−－]/g, "-").trim();
+    if (/^\+/.test(change) || (!/^[-+]/.test(change) && /^\+/.test(rate))) return "up";
+    if (/^-/.test(change) || (!/^[-+]/.test(change) && /^-/.test(rate))) return "down";
+    const direction = String(row?.direction || "");
+    if (/ドル安・円高|下落|弱気|売り優勢/.test(direction)) return "down";
+    if (/ユーロ高|上昇|大幅高|小幅高|強気|買い/.test(direction)) return "up";
     return "flat";
   }
 
@@ -89,6 +138,19 @@
       sourceClass: unavailable ? "missing" : "verified"
     };
   }
+
+  reportMarket = function(report, definition) {
+    const original = baseReportMarket(report, definition) || {};
+    if (!report || report.time !== "08:00") return original;
+    const target = OUTLOOK_LABEL_BY_KEY[definition?.key];
+    const finalOutlook = target ? sixMarketOutlooks(report).get(target) : null;
+    if (!finalOutlook) return original;
+    return {
+      ...original,
+      ...finalOutlook,
+      name: original.name || finalOutlook.name
+    };
+  };
 
   parseMetric = function(report, definition) {
     return metricFromFinalTable(report, definition) || baseParseMetric(report, definition);
