@@ -1,14 +1,20 @@
 function installMarketReportWebMenu() {
   createMarketReportWebMenu_();
+  if (typeof createGoldSupplyDemandMenuV1_ === 'function') {
+    createGoldSupplyDemandMenuV1_();
+  }
   SpreadsheetApp.getUi().alert(
     'WEB版マーケットレポートメニューを設定しました。\n' +
-    '本文・ダッシュボード、東京市場ドル円出来高、USD/JPY需給分析、重要イベント、金利・債券市場、株式市場分析は別メニューです。\n' +
+    '本文・ダッシュボード、東京市場ドル円出来高、USD/JPY需給分析、重要イベント、金利・債券市場、株式市場分析、ゴールド需給分析は別メニューです。\n' +
     '次回以降もスプレッドシートを開くと自動表示されます。'
   );
 }
 
 function onOpen(e) {
   createMarketReportWebMenu_();
+  if (typeof createGoldSupplyDemandMenuV1_ === 'function') {
+    createGoldSupplyDemandMenuV1_();
+  }
 }
 
 function createMarketReportWebMenu_() {
