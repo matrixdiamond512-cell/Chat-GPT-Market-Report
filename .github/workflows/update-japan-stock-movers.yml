@@ -8,17 +8,17 @@ on:
       - "scripts/fetch_japan_stock_movers.py"
       - ".github/workflows/update-japan-stock-movers.yml"
   schedule:
-    # Tokyo close rankings can lag the 15:30 close page. Retry after 16:00 JST.
-    - cron: "20 7 * * 1-5" # 16:20 JST
-    - cron: "40 7 * * 1-5" # 16:40 JST
-    - cron: "0 8 * * 1-5"  # 17:00 JST
+    # Run after the Tokyo close table and Nikkei contribution jobs.
+    - cron: "30 7 * * 1-5" # 16:30 JST
+    - cron: "50 7 * * 1-5" # 16:50 JST
+    - cron: "10 8 * * 1-5" # 17:10 JST
 
 permissions:
   contents: write
 
 concurrency:
-  group: stocks-page-daily-state
-  cancel-in-progress: false
+  group: update-japan-stock-movers
+  cancel-in-progress: true
 
 jobs:
   update:
