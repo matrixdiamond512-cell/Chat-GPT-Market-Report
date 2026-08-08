@@ -55,14 +55,29 @@ jobs:
         run: |
           PAGE_URL='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/nikkei225-supply-demand.html'
           DATA_URL='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/data/nikkei225-supply-demand.json'
+          MARGIN_JS_URL='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/assets/js/nikkei225-margin-display.js'
           : > /tmp/live-page.html
           : > /tmp/live-data.json
-          for i in $(seq 1 12); do
-            curl -fsSL --retry 2 --retry-delay 2 "$PAGE_URL" -o /tmp/live-page.html || true
-            curl -fsSL --retry 2 --retry-delay 2 "$DATA_URL" -o /tmp/live-data.json || true
+          : > /tmp/live-margin.js
+          for i in $(seq 1 24); do
+            CB="$(date +%s)-$i"
+            curl -fsSL --retry 2 --retry-delay 2 "${PAGE_URL}?v=${CB}" -o /tmp/live-page.html || true
+            curl -fsSL --retry 2 --retry-delay 2 "${DATA_URL}?v=${CB}" -o /tmp/live-data.json || true
+            curl -fsSL --retry 2 --retry-delay 2 "${MARGIN_JS_URL}?v=${CB}" -o /tmp/live-margin.js || true
             if grep -q '先物・裁定・オプション・投資主体' /tmp/live-page.html \
-               && grep -q 'nikkei225-basis-options-display.js' /tmp/live-page.html \
-               && python -m json.tool /tmp/live-data.json > /dev/null 2>&1; then
+               && grep -q 'nikkei225-margin-display.js' /tmp/live-page.html \
+               && grep -q '信用売り残' /tmp/live-margin.js \
+               && python - <<'PY'
+          import json, sys
+          try:
+              d=json.load(open('/tmp/live-data.json'))
+              m=d.get('margin') or {}
+              ok=(m.get('status')=='verified' and m.get('buyBalance') is not None and m.get('sellBalance') is not None and m.get('ratio') is not None)
+          except Exception:
+              ok=False
+          sys.exit(0 if ok else 1)
+          PY
+            then
               break
             fi
             sleep 5
@@ -70,19 +85,24 @@ jobs:
           python - <<'PY'
           import json, datetime, pathlib
           html=pathlib.Path('/tmp/live-page.html').read_text(encoding='utf-8',errors='replace')
+          margin_js=pathlib.Path('/tmp/live-margin.js').read_text(encoding='utf-8',errors='replace')
           try:
               d=json.loads(pathlib.Path('/tmp/live-data.json').read_text(encoding='utf-8'))
           except Exception:
               d={}
-          opt=d.get('options') or {}; spot=d.get('spot') or {}; fut=d.get('futures') or {}
+          opt=d.get('options') or {}; spot=d.get('spot') or {}; fut=d.get('futures') or {}; m=d.get('margin') or {}
           same=bool(spot.get('asOfDate') and fut.get('asOfDate') and str(spot.get('asOfDate'))[:10]==str(fut.get('asOfDate'))[:10])
           sv=spot.get('value'); fv=fut.get('price')
           diff=(float(fv)-float(sv)) if same and sv is not None and fv is not None else None
+          margin_ok=bool(m.get('status')=='verified' and m.get('buyBalance') is not None and m.get('sellBalance') is not None and m.get('ratio') is not None)
+          display_ok=bool('nikkei225-margin-display.js' in html and '信用売り残' in margin_js)
           out={
               'checkedAt':datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9))).isoformat(timespec='seconds'),
               'pageUrl':'https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/nikkei225-supply-demand.html',
               'htmlHasCurrentTheme':'先物・裁定・オプション・投資主体' in html,
               'htmlHasBasisOptionsScript':'nikkei225-basis-options-display.js' in html,
+              'htmlHasMarginDisplayScript':'nikkei225-margin-display.js' in html,
+              'publicMarginScriptHasSellBalanceLabel':'信用売り残' in margin_js,
               'publicDataGeneratedAt':d.get('generatedAt'),
               'publicSpotValue':sv,
               'publicSpotAsOfDate':spot.get('asOfDate'),
@@ -94,10 +114,19 @@ jobs:
               'publicIvStatus':opt.get('ivStatus'),
               'publicIvAsOfDate':opt.get('ivAsOfDate'),
               'publicPutCallStatus':opt.get('putCallStatus'),
-              'liveValidationPassed':bool('先物・裁定・オプション・投資主体' in html and 'nikkei225-basis-options-display.js' in html and d and opt.get('ivStatus')=='verified' and same)
+              'publicMarginStatus':m.get('status'),
+              'publicMarginAsOfDate':m.get('asOfDate'),
+              'publicMarginBuyBalance':m.get('buyBalance'),
+              'publicMarginSellBalance':m.get('sellBalance'),
+              'publicMarginRatio':m.get('ratio'),
+              'marginDataValidationPassed':margin_ok,
+              'marginDisplayValidationPassed':display_ok,
+              'liveValidationPassed':bool('先物・裁定・オプション・投資主体' in html and 'nikkei225-basis-options-display.js' in html and d and opt.get('ivStatus')=='verified' and same and margin_ok and display_ok)
           }
           pathlib.Path('data/github-pages-public-validation.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           print(json.dumps(out,ensure_ascii=False,indent=2))
+          if not out['liveValidationPassed']:
+              raise SystemExit('Public validation did not pass')
           PY
 
       - name: Commit final diagnostic
