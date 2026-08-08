@@ -17,11 +17,23 @@ REPORT_SLOTS = ("08:00", "12:00", "16:00", "21:00")
 # - 08:00: Monday-Saturday
 # - 12:00 / 16:00 / 21:00: weekdays only
 # There is no Saturday 09:00 summary report.
+#
+# Keep every independent/fallback/health 08:00 cron here. Scheduled jobs are
+# resolved from the declared cron string rather than their actual runner start
+# time, so a delayed GitHub Actions runner cannot retag the snapshot as a later
+# report slot.
 SCHEDULE_TO_SLOT = {
-    "28 21 * * 0-5": "08:00",
-    "55 21 * * 0-5": "08:00",
-    "42 22 * * 0-5": "08:00",
-    "55 22 * * 0-5": "08:00",
+    "28 21 * * 0-5": "08:00",  # 06:30 attempt starts at 06:28 JST
+    "58 21 * * 0-5": "08:00",  # 07:00
+    "18 22 * * 0-5": "08:00",  # 07:20
+    "28 22 * * 0-5": "08:00",  # 07:30
+    "38 22 * * 0-5": "08:00",  # 07:40
+    "43 22 * * 0-5": "08:00",  # 07:45
+    "48 22 * * 0-5": "08:00",  # 07:50
+    "55 21 * * 0-5": "08:00",  # 06:55 fallback
+    "42 22 * * 0-5": "08:00",  # 07:42 fallback
+    "53 22 * * 0-5": "08:00",  # 07:55 final readiness starts 07:53
+    "55 22 * * 0-5": "08:00",  # legacy 07:55 health cron, kept for compatibility
     "30,35,40,45,50,55 2 * * 1-5": "12:00",
     "30,35,40,45,50,55 6 * * 1-5": "16:00",
     "30,35,40,45,50,55 11 * * 1-5": "21:00",
@@ -42,6 +54,11 @@ def reports_from_payload(payload: Any) -> list[dict[str, Any]]:
 
 
 def latest_report_slot(path: Path) -> str:
+    """Return the latest published slot for display/history use only.
+
+    Do not use this value to tag new acquisition data. A latest published report
+    may belong to yesterday or to a different scheduled window.
+    """
     if not path.is_file():
         return ""
     try:
@@ -87,15 +104,16 @@ def resolve_slot(
         return requested
     if event_name == "schedule":
         # Use the declared cron mapping rather than the delayed job start time.
-        # This prevents a delayed 16:00 acquisition from being mislabeled 21:00.
         scheduled_slot = SCHEDULE_TO_SLOT.get(event_schedule.strip())
         if scheduled_slot:
             return scheduled_slot
         return slot_for_time(now or dt.datetime.now(JST))
     if event_name == "push":
-        report_slot = latest_report_slot(reports_file)
-        if report_slot:
-            return report_slot
+        # Never infer a new data tag from the latest published report. That was
+        # the cause of same-day 08:00 data being retagged as 21:00 after code
+        # changes. Push-triggered callers, if any remain, use the current JST
+        # acquisition window instead.
+        return slot_for_time(now or dt.datetime.now(JST))
     return slot_for_time(now or dt.datetime.now(JST))
 
 
