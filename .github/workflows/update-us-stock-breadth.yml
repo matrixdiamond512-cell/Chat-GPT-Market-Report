@@ -1,4 +1,4 @@
-name: Update US stock close analysis
+name: Update US stock breadth
 
 on:
   workflow_dispatch:
@@ -16,141 +16,57 @@ on:
       - "scripts/fix_us_stock_breadth_52w.py"
       - "scripts/recalculate_us_stock_breadth_history.py"
       - "scripts/build_us_stock_breadth_csv.py"
-      - "scripts/fetch_us_stock_movers_sp500_contributions.py"
   schedule:
-    # Run after the U.S. close and retry for delayed source publication.
     - cron: "30 21 * * 1-5" # 06:30 JST Tue-Sat during U.S. DST
-    - cron: "50 21 * * 1-5" # 06:50 JST
-    - cron: "10 22 * * 1-5" # 07:10 JST
 
 permissions:
   contents: write
 
 concurrency:
-  group: update-us-stock-close-analysis
+  group: update-us-stock-breadth
   cancel-in-progress: true
 
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 18
+    timeout-minutes: 15
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Install dependencies
-        run: python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt beautifulsoup4
-
+      - name: Install Google Sheets dependencies
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
       - name: Fetch US breadth
         env:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           US_BREADTH_MARKET_DATE: ${{ inputs.market_date }}
         run: python scripts/fetch_us_stock_breadth.py
-
       - name: Correct 52-week high and low counts
         run: python scripts/fix_us_stock_breadth_52w.py
-
       - name: Recalculate prior-day and 20-day comparisons
         run: python scripts/recalculate_us_stock_breadth_history.py
-
       - name: Build public CSV history for Google Sheets
         run: python scripts/build_us_stock_breadth_csv.py
-
-      - name: Fetch S&P 500 movers and contribution estimates
-        id: movers
-        continue-on-error: true
-        env:
-          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-        run: |
-          set -o pipefail
-          python scripts/fetch_us_stock_movers_sp500_contributions.py 2>&1 | tee /tmp/us-stock-movers.log
-
-      - name: Write movers pipeline status
-        if: always()
-        env:
-          MOVERS_OUTCOME: ${{ steps.movers.outcome }}
-        run: |
-          python - <<'PY'
-          import json
-          import os
-          from datetime import datetime, timedelta, timezone
-          from pathlib import Path
-          JST = timezone(timedelta(hours=9))
-          log_path = Path('/tmp/us-stock-movers.log')
-          log = log_path.read_text(encoding='utf-8', errors='replace') if log_path.exists() else ''
-          safe = []
-          for line in log.splitlines():
-              lower = line.lower()
-              if any(token in lower for token in ('private_key', 'client_email', 'credential', 'authorization:', 'bearer ')):
-                  continue
-              safe.append(line[:500])
-          payload = {
-              'schemaVersion': '1.0.0',
-              'updatedAt': datetime.now(JST).replace(microsecond=0).isoformat(),
-              'status': 'ok' if os.environ.get('MOVERS_OUTCOME') == 'success' else 'failed',
-              'logTail': safe[-25:],
-          }
-          path = Path('data/market/us-stock-pipeline-status.json')
-          path.parent.mkdir(parents=True, exist_ok=True)
-          path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-          PY
-
-      - name: Validate generated close-analysis files
+      - name: Validate generated files
         run: |
           python -m json.tool data/market/us-stock-breadth.json > /dev/null
           python -m json.tool data/market/us-stock-breadth-history.json > /dev/null
           python -m json.tool data/stocks.json > /dev/null
           test -s data/market/us-stock-breadth-history.csv
-          if [ "${{ steps.movers.outcome }}" = "success" ]; then
-            python - <<'PY'
-          import json
-          from pathlib import Path
-          movers = json.loads(Path('data/market/us-stock-movers.json').read_text(encoding='utf-8'))
-          contrib = json.loads(Path('data/market/sp500-contributions.json').read_text(encoding='utf-8'))
-          stocks = json.loads(Path('data/stocks.json').read_text(encoding='utf-8'))
-          date = str((stocks.get('marketDates') or {}).get('us') or '')[:10]
-          if movers.get('status') != 'verified' or movers.get('dataDate') != date:
-              raise SystemExit('US movers are not synced to verified US market date')
-          if contrib.get('status') != 'verified-estimate' or contrib.get('dataDate') != date:
-              raise SystemExit('S&P contribution estimates are not synced to verified US market date')
-          if contrib.get('official') is not False or contrib.get('unit') != 'bp':
-              raise SystemExit('S&P contribution estimate labeling is invalid')
-          if len(movers.get('gainers') or []) != 5 or len(movers.get('losers') or []) != 5:
-              raise SystemExit('US movers must contain five gainers and five losers')
-          if len(contrib.get('top') or []) != 5 or len(contrib.get('bottom') or []) != 5:
-              raise SystemExit('S&P contribution estimate must contain five top and five bottom rows')
-          print('Verified US movers and S&P contribution estimates for', date)
-          PY
-          fi
-
-      - name: Save stock-analysis history snapshot
+      - name: Commit generated breadth data
+        shell: bash
         run: |
-          if [ -f scripts/snapshot_stocks_history.py ]; then
-            python scripts/snapshot_stocks_history.py
+          if git diff --quiet -- data/market/us-stock-breadth.json data/market/us-stock-breadth-history.json data/market/us-stock-breadth-history.csv data/stocks.json; then
+            echo "US stock breadth files are already up to date."
+            exit 0
           fi
-
-      - name: Commit generated US close-analysis data
-        run: |
-          git add data/market/us-stock-breadth.json data/market/us-stock-breadth-history.json data/market/us-stock-breadth-history.csv data/market/us-stock-pipeline-status.json data/market/us-stock-movers.json data/market/sp500-contributions.json data/stocks.json data/history/stocks 2>/dev/null || true
-          if git diff --cached --quiet; then
-            echo "US stock close-analysis files are already up to date."
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "Update US stock close analysis"
-            git pull --rebase
-            git push
-          fi
-
-      - name: Mark degraded run when mover pipeline failed
-        if: steps.movers.outcome != 'success'
-        run: exit 1
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market/us-stock-breadth.json data/market/us-stock-breadth-history.json data/market/us-stock-breadth-history.csv data/stocks.json
+          git commit -m "Update US stock breadth"
+          git pull --rebase
+          git push
