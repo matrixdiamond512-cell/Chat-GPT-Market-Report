@@ -1,47 +1,81 @@
 /*
  * WEB market report market-data renderer.
- * 07:00: fixed 24-item morning overview.
+ * 08:00: fixed 28-item morning overview, always rendered as 5 columns.
+ * 07:00 historical reports: keep the legacy morning profile.
  * 12:00 / 16:00 / 21:00: fixed 6-market intraday overview.
- * Always renders a real HTML table; never exposes pipe-delimited rows as prose.
+ * Missing rows are never hidden.
  */
 (() => {
   "use strict";
 
   const MORNING_ITEMS = [
-    "Dow",
-    "Nasdaq",
+    "NYダウ",
+    "NASDAQ総合",
     "S&P500",
     "Russell 2000",
     "日経225現物",
-    "CME日経225先物",
+    "CME日経225先物・円建て",
+    "CME日経225先物・ドル建て",
     "日経225先物（大阪取引所）",
     "USD/JPY",
     "EUR/USD",
-    "金",
+    "COMEX金先物",
     "WTI原油",
     "BTCUSD",
     "VIX",
     "日経VI",
     "Fear & Greed Index",
-    "米10年国債利回り",
+    "米10年債利回り",
+    "日本10年国債利回り",
+    "日経225予想PER",
+    "日経225 PBR",
+    "日経225予想EPS",
+    "日経225 25日移動平均乖離率",
+    "日経225 200日移動平均乖離率",
+    "東証プライム売買代金",
+    "東証プライム売買高",
+    "東証プライム値上がり銘柄数",
+    "東証プライム値下がり銘柄数",
+    "東証プライム25日騰落レシオ"
+  ];
+
+  const LEGACY_MORNING_ITEMS = [
+    "NYダウ",
+    "NASDAQ総合",
+    "S&P500",
+    "Russell 2000",
+    "日経225現物",
+    "CME日経225先物・円建て",
+    "日経225先物（大阪取引所）",
+    "USD/JPY",
+    "EUR/USD",
+    "COMEX金先物",
+    "WTI原油",
+    "BTCUSD",
+    "VIX",
+    "日経VI",
+    "Fear & Greed Index",
+    "米10年債利回り",
     "日本10年国債利回り",
     "東証プライム値上がり銘柄数",
     "東証プライム値下がり銘柄数",
-    "騰落レシオ",
+    "東証プライム25日騰落レシオ",
     "日経225予想PER",
     "日経225予想EPS",
-    "25日移動平均乖離率",
-    "200日移動平均乖離率"
+    "日経225 25日移動平均乖離率",
+    "日経225 200日移動平均乖離率"
   ];
 
   const INTRADAY_ITEMS = [
-    "金",
+    "COMEX金先物",
     "WTI原油",
     "日経225先物（大阪取引所）",
     "USD/JPY",
     "EUR/USD",
     "BTCUSD"
   ];
+
+  const ALL_ITEMS = [...new Set([...MORNING_ITEMS, ...LEGACY_MORNING_ITEMS, ...INTRADAY_ITEMS])];
 
   const escHtml = (value = "") => String(value)
     .replace(/&/g, "&amp;")
@@ -59,40 +93,61 @@
   }
 
   function allowedItems() {
-    return currentReportTime() === "07:00" ? MORNING_ITEMS : INTRADAY_ITEMS;
+    const time = currentReportTime();
+    if (time === "08:00") return MORNING_ITEMS;
+    if (time === "07:00") return LEGACY_MORNING_ITEMS;
+    return INTRADAY_ITEMS;
+  }
+
+  function isMorning08() {
+    return currentReportTime() === "08:00";
+  }
+
+  function stripRowNumber(label) {
+    return String(label || "")
+      .trim()
+      .replace(/^[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘㉙㉚]\s*/, "")
+      .replace(/^\d+[.)．、]\s*/, "")
+      .trim();
   }
 
   function normalizeLabel(label) {
-    const value = String(label || "").trim().replace(/\s+/g, " ");
+    const value = stripRowNumber(label).replace(/\s+/g, " ");
 
-    if (/^(Dow|NYダウ|ダウ|NYダウ平均)$/i.test(value)) return "Dow";
-    if (/^(Nasdaq|NASDAQ|Nasdaq総合|NASDAQ総合)$/i.test(value)) return "Nasdaq";
+    if (/^(Dow|NYダウ|ダウ|NYダウ平均)$/i.test(value)) return "NYダウ";
+    if (/^(Nasdaq|NASDAQ|Nasdaq総合|NASDAQ総合)$/i.test(value)) return "NASDAQ総合";
     if (/^S&P\s*500$/i.test(value)) return "S&P500";
     if (/^Russell\s*2000$/i.test(value)) return "Russell 2000";
 
     if (/^(日経225現物|日経225|日経平均|日経平均現物)$/.test(value)) return "日経225現物";
-    if (/^CME.*日経225先物|^CME日経225/.test(value)) return "CME日経225先物";
-    if (/^(日経225先物|日経225先物（大阪取引所）|日経225先物\(大阪取引所\)|日経先物)$/.test(value)) return "日経225先物（大阪取引所）";
+    if (/^CME.*日経225先物.*(円建て|円)$/i.test(value)) return "CME日経225先物・円建て";
+    if (/^CME.*日経225先物.*(ドル建て|ドル)$/i.test(value)) return "CME日経225先物・ドル建て";
+    if (/^CME.*日経225先物|^CME日経225/i.test(value)) return "CME日経225先物・円建て";
+    if (/^(日経225先物|日経225先物（大阪取引所）|日経225先物\(大阪取引所\)|日経先物|日経225先物・大阪取引所)$/.test(value)) return "日経225先物（大阪取引所）";
 
     if (/^(USD\/JPY|USDJPY|ドル円)$/i.test(value)) return "USD/JPY";
     if (/^(EUR\/USD|EURUSD|ユーロドル)$/i.test(value)) return "EUR/USD";
-    if (/^(金|金先物|金価格|金現物|ゴールド)$/i.test(value)) return "金";
+    if (/^(COMEX金先物|金|金先物|金価格|金現物|ゴールド)$/i.test(value)) return "COMEX金先物";
     if (/^(WTI原油|原油|原油価格|WTI)$/i.test(value)) return "WTI原油";
     if (/^(BTCUSD|BTC\/USD|Bitcoin|ビットコイン)$/i.test(value)) return "BTCUSD";
 
     if (/^VIX(?:指数)?$/i.test(value)) return "VIX";
     if (/^日経VI$/.test(value)) return "日経VI";
     if (/^Fear\s*&\s*Greed(?:\s*Index)?$/i.test(value)) return "Fear & Greed Index";
-    if (/^(米10年債利回り|米10年債|米国10年債利回り|米10年国債利回り)$/.test(value)) return "米10年国債利回り";
+    if (/^(米10年債利回り|米10年債|米国10年債利回り|米10年国債利回り)$/.test(value)) return "米10年債利回り";
     if (/^(日本10年国債利回り|日本10年債利回り|日本10年国債)$/.test(value)) return "日本10年国債利回り";
 
+    if (/^(日経225予想PER|日経225 PER|日経225PER|PER)$/.test(value)) return "日経225予想PER";
+    if (/^(日経225\s*PBR|日経225PBR|PBR)$/.test(value)) return "日経225 PBR";
+    if (/^(日経225予想EPS|日経225 EPS|日経225EPS|EPS)$/.test(value)) return "日経225予想EPS";
+    if (/^(日経225 )?25日(?:移動平均)?乖離率$/.test(value)) return "日経225 25日移動平均乖離率";
+    if (/^(日経225 )?200日(?:移動平均)?乖離率$/.test(value)) return "日経225 200日移動平均乖離率";
+
+    if (/^東証プライム売買代金$/.test(value)) return "東証プライム売買代金";
+    if (/^東証プライム売買高$/.test(value)) return "東証プライム売買高";
     if (/^(東証プライム値上がり銘柄数|値上がり銘柄数（プライム）|プライム値上がり銘柄数)$/.test(value)) return "東証プライム値上がり銘柄数";
     if (/^(東証プライム値下がり銘柄数|値下がり銘柄数（プライム）|プライム値下がり銘柄数)$/.test(value)) return "東証プライム値下がり銘柄数";
-    if (/^騰落レシオ/.test(value)) return "騰落レシオ";
-    if (/^(日経225予想PER|日経225 PER|日経225PER|PER)$/.test(value)) return "日経225予想PER";
-    if (/^(日経225予想EPS|日経225 EPS|日経225EPS|EPS)$/.test(value)) return "日経225予想EPS";
-    if (/^(日経225 )?25日(?:移動平均)?乖離率$/.test(value)) return "25日移動平均乖離率";
-    if (/^(日経225 )?200日(?:移動平均)?乖離率$/.test(value)) return "200日移動平均乖離率";
+    if (/^(東証プライム25日騰落レシオ|25日騰落レシオ|騰落レシオ.*)$/.test(value)) return "東証プライム25日騰落レシオ";
 
     return value;
   }
@@ -109,13 +164,6 @@
     };
   }
 
-  function splitChangeRate(value) {
-    const source = String(value || "").trim();
-    const match = source.match(/^(.+?)\s*\/\s*([+-]?\d+(?:\.\d+)?%)$/);
-    if (!match) return { change: source || "—", rate: "—" };
-    return { change: match[1].trim() || "—", rate: match[2].trim() || "—" };
-  }
-
   function row(label, value, change, rate, time, marketType, note) {
     return {
       label: normalizeLabel(label),
@@ -126,6 +174,13 @@
       marketType: String(marketType || "—").trim() || "—",
       note: String(note || "—").trim() || "—"
     };
+  }
+
+  function splitChangeRate(value) {
+    const source = String(value || "").trim();
+    const match = source.match(/^(.+?)\s*\/\s*([+-]?\d+(?:\.\d+)?%)$/);
+    if (!match) return { change: source || "—", rate: "—" };
+    return { change: match[1].trim() || "—", rate: match[2].trim() || "—" };
   }
 
   function parsePipeLine(line) {
@@ -139,19 +194,18 @@
     if (cells.length < 2) return null;
 
     const first = String(cells[0] || "").trim();
-    if (/^(市場|市場・指標|市場・資産|指標)$/.test(first)) return null;
+    if (/^(項目|市場|市場・指標|市場・資産|指標)$/.test(stripRowNumber(first))) return null;
     if (/^[-: ]+$/.test(first)) return null;
 
     const label = normalizeLabel(first);
-    if (![...MORNING_ITEMS, ...INTRADAY_ITEMS].includes(label)) return null;
+    if (!ALL_ITEMS.includes(label)) return null;
 
     if (cells.length >= 7) {
       return row(label, cells[1], cells[2], cells[3], cells[4], cells[5], cells.slice(6).join(" / "));
     }
 
     if (cells.length >= 5) {
-      const cr = splitChangeRate(cells[2]);
-      return row(label, cells[1], cr.change, cr.rate, cells[3], cells[4], cells.slice(5).join(" / ") || "—");
+      return row(label, cells[1], cells[2], cells[3], "—", "—", cells[4]);
     }
 
     if (cells.length === 4) {
@@ -168,7 +222,7 @@
     if (!match) return null;
 
     const label = normalizeLabel(match[1]);
-    if (![...MORNING_ITEMS, ...INTRADAY_ITEMS].includes(label)) return null;
+    if (!ALL_ITEMS.includes(label)) return null;
 
     const tail = match[5].trim();
     const timeMatch = tail.match(/([0-9]{1,2}:[0-9]{2})(?:\s*JST)?/);
@@ -181,7 +235,7 @@
       const cells = [...tr.querySelectorAll("th,td")].map((cell) => (cell.textContent || "").trim());
       if (cells.length < 2) return;
       const label = normalizeLabel(cells[0]);
-      if (![...MORNING_ITEMS, ...INTRADAY_ITEMS].includes(label)) return;
+      if (!ALL_ITEMS.includes(label)) return;
 
       if (cells.length >= 7) {
         rows.push(row(label, cells[1], cells[2], cells[3], cells[4], cells[5], cells[6]));
@@ -220,6 +274,27 @@
     return lines;
   }
 
+  function parseFlattenedFiveColumn(lines) {
+    const rows = [];
+    for (let i = 0; i < lines.length; i += 1) {
+      const label = normalizeLabel(lines[i]);
+      if (!MORNING_ITEMS.includes(label)) continue;
+      if (i + 4 >= lines.length) continue;
+
+      rows.push(row(
+        label,
+        lines[i + 1],
+        lines[i + 2],
+        lines[i + 3],
+        "—",
+        "—",
+        lines[i + 4]
+      ));
+      i += 4;
+    }
+    return rows;
+  }
+
   function collectRows(section) {
     const found = new Map();
     const add = (item) => {
@@ -230,7 +305,10 @@
 
     parseExistingTable(section).forEach(add);
 
-    sourceLines(section).forEach((line) => {
+    const lines = sourceLines(section);
+    if (isMorning08()) parseFlattenedFiveColumn(lines).forEach(add);
+
+    lines.forEach((line) => {
       add(parsePipeLine(line));
       add(parseStandardMarketLine(line));
       parsePrimeBreadthLine(line).forEach(add);
@@ -242,13 +320,27 @@
   function collectNotes(section) {
     return sourceLines(section).filter((line) => {
       if (parsePipeLine(line) || parseStandardMarketLine(line) || parsePrimeBreadthLine(line).length) return false;
-      if (/^(市場|市場・指標|市場・資産).*([|｜])/.test(line)) return false;
+      if (/^(項目|市場|市場・指標|市場・資産).*([|｜])/.test(line)) return false;
       if (/^[-:|｜ ]+$/.test(line)) return false;
       return /レポート作成時点|最終検証済み|スナップショット|同時刻値|リアルタイム値|取得時刻/.test(line);
     });
   }
 
-  function buildTable(rows) {
+  function buildMorningTable(rows) {
+    const headers = ["項目", "終値・値", "前日比", "騰落率", "方向感"];
+    return `<div class="market-table-wrap"><table class="market-table market-table-five time-profile-market-table morning-28-market-table">
+      <thead><tr>${headers.map((cell) => `<th>${escHtml(cell)}</th>`).join("")}</tr></thead>
+      <tbody>${rows.map((item) => `<tr>
+        <th scope="row">${escHtml(item.label)}</th>
+        <td>${escHtml(item.value)}</td>
+        <td>${escHtml(item.change)}</td>
+        <td>${escHtml(item.rate)}</td>
+        <td>${escHtml(item.note)}</td>
+      </tr>`).join("")}</tbody>
+    </table></div>`;
+  }
+
+  function buildIntradayTable(rows) {
     const headers = ["市場", "最終検証済み値", "前日比", "騰落率", "対象時点", "市場区分", "備考・検証状態"];
     return `<div class="market-table-wrap"><table class="market-table market-table-seven time-profile-market-table">
       <thead><tr>${headers.map((cell) => `<th>${escHtml(cell)}</th>`).join("")}</tr></thead>
@@ -262,6 +354,10 @@
         <td>${escHtml(item.note)}</td>
       </tr>`).join("")}</tbody>
     </table></div>`;
+  }
+
+  function buildTable(rows) {
+    return isMorning08() ? buildMorningTable(rows) : buildIntradayTable(rows);
   }
 
   function convertSection(section) {
