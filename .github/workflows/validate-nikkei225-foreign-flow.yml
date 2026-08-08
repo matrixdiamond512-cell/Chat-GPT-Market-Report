@@ -46,7 +46,7 @@ jobs:
               d=json.load(open('/tmp/data.json'))
               f=d.get('foreignInvestors') or {}
               s=f.get('series') or []
-              ok=(f.get('status')=='verified' and len(s)>=2 and len(s)<=12 and f.get('cashNet') is not None and f.get('nikkeiFuturesNet') is not None and all(x.get('asOfDate') and x.get('cashNet') is not None and x.get('nikkeiFuturesNet') is not None for x in s))
+              ok=(f.get('status')=='verified' and f.get('historyStatus')=='verified' and f.get('historyWeeks')==12 and f.get('historyTargetWeeks')==12 and len(s)==12 and f.get('cashNet') is not None and f.get('nikkeiFuturesNet') is not None and all(x.get('asOfDate') and x.get('cashNet') is not None and x.get('nikkeiFuturesNet') is not None for x in s))
           except Exception:
               ok=False
           sys.exit(0 if ok else 1)
@@ -67,7 +67,7 @@ jobs:
               d={}
           f=d.get('foreignInvestors') or {}
           s=f.get('series') or []
-          series_ok=bool(f.get('status')=='verified' and len(s)>=2 and len(s)<=12 and all(x.get('asOfDate') and x.get('cashNet') is not None and x.get('nikkeiFuturesNet') is not None for x in s))
+          series_ok=bool(f.get('status')=='verified' and f.get('historyStatus')=='verified' and f.get('historyWeeks')==12 and f.get('historyTargetWeeks')==12 and len(s)==12 and all(x.get('asOfDate') and x.get('cashNet') is not None and x.get('nikkeiFuturesNet') is not None for x in s))
           display_ok=bool('nikkei225-foreign-flow-display.js' in html and 'nikkei225-foreign-flow.css' in html and '海外投資家の週次需給推移' in js and 'nikkei-foreign-card' in css)
           out={
               'checkedAt':datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9))).isoformat(timespec='seconds'),
