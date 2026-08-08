@@ -140,6 +140,12 @@
 
   function applyNikkeiMetrics() {
     if (requestedDate || !nikkeiPayload?.metrics || busy) return false;
+    const mainJapanDate = marketDatesOf(latestStocksPayload || {}).japan;
+    const overlayDate = dateOnly(nikkeiPayload?.dataAsOf);
+    if (mainJapanDate && overlayDate && overlayDate < mainJapanDate) {
+      console.warn(`Skip stale Nikkei metrics overlay: ${overlayDate} < ${mainJapanDate}`);
+      return false;
+    }
     const tbody = japanMarketBody();
     if (!tbody) return false;
     const panel = tbody.closest(".panel");
