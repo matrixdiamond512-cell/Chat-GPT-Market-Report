@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
-"""Run a resilient multi-attempt market-data acquisition window.
+"""Run resilient scheduled market-data acquisition attempts.
 
-This script is used by the 08:00 primary and fallback workflows. A single
-runner stays alive across the requested Japan-time schedule, records every
-attempt in a committed daily audit log, writes the best staged data to Google
-Sheets when configured, and commits each attempt before waiting for the next
-one. Separate primary/fallback workflows share a concurrency group, so a
-fallback run waits for the primary and then exits after confirming the audit.
+The script can run one or several Japan-time attempts, records every real
+attempt in a committed audit log, persists to Google Sheets when credentials
+are configured, and keeps the committed GitHub market-data layer usable as a
+report fallback when Sheets is temporarily unavailable.
+
+Important operational rules:
+- only verified/degraded attempts count as completed;
+- blocked attempts do not satisfy the schedule;
+- excessively late attempts are recorded as expired instead of being replayed
+  minutes or hours later and falsely appearing on-time;
+- final health checks may use --mode full to force a fresh snapshot.
 """
 
 from __future__ import annotations
@@ -95,7 +100,7 @@ def completed_times(path: Path, slot: str) -> set[str]:
     return {
         str(item.get("scheduledTime"))
         for item in read_audit(path)
-        if item.get("reportSlot") == slot and item.get("outcome") in {"verified", "degraded", "blocked"}
+        if item.get("reportSlot") == slot and item.get("outcome") in {"verified", "degraded"}
     }
 
 
@@ -141,7 +146,10 @@ def sync_sheets(status: str) -> tuple[str, str]:
     if status == "blocked":
         return "skipped_blocked", "Blocked staged data was not written to Google Sheets."
     if not os.environ.get("MARKET_DATA_SPREADSHEET_ID") or not os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON"):
-        return "skipped_unconfigured", "Google Sheets credentials are not configured."
+        return (
+            "skipped_unconfigured",
+            "Google Sheets credentials are not configured; committed GitHub market data remains the report fallback.",
+        )
     completed = run([sys.executable, "scripts/write_market_data_to_sheets.py"], check=False, capture=True)
     output = ((completed.stdout or "") + "\n" + (completed.stderr or "")).strip()
     if completed.returncode == 0:
@@ -149,7 +157,15 @@ def sync_sheets(status: str) -> tuple[str, str]:
     return "failed", output[-2000:]
 
 
-def perform_attempt(slot: str, scheduled_time: str, trigger_source: str, audit: Path) -> dict[str, Any]:
+def perform_attempt(
+    slot: str,
+    scheduled_day: dt.date,
+    scheduled_time: str,
+    trigger_source: str,
+    audit: Path,
+    mode: str,
+    late_minutes: float,
+) -> dict[str, Any]:
     started = now_jst()
     os.environ["ACQUISITION_TRIGGER_SOURCE"] = trigger_source
     os.environ["ACQUISITION_SCHEDULED_TIME"] = scheduled_time
@@ -160,7 +176,7 @@ def perform_attempt(slot: str, scheduled_time: str, trigger_source: str, audit: 
         "--slot",
         slot,
         "--mode",
-        "auto",
+        mode,
         "--print-summary",
     ])
     run([sys.executable, "scripts/build_market_sheet_exports.py"])
@@ -178,8 +194,9 @@ def perform_attempt(slot: str, scheduled_time: str, trigger_source: str, audit: 
     sheets_outcome, sheets_message = sync_sheets(status)
     completed = now_jst()
     acquisition = payload.get("acquisition") or {}
+    targeted = acquisition.get("targetedSymbols") or []
     record = {
-        "scheduledDate": started.date().isoformat(),
+        "scheduledDate": scheduled_day.isoformat(),
         "scheduledTime": scheduled_time,
         "reportSlot": slot,
         "triggerSource": trigger_source,
@@ -187,19 +204,49 @@ def perform_attempt(slot: str, scheduled_time: str, trigger_source: str, audit: 
         "workflowRunAttempt": os.environ.get("GITHUB_RUN_ATTEMPT", ""),
         "startedAt": iso(started),
         "completedAt": iso(completed),
+        "lateMinutes": round(max(0.0, late_minutes), 1),
         "outcome": status,
         "missingRequired": payload.get("missingRequired") or [],
         "fallbackCount": payload.get("fallbackCount", 0),
         "runCount": acquisition.get("runCount", 0),
-        "targetedSymbols": acquisition.get("targetedSymbols") or [],
+        "mode": acquisition.get("mode") or mode,
+        "targetedSymbols": targeted,
+        "effectiveFetch": bool(targeted),
         "recoveredSymbols": acquisition.get("recoveredSymbols") or [],
         "remainingUnavailable": acquisition.get("remainingUnavailable") or [],
         "sheetsOutcome": sheets_outcome,
         "sheetsMessage": sheets_message,
+        "reportDataFallback": "data/market/latest.json" if sheets_outcome != "success" else "ChatGPT_Market_Input",
     }
     append_audit(audit, record)
     git_commit_push(f"Record {slot} market data attempt {scheduled_time}")
     return record
+
+
+def record_expired(
+    audit: Path,
+    slot: str,
+    day: dt.date,
+    scheduled_time: str,
+    trigger_source: str,
+    late_minutes: float,
+) -> None:
+    record = {
+        "scheduledDate": day.isoformat(),
+        "scheduledTime": scheduled_time,
+        "reportSlot": slot,
+        "triggerSource": trigger_source,
+        "workflowRunId": os.environ.get("GITHUB_RUN_ID", ""),
+        "workflowRunAttempt": os.environ.get("GITHUB_RUN_ATTEMPT", ""),
+        "startedAt": iso(),
+        "completedAt": iso(),
+        "lateMinutes": round(max(0.0, late_minutes), 1),
+        "outcome": "expired",
+        "effectiveFetch": False,
+        "reason": "scheduled attempt started after the allowed catch-up window",
+    }
+    append_audit(audit, record)
+    git_commit_push(f"Record expired {slot} market data attempt {scheduled_time}")
 
 
 def main() -> int:
@@ -207,7 +254,8 @@ def main() -> int:
     parser.add_argument("--slot", required=True, choices=("08:00", "12:00", "16:00", "21:00"))
     parser.add_argument("--times", required=True, type=parse_times)
     parser.add_argument("--trigger-source", default=os.environ.get("ACQUISITION_TRIGGER_SOURCE", "window"))
-    parser.add_argument("--max-catchup-minutes", type=int, default=90)
+    parser.add_argument("--max-catchup-minutes", type=int, default=30)
+    parser.add_argument("--mode", choices=("auto", "full"), default="auto")
     args = parser.parse_args()
 
     run(["git", "config", "user.name", "github-actions[bot]"])
@@ -228,20 +276,32 @@ def main() -> int:
         age_minutes = (now_jst() - target).total_seconds() / 60.0
         if age_minutes < 0:
             wait_until(target)
+            age_minutes = max(0.0, (now_jst() - target).total_seconds() / 60.0)
         elif age_minutes > args.max_catchup_minutes:
             print(f"Skipping expired attempt {scheduled_time}: {age_minutes:.1f} minutes late", flush=True)
+            record_expired(audit, args.slot, day, scheduled_time, args.trigger_source, age_minutes)
             failures.append(scheduled_time)
             continue
         else:
             print(f"Catching up {scheduled_time}: {age_minutes:.1f} minutes late", flush=True)
 
         try:
-            perform_attempt(args.slot, scheduled_time, args.trigger_source, audit)
+            record = perform_attempt(
+                args.slot,
+                day,
+                scheduled_time,
+                args.trigger_source,
+                audit,
+                args.mode,
+                age_minutes,
+            )
+            if record.get("outcome") not in {"verified", "degraded"}:
+                failures.append(scheduled_time)
         except Exception as exc:
             print(f"Attempt {scheduled_time} failed: {exc}", file=sys.stderr, flush=True)
             failures.append(scheduled_time)
-            # Keep the window alive so later attempts can still recover data.
-            time.sleep(30)
+            # A multi-time manual/recovery window may continue to a later attempt.
+            time.sleep(10)
 
     git_sync()
     final_done = completed_times(audit, args.slot)
@@ -253,6 +313,7 @@ def main() -> int:
         "completedTimes": sorted(final_done),
         "missingTimes": missing,
         "triggerSource": args.trigger_source,
+        "mode": args.mode,
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2), flush=True)
     return 1 if missing else 0
