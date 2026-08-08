@@ -9,6 +9,8 @@ const n=v=>{const x=Number(v);return Number.isFinite(x)?x:null};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=(v,d=2)=>n(v)===null?'取得待ち':Number(v).toLocaleString('ja-JP',{minimumFractionDigits:d,maximumFractionDigits:d});
 const signed=(v,d=2,suffix='')=>n(v)===null?'取得待ち':`${Number(v)>0?'+':''}${fmt(v,d)}${suffix}`;
+const dateText=v=>v?String(v).slice(0,10).replaceAll('-','/'):'取得待ち';
+const sameDate=(a,b)=>Boolean(a&&b&&String(a).slice(0,10)===String(b).slice(0,10));
 
 function findCardByTitle(title){
   const heads=[...document.querySelectorAll('.gold-section-title')];
@@ -39,8 +41,10 @@ function buildCard(data){
   const db=env.dollarBroad||{};
 
   const cftcClass=classifyDirection(cot.managedMoneyNetChange,true);
-  const etfParts=[gld.changeTonnes,iau.changeTonnes].filter(v=>n(v)!==null).map(Number);
-  const etfTotal=etfParts.length?etfParts.reduce((s,v)=>s+v,0):null;
+  const etfAligned=sameDate(gld.asOfDate,iau.asOfDate);
+  const etfTotal=etfAligned&&n(gld.changeTonnes)!==null&&n(iau.changeTonnes)!==null
+    ?Number(gld.changeTonnes)+Number(iau.changeTonnes)
+    :null;
   const etfClass=classifyDirection(etfTotal,true,2);
   const ryClass=classifyDirection(ry.change,false);
   const dbClass=classifyDirection(db.change,false);
@@ -53,13 +57,15 @@ function buildCard(data){
         ?'投機筋の買い越しが前週から縮小しており、金にはマイナスです。'
         :'投機筋のネットポジションは前週からほぼ横ばいです。');
 
-  const etfReason=n(etfTotal)===null
-    ?'GLD・IAUの前回比が揃っていないため判定を保留します。'
-    :(etfTotal>0
-      ?'主要金ETFの保有量が合計で増えており、金融需要の流入を示します。'
-      :etfTotal<0
-        ?'主要金ETFの保有量が合計で減っており、金融需要は小幅流出です。'
-        :'主要金ETFの保有量は合計で横ばいです。');
+  const etfReason=!etfAligned
+    ?`GLD（${dateText(gld.asOfDate)}）とIAU（${dateText(iau.asOfDate)}）の基準日が一致しないため、合計と方向判定を保留します。`
+    :n(etfTotal)===null
+      ?'GLD・IAUの前回比が揃っていないため判定を保留します。'
+      :(etfTotal>0
+        ?'同一基準日のGLD・IAU保有量が合計で増えており、金融需要の流入を示します。'
+        :etfTotal<0
+          ?'同一基準日のGLD・IAU保有量が合計で減っており、金融需要は流出です。'
+          :'同一基準日のGLD・IAU保有量は合計で横ばいです。');
 
   const ryReason=n(ry.change)===null
     ?'実質金利の前回比を取得できていないため判定を保留します。'
@@ -96,7 +102,7 @@ function buildCard(data){
         </li>
         <li>
           <div class="gold-supply-summary-line"><b>ETF</b><em class="${etfClass.cls}">${esc(etfClass.label)}</em></div>
-          <div class="gold-supply-summary-data">GLD：<strong>${signed(gld.changeTonnes,2,'t')}</strong> ／ IAU：<strong>${signed(iau.changeTonnes,2,'t')}</strong> ／ 合計：<strong>${n(etfTotal)===null?'取得待ち':signed(etfTotal,2,'t')}</strong></div>
+          <div class="gold-supply-summary-data">GLD：<strong>${signed(gld.changeTonnes,2,'t')}</strong>（${dateText(gld.asOfDate)}） ／ IAU：<strong>${signed(iau.changeTonnes,2,'t')}</strong>（${dateText(iau.asOfDate)}） ／ 日次合計：<strong>${n(etfTotal)===null?'算出保留':signed(etfTotal,2,'t')}</strong></div>
           <p>${esc(etfReason)}</p>
         </li>
         <li>
@@ -110,7 +116,7 @@ function buildCard(data){
           <p>${esc(dbReason)}</p>
         </li>
       </ol>
-      <div class="gold-supply-summary-foot">判定方法：CFTC・ETF・実質金利・ドルを分解して表示。各データの基準日・更新頻度が異なるため、方向だけでなく変化の大きさと鮮度も併せて確認します。</div>
+      <div class="gold-supply-summary-foot">判定方法：CFTC・ETF・実質金利・ドルを分解して表示。各データの基準日・更新頻度が異なるため、方向だけでなく変化の大きさと鮮度も併せて確認します。ETFの日次合計はGLDとIAUの基準日が一致した場合のみ算出します。</div>
     </div>
   </article>`;
 }
