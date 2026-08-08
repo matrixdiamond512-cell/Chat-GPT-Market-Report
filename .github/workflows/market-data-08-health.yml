@@ -1,11 +1,12 @@
-name: 08:00 market data health check
+name: 08:00 market data final readiness check
 
 on:
   workflow_dispatch:
   schedule:
-    # 07:55 JST, Monday-Saturday. This checks the committed daily audit before
-    # the 08:00 report and runs only attempts missed by the primary/fallback paths.
-    - cron: "55 22 * * 0-5"
+    # Start two minutes before the final 07:55 JST validation point. The job
+    # waits until 07:55, forces a fresh acquisition, and writes a machine-readable
+    # readiness result before the 08:00 report can be considered data-ready.
+    - cron: "53 22 * * 0-5"
 
 permissions:
   contents: write
@@ -17,7 +18,7 @@ concurrency:
 jobs:
   verify-and-recover:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,14 +33,47 @@ jobs:
       - name: Install Google Sheets dependencies
         run: python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
 
-      - name: Verify audit and recover missing attempts
+      - name: Validate acquisition programs
+        run: |
+          python -m py_compile scripts/fetch_market_data.py
+          python -m py_compile scripts/run_market_data_acquisition.py
+          python -m py_compile scripts/run_market_data_window.py
+          python -m py_compile scripts/verify_market_report_readiness.py
+
+      - name: Force final 07:55 market-data refresh
         env:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-          ACQUISITION_TRIGGER_SOURCE: health_check
+          ACQUISITION_TRIGGER_SOURCE: final_readiness
         run: |
           python scripts/run_market_data_window.py \
             --slot "08:00" \
-            --times "06:30,07:00,07:20,07:30,07:40,07:45,07:50" \
-            --trigger-source "health_check" \
-            --max-catchup-minutes 120
+            --times "07:55" \
+            --trigger-source "final_readiness" \
+            --max-catchup-minutes 10 \
+            --mode full
+
+      - name: Verify report data readiness and record result
+        shell: bash
+        run: |
+          set +e
+          python scripts/verify_market_report_readiness.py \
+            --slot "08:00" \
+            --max-age-minutes 15
+          CODE=$?
+          set -e
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market/report_readiness.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Record 08:00 market data readiness"
+            git pull --rebase
+            git push
+          fi
+
+          if [ "$CODE" -ne 0 ]; then
+            echo "08:00 report data is NOT ready. Report generation must not label current verified GitHub values as unavailable."
+            exit "$CODE"
+          fi
+          echo "08:00 report data readiness verified."
