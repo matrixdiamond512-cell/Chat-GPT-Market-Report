@@ -1,0 +1,86 @@
+name: Update Japan stock movers
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/fetch_japan_stock_movers.py"
+      - ".github/workflows/update-japan-stock-movers.yml"
+  schedule:
+    # Tokyo close rankings can lag the 15:30 close page. Retry after 16:00 JST.
+    - cron: "20 7 * * 1-5" # 16:20 JST
+    - cron: "40 7 * * 1-5" # 16:40 JST
+    - cron: "0 8 * * 1-5"  # 17:00 JST
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stocks-page-daily-state
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check requests beautifulsoup4 google-auth
+
+      - name: Fetch verified Tokyo Prime movers
+        env:
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python scripts/fetch_japan_stock_movers.py
+
+      - name: Validate generated data
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          movers = json.loads(Path('data/market/japan-stock-movers.json').read_text(encoding='utf-8'))
+          stocks = json.loads(Path('data/stocks.json').read_text(encoding='utf-8'))
+          date = str((stocks.get('marketDates') or {}).get('japan') or '')[:10]
+          if movers.get('status') != 'verified' or movers.get('dataDate') != date:
+              raise SystemExit('Japan movers are not synced to the verified Tokyo market date')
+          for key in ('gainers','losers'):
+              rows = movers.get(key) or []
+              if len(rows) != 5:
+                  raise SystemExit(f'Japan movers {key} must contain 5 rows')
+              if any('東証プライム' not in str(row.get('reason') or '') for row in rows):
+                  raise SystemExit('Japan mover row is not labeled as Tokyo Prime')
+          block = ((stocks.get('movers') or {}).get('japan') or {})
+          if block.get('status') != 'verified' or block.get('dataDate') != date:
+              raise SystemExit('stocks.json Japan mover block is not synced')
+          print('Verified Tokyo Prime movers for', date)
+          PY
+
+      - name: Save stock-analysis history snapshot
+        run: |
+          if [ -f scripts/snapshot_stocks_history.py ]; then
+            python scripts/snapshot_stocks_history.py
+          fi
+
+      - name: Commit verified data
+        run: |
+          git add data/market/japan-stock-movers.json data/stocks.json data/history/stocks 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "Japan mover data is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update verified Tokyo Prime stock movers"
+          git pull --rebase
+          git push
