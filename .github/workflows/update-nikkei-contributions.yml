@@ -3,7 +3,7 @@ name: Update Nikkei 225 contributions
 on:
   workflow_dispatch:
   schedule:
-    - cron: "10 7 * * 1-5" # 16:10 JST, Monday-Friday
+    - cron: "15 7 * * 1-5" # 16:15 JST, after Tokyo table update
   push:
     branches: [main]
     paths:
@@ -14,8 +14,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: stocks-page-daily-state
-  cancel-in-progress: false
+  group: update-nikkei-contributions
+  cancel-in-progress: true
 
 jobs:
   update:
