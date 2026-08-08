@@ -2,6 +2,7 @@
 'use strict';
 
 const DATA_URL='data/gold-supply-demand.json';
+let installPromise=null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const n=v=>{const x=Number(v);return Number.isFinite(x)?x:null};
 const fmt=(v,d=0)=>n(v)===null?'取得待ち':Number(v).toLocaleString('ja-JP',{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -90,17 +91,27 @@ function renderCard(cot){
 
 async function install(){
   if(document.querySelector('[data-cftc-history-card]'))return true;
+  if(installPromise)return installPromise;
   const anchor=findCftcCard();
   if(!anchor)return false;
-  try{
-    const r=await fetch(`${DATA_URL}?ts=${Date.now()}`,{cache:'no-store'});
-    if(!r.ok)throw new Error(`HTTP ${r.status}`);
-    const data=await r.json();
-    anchor.insertAdjacentHTML('afterend',renderCard(data.cftc||{}));
-  }catch(err){
-    anchor.insertAdjacentHTML('afterend',`<article class="gold-card gold-cftc-history-card" data-cftc-history-card><div class="gold-section-head"><h2 class="gold-section-title">投機筋ポジション推移</h2><span class="gold-frequency">週次</span></div><div class="gold-section-body"><div class="gold-cftc-empty">CFTC時系列データの読み込みに失敗しました。再読込してください。</div></div></article>`);
-  }
-  return true;
+
+  installPromise=(async()=>{
+    try{
+      const r=await fetch(`${DATA_URL}?ts=${Date.now()}`,{cache:'no-store'});
+      if(!r.ok)throw new Error(`HTTP ${r.status}`);
+      const data=await r.json();
+      if(!document.querySelector('[data-cftc-history-card]')){
+        anchor.insertAdjacentHTML('afterend',renderCard(data.cftc||{}));
+      }
+    }catch(err){
+      if(!document.querySelector('[data-cftc-history-card]')){
+        anchor.insertAdjacentHTML('afterend',`<article class="gold-card gold-cftc-history-card" data-cftc-history-card><div class="gold-section-head"><h2 class="gold-section-title">投機筋ポジション推移</h2><span class="gold-frequency">週次</span></div><div class="gold-section-body"><div class="gold-cftc-empty">CFTC時系列データの読み込みに失敗しました。再読込してください。</div></div></article>`);
+      }
+    }
+    return true;
+  })().finally(()=>{installPromise=null;});
+
+  return installPromise;
 }
 
 async function waitForBaseRender(){
