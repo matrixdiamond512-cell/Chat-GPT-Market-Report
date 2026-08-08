@@ -2,7 +2,9 @@
   "use strict";
 
   const MAX_ATTEMPTS = 80;
+  const LATEST_REPORT_PATH = "data/latest-report.json";
   let attempts = 0;
+  let overrideLoaded = false;
 
   function keyOf(item) {
     return `${item?.date || ""} ${item?.time || ""}`;
@@ -21,7 +23,41 @@
     return Boolean(requestedDate && requestedDate < latest.date);
   }
 
-  function chooseLatest() {
+  async function mergeLatestOverride() {
+    if (overrideLoaded) return;
+    overrideLoaded = true;
+
+    try {
+      const response = await fetch(`${LATEST_REPORT_PATH}?ts=${Date.now()}`, { cache: "no-store" });
+      if (!response.ok) return;
+      const payload = await response.json();
+      const candidate = payload?.latestReport || payload?.report || payload;
+      if (!candidate || !/^\d{4}-\d{2}-\d{2}$/.test(candidate.date || "") || !/^\d{2}:\d{2}$/.test(candidate.time || "")) return;
+
+      let list = [];
+      try {
+        list = Array.isArray(reports) ? reports : [];
+      } catch (error) {
+        list = [];
+      }
+
+      const merged = new Map(list.map((item) => [keyOf(item), item]));
+      const previous = merged.get(keyOf(candidate)) || {};
+      merged.set(keyOf(candidate), {
+        ...previous,
+        ...candidate,
+        fullText: candidate.fullText || previous.fullText || ""
+      });
+
+      reports = [...merged.values()]
+        .filter((item) => item && /^\d{4}-\d{2}-\d{2}$/.test(item.date || ""))
+        .sort((a, b) => keyOf(b).localeCompare(keyOf(a)));
+    } catch (error) {
+      console.warn("latest report override load failed", error);
+    }
+  }
+
+  async function chooseLatest() {
     attempts += 1;
 
     let list = [];
@@ -34,6 +70,14 @@
     if (!list.length) {
       if (attempts < MAX_ATTEMPTS) setTimeout(chooseLatest, 250);
       return;
+    }
+
+    await mergeLatestOverride();
+
+    try {
+      list = Array.isArray(reports) ? reports : [];
+    } catch (error) {
+      list = [];
     }
 
     const latest = latestReport(list);
