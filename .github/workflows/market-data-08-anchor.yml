@@ -63,6 +63,7 @@ jobs:
           python -m py_compile scripts/run_market_data_acquisition.py
           python -m py_compile scripts/run_market_data_window.py
           python -m py_compile scripts/verify_market_report_readiness.py
+          python -m py_compile scripts/fetch_morning_reference.py
 
       - name: Resolve intended Japan-time attempt
         id: intended
@@ -93,3 +94,21 @@ jobs:
             --trigger-source "independent_schedule" \
             --max-catchup-minutes 20 \
             --mode auto
+
+      - name: Refresh CME/OSE morning reference at final attempt
+        if: ${{ steps.intended.outputs.time == '07:50' }}
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull --rebase
+          REPORT_DATE="$(TZ=Asia/Tokyo date +%F)"
+          python scripts/fetch_morning_reference.py --report-date "$REPORT_DATE" --slot "08:00"
+          git add data/market/morning-reference.json
+          if git diff --cached --quiet; then
+            echo "Morning reference unchanged"
+            exit 0
+          fi
+          git commit -m "Refresh 08:00 CME/OSE morning reference"
+          git pull --rebase
+          git push
