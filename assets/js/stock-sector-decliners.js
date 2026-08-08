@@ -38,9 +38,20 @@
     return match ? Number(match[0]) : 0;
   };
   const flag = code => code === "US" ? "🇺🇸" : code === "JP" ? "🇯🇵" : "";
-  const displayDate = value => /^\d{4}-\d{2}-\d{2}$/.test(String(value || ""))
-    ? String(value).replace(/-/g, "/")
-    : "取得不能";
+  const dateOnly = value => {
+    const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return match ? `${match[1]}-${match[2]}-${match[3]}` : "";
+  };
+  const displayDate = value => {
+    const date = dateOnly(value);
+    return date ? date.replace(/-/g, "/") : "取得不能";
+  };
+  const displayDateTime = value => {
+    const text = String(value || "");
+    const match = text.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
+    if (match) return `${match[1]}/${match[2]}/${match[3]} ${match[4]}:${match[5]}`;
+    return displayDate(text);
+  };
 
   function injectStyles() {
     if (document.getElementById("stocks-overlay-style")) return;
@@ -61,8 +72,12 @@
       .stocks-date-input{width:270px;height:42px;border:1px solid #bfd0e9;border-radius:7px;background:#fff;color:#001f56;padding:0 14px;font:1000 16px/1 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic UI",Meiryo,sans-serif;text-align:center;color-scheme:light}
       .stocks-date-status{max-width:1640px;margin:-5px auto 10px;padding:0 20px;color:#314a6b;font-size:12px;font-weight:900;text-align:center;line-height:1.6}
       .stocks-market-date{margin-left:auto;padding:2px 8px;border:1px solid rgba(255,255,255,.7);border-radius:999px;background:rgba(255,255,255,.14);font-size:11px;font-weight:1000;white-space:nowrap}
+      .stocks-card-meta{display:flex;flex-wrap:wrap;gap:6px 10px;padding:7px 12px;border-bottom:1px solid #e3ebf7;background:#f7faff;color:#52647f;font-size:11px;font-weight:900;line-height:1.45}
+      .stocks-card-meta span{display:inline-flex;align-items:center;padding:2px 7px;border:1px solid #d7e2f1;border-radius:999px;background:#fff;white-space:nowrap}
+      .info-card>.stocks-card-meta,.analysis-card>.stocks-card-meta,.bridge>.stocks-card-meta{margin:0 0 10px;padding:0;border:0;background:transparent}
+      .info-card>.stocks-card-meta span,.analysis-card>.stocks-card-meta span,.bridge>.stocks-card-meta span{background:#f7faff}
       .stocks-history-error{border:1px dashed #d5a8aa;border-radius:7px;padding:18px;background:#fff7f7;color:#8b1b25;font-weight:900}
-      @media(max-width:760px){.sector-mover-source{display:none}.stocks-date-control{padding-left:12px;padding-right:12px}.stocks-date-input{width:min(68vw,270px)}.panel-title{flex-wrap:wrap}.stocks-market-date{margin-left:34px}}
+      @media(max-width:760px){.sector-mover-source{display:none}.stocks-date-control{padding-left:12px;padding-right:12px}.stocks-date-input{width:min(68vw,270px)}.panel-title{flex-wrap:wrap}.stocks-market-date{margin-left:34px}.stocks-card-meta{padding-left:10px;padding-right:10px}}
     `;
     document.head.appendChild(style);
   }
@@ -100,7 +115,7 @@
     });
     const status = document.querySelector("[data-updated]");
     if (status) {
-      const prefix = requestedDate ? `保存日 ${displayDate(requestedDate)}` : `更新日時 ${data.updatedAt || data.savedAt || "取得不能"}`;
+      const prefix = requestedDate ? `保存日 ${displayDate(requestedDate)}` : `更新日時 ${displayDateTime(data.updatedAt || data.savedAt || data.generatedAt)}`;
       status.textContent = `${prefix} / 米国市場 ${displayDate(dates.us)} / 東京市場 ${displayDate(dates.japan)}`;
     }
     const calendarStatus = document.querySelector(".stocks-date-status");
@@ -186,11 +201,114 @@
     return true;
   }
 
+  function firstItemDate(source) {
+    const pools = [source?.gainers, source?.losers, source?.top, source?.bottom, source?.rows, source?.items];
+    for (const pool of pools) {
+      for (const item of arr(pool)) {
+        if (item && typeof item === "object") {
+          const value = item.asOf || item.dataDate || item.marketDate || item.date;
+          if (value) return value;
+        }
+      }
+    }
+    return "";
+  }
+
+  function metaOf(source, marketKey, data, updateOverride) {
+    const marketDates = marketDatesOf(data || {});
+    const pageBasis = data?.dataAsOf || data?.dataDate || data?.asOf || data?.marketDate || requestedDate || "";
+    const directBasis = source?.dataDate || source?.asOf || source?.dataAsOf || source?.marketDate || source?.date || firstItemDate(source);
+    const basis = directBasis || (marketKey ? marketDates[marketKey] : pageBasis);
+    const update = source?.updatedAt || source?.generatedAt || source?.savedAt || updateOverride || data?.updatedAt || data?.savedAt || data?.generatedAt || "";
+    return {
+      basis: displayDate(basis),
+      updated: displayDateTime(update),
+      basisFallback: !directBasis && Boolean(basis)
+    };
+  }
+
+  function metaHtml(meta) {
+    const basisLabel = meta.basisFallback && meta.basis !== "取得不能" ? `${meta.basis}（ページ基準）` : meta.basis;
+    return `<span>基準日 ${esc(basisLabel)}</span><span>更新日時 ${esc(meta.updated)}</span>`;
+  }
+
+  function upsertCardMeta(card, source, marketKey, data, updateOverride) {
+    if (!card) return false;
+    const html = metaHtml(metaOf(source || {}, marketKey, data || {}, updateOverride));
+    let node = Array.from(card.children || []).find(child => child.classList?.contains("stocks-card-meta"));
+    if (!node) {
+      node = document.createElement("div");
+      node.className = "stocks-card-meta";
+      const heading = Array.from(card.children || []).find(child => /^H[1-6]$/.test(child.tagName || ""));
+      if (heading) heading.insertAdjacentElement("afterend", node);
+      else card.insertAdjacentElement("afterbegin", node);
+    }
+    if (node.innerHTML !== html) node.innerHTML = html;
+    return true;
+  }
+
+  function sectionPanels(label) {
+    const section = Array.from(document.querySelectorAll("section"))
+      .find(node => (node.getAttribute("aria-label") || "").includes(label));
+    return section ? Array.from(section.querySelectorAll(":scope > article.panel")) : [];
+  }
+
+  function applySessionMeta(data) {
+    const cards = Array.from(document.querySelectorAll(".session-grid > .session-panel"));
+    if (!cards.length) return;
+    const sources = [
+      data?.sessionAnalysis?.tokyoOpen || data?.marketInternals?.japan || {},
+      data?.sessionAnalysis?.usPremarket || data?.marketInternals?.us || {}
+    ];
+    const markets = ["japan", "us"];
+    cards.slice(0, 2).forEach((card, index) => {
+      const meta = metaOf(sources[index], markets[index], data || {});
+      let node = card.querySelector(".session-meta");
+      if (!node) {
+        node = document.createElement("div");
+        node.className = "session-meta";
+        card.querySelector(".session-header")?.insertAdjacentElement("afterend", node);
+      }
+      const html = `<span>基準日 ${esc(meta.basisFallback && meta.basis !== "取得不能" ? `${meta.basis}（ページ基準）` : meta.basis)}</span><span>更新日時 ${esc(meta.updated)}</span>`;
+      if (node && node.innerHTML !== html) node.innerHTML = html;
+    });
+  }
+
+  function applyAllCardMeta(data) {
+    if (!data) return false;
+    applySessionMeta(data);
+
+    const pairSpecs = [
+      ["主要指数と市場内部", [data?.marketInternals?.us, data?.marketInternals?.japan], ["us", "japan"], [null, null]],
+      ["大幅上昇・下落銘柄", [data?.movers?.us, data?.movers?.japan], ["us", "japan"], [null, null]],
+      ["セクター・業種", [requestedDate ? data?.sectors?.us : (sectorPayload?.markets?.us || data?.sectors?.us), requestedDate ? data?.sectors?.japan : (sectorPayload?.markets?.japan || data?.sectors?.japan)], ["us", "japan"], [requestedDate ? null : sectorPayload?.generatedAt, requestedDate ? null : sectorPayload?.generatedAt]],
+      ["指数寄与度", [data?.contributions?.us, data?.contributions?.japan], ["us", "japan"], [null, null]]
+    ];
+    pairSpecs.forEach(([label, sources, markets, updates]) => {
+      const panels = sectionPanels(label);
+      panels.slice(0, 2).forEach((panel, index) => upsertCardMeta(panel, sources[index] || {}, markets[index], data, updates[index]));
+    });
+
+    const judgementItems = [data?.judgement?.conclusion, data?.judgement?.reason, data?.judgement?.risk, data?.judgement?.watch];
+    Array.from(document.querySelectorAll(".bottom-cards > .info-card")).forEach((card, index) => {
+      upsertCardMeta(card, judgementItems[index] || {}, null, data);
+    });
+
+    Array.from(document.querySelectorAll(".analysis-grid > .analysis-card")).forEach((card, index) => {
+      upsertCardMeta(card, arr(data?.analysisCards)[index] || {}, null, data);
+    });
+
+    const bridge = document.querySelector(".bridge");
+    if (bridge) upsertCardMeta(bridge, data?.sessionAnalysis?.bridge || {}, null, data);
+    return true;
+  }
+
   function applyLatest() {
     if (requestedDate) return;
     applyNikkeiMetrics();
     applySectors();
     applyMarketDateLabels(latestStocksPayload);
+    applyAllCardMeta(latestStocksPayload);
   }
 
   const panel = (s, body) => `<article class="panel"><h2 class="panel-title"><span class="flag">${flag(s?.flag)}</span>${esc((s?.title || "取得不能").replace("（上昇率TOP5）", ""))}</h2>${body}</article>`;
@@ -212,6 +330,7 @@
     if (!root) return;
     root.innerHTML = `<section class="pair-grid" aria-label="主要指数と市場内部">${market(data?.marketInternals?.us)}${market(data?.marketInternals?.japan)}</section><section class="pair-grid" aria-label="大幅上昇・下落銘柄">${movers(data?.movers?.us)}${movers(data?.movers?.japan)}</section><section class="pair-grid" aria-label="セクター・業種">${snapshotSector(data?.sectors?.us)}${snapshotSector(data?.sectors?.japan)}</section><section class="pair-grid" aria-label="指数寄与度">${contributions(data?.contributions?.us)}${contributions(data?.contributions?.japan)}</section>${judgement(data?.judgement)}${analyses(data?.analysisCards)}<p class="note">${esc(data?.note)}</p>`;
     applyMarketDateLabels(data);
+    applyAllCardMeta(data);
   }
 
   function entries() {
@@ -280,6 +399,7 @@
     if (requestedDate) {
       await loadHistory();
       applyMarketDateLabels(historyPayload);
+      applyAllCardMeta(historyPayload);
       return;
     }
 
