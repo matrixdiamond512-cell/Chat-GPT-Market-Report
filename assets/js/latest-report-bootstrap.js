@@ -10,9 +10,31 @@
     return `${item?.date || ""} ${item?.time || ""}`;
   }
 
+  function qaResult(item) {
+    try {
+      if (window.MorningReportQA && typeof window.MorningReportQA.validate === "function") {
+        return window.MorningReportQA.validate(item);
+      }
+    } catch (error) {
+      console.warn("morning report QA evaluation failed", error);
+    }
+    return { ready: true, enforced: false, reasons: [] };
+  }
+
+  function isPublishable(item) {
+    const qa = qaResult(item);
+    if (!qa.ready) {
+      console.error("08:00 report blocked by publication QA", keyOf(item), qa.reasons);
+      window.morningReportQaBlocked = { report: item, ...qa };
+      return false;
+    }
+    return true;
+  }
+
   function latestReport(list) {
     return list
       .filter((item) => item && /^\d{4}-\d{2}-\d{2}$/.test(item.date || "") && /^\d{2}:\d{2}$/.test(item.time || ""))
+      .filter(isPublishable)
       .slice()
       .sort((a, b) => keyOf(b).localeCompare(keyOf(a)))[0] || null;
   }
@@ -43,12 +65,18 @@
 
       const merged = new Map(list.map((item) => [keyOf(item), item]));
       const previous = merged.get(keyOf(candidate)) || {};
-      merged.set(keyOf(candidate), {
+      const proposed = {
         ...previous,
         ...candidate,
         fullText: candidate.fullText || previous.fullText || ""
-      });
+      };
 
+      if (!isPublishable(proposed)) {
+        console.error("latest-report override rejected by QA", keyOf(proposed));
+        return;
+      }
+
+      merged.set(keyOf(candidate), proposed);
       reports = [...merged.values()]
         .filter((item) => item && /^\d{4}-\d{2}-\d{2}$/.test(item.date || ""))
         .sort((a, b) => keyOf(b).localeCompare(keyOf(a)));
@@ -70,6 +98,14 @@
     if (!list.length) {
       if (attempts < MAX_ATTEMPTS) setTimeout(chooseLatest, 250);
       return;
+    }
+
+    try {
+      if (window.MorningReportQA && typeof window.MorningReportQA.loadReference === "function") {
+        await window.MorningReportQA.loadReference();
+      }
+    } catch (error) {
+      console.warn("morning report QA reference initialization failed", error);
     }
 
     await mergeLatestOverride();
