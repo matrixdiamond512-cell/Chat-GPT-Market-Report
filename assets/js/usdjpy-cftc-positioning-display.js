@@ -4,7 +4,7 @@ const root=document.querySelector('[data-usdjpy-positioning]');
 if(!root)return;
 const target=document.getElementById('usdjpy-positioning-content');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const n=v=>{const x=Number(v);return Number.isFinite(x)?x:null};
+const n=v=>{if(v===null||v===undefined||v==='')return null;const x=Number(v);return Number.isFinite(x)?x:null};
 const fmt=(v,d=0)=>n(v)===null?'—':Number(v).toLocaleString('ja-JP',{minimumFractionDigits:d,maximumFractionDigits:d});
 const signed=(v,d=0,suffix='')=>n(v)===null?'—':`${Number(v)>0?'+':''}${Number(v).toLocaleString('ja-JP',{minimumFractionDigits:d,maximumFractionDigits:d})}${suffix}`;
 const date=v=>v?String(v).slice(0,10).replaceAll('-','/'):'—';
@@ -59,11 +59,14 @@ function render(data){
   const shortChg=n(c.shortChange)!==null?n(c.shortChange):(prev&&short!==null&&n(prev.short)!==null?short-n(prev.short):null);
   const judge=judgement({...c,net,netChange:netChg});const sub=c.judgementSub||judgementSub(judge);
   const state=c.status||'unavailable';const usable=(state==='confirmed'||state==='stale')&&series.length>=2;
-  const badge=document.getElementById('usdjpy-positioning-frequency');if(badge)badge.textContent=`週次・${series.length||0}週取得`;
+  const verified=series.filter(d=>n(d.long)!==null&&n(d.short)!==null).length;
+  const missing=Math.max(0,series.length-verified);
+  const badge=document.getElementById('usdjpy-positioning-frequency');if(badge)badge.textContent=`週次・${c.lookbackWeeks||series.length||0}週 / ${verified}点確認済み`;
   if(!usable){target.innerHTML=`<div class="usd-position-empty"><b>CFTC投機筋ポジション：取得待ち</b><br>${esc(c.error||'26週の検証済み系列を準備しています。')}</div>`;return;}
   const priceAvailable=c.priceStatus==='available'||series.filter(d=>n(d.price)!==null).length>=2;
+  const intro=priceAvailable?'Long・Short・Netの変化とUSD/JPY価格を重ね、投機筋の円買い／円売りの偏りと価格反応の整合性を確認します。':'Long・Short・Netの変化から、投機筋の円買い／円売りの偏りと巻き戻しの強さを確認します。';
   target.innerHTML=`
-    <div class="usd-position-intro">CFTCの <b>Japanese Yen / Non-Commercial</b> を26週で追跡します。Long・Short・Netの変化とUSD/JPY価格を重ね、投機筋の円買い／円売りの偏りと価格反応の整合性を確認します。</div>
+    <div class="usd-position-intro">CFTCの <b>Japanese Yen / Non-Commercial</b> を直近26週レンジで追跡します。${intro}</div>
     <div class="usd-position-stats">
       <div class="usd-position-stat net"><span>Net</span><b>${signed(net,0,'枚')}</b><small>${net!==null&&net<0?'円売り越し':net!==null&&net>0?'円買い越し':'中立'} ｜ 前週比 ${signed(netChg,0,'枚')}</small></div>
       <div class="usd-position-stat"><span>前週比</span><b class="${netChg!==null&&netChg>0?'usd-pos-positive':netChg!==null&&netChg<0?'usd-pos-negative':''}">${signed(netChg,0,'枚')}</b><small>${n(c.netChangePct)!==null?signed(c.netChangePct,1,'%'):'Net変化'}</small></div>
@@ -73,6 +76,8 @@ function render(data){
     </div>
     <div class="usd-position-reading"><b>読み方</b><span>円先物Netがプラス＝円買い越しでUSD/JPYの下押し要因、マイナス＝円売り越しでUSD/JPYの上押し要因。単独ではなく、日米金利差・出来高・オーダーと合わせて判断します。</span></div>
     <div class="usd-position-chart-shell"><div class="usd-position-chart-scroll">${svgChart(series,priceAvailable)}</div><div class="usd-position-legend"><span><i class="lg-box long"></i>Long（円買い）</span><span><i class="lg-box short"></i>Short（円売り）</span><span><i class="lg-line net"></i>Net（円買い越し／売り越し）</span>${priceAvailable?'<span><i class="lg-line price"></i>USD/JPY（右軸）</span>':''}</div></div>
+    ${missing?`<div class="usd-position-note">26週レンジのうち${missing}週は現在欠損です。欠損値を0として扱わず空欄にし、自動取得処理で補完する設計にしています。</div>`:''}
+    ${!priceAvailable?'<div class="usd-position-note">USD/JPY価格線は履歴価格の取得に成功した更新回から自動で右軸に重ねます。ポジション値の表示は価格線の有無に依存しません。</div>':''}
     <div class="usd-position-note">${esc(c.comment||`${judge}。ポジションの方向とUSD/JPYの値動きが一致しているかを確認し、急激な巻き戻しが起きていないかを監視します。`)}</div>
     <div class="usd-position-source">出典：<a href="${esc(c.url||'https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm')}" target="_blank" rel="noopener">CFTC Commitments of Traders</a> ｜ 基準日 ${esc(date(c.asOf||latest.date))}${priceAvailable?`<br>価格線：<a href="${esc(c.priceSourceUrl||'https://finance.yahoo.co.jp/quote/USDJPY=X/history')}" target="_blank" rel="noopener">${esc(c.priceSourceName||'Yahoo!ファイナンス USD/JPY時系列')}</a>`:''}</div>`;
 }
