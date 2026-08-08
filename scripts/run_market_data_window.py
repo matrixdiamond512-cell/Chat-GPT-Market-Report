@@ -2,16 +2,17 @@
 """Run resilient scheduled market-data acquisition attempts.
 
 The script can run one or several Japan-time attempts, records every real
-attempt in a committed audit log, persists to Google Sheets when credentials
-are configured, and keeps the committed GitHub market-data layer usable as a
-report fallback when Sheets is temporarily unavailable.
+attempt in a committed audit log, and keeps the committed GitHub market-data
+layer usable as the canonical source for the Google Sheets pull/import layer.
 
 Important operational rules:
 - only verified/degraded attempts count as completed;
 - blocked attempts do not satisfy the schedule;
 - excessively late attempts are recorded as expired instead of being replayed
   minutes or hours later and falsely appearing on-time;
-- final health checks may use --mode full to force a fresh snapshot.
+- final health checks may use --mode full to force a fresh snapshot;
+- Google Sheets reads data/market/chatgpt_input.csv through IMPORTDATA, so
+  service-account credentials are not required by this workflow.
 """
 
 from __future__ import annotations
@@ -142,19 +143,22 @@ def git_commit_push(message: str) -> bool:
     return True
 
 
-def sync_sheets(status: str) -> tuple[str, str]:
+def sheets_pull_status(status: str) -> tuple[str, str]:
+    """Describe the Google Sheets handoff used by the current architecture.
+
+    GitHub Actions no longer writes to Google Sheets with a service account.
+    Verified CSV is committed to GitHub and the spreadsheet imports it from
+    the hidden GitHub_Market_Import sheet.
+    """
     if status == "blocked":
-        return "skipped_blocked", "Blocked staged data was not written to Google Sheets."
-    if not os.environ.get("MARKET_DATA_SPREADSHEET_ID") or not os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON"):
         return (
-            "skipped_unconfigured",
-            "Google Sheets credentials are not configured; committed GitHub market data remains the report fallback.",
+            "skipped_blocked",
+            "Blocked staged data is not exposed as usable data to the Google Sheets pull layer.",
         )
-    completed = run([sys.executable, "scripts/write_market_data_to_sheets.py"], check=False, capture=True)
-    output = ((completed.stdout or "") + "\n" + (completed.stderr or "")).strip()
-    if completed.returncode == 0:
-        return "success", output[-2000:]
-    return "failed", output[-2000:]
+    return (
+        "pull_importdata",
+        "Google Sheets pulls data/market/chatgpt_input.csv through GitHub_Market_Import/IMPORTDATA; no service-account credentials are required.",
+    )
 
 
 def perform_attempt(
@@ -191,7 +195,7 @@ def perform_attempt(
 
     payload = load_json(ROOT / "data" / "market" / "latest.json", {})
     status = str(payload.get("overallStatus") or "blocked")
-    sheets_outcome, sheets_message = sync_sheets(status)
+    sheets_outcome, sheets_message = sheets_pull_status(status)
     completed = now_jst()
     acquisition = payload.get("acquisition") or {}
     targeted = acquisition.get("targetedSymbols") or []
@@ -214,9 +218,11 @@ def perform_attempt(
         "effectiveFetch": bool(targeted),
         "recoveredSymbols": acquisition.get("recoveredSymbols") or [],
         "remainingUnavailable": acquisition.get("remainingUnavailable") or [],
+        "sheetsSyncMode": "pull_importdata",
         "sheetsOutcome": sheets_outcome,
         "sheetsMessage": sheets_message,
-        "reportDataFallback": "data/market/latest.json" if sheets_outcome != "success" else "ChatGPT_Market_Input",
+        "reportDataSource": "ChatGPT_Market_Input via GitHub_Market_Import/IMPORTDATA",
+        "reportDataFallback": "data/market/latest.json",
     }
     append_audit(audit, record)
     git_commit_push(f"Record {slot} market data attempt {scheduled_time}")
@@ -314,6 +320,7 @@ def main() -> int:
         "missingTimes": missing,
         "triggerSource": args.trigger_source,
         "mode": args.mode,
+        "sheetsSyncMode": "pull_importdata",
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2), flush=True)
     return 1 if missing else 0
