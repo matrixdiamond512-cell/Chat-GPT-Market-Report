@@ -1,0 +1,59 @@
+name: Patch market sheet rules once
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/patch-market-sheet-rules-once.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Persist report fallback/readiness rules in Sheets writer
+        shell: bash
+        run: |
+          python - <<'PYCODE'
+          from pathlib import Path
+
+          path = Path('scripts/write_market_data_to_sheets.py')
+          text = path.read_text(encoding='utf-8')
+          marker = '    [8, "価格変化だけからニュース、中央銀行会合、介入などの出来事を推測しない。出来事は別の確認済み情報源で照合する。"],\n]'
+          replacement = '''    [8, "価格変化だけからニュース、中央銀行会合、介入などの出来事を推測しない。出来事は別の確認済み情報源で照合する。"],
+    [9, "対象レポート時刻に一致する行がChatGPT_Market_Inputにない場合、取得不能と断定する前にGitHubのdata/market/latest.jsonとdata/market/chatgpt_input.csvを確認する。"],
+    [10, "GitHub側に当日・対象レポート時刻の検証済み値がある場合は、その値を代替正本として使用し、Google Sheets同期遅延として扱う。『取得不能』とは書かない。"],
+    [11, "レポート作成前にdata/market/report_readiness.jsonのready=trueを確認する。ready=falseの場合はデータ不足理由を示し、古い対象時刻の行を新しいレポート時刻の値として扱わない。"],
+    [12, "対象レポート時刻の不一致は『データ未取得』ではなく『連携・時刻タグ不一致』として区別する。同日の検証済み値が存在する場合は時刻と取得元を明記して利用可否を判断する。"],
+]'''
+          if marker not in text:
+              if 'data/market/report_readiness.jsonのready=true' in text:
+                  print('Rules already patched.')
+                  raise SystemExit(0)
+              raise SystemExit('Expected RULES_ROWS marker not found; refusing unsafe edit.')
+          path.write_text(text.replace(marker, replacement, 1), encoding='utf-8')
+          PYCODE
+          python -m py_compile scripts/write_market_data_to_sheets.py
+
+      - name: Commit durable rule update
+        shell: bash
+        run: |
+          if git diff --quiet -- scripts/write_market_data_to_sheets.py; then
+            echo "No rule changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/write_market_data_to_sheets.py
+          git commit -m "Persist market report data fallback rules"
+          git pull --rebase
+          git push
