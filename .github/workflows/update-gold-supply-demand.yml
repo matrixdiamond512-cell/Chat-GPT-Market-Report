@@ -8,6 +8,7 @@ on:
       - "data/market/latest.json"
       - "data/gold-supply-demand-trigger/**"
       - "scripts/update_gold_supply_demand.py"
+      - "scripts/enrich_gold_cftc_history.py"
       - "scripts/postprocess_gold_supply_demand.py"
       - "scripts/build_gold_supply_demand_sheet_csv.py"
       - "scripts/write_gold_supply_demand_to_sheets.py"
@@ -25,7 +26,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: update-gold-supply-demand-csv-v4
+  group: update-gold-supply-demand-csv-v5-cftc-history
   cancel-in-progress: false
 
 jobs:
@@ -49,12 +50,16 @@ jobs:
       - name: Validate scripts
         run: |
           python -m py_compile scripts/update_gold_supply_demand.py
+          python -m py_compile scripts/enrich_gold_cftc_history.py
           python -m py_compile scripts/postprocess_gold_supply_demand.py
           python -m py_compile scripts/write_gold_supply_demand_to_sheets.py
           python -m py_compile scripts/build_gold_supply_demand_sheet_csv.py
 
       - name: Build gold supply-demand JSON
         run: python scripts/update_gold_supply_demand.py
+
+      - name: Add 26-week CFTC positioning history
+        run: python scripts/enrich_gold_cftc_history.py
 
       - name: Normalize display statuses
         run: python scripts/postprocess_gold_supply_demand.py
@@ -68,12 +73,18 @@ jobs:
           test -s data/gold-supply-demand-sheet.csv
           python - <<'PYCODE'
           import csv
+          import json
           from pathlib import Path
           with Path('data/gold-supply-demand-sheet.csv').open(encoding='utf-8-sig', newline='') as f:
               rows = list(csv.reader(f))
           if not rows or len(rows[0]) != 12:
               raise SystemExit('Gold_Demand CSV must have exactly 12 columns')
+          data = json.loads(Path('data/gold-supply-demand.json').read_text(encoding='utf-8'))
+          history = ((data.get('cftc') or {}).get('historyWeeks') or [])
+          if history and len(history) < 2:
+              raise SystemExit('CFTC history must contain at least 2 rows when present')
           print('Gold_Demand CSV rows:', len(rows), 'columns:', len(rows[0]))
+          print('CFTC history weeks:', len(history))
           PYCODE
 
       - name: Commit gold data and sheet CSV
