@@ -3,6 +3,11 @@
  * final report fullText, rather than from already-rendered DOM fragments.
  * This prevents row shifts when a direction such as "ドル安・円高" is
  * rendered as an h3 by the rich-text layer.
+ *
+ * A small morning-reference layer may replace rows that were unavailable in
+ * the original 08:00 text after a later, source-verified value becomes
+ * available. It is keyed by reportDate/reportSlot and never imports later live
+ * quotes for continuously traded markets.
  */
 (() => {
   "use strict";
@@ -18,6 +23,10 @@
   ];
 
   const NUMBER_PREFIX = /^[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘]\s*/;
+  const REFERENCE_URL = "data/market/morning-reference.json";
+  let referencePayload = null;
+  let referenceStarted = false;
+
   const esc = (value = "") => String(value)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -93,6 +102,23 @@
     });
   }
 
+  function mergeReference(report, rows) {
+    if (!referencePayload || !report) return rows;
+    if (referencePayload.reportDate !== report.date || referencePayload.reportSlot !== report.time) return rows;
+    const items = referencePayload.items || {};
+    return rows.map((row) => {
+      const extra = items[row.label];
+      if (!extra || !extra.value || !/^verified/.test(String(extra.status || ""))) return row;
+      return {
+        ...row,
+        value: String(extra.value),
+        change: extra.change == null ? row.change : String(extra.change),
+        rate: extra.rate == null ? row.rate : String(extra.rate),
+        direction: extra.direction == null ? row.direction : String(extra.direction)
+      };
+    });
+  }
+
   function renderRows(rows) {
     return rows.map((item) => `<tr>
       <th scope="row">${esc(item.label)}</th>
@@ -105,8 +131,9 @@
 
   function apply() {
     const report = currentReport();
-    const rows = rowsFromFullText(report);
-    if (!rows || rows.length !== 28) return;
+    const baseRows = rowsFromFullText(report);
+    if (!baseRows || baseRows.length !== 28) return;
+    const rows = mergeReference(report, baseRows);
     document.querySelectorAll("#app .section").forEach((section) => {
       const heading = section.querySelector(":scope > h2");
       if (!heading || !/主要市場データ/.test(heading.textContent || "")) return;
@@ -118,13 +145,29 @@
       if (tbody) tbody.innerHTML = renderRows(rows);
       table.classList.add("morning-28-market-table", "market-table-five", "final-source-table");
       table.classList.remove("market-table-seven");
-      section.dataset.finalMorningSource = "fullText";
+      section.dataset.finalMorningSource = referencePayload ? "fullText+verified-reference" : "fullText";
     });
+  }
+
+  async function loadReference() {
+    if (referenceStarted) return;
+    referenceStarted = true;
+    try {
+      const response = await fetch(`${REFERENCE_URL}?ts=${Date.now()}`, { cache: "no-store" });
+      if (response.ok) referencePayload = await response.json();
+    } catch (error) {
+      console.warn("morning reference load failed", error);
+    }
+    apply();
   }
 
   const app = document.getElementById("app");
   if (!app) return;
   new MutationObserver(apply).observe(app, { childList: true, subtree: true });
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", apply, { once: true });
-  else apply();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => { apply(); loadReference(); }, { once: true });
+  } else {
+    apply();
+    loadReference();
+  }
 })();
