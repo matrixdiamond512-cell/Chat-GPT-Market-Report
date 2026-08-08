@@ -58,11 +58,15 @@ jobs:
           MARGIN_JS_URL='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/assets/js/nikkei225-margin-display.js'
           CFTC_JS_URL='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/assets/js/nikkei225-cftc-positioning-display.js'
           CFTC_CSS_URL='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/assets/css/nikkei225-cftc-positioning.css'
+          SUMMARY_JS_URL='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/assets/js/nikkei225-demand-summary-display.js'
+          SUMMARY_CSS_URL='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/assets/css/nikkei225-demand-summary.css'
           : > /tmp/live-page.html
           : > /tmp/live-data.json
           : > /tmp/live-margin.js
           : > /tmp/live-cftc.js
           : > /tmp/live-cftc.css
+          : > /tmp/live-summary.js
+          : > /tmp/live-summary.css
           for i in $(seq 1 30); do
             CB="$(date +%s)-$i"
             curl -fsSL --retry 2 --retry-delay 2 "${PAGE_URL}?v=${CB}" -o /tmp/live-page.html || true
@@ -70,19 +74,21 @@ jobs:
             curl -fsSL --retry 2 --retry-delay 2 "${MARGIN_JS_URL}?v=${CB}" -o /tmp/live-margin.js || true
             curl -fsSL --retry 2 --retry-delay 2 "${CFTC_JS_URL}?v=${CB}" -o /tmp/live-cftc.js || true
             curl -fsSL --retry 2 --retry-delay 2 "${CFTC_CSS_URL}?v=${CB}" -o /tmp/live-cftc.css || true
-            if grep -q '先物・裁定・オプション・投資主体' /tmp/live-page.html \
+            curl -fsSL --retry 2 --retry-delay 2 "${SUMMARY_JS_URL}?v=${CB}" -o /tmp/live-summary.js || true
+            curl -fsSL --retry 2 --retry-delay 2 "${SUMMARY_CSS_URL}?v=${CB}" -o /tmp/live-summary.css || true
+            if grep -q 'nikkei225-demand-summary-display.js' /tmp/live-page.html \
+               && grep -q 'nikkei225-demand-summary.css' /tmp/live-page.html \
+               && grep -q '需給まとめ' /tmp/live-summary.js \
+               && grep -q 'nikkei-demand-summary' /tmp/live-summary.css \
                && grep -q 'nikkei225-margin-display.js' /tmp/live-page.html \
-               && grep -q 'nikkei225-cftc-positioning-display.js' /tmp/live-page.html \
                && grep -q '信用売り残' /tmp/live-margin.js \
+               && grep -q 'nikkei225-cftc-positioning-display.js' /tmp/live-page.html \
                && grep -q '海外投機筋ポジション推移' /tmp/live-cftc.js \
-               && grep -q 'nikkei-positioning-card' /tmp/live-cftc.css \
                && python - <<'PY'
           import json, sys
           try:
               d=json.load(open('/tmp/live-data.json'))
-              m=d.get('margin') or {}
-              c=d.get('speculativePositioning') or {}
-              series=c.get('series') or []
+              m=d.get('margin') or {}; c=d.get('speculativePositioning') or {}; series=c.get('series') or []
               margin_ok=(m.get('status')=='verified' and m.get('buyBalance') is not None and m.get('sellBalance') is not None and m.get('ratio') is not None)
               cftc_ok=(c.get('status') in ('verified','stale') and c.get('classification')=='Leveraged Funds' and c.get('cftcContractMarketCode')=='240743' and len(series)>=26 and (c.get('latest') or {}).get('net') is not None)
               ok=margin_ok and cftc_ok
@@ -101,30 +107,28 @@ jobs:
           margin_js=pathlib.Path('/tmp/live-margin.js').read_text(encoding='utf-8',errors='replace')
           cftc_js=pathlib.Path('/tmp/live-cftc.js').read_text(encoding='utf-8',errors='replace')
           cftc_css=pathlib.Path('/tmp/live-cftc.css').read_text(encoding='utf-8',errors='replace')
-          try:
-              d=json.loads(pathlib.Path('/tmp/live-data.json').read_text(encoding='utf-8'))
-          except Exception:
-              d={}
+          summary_js=pathlib.Path('/tmp/live-summary.js').read_text(encoding='utf-8',errors='replace')
+          summary_css=pathlib.Path('/tmp/live-summary.css').read_text(encoding='utf-8',errors='replace')
+          try:d=json.loads(pathlib.Path('/tmp/live-data.json').read_text(encoding='utf-8'))
+          except Exception:d={}
           opt=d.get('options') or {}; spot=d.get('spot') or {}; fut=d.get('futures') or {}; m=d.get('margin') or {}; c=d.get('speculativePositioning') or {}
           same=bool(spot.get('asOfDate') and fut.get('asOfDate') and str(spot.get('asOfDate'))[:10]==str(fut.get('asOfDate'))[:10])
-          sv=spot.get('value'); fv=fut.get('price')
-          diff=(float(fv)-float(sv)) if same and sv is not None and fv is not None else None
+          sv=spot.get('value'); fv=fut.get('price'); diff=(float(fv)-float(sv)) if same and sv is not None and fv is not None else None
           margin_ok=bool(m.get('status')=='verified' and m.get('buyBalance') is not None and m.get('sellBalance') is not None and m.get('ratio') is not None)
           margin_display_ok=bool('nikkei225-margin-display.js' in html and '信用売り残' in margin_js)
           cseries=c.get('series') or []
           cftc_data_ok=bool(c.get('status') in ('verified','stale') and c.get('classification')=='Leveraged Funds' and c.get('cftcContractMarketCode')=='240743' and len(cseries)>=26 and (c.get('latest') or {}).get('net') is not None)
           cftc_display_ok=bool('nikkei225-cftc-positioning-display.js' in html and 'nikkei225-cftc-positioning.css' in html and '海外投機筋ポジション推移' in cftc_js and 'nikkei-positioning-card' in cftc_css)
+          summary_display_ok=bool('nikkei225-demand-summary-display.js' in html and 'nikkei225-demand-summary.css' in html and '需給まとめ' in summary_js and '各カードから何を読むか' in summary_js and 'nikkei-demand-summary' in summary_css)
           base_ok=bool('先物・裁定・オプション・投資主体' in html and 'nikkei225-basis-options-display.js' in html and d and opt.get('ivStatus')=='verified' and same)
           out={
               'checkedAt':datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9))).isoformat(timespec='seconds'),
               'pageUrl':'https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/nikkei225-supply-demand.html',
               'htmlHasCurrentTheme':'先物・裁定・オプション・投資主体' in html,
-              'htmlHasBasisOptionsScript':'nikkei225-basis-options-display.js' in html,
-              'htmlHasMarginDisplayScript':'nikkei225-margin-display.js' in html,
-              'htmlHasCftcPositioningScript':'nikkei225-cftc-positioning-display.js' in html,
-              'htmlHasCftcPositioningCss':'nikkei225-cftc-positioning.css' in html,
-              'publicMarginScriptHasSellBalanceLabel':'信用売り残' in margin_js,
-              'publicCftcScriptHasPositioningTitle':'海外投機筋ポジション推移' in cftc_js,
+              'htmlHasDemandSummaryScript':'nikkei225-demand-summary-display.js' in html,
+              'htmlHasDemandSummaryCss':'nikkei225-demand-summary.css' in html,
+              'publicDemandSummaryScriptHasTitle':'需給まとめ' in summary_js,
+              'publicDemandSummaryScriptHasCardGuide':'各カードから何を読むか' in summary_js,
               'publicDataGeneratedAt':d.get('generatedAt'),
               'publicSpotValue':sv,
               'publicSpotAsOfDate':spot.get('asOfDate'),
@@ -134,34 +138,25 @@ jobs:
               'cashFuturesSimpleDifference':diff,
               'publicIv':opt.get('iv'),
               'publicIvStatus':opt.get('ivStatus'),
-              'publicIvAsOfDate':opt.get('ivAsOfDate'),
-              'publicPutCallStatus':opt.get('putCallStatus'),
               'publicMarginStatus':m.get('status'),
-              'publicMarginAsOfDate':m.get('asOfDate'),
               'publicMarginBuyBalance':m.get('buyBalance'),
               'publicMarginSellBalance':m.get('sellBalance'),
               'publicMarginRatio':m.get('ratio'),
               'publicCftcStatus':c.get('status'),
               'publicCftcAsOfDate':c.get('asOfDate'),
               'publicCftcClassification':c.get('classification'),
-              'publicCftcContractMarketCode':c.get('cftcContractMarketCode'),
               'publicCftcLookbackWeeks':c.get('lookbackWeeks'),
               'publicCftcNet':(c.get('latest') or {}).get('net'),
-              'publicCftcNetChange':(c.get('latest') or {}).get('netChange'),
-              'publicCftcLong':(c.get('latest') or {}).get('long'),
-              'publicCftcShort':(c.get('latest') or {}).get('short'),
-              'publicCftcJudgement':(c.get('latest') or {}).get('judgement'),
-              'publicCftcPriceStatus':c.get('priceStatus'),
               'marginDataValidationPassed':margin_ok,
               'marginDisplayValidationPassed':margin_display_ok,
               'cftcDataValidationPassed':cftc_data_ok,
               'cftcDisplayValidationPassed':cftc_display_ok,
-              'liveValidationPassed':bool(base_ok and margin_ok and margin_display_ok and cftc_data_ok and cftc_display_ok)
+              'demandSummaryDisplayValidationPassed':summary_display_ok,
+              'liveValidationPassed':bool(base_ok and margin_ok and margin_display_ok and cftc_data_ok and cftc_display_ok and summary_display_ok)
           }
           pathlib.Path('data/github-pages-public-validation.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           print(json.dumps(out,ensure_ascii=False,indent=2))
-          if not out['liveValidationPassed']:
-              raise SystemExit('Public validation did not pass')
+          if not out['liveValidationPassed']:raise SystemExit('Public validation did not pass')
           PY
 
       - name: Commit final diagnostic
