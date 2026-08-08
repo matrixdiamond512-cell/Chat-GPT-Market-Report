@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "scripts/fetch_us_stock_movers_sp500_contributions.py"
+      - "scripts/validate_sp500_movers_contributions.py"
       - ".github/workflows/update-us-stock-movers-contributions.yml"
   schedule:
     # U.S. cash close is 05:00 JST during DST. Run after breadth and retry for publication lag.
@@ -46,12 +47,21 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: |
           set -o pipefail
-          python scripts/fetch_us_stock_movers_sp500_contributions.py 2>&1 | tee /tmp/us-stock-pipeline.log
+          python scripts/fetch_us_stock_movers_sp500_contributions.py 2>&1 | tee /tmp/us-stock-fetch.log
+
+      - name: Cross-check against verified S&P 500 return
+        id: crosscheck
+        if: steps.fetch.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          python scripts/validate_sp500_movers_contributions.py 2>&1 | tee /tmp/us-stock-crosscheck.log
 
       - name: Write pipeline status
         if: always()
         env:
           FETCH_OUTCOME: ${{ steps.fetch.outcome }}
+          CROSSCHECK_OUTCOME: ${{ steps.crosscheck.outcome }}
         run: |
           python - <<'PY'
           import json
@@ -59,19 +69,25 @@ jobs:
           from datetime import datetime, timedelta, timezone
           from pathlib import Path
           JST = timezone(timedelta(hours=9))
-          log_path = Path('/tmp/us-stock-pipeline.log')
-          log = log_path.read_text(encoding='utf-8', errors='replace') if log_path.exists() else ''
-          safe = []
-          for line in log.splitlines():
-              lower = line.lower()
-              if any(token in lower for token in ('private_key', 'client_email', 'credential', 'authorization:', 'bearer ')):
+          lines = []
+          for file_name in ('/tmp/us-stock-fetch.log', '/tmp/us-stock-crosscheck.log'):
+              path = Path(file_name)
+              if not path.exists():
                   continue
-              safe.append(line[:500])
+              for line in path.read_text(encoding='utf-8', errors='replace').splitlines():
+                  lower = line.lower()
+                  if any(token in lower for token in ('private_key', 'client_email', 'credential', 'authorization:', 'bearer ')):
+                      continue
+                  lines.append(line[:500])
+          fetch_ok = os.environ.get('FETCH_OUTCOME') == 'success'
+          cross_ok = os.environ.get('CROSSCHECK_OUTCOME') == 'success'
           payload = {
-              'schemaVersion': '1.0.0',
+              'schemaVersion': '1.1.0',
               'updatedAt': datetime.now(JST).replace(microsecond=0).isoformat(),
-              'status': 'ok' if os.environ.get('FETCH_OUTCOME') == 'success' else 'failed',
-              'logTail': safe[-25:],
+              'status': 'ok' if fetch_ok and cross_ok else 'failed',
+              'fetchOutcome': os.environ.get('FETCH_OUTCOME'),
+              'crosscheckOutcome': os.environ.get('CROSSCHECK_OUTCOME'),
+              'logTail': lines[-30:],
           }
           path = Path('data/market/us-stock-pipeline-status.json')
           path.parent.mkdir(parents=True, exist_ok=True)
@@ -79,7 +95,7 @@ jobs:
           PY
 
       - name: Validate generated data
-        if: steps.fetch.outcome == 'success'
+        if: steps.fetch.outcome == 'success' && steps.crosscheck.outcome == 'success'
         run: |
           python - <<'PY'
           import json
@@ -94,6 +110,11 @@ jobs:
               raise SystemExit('S&P contribution estimates are not synced to the verified US market date')
           if contrib.get('official') is not False or contrib.get('unit') != 'bp':
               raise SystemExit('S&P contribution estimate labeling is invalid')
+          validation = contrib.get('validation') or {}
+          if validation.get('status') != 'passed':
+              raise SystemExit('S&P return cross-check did not pass')
+          if abs(float(validation.get('differencePt'))) > float(validation.get('tolerancePt')):
+              raise SystemExit('S&P return cross-check exceeded tolerance')
           for key in ('gainers','losers'):
               if len(movers.get(key) or []) != 5:
                   raise SystemExit(f'US movers {key} must contain 5 rows')
@@ -104,11 +125,11 @@ jobs:
           stock_contrib = ((stocks.get('contributions') or {}).get('us') or {})
           if stock_movers.get('dataDate') != date or stock_contrib.get('dataDate') != date:
               raise SystemExit('stocks.json US mover/contribution blocks are not synced')
-          print('Verified U.S. mover/contribution data for', date)
+          print('Verified U.S. mover/contribution data for', date, validation)
           PY
 
       - name: Save stock-analysis history snapshot
-        if: steps.fetch.outcome == 'success'
+        if: steps.fetch.outcome == 'success' && steps.crosscheck.outcome == 'success'
         run: |
           if [ -f scripts/snapshot_stocks_history.py ]; then
             python scripts/snapshot_stocks_history.py
@@ -123,7 +144,7 @@ jobs:
           else
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            if [ "${{ steps.fetch.outcome }}" = "success" ]; then
+            if [ "${{ steps.fetch.outcome }}" = "success" ] && [ "${{ steps.crosscheck.outcome }}" = "success" ]; then
               git commit -m "Update verified US stock movers and S&P contributions"
             else
               git commit -m "Record US stock mover pipeline failure"
@@ -133,5 +154,5 @@ jobs:
           fi
 
       - name: Fail workflow after diagnostic is saved
-        if: steps.fetch.outcome != 'success'
+        if: steps.fetch.outcome != 'success' || steps.crosscheck.outcome != 'success'
         run: exit 1
