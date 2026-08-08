@@ -1,0 +1,109 @@
+name: 08:00 report publication QA
+
+on:
+  workflow_dispatch:
+    inputs:
+      report_date:
+        description: "YYYY-MM-DD; blank = latest 08:00 report in reports.json"
+        required: false
+        default: ""
+  push:
+    paths:
+      - "reports.json"
+      - "data/latest-report.json"
+      - "data/market/morning-reference.json"
+      - "scripts/verify_morning_report_qa.py"
+      - "assets/js/morning-report-qa-gate.js"
+      - ".github/workflows/qa-morning-report.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: morning-report-publication-qa
+  cancel-in-progress: false
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate QA program
+        run: python -m py_compile scripts/verify_morning_report_qa.py
+
+      - name: Resolve 08:00 report date
+        id: report
+        shell: bash
+        run: |
+          REQUESTED="${{ inputs.report_date }}"
+          if [ -n "$REQUESTED" ]; then
+            DATE="$REQUESTED"
+          else
+            DATE="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          reports = json.loads(Path('reports.json').read_text(encoding='utf-8'))
+          dates = sorted([str(r.get('date')) for r in reports if isinstance(r, dict) and r.get('time') == '08:00' and r.get('date')])
+          print(dates[-1] if dates else '')
+          PY
+          )"
+          fi
+          if [ -z "$DATE" ]; then
+            echo "No 08:00 report found"
+            exit 1
+          fi
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+          echo "QA target: $DATE 08:00"
+
+      - name: Run 28-item publication QA
+        id: qa
+        shell: bash
+        run: |
+          set +e
+          python scripts/verify_morning_report_qa.py \
+            --date "${{ steps.report.outputs.date }}" \
+            --slot "08:00"
+          CODE=$?
+          set -e
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Commit machine-readable QA result
+        if: always()
+        shell: bash
+        run: |
+          if [ ! -f data/market/morning_report_qa.json ]; then
+            echo "QA result file was not created"
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market/morning_report_qa.json
+          if git diff --cached --quiet; then
+            echo "QA result unchanged"
+          else
+            git commit -m "Record 08:00 report publication QA"
+            git pull --rebase
+            git push
+          fi
+
+      - name: Block invalid 08:00 publication
+        if: always()
+        shell: bash
+        run: |
+          CODE="${{ steps.qa.outputs.code }}"
+          if [ "${CODE:-1}" -ne 0 ]; then
+            echo "08:00 report failed publication QA. WEB latest-selection gate will reject this report."
+            cat data/market/morning_report_qa.json || true
+            exit 1
+          fi
+          echo "08:00 report passed 28-item / 5-column publication QA."
