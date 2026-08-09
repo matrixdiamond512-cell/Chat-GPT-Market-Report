@@ -27,7 +27,7 @@ const shortDate=v=>{
 function findCard(){
   return [...root.querySelectorAll('.nikkei-grid > .nikkei-card')].find(card=>{
     const t=card.querySelector('.nikkei-section-title');
-    return t&&/^7\.\s*海外投資家/.test((t.textContent||'').trim());
+    return t&&/^(?:\d+\.\s*)?海外投資家/.test((t.textContent||'').trim());
   })||null;
 }
 
@@ -157,7 +157,7 @@ function render(d){
 
   const allSeries=Array.isArray(f.series)?f.series.filter(x=>num(x.cashNet)!==null&&num(x.nikkeiFuturesNet)!==null&&num(x.nikkeiFuturesPrice)!==null).slice(-52):[];
   const title=card.querySelector('.nikkei-section-title');
-  if(title)title.textContent='7. 海外投資家の週次需給推移';
+  if(title)title.textContent='海外投資家の週次需給推移';
   card.classList.remove('nikkei-span-6');
   card.classList.add('nikkei-span-12','nikkei-foreign-card');
   const body=card.querySelector('.nikkei-section-body');

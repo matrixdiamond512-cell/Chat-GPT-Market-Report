@@ -109,8 +109,8 @@ function dataBadge(label,value,tone='neutral'){
 function findLegacyOptionCard(root){
   return [...root.querySelectorAll('.nikkei-card')].find(card=>{
     if(card.classList.contains('nikkei-options-analysis'))return false;
-    const title=card.querySelector('.nikkei-section-title')?.textContent||'';
-    return /^5\.\s*/.test(title)&&/オプション|ボラティリティ/.test(title);
+    const title=(card.querySelector('.nikkei-section-title')?.textContent||'').replace(/^\s*\d+\.\s*/,'');
+    return /オプション|ボラティリティ/.test(title);
   })||null;
 }
 
@@ -140,7 +140,7 @@ function render(root,d,market){
     <div class="nikkei-section-head nikkei-options-section-head">
       <div class="nikkei-options-intro">
         <div>
-          <h2 class="nikkei-section-title">5. 日経225オプション需給</h2>
+          <h2 class="nikkei-section-title">日経225オプション需給</h2>
           <div class="nikkei-options-note">OSEの日経225オプションを、方向予想ではなく「建玉集中帯・OI増減・IV・Put/Call・SQ接近」からヘッジ圧力が変わりやすい価格帯として読みます。</div>
         </div>
         <span class="nikkei-freq daily">日次</span>
