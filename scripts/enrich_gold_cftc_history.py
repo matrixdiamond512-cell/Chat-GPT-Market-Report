@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Enrich gold supply-demand JSON with 26 weeks of CFTC Managed Money history.
+"""Enrich gold supply-demand JSON with 52 weeks of CFTC Managed Money history.
 
 The main gold updater keeps the latest CFTC snapshot. This script adds a compact
-26-week series used by the WEB gold supply-demand chart. Missing external data is
+52-week series used by the WEB gold supply-demand chart. Missing external data is
 never fabricated. If a refresh fails, the last committed history is preserved.
 """
 from __future__ import annotations
@@ -64,20 +64,20 @@ def fetch_cftc_rows() -> list[dict[str, Any]]:
         ]),
         "$where": "cftc_contract_market_code='088691'",
         "$order": "report_date_as_yyyy_mm_dd DESC",
-        "$limit": "26",
+        "$limit": "52",
     }
     r = requests.get(CFTC_API, params=params, headers={"User-Agent": UA}, timeout=30)
     r.raise_for_status()
     rows = r.json()
     if not isinstance(rows, list) or len(rows) < 2:
-        raise RuntimeError("CFTC 26-week history returned insufficient rows")
+        raise RuntimeError("CFTC 52-week history returned insufficient rows")
     return rows
 
 
 def fetch_gold_daily() -> list[tuple[str, float]]:
     r = requests.get(
         YAHOO_CHART,
-        params={"range": "1y", "interval": "1d", "events": "history"},
+        params={"range": "2y", "interval": "1d", "events": "history"},
         headers={"User-Agent": UA},
         timeout=30,
     )
