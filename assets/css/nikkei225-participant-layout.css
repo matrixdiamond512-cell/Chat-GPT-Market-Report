@@ -1,0 +1,36 @@
+.nikkei-participant-pair-card{
+  align-self:stretch;
+  display:flex;
+  flex-direction:column;
+  min-height:100%;
+}
+
+.nikkei-participant-pair-card .nikkei-section-head{
+  min-height:52px;
+}
+
+.nikkei-participant-pair-card .nikkei-section-body{
+  display:flex;
+  flex:1;
+  flex-direction:column;
+}
+
+.nikkei-participant-pair-card .nikkei-table-scroll,
+.nikkei-participant-pair-card .nikkei-rank-grid{
+  flex:1;
+}
+
+.nikkei-participant-pair-card .nikkei-callout{
+  background:#f8fbff;
+  border-color:#cfdeef;
+}
+
+@media(max-width:820px){
+  .nikkei-participant-pair-card{
+    min-height:auto;
+  }
+
+  .nikkei-participant-pair-card .nikkei-section-head{
+    min-height:0;
+  }
+}

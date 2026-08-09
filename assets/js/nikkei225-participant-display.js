@@ -7,7 +7,8 @@ const fmt=v=>num(v)===null?'—':Number(v).toLocaleString('ja-JP');
 const signed=(v,suffix='')=>num(v)===null?'—':`${Number(v)>0?'+':''}${Number(v).toLocaleString('ja-JP')}${suffix}`;
 const date=v=>v?String(v).slice(0,10).replaceAll('-','/'):'取得待ち';
 const norm=v=>String(v??'').normalize('NFKC').replace(/\s+/g,'').trim();
-function findCard(re){return [...root.querySelectorAll('.nikkei-card')].find(x=>re.test(x.querySelector('.nikkei-section-title')?.textContent||''));}
+const titleText=card=>String(card?.querySelector('.nikkei-section-title')?.textContent||'').replace(/^\s*\d+\.\s*/,'').trim();
+function findCard(re){return [...root.querySelectorAll('.nikkei-card')].find(x=>re.test(titleText(x)));}
 function source(x){return x&&x.sourceFileUrl?`<div class="nikkei-source">出典：<a href="${esc(x.sourceFileUrl)}" target="_blank" rel="noopener">JPX公式ファイル</a> / 基準日 ${esc(date(x.asOfDate))}</div>`:'';}
 function rank(items,key){const rows=(items||[]).slice(0,5);if(!rows.length)return'<div class="nikkei-empty">取得待ち</div>';return rows.map((x,i)=>`<div class="nikkei-rank-row"><span>${esc(x.rank||i+1)}位</span><span>${esc(x.name||'—')}</span><b>${num(x[key])===null?'—':fmt(x[key])+'枚'}</b></div>`).join('');}
 function ratio(a,b){const x=num(a),y=num(b);return x!==null&&y!==null&&y!==0?x/y:null;}
@@ -86,20 +87,20 @@ function apply(d){
  const part=d.participantFlow||{}, poi=d.participantOpenInterest||{}, comp=d.sameDateParticipantAnalysis||{};
  let participantCard=null,oiCard=null;
  if(part.status==='verified'&&Array.isArray(part.leaders)&&part.leaders.length){
-  participantCard=findCard(/^6\. 取引参加者別手口/);
+  participantCard=findCard(/^取引参加者別手口/);
   if(participantCard){
-   const title=participantCard.querySelector('.nikkei-section-title');if(title)title.textContent='6. 取引参加者別手口（取引高上位）';
+   const title=participantCard.querySelector('.nikkei-section-title');if(title)title.textContent='取引参加者別手口（取引高上位）';
    const body=participantCard.querySelector('.nikkei-section-body');if(body)body.innerHTML=`<div class="nikkei-table-scroll"><table class="nikkei-table"><thead><tr><th>順位</th><th>取引参加者</th><th>取引高</th></tr></thead><tbody>${part.leaders.slice(0,5).map((x,i)=>`<tr><td>${esc(x.rank||i+1)}位</td><td>${esc(x.name||'—')}</td><td class="num">${fmt(x.volume)}枚</td></tr>`).join('')}</tbody></table></div><div class="nikkei-callout">期近：${esc(part.contract||'—')}。${esc(part.comment||'日次ファイルは取引高上位であり、売買方向を示しません。')} このカードは最新日次データを表示し、下の分析カードでは週次建玉の基準日に合わせた別の日次データを使用します。</div>${source(part)}`;
   }
  }
  if(poi.status==='verified'&&(poi.buyers?.length||poi.sellers?.length)){
-  oiCard=findCard(/^8\. 取引参加者別 建玉上位/);
+  oiCard=findCard(/^取引参加者別 建玉上位/);
   if(oiCard){
-   const title=oiCard.querySelector('.nikkei-section-title');if(title)title.textContent='8. 取引参加者別 建玉上位（売超・買超）';
+   const title=oiCard.querySelector('.nikkei-section-title');if(title)title.textContent='取引参加者別 建玉上位（売超・買超）';
    const body=oiCard.querySelector('.nikkei-section-body');if(body)body.innerHTML=`<div class="nikkei-rank-grid"><div class="nikkei-rank-box"><div class="nikkei-rank-title">買超参加者</div>${rank(poi.buyers,'openInterest')}</div><div class="nikkei-rank-box"><div class="nikkei-rank-title">売超参加者</div>${rank(poi.sellers,'openInterest')}</div></div><div class="nikkei-callout">対象限月：${esc(poi.contract||'—')}。${esc(poi.comment||'週次の売超・買超上位を表示します。')} 分析カードはこの基準日に他データをそろえます。</div>${source(poi)}`;
   }
  }
- if(poi.status==='verified')upsertAnalysis(part,poi,comp,oiCard||findCard(/^8\. 取引参加者別 建玉上位/));
+ if(poi.status==='verified')upsertAnalysis(part,poi,comp,oiCard||findCard(/^取引参加者別 建玉上位/));
 }
 fetch('data/nikkei225-supply-demand.json',{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{let n=0;const t=setInterval(()=>{apply(d);if(root.querySelector('.nikkei-section-title')||++n>40)clearInterval(t)},100);apply(d)}).catch(()=>{});
 })();

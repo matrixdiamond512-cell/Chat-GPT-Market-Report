@@ -15,7 +15,7 @@ function findCanonicalCard(){
   const cards=[...root.querySelectorAll('.nikkei-grid > .nikkei-card')];
   return cards.find(card=>{
     const title=card.querySelector('.nikkei-section-title');
-    return title && /^9\.\s*空売り・信用需給/.test((title.textContent||'').trim());
+    return title && /^(?:\d+\.\s*)?空売り・信用需給/.test((title.textContent||'').trim());
   })||null;
 }
 function sourceBlock(x,fallback){
@@ -31,7 +31,7 @@ function apply(d){
   if(!card)return false;
 
   const title=card.querySelector('.nikkei-section-title');
-  if(title)title.textContent='9. 空売り・信用需給';
+  if(title)title.textContent='空売り・信用需給';
   const body=card.querySelector('.nikkei-section-body');
   if(!body)return false;
 
