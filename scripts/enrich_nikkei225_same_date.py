@@ -80,7 +80,6 @@ def monthly_sif_record(day):
     raise ValueError(f'Nikkei 225 Futures row not found for {dt.isoformat()} in {url}')
 
 def market_record(d,day):
-    # Prefer official monthly archive when it has already been published.
     try: return monthly_sif_record(day)
     except Exception as monthly_error:
         h=hist_record(d,day)
@@ -91,7 +90,6 @@ def market_record(d,day):
 
 def price_record(d,day):
     target=iso(day)
-    # Current/saved daily price first.
     for x in d.get('nikkeiFuturesDailyHistory') or []:
         if iso(x.get('asOfDate'))==target and u.n(x.get('price')) is not None:
             return {'price':u.n(x.get('price')),'sourceName':x.get('sourceName'),'sourceUrl':x.get('priceSourceUrl'),'definition':'日次保存値'}
@@ -166,8 +164,11 @@ def main():
     comp['marketAlignment']='weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price'
     comp['fetchedAt']=u.now()
     d['sameDateParticipantAnalysis']=comp
-    d.setdefault('diagnostics',{})['sameDateParticipantAnalysis']=comp.get('status')
-    d['diagnostics']['sameDateMarketOiParser']='JPX monthly-statistics SIF_D_YYYYMM.xlsx; current-month fallback to retained verified daily history'
+    diagnostics=d.setdefault('diagnostics',{})
+    diagnostics.pop('historicalOiProbe',None)
+    diagnostics.pop('tategyokuProbe',None)
+    diagnostics['sameDateParticipantAnalysis']=comp.get('status')
+    diagnostics['sameDateMarketOiParser']='JPX monthly-statistics SIF_D_YYYYMM.xlsx; current-month fallback to retained verified daily history'
     d['generatedAt']=u.now()
     OUT.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
     print(json.dumps({'status':comp.get('status'),'asOfDate':anchor,'market':market,'error':comp.get('error')},ensure_ascii=False))
