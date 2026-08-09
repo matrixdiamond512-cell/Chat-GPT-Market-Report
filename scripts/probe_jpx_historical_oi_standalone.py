@@ -12,6 +12,7 @@ PAGES=[
  'https://www.jpx.co.jp/markets/statistics-derivatives/daily/',
  'https://www.jpx.co.jp/markets/statistics-derivatives/sector/',
 ]
+BACK='https://www.jpx.co.jp/public/javascripts/backnumber.js'
 
 def get(url):
  r=requests.get(url,headers=UA,timeout=30); r.raise_for_status(); return r.text
@@ -23,10 +24,19 @@ def scan(url):
   if re.search(r'(2026|202607|20260731|\.xlsx|\.xls|\.csv|\.zip|\.pdf|archive|バックナンバー|建玉)',txt+' '+par+' '+href,re.I):
    items.append({'text':txt[:180],'parent':par[:300],'href':href})
  scripts=[urljoin(url,x['src']) for x in s.find_all('script',src=True)]
- return {'url':url,'items':items,'scripts':scripts,'htmlHints':[x[:500] for x in re.findall(r'.{0,160}(?:202607|monthly|archive|json).{0,300}',h,re.I)[:80]]}
+ attrs=[]
+ for tag in s.find_all(True):
+  d={k:v for k,v in tag.attrs.items() if any(z in k.lower() for z in ('data','back','year','json','url','src'))}
+  blob=str(d)+' '+str(tag.get('id',''))+' '+str(tag.get('class',''))
+  if d and re.search(r'(back|archive|json|year|2026|monthly|daily)',blob,re.I): attrs.append({'tag':tag.name,'attrs':d,'text':' '.join(tag.stripped_strings)[:220]})
+ return {'url':url,'items':items,'scripts':scripts,'attrs':attrs[:120],'htmlHints':[x[:700] for x in re.findall(r'.{0,220}(?:backnumber|202607|monthly|archive|json|data-).{0,420}',h,re.I)[:120]]}
 
 def main():
  out={'pages':[],'follow':[]}
+ try:
+  js=get(BACK)
+  out['backnumberJs']={'url':BACK,'length':len(js),'content':js[:40000]}
+ except Exception as e: out['backnumberJs']={'url':BACK,'error':repr(e)}
  for p in PAGES:
   try: out['pages'].append(scan(p))
   except Exception as e: out['pages'].append({'url':p,'error':repr(e)})
@@ -39,5 +49,5 @@ def main():
   try: out['follow'].append(scan(h))
   except Exception as e: out['follow'].append({'url':h,'error':repr(e)})
  OUT.write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
- print(json.dumps({'pages':len(out['pages']),'follow':len(out['follow'])},ensure_ascii=False))
+ print(json.dumps({'pages':len(out['pages']),'follow':len(out['follow']),'backnumber':out.get('backnumberJs',{}).get('length')},ensure_ascii=False))
 if __name__=='__main__': main()
