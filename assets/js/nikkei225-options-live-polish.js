@@ -18,6 +18,8 @@ function apply(){
 
   const upper=live.upperCallConcentrationStrike;
   const lower=live.lowerPutConcentrationStrike;
+  setText(option.querySelector('.nikkei-options-summary-card.call small'),'上側CALL集中（現値近辺）');
+  setText(option.querySelector('.nikkei-options-summary-card.put small'),'下側PUT集中（現値近辺）');
   setText(option.querySelector('.nikkei-options-summary-card.call strong'),Number.isFinite(Number(upper))?`${fmt(upper)}円`:'取得待ち');
   setText(option.querySelector('.nikkei-options-summary-card.put strong'),Number.isFinite(Number(lower))?`${fmt(lower)}円`:'取得待ち');
 
@@ -28,6 +30,11 @@ function apply(){
     if(Number.isFinite(Number(lower)))labels[0].textContent=`Put ${fmt(lower)}`;
     if(Number.isFinite(Number(upper)))labels[2].textContent=`Call ${fmt(upper)}`;
   }
+
+  const callBullet=option.querySelector('.nikkei-options-bullet.call span');
+  if(callBullet&&Number.isFinite(Number(upper)))callBullet.textContent=`${fmt(upper)}円付近に現値近辺で最大のCALL建玉。価格接近時のヘッジフロー変化を監視。`;
+  const putBullet=option.querySelector('.nikkei-options-bullet.put span');
+  if(putBullet&&Number.isFinite(Number(lower)))putBullet.textContent=`${fmt(lower)}円付近に現値近辺で最大のPUT建玉。下落時のデルタ変化とヘッジ需要を監視。`;
 
   const panelHead=option.querySelector('.heatmap-panel .nikkei-options-panel-head h3');
   if(panelHead)panelHead.textContent=`権利行使価格別 建玉ヒートマップ（${monthLabel(live.optionContractMonth)}）`;
@@ -43,14 +50,18 @@ function apply(){
   if(metrics&&!metrics.querySelector('.nikkei-options-volume-pcr')&&Number.isFinite(Number(live.publishedPutCallVolumeRatio))){
     const row=document.createElement('div');
     row.className='nikkei-options-metric nikkei-options-volume-pcr';
-    row.innerHTML=`<span>Put/Call 出来高比率</span><b>${Number(live.publishedPutCallVolumeRatio).toFixed(3)}</b><small>前営業日 ${Number(live.publishedPutCallVolumeRatioPrevious).toFixed(3)}</small>`;
+    const prev=Number.isFinite(Number(live.publishedPutCallVolumeRatioPrevious))?`前営業日 ${Number(live.publishedPutCallVolumeRatioPrevious).toFixed(3)}`:(live.publishedPutCallDefinition||'出来高ベース');
+    row.innerHTML=`<span>Put/Call 出来高比率</span><b>${Number(live.publishedPutCallVolumeRatio).toFixed(3)}</b><small>${prev}</small>`;
     metrics.appendChild(row);
   }
 
   if(!option.querySelector('.nikkei-options-live-source')){
     const source=document.createElement('div');
     source.className='nikkei-options-live-source';
-    source.innerHTML=`<b>建玉データ</b><span>基準日 ${live.asOfDate||'—'} / ${live.strikeOiCoverage||'権利行使価格別建玉'}</span><span>一次情報：JPX大阪取引所日報。現在はJPX公表データの公開集計をフォールバックとして利用。</span>`;
+    const provenance=live.sourceStatus==='verified-primary'
+      ?'一次情報：JPX大阪取引所日報から直接取得。'
+      :'一次情報：JPX大阪取引所日報。JPX公表データの公開集計をフォールバックとして利用。';
+    source.innerHTML=`<b>建玉データ</b><span>基準日 ${live.asOfDate||'—'} / ${live.strikeOiCoverage||'権利行使価格別建玉'}</span><span>${provenance}</span>`;
     option.querySelector('.heatmap-panel')?.appendChild(source);
   }
 
