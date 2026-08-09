@@ -11,6 +11,7 @@ on:
     paths:
       - ".github/workflows/update-usdjpy-supply-demand.yml"
       - "scripts/build_usdjpy_supply_demand.py"
+      - "scripts/enrich_usdjpy_cftc_52.py"
       - "scripts/enrich_usdjpy_price_history.py"
       - "scripts/enrich_usdjpy_tradersweb_levels.py"
       - "data/usdjpy-supply-demand-trigger/**"
@@ -40,11 +41,15 @@ jobs:
       - name: Validate builders
         run: |
           python -m py_compile scripts/build_usdjpy_supply_demand.py
+          python -m py_compile scripts/enrich_usdjpy_cftc_52.py
           python -m py_compile scripts/enrich_usdjpy_price_history.py
           python -m py_compile scripts/enrich_usdjpy_tradersweb_levels.py
 
       - name: Build USDJPY supply-demand JSON
         run: python scripts/build_usdjpy_supply_demand.py
+
+      - name: Expand CFTC positioning and USDJPY price line to 52 weeks
+        run: python scripts/enrich_usdjpy_cftc_52.py
 
       - name: Ensure USDJPY historical price line
         run: python scripts/enrich_usdjpy_price_history.py
@@ -71,14 +76,15 @@ jobs:
           assert tw.get('pageConfirmed') is True
           assert levels.get('extractedRowCount', 0) > 0
           assert data.get('coreSnapshot') is not None
+          assert len(series) >= 52, f'CFTC series must have 52 weeks, got {len(series)}'
           assert cftc.get('priceStatus') == 'available'
-          assert price_points >= 2
+          assert price_points >= 52, f'USDJPY price series must have 52 points, got {price_points}'
           print('generatedAt:', data.get('generatedAt'))
           print('Traders Web FX status:', tw.get('status'))
           print('Traders Web FX source time:', tw.get('sourceUpdatedAt'))
           print('Traders Web FX checked at:', tw.get('checkedAt'))
           print('Traders Web FX rows:', levels.get('extractedRowCount'))
-          print('CFTC:', cftc.get('asOf'), cftc.get('status'))
+          print('CFTC:', cftc.get('asOf'), cftc.get('status'), 'weeks:', len(series))
           print('USDJPY price points:', price_points, cftc.get('priceSourceName'))
           PY
 
