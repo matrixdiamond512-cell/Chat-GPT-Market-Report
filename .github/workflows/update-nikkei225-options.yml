@@ -4,11 +4,14 @@ on:
   workflow_dispatch:
   schedule:
     # JPX Daily Report is normally published around 09:00 JST on the next business day.
-    # 00:20 UTC = 09:20 JST.
+    # Retry once one hour later in case the publication is delayed.
     - cron: '20 0 * * 1-5'
+    - cron: '20 1 * * 1-5'
   push:
     paths:
       - 'scripts/update_nikkei225_options.py'
+      - 'scripts/update_nikkei225_options_primary.py'
+      - 'scripts/update_nikkei225_options_fallback.py'
       - '.github/workflows/update-nikkei225-options.yml'
 
 permissions:
@@ -39,36 +42,43 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4 pdfplumber
 
-      - name: Update JPX Nikkei 225 options OI
-        run: python scripts/update_nikkei225_options.py
+      - name: Update options data (JPX primary, JPX-derived fallback)
+        shell: bash
+        run: |
+          set +e
+          python scripts/update_nikkei225_options_primary.py
+          STATUS=$?
+          set -e
+          if [ "$STATUS" -ne 0 ]; then
+            echo "Primary JPX Daily Report parser failed; using JPX-derived public fallback."
+            python scripts/update_nikkei225_options_fallback.py
+          fi
 
-      - name: Validate JSON
+      - name: Validate options overlay
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-          p=Path('data/nikkei225-supply-demand.json')
+          p=Path('data/nikkei225-options-latest.json')
           d=json.loads(p.read_text(encoding='utf-8'))
-          o=d.get('options',{})
-          rows=o.get('strikeOpenInterest') or []
+          rows=d.get('strikeOpenInterest') or []
           assert rows, 'strikeOpenInterest is empty'
-          assert o.get('strikeOiStatus') == 'verified', o.get('strikeOiStatus')
+          assert d.get('sourceStatus') in {'verified-primary','verified-fallback'}, d.get('sourceStatus')
           assert any((r.get('putOi') or 0) > 0 for r in rows), 'no Put OI'
           assert any((r.get('callOi') or 0) > 0 for r in rows), 'no Call OI'
-          print('validated:', o.get('optionContractMonth'), o.get('strikeOiAsOfDate'), len(rows))
+          assert d.get('asOfDate'), 'missing asOfDate'
+          print('validated:', d.get('sourceStatus'), d.get('optionContractMonth'), d.get('asOfDate'), len(rows))
           PY
 
-      - name: Commit updated data
+      - name: Commit updated options data
         run: |
-          if git diff --quiet -- data/nikkei225-supply-demand.json; then
-            echo 'No data change.'
+          if git diff --quiet -- data/nikkei225-options-latest.json; then
+            echo 'No options data change.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/nikkei225-supply-demand.json
+          git add data/nikkei225-options-latest.json
           git commit -m 'Update Nikkei 225 options OI data'
           git pull --rebase origin main
           git push origin HEAD:main
-
-# Trigger marker: 2026-08-10 options pipeline completion
