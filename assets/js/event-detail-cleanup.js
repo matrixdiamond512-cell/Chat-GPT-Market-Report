@@ -13,7 +13,8 @@
 
   function cleanEventDetails() {
     document.querySelectorAll("#eventRows .event-detail").forEach((element) => {
-      const parts = String(element.textContent || "")
+      const currentText = String(element.textContent || "");
+      const parts = currentText
         .split(/\s*\/\s*/)
         .map((part) => part.trim())
         .filter(Boolean)
@@ -23,7 +24,14 @@
         element.remove();
         return;
       }
-      element.textContent = parts.join(" / ");
+
+      // The observer below also watches characterData and childList changes.
+      // Replacing textContent with the same value creates another mutation and
+      // can starve the event loop forever, preventing watchdog timers from firing.
+      const cleanedText = parts.join(" / ");
+      if (currentText !== cleanedText) {
+        element.textContent = cleanedText;
+      }
     });
   }
 
