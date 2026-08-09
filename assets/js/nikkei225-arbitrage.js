@@ -26,7 +26,7 @@
     const label=level==='danger'?'危険信号（10億株超）':level==='warning'?'注意信号（5億株超）':'平常圏（5億株未満）';
     const position=Math.min(100,net/1000000*100);
     card.classList.add('kiyohara-card');
-    card.insertAdjacentHTML('afterbegin',`<section class="kiyohara-line ${level}" aria-label="清原ライン"><div><b>清原ライン（ネット裁定残）</b><span>${num(net)}千株：${label}</span></div><div class="kiyohara-meter"><i class="current" style="left:${position}%"></i><em class="warn">5億株・注意</em><em class="danger">10億株・危険</em></div></section>`);
+    card.insertAdjacentHTML('afterbegin',`<section class="kiyohara-line ${level}" aria-label="清原ライン"><div class="kiyohara-summary"><span>清原ライン<br><small>ネット裁定残</small></span><strong>${(net/100000).toFixed(1)}億株</strong><b>${label}</b></div><p><b>5億株超</b>で注意、<b>10億株超</b>で危険。急落局面の需給悪化を確認する目安です。</p><div class="kiyohara-meter"><i class="current" style="left:${position}%"></i><em class="safe">5億株未満<br>平常圏</em><em class="warn">5億株<br>注意</em><em class="danger">10億株<br>危険</em></div></section>`);
   }
   function render(d){
     const buy=latest(d,'buyBalance'),sell=latest(d,'sellBalance'),net=buy===null||sell===null?null:buy-sell,buyDiff=latest(d,'buyChange'),sellDiff=latest(d,'sellChange');
