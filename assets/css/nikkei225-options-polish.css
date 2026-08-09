@@ -1,0 +1,114 @@
+:root{
+  --nikkei-option-put:#2f78c8;
+  --nikkei-option-put-soft:#eaf3ff;
+  --nikkei-option-call:#e66f9c;
+  --nikkei-option-call-deep:#c84f7e;
+  --nikkei-option-call-soft:#fff0f6;
+}
+
+/* 上部サマリーは「総合・先物・裁定・海外投資家」に整理し、オプション詳細との重複をなくす */
+.nikkei-overview.nikkei-overview-refined{
+  grid-template-columns:minmax(360px,1.55fr) repeat(3,minmax(210px,1fr));
+  gap:14px;
+}
+.nikkei-overview-refined .nikkei-card{box-shadow:0 5px 16px rgba(12,34,68,.055)}
+.nikkei-overview-refined .nikkei-summary{min-height:142px}
+
+/* オプション分析全体 */
+.nikkei-options-analysis{
+  border-color:#aec5e2;
+  box-shadow:0 8px 24px rgba(7,42,94,.07);
+}
+.nikkei-options-analysis .nikkei-section-body{padding:15px 16px 16px}
+.nikkei-options-section-head{
+  background:linear-gradient(180deg,#ffffff 0%,#f3f8ff 100%);
+  border-bottom-color:#ccdaea;
+}
+.nikkei-options-intro .nikkei-section-title{font-size:18px;letter-spacing:.01em}
+.nikkei-options-note{max-width:1120px;font-size:11.5px;line-height:1.75}
+
+/* 現在値は先物セクションにあるため、ここでは SQ / CALL / PUT の3点に集中 */
+.nikkei-options-summary-strip.nikkei-options-summary-strip-refined{
+  grid-template-columns:minmax(220px,.9fr) repeat(2,minmax(260px,1.15fr));
+  gap:10px;
+}
+.nikkei-options-summary-card{min-height:78px;padding:11px 13px}
+.nikkei-options-summary-card strong{font-size:18px}
+.nikkei-options-summary-card.call{
+  border-color:#efb5cb;
+  background:linear-gradient(180deg,#fff8fb,var(--nikkei-option-call-soft));
+}
+.nikkei-options-summary-card.call strong{color:var(--nikkei-option-call-deep)}
+.nikkei-options-summary-card.put{
+  border-color:#b8d3ee;
+  background:linear-gradient(180deg,#f9fcff,var(--nikkei-option-put-soft));
+}
+.nikkei-options-summary-card.put strong{color:#1f63ae}
+
+/* CALL はピンク、PUT はブルーで一貫 */
+.nikkei-options-bar.call>i{background:linear-gradient(90deg,#ffe3ee,var(--nikkei-option-call))}
+.nikkei-options-bar.put>i{background:linear-gradient(90deg,#dcecff,var(--nikkei-option-put))}
+.nikkei-options-legend i.call{background:var(--nikkei-option-call)}
+.nikkei-options-legend i.put{background:var(--nikkei-option-put)}
+.nikkei-options-rank.call h4{color:var(--nikkei-option-call-deep);background:var(--nikkei-option-call-soft)}
+.nikkei-options-rank.call .nikkei-options-rank-row em{background:var(--nikkei-option-call)}
+.nikkei-options-rank.call .nikkei-options-rank-row b{color:var(--nikkei-option-call-deep)}
+.nikkei-options-rank.put h4{color:#1e5ea8;background:#edf6ff}
+.nikkei-options-rank.put .nikkei-options-rank-row em{background:var(--nikkei-option-put)}
+.nikkei-options-rank.put .nikkei-options-rank-row b{color:#1e5ea8}
+.nikkei-options-bullet.call b{background:var(--nikkei-option-call-soft);color:var(--nikkei-option-call-deep)}
+.nikkei-options-bullet.put b{background:var(--nikkei-option-put-soft);color:#1e5ea8}
+.nikkei-options-gauge-side.call,.nikkei-options-gauge-labels .call{color:var(--nikkei-option-call-deep)}
+.nikkei-options-gauge-labels .put{color:#1e5ea8}
+.nikkei-options-gauge-line{
+  background:linear-gradient(90deg,var(--nikkei-option-put),#e9eef5 46%,#e9eef5 54%,var(--nikkei-option-call));
+}
+
+/* 情報密度は保ちつつ、ヒートマップを主役にする */
+.nikkei-options-layout{
+  grid-template-columns:minmax(470px,1.45fr) minmax(300px,.9fr) minmax(250px,.68fr);
+  gap:12px;
+}
+.nikkei-options-panel{padding:12px;border-color:#d4e0ed}
+.nikkei-options-panel h3{font-size:13.5px}
+.nikkei-options-heatmap{gap:6px}
+.nikkei-options-row{min-height:25px}
+.nikkei-options-current{background:#f1f7ff;outline-color:#3476c7}
+.nikkei-options-metric{padding:10px}
+
+/* ページ上部の総合判定と重複するカードを削り、補完解釈＋オプション評価の2列に */
+.nikkei-options-combined.nikkei-options-combined-refined{
+  grid-template-columns:minmax(0,1.7fr) minmax(220px,.55fr);
+  gap:12px;
+}
+.nikkei-options-combined-refined .nikkei-options-comment{padding:13px 14px;font-size:11.5px;line-height:1.75}
+.nikkei-options-combined-refined .nikkei-options-judge.option{min-height:100%}
+.nikkei-options-judge.option{
+  border-color:#edbfd1;
+  background:linear-gradient(180deg,#fff9fb,#fff1f6);
+}
+.nikkei-options-judge.option strong{color:var(--nikkei-option-call-deep)}
+
+/* 上下集中帯は上部サマリーに一本化。下部はSQ/MSQと実務用途だけ残す */
+.nikkei-options-pricebands.nikkei-options-pricebands-refined{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+.nikkei-options-pricebands-refined .nikkei-options-chip{padding:11px 12px;background:#fbfdff}
+
+@media(max-width:1260px){
+  .nikkei-overview.nikkei-overview-refined{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .nikkei-overview-refined .nikkei-total{grid-column:1/-1}
+  .nikkei-options-summary-strip.nikkei-options-summary-strip-refined{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .nikkei-options-layout{grid-template-columns:1.2fr .8fr}
+  .nikkei-options-layout>.metrics-panel{grid-column:1/-1}
+}
+@media(max-width:900px){
+  .nikkei-options-summary-strip.nikkei-options-summary-strip-refined{grid-template-columns:1fr}
+  .nikkei-options-layout,.nikkei-options-combined.nikkei-options-combined-refined{grid-template-columns:1fr}
+  .nikkei-options-pricebands.nikkei-options-pricebands-refined{grid-template-columns:1fr}
+}
+@media(max-width:820px){
+  .nikkei-overview.nikkei-overview-refined{grid-template-columns:1fr}
+  .nikkei-overview-refined .nikkei-total{grid-column:auto}
+}
