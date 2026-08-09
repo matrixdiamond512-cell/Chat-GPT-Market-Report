@@ -14,7 +14,7 @@ on:
       - "scripts/enrich_nikkei225_foreign.py"
       - "scripts/enrich_nikkei225_sessions.py"
       - "scripts/enrich_nikkei225_participants.py"
-      - "scripts/probe_nikkei_tategyoku_layout.py"
+      - "scripts/enrich_nikkei225_same_date.py"
       - "scripts/enrich_nikkei225_options.py"
       - "scripts/enrich_nikkei225_spot.py"
       - "scripts/enrich_nikkei225_iv.py"
@@ -62,7 +62,7 @@ jobs:
           python -m py_compile scripts/enrich_nikkei225_foreign.py
           python -m py_compile scripts/enrich_nikkei225_sessions.py
           python -m py_compile scripts/enrich_nikkei225_participants.py
-          python -m py_compile scripts/probe_nikkei_tategyoku_layout.py
+          python -m py_compile scripts/enrich_nikkei225_same_date.py
           python -m py_compile scripts/enrich_nikkei225_options.py
           python -m py_compile scripts/enrich_nikkei225_spot.py
           python -m py_compile scripts/enrich_nikkei225_iv.py
@@ -81,8 +81,8 @@ jobs:
         run: python scripts/enrich_nikkei225_sessions.py
       - name: Add participant turnover and OI leaders
         run: python scripts/enrich_nikkei225_participants.py
-      - name: Probe weekly investor OI workbook layout
-        run: python scripts/probe_nikkei_tategyoku_layout.py
+      - name: Align participant analysis to the same reference date
+        run: python scripts/enrich_nikkei225_same_date.py
       - name: Add independently verified Nikkei 225 spot close
         run: python scripts/enrich_nikkei225_spot.py
       - name: Add Nikkei 225 option Put-Call volume
@@ -100,7 +100,7 @@ jobs:
           d=json.load(open('data/nikkei225-supply-demand.json',encoding='utf-8'))
           print(d.get('sourceStatus'))
           print(json.dumps(d.get('diagnostics',{}),ensure_ascii=False,indent=2))
-          for k in ('spot','futures','sessions','arbitrage','options','participantFlow','foreignInvestors','participantOpenInterest','shortSelling','margin','speculativePositioning'):
+          for k in ('spot','futures','sessions','arbitrage','options','participantFlow','foreignInvestors','participantOpenInterest','shortSelling','margin','speculativePositioning','sameDateParticipantAnalysis'):
               x=d.get(k,{})
               print(f"{k}: status={x.get('status')} asOf={x.get('asOfDate')}")
               if x.get('error'):
