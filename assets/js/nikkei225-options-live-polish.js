@@ -7,6 +7,7 @@ let live=null;
 
 const fmt=v=>Number.isFinite(Number(v))?Number(v).toLocaleString('ja-JP'):'—';
 const monthLabel=v=>{const s=String(v||'');return /^\d{6}$/.test(s)?`${Number(s.slice(4,6))}月限`:'期近限月'};
+const firstNumber=text=>{const m=String(text||'').replace(/,/g,'').match(/-?\d+(?:\.\d+)?/);return m?Number(m[0]):null;};
 
 function setText(el,value){if(el)el.textContent=value;}
 
@@ -27,8 +28,14 @@ function apply(){
   if(gaugeCall&&Number.isFinite(Number(upper)))gaugeCall.innerHTML=`Call集中<br>${fmt(upper)}`;
   const labels=option.querySelectorAll('.nikkei-options-gauge-labels span');
   if(labels.length>=3){
+    const current=firstNumber(labels[1].textContent);
     if(Number.isFinite(Number(lower)))labels[0].textContent=`Put ${fmt(lower)}`;
     if(Number.isFinite(Number(upper)))labels[2].textContent=`Call ${fmt(upper)}`;
+    if(current!==null&&Number.isFinite(Number(lower))&&Number.isFinite(Number(upper))&&Number(upper)!==Number(lower)){
+      const pct=Math.max(5,Math.min(95,((current-Number(lower))/(Number(upper)-Number(lower)))*100));
+      const dot=option.querySelector('.nikkei-options-gauge-dot');
+      if(dot)dot.style.left=`${pct}%`;
+    }
   }
 
   const callBullet=option.querySelector('.nikkei-options-bullet.call span');
