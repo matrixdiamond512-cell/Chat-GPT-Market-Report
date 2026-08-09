@@ -89,7 +89,7 @@ jobs:
         run: python scripts/enrich_nikkei225_options.py
       - name: Add JPX Nikkei 225 base volatility
         run: python scripts/enrich_nikkei225_iv.py
-      - name: Add CFTC TFF Leveraged Funds 26-week positioning
+      - name: Add CFTC TFF Leveraged Funds 52-week positioning
         run: python scripts/enrich_nikkei225_cftc_positioning.py
       - name: Validate JSON
         run: python -m json.tool data/nikkei225-supply-demand.json > /dev/null
@@ -103,6 +103,8 @@ jobs:
           for k in ('spot','futures','sessions','arbitrage','options','participantFlow','foreignInvestors','participantOpenInterest','shortSelling','margin','speculativePositioning','sameDateParticipantAnalysis'):
               x=d.get(k,{})
               print(f"{k}: status={x.get('status')} asOf={x.get('asOfDate')}")
+              if k=='speculativePositioning':
+                  print(f"speculativePositioning: weeks={x.get('lookbackWeeks')} pricePoints={x.get('pricePointCount')}")
               if x.get('error'):
                   print(f"{k}: {x['error']}")
               if k=='options' and x.get('ivReason'):
