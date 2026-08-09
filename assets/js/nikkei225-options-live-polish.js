@@ -16,6 +16,7 @@ function apply(){
   const root=document.querySelector(ROOT);
   const option=root?.querySelector('.nikkei-options-analysis');
   if(!option)return false;
+  if(option.dataset.liveOptionsApplied==='1')return true;
 
   const upper=live.upperCallConcentrationStrike;
   const lower=live.lowerPutConcentrationStrike;
@@ -82,13 +83,19 @@ async function init(){
     if(!r.ok)return;
     live=await r.json();
   }catch(e){console.warn('nikkei225 options live polish',e);return;}
-  apply();
+  if(apply())return;
   const root=document.querySelector(ROOT);
   if(!root)return;
-  const obs=new MutationObserver(()=>apply());
+  const obs=new MutationObserver(()=>{if(apply())obs.disconnect()});
   obs.observe(root,{childList:true,subtree:true});
   let tries=0;
-  const timer=setInterval(()=>{tries++;if(apply()||tries>100)clearInterval(timer)},100);
+  const timer=setInterval(()=>{
+    tries++;
+    if(apply()||tries>100){
+      clearInterval(timer);
+      obs.disconnect();
+    }
+  },100);
 }
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
