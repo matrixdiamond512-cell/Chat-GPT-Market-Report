@@ -27,7 +27,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: update-gold-supply-demand-csv-v5-cftc-history
+  group: update-gold-supply-demand-csv-v6-cftc-52w
   cancel-in-progress: false
 
 jobs:
@@ -63,7 +63,7 @@ jobs:
       - name: Add ETF flow history and WGC global snapshot
         run: python scripts/enrich_gold_etf_flow.py
 
-      - name: Add 26-week CFTC positioning history
+      - name: Add 52-week CFTC positioning history
         run: python scripts/enrich_gold_cftc_history.py
 
       - name: Normalize display statuses
@@ -86,7 +86,10 @@ jobs:
           if not rows or len(rows[0]) != 12:
               raise SystemExit('Gold_Demand CSV must have exactly 12 columns')
           data = json.loads(Path('data/gold-supply-demand.json').read_text(encoding='utf-8'))
-          history = ((data.get('cftc') or {}).get('historyWeeks') or [])
+          cftc = data.get('cftc') or {}
+          history = cftc.get('historyWeeks') or []
+          if cftc.get('historyStatus') == 'verified' and len(history) != 52:
+              raise SystemExit(f'Verified CFTC history must contain 52 rows, got {len(history)}')
           if history and len(history) < 2:
               raise SystemExit('CFTC history must contain at least 2 rows when present')
           etf = data.get('etf') or {}
