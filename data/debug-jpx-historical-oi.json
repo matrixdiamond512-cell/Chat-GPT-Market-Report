@@ -27,8 +27,26 @@
         "https://www.jpx.co.jp/_assets/js2/add_attribute_gid.js",
         "https://www.jpx.co.jp/_assets/js2/popterm3.js"
       ],
+      "attrs": [
+        {
+          "tag": "script",
+          "attrs": {
+            "src": "/public/javascripts/backnumber.js"
+          },
+          "text": ""
+        }
+      ],
       "htmlHints": [
         "<meta property=\"og:url\" content=\"https://www.jpx.co.jp/markets/statistics-derivatives/monthly-statistics/index.html\">\r",
+        "<script type=\"text/javascript\" src=\"/public/javascripts/backnumber.js\"></script>\r",
+        "      <li data-target-item=\"pc-menu-0-0\">\r",
+        "      <li data-target-item=\"pc-menu-1-0\">\r",
+        "      <li data-target-item=\"pc-menu-2-0\">\r",
+        "      <li data-target-item=\"pc-menu-3-0\">\r",
+        "      <li data-target-item=\"pc-menu-4-0\">\r",
+        "      <li data-target-item=\"pc-menu-5-0\">\r",
+        "      <li data-target-item=\"pc-menu-6-0\">\r",
+        "      <li data-target-item=\"pc-menu-7-0\">\r",
         "        <a href=\"/markets/statistics-derivatives/monthly-quotations/index.html\">æéç¸å ´è¡¨</a>\r",
         "        <a href=\"/markets/statistics-derivatives/monthly-statistics/index.html\">æéçµ±è¨è³æ</a>\r",
         "          <li><a href=\"/english/markets/statistics-derivatives/monthly-statistics/index.html\" title=\"\"><span>English</span></a></li>\r",
@@ -36,6 +54,7 @@
         "              <li><a href=\"/markets/statistics-derivatives/monthly-statistics/index.html\">æéçµ±è¨è³æ</a></li>\r",
         "        <a href=\"/markets/statistics-derivatives/monthly-statistics/index.html\" class=\"act-tab\">æéçµ±è¨è³æ\r",
         "        <a href=\"/markets/statistics-derivatives/monthly-statistics/02.html\" class=\"\">ãå©ç¨ã®æå¼ã\r",
+        "        <select size=\"1\" class=\"backnumber\">\r",
         "    let archivesNum = 0;\r",
         "    let BUCKNUMBER_JSON = '/automation/markets/statistics-derivatives/monthly-statistics/json/monthly_statistics_report_yearlist.json';\r",
         "      url: BUCKNUMBER_JSON,\r",
@@ -56,11 +75,15 @@
         "      dataType: 'json',\r",
         "            $(\"#monthly-statistics-target-year\").text(targetYear + \"å¹´\");\r",
         "      $(\"#monthly-statistics-table\").hide();\r",
+        "      $(\"#no-data-message\").after('<div><p class=\"component-text\">ç¾å¨ãè©²å½ããæå ±ã¯ããã¾ããã</p></div>');\r",
         "      $(\"#monthly-statistics-table\").hide();\r",
+        "    // backnumber çæ\r",
         "      $(\".backnumber\").append('<option value=\"/markets/statistics-derivatives/monthly-statistics/index.html\" selected=\"selected\">' + str + 'å¹´</option>');\r",
         "      $(\".backnumber\").append('<option value=\"/markets/statistics-derivatives/monthly-statistics/index.html\">' + str + 'å¹´</option>');\r",
+        "    // backnumber çæ\r",
         "      $(\".backnumber\").append('<option value=\"/markets/statistics-derivatives/monthly-statistics/archives-' + num + '.html\" selected=\"selected\">' + str + 'å¹´</option>');\r",
         "      $(\".backnumber\").append('<option value=\"/markets/statistics-derivatives/monthly-statistics/archives-' + num + '.html\">' + str + 'å¹´</option>');\r",
+        "    // backnumber çæ\r",
         "      $(\".backnumber\").append('<option value=\"/markets/statistics-derivatives/monthly-statistics/archives-' + str + '.html\" selected=\"selected\">' + str + 'å¹´</option>');\r",
         "      $(\".backnumber\").append('<option value=\"/markets/statistics-derivatives/monthly-statistics/archives-' + str + '.html\">' + str + 'å¹´</option>');\r",
         "  function createTable(jsonElement, monthlyReportFlg) {\r",
@@ -68,6 +91,7 @@
         "          html += '<tr class=\"json-data\">';\r",
         "    if (monthlyReportFlg == true) {\r",
         "      $(\"#monthly-statistics-table\").append(html);\r",
+        "      <div id=\"no-data-message\"></div>\r",
         "        <table _fixedhead=\"rows:1; cols:0;div-auto-size: none;\" class=\"fixedhead\" id=\"monthly-statistics-table\">\r",
         "            <th class=\"w-space\" id=\"monthly-statistics-target-year\"></th>\r",
         "      <li><a href=\"/markets/statistics-derivatives/monthly-quotations/index.html\" class=\"\">æéç¸å ´è¡¨</a>\r",
@@ -101,8 +125,26 @@
         "https://www.jpx.co.jp/_assets/js2/add_attribute_gid.js",
         "https://www.jpx.co.jp/_assets/js2/popterm3.js"
       ],
+      "attrs": [
+        {
+          "tag": "script",
+          "attrs": {
+            "src": "/public/javascripts/backnumber.js"
+          },
+          "text": ""
+        }
+      ],
       "htmlHints": [
         "<meta property=\"og:url\" content=\"https://www.jpx.co.jp/markets/statistics-derivatives/monthly-quotations/index.html\">\r",
+        "<script type=\"text/javascript\" src=\"/public/javascripts/backnumber.js\"></script>\r",
+        "      <li data-target-item=\"pc-menu-0-0\">\r",
+        "      <li data-target-item=\"pc-menu-1-0\">\r",
+        "      <li data-target-item=\"pc-menu-2-0\">\r",
+        "      <li data-target-item=\"pc-menu-3-0\">\r",
+        "      <li data-target-item=\"pc-menu-4-0\">\r",
+        "      <li data-target-item=\"pc-menu-5-0\">\r",
+        "      <li data-target-item=\"pc-menu-6-0\">\r",
+        "      <li data-target-item=\"pc-menu-7-0\">\r",
         "        <a href=\"/markets/statistics-derivatives/monthly-quotations/index.html\">æéç¸å ´è¡¨</a>\r",
         "        <a href=\"/markets/statistics-derivatives/monthly-statistics/index.html\">æéçµ±è¨è³æ</a>\r",
         "          <li><a href=\"/english/markets/statistics-derivatives/monthly-quotations/index.html\" title=\"\"><span>English</span></a></li>\r",
@@ -110,6 +152,7 @@
         "              <li><a href=\"/markets/statistics-derivatives/monthly-quotations/index.html\">æéç¸å ´è¡¨</a></li>\r",
         "        <a href=\"/markets/statistics-derivatives/monthly-quotations/index.html\" class=\"act-tab\">æéç¸å ´è¡¨\r",
         "        <a href=\"/markets/statistics-derivatives/monthly-quotations/02.html\" class=\"\">ãå©ç¨ã®æå¼ã\r",
+        "        <select size=\"1\" class=\"backnumber\">\r",
         "    let archivesNum = 0;\r",
         "    let BUCKNUMBER_JSON = '/automation/markets/statistics-derivatives/monthly_quotations/json/monthly_quotations_yearlist.json';\r",
         "      url: BUCKNUMBER_JSON,\r",
@@ -126,17 +169,22 @@
         "      url: MONTHLY_QUOTATION_JSON,\r",
         "      dataType: 'json',\r",
         "      $(\"#monthly-quotations-table\").hide();\r",
+        "      $(\"#no-data-message\").after('<div><p class=\"component-text\">ç¾å¨ãè©²å½ããæå ±ã¯ããã¾ããã</p></div>');\r",
         "      $(\"#monthly-quotations-table\").hide();\r",
+        "    // backnumber çæ\r",
         "      $(\".backnumber\").append('<option value=\"/markets/statistics-derivatives/monthly-quotations/index.html\" selected=\"selected\">' + str + 'å¹´</option>');\r",
         "      $(\".backnumber\").append('<option value=\"/markets/statistics-derivatives/monthly-quotations/index.html\">' + str + 'å¹´</option>');\r",
+        "    // backnumber çæ\r",
         "      $(\".backnumber\").append('<option value=\"/markets/statistics-derivatives/monthly-quotations/archives-' + num + '.html\" selected=\"selected\">' + str + 'å¹´</option>');\r",
         "      $(\".backnumber\").append('<option value=\"/markets/statistics-derivatives/monthly-quotations/archives-' + num + '.html\">' + str + 'å¹´</option>');\r",
+        "    // backnumber çæ\r",
         "      $(\".backnumber\").append('<option value=\"/markets/statistics-derivatives/monthly-quotations/archives-' + str + '.html\" selected=\"selected\">' + str + 'å¹´</option>');\r",
         "      $(\".backnumber\").append('<option value=\"/markets/statistics-derivatives/monthly-quotations/archives-' + str + '.html\">' + str + 'å¹´</option>');\r",
         "  function createTable(jsonElement) {\r",
         "    $.each(jsonElement, function (key, values) {\r",
         "          html += '<tr class=\"json-data\">';\r",
         "    $(\"#monthly-quotations-table\").append(html);\r",
+        "      <div id=\"no-data-message\"></div>\r",
         "        <table _fixedhead=\"rows:1; cols:0;div-auto-size: none;\" class=\"fixedhead\" id=\"monthly-quotations-table\">\r",
         "      <li><a href=\"/markets/statistics-derivatives/monthly-quotations/index.html\" class=\"-is-active\">æéç¸å ´è¡¨</a>\r",
         "      <li><a href=\"/markets/statistics-derivatives/monthly-statistics/index.html\" class=\"\">æéçµ±è¨è³æ</a>\r"
@@ -169,16 +217,39 @@
         "https://www.jpx.co.jp/_assets/js2/add_attribute_gid.js",
         "https://www.jpx.co.jp/_assets/js2/popterm3.js"
       ],
+      "attrs": [
+        {
+          "tag": "script",
+          "attrs": {
+            "src": "/public/javascripts/backnumber.js"
+          },
+          "text": ""
+        }
+      ],
       "htmlHints": [
+        "<script type=\"text/javascript\" src=\"/public/javascripts/backnumber.js\"></script>\r",
+        "      <li data-target-item=\"pc-menu-0-0\">\r",
+        "      <li data-target-item=\"pc-menu-1-0\">\r",
+        "      <li data-target-item=\"pc-menu-2-0\">\r",
+        "      <li data-target-item=\"pc-menu-3-0\">\r",
+        "      <li data-target-item=\"pc-menu-4-0\">\r",
+        "      <li data-target-item=\"pc-menu-5-0\">\r",
+        "      <li data-target-item=\"pc-menu-6-0\">\r",
+        "      <li data-target-item=\"pc-menu-7-0\">\r",
         "        <a href=\"/markets/statistics-derivatives/monthly-quotations/index.html\">æéç¸å ´è¡¨</a>\r",
         "        <a href=\"/markets/statistics-derivatives/monthly-statistics/index.html\">æéçµ±è¨è³æ</a>\r",
+        "        <select size=\"1\" class=\"backnumber\">\r",
         "    const BASE_PATH = '/automation/markets/statistics-derivatives/daily/json/';\r",
         "    const BUCKNUMBER_JSON = BASE_PATH + 'daily_report_monthlylist.json';\r",
+        "    const $noDataMsg = $(\"#no-data-message\");\r",
         "        // JSONåå¾ãè©¦è¡ãå¤±ææã¯ null ãè¿ã\r",
         "        const data = await $.ajax({ url: BUCKNUMBER_JSON, dataType: 'json' }).catch(() => null);\r",
+        "        processBacknumber(data);\r",
         "            await loadAndRenderJsonTable(state.targetMonth);\r",
+        "    function processBacknumber(data) {\r",
         "        const match = currentUrl.match(/archives-(\\d+)/);\r",
         "        // JSONããæãªã¹ããåå¾ã§ããå ´å\r",
+        "        $(\".backnumber\").append(optionsHtml);\r",
         "        const archiveNum = index.toString().padStart(2, '0');\r",
         "            : `${currentDir}archives-${archiveNum}.html`;\r",
         "    // jsonèª­ã¿è¾¼ã¿\r",
@@ -187,6 +258,7 @@
         "            const data = await $.ajax({ url: jsonUrl, dataType: 'json' });\r",
         "    // jsonããè¡¨ãçæ\r",
         "            let rowHtml = `<tr class=\"json-data\"><td class=\"a-center w-space\">${dateStr}</td>`;\r",
+        "  <div id=\"no-data-message\"></div>\r",
         "      <li><a href=\"/markets/statistics-derivatives/monthly-quotations/index.html\" class=\"\">æéç¸å ´è¡¨</a>\r",
         "      <li><a href=\"/markets/statistics-derivatives/monthly-statistics/index.html\" class=\"\">æéçµ±è¨è³æ</a>\r"
       ]
@@ -299,12 +371,30 @@
         "https://www.jpx.co.jp/_assets/js2/add_attribute_gid.js",
         "https://www.jpx.co.jp/_assets/js2/popterm3.js"
       ],
+      "attrs": [
+        {
+          "tag": "script",
+          "attrs": {
+            "src": "/public/javascripts/backnumber.js"
+          },
+          "text": ""
+        }
+      ],
       "htmlHints": [
+        "<script type=\"text/javascript\" src=\"/public/javascripts/backnumber.js\"></script>\r",
+        "      <li data-target-item=\"pc-menu-0-0\">\r",
+        "      <li data-target-item=\"pc-menu-1-0\">\r",
+        "      <li data-target-item=\"pc-menu-2-0\">\r",
+        "      <li data-target-item=\"pc-menu-3-0\">\r",
+        "      <li data-target-item=\"pc-menu-4-0\">\r",
+        "      <li data-target-item=\"pc-menu-5-0\">\r",
+        "      <li data-target-item=\"pc-menu-6-0\">\r",
+        "      <li data-target-item=\"pc-menu-7-0\">\r",
         "        <a href=\"/markets/statistics-derivatives/monthly-quotations/index.html\">æéç¸å ´è¡¨</a>\r",
         "        <a href=\"/markets/statistics-derivatives/monthly-statistics/index.html\">æéçµ±è¨è³æ</a>\r",
-        "  <option value=\"/markets/statistics-derivatives/sector/index.html\" selected=\"selected\">ææ°</option><option value=\"/markets/statistics-derivatives/sector/00-archives-00.html\">2026å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-01.html\">2025å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-02.html\">2024å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-03.html\">2023å¹´</option>",
-        "<option value=\"/markets/statistics-derivatives/sector/00-archives-04.html\">2022å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-05.html\">2021å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-06.html\">2020å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-07.html\">2019å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-08.html\">2018å¹´</option>",
-        "<option value=\"/markets/statistics-derivatives/sector/00-archives-09.html\">2017å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-10.html\">2016å¹´</option>\r",
+        "      <select size=\"1\" class=\"backnumber\">\r",
+        "          <option value=\"/markets/statistics-derivatives/sector/index.html\" selected=\"selected\">ææ°</option><option value=\"/markets/statistics-derivatives/sector/00-archives-00.html\">2026å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-01.html\">2025å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-02.html\">2024å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-03.html\">2023å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-04.html\">2022å¹´</option><option value=\"/markets/stati",
+        "stics-derivatives/sector/00-archives-05.html\">2021å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-06.html\">2020å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-07.html\">2019å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-08.html\">2018å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-09.html\">2017å¹´</option><option value=\"/markets/statistics-derivatives/sector/00-archives-10.html\">2016å¹´</option>\r",
         "                          <td class=\"a-center\"><a href=\"/markets/statistics-derivatives/sector/t13vrt000001ri3p-att/Tousi_DV_pdf_W_20260727_20260731.pdf\" rel=\"external\"><img src=\"/common/images/icon/icon-pdf.png\" alt=\"PDF\" title=\"PDF\" width=\"18\" height=\"18\" /></a></td>\r",
         "                          <td class=\"a-center\"><a href=\"/markets/statistics-derivatives/sector/t13vrt000001ri3p-att/Tousi_DV_W_20260727_20260731.csv\" rel=\"external\"><img src=\"/common/images/icon/icon-csv.png\" alt=\"icon-csv\" title=\"icon-csv\" width=\"18\" height=\"18\" /></a></td>\r",
         "                          <td class=\"a-center\"><a href=\"/markets/statistics-derivatives/sector/t13vrt000001otfr-att/Tousi_DV_pdf_W_20260721_20260724.pdf\" rel=\"external\"><img src=\"/common/images/icon/icon-pdf.png\" alt=\"PDF\" title=\"PDF\" width=\"18\" height=\"18\" /></a></td>\r",
@@ -320,5 +410,10 @@
       ]
     }
   ],
-  "follow": []
+  "follow": [],
+  "backnumberJs": {
+    "url": "https://www.jpx.co.jp/public/javascripts/backnumber.js",
+    "length": 108,
+    "content": "$(function () {\n  $(\"select.backnumber\").on(\"change\", function (e) {\n    location = $(this).val();\n  });\n});"
+  }
 }
