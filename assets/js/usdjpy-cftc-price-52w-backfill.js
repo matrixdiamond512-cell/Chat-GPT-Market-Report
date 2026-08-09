@@ -64,5 +64,7 @@ function patch(){
  }
 }
 let tries=0;const timer=setInterval(()=>{patch();if(++tries>=24)clearInterval(timer);},250);
+const target=document.getElementById('usdjpy-positioning-content');
+if(target){const observer=new MutationObserver(()=>setTimeout(patch,0));observer.observe(target,{childList:true,subtree:true});}
 document.addEventListener('click',e=>{if(e.target.closest('.usd-position-range button[data-weeks]'))setTimeout(patch,30);});
 })();
