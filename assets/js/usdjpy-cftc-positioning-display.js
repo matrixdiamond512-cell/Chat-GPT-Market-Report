@@ -13,6 +13,7 @@ let sourceData=null;
 let fullSeries=[];
 let activeWeeks=52;
 let apiStatus='loading';
+let priceApiStatus='loading';
 
 function injectStyles(){
   if(document.getElementById('usdjpy-cftc-range-style'))return;
@@ -73,6 +74,33 @@ function labelSeries(series){
   const last=series.length-1;
   return series.map((d,i)=>({...d,label:i===last?'今週':`${last-i}週前`}));
 }
+function priceOnOrBefore(history,target){
+  let best=null;
+  for(const row of history||[]){
+    if(row.date<=target)best=row.price;
+    else break;
+  }
+  return best;
+}
+async function fetchUsdJpyDailyHistory(){
+  const endpoint='https://query1.finance.yahoo.com/v8/finance/chart/USDJPY%3DX';
+  const params=new URLSearchParams({range:'2y',interval:'1d',events:'history',includeAdjustedClose:'true'});
+  const r=await fetch(`${endpoint}?${params.toString()}`,{cache:'no-store'});
+  if(!r.ok)throw new Error(`Yahoo USDJPY ${r.status}`);
+  const data=await r.json();
+  const result=((data?.chart?.result)||[null])[0]||{};
+  const timestamps=result.timestamp||[];
+  const closes=((((result.indicators||{}).quote)||[{}])[0].close)||[];
+  const out=[];
+  timestamps.forEach((ts,i)=>{
+    const close=n(closes[i]);
+    if(close===null)return;
+    out.push({date:new Date(Number(ts)*1000).toISOString().slice(0,10),price:close});
+  });
+  out.sort((a,b)=>a.date.localeCompare(b.date));
+  if(out.length<200)throw new Error('Yahoo USDJPY history too short');
+  return out;
+}
 function svgChart(series,priceAvailable,weeks){
   if(!Array.isArray(series)||series.length<2)return`<div class="usd-position-empty">${weeks}週推移を描画できるだけの検証済みデータがありません。</div>`;
   const W=1120,H=420,L=82,R=88,T=32,B=58,pw=W-L-R,ph=H-T-B;
@@ -106,7 +134,7 @@ function svgChart(series,priceAvailable,weeks){
   out+='</svg>';return out;
 }
 
-async function fetchOfficialCftc52(localSeries){
+async function fetchOfficialCftc52(localSeries,priceHistory){
   const endpoint='https://publicreporting.cftc.gov/resource/6dca-aqww.json';
   const params=new URLSearchParams({
     '$select':'report_date_as_yyyy_mm_dd,noncomm_positions_long_all,noncomm_positions_short_all',
@@ -123,7 +151,9 @@ async function fetchOfficialCftc52(localSeries){
   const s=rows.map(row=>{
     const dt=isoDate(row.report_date_as_yyyy_mm_dd);
     const l=n(row.noncomm_positions_long_all),sh=n(row.noncomm_positions_short_all);
-    return{date:dt,long:l,short:sh,net:l!==null&&sh!==null?l-sh:null,price:priceMap.get(dt)??null,status:statusMap.get(dt)||'official-api'};
+    const localPrice=priceMap.get(dt);
+    const historyPrice=priceOnOrBefore(priceHistory,dt);
+    return{date:dt,long:l,short:sh,net:l!==null&&sh!==null?l-sh:null,price:localPrice??historyPrice??null,status:statusMap.get(dt)||'official-api'};
   }).sort((a,b)=>a.date.localeCompare(b.date));
   return labelSeries(s.slice(-52));
 }
@@ -148,7 +178,9 @@ function renderCurrentRange(){
   const pricePoints=series.filter(d=>n(d.price)!==null).length;
   const priceAvailable=pricePoints>=2;
   const intro=priceAvailable?'Long・Short・Netの変化と取得済みUSD/JPY価格を重ね、投機筋の円買い／円売りの偏りと価格反応の整合性を確認します。':'Long・Short・Netの変化から、投機筋の円買い／円売りの偏りと巻き戻しの強さを確認します。';
-  const apiText=apiStatus==='ok'?'CFTC公式Public Reporting APIから52週を取得':'ローカル検証済み系列を表示（公式API取得失敗時のフォールバック）';
+  const apiText=apiStatus==='ok'?(priceApiStatus==='ok'?'CFTC公式52週＋USD/JPY日次履歴を取得':'CFTC公式Public Reporting APIから52週を取得'):'ローカル検証済み系列を表示（公式API取得失敗時のフォールバック）';
+  const priceSourceName=priceApiStatus==='ok'?'Yahoo!ファイナンス USD/JPY時系列':(c.priceSourceName||'USD/JPY履歴価格');
+  const priceSourceUrl=priceApiStatus==='ok'?'https://finance.yahoo.co.jp/quote/USDJPY=X/history':(c.priceSourceUrl||'https://finance.yahoo.co.jp/quote/USDJPY=X/history');
   target.innerHTML=`
     <div class="usd-position-intro">CFTCの <b>Japanese Yen / Non-Commercial</b> を直近${requested}週レンジで追跡します。${intro}</div>
     <div class="usd-position-stats">
@@ -159,12 +191,12 @@ function renderCurrentRange(){
       <div class="usd-position-stat judge"><span>判定</span><b>${esc(judge)}</b><small>${esc(sub)}</small></div>
     </div>
     <div class="usd-position-reading"><b>読み方</b><span>円先物Netがプラス＝円買い越しでUSD/JPYの下押し要因、マイナス＝円売り越しでUSD/JPYの上押し要因。単独ではなく、日米金利差・出来高・オーダーと合わせて判断します。</span></div>
-    <div class="usd-position-chart-shell"><div class="usd-position-chart-scroll">${svgChart(series,priceAvailable,requested)}</div><div class="usd-position-legend"><span><i class="lg-box long"></i>Long（円買い）</span><span><i class="lg-box short"></i>Short（円売り）</span><span><i class="lg-line net"></i>Net（円買い越し／売り越し）</span>${priceAvailable?'<span><i class="lg-line price"></i>USD/JPY（右軸・取得済み期間）</span>':''}</div></div>
+    <div class="usd-position-chart-shell"><div class="usd-position-chart-scroll">${svgChart(series,priceAvailable,requested)}</div><div class="usd-position-legend"><span><i class="lg-box long"></i>Long（円買い）</span><span><i class="lg-box short"></i>Short（円売り）</span><span><i class="lg-line net"></i>Net（円買い越し／売り越し）</span>${priceAvailable?'<span><i class="lg-line price"></i>USD/JPY（右軸）</span>':''}</div></div>
     ${missing?`<div class="usd-position-note">${requested}週レンジのうち${missing}週は現在欠損です。欠損値を0として扱わず空欄にします。</div>`:''}
     ${priceAvailable&&pricePoints<series.length?`<div class="usd-position-note">CFTCポジションは${verified}週分を表示しています。USD/JPY価格線は履歴価格を確認済みの${pricePoints}週分だけ重ね、未取得期間を推測で補完しません。</div>`:''}
     <div class="usd-position-note">${esc(c.comment||`${judge}。ポジションの方向とUSD/JPYの値動きが一致しているかを確認し、急激な巻き戻しが起きていないかを監視します。`)}</div>
     <div class="usd-position-api-note">${esc(apiText)}。表示期間は右上の「26週 / 52週」で切り替えできます。初期表示は52週です。</div>
-    <div class="usd-position-source">出典：<a href="https://publicreporting.cftc.gov/Commitments-of-Traders/Legacy-Futures-Only/6dca-aqww" target="_blank" rel="noopener">CFTC Legacy - Futures Only / Public Reporting</a> ｜ 基準日 ${esc(date(latest.date||c.asOf))}${priceAvailable?`<br>価格線：<a href="${esc(c.priceSourceUrl||'https://finance.yahoo.co.jp/quote/USDJPY=X/history')}" target="_blank" rel="noopener">${esc(c.priceSourceName||'USD/JPY履歴価格')}</a>`:''}</div>`;
+    <div class="usd-position-source">出典：<a href="https://publicreporting.cftc.gov/Commitments-of-Traders/Legacy-Futures-Only/6dca-aqww" target="_blank" rel="noopener">CFTC Legacy - Futures Only / Public Reporting</a> ｜ 基準日 ${esc(date(latest.date||c.asOf))}${priceAvailable?`<br>価格線：<a href="${esc(priceSourceUrl)}" target="_blank" rel="noopener">${esc(priceSourceName)}</a>`:''}</div>`;
 }
 
 async function init(){
@@ -176,8 +208,16 @@ async function init(){
     const local=Array.isArray(sourceData?.cftc?.series)?sourceData.cftc.series:[];
     fullSeries=labelSeries(local);
     renderCurrentRange();
+    let priceHistory=[];
     try{
-      fullSeries=await fetchOfficialCftc52(local);
+      priceHistory=await fetchUsdJpyDailyHistory();
+      priceApiStatus='ok';
+    }catch(e){
+      priceApiStatus='fallback';
+      console.warn('[USDJPY CFTC] Yahoo 52-week price history fallback:',e);
+    }
+    try{
+      fullSeries=await fetchOfficialCftc52(local,priceHistory);
       apiStatus='ok';
     }catch(e){
       apiStatus='fallback';
