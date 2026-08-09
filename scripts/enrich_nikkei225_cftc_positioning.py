@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Add 26-week CFTC TFF Leveraged Funds positioning to Nikkei 225 supply-demand JSON.
+"""Add 52-week CFTC TFF Leveraged Funds positioning to Nikkei 225 supply-demand JSON.
 
 Official CFTC Traders in Financial Futures (TFF), futures-only dataset is used because
 Nikkei 225 is a financial futures contract. The relevant contract is CFTC code 240743
@@ -25,7 +25,7 @@ CFTC_CONTRACT_CODE = "240743"
 CFTC_CONTRACT_NAME = "NIKKEI STOCK AVERAGE YEN DENOM - CHICAGO MERCANTILE EXCHANGE"
 YAHOO_CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/%5EN225"
 YAHOO_HISTORY_URL = "https://finance.yahoo.com/quote/%5EN225/history/"
-LOOKBACK_WEEKS = 26
+LOOKBACK_WEEKS = 52
 JST = timezone(timedelta(hours=9))
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (compatible; Chat-GPT-Market-Report/1.0; +https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report)",
@@ -158,7 +158,7 @@ def fetch_nikkei_prices(report_dates: list[str]) -> tuple[dict[str, float], str 
         if not mapped:
             return {}, "Yahoo Finance returned no close matching CFTC report weeks"
         return mapped, None
-    except Exception as exc:  # secondary source failure must not fail CFTC section
+    except Exception as exc:
         return {}, f"Yahoo Finance price history unavailable: {exc}"
 
 
@@ -258,6 +258,7 @@ def main() -> None:
         "classification": section.get("classification"),
         "latest": section.get("latest"),
         "priceStatus": section.get("priceStatus"),
+        "pricePointCount": section.get("pricePointCount"),
         "error": section.get("error"),
     }, ensure_ascii=False, indent=2))
 
