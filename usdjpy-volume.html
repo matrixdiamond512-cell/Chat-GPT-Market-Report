@@ -25,7 +25,7 @@ let DATASET={records:[],priceRecords:[],pdfBaseUrl:"",priceSourceName:"Investing
 let HISTORY=[];
 let PRICES=[];
 const PERIODS=[{key:"20d",label:"20営業日",rows:20},{key:"2m",label:"2か月",rows:44},{key:"3m",label:"3か月",rows:66},{key:"6m",label:"6か月",rows:132},{key:"1y",label:"1年",rows:260},{key:"all",label:"全期間",rows:null}];
-const state={chart:"20d",table:"20d"};
+const state={chart:"6m",table:"20d"};
 const fmt=new Intl.NumberFormat("ja-JP");
 const el=(id)=>document.getElementById(id);
 const fdate=(v)=>v?v.replaceAll("-","/"):"データなし";
