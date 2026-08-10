@@ -11,6 +11,7 @@ on:
       - "scripts/enrich_gold_etf_flow.py"
       - "scripts/enrich_gold_cftc_history.py"
       - "scripts/postprocess_gold_supply_demand.py"
+      - "scripts/build_gold_supply_demand_archive.py"
       - "scripts/build_gold_supply_demand_sheet_csv.py"
       - "scripts/write_gold_supply_demand_to_sheets.py"
       - "scripts/requirements-gold-supply-demand.txt"
@@ -27,7 +28,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: update-gold-supply-demand-csv-v6-cftc-52w
+  group: update-gold-supply-demand-csv-v7-history-calendar
   cancel-in-progress: false
 
 jobs:
@@ -54,6 +55,7 @@ jobs:
           python -m py_compile scripts/enrich_gold_etf_flow.py
           python -m py_compile scripts/enrich_gold_cftc_history.py
           python -m py_compile scripts/postprocess_gold_supply_demand.py
+          python -m py_compile scripts/build_gold_supply_demand_archive.py
           python -m py_compile scripts/write_gold_supply_demand_to_sheets.py
           python -m py_compile scripts/build_gold_supply_demand_sheet_csv.py
 
@@ -69,6 +71,9 @@ jobs:
       - name: Normalize display statuses
         run: python scripts/postprocess_gold_supply_demand.py
 
+      - name: Archive complete gold supply-demand page snapshot
+        run: python scripts/build_gold_supply_demand_archive.py
+
       - name: Build Gold_Demand CSV
         run: python scripts/build_gold_supply_demand_sheet_csv.py
 
@@ -76,6 +81,7 @@ jobs:
         run: |
           python -m json.tool data/gold-supply-demand.json > /dev/null
           python -m json.tool data/gold-etf-flow-history.json > /dev/null
+          python -m json.tool data/gold-supply-demand-archive/index.json > /dev/null
           test -s data/gold-supply-demand-sheet.csv
           python - <<'PYCODE'
           import csv
@@ -97,22 +103,31 @@ jobs:
           for row in etf_history:
               if not row.get('asOfDate') or row.get('combinedChangeTonnes') is None:
                   raise SystemExit('ETF aligned history row is incomplete')
+          archive = json.loads(Path('data/gold-supply-demand-archive/index.json').read_text(encoding='utf-8'))
+          reports = archive.get('reports') or []
+          if not reports:
+              raise SystemExit('Gold supply-demand archive index must contain at least one report')
+          for report in reports:
+              file = report.get('file')
+              if not file or not (Path('data/gold-supply-demand-archive') / file).exists():
+                  raise SystemExit(f'Missing gold archive file: {file}')
           print('Gold_Demand CSV rows:', len(rows), 'columns:', len(rows[0]))
           print('CFTC history weeks:', len(history))
           print('ETF aligned history days:', len(etf_history))
           print('Global ETF status:', (etf.get('global') or {}).get('status'))
+          print('Gold archive reports:', len(reports), [r.get('date') for r in reports])
           PYCODE
 
-      - name: Commit gold data and sheet CSV
+      - name: Commit gold data, history archive and sheet CSV
         shell: bash
         run: |
-          if git diff --quiet -- data/gold-supply-demand.json data/gold-etf-flow-history.json data/gold-supply-demand-sheet.csv; then
-            echo "Gold supply-demand outputs are already up to date."
+          if git diff --quiet -- data/gold-supply-demand.json data/gold-etf-flow-history.json data/gold-supply-demand-sheet.csv data/gold-supply-demand-archive; then
+            echo "Gold supply-demand outputs and history archive are already up to date."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/gold-supply-demand.json data/gold-etf-flow-history.json data/gold-supply-demand-sheet.csv
-          git commit -m "Update gold supply-demand data and sheet CSV"
+          git add data/gold-supply-demand.json data/gold-etf-flow-history.json data/gold-supply-demand-sheet.csv data/gold-supply-demand-archive
+          git commit -m "Update gold supply-demand data, archive and sheet CSV"
           git pull --rebase
           git push
