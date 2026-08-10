@@ -56,7 +56,7 @@ async function install(){
   const etf=data.etf||{},aligned=Array.isArray(etf.historyDaily)?etf.historyDaily:[],gld=normalize(etf.gldHistory);
   if(aligned.length>=3||gld.length<2)return;
 
-  const apply=(range=10)=>{
+  const apply=(range=22)=>{
     const bar=document.querySelector('[data-etf-bar]');
     const cumulative=document.querySelector('[data-etf-cumulative]');
     if(!bar)return false;
@@ -76,11 +76,11 @@ async function install(){
   };
 
   let tries=0;
-  const timer=setInterval(()=>{tries+=1;if(apply(10)||tries>40)clearInterval(timer);},250);
+  const timer=setInterval(()=>{tries+=1;if(apply(22)||tries>40)clearInterval(timer);},250);
   document.addEventListener('click',ev=>{
     const btn=ev.target.closest&&ev.target.closest('[data-etf-range]');
     if(!btn)return;
-    const range=Number(btn.getAttribute('data-etf-range'))||10;
+    const range=Number(btn.getAttribute('data-etf-range'))||22;
     setTimeout(()=>apply(range),0);
   },true);
 }
