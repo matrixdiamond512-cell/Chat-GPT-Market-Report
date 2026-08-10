@@ -73,6 +73,11 @@
     return referencePromise;
   }
 
+  function hasReasonedUnavailable(value) {
+    const text = String(value || "").trim();
+    return /^取得不能（.+）$/.test(text) || /^未公表（.+）$/.test(text);
+  }
+
   function validate(report) {
     if (!enforce(report)) return { ready: true, enforced: false, reasons: [], rows: [] };
     const parsed = effectiveRows(report, rows(report));
@@ -87,12 +92,13 @@
       if (cells.some((cell) => !String(cell || "").trim())) reasons.push(`${row.label}: 5列の空欄あり`);
       if (BAD_MARKERS.some((marker) => joined.includes(marker))) reasons.push(`${row.label}: 行ずれ/パーサー異常`);
       if (row.value === "取得不能") reasons.push(`${row.label}: 理由のない取得不能`);
+      if (/取得不能|未公表/.test(row.value) && !hasReasonedUnavailable(row.value)) reasons.push(`${row.label}: 取得不能/未公表の理由なし`);
       if (!/取得不能|未公表/.test(row.value) && row.direction === "取得不能") reasons.push(`${row.label}: 値ありなのに方向感が取得不能`);
     });
     REQUIRED_SIX.forEach((label) => {
       const row = byLabel.get(label);
       if (!row) reasons.push(`${label}: 6市場必須行なし`);
-      else if (/取得不能|未公表/.test(row.value)) reasons.push(`${label}: 6市場必須値が利用不能`);
+      else if (/取得不能|未公表/.test(row.value) && !hasReasonedUnavailable(row.value)) reasons.push(`${label}: 6市場必須値の取得不能理由なし`);
     });
     return { ready: reasons.length === 0, enforced: true, reasons: [...new Set(reasons)], rows: parsed };
   }
