@@ -2,7 +2,7 @@
   "schemaVersion": "2.0.0",
   "pageTitle": "ゴールド需給分析",
   "subtitle": "COMEX先物・投機筋・ETF・中国/インド現物需要から総合判定",
-  "generatedAt": "2026-08-11T00:33:46+09:00",
+  "generatedAt": "2026-08-11T08:55:47+09:00",
   "comex": {
     "status": "stale",
     "asOfDate": "2026-08-06",
@@ -28,7 +28,7 @@
     "judgement": "投機筋の買い増加",
     "sourceName": "CFTC Disaggregated COT - Futures Only",
     "sourceUrl": "https://publicreporting.cftc.gov/Commitments-of-Traders/Disaggregated-Futures-Only/72hh-3qpy",
-    "fetchedAt": "2026-08-11T00:34:39+09:00",
+    "fetchedAt": "2026-08-11T08:56:33+09:00",
     "historyWeeks": [
       {
         "asOfDate": "2025-08-12",
@@ -608,7 +608,7 @@
     "managedMoneyLongChange": 4716,
     "managedMoneyShortChange": -6255,
     "goldPrice": 4095.4,
-    "historyFetchedAt": "2026-08-10T15:34:45+00:00"
+    "historyFetchedAt": "2026-08-10T23:56:36+00:00"
   },
   "etf": {
     "gld": {
@@ -618,16 +618,16 @@
       "changeTonnes": 2.8199999999999363,
       "sourceName": "SPDR Gold Shares Historical Archive",
       "sourceUrl": "https://www.spdrgoldshares.com/usa/gld/",
-      "fetchedAt": "2026-08-11T00:34:39+09:00"
+      "fetchedAt": "2026-08-11T08:56:33+09:00"
     },
     "iau": {
       "status": "verified",
-      "asOfDate": "2026-08-07",
-      "tonnes": 457.89,
-      "changeTonnes": -1.1200000000000045,
+      "asOfDate": "2026-08-10",
+      "tonnes": 456.84,
+      "changeTonnes": -1.0500000000000114,
       "sourceName": "iShares Gold Trust",
       "sourceUrl": "https://www.ishares.com/us/products/239561/ishares-gold-trust-fund",
-      "fetchedAt": "2026-08-11T00:34:40+09:00"
+      "fetchedAt": "2026-08-11T08:56:34+09:00"
     },
     "global": {
       "status": "verified",
@@ -640,7 +640,7 @@
       "frequency": "monthly",
       "sourceName": "World Gold Council Gold ETF Flows",
       "sourceUrl": "https://www.gold.org/goldhub/research/gold-etfs-holdings-and-flows/2026/08",
-      "fetchedAt": "2026-08-11T00:34:41+09:00",
+      "fetchedAt": "2026-08-11T08:56:36+09:00",
       "note": "WGC公式月次レポート本文から公開値を抽出。週次チャートがログイン必須の場合は月次公開値を使用。"
     },
     "gldHistory": [
@@ -1100,6 +1100,11 @@
         "asOfDate": "2026-08-07",
         "tonnes": 457.89,
         "changeTonnes": -1.1200000000000045
+      },
+      {
+        "asOfDate": "2026-08-10",
+        "tonnes": 456.84,
+        "changeTonnes": -1.0500000000000114
       }
     ],
     "historyDaily": [
@@ -1150,38 +1155,38 @@
   "environment": {
     "realYield10y": {
       "status": "verified",
-      "asOfDate": "2026-08-06",
-      "value": 2.43,
-      "change": 0.020000000000000018,
+      "asOfDate": "2026-08-07",
+      "value": 2.4,
+      "change": -0.03000000000000025,
       "sourceName": "FRED DFII10",
       "sourceUrl": "https://fred.stlouisfed.org/series/DFII10",
       "label": "米10年実質金利",
-      "fetchedAt": "2026-08-11T00:34:40+09:00"
+      "fetchedAt": "2026-08-11T08:56:35+09:00"
     },
     "dollarBroad": {
       "status": "verified",
-      "asOfDate": "2026-07-31",
-      "value": 119.7034,
-      "change": 0.028100000000009118,
+      "asOfDate": "2026-08-07",
+      "value": 119.0649,
+      "change": -0.44640000000001123,
       "sourceName": "FRED DTWEXBGS",
       "sourceUrl": "https://fred.stlouisfed.org/series/DTWEXBGS",
       "label": "米ドル実効指数（Broad）",
-      "fetchedAt": "2026-08-11T00:34:41+09:00"
+      "fetchedAt": "2026-08-11T08:56:35+09:00"
     },
     "usdjpy": {
       "status": "verified",
-      "asOfDateTime": "2026-08-08T05:59:57+09:00",
-      "value": 157.745,
-      "change": -0.6639965820312455,
-      "changePercent": -0.41916595418076685,
+      "asOfDateTime": "2026-08-11T08:54:37+09:00",
+      "value": 159.199,
+      "change": 1.3079935302734498,
+      "changePercent": 0.8284154743951389,
       "sourceName": "Yahoo Finance USD/JPY",
       "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/"
     }
   },
   "assessment": {
-    "shortTerm": "中立",
+    "shortTerm": "買い優勢",
     "structural": "買い需要あり（確認項目限定）",
-    "score": 50,
+    "score": 85,
     "components": [
       {
         "name": "CFTC",
@@ -1193,11 +1198,11 @@
       },
       {
         "name": "実質金利",
-        "score": -1.0
+        "score": 1.0
       },
       {
         "name": "ドル",
-        "score": -1.0
+        "score": 1.0
       }
     ]
   },
@@ -1206,10 +1211,10 @@
     "total": 7
   },
   "aiSummary": [
-    "金先物は前回比+0.00%です。COMEXの出来高・建玉は別の基準日で表示し、日付を合わせられた場合だけ価格×建玉判定を行います。",
+    "金先物は前回比-0.00%です。COMEXの出来高・建玉は別の基準日で表示し、日付を合わせられた場合だけ価格×建玉判定を行います。",
     "COMEXは2026-08-06の前回確認値を保持しています。出来高201,455枚、建玉389,008枚、建玉前日比-2,323枚です。今回取得に失敗した場合も推測値へ置き換えません。",
     "CFTC Managed Moneyのネットは130,766枚、前週比+10,971枚です。週次データとして短期需給に反映します。",
-    "主要金ETF保有量は GLD 1017.54t / IAU 457.89t。金融需要の実流入・流出を先物と分けて確認します。",
+    "主要金ETF保有量は GLD 1017.54t / IAU 456.84t。金融需要の実流入・流出を先物と分けて確認します。",
     "中国・インドの現物プレミアムはWGCの公開更新を確認できる場合だけ表示します。ログイン等で取得できない場合は前回値を捏造せず保留します。"
   ]
 }
