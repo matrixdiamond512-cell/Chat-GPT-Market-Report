@@ -208,17 +208,64 @@
   letter-spacing: 0;
 }
 
-.sd-kicker,
-.usd-kicker {
+/*
+ * Supply-demand drilldown pages use a different DOM structure from the rest
+ * of the portal. Normalize their visible heading hierarchy so they match the
+ * other pages: portal name first, page name second, description third.
+ */
+.usdjpy-page .usd-kicker,
+.gold-page .sd-kicker,
+.nikkei-page .sd-kicker,
+.arb-page .sd-kicker {
+  display: block !important;
+  width: auto !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  color: var(--site-text-on-navy) !important;
   font-size: 0 !important;
+  font-weight: 1000 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
 }
 
-.sd-kicker::after,
-.usd-kicker::after {
+.usdjpy-page .usd-kicker::after,
+.gold-page .sd-kicker::after,
+.nikkei-page .sd-kicker::after,
+.arb-page .sd-kicker::after {
   content: "マーケット分析ポータル";
+  display: block;
+  color: var(--site-text-on-navy) !important;
+  font-size: clamp(22px, 2.1vw, 30px) !important;
+  font-weight: 1000 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0 !important;
+}
+
+.usdjpy-page .usd-head h1,
+.gold-page .sd-title,
+.nikkei-page .sd-title,
+.arb-page .sd-title {
+  color: var(--site-text-soft) !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0 !important;
+  margin: 4px 0 0 !important;
+}
+
+.usdjpy-page .usd-head p,
+.gold-page .sd-theme,
+.nikkei-page .sd-theme,
+.arb-page .sd-theme {
+  color: var(--site-text-soft) !important;
   font-size: 12px !important;
-  font-weight: 800 !important;
-  line-height: 1.4;
+  font-weight: 700 !important;
+  line-height: 1.45 !important;
+  margin: 3px 0 0 !important;
+  opacity: 0.92;
 }
 
 @media (max-width: 760px) {
