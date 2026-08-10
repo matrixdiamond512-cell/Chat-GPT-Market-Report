@@ -16,6 +16,7 @@ on:
       - ".github/workflows/update-rates-bonds.yml"
       - "scripts/build_rates_bonds_json.py"
       - "scripts/build_rates_bonds_json_v2.py"
+      - "scripts/build_rates_bonds_archive.py"
       - "data/rates-bonds-trigger/**"
 
 permissions:
@@ -44,14 +45,16 @@ jobs:
         run: |
           python -m py_compile scripts/build_rates_bonds_json.py
           python -m py_compile scripts/build_rates_bonds_json_v2.py
+          python -m py_compile scripts/build_rates_bonds_archive.py
 
-      - name: Build rates and bonds JSON
-        run: python scripts/build_rates_bonds_json_v2.py
+      - name: Build rates and bonds JSON and archive
+        run: python scripts/build_rates_bonds_archive.py
 
       - name: Validate generated JSON
         run: |
           python -m json.tool data/rates-bonds.json > /dev/null
           python -m json.tool data/rates-bonds-history.json > /dev/null
+          python -m json.tool data/rates-bonds-archive/index.json > /dev/null
           python - <<'PY'
           import json
           from pathlib import Path
@@ -64,19 +67,34 @@ jobs:
           print("missing:", data.get("meta", {}).get("missingData"))
           if not rates:
               raise SystemExit("No confirmed rates were generated; keep the previous published JSON instead.")
+
+          archive_dir = Path("data/rates-bonds-archive")
+          index = json.loads((archive_dir / "index.json").read_text(encoding="utf-8"))
+          reports = index.get("reports") or []
+          if not reports:
+              raise SystemExit("Rates and bonds archive contains no reports.")
+          for report in reports:
+              path = archive_dir / report["file"]
+              if not path.exists():
+                  raise SystemExit(f"Missing archive file: {path}")
+              archived = json.loads(path.read_text(encoding="utf-8"))
+              if archived.get("pageId") != "rates-bonds":
+                  raise SystemExit(f"Invalid archive payload: {path}")
+          print("archive reports:", len(reports))
           PY
 
       - name: Commit verified page data
         shell: bash
         run: |
-          if git diff --quiet -- data/rates-bonds.json data/rates-bonds-history.json; then
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/rates-bonds.json data/rates-bonds-history.json data/rates-bonds-archive
+
+          if git diff --cached --quiet; then
             echo "Rates and bonds data is already up to date."
             exit 0
           fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/rates-bonds.json data/rates-bonds-history.json
-          git commit -m "Update rates and bonds data"
+          git commit -m "Update rates and bonds data and archive"
           git pull --rebase
           git push
