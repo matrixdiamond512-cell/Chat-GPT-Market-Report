@@ -1,0 +1,482 @@
+{
+  "schemaVersion": "1.0.0",
+  "pageId": "rates-bonds",
+  "pageTitle": "金利・債券市場分析",
+  "subtitle": "金利の動き、理由、需給、各市場への影響を一目で把握",
+  "generatedAt": "2026-08-04T03:23:00+09:00",
+  "meta": {
+    "page": "rates-bonds",
+    "asOfDate": null,
+    "asOfTime": null,
+    "updatedAt": null,
+    "status": "unavailable",
+    "sourceStatus": "実データ連携前",
+    "isStale": true,
+    "staleReason": "金利・債券市場データはまだ自動連携されていません。",
+    "missingData": [
+      "米国債利回り",
+      "日本国債利回り",
+      "ドイツ国債利回り",
+      "実質金利",
+      "期待インフレ率",
+      "ACMタームプレミアム",
+      "米国債入札結果",
+      "債券ETFフロー",
+      "CFTC米国債先物ポジション",
+      "政策織り込み"
+    ]
+  },
+  "summary": {
+    "headline": "金利・債券市場データは連携待ちです。",
+    "theme": "ページ構造とJSONスキーマを先に用意し、実データ連携後に金利の方向・理由・波及を表示します。",
+    "conclusion": "この初期データでは、市場判断を行いません。確認済みデータが入った項目だけを表示し、取得できない項目は理由を明示します。",
+    "consistency": "材料と値動きの整合性は、米国債利回り・実質金利・期待インフレ率・ドル・株式・金・BTCがそろってから判定します。"
+  },
+  "cards": [
+    {
+      "label": "米金利",
+      "direction": "取得不能",
+      "status": "unavailable",
+      "reason": "米2年・5年・10年・30年債利回りが未接続",
+      "asOf": null
+    },
+    {
+      "label": "日本金利",
+      "direction": "取得不能",
+      "status": "unavailable",
+      "reason": "日本2年・10年国債利回りが未接続",
+      "asOf": null
+    },
+    {
+      "label": "イールドカーブ",
+      "direction": "未判定",
+      "status": "unavailable",
+      "reason": "2年-10年、5年-30年、10年-30年スプレッドが未計算",
+      "asOf": null
+    },
+    {
+      "label": "債券市場リスク",
+      "direction": "未判定",
+      "status": "unavailable",
+      "reason": "入札結果・ETFフロー・CFTCポジションが未接続",
+      "asOf": null
+    }
+  ],
+  "rates": [
+    {
+      "name": "米2年債利回り",
+      "value": null,
+      "unit": "%",
+      "changeBp": null,
+      "weekChangeBp": null,
+      "direction": null,
+      "asOf": null,
+      "status": "unavailable",
+      "source": "U.S. Treasury / FRED DGS2",
+      "meaning": "金融政策見通しを確認",
+      "missingReason": "自動取得未実装"
+    },
+    {
+      "name": "米5年債利回り",
+      "value": null,
+      "unit": "%",
+      "changeBp": null,
+      "weekChangeBp": null,
+      "direction": null,
+      "asOf": null,
+      "status": "unavailable",
+      "source": "U.S. Treasury / FRED DGS5",
+      "meaning": "中期金利とカーブ計算に使用",
+      "missingReason": "自動取得未実装"
+    },
+    {
+      "name": "米10年債利回り",
+      "value": null,
+      "unit": "%",
+      "changeBp": null,
+      "weekChangeBp": null,
+      "direction": null,
+      "asOf": null,
+      "status": "unavailable",
+      "source": "U.S. Treasury / FRED DGS10",
+      "meaning": "市場全体の基準金利",
+      "missingReason": "自動取得未実装"
+    },
+    {
+      "name": "米30年債利回り",
+      "value": null,
+      "unit": "%",
+      "changeBp": null,
+      "weekChangeBp": null,
+      "direction": null,
+      "asOf": null,
+      "status": "unavailable",
+      "source": "U.S. Treasury / FRED DGS30",
+      "meaning": "財政・国債供給・長期インフレを確認",
+      "missingReason": "自動取得未実装"
+    },
+    {
+      "name": "米10年実質金利",
+      "value": null,
+      "unit": "%",
+      "changeBp": null,
+      "weekChangeBp": null,
+      "direction": null,
+      "asOf": null,
+      "status": "unavailable",
+      "source": "FRED DFII10",
+      "meaning": "金・高PER株・BTCへの影響を確認",
+      "missingReason": "自動取得未実装"
+    },
+    {
+      "name": "米10年期待インフレ率",
+      "value": null,
+      "unit": "%",
+      "changeBp": null,
+      "weekChangeBp": null,
+      "direction": null,
+      "asOf": null,
+      "status": "unavailable",
+      "source": "FRED T10YIE",
+      "meaning": "インフレ期待の変化を確認",
+      "missingReason": "自動取得未実装"
+    },
+    {
+      "name": "ACMタームプレミアム",
+      "value": null,
+      "unit": "%",
+      "changeBp": null,
+      "weekChangeBp": null,
+      "direction": null,
+      "asOf": null,
+      "status": "unavailable",
+      "source": "Federal Reserve Bank of New York ACM",
+      "meaning": "国債需給・長期リスクプレミアムの確認",
+      "missingReason": "公式系列の取得方法を実装前確認"
+    },
+    {
+      "name": "日本2年国債利回り",
+      "value": null,
+      "unit": "%",
+      "changeBp": null,
+      "weekChangeBp": null,
+      "direction": null,
+      "asOf": null,
+      "status": "unavailable",
+      "source": "財務省 / 日本相互証券等",
+      "meaning": "日銀政策織り込みを確認",
+      "missingReason": "取得元の安定性確認待ち"
+    },
+    {
+      "name": "日本10年国債利回り",
+      "value": null,
+      "unit": "%",
+      "changeBp": null,
+      "weekChangeBp": null,
+      "direction": null,
+      "asOf": null,
+      "status": "unavailable",
+      "source": "財務省 / 日本相互証券等",
+      "meaning": "円・銀行株・日経225への影響を確認",
+      "missingReason": "取得元の安定性確認待ち"
+    },
+    {
+      "name": "ドイツ10年国債利回り",
+      "value": null,
+      "unit": "%",
+      "changeBp": null,
+      "weekChangeBp": null,
+      "direction": null,
+      "asOf": null,
+      "status": "unavailable",
+      "source": "ECB / Bundesbank",
+      "meaning": "EUR/USDと欧州金利環境を確認",
+      "missingReason": "自動取得未実装"
+    }
+  ],
+  "decomposition": {
+    "formula": "米10年債利回り = 実質金利 + 期待インフレ率 + タームプレミアム",
+    "point": "公式系列が未接続のため、米10年債利回りの変化要因は未判定です。",
+    "status": "unavailable",
+    "factors": [
+      {
+        "name": "実質金利要因",
+        "value": null,
+        "unit": "bp",
+        "direction": null,
+        "status": "unavailable",
+        "interpretation": "FRED DFII10の連携後に判定"
+      },
+      {
+        "name": "インフレ期待要因",
+        "value": null,
+        "unit": "bp",
+        "direction": null,
+        "status": "unavailable",
+        "interpretation": "FRED T10YIEの連携後に判定"
+      },
+      {
+        "name": "タームプレミアム要因",
+        "value": null,
+        "unit": "bp",
+        "direction": null,
+        "status": "unavailable",
+        "interpretation": "公式ACM系列が取得できる場合のみ表示。残差では断定しない"
+      },
+      {
+        "name": "その他要因",
+        "value": null,
+        "unit": "",
+        "direction": null,
+        "status": "unavailable",
+        "interpretation": "国債供給、入札、財政懸念、経済指標を確認"
+      }
+    ]
+  },
+  "curve": {
+    "summary": "イールドカーブの判定には、同一時点の米2年・5年・10年・30年利回りが必要です。",
+    "status": "unavailable",
+    "rows": [
+      {
+        "spread": "2年－10年",
+        "value": null,
+        "changeBp": null,
+        "weekChangeBp": null,
+        "shape": "未判定",
+        "reading": "米10年－米2年を同一時点で計算",
+        "status": "unavailable"
+      },
+      {
+        "spread": "5年－30年",
+        "value": null,
+        "changeBp": null,
+        "weekChangeBp": null,
+        "shape": "未判定",
+        "reading": "米30年－米5年を同一時点で計算",
+        "status": "unavailable"
+      },
+      {
+        "spread": "10年－30年",
+        "value": null,
+        "changeBp": null,
+        "weekChangeBp": null,
+        "shape": "未判定",
+        "reading": "米30年－米10年を同一時点で計算",
+        "status": "unavailable"
+      }
+    ]
+  },
+  "supplyDemand": {
+    "summary": "米国債入札、債券ETFフロー、CFTC米国債先物ポジションは未接続です。週次データは基準日と公表日を分けて表示します。",
+    "items": [
+      {
+        "name": "米国債入札結果",
+        "value": null,
+        "status": "unavailable",
+        "source": "U.S. Treasury Auction Results",
+        "note": "対象年限、発行額、最高落札利回り、応札倍率を取得"
+      },
+      {
+        "name": "テール／ストップスルー",
+        "value": null,
+        "status": "unavailable",
+        "source": "計算",
+        "note": "入札前WI利回りの安定取得が必要"
+      },
+      {
+        "name": "間接入札者比率",
+        "value": null,
+        "status": "unavailable",
+        "source": "U.S. Treasury Auction Results",
+        "note": "海外需要そのものとは断定しない"
+      },
+      {
+        "name": "ディーラー引受比率",
+        "value": null,
+        "status": "unavailable",
+        "source": "U.S. Treasury Auction Results",
+        "note": "高比率は弱い最終需要の可能性"
+      },
+      {
+        "name": "債券ETFフロー",
+        "value": null,
+        "status": "unavailable",
+        "source": "ETF発行体 / 公開フローデータ",
+        "note": "価格変動と純資金フローを区別"
+      },
+      {
+        "name": "CFTC米国債先物ポジション",
+        "value": null,
+        "status": "unavailable",
+        "source": "CFTC COT",
+        "note": "基準日と公表日を保持"
+      }
+    ]
+  },
+  "policyExpectations": {
+    "summary": "政策織り込みは、無料で安定取得できる系列を確認してから表示します。",
+    "rows": [
+      {
+        "policy": "次回FOMC",
+        "value": null,
+        "change": null,
+        "status": "unavailable",
+        "source": "CME FedWatch / FF先物",
+        "note": "利用条件と取得安定性を確認"
+      },
+      {
+        "policy": "年末までの米政策織り込み",
+        "value": null,
+        "change": null,
+        "status": "unavailable",
+        "source": "CME FedWatch / FF先物",
+        "note": "利下げ・利上げ回数を取得または計算"
+      },
+      {
+        "policy": "日銀政策織り込み",
+        "value": null,
+        "change": null,
+        "status": "unavailable",
+        "source": "OIS・短期金利先物等",
+        "note": "公開無料データの制約を明示"
+      },
+      {
+        "policy": "ECB政策織り込み",
+        "value": null,
+        "change": null,
+        "status": "unavailable",
+        "source": "€STR/OIS・市場データ",
+        "note": "取得不能時は推測しない"
+      }
+    ]
+  },
+  "crossAssetImpact": [
+    {
+      "market": "株式",
+      "driver": "米10年債利回り",
+      "path": [
+        "割引率の変化",
+        "高PER株・グロース株の評価",
+        "Nasdaq・日経225への波及"
+      ],
+      "actualStatus": "未判定",
+      "status": "unavailable",
+      "note": "株価データと同時刻で照合後に整合性を判定"
+    },
+    {
+      "market": "USD/JPY・EUR/USD",
+      "driver": "米2年債利回り・日米金利差",
+      "path": [
+        "政策金利見通し",
+        "ドル指数・金利差",
+        "為替方向"
+      ],
+      "actualStatus": "未判定",
+      "status": "unavailable",
+      "note": "終値一覧と金利データがそろってから判定"
+    },
+    {
+      "market": "金",
+      "driver": "米10年実質金利",
+      "path": [
+        "保有コスト",
+        "ドルとの整合",
+        "XAU/USDの上値・下値圧力"
+      ],
+      "actualStatus": "未判定",
+      "status": "unavailable",
+      "note": "Gold_Demandと実質金利の連携後に判定"
+    },
+    {
+      "market": "BTCUSD",
+      "driver": "実質金利・リスク選好",
+      "path": [
+        "流動性期待",
+        "株式ボラティリティ",
+        "暗号資産への資金流入出"
+      ],
+      "actualStatus": "未判定",
+      "status": "unavailable",
+      "note": "BTC価格と株式・金利の同時刻データが必要"
+    },
+    {
+      "market": "債券価格",
+      "driver": "名目金利・入札需給",
+      "path": [
+        "金利上昇",
+        "債券価格下落",
+        "ボラティリティ上昇"
+      ],
+      "actualStatus": "未判定",
+      "status": "unavailable",
+      "note": "入札結果と利回り変化を照合"
+    }
+  ],
+  "leadingRate": {
+    "name": "取得不能",
+    "status": "unavailable",
+    "reason": "米2年・10年・30年、日本10年、実質金利、期待インフレ率の変化幅が未接続",
+    "changeFromPrevious": "未判定",
+    "switchCondition": "各年限の変化幅、材料、他市場反応がそろった時点で判定"
+  },
+  "scenarios": {
+    "main": {
+      "title": "メインシナリオ",
+      "body": "実データ連携後、確認済みの金利方向と市場反応に基づいて表示します。",
+      "status": "unavailable"
+    },
+    "alternative": {
+      "title": "代替シナリオ",
+      "body": "金利低下・上昇の主因が変わる場合の波及を、確認済みデータだけで表示します。",
+      "status": "unavailable"
+    },
+    "breakConditions": [
+      "米2年債利回りの急変",
+      "米10年債利回りのレンジ逸脱",
+      "米30年債主導のスティープ化",
+      "日本10年国債利回りの急変",
+      "実質金利と金価格の連動崩れ",
+      "金利低下にもかかわらず株式が反発しない"
+    ],
+    "watchPoints": [
+      "次回FOMCの政策織り込み",
+      "米国債入札結果",
+      "実質金利と期待インフレ率",
+      "日米金利差とUSD/JPY",
+      "金利変化と株式・金・BTCの整合性"
+    ]
+  },
+  "sources": [
+    {
+      "name": "U.S. Treasury / FRED",
+      "status": "planned",
+      "note": "米国債利回り、実質金利、期待インフレ率の取得候補"
+    },
+    {
+      "name": "Federal Reserve Bank of New York ACM",
+      "status": "planned",
+      "note": "タームプレミアムは公式系列が取得できる場合のみ使用"
+    },
+    {
+      "name": "U.S. Treasury Auction Results",
+      "status": "planned",
+      "note": "米国債入札結果、応札倍率、間接入札者比率、ディーラー引受比率"
+    },
+    {
+      "name": "CFTC COT",
+      "status": "planned",
+      "note": "米国債先物ポジション。週次データとして基準日と公表日を区別"
+    },
+    {
+      "name": "WEBマーケットレポート データ連携設計表 Rates_Bonds_SourceMap",
+      "status": "confirmed",
+      "note": "取得先・計算方法・更新頻度・注意点の正本"
+    }
+  ],
+  "errors": [
+    {
+      "level": "info",
+      "message": "初期テンプレートのため、実市場データはまだありません。"
+    }
+  ]
+}
