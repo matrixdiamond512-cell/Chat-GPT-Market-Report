@@ -36,23 +36,24 @@ async function getBundle(){
   bundlePromise=(async()=>{const entry=await getEntry();if(!entry)throw new Error('保存済みUSD/JPY需給分析がありません');return jsonFetch(`${ARCHIVE_BASE}${entry.file}`)})();
   return bundlePromise;
 }
-function pathnameOf(input){
-  try{const raw=input instanceof Request?input.url:String(input);return new URL(raw,location.href).pathname}catch{return''}
-}
+function urlOf(input){try{return new URL(input instanceof Request?input.url:String(input),location.href)}catch{return null}}
 function archivedKey(pathname){for(const [suffix,key] of localMap){if(pathname.endsWith(suffix))return key}return null}
 
 if(requestedDate){
   window.__USDJPY_HISTORY_MODE__=true;
   window.fetch=async function(input,init){
-    const path=pathnameOf(input);
-    const key=archivedKey(path);
+    const u=urlOf(input);
+    const key=archivedKey(u?.pathname||'');
     if(key){
       const bundle=await getBundle();
       const value=bundle?.[key];
       if(value===undefined)return new Response(JSON.stringify({}),{status:200,headers:{'Content-Type':'application/json'}});
       return new Response(JSON.stringify(value),{status:200,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
     }
-    if(/publicreporting\.cftc\.gov\/resource\/6dca-aqww\.json/.test(path)||/query1\.finance\.yahoo\.com\/v8\/finance\/chart\/USDJPY/.test(path)){
+    if(u&&(
+      (u.hostname==='publicreporting.cftc.gov'&&u.pathname.includes('/resource/6dca-aqww.json'))||
+      (u.hostname==='query1.finance.yahoo.com'&&u.pathname.includes('/v8/finance/chart/USDJPY'))
+    )){
       return Promise.reject(new Error('過去表示では保存済みCFTC・USD/JPY履歴を使用します'));
     }
     return originalFetch(input,init);
