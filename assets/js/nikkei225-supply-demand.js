@@ -2,6 +2,7 @@
 'use strict';
 const root=document.querySelector('[data-nikkei-dashboard]');if(!root)return;
 const DATA_URL='data/nikkei225-supply-demand.json';
+const ARBITRAGE_URL='data/nikkei225-arbitrage.json';
 const MARKET_URL='data/market/latest.json';
 const STOCKS_URL='data/stocks.json';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -21,11 +22,58 @@ function parseFirstNumber(v){if(v===null||v===undefined)return null;const m=Stri
 function futureInterpret(priceChange,oiChange){if(num(priceChange)===null||num(oiChange)===null)return{label:'建玉データ待ち',index:-1,bias:'neutral'};if(priceChange>0&&oiChange>0)return{label:'価格上昇＋建玉増加 → 新規ロング流入の可能性',index:0,bias:'buy'};if(priceChange>0&&oiChange<0)return{label:'価格上昇＋建玉減少 → ショートカバーの可能性',index:1,bias:'buy'};if(priceChange<0&&oiChange>0)return{label:'価格下落＋建玉増加 → 新規ショート流入の可能性',index:2,bias:'sell'};if(priceChange<0&&oiChange<0)return{label:'価格下落＋建玉減少 → ロング手仕舞いの可能性',index:3,bias:'sell'};return{label:'価格または建玉の変化が小さく方向判定は中立',index:-1,bias:'neutral'};}
 function summaryClass(text){if(/強気|買い優勢|買い/.test(text||''))return'nikkei-status-good';if(/弱い|売り優勢|売り/.test(text||''))return'nikkei-status-bad';if(/警戒/.test(text||''))return'nikkei-status-warn';if(/中立/.test(text||''))return'nikkei-status-purple';return'';}
 function rankRows(items,side){const rows=(items||[]).slice(0,3);if(!rows.length)return'<div class="nikkei-rank-row"><span>—</span><span class="nikkei-empty">取得待ち</span><span>—</span></div>';return rows.map((x,i)=>`<div class="nikkei-rank-row"><span>${i+1}位</span><span>${esc(x.name||'—')}</span><b>${num(x.volume)===null?'—':fmt(x.volume,0)+'枚'}</b></div>`).join('');}
-function render(d,market,stocks){
+function percentile(values,p){const xs=values.filter(v=>Number.isFinite(v)).sort((a,b)=>a-b);if(!xs.length)return null;const i=(xs.length-1)*p;const lo=Math.floor(i),hi=Math.ceil(i);return lo===hi?xs[lo]:xs[lo]+(xs[hi]-xs[lo])*(i-lo);}
+function arbitrageAnalysis(arb,detail){
+ const buy=num(arb.buyBalance),sell=num(arb.sellBalance),buyChange=num(arb.buyChange),sellChange=num(arb.sellChange);
+ const balancesReady=buy!==null&&sell!==null;
+ const changesReady=buyChange!==null&&sellChange!==null;
+ const net=balancesReady?buy-sell:null;
+ const netChange=changesReady?buyChange-sellChange:null;
+ const previousBuy=buy!==null&&buyChange!==null?buy-buyChange:null;
+ const previousSell=sell!==null&&sellChange!==null?sell-sellChange:null;
+ const previousNet=previousBuy!==null&&previousSell!==null?previousBuy-previousSell:null;
+ const rows=(Array.isArray(detail?.history)?detail.history:[]).map(x=>({date:String(x.date||'').slice(0,10),buy:num(x.buyBalance),sell:num(x.sellBalance),price:num(x.nikkei225Close)})).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x.date)&&x.buy!==null&&x.sell!==null).map(x=>({...x,net:x.buy-x.sell})).sort((a,b)=>a.date.localeCompare(b.date));
+ const unique=rows.filter((x,i)=>i===rows.length-1||x.date!==rows[i+1].date);
+ const latestDate=String(arb.asOfDate||'').slice(0,10);
+ const throughLatest=unique.filter(x=>!latestDate||x.date<=latestDate).slice(-260);
+ const spanDays=throughLatest.length>1?(new Date(throughLatest.at(-1).date)-new Date(throughLatest[0].date))/86400000:0;
+ const historyReady=throughLatest.length>=13&&spanDays>=84;
+ const nets=throughLatest.map(x=>x.net);
+ const netChanges=throughLatest.slice(1).map((x,i)=>x.net-throughLatest[i].net);
+ const q75=historyReady?percentile(nets,.75):null;
+ const q90=historyReady?percentile(nets,.90):null;
+ const quiet=historyReady?percentile(netChanges.map(Math.abs),.25):null;
+ const latestIndex=throughLatest.length-1;
+ const oneWeek=latestIndex>=5?throughLatest[latestIndex].net-throughLatest[latestIndex-5].net:null;
+ const fourWeeks=latestIndex>=20?throughLatest[latestIndex].net-throughLatest[latestIndex-20].net:null;
+ const recentChanges=netChanges.slice(-3);
+ const risingStreak=recentChanges.length===3&&recentChanges.every(v=>v>0);
+ let status='中立';
+ if(!balancesReady||!changesReady)status='判定不能（データ不足）';
+ else if(net<0)status='売り残優勢';
+ else if(!historyReady)status='中立';
+ else if(net>=q75&&netChange<0)status='解消進行';
+ else if(net>=q90&&netChange>0&&(risingStreak||(oneWeek>0&&fourWeeks>0)))status='過熱';
+ else if(net>=q75&&netChange>0)status='やや過熱';
+ const latest=throughLatest.at(-1),previous=throughLatest.at(-2);
+ const priceChange=latest&&previous&&latest.date===latestDate&&latest.price!==null&&previous.price!==null?latest.price-previous.price:null;
+ let interpretation='裁定残の変化は小さく、現時点では裁定需給による大きな偏りは確認されません。';
+ if(status==='判定不能（データ不足）')interpretation='裁定需給の判定に必要なデータが不足しています。欠損値は推測で補完していません。';
+ else if(status==='売り残優勢')interpretation='裁定売り残が買い残を上回っています。売り残の解消方向を含め、次回公表値を確認します。';
+ else if(status==='解消進行')interpretation=priceChange!==null&&priceChange<0?'株価調整とともにネット裁定残が減少。裁定解消が進み、需給の重さは低下方向です。':'高水準のネット裁定残が減少に転じ、裁定解消が進んでいます。需給の重さは低下方向です。';
+ else if(status==='過熱'||status==='やや過熱')interpretation=priceChange!==null&&priceChange>0?'日経225上昇と同時にネット裁定残も増加。上昇継続の一方、裁定ポジションの積み上がりに注意。':'ネット裁定残が高水準で増加しています。方向を弱気と断定せず、積み上がりの継続に注意します。';
+ else if(netChange!==null&&quiet!==null&&Math.abs(netChange)>quiet)interpretation=netChange>0?'ネット裁定残は前回から増加していますが、現時点では過熱を示す条件はそろっていません。':'ネット裁定残は前回から減少し、裁定ポジションは解消方向です。';
+ return{buy,sell,buyChange,sellChange,net,netChange,previousNet,oneWeek,fourWeeks,status,interpretation};
+}
+function arbStatusClass(status){if(status==='過熱')return'is-hot';if(status==='やや過熱')return'is-warm';if(status==='解消進行')return'is-unwinding';if(status==='売り残優勢')return'is-sell';return'is-neutral';}
+function arbValue(v){return num(v)===null?'<span class="nikkei-empty">取得不能（データ未取得）</span>':`${fmt(v,0)}千株`;}
+function arbChange(v){if(num(v)===null)return'<span class="nikkei-empty">取得不能（前回値未取得）</span>';const arrow=v>0?'↑':v<0?'↓':'→';return`<span class="${cls(v)}">${esc(signed(v,0,'千株'))} ${arrow}</span>`;}
+function render(d,market,stocks,arbDetail){
  const fut=market?.markets?.nikkei225_futures_ose||{};
  const futures=d.futures||{};
  const sessions=d.sessions||{};
  const arb=d.arbitrage||{};
+ const arbView=arbitrageAnalysis(arb,arbDetail);
  const opt=d.options||{};
  const part=d.participantFlow||{};
  const foreign=d.foreignInvestors||{};
@@ -59,7 +107,7 @@ function render(d,market,stocks){
  <section class="nikkei-overview" aria-label="需給サマリー">
   <article class="nikkei-card nikkei-total"><div class="nikkei-total-kicker">総合需給判定</div><div class="nikkei-total-value ${overallBias}">${esc(overall)}</div><div class="nikkei-total-reason">${esc(overallReason)}</div></article>
   <article class="nikkei-card nikkei-summary">${freq('日次','daily')}<div class="nikkei-summary-label">短期先物需給</div><div class="nikkei-summary-value ${summaryClass(shortTerm)}">${esc(shortTerm)}</div><div class="nikkei-summary-sub">価格×建玉で新規買い・買い戻しを区別</div></article>
-  <article class="nikkei-card nikkei-summary">${freq('前々営業日','delayed')}<div class="nikkei-summary-label">裁定需給</div><div class="nikkei-summary-value ${summaryClass(assess.arbitrage)}">${esc(assess.arbitrage||'判定待ち')}</div><div class="nikkei-summary-sub">買い残・売り残の増減を確認</div></article>
+  <article class="nikkei-card nikkei-summary">${freq('前々営業日','delayed')}<div class="nikkei-summary-label">裁定需給</div><div class="nikkei-summary-value arbitrage-summary-status ${arbStatusClass(arbView.status)}">${esc(arbView.status)}</div><div class="nikkei-summary-sub">ネット残と直近の増減を複合判定</div></article>
   <article class="nikkei-card nikkei-summary">${freq('日次','daily')}<div class="nikkei-summary-label">オプション需給</div><div class="nikkei-summary-value ${summaryClass(assess.options)}">${esc(assess.options||'判定待ち')}</div><div class="nikkei-summary-sub">Put/Call・IV・SQ接近を分離評価</div></article>
   <article class="nikkei-card nikkei-summary">${freq('週次','weekly')}<div class="nikkei-summary-label">海外投資家</div><div class="nikkei-summary-value ${summaryClass(assess.foreign)}">${esc(assess.foreign||'判定待ち')}</div><div class="nikkei-summary-sub">現物・日経225先物・TOPIX先物を併読</div></article>
  </section>
@@ -83,10 +131,13 @@ function render(d,market,stocks){
    <div class="nikkei-basis-item"><div class="nikkei-basis-label">日経225先物（期近）</div><div class="nikkei-basis-value">${value(price,'',0)}</div><div class="nikkei-note">基準日 ${esc(dateOnly(futDate))}</div></div>
    <div class="nikkei-basis-item"><div class="nikkei-basis-label">単純ベーシス</div><div class="nikkei-basis-value ${cls(basis)}">${num(basis)===null?'—':esc(signed(basis,2,'円'))}</div><div class="nikkei-note">${esc(basisReady?(basis>0?'先物プレミアム':'先物ディスカウント'):'基準日不一致')}</div></div>
    </div><div class="nikkei-note">${esc(basisNote)}</div></div></article>
-  <article class="nikkei-card nikkei-span-7"><div class="nikkei-section-head"><h2 class="nikkei-section-title">裁定取引</h2>${freq('前々営業日','delayed')}</div><div class="nikkei-section-body"><div class="nikkei-table-scroll"><table class="nikkei-table"><thead><tr><th>項目</th><th>残高</th><th>前回比</th></tr></thead><tbody>
-    <tr><td>裁定買い残</td><td class="num">${value(arb.buyBalance,'千株',0)}</td><td class="num">${change(arb.buyChange,'千株',0)}</td></tr>
-    <tr><td>裁定売り残</td><td class="num">${value(arb.sellBalance,'千株',0)}</td><td class="num">${change(arb.sellChange,'千株',0)}</td></tr>
-   </tbody></table></div><div class="nikkei-callout">対象データ：${esc(dateOnly(arb.asOfDate))}。${esc(arb.comment||'裁定買い残の増減から、先物高が現物買いへ波及しているかを確認します。')}</div>${source(arb)}</div></article>
+  <article class="nikkei-card nikkei-span-7 arbitrage-summary-card"><div class="nikkei-section-head"><h2 class="nikkei-section-title">裁定取引</h2>${freq('前々営業日','delayed')}</div><div class="nikkei-section-body">
+   <div class="arbitrage-summary-head"><div><div class="arbitrage-summary-kicker">ネット裁定残</div><div class="arbitrage-summary-net">${arbValue(arbView.net)}</div><div class="arbitrage-summary-previous">前回 ${arbValue(arbView.previousNet)} / ${arbChange(arbView.netChange)}</div></div><div class="arbitrage-summary-badge ${arbStatusClass(arbView.status)}"><span>裁定需給</span><strong>${esc(arbView.status)}</strong></div></div>
+   <div class="arbitrage-summary-balances"><div><span>裁定買い残</span><strong>${arbValue(arbView.buy)}</strong><small>前回比 ${arbChange(arbView.buyChange)}</small></div><div><span>裁定売り残</span><strong>${arbValue(arbView.sell)}</strong><small>前回比 ${arbChange(arbView.sellChange)}</small></div></div>
+   <div class="arbitrage-summary-interpretation">${esc(arbView.interpretation)}</div>
+   <div class="arbitrage-summary-meta"><span>基準日：${esc(arb.asOfDate?String(arb.asOfDate).slice(0,10):'取得不能（基準日未取得）')}</span>${arb.fetchedAt?`<span>更新：${esc(dtText(arb.fetchedAt))}</span>`:''}</div>
+   <a class="arbitrage-summary-link" href="nikkei225-arbitrage.html">詳しく見る <span aria-hidden="true">→</span> 裁定取引分析</a>${source(arb)}
+  </div></article>
   <article class="nikkei-card nikkei-span-5"><div class="nikkei-section-head"><h2 class="nikkei-section-title">オプション・SQ需給</h2>${freq('日次','daily')}</div><div class="nikkei-section-body"><div class="nikkei-mini-grid">
    <div class="nikkei-mini-card"><div class="nikkei-mini-label">次回SQ</div><div class="nikkei-mini-value">${esc(opt.nextSqDate?dateOnly(opt.nextSqDate):'取得待ち')}</div><div class="nikkei-note">${num(opt.businessDaysToSq)===null?'営業日数待ち':`あと ${fmt(opt.businessDaysToSq,0)} 営業日`}</div></div>
    <div class="nikkei-mini-card"><div class="nikkei-mini-label">Put / Call</div><div class="nikkei-mini-value">${num(opt.putCallRatio)===null?'取得待ち':fmt(opt.putCallRatio,2)}</div><div class="nikkei-note">出来高または建玉の定義を明示</div></div>
@@ -112,6 +163,6 @@ function render(d,market,stocks){
  </div></article>
  <div class="nikkei-footer-note">日次・前々営業日・週次データを同じ鮮度として扱いません。取得できない項目は推測値で埋めず「取得待ち」と表示します。</div>`;
 }
-async function load(){root.innerHTML='<section class="nikkei-loading">日経225需給データを読み込み中です。</section>';try{const [dr,mr,sr]=await Promise.allSettled([fetch(DATA_URL,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('specialized '+r.status);return r.json()}),fetch(MARKET_URL,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('market '+r.status);return r.json()}),fetch(STOCKS_URL,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('stocks '+r.status);return r.json()})]);const d=dr.status==='fulfilled'?dr.value:{};const m=mr.status==='fulfilled'?mr.value:{};const s=sr.status==='fulfilled'?sr.value:{};render(d,m,s)}catch(err){root.innerHTML=`<section class="nikkei-error"><b>日経225需給ページの読み込みに失敗しました。</b><div>${esc(err.message||err)}</div></section>`}}
+async function load(){root.innerHTML='<section class="nikkei-loading">日経225需給データを読み込み中です。</section>';try{const [dr,mr,sr,ar]=await Promise.allSettled([fetch(DATA_URL,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('specialized '+r.status);return r.json()}),fetch(MARKET_URL,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('market '+r.status);return r.json()}),fetch(STOCKS_URL,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('stocks '+r.status);return r.json()}),fetch(ARBITRAGE_URL,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('arbitrage '+r.status);return r.json()})]);const d=dr.status==='fulfilled'?dr.value:{};const m=mr.status==='fulfilled'?mr.value:{};const s=sr.status==='fulfilled'?sr.value:{};const a=ar.status==='fulfilled'?ar.value:{};render(d,m,s,a)}catch(err){root.innerHTML=`<section class="nikkei-error"><b>日経225需給ページの読み込みに失敗しました。</b><div>${esc(err.message||err)}</div></section>`}}
 document.querySelector('[data-reload]')?.addEventListener('click',load);load();
 })();
