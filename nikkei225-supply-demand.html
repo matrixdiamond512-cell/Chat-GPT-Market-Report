@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="assets/css/nikkei225-options-polish.css?v=20260810-01">
 <link rel="stylesheet" href="assets/css/nikkei225-options-live.css?v=20260810-01">
 <link rel="stylesheet" href="assets/css/site-common.css?v=20260804-ui1">
+<link rel="stylesheet" href="assets/css/rates-bonds-history.css?v=20260810-nikkei-history1">
 </head>
 <body class="nikkei-page">
 <header class="sd-head">
@@ -46,9 +47,20 @@
   <a href="nikkei225-supply-demand.html" aria-current="page">日経225需給</a>
   <a href="nikkei225-arbitrage.html">裁定取引</a>
 </nav>
+
+<section class="rb-history-shell" data-nikkei-history aria-label="日経225需給分析の過去レポート選択" aria-busy="true">
+  <div class="rb-history-control">
+    <button class="rb-date-nav" type="button" id="nikkeiHistoryPrev" aria-label="前の保存レポート">‹</button>
+    <input class="rb-date-input" type="date" id="nikkeiHistoryDate" aria-label="表示するレポート日">
+    <button class="rb-date-nav" type="button" id="nikkeiHistoryNext" aria-label="次の保存レポート">›</button>
+  </div>
+  <p class="rb-history-status" id="nikkeiHistoryStatus">過去レポート一覧を読み込み中です。</p>
+</section>
+
 <main class="nikkei-dashboard" data-nikkei-dashboard>
   <section class="nikkei-loading">日経225需給データを読み込み中です。</section>
 </main>
+<script src="assets/js/nikkei225-supply-demand-history.js?v=20260810-nikkei-history1"></script>
 <script src="assets/js/nikkei225-options-data-overlay.js?v=20260810-01"></script>
 <script src="assets/js/nikkei225-supply-demand.js?v=20260810-06"></script>
 <script src="assets/js/nikkei225-session-display.js?v=20260810-01"></script>
@@ -64,4 +76,3 @@
 <script src="assets/js/site-common.js?v=20260804-ui1"></script>
 </body>
 </html>
-
