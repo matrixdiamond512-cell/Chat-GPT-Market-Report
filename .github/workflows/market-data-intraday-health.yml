@@ -72,4 +72,5 @@ jobs:
             --slot "${{ steps.window.outputs.slot }}" \
             --times "${{ steps.window.outputs.times }}" \
             --trigger-source "intraday_health_check" \
-            --max-catchup-minutes 120
+            --max-catchup-minutes 120 \
+            --recover-expired

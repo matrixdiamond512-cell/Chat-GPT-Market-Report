@@ -102,7 +102,18 @@ def completed_times(path: Path, slot: str) -> set[str]:
         str(item.get("scheduledTime"))
         for item in read_audit(path)
         if item.get("reportSlot") == slot and item.get("outcome") in {"verified", "degraded"}
+        and not item.get("recoveryAfterExpiry")
     }
+
+
+def snapshot_is_current(payload: dict[str, Any], slot: str, day: dt.date) -> bool:
+    """Return whether GitHub already exposes a usable snapshot for this slot/day."""
+    generated = str(payload.get("generatedAt") or "")
+    return bool(
+        payload.get("reportSlot") == slot
+        and generated[:10] == day.isoformat()
+        and payload.get("overallStatus") in {"verified", "degraded"}
+    )
 
 
 def append_audit(path: Path, record: dict[str, Any]) -> None:
@@ -169,6 +180,7 @@ def perform_attempt(
     audit: Path,
     mode: str,
     late_minutes: float,
+    recovery_after_expiry: bool = False,
 ) -> dict[str, Any]:
     started = now_jst()
     os.environ["ACQUISITION_TRIGGER_SOURCE"] = trigger_source
@@ -209,6 +221,7 @@ def perform_attempt(
         "startedAt": iso(started),
         "completedAt": iso(completed),
         "lateMinutes": round(max(0.0, late_minutes), 1),
+        "recoveryAfterExpiry": recovery_after_expiry,
         "outcome": status,
         "missingRequired": payload.get("missingRequired") or [],
         "fallbackCount": payload.get("fallbackCount", 0),
@@ -262,6 +275,14 @@ def main() -> int:
     parser.add_argument("--trigger-source", default=os.environ.get("ACQUISITION_TRIGGER_SOURCE", "window"))
     parser.add_argument("--max-catchup-minutes", type=int, default=30)
     parser.add_argument("--mode", choices=("auto", "full"), default="auto")
+    parser.add_argument(
+        "--recover-expired",
+        action="store_true",
+        help=(
+            "After recording expired scheduled attempts, fetch one explicitly late "
+            "recovery snapshot when this slot/day still has no usable data."
+        ),
+    )
     args = parser.parse_args()
 
     run(["git", "config", "user.name", "github-actions[bot]"])
@@ -309,9 +330,38 @@ def main() -> int:
             # A multi-time manual/recovery window may continue to a later attempt.
             time.sleep(10)
 
+    recovery_record: dict[str, Any] | None = None
+    current_payload = load_json(ROOT / "data" / "market" / "latest.json", {})
+    if args.recover_expired and not snapshot_is_current(current_payload, args.slot, day):
+        recovery_time = args.times[-1]
+        recovery_lateness = max(
+            0.0,
+            (now_jst() - target_datetime(day, recovery_time)).total_seconds() / 60.0,
+        )
+        print(
+            f"Running explicit late recovery for {args.slot}; "
+            f"scheduled attempts remain expired ({recovery_lateness:.1f} minutes late).",
+            flush=True,
+        )
+        try:
+            recovery_record = perform_attempt(
+                args.slot,
+                day,
+                recovery_time,
+                args.trigger_source,
+                audit,
+                "full",
+                recovery_lateness,
+                recovery_after_expiry=True,
+            )
+        except Exception as exc:
+            print(f"Late recovery failed: {exc}", file=sys.stderr, flush=True)
+
     git_sync()
     final_done = completed_times(audit, args.slot)
     missing = [item for item in args.times if item not in final_done]
+    final_payload = load_json(ROOT / "data" / "market" / "latest.json", {})
+    current_snapshot_ready = snapshot_is_current(final_payload, args.slot, day)
     summary = {
         "date": day.isoformat(),
         "reportSlot": args.slot,
@@ -320,10 +370,12 @@ def main() -> int:
         "missingTimes": missing,
         "triggerSource": args.trigger_source,
         "mode": args.mode,
+        "recoveryAfterExpiry": recovery_record,
+        "currentSnapshotReady": current_snapshot_ready,
         "sheetsSyncMode": "pull_importdata",
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2), flush=True)
-    return 1 if missing else 0
+    return 1 if missing and not current_snapshot_ready else 0
 
 
 if __name__ == "__main__":
