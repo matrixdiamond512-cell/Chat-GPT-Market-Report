@@ -3,9 +3,10 @@ name: 08:00 market data final readiness check
 on:
   workflow_dispatch:
   schedule:
-    # Start two minutes before the final 07:55 JST validation point. The job
-    # waits until 07:55, forces a fresh acquisition, and writes a machine-readable
-    # readiness result before the 08:00 report can be considered data-ready.
+    # Start two minutes before the final 07:55 JST validation point. GitHub cron
+    # may start substantially late; the recovery run is still executed instead
+    # of being discarded. The readiness gate then decides whether the resulting
+    # data is fresh enough to publish.
     - cron: "53 22 * * 0-5"
 
 permissions:
@@ -51,7 +52,7 @@ jobs:
             --slot "08:00" \
             --times "07:55" \
             --trigger-source "final_readiness" \
-            --max-catchup-minutes 10 \
+            --max-catchup-minutes 120 \
             --mode full
 
       - name: Recover CME/OSE morning reference
@@ -96,7 +97,7 @@ jobs:
           fi
 
           if [ "$CODE" -ne 0 ]; then
-            echo "08:00 report data is NOT ready. Report generation must not label current verified GitHub values as unavailable."
+            echo "08:00 report data is NOT ready. Publication must stay blocked until current verified data exists."
             exit "$CODE"
           fi
           echo "08:00 report data readiness verified."
