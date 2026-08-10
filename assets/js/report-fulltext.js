@@ -356,11 +356,37 @@ function render() {
 
 async function init() {
   try {
-    const response = await fetch(`reports.json?ts=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) throw new Error(`reports.json HTTP ${response.status}`);
-    const payload = await response.json();
-    const list = Array.isArray(payload) ? payload : asArray(payload.reports);
-    reports = sortReports(list);
+      const [archiveResult, dashboardResult] = await Promise.allSettled([
+        fetch(`reports.json?ts=${Date.now()}`, { cache: "no-store" }).then(async (response) => {
+          if (!response.ok) throw new Error(`reports.json HTTP ${response.status}`);
+          return response.json();
+        }),
+        fetch(`data/dashboard.json?ts=${Date.now()}`, { cache: "no-store" }).then(async (response) => {
+          if (!response.ok) throw new Error(`data/dashboard.json HTTP ${response.status}`);
+          return response.json();
+        })
+      ]);
+
+      const archive = archiveResult.status === "fulfilled" ? archiveResult.value : null;
+      const dashboard = dashboardResult.status === "fulfilled" ? dashboardResult.value : null;
+      const archiveReports = Array.isArray(archive) ? archive : asArray(archive?.reports);
+      const dashboardReports = Array.isArray(dashboard?.reports)
+        ? dashboard.reports
+        : asArray(dashboard?.latestReport || dashboard?.currentReport);
+      const reportsByKey = new Map();
+
+      archiveReports.forEach((report) => reportsByKey.set(reportKey(report), report));
+      dashboardReports.forEach((report) => {
+        const key = reportKey(report);
+        const archiveReport = reportsByKey.get(key) || {};
+        reportsByKey.set(key, {
+          ...archiveReport,
+          ...report,
+          fullText: report.fullText || archiveReport.fullText || ""
+        });
+      });
+
+    reports = sortReports([...reportsByKey.values()]);
     if (!reports.length) throw new Error("reports.jsonに表示できる本文データがありません");
 
     const params = new URLSearchParams(location.search);
