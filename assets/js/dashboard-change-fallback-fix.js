@@ -2,7 +2,7 @@
   "use strict";
 
   const INTERNAL_MISSING_RE = /JSONにありません|前回からの変化[^。\n]*(?:ありません|取得不能)/;
-  const CHANGE_HEADING_RE = /^\s*(?:【\s*)?(?:\d{1,2}\s*[.．、)]\s*)?前回から(?:の)?(?:変化|市場解釈の変化)(?:\s*】)?\s*$/;
+  const CHANGE_HEADING_RE = /^\s*(?:【\s*)?(?:\d{1,2}\s*[.．、)]\s*)?(?:(?:(?:前回|\d{1,2}:\d{2}|朝|午前|午後)から(?:の)?(?:変化|市場解釈の変化|何が変わったか))|前回比)(?:\s*】)?\s*$/;
   const NEXT_SECTION_RE = /^\s*(?:【[^】]+】|\d{1,2}\s*[.．、)]\s*\S.+)$/;
 
   function currentReportSafe() {
