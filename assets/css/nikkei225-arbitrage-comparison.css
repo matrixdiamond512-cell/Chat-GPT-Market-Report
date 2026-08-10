@@ -1,0 +1,28 @@
+.comparison-card{
+  margin-top:16px;
+  padding:22px 24px 18px;
+  overflow:hidden;
+  background:#fff;
+  border:1px solid #cbdcf8;
+  border-radius:14px;
+  box-shadow:0 4px 18px rgba(25,65,125,.045);
+}
+.comparison-head{display:flex;justify-content:space-between;gap:24px;align-items:flex-start}
+.comparison-kicker{display:block;margin-bottom:5px;color:#2865e8;font-size:12px;font-weight:900;letter-spacing:.12em}
+.comparison-title{margin:0;color:#092354;font-size:clamp(21px,2vw,29px)}
+.comparison-head p{margin:8px 0 0;color:#546987;font-size:14px;font-weight:700}
+.comparison-latest{min-width:190px;padding:11px 14px;text-align:right;background:#f3f8ff;border-radius:10px}
+.comparison-latest span{display:block;color:#546987;font-size:12px;font-weight:800}
+.comparison-latest b{display:block;margin-top:3px;color:#078f80;font-size:21px}
+.comparison-legend{display:flex;gap:20px;flex-wrap:wrap;margin:18px 0 8px;color:#344b6f;font-size:13px;font-weight:800}
+.comparison-legend span{display:inline-flex;align-items:center;gap:7px}
+.comparison-legend span::before{width:22px;height:4px;border-radius:4px;background:currentColor;content:""}
+.comparison-legend .legend-buy{color:#2865e8}.comparison-legend .legend-sell{color:#d0782d}.comparison-legend .legend-net{color:#078f80}.comparison-legend .legend-net::before{height:11px;opacity:.25}.comparison-legend .legend-price{color:#ef3f18}
+.comparison-scroll{overflow-x:auto}.comparison-chart{display:block;width:100%;min-width:760px;height:auto}
+.comparison-grid{stroke:#dce6f4;stroke-dasharray:4 5}.zero-line{stroke:#7890b2;stroke-width:1.4}
+.axis-label,.unit-label,.comparison-axis,.comparison-unit,.comparison-date{fill:#647795;font:12px "Yu Gothic UI",Meiryo,sans-serif}.left-label,.comparison-axis.left{text-anchor:end}.right-label,.comparison-axis.right{text-anchor:start}.date-label{text-anchor:middle}.unit-label,.comparison-unit{font-weight:800}.right-unit,.comparison-unit.right{text-anchor:end}
+.net-area,.comparison-net-area{fill:#43ad83;opacity:.18}.buy-line,.sell-line,.price-line,.comparison-buy-line,.comparison-sell-line,.comparison-price-line{fill:none;stroke-linejoin:round;stroke-linecap:round}.buy-line,.comparison-buy-line{stroke:#2865e8;stroke-width:3}.sell-line,.comparison-sell-line{stroke:#d0782d;stroke-width:2.5}.price-line,.comparison-price-line{stroke:#ef3f18;stroke-width:3.5}
+.comparison-grid{stroke:#dce6f4;stroke-dasharray:4 5}.comparison-zero{stroke:#7890b2;stroke-width:1.4}
+.comparison-note{margin:8px 0 0;padding:10px 12px;color:#7b5b21;background:#fff8e8;border-radius:8px;font-size:13px}.comparison-note code{font-weight:800}
+.comparison-empty{height:230px;margin-top:16px}
+@media(max-width:680px){.comparison-card{padding:17px 14px}.comparison-head{display:block}.comparison-latest{margin-top:14px;text-align:left}.comparison-legend{gap:10px 16px}.comparison-chart{min-width:700px}}
