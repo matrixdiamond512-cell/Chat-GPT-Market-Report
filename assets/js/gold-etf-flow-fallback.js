@@ -56,13 +56,14 @@ async function install(){
   const etf=data.etf||{},aligned=Array.isArray(etf.historyDaily)?etf.historyDaily:[],gld=normalize(etf.gldHistory);
   if(aligned.length>=3||gld.length<2)return;
 
-  const apply=(range=10)=>{
+  const apply=(range=66)=>{
     const bar=document.querySelector('[data-etf-bar]');
     const cumulative=document.querySelector('[data-etf-cumulative]');
     if(!bar)return false;
     const slice=gld.slice(-range);
     bar.innerHTML=barSvg(slice);
     if(cumulative)cumulative.innerHTML=cumulativeSvg(gld.slice(-66));
+    document.querySelectorAll('[data-etf-range]').forEach(btn=>btn.classList.toggle('active',Number(btn.getAttribute('data-etf-range'))===range));
     const cards=[...document.querySelectorAll('.gold-etf-chart-card')];
     if(cards[0]){const t=cards[0].querySelector('.gold-etf-chart-title');if(t)t.textContent='直近の日次ETFフロー（GLD・IAU履歴蓄積中）';}
     const cum=document.querySelector('.gold-etf-chart-card.cumulative .gold-etf-chart-title');if(cum)cum.textContent='累積フロー（GLD・暫定）';
@@ -76,11 +77,11 @@ async function install(){
   };
 
   let tries=0;
-  const timer=setInterval(()=>{tries+=1;if(apply(10)||tries>40)clearInterval(timer);},250);
+  const timer=setInterval(()=>{tries+=1;if(apply(66)||tries>40)clearInterval(timer);},250);
   document.addEventListener('click',ev=>{
     const btn=ev.target.closest&&ev.target.closest('[data-etf-range]');
     if(!btn)return;
-    const range=Number(btn.getAttribute('data-etf-range'))||10;
+    const range=Number(btn.getAttribute('data-etf-range'))||66;
     setTimeout(()=>apply(range),0);
   },true);
 }
