@@ -14,9 +14,9 @@ on:
           - us
           - both
   schedule:
-    # Tokyo open: 08:55, 09:05, 09:15 JST on weekdays.
-    - cron: '55 23 * * 0-4'
-    - cron: '5,15 0 * * 1-5'
+    # Tokyo open retries after cash trading has actually started.
+    # Three independent attempts protect against delayed GitHub cron execution.
+    - cron: '5,10,15 0 * * 1-5'   # 09:05 / 09:10 / 09:15 JST
     # U.S. premarket: 20:30, 20:45, 20:55 JST on weekdays.
     - cron: '30,45,55 11 * * 1-5'
   push:
@@ -28,31 +28,69 @@ on:
 permissions:
   contents: write
 
+# Keep only the newest session refresh when GitHub starts several delayed cron
+# events together. A newer Tokyo retry is more useful than an old queued one.
 concurrency:
   group: update-stock-sessions
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 12
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+
+      - name: Sync latest main
+        shell: bash
+        run: git pull --rebase origin main
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Update session data
-        env:
-          STOCK_SESSION_MODE: ${{ github.event.inputs.mode || 'auto' }}
-        run: python scripts/update_stock_sessions.py --mode "$STOCK_SESSION_MODE"
+
+      - name: Resolve session mode
+        id: session
+        shell: bash
+        run: |
+          case "${{ github.event.schedule }}" in
+            "5,10,15 0 * * 1-5") MODE="tokyo" ;;
+            "30,45,55 11 * * 1-5") MODE="us" ;;
+            *) MODE="${{ github.event.inputs.mode || 'auto' }}" ;;
+          esac
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "Resolved stock-session mode: $MODE"
+
+      - name: Update session data with retry
+        shell: bash
+        run: |
+          MODE="${{ steps.session.outputs.mode }}"
+          SUCCESS=0
+          for ATTEMPT in 1 2 3; do
+            echo "Stock session update attempt $ATTEMPT/3 mode=$MODE"
+            if python scripts/update_stock_sessions.py --mode "$MODE"; then
+              SUCCESS=1
+              break
+            fi
+            sleep $((ATTEMPT * 30))
+          done
+          if [ "$SUCCESS" -ne 1 ]; then
+            echo "Stock session update failed after 3 attempts"
+            exit 1
+          fi
+
       - name: Validate JSON and Python
         run: |
           python -m py_compile scripts/update_stock_sessions.py
           python -m json.tool data/stock-sessions.json >/dev/null
           python -m json.tool data/stocks.json >/dev/null
+
       - name: Commit updated data
+        shell: bash
         run: |
           if git diff --quiet -- data/stock-sessions.json data/stocks.json; then
             echo "No data changes"
@@ -64,5 +102,3 @@ jobs:
           git commit -m "Update stock session analysis"
           git pull --rebase origin main
           git push origin HEAD:main
-
-# bootstrap trigger 2026-08-08 JST
