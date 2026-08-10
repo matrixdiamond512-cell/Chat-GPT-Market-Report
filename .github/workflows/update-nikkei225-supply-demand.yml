@@ -19,6 +19,7 @@ on:
       - "scripts/enrich_nikkei225_spot.py"
       - "scripts/enrich_nikkei225_iv.py"
       - "scripts/enrich_nikkei225_cftc_positioning.py"
+      - "scripts/build_nikkei225_supply_demand_archive.py"
       - "scripts/requirements-nikkei225-supply-demand.txt"
       - ".github/workflows/update-nikkei225-supply-demand.yml"
       - ".github/nikkei225-supply-demand-trigger.txt"
@@ -67,6 +68,7 @@ jobs:
           python -m py_compile scripts/enrich_nikkei225_spot.py
           python -m py_compile scripts/enrich_nikkei225_iv.py
           python -m py_compile scripts/enrich_nikkei225_cftc_positioning.py
+          python -m py_compile scripts/build_nikkei225_supply_demand_archive.py
       - name: Build base Nikkei 225 supply-demand JSON
         run: python scripts/update_nikkei225_supply_demand.py
       - name: Apply verified JPX-format parsers
@@ -91,8 +93,26 @@ jobs:
         run: python scripts/enrich_nikkei225_iv.py
       - name: Add CFTC TFF Leveraged Funds 52-week positioning
         run: python scripts/enrich_nikkei225_cftc_positioning.py
-      - name: Validate JSON
-        run: python -m json.tool data/nikkei225-supply-demand.json > /dev/null
+      - name: Build Nikkei 225 daily archive
+        run: python scripts/build_nikkei225_supply_demand_archive.py
+      - name: Validate JSON and archive
+        run: |
+          python -m json.tool data/nikkei225-supply-demand.json > /dev/null
+          python -m json.tool data/nikkei225-supply-demand-archive/index.json > /dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          idx=json.load(open('data/nikkei225-supply-demand-archive/index.json',encoding='utf-8'))
+          rows=idx.get('reports') or []
+          if not rows:
+              raise SystemExit('Nikkei 225 archive index is empty')
+          latest=rows[-1]
+          p=Path('data/nikkei225-supply-demand-archive')/latest['file']
+          if not p.exists():
+              raise SystemExit(f'Archive file missing: {p}')
+          json.load(p.open(encoding='utf-8'))
+          print('Nikkei 225 archive reports:', len(rows), 'latest:', latest.get('date'))
+          PY
       - name: Show data status
         run: |
           python - <<'PY'
@@ -110,16 +130,16 @@ jobs:
               if k=='options' and x.get('ivReason'):
                   print(f"options.iv: {x['ivReason']}")
           PY
-      - name: Commit Nikkei 225 supply-demand data
+      - name: Commit Nikkei 225 supply-demand data and archive
         shell: bash
         run: |
-          if git diff --quiet -- data/nikkei225-supply-demand.json; then
-            echo "Nikkei 225 supply-demand JSON is already up to date."
+          if git diff --quiet -- data/nikkei225-supply-demand.json data/nikkei225-supply-demand-archive; then
+            echo "Nikkei 225 supply-demand JSON and archive are already up to date."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/nikkei225-supply-demand.json
-          git commit -m "Update Nikkei 225 supply-demand data"
+          git add data/nikkei225-supply-demand.json data/nikkei225-supply-demand-archive
+          git commit -m "Update Nikkei 225 supply-demand data and archive"
           git pull --rebase origin main
           git push origin main
