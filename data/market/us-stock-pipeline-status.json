@@ -1,11 +1,19 @@
 {
   "schemaVersion": "1.1.0",
-  "updatedAt": "2026-08-08T20:48:27+09:00",
-  "status": "ok",
-  "fetchOutcome": "success",
-  "crosscheckOutcome": "success",
+  "updatedAt": "2026-08-11T08:21:05+09:00",
+  "status": "failed",
+  "fetchOutcome": "failure",
+  "crosscheckOutcome": "skipped",
   "logTail": [
-    "{\"status\": \"already-current\", \"marketDate\": \"2026-08-07\", \"validation\": {\"estimatedWeightedReturnPct\": 0.6597, \"verifiedSP500ReturnPct\": null, \"differencePt\": null}}",
-    "{\"status\": \"passed\", \"marketDate\": \"2026-08-07\", \"estimatedWeightedReturnPct\": 0.6597, \"verifiedSP500ReturnPct\": 0.62, \"differencePt\": 0.0397, \"tolerancePt\": 0.2}"
+    "Traceback (most recent call last):",
+    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/fetch_us_stock_movers_sp500_contributions.py\", line 366, in <module>",
+    "    raise SystemExit(main())",
+    "                     ^^^^^^",
+    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/fetch_us_stock_movers_sp500_contributions.py\", line 331, in main",
+    "    expected_date = verified_market_date(stocks)",
+    "                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/fetch_us_stock_movers_sp500_contributions.py\", line 89, in verified_market_date",
+    "    raise RuntimeError(f\"verified U.S. market dates disagree: breadth={breadth_date}, stocks={stock_date}\")",
+    "RuntimeError: verified U.S. market dates disagree: breadth=2026-08-10, stocks=2026-08-07"
   ]
 }
