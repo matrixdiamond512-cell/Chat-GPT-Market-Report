@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       report_date:
-        description: "YYYY-MM-DD; blank = latest 08:00 report in reports.json"
+        description: "YYYY-MM-DD; blank = current/latest 08:00 report"
         required: false
         default: ""
   push:
@@ -21,7 +21,7 @@ permissions:
 
 concurrency:
   group: morning-report-publication-qa
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   qa:
@@ -32,6 +32,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Sync latest main before QA
+        shell: bash
+        run: git pull --rebase origin main
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -46,20 +50,45 @@ jobs:
         shell: bash
         run: |
           REQUESTED="${{ inputs.report_date }}"
+          TODAY="$(TZ=Asia/Tokyo date +%F)"
           if [ -n "$REQUESTED" ]; then
             DATE="$REQUESTED"
+            EXPLICIT="true"
           else
             DATE="$(python - <<'PY'
           import json
           from pathlib import Path
-          reports = json.loads(Path('reports.json').read_text(encoding='utf-8'))
-          dates = sorted([str(r.get('date')) for r in reports if isinstance(r, dict) and r.get('time') == '08:00' and r.get('date')])
-          print(dates[-1] if dates else '')
+
+          latest_path = Path('data/latest-report.json')
+          date = ''
+          if latest_path.is_file():
+              try:
+                  payload = json.loads(latest_path.read_text(encoding='utf-8'))
+                  report = payload.get('latestReport') or {}
+                  if report.get('time') == '08:00' and report.get('date'):
+                      date = str(report.get('date'))
+              except Exception:
+                  pass
+
+          if not date:
+              reports = json.loads(Path('reports.json').read_text(encoding='utf-8'))
+              dates = sorted([
+                  str(r.get('date'))
+                  for r in reports
+                  if isinstance(r, dict) and r.get('time') == '08:00' and r.get('date')
+              ])
+              date = dates[-1] if dates else ''
+          print(date)
           PY
           )"
+            EXPLICIT="false"
           fi
           if [ -z "$DATE" ]; then
             echo "No 08:00 report found"
+            exit 1
+          fi
+          if [ "$EXPLICIT" != "true" ] && [ "$DATE" != "$TODAY" ]; then
+            echo "Latest 08:00 report is stale: resolved=$DATE today=$TODAY"
             exit 1
           fi
           echo "date=$DATE" >> "$GITHUB_OUTPUT"
@@ -92,8 +121,8 @@ jobs:
             echo "QA result unchanged"
           else
             git commit -m "Record 08:00 report publication QA"
-            git pull --rebase
-            git push
+            git pull --rebase origin main
+            git push origin HEAD:main
           fi
 
       - name: Block invalid 08:00 publication
@@ -102,8 +131,8 @@ jobs:
         run: |
           CODE="${{ steps.qa.outputs.code }}"
           if [ "${CODE:-1}" -ne 0 ]; then
-            echo "08:00 report failed publication QA. WEB latest-selection gate will reject this report."
+            echo "08:00 report failed publication QA. WEB latest-selection gate must reject this report."
             cat data/market/morning_report_qa.json || true
             exit 1
           fi
-          echo "08:00 report passed 28-item / 5-column publication QA."
+          echo "08:00 report passed current-date 28-item / 5-column publication QA."
