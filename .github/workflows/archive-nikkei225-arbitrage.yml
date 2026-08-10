@@ -1,0 +1,75 @@
+name: Archive Nikkei 225 arbitrage reports
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "data/nikkei225-arbitrage.json"
+      - "scripts/build_nikkei225_arbitrage_archive.py"
+      - ".github/workflows/archive-nikkei225-arbitrage.yml"
+  schedule:
+    # 21:20 JST on weekdays. Keeps one final snapshot for each trading day.
+    - cron: "20 12 * * 1-5"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: archive-nikkei225-arbitrage
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate archive builder
+        run: python -m py_compile scripts/build_nikkei225_arbitrage_archive.py
+
+      - name: Build arbitrage daily archive
+        run: python scripts/build_nikkei225_arbitrage_archive.py
+
+      - name: Validate archive
+        run: |
+          python -m json.tool data/nikkei225-arbitrage-archive/index.json > /dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          idx=json.load(open('data/nikkei225-arbitrage-archive/index.json',encoding='utf-8'))
+          rows=idx.get('reports') or []
+          if not rows:
+              raise SystemExit('Arbitrage archive index is empty')
+          latest=rows[-1]
+          p=Path('data/nikkei225-arbitrage-archive')/latest['file']
+          if not p.exists():
+              raise SystemExit(f'Archive file missing: {p}')
+          bundle=json.load(p.open(encoding='utf-8'))
+          if not isinstance(bundle.get('arbitrage'),dict):
+              raise SystemExit('Archive bundle does not contain arbitrage data')
+          print('Arbitrage archive reports:', len(rows), 'latest:', latest.get('date'))
+          PY
+
+      - name: Commit arbitrage archive
+        shell: bash
+        run: |
+          if git diff --quiet -- data/nikkei225-arbitrage-archive; then
+            echo "Arbitrage archive is already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/nikkei225-arbitrage-archive
+          git commit -m "Update Nikkei 225 arbitrage archive"
+          git pull --rebase origin main
+          git push origin main
