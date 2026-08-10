@@ -1,8 +1,13 @@
 {
-  "checkedAt": "2026-08-10T12:40:12+09:00",
+  "checkedAt": "2026-08-10T12:41:43+09:00",
   "reportDate": "2026-08-10",
   "reportSlot": "08:00",
   "ready": false,
+  "historicalMode": false,
+  "latestReportDate": "2026-08-10",
+  "latestReportTime": "08:00",
+  "morningReferenceDate": "2026-08-08",
+  "morningReferenceGeneratedAt": "2026-08-08T16:40:00+09:00",
   "expectedRowCount": 28,
   "actualRowCount": 0,
   "expectedColumns": [
@@ -14,8 +19,10 @@
   ],
   "labels": [],
   "blockingReasons": [
-    "report not found: 2026-08-10 08:00"
+    "report not found: 2026-08-10 08:00",
+    "morning-reference date mismatch: expected 2026-08-10, got 2026-08-08",
+    "morning-reference generated date mismatch: expected 2026-08-10, got 2026-08-08"
   ],
   "warnings": [],
-  "rule": "Publish only the effective 28-item / 5-column table after verified morning-reference overlays pass QA."
+  "rule": "Normal publication requires the current JST 08:00 report, matching latest-report, same-date morning-reference, and a valid effective 28-item / 5-column table."
 }
