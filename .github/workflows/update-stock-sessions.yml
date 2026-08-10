@@ -24,6 +24,7 @@ on:
     paths:
       - '.github/workflows/update-stock-sessions.yml'
       - 'scripts/update_stock_sessions.py'
+      - 'scripts/update_stock_sessions_topix.py'
 
 permissions:
   contents: write
@@ -65,14 +66,14 @@ jobs:
           echo "mode=$MODE" >> "$GITHUB_OUTPUT"
           echo "Resolved stock-session mode: $MODE"
 
-      - name: Update session data with retry
+      - name: Update session data with corrected TOPIX source
         shell: bash
         run: |
           MODE="${{ steps.session.outputs.mode }}"
           SUCCESS=0
           for ATTEMPT in 1 2 3; do
             echo "Stock session update attempt $ATTEMPT/3 mode=$MODE"
-            if python scripts/update_stock_sessions.py --mode "$MODE"; then
+            if python scripts/update_stock_sessions_topix.py --mode "$MODE"; then
               SUCCESS=1
               break
             fi
@@ -86,6 +87,7 @@ jobs:
       - name: Validate JSON and Python
         run: |
           python -m py_compile scripts/update_stock_sessions.py
+          python -m py_compile scripts/update_stock_sessions_topix.py
           python -m json.tool data/stock-sessions.json >/dev/null
           python -m json.tool data/stocks.json >/dev/null
 
