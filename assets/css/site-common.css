@@ -181,6 +181,46 @@
   box-shadow: inset 0 -3px 0 rgba(255, 255, 255, 0.32) !important;
 }
 
+/* Site-wide brand rule: the uppermost visible title is always the portal name. */
+.top-header h1,
+.mt-topbar h1,
+.topbar .brand,
+.topbar h1,
+.head h1,
+.rb-topbar h1,
+.top h1 {
+  font-size: 0 !important;
+}
+
+.top-header h1::after,
+.mt-topbar h1::after,
+.topbar .brand::after,
+.topbar h1::after,
+.head h1::after,
+.rb-topbar h1::after,
+.top h1::after {
+  content: "マーケット分析ポータル";
+  display: inline-block;
+  color: var(--site-text-on-navy) !important;
+  font-size: clamp(22px, 2.1vw, 30px) !important;
+  font-weight: 1000;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.sd-kicker,
+.usd-kicker {
+  font-size: 0 !important;
+}
+
+.sd-kicker::after,
+.usd-kicker::after {
+  content: "マーケット分析ポータル";
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  line-height: 1.4;
+}
+
 @media (max-width: 760px) {
   .top-header .header-inner,
   .mt-topbar .mt-top-inner,
