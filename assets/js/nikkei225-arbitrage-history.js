@@ -4,6 +4,7 @@
 const originalFetch=window.fetch.bind(window);
 const INDEX_URL='data/nikkei225-arbitrage-archive/index.json';
 const ARCHIVE_BASE='data/nikkei225-arbitrage-archive/';
+const RAW_BASE='https://raw.githubusercontent.com/matrixdiamond512-cell/Chat-GPT-Market-Report/';
 const params=new URLSearchParams(location.search);
 const requestedDate=params.get('date');
 let indexCache=null;
@@ -53,7 +54,15 @@ async function getBundle(){
   bundlePromise=(async()=>{
     const entry=await getEntry();
     if(!entry)throw new Error('保存済み裁定取引レポートがありません');
-    return jsonFetch(`${ARCHIVE_BASE}${entry.file}`);
+    let url='';
+    if(entry.file){
+      url=/^https?:\/\//.test(entry.file)?entry.file:`${ARCHIVE_BASE}${entry.file}`;
+    }else if(entry.sourceCommit){
+      url=`${RAW_BASE}${entry.sourceCommit}/data/nikkei225-arbitrage.json`;
+    }
+    if(!url)throw new Error('保存済みレポートの参照先がありません');
+    const payload=await jsonFetch(url);
+    return payload?.arbitrage?payload:{arbitrage:payload};
   })();
   return bundlePromise;
 }
