@@ -19,8 +19,9 @@ on:
   schedule:
     # Seven independent triggers. Each starts two minutes before the intended
     # Japan-time acquisition so the runner can initialize and then wait until
-    # the exact target. Independent schedule events avoid losing the whole
-    # morning window when one long-lived GitHub Actions run starts late.
+    # the exact target. GitHub-hosted cron can start late, so a delayed run is
+    # still allowed to fetch and recover current data instead of expiring after
+    # only 20 minutes. Freshness is enforced separately by the readiness/QA gate.
     - cron: "28 21 * * 0-5" # 06:28 JST -> 06:30 acquisition
     - cron: "58 21 * * 0-5" # 06:58 JST -> 07:00 acquisition
     - cron: "18 22 * * 0-5" # 07:18 JST -> 07:20 acquisition
@@ -32,9 +33,9 @@ on:
 permissions:
   contents: write
 
-# Each scheduled time gets its own concurrency key. A delayed 06:30 run must
-# not queue or block 07:00/07:20/... attempts. Repository writes are protected
-# by git pull --rebase in run_market_data_window.py.
+# Each scheduled time gets its own concurrency key. A delayed early run must
+# not queue or block later attempts. Repository writes are protected by
+# git pull --rebase in run_market_data_window.py.
 concurrency:
   group: market-data-08-primary-${{ github.event.schedule || inputs.scheduled_time || github.run_id }}
   cancel-in-progress: false
@@ -92,7 +93,7 @@ jobs:
             --slot "08:00" \
             --times "${{ steps.intended.outputs.time }}" \
             --trigger-source "independent_schedule" \
-            --max-catchup-minutes 20 \
+            --max-catchup-minutes 120 \
             --mode auto
 
       - name: Refresh CME/OSE morning reference at final attempt
