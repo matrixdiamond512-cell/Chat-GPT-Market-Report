@@ -253,7 +253,7 @@ def enrich_short_selling(d: dict[str, Any]) -> None:
     try:
         pdfs = [url for url, _ in u.links(u.URLS["short"]) if re.search(r"\.pdf(?:\?|$)", url, re.I)]
         rows = []
-        for url in pdfs[:24]:
+        for url in pdfs[:80]:
             try:
                 x = _parse_short_pdf(url)
                 if x:
@@ -261,7 +261,7 @@ def enrich_short_selling(d: dict[str, Any]) -> None:
             except Exception:
                 continue
         uniq = {x["asOfDate"]: x for x in rows}
-        rows = sorted(uniq.values(), key=lambda x: x["asOfDate"], reverse=True)
+        rows = sorted(uniq.values(), key=lambda x: x["asOfDate"], reverse=True)[:52]
         if not rows:
             raise ValueError("short-selling ratio rows not found")
         vals = [float(x["ratio"]) for x in rows]
@@ -272,6 +272,7 @@ def enrich_short_selling(d: dict[str, Any]) -> None:
             "avg5": sum(vals[:5]) / len(vals[:5]) if vals else None,
             "avg20": sum(vals[:20]) / len(vals[:20]) if vals else None,
             "sampleCount": min(20, len(vals)),
+            "series": list(reversed(rows)),
             "status": "verified",
             "fetchedAt": u.now(),
         }
@@ -315,3 +316,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
