@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="assets/css/supply-demand.css">
 <link rel="stylesheet" href="assets/css/usdjpy-supply-demand.css?v=20260808-ui1">
 <link rel="stylesheet" href="assets/css/usdjpy-positioning-polish.css?v=20260809-ui1">
+<link rel="stylesheet" href="assets/css/usdjpy-supply-demand-history.css?v=20260810-history1">
 <link rel="stylesheet" href="assets/css/site-common.css?v=20260804-ui1">
 </head>
 <body class="usdjpy-page">
@@ -37,6 +38,15 @@
   <a href="gold-supply-demand.html">ゴールド需給</a>
   <a href="nikkei225-supply-demand.html">日経225需給</a><a href="nikkei225-arbitrage.html">裁定取引</a>
 </nav>
+
+<section class="usd-history-shell" data-usdjpy-history aria-label="USD/JPY需給分析の過去レポート選択" aria-busy="true">
+  <div class="usd-history-control">
+    <button class="usd-history-nav" type="button" id="usdHistoryPrev" aria-label="前の保存レポート">‹</button>
+    <input class="usd-history-date" type="date" id="usdHistoryDate" aria-label="表示するUSD/JPY需給分析の日付">
+    <button class="usd-history-nav" type="button" id="usdHistoryNext" aria-label="次の保存レポート">›</button>
+  </div>
+  <p class="usd-history-status" id="usdHistoryStatus">過去レポート一覧を読み込み中です。</p>
+</section>
 
 <main class="usd-page">
   <section class="usd-kpis" aria-label="需給サマリー">
@@ -133,6 +143,7 @@
   </div>
 </main>
 
+<script src="assets/js/usdjpy-supply-demand-history.js?v=20260810-history1"></script>
 <script src="assets/js/usdjpy-supply-demand.js?v=20260807-real2"></script>
 <script src="assets/js/usdjpy-supply-demand-ui-fix.js?v=20260808-ui2"></script>
 <script src="assets/js/usdjpy-cftc-positioning-display.js?v=20260810-ui2"></script>
