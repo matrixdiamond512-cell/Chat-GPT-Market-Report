@@ -2,17 +2,15 @@
 'use strict';
 
 const DEFAULT_RANGE='66';
-const CARD_ATTR='data-gold-etf-ui-ready';
+const READY_ATTR='data-gold-etf-ui-ready';
 
 function parseValue(text){
   const value=Number(String(text||'').replace(/[^0-9+\-.]/g,''));
   return Number.isFinite(value)?value:null;
 }
 
-function getChartCard(){
-  const card=document.querySelector('.gold-etf-enhanced');
-  if(!card)return null;
-  return card.querySelector('.gold-etf-chart-card:not(.cumulative)');
+function getDailyChartCard(root){
+  return root?root.querySelector('.gold-etf-chart-card:not(.cumulative)'):null;
 }
 
 function getSelectedRangeLabel(card){
@@ -20,31 +18,8 @@ function getSelectedRangeLabel(card){
   return active?String(active.textContent||'').trim():'3か月';
 }
 
-function updateSummary(chartCard){
-  const meta=chartCard.querySelector('[data-etf-chart-meta]');
-  if(!meta)return;
-  const values=[...chartCard.querySelectorAll('[data-etf-bar] .value-text')]
-    .map(el=>parseValue(el.textContent))
-    .filter(v=>v!==null);
-  const total=values.reduce((sum,v)=>sum+v,0);
-  const rangeLabel=getSelectedRangeLabel(chartCard);
-  const totalEl=meta.querySelector('[data-etf-period-total]');
-  const statusEl=meta.querySelector('[data-etf-flow-status]');
-  if(totalEl){
-    totalEl.textContent=values.length?`${total>0?'+':''}${total.toFixed(2)} t`:'取得待ち';
-    totalEl.classList.toggle('flow-positive',total>0);
-    totalEl.classList.toggle('flow-negative',total<0);
-  }
-  if(statusEl){
-    const status=total>0?'資金流入優勢':total<0?'資金流出優勢':'中立';
-    statusEl.textContent=values.length?`${rangeLabel}：${status}`:'取得待ち';
-    statusEl.classList.toggle('flow-positive',total>0);
-    statusEl.classList.toggle('flow-negative',total<0);
-  }
-}
-
 function ensureMeta(chartCard){
-  if(chartCard.querySelector('[data-etf-chart-meta]'))return;
+  if(!chartCard||chartCard.querySelector('[data-etf-chart-meta]'))return;
   const head=chartCard.querySelector('.gold-etf-chart-head');
   if(!head)return;
   const meta=document.createElement('div');
@@ -54,39 +29,71 @@ function ensureMeta(chartCard){
   head.insertAdjacentElement('afterend',meta);
 }
 
-function applyDefaultRange(chartCard){
-  const owner=chartCard.closest('.gold-etf-enhanced');
-  if(!owner||owner.hasAttribute(CARD_ATTR))return;
-  const button=chartCard.querySelector(`[data-etf-range="${DEFAULT_RANGE}"]`);
-  if(!button)return;
-  owner.setAttribute(CARD_ATTR,'');
-  setTimeout(()=>{
-    button.click();
-    setTimeout(()=>updateSummary(chartCard),30);
-  },0);
+function updateSummary(chartCard){
+  const meta=chartCard&&chartCard.querySelector('[data-etf-chart-meta]');
+  if(!meta)return;
+  const values=[...chartCard.querySelectorAll('[data-etf-bar] .value-text')]
+    .map(el=>parseValue(el.textContent))
+    .filter(v=>v!==null);
+  const total=values.reduce((sum,v)=>sum+v,0);
+  const totalEl=meta.querySelector('[data-etf-period-total]');
+  const statusEl=meta.querySelector('[data-etf-flow-status]');
+  const positive=total>0;
+  const negative=total<0;
+  if(totalEl){
+    totalEl.textContent=values.length?`${positive?'+':''}${total.toFixed(2)} t`:'取得待ち';
+    totalEl.classList.toggle('flow-positive',positive);
+    totalEl.classList.toggle('flow-negative',negative);
+  }
+  if(statusEl){
+    const status=positive?'資金流入優勢':negative?'資金流出優勢':'中立';
+    statusEl.textContent=values.length?`${getSelectedRangeLabel(chartCard)}：${status}`:'取得待ち';
+    statusEl.classList.toggle('flow-positive',positive);
+    statusEl.classList.toggle('flow-negative',negative);
+  }
 }
 
-function enhance(){
-  const chartCard=getChartCard();
-  if(!chartCard)return false;
-  ensureMeta(chartCard);
-  applyDefaultRange(chartCard);
-  updateSummary(chartCard);
+function applyOnce(){
+  const root=document.querySelector('.gold-etf-enhanced');
+  if(!root)return false;
+  const daily=getDailyChartCard(root);
+  if(!daily)return false;
+
+  const cumulative=root.querySelector('.gold-etf-chart-card.cumulative');
+  if(cumulative&&daily.nextElementSibling!==cumulative){
+    daily.insertAdjacentElement('afterend',cumulative);
+  }
+
+  ensureMeta(daily);
+
+  if(!root.hasAttribute(READY_ATTR)){
+    root.setAttribute(READY_ATTR,'');
+    const button=daily.querySelector(`[data-etf-range="${DEFAULT_RANGE}"]`);
+    if(button&&!button.classList.contains('active')){
+      setTimeout(()=>button.click(),0);
+    }
+  }
+
+  setTimeout(()=>updateSummary(daily),60);
   return true;
 }
 
 function install(){
-  enhance();
-  const root=document.querySelector('[data-gold-dashboard]')||document.body;
-  const observer=new MutationObserver(()=>{enhance();});
-  observer.observe(root,{childList:true,subtree:true,characterData:true});
-  setTimeout(()=>observer.disconnect(),20000);
+  if(!applyOnce()){
+    const root=document.querySelector('[data-gold-dashboard]')||document.body;
+    const observer=new MutationObserver(()=>{
+      if(applyOnce())observer.disconnect();
+    });
+    observer.observe(root,{childList:true,subtree:true});
+    setTimeout(()=>observer.disconnect(),12000);
+  }
+
   document.addEventListener('click',event=>{
     const button=event.target.closest&&event.target.closest('[data-etf-range]');
     if(!button)return;
     const chartCard=button.closest('.gold-etf-chart-card');
     if(!chartCard)return;
-    setTimeout(()=>updateSummary(chartCard),40);
+    setTimeout(()=>updateSummary(chartCard),60);
   },true);
 }
 
