@@ -53,7 +53,7 @@ jobs:
           TODAY="$(TZ=Asia/Tokyo date +%F)"
           if [ -n "$REQUESTED" ]; then
             DATE="$REQUESTED"
-            EXPLICIT="true"
+            HISTORICAL="true"
           else
             DATE="$(python - <<'PY'
           import json
@@ -81,27 +81,33 @@ jobs:
           print(date)
           PY
           )"
-            EXPLICIT="false"
+            HISTORICAL="false"
           fi
           if [ -z "$DATE" ]; then
             echo "No 08:00 report found"
             exit 1
           fi
-          if [ "$EXPLICIT" != "true" ] && [ "$DATE" != "$TODAY" ]; then
+          if [ "$HISTORICAL" != "true" ] && [ "$DATE" != "$TODAY" ]; then
             echo "Latest 08:00 report is stale: resolved=$DATE today=$TODAY"
             exit 1
           fi
           echo "date=$DATE" >> "$GITHUB_OUTPUT"
-          echo "QA target: $DATE 08:00"
+          echo "historical=$HISTORICAL" >> "$GITHUB_OUTPUT"
+          echo "QA target: $DATE 08:00 / historical=$HISTORICAL"
 
       - name: Run 28-item publication QA
         id: qa
         shell: bash
         run: |
           set +e
+          EXTRA_ARGS=()
+          if [ "${{ steps.report.outputs.historical }}" = "true" ]; then
+            EXTRA_ARGS+=(--allow-historical)
+          fi
           python scripts/verify_morning_report_qa.py \
             --date "${{ steps.report.outputs.date }}" \
-            --slot "08:00"
+            --slot "08:00" \
+            "${EXTRA_ARGS[@]}"
           CODE=$?
           set -e
           echo "code=$CODE" >> "$GITHUB_OUTPUT"
@@ -135,4 +141,4 @@ jobs:
             cat data/market/morning_report_qa.json || true
             exit 1
           fi
-          echo "08:00 report passed current-date 28-item / 5-column publication QA."
+          echo "08:00 report passed publication QA."
