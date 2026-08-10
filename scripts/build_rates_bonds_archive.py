@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import json
 import subprocess
-from pathlib import Path
 from typing import Any
 
 import build_rates_bonds_json as core
@@ -27,6 +26,17 @@ def report_date(payload: dict[str, Any]) -> str | None:
     if len(meta_date) >= 10 and meta_date[4:5] == "-" and meta_date[7:8] == "-":
         return meta_date[:10]
     return None
+
+
+def valid_report_payload(payload: dict[str, Any]) -> bool:
+    if payload.get("pageId") != "rates-bonds":
+        return False
+    if not (payload.get("meta") or {}).get("asOfDate"):
+        return False
+    return any(
+        row.get("status") == "confirmed" and row.get("value") is not None
+        for row in (payload.get("rates") or [])
+    )
 
 
 def latest_market_date(payload: dict[str, Any], prefix: str) -> str | None:
@@ -64,9 +74,7 @@ def read_git_snapshot(commit: str) -> dict[str, Any] | None:
         payload = json.loads(proc.stdout)
     except (subprocess.CalledProcessError, json.JSONDecodeError, OSError):
         return None
-    if payload.get("pageId") != "rates-bonds":
-        return None
-    return payload
+    return payload if valid_report_payload(payload) else None
 
 
 def backfill_from_git(entries: dict[str, dict[str, Any]]) -> None:
@@ -103,15 +111,19 @@ def backfill_from_git(entries: dict[str, dict[str, Any]]) -> None:
 
 
 def update_archive(payload: dict[str, Any]) -> None:
+    if not valid_report_payload(payload):
+        raise RuntimeError("Current rates/bonds payload is not valid for archive publication")
+
     ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
     existing = core.load_json(
         ARCHIVE_INDEX,
         {"schemaVersion": "1.0.0", "pageId": "rates-bonds", "reports": []},
     )
+    # Old prototypes without a real market as-of date are intentionally omitted from the calendar.
     entries = {
         str(row.get("date")): dict(row)
         for row in (existing.get("reports") or [])
-        if isinstance(row, dict) and row.get("date")
+        if isinstance(row, dict) and row.get("date") and row.get("asOfDate")
     }
 
     if not existing.get("backfillComplete"):
