@@ -1,10 +1,13 @@
 (()=>{
 'use strict';
 const originalFetch=window.fetch.bind(window);
+const nativeDateNow=Date.now.bind(Date);
 const INDEX_URL='data/usdjpy-supply-demand-archive/index.json';
 const ARCHIVE_BASE='data/usdjpy-supply-demand-archive/';
+const RAW_BASE='https://raw.githubusercontent.com/matrixdiamond512-cell/Chat-GPT-Market-Report';
 const params=new URLSearchParams(location.search);
 const requestedDate=params.get('date');
+let historyNow=requestedDate?Date.parse(`${requestedDate}T23:59:59+09:00`):null;
 let indexCache=null;
 let entryPromise=null;
 let bundlePromise=null;
@@ -16,11 +19,34 @@ const localMap=new Map([
   ['/data/events.json','events'],
   ['/data/usdjpy-supply-demand.json','config']
 ]);
+const sourcePaths={
+  market:'data/market/latest.json',
+  rates:'data/rates-bonds.json',
+  volume:'data/usdjpy-volume.json',
+  events:'data/events.json',
+  config:'data/usdjpy-supply-demand.json'
+};
+
+if(requestedDate&&Number.isFinite(historyNow))Date.now=()=>historyNow;
 
 async function jsonFetch(url){
-  const r=await originalFetch(`${url}${url.includes('?')?'&':'?'}v=${Date.now()}`,{cache:'no-store'});
+  const r=await originalFetch(`${url}${url.includes('?')?'&':'?'}v=${nativeDateNow()}`,{cache:'no-store'});
   if(!r.ok)throw new Error(`${url}: HTTP ${r.status}`);
   return r.json();
+}
+async function rawJson(commit,path){
+  const url=`${RAW_BASE}/${encodeURIComponent(commit)}/${path}`;
+  const r=await originalFetch(`${url}?v=${nativeDateNow()}`,{cache:'no-store'});
+  if(!r.ok)throw new Error(`${path}@${commit}: HTTP ${r.status}`);
+  return r.json();
+}
+async function commitBundle(commit){
+  const entries=await Promise.all(Object.entries(sourcePaths).map(async([key,path])=>[key,await rawJson(commit,path)]));
+  return Object.fromEntries(entries);
+}
+async function liveBundle(){
+  const entries=await Promise.all(Object.entries(sourcePaths).map(async([key,path])=>[key,await jsonFetch(path)]));
+  return Object.fromEntries(entries);
 }
 function reports(index){return Array.isArray(index?.reports)?index.reports.slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))):[]}
 function resolveEntry(index,date){
@@ -30,10 +56,27 @@ function resolveEntry(index,date){
   let prior=null;for(const row of rows){if(row.date<=date)prior=row;else break;}return prior||rows[0];
 }
 async function getIndex(){if(indexCache)return indexCache;indexCache=await jsonFetch(INDEX_URL);return indexCache}
-async function getEntry(){if(entryPromise)return entryPromise;entryPromise=getIndex().then(index=>resolveEntry(index,requestedDate));return entryPromise}
+async function getEntry(){
+  if(entryPromise)return entryPromise;
+  entryPromise=getIndex().then(index=>{
+    const entry=resolveEntry(index,requestedDate);
+    if(entry&&requestedDate){const t=Date.parse(`${entry.date}T23:59:59+09:00`);if(Number.isFinite(t))historyNow=t;}
+    return entry;
+  });
+  return entryPromise;
+}
 async function getBundle(){
   if(bundlePromise)return bundlePromise;
-  bundlePromise=(async()=>{const entry=await getEntry();if(!entry)throw new Error('保存済みUSD/JPY需給分析がありません');return jsonFetch(`${ARCHIVE_BASE}${entry.file}`)})();
+  bundlePromise=(async()=>{
+    const entry=await getEntry();
+    if(!entry)throw new Error('保存済みUSD/JPY需給分析がありません');
+    if(entry.live)return liveBundle();
+    if(entry.file){
+      try{return await jsonFetch(`${ARCHIVE_BASE}${entry.file}`)}catch(err){if(!entry.commit)throw err;}
+    }
+    if(entry.commit)return commitBundle(entry.commit);
+    throw new Error('履歴データの保存先がありません');
+  })();
   return bundlePromise;
 }
 function urlOf(input){try{return new URL(input instanceof Request?input.url:String(input),location.href)}catch{return null}}
