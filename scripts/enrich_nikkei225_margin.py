@@ -29,15 +29,16 @@ def main():
     try:
         pdfs=[url for url,_ in u.links(u.URLS['margin']) if re.search(r'mtgaisan\d+\.pdf(?:\?|$)',url,re.I)]
         rows=[]
-        for url in pdfs[:12]:
+        for url in pdfs[:80]:
             try:
                 x=parse_pdf(url)
                 if x:rows.append(x)
             except Exception:pass
-        rows.sort(key=lambda x:x['asOfDate'],reverse=True)
+        rows=sorted({x['asOfDate']:x for x in rows}.values(),key=lambda x:x['asOfDate'],reverse=True)[:52]
         if not rows:raise ValueError('weekly margin total monetary row not found')
-        d['margin']={**base,**rows[0],'status':'verified','fetchedAt':u.now()}
+        d['margin']={**base,**rows[0],'series':list(reversed(rows)),'status':'verified','fetchedAt':u.now()}
     except Exception as exc:
         d['margin']=u.stale(prev,base,f'JPX信用需給取得失敗: {type(exc).__name__}: {exc}')
     keys=('spot','futures','sessions','arbitrage','options','participantFlow','foreignInvestors','participantOpenInterest','shortSelling','margin'); statuses={k:(d.get(k) or {}).get('status','unavailable') for k in keys}; d['sourceStatus']=f"{sum(v in {'verified','calculated'} for v in statuses.values())}/10項目連携（基準日を個別表示）"; d.setdefault('diagnostics',{})['statuses']=statuses; d['generatedAt']=u.now(); OUT.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n',encoding='utf-8'); print(json.dumps(d['margin'],ensure_ascii=False))
 if __name__=='__main__':main()
+
