@@ -955,7 +955,9 @@ function consistencyForMarket(report, definition) {
     verdict = "整合";
     cls = "match";
   }
-  return { verdict, cls, reason: cleanText(text, 140) };
+  // The market cards already grow with their content. Keep the complete
+  // consistency explanation instead of adding a misleading "..." suffix.
+  return { verdict, cls, reason: cleanText(text, Infinity) };
 }
 
 function extractLevels(report, definition) {
