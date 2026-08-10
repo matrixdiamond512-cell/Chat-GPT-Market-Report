@@ -14,6 +14,7 @@ on:
       - "scripts/enrich_usdjpy_cftc_52.py"
       - "scripts/enrich_usdjpy_price_history.py"
       - "scripts/enrich_usdjpy_tradersweb_levels.py"
+      - "scripts/archive_usdjpy_supply_demand.py"
       - "data/usdjpy-supply-demand-trigger/**"
 
 permissions:
@@ -26,7 +27,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 7
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,6 +45,7 @@ jobs:
           python -m py_compile scripts/enrich_usdjpy_cftc_52.py
           python -m py_compile scripts/enrich_usdjpy_price_history.py
           python -m py_compile scripts/enrich_usdjpy_tradersweb_levels.py
+          python -m py_compile scripts/archive_usdjpy_supply_demand.py
 
       - name: Build USDJPY supply-demand JSON
         run: python scripts/build_usdjpy_supply_demand.py
@@ -57,9 +59,13 @@ jobs:
       - name: Extract Traders Web FX key levels
         run: python scripts/enrich_usdjpy_tradersweb_levels.py
 
-      - name: Validate generated JSON
+      - name: Archive USDJPY supply-demand report
+        run: python scripts/archive_usdjpy_supply_demand.py
+
+      - name: Validate generated JSON and history archive
         run: |
           python -m json.tool data/usdjpy-supply-demand.json > /dev/null
+          python -m json.tool data/usdjpy-supply-demand-archive/index.json > /dev/null
           python - <<'PY'
           import json
           from pathlib import Path
@@ -79,6 +85,20 @@ jobs:
           assert len(series) >= 52, f'CFTC series must have 52 weeks, got {len(series)}'
           assert cftc.get('priceStatus') == 'available'
           assert price_points >= 52, f'USDJPY price series must have 52 points, got {price_points}'
+
+          index = json.loads(Path('data/usdjpy-supply-demand-archive/index.json').read_text(encoding='utf-8'))
+          reports = index.get('reports') or []
+          assert index.get('pageId') == 'usdjpy-supply-demand'
+          assert reports, 'USDJPY history archive must contain at least one report'
+          latest = reports[-1]
+          archive_path = Path('data/usdjpy-supply-demand-archive') / latest['file']
+          archive = json.loads(archive_path.read_text(encoding='utf-8'))
+          assert archive.get('pageId') == 'usdjpy-supply-demand-archive'
+          assert archive.get('config', {}).get('pageId') == 'usdjpy-supply-demand'
+          assert archive.get('market') is not None
+          assert archive.get('rates') is not None
+          assert archive.get('volume') is not None
+
           print('generatedAt:', data.get('generatedAt'))
           print('Traders Web FX status:', tw.get('status'))
           print('Traders Web FX source time:', tw.get('sourceUpdatedAt'))
@@ -86,19 +106,20 @@ jobs:
           print('Traders Web FX rows:', levels.get('extractedRowCount'))
           print('CFTC:', cftc.get('asOf'), cftc.get('status'), 'weeks:', len(series))
           print('USDJPY price points:', price_points, cftc.get('priceSourceName'))
+          print('archive reports:', len(reports), 'latest:', latest.get('date'))
           PY
 
-      - name: Commit refreshed integration metadata
+      - name: Commit refreshed integration metadata and archive
         shell: bash
         run: |
-          if git diff --quiet -- data/usdjpy-supply-demand.json; then
-            echo "USDJPY supply-demand data is already up to date."
+          if git diff --quiet -- data/usdjpy-supply-demand.json data/usdjpy-supply-demand-archive; then
+            echo "USDJPY supply-demand data and archive are already up to date."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/usdjpy-supply-demand.json
-          git commit -m "Update USDJPY supply-demand data"
+          git add data/usdjpy-supply-demand.json data/usdjpy-supply-demand-archive
+          git commit -m "Update USDJPY supply-demand data and archive"
           git pull --rebase
           git push
