@@ -1,59 +1,94 @@
 (function(){
-  const root=document.querySelector('[data-arbitrage]');if(!root)return;
-  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const num=v=>Number.isFinite(Number(v))?Number(v).toLocaleString('ja-JP'):'取得不能';
-  const latest=(d,key)=>Number.isFinite(Number(d.latest?.[key]))?Number(d.latest[key]):null;
-  const change=v=>!Number.isFinite(Number(v))?'<b class="unavailable">取得不能</b>':`<b class="${v<0?'negative':'positive'}">${v>0?'+':''}${num(v)}千株</b>`;
-  const weekKey=date=>{const d=new Date(`${date}T00:00:00Z`),m=new Date(d);m.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7));return m.toISOString().slice(0,10)};
-  const weekly=history=>[...new Map((history||[]).filter(x=>x.date).map(x=>[weekKey(x.date),x])).values()];
-  function comparisonChart(history){
-    const rows=weekly(history).filter(x=>Number.isFinite(Number(x.buyBalance))&&Number.isFinite(Number(x.sellBalance))&&Number.isFinite(Number(x.nikkei225Close)));
-    if(rows.length<2)return `<section class="comparison-card"><div class="comparison-head"><div><span class="comparison-kicker">週次・複合チャート</span><h2 class="comparison-title">日経平均株価と裁定取引の残高</h2></div></div><div class="empty-chart comparison-empty">比較用の週次データを取得中です。</div></section>`;
-    const width=1430,height=330,left=78,right=1360,top=42,bottom=258,plotW=right-left,plotH=bottom-top;
-    const values=rows.flatMap(x=>[Number(x.buyBalance),Number(x.sellBalance),Number(x.buyBalance)-Number(x.sellBalance)]),leftMin=Math.min(0,...values),leftMax=Math.max(0,...values),leftSpan=leftMax-leftMin||1;
-    const prices=rows.map(x=>Number(x.nikkei225Close)),priceMin=Math.min(...prices),priceMax=Math.max(...prices),priceSpan=priceMax-priceMin||1;
-    const x=i=>left+i*(plotW/(rows.length-1)),yLeft=v=>top+(leftMax-v)/leftSpan*plotH,yPrice=v=>top+(priceMax-v)/priceSpan*plotH;
-    const points=key=>rows.map((row,i)=>`${x(i)},${yLeft(key==='net'?Number(row.buyBalance)-Number(row.sellBalance):Number(row[key]))}`).join(' ');
-    const pricePoints=rows.map((row,i)=>`${x(i)},${yPrice(Number(row.nikkei225Close))}`).join(' '),zeroY=yLeft(0),netArea=`${left},${zeroY} ${points('net')} ${right},${zeroY}`;
-    const yTicks=[0,.25,.5,.75,1].map(t=>{const y=top+t*plotH,leftValue=Math.round(leftMax-t*leftSpan),priceValue=Math.round(priceMax-t*priceSpan);return `<line class="comparison-grid" x1="${left}" y1="${y}" x2="${right}" y2="${y}"/><text class="comparison-axis left" x="${left-10}" y="${y+4}">${num(leftValue)}</text><text class="comparison-axis right" x="${right+10}" y="${y+4}">${num(priceValue)}</text>`}).join('');
-    const labels=rows.map((row,i)=>`<text class="comparison-date" x="${x(i)}" y="292" text-anchor="end" transform="rotate(-45 ${x(i)} 292)">${esc(row.date.slice(5).replace('-','/'))}</text>`).join('');
-    const latestRow=rows.at(-1),latestNet=Number(latestRow.buyBalance)-Number(latestRow.sellBalance),warnY=yLeft(500000),dangerY=yLeft(1000000);
-    return `<section class="comparison-card"><div class="comparison-head"><div><span class="comparison-kicker">週次・複合チャート</span><h2 class="comparison-title">日経平均株価と裁定取引の残高</h2><p>買い残・売り残・差し引きと株価の方向を、同じ時間軸で比較します。</p></div><div class="comparison-latest"><span>最新ネット残高</span><b>${num(latestNet)}千株</b></div></div><div class="comparison-legend"><span class="legend-buy">裁定買い残</span><span class="legend-sell">裁定売り残</span><span class="legend-net">差し引き（買い残−売り残）</span><span class="legend-price">日経平均（右目盛）</span><span class="legend-kiyohara-warn">5億株・注意</span><span class="legend-kiyohara-danger">10億株・危険</span></div><div class="comparison-scroll"><svg class="comparison-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="日経平均株価と裁定取引残高の週次推移"><text class="comparison-unit" x="${left}" y="22">（千株）</text><text class="comparison-unit right" x="${right}" y="22">（円）</text>${yTicks}<line class="comparison-zero" x1="${left}" y1="${zeroY}" x2="${right}" y2="${zeroY}"/><line class="comparison-kiyohara-warn" x1="${left}" y1="${warnY}" x2="${right}" y2="${warnY}"/><text class="comparison-threshold warn" x="${left+10}" y="${warnY-7}">5億株・注意</text><line class="comparison-kiyohara-danger" x1="${left}" y1="${dangerY}" x2="${right}" y2="${dangerY}"/><text class="comparison-threshold danger" x="${left+10}" y="${dangerY-7}">10億株・危険</text><polygon class="comparison-net-area" points="${netArea}"/><polyline class="comparison-buy-line" points="${points('buyBalance')}"/><polyline class="comparison-sell-line" points="${points('sellBalance')}"/><polyline class="comparison-price-line" points="${pricePoints}"/>${labels}</svg></div></section>`;
-  }
-  function metric(kind,title,icon,value,diff,note){return `<article class="arb-card ${kind}"><div class="kpi-head"><span class="kpi-icon">${icon}</span><div><div class="kpi-title">${title}</div><div class="kpi-value">${value===null?'取得不能':num(value)+'<small>千株</small>'}</div></div></div><div class="change"><span>前回比</span>${change(diff)}</div><div class="signal">● ${esc(note)}</div></article>`}
-  function netChart(title,rows,values,prices,tone){
-    const left=72,right=1360,top=38,bottom=205,netMax=Math.max(1100000,...values)*1.08,pMin=Math.min(...prices),pMax=Math.max(...prices),pSpan=pMax-pMin||1;
-    const x=i=>left+i*((right-left)/(rows.length-1)),netY=v=>bottom-v/netMax*(bottom-top),priceY=p=>bottom-(p-pMin)/pSpan*(bottom-top);
-    const ticks=rows.map((row,i)=>`<text class="week-label" x="${x(i)}" y="242" text-anchor="end" transform="rotate(-45 ${x(i)} 242)">${esc(row.date.slice(5).replace('-','/'))}</text>`).join('');
-    const netLine=values.map((v,i)=>`${x(i)},${netY(v)}`).join(' '),priceLine=prices.map((v,i)=>`${x(i)},${priceY(v)}`).join(' '),warnY=netY(500000),dangerY=netY(1000000);
-    return `<article class="chart-card net-level-chart" style="--chart-tone:${tone}"><h2 class="card-title">${esc(title)}｜過去52週</h2><p class="chart-meta"><span class="legend net">━ ネット裁定残（左軸）</span><span class="legend price">━ 日経225終値（右軸）</span><span class="legend warn">--- 5億株・注意</span><span class="legend danger">--- 10億株・危険</span></p><svg class="chart combined-chart" viewBox="0 0 1430 260" role="img" aria-label="ネット裁定残と清原ライン、日経225終値"><line class="grid" x1="${left}" y1="${top}" x2="${right}" y2="${top}"/><line class="grid" x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}"/><line class="kiyohara-warn" x1="${left}" y1="${warnY}" x2="${right}" y2="${warnY}"/><line class="kiyohara-danger" x1="${left}" y1="${dangerY}" x2="${right}" y2="${dangerY}"/><text class="threshold-label warn" x="${left+8}" y="${warnY-5}">5億株・注意</text><text class="threshold-label danger" x="${left+8}" y="${dangerY-5}">10億株・危険</text><text x="${left}" y="22">ネット裁定残（千株）</text><text x="${right}" y="22" text-anchor="end">日経225終値（円）</text><text x="${left-8}" y="${top+4}" text-anchor="end">${num(Math.round(netMax))}</text><text x="${left-8}" y="${warnY+4}" text-anchor="end">500,000</text><text x="${left-8}" y="${dangerY+4}" text-anchor="end">1,000,000</text><text x="${left-8}" y="${bottom}" text-anchor="end">0</text><text x="${right+8}" y="${top+4}">${num(Math.round(pMax))}</text><text x="${right+8}" y="${bottom}">${num(Math.round(pMin))}</text><polyline class="net-balance-line" points="${netLine}"/><polyline class="price-line" points="${priceLine}"/><circle cx="${x(values.length-1)}" cy="${netY(values.at(-1))}" r="4" fill="${tone}"/>${ticks}</svg></article>`;
-  }
-  function chart(title,history,key,tone){
-    const valueFor=row=>key==='net'?Number(row.buyBalance)-Number(row.sellBalance):Number(row[key]);
-    const rows=weekly(history).filter(x=>Number.isFinite(valueFor(x))&&Number.isFinite(Number(x.nikkei225Close)));
-    if(rows.length<2)return `<article class="chart-card"><h2 class="card-title">${esc(title)}</h2><div class="empty-chart">比較に必要な週次データを取得中です。</div></article>`;
-    const values=rows.map(valueFor),deltas=values.map((v,i)=>i?v-values[i-1]:0),prices=rows.map(x=>Number(x.nikkei225Close));
-    if(key==='net')return netChart(title,rows,values,prices,tone);
-    const left=72,right=1360,top=38,bottom=205,zero=122,span=Math.max(...deltas.map(Math.abs))||1,pMin=Math.min(...prices),pMax=Math.max(...prices),pSpan=pMax-pMin||1;
-    const x=i=>left+i*((right-left)/(rows.length-1)),priceY=p=>bottom-(p-pMin)/pSpan*(bottom-top),barWidth=Math.max(5,(right-left)/rows.length*.56);
-    const bars=deltas.map((d,i)=>{if(!i)return'';const h=Math.abs(d)/span*72,y=d>=0?zero-h:zero;return `<rect x="${x(i)-barWidth/2}" y="${y}" width="${barWidth}" height="${h}" rx="2" fill="${d>=0?'#078f80':'#df4e52'}"/>`}).join('');
-    const ticks=rows.map((row,i)=>`<text class="week-label" x="${x(i)}" y="242" text-anchor="end" transform="rotate(-45 ${x(i)} 242)">${esc(row.date.slice(5).replace('-','/'))}</text>`).join('');
-    const line=prices.map((p,i)=>`${x(i)},${priceY(p)}`).join(' '),midPrice=Math.round((pMin+pMax)/2);
-    return `<article class="chart-card" style="--chart-tone:${tone}"><h2 class="card-title">${esc(title)}｜過去52週</h2><p class="chart-meta"><span class="legend up">■ 前週比プラス</span><span class="legend down">■ 前週比マイナス</span><span class="legend price">━ 日経225終値（右軸）</span></p><svg class="chart combined-chart" viewBox="0 0 1430 260" role="img" aria-label="${esc(title)}の前週比と日経225終値"><line class="grid" x1="${left}" y1="${top}" x2="${right}" y2="${top}"/><line class="grid" x1="${left}" y1="${zero}" x2="${right}" y2="${zero}"/><line class="axis" x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}"/><text x="${left}" y="22" text-anchor="start">前週比（千株）</text><text x="${right}" y="22" text-anchor="end">日経225終値（円）</text><text x="${left-8}" y="${top+4}" text-anchor="end">+${num(Math.round(span))}</text><text x="${left-8}" y="${zero+4}" text-anchor="end">0</text><text x="${left-8}" y="${bottom}" text-anchor="end">-${num(Math.round(span))}</text><text x="${right+8}" y="${top+4}">${num(Math.round(pMax))}</text><text x="${right+8}" y="${zero+4}">${num(midPrice)}</text><text x="${right+8}" y="${bottom}">${num(Math.round(pMin))}</text>${bars}<polyline class="price-line" points="${line}"/><circle cx="${x(rows.length-1)}" cy="${priceY(prices.at(-1))}" r="4" fill="#173f7a"/>${ticks}</svg></article>`;
-  }
-  function addKiyoharaLine(d){
-    const card=root.querySelector('.dashboard-grid .chart-card:nth-child(3)');
-    const net=Number(d.latest?.buyBalance)-Number(d.latest?.sellBalance);if(!card||!Number.isFinite(net))return;
-    const level=net>=1000000?'danger':net>=500000?'warning':'normal';
-    const label=level==='danger'?'危険信号（10億株超）':level==='warning'?'注意信号（5億株超）':'平常圏（5億株未満）';
-    const position=Math.min(100,net/1000000*100);
-    card.classList.add('kiyohara-card');
-    card.insertAdjacentHTML('afterbegin',`<section class="kiyohara-line ${level}" aria-label="清原ライン"><div class="kiyohara-summary"><span>清原ライン<br><small>ネット裁定残</small></span><strong>${(net/100000).toFixed(1)}億株</strong><b>${label}</b></div><p><b>5億株超</b>で注意、<b>10億株超</b>で危険。急落局面の需給悪化を確認する目安です。</p><div class="kiyohara-meter"><i class="current" style="left:${position}%"></i><em class="safe">5億株未満<br>平常圏</em><em class="warn">5億株<br>注意</em><em class="danger">10億株<br>危険</em></div></section>`);
-  }
-  function render(d){
-    const buy=latest(d,'buyBalance'),sell=latest(d,'sellBalance'),net=buy===null||sell===null?null:buy-sell,buyDiff=latest(d,'buyChange'),sellDiff=latest(d,'sellChange');
-    document.querySelector('[data-as-of]').textContent=d.asOfDate||'取得不能';document.querySelector('[data-status]').textContent=d.sourceStatus||'取得不能';
-    root.innerHTML=`<section class="mechanism"><p class="lead">裁定取引は、先物と現物の価格差（ベーシス）に着目し、指数の需給に影響を与える取引です。</p><div class="flow"><div class="flow-step"><span class="flow-icon">↗</span><div><strong>日経225先物</strong><small>先物価格の変動</small></div></div><b class="arrow">→</b><div class="flow-step"><span class="flow-icon">⚖</span><div><strong>先物と現物の価格差</strong><small>理論的な差が発生</small></div></div><b class="arrow">→</b><div class="flow-step focus"><span class="flow-icon">⟳</span><div><strong>裁定取引</strong><small>差を埋めるポジションを構築</small></div></div><b class="arrow">→</b><div class="flow-step"><span class="flow-icon">▦</span><div><strong>現物225銘柄</strong><small>機械的な買い・売り</small></div></div><b class="arrow">→</b><div class="flow-step"><span class="flow-icon">▥</span><div><strong>日経225の需給</strong><small>需給と価格形成に作用</small></div></div></div></section><section class="kpi-grid">${metric('buy','裁定買い残','↗',buy,buyDiff,buyDiff<0?'減少し、裁定解消が進行':'残高の積み上がりを確認')}${metric('sell','裁定売り残','↓',sell,sellDiff,sellDiff>0?'直近は増加':'買い戻し余地を確認')}${metric('net','ネット裁定残','⇄',net,buyDiff===null||sellDiff===null?null:buyDiff-sellDiff,'買い圧力の残高を確認')}<article class="arb-card judge"><div class="kpi-head"><span class="kpi-icon">!</span><div><div class="kpi-title">需給判断</div><div class="judge-text">買い残縮小＝裁定解消の可能性</div></div></div><p>現物売り圧力の高まりに注意</p><div class="signal">● 先物・ベーシス・海外投資家と併読</div></article></section><section class="dashboard-grid">${chart('裁定買い残',d.history,'buyBalance','#2865e8')}${chart('裁定売り残',d.history,'sellBalance','#7b43c5')}${chart('ネット裁定残',d.history,'net','#078f80')}</section><aside class="read-card"><h2 class="card-title">このグラフの読み方</h2><ul><li>棒は裁定残の前週比です。青緑は増加、赤は減少を示します。</li><li>薄い紺色の線は日経225終値で、右側の目盛りで読みます。</li><li>残高が減る週と日経225の動きを、同じ横軸で比較できます。</li></ul></aside><p class="source">出典：<a href="${esc(d.sourcePageUrl||'https://www.jpx.co.jp/markets/statistics-equities/program/')}" target="_blank" rel="noopener">JPX 裁定取引の状況</a> ／ 日経225終値：<a href="${esc(d.nikkei225PriceSourceUrl||'https://finance.yahoo.com/quote/%5EN225/history/')}" target="_blank" rel="noopener">${esc(d.nikkei225PriceSourceName||'Yahoo Finance')}</a></p>`;
-  }
-  fetch('data/nikkei225-arbitrage.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error();return r.json()}).then(d=>{render(d);addKiyoharaLine(d);root.querySelector('.read-card')?.insertAdjacentHTML('afterend',comparisonChart(d.history))}).catch(()=>render({sourceStatus:'取得不能',latest:{},history:[]}));
+'use strict';
+const root=document.querySelector('[data-arbitrage]');if(!root)return;
+const ARB_URL='data/nikkei225-arbitrage.json';
+const SUPPLY_URL='data/nikkei225-supply-demand.json';
+const STOCKS_URL='data/stocks.json';
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const n=v=>v===null||v===undefined||v===''?null:(Number.isFinite(Number(String(v).replace(/,/g,'')))?Number(String(v).replace(/,/g,'')):null);
+const fmt=(v,d=0)=>n(v)===null?'取得不能':n(v).toLocaleString('ja-JP',{minimumFractionDigits:d,maximumFractionDigits:d});
+const shares=v=>n(v)===null?'取得不能（データ未取得）':`${fmt(n(v)/100000,2)}億株`;
+const signedShares=v=>n(v)===null?'取得不能（比較値未取得）':`${n(v)>0?'+':''}${fmt(n(v)/100000,2)}億株 ${n(v)>0?'↑':n(v)<0?'↓':'→'}`;
+const signed=(v,suffix='',d=0)=>n(v)===null?'取得不能':`${n(v)>0?'+':''}${fmt(v,d)}${suffix}`;
+const iso=v=>{const s=String(v||'').slice(0,10).replaceAll('/','-');return /^\d{4}-\d{2}-\d{2}$/.test(s)?s:'取得不能'};
+const dateTime=v=>{if(!v)return'取得不能';try{return new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(v))+' JST'}catch(_){return String(v)}};
+const tone=v=>n(v)>0?'positive':n(v)<0?'negative':'neutral';
+function normalizeHistory(d){
+ const rows=(Array.isArray(d?.history)?d.history:[]).map(x=>({date:iso(x.date),buy:n(x.buyBalance),sell:n(x.sellBalance),price:n(x.nikkei225Close)})).filter(x=>x.date!=='取得不能'&&x.buy!==null&&x.sell!==null).map(x=>({...x,net:x.buy-x.sell})).sort((a,b)=>a.date.localeCompare(b.date));
+ return rows.filter((x,i)=>i===rows.length-1||x.date!==rows[i+1].date);
+}
+function analyze(d){
+ const rows=normalizeHistory(d),asOf=iso(d?.asOfDate),latestHistory=rows.filter(x=>asOf==='取得不能'||x.date<=asOf).at(-1);
+ const buy=n(d?.latest?.buyBalance)??latestHistory?.buy??null,sell=n(d?.latest?.sellBalance)??latestHistory?.sell??null,net=buy!==null&&sell!==null?buy-sell:null;
+ let index=rows.findIndex(x=>x.date===asOf);if(index<0)index=rows.length-1;
+ const current=index>=0?rows[index]:null;
+ const delta=offset=>current&&index>=offset?current.net-rows[index-offset].net:null;
+ const prev=delta(1),d5=delta(5),d20=delta(20),window52=rows.slice(Math.max(0,index-259),index+1),nets=window52.map(x=>x.net);
+ const min52=nets.length?Math.min(...nets):null,max52=nets.length?Math.max(...nets):null;
+ const range=net!==null&&min52!==null&&max52!==null&&max52!==min52?Math.max(0,Math.min(100,(net-min52)/(max52-min52)*100)):null;
+ let status='中立',note='裁定残の変化は小さく、現時点で裁定取引による大きな需給の偏りは確認できません。';
+ if(net===null||prev===null){status='判定不能';note='裁定需給の判定に必要な公表値または比較値が不足しています。欠損値は推測していません。'}
+ else if(net<0){status='売り残優勢';note='裁定売り残が買い残を上回っています。売り残の解消方向を含め、次回公表値を確認します。'}
+ else if(range!==null&&range>=85&&prev>0&&d5>0&&d20>0){status='過熱';note=`ネット裁定残は52週レンジの${fmt(range,0)}%位置。前回比・1週間・4週間とも増加しており、裁定ポジションの積み上がりに注意が必要です。`}
+ else if(range!==null&&range>=70&&[prev,d5,d20].filter(v=>v!==null&&v>0).length>=2){status='やや過熱';note=`ネット裁定残は52週レンジの${fmt(range,0)}%位置。複数期間で増加しており、裁定ポジションの積み上がりに注意します。`}
+ else if(prev<0&&d5!==null&&d5<0){status='解消進行';note=`ネット裁定残は前回比と1週間変化が減少。${range!==null&&range>=70?'高水準ですが、':''}裁定解消が進み、需給の重さは低下方向です。`}
+ const price5=current&&index>=5&&current.price!==null&&rows[index-5].price!==null?current.price-rows[index-5].price:null;
+ let combination='比較可能な同一基準日の株価データが不足しています。';
+ if(price5!==null&&d5!==null){if(price5>0&&d5>0)combination='注意：日経225上昇と同時にネット裁定残も積み上がっています。';else if(price5<0&&d5<0)combination='裁定解消進行：株価調整とともにネット裁定残も減少しています。';else if(price5>0&&d5<0)combination='比較的健全な上昇：日経225上昇に対してネット裁定残は減少しています。';else if(price5<0&&d5>0)combination='需給悪化に注意：日経225下落中もネット裁定残が増えています。';else combination='日経225またはネット裁定残の方向感は限定的です。'}
+ return{rows,index,current,buy,sell,net,prev,d5,d20,range,min52,max52,status,note,price5,combination};
+}
+function statusClass(s){return s==='過熱'?'hot':s==='やや過熱'?'warm':s==='解消進行'?'unwind':s==='売り残優勢'?'sell':'neutral'}
+function kpi(label,value,sub,kind){return`<article class="arb-kpi ${kind}"><div class="arb-kpi-label">${esc(label)}</div><div class="arb-kpi-value">${value}</div><div class="arb-kpi-sub">${sub}</div></article>`}
+function rowByLabel(stocks,label){return(stocks?.marketInternals?.japan?.rows||[]).find(r=>Array.isArray(r)&&String(r[0]).trim()===label)||null}
+function parsePair(v){const m=String(v||'').match(/([\d,]+)\s*\/\s*([\d,]+)/);return m?[Number(m[1].replaceAll(',','')),Number(m[2].replaceAll(',',''))]:[null,null]}
+function marketInternals(stocks,a){
+ const breadth=rowByLabel(stocks,'値上がり銘柄 / 値下がり銘柄'),turnover=rowByLabel(stocks,'東証プライム売買代金'),[adv,dec]=parsePair(breadth?.[1]);
+ let text='市場内部データが不足しているため、裁定残との組み合わせは判定できません。';
+ if(adv!==null&&dec!==null&&a.price5!==null&&a.d5!==null){if(a.price5>0&&a.d5>0&&adv<=dec)text='日経225は上昇していますが市場の広がりは弱く、裁定残増加と合わせると指数主導色が強い可能性があります。';else if(a.price5>0&&adv>dec)text='指数上昇に加えて値上がり銘柄数も優勢です。裁定だけに依存した上昇とは断定しません。';else text='値上がり・値下がりの広がりと裁定残を併読し、指数だけの動きか確認します。'}
+ return{adv,dec,turnover:turnover?.[1]||null,text,date:stocks?.marketInternals?.japan?.dataDate||''};
+}
+function specialEvents(supply){
+ const sq=iso(supply?.options?.nextSqDate),days=n(supply?.options?.businessDaysToSq),month=sq!=='取得不能'?Number(sq.slice(5,7)):null,isMsq=[3,6,9,12].includes(month);
+ return[{name:isMsq?'MSQ':'SQ',date:sq,note:days===null?'残存営業日数は取得不能':`あと${fmt(days)}営業日`},{name:'ロールオーバー期間',date:sq,note:sq==='取得不能'?'取得不能（SQ日程未取得）':'SQ接近時の限月移行を監視'},{name:'配当落ち',date:'取得不能',note:'既存データに確認済み日程なし'},{name:'限月交代',date:'取得不能',note:'確認済み日付は未収録'}];
+}
+function chartSvg(rows){
+ if(rows.length<2)return'<div class="arb-empty">取得不能（比較可能な履歴不足）</div>';
+ const W=1200,H=420,L=76,R=1115,T=32,B=338,pMin=Math.min(...rows.map(x=>x.price).filter(Number.isFinite)),pMax=Math.max(...rows.map(x=>x.price).filter(Number.isFinite)),balances=rows.flatMap(x=>[x.buy,x.sell,x.net]),bMin=Math.min(0,...balances),bMax=Math.max(0,...balances),pSpan=pMax-pMin||1,bSpan=bMax-bMin||1;
+ const x=i=>L+i*(R-L)/(rows.length-1),yp=v=>T+(pMax-v)/pSpan*(B-T),yb=v=>T+(bMax-v)/bSpan*(B-T),line=fn=>rows.map((r,i)=>`${x(i)},${fn(r)}`).join(' '),ticks=[0,.25,.5,.75,1].map(t=>{const y=T+t*(B-T);return`<line class="arb-gridline" x1="${L}" y1="${y}" x2="${R}" y2="${y}"/><text x="${L-10}" y="${y+4}" text-anchor="end">${fmt(pMax-t*pSpan,0)}</text><text x="${R+10}" y="${y+4}">${fmt((bMax-t*bSpan)/100000,1)}</text>`}).join(''),step=(R-L)/(rows.length-1);
+ const hits=rows.map((r,i)=>`<rect class="arb-hit" data-index="${i}" x="${Math.max(L,x(i)-step/2)}" y="${T}" width="${Math.max(5,step)}" height="${B-T}"><title>${r.date}｜日経225 ${fmt(r.price)}円｜買い ${shares(r.buy)}｜売り ${shares(r.sell)}｜ネット ${shares(r.net)}</title></rect>`).join('');
+ return`<svg class="arb-main-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="日経225と裁定買い残、裁定売り残、ネット裁定残の推移">${ticks}<line class="arb-zero" x1="${L}" y1="${yb(0)}" x2="${R}" y2="${yb(0)}"/><polyline class="price" points="${line(r=>yp(r.price))}"/><polyline class="buy" points="${line(r=>yb(r.buy))}"/><polyline class="sell" points="${line(r=>yb(r.sell))}"/><polyline class="net" points="${line(r=>yb(r.net))}"/>${hits}<text class="axis-title" x="${L}" y="18">日経225（円）</text><text class="axis-title" x="${R}" y="18" text-anchor="end">裁定残（億株）</text><text x="${L}" y="375">${rows[0].date}</text><text x="${R}" y="375" text-anchor="end">${rows.at(-1).date}</text></svg>`;
+}
+function renderChart(allRows,period){
+ const counts={4:20,13:65,26:130,52:260,156:780},usable=allRows.filter(x=>x.price!==null),rows=usable.slice(-counts[period]),host=root.querySelector('[data-chart-host]');if(!host)return;
+ host.innerHTML=chartSvg(rows);host.dataset.rows=JSON.stringify(rows);root.querySelector('[data-chart-coverage]').textContent=period==='156'&&usable.length<780?`3年を選択中／保存済み${usable.length}取引日を表示`:`${period}週／${rows.length}取引日`;
+ root.querySelectorAll('[data-period]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.period===String(period))));
+ host.querySelectorAll('.arb-hit').forEach(hit=>hit.addEventListener('click',()=>{const r=rows[Number(hit.dataset.index)];root.querySelector('[data-chart-tooltip]').innerHTML=`<b>${esc(r.date)}</b><span>日経225 ${fmt(r.price)}円</span><span>買い ${shares(r.buy)}</span><span>売り ${shares(r.sell)}</span><span>ネット ${shares(r.net)}</span>`}));
+}
+function render(d,supply,stocks){
+ const a=analyze(d),internal=marketInternals(stocks,a),arbMeta=supply?.arbitrage||{},sameDate=iso(arbMeta.asOfDate)===iso(d.asOfDate),published=sameDate&&arbMeta.fetchedAt?iso(arbMeta.fetchedAt):'取得不能',webUpdated=sameDate?supply?.generatedAt:null;
+ const futures=n(supply?.futures?.price),spot=n(supply?.spot?.value),sameBasisDate=iso(supply?.futures?.asOfDate)===iso(supply?.spot?.asOfDate),basis=sameBasisDate&&futures!==null&&spot!==null?futures-spot:null,basisPct=basis!==null&&spot?basis/spot*100:null;
+ const headDate=document.querySelector('[data-as-of]');if(headDate)headDate.textContent=iso(d.asOfDate);const headStatus=document.querySelector('[data-status]');if(headStatus)headStatus.textContent=d.sourceStatus||'取得不能';
+ const events=specialEvents(supply),rangePos=a.range===null?0:a.range;
+ root.innerHTML=`
+ <section class="arb-overview">
+  <article class="arb-judgement ${statusClass(a.status)}"><div class="arb-eyebrow">裁定需給判定</div><div class="arb-status">${esc(a.status)}</div><p>${esc(a.note)}</p><div class="arb-range"><div><b>52週レンジ位置</b><strong>${a.range===null?'取得不能':fmt(a.range,0)+'%'}</strong></div><div class="arb-range-track"><i style="left:${rangePos}%"></i></div><div class="arb-range-label"><span>低</span><span>高</span></div></div></article>
+  ${kpi('ネット裁定残',shares(a.net),'買い残 − 売り残','net')}
+  ${kpi('裁定買い残',shares(a.buy),`前回比 ${signedShares(n(d.latest?.buyChange))}`,'buy')}
+  ${kpi('裁定売り残',shares(a.sell),`前回比 ${signedShares(n(d.latest?.sellChange))}`,'sell')}
+  <div class="arb-deltas">${kpi('前回比',signedShares(a.prev),'直前取引日との差','delta')}${kpi('1週間変化',signedShares(a.d5),'5取引日前との差','delta')}${kpi('4週間変化',signedShares(a.d20),'20取引日前との差','delta')}</div>
+ </section>
+ <div class="arb-dates"><span><b>基準日</b>${iso(d.asOfDate)}</span><span><b>公表日</b>${published}</span><span><b>WEB更新日時</b>${dateTime(webUpdated)}</span><em>JPX公表値は原則として前々営業日分です</em></div>
+ <section class="arb-panel arb-chart-panel"><div class="arb-panel-head"><div><h2>日経225 × 裁定残高 推移</h2><p>株価と裁定残の方向を同じ取引日で比較</p></div><div class="arb-periods" role="group" aria-label="表示期間">${[['4','4週'],['13','13週'],['26','26週'],['52','52週'],['156','3年']].map(x=>`<button type="button" data-period="${x[0]}" aria-pressed="${x[0]==='52'}">${x[1]}</button>`).join('')}</div></div><div class="arb-legend"><span class="price">日経225</span><span class="buy">裁定買い残</span><span class="sell">裁定売り残</span><span class="net">ネット裁定残</span><small data-chart-coverage></small></div><div data-chart-host></div><div class="arb-chart-tooltip" data-chart-tooltip><b>${iso(d.asOfDate)}</b><span>グラフをタップすると数値を表示します</span></div></section>
+ <section class="arb-analysis-grid">
+  <article class="arb-panel"><h2>株価との組み合わせ判定</h2><div class="arb-direction"><span>日経225 <b class="${tone(a.price5)}">${a.price5>0?'↑':a.price5<0?'↓':'→'}</b></span><span>ネット裁定残 <b class="${tone(a.d5)}">${a.d5>0?'↑':a.d5<0?'↓':'→'}</b></span></div><p class="arb-interpretation">${esc(a.combination)}</p><small>相関を断定せず、直近5取引日の方向を組み合わせて確認します。</small></article>
+  <article class="arb-panel"><h2>裁定残 × 市場内部</h2><div class="arb-mini-grid">${kpi('値上がり銘柄数',internal.adv===null?'取得不能':fmt(internal.adv),'東証プライム','mini')}${kpi('値下がり銘柄数',internal.dec===null?'取得不能':fmt(internal.dec),'東証プライム','mini')}${kpi('200日線上銘柄比率','取得不能','既存データに未収録','mini')}${kpi('東証プライム売買代金',internal.turnover||'取得不能','既存市場内部データ','mini')}</div><p class="arb-interpretation">${esc(internal.text)}</p><small>市場内部基準日：${iso(internal.date)}</small></article>
+  <article class="arb-panel"><h2>当日裁定需給の参考</h2><div class="arb-mini-grid">${kpi('日経225先物（期近）',futures===null?'取得不能':fmt(futures)+'円',`基準日 ${iso(supply?.futures?.asOfDate)}`,'mini')}${kpi('日経225現物',spot===null?'取得不能':fmt(spot,2),`基準日 ${iso(supply?.spot?.asOfDate)}`,'mini')}${kpi('ベーシス',basis===null?'取得不能（基準日不一致）':signed(basis,'円',2),'先物 − 現物','mini')}${kpi('ベーシス率',basisPct===null?'取得不能':signed(basisPct,'%',2),'参考値','mini')}</div><p class="arb-caution">これは当日裁定需給の参考値です。JPXの正式な当日裁定残高ではありません。</p></article>
+  <article class="arb-panel"><h2>特殊需給イベント</h2><div class="arb-events">${events.map(e=>`<div><b>${esc(e.name)}</b><strong>${esc(e.date)}</strong><span>${esc(e.note)}</span></div>`).join('')}</div><p class="arb-interpretation">急増・急減が相場観によるものか、SQやロールなどの機械的要因かを区別するための確認欄です。</p></article>
+ </section>
+ <aside class="arb-panel arb-howto"><h2>このページの読み方</h2><ol><li>ネット裁定残の現在水準と52週レンジ位置を確認します。</li><li>前回比、5取引日、20取引日の順に、積み上がりか解消かを確認します。</li><li>日経225、市場内部、当日ベーシス、特殊イベントを併読します。</li><li>買い残が多いだけで暴落や弱気と断定しません。</li></ol><p>日次残高は株数ベースです。週次の金額ベース資料とは混在させません。</p></aside>
+ <p class="arb-source">出典：<a href="${esc(d.sourcePageUrl||'https://www.jpx.co.jp/markets/statistics-equities/program/')}" target="_blank" rel="noopener">JPX 裁定取引の状況（日別）</a> ／ 日経225終値：<a href="${esc(d.nikkei225PriceSourceUrl||'https://finance.yahoo.com/quote/%5EN225/history/')}" target="_blank" rel="noopener">${esc(d.nikkei225PriceSourceName||'Yahoo Finance')}</a></p>`;
+ root.querySelectorAll('[data-period]').forEach(b=>b.addEventListener('click',()=>renderChart(a.rows,b.dataset.period)));renderChart(a.rows,'52');
+}
+async function load(){try{const [d,supply,stocks]=await Promise.all([fetch(ARB_URL,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('裁定履歴を取得できません');return r.json()}),fetch(SUPPLY_URL,{cache:'no-store'}).then(r=>r.ok?r.json():{}),fetch(STOCKS_URL,{cache:'no-store'}).then(r=>r.ok?r.json():{})]);render(d,supply,stocks)}catch(err){root.innerHTML=`<section class="loading-card"><b>取得不能</b><p>${esc(err.message||'裁定取引データを読み込めませんでした')}</p></section>`}}
+load();
 })();
