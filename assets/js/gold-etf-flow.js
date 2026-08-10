@@ -203,8 +203,8 @@ function renderCard(card,data){
     </div>
     <div class="gold-etf-charts">
       <div class="gold-etf-chart-card">
-        <div class="gold-etf-chart-head"><div class="gold-etf-chart-title">直近の日次ETFフロー（GLD＋IAU・同一基準日のみ）</div><div class="gold-etf-range"><button type="button" class="active" data-etf-range="10">10日</button><button type="button" data-etf-range="22">1か月</button><button type="button" data-etf-range="66">3か月</button></div></div>
-        <div class="gold-etf-chart-wrap" data-etf-bar>${buildBarSvg(history.slice(-10))}</div>
+        <div class="gold-etf-chart-head"><div class="gold-etf-chart-title">直近の日次ETFフロー（GLD＋IAU・同一基準日のみ）</div><div class="gold-etf-range"><button type="button" data-etf-range="10">10日</button><button type="button" class="active" data-etf-range="22">1か月</button><button type="button" data-etf-range="66">3か月</button></div></div>
+        <div class="gold-etf-chart-wrap" data-etf-bar>${buildBarSvg(history.slice(-22))}</div>
       </div>
       <div class="gold-etf-chart-card cumulative">
         <div class="gold-etf-chart-head"><div class="gold-etf-chart-title">累積フロー（GLD＋IAU）</div></div>
@@ -222,7 +222,7 @@ function renderCard(card,data){
   `;
   card.querySelectorAll('[data-etf-range]').forEach(btn=>btn.addEventListener('click',()=>{
     card.querySelectorAll('[data-etf-range]').forEach(x=>x.classList.toggle('active',x===btn));
-    const range=Number(btn.getAttribute('data-etf-range'))||10;
+    const range=Number(btn.getAttribute('data-etf-range'))||22;
     const target=card.querySelector('[data-etf-bar]');
     if(target)target.innerHTML=buildBarSvg(history.slice(-range));
   }));
