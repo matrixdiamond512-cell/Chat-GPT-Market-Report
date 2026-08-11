@@ -12,19 +12,21 @@ async function load(url){const r=await fetch(`${url}?v=${Date.now()}`,{cache:'no
 
 function renderTradersWeb(tw){
   const ok=tw.status==='confirmed'&&tw.pageConfirmed!==false;
+  const preserved=tw.status==='preserved_after_fetch_error'&&Number(tw?.keyLevels?.extractedRowCount)>0;
+  const usable=ok||preserved;
   const freshness=tw.freshness==='today'?'当日情報':tw.freshness==='previous-session'?'前営業日情報':'鮮度注意';
   if($('tradersweb-asof')) $('tradersweb-asof').textContent=tw.sourceUpdatedAt?fmtJst(tw.sourceUpdatedAt):'取得不能';
   if($('tradersweb-checked')) $('tradersweb-checked').textContent=tw.checkedAt?fmtJst(tw.checkedAt):'—';
   if($('tradersweb-status')){
-    $('tradersweb-status').textContent=ok?`取得済み・${freshness}`:'取得確認できず';
+    $('tradersweb-status').textContent=ok?`取得済み・${freshness}`:preserved?'前回確認値・最新取得遅延':'取得確認できず';
     $('tradersweb-status').classList.toggle('usd-positive',ok);
-    $('tradersweb-status').classList.toggle('usd-error',!ok);
+    $('tradersweb-status').classList.toggle('usd-error',!usable);
   }
 
   const note=$('tradersweb-source-note');
   if(!note)return;
   const card=note.parentElement;
-  if(!ok){
+  if(!usable){
     card.innerHTML=`<h3>Traders Web FX 無料ページ</h3><p class="usd-error">注文水準を取得できませんでした。${tw.error?` 理由：${esc(tw.error)}`:''}</p>`;
     return;
   }
