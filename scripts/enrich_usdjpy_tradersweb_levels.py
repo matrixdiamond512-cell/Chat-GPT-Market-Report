@@ -55,14 +55,19 @@ def price_range(label: str) -> tuple[float, float]:
 
 
 def parse_rows(text: str) -> list[dict]:
+    # The source used to expose a literal ``|`` between the price and the
+    # description.  It is now only a visual separator in the HTML, so use the
+    # next price (or the members-only notice) as the row boundary instead.
     pattern = re.compile(
-        r"(\d{3}\.\d{2}(?:-\d{2})?)円\s*\|\s*(.*?)"
-        r"(?=\s+\d{3}\.\d{2}(?:-\d{2})?円\s*\||\s+プレミアム会員サービス|$)",
+        r"(\d{3}\.\d{2}(?:-\d{2})?)円\s*(?:\|\s*)?(.*?)"
+        r"(?=\s+\d{3}\.\d{2}(?:-\d{2})?円(?:\s|\|)|\s+プレミアム会員サービス|$)",
         re.S,
     )
     rows = []
     for price, desc in pattern.findall(text):
         desc = re.sub(r"\s+", " ", desc).strip()
+        if not desc or not any(word in desc for word in ("売り", "買い", "現在", "OP", "ストップ")):
+            continue
         low, high = price_range(price)
         rows.append({
             "price": price,
