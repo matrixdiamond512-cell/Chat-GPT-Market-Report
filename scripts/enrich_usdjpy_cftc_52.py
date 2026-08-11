@@ -8,6 +8,7 @@ import build_usdjpy_supply_demand as base
 ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = ROOT / "data" / "usdjpy-supply-demand.json"
 TARGET_WEEKS = 52
+MINIMUM_WEEKS = 26
 
 
 def main() -> None:
@@ -19,19 +20,36 @@ def main() -> None:
     base.LOOKBACK_WEEKS = TARGET_WEEKS
     cftc = base.fetch_cftc(previous)
     series = cftc.get("series") or []
+    fetched_weeks = len(series)
 
-    if len(series) < TARGET_WEEKS:
-        raise SystemExit(
-            f"CFTC 52-week expansion failed: expected {TARGET_WEEKS}, got {len(series)}"
-        )
+    previous_series = previous.get("series") or []
+    if len(series) < MINIMUM_WEEKS and len(previous_series) >= MINIMUM_WEEKS:
+        # A partial CFTC response must not truncate a previously usable history.
+        latest_by_date = {str(item.get("date") or item.get("asOf") or item.get("asOfDate")): item for item in previous_series}
+        for item in series:
+            latest_by_date[str(item.get("date") or item.get("asOf") or item.get("asOfDate"))] = item
+        series = sorted(latest_by_date.values(), key=lambda item: str(item.get("date") or item.get("asOf") or item.get("asOfDate")))[-TARGET_WEEKS:]
+        cftc["series"] = series
+        cftc["status"] = "preserved_after_fetch_error"
+        cftc["error"] = f"CFTC履歴不足（取得{fetched_weeks}週）。前回正常履歴を保持"
+    elif len(series) < MINIMUM_WEEKS:
+        cftc["status"] = "unavailable"
+        cftc["error"] = f"CFTC履歴不足: 最低{MINIMUM_WEEKS}週に対して{len(series)}週"
+    elif len(series) < TARGET_WEEKS:
+        cftc["status"] = "degraded"
+        cftc["error"] = f"CFTC 52週拡張は一部取得: {len(series)}週"
+    else:
+        cftc["status"] = "verified"
+        cftc.pop("error", None)
 
     price_points = sum(isinstance(item.get("price"), (int, float)) for item in series)
     cftc["lookbackWeeks"] = len(series)
     cftc["verifiedPoints"] = len(series)
     cftc["priceVerifiedPoints"] = price_points
+    cftc["frequency"] = "weekly"
     cftc["note"] = (
         "CFTC公式のJapanese Yen・Non-Commercial Long/Shortを使用。"
-        "直近52週を年次履歴から取得し、各CFTC基準日のUSD/JPY価格を重ねる。"
+        f"直近{len(series)}週を年次履歴から取得し、各CFTC基準日のUSD/JPY価格を重ねる。"
     )
 
     data["cftc"] = cftc
@@ -53,7 +71,7 @@ def main() -> None:
     print(
         json.dumps(
             {
-                "status": "expanded",
+                "status": cftc.get("status"),
                 "weeks": len(series),
                 "pricePointsBeforeFallback": price_points,
                 "asOf": cftc.get("asOf"),

@@ -10,8 +10,8 @@ const signed=(v,d=2,suffix='')=>n(v)===null?'—':`${Number(v)>0?'+':''}${Number
 const intSigned=v=>n(v)===null?'—':`${Number(v)>0?'+':''}${Math.round(Number(v)).toLocaleString('en-US')}`;
 const dateText=v=>v?String(v).slice(0,10).replaceAll('-','/'):'取得待ち';
 const dtText=v=>{if(!v)return'取得待ち';try{return new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(v)).replace(/\//g,'/').replace(' ',' ')+' JST'}catch(_){return String(v)}};
-const statusKind=s=>s==='verified'?'good':s==='stale'?'warn':'muted';
-const badge=(s,label)=>`<span class="gold-badge ${statusKind(s)}">${esc(label||({verified:'確認済み',stale:'前回確認値',unavailable:'取得待ち'}[s]||s||'取得待ち'))}</span>`;
+const statusKind=s=>s==='verified'?'good':['stale','preserved_after_fetch_error','degraded'].includes(s)?'warn':'muted';
+const badge=(s,label)=>`<span class="gold-badge ${statusKind(s)}">${esc(label||({verified:'確認済み',stale:'前回確認値',preserved_after_fetch_error:'取得失敗・前回値',degraded:'一部遅延',unavailable:'取得不能'}[s]||s||'取得待ち'))}</span>`;
 const source=(x)=>x&&x.sourceUrl?`<div class="gold-source-line">出典：<a href="${esc(x.sourceUrl)}" target="_blank" rel="noopener">${esc(x.sourceName||'情報源')}</a></div>`:'';
 const valClass=v=>n(v)>0?'up':n(v)<0?'down':'';
 const item=(obj,key)=>obj&&typeof obj==='object'?(obj[key]||{}):{};

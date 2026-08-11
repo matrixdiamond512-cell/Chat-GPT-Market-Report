@@ -3,8 +3,11 @@ name: Update USDJPY supply demand page
 on:
   workflow_dispatch:
   schedule:
-    # 06:35 JST Monday-Friday = 21:35 UTC Sunday-Thursday
+    # Morning, after Tokyo, before Europe and before New York.
     - cron: "35 21 * * 0-4"
+    - cron: "15 6 * * 1-5"
+    - cron: "0 8 * * 1-5"
+    - cron: "0 12 * * 1-5"
   push:
     branches:
       - main
@@ -82,9 +85,9 @@ jobs:
           assert tw.get('pageConfirmed') is True
           assert levels.get('extractedRowCount', 0) > 0
           assert data.get('coreSnapshot') is not None
-          assert len(series) >= 52, f'CFTC series must have 52 weeks, got {len(series)}'
-          assert cftc.get('priceStatus') == 'available'
-          assert price_points >= 52, f'USDJPY price series must have 52 points, got {price_points}'
+          assert len(series) >= 26, f'CFTC series must retain at least 26 weeks, got {len(series)}'
+          assert cftc.get('status') in {'verified','degraded','preserved_after_fetch_error'}
+          assert price_points >= 26, f'USDJPY price series must retain at least 26 points, got {price_points}'
 
           index = json.loads(Path('data/usdjpy-supply-demand-archive/index.json').read_text(encoding='utf-8'))
           reports = index.get('reports') or []

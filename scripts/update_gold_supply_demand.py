@@ -15,6 +15,7 @@ import io
 import json
 import math
 import re
+import time
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -81,18 +82,28 @@ def parse_date(v: Any) -> date | None:
     return None
 
 
-def request(url: str, *, params: dict[str, Any] | None = None, timeout: int = 30) -> requests.Response:
-    r = requests.get(url, params=params, timeout=timeout, headers={"User-Agent": UA, "Accept": "*/*"})
-    r.raise_for_status()
-    return r
+def request(url: str, *, params: dict[str, Any] | None = None, timeout: int | tuple[int, ...] = 30) -> requests.Response:
+    timeouts = timeout if isinstance(timeout, tuple) else (timeout,)
+    last_error: Exception | None = None
+    for attempt, seconds in enumerate(timeouts, start=1):
+        try:
+            response = requests.get(url, params=params, timeout=seconds, headers={"User-Agent": UA, "Accept": "*/*"})
+            response.raise_for_status()
+            return response
+        except requests.RequestException as exc:
+            last_error = exc
+            if attempt < len(timeouts):
+                time.sleep(min(2 ** (attempt - 1), 8))
+    raise RuntimeError(f"HTTP取得失敗（{len(timeouts)}回試行）: {last_error}")
 
 
 def stale_copy(previous: dict[str, Any] | None, reason: str) -> dict[str, Any]:
     if not isinstance(previous, dict) or not any(v not in (None, "", []) for k, v in previous.items() if k not in {"status", "error"}):
         return {"status": "unavailable", "error": reason}
     out = dict(previous)
-    out["status"] = "stale"
+    out["status"] = "preserved_after_fetch_error"
     out["error"] = reason
+    out["lastAttemptAt"] = now_iso()
     return out
 
 
@@ -120,7 +131,7 @@ def fetch_yahoo_daily(symbol: str) -> list[tuple[date, float]]:
 
 def fetch_comex(previous: dict[str, Any] | None) -> dict[str, Any]:
     try:
-        pdf = request(CME_PDF, timeout=45).content
+        pdf = request(CME_PDF, timeout=(20, 30, 45)).content
         reader = PdfReader(io.BytesIO(pdf))
         text = "\n".join((p.extract_text() or "") for p in reader.pages)
         dm = re.search(r"(?:Mon|Tue|Wed|Thu|Fri),\s+([A-Z][a-z]{2})\s+(\d{1,2}),\s+(\d{4})", text)
@@ -385,7 +396,15 @@ def fetch_wgc_premiums(previous: dict[str, Any] | None) -> dict[str, Any]:
             "fetchedAt": now_iso(),
         }
     except Exception as exc:
-        return stale_copy(prev, f"WGC現物プレミアム取得保留: {type(exc).__name__}: {exc}")
+        return {
+            "status": "unavailable",
+            "frequency": "weekly",
+            "sourceName": "World Gold Council Local gold price premium/discount",
+            "sourceUrl": WGC_PREMIUM,
+            "fetchedAt": now_iso(),
+            "error": f"WGC現物プレミアム取得不能: {type(exc).__name__}: {exc}",
+            "note": "一般公開経路を確認できないため旧値を最新値として表示しません。",
+        }
 
 
 def assessment(data: dict[str, Any]) -> dict[str, Any]:
@@ -510,7 +529,13 @@ def main() -> int:
             "global": stale_copy((prev_etf or {}).get("global") if isinstance(prev_etf, dict) else None, "WGC世界ETFは週次/月次の公開値を自動取得できる場合のみ更新"),
         },
         "physical": fetch_wgc_premiums(previous.get("physical") if isinstance(previous, dict) else None),
-        "curve": stale_copy(previous.get("curve") if isinstance(previous, dict) else None, "先物カーブは安定した無料公開データ連携を確認後に更新"),
+        "curve": {
+            "status": "unavailable",
+            "implementationStatus": "not_implemented",
+            "frequency": "daily",
+            "error": "未実装・安定データソース確認中",
+            "note": "安定した無料公開データ連携を確認後に実装します。",
+        },
         "centralBank": previous.get("centralBank") if isinstance(previous.get("centralBank"), dict) else {
             "status": "stale",
             "period": "2026-05",
@@ -525,6 +550,7 @@ def main() -> int:
             "usdjpy": {},
         },
     }
+    data["centralBank"]["frequency"] = "monthly"
     usd = ((market.get("markets") or {}).get("usdjpy") or {})
     if usd.get("verificationStatus") == "verified" and num(usd.get("value")) is not None:
         data["environment"]["usdjpy"] = {

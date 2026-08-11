@@ -68,6 +68,8 @@ jobs:
           python -m py_compile scripts/enrich_nikkei225_spot.py
           python -m py_compile scripts/enrich_nikkei225_iv.py
           python -m py_compile scripts/enrich_nikkei225_cftc_positioning.py
+          python -m py_compile scripts/lib/jpx_arbitrage.py
+          python -m py_compile scripts/update_nikkei225_arbitrage.py
           python -m py_compile scripts/build_nikkei225_supply_demand_archive.py
       - name: Build base Nikkei 225 supply-demand JSON
         run: python scripts/update_nikkei225_supply_demand.py
@@ -93,6 +95,8 @@ jobs:
         run: python scripts/enrich_nikkei225_iv.py
       - name: Add CFTC TFF Leveraged Funds 52-week positioning
         run: python scripts/enrich_nikkei225_cftc_positioning.py
+      - name: Keep the dedicated arbitrage page aligned
+        run: python scripts/update_nikkei225_arbitrage.py --from-supply
       - name: Build Nikkei 225 daily archive
         run: python scripts/build_nikkei225_supply_demand_archive.py
       - name: Validate JSON and archive
@@ -133,13 +137,13 @@ jobs:
       - name: Commit Nikkei 225 supply-demand data and archive
         shell: bash
         run: |
-          if git diff --quiet -- data/nikkei225-supply-demand.json data/nikkei225-supply-demand-archive; then
+          if git diff --quiet -- data/nikkei225-supply-demand.json data/nikkei225-supply-demand-archive data/nikkei225-arbitrage.json; then
             echo "Nikkei 225 supply-demand JSON and archive are already up to date."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/nikkei225-supply-demand.json data/nikkei225-supply-demand-archive
+          git add data/nikkei225-supply-demand.json data/nikkei225-supply-demand-archive data/nikkei225-arbitrage.json
           git commit -m "Update Nikkei 225 supply-demand data and archive"
           git pull --rebase origin main
           git push origin main
