@@ -21,7 +21,7 @@ body{margin:0;background:#fff;color:var(--text);font-family:-apple-system,BlinkM
 .panel{min-width:0;border:1px solid var(--line);border-radius:6px;background:#fff;box-shadow:var(--shadow);overflow:hidden}
 .panel-title{display:flex;align-items:center;gap:10px;margin:0;padding:7px 14px;background:linear-gradient(90deg,#063baf,#075fe8);color:#fff;font-size:16px;line-height:1.25;font-weight:1000}
 .flag{display:inline-grid;place-items:center;width:24px;height:18px;border-radius:2px;background:#fff;font-size:16px}
-.panel-body{padding:10px 12px}.table-wrap{overflow:auto}
+.panel-body{padding:10px 12px}.table-wrap{overflow:auto}.component-freshness{display:flex;gap:8px;flex-wrap:wrap;padding:7px 12px;border-bottom:1px solid #e3ebf7;background:#f7faff;color:#52647f;font-size:11px;font-weight:900}
 table{width:100%;border-collapse:collapse;min-width:680px}
 th,td{border:1px solid var(--line);padding:6px 9px;font-size:13px;vertical-align:middle}
 th{background:#eef3fb;color:var(--navy);font-weight:1000;text-align:center}
@@ -54,7 +54,7 @@ td:first-child{font-weight:900}.num{text-align:right;font-variant-numeric:tabula
   const arr=v=>Array.isArray(v)?v:[];
   const cls=v=>{const t=String(v??'').trim();return t.startsWith('+')||/上昇|買い|改善|強/.test(t)?'up':t.startsWith('-')||t.startsWith('−')||/下落|売り|悪化|弱/.test(t)?'down':'muted'};
   const flag=c=>c==='US'?'🇺🇸':c==='JP'?'🇯🇵':'';
-  const panel=(s,b)=>`<article class="panel"><h2 class="panel-title"><span class="flag">${flag(s?.flag)}</span>${esc((s?.title||'取得不能').replace('（上昇率TOP5）',''))}</h2>${b}</article>`;
+  const panel=(s,b)=>`<article class="panel"><h2 class="panel-title"><span class="flag">${flag(s?.flag)}</span>${esc((s?.title||'取得不能').replace('（上昇率TOP5）',''))}</h2><div class="component-freshness"><span>基準日 ${esc(s?.dataDate||s?.asOfDate||s?.sourceDate||'取得不能')}</span><span>最終取得 ${esc(s?.updatedAt||s?.fetchedAt||'取得日時なし')}</span><span>${esc(s?.frequency||'更新頻度未設定')}</span><span>${esc(s?.status||'状態未設定')}</span></div>${b}</article>`;
   const table=(cols,rows,cn='')=>`<div class="table-wrap"><table class="${cn}"><thead><tr>${arr(cols).map(x=>`<th>${esc(x)}</th>`).join('')}</tr></thead><tbody>${arr(rows).map(r=>`<tr>${arr(r).map((x,i)=>`<td class="${i===1||i===2?`num ${cls(x)}`:i===3?'comment':''}">${esc(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
   const market=s=>panel(s,table(s?.columns,s?.rows,'market-table'));
   const rankRows=(items,type)=>arr(items).map(x=>`<tr>${type==='mover'?`<td class="num">${esc(x.rank)}</td>`:''}<td>${esc(x.name)}${x.reason?`<span class="reason">${esc(x.reason)}</span>`:''}</td>${type==='mover'?`<td class="num">${esc(x.close)}</td><td class="num ${cls(x.change)}">${esc(x.change)}</td>`:`<td class="num ${cls(x.contribution)}">${esc(x.contribution)}</td>`}</tr>`).join('');
@@ -97,6 +97,6 @@ td:first-child{font-weight:900}.num{text-align:right;font-variant-numeric:tabula
 </script>
 <script src="assets/js/stock-sector-decliners.js?v=20260807-0713"></script>
 <script src="assets/js/site-common.js?v=20260804-ui1"></script>
-<script src="assets/js/portal-update-controls.js?v=20260811-01"></script>
+<script src="assets/js/portal-update-controls.js?v=20260811-02"></script>
 </body>
 </html>

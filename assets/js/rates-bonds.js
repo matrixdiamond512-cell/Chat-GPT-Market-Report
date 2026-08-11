@@ -110,7 +110,7 @@
               <h3>${plainValue(card.label)}</h3>
               <strong class="${toneClass(card)}">${plainValue(card.direction)}</strong>
               <p>${plainValue(card.reason)}</p>
-              <p class="small-meta">基準：${plainValue(card.asOf)}</p>
+              <p class="small-meta">基準日：${plainValue(card.asOf)} ｜ 最終取得：${plainValue(card.fetchedAt || card.updatedAt || data.meta?.updatedAt || data.generatedAt)} ｜ ${plainValue(card.frequency, "日次")} ｜ ${esc(statusLabel(card.status || "confirmed"))}</p>
             </article>
           `).join("")}
         </div>
@@ -203,7 +203,7 @@
               <article class="factor-card">
                 <h3>${plainValue(factor.name)}</h3>
                 <strong class="factor-value ${toneClass(factor)}">${valueWithUnit(factor)}</strong>
-                <p>${plainValue(factor.interpretation)}</p>
+                <p>${plainValue(factor.interpretation)}</p><p class="small-meta">基準日：${plainValue(factor.asOf)} ｜ 最終取得：${plainValue(factor.fetchedAt || data.meta?.updatedAt || data.generatedAt)} ｜ ${plainValue(factor.frequency, "日次")}</p>
               </article>
             `).join("")}
           </div>
@@ -223,7 +223,7 @@
         <div class="panel-body">
           <p class="plain-note">${plainValue(section.summary)}</p>
           <div class="supply-grid">
-            ${items.map((item) => `<article class="mini-card"><h3>${plainValue(item.name)}</h3><p class="metric-line"><b>${valueWithUnit(item)}</b></p><p>${plainValue(item.note)}</p><p class="small-meta">出所：${plainValue(item.source)}</p></article>`).join("")}
+            ${items.map((item) => `<article class="mini-card"><h3>${plainValue(item.name)}</h3><p class="metric-line"><b>${valueWithUnit(item)}</b></p><p>${plainValue(item.note)}</p><p class="small-meta">基準日：${plainValue(item.asOf)} ｜ 最終取得：${plainValue(item.fetchedAt || data.meta?.updatedAt || data.generatedAt)} ｜ ${plainValue(item.frequency, "イベント時")}</p><p class="small-meta">出所：${plainValue(item.source)}</p></article>`).join("")}
           </div>
         </div>
       </section>

@@ -14,7 +14,7 @@ const localDate=v=>{if(!v)return'';try{return new Intl.DateTimeFormat('sv-SE',{t
 const dtText=v=>{if(!v)return'取得待ち';try{return new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(v))+' JST'}catch(_){return String(v)}};
 const cls=v=>num(v)>0?'nikkei-up':num(v)<0?'nikkei-down':'';
 const freq=(label,kind='daily')=>`<span class="nikkei-freq ${esc(kind)}">${esc(label)}</span>`;
-const source=x=>x&&x.sourceUrl?`<div class="nikkei-source">出典：<a href="${esc(x.sourceUrl)}" target="_blank" rel="noopener">${esc(x.sourceName||'情報源')}</a>${x.asOfDate?` / 基準日 ${esc(dateOnly(x.asOfDate))}`:''}</div>`:'';
+const source=x=>{if(!x)return'';const link=x.sourceUrl?`<a href="${esc(x.sourceUrl)}" target="_blank" rel="noopener">${esc(x.sourceName||'情報源')}</a>`:esc(x.sourceName||'情報源未登録');const updated=x.fetchedAt||x.lastSuccessAt||x.checkedAt||x.updatedAt;return`<div class="nikkei-source">出典：${link} / 基準日 ${esc(dateOnly(x.asOfDate||x.sourceDate))} / 最終取得 ${esc(updated?dtText(updated):'取得日時なし')} / ${esc(x.frequency||'更新頻度未設定')} / ${esc(x.status||'状態未設定')}</div>`};
 const value=(v,suffix='',d=0)=>num(v)===null?'<span class="nikkei-empty">取得待ち</span>':`${fmt(v,d)}${esc(suffix)}`;
 const change=(v,suffix='',d=0)=>num(v)===null?'—':`<span class="${cls(v)}">${esc(signed(v,d,suffix))}</span>`;
 function jpRow(stocks,label){const rows=stocks?.marketInternals?.japan?.rows||[];return rows.find(r=>Array.isArray(r)&&String(r[0]).trim()===label)||null;}

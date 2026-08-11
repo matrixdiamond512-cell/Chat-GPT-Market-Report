@@ -47,7 +47,10 @@ function drawChart(){const {p,rows}=rowsFor(state.chart);el("chartTitle").textCo
 async function init(){try{const res=await fetch(`${DATA_URL}?v=${Date.now()}`,{cache:"no-store"});if(!res.ok)throw new Error(`${DATA_URL} を取得できません（HTTP ${res.status}）`);const payload=await res.json();DATASET=normalizeDataset(payload);HISTORY=DATASET.records;PRICES=DATASET.priceRecords;drawStatic();buttons("chartPeriods","chart");buttons("tablePeriods","table");drawTable();drawChart();addEventListener("resize",()=>requestAnimationFrame(drawChart));if(DATASET.isStale){el("sourceDetail").textContent=`古いデータ：${DATASET.staleReason||"鮮度期限を超過"}`;}}catch(error){showError(error);}}
 init();
 </script>
+<script>
+fetch(`data/usdjpy-volume.json?freshness=${Date.now()}`,{cache:"no-store"}).then(r=>r.json()).then(d=>{const latest=d?.data?.records?.[0];if(!latest)return;document.getElementById("pageStamp").textContent=`対象日 ${latest.targetDate||"取得不能"}｜日銀公表日 ${latest.publicationDate||"取得不能"}｜最終取得 ${String(d.generatedAt||"取得日時なし").replace("T"," ").slice(0,16)}`;}).catch(()=>{});
+</script>
 <script src="assets/js/site-common.js?v=20260804-ui1"></script>
-<script src="assets/js/portal-update-controls.js?v=20260811-01"></script>
+<script src="assets/js/portal-update-controls.js?v=20260811-02"></script>
 </body>
 </html>

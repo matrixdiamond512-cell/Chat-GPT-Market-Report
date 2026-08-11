@@ -1,0 +1,41 @@
+name: Verify Tokyo USDJPY spot volume freshness
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "40 11 * * 1-5"
+    - cron: "40 13 * * 1-5"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate publication date, target date and acquisition time
+        run: |
+          python -m json.tool data/usdjpy-volume.json > /dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          data=json.loads(Path('data/usdjpy-volume.json').read_text(encoding='utf-8'))
+          rows=((data.get('data') or {}).get('records') or [])
+          if not rows:
+              raise SystemExit('No BOJ USDJPY spot-volume records')
+          latest=rows[0]
+          required=('targetDate','publicationDate','spotVolume')
+          missing=[key for key in required if latest.get(key) in (None,'')]
+          if missing:
+              raise SystemExit('Latest record is missing: '+', '.join(missing))
+          print('target date:', latest['targetDate'])
+          print('BOJ publication date:', latest['publicationDate'])
+          print('acquired/generated:', data.get('generatedAt'))
+          print('The target date can precede the BOJ publication date across weekends/holidays.')
+          PY

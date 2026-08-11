@@ -5,8 +5,10 @@
   var workflows = {
     "index": "update-market-data.yml",
     "report": "build-reports.yml",
+    "usdjpy-volume": "update-usdjpy-volume.yml",
     "events": "update-economic-calendar.yml",
     "rates-bonds": "update-rates-bonds.yml",
+    "stocks": "update-stocks.yml",
     "usdjpy-supply-demand": "update-usdjpy-supply-demand.yml",
     "gold-supply-demand": "update-gold-supply-demand.yml",
     "nikkei225-supply-demand": "update-nikkei225-supply-demand.yml",
@@ -70,7 +72,19 @@
       var response = await fetch(url + "?freshness=" + Date.now(), {cache:"no-store"});
       if (!response.ok) return null;
       var data = await response.json();
-      return data.generatedAt || data.updatedAt || data.asOfDate || data.dataAsOf || null;
+      var dates = [];
+      function collect(value, depth) {
+        if (!value || depth > 4) return;
+        if (Array.isArray(value)) return value.slice(0, 5).forEach(function (item) { collect(item, depth + 1); });
+        if (typeof value !== "object") return;
+        Object.keys(value).forEach(function (key) {
+          var item = value[key];
+          if (/^(asOf|asOfDate|dataAsOf|dataDate|sourceDate|targetDate|publicationDate|latestTargetDate|latestPublicationDate)$/.test(key) && item) dates.push(key + ":" + item);
+          else if (depth < 4 && item && typeof item === "object") collect(item, depth + 1);
+        });
+      }
+      collect(data, 0);
+      return dates.sort().join("|") || data.generatedAt || data.updatedAt || null;
     } catch (_) { return null; }
   }
 
