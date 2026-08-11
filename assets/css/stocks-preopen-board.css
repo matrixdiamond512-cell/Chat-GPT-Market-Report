@@ -1,0 +1,50 @@
+.preopen-board-reading {
+  margin: 0 12px 10px;
+  padding: 11px 12px;
+  border: 1px solid #c9d9ee;
+  border-radius: 7px;
+  background: #fbfdff;
+}
+
+.preopen-board-reading h3 {
+  margin: 0 0 7px;
+  color: #071f56;
+  font-size: 13px;
+  font-weight: 1000;
+}
+
+.preopen-board-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.preopen-board-point {
+  border-left: 3px solid #0b5fe8;
+  background: #f3f7fd;
+  padding: 7px 9px;
+  color: #173968;
+  font-size: 11.5px;
+  font-weight: 850;
+  line-height: 1.55;
+}
+
+.preopen-board-point b {
+  display: block;
+  margin-bottom: 2px;
+  color: #072d78;
+  font-size: 12px;
+}
+
+.preopen-board-caution {
+  margin: 8px 0 0;
+  color: #74530a;
+  font-size: 10.5px;
+  font-weight: 850;
+}
+
+@media (max-width: 760px) {
+  .preopen-board-grid {
+    grid-template-columns: 1fr;
+  }
+}
