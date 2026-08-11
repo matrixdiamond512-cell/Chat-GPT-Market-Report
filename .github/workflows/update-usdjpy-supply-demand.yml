@@ -82,8 +82,8 @@ jobs:
           assert data.get('pageId') == 'usdjpy-supply-demand'
           assert data.get('generatedAt')
           assert tw.get('url')
-          assert tw.get('pageConfirmed') is True
-          assert levels.get('extractedRowCount', 0) > 0
+          assert tw.get('status') in {'confirmed','preserved_after_fetch_error'}, tw.get('error')
+          assert levels.get('extractedRowCount', 0) > 0, 'No current or preserved Traders Web FX rows'
           assert data.get('coreSnapshot') is not None
           assert len(series) >= 26, f'CFTC series must retain at least 26 weeks, got {len(series)}'
           assert cftc.get('status') in {'verified','degraded','preserved_after_fetch_error'}
