@@ -29,6 +29,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "data" / "rates-bonds.json"
 HISTORY = ROOT / "data" / "rates-bonds-history.json"
 MARKET_LATEST = ROOT / "data" / "market" / "latest.json"
+EVENTS_LATEST = ROOT / "data" / "events.json"
 JST = dt.timezone(dt.timedelta(hours=9))
 USER_AGENT = (
     "Mozilla/5.0 (compatible; MarketReportBot/1.0; "
@@ -50,6 +51,8 @@ FRED_SERIES = {
 FRED_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=" + ",".join(FRED_SERIES)
 MOF_JGB_URL = "https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/jgbcme.csv"
 MOF_JGB_HISTORY_URL = "https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/historical/jgbcme_all.csv"
+TRADINGVIEW_SCANNER_URL = "https://scanner.tradingview.com/global/scan"
+TRADINGVIEW_JGB_SYMBOLS = {2: "TVC:JP02Y", 5: "TVC:JP05Y", 10: "TVC:JP10Y", 30: "TVC:JP30Y"}
 BUND10_URL = (
     "https://api.statistiken.bundesbank.de/rest/data/BBSSY/"
     "D.REN.EUR.A630.000000WT1010.A?format=csv&lang=en"
@@ -94,6 +97,20 @@ def http_text(url: str, timeout: int = 25) -> str:
         except (UnicodeDecodeError, LookupError):
             continue
     return raw.decode("utf-8", errors="replace")
+
+
+def http_json_post(url: str, payload: dict[str, Any], timeout: int = 25) -> Any:
+    request = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"User-Agent": USER_AGENT, "Accept": "application/json", "Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"{type(exc).__name__}: {exc}") from exc
 
 
 def safe_float(value: Any) -> float | None:
@@ -259,6 +276,45 @@ def parse_jgb_rows(text: str) -> dict[int, list[tuple[dt.date, float]]]:
     return points
 
 
+def latest_japan_market_date() -> dt.date:
+    """Infer the date represented by a current JGB market snapshot.
+
+    Before the Tokyo cash-market close, the latest complete observation is the
+    preceding market day.  Holiday events already maintained by this portal are
+    used so a national holiday is not incorrectly labelled as a trading day.
+    """
+    current = now_jst()
+    candidate = current.date() if current.hour >= 18 else current.date() - dt.timedelta(days=1)
+    events = load_json(EVENTS_LATEST, {})
+    holiday_dates = {
+        parse_date(item.get("date"))
+        for item in (events.get("events") or [])
+        if item.get("currency") == "JPY" and item.get("category") == "holiday"
+    }
+    holiday_dates.discard(None)
+    while candidate.weekday() >= 5 or candidate in holiday_dates:
+        candidate -= dt.timedelta(days=1)
+    return candidate
+
+
+def fetch_tradingview_jgb() -> tuple[dict[int, float], dt.date]:
+    payload = {
+        "symbols": {"tickers": list(TRADINGVIEW_JGB_SYMBOLS.values()), "query": {"types": []}},
+        "columns": ["name", "close"],
+    }
+    response = http_json_post(TRADINGVIEW_SCANNER_URL, payload)
+    by_symbol = {row.get("s"): row.get("d", []) for row in response.get("data", [])}
+    values: dict[int, float] = {}
+    for tenor, symbol in TRADINGVIEW_JGB_SYMBOLS.items():
+        cells = by_symbol.get(symbol) or []
+        value = safe_float(cells[1] if len(cells) > 1 else None)
+        if value is not None:
+            values[tenor] = value
+    if not values:
+        raise RuntimeError("TradingView JGB scanner returned no usable observations")
+    return values, latest_japan_market_date()
+
+
 def fetch_jgb() -> tuple[dict[int, dict[str, Any]], str]:
     combined: dict[int, list[tuple[dt.date, float]]] = {2: [], 5: [], 10: [], 30: []}
     errors: list[str] = []
@@ -269,10 +325,22 @@ def fetch_jgb() -> tuple[dict[int, dict[str, Any]], str]:
                 combined[tenor].extend(points)
         except Exception as exc:  # best-effort source chain
             errors.append(f"{url}: {exc}")
+    market_source_used = False
+    try:
+        market_values, market_date = fetch_tradingview_jgb()
+        official_latest = max((d for points in combined.values() for d, _ in points), default=None)
+        if official_latest is None or market_date > official_latest:
+            for tenor, value in market_values.items():
+                combined[tenor].append((market_date, value))
+            market_source_used = True
+    except Exception as exc:
+        errors.append(f"{TRADINGVIEW_SCANNER_URL}: {exc}")
     result: dict[int, dict[str, Any]] = {}
     for tenor, points in combined.items():
         stats = point_stats(points)
         if stats:
+            if market_source_used and stats["date"] == market_date:
+                stats["source"] = "TradingView JGB market snapshot (LSEG)"
             result[tenor] = stats
     if not result:
         raise RuntimeError(" / ".join(errors) or "MOF JGB returned no usable observations")
@@ -364,7 +432,7 @@ def rate_item(name: str, stats: dict[str, Any] | None, source: str, meaning: str
         "direction": direction(stats.get("changeBp")),
         "asOf": stats["date"].isoformat(),
         "status": "confirmed",
-        "source": source,
+        "source": stats.get("source", source),
         "meaning": meaning,
         "missingReason": None,
     }
@@ -681,6 +749,7 @@ def build_payload() -> dict[str, Any]:
     sources = [
         {"name": "FRED / Federal Reserve", "status": "confirmed" if fred else "unavailable", "note": "米2・5・10・30年、10年実質金利、10年期待インフレ、10年タームプレミアム、FF目標レンジ"},
         {"name": "財務省 国債金利情報", "status": "confirmed" if jgb else "unavailable", "note": "JGBコンスタントマチュリティ金利。市場終値ベース、翌営業日公表。"},
+        {"name": "TradingView / LSEG JGB", "status": "confirmed" if any(x.get("source", "").startswith("TradingView") for x in jgb.values()) else "standby", "note": "財務省の翌営業日公表が遅れている場合のみ、直近市場スナップショットで補完。"},
         {"name": "Deutsche Bundesbank", "status": "confirmed" if bund10 else "unavailable", "note": "ドイツ10年連邦債利回り"},
         {"name": "U.S. Treasury FiscalData", "status": "confirmed" if auctions else "unavailable", "note": "米国債入札結果。取得できた場合のみ需給欄へ表示。"},
         {"name": "WEBマーケットレポート 独立市場データ", "status": "confirmed" if market else "unavailable", "note": "USD/JPY、EUR/USD、金、BTCUSD、日経225先物との整合性判定に使用。"},
