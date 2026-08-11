@@ -29,7 +29,7 @@
       "id": "INDEPENDENT_MARKET_DATA",
       "name": "独立市場データ取得・検証基盤",
       "path": "data/market/latest.json",
-      "asOf": "2026-08-11T09:04:25+09:00",
+      "asOf": "2026-08-11T09:04:53+09:00",
       "status": "verified",
       "note": "価格カードと市場温度カードは、この検証済み市場データを本文解析より優先します。"
     }
@@ -213,7 +213,7 @@
     "marketData": {
       "schemaVersion": "1.1.0",
       "pageId": "market-data",
-      "generatedAt": "2026-08-11T09:04:25+09:00",
+      "generatedAt": "2026-08-11T09:04:53+09:00",
       "reportSlot": "08:00",
       "overallStatus": "verified",
       "missingRequired": [],
@@ -530,60 +530,14 @@
           "retryPreserved": false
         }
       },
-      "errors": [
-        {
-          "symbol": "eurusd",
-          "sourceId": "stooq_eurusd",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 1
-        },
-        {
-          "symbol": "eurusd",
-          "sourceId": "stooq_eurusd",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 2
-        },
-        {
-          "symbol": "eurusd",
-          "sourceId": "stooq_eurusd",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 3
-        },
-        {
-          "symbol": "btcusd",
-          "sourceId": "stooq_btcusd",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 1
-        },
-        {
-          "symbol": "btcusd",
-          "sourceId": "stooq_btcusd",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 2
-        },
-        {
-          "symbol": "btcusd",
-          "sourceId": "stooq_btcusd",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 3
-        }
-      ],
+      "errors": [],
       "acquisition": {
         "strategy": "staged_retry",
         "windowStartedAt": "2026-08-11T08:19:11+09:00",
-        "lastAttemptAt": "2026-08-11T09:04:25+09:00",
-        "runCount": 6,
+        "lastAttemptAt": "2026-08-11T09:04:53+09:00",
+        "runCount": 7,
         "mode": "incremental",
-        "targetedSymbols": [
-          "eurusd",
-          "btcusd"
-        ],
+        "targetedSymbols": [],
         "recoveredSymbols": [],
         "preservedVerifiedSymbols": [],
         "remainingFallback": [],
@@ -908,7 +862,7 @@
       "marketData": {
         "schemaVersion": "1.1.0",
         "pageId": "market-data",
-        "generatedAt": "2026-08-11T09:04:25+09:00",
+        "generatedAt": "2026-08-11T09:04:53+09:00",
         "reportSlot": "08:00",
         "overallStatus": "verified",
         "missingRequired": [],
@@ -1225,60 +1179,14 @@
             "retryPreserved": false
           }
         },
-        "errors": [
-          {
-            "symbol": "eurusd",
-            "sourceId": "stooq_eurusd",
-            "code": "HTTP_404",
-            "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-            "attempt": 1
-          },
-          {
-            "symbol": "eurusd",
-            "sourceId": "stooq_eurusd",
-            "code": "HTTP_404",
-            "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-            "attempt": 2
-          },
-          {
-            "symbol": "eurusd",
-            "sourceId": "stooq_eurusd",
-            "code": "HTTP_404",
-            "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-            "attempt": 3
-          },
-          {
-            "symbol": "btcusd",
-            "sourceId": "stooq_btcusd",
-            "code": "HTTP_404",
-            "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-            "attempt": 1
-          },
-          {
-            "symbol": "btcusd",
-            "sourceId": "stooq_btcusd",
-            "code": "HTTP_404",
-            "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-            "attempt": 2
-          },
-          {
-            "symbol": "btcusd",
-            "sourceId": "stooq_btcusd",
-            "code": "HTTP_404",
-            "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-            "attempt": 3
-          }
-        ],
+        "errors": [],
         "acquisition": {
           "strategy": "staged_retry",
           "windowStartedAt": "2026-08-11T08:19:11+09:00",
-          "lastAttemptAt": "2026-08-11T09:04:25+09:00",
-          "runCount": 6,
+          "lastAttemptAt": "2026-08-11T09:04:53+09:00",
+          "runCount": 7,
           "mode": "incremental",
-          "targetedSymbols": [
-            "eurusd",
-            "btcusd"
-          ],
+          "targetedSymbols": [],
           "recoveredSymbols": [],
           "preservedVerifiedSymbols": [],
           "remainingFallback": [],
@@ -1428,7 +1336,7 @@
   "marketData": {
     "schemaVersion": "1.1.0",
     "pageId": "market-data",
-    "generatedAt": "2026-08-11T09:04:25+09:00",
+    "generatedAt": "2026-08-11T09:04:53+09:00",
     "reportSlot": "08:00",
     "overallStatus": "verified",
     "missingRequired": [],
@@ -1745,60 +1653,14 @@
         "retryPreserved": false
       }
     },
-    "errors": [
-      {
-        "symbol": "eurusd",
-        "sourceId": "stooq_eurusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "eurusd",
-        "sourceId": "stooq_eurusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "eurusd",
-        "sourceId": "stooq_eurusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "btcusd",
-        "sourceId": "stooq_btcusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "btcusd",
-        "sourceId": "stooq_btcusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "btcusd",
-        "sourceId": "stooq_btcusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      }
-    ],
+    "errors": [],
     "acquisition": {
       "strategy": "staged_retry",
       "windowStartedAt": "2026-08-11T08:19:11+09:00",
-      "lastAttemptAt": "2026-08-11T09:04:25+09:00",
-      "runCount": 6,
+      "lastAttemptAt": "2026-08-11T09:04:53+09:00",
+      "runCount": 7,
       "mode": "incremental",
-      "targetedSymbols": [
-        "eurusd",
-        "btcusd"
-      ],
+      "targetedSymbols": [],
       "recoveredSymbols": [],
       "preservedVerifiedSymbols": [],
       "remainingFallback": [],
@@ -1943,5 +1805,5 @@
       }
     ]
   },
-  "marketDataUpdatedAt": "2026-08-11T09:04:25+09:00"
+  "marketDataUpdatedAt": "2026-08-11T09:04:53+09:00"
 }
