@@ -2,6 +2,11 @@ name: Update all stock analysis components
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "data/stocks-update-trigger/**"
+      - ".github/workflows/update-stocks.yml"
   schedule:
     - cron: "20 7 * * 1-5"
     - cron: "20 13 * * 1-5"
