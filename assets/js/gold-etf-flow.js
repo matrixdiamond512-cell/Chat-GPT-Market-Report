@@ -118,12 +118,13 @@ function buildDateTile(data,index,gld,iau,global){
 
 function buildBarSvg(rows){
   if(!rows.length)return '<div class="gold-etf-chart-empty">同一基準日のGLD・IAU履歴がまだありません。<br>基準日が揃ったデータから日次合計を描画します。</div>';
-  const W=760,H=250,L=42,R=14,T=24,B=46,plotW=W-L-R,plotH=H-T-B;
+  const W=1180,H=280,L=48,R=18,T=28,B=54,plotW=W-L-R,plotH=H-T-B;
   const maxAbs=Math.max(1,...rows.map(x=>Math.abs(x.combined)))*1.15;
   const y=v=>T+(maxAbs-v)/(maxAbs*2)*plotH;
   const zero=y(0);
   const step=plotW/rows.length;
   const barW=Math.max(8,Math.min(34,step*.55));
+  const labelEvery=Math.max(1,Math.ceil(rows.length/12));
   const ticks=[maxAbs,maxAbs/2,0,-maxAbs/2,-maxAbs];
   let svg=`<svg class="gold-etf-chart-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="GLDとIAUの日次合計フロー棒グラフ">`;
   ticks.forEach(t=>{const yy=y(t);svg+=`<line class="${t===0?'zero':'grid'}" x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}"></line><text class="axis-text" x="${L-7}" y="${yy+3}" text-anchor="end">${Math.abs(t)<.005?'0':t.toFixed(1)}</text>`;});
@@ -133,9 +134,9 @@ function buildBarSvg(rows){
     const barClass=row.combined>=0?'bar-positive':'bar-negative';
     const valueY=row.combined>=0?top-6:top+height+13;
     const label=String(row.date).slice(5).replace('-','/');
-    svg+=`<rect class="${barClass}" x="${cx-barW/2}" y="${top}" width="${barW}" height="${height}" rx="2"></rect>`;
-    svg+=`<text class="value-text" x="${cx}" y="${valueY}" text-anchor="middle">${row.combined>0?'+':''}${row.combined.toFixed(2)}</text>`;
-    svg+=`<text class="axis-text" x="${cx}" y="${H-20}" text-anchor="middle">${esc(label)}</text>`;
+    svg+=`<rect class="${barClass}" x="${cx-barW/2}" y="${top}" width="${barW}" height="${height}" rx="2"><title>${esc(row.date)} ${row.combined>0?'+':''}${row.combined.toFixed(2)}t</title></rect>`;
+    if(rows.length<=35)svg+=`<text class="value-text" x="${cx}" y="${valueY}" text-anchor="middle">${row.combined>0?'+':''}${row.combined.toFixed(2)}</text>`;
+    if(i%labelEvery===0||i===rows.length-1)svg+=`<text class="axis-text" x="${cx}" y="${H-20}" text-anchor="middle">${esc(label)}</text>`;
   });
   svg+='</svg>';
   return svg;
@@ -145,7 +146,7 @@ function buildCumulativeSvg(rows){
   if(rows.length<2)return '<div class="gold-etf-chart-empty">累積フローは同一基準日の履歴が2営業日以上蓄積すると表示します。</div>';
   let total=0;
   const points=rows.map(x=>{total+=x.combined;return {date:x.date,value:total};});
-  const W=360,H=250,L=40,R=12,T=24,B=42,plotW=W-L-R,plotH=H-T-B;
+  const W=1180,H=280,L=48,R=18,T=28,B=54,plotW=W-L-R,plotH=H-T-B;
   const vals=points.map(x=>x.value).concat([0]);
   let min=Math.min(...vals),max=Math.max(...vals);
   if(min===max){min-=1;max+=1;}
@@ -159,9 +160,14 @@ function buildCumulativeSvg(rows){
   [0,.25,.5,.75,1].forEach(fr=>{const yy=T+plotH*fr;const val=max-(max-min)*fr;svg+=`<line class="${Math.abs(val)<.02?'zero':'grid'}" x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}"></line><text class="axis-text" x="${L-6}" y="${yy+3}" text-anchor="end">${val.toFixed(1)}</text>`;});
   if(zero>=T&&zero<=T+plotH)svg+=`<line class="zero" x1="${L}" x2="${W-R}" y1="${zero}" y2="${zero}"></line>`;
   svg+=`<path class="cum-line" d="${d.trim()}"></path>`;
+  points.slice(1).forEach((p,i)=>{
+    const prev=points[i],trend=p.value>=prev.value?'cum-positive':'cum-negative';
+    svg+=`<line class="cum-segment ${trend}" x1="${x(i)}" y1="${y(prev.value)}" x2="${x(i+1)}" y2="${y(p.value)}"><title>${esc(p.date)} ${p.value>=prev.value?'増加':'減少'} ${p.value.toFixed(2)}t</title></line>`;
+  });
   points.forEach((p,i)=>{if(i===0||i===points.length-1)svg+=`<circle class="cum-dot" cx="${x(i)}" cy="${y(p.value)}" r="3.5"></circle>`;});
-  const first=String(points[0].date).slice(5).replace('-','/'),last=String(points[points.length-1].date).slice(5).replace('-','/');
-  svg+=`<text class="axis-text" x="${L}" y="${H-18}" text-anchor="start">${esc(first)}</text><text class="axis-text" x="${W-R}" y="${H-18}" text-anchor="end">${esc(last)}</text></svg>`;
+  const labelEvery=Math.max(1,Math.ceil(points.length/12));
+  points.forEach((p,i)=>{if(i%labelEvery===0||i===points.length-1){const label=String(p.date).slice(5).replace('-','/');svg+=`<text class="axis-text" x="${x(i)}" y="${H-18}" text-anchor="middle">${esc(label)}</text>`;}});
+  svg+='</svg>';
   return `<div class="gold-etf-cum-total">${total>0?'+':''}${total.toFixed(2)}t</div>${svg}`;
 }
 
@@ -203,12 +209,12 @@ function renderCard(card,data){
     </div>
     <div class="gold-etf-charts">
       <div class="gold-etf-chart-card">
-        <div class="gold-etf-chart-head"><div class="gold-etf-chart-title">直近の日次ETFフロー（GLD＋IAU・同一基準日のみ）</div><div class="gold-etf-range"><button type="button" data-etf-range="10">10日</button><button type="button" class="active" data-etf-range="22">1か月</button><button type="button" data-etf-range="66">3か月</button></div></div>
-        <div class="gold-etf-chart-wrap" data-etf-bar>${buildBarSvg(history.slice(-22))}</div>
+        <div class="gold-etf-chart-head"><div class="gold-etf-chart-title">直近の日次ETFフロー（GLD＋IAU・同一基準日のみ）</div><div class="gold-etf-range"><button type="button" data-etf-range="10">10日</button><button type="button" data-etf-range="22">1か月</button><button type="button" data-etf-range="66">3か月</button><button type="button" class="active" data-etf-range="132">6か月</button></div></div>
+        <div class="gold-etf-chart-wrap" data-etf-bar>${buildBarSvg(history.slice(-132))}</div>
       </div>
       <div class="gold-etf-chart-card cumulative">
         <div class="gold-etf-chart-head"><div class="gold-etf-chart-title">累積フロー（GLD＋IAU）</div></div>
-        <div class="gold-etf-chart-wrap" data-etf-cumulative>${buildCumulativeSvg(history.slice(-66))}</div>
+        <div class="gold-etf-chart-wrap" data-etf-cumulative>${buildCumulativeSvg(history.slice(-132))}</div>
       </div>
     </div>
     <div class="gold-etf-table-wrap"><table class="gold-etf-table"><thead><tr><th>ETF</th><th>基準日</th><th>保有量</th><th>前回比</th><th>状態 / 更新</th></tr></thead><tbody>
@@ -225,6 +231,8 @@ function renderCard(card,data){
     const range=Number(btn.getAttribute('data-etf-range'))||22;
     const target=card.querySelector('[data-etf-bar]');
     if(target)target.innerHTML=buildBarSvg(history.slice(-range));
+    const cumulative=card.querySelector('[data-etf-cumulative]');
+    if(cumulative)cumulative.innerHTML=buildCumulativeSvg(history.slice(-range));
   }));
 }
 

@@ -1,0 +1,60 @@
+.gold-dashboard {
+  max-width: 1900px;
+  padding-inline: 10px;
+}
+
+.gold-etf-enhanced .gold-etf-charts {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.gold-etf-enhanced .gold-etf-chart-card.cumulative {
+  display: block;
+  grid-column: 1 / -1;
+}
+
+.gold-etf-enhanced .gold-etf-chart-wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-gutter: stable;
+}
+
+.gold-etf-enhanced .gold-etf-chart-svg {
+  min-width: 1050px;
+}
+
+.gold-etf-enhanced .gold-etf-chart-svg .bar-positive {
+  fill: #e83f6f;
+}
+
+.gold-etf-enhanced .gold-etf-chart-svg .bar-negative {
+  fill: #176fc1;
+}
+
+.gold-etf-enhanced .gold-etf-chart-svg .cum-line {
+  fill: none;
+  stroke: #d9e1ec;
+  stroke-width: 5;
+}
+
+.gold-etf-enhanced .gold-etf-chart-svg .cum-segment {
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.gold-etf-enhanced .gold-etf-chart-svg .cum-segment.cum-positive {
+  stroke: #e83f6f;
+}
+
+.gold-etf-enhanced .gold-etf-chart-svg .cum-segment.cum-negative {
+  stroke: #176fc1;
+}
+
+@media (max-width: 760px) {
+  .gold-dashboard {
+    padding-inline: 6px;
+  }
+
+  .gold-etf-enhanced .gold-etf-chart-svg {
+    min-width: 900px;
+  }
+}
