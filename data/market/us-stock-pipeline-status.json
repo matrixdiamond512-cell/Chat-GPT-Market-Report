@@ -1,19 +1,11 @@
 {
   "schemaVersion": "1.1.0",
-  "updatedAt": "2026-08-11T23:54:59+09:00",
+  "updatedAt": "2026-08-11T23:58:45+09:00",
   "status": "failed",
-  "fetchOutcome": "failure",
-  "crosscheckOutcome": "skipped",
+  "fetchOutcome": "success",
+  "crosscheckOutcome": "failure",
   "logTail": [
-    "Traceback (most recent call last):",
-    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/fetch_us_stock_movers_sp500_contributions.py\", line 366, in <module>",
-    "    raise SystemExit(main())",
-    "                     ^^^^^^",
-    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/fetch_us_stock_movers_sp500_contributions.py\", line 331, in main",
-    "    expected_date = verified_market_date(stocks)",
-    "                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/fetch_us_stock_movers_sp500_contributions.py\", line 89, in verified_market_date",
-    "    raise RuntimeError(f\"verified U.S. market dates disagree: breadth={breadth_date}, stocks={stock_date}\")",
-    "RuntimeError: verified U.S. market dates disagree: breadth=2026-08-10, stocks=2026-08-07"
+    "{\"status\": \"verified\", \"marketDate\": \"2026-08-10\", \"componentCount\": 503, \"topGainer\": \"Axon Enterprise Inc（AXON）\", \"topLoser\": \"Monster Beverage Corp（MNST）\", \"topContribution\": \"NVIDIA Corp（NVDA）\", \"validation\": {\"estimatedWeightedReturnPct\": 0.0605, \"verifiedSP500ReturnPct\": null, \"differencePt\": null}}",
+    "mover/contribution basis date does not match verified U.S. market date"
   ]
 }
