@@ -156,5 +156,26 @@ def main() -> None:
     print(json.dumps({"sourceUpdatedAt": tw["sourceUpdatedAt"], "rows": tw["keyLevels"]["extractedRowCount"], "freshness": freshness}, ensure_ascii=False))
 
 
+def safe_main() -> None:
+    try:
+        main()
+    except Exception as exc:
+        data = json.loads(OUT.read_text(encoding="utf-8"))
+        now = now_jst().isoformat(timespec="seconds")
+        tw = data.setdefault("tradersWebFx", {})
+        has_previous = bool((tw.get("keyLevels") or {}).get("extractedRowCount"))
+        tw.update({
+            "checkedAt": now,
+            "lastAttemptAt": now,
+            "status": "preserved_after_fetch_error" if has_previous else "unavailable",
+            "pageConfirmed": bool(has_previous),
+            "error": f"{type(exc).__name__}: {exc}",
+        })
+        data.setdefault("sourceStatus", {})["tradersWebFx"] = tw["status"]
+        data["generatedAt"] = now
+        OUT.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps({"status": tw["status"], "checkedAt": now, "error": tw["error"]}, ensure_ascii=False))
+
+
 if __name__ == "__main__":
-    main()
+    safe_main()
