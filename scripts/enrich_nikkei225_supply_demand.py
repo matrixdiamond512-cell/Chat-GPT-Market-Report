@@ -17,6 +17,7 @@ from typing import Any
 from openpyxl import load_workbook
 
 import update_nikkei225_supply_demand as u
+from lib.jpx_arbitrage import component_from_positions, fetch_latest_positions
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "nikkei225-supply-demand.json"
@@ -199,29 +200,7 @@ def enrich_arbitrage(d: dict[str, Any]) -> None:
         "comment": "裁定買い・売りポジションはJPXの全取引参加者報告合計。前々営業日データとして鮮度を分離表示。",
     }
     try:
-        pdfs = [url for url, _ in u.links(u.URLS["arbitrage"]) if re.search(r"\.pdf(?:\?|$)", url, re.I)]
-        parsed = []
-        for url in pdfs[:8]:
-            try:
-                x = _parse_arbitrage_pdf(url)
-                if x and x.get("asOfDate"):
-                    parsed.append(x)
-            except Exception:
-                continue
-        parsed.sort(key=lambda x: x["asOfDate"], reverse=True)
-        if not parsed:
-            raise ValueError("JPX arbitrage position rows not found")
-        cur = parsed[0]
-        old = parsed[1] if len(parsed) > 1 else None
-        out = {
-            **base,
-            **cur,
-            "sellChange": cur["sellBalance"] - old["sellBalance"] if old else None,
-            "buyChange": cur["buyBalance"] - old["buyBalance"] if old else None,
-            "status": "verified",
-            "fetchedAt": u.now(),
-        }
-        d["arbitrage"] = out
+        d["arbitrage"] = component_from_positions(fetch_latest_positions(), prev)
     except Exception as exc:
         d["arbitrage"] = u.stale(prev, base, f"JPX裁定取得失敗: {type(exc).__name__}: {exc}")
 

@@ -1,0 +1,92 @@
+name: Update Nikkei 225 arbitrage data
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "data/nikkei225-arbitrage-trigger/**"
+      - "scripts/lib/jpx_arbitrage.py"
+      - "scripts/update_nikkei225_arbitrage.py"
+      - ".github/workflows/update-nikkei225-arbitrage.yml"
+  schedule:
+    # JPX publishes the preceding position date after the Tokyo close.
+    # Two attempts provide a normal run and a late-publication recovery run.
+    - cron: "20 8 * * 1-5"
+    - cron: "20 10 * * 1-5"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-nikkei225-arbitrage
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-nikkei225-supply-demand.txt
+
+      - name: Validate updater and parser fixture
+        run: |
+          python -m py_compile scripts/lib/jpx_arbitrage.py scripts/update_nikkei225_arbitrage.py
+          PYTHONPATH=scripts python -m unittest scripts/test_jpx_arbitrage.py
+
+      - name: Fetch JPX and update both current JSON files
+        id: update
+        continue-on-error: true
+        run: python scripts/update_nikkei225_arbitrage.py
+
+      - name: Build dedicated arbitrage archive
+        run: python scripts/build_nikkei225_arbitrage_archive.py
+
+      - name: Validate alignment and JSON
+        run: |
+          python -m json.tool data/nikkei225-arbitrage.json > /dev/null
+          python -m json.tool data/nikkei225-supply-demand.json > /dev/null
+          python - <<'PY'
+          import json
+          page=json.load(open('data/nikkei225-arbitrage.json',encoding='utf-8'))
+          supply=json.load(open('data/nikkei225-supply-demand.json',encoding='utf-8'))
+          component=supply.get('arbitrage') or {}
+          if page.get('asOfDate','').replace('/','-') != component.get('asOfDate','').replace('/','-'):
+              raise SystemExit('Arbitrage dates are not aligned')
+          for key in ('buyBalance','sellBalance'):
+              if (page.get('latest') or {}).get(key) != component.get(key):
+                  raise SystemExit(f'Arbitrage {key} is not aligned')
+          if page.get('status') == 'unavailable':
+              raise SystemExit('No current or preserved arbitrage data is available')
+          print('aligned:', page.get('asOfDate'), page.get('status'))
+          PY
+
+      - name: Commit latest data and archive
+        shell: bash
+        run: |
+          if git diff --quiet -- data/nikkei225-arbitrage.json data/nikkei225-supply-demand.json data/nikkei225-arbitrage-archive; then
+            echo "JPX publication has not changed; no commit is required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/nikkei225-arbitrage.json data/nikkei225-supply-demand.json data/nikkei225-arbitrage-archive
+          git commit -m "Update Nikkei 225 arbitrage data"
+          git pull --rebase origin main
+          git push origin main
+
+      - name: Report preserved fetch failure
+        if: steps.update.outcome == 'failure'
+        run: |
+          echo "JPX acquisition failed. The previous verified value was preserved and its error/status were committed."

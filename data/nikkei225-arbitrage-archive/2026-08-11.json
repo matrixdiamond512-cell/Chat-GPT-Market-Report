@@ -2,19 +2,19 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-arbitrage",
   "reportDate": "2026-08-11",
-  "generatedAt": "2026-08-11T22:47:41+09:00",
+  "generatedAt": "2026-08-11T22:54:34+09:00",
   "arbitrage": {
-    "schemaVersion": 1,
+    "schemaVersion": 2,
     "pageTitle": "裁定取引",
-    "asOfDate": "2026/08/05",
+    "asOfDate": "2026-08-06",
     "sourceStatus": "JPX一次情報で確認",
     "sourcePageUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/",
-    "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt000001tvtj-att/260805.pdf",
+    "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt000001tzgt-att/260806.pdf",
     "latest": {
-      "buyBalance": 630611,
-      "buyChange": -36534,
-      "sellBalance": 40269,
-      "sellChange": 2082
+      "buyBalance": 625909,
+      "buyChange": -4702,
+      "sellBalance": 39322,
+      "sellChange": -947
     },
     "history": [
       {
@@ -1676,11 +1676,25 @@
         "source": "JPX",
         "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt000001tvtj-att/260805.pdf",
         "nikkei225Close": 66300.44
+      },
+      {
+        "date": "2026-08-06",
+        "sellBalance": 39322,
+        "buyBalance": 625909,
+        "source": "JPX",
+        "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt000001tzgt-att/260806.pdf",
+        "nikkei225Close": null
       }
     ],
     "historySourceName": "karauri.net（東証の裁定取引に係る現物ポジションから集計）",
     "historySourceUrl": "https://karauri.net/saitei/",
     "nikkei225PriceSourceName": "Yahoo Finance (^N225)",
-    "nikkei225PriceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/"
+    "nikkei225PriceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
+    "pageId": "nikkei225-arbitrage",
+    "generatedAt": "2026-08-11T22:32:03+09:00",
+    "lastAttemptAt": "2026-08-11T22:32:00+09:00",
+    "lastSuccessAt": "2026-08-11T22:32:03+09:00",
+    "status": "verified",
+    "frequency": "daily"
   }
 }
