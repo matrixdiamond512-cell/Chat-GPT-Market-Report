@@ -1,0 +1,2107 @@
+{
+  "schemaVersion": "1.0.0",
+  "pageId": "usdjpy-supply-demand-archive",
+  "reportDate": "2026-08-09",
+  "generatedAt": "2026-08-09T02:42:00+09:00",
+  "market": {
+    "schemaVersion": "1.1.0",
+    "generatedAt": "2026-08-08T08:18:37+09:00",
+    "status": null,
+    "markets": {
+      "usdjpy": {
+        "id": "usdjpy",
+        "displayName": "USD/JPY",
+        "dashboardKey": "usdjpy",
+        "value": 157.745,
+        "displayValue": "157.75",
+        "previousClose": 158.40899658203125,
+        "change": -0.6639965820312455,
+        "changePercent": -0.41916595418076685,
+        "changeText": "-0.66 / -0.42%",
+        "unit": "円",
+        "marketType": "spot",
+        "session": "continuous",
+        "asOf": "2026-08-08T05:59:57+09:00",
+        "fetchedAt": "2026-08-08T08:18:10+09:00",
+        "sourceId": "yahoo_jpy_x",
+        "sourceName": "Yahoo Finance USD/JPY",
+        "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
+        "rawReference": "JPY=X",
+        "classification": "",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-08-08T08:18:13+09:00",
+        "error": null,
+        "note": "",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-08-08T08:18:01+09:00",
+        "lastError": "stooq_usdjpy: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
+        "retryPreserved": false
+      },
+      "vix": {
+        "id": "vix",
+        "displayName": "VIX",
+        "dashboardKey": "vix",
+        "value": 15.15,
+        "displayValue": "15.15",
+        "previousClose": 15.81,
+        "change": -0.6600000000000001,
+        "changePercent": -4.174573055028463,
+        "changeText": "-0.66 / -4.17%",
+        "unit": "pt",
+        "marketType": "index",
+        "session": "daily",
+        "asOf": "2026-08-06T09:00:00+09:00",
+        "fetchedAt": "2026-08-08T08:18:20+09:00",
+        "sourceId": "cboe_vix_history",
+        "sourceName": "Cboe VIX Historical Data",
+        "sourceUrl": "https://www.cboe.com/tradable_products/vix/vix_historical_data/",
+        "rawReference": "VIX_History.csv",
+        "classification": "",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-08-08T08:18:20+09:00",
+        "error": null,
+        "note": "",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-08-08T08:18:01+09:00",
+        "lastError": "",
+        "retryPreserved": false
+      }
+    }
+  },
+  "rates": {
+    "schemaVersion": "2.0.0",
+    "pageId": "rates-bonds",
+    "generatedAt": "2026-08-08T14:06:38+09:00",
+    "meta": {
+      "page": "rates-bonds",
+      "asOfDate": "2026-08-07",
+      "asOfTime": "各市場の公表時点",
+      "updatedAt": "2026-08-08T14:06:38+09:00",
+      "status": "confirmed",
+      "sourceStatus": "自動取得",
+      "isStale": false,
+      "staleReason": null,
+      "missingData": []
+    },
+    "rates": [
+      {
+        "name": "米2年債利回り",
+        "value": 4.25,
+        "unit": "%",
+        "changeBp": 7.0,
+        "weekChangeBp": 2.0,
+        "direction": "上昇",
+        "asOf": "2026-08-06",
+        "status": "confirmed",
+        "source": "FRED DGS2",
+        "meaning": "金融政策・FF金利見通しを最も反映しやすい年限",
+        "missingReason": null
+      },
+      {
+        "name": "米10年債利回り",
+        "value": 4.69,
+        "unit": "%",
+        "changeBp": 6.0,
+        "weekChangeBp": 1.0,
+        "direction": "上昇",
+        "asOf": "2026-08-06",
+        "status": "confirmed",
+        "source": "FRED DGS10",
+        "meaning": "株式・為替・金の基準となる長期金利",
+        "missingReason": null
+      },
+      {
+        "name": "日本10年国債利回り",
+        "value": 2.773,
+        "unit": "%",
+        "changeBp": -4.0,
+        "weekChangeBp": -2.8,
+        "direction": "低下",
+        "asOf": "2026-08-06",
+        "status": "confirmed",
+        "source": "財務省 国債金利情報",
+        "meaning": "円・銀行株・日経225・円キャリーへの影響を確認",
+        "missingReason": null
+      }
+    ]
+  },
+  "volume": {
+    "schemaVersion": "1.0.0",
+    "generatedAt": "2026-08-08T21:34:42+09:00",
+    "status": "ok",
+    "data": {
+      "sourceName": "日本銀行 外国為替市況（日次）",
+      "sourceUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/index.htm",
+      "pdfBaseUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/",
+      "priceSourceName": "Investing.com USD/JPY日足OHLC",
+      "unit": "百万ドル",
+      "latestJudgement": {
+        "targetDate": "2026-08-06",
+        "publicationDate": "2026-08-07",
+        "spotVolumeLevel": "少ない",
+        "summary": "直近のUSD/JPYスポット出来高は20営業日平均を下回っています。同日のUSD/JPY終値は157.65円です。"
+      },
+      "records": [
+        {
+          "targetDate": "2026-08-06",
+          "publicationDate": "2026-08-07",
+          "sourcePdfName": "fx260807.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260807.pdf",
+          "spotVolume": 2840,
+          "volumeChange": 12,
+          "volumeChangePct": 0.42,
+          "avg20": 5603,
+          "vs20": -2763,
+          "vs20Pct": -49.31,
+          "close": 157.65,
+          "open": 157.78,
+          "high": 157.88,
+          "low": 157.3,
+          "priceChangePct": 0.08
+        },
+        {
+          "targetDate": "2026-08-05",
+          "publicationDate": "2026-08-06",
+          "sourcePdfName": "fx260806.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260806.pdf",
+          "spotVolume": 2828,
+          "volumeChange": -1156,
+          "volumeChangePct": -29.02,
+          "avg20": 5588,
+          "vs20": -2760,
+          "vs20Pct": -49.39,
+          "close": 157.56,
+          "open": 157.78,
+          "high": 157.88,
+          "low": 157.3,
+          "priceChangePct": 0.02
+        },
+        {
+          "targetDate": "2026-08-04",
+          "publicationDate": "2026-08-05",
+          "sourcePdfName": "fx260805.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260805.pdf",
+          "spotVolume": 3984,
+          "volumeChange": -9196,
+          "volumeChangePct": -69.77,
+          "avg20": 5589,
+          "vs20": -1605,
+          "vs20Pct": -28.72,
+          "close": 157.53,
+          "open": 157.54,
+          "high": 157.95,
+          "low": 157.23,
+          "priceChangePct": -0.03
+        },
+        {
+          "targetDate": "2026-08-03",
+          "publicationDate": "2026-08-04",
+          "sourcePdfName": "fx260804.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260804.pdf",
+          "spotVolume": 13180,
+          "volumeChange": 1122,
+          "volumeChangePct": 9.31,
+          "avg20": 5536,
+          "vs20": 7644,
+          "vs20Pct": 138.08,
+          "close": 157.58,
+          "open": 157.7,
+          "high": 157.87,
+          "low": 155.26,
+          "priceChangePct": -1.62
+        },
+        {
+          "targetDate": "2026-07-31",
+          "publicationDate": "2026-08-03",
+          "sourcePdfName": "fx260803.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260803.pdf",
+          "spotVolume": 12058,
+          "volumeChange": -22627,
+          "volumeChangePct": -65.24,
+          "avg20": 5041,
+          "vs20": 7017,
+          "vs20Pct": 139.2,
+          "close": 160.18,
+          "open": 160.18,
+          "high": 160.84,
+          "low": 158.67,
+          "priceChangePct": -1.91
+        },
+        {
+          "targetDate": "2026-07-30",
+          "publicationDate": "2026-07-31",
+          "sourcePdfName": "fx260731.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260731.pdf",
+          "spotVolume": 34685,
+          "volumeChange": 32180,
+          "volumeChangePct": 1284.63,
+          "avg20": 4670,
+          "vs20": 30015,
+          "vs20Pct": 642.72,
+          "close": 163.3,
+          "open": 163.25,
+          "high": 163.73,
+          "low": 157.99,
+          "priceChangePct": -0.34
+        },
+        {
+          "targetDate": "2026-07-29",
+          "publicationDate": "2026-07-30",
+          "sourcePdfName": "fx260730.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260730.pdf",
+          "spotVolume": 2505,
+          "volumeChange": 251,
+          "volumeChangePct": 11.14,
+          "avg20": 3052,
+          "vs20": -547,
+          "vs20Pct": -17.92,
+          "close": 163.86,
+          "open": 163.86,
+          "high": 163.88,
+          "low": 163.29,
+          "priceChangePct": 0.05
+        },
+        {
+          "targetDate": "2026-07-28",
+          "publicationDate": "2026-07-29",
+          "sourcePdfName": "fx260729.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260729.pdf",
+          "spotVolume": 2254,
+          "volumeChange": -211,
+          "volumeChangePct": -8.56,
+          "avg20": 3192,
+          "vs20": -938,
+          "vs20Pct": -29.39,
+          "close": 163.77,
+          "open": 163.79,
+          "high": 163.94,
+          "low": 163.64,
+          "priceChangePct": 0.1
+        },
+        {
+          "targetDate": "2026-07-27",
+          "publicationDate": "2026-07-28",
+          "sourcePdfName": "fx260728.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260728.pdf",
+          "spotVolume": 2465,
+          "volumeChange": -477,
+          "volumeChangePct": -16.21,
+          "avg20": 3180,
+          "vs20": -715,
+          "vs20Pct": -22.48,
+          "close": 163.61,
+          "open": 163.59,
+          "high": 163.76,
+          "low": 163.33,
+          "priceChangePct": -0.13
+        },
+        {
+          "targetDate": "2026-07-24",
+          "publicationDate": "2026-07-27",
+          "sourcePdfName": "fx260727.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260727.pdf",
+          "spotVolume": 2942,
+          "volumeChange": 252,
+          "volumeChangePct": 9.37,
+          "avg20": 3197,
+          "vs20": -255,
+          "vs20Pct": -7.98,
+          "close": 163.83,
+          "open": 163.88,
+          "high": 163.93,
+          "low": 163.65,
+          "priceChangePct": 0.46
+        },
+        {
+          "targetDate": "2026-07-23",
+          "publicationDate": "2026-07-24",
+          "sourcePdfName": "fx260724.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260724.pdf",
+          "spotVolume": 2690,
+          "volumeChange": -933,
+          "volumeChangePct": -25.75,
+          "avg20": 3217,
+          "vs20": -527,
+          "vs20Pct": -16.38,
+          "close": 163.08,
+          "open": 163.07,
+          "high": 163.98,
+          "low": 162.99,
+          "priceChangePct": -0.07
+        },
+        {
+          "targetDate": "2026-07-22",
+          "publicationDate": "2026-07-23",
+          "sourcePdfName": "fx260723.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260723.pdf",
+          "spotVolume": 3623,
+          "volumeChange": 737,
+          "volumeChangePct": 25.54,
+          "avg20": 3204,
+          "vs20": 419,
+          "vs20Pct": 13.08,
+          "close": 163.19,
+          "open": 163.17,
+          "high": 163.2,
+          "low": 162.85,
+          "priceChangePct": 0.43
+        },
+        {
+          "targetDate": "2026-07-21",
+          "publicationDate": "2026-07-22",
+          "sourcePdfName": "fx260722.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260722.pdf",
+          "spotVolume": 2886,
+          "volumeChange": -366,
+          "volumeChangePct": -11.25,
+          "avg20": 3221,
+          "vs20": -335,
+          "vs20Pct": -10.4,
+          "close": 162.49,
+          "open": 162.48,
+          "high": 163.03,
+          "low": 162.44,
+          "priceChangePct": -0.01
+        },
+        {
+          "targetDate": "2026-07-20",
+          "publicationDate": "2026-07-21",
+          "sourcePdfName": "fx260721.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260721.pdf",
+          "spotVolume": 3252,
+          "volumeChange": 0,
+          "volumeChangePct": 0,
+          "avg20": 3240,
+          "vs20": 12,
+          "vs20Pct": 0.37,
+          "close": 162.51,
+          "open": 162.52,
+          "high": 162.58,
+          "low": 162.27,
+          "priceChangePct": 0.08
+        },
+        {
+          "targetDate": "2026-07-17",
+          "publicationDate": "2026-07-21",
+          "sourcePdfName": "fx260721.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260721.pdf",
+          "spotVolume": 3252,
+          "volumeChange": 381,
+          "volumeChangePct": 13.27,
+          "avg20": 3228,
+          "vs20": 24,
+          "vs20Pct": 0.74,
+          "close": 162.38,
+          "open": 162.38,
+          "high": 162.47,
+          "low": 162.15,
+          "priceChangePct": 0.19
+        },
+        {
+          "targetDate": "2026-07-16",
+          "publicationDate": "2026-07-17",
+          "sourcePdfName": "fx260717.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260717.pdf",
+          "spotVolume": 2871,
+          "volumeChange": 119,
+          "volumeChangePct": 4.32,
+          "avg20": 3231,
+          "vs20": -360,
+          "vs20Pct": -11.14,
+          "close": 162.07,
+          "open": 162.08,
+          "high": 162.47,
+          "low": 161.98,
+          "priceChangePct": -0.07
+        },
+        {
+          "targetDate": "2026-07-15",
+          "publicationDate": "2026-07-16",
+          "sourcePdfName": "fx260716.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260716.pdf",
+          "spotVolume": 2752,
+          "volumeChange": -112,
+          "volumeChangePct": -3.91,
+          "avg20": 3271,
+          "vs20": -519,
+          "vs20Pct": -15.87,
+          "close": 162.19,
+          "open": 162.19,
+          "high": 162.41,
+          "low": 161.97,
+          "priceChangePct": -0.15
+        },
+        {
+          "targetDate": "2026-07-14",
+          "publicationDate": "2026-07-15",
+          "sourcePdfName": "fx260715.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260715.pdf",
+          "spotVolume": 2864,
+          "volumeChange": -581,
+          "volumeChangePct": -16.87,
+          "avg20": 3236,
+          "vs20": -372,
+          "vs20Pct": -11.5,
+          "close": 162.43,
+          "open": 162.41,
+          "high": 162.47,
+          "low": 161.7,
+          "priceChangePct": 0.34
+        },
+        {
+          "targetDate": "2026-07-13",
+          "publicationDate": "2026-07-14",
+          "sourcePdfName": "fx260714.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260714.pdf",
+          "spotVolume": 3445,
+          "volumeChange": -1245,
+          "volumeChangePct": -26.55,
+          "avg20": 3269,
+          "vs20": 176,
+          "vs20Pct": 5.38,
+          "close": 161.88,
+          "open": 161.89,
+          "high": 162.39,
+          "low": 161.89,
+          "priceChangePct": -0.3
+        },
+        {
+          "targetDate": "2026-07-10",
+          "publicationDate": "2026-07-13",
+          "sourcePdfName": "fx260713.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260713.pdf",
+          "spotVolume": 4690,
+          "volumeChange": 2163,
+          "volumeChangePct": 85.6,
+          "avg20": 3286,
+          "vs20": 1404,
+          "vs20Pct": 42.73,
+          "close": 162.36,
+          "open": 162.34,
+          "high": 162.42,
+          "low": 161.29,
+          "priceChangePct": -0.11
+        },
+        {
+          "targetDate": "2026-07-09",
+          "publicationDate": "2026-07-10",
+          "sourcePdfName": "fx260710.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260710.pdf",
+          "spotVolume": 2527,
+          "volumeChange": -318,
+          "volumeChangePct": -11.18,
+          "avg20": 3208,
+          "vs20": -681,
+          "vs20Pct": -21.23,
+          "close": 162.54,
+          "open": 162.51,
+          "high": 162.57,
+          "low": 162.25,
+          "priceChangePct": 0.11
+        },
+        {
+          "targetDate": "2026-07-08",
+          "publicationDate": "2026-07-09",
+          "sourcePdfName": "fx260709.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260709.pdf",
+          "spotVolume": 2845,
+          "volumeChange": -92,
+          "volumeChangePct": -3.13,
+          "avg20": 3196,
+          "vs20": -351,
+          "vs20Pct": -10.98,
+          "close": 162.36,
+          "open": 162.36,
+          "high": 162.7,
+          "low": 162.08,
+          "priceChangePct": 0.17
+        },
+        {
+          "targetDate": "2026-07-07",
+          "publicationDate": "2026-07-08",
+          "sourcePdfName": "fx260708.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260708.pdf",
+          "spotVolume": 2937,
+          "volumeChange": -337,
+          "volumeChangePct": -10.29,
+          "avg20": 3194,
+          "vs20": -257,
+          "vs20Pct": -8.05,
+          "close": 162.09,
+          "open": 162.1,
+          "high": 162.17,
+          "low": 161.69,
+          "priceChangePct": 0.4
+        },
+        {
+          "targetDate": "2026-07-06",
+          "publicationDate": "2026-07-07",
+          "sourcePdfName": "fx260707.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260707.pdf",
+          "spotVolume": 3274,
+          "volumeChange": 13,
+          "volumeChangePct": 0.4,
+          "avg20": 3225,
+          "vs20": 49,
+          "vs20Pct": 1.52,
+          "close": 161.45,
+          "open": 161.49,
+          "high": 162.42,
+          "low": 161.46,
+          "priceChangePct": 0
+        },
+        {
+          "targetDate": "2026-07-03",
+          "publicationDate": "2026-07-06",
+          "sourcePdfName": "fx260706.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260706.pdf",
+          "spotVolume": 3261,
+          "volumeChange": -1377,
+          "volumeChangePct": -29.69,
+          "avg20": 3199,
+          "vs20": 62,
+          "vs20Pct": 1.94,
+          "close": 161.45,
+          "open": 161.4,
+          "high": 161.49,
+          "low": 160.62,
+          "priceChangePct": -0.67
+        },
+        {
+          "targetDate": "2026-07-02",
+          "publicationDate": "2026-07-03",
+          "sourcePdfName": "fx260703.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260703.pdf",
+          "spotVolume": 4638,
+          "volumeChange": 2312,
+          "volumeChangePct": 99.4,
+          "avg20": 3156,
+          "vs20": 1482,
+          "vs20Pct": 46.96,
+          "close": 162.54,
+          "open": 162.54,
+          "high": 162.58,
+          "low": 160.69,
+          "priceChangePct": -0.06
+        },
+        {
+          "targetDate": "2026-07-01",
+          "publicationDate": "2026-07-02",
+          "sourcePdfName": "fx260702.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260702.pdf",
+          "spotVolume": 2326,
+          "volumeChange": -2967,
+          "volumeChangePct": -56.06,
+          "avg20": 3050,
+          "vs20": -724,
+          "vs20Pct": -23.74,
+          "close": 162.63,
+          "open": 162.66,
+          "high": 162.84,
+          "low": 162.29,
+          "priceChangePct": 0.44
+        },
+        {
+          "targetDate": "2026-06-30",
+          "publicationDate": "2026-07-01",
+          "sourcePdfName": "fx260701.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260701.pdf",
+          "spotVolume": 5293,
+          "volumeChange": 3278,
+          "volumeChangePct": 162.68,
+          "avg20": 3087,
+          "vs20": 2206,
+          "vs20Pct": 71.46,
+          "close": 161.92,
+          "open": 161.92,
+          "high": 162.65,
+          "low": 161.92,
+          "priceChangePct": 0.08
+        },
+        {
+          "targetDate": "2026-06-29",
+          "publicationDate": "2026-06-30",
+          "sourcePdfName": "fx260630.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260630.pdf",
+          "spotVolume": 2015,
+          "volumeChange": -802,
+          "volumeChangePct": -28.47,
+          "avg20": 2962,
+          "vs20": -947,
+          "vs20Pct": -31.97,
+          "close": 161.79,
+          "open": 161.76,
+          "high": 161.96,
+          "low": 161.72,
+          "priceChangePct": -0.01
+        },
+        {
+          "targetDate": "2026-06-26",
+          "publicationDate": "2026-06-29",
+          "sourcePdfName": "fx260629.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260629.pdf",
+          "spotVolume": 2817,
+          "volumeChange": -519,
+          "volumeChangePct": -15.56,
+          "avg20": 2985,
+          "vs20": -168,
+          "vs20Pct": -5.63,
+          "close": 161.8,
+          "open": 161.79,
+          "high": 161.84,
+          "low": 161.54,
+          "priceChangePct": 0.02
+        },
+        {
+          "targetDate": "2026-06-25",
+          "publicationDate": "2026-06-26",
+          "sourcePdfName": "fx260626.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260626.pdf",
+          "spotVolume": 3336,
+          "volumeChange": 901,
+          "volumeChangePct": 37,
+          "avg20": 3007,
+          "vs20": 329,
+          "vs20Pct": 10.94,
+          "close": 161.76,
+          "open": 161.73,
+          "high": 161.93,
+          "low": 161.59,
+          "priceChangePct": 0.1
+        },
+        {
+          "targetDate": "2026-06-24",
+          "publicationDate": "2026-06-25",
+          "sourcePdfName": "fx260625.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260625.pdf",
+          "spotVolume": 2435,
+          "volumeChange": -1528,
+          "volumeChangePct": -38.56,
+          "avg20": 2951,
+          "vs20": -516,
+          "vs20Pct": -17.49,
+          "close": 161.6,
+          "open": 161.56,
+          "high": 161.8,
+          "low": 161.53,
+          "priceChangePct": 0.02
+        },
+        {
+          "targetDate": "2026-06-23",
+          "publicationDate": "2026-06-24",
+          "sourcePdfName": "fx260624.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260624.pdf",
+          "spotVolume": 3963,
+          "volumeChange": 948,
+          "volumeChangePct": 31.44,
+          "avg20": 2998,
+          "vs20": 965,
+          "vs20Pct": 32.19,
+          "close": 161.57,
+          "open": 161.55,
+          "high": 161.73,
+          "low": 161.31,
+          "priceChangePct": 0.09
+        },
+        {
+          "targetDate": "2026-06-22",
+          "publicationDate": "2026-06-23",
+          "sourcePdfName": "fx260623.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260623.pdf",
+          "spotVolume": 3015,
+          "volumeChange": -308,
+          "volumeChangePct": -9.27,
+          "avg20": 2907,
+          "vs20": 108,
+          "vs20Pct": 3.72,
+          "close": 161.43,
+          "open": 161.43,
+          "high": 161.91,
+          "low": 161.1,
+          "priceChangePct": 0.09
+        },
+        {
+          "targetDate": "2026-06-19",
+          "publicationDate": "2026-06-22",
+          "sourcePdfName": "fx260622.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260622.pdf",
+          "spotVolume": 3323,
+          "volumeChange": -338,
+          "volumeChangePct": -9.23,
+          "avg20": 2843,
+          "vs20": 480,
+          "vs20Pct": 16.88,
+          "close": 161.29,
+          "open": 161.25,
+          "high": 161.45,
+          "low": 161.01,
+          "priceChangePct": 0.43
+        },
+        {
+          "targetDate": "2026-06-18",
+          "publicationDate": "2026-06-19",
+          "sourcePdfName": "fx260619.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260619.pdf",
+          "spotVolume": 3661,
+          "volumeChange": 1598,
+          "volumeChangePct": 77.46,
+          "avg20": 2857,
+          "vs20": 804,
+          "vs20Pct": 28.14,
+          "close": 160.6,
+          "open": 160.55,
+          "high": 161.37,
+          "low": 160.54,
+          "priceChangePct": 0.11
+        },
+        {
+          "targetDate": "2026-06-17",
+          "publicationDate": "2026-06-18",
+          "sourcePdfName": "fx260618.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260618.pdf",
+          "spotVolume": 2063,
+          "volumeChange": -1454,
+          "volumeChangePct": -41.34,
+          "avg20": 2789,
+          "vs20": -726,
+          "vs20Pct": -26.03,
+          "close": 160.42,
+          "open": 160.41,
+          "high": 160.42,
+          "low": 160.12,
+          "priceChangePct": 0.12
+        },
+        {
+          "targetDate": "2026-06-16",
+          "publicationDate": "2026-06-17",
+          "sourcePdfName": "fx260617.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260617.pdf",
+          "spotVolume": 3517,
+          "volumeChange": -262,
+          "volumeChangePct": -6.93,
+          "avg20": 2815,
+          "vs20": 702,
+          "vs20Pct": 24.94,
+          "close": 160.23,
+          "open": 160.24,
+          "high": 160.46,
+          "low": 160.06,
+          "priceChangePct": 0.17
+        },
+        {
+          "targetDate": "2026-06-15",
+          "publicationDate": "2026-06-16",
+          "sourcePdfName": "fx260616.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260616.pdf",
+          "spotVolume": 3779,
+          "volumeChange": 641,
+          "volumeChangePct": 20.43,
+          "avg20": 2772,
+          "vs20": 1007,
+          "vs20Pct": 36.33,
+          "close": 159.96,
+          "open": 159.92,
+          "high": 160.22,
+          "low": 159.89,
+          "priceChangePct": -0.11
+        },
+        {
+          "targetDate": "2026-06-12",
+          "publicationDate": "2026-06-15",
+          "sourcePdfName": "fx260615.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260615.pdf",
+          "spotVolume": 3138,
+          "volumeChange": 849,
+          "volumeChangePct": 37.09,
+          "avg20": 2683,
+          "vs20": 455,
+          "vs20Pct": 16.96,
+          "close": 160.13,
+          "open": 160.17,
+          "high": 160.37,
+          "low": 159.97,
+          "priceChangePct": -0.25
+        }
+      ],
+      "priceRange": {
+        "startDate": "2026-04-15",
+        "endDate": "2026-08-06",
+        "count": 80
+      },
+      "priceRecords": [
+        {
+          "date": "2026-08-06",
+          "close": 157.65,
+          "open": 157.78,
+          "high": 157.88,
+          "low": 157.3,
+          "priceChangePct": 0.08
+        },
+        {
+          "date": "2026-08-05",
+          "close": 157.56,
+          "open": 157.78,
+          "high": 157.88,
+          "low": 157.3,
+          "priceChangePct": 0.02
+        },
+        {
+          "date": "2026-08-04",
+          "close": 157.53,
+          "open": 157.54,
+          "high": 157.95,
+          "low": 157.23,
+          "priceChangePct": -0.03
+        },
+        {
+          "date": "2026-08-03",
+          "close": 157.58,
+          "open": 157.7,
+          "high": 157.87,
+          "low": 155.26,
+          "priceChangePct": -1.62
+        },
+        {
+          "date": "2026-07-31",
+          "close": 160.18,
+          "open": 160.18,
+          "high": 160.84,
+          "low": 158.67,
+          "priceChangePct": -1.91
+        },
+        {
+          "date": "2026-07-30",
+          "close": 163.3,
+          "open": 163.25,
+          "high": 163.73,
+          "low": 157.99,
+          "priceChangePct": -0.34
+        },
+        {
+          "date": "2026-07-29",
+          "close": 163.86,
+          "open": 163.86,
+          "high": 163.88,
+          "low": 163.29,
+          "priceChangePct": 0.05
+        },
+        {
+          "date": "2026-07-28",
+          "close": 163.77,
+          "open": 163.79,
+          "high": 163.94,
+          "low": 163.64,
+          "priceChangePct": 0.1
+        },
+        {
+          "date": "2026-07-27",
+          "close": 163.61,
+          "open": 163.59,
+          "high": 163.76,
+          "low": 163.33,
+          "priceChangePct": -0.13
+        },
+        {
+          "date": "2026-07-24",
+          "close": 163.83,
+          "open": 163.88,
+          "high": 163.93,
+          "low": 163.65,
+          "priceChangePct": 0.46
+        },
+        {
+          "date": "2026-07-23",
+          "close": 163.08,
+          "open": 163.07,
+          "high": 163.98,
+          "low": 162.99,
+          "priceChangePct": -0.07
+        },
+        {
+          "date": "2026-07-22",
+          "close": 163.19,
+          "open": 163.17,
+          "high": 163.2,
+          "low": 162.85,
+          "priceChangePct": 0.43
+        },
+        {
+          "date": "2026-07-21",
+          "close": 162.49,
+          "open": 162.48,
+          "high": 163.03,
+          "low": 162.44,
+          "priceChangePct": -0.01
+        },
+        {
+          "date": "2026-07-20",
+          "close": 162.51,
+          "open": 162.52,
+          "high": 162.58,
+          "low": 162.27,
+          "priceChangePct": 0.08
+        },
+        {
+          "date": "2026-07-17",
+          "close": 162.38,
+          "open": 162.38,
+          "high": 162.47,
+          "low": 162.15,
+          "priceChangePct": 0.19
+        },
+        {
+          "date": "2026-07-16",
+          "close": 162.07,
+          "open": 162.08,
+          "high": 162.47,
+          "low": 161.98,
+          "priceChangePct": -0.07
+        },
+        {
+          "date": "2026-07-15",
+          "close": 162.19,
+          "open": 162.19,
+          "high": 162.41,
+          "low": 161.97,
+          "priceChangePct": -0.15
+        },
+        {
+          "date": "2026-07-14",
+          "close": 162.43,
+          "open": 162.41,
+          "high": 162.47,
+          "low": 161.7,
+          "priceChangePct": 0.34
+        },
+        {
+          "date": "2026-07-13",
+          "close": 161.88,
+          "open": 161.89,
+          "high": 162.39,
+          "low": 161.89,
+          "priceChangePct": -0.3
+        },
+        {
+          "date": "2026-07-10",
+          "close": 162.36,
+          "open": 162.34,
+          "high": 162.42,
+          "low": 161.29,
+          "priceChangePct": -0.11
+        },
+        {
+          "date": "2026-07-09",
+          "close": 162.54,
+          "open": 162.51,
+          "high": 162.57,
+          "low": 162.25,
+          "priceChangePct": 0.11
+        },
+        {
+          "date": "2026-07-08",
+          "close": 162.36,
+          "open": 162.36,
+          "high": 162.7,
+          "low": 162.08,
+          "priceChangePct": 0.17
+        },
+        {
+          "date": "2026-07-07",
+          "close": 162.09,
+          "open": 162.1,
+          "high": 162.17,
+          "low": 161.69,
+          "priceChangePct": 0.4
+        },
+        {
+          "date": "2026-07-06",
+          "close": 161.45,
+          "open": 161.49,
+          "high": 162.42,
+          "low": 161.46,
+          "priceChangePct": 0
+        },
+        {
+          "date": "2026-07-03",
+          "close": 161.45,
+          "open": 161.4,
+          "high": 161.49,
+          "low": 160.62,
+          "priceChangePct": -0.67
+        },
+        {
+          "date": "2026-07-02",
+          "close": 162.54,
+          "open": 162.54,
+          "high": 162.58,
+          "low": 160.69,
+          "priceChangePct": -0.06
+        },
+        {
+          "date": "2026-07-01",
+          "close": 162.63,
+          "open": 162.66,
+          "high": 162.84,
+          "low": 162.29,
+          "priceChangePct": 0.44
+        },
+        {
+          "date": "2026-06-30",
+          "close": 161.92,
+          "open": 161.92,
+          "high": 162.65,
+          "low": 161.92,
+          "priceChangePct": 0.08
+        },
+        {
+          "date": "2026-06-29",
+          "close": 161.79,
+          "open": 161.76,
+          "high": 161.96,
+          "low": 161.72,
+          "priceChangePct": -0.01
+        },
+        {
+          "date": "2026-06-26",
+          "close": 161.8,
+          "open": 161.79,
+          "high": 161.84,
+          "low": 161.54,
+          "priceChangePct": 0.02
+        },
+        {
+          "date": "2026-06-25",
+          "close": 161.76,
+          "open": 161.73,
+          "high": 161.93,
+          "low": 161.59,
+          "priceChangePct": 0.1
+        },
+        {
+          "date": "2026-06-24",
+          "close": 161.6,
+          "open": 161.56,
+          "high": 161.8,
+          "low": 161.53,
+          "priceChangePct": 0.02
+        },
+        {
+          "date": "2026-06-23",
+          "close": 161.57,
+          "open": 161.55,
+          "high": 161.73,
+          "low": 161.31,
+          "priceChangePct": 0.09
+        },
+        {
+          "date": "2026-06-22",
+          "close": 161.43,
+          "open": 161.43,
+          "high": 161.91,
+          "low": 161.1,
+          "priceChangePct": 0.09
+        },
+        {
+          "date": "2026-06-19",
+          "close": 161.29,
+          "open": 161.25,
+          "high": 161.45,
+          "low": 161.01,
+          "priceChangePct": 0.43
+        },
+        {
+          "date": "2026-06-18",
+          "close": 160.6,
+          "open": 160.55,
+          "high": 161.37,
+          "low": 160.54,
+          "priceChangePct": 0.11
+        },
+        {
+          "date": "2026-06-17",
+          "close": 160.42,
+          "open": 160.41,
+          "high": 160.42,
+          "low": 160.12,
+          "priceChangePct": 0.12
+        },
+        {
+          "date": "2026-06-16",
+          "close": 160.23,
+          "open": 160.24,
+          "high": 160.46,
+          "low": 160.06,
+          "priceChangePct": 0.17
+        },
+        {
+          "date": "2026-06-15",
+          "close": 159.96,
+          "open": 159.92,
+          "high": 160.22,
+          "low": 159.89,
+          "priceChangePct": -0.11
+        },
+        {
+          "date": "2026-06-12",
+          "close": 160.13,
+          "open": 160.17,
+          "high": 160.37,
+          "low": 159.97,
+          "priceChangePct": -0.25
+        },
+        {
+          "date": "2026-06-11",
+          "close": 160.53,
+          "open": 160.51,
+          "high": 160.59,
+          "low": 160.43,
+          "priceChangePct": 0.09
+        },
+        {
+          "date": "2026-06-10",
+          "close": 160.38,
+          "open": 160.38,
+          "high": 160.52,
+          "low": 160.25,
+          "priceChangePct": 0.13
+        },
+        {
+          "date": "2026-06-09",
+          "close": 160.17,
+          "open": 160.18,
+          "high": 160.3,
+          "low": 160.05,
+          "priceChangePct": -0.1
+        },
+        {
+          "date": "2026-06-08",
+          "close": 160.33,
+          "open": 160.33,
+          "high": 160.39,
+          "low": 159.91,
+          "priceChangePct": 0.21
+        },
+        {
+          "date": "2026-06-05",
+          "close": 159.99,
+          "open": 159.99,
+          "high": 160.29,
+          "low": 159.82,
+          "priceChangePct": 0.03
+        },
+        {
+          "date": "2026-06-04",
+          "close": 159.94,
+          "open": 159.95,
+          "high": 160.02,
+          "low": 159.75,
+          "priceChangePct": -0.02
+        },
+        {
+          "date": "2026-06-03",
+          "close": 159.97,
+          "open": 159.98,
+          "high": 159.99,
+          "low": 159.51,
+          "priceChangePct": 0.21
+        },
+        {
+          "date": "2026-06-02",
+          "close": 159.64,
+          "open": 159.64,
+          "high": 159.9,
+          "low": 159.64,
+          "priceChangePct": 0.18
+        },
+        {
+          "date": "2026-06-01",
+          "close": 159.35,
+          "open": 159.38,
+          "high": 159.75,
+          "low": 159.37,
+          "priceChangePct": 0.05
+        },
+        {
+          "date": "2026-05-29",
+          "close": 159.27,
+          "open": 159.26,
+          "high": 159.38,
+          "low": 159.1,
+          "priceChangePct": -0.19
+        },
+        {
+          "date": "2026-05-28",
+          "close": 159.57,
+          "open": 159.57,
+          "high": 159.64,
+          "low": 159.17,
+          "priceChangePct": 0.21
+        },
+        {
+          "date": "2026-05-27",
+          "close": 159.24,
+          "open": 159.22,
+          "high": 159.52,
+          "low": 159.17,
+          "priceChangePct": 0.18
+        },
+        {
+          "date": "2026-05-26",
+          "close": 158.95,
+          "open": 158.95,
+          "high": 159.37,
+          "low": 158.91,
+          "priceChangePct": 0
+        },
+        {
+          "date": "2026-05-25",
+          "close": 158.95,
+          "open": 158.94,
+          "high": 159.04,
+          "low": 158.76,
+          "priceChangePct": -0.04
+        },
+        {
+          "date": "2026-05-22",
+          "close": 159.02,
+          "open": 159.05,
+          "high": 159.23,
+          "low": 159,
+          "priceChangePct": 0.08
+        },
+        {
+          "date": "2026-05-21",
+          "close": 158.89,
+          "open": 158.89,
+          "high": 159.32,
+          "low": 158.82,
+          "priceChangePct": -0.09
+        },
+        {
+          "date": "2026-05-20",
+          "close": 159.04,
+          "open": 159.05,
+          "high": 159.17,
+          "low": 158.59,
+          "priceChangePct": 0.11
+        },
+        {
+          "date": "2026-05-19",
+          "close": 158.86,
+          "open": 158.88,
+          "high": 159.24,
+          "low": 158.78,
+          "priceChangePct": 0.01
+        },
+        {
+          "date": "2026-05-18",
+          "close": 158.84,
+          "open": 158.87,
+          "high": 159.06,
+          "low": 158.64,
+          "priceChangePct": 0.29
+        },
+        {
+          "date": "2026-05-15",
+          "close": 158.38,
+          "open": 158.39,
+          "high": 158.74,
+          "low": 158.3,
+          "priceChangePct": 0.34
+        },
+        {
+          "date": "2026-05-14",
+          "close": 157.85,
+          "open": 157.85,
+          "high": 158.18,
+          "low": 157.61,
+          "priceChangePct": 0.11
+        },
+        {
+          "date": "2026-05-13",
+          "close": 157.67,
+          "open": 157.68,
+          "high": 157.89,
+          "low": 157.58,
+          "priceChangePct": 0.28
+        },
+        {
+          "date": "2026-05-12",
+          "close": 157.23,
+          "open": 157.27,
+          "high": 157.75,
+          "low": 156.81,
+          "priceChangePct": 0.24
+        },
+        {
+          "date": "2026-05-11",
+          "close": 156.86,
+          "open": 156.89,
+          "high": 157.17,
+          "low": 156.85,
+          "priceChangePct": 0.02
+        },
+        {
+          "date": "2026-05-08",
+          "close": 156.83,
+          "open": 156.84,
+          "high": 156.97,
+          "low": 156.45,
+          "priceChangePct": 0.2
+        },
+        {
+          "date": "2026-05-07",
+          "close": 156.51,
+          "open": 156.51,
+          "high": 156.51,
+          "low": 156.04,
+          "priceChangePct": -0.74
+        },
+        {
+          "date": "2026-05-06",
+          "close": 157.68,
+          "open": 157.66,
+          "high": 157.89,
+          "low": 155.05,
+          "priceChangePct": 0.31
+        },
+        {
+          "date": "2026-05-01",
+          "close": 156.98,
+          "open": 156.99,
+          "high": 157.31,
+          "low": 155.52,
+          "priceChangePct": -2
+        },
+        {
+          "date": "2026-04-30",
+          "close": 160.18,
+          "open": 160.19,
+          "high": 160.7,
+          "low": 155.55,
+          "priceChangePct": 0.39
+        },
+        {
+          "date": "2026-04-29",
+          "close": 159.55,
+          "open": 159.54,
+          "high": 160.29,
+          "low": 159.52,
+          "priceChangePct": 0.12
+        },
+        {
+          "date": "2026-04-28",
+          "close": 159.36,
+          "open": 159.36,
+          "high": 159.78,
+          "low": 158.97,
+          "priceChangePct": -0.14
+        },
+        {
+          "date": "2026-04-27",
+          "close": 159.58,
+          "open": 159.57,
+          "high": 159.57,
+          "low": 159.09,
+          "priceChangePct": -0.11
+        },
+        {
+          "date": "2026-04-24",
+          "close": 159.75,
+          "open": 159.74,
+          "high": 159.84,
+          "low": 159.34,
+          "priceChangePct": 0.16
+        },
+        {
+          "date": "2026-04-23",
+          "close": 159.49,
+          "open": 159.49,
+          "high": 159.78,
+          "low": 159.3,
+          "priceChangePct": 0.08
+        },
+        {
+          "date": "2026-04-22",
+          "close": 159.37,
+          "open": 159.34,
+          "high": 159.5,
+          "low": 159.1,
+          "priceChangePct": 0.33
+        },
+        {
+          "date": "2026-04-21",
+          "close": 158.84,
+          "open": 158.85,
+          "high": 159.43,
+          "low": 158.8,
+          "priceChangePct": -0.2
+        },
+        {
+          "date": "2026-04-20",
+          "close": 159.16,
+          "open": 159.15,
+          "high": 159.18,
+          "low": 158.55,
+          "priceChangePct": -0.03
+        },
+        {
+          "date": "2026-04-17",
+          "close": 159.2,
+          "open": 159.22,
+          "high": 159.51,
+          "low": 157.61,
+          "priceChangePct": 0.25
+        },
+        {
+          "date": "2026-04-16",
+          "close": 158.81,
+          "open": 158.78,
+          "high": 159.29,
+          "low": 158.28,
+          "priceChangePct": 0.01
+        },
+        {
+          "date": "2026-04-15",
+          "close": 158.79,
+          "open": 158.76,
+          "high": 159.15,
+          "low": 158.65,
+          "priceChangePct": -0.26
+        }
+      ]
+    }
+  },
+  "events": {
+    "schemaVersion": "2.0.0",
+    "generatedAt": "2026-08-09T01:03:53+09:00",
+    "dataAsOf": "2026-08-09T01:03:53+09:00",
+    "status": "ok",
+    "events": [
+      {
+        "id": "event-76e86bac79677e",
+        "sourceKey": "2026-08-09|01:45|USD|fomc member bowman speaks",
+        "date": "2026-08-09",
+        "time": "01:45",
+        "datetimeJst": "2026-08-09T01:45:00+09:00",
+        "scheduledAtSource": "2026-08-08T12:45:00-04:00",
+        "scheduledAtUtc": "2026-08-08T16:45:00Z",
+        "country": "米国",
+        "currency": "USD",
+        "title": "FOMCメンバー Bowman 発言",
+        "eventNameOriginal": "FOMC Member Bowman Speaks",
+        "category": "speech",
+        "impactOriginal": "Low",
+        "ffImportance": 1,
+        "importance": 2,
+        "importanceLabel": "中",
+        "forecast": "",
+        "previous": "",
+        "actual": "",
+        "revised": "",
+        "resultComparison": "",
+        "resultExplanation": "発表後に実績値と市場反応を更新します。",
+        "status": "scheduled",
+        "isTimed": true,
+        "isImportantEvent": true,
+        "affectedMarkets": [
+          "米2年債",
+          "米10年債",
+          "USD/JPY",
+          "ダウ先物",
+          "ナスダック先物",
+          "日経225先物",
+          "金"
+        ],
+        "focusMarkets": [
+          "米2年債",
+          "米10年債",
+          "USD/JPY",
+          "ダウ先物",
+          "ナスダック先物"
+        ],
+        "pricedIn": [
+          "市場予想：予想なし",
+          "前回値：前回値なし",
+          "発表直後は米2年債、米10年債、株価指数先物、為替の順に確認"
+        ],
+        "scenarios": [
+          [
+            "米2年債",
+            "上昇しやすい",
+            "小動き",
+            "低下しやすい"
+          ],
+          [
+            "米10年債",
+            "上昇しやすい",
+            "小動き",
+            "低下しやすい"
+          ],
+          [
+            "ダウ先物",
+            "金利上昇なら重い",
+            "小動き",
+            "金利低下なら支え"
+          ],
+          [
+            "ナスダック先物",
+            "高金利なら重い",
+            "小動き",
+            "金利低下なら支え"
+          ],
+          [
+            "日経225先物",
+            "米株安・円高なら重い",
+            "小動き",
+            "米株高・円安なら支え"
+          ],
+          [
+            "USD/JPY",
+            "ドル高で上昇しやすい",
+            "小動き",
+            "ドル安で下落しやすい"
+          ],
+          [
+            "EUR/USD",
+            "ドル高で下落しやすい",
+            "小動き",
+            "ドル安で上昇しやすい"
+          ],
+          [
+            "金",
+            "実質金利上昇なら重い",
+            "小動き",
+            "実質金利低下なら支え"
+          ],
+          [
+            "原油",
+            "景気上振れなら支え",
+            "小動き",
+            "景気減速なら重い"
+          ]
+        ],
+        "outlook": [
+          [
+            "米2年債",
+            "政策金利見通しに反応",
+            "初動と翌営業日の持続性を確認",
+            "利下げ期待後退",
+            "利下げ期待拡大"
+          ],
+          [
+            "米10年債",
+            "成長・インフレ・国債需給に反応",
+            "2年債との方向差を確認",
+            "インフレ再燃・需給悪化",
+            "成長鈍化・利下げ期待"
+          ],
+          [
+            "ダウ先物",
+            "景気敏感株の反応を確認",
+            "金利と業績期待の綱引きを確認",
+            "景気悪化・金利上昇",
+            "景気底堅さ・金利低下"
+          ],
+          [
+            "ナスダック先物",
+            "高PER株の金利感応度を確認",
+            "実質金利への耐性を見る",
+            "実質金利上昇",
+            "金利低下・買い戻し"
+          ],
+          [
+            "日経225先物",
+            "米株と円相場に反応",
+            "USD/JPYとの組み合わせを見る",
+            "米株安・円高",
+            "米株高・円安"
+          ],
+          [
+            "USD/JPY",
+            "米金利差とドルに反応",
+            "米2年・10年債との連動を確認",
+            "米金利上昇・ドル高",
+            "米金利低下・ドル安"
+          ],
+          [
+            "EUR/USD",
+            "ドルと欧州固有材料に反応",
+            "ドル全面高かを確認",
+            "米金利上昇・ドル高",
+            "米金利低下・ドル安"
+          ],
+          [
+            "金",
+            "実質金利とドルに反応",
+            "安全資産需要との整合性を確認",
+            "実質金利上昇・ドル高",
+            "実質金利低下・ドル安"
+          ],
+          [
+            "原油",
+            "需要見通しと供給材料に反応",
+            "景気と在庫のどちらが主導か確認",
+            "需要上振れ・供給不安",
+            "需要鈍化・供給懸念後退"
+          ]
+        ],
+        "postReleaseReactions": [],
+        "comparison": [
+          [
+            "米2年債",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "米10年債",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "ダウ先物",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "ナスダック先物",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "日経225先物",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "USD/JPY",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "EUR/USD",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "金",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "原油",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ]
+        ],
+        "conclusion": {
+          "narrative": "発表前",
+          "reaction": "結果待ち",
+          "watch": [
+            "米2年債の初動",
+            "米10年債への波及",
+            "ダウ・ナスダック先物",
+            "USD/JPYとEUR/USD",
+            "日経225先物・金・原油"
+          ]
+        },
+        "officialSource": {
+          "id": "federal_reserve",
+          "name": "Federal Reserve FOMC calendar",
+          "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+        },
+        "sourceType": "forex_factory_weekly",
+        "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+        "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
+        "createdAt": "2026-08-05T23:03:06+09:00",
+        "updatedAt": "2026-08-09T01:03:53+09:00",
+        "resultExpected": false,
+        "resultType": "qualitative"
+      }
+    ]
+  },
+  "config": {
+    "schemaVersion": "3.3.1",
+    "pageId": "usdjpy-supply-demand",
+    "generatedAt": "2026-08-09T02:42:00+09:00",
+    "mode": "integrated-realistic",
+    "sourceStatus": {
+      "tradersWebFx": "confirmed",
+      "cftc": "confirmed",
+      "core": "referenced-existing-json"
+    },
+    "tradersWebFx": {
+      "name": "トレーダーズ・ウェブFX 無料ページ",
+      "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
+      "sourceUpdatedAt": "2026-08-07T06:22:00+09:00",
+      "checkedAt": "2026-08-08T01:35:00+09:00",
+      "status": "confirmed",
+      "pageConfirmed": true,
+      "publicScope": "一般公開はUSD/JPYの直近6時台情報",
+      "redistributionMode": "key-levels-excerpt-with-attribution",
+      "note": "無料公開データから需給判断に必要な主要水準のみ抜粋し、基準日時と出典を明示する。",
+      "sourceDate": "2026-08-07",
+      "sourceTime": "06:22",
+      "freshness": "previous-session",
+      "ageHours": 19.2,
+      "keyLevels": {
+        "referenceSpot": "158.43",
+        "referenceSpotDescription": "8/7 6:00現在（高値158.55円 - 安値157.56円）",
+        "sellOrders": [
+          {
+            "price": "158.70-80",
+            "description": "売り小さめ"
+          },
+          {
+            "price": "159.00",
+            "description": "売りやや小さめ、OP12日NYカット / OP13日NYカット大きめ"
+          }
+        ],
+        "buyOrders": [
+          {
+            "price": "157.10-40",
+            "description": "買い小さめ"
+          },
+          {
+            "price": "157.00",
+            "description": "買い小さめ、OP7・12・13日NYカット"
+          }
+        ],
+        "stops": [
+          {
+            "price": "157.50",
+            "description": "割り込むとストップロス売り小さめ"
+          }
+        ],
+        "nyCutOptions": [
+          {
+            "price": "158.00",
+            "description": "OP7日NYカット"
+          },
+          {
+            "price": "159.00",
+            "description": "OP12日NYカット / OP13日NYカット大きめ"
+          },
+          {
+            "price": "157.00",
+            "description": "OP7・12・13日NYカット"
+          }
+        ],
+        "extractedRowCount": 14,
+        "displayMode": "key-levels-excerpt"
+      }
+    },
+    "cftc": {
+      "name": "CFTC Commitments of Traders - Japanese Yen",
+      "url": "https://www.cftc.gov/dea/futures/deacmesf.htm",
+      "status": "confirmed",
+      "asOf": "2026-08-04",
+      "long": 147228,
+      "short": 192701,
+      "net": -45473,
+      "previousNet": -163412,
+      "netChange": 117939,
+      "netChangePct": 72.2,
+      "longChange": 45957,
+      "shortChange": -71982,
+      "judgement": "円売り越し縮小",
+      "judgementSub": "ドル買い圧力が弱まる方向",
+      "lookbackWeeks": 26,
+      "verifiedPoints": 26,
+      "priceStatus": "available",
+      "priceVerifiedPoints": 26,
+      "priceSourceName": "Exchange-Rates.org USD/JPY 2026",
+      "priceSourceUrl": "https://www.exchange-rates.org/exchange-rate-history/usd-jpy-2026",
+      "priceCheckedAt": "2026-08-09T02:42:00+09:00",
+      "note": "CFTC Japanese Yen・Non-Commercial Long/Shortを直近26週で表示。CFTC公式資料を軸に、履歴値はCFTCアーカイブとCOT履歴表示で照合する。USD/JPY価格は各CFTC基準日の履歴値を使用する。",
+      "comment": "8月4日時点の円先物Netは-45,473枚。前週の-163,412枚から+117,939枚改善し、円売り越しが大幅に縮小。ドル円の上昇を支えていた投機的な円売り圧力は急速に弱まったため、日米金利差とオーダー需給を併せて巻き戻し継続の有無を確認する。",
+      "checkedAt": "2026-08-09T02:42:00+09:00",
+      "series": [
+        {
+          "date": "2026-02-10",
+          "label": "25週前",
+          "long": 128090,
+          "short": 147196,
+          "net": -19106,
+          "price": 154.5,
+          "status": "verified"
+        },
+        {
+          "date": "2026-02-17",
+          "label": "24週前",
+          "long": 143172,
+          "short": 130217,
+          "net": 12955,
+          "price": 153.26,
+          "status": "verified"
+        },
+        {
+          "date": "2026-02-24",
+          "label": "23週前",
+          "long": 149364,
+          "short": 137825,
+          "net": 11539,
+          "price": 155.86,
+          "status": "verified"
+        },
+        {
+          "date": "2026-03-03",
+          "label": "22週前",
+          "long": 134945,
+          "short": 151520,
+          "net": -16575,
+          "price": 157.64,
+          "status": "verified"
+        },
+        {
+          "date": "2026-03-10",
+          "label": "21週前",
+          "long": 119411,
+          "short": 160798,
+          "net": -41387,
+          "price": 158.14,
+          "status": "verified"
+        },
+        {
+          "date": "2026-03-17",
+          "label": "20週前",
+          "long": 106819,
+          "short": 174599,
+          "net": -67780,
+          "price": 158.95,
+          "status": "verified"
+        },
+        {
+          "date": "2026-03-24",
+          "label": "19週前",
+          "long": 98271,
+          "short": 161077,
+          "net": -62806,
+          "price": 158.69,
+          "status": "verified"
+        },
+        {
+          "date": "2026-03-31",
+          "label": "18週前",
+          "long": 95356,
+          "short": 168228,
+          "net": -72872,
+          "price": 158.75,
+          "status": "verified"
+        },
+        {
+          "date": "2026-04-07",
+          "label": "17週前",
+          "long": 91560,
+          "short": 185302,
+          "net": -93742,
+          "price": 159.45,
+          "status": "verified"
+        },
+        {
+          "date": "2026-04-14",
+          "label": "16週前",
+          "long": 102114,
+          "short": 185322,
+          "net": -83208,
+          "price": 158.8,
+          "status": "verified"
+        },
+        {
+          "date": "2026-04-21",
+          "label": "15週前",
+          "long": 101386,
+          "short": 195846,
+          "net": -94460,
+          "price": 159.41,
+          "status": "verified"
+        },
+        {
+          "date": "2026-04-28",
+          "label": "14週前",
+          "long": 106530,
+          "short": 208589,
+          "net": -102059,
+          "price": 159.6,
+          "status": "verified"
+        },
+        {
+          "date": "2026-05-05",
+          "label": "13週前",
+          "long": 109035,
+          "short": 170773,
+          "net": -61738,
+          "price": 157.87,
+          "status": "verified"
+        },
+        {
+          "date": "2026-05-12",
+          "label": "12週前",
+          "long": 100155,
+          "short": 175257,
+          "net": -75102,
+          "price": 157.61,
+          "status": "verified"
+        },
+        {
+          "date": "2026-05-19",
+          "label": "11週前",
+          "long": 106603,
+          "short": 200508,
+          "net": -93905,
+          "price": 159.09,
+          "status": "verified"
+        },
+        {
+          "date": "2026-05-26",
+          "label": "10週前",
+          "long": 112993,
+          "short": 227660,
+          "net": -114667,
+          "price": 159.29,
+          "status": "verified"
+        },
+        {
+          "date": "2026-06-02",
+          "label": "9週前",
+          "long": 114849,
+          "short": 244416,
+          "net": -129567,
+          "price": 159.92,
+          "status": "verified"
+        },
+        {
+          "date": "2026-06-09",
+          "label": "8週前",
+          "long": 121520,
+          "short": 267338,
+          "net": -145818,
+          "price": 160.37,
+          "status": "verified"
+        },
+        {
+          "date": "2026-06-16",
+          "label": "7週前",
+          "long": 117375,
+          "short": 267507,
+          "net": -150132,
+          "price": 160.42,
+          "status": "verified"
+        },
+        {
+          "date": "2026-06-23",
+          "label": "6週前",
+          "long": 113698,
+          "short": 259802,
+          "net": -146104,
+          "price": 161.57,
+          "status": "verified"
+        },
+        {
+          "date": "2026-06-30",
+          "label": "5週前",
+          "long": 111872,
+          "short": 266964,
+          "net": -155092,
+          "price": 162.62,
+          "status": "verified"
+        },
+        {
+          "date": "2026-07-07",
+          "label": "4週前",
+          "long": 112247,
+          "short": 236025,
+          "net": -123778,
+          "price": 162.14,
+          "status": "verified"
+        },
+        {
+          "date": "2026-07-14",
+          "label": "3週前",
+          "long": 115965,
+          "short": 238628,
+          "net": -122663,
+          "price": 162.23,
+          "status": "verified"
+        },
+        {
+          "date": "2026-07-21",
+          "label": "2週前",
+          "long": 107590,
+          "short": 259715,
+          "net": -152125,
+          "price": 163.19,
+          "status": "verified"
+        },
+        {
+          "date": "2026-07-28",
+          "label": "1週前",
+          "long": 101271,
+          "short": 264683,
+          "net": -163412,
+          "price": 163.85,
+          "status": "verified"
+        },
+        {
+          "date": "2026-08-04",
+          "label": "今週",
+          "long": 147228,
+          "short": 192701,
+          "net": -45473,
+          "price": 157.76,
+          "status": "verified"
+        }
+      ]
+    },
+    "coreSnapshot": {
+      "market": {
+        "generatedAt": "2026-08-08T01:10:52+09:00",
+        "asOf": "2026-08-08T01:10:59+09:00",
+        "verificationStatus": "verified"
+      },
+      "ratesBonds": {
+        "generatedAt": "2026-08-08T00:09:14+09:00",
+        "asOfDate": "2026-08-07",
+        "status": "confirmed"
+      },
+      "usdJpyVolume": {
+        "generatedAt": "2026-08-07T21:34:51+09:00",
+        "targetDate": "2026-08-06",
+        "publicationDate": "2026-08-07",
+        "status": "ok"
+      }
+    },
+    "rules": {
+      "hideUnavailableOptionalBlocks": true,
+      "coreSources": [
+        "data/market/latest.json",
+        "data/rates-bonds.json",
+        "data/usdjpy-volume.json",
+        "CFTC Japanese Yen futures"
+      ],
+      "assessment": "価格方向、日米10年金利差の変化、東京スポット出来高、CFTC円先物の26週ポジション推移を中核とし、オーダー情報を補助材料として総合判断する。",
+      "cftc": "Japanese Yen / Non-CommercialのLong・Short・Netを直近26週で表示し、USD/JPY価格線との整合性を確認する。Netプラスを円買い越し、Netマイナスを円売り越しとして読む。",
+      "tradersWebFx": "無料ページから主要な売り・買い・ストップ・NYカット水準を抜粋し、基準日時・鮮度・出典を明示する。"
+    }
+  },
+  "meta": {
+    "priceDataDate": "2026-08-08",
+    "usDataDate": "2026-08-06",
+    "japanDataDate": "2026-08-06",
+    "tokyoDataDate": "2026-08-06",
+    "cftcDate": "2026-08-04"
+  }
+}
