@@ -1,6 +1,7 @@
 import unittest
 
 from lib.jpx_arbitrage import component_from_positions, parse_position_text
+from update_nikkei225_arbitrage import update_history
 
 
 FIXTURE = """
@@ -25,6 +26,15 @@ class JpxArbitrageParserTest(unittest.TestCase):
         self.assertEqual(component["sellChange"], -947)
         self.assertEqual(component["buyChange"], -4702)
         self.assertEqual(component["status"], "verified")
+
+    def test_all_fetched_publications_are_merged_into_daily_history(self):
+        current = parse_position_text(FIXTURE, "https://example.test/260806.pdf")
+        older = parse_position_text(FIXTURE.replace("8月6日", "8月5日"), "https://example.test/260805.pdf")
+        component = component_from_positions([current, older])
+        rows = update_history({"history": []}, component, {}, [current, older])
+        self.assertEqual([row["date"] for row in rows], ["2026-08-05", "2026-08-06"])
+        self.assertEqual(rows[0]["sourceFileUrl"], "https://example.test/260805.pdf")
+        self.assertEqual(rows[1]["sourceFileUrl"], "https://example.test/260806.pdf")
 
 
 if __name__ == "__main__":
