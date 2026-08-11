@@ -2,12 +2,12 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-supply-demand",
   "reportDate": "2026-08-11",
-  "generatedAt": "2026-08-11T19:18:43+09:00",
+  "generatedAt": "2026-08-11T20:36:46+09:00",
   "nikkei": {
     "schemaVersion": "2.1.0",
     "pageId": "nikkei225-supply-demand",
     "pageTitle": "日経225需給分析",
-    "generatedAt": "2026-08-11T19:18:43+09:00",
+    "generatedAt": "2026-08-11T20:36:46+09:00",
     "spot": {
       "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
@@ -16,7 +16,7 @@
       "value": 66970.22,
       "asOfDate": "2026-08-10",
       "status": "verified",
-      "fetchedAt": "2026-08-11T19:18:43+09:00"
+      "fetchedAt": "2026-08-11T20:36:46+09:00"
     },
     "futures": {
       "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -35,7 +35,7 @@
       "volumeChangePercent": null,
       "miniVolumeChangePercent": null,
       "status": "verified",
-      "fetchedAt": "2026-08-11T19:17:12+09:00",
+      "fetchedAt": "2026-08-11T20:35:16+09:00",
       "previousOpenInterest": 193030,
       "miniPreviousOpenInterest": 323639,
       "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260810open_interest.xlsx"
@@ -55,7 +55,7 @@
       "asOfDate": "2026-08-10",
       "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260810_derivatives_market_data_night.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-08-11T19:18:34+09:00"
+      "fetchedAt": "2026-08-11T20:36:37+09:00"
     },
     "arbitrage": {
       "sourceName": "JPX 裁定取引の状況",
@@ -68,7 +68,7 @@
       "sellChange": -947,
       "buyChange": -4702,
       "status": "verified",
-      "fetchedAt": "2026-08-11T19:17:10+09:00"
+      "fetchedAt": "2026-08-11T20:35:13+09:00"
     },
     "options": {
       "sourceName": "JPX 日経225オプション / オプション理論価格等情報",
@@ -81,7 +81,7 @@
       "ivChange": null,
       "asOfDate": "2026-08-11",
       "status": "calculated",
-      "fetchedAt": "2026-08-11T19:18:43+09:00",
+      "fetchedAt": "2026-08-11T20:36:46+09:00",
       "putVolume": null,
       "callVolume": null,
       "putCallStatus": "unavailable",
@@ -157,7 +157,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202608/20260810_volume_by_participant_whole_day.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-08-11T19:18:36+09:00"
+      "fetchedAt": "2026-08-11T20:36:39+09:00"
     },
     "foreignInvestors": {
       "sourceName": "JPX 投資部門別売買状況",
@@ -770,7 +770,7 @@
         ]
       },
       "status": "verified",
-      "fetchedAt": "2026-08-11T19:18:33+09:00"
+      "fetchedAt": "2026-08-11T20:36:36+09:00"
     },
     "participantOpenInterest": {
       "sourceName": "JPX 取引参加者別建玉残高",
@@ -884,7 +884,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20260807_indexfut_oi_by_tp.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-08-11T19:18:37+09:00"
+      "fetchedAt": "2026-08-11T20:36:40+09:00"
     },
     "shortSelling": {
       "sourceName": "JPX 空売り集計",
@@ -929,7 +929,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-08-11T19:17:11+09:00"
+      "fetchedAt": "2026-08-11T20:35:15+09:00"
     },
     "margin": {
       "sourceName": "JPX 信用取引現在高",
@@ -990,7 +990,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-08-11T19:17:14+09:00"
+      "fetchedAt": "2026-08-11T20:35:18+09:00"
     },
     "assessment": {
       "overall": "売り優勢",
@@ -1285,7 +1285,7 @@
       "market": null,
       "status": "partial",
       "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202608.xlsx",
-      "fetchedAt": "2026-08-11T19:18:41+09:00",
+      "fetchedAt": "2026-08-11T20:36:44+09:00",
       "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
     },
     "nikkeiFuturesDailyHistory": [
@@ -1297,7 +1297,7 @@
         "sourceName": "JPX / 大阪取引所 日経225先物",
         "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
         "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260810open_interest.xlsx",
-        "capturedAt": "2026-08-11T19:18:40+09:00",
+        "capturedAt": "2026-08-11T20:36:43+09:00",
         "status": "verified"
       }
     ],
@@ -1314,7 +1314,7 @@
       "status": "verified",
       "releaseFrequency": "weekly",
       "lookbackWeeks": 52,
-      "fetchedAt": "2026-08-11T19:18:44+09:00",
+      "fetchedAt": "2026-08-11T20:36:47+09:00",
       "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
       "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
       "priceStatus": "available",
@@ -2350,7 +2350,7 @@
     "pageId": "stocks",
     "pageTitle": "株式市場分析",
     "generatedAt": "2026-08-04T00:00:00+09:00",
-    "updatedAt": "2026-08-11T08:19:41+09:00",
+    "updatedAt": "2026-08-11T19:16:21+09:00",
     "dataAsOf": "2026-08-10T16:00:00-04:00",
     "status": "ok",
     "sourceStatus": "Google Sheets＋日経225寄与度検証済みデータ",
@@ -2976,100 +2976,100 @@
         "title": "日本市場（日経225寄与度 上位・下位）",
         "flag": "JP",
         "status": "verified",
-        "asOf": "2026-08-07",
+        "asOf": "2026-08-10",
         "source": "株探 日経平均の寄与度ランキング",
         "top": [
-          {
-            "rank": 1,
-            "code": "5803",
-            "name": "フジクラ（5803）",
-            "shortName": "フジクラ",
-            "close": "5,185",
-            "contribution": "+118.47",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-07"
-          },
-          {
-            "rank": 2,
-            "code": "7832",
-            "name": "バンナムＨＤ（7832）",
-            "shortName": "バンナムＨＤ",
-            "close": "5,398",
-            "contribution": "+51.59",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-07"
-          },
-          {
-            "rank": 3,
-            "code": "9983",
-            "name": "ファストリ（9983）",
-            "shortName": "ファストリ",
-            "close": "79,310",
-            "contribution": "+33.79",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-07"
-          },
-          {
-            "rank": 4,
-            "code": "6098",
-            "name": "リクルート（6098）",
-            "shortName": "リクルート",
-            "close": "13,165",
-            "contribution": "+32.18",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-07"
-          },
-          {
-            "rank": 5,
-            "code": "9433",
-            "name": "ＫＤＤＩ（9433）",
-            "shortName": "ＫＤＤＩ",
-            "close": "2,981.0",
-            "contribution": "+32.18",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-07"
-          }
-        ],
-        "bottom": [
           {
             "rank": 1,
             "code": "6857",
             "name": "アドテスト（6857）",
             "shortName": "アドテスト",
-            "close": "32,190",
-            "contribution": "-178.61",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-07"
+            "close": "34,260",
+            "contribution": "+499.61",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-10"
           },
           {
             "rank": 2,
-            "code": "9984",
-            "name": "ＳＢＧ（9984）",
-            "shortName": "ＳＢＧ",
-            "close": "5,552",
-            "contribution": "-115.05",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-07"
+            "code": "6098",
+            "name": "リクルート（6098）",
+            "shortName": "リクルート",
+            "close": "16,165",
+            "contribution": "+301.70",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-10"
           },
           {
             "rank": 3,
             "code": "8035",
             "name": "東エレク（8035）",
             "shortName": "東エレク",
-            "close": "54,500",
-            "contribution": "-83.47",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-07"
+            "close": "56,750",
+            "contribution": "+226.27",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-10"
           },
           {
             "rank": 4,
-            "code": "6920",
-            "name": "レーザーテク（6920）",
-            "shortName": "レーザーテク",
-            "close": "37,460",
-            "contribution": "-78.71",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-07"
+            "code": "5803",
+            "name": "フジクラ（5803）",
+            "shortName": "フジクラ",
+            "close": "5,580",
+            "contribution": "+79.45",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-10"
           },
           {
             "rank": 5,
-            "code": "4901",
-            "name": "富士フイルム（4901）",
-            "shortName": "富士フイルム",
-            "close": "3,236",
-            "contribution": "-64.56",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-07"
+            "code": "4543",
+            "name": "テルモ（4543）",
+            "shortName": "テルモ",
+            "close": "2,575.5",
+            "contribution": "+54.31",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-10"
+          }
+        ],
+        "bottom": [
+          {
+            "rank": 1,
+            "code": "9433",
+            "name": "ＫＤＤＩ（9433）",
+            "shortName": "ＫＤＤＩ",
+            "close": "2,830.0",
+            "contribution": "-60.74",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-10"
+          },
+          {
+            "rank": 2,
+            "code": "9984",
+            "name": "ＳＢＧ（9984）",
+            "shortName": "ＳＢＧ",
+            "close": "5,484",
+            "contribution": "-54.71",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-10"
+          },
+          {
+            "rank": 3,
+            "code": "9983",
+            "name": "ファストリ（9983）",
+            "shortName": "ファストリ",
+            "close": "78,720",
+            "contribution": "-47.47",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-10"
+          },
+          {
+            "rank": 4,
+            "code": "9735",
+            "name": "セコム（9735）",
+            "shortName": "セコム",
+            "close": "6,340",
+            "contribution": "-33.46",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-10"
+          },
+          {
+            "rank": 5,
+            "code": "5706",
+            "name": "三井金属（5706）",
+            "shortName": "三井金属",
+            "close": "27,855",
+            "contribution": "-14.63",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-10"
           }
         ]
       }
