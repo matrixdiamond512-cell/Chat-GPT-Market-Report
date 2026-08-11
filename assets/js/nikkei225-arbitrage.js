@@ -61,6 +61,7 @@ function analyze(d){
 }
 function statusClass(s){return s==='過熱'?'hot':s==='やや過熱'?'warm':s==='解消進行'?'unwind':s==='売り残優勢'?'sell':'neutral'}
 function kpi(label,value,sub,kind){return`<article class="arb-kpi ${kind}"><div class="arb-kpi-label">${esc(label)}</div><div class="arb-kpi-value">${value}</div><div class="arb-kpi-sub">${sub}</div></article>`}
+function cardDate(asOf,updated,status){return`<div class="arb-card-date">基準日 ${esc(iso(asOf))} ｜ 最終取得 ${esc(dateTime(updated))} ｜ ${esc(status||'状態未設定')}</div>`}
 function rowByLabel(stocks,label){return(stocks?.marketInternals?.japan?.rows||[]).find(r=>Array.isArray(r)&&String(r[0]).trim()===label)||null}
 function parsePair(v){const m=String(v||'').match(/([\d,]+)\s*\/\s*([\d,]+)/);return m?[Number(m[1].replaceAll(',','')),Number(m[2].replaceAll(',',''))]:[null,null]}
 function marketInternals(stocks,a){
@@ -114,11 +115,11 @@ function render(d,supply,stocks){
  const events=specialEvents(supply),rangePos=a.range===null?0:a.range;
  root.innerHTML=`
  <section class="arb-overview">
-  <article class="arb-judgement ${statusClass(a.status)}"><div class="arb-eyebrow">裁定需給判定</div><div class="arb-status">${esc(a.status)}</div><p>${esc(a.note)}</p><div class="arb-range"><div><b>52週レンジ位置</b><strong>${a.range===null?'取得不能':fmt(a.range,0)+'%'}</strong></div><div class="arb-range-track"><i style="left:${rangePos}%"></i></div><div class="arb-range-label"><span>低</span><span>高</span></div></div></article>
-  ${kpi('ネット裁定残',shares(a.net),'買い残 − 売り残','net')}
-  ${kpi('裁定買い残',shares(a.buy),`前回比 ${signedShares(n(d.latest?.buyChange))}`,'buy')}
-  ${kpi('裁定売り残',shares(a.sell),`前回比 ${signedShares(n(d.latest?.sellChange))}`,'sell')}
-  <div class="arb-deltas">${kpi('前回比',signedShares(a.prev),'直前取引日との差','delta')}${kpi('1週間変化',signedShares(a.d5),'5取引日前との差','delta')}${kpi('4週間変化',signedShares(a.d20),'20取引日前との差','delta')}</div>
+  <article class="arb-judgement ${statusClass(a.status)}"><div class="arb-eyebrow">裁定需給判定</div><div class="arb-status">${esc(a.status)}</div><p>${esc(a.note)}</p><div class="arb-range"><div><b>52週レンジ位置</b><strong>${a.range===null?'取得不能':fmt(a.range,0)+'%'}</strong></div><div class="arb-range-track"><i style="left:${rangePos}%"></i></div><div class="arb-range-label"><span>低</span><span>高</span></div></div>${cardDate(d.asOfDate,d.lastSuccessAt||d.generatedAt,d.status)}</article>
+  ${kpi('ネット裁定残',shares(a.net),`買い残 − 売り残${cardDate(d.asOfDate,d.lastSuccessAt||d.generatedAt,d.status)}`,'net')}
+  ${kpi('裁定買い残',shares(a.buy),`前回比 ${signedShares(n(d.latest?.buyChange))}${cardDate(d.asOfDate,d.lastSuccessAt||d.generatedAt,d.status)}`,'buy')}
+  ${kpi('裁定売り残',shares(a.sell),`前回比 ${signedShares(n(d.latest?.sellChange))}${cardDate(d.asOfDate,d.lastSuccessAt||d.generatedAt,d.status)}`,'sell')}
+  <div class="arb-deltas">${kpi('前回比',signedShares(a.prev),`直前取引日との差${cardDate(d.asOfDate,d.lastSuccessAt||d.generatedAt,d.status)}`,'delta')}${kpi('1週間変化',signedShares(a.d5),`5取引日前との差${cardDate(d.asOfDate,d.lastSuccessAt||d.generatedAt,d.status)}`,'delta')}${kpi('4週間変化',signedShares(a.d20),`20取引日前との差${cardDate(d.asOfDate,d.lastSuccessAt||d.generatedAt,d.status)}`,'delta')}</div>
  </section>
  <div class="arb-dates"><span><b>基準日</b>${iso(d.asOfDate)}</span><span><b>公表日</b>${published}</span><span><b>WEB更新日時</b>${dateTime(webUpdated)}</span><em>JPX公表値は原則として前々営業日分です</em></div>
  <section class="arb-legacy"><div class="dashboard-grid">${legacyChart('裁定買い残',d.history,'buyBalance','#2865e8')}${legacyChart('裁定売り残',d.history,'sellBalance','#7b43c5')}<article class="chart-card daily-net-card"><div class="daily-net-head"><div><h2 class="card-title" data-daily-title>ネット裁定残｜直近60営業日</h2><p>基準日ごとの残高水準と日々の増減を確認</p></div><div class="arb-periods" role="group" aria-label="日次チャート表示期間"><button type="button" data-daily-period="20" aria-pressed="false">20日</button><button type="button" data-daily-period="60" aria-pressed="true">60日</button></div></div><div class="daily-net-legend"><span class="net">ネット裁定残</span><span class="increase">前日比 増加</span><span class="decrease">前日比 減少</span><small data-daily-coverage></small></div><div data-daily-chart-host></div><div class="daily-tooltip" data-daily-tooltip><b>グラフにマウスを重ねるかタップすると詳細を表示します</b></div><div class="daily-summary" data-daily-summary></div><p class="daily-comment" data-daily-comment></p></article></div><div data-legacy-comparison></div></section>
@@ -130,6 +131,8 @@ function render(d,supply,stocks){
  </section>
  <aside class="arb-panel arb-howto"><h2>このページの読み方</h2><ol><li>ネット裁定残の現在水準と52週レンジ位置を確認します。</li><li>前回比、5取引日、20取引日の順に、積み上がりか解消かを確認します。</li><li>日経225、市場内部、当日ベーシス、特殊イベントを併読します。</li><li>買い残が多いだけで暴落や弱気と断定しません。</li></ol><p>日次残高は株数ベースです。週次の金額ベース資料とは混在させません。</p></aside>
  <p class="arb-source">出典：<a href="${esc(d.sourcePageUrl||'https://www.jpx.co.jp/markets/statistics-equities/program/')}" target="_blank" rel="noopener">JPX 裁定取引の状況（日別）</a> ／ 日経225終値：<a href="${esc(d.nikkei225PriceSourceUrl||'https://finance.yahoo.com/quote/%5EN225/history/')}" target="_blank" rel="noopener">${esc(d.nikkei225PriceSourceName||'Yahoo Finance')}</a></p>`;
+ root.querySelector('[data-daily-title]')?.insertAdjacentHTML('afterend',cardDate(d.asOfDate,d.lastSuccessAt||d.generatedAt,d.status));
+ root.querySelectorAll('.arb-analysis-grid>.arb-panel').forEach((panel,index)=>{const dates=[d.asOfDate,internal.date,supply?.futures?.asOfDate,supply?.options?.nextSqDate];const updates=[d.lastSuccessAt||d.generatedAt,stocks?.updatedAt||stocks?.generatedAt,supply?.futures?.fetchedAt||supply?.generatedAt,supply?.generatedAt];panel.insertAdjacentHTML('beforeend',cardDate(dates[index],updates[index],index===1?(stocks?.status||'状態未設定'):(d.status||'verified')))});
  bindLegacyComparison(d.history);root.querySelectorAll('[data-daily-period]').forEach(b=>b.addEventListener('click',()=>renderDailyChart(a.rows,b.dataset.dailyPeriod)));renderDailyChart(a.rows,'60');
 }
 async function load(){try{const [d,supply,stocks]=await Promise.all([fetch(ARB_URL,{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('裁定履歴を取得できません');return r.json()}),fetch(SUPPLY_URL,{cache:'no-store'}).then(r=>r.ok?r.json():{}),fetch(STOCKS_URL,{cache:'no-store'}).then(r=>r.ok?r.json():{})]);render(d,supply,stocks)}catch(err){root.innerHTML=`<section class="loading-card"><b>取得不能</b><p>${esc(err.message||'裁定取引データを読み込めませんでした')}</p></section>`}}

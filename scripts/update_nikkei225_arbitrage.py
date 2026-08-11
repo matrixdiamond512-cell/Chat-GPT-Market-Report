@@ -6,7 +6,7 @@ import argparse
 import json
 from pathlib import Path
 
-from lib.jpx_arbitrage import component_from_positions, fetch_latest_positions, now_iso
+from lib.jpx_arbitrage import ArbitragePosition, component_from_positions, fetch_latest_positions, now_iso
 
 ROOT = Path(__file__).resolve().parents[1]
 ARBITRAGE = ROOT / "data" / "nikkei225-arbitrage.json"
@@ -37,21 +37,36 @@ def normalize_component(value: dict) -> dict:
     return out
 
 
-def update_history(page: dict, component: dict, supply: dict) -> list[dict]:
+def update_history(
+    page: dict,
+    component: dict,
+    supply: dict,
+    positions: list[ArbitragePosition] | None = None,
+) -> list[dict]:
     rows = [dict(row) for row in page.get("history", []) if isinstance(row, dict)]
     by_date = {iso(row.get("date")): row for row in rows if iso(row.get("date"))}
-    as_of = iso(component["asOfDate"])
     spot = supply.get("spot") or {}
-    existing = by_date.get(as_of, {})
-    by_date[as_of] = {
-        **existing,
-        "date": as_of,
-        "sellBalance": int(component["sellBalance"]),
-        "buyBalance": int(component["buyBalance"]),
-        "source": "JPX",
-        "sourceFileUrl": component.get("sourceFileUrl"),
-        "nikkei225Close": spot.get("value") if iso(spot.get("asOfDate")) == as_of else existing.get("nikkei225Close"),
-    }
+    fetched = positions or [ArbitragePosition(
+        asOfDate=str(component["asOfDate"]),
+        sellBalance=int(component["sellBalance"]),
+        buyBalance=int(component["buyBalance"]),
+        sourceFileUrl=str(component.get("sourceFileUrl") or ""),
+    )]
+    for position in fetched:
+        as_of = iso(position.asOfDate)
+        if not as_of:
+            continue
+        existing = by_date.get(as_of, {})
+        by_date[as_of] = {
+            **existing,
+            "date": as_of,
+            "sellBalance": int(position.sellBalance),
+            "buyBalance": int(position.buyBalance),
+            "source": "JPX",
+            "sourceFileUrl": position.sourceFileUrl,
+            "fetchedAt": component.get("fetchedAt") or component.get("lastSuccessAt"),
+            "nikkei225Close": spot.get("value") if iso(spot.get("asOfDate")) == as_of else existing.get("nikkei225Close"),
+        }
     return [by_date[key] for key in sorted(by_date)]
 
 
@@ -78,10 +93,12 @@ def main() -> int:
     previous_component = supply.get("arbitrage") or {}
     attempt = now_iso()
     try:
+        positions: list[ArbitragePosition] | None = None
         if args.from_supply:
             component = normalize_component(previous_component)
         else:
-            component = component_from_positions(fetch_latest_positions(), previous_component)
+            positions = fetch_latest_positions()
+            component = component_from_positions(positions, previous_component)
             supply["arbitrage"] = component
             supply["generatedAt"] = now_iso()
         page.update({
@@ -99,7 +116,7 @@ def main() -> int:
             "sourceFileUrl": component.get("sourceFileUrl"),
             "latest": {key: component.get(key) for key in ("buyBalance", "buyChange", "sellBalance", "sellChange")},
         })
-        page["history"] = update_history(page, component, supply)
+        page["history"] = update_history(page, component, supply, positions)
         validate(page, supply)
         ARBITRAGE.write_text(json.dumps(page, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         if not args.from_supply:
