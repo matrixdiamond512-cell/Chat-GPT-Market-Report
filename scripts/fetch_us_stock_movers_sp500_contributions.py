@@ -86,7 +86,13 @@ def verified_market_date(stocks: dict[str, Any]) -> str:
     stock_date = str((stocks.get("marketDates") or {}).get("us") or "")[:10]
     valid = lambda value: bool(re.fullmatch(r"\d{4}-\d{2}-\d{2}", value))
     if valid(breadth_date) and valid(stock_date) and breadth_date != stock_date:
-        raise RuntimeError(f"verified U.S. market dates disagree: breadth={breadth_date}, stocks={stock_date}")
+        # Breadth is fetched and validated before this component.  A newer
+        # breadth session is therefore the update target, not an error caused
+        # by the still-old aggregate stocks.json that this script will replace.
+        gap = abs((datetime.fromisoformat(breadth_date) - datetime.fromisoformat(stock_date)).days)
+        if gap > 7:
+            raise RuntimeError(f"verified U.S. market dates are implausibly far apart: breadth={breadth_date}, stocks={stock_date}")
+        return max(breadth_date, stock_date)
     if valid(breadth_date):
         return breadth_date
     if valid(stock_date):
