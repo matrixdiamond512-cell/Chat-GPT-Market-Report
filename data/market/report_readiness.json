@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-08-11T09:06:02+09:00",
+  "reportSlot": "08:00",
+  "ready": false,
+  "overallStatus": "degraded",
+  "generatedAt": "2026-08-11T09:05:39+09:00",
+  "ageMinutes": 0.4,
+  "maxAgeMinutes": 15,
+  "requiredMarkets": [
+    "gold",
+    "wti",
+    "nikkei225_futures_ose",
+    "usdjpy",
+    "eurusd",
+    "btcusd",
+    "vix",
+    "nikkei_vi",
+    "fear_greed"
+  ],
+  "morningReferenceRequired": [
+    "CME日経225先物・円建て",
+    "CME日経225先物・ドル建て",
+    "日経225先物（大阪取引所）"
+  ],
+  "morningReferenceDate": "2026-08-11",
+  "blockingReasons": [
+    "morning reference missing required item: CME日経225先物・円建て",
+    "morning reference missing required item: CME日経225先物・ドル建て"
+  ],
+  "warnings": [
+    "overallStatus is degraded; fallback values must be identified in the report"
+  ],
+  "reportSourcePriority": [
+    "ChatGPT_Market_Input when the expected report slot is present and current",
+    "data/market/latest.json when Google Sheets is missing, stale, or not synchronized",
+    "data/market/chatgpt_input.csv as the equivalent tabular GitHub fallback",
+    "data/market/morning-reference.json for 08:00 CME/OSE reference values",
+    "last verified value only with explicit timestamp/fallback note"
+  ],
+  "rule": "Do not output '取得不能' merely because one persistence/display layer has no matching row when a current verified source value exists."
+}
