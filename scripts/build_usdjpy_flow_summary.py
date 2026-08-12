@@ -126,9 +126,16 @@ def build_real(volume_payload: dict[str, Any], now: datetime) -> dict[str, Any]:
             "structuralScore": clip(structural), "verifiedCount": len(verified), "drivers": drivers}
 
 
-def build_speculative(config: dict[str, Any]) -> dict[str, Any]:
+def build_speculative(config: dict[str, Any], now: datetime) -> dict[str, Any]:
     cftc = config.get("cftc") or {}
-    cftc_status = "verified" if cftc.get("status") == "verified" else "stale" if cftc else "unavailable"
+    try:
+        cftc_age = (now.date() - date.fromisoformat(str(cftc.get("asOf") or ""))).days
+    except ValueError:
+        cftc_age = None
+    cftc_status = (
+        "verified" if cftc.get("status") == "verified" and cftc_age is not None and cftc_age <= 7
+        else "stale" if cftc else "unavailable"
+    )
     delta = number(cftc.get("netChange"))
     cftc_score = None
     if cftc_status == "verified" and delta is not None:
@@ -151,7 +158,7 @@ def build_speculative(config: dict[str, Any]) -> dict[str, Any]:
     drivers = [
         driver(id="cftc", name="CFTC円先物", category="speculative", score=cftc_score, status=cftc_status,
                as_of=str(cftc.get("asOf") or ""), updated_at=str(cftc.get("checkedAt") or config.get("generatedAt") or ""),
-               value_text=(f"円Net前週比 {delta:+,.0f}枚（USD/JPY方向へ符号反転）" if delta is not None else "前週比取得不能"),
+               value_text=(f"円Net前週比 {delta:+,.0f}枚（USD/JPY方向へ符号反転）" + (f"／基準日から{cftc_age}日" if cftc_age is not None else "") if delta is not None else "前週比取得不能"),
                source_name=str(cftc.get("name") or "CFTC"), source_url=str(cftc.get("url") or ""), frequency="weekly"),
         driver(id="orders", name="オーダー", category="speculative", score=order_score,
                status="verified" if tw_verified else "stale" if tw else "unavailable", as_of=str(tw.get("sourceDate") or ""),
@@ -205,7 +212,7 @@ def build(now: datetime | None = None) -> dict[str, Any]:
     now = now or datetime.now(JST)
     previous = load(OUT)
     config, volume = load(CONFIG), load(VOLUME)
-    real, spec = build_real(volume, now), build_speculative(config)
+    real, spec = build_real(volume, now), build_speculative(config, now)
     combined_score = clip(real["score"] + spec["score"]) if real["score"] is not None and spec["score"] is not None else None
     rel, comment = relationship(real["score"], spec["score"])
     if real["score"] is None or spec["score"] is None:
