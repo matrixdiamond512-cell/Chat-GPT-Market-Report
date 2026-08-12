@@ -282,9 +282,13 @@ function validateMarketReportManualContract_(report, byName, errors) {
     });
   });
 
-  var embeddedHeading = /(?:^|[。\s])(?:メインシナリオ|代替シナリオ|シナリオが崩れる条件|東京時間への引き継ぎ|欧州時間への引き継ぎ|NY時間への引き継ぎ|翌東京時間への引き継ぎ|結論|最終判断)(?:\s|$)/;
-  ['mainScenario', 'alternativeScenario', 'breakConditions'].forEach(function(field) {
-    if (embeddedHeading.test(String(report[field] || ''))) {
+  var foreignHeadings = {
+    mainScenario: /(?:^|[。\s])(?:代替シナリオ|シナリオが崩れる条件|東京時間への引き継ぎ|欧州時間への引き継ぎ|NY時間への引き継ぎ|翌東京時間への引き継ぎ|結論|最終判断)(?:\s|$)/,
+    alternativeScenario: /(?:^|[。\s])(?:メインシナリオ|シナリオが崩れる条件|東京時間への引き継ぎ|欧州時間への引き継ぎ|NY時間への引き継ぎ|翌東京時間への引き継ぎ|結論|最終判断)(?:\s|$)/,
+    breakConditions: /(?:^|[。\s])(?:メインシナリオ|代替シナリオ|東京時間への引き継ぎ|欧州時間への引き継ぎ|NY時間への引き継ぎ|翌東京時間への引き継ぎ|結論|最終判断)(?:\s|$)/
+  };
+  Object.keys(foreignHeadings).forEach(function(field) {
+    if (foreignHeadings[field].test(String(report[field] || ''))) {
       errors.push(timeText + ' ' + field + ': 複数セクションが1フィールドへ連結されています。');
     }
   });
