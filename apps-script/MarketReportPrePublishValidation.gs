@@ -305,7 +305,7 @@ function marketReportPrePublishNormalizeHeading_(line) {
     .trim()
     .replace(/^【|】$/g, '')
     .replace(/^[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]\s*/, '')
-    .replace(/^\s*(?:第?\d{1,2}|[一二三四五六七八九十]+)\s*[．.、:：)）]\s*/, '')
+    .replace(/^\s*(?:第?\d{1,2}|[一二三四五六七八九十]+)\s*[．.、)）]\s*/, '')
     .replace(/^[■◆◇●▶]\s*/, '')
     .trim();
 }
