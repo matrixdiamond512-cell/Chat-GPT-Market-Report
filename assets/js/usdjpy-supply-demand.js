@@ -26,6 +26,14 @@ function volumeLevel(r){const p=Number(r?.vs20Pct);if(!Number.isFinite(p))return
 function impactClass(v){return v==='高'?'usd-event-high':v==='中'?'usd-event-mid':'usd-event-low'}
 function countryShort(e){if(e?.country==='米国'||e?.currency==='USD')return'米';if(e?.country==='日本'||e?.currency==='JPY')return'日';return e?.currency||e?.country||'—'}
 function safeTime(v){return/^\d{2}:\d{2}$/.test(v||'')?v:'未定'}
+const metaDate=v=>v?fmtJst(v).replace(' JST',''):'—';
+function addCardMeta(selector,asOf,acquired){
+  document.querySelectorAll(selector).forEach(card=>{
+    let meta=card.querySelector(':scope > .usd-card-meta');
+    if(!meta){meta=document.createElement('div');meta.className='usd-card-meta';card.appendChild(meta)}
+    meta.innerHTML=`<span>基準日 <b>${esc(metaDate(asOf))}</b></span><span>取得日 <b>${esc(metaDate(acquired))}</b></span>`;
+  });
+}
 
 Promise.allSettled(Object.entries(SOURCES).map(async([k,u])=>[k,await load(u)]))
 .then(results=>{
@@ -112,6 +120,14 @@ function render(data,failed){
   if(tw.url)$('tradersweb-link').href=tw.url;
   renderEvents(events);
   renderScenarios({judgement,confidence,usd,latestVol,spread,spreadChange,cftc,cftcFresh});
+  const compositeAsOf=usd?.asOf||latestVol?.targetDate||cftc?.asOf;
+  addCardMeta('.usd-price-grid article',usd?.asOf,market.generatedAt);
+  addCardMeta('.usd-volume-panel .usd-panel-body',latestVol?.targetDate,volume.generatedAt);
+  addCardMeta('.usd-rates-panel .usd-panel-body',rates?.source?.asOfDate||rates?.asOfDate||us10?.asOf,rates.generatedAt);
+  addCardMeta('.usd-orders-panel .usd-panel-body',tw.sourceUpdatedAt,tw.checkedAt||cfg.generatedAt);
+  addCardMeta('.usd-scenario, .usd-watch',compositeAsOf,pageUpdate);
+  addCardMeta('.usd-investor-summary .usd-source-row',compositeAsOf,pageUpdate);
+  setTimeout(()=>addCardMeta('.usd-position-stat',cftc?.asOf,cftc?.checkedAt||cfg.generatedAt),900);
 }
 
 function renderCftc(cftc,fresh){

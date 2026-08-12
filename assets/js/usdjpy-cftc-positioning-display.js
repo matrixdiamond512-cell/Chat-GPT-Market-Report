@@ -8,6 +8,7 @@ const n=v=>{if(v===null||v===undefined||v==='')return null;const x=Number(v);ret
 const fmt=(v,d=0)=>n(v)===null?'—':Number(v).toLocaleString('ja-JP',{minimumFractionDigits:d,maximumFractionDigits:d});
 const signed=(v,d=0,suffix='')=>n(v)===null?'—':`${Number(v)>0?'+':''}${Number(v).toLocaleString('ja-JP',{minimumFractionDigits:d,maximumFractionDigits:d})}${suffix}`;
 const date=v=>v?String(v).slice(0,10).replaceAll('-','/'):'—';
+const dateTime=v=>{if(!v)return'—';try{return new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(v)).replaceAll('/','-')}catch{return String(v)}};
 const isoDate=v=>v?String(v).slice(0,10):'';
 let sourceData=null;
 let fullSeries=[];
@@ -197,6 +198,7 @@ function renderCurrentRange(){
     <div class="usd-position-note">${esc(c.comment||`${judge}。ポジションの方向とUSD/JPYの値動きが一致しているかを確認し、急激な巻き戻しが起きていないかを監視します。`)}</div>
     <div class="usd-position-api-note">${esc(apiText)}。表示期間は右上の「26週 / 52週」で切り替えできます。初期表示は52週です。</div>
     <div class="usd-position-source">出典：<a href="https://publicreporting.cftc.gov/Commitments-of-Traders/Legacy-Futures-Only/6dca-aqww" target="_blank" rel="noopener">CFTC Legacy - Futures Only / Public Reporting</a> ｜ 基準日 ${esc(date(latest.date||c.asOf))}${priceAvailable?`<br>価格線：<a href="${esc(priceSourceUrl)}" target="_blank" rel="noopener">${esc(priceSourceName)}</a>`:''}</div>`;
+  target.querySelectorAll('.usd-position-stat').forEach(card=>card.insertAdjacentHTML('beforeend',`<div class="usd-card-meta"><span>基準日 <b>${esc(dateTime(latest.date||c.asOf))}</b></span><span>取得日 <b>${esc(dateTime(c.checkedAt||sourceData.generatedAt))}</b></span></div>`));
 }
 
 async function init(){

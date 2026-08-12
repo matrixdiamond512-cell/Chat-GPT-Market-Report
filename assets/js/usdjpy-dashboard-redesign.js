@@ -6,6 +6,8 @@ const num=(v,d=2)=>Number.isFinite(Number(v))?Number(v).toLocaleString('ja-JP',{
 const signed=(v,d=2,s='')=>Number.isFinite(Number(v))?`${Number(v)>0?'+':''}${num(v,d)}${s}`:'—';
 const setTone=(el,tone)=>{if(!el)return;el.classList.remove('is-bullish','is-bearish','is-neutral');el.classList.add(tone)};
 const toneBy=n=>Number(n)>0?'is-bullish':Number(n)<0?'is-bearish':'is-neutral';
+const fmt=v=>{if(!v)return'—';try{return new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(v)).replaceAll('/','-')}catch{return String(v)}};
+function addMeta(selector,asOf,acquired){document.querySelectorAll(selector).forEach(card=>{let el=card.querySelector(':scope > .usd-card-meta');if(!el){el=document.createElement('div');el.className='usd-card-meta';card.appendChild(el)}el.innerHTML=`<span>基準日 <b>${esc(fmt(asOf))}</b></span><span>取得日 <b>${esc(fmt(acquired))}</b></span>`})}
 async function load(url){const r=await fetch(`${url}?v=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw new Error(r.status);return r.json()}
 function marketBy(data,key){return data?.markets?.[key]||null}
 function rateBy(data,name){return(data?.rates||[]).find(x=>x.name===name)||null}
@@ -17,6 +19,7 @@ function renderOptions(cfg){
   const unavailable='公開データではCall/Put別O/I枚数が開示されていません';
   root.className='usd-option-dashboard';
   root.innerHTML=`<article class="usd-option-card call"><h3>コール（ドルコール）</h3><div class="usd-option-metric"><span>主要ストライク</span><b>${esc(first?.price||'—')}円</b></div><div class="usd-option-metric"><span>直近O/I</span><b>公開情報なし</b></div><div class="usd-option-metric"><span>次点</span><b>${esc(second?.price||'—')}円</b></div><p>${unavailable}。主要NYカット水準を参考表示しています。</p></article><article class="usd-option-card put"><h3>プット（ドルプット）</h3><div class="usd-option-metric"><span>主要ストライク</span><b>${esc(first?.price||'—')}円</b></div><div class="usd-option-metric"><span>直近O/I</span><b>公開情報なし</b></div><div class="usd-option-metric"><span>次点</span><b>${esc(opts[2]?.price||'—')}円</b></div><p>${unavailable}。売買方向は断定せず、注文との重複を確認します。</p></article><article class="usd-option-card assessment"><h3>オプション総合判定</h3><p><b>${esc(analysis.headline||'方向判定なし')}</b></p><p>${esc(analysis.summary||'公開されている主要ストライクを参考表示します。')}</p><ul>${(analysis.points||[]).slice(0,3).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></article>`;
+  addMeta('.usd-option-card',cfg?.tradersWebFx?.sourceUpdatedAt,cfg?.tradersWebFx?.checkedAt||cfg?.generatedAt);
 }
 function renderInterbank(){
   const rows=[
@@ -34,7 +37,7 @@ function renderInterbank(){
 }
 async function render(){
   try{
-    const [market,rates,volume,cfg]=await Promise.all([load('data/market/latest.json'),load('data/rates-bonds.json'),load('data/usdjpy-volume.json'),load('data/usdjpy-supply-demand.json')]);
+    const [market,rates,volume,cfg,flow]=await Promise.all([load('data/market/latest.json'),load('data/rates-bonds.json'),load('data/usdjpy-volume.json'),load('data/usdjpy-supply-demand.json'),load('data/usdjpy-flow-summary.json')]);
     const usd=marketBy(market,'usdjpy'), rec=(volume?.data?.records||[])[0], rec2=(volume?.data?.records||[])[1], us10=rateBy(rates,'米10年債利回り'),jp10=rateBy(rates,'日本10年国債利回り'),c=cfg?.cftc||{},tw=cfg?.tradersWebFx||{};
     const spreadChange=us10&&jp10?Number(us10.changeBp)-Number(jp10.changeBp):0;
     const priceMove=Number(usd?.changePercent)||0,priceSignal=priceMove>.15?1:priceMove<-.15?-1:0,volumeSignal=rec&&Math.abs(Number(rec.vs20Pct))>=20?Math.sign(priceMove):0,rateSignal=spreadChange>1?1:spreadChange<-1?-1:0,cftcAge=c.asOf?Math.max(0,(Date.now()-Date.parse(`${c.asOf}T00:00:00+09:00`))/86400000):Infinity,cftcSignal=c.status==='confirmed'&&cftcAge<=10?(Number(c.net)<0?1:Number(c.net)>0?-1:0):0;
@@ -51,6 +54,15 @@ async function render(){
     if(usd){$('price-prev-close').textContent=num(Number(usd.value)-Number(usd.change),2);$('price-high').textContent=Number.isFinite(Number(usd.high))?num(usd.high,2):'—';$('price-low').textContent=Number.isFinite(Number(usd.low))?num(usd.low,2):'—'}
     if(rec2&&Number.isFinite(Number(rec2.close)))$('price-prev2-close').textContent=num(rec2.close,2);
     renderOptions(cfg);renderInterbank();
+    const latestUpdate=[market.generatedAt,rates.generatedAt,volume.generatedAt,cfg.generatedAt,flow.generatedAt].filter(Boolean).sort().at(-1);
+    addMeta('.usd-verdict-main, .usd-verdict-count',usd?.asOf||rec?.targetDate,latestUpdate);
+    addMeta('.usd-factor-grid article:nth-child(1)',usd?.asOf,market.generatedAt);
+    addMeta('.usd-factor-grid article:nth-child(2)',rec?.targetDate,volume.generatedAt);
+    addMeta('.usd-factor-grid article:nth-child(3)',rates?.source?.asOfDate||us10?.asOf,rates.generatedAt);
+    addMeta('.usd-factor-grid article:nth-child(4)',c?.asOf,c?.checkedAt||cfg.generatedAt);
+    addMeta('.usd-factor-grid article:nth-child(5)',tw.sourceUpdatedAt,tw.checkedAt||cfg.generatedAt);
+    const flowAsOf=[...(flow?.realDemand?.drivers||[]),...(flow?.speculative?.drivers||[])].map(x=>x?.asOf).filter(Boolean).sort().at(-1);
+    addMeta('.usd-interbank-panel .usd-panel-body',flowAsOf,flow?.generatedAt);
   }catch(e){renderOptions({});renderInterbank();console.warn('[USDJPY redesign]',e)}
 }
 window.addEventListener('load',()=>setTimeout(render,500));
