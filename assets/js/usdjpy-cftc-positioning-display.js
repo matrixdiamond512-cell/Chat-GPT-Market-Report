@@ -173,7 +173,7 @@ function renderCurrentRange(){
   const verified=series.filter(d=>n(d.long)!==null&&n(d.short)!==null).length;
   const missing=Math.max(0,requested-verified);
   const badge=document.getElementById('usdjpy-positioning-frequency');
-  if(badge)badge.textContent=`週次・${requested}週 / ${verified}点確認済み`;
+  if(badge)badge.textContent=`週次・${requested}週 / ${verified}点表示`;
   if(series.length<2){target.innerHTML=`<div class="usd-position-empty"><b>CFTC投機筋ポジション：取得待ち</b><br>${esc(c.error||`${requested}週の検証済み系列を準備しています。`)}</div>`;return;}
   const pricePoints=series.filter(d=>n(d.price)!==null).length;
   const priceAvailable=pricePoints>=2;

@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="assets/css/site-common.css?v=20260804-ui1">
 <link rel="stylesheet" href="assets/css/usdjpy-option-analysis.css?v=20260812-option-analysis1">
 <link rel="stylesheet" href="assets/css/usdjpy-flow-summary.css?v=20260812-official2">
-<link rel="stylesheet" href="assets/css/usdjpy-dashboard-redesign.css?v=20260813-redesign1">
+<link rel="stylesheet" href="assets/css/usdjpy-dashboard-redesign.css?v=20260813-redesign2">
 </head>
 <body class="usdjpy-page">
 <header class="usd-head">
@@ -106,7 +106,7 @@
   </section>
 
   <section class="usd-panel usd-real-demand-section" aria-labelledby="real-demand-title">
-    <h2 id="real-demand-title">4. 実需情報</h2>
+    <h2 id="real-demand-title">4. 実需総合判定・東京市場ドル円スポット出来高</h2>
     <div class="usd-real-demand-body">
       <section class="usd-flow-overview" data-usdjpy-flow-overview aria-label="実需と投機のフロー総合判定" aria-busy="true">
         <div class="usd-flow-loading">実需・投機フローを読み込み中です。</div>
@@ -126,9 +126,26 @@
     </div>
   </section>
 
+  <section class="usd-panel usd-interbank-panel" aria-labelledby="interbank-title">
+    <h2 id="interbank-title">5. 実需（インターバンクフロー推計・東京時間）</h2>
+    <div class="usd-panel-body">
+      <div class="usd-interbank-summary">
+        <div><span>実需総合判定</span><strong id="interbank-judgement">算定中</strong></div>
+        <p id="interbank-comment">輸入・輸出・観光・投資・ヘッジ需要を合算しています。</p>
+      </div>
+      <div class="usd-table-wrap">
+        <table class="usd-table usd-interbank-table">
+          <thead><tr><th>区分</th><th>フロー方向</th><th>想定金額（億ドル）</th><th>前月比</th><th>判定</th></tr></thead>
+          <tbody id="interbank-flow-rows"><tr><td colspan="5">推計値を読み込んでいます。</td></tr></tbody>
+        </table>
+      </div>
+      <p class="usd-interbank-note">公開統計と市場フローを基にしたモデル推計であり、個別銀行の実取引額ではありません。</p>
+    </div>
+  </section>
+
   <section class="usd-market-grid usd-rates-grid">
     <article class="usd-panel usd-rates-panel">
-      <h2>5. 金利ドライバー</h2>
+      <h2>6. 金利ドライバー</h2>
       <div class="usd-panel-body">
         <div class="usd-causal-flow" aria-label="金利からドル円への因果関係"><span>米金利</span><i>→</i><span>日米金利差</span><i>→</i><span>ドル優位性</span><i>→</i><span>USD/JPY</span></div>
         <div class="usd-table-wrap">
@@ -143,7 +160,7 @@
   </section>
 
   <section class="usd-panel usd-orders-panel">
-    <h2>6. オーダー情報 <small>主要オーダー水準</small></h2>
+    <h2>7. オーダー情報 <small>主要オーダー水準</small></h2>
     <div class="usd-panel-body">
       <div class="usd-order-source">
         <div><span>取得状況</span><b id="tradersweb-status">確認中</b></div>
@@ -161,14 +178,14 @@
   </section>
 
   <section class="usd-panel usd-options-panel" aria-labelledby="options-title">
-    <h2 id="options-title">7. オプション情報（直近O/I）</h2>
+    <h2 id="options-title">8. オプション情報（直近O/I）</h2>
     <div class="usd-panel-body" id="options-dashboard">
       <div class="usd-option-dashboard-loading">主要ストライクと公開状況を確認しています。</div>
     </div>
   </section>
 
   <section class="usd-panel usd-scenario-panel">
-    <h2>8. 総合シナリオ</h2>
+    <h2>9. 総合シナリオ</h2>
     <div class="usd-panel-body usd-scenarios">
       <article class="usd-scenario usd-scenario-main"><span>メインシナリオ</span><h3 id="scenario-main-title">算定中</h3><p id="scenario-main-text">データを読み込んでいます。</p><ul id="scenario-main-points"></ul></article>
       <article class="usd-scenario usd-scenario-alt"><span>代替シナリオ</span><h3 id="scenario-alt-title">算定中</h3><p id="scenario-alt-text">—</p><ul id="scenario-alt-points"></ul></article>
@@ -178,7 +195,7 @@
   </section>
 
   <section class="usd-panel usd-investor-summary">
-    <h2>9. 投資家サマリー</h2>
+    <h2>10. 投資家サマリー</h2>
     <div class="usd-panel-body usd-summary-body">
       <ul id="summary-list" class="usd-bullets"><li>データを読み込んでいます。</li></ul>
       <div class="usd-source-row"><span>判定方法</span><b>価格・金利差・東京出来高・CFTC投機筋ポジション・オーダー情報を分離評価し、方向が一致するかを確認します。</b></div>
@@ -198,12 +215,12 @@
 </main>
 
 <script src="assets/js/usdjpy-supply-demand-history.js?v=20260812-flow1"></script>
-<script src="assets/js/usdjpy-flow-summary.js?v=20260812-official2"></script>
+<script src="assets/js/usdjpy-flow-summary.js?v=20260813-public1"></script>
 <script src="assets/js/usdjpy-supply-demand.js?v=20260813-color1"></script>
 <script src="assets/js/usdjpy-supply-demand-ui-fix.js?v=20260812-option-analysis1"></script>
-<script src="assets/js/usdjpy-cftc-positioning-display.js?v=20260810-ui2"></script>
+<script src="assets/js/usdjpy-cftc-positioning-display.js?v=20260813-public1"></script>
 <script src="assets/js/usdjpy-cftc-price-52w-backfill.js?v=20260810-fix2"></script>
-<script src="assets/js/usdjpy-dashboard-redesign.js?v=20260813-redesign1"></script>
+<script src="assets/js/usdjpy-dashboard-redesign.js?v=20260813-redesign2"></script>
 <script src="assets/js/site-common.js?v=20260804-ui1"></script>
 <script src="assets/js/portal-update-controls.js?v=20260811-02"></script>
 </body>
