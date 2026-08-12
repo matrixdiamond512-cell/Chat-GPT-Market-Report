@@ -30,7 +30,19 @@
   }
   function reportText(report) { return String(report?.fullText || report?.rawText || report?.body || "").replace(/\r/g, ""); }
 
-  function rows(report) {
+  function structuredRows(report) {
+    const rows = report?.marketDataTable?.rows;
+    if (!Array.isArray(rows)) return [];
+    return rows.map((row) => ({
+      label: normalizeLabel(row?.label ?? row?.item ?? row?.name ?? ""),
+      value: String(row?.value ?? ""),
+      change: String(row?.change ?? ""),
+      rate: String(row?.rate ?? row?.changePercent ?? ""),
+      direction: String(row?.direction ?? "")
+    }));
+  }
+
+  function textRows(report) {
     const lines = reportText(report).split("\n").map((line) => line.trim()).filter(Boolean);
     const start = lines.findIndex((line) => /主要市場データ/.test(line));
     if (start < 0) return [];
@@ -43,6 +55,11 @@
       i += 4;
     }
     return result;
+  }
+
+  function rows(report) {
+    const structured = structuredRows(report);
+    return structured.length ? structured : textRows(report);
   }
 
   function effectiveRows(report, parsed) {
