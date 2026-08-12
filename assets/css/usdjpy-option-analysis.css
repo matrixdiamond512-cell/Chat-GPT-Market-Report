@@ -1,0 +1,32 @@
+.usd-option-analysis {
+  margin-top: 9px;
+  padding: 10px 11px;
+  border: 1px solid #9dbbe4;
+  border-left: 4px solid var(--usd-blue);
+  border-radius: 6px;
+  background: #f6f9ff;
+}
+.usd-option-analysis-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 9px;
+  align-items: start;
+}
+.usd-option-analysis-head span {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #dceaff;
+  color: #0b4d9e;
+  font-size: 10px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.usd-option-analysis-head b { color: #0b326e; font-size: 13px; }
+.usd-option-analysis p { margin: 7px 0 5px; color: #40536f; font-size: 11px; line-height: 1.55; }
+.usd-option-analysis ul { margin: 0; padding-left: 19px; }
+.usd-option-analysis li { margin: 4px 0; color: #203a5f; font-size: 11px; line-height: 1.5; }
+.usd-option-analysis small { display: block; margin-top: 7px; padding-top: 6px; border-top: 1px solid #d5e1f2; color: #687991; font-size: 9px; }
+.usd-option-analysis.unavailable { border-color: #d7dfeb; border-left-color: #8998ad; background: #f8f9fb; }
+@media (max-width: 760px) {
+  .usd-option-analysis-head { grid-template-columns: 1fr; }
+}
