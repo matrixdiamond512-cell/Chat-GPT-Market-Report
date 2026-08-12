@@ -45,7 +45,7 @@ jobs:
           const code = fs.readFileSync('apps-script/MarketReportPrePublishValidation.gs', 'utf8');
           const context = {
             console,
-            Utilities: { formatDate: () => '2026-08-04 09:30:00' },
+            Utilities: { formatDate: () => '2026-08-13 04:40:00' },
             SpreadsheetApp: { getUi: () => ({ alert: () => {} }) },
           };
           vm.createContext(context);
@@ -55,6 +55,7 @@ jobs:
             name,
             direction: '中立',
             price: '取得不能（構造化元本文に価格記載なし）',
+            outlook: '中立',
             material: '材料',
             positioning: '需給',
             levels: '水準',
@@ -63,6 +64,8 @@ jobs:
             breakCondition: '崩れる条件',
             risk: 'リスク',
           });
+
+          // Legacy/non-21 reports keep the existing base contract.
           const report = {
             date: '2026-08-04',
             time: '07:00',
@@ -77,12 +80,109 @@ jobs:
           };
 
           const ok = context.validateMarketReportBeforePublish_(report, 7);
-          if (!ok.ok || ok.warnings.length !== 6) throw new Error('valid report should pass with six warnings');
+          if (!ok.ok || ok.warnings.length !== 6) {
+            throw new Error(`valid base report should pass with six price warnings; actual=${ok.warnings.length}`);
+          }
 
           const broken = JSON.parse(JSON.stringify(report));
-          broken.markets[0].price = '';
+          broken.markets[0].direction = '';
           let failed = false;
           try { context.validateMarketReportBeforePublish_(broken, 7); }
           catch (error) { failed = /公開前検証に失敗/.test(String(error.message)); }
-          if (!failed) throw new Error('blank required market field must fail');
+          if (!failed) throw new Error('blank required market direction must fail');
+
+          // From 2026-08-13, 21:00 reports must satisfy the manual/SOP publication contract.
+          const compliant21FullText = [
+            'マーケットレポート｜2026/08/13（木）21:00',
+            '',
+            '主要市場データ',
+            '金：4,470.00ドル/oz（21:00確認済み）',
+            'WTI原油：83.50ドル/バレル（21:00確認済み）',
+            '日経225先物（大阪取引所）：68,000円（21:00確認済み）',
+            'USD/JPY：159.10円（21:00確認済み）',
+            'EUR/USD：1.1550（21:00確認済み）',
+            'BTCUSD：64,200ドル（21:00確認済み）',
+            '',
+            '今日の相場テーマ',
+            'イベント前のポジション調整。',
+            '',
+            '16:00からの変化',
+            '金は強含み、為替は横ばい。',
+            '',
+            '材料と値動きの整合性',
+            '材料と価格反応は概ね整合的。',
+            '',
+            '主導市場',
+            '米金利と原油が主導。',
+            '',
+            '重要ニュース',
+            '重要材料を市場影響とともに整理。',
+            '',
+            'クロスアセット資金フロー',
+            '安全資産と選別リスク資産へ資金が分散。',
+            '',
+            '需給・ポジション',
+            '偏りと巻き戻しリスクを確認。',
+            '',
+            '重要イベント',
+            '次の米指標を確認。',
+            '',
+            '6市場の見通し',
+            '金：強含み。',
+            'WTI原油：高値圏。',
+            '日経225先物（大阪取引所）：米株と円を確認。',
+            'USD/JPY：レンジ。',
+            'EUR/USD：レンジ。',
+            'BTCUSD：金利感応度に注意。',
+            '',
+            'メインシナリオ',
+            'イベント通過までは選別相場。',
+            '',
+            '代替シナリオ',
+            '金利急変時は相関が崩れる。',
+            '',
+            'シナリオが崩れる条件',
+            '金利・原油・為替の急変。',
+            '',
+            'NY時間への引き継ぎ',
+            '米金利、ドル、原油の順に確認する。'
+          ].join('\n');
+
+          const report21 = {
+            date: '2026-08-13',
+            time: '21:00',
+            title: 'マーケットレポート｜2026/08/13（木）21:00',
+            theme: 'イベント前のポジション調整',
+            changes: ['金は強含み、為替は横ばい'],
+            consistency: ['材料と価格反応は概ね整合的'],
+            leadingMarket: '米金利と原油',
+            news: ['重要材料を市場影響とともに整理'],
+            crossAssetFlow: ['安全資産と選別リスク資産へ資金が分散'],
+            positioning: ['偏りと巻き戻しリスクを確認'],
+            events: ['次の米指標を確認'],
+            handover: ['米金利、ドル、原油の順に確認'],
+            mainScenario: 'イベント通過までは選別相場',
+            alternativeScenario: '金利急変時は相関が崩れる',
+            breakConditions: '金利・原油・為替の急変',
+            riskManagement: ['イベント前後はサイズを抑える'],
+            fullText: compliant21FullText,
+            markets: ['金','原油','日経225先物','USD/JPY','EUR/USD','BTCUSD'].map(market),
+          };
+
+          const ok21 = context.validateMarketReportBeforePublish_(report21, 21);
+          if (!ok21.ok) throw new Error('compliant 21:00 report must pass');
+
+          const bad21 = JSON.parse(JSON.stringify(report21));
+          bad21.fullText += '\n内部メモ: verified';
+          failed = false;
+          try { context.validateMarketReportBeforePublish_(bad21, 21); }
+          catch (error) { failed = /公開前検証に失敗/.test(String(error.message)); }
+          if (!failed) throw new Error('21:00 public text containing verified must fail');
+
+          const missingSection21 = JSON.parse(JSON.stringify(report21));
+          missingSection21.fullText = missingSection21.fullText.replace('\n主要市場データ\n', '\n');
+          failed = false;
+          try { context.validateMarketReportBeforePublish_(missingSection21, 21); }
+          catch (error) { failed = /公開前検証に失敗/.test(String(error.message)); }
+          if (!failed) throw new Error('21:00 report without major-market heading must fail');
           NODE
