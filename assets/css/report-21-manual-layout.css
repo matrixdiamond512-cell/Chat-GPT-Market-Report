@@ -1,4 +1,4 @@
-/* 21:00 market report SOP layout */
+/* 08:00 / 12:00 / 16:00 / 21:00 market report SOP layout */
 .manual21-summary,
 .manual21-section,
 .manual21-data-check,
@@ -70,13 +70,14 @@
 
 .manual21-table-wrap {
   width: 100%;
+  margin: 4px 0 14px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 .manual21-table {
   width: 100%;
-  min-width: 760px;
+  min-width: 820px;
   border-collapse: collapse;
   table-layout: fixed;
 }
@@ -97,13 +98,32 @@
 }
 
 .manual21-table thead th:nth-child(1) { width: 22%; }
-.manual21-table thead th:nth-child(2) { width: 20%; }
-.manual21-table thead th:nth-child(3) { width: 18%; }
-.manual21-table thead th:nth-child(4) { width: 40%; }
+.manual21-table thead th:nth-child(2) { width: 26%; }
+.manual21-table thead th:nth-child(3) { width: 16%; }
+.manual21-table thead th:nth-child(4) { width: 15%; }
+.manual21-table thead th:nth-child(5) { width: 21%; }
 
 .manual21-value {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+.manual21-market-notes {
+  margin: 6px 0 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--border, #d9e2ec);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.manual21-market-notes > p {
+  margin: 0 0 6px;
+  font-weight: 700;
+}
+
+.manual21-market-notes ul {
+  margin: 0;
+  padding-left: 1.2rem;
 }
 
 .manual21-outlook-grid {
@@ -173,7 +193,7 @@
   }
 
   .manual21-table {
-    min-width: 680px;
+    min-width: 760px;
   }
 
   .manual21-table th,
