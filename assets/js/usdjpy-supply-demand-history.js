@@ -18,13 +18,15 @@ const localMap=new Map([
   ['/data/usdjpy-volume.json','volume'],
   ['/data/events.json','events'],
   ['/data/usdjpy-supply-demand.json','config']
+  ,['/data/usdjpy-flow-summary.json','flow']
 ]);
 const sourcePaths={
   market:'data/market/latest.json',
   rates:'data/rates-bonds.json',
   volume:'data/usdjpy-volume.json',
   events:'data/events.json',
-  config:'data/usdjpy-supply-demand.json'
+  config:'data/usdjpy-supply-demand.json',
+  flow:'data/usdjpy-flow-summary.json'
 };
 
 if(requestedDate&&Number.isFinite(historyNow))Date.now=()=>historyNow;

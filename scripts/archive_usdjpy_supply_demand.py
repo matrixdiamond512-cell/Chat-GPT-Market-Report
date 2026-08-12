@@ -11,6 +11,7 @@ MARKET_PATH = ROOT / "data" / "market" / "latest.json"
 RATES_PATH = ROOT / "data" / "rates-bonds.json"
 VOLUME_PATH = ROOT / "data" / "usdjpy-volume.json"
 EVENTS_PATH = ROOT / "data" / "events.json"
+FLOW_PATH = ROOT / "data" / "usdjpy-flow-summary.json"
 ARCHIVE_DIR = ROOT / "data" / "usdjpy-supply-demand-archive"
 INDEX_PATH = ARCHIVE_DIR / "index.json"
 MAX_REPORTS = 400
@@ -124,6 +125,7 @@ def build_bundle(
     rates: dict[str, Any],
     volume: dict[str, Any],
     events: dict[str, Any],
+    flow: dict[str, Any],
 ) -> dict[str, Any]:
     date = report_date(config)
     if not date:
@@ -143,6 +145,7 @@ def build_bundle(
         "volume": c_volume,
         "events": c_events,
         "config": config,
+        "flow": flow,
         "meta": {
             "priceDataDate": market_date(c_market),
             "usDataDate": latest_rate_date(c_rates, "米"),
@@ -221,10 +224,11 @@ def backfill(entries: dict[str, dict[str, Any]]) -> None:
         rates = git_json(commit, "data/rates-bonds.json")
         volume = git_json(commit, "data/usdjpy-volume.json")
         events = git_json(commit, "data/events.json")
+        flow = git_json(commit, "data/usdjpy-flow-summary.json")
         if not (config and market and rates and volume):
             continue
         try:
-            bundle = build_bundle(config, market, rates, volume, events)
+            bundle = build_bundle(config, market, rates, volume, events, flow)
         except Exception:
             continue
         write_json(ARCHIVE_DIR / f"{date}.json", bundle)
@@ -237,12 +241,13 @@ def main() -> int:
     rates = load_json(RATES_PATH)
     volume = load_json(VOLUME_PATH)
     events = load_json(EVENTS_PATH)
+    flow = load_json(FLOW_PATH)
     if not valid_historical_config(config):
         raise RuntimeError("現在のUSD/JPY需給分析JSONが履歴保存対象の形式ではありません")
     if not (market and rates and volume):
         raise RuntimeError("USD/JPY需給分析の中核データが不足しています")
 
-    bundle = build_bundle(config, market, rates, volume, events)
+    bundle = build_bundle(config, market, rates, volume, events, flow)
     ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
     write_json(ARCHIVE_DIR / f"{bundle['reportDate']}.json", bundle)
 

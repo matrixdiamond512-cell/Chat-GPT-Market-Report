@@ -18,6 +18,7 @@ on:
       - "scripts/enrich_usdjpy_price_history.py"
       - "scripts/enrich_usdjpy_tradersweb_levels.py"
       - "scripts/archive_usdjpy_supply_demand.py"
+      - "scripts/build_usdjpy_flow_summary.py"
       - "data/usdjpy-supply-demand-trigger/**"
 
 permissions:
@@ -49,6 +50,8 @@ jobs:
           python -m py_compile scripts/enrich_usdjpy_price_history.py
           python -m py_compile scripts/enrich_usdjpy_tradersweb_levels.py
           python -m py_compile scripts/archive_usdjpy_supply_demand.py
+          python -m py_compile scripts/build_usdjpy_flow_summary.py
+          python scripts/test_usdjpy_flow_summary.py
 
       - name: Build USDJPY supply-demand JSON
         run: python scripts/build_usdjpy_supply_demand.py
@@ -62,6 +65,9 @@ jobs:
       - name: Extract Traders Web FX key levels
         run: python scripts/enrich_usdjpy_tradersweb_levels.py
 
+      - name: Build real-demand and speculative-flow summary
+        run: python scripts/build_usdjpy_flow_summary.py
+
       - name: Archive USDJPY supply-demand report
         run: python scripts/archive_usdjpy_supply_demand.py
 
@@ -69,11 +75,13 @@ jobs:
         run: |
           python -m json.tool data/usdjpy-supply-demand.json > /dev/null
           python -m json.tool data/usdjpy-supply-demand-archive/index.json > /dev/null
+          python -m json.tool data/usdjpy-flow-summary.json > /dev/null
           python - <<'PY'
           import json
           from pathlib import Path
 
           data = json.loads(Path('data/usdjpy-supply-demand.json').read_text(encoding='utf-8'))
+          flow = json.loads(Path('data/usdjpy-flow-summary.json').read_text(encoding='utf-8'))
           tw = data.get('tradersWebFx', {})
           levels = tw.get('keyLevels', {})
           cftc = data.get('cftc', {})
@@ -88,6 +96,15 @@ jobs:
           assert len(series) >= 26, f'CFTC series must retain at least 26 weeks, got {len(series)}'
           assert cftc.get('status') in {'verified','degraded','preserved_after_fetch_error'}
           assert price_points >= 26, f'USDJPY price series must retain at least 26 points, got {price_points}'
+          assert flow.get('pageId') == 'usdjpy-flow-summary'
+          assert flow.get('combined', {}).get('score') is None or -5 <= flow['combined']['score'] <= 5
+          for section, minimum in (('realDemand', 3), ('speculative', 2)):
+              item = flow.get(section) or {}
+              if item.get('score') is not None:
+                  assert item.get('verifiedCount', 0) >= minimum
+              for driver in item.get('drivers') or []:
+                  if driver.get('status') != 'verified':
+                      assert driver.get('score') is None, f"Non-verified driver scored: {driver.get('id')}"
 
           index = json.loads(Path('data/usdjpy-supply-demand-archive/index.json').read_text(encoding='utf-8'))
           reports = index.get('reports') or []
@@ -115,14 +132,14 @@ jobs:
       - name: Commit refreshed integration metadata and archive
         shell: bash
         run: |
-          if git diff --quiet -- data/usdjpy-supply-demand.json data/usdjpy-supply-demand-archive; then
+          if git diff --quiet -- data/usdjpy-supply-demand.json data/usdjpy-flow-summary.json data/usdjpy-supply-demand-archive; then
             echo "USDJPY supply-demand data and archive are already up to date."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/usdjpy-supply-demand.json data/usdjpy-supply-demand-archive
+          git add data/usdjpy-supply-demand.json data/usdjpy-flow-summary.json data/usdjpy-supply-demand-archive
           git commit -m "Update USDJPY supply-demand data and archive"
           git pull --rebase
           git push
