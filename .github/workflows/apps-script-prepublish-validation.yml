@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - 'apps-script/MarketReportAutoPublish.gs'
+      - 'apps-script/MarketReportMasterScheduler.gs'
       - 'apps-script/MarketReportPrePublishValidation.gs'
       - '.github/workflows/apps-script-prepublish-validation.yml'
   push:
@@ -12,6 +13,7 @@ on:
       - main
     paths:
       - 'apps-script/MarketReportAutoPublish.gs'
+      - 'apps-script/MarketReportMasterScheduler.gs'
       - 'apps-script/MarketReportPrePublishValidation.gs'
       - '.github/workflows/apps-script-prepublish-validation.yml'
 
@@ -33,11 +35,28 @@ jobs:
       - name: Syntax-check Apps Script files
         run: |
           cp apps-script/MarketReportAutoPublish.gs /tmp/MarketReportAutoPublish.js
+          cp apps-script/MarketReportMasterScheduler.gs /tmp/MarketReportMasterScheduler.js
           cp apps-script/MarketReportPrePublishValidation.gs /tmp/MarketReportPrePublishValidation.js
           node --check /tmp/MarketReportAutoPublish.js
+          node --check /tmp/MarketReportMasterScheduler.js
           node --check /tmp/MarketReportPrePublishValidation.js
 
-      - name: Unit-test validator behavior
+      - name: Confirm 08:00 scheduler migration
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const auto = fs.readFileSync('apps-script/MarketReportAutoPublish.gs', 'utf8');
+          const master = fs.readFileSync('apps-script/MarketReportMasterScheduler.gs', 'utf8');
+          if (!/reportHours:\s*\[8, 12, 16, 21\]/.test(auto)) throw new Error('AutoPublish reportHours is not 08/12/16/21');
+          if (!/autoPublishMarketReport0800/.test(auto)) throw new Error('08:00 auto-publish handler missing');
+          if (!/autoPublishMarketReport0930Retry/.test(auto)) throw new Error('09:30 retry handler missing');
+          if (!/reportHours:\s*\[8, 12, 16, 21\]/.test(master)) throw new Error('MasterScheduler reportHours is not 08/12/16/21');
+          if (!/runMarketReportMaster0830/.test(master)) throw new Error('08:30 master handler missing');
+          if (!/runMarketReportMaster0930Retry/.test(master)) throw new Error('09:30 master retry missing');
+          if (!/return 8;\s*\n}/.test(master)) throw new Error('Current-slot resolver does not fall back to 08:00');
+          NODE
+
+      - name: Unit-test all-slot validator behavior
         run: |
           node <<'NODE'
           const fs = require('fs');
@@ -45,7 +64,7 @@ jobs:
           const code = fs.readFileSync('apps-script/MarketReportPrePublishValidation.gs', 'utf8');
           const context = {
             console,
-            Utilities: { formatDate: () => '2026-08-13 04:40:00' },
+            Utilities: { formatDate: () => '2026-08-13 05:10:00' },
             SpreadsheetApp: { getUi: () => ({ alert: () => {} }) },
           };
           vm.createContext(context);
@@ -53,136 +72,134 @@ jobs:
 
           const market = name => ({
             name,
-            direction: '中立',
-            price: '取得不能（構造化元本文に価格記載なし）',
+            direction: '横ばい',
+            price: '100.00',
             outlook: '中立',
             material: '材料',
             positioning: '需給',
-            levels: '水準',
+            levels: '100',
             mainScenario: 'メイン',
             alternativeScenario: '代替',
             breakCondition: '崩れる条件',
             risk: 'リスク',
           });
 
-          // Legacy/non-21 reports keep the existing base contract.
-          const report = {
-            date: '2026-08-04',
-            time: '07:00',
-            title: 'マーケットレポート｜2026/08/04（火）07:00',
-            theme: 'テーマ',
-            leadingMarket: '主導市場',
-            mainScenario: 'メイン',
-            alternativeScenario: '代替',
-            breakConditions: '崩れる条件',
-            riskManagement: ['リスク管理'],
-            markets: ['金','原油','日経225先物','USD/JPY','EUR/USD','BTCUSD'].map(market),
+          const coreMarketLines = [
+            '金：4,470.00ドル/oz（+10.00、+0.22%、上昇）',
+            'WTI原油：83.50ドル/バレル（+0.50、+0.60%、上昇）',
+            '日経225先物（大阪取引所）：68,000円（+200、+0.29%、上昇）',
+            'USD/JPY：159.10円（+0.20、+0.13%、ドル高）',
+            'EUR/USD：1.1550（-0.0010、-0.09%、下落）',
+            'BTCUSD：64,200ドル（+500、+0.78%、上昇）'
+          ];
+
+          const morningLabels = [
+            'NYダウ','NASDAQ総合','S&P500','Russell 2000','日経225現物',
+            'CME日経225先物・円建て','CME日経225先物・ドル建て','日経225先物（大阪取引所）',
+            'USD/JPY','EUR/USD','COMEX金先物','WTI原油','BTCUSD','VIX','日経VI',
+            'Fear & Greed Index','米10年債利回り','日本10年国債利回り','日経225予想PER',
+            '日経225 PBR','日経225予想EPS','日経225 25日移動平均乖離率',
+            '日経225 200日移動平均乖離率','東証プライム売買代金','東証プライム売買高',
+            '東証プライム値上がり銘柄数','東証プライム値下がり銘柄数','東証プライム25日騰落レシオ'
+          ];
+
+          const changeHeading = {
+            '08:00': '前回からの変化',
+            '12:00': '08:00からの変化',
+            '16:00': '12:00からの変化',
+            '21:00': '16:00からの変化'
+          };
+          const handoverHeading = {
+            '08:00': '東京時間への引き継ぎ',
+            '12:00': '欧州時間への引き継ぎ',
+            '16:00': 'NY時間への引き継ぎ',
+            '21:00': '翌東京時間への引き継ぎ'
           };
 
-          const ok = context.validateMarketReportBeforePublish_(report, 7);
-          if (!ok.ok || ok.warnings.length !== 6) {
-            throw new Error(`valid base report should pass with six price warnings; actual=${ok.warnings.length}`);
+          function buildFullText(time) {
+            const lines = [
+              `マーケットレポート｜2026/08/13（木）${time}`,
+              '',
+              '主要市場データ'
+            ];
+            if (time === '08:00') {
+              morningLabels.forEach((label, index) => {
+                lines.push(label, String(100 + index), '+1', '+0.10%', '上昇');
+              });
+            } else {
+              lines.push(...coreMarketLines);
+            }
+            lines.push(
+              '', '今日の相場テーマ', '市場テーマを整理。',
+              '', changeHeading[time], '前回からの変化を整理。',
+              '', '材料と値動きの整合性', '材料と価格反応は概ね整合的。',
+              '', '主導市場', '金利と為替が主導。',
+              '', '重要ニュース', '重要材料を市場影響とともに整理。',
+              '', '金利', '米日金利の変化を整理。',
+              '', 'クロスアセット資金フロー', '株・債券・商品・FX・暗号資産を整理。',
+              '', '需給・ポジション', '偏りと巻き戻しリスクを確認。',
+              '', '個別市場見通し',
+              '金：強含み。','WTI原油：高値圏。','日経225先物（大阪取引所）：米株と円を確認。',
+              'USD/JPY：レンジ。','EUR/USD：レンジ。','BTCUSD：金利感応度に注意。',
+              '', '重要イベント', '次の重要指標を確認。',
+              '', 'メインシナリオ', '基本シナリオを記載。',
+              '', '代替シナリオ', '代替シナリオを記載。',
+              '', 'シナリオが崩れる条件', '金利・原油・為替の急変。',
+              '', handoverHeading[time], '次の市場参加者が見る材料を整理。',
+              '', 'リスク管理', 'イベント前後はサイズを抑える。',
+              '', '結論', '材料、資金フロー、需給を統合して判断する。'
+            );
+            return lines.join('\n');
           }
 
-          const broken = JSON.parse(JSON.stringify(report));
-          broken.markets[0].direction = '';
+          function buildReport(time) {
+            return {
+              date: '2026-08-13',
+              time,
+              title: `マーケットレポート｜2026/08/13（木）${time}`,
+              theme: '市場テーマ',
+              changes: ['前回からの変化'],
+              consistency: ['材料と価格反応は整合的'],
+              leadingMarket: '金利と為替',
+              news: ['重要材料'],
+              crossAssetFlow: ['資金フロー'],
+              positioning: ['需給'],
+              events: ['重要イベント'],
+              handover: ['次の時間帯への引き継ぎ'],
+              mainScenario: '基本シナリオ',
+              alternativeScenario: '代替シナリオ',
+              breakConditions: '金利・原油・為替の急変',
+              riskManagement: ['イベント前後はサイズを抑える'],
+              fullText: buildFullText(time),
+              markets: ['金','原油','日経225先物','USD/JPY','EUR/USD','BTCUSD'].map(market),
+            };
+          }
+
+          for (const time of ['08:00','12:00','16:00','21:00']) {
+            const hour = Number(time.slice(0, 2));
+            const report = buildReport(time);
+            const ok = context.validateMarketReportBeforePublish_(report, hour);
+            if (!ok.ok) throw new Error(`${time} compliant report must pass`);
+
+            const missing = JSON.parse(JSON.stringify(report));
+            missing.fullText = missing.fullText.replace('\n金利\n', '\n');
+            let failed = false;
+            try { context.validateMarketReportBeforePublish_(missing, hour); }
+            catch (error) { failed = /公開前検証に失敗/.test(String(error.message)); }
+            if (!failed) throw new Error(`${time} report without rates section must fail`);
+
+            const internal = JSON.parse(JSON.stringify(report));
+            internal.fullText += '\n内部メモ: verified';
+            failed = false;
+            try { context.validateMarketReportBeforePublish_(internal, hour); }
+            catch (error) { failed = /公開前検証に失敗/.test(String(error.message)); }
+            if (!failed) throw new Error(`${time} public text containing verified must fail`);
+          }
+
+          const broken08 = buildReport('08:00');
+          broken08.fullText = broken08.fullText.replace('\n日経VI\n', '\n');
           let failed = false;
-          try { context.validateMarketReportBeforePublish_(broken, 7); }
+          try { context.validateMarketReportBeforePublish_(broken08, 8); }
           catch (error) { failed = /公開前検証に失敗/.test(String(error.message)); }
-          if (!failed) throw new Error('blank required market direction must fail');
-
-          // From 2026-08-13, 21:00 reports must satisfy the manual/SOP publication contract.
-          const compliant21FullText = [
-            'マーケットレポート｜2026/08/13（木）21:00',
-            '',
-            '主要市場データ',
-            '金：4,470.00ドル/oz（21:00確認済み）',
-            'WTI原油：83.50ドル/バレル（21:00確認済み）',
-            '日経225先物（大阪取引所）：68,000円（21:00確認済み）',
-            'USD/JPY：159.10円（21:00確認済み）',
-            'EUR/USD：1.1550（21:00確認済み）',
-            'BTCUSD：64,200ドル（21:00確認済み）',
-            '',
-            '今日の相場テーマ',
-            'イベント前のポジション調整。',
-            '',
-            '16:00からの変化',
-            '金は強含み、為替は横ばい。',
-            '',
-            '材料と値動きの整合性',
-            '材料と価格反応は概ね整合的。',
-            '',
-            '主導市場',
-            '米金利と原油が主導。',
-            '',
-            '重要ニュース',
-            '重要材料を市場影響とともに整理。',
-            '',
-            'クロスアセット資金フロー',
-            '安全資産と選別リスク資産へ資金が分散。',
-            '',
-            '需給・ポジション',
-            '偏りと巻き戻しリスクを確認。',
-            '',
-            '重要イベント',
-            '次の米指標を確認。',
-            '',
-            '6市場の見通し',
-            '金：強含み。',
-            'WTI原油：高値圏。',
-            '日経225先物（大阪取引所）：米株と円を確認。',
-            'USD/JPY：レンジ。',
-            'EUR/USD：レンジ。',
-            'BTCUSD：金利感応度に注意。',
-            '',
-            'メインシナリオ',
-            'イベント通過までは選別相場。',
-            '',
-            '代替シナリオ',
-            '金利急変時は相関が崩れる。',
-            '',
-            'シナリオが崩れる条件',
-            '金利・原油・為替の急変。',
-            '',
-            'NY時間への引き継ぎ',
-            '米金利、ドル、原油の順に確認する。'
-          ].join('\n');
-
-          const report21 = {
-            date: '2026-08-13',
-            time: '21:00',
-            title: 'マーケットレポート｜2026/08/13（木）21:00',
-            theme: 'イベント前のポジション調整',
-            changes: ['金は強含み、為替は横ばい'],
-            consistency: ['材料と価格反応は概ね整合的'],
-            leadingMarket: '米金利と原油',
-            news: ['重要材料を市場影響とともに整理'],
-            crossAssetFlow: ['安全資産と選別リスク資産へ資金が分散'],
-            positioning: ['偏りと巻き戻しリスクを確認'],
-            events: ['次の米指標を確認'],
-            handover: ['米金利、ドル、原油の順に確認'],
-            mainScenario: 'イベント通過までは選別相場',
-            alternativeScenario: '金利急変時は相関が崩れる',
-            breakConditions: '金利・原油・為替の急変',
-            riskManagement: ['イベント前後はサイズを抑える'],
-            fullText: compliant21FullText,
-            markets: ['金','原油','日経225先物','USD/JPY','EUR/USD','BTCUSD'].map(market),
-          };
-
-          const ok21 = context.validateMarketReportBeforePublish_(report21, 21);
-          if (!ok21.ok) throw new Error('compliant 21:00 report must pass');
-
-          const bad21 = JSON.parse(JSON.stringify(report21));
-          bad21.fullText += '\n内部メモ: verified';
-          failed = false;
-          try { context.validateMarketReportBeforePublish_(bad21, 21); }
-          catch (error) { failed = /公開前検証に失敗/.test(String(error.message)); }
-          if (!failed) throw new Error('21:00 public text containing verified must fail');
-
-          const missingSection21 = JSON.parse(JSON.stringify(report21));
-          missingSection21.fullText = missingSection21.fullText.replace('\n主要市場データ\n', '\n');
-          failed = false;
-          try { context.validateMarketReportBeforePublish_(missingSection21, 21); }
-          catch (error) { failed = /公開前検証に失敗/.test(String(error.message)); }
-          if (!failed) throw new Error('21:00 report without major-market heading must fail');
+          if (!failed) throw new Error('08:00 report missing a required morning row must fail');
           NODE
