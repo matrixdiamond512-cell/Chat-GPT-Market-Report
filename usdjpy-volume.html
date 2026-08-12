@@ -50,7 +50,7 @@ init();
 <script>
 fetch(`data/usdjpy-volume.json?freshness=${Date.now()}`,{cache:"no-store"}).then(r=>r.json()).then(d=>{const latest=d?.data?.records?.[0];if(!latest)return;document.getElementById("pageStamp").textContent=`対象日 ${latest.targetDate||"取得不能"}｜日銀公表日 ${latest.publicationDate||"取得不能"}｜最終取得 ${String(d.generatedAt||"取得日時なし").replace("T"," ").slice(0,16)}`;}).catch(()=>{});
 </script>
-<script src="assets/js/site-common.js?v=20260804-ui1"></script>
+<script src="assets/js/site-common.js?v=20260812-volume-fix1"></script>
 <script src="assets/js/portal-update-controls.js?v=20260812-volume-fix1"></script>
 </body>
 </html>
