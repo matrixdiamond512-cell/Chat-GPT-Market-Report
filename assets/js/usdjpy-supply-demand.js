@@ -99,11 +99,11 @@ function render(data,failed){
   if(latestVol){const direction=Number(latestVol.priceChangePct)>0?'価格は上昇':'価格は下落';const volDesc=Number(latestVol.vs20Pct)<=-20?'出来高は20日平均を大きく下回る':Number(latestVol.vs20Pct)>=20?'出来高は20日平均を大きく上回る':'出来高は20日平均近辺';$('volume-comment').textContent=`${direction}、${volDesc}。出来高単独で方向を断定せず、金利差・イベント・ポジションと合わせて判断します。`}
 
   const rateRows=[];
-  const pushRate=(label,r,read)=>{if(r)rateRows.push(`<tr><td>${esc(label)}</td><td>${num(r.value,3)}%</td><td class="${Number(r.changeBp)>0?'usd-negative':Number(r.changeBp)<0?'usd-positive':''}">${signed(r.changeBp,1,'bp')}</td><td>${esc(read)}<br><small>${esc(r.asOf||'')}</small></td></tr>`)};
+  const pushRate=(label,r,read)=>{if(r)rateRows.push(`<tr><td>${esc(label)}</td><td>${num(r.value,3)}%</td><td class="${Number(r.changeBp)>0?'up':Number(r.changeBp)<0?'down':''}">${signed(r.changeBp,1,'bp')}</td><td>${esc(read)}<br><small>${esc(r.asOf||'')}</small></td></tr>`)};
   pushRate('米2年',us2,'短期のFRB政策期待を反映');
   pushRate('米10年',us10,'上昇はドル支援、低下はドルの重しになりやすい');
   pushRate('日本10年',jp10,'上昇は円支援、低下は円の重しになりやすい');
-  if(Number.isFinite(spread))rateRows.push(`<tr><td><b>日米10年差</b></td><td><b>${num(spread,3)}%</b></td><td class="${spreadChange>0?'usd-negative':spreadChange<0?'usd-positive':''}">${signed(spreadChange,1,'bp')}</td><td>${spreadChange>0?'金利差拡大はドル支援':'金利差縮小は円支援'}</td></tr>`);
+  if(Number.isFinite(spread))rateRows.push(`<tr><td><b>日米10年差</b></td><td><b>${num(spread,3)}%</b></td><td class="${spreadChange>0?'up':spreadChange<0?'down':''}">${signed(spreadChange,1,'bp')}</td><td>${spreadChange>0?'金利差拡大はドル支援':'金利差縮小は円支援'}</td></tr>`);
   if(vix)rateRows.push(`<tr><td>VIX</td><td>${num(vix.value,2)}</td><td>${signed(vix.change,2)}</td><td>急上昇時はリスク回避の円買いに注意</td></tr>`);
   $('rates-rows').innerHTML=rateRows.length?rateRows.join(''):'<tr><td colspan="4" class="usd-error">取得不能（金利JSON）</td></tr>';
 
