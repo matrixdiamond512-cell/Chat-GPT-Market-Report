@@ -3,8 +3,8 @@
   "pageId": "stocks",
   "pageTitle": "株式市場分析",
   "generatedAt": "2026-08-04T00:00:00+09:00",
-  "updatedAt": "2026-08-12T23:33:55+09:00",
-  "dataAsOf": "2026-08-11T16:00:00-04:00",
+  "updatedAt": "2026-08-13T07:10:34+09:00",
+  "dataAsOf": "2026-08-12T16:00:00-04:00",
   "status": "ok",
   "sourceStatus": "Google Sheets＋日経225寄与度検証済みデータ",
   "sources": [
@@ -64,15 +64,15 @@
         ],
         [
           "NYSE 値上がり / 値下がり",
-          "1,105 / 962",
+          "1,144 / 934",
           "-",
-          "基準日 2026-08-11"
+          "基準日 2026-08-12"
         ],
         [
           "NASDAQ 値上がり / 値下がり",
-          "1,835 / 1,341",
+          "1,709 / 1,461",
           "-",
-          "基準日 2026-08-11"
+          "基準日 2026-08-12"
         ],
         [
           "NYSE 200日線上 / 下",
@@ -102,13 +102,13 @@
           "NYSE 52週高値 / 安値",
           "0 / 0",
           "-",
-          "基準日 2026-08-11"
+          "基準日 2026-08-12"
         ],
         [
           "NASDAQ 52週高値 / 安値",
           "0 / 0",
           "-",
-          "基準日 2026-08-11"
+          "基準日 2026-08-12"
         ]
       ],
       "dataDate": "2026-08-11",
@@ -783,8 +783,8 @@
   "note": "データ欠損がある場合は推測で補完せず、該当セルに「取得不能」と理由を表示します。本ページは株式市場分析用の表示構成です。",
   "usBreadth": {
     "schemaVersion": "1.0.0",
-    "marketDate": "2026-08-11",
-    "fetchedAt": "2026-08-12T17:43:23+09:00",
+    "marketDate": "2026-08-12",
+    "fetchedAt": "2026-08-13T07:10:34+09:00",
     "status": "verified",
     "source": {
       "name": "TradingView America Stock Screener",
@@ -793,32 +793,32 @@
     },
     "exchanges": {
       "NYSE": {
-        "advancers": 1105,
-        "decliners": 962,
-        "unchanged": 57,
+        "advancers": 1144,
+        "decliners": 934,
+        "unchanged": 46,
         "total": 2124,
         "newHigh52Week": 0,
         "newLow52Week": 0,
-        "advanceDeclineRatio": 1.148649,
-        "previousDayChange": 0.000155,
-        "average20Day": 1.150993,
-        "versus20DayAveragePercent": -0.2037
+        "advanceDeclineRatio": 1.224839,
+        "previousDayChange": 0.07619,
+        "average20Day": 1.151024,
+        "versus20DayAveragePercent": 6.413
       },
       "NASDAQ": {
-        "advancers": 1835,
-        "decliners": 1341,
-        "unchanged": 143,
-        "total": 3319,
+        "advancers": 1709,
+        "decliners": 1461,
+        "unchanged": 150,
+        "total": 3320,
         "newHigh52Week": 0,
         "newLow52Week": 0,
-        "advanceDeclineRatio": 1.368382,
-        "previousDayChange": -0.003537,
-        "average20Day": 1.195241,
-        "versus20DayAveragePercent": 14.4859
+        "advanceDeclineRatio": 1.169747,
+        "previousDayChange": -0.198635,
+        "average20Day": 1.194534,
+        "versus20DayAveragePercent": -2.075
       }
     },
-    "combinedAdvanceRate": 0.560748,
-    "judgement": "上昇優勢",
+    "combinedAdvanceRate": 0.543636,
+    "judgement": "拮抗",
     "note": "値上がり・値下がりは前日比change、52週高値・安値は当日高安と52週高安の一致で集計。"
   },
   "marketDates": {
