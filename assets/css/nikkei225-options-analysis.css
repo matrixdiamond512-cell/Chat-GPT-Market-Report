@@ -13,6 +13,18 @@
 .nikkei-options-summary-card.call{border-color:#efbfd0;background:var(--nikkei-option-call-soft)}.nikkei-options-summary-card.call strong{color:var(--nikkei-option-call-deep)}
 .nikkei-options-summary-card.put{border-color:#bfd6ef;background:var(--nikkei-option-put-soft)}.nikkei-options-summary-card.put strong{color:#1f63ae}
 
+.nikkei-options-current-analysis{margin:0 0 12px;padding:12px 14px;border:1px solid #b9cee7;border-left:5px solid #316eae;border-radius:10px;background:linear-gradient(135deg,#f5f9ff,#fff)}
+.nikkei-options-current-analysis.warn{border-color:#e9c18c;border-left-color:#d47a09;background:linear-gradient(135deg,#fff8ec,#fff)}
+.nikkei-options-current-analysis.put{border-left-color:var(--nikkei-option-put);background:linear-gradient(135deg,var(--nikkei-option-put-soft),#fff)}
+.nikkei-options-current-analysis.call{border-left-color:var(--nikkei-option-call);background:linear-gradient(135deg,var(--nikkei-option-call-soft),#fff)}
+.nikkei-options-current-analysis-head{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start}
+.nikkei-options-current-analysis-head span{padding:3px 8px;border-radius:999px;background:#dceaff;color:#174f91;font-size:10px;font-weight:950;white-space:nowrap}
+.nikkei-options-current-analysis.warn .nikkei-options-current-analysis-head span{background:#ffe3bc;color:#975000}
+.nikkei-options-current-analysis-head strong{color:#153f73;font-size:15px;line-height:1.45}
+.nikkei-options-current-analysis p{margin:7px 0 5px;color:#536a84;font-size:10.5px;line-height:1.6}
+.nikkei-options-current-analysis ul{margin:0;padding-left:20px;display:grid;grid-template-columns:1fr 1fr;gap:5px 22px}
+.nikkei-options-current-analysis li{color:#263f5f;font-size:11px;line-height:1.55}
+
 .nikkei-options-layout{display:grid;grid-template-columns:minmax(430px,1.4fr) minmax(310px,.9fr) minmax(260px,.7fr);gap:10px;align-items:stretch}
 .nikkei-options-panel{border:1px solid #d8e2ef;border-radius:10px;background:#fbfdff;padding:11px;min-width:0}
 .nikkei-options-panel h3{margin:0 0 9px;color:#153f78;font-size:13px;font-weight:950}
@@ -68,5 +80,5 @@
 .nikkei-options-source{margin-top:9px;color:#7a8799;font-size:10px}.nikkei-options-source a{color:#245fa7;text-decoration:none}.nikkei-options-source a:hover{text-decoration:underline}
 
 @media(max-width:1260px){.nikkei-options-summary-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.nikkei-options-layout{grid-template-columns:1.2fr .8fr}.nikkei-options-layout>.metrics-panel{grid-column:1/-1}.nikkei-options-metrics{grid-template-columns:repeat(5,minmax(0,1fr));gap:1px}.nikkei-options-metric{grid-template-columns:1fr}.nikkei-options-metric b{text-align:left}.nikkei-options-combined{grid-template-columns:180px 1fr}.nikkei-options-combined>.nikkei-options-judge.option{grid-column:1/-1}.nikkei-options-pricebands{grid-template-columns:1fr 1fr}}
-@media(max-width:900px){.nikkei-options-layout,.nikkei-options-sq,.nikkei-options-combined{grid-template-columns:1fr}.nikkei-options-layout>.metrics-panel,.nikkei-options-combined>.nikkei-options-judge.option{grid-column:auto}.nikkei-options-metrics{grid-template-columns:1fr 1fr}.nikkei-options-pricebands{grid-template-columns:1fr 1fr}.nikkei-options-intro{flex-direction:column}.nikkei-options-row{grid-template-columns:70px minmax(90px,1fr) 52px minmax(90px,1fr) 52px;min-width:470px}.nikkei-options-heatmap{overflow-x:auto}}
+@media(max-width:900px){.nikkei-options-layout,.nikkei-options-sq,.nikkei-options-combined{grid-template-columns:1fr}.nikkei-options-layout>.metrics-panel,.nikkei-options-combined>.nikkei-options-judge.option{grid-column:auto}.nikkei-options-metrics{grid-template-columns:1fr 1fr}.nikkei-options-pricebands{grid-template-columns:1fr 1fr}.nikkei-options-intro{flex-direction:column}.nikkei-options-current-analysis ul{grid-template-columns:1fr}.nikkei-options-row{grid-template-columns:70px minmax(90px,1fr) 52px minmax(90px,1fr) 52px;min-width:470px}.nikkei-options-heatmap{overflow-x:auto}}
 @media(max-width:620px){.nikkei-options-summary-strip,.nikkei-options-rank-grid,.nikkei-options-metrics,.nikkei-options-pricebands{grid-template-columns:1fr}.nikkei-options-panel-head{align-items:flex-start;flex-direction:column}.nikkei-options-summary-card{min-height:62px}.nikkei-options-summary-card strong{font-size:16px}.nikkei-options-bullet{grid-template-columns:42px 1fr}}
