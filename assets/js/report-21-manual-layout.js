@@ -122,7 +122,7 @@
       .trim()
       .replace(/^【|】$/g, "")
       .replace(/^[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘]\s*/, "")
-      .replace(/^\s*(?:第?\d{1,2}|[一二三四五六七八九十]+)\s*[．.、:：)）]\s*/, "")
+      .replace(/^\s*(?:第?\d{1,2}|[一二三四五六七八九十]+)\s*[．.、)）]\s*/, "")
       .replace(/^[■◆◇●▶]\s*/, "")
       .trim();
   }
@@ -219,7 +219,6 @@
     const rows = [];
     const consumed = new Set();
 
-    // Markdown / pipe table rows.
     clean.forEach((line, index) => {
       if (!/^\|/.test(line)) return;
       const cells = line.split("|").map((cell) => publicText(cell)).filter(Boolean);
@@ -230,7 +229,6 @@
       consumed.add(index);
     });
 
-    // Colon-style rows.
     clean.forEach((line, index) => {
       if (consumed.has(index)) return;
       const match = line.match(MARKET_LINE_RE);
@@ -239,7 +237,6 @@
       consumed.add(index);
     });
 
-    // Google Docs real-table text often arrives as five consecutive lines.
     for (let i = 0; i < clean.length; i += 1) {
       if (consumed.has(i)) continue;
       const name = normalizeMarketName(clean[i]);
