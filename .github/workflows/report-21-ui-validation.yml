@@ -1,4 +1,4 @@
-name: 21:00 Report UI Validation
+name: All-Slot Report UI Validation
 
 on:
   workflow_dispatch:
@@ -8,6 +8,7 @@ on:
       - 'assets/js/report-21-manual-layout.js'
       - 'assets/js/report-21-navigation-fix.js'
       - 'assets/css/report-21-manual-layout.css'
+      - 'assets/js/report-08-final-table-source.js'
       - '.github/workflows/report-21-ui-validation.yml'
   push:
     branches:
@@ -17,6 +18,7 @@ on:
       - 'assets/js/report-21-manual-layout.js'
       - 'assets/js/report-21-navigation-fix.js'
       - 'assets/css/report-21-manual-layout.css'
+      - 'assets/js/report-08-final-table-source.js'
       - '.github/workflows/report-21-ui-validation.yml'
 
 permissions:
@@ -34,19 +36,29 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Syntax-check 21:00 report scripts
+      - name: Syntax-check report scripts
         run: |
           node --check assets/js/report-21-manual-layout.js
           node --check assets/js/report-21-navigation-fix.js
+          node --check assets/js/report-08-final-table-source.js
 
       - name: Confirm portal loads SOP assets
         run: |
           grep -q 'report-21-manual-layout.css' report.html
           grep -q 'report-21-manual-layout.js' report.html
           grep -q 'report-21-navigation-fix.js' report.html
+          grep -q '08:00・12:00・16:00・21:00' report.html
 
-      - name: Confirm QA hold is enabled
+      - name: Confirm all-slot QA hold and five-column table
         run: |
           grep -q 'ENFORCE_FROM = "2026-08-13"' assets/js/report-21-manual-layout.js
-          grep -q '21:00レポートは公開保留中です' assets/js/report-21-manual-layout.js
-          grep -q '主要市場データ' assets/js/report-21-manual-layout.js
+          grep -q '"08:00"' assets/js/report-21-manual-layout.js
+          grep -q '"12:00"' assets/js/report-21-manual-layout.js
+          grep -q '"16:00"' assets/js/report-21-manual-layout.js
+          grep -q '"21:00"' assets/js/report-21-manual-layout.js
+          grep -q '公開保留中です' assets/js/report-21-manual-layout.js
+          grep -q '確定終値・現在値' assets/js/report-21-manual-layout.js
+          grep -q '前日比' assets/js/report-21-manual-layout.js
+          grep -q '騰落率' assets/js/report-21-manual-layout.js
+          grep -q '状態' assets/js/report-21-manual-layout.js
+          grep -q '28-row morning renderer' assets/js/report-21-manual-layout.js
