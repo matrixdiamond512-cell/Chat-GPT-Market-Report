@@ -2,7 +2,7 @@
   "schemaVersion": "1.0.0",
   "pageId": "usdjpy-supply-demand-archive",
   "reportDate": "2026-08-12",
-  "generatedAt": "2026-08-12T22:37:27+09:00",
+  "generatedAt": "2026-08-12T22:39:48+09:00",
   "market": {
     "schemaVersion": "1.1.0",
     "generatedAt": "2026-08-12T21:05:18+09:00",
@@ -3487,7 +3487,7 @@
   "config": {
     "schemaVersion": "3.2.0",
     "pageId": "usdjpy-supply-demand",
-    "generatedAt": "2026-08-12T22:37:27+09:00",
+    "generatedAt": "2026-08-12T22:39:48+09:00",
     "mode": "integrated-realistic",
     "sourceStatus": {
       "tradersWebFx": "confirmed",
@@ -3498,7 +3498,7 @@
       "name": "トレーダーズ・ウェブFX 無料ページ",
       "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
       "sourceUpdatedAt": "2026-08-12T06:26:00+09:00",
-      "checkedAt": "2026-08-12T22:37:29+09:00",
+      "checkedAt": "2026-08-12T22:39:51+09:00",
       "status": "confirmed",
       "pageConfirmed": true,
       "publicScope": "一般公開はUSD/JPYの直近情報",
@@ -4010,7 +4010,7 @@
       "judgement": "円売り越し縮小",
       "judgementSub": "ドル買い圧力が弱まる方向",
       "priceStatus": "available",
-      "checkedAt": "2026-08-12T22:37:27+09:00",
+      "checkedAt": "2026-08-12T22:39:48+09:00",
       "comment": "円売り越し縮小。円先物のNetは-45,473枚、前週比+117,939枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
       "verifiedPoints": 52,
       "priceVerifiedPoints": 52,
@@ -4050,7 +4050,7 @@
   "flow": {
     "schemaVersion": "1.0.0",
     "pageId": "usdjpy-flow-summary",
-    "generatedAt": "2026-08-12T22:37:29+09:00",
+    "generatedAt": "2026-08-12T22:39:51+09:00",
     "status": "ok",
     "realDemand": {
       "score": 0.0,
@@ -4095,7 +4095,7 @@
           "score": 0.0,
           "status": "verified",
           "asOf": "2026-08-12",
-          "updatedAt": "2026-08-12T22:37:29+09:00",
+          "updatedAt": "2026-08-12T22:39:51+09:00",
           "valueText": "非該当",
           "sourceName": "",
           "sourceUrl": "",
@@ -4165,7 +4165,7 @@
           "score": 0.0,
           "status": "verified",
           "asOf": "2026-08-12",
-          "updatedAt": "2026-08-12T22:37:29+09:00",
+          "updatedAt": "2026-08-12T22:39:51+09:00",
           "valueText": "月末非該当",
           "sourceName": "",
           "sourceUrl": "",
@@ -4174,20 +4174,20 @@
       ]
     },
     "speculative": {
-      "score": -2.0,
-      "judgement": "ややドル売り",
-      "verifiedCount": 4,
+      "score": 0.0,
+      "judgement": "中立",
+      "verifiedCount": 3,
       "drivers": [
         {
           "id": "cftc",
           "name": "CFTC円先物",
           "category": "speculative",
-          "direction": "usd_sell",
-          "score": -2.0,
-          "status": "verified",
+          "direction": "unknown",
+          "score": null,
+          "status": "stale",
           "asOf": "2026-08-04",
-          "updatedAt": "2026-08-12T22:37:27+09:00",
-          "valueText": "円Net前週比 +117,939枚（USD/JPY方向へ符号反転）",
+          "updatedAt": "2026-08-12T22:39:48+09:00",
+          "valueText": "円Net前週比 +117,939枚（USD/JPY方向へ符号反転）／基準日から8日",
           "sourceName": "CFTC Commitments of Traders - Japanese Yen",
           "sourceUrl": "https://www.cftc.gov/dea/newcot/deafut.txt",
           "frequency": "weekly"
@@ -4251,18 +4251,18 @@
       ]
     },
     "combined": {
-      "score": -2.0,
-      "judgement": "ややドル売り優勢",
-      "leadingFlow": "投機",
-      "relationship": "片側中立",
+      "score": 0.0,
+      "judgement": "中立",
+      "leadingFlow": "拮抗",
+      "relationship": "中立",
       "sessionComment": "NY時間は米金利・米指標・オプション・NYカット・ストップを優先監視。",
-      "comment": "実需は中立、投機はドル売り。現在は投機フローが価格形成を主導。"
+      "comment": "実需・投機とも中立圏で、確認済みフローに明確な方向差はありません。"
     },
     "previous": {
       "realDemand": 0.0,
-      "speculative": -2.0,
-      "combined": -2.0,
-      "generatedAt": "2026-08-12T22:34:58+09:00"
+      "speculative": 0.0,
+      "combined": 0.0,
+      "generatedAt": "2026-08-12T22:39:01+09:00"
     }
   },
   "meta": {
