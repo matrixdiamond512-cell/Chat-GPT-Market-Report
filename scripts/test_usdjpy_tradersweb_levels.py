@@ -23,6 +23,14 @@ class TradersWebLevelsTest(unittest.TestCase):
         self.assertEqual(levels["buyOrders"][0]["price"], "158.80")
         self.assertEqual(levels["stops"][0]["price"], "158.80")
         self.assertEqual(levels["nyCutOptions"][0]["price"], "158.00")
+        self.assertEqual(levels["optionAnalysis"]["nearestDistancePips"], 129)
+        self.assertIn("下側NYカット", levels["optionAnalysis"]["headline"])
+
+    def test_option_analysis_detects_range_and_order_overlap(self) -> None:
+        text = ("160.00円 売り小さめ、OP13日NYカット " "159.29円 8/11 06:00現在 " "159.00円 OP12・13日NYカット大きめ " "158.00円 買い小さめ、OP14日NYカット大きめ " "プレミアム会員サービス")
+        levels = select_levels(parse_rows(text))
+        self.assertIn("挟まれ", levels["optionAnalysis"]["headline"])
+        self.assertTrue(any("売り注文" in point for point in levels["optionAnalysis"]["points"]))
 
 
     def test_legacy_literal_separator_remains_supported(self) -> None:

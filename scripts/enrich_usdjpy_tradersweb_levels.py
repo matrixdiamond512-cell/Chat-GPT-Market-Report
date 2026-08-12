@@ -89,6 +89,45 @@ def compact(r: dict) -> dict:
     return {"price": r["price"], "description": r["description"]}
 
 
+def analyze_options(rows: list[dict], spot: float | None) -> dict:
+    options = [r for r in rows if r["option"]]
+    if not options or spot is None:
+        return {"status": "unavailable", "headline": "分析対象のNYカット情報なし", "summary": "現在値と比較できるオプション水準を取得できませんでした。", "points": []}
+
+    options.sort(key=lambda r: abs(r["mid"] - spot))
+    nearest = options[0]
+    distance = round(nearest["mid"] - spot, 2)
+    pips = round(abs(distance) * 100)
+    size = "大きめ" if "大きめ" in nearest["description"] else "通常規模"
+    side = "上" if distance > 0 else "下" if distance < 0 else "同水準"
+    clustered = any("・" in r["description"] and "日NYカット" in r["description"] for r in options)
+
+    overlaps = []
+    for r in options:
+        tags = []
+        if r["sell"]: tags.append("売り注文")
+        if r["buy"]: tags.append("買い注文")
+        if r["stopSell"]: tags.append("売りストップ")
+        if r["stopBuy"]: tags.append("買いストップ")
+        if tags: overlaps.append((r, "・".join(tags)))
+
+    points = [f"最接近は{nearest['price']}円（現在値から{side}へ約{pips}pips、{size}）。NYカット接近時は同水準へ値が寄る動きと、通過後の反動に注意。"]
+    if overlaps:
+        r, tags = min(overlaps, key=lambda x: abs(x[0]["mid"] - spot))
+        if r["sell"]: reading = "上値を抑えやすい"
+        elif r["buy"] and r["stopSell"]: reading = "いったん支えになりやすい一方、割れると下落が加速しやすい"
+        elif r["buy"]: reading = "下値を支えやすい"
+        else: reading = "通過時に値動きが加速しやすい"
+        points.append(f"{r['price']}円はNYカットと{tags}が重複。カット前後は{reading}水準。")
+    if clustered:
+        points.append("複数期日のNYカットが同一水準に重なるため、単一期日より意識されやすい価格帯があります。")
+
+    above = [r for r in options if r["mid"] > spot]
+    below = [r for r in options if r["mid"] < spot]
+    headline = "上下のNYカットに挟まれ、カット前はレンジ化しやすい" if above and below else "上側NYカットが短期的な吸着・上値抑制候補" if above else "下側NYカットが短期的な吸着・下値支持候補"
+    return {"status": "calculated", "headline": headline, "summary": "NYカットは方向を保証せず、カット時刻までは吸着、その後は反動が出る可能性を注文・ストップとの重複で評価します。", "nearestPrice": nearest["price"], "nearestDistancePips": pips, "points": points}
+
+
 def select_levels(rows: list[dict]) -> dict:
     current = next((r for r in rows if r["isCurrent"]), None)
     spot = current["mid"] if current else None
@@ -116,6 +155,7 @@ def select_levels(rows: list[dict]) -> dict:
         "buyOrders": [compact(r) for r in buys[:2]],
         "stops": [compact(r) for r in stops[:2]],
         "nyCutOptions": [compact(r) for r in options[:3]],
+        "optionAnalysis": analyze_options(rows, spot),
         "extractedRowCount": len(rows),
         "displayMode": "key-levels-excerpt",
     }

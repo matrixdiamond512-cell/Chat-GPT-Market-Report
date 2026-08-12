@@ -45,6 +45,8 @@ function renderTradersWeb(tw){
     }
   }
   const ref=k.referenceSpot?`基準時点レート ${esc(k.referenceSpot)}円`:'基準時点レート —';
+  const analysis=k.optionAnalysis||{};
+  const analysisHtml=analysis.status==='calculated'?`<div class="usd-option-analysis"><div class="usd-option-analysis-head"><span>オプション分析</span><b>${esc(analysis.headline)}</b></div><p>${esc(analysis.summary)}</p><ul>${(analysis.points||[]).map(point=>`<li>${esc(point)}</li>`).join('')}</ul><small>分析値は取得済みの公開オーダー情報から自動計算。NYカット単独で方向を断定しません。</small></div>`:`<div class="usd-option-analysis unavailable"><b>オプション分析</b><p>${esc(analysis.summary||'分析対象のNYカット情報を取得できませんでした。')}</p></div>`;
   card.innerHTML=`
     <h3>主要オーダー水準 <small>無料公開データ・抜粋</small></h3>
     <p class="usd-position-note"><b>${freshness}</b> ｜ ${ref} ｜ 情報基準 ${esc(fmtJst(tw.sourceUpdatedAt))}</p>
@@ -54,6 +56,7 @@ function renderTradersWeb(tw){
         <tbody>${rows.length?rows.join(''):'<tr><td colspan="3" class="usd-error">主要水準を抽出できませんでした。</td></tr>'}</tbody>
       </table>
     </div>
+    ${analysisHtml}
     <p class="usd-order-note">全掲載水準の転載ではなく、現在値に近い主要な売り・買い・ストップ・NYカットを需給判断用に抜粋しています。情報の基準日時を必ず確認してください。</p>`;
 }
 
