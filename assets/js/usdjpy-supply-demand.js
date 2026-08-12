@@ -88,15 +88,15 @@ function render(data,failed){
   if(Number.isFinite(spreadChange)){score+=spreadChange>1?1:spreadChange<-1?-1:0;scoreParts++}
   if(latestVol&&Number.isFinite(Number(latestVol.vs20Pct))&&usd){const active=Math.abs(Number(latestVol.vs20Pct))<20?0:1;if(active&&Number(latestVol.vs20Pct)>20){score+=Number(usd.changePercent)>0?0.5:Number(usd.changePercent)<0?-0.5:0}scoreParts++}
   if(cftcFresh){score+=Number(cftc.net)<0?0.5:Number(cftc.net)>0?-0.5:0;scoreParts++}
-  const judgement=score>=1.5?'ドル買い優勢':score>=0.5?'ややドル買い優勢':score<=-1.5?'円買い優勢':score<=-0.5?'やや円買い優勢':'中立';
+  const judgement=score>=1.5?'ドル買い優勢':score>=0.5?'ややドル買い優勢':score<=-1.5?'ドル売り優勢':score<=-0.5?'ややドル売り優勢':'中立';
   const confidence=scoreParts>=4?'高め':scoreParts>=3?'中程度':scoreParts>=2?'やや低め':'低い';
   $('kpi-judgement').textContent=judgement;
   $('kpi-confidence').textContent=`信頼度：${confidence}`;
   const verdictCard=$('kpi-judgement').closest('.usd-verdict-main');
   verdictCard?.classList.remove('is-buy','is-sell','is-neutral');
-  verdictCard?.classList.add(judgement.includes('ドル買い')?'is-buy':judgement.includes('円買い')?'is-sell':'is-neutral');
+  verdictCard?.classList.add(judgement.includes('ドル買い')?'is-buy':judgement.includes('ドル売り')?'is-sell':'is-neutral');
   if(judgement.includes('ドル買い'))$('kpi-judgement').classList.add('up');
-  if(judgement.includes('円買い'))$('kpi-judgement').classList.add('down');
+  if(judgement.includes('ドル売り'))$('kpi-judgement').classList.add('down');
 
   const bullets=[];
   if(usd)bullets.push(`USD/JPYは${Number(usd.changePercent)>0?'上昇':'下落'}。現在 ${num(usd.value,2)}、前日比 ${signed(usd.changePercent,2,'%')}。`);
