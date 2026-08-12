@@ -1,8 +1,8 @@
 {
   "schemaVersion": "1.1.0",
   "pageId": "stock-sessions",
-  "updatedAt": "2026-08-12T21:11:00+09:00",
-  "updateMode": "us",
+  "updatedAt": "2026-08-12T23:33:46+09:00",
+  "updateMode": "both",
   "sourcePolicy": "セッション別に基準日・取得時刻を保持。前日終値で当日寄り付き/プレマーケットを代用しない。",
   "sessionAnalysis": {
     "tokyoOpen": {
@@ -10,7 +10,7 @@
       "flag": "JP",
       "status": "東京寄り付きデータ取得済み",
       "dataDate": "2026-08-12",
-      "updatedAt": "2026-08-12T17:43:19+09:00",
+      "updatedAt": "2026-08-12T23:33:42+09:00",
       "source": "Yahoo Finance chart API（日経225・FX・CME参考先物） / Google Finance（TOPIX）",
       "metrics": [
         {
@@ -33,8 +33,8 @@
         },
         {
           "label": "日経225先物（CME参考）",
-          "value": "67,745.00",
-          "change": "+1.01%",
+          "value": "68,760.00",
+          "change": "+2.53%",
           "note": "CME参考値。大阪取引所先物とは別銘柄として表示"
         }
       ],
@@ -49,114 +49,114 @@
     "usPremarket": {
       "title": "米国市場 プレマーケット分析",
       "flag": "US",
-      "status": "米国プレマーケットデータ取得済み",
+      "status": "取得不能（当日プレマーケット時間外・休場、または株価データなし）",
       "dataDate": "2026-08-12",
-      "updatedAt": "2026-08-12T21:10:59+09:00",
+      "updatedAt": "2026-08-12T23:33:43+09:00",
       "source": "Yahoo Finance chart API（指数先物・金利・FX・大型株）",
       "metrics": [
         {
           "label": "S&P500先物",
-          "value": "7,770.50",
-          "change": "+0.30%",
+          "value": "7,771.75",
+          "change": "+0.31%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "Nasdaq100先物",
-          "value": "29,847.00",
-          "change": "+0.75%",
+          "value": "29,892.25",
+          "change": "+0.90%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "Dow先物",
-          "value": "53,971.00",
-          "change": "+0.17%",
+          "value": "53,947.00",
+          "change": "+0.12%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "Russell2000先物",
-          "value": "3,043.40",
-          "change": "+0.26%",
+          "value": "3,043.00",
+          "change": "+0.25%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "VIX",
-          "value": "15.37",
-          "change": "+0.59%",
+          "value": "14.77",
+          "change": "-3.34%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "米10年債利回り",
-          "value": "4.68%",
-          "change": "-0.32%",
+          "value": "4.67%",
+          "change": "-0.34%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "ドル指数",
-          "value": "99.79",
-          "change": "-0.04%",
+          "value": "99.72",
+          "change": "-0.11%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "USD/JPY",
-          "value": "159.045",
-          "change": "-0.14%",
+          "value": "159.085",
+          "change": "-0.12%",
           "note": "前日通常取引終値比"
         }
       ],
       "premarketMovers": [
         {
-          "symbol": "GOOGL",
-          "price": 345.56,
-          "changePct": -3.3452673976281044,
-          "volume": 0
-        },
-        {
-          "symbol": "AMZN",
-          "price": 273.3,
-          "changePct": -1.7224639505196038,
-          "volume": 0
-        },
-        {
-          "symbol": "AAPL",
-          "price": 304.75,
-          "changePct": -1.1386491922403152,
-          "volume": 0
-        },
-        {
-          "symbol": "MSFT",
-          "price": 501.73,
-          "changePct": -0.8556297672212776,
-          "volume": 0
-        },
-        {
-          "symbol": "META",
-          "price": 600.01,
-          "changePct": 0.8555772204666301,
+          "symbol": "AVGO",
+          "price": 426.56,
+          "changePct": 2.518746394924065,
           "volume": 0
         },
         {
           "symbol": "NVDA",
-          "price": 219.37,
-          "changePct": 0.8365892898184235,
+          "price": 220.79,
+          "changePct": 1.5126436781609076,
+          "volume": 0
+        },
+        {
+          "symbol": "MSFT",
+          "price": 499.41,
+          "changePct": -0.8733451102598155,
           "volume": 0
         },
         {
           "symbol": "TSLA",
-          "price": 333.3052,
-          "changePct": 0.732954545454545,
+          "price": 335.0584,
+          "changePct": 0.675580661638775,
           "volume": 0
         },
         {
-          "symbol": "AVGO",
-          "price": 421.1,
-          "changePct": -0.30776515151513806,
+          "symbol": "GOOGL",
+          "price": 346.01,
+          "changePct": 0.6428155904595556,
+          "volume": 0
+        },
+        {
+          "symbol": "META",
+          "price": 600.96,
+          "changePct": 0.30711710508746215,
+          "volume": 0
+        },
+        {
+          "symbol": "AMZN",
+          "price": 273.1,
+          "changePct": 0.3048444558710228,
+          "volume": 0
+        },
+        {
+          "symbol": "AAPL",
+          "price": 305.2,
+          "changePct": 0.09511003246858163,
           "volume": 0
         }
       ],
       "insights": [
-        "大型テック・主要株プレマーケット: GOOGL -3.35%（出来高 0） / AMZN -1.72%（出来高 0） / AAPL -1.14%（出来高 0） / MSFT -0.86%（出来高 0） / META +0.86%（出来高 0）",
+        "大型テック・主要株プレマーケット: AVGO +2.52%（出来高 0） / NVDA +1.51%（出来高 0） / MSFT -0.87%（出来高 0） / TSLA +0.68%（出来高 0） / GOOGL +0.64%（出来高 0）",
         "S&P500先物とNasdaq100先物はともにプラス圏。NY寄り前の株式センチメントはリスクオン寄りです。",
-        "米10年債利回り 4.68%（前日比 -0.32%）。株先物との整合性を確認します。"
+        "米10年債利回り 4.67%（前日比 -0.34%）。株先物との整合性を確認します。"
       ],
       "judgement": "米株先物は明確に上方向。米金利急騰が伴わない限り、NY寄りはリスクオン継続を優先します。",
       "errors": []
@@ -170,7 +170,7 @@
         },
         {
           "label": "米国プレマーケット",
-          "text": "2026-08-12 / S&P500先物 7,770.50 +0.30% / Nasdaq100先物 29,847.00 +0.75%"
+          "text": "2026-08-12 / S&P500先物 7,771.75 +0.31% / Nasdaq100先物 29,892.25 +0.90%"
         },
         {
           "label": "米国通常市場（直近終値）",
