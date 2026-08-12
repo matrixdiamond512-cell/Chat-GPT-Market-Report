@@ -1,0 +1,72 @@
+name: Sync latest market report publication
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/latest-report.json"
+      - "scripts/sync_latest_report_publication.py"
+      - ".github/workflows/sync-latest-report-publication.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-latest-market-report-publication
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sync latest report into history and dashboard
+        run: |
+          python scripts/sync_latest_report_publication.py
+          python scripts/build_reports.py
+
+      - name: Validate 08:00 publication QA when applicable
+        shell: bash
+        run: |
+          SLOT=$(python - <<'PY'
+          import json
+          d=json.load(open('data/latest-report.json',encoding='utf-8'))
+          r=d.get('latestReport') or d.get('report') or d
+          print(r.get('time',''))
+          PY
+          )
+          DATE=$(python - <<'PY'
+          import json
+          d=json.load(open('data/latest-report.json',encoding='utf-8'))
+          r=d.get('latestReport') or d.get('report') or d
+          print(r.get('date',''))
+          PY
+          )
+          if [ "$SLOT" = "08:00" ]; then
+            python scripts/verify_morning_report_qa.py --date "$DATE" --slot 08:00
+          fi
+
+      - name: Commit synchronized publication files
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports data/dashboard.json reports.json data/market/morning_report_qa.json
+          if git diff --cached --quiet; then
+            echo "Publication files already synchronized."
+            exit 0
+          fi
+          git commit -m "Sync latest market report publication"
+          git pull --rebase origin main
+          git push origin main
