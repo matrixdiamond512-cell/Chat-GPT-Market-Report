@@ -12,11 +12,13 @@ on:
       - "scripts/repair_missing_event_results.py"
       - "scripts/validate_weekly_claims_result.py"
       - "scripts/clean_legacy_event_records.py"
+      - "scripts/build_completed_event_records.py"
       - "scripts/test_fetch_economic_calendar.py"
       - "scripts/test_postprocess_economic_calendar.py"
       - "scripts/test_repair_missing_event_results.py"
       - "scripts/test_validate_weekly_claims_result.py"
       - "scripts/test_clean_legacy_event_records.py"
+      - "scripts/test_build_completed_event_records.py"
       - "config/economic_calendar.json"
       - "data/events/event_dictionary.json"
   schedule:
@@ -64,10 +66,14 @@ jobs:
       - name: Validate weekly unemployment claims
         run: python -m scripts.validate_weekly_claims_result --print-summary
 
+      - name: Build completed-event records
+        run: python -m scripts.build_completed_event_records
+
       - name: Run calendar tests
         run: |
           python -m unittest scripts.test_fetch_economic_calendar -v
           python -m unittest scripts.test_clean_legacy_event_records -v
+          python scripts/test_build_completed_event_records.py
           python -m unittest scripts.test_postprocess_economic_calendar -v
           python -m unittest scripts.test_repair_missing_event_results -v
           python -m unittest scripts.test_validate_weekly_claims_result -v
@@ -77,6 +83,7 @@ jobs:
           python -m json.tool data/events/latest.json > /dev/null
           python -m json.tool data/events/upcoming.json > /dev/null
           python -m json.tool data/events/completed.json > /dev/null
+          python -m json.tool data/events/completed-records.json > /dev/null
           python -m json.tool data/events.json > /dev/null
           python -m json.tool economic-calendar.json > /dev/null
 
