@@ -30,6 +30,7 @@ JST = timezone(timedelta(hours=9))
 UA = "Mozilla/5.0 (compatible; ChatGPT-Market-Report/1.0; +https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report)"
 GLD_XLSX = "https://api.spdrgoldshares.com/api/v1/historical-archive?exchange=NYSE&lang=en&product=gld"
 WGC_BASE = "https://www.gold.org/goldhub/research/gold-etfs-holdings-and-flows"
+MIN_ALIGNED_HISTORY_DAYS = 20
 
 
 def now_iso() -> str:
@@ -273,8 +274,8 @@ def main() -> int:
     etf["iauHistory"] = iau_rows[-90:]
     etf["historyDaily"] = aligned[-90:]
     etf["historyDaysCount"] = len(etf["historyDaily"])
-    etf["historyStatus"] = "verified" if etf["historyDaily"] else "collecting"
-    etf["historyFallback"] = "GLD" if not etf["historyDaily"] and etf["gldHistory"] else None
+    etf["historyStatus"] = "verified" if len(etf["historyDaily"]) >= MIN_ALIGNED_HISTORY_DAYS else "collecting"
+    etf["historyFallback"] = "GLD" if len(etf["historyDaily"]) < MIN_ALIGNED_HISTORY_DAYS and etf["gldHistory"] else None
     etf["global"] = fetch_wgc_global(etf.get("global") if isinstance(etf.get("global"), dict) else None)
 
     HISTORY.write_text(json.dumps(history, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

@@ -2,6 +2,7 @@
 'use strict';
 
 const DATA_URL='data/gold-supply-demand.json';
+const MIN_ALIGNED_HISTORY_DAYS=20;
 const n=v=>{const x=Number(v);return Number.isFinite(x)?x:null};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -57,7 +58,7 @@ async function install(){
   let data;
   try{const r=await fetch(`${DATA_URL}?ts=${Date.now()}`,{cache:'no-store'});if(!r.ok)return;data=await r.json();}catch(_){return;}
   const etf=data.etf||{},aligned=Array.isArray(etf.historyDaily)?etf.historyDaily:[],gld=normalize(etf.gldHistory);
-  if(aligned.length>=3||gld.length<2)return;
+  if(aligned.length>=MIN_ALIGNED_HISTORY_DAYS||gld.length<2)return;
 
   const apply=(range=22)=>{
     const bar=document.querySelector('[data-etf-bar]');
