@@ -1,4 +1,4 @@
-name: Verify Tokyo USDJPY spot volume freshness
+name: Update Tokyo USDJPY spot volume
 
 on:
   workflow_dispatch:
@@ -7,10 +7,10 @@ on:
     - cron: "40 13 * * 1-5"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  verify:
+  update:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -18,6 +18,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Update from BOJ official API
+        run: python scripts/update_usdjpy_volume.py
       - name: Validate publication date, target date and acquisition time
         run: |
           python -m json.tool data/usdjpy-volume.json > /dev/null
@@ -39,3 +41,15 @@ jobs:
           print('acquired/generated:', data.get('generatedAt'))
           print('The target date can precede the BOJ publication date across weekends/holidays.')
           PY
+      - name: Commit updated volume data
+        run: |
+          if git diff --quiet -- data/usdjpy-volume.json; then
+            echo 'No USDJPY volume data change.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/usdjpy-volume.json
+          git commit -m 'Update Tokyo USDJPY spot volume'
+          git pull --rebase origin main
+          git push origin HEAD:main
