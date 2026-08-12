@@ -1,10 +1,10 @@
 var MARKET_REPORT_MASTER_SCHEDULER_CONFIG = {
   timezone: 'Asia/Tokyo',
   lastResultProperty: 'MARKET_REPORT_MASTER_SCHEDULER_LAST_RESULT',
-  reportHours: [7, 12, 16, 21],
+  reportHours: [8, 12, 16, 21],
   slots: [
-    { handler: 'runMarketReportMaster0730', hour: 7, slotHour: 7, mode: 'main-0730', retry: false },
-    { handler: 'runMarketReportMaster0830Retry', hour: 8, slotHour: 7, mode: 'retry-0830', retry: true },
+    { handler: 'runMarketReportMaster0830', hour: 8, slotHour: 8, mode: 'main-0830', retry: false },
+    { handler: 'runMarketReportMaster0930Retry', hour: 9, slotHour: 8, mode: 'retry-0930', retry: true },
     { handler: 'runMarketReportMaster1230', hour: 12, slotHour: 12, mode: 'main-1230', retry: false },
     { handler: 'runMarketReportMaster1330Retry', hour: 13, slotHour: 12, mode: 'retry-1330', retry: true },
     { handler: 'runMarketReportMaster1630', hour: 16, slotHour: 16, mode: 'main-1630', retry: false },
@@ -13,11 +13,15 @@ var MARKET_REPORT_MASTER_SCHEDULER_CONFIG = {
     { handler: 'runMarketReportMaster2230Retry', hour: 22, slotHour: 21, mode: 'retry-2230', retry: true }
   ],
   oldManagedHandlers: [
+    'runMarketReportMaster0730',
+    'runMarketReportMaster0830Retry',
     'autoPublishMarketReport0700',
+    'autoPublishMarketReport0800',
     'autoPublishMarketReport1200',
     'autoPublishMarketReport1600',
     'autoPublishMarketReport2100',
     'autoPublishMarketReport0830Retry',
+    'autoPublishMarketReport0930Retry',
     'autoPublishMarketReport1330Retry',
     'autoPublishMarketReport1730Retry',
     'autoPublishMarketReport2230Retry',
@@ -56,8 +60,8 @@ function installMarketReportMasterSchedulerTriggers() {
   }
   SpreadsheetApp.getUi().alert(
     '本文・ダッシュボード用の自動更新を設定しました。\n\n' +
-    '通常: 07:30 / 12:30 / 16:30 / 21:30\n' +
-    '再チェック: 08:30 / 13:30 / 17:30 / 22:30\n\n' +
+    '通常: 08:30 / 12:30 / 16:30 / 21:30\n' +
+    '再チェック: 09:30 / 13:30 / 17:30 / 22:30\n\n' +
     '東京市場ドル円出来高・重要イベント・株式市場分析は対象外です。\n' +
     '削除した共通管理トリガー: ' + cleanup.deletedCount + '\n' +
     '作成した共通トリガー: ' + created.length
@@ -112,14 +116,20 @@ function showMarketReportMasterSchedulerStatus() {
   return { masterInstalled: masterInstalled, oldInstalled: oldInstalled, allTriggers: allNames, lastResult: lastResult };
 }
 
-function runMarketReportMaster0730() { return runMarketReportMasterScheduler_(7, 'main-0730', false); }
-function runMarketReportMaster0830Retry() { return runMarketReportMasterScheduler_(7, 'retry-0830', true); }
+function runMarketReportMaster0830() { return runMarketReportMasterScheduler_(8, 'main-0830', false); }
+function runMarketReportMaster0930Retry() { return runMarketReportMasterScheduler_(8, 'retry-0930', true); }
 function runMarketReportMaster1230() { return runMarketReportMasterScheduler_(12, 'main-1230', false); }
 function runMarketReportMaster1330Retry() { return runMarketReportMasterScheduler_(12, 'retry-1330', true); }
 function runMarketReportMaster1630() { return runMarketReportMasterScheduler_(16, 'main-1630', false); }
 function runMarketReportMaster1730Retry() { return runMarketReportMasterScheduler_(16, 'retry-1730', true); }
 function runMarketReportMaster2130() { return runMarketReportMasterScheduler_(21, 'main-2130', false); }
 function runMarketReportMaster2230Retry() { return runMarketReportMasterScheduler_(21, 'retry-2230', true); }
+
+// Legacy handlers are retained only so old installed triggers fail safely until cleanup.
+function runMarketReportMaster0730() {
+  return saveMarketReportMasterResult_({ ok: true, skipped: true, mode: 'legacy-0730', slotHour: 8, reason: '07:00朝レポート運用は廃止済みです。08:00枠を使用します。' });
+}
+function runMarketReportMaster0830Retry() { return runMarketReportMasterScheduler_(8, 'legacy-retry-0830', true); }
 
 function runMarketReportMasterNow() {
   return runMarketReportBodyAndDashboardNow();
@@ -182,7 +192,7 @@ function marketReportMasterResolveCurrentSlotHour_(date) {
   if (hour >= 21) return 21;
   if (hour >= 16) return 16;
   if (hour >= 12) return 12;
-  return 7;
+  return 8;
 }
 
 function runMarketReportMasterScheduler_(slotHour, mode, isRetry) {
@@ -193,9 +203,9 @@ function runMarketReportMasterScheduler_(slotHour, mode, isRetry) {
   var result = { ok: true, skipped: false, mode: mode, slotHour: slotHour, retry: !!isRetry, modules: [] };
   try {
     var day = Number(Utilities.formatDate(new Date(), MARKET_REPORT_MASTER_SCHEDULER_CONFIG.timezone, 'u'));
-    if (day === 6 || day === 7) {
+    if (day === 7 || (day === 6 && slotHour !== 8)) {
       result.skipped = true;
-      result.reason = '週末のため本文・ダッシュボード自動更新をスキップしました。';
+      result.reason = day === 7 ? '日曜のため本文・ダッシュボード自動更新をスキップしました。' : '土曜は08:00朝レポート以外を発行しません。';
       return saveMarketReportMasterResult_(result);
     }
     runMarketReportMasterModule_(result, 'market_report', 'マーケットレポート本文・ダッシュボード公開', function() {
