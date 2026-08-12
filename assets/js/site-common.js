@@ -5,6 +5,7 @@
   var workflows = {
     "index": "update-market-data.yml",
     "report": "build-reports.yml",
+    "usdjpy-volume": "update-usdjpy-volume.yml",
     "events": "update-economic-calendar.yml",
     "rates-bonds": "update-rates-bonds.yml",
     "usdjpy-supply-demand": "update-usdjpy-supply-demand.yml",
