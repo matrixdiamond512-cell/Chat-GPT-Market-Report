@@ -43,6 +43,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install flow-data parser
+        run: python -m pip install --disable-pip-version-check pypdf==6.1.1
+
       - name: Validate builders
         run: |
           python -m py_compile scripts/build_usdjpy_supply_demand.py
@@ -103,7 +106,7 @@ jobs:
               if item.get('score') is not None:
                   assert item.get('verifiedCount', 0) >= minimum
               for driver in item.get('drivers') or []:
-                  if driver.get('status') != 'verified':
+                  if driver.get('status') not in {'verified', 'calculated'}:
                       assert driver.get('score') is None, f"Non-verified driver scored: {driver.get('id')}"
 
           index = json.loads(Path('data/usdjpy-supply-demand-archive/index.json').read_text(encoding='utf-8'))

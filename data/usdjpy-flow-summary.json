@@ -1,30 +1,30 @@
 {
   "schemaVersion": "1.0.0",
   "pageId": "usdjpy-flow-summary",
-  "generatedAt": "2026-08-12T22:49:05+09:00",
+  "generatedAt": "2026-08-12T23:08:40+09:00",
   "status": "ok",
   "realDemand": {
-    "score": null,
-    "judgement": "判定保留",
+    "score": 2.0,
+    "judgement": "ややドル買い",
     "shortTermScore": 0.0,
-    "structuralScore": 0.0,
-    "verifiedCount": 1,
-    "confirmedCount": 3,
+    "structuralScore": 2.0,
+    "verifiedCount": 6,
+    "confirmedCount": 8,
     "minimumRequired": 3,
     "drivers": [
       {
         "id": "tokyo_fix",
-        "name": "仲値フロー",
+        "name": "仲値フロー（東京価格代理）",
         "category": "short_term_real_demand",
-        "direction": "unknown",
-        "score": null,
-        "status": "unavailable",
-        "asOf": "",
-        "updatedAt": "",
-        "valueText": "時刻別価格を取得できないため判定しません",
-        "sourceName": "",
-        "sourceUrl": "",
-        "frequency": "intraday"
+        "direction": "neutral",
+        "score": 0.0,
+        "status": "calculated",
+        "asOf": "2026-08-10",
+        "updatedAt": "2026-08-12T21:36:01+09:00",
+        "valueText": "東京市場の始値→終値 157.90→157.89（-0.01%）。仲値実額ではなく価格代理",
+        "sourceName": "日本銀行 外国為替市況（日次）",
+        "sourceUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/index.htm",
+        "frequency": "daily proxy"
       },
       {
         "id": "tokyo_volume",
@@ -48,7 +48,7 @@
         "score": 0.0,
         "status": "verified",
         "asOf": "2026-08-12",
-        "updatedAt": "2026-08-12T22:49:05+09:00",
+        "updatedAt": "2026-08-12T23:08:40+09:00",
         "valueText": "非該当",
         "sourceName": "",
         "sourceUrl": "",
@@ -56,58 +56,58 @@
       },
       {
         "id": "capital_flow",
-        "name": "当日企業・資本フロー",
+        "name": "企業・資本フロー（公表値代理）",
         "category": "short_term_real_demand",
-        "direction": "unknown",
-        "score": null,
-        "status": "unavailable",
-        "asOf": "",
-        "updatedAt": "",
-        "valueText": "確認済み公開データなし",
-        "sourceName": "",
-        "sourceUrl": "",
-        "frequency": "event"
+        "direction": "usd_buy",
+        "score": 0.5,
+        "status": "calculated",
+        "asOf": "2026-08-01",
+        "updatedAt": "2026-08-12T23:08:40+09:00",
+        "valueText": "対外－対内ネット +7,528億円。企業の当日実額ではなく週次資本フロー代理（為替ヘッジ不明）",
+        "sourceName": "財務省 対外及び対内証券投資",
+        "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
+        "frequency": "weekly proxy"
       },
       {
         "id": "trade",
         "name": "貿易統計",
         "category": "structural_real_demand",
-        "direction": "unknown",
-        "score": null,
-        "status": "unavailable",
-        "asOf": "",
-        "updatedAt": "",
-        "valueText": "自動取得未接続（当日方向には代用しません）",
-        "sourceName": "",
-        "sourceUrl": "",
+        "direction": "usd_buy",
+        "score": 1.0,
+        "status": "verified",
+        "asOf": "2026-06",
+        "updatedAt": "2026-08-12T23:08:40+09:00",
+        "valueText": "輸出 10.93兆円／輸入 11.34兆円／収支 -4099億円（構造要因）",
+        "sourceName": "財務省 貿易統計",
+        "sourceUrl": "https://www.customs.go.jp/toukei/shinbun/trade-st/2026/2026065.pdf",
         "frequency": "monthly"
       },
       {
         "id": "outward_securities",
         "name": "対外証券投資",
         "category": "structural_real_demand",
-        "direction": "unknown",
-        "score": null,
-        "status": "unavailable",
-        "asOf": "",
-        "updatedAt": "",
-        "valueText": "自動取得未接続（為替ヘッジ不明）",
-        "sourceName": "",
-        "sourceUrl": "",
+        "direction": "usd_buy",
+        "score": 0.5,
+        "status": "verified",
+        "asOf": "2026-08-01",
+        "updatedAt": "2026-08-12T23:08:40+09:00",
+        "valueText": "合計 +6,262億円（取得超は外貨需要候補、為替ヘッジ不明）",
+        "sourceName": "財務省 対外及び対内証券投資",
+        "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
         "frequency": "weekly"
       },
       {
         "id": "inward_securities",
         "name": "対内証券投資",
         "category": "structural_real_demand",
-        "direction": "unknown",
-        "score": null,
-        "status": "unavailable",
-        "asOf": "",
-        "updatedAt": "",
-        "valueText": "自動取得未接続（為替ヘッジ不明）",
-        "sourceName": "",
-        "sourceUrl": "",
+        "direction": "usd_buy",
+        "score": 0.5,
+        "status": "verified",
+        "asOf": "2026-08-01",
+        "updatedAt": "2026-08-12T23:08:40+09:00",
+        "valueText": "合計 -1,266億円（取得超は円需要候補、為替ヘッジ不明）",
+        "sourceName": "財務省 対外及び対内証券投資",
+        "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
         "frequency": "weekly"
       },
       {
@@ -118,7 +118,7 @@
         "score": 0.0,
         "status": "verified",
         "asOf": "2026-08-12",
-        "updatedAt": "2026-08-12T22:49:05+09:00",
+        "updatedAt": "2026-08-12T23:08:40+09:00",
         "valueText": "月末非該当",
         "sourceName": "",
         "sourceUrl": "",
@@ -129,8 +129,8 @@
   "speculative": {
     "score": 0.0,
     "judgement": "中立",
-    "verifiedCount": 3,
-    "confirmedCount": 3,
+    "verifiedCount": 4,
+    "confirmedCount": 4,
     "minimumRequired": 2,
     "drivers": [
       {
@@ -191,32 +191,50 @@
       },
       {
         "id": "short_reaction",
-        "name": "金利と短期価格反応",
+        "name": "金利差と短期価格反応",
         "category": "speculative",
-        "direction": "unknown",
-        "score": null,
-        "status": "unavailable",
-        "asOf": "",
-        "updatedAt": "",
-        "valueText": "反応の因果確認データなし",
-        "sourceName": "",
-        "sourceUrl": "",
-        "frequency": "intraday"
+        "direction": "neutral",
+        "score": 0.0,
+        "status": "calculated",
+        "asOf": "2026-08-12T21:04:53+09:00",
+        "updatedAt": "2026-08-12T21:04:54+09:00",
+        "valueText": "USD/JPY -0.04%／米日2年金利変化差 +4.6bp（同時反応の代理、因果断定なし）",
+        "sourceName": "市場価格・金利データ統合",
+        "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
+        "frequency": "daily proxy"
       }
     ]
   },
   "combined": {
-    "score": null,
-    "judgement": "判定保留",
-    "leadingFlow": "保留",
-    "relationship": "判定保留",
+    "score": 2.0,
+    "judgement": "ややドル買い優勢",
+    "leadingFlow": "実需",
+    "relationship": "片側中立",
     "sessionComment": "NY時間は米金利・米指標・オプション・NYカット・ストップを優先監視。",
-    "comment": "実需または投機の確認済みカテゴリーが不足しているため、総合判定を保留します。"
+    "comment": "投機は中立、実需はドル買い。現在は実需フローを優先して確認。"
   },
   "previous": {
-    "realDemand": null,
+    "realDemand": 2.0,
     "speculative": 0.0,
-    "combined": null,
-    "generatedAt": "2026-08-12T22:47:50+09:00"
+    "combined": 2.0,
+    "generatedAt": "2026-08-12T23:06:59+09:00"
+  },
+  "officialFlows": {
+    "trade": {
+      "asOf": "2026-06",
+      "exports": 10926535,
+      "imports": 11336461,
+      "balance": -409926,
+      "sourceUrl": "https://www.customs.go.jp/toukei/shinbun/trade-st/2026/2026065.pdf"
+    },
+    "securities": {
+      "asOf": "2026-08-01",
+      "outward": 6262,
+      "inward": -1266,
+      "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf"
+    }
+  },
+  "diagnostics": {
+    "officialFlowFetchError": null
   }
 }

@@ -7,19 +7,19 @@ const n=v=>{if(v===null||v===undefined||v==='')return null;const x=Number(v);ret
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const scoreText=v=>n(v)===null?'—':`${Number(v)>0?'+':''}${Number(v).toLocaleString('ja-JP',{maximumFractionDigits:2})}`;
 const dateText=v=>v?String(v).slice(0,10).replaceAll('-','/'):'—';
-const statusLabel={verified:'確認済み',stale:'期限切れ',degraded:'参考',unavailable:'取得不能'};
+const statusLabel={verified:'確認済み',calculated:'算出値',stale:'期限切れ',degraded:'参考',unavailable:'取得不能'};
 const tone=v=>n(v)>0?'is-buy':n(v)<0?'is-sell':'';
 const arrow=v=>n(v)>0?'↑':n(v)<0?'↓':'→';
 const compare=(now,prev)=>{if(n(now)===null||n(prev)===null)return'';const delta=Number(now)-Number(prev);return delta===0?'前回比：変化なし':`前回 ${scoreText(prev)} → 今回 ${scoreText(now)}（${Math.abs(now)>Math.abs(prev)?'強まった':Math.abs(now)<Math.abs(prev)?'弱まった':'方向変化'}）`};
 
 function topDrivers(section){
   return (Array.isArray(section?.drivers)?section.drivers:[])
-    .filter(x=>x&&x.status==='verified'&&n(x.score)!==null)
+    .filter(x=>x&&['verified','calculated'].includes(x.status)&&n(x.score)!==null)
     .sort((a,b)=>Math.abs(Number(b.score))-Math.abs(Number(a.score))||String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')))
     .slice(0,3);
 }
 function latestMeta(section){
-  const rows=(section?.drivers||[]).filter(x=>x.status==='verified');
+  const rows=(section?.drivers||[]).filter(x=>['verified','calculated'].includes(x.status));
   const dates=rows.map(x=>x.asOf).filter(Boolean).sort();
   const updates=rows.map(x=>x.updatedAt).filter(Boolean).sort();
   return `基準：${dateText(dates.at(-1))}${updates.length?`／更新 ${String(updates.at(-1)).replace('T',' ').slice(0,16)}`:''}`;
