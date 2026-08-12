@@ -46,10 +46,10 @@ async function render(){
     $('count-bullish').textContent=bull;$('count-bearish').textContent=bear;$('count-neutral').textContent=neutral;
     const weighted=(priceSignal||0)+(rateSignal||0)+(volumeSignal?volumeSignal*.5:0)+(cftcSignal?cftcSignal*.5:0),score=Math.round(50+weighted/4*50);$('dashboard-score').textContent=score;
     const renderedJudgement=$('kpi-judgement')?.textContent||'';$('dashboard-driver').textContent=renderedJudgement.includes('ドル買い')?'金利差を中心にドル買い材料がやや優勢です。出来高と更新鮮度も併せて確認してください。':renderedJudgement.includes('円買い')?'円買い材料がやや優勢です。価格と金利の整合性を確認してください。':'主要材料が拮抗しており、次の確認データを待つ局面です。';
-    factor('factor-price','factor-price-note',signals[0]>0?'ドル買い':signals[0]<0?'円買い':'中立',usd?`前日比 ${signed(usd.changePercent,2,'%')}`:'取得不能',toneBy(signals[0]));
-    factor('factor-volume','factor-volume-note',signals[1]>0?'ドル買い':signals[1]<0?'円買い':'中立',rec?`20日平均比 ${signed(rec.vs20Pct,1,'%')}`:'取得不能',toneBy(signals[1]));
-    factor('factor-rates','factor-rates-note',signals[2]>0?'ドル買い':signals[2]<0?'円買い':'中立',`金利差変化 ${signed(spreadChange,1,'bp')}`,toneBy(signals[2]));
-    factor('factor-cftc','factor-cftc-note',signals[3]>0?'ドル買い':signals[3]<0?'円買い':'中立',c.net!=null?`Net ${signed(c.net,0)}枚`:'取得不能',toneBy(signals[3]));
+    factor('factor-price','factor-price-note',signals[0]>0?'ドル買い':signals[0]<0?'ドル売り':'中立',usd?`前日比 ${signed(usd.changePercent,2,'%')}`:'取得不能',toneBy(signals[0]));
+    factor('factor-volume','factor-volume-note',signals[1]>0?'ドル買い':signals[1]<0?'ドル売り':'中立',rec?`20日平均比 ${signed(rec.vs20Pct,1,'%')}`:'取得不能',toneBy(signals[1]));
+    factor('factor-rates','factor-rates-note',signals[2]>0?'ドル買い':signals[2]<0?'ドル売り':'中立',`金利差変化 ${signed(spreadChange,1,'bp')}`,toneBy(signals[2]));
+    factor('factor-cftc','factor-cftc-note',signals[3]>0?'ドル買い':signals[3]<0?'ドル売り':'中立',c.net!=null?`Net ${signed(c.net,0)}枚`:'取得不能',toneBy(signals[3]));
     factor('factor-orders','factor-orders-note','中立',tw.sourceUpdatedAt?'主要水準を掲載':'公開情報なし','is-neutral');
     if(usd){$('price-prev-close').textContent=num(Number(usd.value)-Number(usd.change),2);$('price-high').textContent=Number.isFinite(Number(usd.high))?num(usd.high,2):'—';$('price-low').textContent=Number.isFinite(Number(usd.low))?num(usd.low,2):'—'}
     if(rec2&&Number.isFinite(Number(rec2.close)))$('price-prev2-close').textContent=num(rec2.close,2);
