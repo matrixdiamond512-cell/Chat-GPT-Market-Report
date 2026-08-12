@@ -5,12 +5,21 @@
  * - Keep the Google Docs source intact while presenting the portal in the SOP order.
  * - Always render "主要市場データ" as a table.
  * - Keep internal QA wording such as "verified" out of the public UI.
- * - Preserve all source content; low-priority acquisition notes are moved into a collapsed details block.
+ * - Preserve source content; low-priority acquisition notes are moved into a collapsed details block.
+ * - From 2026-08-13 onward, hold a malformed 21:00 report instead of showing a broken layout.
  *
- * This is intentionally a presentation layer. It does not invent or repair market data.
+ * This is intentionally a presentation/QA layer. It does not invent or repair market data.
  */
 (() => {
   "use strict";
+
+  const ENFORCE_FROM = "2026-08-13";
+  const REQUIRED_21_KEYS = [
+    "marketData", "theme", "changes", "consistency", "leading", "news", "flow",
+    "positioning", "events", "outlooks", "mainScenario", "alternativeScenario",
+    "breakConditions", "handover"
+  ];
+  const REQUIRED_CORE_MARKETS = ["金", "WTI原油", "日経225先物（大阪取引所）", "USD/JPY", "EUR/USD", "BTCUSD"];
 
   const SECTION_SPECS = [
     { key: "dataCheck", title: "データ取得・確認情報", patterns: [/^データ確認$/, /^データ取得(?:・確認)?$/] },
@@ -169,6 +178,27 @@
     });
   }
 
+  function splitReadableParts(line) {
+    const text = publicText(line);
+    if (!text) return [];
+    if (text.length < 150) return [text];
+
+    const pieces = text.match(/[^。！？]+[。！？]?/g) || [text];
+    const chunks = [];
+    let current = "";
+    pieces.forEach((piece) => {
+      const next = `${current}${piece}`.trim();
+      if (current && next.length > 190) {
+        chunks.push(current.trim());
+        current = piece;
+      } else {
+        current = next;
+      }
+    });
+    if (current.trim()) chunks.push(current.trim());
+    return chunks;
+  }
+
   function renderMarketTable(lines) {
     const rows = collectMarketRows(lines);
     if (!rows.length) return renderReadableText(lines);
@@ -186,11 +216,18 @@
   function renderReadableText(lines) {
     const clean = meaningfulLines(lines);
     if (!clean.length) return "";
-    return clean.map((line) => {
+
+    const pieces = [];
+    clean.forEach((line) => {
       const bullet = line.match(/^(?:[・●■▶]|[-*]\s+)(.+)$/);
-      if (bullet) return `<li>${escapeHtml(bullet[1])}</li>`;
-      return `<p>${escapeHtml(line)}</p>`;
-    }).reduce((html, piece) => {
+      if (bullet) {
+        pieces.push(`<li>${escapeHtml(bullet[1])}</li>`);
+        return;
+      }
+      splitReadableParts(line).forEach((part) => pieces.push(`<p>${escapeHtml(part)}</p>`));
+    });
+
+    return pieces.reduce((html, piece) => {
       if (piece.startsWith("<li>")) {
         if (html.endsWith("</ul>")) return html.slice(0, -5) + piece + "</ul>";
         return html + `<ul>${piece}</ul>`;
@@ -217,7 +254,7 @@
     return `<div class="manual21-outlook-grid">${cards.map((card) => `
       <article class="manual21-outlook-card">
         <h3>${escapeHtml(card.name)}</h3>
-        <p>${escapeHtml(publicText(card.body))}</p>
+        ${splitReadableParts(card.body).map((part) => `<p>${escapeHtml(part)}</p>`).join("")}
       </article>`).join("")}</div>`;
   }
 
@@ -262,6 +299,40 @@
     </details>`;
   }
 
+  function qaIssues(report, source, parsed) {
+    if (String(report.date || "") < ENFORCE_FROM) return [];
+    const issues = [];
+
+    REQUIRED_21_KEYS.forEach((key) => {
+      if (!meaningfulLines(parsed.sections.get(key)).length) {
+        const spec = SECTION_SPECS.find((item) => item.key === key);
+        issues.push(`${spec ? spec.title : key} がありません`);
+      }
+    });
+
+    const marketRows = collectMarketRows(parsed.sections.get("marketData"));
+    const marketNames = new Set(marketRows.map((row) => row.name));
+    REQUIRED_CORE_MARKETS.forEach((name) => {
+      if (!marketNames.has(name)) issues.push(`主要市場データに ${name} がありません`);
+    });
+
+    if (/\bverified\b/i.test(source)) issues.push("公開本文に内部確認用語 verified が残っています");
+    if (/未確認/.test(source)) issues.push("公開本文に『未確認』が残っています");
+
+    return issues;
+  }
+
+  function renderQaHold(issues) {
+    return `<section class="manual21-qa-hold" role="status" aria-live="polite">
+      <h2>21:00レポートは公開保留中です</h2>
+      <p>マニュアルの公開前チェックを通過していないため、読みにくい・不完全な本文は表示していません。</p>
+      <details>
+        <summary>検出した項目</summary>
+        <ul>${issues.map((issue) => `<li>${escapeHtml(issue)}</li>`).join("")}</ul>
+      </details>
+    </section>`;
+  }
+
   function applyManualLayout() {
     const report = currentReport();
     if (!report || String(report.time || "") !== "21:00") return;
@@ -276,6 +347,17 @@
     const source = reportSource(report);
     if (!source) return;
     const parsed = parseSections(source);
+    const issues = qaIssues(report, source, parsed);
+
+    if (issues.length) {
+      body.innerHTML = renderQaHold(issues);
+      app.dataset.manual21Key = key;
+      app.classList.add("manual21-applied", "manual21-qa-blocked");
+      const status = document.getElementById("reportStatus");
+      if (status) status.textContent = "21:00 SOP QA未通過｜公開保留";
+      return;
+    }
+
     if (!parsed.sections.has("marketData")) return;
 
     const known = new Set(RENDER_ORDER);
@@ -284,7 +366,6 @@
       html += renderSection(sectionKey, parsed.sections.get(sectionKey));
     });
 
-    // Preserve any recognized content that is intentionally outside the primary reading order.
     parsed.sections.forEach((lines, sectionKey) => {
       if (known.has(sectionKey) || sectionKey === "dataCheck") return;
       html += renderSection(sectionKey, lines);
@@ -294,6 +375,7 @@
     body.innerHTML = html;
     app.dataset.manual21Key = key;
     app.classList.add("manual21-applied");
+    app.classList.remove("manual21-qa-blocked");
 
     const status = document.getElementById("reportStatus");
     if (status) status.textContent = "本文全文を表示中｜21:00 SOPレイアウト適用済み";
