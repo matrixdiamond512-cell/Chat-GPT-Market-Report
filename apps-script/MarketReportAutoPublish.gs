@@ -3,20 +3,22 @@ const MARKET_REPORT_AUTO_CONFIG = {
   minute: 30,
   retryMinute: 30,
   lookbackDays: 4,
-  reportHours: [7, 12, 16, 21],
+  reportHours: [8, 12, 16, 21],
   scheduleHandlers: [
-    { name: 'autoPublishMarketReport0700', hour: 7 },
+    { name: 'autoPublishMarketReport0800', hour: 8 },
     { name: 'autoPublishMarketReport1200', hour: 12 },
     { name: 'autoPublishMarketReport1600', hour: 16 },
     { name: 'autoPublishMarketReport2100', hour: 21 }
   ],
   retryHandlers: [
-    { name: 'autoPublishMarketReport0830Retry', hour: 8 },
+    { name: 'autoPublishMarketReport0930Retry', hour: 9 },
     { name: 'autoPublishMarketReport1330Retry', hour: 13 },
     { name: 'autoPublishMarketReport1730Retry', hour: 17 },
     { name: 'autoPublishMarketReport2230Retry', hour: 22 }
   ],
   legacyHandlers: [
+    { name: 'autoPublishMarketReport0700', hour: 7 },
+    { name: 'autoPublishMarketReport0830Retry', hour: 8 },
     { name: 'autoPublishMarketReport0900', hour: 9 }
   ],
   lastResultProperty: 'MARKET_REPORT_AUTO_LAST_RESULT',
@@ -48,8 +50,8 @@ function installMarketReportAutoPublishTriggers() {
 
   SpreadsheetApp.getUi().alert(
     'Market report auto publish triggers were installed.\n' +
-    'Main: 07:30 / 12:30 / 16:30 / 21:30\n' +
-    'Retry once: 08:30 / 13:30 / 17:30 / 22:30\n\n' +
+    'Main: 08:30 / 12:30 / 16:30 / 21:30\n' +
+    'Retry once: 09:30 / 13:30 / 17:30 / 22:30\n\n' +
     'This is not a 5-minute monitor. It only checks once more when a report is late.'
   );
 }
@@ -88,7 +90,7 @@ function testMarketReportAutoFindLatestDoc() {
       'No market report Google Docs file was found.\n' +
       'Example name: ' + marketReportAutoDocName_(
         Utilities.formatDate(new Date(), MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd'),
-        7
+        8
       )
     );
     return;
@@ -109,17 +111,19 @@ function testMarketReportAutoFind1600Doc() {
     : '16:00 file was not found for today.');
 }
 
-function autoPublishMarketReport0700() { return autoPublishScheduledMarketReport_(7); }
+function autoPublishMarketReport0800() { return autoPublishScheduledMarketReport_(8); }
 function autoPublishMarketReport1200() { return autoPublishScheduledMarketReport_(12); }
 function autoPublishMarketReport1600() { return autoPublishScheduledMarketReport_(16); }
 function autoPublishMarketReport2100() { return autoPublishScheduledMarketReport_(21); }
 
-function autoPublishMarketReport0830Retry() { return autoPublishDueMarketReports_('retry-0830'); }
+function autoPublishMarketReport0930Retry() { return autoPublishDueMarketReports_('retry-0930'); }
 function autoPublishMarketReport1330Retry() { return autoPublishDueMarketReports_('retry-1330'); }
 function autoPublishMarketReport1730Retry() { return autoPublishDueMarketReports_('retry-1730'); }
 function autoPublishMarketReport2230Retry() { return autoPublishDueMarketReports_('retry-2230'); }
 
-// Old trigger compatibility. If an old 09:30 trigger remains, it exits safely.
+// Legacy trigger compatibility. These handlers no longer publish a 07:00 report.
+function autoPublishMarketReport0700() { return autoPublishScheduledMarketReport_(7); }
+function autoPublishMarketReport0830Retry() { return autoPublishDueMarketReports_('legacy-retry-0830'); }
 function autoPublishMarketReport0900() { return autoPublishScheduledMarketReport_(9); }
 
 function autoPublishScheduledMarketReport_(hour) {
@@ -130,7 +134,7 @@ function autoPublishScheduledMarketReport_(hour) {
     return saveMarketReportAutoResult_({
       ok: true,
       skipped: true,
-      reason: 'Outside scheduled weekday slots.',
+      reason: 'Outside scheduled report slots.',
       slot: formatMarketReportAutoSlot_(now, hour)
     });
   }
@@ -142,11 +146,11 @@ function autoPublishDueMarketReports_(reason) {
   const now = new Date();
   const day = Number(Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'u'));
 
-  if (day === 6 || day === 7) {
+  if (day === 7) {
     return saveMarketReportAutoResult_({
       ok: true,
       skipped: true,
-      reason: 'Weekend retry skipped.',
+      reason: 'Sunday retry skipped.',
       mode: reason
     });
   }
@@ -156,6 +160,7 @@ function autoPublishDueMarketReports_(reason) {
   const results = [];
 
   MARKET_REPORT_AUTO_CONFIG.reportHours.forEach(hour => {
+    if (!isScheduledMarketReportSlot_(day, hour)) return;
     if (hour < currentHour || (hour === currentHour && currentMinute >= MARKET_REPORT_AUTO_CONFIG.minute)) {
       results.push(publishMarketReportSlot_(hour, reason, false));
     }
@@ -419,7 +424,8 @@ function marketReportAutoDocName_(dateText, hour) {
 }
 
 function isScheduledMarketReportSlot_(day, hour) {
-  if (day === 6 || day === 7) return false;
+  if (day === 7) return false;
+  if (day === 6) return hour === 8;
   return MARKET_REPORT_AUTO_CONFIG.reportHours.includes(hour);
 }
 
