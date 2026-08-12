@@ -1,27 +1,33 @@
-/* Reset the 21:00 layout guard when the user leaves the 21:00 tab. */
+/* Reset the SOP layout guard only when the selected date/time actually changes. */
 (() => {
   "use strict";
 
-  function resetWhenOutside21() {
+  function currentKey() {
+    try {
+      const report = selectedReport || null;
+      if (!report) return "";
+      return `${report.date || ""} ${report.time || ""}`;
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function resetWhenSelectionChanges() {
     const app = document.getElementById("app");
     if (!app) return;
-    let report = null;
-    try {
-      report = selectedReport || null;
-    } catch (error) {
-      report = null;
-    }
-    if (!report || String(report.time || "") !== "21:00") {
+    const activeKey = currentKey();
+    const appliedKey = app.dataset.manual21Key || "";
+    if (appliedKey && appliedKey !== activeKey) {
       delete app.dataset.manual21Key;
-      app.classList.remove("manual21-applied");
+      app.classList.remove("manual21-applied", "manual21-qa-blocked");
     }
   }
 
   function start() {
     const app = document.getElementById("app");
     if (!app) return;
-    new MutationObserver(resetWhenOutside21).observe(app, { childList: true, subtree: true });
-    resetWhenOutside21();
+    new MutationObserver(resetWhenSelectionChanges).observe(app, { childList: true, subtree: true });
+    resetWhenSelectionChanges();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start, { once: true });
