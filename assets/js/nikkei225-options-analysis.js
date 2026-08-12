@@ -63,6 +63,61 @@ function calcBands(rows,current){
   return {topCall,topPut,upper,lower};
 }
 
+function buildAnalysis(rows,current,opt,bands,metrics,iv){
+  const days=num(opt.businessDaysToSq);
+  const upper=bands.upper??bands.topCall??null;
+  const lower=bands.lower??bands.topPut??null;
+  const volumePcr=num(opt.publishedPutCallVolumeRatio);
+  const oiPcr=metrics.overallPcr;
+  const highIv=iv!==null&&iv>=25;
+  const sqNear=days!==null&&days<=3;
+  const points=[];
+
+  if(current!==null&&upper!==null&&lower!==null){
+    const upperGap=Math.max(0,upper-current);
+    const lowerGap=Math.max(0,current-lower);
+    const closer=upperGap<lowerGap?'上側Call':'下側Put';
+    points.push(`現在値${fmt(current)}円は、下側Put集中${fmt(lower)}円と上側Call集中${fmt(upper)}円の間。近いのは${closer}で、上方向${fmt(upperGap)}円・下方向${fmt(lowerGap)}円が最初の需給変化候補。`);
+  }
+
+  if(volumePcr!==null){
+    const reading=volumePcr>=1.2?'Put出来高優位で、下落警戒のヘッジ需要が強い':volumePcr<=0.8?'Call出来高優位で、上方向への取引需要が強い':'Call/Put出来高はおおむね均衡';
+    points.push(`出来高PCRは${fmt(volumePcr,2)}。${reading}状態。ただし、PCRだけで相場方向は断定しない。`);
+  }else if(oiPcr!==null){
+    const reading=oiPcr>=1.2?'Put建玉優位':oiPcr<=0.8?'Call建玉優位':'ほぼ均衡';
+    points.push(`建玉PCRは${fmt(oiPcr,2)}で${reading}。残高の偏りとして確認し、当日の売買方向とは区別する。`);
+  }
+
+  const topCallAdd=rows.filter(r=>num(r.callChange)!==null&&r.callChange>0).sort((a,b)=>b.callChange-a.callChange)[0];
+  const topPutAdd=rows.filter(r=>num(r.putChange)!==null&&r.putChange>0).sort((a,b)=>b.putChange-a.putChange)[0];
+  if(topCallAdd||topPutAdd){
+    const changes=[];
+    if(topCallAdd)changes.push(`Call ${fmt(topCallAdd.strike)}円で${signed(topCallAdd.callChange,0,'枚')}`);
+    if(topPutAdd)changes.push(`Put ${fmt(topPutAdd.strike)}円で${signed(topPutAdd.putChange,0,'枚')}`);
+    points.push(`新規建玉の増加上位は${changes.join('、')}。残高の壁だけでなく、新しくヘッジが積み上がる水準として監視。`);
+  }
+
+  if(sqNear||highIv){
+    points.push(`${sqNear?`SQまで${fmt(days)}営業日`:''}${sqNear&&highIv?'、':''}${highIv?`基準IV ${fmt(iv,2)}%`:''}。建玉集中帯への吸着と、通過時のヘッジ加速・反動の両方に注意。`);
+  }
+
+  const oiDate=opt.strikeOiAsOfDate||opt.openInterestAsOfDate||opt.optionChainAsOfDate||opt.asOfDate;
+  const ivDate=opt.ivAsOfDate||opt.asOfDate;
+  if(oiDate&&ivDate&&dateOnly(oiDate)!==dateOnly(ivDate)){
+    points.push(`データ基準日は建玉 ${dateOnly(oiDate)}、IV ${dateOnly(ivDate)}。鮮度が異なるため、価格帯は参考水準として扱う。`);
+  }
+
+  let headline='オプション需給は方向感より価格帯を重視';
+  let tone='neutral';
+  if(sqNear&&highIv){headline='SQ接近と高IVが重なり、値幅拡大に警戒';tone='warn'}
+  else if(sqNear){headline='SQ接近で建玉集中帯への吸着・反動に注意';tone='warn'}
+  else if(highIv){headline='高IV環境でヘッジフローによる変動拡大に注意';tone='warn'}
+  else if(volumePcr!==null&&volumePcr>=1.2){headline='Put出来高優位で下方ヘッジ需要が強い';tone='put'}
+  else if(volumePcr!==null&&volumePcr<=0.8){headline='Call出来高優位で上方向の取引需要が強い';tone='call'}
+
+  return {headline,tone,points,summary:'Call建玉＝上値抵抗、Put建玉＝下値支持と固定せず、価格接近時のOI増減・IV・SQ残存日数からヘッジ圧力の変化を評価します。'};
+}
+
 function rangeText(primary,secondary){
   if(primary===null&&secondary===null)return'取得待ち';
   if(primary!==null&&secondary!==null&&primary!==secondary){
@@ -131,6 +186,7 @@ function render(root,d,market){
   const lowerText=rangeText(lowerPrimary,lowerSecondary);
   const upperPoint=upperPrimary??upperSecondary;
   const lowerPoint=lowerPrimary??lowerSecondary;
+  const analysis=buildAnalysis(rows,current,opt,bands,metrics,iv);
   const gaugeLeft=current!==null&&lowerPoint!==null&&upperPoint!==null&&upperPoint!==lowerPoint?Math.max(5,Math.min(95,((current-lowerPoint)/(upperPoint-lowerPoint))*100)):50;
   const oiAsOf=opt.strikeOiAsOfDate||opt.openInterestAsOfDate||opt.optionChainAsOfDate||opt.asOfDate||opt.ivAsOfDate;
   const sourceLink=opt.sourceUrl?`<div class="nikkei-options-source">出典：<a href="${esc(opt.sourceUrl)}" target="_blank" rel="noopener">${esc(opt.sourceName||'JPX')}</a> / 基準日 ${esc(dateOnly(oiAsOf))}</div>`:'';
@@ -152,6 +208,12 @@ function render(root,d,market){
         ${dataBadge('次回SQ',dateOnly(opt.nextSqDate)+(num(opt.businessDaysToSq)!==null?` / 残り${fmt(opt.businessDaysToSq)}営業日`:''),'sq')}
         ${dataBadge('上側Call集中',upperText,'call')}
         ${dataBadge('下側Put集中',lowerText,'put')}
+      </div>
+
+      <div class="nikkei-options-current-analysis ${esc(analysis.tone)}">
+        <div class="nikkei-options-current-analysis-head"><span>現在の分析</span><strong>${esc(analysis.headline)}</strong></div>
+        <p>${esc(analysis.summary)}</p>
+        <ul>${analysis.points.map(point=>`<li>${esc(point)}</li>`).join('')}</ul>
       </div>
 
       <div class="nikkei-options-layout">
