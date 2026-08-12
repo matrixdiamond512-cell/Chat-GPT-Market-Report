@@ -36,6 +36,9 @@ function driverRows(section){
     <small>${esc(x.frequency||'')}${x.asOf?`／基準 ${esc(dateText(x.asOf))}`:''}${n(x.score)!==null?`／スコア ${esc(scoreText(x.score))}`:''}</small>
   </div>`).join('');
 }
+function compactDrivers(section){
+  return `<div class="usd-flow-card-data">${(section?.drivers||[]).map(x=>`<div class="usd-flow-card-data-row"><div><strong>${esc(x.name)}</strong><span class="${esc(x.status||'unavailable')}">${esc(statusLabel[x.status]||x.status||'取得不能')}</span></div><p>${esc(x.valueText||'確認できるデータがありません。')}</p></div>`).join('')}</div>`;
+}
 function card(kind,label,section,previous,extra=''){
   const score=n(section?.score),hold=score===null;
   return `<article class="usd-flow-card ${kind==='combined'?'is-combined':''}">
@@ -43,7 +46,7 @@ function card(kind,label,section,previous,extra=''){
     <strong class="usd-flow-judgement ${tone(score)}">${esc(section?.judgement||'判定保留')}</strong>
     <span class="usd-flow-score ${tone(score)}">${hold?'判定保留':scoreText(score)}</span>
     ${extra}
-    ${kind==='combined'?'':`<ul class="usd-flow-evidence">${evidence(section)}</ul>`}
+    ${kind==='combined'?'':kind==='real'?compactDrivers(section):`<ul class="usd-flow-evidence">${evidence(section)}</ul>`}
     ${kind==='real'?`<div class="usd-flow-split"><b>短期実需</b> ${scoreText(section?.shortTermScore)}　<b>構造実需</b> ${scoreText(section?.structuralScore)}<br>採点可能 ${Number(section?.verifiedCount||0)} / 必要 ${Number(section?.minimumRequired||3)}カテゴリー</div>`:''}
     ${kind==='spec'?`<div class="usd-flow-split">採点可能 ${Number(section?.verifiedCount||0)} / 必要 ${Number(section?.minimumRequired||2)}カテゴリー<br>CFTCは円ポジションをUSD/JPY方向へ反転</div>`:''}
     ${kind==='combined'?'':`<div class="usd-flow-meta">${esc(latestMeta(section))}</div>`}
