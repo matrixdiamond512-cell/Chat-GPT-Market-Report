@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from io import BytesIO
 import json
 import re
 import urllib.parse
@@ -66,6 +67,31 @@ def publications() -> list[dict]:
     return [found[key] for key in sorted(found)]
 
 
+def latest_pdf_records(items: list[dict], api_latest_target: str) -> list[dict]:
+    """Read PDF values that can appear before the time-series API catches up."""
+    from pypdf import PdfReader
+
+    rows = []
+    for index, publication in enumerate(items):
+        if index == 0:
+            continue
+        target = items[index - 1]["date"]
+        if target < api_latest_target:
+            continue
+        text = "\n".join(page.extract_text() or "" for page in PdfReader(BytesIO(fetch(publication["url"]))).pages)
+        match = re.search(r"(?:スポット\s*)?Spot\s+([\d,]+)\s+[\d,]+", text, flags=re.I)
+        if not match:
+            raise RuntimeError(f"USD/JPY spot turnover was not found in {publication['pdfName']}")
+        rows.append({
+            "targetDate": target,
+            "publicationDate": publication["date"],
+            "sourcePdfName": publication["pdfName"],
+            "sourcePdfUrl": publication["url"],
+            "spotVolume": float(match.group(1).replace(",", "")),
+        })
+    return rows
+
+
 def next_weekday(value: str) -> str:
     current = date.fromisoformat(value) + timedelta(days=1)
     while current.weekday() >= 5:
@@ -103,6 +129,7 @@ def update_derived(records: list[dict]) -> None:
 def build(existing: dict, now: datetime) -> dict:
     observations, last_update = api_records(now)
     publication_files = publications()
+    pdf_observations = latest_pdf_records(publication_files, max(row["targetDate"] for row in observations))
     existing_rows = {row.get("targetDate"): dict(row) for row in ((existing.get("data") or {}).get("records") or []) if row.get("targetDate")}
     price_rows = {row.get("date"): row for row in ((existing.get("data") or {}).get("priceRecords") or []) if row.get("date")}
     for observation in observations:
@@ -115,6 +142,15 @@ def build(existing: dict, now: datetime) -> dict:
             "sourcePdfUrl": publication["url"],
             "spotVolume": rounded(observation["spotVolume"]),
         })
+        price = price_rows.get(target) or {}
+        for key in ("close", "open", "high", "low", "priceChangePct"):
+            row.setdefault(key, price.get(key))
+        existing_rows[target] = row
+
+    for observation in pdf_observations:
+        target = observation["targetDate"]
+        row = existing_rows.get(target, {"targetDate": target})
+        row.update(observation)
         price = price_rows.get(target) or {}
         for key in ("close", "open", "high", "low", "priceChangePct"):
             row.setdefault(key, price.get(key))
@@ -152,7 +188,13 @@ def build(existing: dict, now: datetime) -> dict:
         if source.get("id") == "BOJ_FX_DAILY":
             source["asOf"] = latest["publicationDate"]
             source["status"] = "ok"
-    existing.setdefault("diagnostics", {})["bojApi"] = {"series": SERIES, "lastUpdate": last_update, "checkedAt": generated}
+    diagnostics = existing.setdefault("diagnostics", {})
+    diagnostics["bojApi"] = {"series": SERIES, "lastUpdate": last_update, "checkedAt": generated}
+    diagnostics["bojLatestPdf"] = {
+        "checkedAt": generated,
+        "records": len(pdf_observations),
+        "latestPublicationDate": pdf_observations[-1]["publicationDate"] if pdf_observations else None,
+    }
     return existing
 
 
