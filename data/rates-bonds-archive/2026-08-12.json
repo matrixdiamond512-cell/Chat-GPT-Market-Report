@@ -3,12 +3,12 @@
   "pageId": "rates-bonds",
   "pageTitle": "金利・債券市場分析",
   "subtitle": "米・日・欧の金利、イールドカーブ、実質金利、入札需給、他市場への波及を一画面で確認",
-  "generatedAt": "2026-08-12T07:24:44+09:00",
+  "generatedAt": "2026-08-12T13:29:24+09:00",
   "meta": {
     "page": "rates-bonds",
     "asOfDate": "2026-08-11",
     "asOfTime": "各市場の公表時点",
-    "updatedAt": "2026-08-12T07:24:44+09:00",
+    "updatedAt": "2026-08-12T13:29:24+09:00",
     "status": "confirmed",
     "sourceStatus": "自動取得",
     "isStale": false,
@@ -33,7 +33,7 @@
       "label": "日本金利",
       "direction": "上昇",
       "status": "confirmed",
-      "reason": "日本10年 2.806% / 前日比 +0.2bp",
+      "reason": "日本10年 2.815% / 前日比 +1.1bp",
       "asOf": "2026-08-10"
     },
     {
@@ -145,53 +145,53 @@
     },
     {
       "name": "日本2年国債利回り",
-      "value": 1.609,
+      "value": 1.618,
       "unit": "%",
-      "changeBp": -0.2,
-      "weekChangeBp": 4.7,
-      "direction": "低下",
+      "changeBp": 0.7,
+      "weekChangeBp": 5.6,
+      "direction": "上昇",
       "asOf": "2026-08-10",
       "status": "confirmed",
-      "source": "TradingView JGB market snapshot (LSEG)",
+      "source": "財務省 国債金利情報",
       "meaning": "日銀の政策正常化・短期金利期待を確認",
       "missingReason": null
     },
     {
       "name": "日本5年国債利回り",
-      "value": 2.084,
+      "value": 2.101,
       "unit": "%",
-      "changeBp": -0.7,
-      "weekChangeBp": -1.6,
-      "direction": "低下",
+      "changeBp": 1.0,
+      "weekChangeBp": 0.1,
+      "direction": "上昇",
       "asOf": "2026-08-10",
       "status": "confirmed",
-      "source": "TradingView JGB market snapshot (LSEG)",
+      "source": "財務省 国債金利情報",
       "meaning": "日本の中期金利とカーブ形状を確認",
       "missingReason": null
     },
     {
       "name": "日本10年国債利回り",
-      "value": 2.806,
+      "value": 2.815,
       "unit": "%",
-      "changeBp": 0.2,
-      "weekChangeBp": -1.8,
+      "changeBp": 1.1,
+      "weekChangeBp": -0.9,
       "direction": "上昇",
       "asOf": "2026-08-10",
       "status": "confirmed",
-      "source": "TradingView JGB market snapshot (LSEG)",
+      "source": "財務省 国債金利情報",
       "meaning": "円・銀行株・日経225・円キャリーへの影響を確認",
       "missingReason": null
     },
     {
       "name": "日本30年国債利回り",
-      "value": 3.958,
+      "value": 3.957,
       "unit": "%",
-      "changeBp": 3.3,
-      "weekChangeBp": -2.4,
+      "changeBp": 3.2,
+      "weekChangeBp": -2.5,
       "direction": "上昇",
       "asOf": "2026-08-10",
       "status": "confirmed",
-      "source": "TradingView JGB market snapshot (LSEG)",
+      "source": "財務省 国債金利情報",
       "meaning": "日本の財政・超長期債需給を確認",
       "missingReason": null
     },
@@ -286,10 +286,10 @@
       },
       {
         "spread": "日本30年－10年",
-        "value": 115.2,
+        "value": 114.2,
         "unit": "bp",
-        "changeBp": 3.1,
-        "weekChangeBp": -0.6,
+        "changeBp": 2.1,
+        "weekChangeBp": -1.6,
         "shape": "順イールド",
         "reading": "スティープ化",
         "status": "calculated"
@@ -320,22 +320,22 @@
     "jpCurve": [
       {
         "tenor": "2年",
-        "value": 1.609,
+        "value": 1.618,
         "status": "confirmed"
       },
       {
         "tenor": "5年",
-        "value": 2.084,
+        "value": 2.101,
         "status": "confirmed"
       },
       {
         "tenor": "10年",
-        "value": 2.806,
+        "value": 2.815,
         "status": "confirmed"
       },
       {
         "tenor": "30年",
-        "value": 3.958,
+        "value": 3.957,
         "status": "confirmed"
       }
     ]
@@ -374,8 +374,8 @@
       },
       {
         "policy": "日本2年債が示す政策期待",
-        "value": "1.609%",
-        "change": "前日比 -0.2bp",
+        "value": "1.618%",
+        "change": "前日比 +0.7bp",
         "status": "confirmed",
         "source": "財務省 国債金利情報",
         "note": "日銀会合の確率値ではなく、日本の短期金利期待の方向確認用。"
@@ -391,9 +391,9 @@
         "円相場",
         "日本株バリュエーション"
       ],
-      "actualStatus": "上昇（+0.06%）／逆行",
+      "actualStatus": "上昇（+0.31%）／逆行",
       "status": "confirmed",
-      "note": "金利基準日 2026-08-10、日経225先物基準時刻 2026-08-12T06:00:00+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+      "note": "金利基準日 2026-08-10、日経225先物基準時刻 2026-08-12T13:05:00+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
     },
     {
       "market": "USD/JPY",
@@ -403,9 +403,9 @@
         "日米金利差",
         "円キャリー/実需"
       ],
-      "actualStatus": "上昇（+0.08%）",
+      "actualStatus": "上昇（+0.19%）",
       "status": "confirmed",
-      "note": "金利基準日 2026-08-10、USD/JPY基準時刻 2026-08-12T07:09:24+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+      "note": "金利基準日 2026-08-10、USD/JPY基準時刻 2026-08-12T13:20:53+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
     },
     {
       "market": "EUR/USD",
@@ -415,9 +415,9 @@
         "ドル需要",
         "ユーロ評価"
       ],
-      "actualStatus": "横ばい（-0.00%）",
+      "actualStatus": "下落（-0.08%）",
       "status": "confirmed",
-      "note": "金利基準日 2026-08-10、EUR/USD基準時刻 2026-08-12T07:09:23+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+      "note": "金利基準日 2026-08-10、EUR/USD基準時刻 2026-08-12T13:20:20+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
     },
     {
       "market": "金",
@@ -427,9 +427,9 @@
         "ドル",
         "安全資産需要"
       ],
-      "actualStatus": "横ばい（+0.00%）／概ね整合",
+      "actualStatus": "上昇（+1.75%）／逆行",
       "status": "confirmed",
-      "note": "金利基準日 2026-08-10、金基準時刻 2026-08-12T05:59:57+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+      "note": "金利基準日 2026-08-10、金基準時刻 2026-08-12T13:10:42+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
     },
     {
       "market": "BTCUSD",
@@ -439,9 +439,9 @@
         "リスク選好",
         "暗号資産フロー"
       ],
-      "actualStatus": "横ばい（+0.00%）／概ね整合",
+      "actualStatus": "下落（-0.23%）／概ね整合",
       "status": "confirmed",
-      "note": "金利基準日 2026-08-10、BTCUSD基準時刻 2026-08-12T07:09:30+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+      "note": "金利基準日 2026-08-10、BTCUSD基準時刻 2026-08-12T13:20:59+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
     }
   ],
   "leadingRate": {
@@ -489,7 +489,7 @@
     },
     {
       "name": "TradingView / LSEG JGB",
-      "status": "confirmed",
+      "status": "standby",
       "note": "財務省の翌営業日公表が遅れている場合のみ、直近市場スナップショットで補完。"
     },
     {
