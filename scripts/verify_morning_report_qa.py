@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Validate the effective 08:00 28-item / 5-column publication table.
 
-Normal publication QA is intentionally date-strict: an old 08:00 report or an
-old morning-reference snapshot must never be marked ready for today's page.
-Historical QA remains available only when --allow-historical is explicitly set.
+Normal publication QA is date-strict. The preferred source is structured
+marketDataTable.rows in data/latest-report.json. Legacy reports.json/fullText
+parsing remains as a fallback for compatibility.
 """
 
 from __future__ import annotations
@@ -82,43 +82,51 @@ def parse_rows(text: str) -> list[dict[str, str]]:
     return rows
 
 
+def structured_rows(report: dict[str, Any] | None) -> list[dict[str, str]]:
+    if not isinstance(report, dict):
+        return []
+    table = report.get("marketDataTable") or {}
+    raw = table.get("rows") if isinstance(table, dict) else None
+    if not isinstance(raw, list):
+        return []
+    rows: list[dict[str, str]] = []
+    for row in raw:
+        if not isinstance(row, dict):
+            continue
+        rows.append({
+            "label": normalize_label(row.get("label") or row.get("item") or row.get("name") or ""),
+            "value": str(row.get("value") or ""),
+            "change": str(row.get("change") or ""),
+            "rate": str(row.get("rate") or row.get("changePercent") or ""),
+            "direction": str(row.get("direction") or ""),
+        })
+    return rows
+
+
 def find_report(reports: Any, date: str, slot: str) -> dict[str, Any] | None:
     if not isinstance(reports, list):
         return None
-    return next(
-        (
-            x for x in reports
-            if isinstance(x, dict) and x.get("date") == date and x.get("time") == slot
-        ),
-        None,
-    )
+    return next((x for x in reports if isinstance(x, dict) and x.get("date") == date and x.get("time") == slot), None)
 
 
-def apply_reference(
-    rows: list[dict[str, str]],
-    reference: dict[str, Any],
-    date: str,
-    slot: str,
-    warnings: list[str],
-) -> list[dict[str, str]]:
+def select_report(reports: Any, latest_report_payload: dict[str, Any], date: str, slot: str) -> tuple[dict[str, Any] | None, str]:
+    latest = latest_report_payload.get("latestReport") or latest_report_payload.get("report") or {}
+    if isinstance(latest, dict) and latest.get("date") == date and latest.get("time") == slot:
+        return latest, "latest-report"
+    report = find_report(reports, date, slot)
+    return report, "reports.json" if report else "none"
+
+
+def apply_reference(rows: list[dict[str, str]], reference: dict[str, Any], date: str, slot: str, warnings: list[str]) -> list[dict[str, str]]:
     if reference.get("reportDate") != date or reference.get("reportSlot") != slot:
         return rows
     items = reference.get("items") or {}
     out: list[dict[str, str]] = []
     for row in rows:
         ref = items.get(row["label"])
-        if (
-            isinstance(ref, dict)
-            and str(ref.get("status") or "").startswith("verified")
-            and ref.get("value") not in (None, "")
-        ):
+        if isinstance(ref, dict) and str(ref.get("status") or "").startswith("verified") and ref.get("value") not in (None, ""):
             replaced = dict(row)
-            for key, source_key in (
-                ("value", "value"),
-                ("change", "change"),
-                ("rate", "rate"),
-                ("direction", "direction"),
-            ):
+            for key, source_key in (("value", "value"), ("change", "change"), ("rate", "rate"), ("direction", "direction")):
                 if ref.get(source_key) is not None:
                     replaced[key] = str(ref.get(source_key))
             if replaced != row:
@@ -129,15 +137,7 @@ def apply_reference(
     return out
 
 
-def validate_current_publication_context(
-    *,
-    target_date: str,
-    slot: str,
-    allow_historical: bool,
-    latest_report_payload: dict[str, Any],
-    reference: dict[str, Any],
-    blocking: list[str],
-) -> None:
+def validate_current_publication_context(*, target_date: str, slot: str, allow_historical: bool, latest_report_payload: dict[str, Any], reference: dict[str, Any], blocking: list[str]) -> None:
     today = dt.datetime.now(JST).date().isoformat()
     if not allow_historical and target_date != today:
         blocking.append(f"report date is stale: expected current JST date {today}, got {target_date}")
@@ -147,30 +147,22 @@ def validate_current_publication_context(
         latest_date = str(latest_report.get("date") or "")
         latest_slot = str(latest_report.get("time") or "")
         if latest_date != target_date or latest_slot != slot:
-            blocking.append(
-                "latest-report mismatch: "
-                f"expected {target_date} {slot}, got {latest_date or 'empty'} {latest_slot or 'empty'}"
-            )
+            blocking.append(f"latest-report mismatch: expected {target_date} {slot}, got {latest_date or 'empty'} {latest_slot or 'empty'}")
 
     if reference.get("reportDate") != target_date:
-        blocking.append(
-            "morning-reference date mismatch: "
-            f"expected {target_date}, got {reference.get('reportDate') or 'empty'}"
-        )
+        blocking.append(f"morning-reference date mismatch: expected {target_date}, got {reference.get('reportDate') or 'empty'}")
     if reference.get("reportSlot") != slot:
-        blocking.append(
-            "morning-reference slot mismatch: "
-            f"expected {slot}, got {reference.get('reportSlot') or 'empty'}"
-        )
+        blocking.append(f"morning-reference slot mismatch: expected {slot}, got {reference.get('reportSlot') or 'empty'}")
 
     generated = parse_datetime(reference.get("generatedAt"))
     if generated is None:
         blocking.append("morning-reference generatedAt is missing or invalid")
     elif generated.date().isoformat() != target_date:
-        blocking.append(
-            "morning-reference generated date mismatch: "
-            f"expected {target_date}, got {generated.date().isoformat()}"
-        )
+        blocking.append(f"morning-reference generated date mismatch: expected {target_date}, got {generated.date().isoformat()}")
+
+
+def reasoned_unavailable(value: str) -> bool:
+    return bool(re.match(r"^(取得不能|未公表)（.+）$", str(value or "").strip()))
 
 
 def main() -> int:
@@ -181,27 +173,28 @@ def main() -> int:
     p.add_argument("--reference", default=str(ROOT / "data/market/morning-reference.json"))
     p.add_argument("--latest-report", default=str(ROOT / "data/latest-report.json"))
     p.add_argument("--output", default=str(ROOT / "data/market/morning_report_qa.json"))
-    p.add_argument(
-        "--allow-historical",
-        action="store_true",
-        help="Allow explicit historical QA. Never use this flag for normal latest publication.",
-    )
+    p.add_argument("--allow-historical", action="store_true")
     a = p.parse_args()
 
     blocking: list[str] = []
     warnings: list[str] = []
     reports = load_json(Path(a.reports), [])
-    report = find_report(reports, a.date, a.slot)
-    raw_rows = [] if not report else parse_rows(
-        str(report.get("fullText") or report.get("rawText") or report.get("body") or "")
-    )
+    latest_report_payload = load_json(Path(a.latest_report), {})
+    report, report_source = select_report(reports, latest_report_payload, a.date, a.slot)
+
     if not report:
         blocking.append(f"report not found: {a.date} {a.slot}")
-    elif not raw_rows:
-        blocking.append("28-item market table could not be parsed from report text")
+        raw_rows: list[dict[str, str]] = []
+    else:
+        raw_rows = structured_rows(report)
+        if raw_rows:
+            warnings.append(f"marketDataTable structured rows used from {report_source}")
+        else:
+            raw_rows = parse_rows(str(report.get("fullText") or report.get("rawText") or report.get("body") or ""))
+            if not raw_rows:
+                blocking.append("28-item market table could not be parsed from report text")
 
     reference = load_json(Path(a.reference), {})
-    latest_report_payload = load_json(Path(a.latest_report), {})
     validate_current_publication_context(
         target_date=a.date,
         slot=a.slot,
@@ -230,8 +223,8 @@ def main() -> int:
                 blocking.append(f"{r['label']}: 5-column empty cell")
             if r["value"] == "取得不能":
                 blocking.append(f"{r['label']}: generic 取得不能 without reason")
-            if not re.search(r"取得不能|未公表", r["value"]) and r["direction"] == "取得不能":
-                blocking.append(f"{r['label']}: value exists but direction is 取得不能")
+            if re.search(r"取得不能|未公表", r["value"]) and not reasoned_unavailable(r["value"]):
+                blocking.append(f"{r['label']}: unavailable value without reason")
         for label in REQUIRED_SIX:
             r = by.get(label)
             if not r:
@@ -247,6 +240,7 @@ def main() -> int:
         "reportSlot": a.slot,
         "ready": ready,
         "historicalMode": bool(a.allow_historical),
+        "reportSource": report_source,
         "latestReportDate": latest_report.get("date"),
         "latestReportTime": latest_report.get("time"),
         "morningReferenceDate": reference.get("reportDate"),
@@ -255,12 +249,9 @@ def main() -> int:
         "actualRowCount": len(rows),
         "expectedColumns": ["項目", "終値・値", "前日比", "騰落率", "方向感"],
         "labels": [r.get("label") for r in rows],
-        "blockingReasons": blocking,
+        "blockingReasons": sorted(set(blocking)),
         "warnings": warnings,
-        "rule": (
-            "Normal publication requires the current JST 08:00 report, matching latest-report, "
-            "same-date morning-reference, and a valid effective 28-item / 5-column table."
-        ),
+        "rule": "Normal publication requires the current JST 08:00 latest-report, same-date morning-reference, and a valid structured 28-item / 5-column table. Legacy reports.json/fullText remains fallback only."
     }
     out = Path(a.output)
     out.parent.mkdir(parents=True, exist_ok=True)
