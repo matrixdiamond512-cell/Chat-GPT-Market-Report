@@ -3,6 +3,10 @@
 
 Historical reports may use older schemas, so their content gaps are warnings.
 The newest report and the latest due schedule slot are validated strictly.
+From 2026-08-13 onward, 21:00 reports must also satisfy the portal/SOP
+readability contract: mandatory sections, a parseable major-market block,
+and no internal QA wording in public text.
+
 This script never invents or repairs market data.
 """
 from __future__ import annotations
@@ -29,6 +33,45 @@ TITLE_RE = re.compile(r"^マーケットレポート｜(\d{4})/(\d{2})/(\d{2})�
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 TIME_RE = re.compile(r"^(07|09|12|16|21):00$")
 
+MANUAL_21_ENFORCE_FROM = "2026-08-13"
+REQUIRED_21_FIELDS = {
+    "changes", "consistency", "news", "crossAssetFlow", "positioning", "events", "handover"
+}
+REQUIRED_21_SECTIONS: dict[str, re.Pattern[str]] = {
+    "主要市場データ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?主要市場データ(?:（.*）)?\s*$"),
+    "今日の相場テーマ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?今日の相場テーマ\s*$"),
+    "16:00からの変化": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:16:00|16時|前回)からの(?:主な)?変化\s*$"),
+    "材料と値動きの整合性": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?材料と値動きの整合性\s*$"),
+    "主導市場": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:今日の)?主導市場\s*$"),
+    "重要ニュース": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?重要ニュース\s*$"),
+    "クロスアセット資金フロー": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?クロスアセット(?:資金フロー)?\s*$"),
+    "需給・ポジション": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?需給・ポジション\s*$"),
+    "重要イベント": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:今後の)?重要イベント\s*$"),
+    "6市場の見通し": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?6市場の(?:個別)?見通し\s*$"),
+    "メインシナリオ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?メインシナリオ\s*$"),
+    "代替シナリオ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?代替シナリオ\s*$"),
+    "シナリオが崩れる条件": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:シナリオが)?崩れる条件\s*$"),
+    "引き継ぎ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:NY時間|次の時間帯|翌東京時間)への引き継ぎ\s*$"),
+}
+REQUIRED_21_MARKET_PATTERNS: dict[str, re.Pattern[str]] = {
+    "金": re.compile(r"(?mi)^\s*\|?\s*(?:金|ゴールド|COMEX金先物)(?:[・（|：:].*)?$"),
+    "原油": re.compile(r"(?mi)^\s*\|?\s*(?:WTI原油|原油)(?:[（|：:].*)?$"),
+    "日経225先物": re.compile(r"(?mi)^\s*\|?\s*日経225先物(?:（大阪取引所）)?\s*[|：:].*$"),
+    "USD/JPY": re.compile(r"(?mi)^\s*\|?\s*(?:USD/JPY|USDJPY|ドル円)\s*[|：:].*$"),
+    "EUR/USD": re.compile(r"(?mi)^\s*\|?\s*(?:EUR/USD|EURUSD|ユーロドル)\s*[|：:].*$"),
+    "BTCUSD": re.compile(r"(?mi)^\s*\|?\s*(?:BTCUSD|BTC/USD|ビットコイン)\s*[|：:].*$"),
+}
+PUBLIC_INTERNAL_PATTERNS = {
+    "verified": re.compile(r"\bverified\b", re.I),
+    "未確認": re.compile(r"未確認"),
+}
+LEAKED_HEADING_RE = re.compile(
+    r"^(?:金利|6市場の(?:個別)?見通し|結論|シナリオが崩れる条件|翌東京時間への引き継ぎ)$"
+)
+EMBEDDED_HEADING_RE = re.compile(
+    r"(?:^|[。\s])(?:シナリオが崩れる条件|翌東京時間への引き継ぎ|NY時間への引き継ぎ|結論)(?:\s|$)"
+)
+
 
 def expected_slots(date_text: str) -> set[str]:
     day = datetime.strptime(date_text, "%Y-%m-%d").weekday()  # Mon=0
@@ -41,6 +84,61 @@ def expected_slots(date_text: str) -> set[str]:
 
 def report_key(report: dict) -> tuple[str, str]:
     return str(report.get("date", "")), str(report.get("time", ""))
+
+
+def is_blank(value: object) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, (list, tuple, dict, set)):
+        return len(value) == 0
+    return not str(value).strip()
+
+
+def public_full_text(report: dict) -> str:
+    for key in ("fullText", "rawText", "body"):
+        value = report.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.replace("\r", "").strip()
+    return ""
+
+
+def validate_21_manual_contract(report: dict, prefix: str, target: list[str]) -> None:
+    """Strict public/readability checks for 21:00 reports after the enforcement date."""
+    missing_fields = sorted(field for field in REQUIRED_21_FIELDS if is_blank(report.get(field)))
+    if missing_fields:
+        target.append(f"{prefix}: 21:00 SOP必須項目不足/空欄: {', '.join(missing_fields)}")
+
+    source = public_full_text(report)
+    if not source:
+        target.append(f"{prefix}: 21:00 SOPでは公開本文 fullText/rawText/body が必須です")
+        return
+
+    for label, pattern in PUBLIC_INTERNAL_PATTERNS.items():
+        if pattern.search(source):
+            target.append(f"{prefix}: 公開本文に内部確認用語 {label!r} が残っています")
+
+    missing_sections = [name for name, pattern in REQUIRED_21_SECTIONS.items() if not pattern.search(source)]
+    if missing_sections:
+        target.append(f"{prefix}: 21:00 SOP必須セクション不足: {', '.join(missing_sections)}")
+
+    # The market-data block may be prose lines or a Markdown table, but all six core
+    # markets must be individually identifiable so the portal can always render a table.
+    missing_rows = [name for name, pattern in REQUIRED_21_MARKET_PATTERNS.items() if not pattern.search(source)]
+    if missing_rows:
+        target.append(f"{prefix}: 主要市場データで表変換可能な市場行が不足: {', '.join(missing_rows)}")
+
+    for field in ("changes", "consistency", "news", "crossAssetFlow", "positioning", "events", "handover", "riskManagement"):
+        value = report.get(field)
+        items = value if isinstance(value, list) else [value]
+        for item in items:
+            text = str(item or "").strip()
+            if LEAKED_HEADING_RE.fullmatch(text):
+                target.append(f"{prefix}.{field}: 見出しが本文項目へ混入しています: {text}")
+
+    for field in ("mainScenario", "alternativeScenario", "breakConditions"):
+        text = str(report.get(field, ""))
+        if EMBEDDED_HEADING_RE.search(text):
+            target.append(f"{prefix}.{field}: 複数セクションが1フィールドへ連結されています")
 
 
 def validate_report_content(report: dict, prefix: str, strict: bool, errors: list[str], warnings: list[str]) -> None:
@@ -73,6 +171,15 @@ def validate_report_content(report: dict, prefix: str, strict: bool, errors: lis
         ]
         if empty_fields:
             target.append(f"{mp}: 空欄項目: {', '.join(sorted(empty_fields))}")
+
+    date_text = str(report.get("date", ""))
+    time_text = str(report.get("time", ""))
+    if time_text == "21:00" and date_text >= MANUAL_21_ENFORCE_FROM:
+        validate_21_manual_contract(report, prefix, target)
+    elif time_text == "21:00":
+        source = public_full_text(report)
+        if source and PUBLIC_INTERNAL_PATTERNS["verified"].search(source):
+            warnings.append(f"{prefix}: 過去21:00本文に内部確認用語 'verified' があります（表示層で除去）")
 
 
 def validate(path: Path, require_current_slot: bool = False, grace_minutes: int = 45) -> tuple[list[str], list[str]]:
