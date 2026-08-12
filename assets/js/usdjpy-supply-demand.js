@@ -92,6 +92,9 @@ function render(data,failed){
   const confidence=scoreParts>=4?'高め':scoreParts>=3?'中程度':scoreParts>=2?'やや低め':'低い';
   $('kpi-judgement').textContent=judgement;
   $('kpi-confidence').textContent=`信頼度：${confidence}`;
+  const verdictCard=$('kpi-judgement').closest('.usd-verdict-main');
+  verdictCard?.classList.remove('is-buy','is-sell','is-neutral');
+  verdictCard?.classList.add(judgement.includes('ドル買い')?'is-buy':judgement.includes('円買い')?'is-sell':'is-neutral');
   if(judgement.includes('ドル買い'))$('kpi-judgement').classList.add('up');
   if(judgement.includes('円買い'))$('kpi-judgement').classList.add('down');
 
