@@ -119,11 +119,13 @@ def build_real(volume_payload: dict[str, Any], now: datetime) -> dict[str, Any]:
                value_text=("月末該当（方向確認なし・加点なし）" if is_month_end else "月末非該当"), frequency="calendar"),
     ]
     verified = [item for item in drivers if item["status"] == "verified" and item["score"] is not None]
+    substantive = [item for item in verified if item["frequency"] != "calendar"]
     short = sum(item["score"] for item in verified if item["category"] == "short_term_real_demand")
     structural = sum(item["score"] for item in verified if item["category"] == "structural_real_demand")
-    score = clip(short + structural) if len(verified) >= 3 else None
+    score = clip(short + structural) if len(substantive) >= 3 else None
     return {"score": score, "judgement": judgement(score), "shortTermScore": clip(short),
-            "structuralScore": clip(structural), "verifiedCount": len(verified), "drivers": drivers}
+            "structuralScore": clip(structural), "verifiedCount": len(substantive),
+            "confirmedCount": len(verified), "minimumRequired": 3, "drivers": drivers}
 
 
 def build_speculative(config: dict[str, Any], now: datetime) -> dict[str, Any]:
@@ -177,7 +179,8 @@ def build_speculative(config: dict[str, Any], now: datetime) -> dict[str, Any]:
     ]
     verified = [item for item in drivers if item["status"] == "verified" and item["score"] is not None]
     score = clip(sum(item["score"] for item in verified)) if len(verified) >= 2 else None
-    return {"score": score, "judgement": judgement(score), "verifiedCount": len(verified), "drivers": drivers}
+    return {"score": score, "judgement": judgement(score), "verifiedCount": len(verified),
+            "confirmedCount": len(verified), "minimumRequired": 2, "drivers": drivers}
 
 
 def relationship(real: float | None, spec: float | None) -> tuple[str, str]:

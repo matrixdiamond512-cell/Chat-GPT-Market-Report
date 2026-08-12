@@ -3,7 +3,7 @@
 const root=document.querySelector('[data-usdjpy-flow-overview]');
 if(!root)return;
 const URL='data/usdjpy-flow-summary.json';
-const n=v=>{const x=Number(v);return Number.isFinite(x)?x:null};
+const n=v=>{if(v===null||v===undefined||v==='')return null;const x=Number(v);return Number.isFinite(x)?x:null};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const scoreText=v=>n(v)===null?'—':`${Number(v)>0?'+':''}${Number(v).toLocaleString('ja-JP',{maximumFractionDigits:2})}`;
 const dateText=v=>v?String(v).slice(0,10).replaceAll('-','/'):'—';
@@ -29,6 +29,13 @@ function evidence(section){
   if(!rows.length)return '<li class="is-muted">採点可能な確認済み根拠がありません。</li>';
   return rows.map(x=>`<li><span class="usd-flow-arrow ${tone(x.score)}">${arrow(x.score)}</span>${esc(x.name)}：${esc(x.valueText||scoreText(x.score))}<span class="usd-flow-status">${esc(statusLabel[x.status]||x.status)}・${esc(x.frequency||'')}</span></li>`).join('');
 }
+function driverRows(section){
+  return (section?.drivers||[]).map(x=>`<div class="usd-flow-driver ${esc(x.status||'unavailable')}">
+    <div><strong>${esc(x.name)}</strong><span>${esc(statusLabel[x.status]||x.status||'取得不能')}</span></div>
+    <p>${esc(x.valueText||'確認できるデータがありません。')}</p>
+    <small>${esc(x.frequency||'')}${x.asOf?`／基準 ${esc(dateText(x.asOf))}`:''}${n(x.score)!==null?`／スコア ${esc(scoreText(x.score))}`:''}</small>
+  </div>`).join('');
+}
 function card(kind,label,section,previous,extra=''){
   const score=n(section?.score),hold=score===null;
   return `<article class="usd-flow-card ${kind==='combined'?'is-combined':''}">
@@ -37,8 +44,8 @@ function card(kind,label,section,previous,extra=''){
     <span class="usd-flow-score ${tone(score)}">${hold?'判定保留':scoreText(score)}</span>
     ${extra}
     ${kind==='combined'?'':`<ul class="usd-flow-evidence">${evidence(section)}</ul>`}
-    ${kind==='real'?`<div class="usd-flow-split">短期実需 ${scoreText(section?.shortTermScore)}／構造実需 ${scoreText(section?.structuralScore)}／確認済み ${Number(section?.verifiedCount||0)}カテゴリー</div>`:''}
-    ${kind==='spec'?`<div class="usd-flow-split">確認済み ${Number(section?.verifiedCount||0)}カテゴリー（CFTCはUSD/JPY方向へ符号変換）</div>`:''}
+    ${kind==='real'?`<div class="usd-flow-split"><b>短期実需</b> ${scoreText(section?.shortTermScore)}　<b>構造実需</b> ${scoreText(section?.structuralScore)}<br>採点可能 ${Number(section?.verifiedCount||0)} / 必要 ${Number(section?.minimumRequired||3)}カテゴリー</div>`:''}
+    ${kind==='spec'?`<div class="usd-flow-split">採点可能 ${Number(section?.verifiedCount||0)} / 必要 ${Number(section?.minimumRequired||2)}カテゴリー<br>CFTCは円ポジションをUSD/JPY方向へ反転</div>`:''}
     ${kind==='combined'?'':`<div class="usd-flow-meta">${esc(latestMeta(section))}</div>`}
     <div class="usd-flow-previous">${esc(compare(score,previous))}</div>
   </article>`;
@@ -56,7 +63,8 @@ function render(data){
       ${card('spec','投機フロー',spec,prev.speculative)}
       ${card('combined','フロー総合判定',combined,prev.combined,combinedExtra)}
     </div>
-    <div class="usd-flow-relationship"><h3>実需と投機の関係</h3><p>${esc(combined.comment||'判定保留')}</p><p class="usd-flow-session">${esc(combined.sessionComment||'')}</p></div>`;
+    <div class="usd-flow-relationship"><h3>実需と投機の関係</h3><p>${esc(combined.comment||'判定保留')}</p><p class="usd-flow-session">${esc(combined.sessionComment||'')}</p></div>
+    <div class="usd-flow-details"><h3>データ確認状況</h3><p class="usd-flow-details-note">確認できたデータ、期限切れ、取得不能をすべて表示します。取得不能は0点として扱いません。</p><div class="usd-flow-detail-columns"><section><h4>実需データ</h4>${driverRows(real)}</section><section><h4>投機データ</h4>${driverRows(spec)}</section></div></div>`;
   root.removeAttribute('aria-busy');
 }
 fetch(`${URL}?v=${Date.now()}`,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json()}).then(render).catch(err=>{

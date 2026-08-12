@@ -1,14 +1,16 @@
 {
   "schemaVersion": "1.0.0",
   "pageId": "usdjpy-flow-summary",
-  "generatedAt": "2026-08-12T22:39:51+09:00",
+  "generatedAt": "2026-08-12T22:47:50+09:00",
   "status": "ok",
   "realDemand": {
-    "score": 0.0,
-    "judgement": "中立",
+    "score": null,
+    "judgement": "判定保留",
     "shortTermScore": 0.0,
     "structuralScore": 0.0,
-    "verifiedCount": 3,
+    "verifiedCount": 1,
+    "confirmedCount": 3,
+    "minimumRequired": 3,
     "drivers": [
       {
         "id": "tokyo_fix",
@@ -46,7 +48,7 @@
         "score": 0.0,
         "status": "verified",
         "asOf": "2026-08-12",
-        "updatedAt": "2026-08-12T22:39:51+09:00",
+        "updatedAt": "2026-08-12T22:47:50+09:00",
         "valueText": "非該当",
         "sourceName": "",
         "sourceUrl": "",
@@ -116,7 +118,7 @@
         "score": 0.0,
         "status": "verified",
         "asOf": "2026-08-12",
-        "updatedAt": "2026-08-12T22:39:51+09:00",
+        "updatedAt": "2026-08-12T22:47:50+09:00",
         "valueText": "月末非該当",
         "sourceName": "",
         "sourceUrl": "",
@@ -128,6 +130,8 @@
     "score": 0.0,
     "judgement": "中立",
     "verifiedCount": 3,
+    "confirmedCount": 3,
+    "minimumRequired": 2,
     "drivers": [
       {
         "id": "cftc",
@@ -202,17 +206,12 @@
     ]
   },
   "combined": {
-    "score": 0.0,
-    "judgement": "中立",
-    "leadingFlow": "拮抗",
-    "relationship": "中立",
+    "score": null,
+    "judgement": "判定保留",
+    "leadingFlow": "保留",
+    "relationship": "判定保留",
     "sessionComment": "NY時間は米金利・米指標・オプション・NYカット・ストップを優先監視。",
-    "comment": "実需・投機とも中立圏で、確認済みフローに明確な方向差はありません。"
+    "comment": "実需または投機の確認済みカテゴリーが不足しているため、総合判定を保留します。"
   },
-  "previous": {
-    "realDemand": 0.0,
-    "speculative": 0.0,
-    "combined": 0.0,
-    "generatedAt": "2026-08-12T22:39:01+09:00"
-  }
+  "previous": null
 }
