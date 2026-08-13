@@ -1,0 +1,73 @@
+name: Capture Japan close reference
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: "Japan trading date YYYY-MM-DD; blank=today JST"
+        required: false
+        type: string
+  schedule:
+    - cron: "10 7 * * 1-5"   # 16:10 JST
+    - cron: "40 7 * * 1-5"   # 16:40 JST
+    - cron: "10 8 * * 1-5"   # 17:10 JST
+    - cron: "10 9 * * 1-5"   # 18:10 JST
+    - cron: "10 11 * * 1-5"  # 20:10 JST
+    - cron: "10 14 * * 1-5"  # 23:10 JST
+
+permissions:
+  contents: write
+
+concurrency:
+  group: capture-japan-close-reference
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Resolve target date
+        id: target
+        shell: bash
+        run: |
+          TARGET="${{ inputs.target_date }}"
+          if [ -z "$TARGET" ]; then TARGET="$(TZ=Asia/Tokyo date +%F)"; fi
+          echo "date=$TARGET" >> "$GITHUB_OUTPUT"
+
+      - name: Capture exact-date Japanese close data
+        run: python scripts/capture_japan_close_reference.py --date "${{ steps.target.outputs.date }}"
+
+      - name: Validate reference shape
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('data/market/japan-close-reference.json').read_text(encoding='utf-8'))
+          assert p.get('dataDate'), 'dataDate missing'
+          assert isinstance(p.get('items'),dict), 'items missing'
+          assert isinstance(p.get('unavailable'),dict), 'unavailable missing'
+          print({'dataDate':p['dataDate'],'itemCount':len(p['items']),'complete':p.get('complete')})
+          PY
+
+      - name: Commit capture result
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market/japan-close-reference.json
+          if git diff --cached --quiet; then
+            echo "Reference unchanged"
+            exit 0
+          fi
+          git commit -m "Capture Japan close reference ${{ steps.target.outputs.date }}"
+          git pull --rebase origin main
+          git push origin main
