@@ -7,6 +7,11 @@ clock time at which the close is retrieved is irrelevant. This script therefore 
 repair a morning report later in the day with the correct prior-session close, while
 still prohibiting stale-date carry-forward or substitution of a later intraday quote.
 
+BTCUSD is intentionally left to its dedicated 24/7-market source because its daily
+bar boundary is not the same as the exchange-session boundary used by the other
+markets. This repair must never erase an already published BTC value merely because
+Yahoo's UTC daily candle is not final at 08:00 JST.
+
 The helper also rewrites the textual 主要市場データ block from the structured 28-row
 table so repo fullText and the web table cannot disagree.
 """
@@ -31,7 +36,7 @@ UA = "Mozilla/5.0 (compatible; ChatGPT-Market-Report/1.0)"
 # label -> Yahoo symbol, source name, display decimals
 # OSE futures and Japanese valuation/breadth rows are handled by the canonical
 # close-sheet / Japan-close capture because a different market must never be
-# substituted under the OSE label.
+# substituted under the OSE label. BTCUSD is handled by its dedicated 24/7 source.
 SYMBOLS: dict[str, tuple[str, str, int]] = {
     "NYダウ": ("^DJI", "Yahoo Finance Dow Jones Industrial Average", 2),
     "NASDAQ総合": ("^IXIC", "Yahoo Finance Nasdaq Composite", 2),
@@ -44,7 +49,6 @@ SYMBOLS: dict[str, tuple[str, str, int]] = {
     "EUR/USD": ("EURUSD=X", "Yahoo Finance EUR/USD", 5),
     "COMEX金先物": ("GC=F", "Yahoo Finance COMEX Gold Futures", 2),
     "WTI原油": ("CL=F", "Yahoo Finance NYMEX WTI Futures", 2),
-    "BTCUSD": ("BTC-USD", "Yahoo Finance Bitcoin USD", 0),
     "VIX": ("^VIX", "Yahoo Finance CBOE Volatility Index", 2),
 }
 
@@ -110,10 +114,6 @@ def completed_bars(result: dict[str, Any], report_date: dt.date) -> list[tuple[d
 
 
 def expected_prior_session(report_date: dt.date, label: str) -> dt.date:
-    # BTC trades every calendar day; the rest of the rows below use weekday
-    # trading sessions, so Monday's preceding session is normally Friday.
-    if label == "BTCUSD":
-        return report_date - dt.timedelta(days=1)
     return report_date - dt.timedelta(days=3 if report_date.weekday() == 0 else 1)
 
 
@@ -233,13 +233,13 @@ def main() -> int:
     report.setdefault("dataProvenance", {})["dailyCloseRepair"] = {
         "generatedAt": now_jst().isoformat(),
         "semantics": "previous_close",
-        "rule": "08:00 uses date-matched prior-session closes; retrieval after 08:00 is allowed, stale-date carry-forward is prohibited",
+        "rule": "08:00 uses date-matched prior-session closes; retrieval after 08:00 is allowed, stale-date carry-forward is prohibited; BTCUSD keeps its dedicated 24/7-market convention",
         "repairedLabels": repaired,
         "unavailable": unavailable,
     }
     save(LATEST, payload)
     save(OUT, {
-        "schemaVersion": "2.0.0",
+        "schemaVersion": "2.1.0",
         "generatedAt": now_jst().isoformat(),
         "reportDate": report_date.isoformat(),
         "reportSlot": "08:00",
