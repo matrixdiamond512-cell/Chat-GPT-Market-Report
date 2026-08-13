@@ -2,16 +2,16 @@
   "schemaVersion": "2.1.0",
   "pageId": "nikkei225-supply-demand",
   "pageTitle": "日経225需給分析",
-  "generatedAt": "2026-08-13T13:33:35+09:00",
+  "generatedAt": "2026-08-13T17:43:24+09:00",
   "spot": {
     "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
     "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
-    "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20260812tp.csv",
+    "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20260813tp.csv",
     "comment": "NK225E理論価格ファイルの原資産終値。先物とは同一取引日でも時刻が異なるため、表示差は理論ベーシスではなく単純な現物終値対比。",
-    "value": 67524.06,
-    "asOfDate": "2026-08-12",
+    "value": 68308.59,
+    "asOfDate": "2026-08-13",
     "status": "verified",
-    "fetchedAt": "2026-08-13T13:33:35+09:00"
+    "fetchedAt": "2026-08-13T17:43:24+09:00"
   },
   "futures": {
     "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -30,7 +30,7 @@
     "volumeChangePercent": -67.4926191480388,
     "miniVolumeChangePercent": 0.0,
     "status": "verified",
-    "fetchedAt": "2026-08-13T13:32:22+09:00",
+    "fetchedAt": "2026-08-13T17:42:04+09:00",
     "previousOpenInterest": 191308,
     "miniPreviousOpenInterest": 337968,
     "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260812open_interest.xlsx"
@@ -50,23 +50,23 @@
     "asOfDate": "2026-08-13",
     "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260813_derivatives_market_data_night.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-08-13T13:33:28+09:00"
+    "fetchedAt": "2026-08-13T17:43:15+09:00"
   },
   "arbitrage": {
     "sourceName": "JPX 裁定取引の状況",
     "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/",
     "comment": "裁定買い・売りポジションはJPXの全取引参加者報告合計。前々営業日データとして鮮度を分離表示。",
-    "asOfDate": "2026-08-07",
-    "sellBalance": 39180,
-    "buyBalance": 626985,
-    "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt000001u1oh-att/260807.pdf",
-    "sellChange": -142,
-    "buyChange": 1076,
+    "asOfDate": "2026-08-10",
+    "sellBalance": 37888,
+    "buyBalance": 623881,
+    "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt000001u49d-att/260810.pdf",
+    "sellChange": -1292,
+    "buyChange": -3104,
     "status": "verified",
     "frequency": "daily",
-    "lastAttemptAt": "2026-08-13T13:32:21+09:00",
-    "lastSuccessAt": "2026-08-13T13:32:21+09:00",
-    "fetchedAt": "2026-08-13T13:32:21+09:00",
+    "lastAttemptAt": "2026-08-13T17:42:02+09:00",
+    "lastSuccessAt": "2026-08-13T17:42:02+09:00",
+    "fetchedAt": "2026-08-13T17:42:02+09:00",
     "error": null
   },
   "options": {
@@ -76,87 +76,87 @@
     "nextSqDate": "2026-08-14",
     "businessDaysToSq": 1,
     "putCallRatio": null,
-    "iv": 29.59,
+    "iv": 29.56,
     "ivChange": null,
     "asOfDate": "2026-08-13",
     "status": "calculated",
-    "fetchedAt": "2026-08-13T13:33:35+09:00",
+    "fetchedAt": "2026-08-13T17:43:24+09:00",
     "putVolume": null,
     "callVolume": null,
     "putCallStatus": "unavailable",
     "putCallReason": "現在のJPX当日取引総括CSVには日経225指数オプション（NK225E）の行がないため取得不能",
     "ivStatus": "verified",
     "ivDefinition": "JPX基準ボラティリティ（NK225E・期近限月）",
-    "baseVolatility": 29.59,
-    "referenceStrikePrice": 67500.0,
-    "referencePutSettlementVolatility": 31.28,
-    "referenceCallSettlementVolatility": 34.922599999999996,
+    "baseVolatility": 29.56,
+    "referenceStrikePrice": 68250.0,
+    "referencePutSettlementVolatility": 29.770799999999998,
+    "referenceCallSettlementVolatility": 29.7514,
     "ivContractMonth": "202608",
-    "ivUnderlyingClose": 67524.06,
-    "ivSourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20260812tp.csv",
-    "ivAsOfDate": "2026-08-12"
+    "ivUnderlyingClose": 68308.59,
+    "ivSourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20260813tp.csv",
+    "ivAsOfDate": "2026-08-13"
   },
   "participantFlow": {
     "sourceName": "JPX 取引参加者別取引高（手口上位一覧）",
     "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/participant-volume/",
     "comment": "日次ファイルは売買方向別ではなく取引高上位です。取引高上位を売り・買いと読み替えません。",
-    "asOfDate": "2026-08-12",
+    "asOfDate": "2026-08-13",
     "contract": "NIKKEI 225 FUT 2609",
     "leaders": [
       {
         "name": "ＡＢＮクリアリン証券",
-        "volume": 6950,
+        "volume": 9661,
         "rank": 1
       },
       {
         "name": "ソシエテＧ証券",
-        "volume": 5569,
+        "volume": 8423,
         "rank": 2
       },
       {
         "name": "バークレイズ証券",
-        "volume": 3951,
+        "volume": 4137,
         "rank": 3
       },
       {
-        "name": "サスケハナ・ホンコン",
-        "volume": 1658,
+        "name": "野村証券",
+        "volume": 2259,
         "rank": 4
       },
       {
-        "name": "モルガンＭＵＦＧ証券",
-        "volume": 1466,
+        "name": "みずほ証券",
+        "volume": 2212,
         "rank": 5
       },
       {
-        "name": "ＪＰモルガン証券",
-        "volume": 1055,
+        "name": "三菱ＵＦＪ証券",
+        "volume": 1845,
         "rank": 6
       },
       {
-        "name": "ＳＢＩ証券",
-        "volume": 914,
+        "name": "サスケハナ・ホンコン",
+        "volume": 1518,
         "rank": 7
       },
       {
-        "name": "野村証券",
-        "volume": 849,
+        "name": "ゴールドマン証券",
+        "volume": 1494,
         "rank": 8
       },
       {
-        "name": "楽天証券",
-        "volume": 677,
+        "name": "ＪＰモルガン証券",
+        "volume": 940,
         "rank": 9
       },
       {
-        "name": "松井証券",
-        "volume": 588,
+        "name": "日産証券",
+        "volume": 846,
         "rank": 10
       }
     ],
-    "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202608/20260812_volume_by_participant_whole_day.xlsx",
+    "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202608/20260813_volume_by_participant_whole_day.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-08-13T13:33:29+09:00"
+    "fetchedAt": "2026-08-13T17:43:17+09:00"
   },
   "foreignInvestors": {
     "sourceName": "JPX 投資部門別売買状況",
@@ -769,7 +769,7 @@
       ]
     },
     "status": "verified",
-    "fetchedAt": "2026-08-13T13:33:27+09:00"
+    "fetchedAt": "2026-08-13T17:43:14+09:00"
   },
   "participantOpenInterest": {
     "sourceName": "JPX 取引参加者別建玉残高",
@@ -883,18 +883,18 @@
     ],
     "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20260807_indexfut_oi_by_tp.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-08-13T13:33:30+09:00"
+    "fetchedAt": "2026-08-13T17:43:18+09:00"
   },
   "shortSelling": {
     "sourceName": "JPX 空売り集計",
     "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/",
     "comment": "空売り比率は価格規制あり・なしの合計。5日・20日平均と比較し、単独で弱気判定しません。",
-    "asOfDate": "2026-08-12",
-    "ratio": 40.3,
-    "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000001u2ui-att/260812-m.pdf",
+    "asOfDate": "2026-08-13",
+    "ratio": 41.8,
+    "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000001u589-att/260813-m.pdf",
     "avg5": 40.04,
     "avg20": null,
-    "sampleCount": 7,
+    "sampleCount": 8,
     "series": [
       {
         "asOfDate": "2026-08-03",
@@ -930,10 +930,15 @@
         "asOfDate": "2026-08-12",
         "ratio": 40.3,
         "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000001u2ui-att/260812-m.pdf"
+      },
+      {
+        "asOfDate": "2026-08-13",
+        "ratio": 41.8,
+        "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000001u589-att/260813-m.pdf"
       }
     ],
     "status": "verified",
-    "fetchedAt": "2026-08-13T13:32:21+09:00"
+    "fetchedAt": "2026-08-13T17:42:03+09:00"
   },
   "margin": {
     "sourceName": "JPX 信用取引現在高",
@@ -994,15 +999,15 @@
       }
     ],
     "status": "verified",
-    "fetchedAt": "2026-08-13T13:32:23+09:00"
+    "fetchedAt": "2026-08-13T17:42:05+09:00"
   },
   "assessment": {
-    "overall": "やや買い優勢",
+    "overall": "中立",
     "shortTerm": "強気（新規買い）",
-    "arbitrage": "強い",
+    "arbitrage": "やや弱い",
     "options": "SQ日程のみ確認済み",
     "foreign": "現物売り・先物買い",
-    "reason": "短期先物=強気（新規買い）、裁定=強い、オプション=中立（SQ日程のみ）、海外投資家=現物売り・先物買い。各データの鮮度を分離して判定。",
+    "reason": "短期先物=強気（新規買い）、裁定=やや弱い、オプション=中立（SQ日程のみ）、海外投資家=現物売り・先物買い。各データの鮮度を分離して判定。",
     "comment": "価格×建玉を中心に、裁定・オプション・海外投資家を補助線として重ねます。"
   },
   "watchpoints": [
@@ -1289,7 +1294,7 @@
     "market": null,
     "status": "partial",
     "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202608.xlsx",
-    "fetchedAt": "2026-08-13T13:33:33+09:00",
+    "fetchedAt": "2026-08-13T17:43:21+09:00",
     "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
   },
   "nikkeiFuturesDailyHistory": [
@@ -1301,7 +1306,7 @@
       "sourceName": "JPX / 大阪取引所 日経225先物",
       "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
       "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260812open_interest.xlsx",
-      "capturedAt": "2026-08-13T13:33:32+09:00",
+      "capturedAt": "2026-08-13T17:43:20+09:00",
       "status": "verified"
     }
   ],
@@ -1318,7 +1323,7 @@
     "status": "verified",
     "releaseFrequency": "weekly",
     "lookbackWeeks": 52,
-    "fetchedAt": "2026-08-13T13:33:36+09:00",
+    "fetchedAt": "2026-08-13T17:43:25+09:00",
     "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
     "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
     "priceStatus": "available",
