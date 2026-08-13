@@ -1,10 +1,10 @@
-name: 08:00 market data independent attempts
+name: 08:00 supporting market-data attempts
 
 on:
   workflow_dispatch:
     inputs:
       scheduled_time:
-        description: "08:00 report acquisition label"
+        description: "08:00 supporting acquisition label"
         required: false
         default: "07:50"
         type: choice
@@ -19,8 +19,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "scripts/fetch_morning_reference.py"
-      - "scripts/mark_late_morning_references.py"
+      - "scripts/run_market_data_acquisition.py"
+      - "scripts/run_market_data_window.py"
       - ".github/workflows/market-data-08-anchor.yml"
   schedule:
     - cron: "28 21 * * 0-5" # 06:28 JST -> 06:30 acquisition
@@ -35,7 +35,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: market-data-08-primary-${{ github.event.schedule || inputs.scheduled_time || github.run_id }}
+  group: market-data-08-support-${{ github.event.schedule || inputs.scheduled_time || github.run_id }}
   cancel-in-progress: false
 
 jobs:
@@ -62,8 +62,6 @@ jobs:
           python -m py_compile scripts/run_market_data_acquisition.py
           python -m py_compile scripts/run_market_data_window.py
           python -m py_compile scripts/verify_market_report_readiness.py
-          python -m py_compile scripts/fetch_morning_reference.py
-          python -m py_compile scripts/mark_late_morning_references.py
 
       - name: Resolve intended Japan-time attempt
         id: intended
@@ -82,7 +80,7 @@ jobs:
           if [ -z "$TIME" ]; then TIME="07:50"; fi
           echo "time=$TIME" >> "$GITHUB_OUTPUT"
 
-      - name: Run one scheduled 08:00 acquisition attempt
+      - name: Run one supporting acquisition attempt
         env:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
@@ -95,21 +93,8 @@ jobs:
             --max-catchup-minutes 180 \
             --mode auto
 
-      - name: Capture durable CME/OSE morning reference
-        if: ${{ steps.intended.outputs.time == '07:40' || steps.intended.outputs.time == '07:45' || steps.intended.outputs.time == '07:50' }}
-        shell: bash
+      - name: Explain 08:00 data semantics
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull --rebase
-          REPORT_DATE="$(TZ=Asia/Tokyo date +%F)"
-          python scripts/fetch_morning_reference.py --report-date "$REPORT_DATE" --slot "08:00"
-          python scripts/mark_late_morning_references.py
-          git add data/market/morning-reference.json data/latest-report.json
-          if git diff --cached --quiet; then
-            echo "Morning reference unchanged"
-            exit 0
-          fi
-          git commit -m "Capture 08:00 CME/OSE reference ${{ steps.intended.outputs.time }}"
-          git pull --rebase origin main
-          git push origin main
+          echo "These supporting acquisitions must not become the 08:00 major-market table."
+          echo "The 08:00 report uses date-matched prior-session closes from 終値一覧 and previous-close repair sources."
+          echo "Retrieval time and market-data date are separate concepts."
