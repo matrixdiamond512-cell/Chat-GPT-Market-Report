@@ -1,8 +1,9 @@
 {
-  "schemaVersion": "1.0.0",
-  "generatedAt": "2026-08-13T10:13:19+09:00",
+  "schemaVersion": "1.1.0",
+  "generatedAt": "2026-08-13T10:14:46+09:00",
   "reportDate": "2026-08-13",
   "reportSlot": "08:00",
+  "expectedDataDate": "2026-08-12",
   "items": {
     "NYダウ": {
       "symbol": "^DJI",
@@ -52,18 +53,6 @@
       "sourceUrl": "https://finance.yahoo.com/quote/%5ERUT/history/",
       "status": "verified_date_matched_daily_close"
     },
-    "日経225現物": {
-      "symbol": "^N225",
-      "value": "66,970.22",
-      "change": "+1,363.51",
-      "rate": "+2.08%",
-      "direction": "上昇",
-      "dataDate": "2026-08-10",
-      "previousDate": "2026-08-07",
-      "sourceName": "Yahoo Finance Nikkei 225",
-      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
-      "status": "verified_date_matched_daily_close"
-    },
     "VIX": {
       "symbol": "^VIX",
       "value": "14.55",
@@ -77,5 +66,9 @@
       "status": "verified_date_matched_daily_close"
     }
   },
-  "failures": {}
+  "unavailable": {
+    "日経225現物": "2026-08-12基準の確定終値を取得できず。取得可能な最新日付は2026-08-10のため不採用",
+    "日経225 25日移動平均乖離率": "2026-08-12の日経225現物終値を確認できないため算定値を不採用",
+    "日経225 200日移動平均乖離率": "2026-08-12の日経225現物終値を確認できないため算定値を不採用"
+  }
 }
