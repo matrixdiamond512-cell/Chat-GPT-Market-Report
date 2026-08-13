@@ -7,6 +7,7 @@ on:
       - "data/latest-report.json"
       - "scripts/enrich_latest_morning_from_sheet.py"
       - "scripts/repair_morning_daily_references.py"
+      - "scripts/apply_japan_close_reference.py"
       - "scripts/build_chatgpt_report_input.py"
       - "scripts/build_market_sheet_exports.py"
       - "scripts/sync_latest_report_publication.py"
@@ -47,6 +48,9 @@ jobs:
 
       - name: Repair date-matched daily closes
         run: python scripts/repair_morning_daily_references.py
+
+      - name: Apply exact-date Japan close capture
+        run: python scripts/apply_japan_close_reference.py
 
       - name: Build report-time ChatGPT input and CSV contract
         run: |
