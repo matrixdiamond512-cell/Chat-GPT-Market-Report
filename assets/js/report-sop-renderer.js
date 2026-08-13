@@ -3,6 +3,8 @@
   "use strict";
 
   const ACTIVE_SLOTS = new Set(["08:00", "12:00", "16:00", "21:00"]);
+  const MORNING_REFERENCE_URL = "data/market/morning-reference.json";
+  let morningReference = null;
   const escHtml = (value = "") => String(value)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -85,10 +87,27 @@
     return { change: c || "—", rate: r || "—" };
   }
 
+  function applyMorningReference(report, rows) {
+    if (!report || report.time !== "08:00" || !morningReference) return rows;
+    if (morningReference.reportDate !== report.date || morningReference.reportSlot !== report.time) return rows;
+    const items = morningReference.items || {};
+    return rows.map((row) => {
+      const ref = items[row.label];
+      if (!ref || !String(ref.status || "").startsWith("verified") || ref.value == null || ref.value === "") return row;
+      return {
+        ...row,
+        value: publicText(ref.value) || row.value,
+        change: publicText(ref.change) || row.change,
+        rate: publicText(ref.rate) || row.rate,
+        direction: publicText(ref.direction) || row.direction
+      };
+    });
+  }
+
   function structuredMarketRows(report) {
     const rawRows = report?.marketDataTable?.rows;
     if (!Array.isArray(rawRows)) return [];
-    return rawRows.map((row) => {
+    const rows = rawRows.map((row) => {
       const cr = splitChangeRate(row?.change, row?.rate ?? row?.changePercent);
       return {
         label: publicText(row?.label ?? row?.item ?? row?.name ?? ""),
@@ -98,6 +117,7 @@
         direction: publicText(row?.direction ?? row?.status ?? "—") || "—"
       };
     }).filter((row) => row.label);
+    return applyMorningReference(report, rows);
   }
 
   function textMarketRows(lines) {
@@ -206,7 +226,7 @@
     sourceSections.forEach((section) => {
       const title = normalizeHeading(section.title);
       if (!title) return;
-      let body = looksLikeMarketSection(title) ? renderMarketTable(report, section.lines) : renderText(section.lines);
+      const body = looksLikeMarketSection(title) ? renderMarketTable(report, section.lines) : renderText(section.lines);
       if (!body) return;
       sections.push(`<section class="section sop-section" data-sop-title="${escHtml(title)}"><h2>${escHtml(title)}</h2>${body}</section>`);
     });
@@ -223,7 +243,18 @@
     return true;
   }
 
-  // Override the base renderer before its asynchronous initial fetch completes.
+  async function loadMorningReference() {
+    try {
+      const response = await fetch(`${MORNING_REFERENCE_URL}?ts=${Date.now()}`, { cache: "no-store" });
+      if (!response.ok) return;
+      morningReference = await response.json();
+      const report = currentReport();
+      if (report?.time === "08:00") renderSopReport(report);
+    } catch (error) {
+      console.warn("morning reference load failed", error);
+    }
+  }
+
   try {
     if (typeof renderDocument === "function") {
       const legacyRenderDocument = renderDocument;
@@ -236,4 +267,5 @@
   }
 
   window.MarketReportSopRenderer = { render: renderSopReport, parseSections, structuredMarketRows };
+  loadMorningReference();
 })();
