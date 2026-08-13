@@ -12,8 +12,8 @@ bar boundary is not the same as the exchange-session boundary used by the other
 markets. This repair must never erase an already published BTC value merely because
 Yahoo's UTC daily candle is not final at 08:00 JST.
 
-The helper also rewrites the textual 主要市場データ block from the structured 28-row
-table so repo fullText and the web table cannot disagree.
+The helper rewrites the textual 主要市場データ block and synchronizes the six-market
+summary prices so the table, report cards, history JSON and portal cannot disagree.
 """
 from __future__ import annotations
 
@@ -56,6 +56,15 @@ DERIVED_FROM_NIKKEI_CLOSE = (
     "日経225 25日移動平均乖離率",
     "日経225 200日移動平均乖離率",
 )
+
+SUMMARY_MARKETS: dict[str, tuple[str, str, str]] = {
+    "金": ("COMEX金先物", "ドル/oz", ""),
+    "WTI原油": ("WTI原油", "ドル/bbl", ""),
+    "日経225先物（大阪取引所）": ("日経225先物（大阪取引所）", "円", ""),
+    "USD/JPY": ("USD/JPY", "円", ""),
+    "EUR/USD": ("EUR/USD", "", ""),
+    "BTCUSD": ("BTCUSD", "ドル", ""),
+}
 
 
 def now_jst() -> dt.datetime:
@@ -153,6 +162,44 @@ def rewrite_market_block(report: dict[str, Any]) -> None:
         report["fullText"] = pattern.sub(replacement.rstrip("\n"), text, count=1)
 
 
+def summary_price(label: str, row: dict[str, Any]) -> str:
+    value = str(row.get("value") or "").strip()
+    if not value or value.startswith("取得不能"):
+        return value
+    suffix = SUMMARY_MARKETS[label][1]
+    if suffix and not value.endswith(suffix):
+        if suffix == "円" and value.endswith("円"):
+            return value
+        return value + suffix
+    return value
+
+
+def synchronize_summary_prices(report: dict[str, Any], by_label: dict[str, dict[str, Any]]) -> None:
+    markets = report.get("markets")
+    if not isinstance(markets, list):
+        return
+    text = str(report.get("fullText") or "")
+    for market in markets:
+        if not isinstance(market, dict):
+            continue
+        name = str(market.get("name") or "")
+        spec = SUMMARY_MARKETS.get(name)
+        if not spec:
+            continue
+        table_label = spec[0]
+        row = by_label.get(table_label)
+        if not isinstance(row, dict):
+            continue
+        new_price = summary_price(name, row)
+        if not new_price or new_price.startswith("取得不能"):
+            continue
+        old_price = str(market.get("price") or "")
+        market["price"] = new_price
+        if old_price and old_price != new_price:
+            text = text.replace(old_price, new_price)
+    report["fullText"] = text
+
+
 def main() -> int:
     payload = load(LATEST)
     report = payload.get("latestReport") or payload.get("report") or payload
@@ -218,8 +265,6 @@ def main() -> int:
             set_unavailable(row, reason)
             unavailable[label] = reason
 
-    # 25/200-day deviations cannot be trusted for the report date when the
-    # underlying Nikkei close itself is not date-matched.
     if not nikkei_date_verified:
         expected_date = expected_prior_session(report_date, "日経225現物")
         for label in DERIVED_FROM_NIKKEI_CLOSE:
@@ -230,6 +275,7 @@ def main() -> int:
                 unavailable[label] = reason
 
     rewrite_market_block(report)
+    synchronize_summary_prices(report, by_label)
     report.setdefault("dataProvenance", {})["dailyCloseRepair"] = {
         "generatedAt": now_jst().isoformat(),
         "semantics": "previous_close",
@@ -239,7 +285,7 @@ def main() -> int:
     }
     save(LATEST, payload)
     save(OUT, {
-        "schemaVersion": "2.1.0",
+        "schemaVersion": "2.2.0",
         "generatedAt": now_jst().isoformat(),
         "reportDate": report_date.isoformat(),
         "reportSlot": "08:00",
