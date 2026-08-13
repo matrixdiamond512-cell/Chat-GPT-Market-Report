@@ -8,6 +8,7 @@ on:
       - "scripts/enrich_latest_morning_from_sheet.py"
       - "scripts/repair_morning_daily_references.py"
       - "scripts/apply_japan_close_reference.py"
+      - "scripts/mark_late_morning_references.py"
       - "scripts/build_chatgpt_report_input.py"
       - "scripts/build_market_sheet_exports.py"
       - "scripts/sync_latest_report_publication.py"
@@ -51,6 +52,9 @@ jobs:
 
       - name: Apply exact-date Japan close capture
         run: python scripts/apply_japan_close_reference.py
+
+      - name: Apply durable CME OSE morning reference
+        run: python scripts/mark_late_morning_references.py
 
       - name: Build report-time ChatGPT input and CSV contract
         run: |
