@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Repair daily-close rows in the 08:00 report using date-matched Yahoo history.
 
-The morning report mixes previous-session closes for daily indices with report-time
-quotes for continuous markets.  This helper only touches daily index rows for which
-Yahoo supplies a completed bar whose exchange-local date is strictly before the JST
-report date.  It therefore cannot copy an old/stale bar into a new report date.
+Only a bar for the expected immediately preceding session date is accepted. If the
+source has not published that date yet, the row is explicitly marked unavailable
+instead of silently carrying an older quote forward. This is deliberately strict:
+a holiday edge case may temporarily show unavailable, but a stale close can never be
+presented as the prior-session close.
 
-It also rewrites the textual 主要市場データ block from the structured 28-row table so
-repo fullText and the web table cannot disagree.
+The helper also rewrites the textual 主要市場データ block from the structured 28-row
+table so repo fullText and the web table cannot disagree.
 """
 from __future__ import annotations
 
@@ -35,6 +36,11 @@ SYMBOLS: dict[str, tuple[str, str, int]] = {
     "日経225現物": ("^N225", "Yahoo Finance Nikkei 225", 2),
     "VIX": ("^VIX", "Yahoo Finance CBOE Volatility Index", 2),
 }
+
+DERIVED_FROM_NIKKEI_CLOSE = (
+    "日経225 25日移動平均乖離率",
+    "日経225 200日移動平均乖離率",
+)
 
 
 def now_jst() -> dt.datetime:
@@ -92,6 +98,13 @@ def completed_bars(result: dict[str, Any], report_date: dt.date) -> list[tuple[d
     return bars
 
 
+def expected_prior_calendar_session(report_date: dt.date) -> dt.date:
+    # Normal weekday report: previous calendar day. Monday report: Friday.
+    # If that date is an exchange holiday and the source has no bar, we prefer
+    # explicit unavailable over incorrectly carrying an older close forward.
+    return report_date - dt.timedelta(days=3 if report_date.weekday() == 0 else 1)
+
+
 def fmt_number(value: float, places: int) -> str:
     return f"{value:,.{places}f}"
 
@@ -104,6 +117,13 @@ def direction(change: float, label: str) -> str:
     if label == "VIX":
         return "上昇" if change > 0 else "低下" if change < 0 else "横ばい"
     return "上昇" if change > 0 else "下落" if change < 0 else "横ばい"
+
+
+def set_unavailable(row: dict[str, Any], reason: str) -> None:
+    row["value"] = f"取得不能（{reason}）"
+    row["change"] = "—"
+    row["rate"] = "—"
+    row["direction"] = "取得不能"
 
 
 def rewrite_market_block(report: dict[str, Any]) -> None:
@@ -128,6 +148,7 @@ def main() -> int:
         print("Latest report is not 08:00; daily repair skipped")
         return 0
     report_date = dt.date.fromisoformat(str(report.get("date")))
+    expected_date = expected_prior_calendar_session(report_date)
     table = report.get("marketDataTable") or {}
     rows = table.get("rows") if isinstance(table, dict) else None
     if not isinstance(rows, list) or len(rows) != 28:
@@ -136,11 +157,12 @@ def main() -> int:
 
     items: dict[str, Any] = {}
     repaired: list[str] = []
-    failures: dict[str, str] = {}
+    unavailable: dict[str, str] = {}
+    nikkei_date_verified = False
     for label, (symbol, source_name, places) in SYMBOLS.items():
         row = by_label.get(label)
         if row is None:
-            failures[label] = "structured row missing"
+            unavailable[label] = "structured row missing"
             continue
         try:
             result = fetch_chart(symbol)
@@ -148,6 +170,14 @@ def main() -> int:
             if len(bars) < 2:
                 raise RuntimeError("fewer than two completed pre-report daily bars")
             target_date, value = bars[-1]
+            if target_date != expected_date:
+                reason = (
+                    f"{expected_date.isoformat()}基準の確定終値を取得できず。"
+                    f"取得可能な最新日付は{target_date.isoformat()}のため不採用"
+                )
+                set_unavailable(row, reason)
+                unavailable[label] = reason
+                continue
             previous_date, previous = bars[-2]
             change = value - previous
             rate = (change / previous * 100.0) if previous else 0.0
@@ -168,26 +198,42 @@ def main() -> int:
                 "status": "verified_date_matched_daily_close",
             }
             repaired.append(label)
+            if label == "日経225現物":
+                nikkei_date_verified = True
         except Exception as exc:
-            failures[label] = str(exc)
+            reason = f"{expected_date.isoformat()}基準の確定終値を取得できず: {exc}"
+            set_unavailable(row, reason)
+            unavailable[label] = reason
+
+    # 25/200-day deviations cannot be trusted for the report date when the
+    # underlying Nikkei close itself is not date-matched.
+    if not nikkei_date_verified:
+        for label in DERIVED_FROM_NIKKEI_CLOSE:
+            row = by_label.get(label)
+            if row is not None:
+                reason = f"{expected_date.isoformat()}の日経225現物終値を確認できないため算定値を不採用"
+                set_unavailable(row, reason)
+                unavailable[label] = reason
 
     rewrite_market_block(report)
     report.setdefault("dataProvenance", {})["dailyCloseRepair"] = {
         "generatedAt": now_jst().isoformat(),
-        "rule": "exchange-local completed daily bar with date < report date; newest matching bar only",
+        "expectedDataDate": expected_date.isoformat(),
+        "rule": "expected prior session date must match exactly; stale carry-forward is prohibited",
         "repairedLabels": repaired,
-        "failures": failures,
+        "unavailable": unavailable,
     }
     save(LATEST, payload)
     save(OUT, {
-        "schemaVersion": "1.0.0",
+        "schemaVersion": "1.1.0",
         "generatedAt": now_jst().isoformat(),
         "reportDate": report_date.isoformat(),
         "reportSlot": "08:00",
+        "expectedDataDate": expected_date.isoformat(),
         "items": items,
-        "failures": failures,
+        "unavailable": unavailable,
     })
-    print(json.dumps({"repaired": repaired, "failures": failures}, ensure_ascii=False))
+    print(json.dumps({"repaired": repaired, "unavailable": unavailable}, ensure_ascii=False))
     return 0
 
 
