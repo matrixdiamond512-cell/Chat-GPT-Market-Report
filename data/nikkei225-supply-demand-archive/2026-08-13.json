@@ -2,12 +2,12 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-supply-demand",
   "reportDate": "2026-08-13",
-  "generatedAt": "2026-08-13T17:43:24+09:00",
+  "generatedAt": "2026-08-13T19:21:01+09:00",
   "nikkei": {
     "schemaVersion": "2.1.0",
     "pageId": "nikkei225-supply-demand",
     "pageTitle": "日経225需給分析",
-    "generatedAt": "2026-08-13T17:43:24+09:00",
+    "generatedAt": "2026-08-13T19:21:01+09:00",
     "spot": {
       "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
@@ -16,7 +16,7 @@
       "value": 68308.59,
       "asOfDate": "2026-08-13",
       "status": "verified",
-      "fetchedAt": "2026-08-13T17:43:24+09:00"
+      "fetchedAt": "2026-08-13T19:21:01+09:00"
     },
     "futures": {
       "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -35,7 +35,7 @@
       "volumeChangePercent": -67.4926191480388,
       "miniVolumeChangePercent": 0.0,
       "status": "verified",
-      "fetchedAt": "2026-08-13T17:42:04+09:00",
+      "fetchedAt": "2026-08-13T19:19:20+09:00",
       "previousOpenInterest": 191308,
       "miniPreviousOpenInterest": 337968,
       "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260812open_interest.xlsx"
@@ -55,7 +55,7 @@
       "asOfDate": "2026-08-13",
       "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260813_derivatives_market_data_night.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-08-13T17:43:15+09:00"
+      "fetchedAt": "2026-08-13T19:20:52+09:00"
     },
     "arbitrage": {
       "sourceName": "JPX 裁定取引の状況",
@@ -69,9 +69,9 @@
       "buyChange": -3104,
       "status": "verified",
       "frequency": "daily",
-      "lastAttemptAt": "2026-08-13T17:42:02+09:00",
-      "lastSuccessAt": "2026-08-13T17:42:02+09:00",
-      "fetchedAt": "2026-08-13T17:42:02+09:00",
+      "lastAttemptAt": "2026-08-13T19:19:14+09:00",
+      "lastSuccessAt": "2026-08-13T19:19:14+09:00",
+      "fetchedAt": "2026-08-13T19:19:14+09:00",
       "error": null
     },
     "options": {
@@ -85,7 +85,7 @@
       "ivChange": null,
       "asOfDate": "2026-08-13",
       "status": "calculated",
-      "fetchedAt": "2026-08-13T17:43:24+09:00",
+      "fetchedAt": "2026-08-13T19:21:01+09:00",
       "putVolume": null,
       "callVolume": null,
       "putCallStatus": "unavailable",
@@ -161,7 +161,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202608/20260813_volume_by_participant_whole_day.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-08-13T17:43:17+09:00"
+      "fetchedAt": "2026-08-13T19:20:53+09:00"
     },
     "foreignInvestors": {
       "sourceName": "JPX 投資部門別売買状況",
@@ -774,7 +774,7 @@
         ]
       },
       "status": "verified",
-      "fetchedAt": "2026-08-13T17:43:14+09:00"
+      "fetchedAt": "2026-08-13T19:20:51+09:00"
     },
     "participantOpenInterest": {
       "sourceName": "JPX 取引参加者別建玉残高",
@@ -888,7 +888,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20260807_indexfut_oi_by_tp.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-08-13T17:43:18+09:00"
+      "fetchedAt": "2026-08-13T19:20:55+09:00"
     },
     "shortSelling": {
       "sourceName": "JPX 空売り集計",
@@ -943,7 +943,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-08-13T17:42:03+09:00"
+      "fetchedAt": "2026-08-13T19:19:20+09:00"
     },
     "margin": {
       "sourceName": "JPX 信用取引現在高",
@@ -1004,7 +1004,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-08-13T17:42:05+09:00"
+      "fetchedAt": "2026-08-13T19:19:23+09:00"
     },
     "assessment": {
       "overall": "中立",
@@ -1299,7 +1299,7 @@
       "market": null,
       "status": "partial",
       "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202608.xlsx",
-      "fetchedAt": "2026-08-13T17:43:21+09:00",
+      "fetchedAt": "2026-08-13T19:20:58+09:00",
       "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
     },
     "nikkeiFuturesDailyHistory": [
@@ -1311,7 +1311,7 @@
         "sourceName": "JPX / 大阪取引所 日経225先物",
         "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
         "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260812open_interest.xlsx",
-        "capturedAt": "2026-08-13T17:43:20+09:00",
+        "capturedAt": "2026-08-13T19:20:58+09:00",
         "status": "verified"
       }
     ],
@@ -1328,7 +1328,7 @@
       "status": "verified",
       "releaseFrequency": "weekly",
       "lookbackWeeks": 52,
-      "fetchedAt": "2026-08-13T17:43:25+09:00",
+      "fetchedAt": "2026-08-13T19:21:02+09:00",
       "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
       "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
       "priceStatus": "available",
@@ -1743,7 +1743,7 @@
           "long": 5707,
           "short": 3172,
           "net": 2535,
-          "price": 66232.1875
+          "price": 64141.12109375
         },
         {
           "label": "1週前",
@@ -2273,10 +2273,10 @@
     "pageId": "stocks",
     "pageTitle": "株式市場分析",
     "generatedAt": "2026-08-04T00:00:00+09:00",
-    "updatedAt": "2026-08-13T08:07:11+09:00",
+    "updatedAt": "2026-08-13T17:47:37+09:00",
     "dataAsOf": "2026-08-12T16:00:00-04:00",
     "status": "ok",
-    "sourceStatus": "米国市場と東京市場を独立更新・市場別基準日を明示",
+    "sourceStatus": "Google Sheets＋日経225寄与度検証済みデータ",
     "sources": [
       {
         "id": "INITIAL_STOCKS_HTML",
@@ -2336,13 +2336,13 @@
             "NYSE 値上がり / 値下がり",
             "1,144 / 934",
             "-",
-            "上昇優勢。A/D比 1.22倍。 基準日 2026-08-12"
+            "基準日 2026-08-12"
           ],
           [
             "NASDAQ 値上がり / 値下がり",
-            "1,709 / 1,461",
+            "1,705 / 1,464",
             "-",
-            "上昇優勢。A/D比 1.17倍。 基準日 2026-08-12"
+            "基準日 2026-08-12"
           ],
           [
             "NYSE 200日線上 / 下",
@@ -2367,6 +2367,18 @@
             "-0.07pt",
             "-",
             "RSP騰落率－SPY騰落率。プラスは均等加重優位。基準日 2026-08-12"
+          ],
+          [
+            "NYSE 52週高値 / 安値",
+            "0 / 0",
+            "-",
+            "基準日 2026-08-12"
+          ],
+          [
+            "NASDAQ 52週高値 / 安値",
+            "0 / 0",
+            "-",
+            "基準日 2026-08-12"
           ]
         ],
         "dataDate": "2026-08-12",
@@ -2887,53 +2899,53 @@
         "title": "日本市場（日経225寄与度 上位・下位）",
         "flag": "JP",
         "status": "verified",
-        "asOf": "2026-08-12",
+        "asOf": "2026-08-13",
         "source": "株探 日経平均の寄与度ランキング",
         "top": [
           {
             "rank": 1,
-            "code": "8035",
-            "name": "東エレク（8035）",
-            "shortName": "東エレク",
-            "close": "58,230",
-            "contribution": "+148.84",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-12"
-          },
-          {
-            "rank": 2,
             "code": "6857",
             "name": "アドテスト（6857）",
             "shortName": "アドテスト",
-            "close": "34,550",
-            "contribution": "+69.99",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-12"
+            "close": "35,940",
+            "contribution": "+335.49",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-13"
+          },
+          {
+            "rank": 2,
+            "code": "8035",
+            "name": "東エレク（8035）",
+            "shortName": "東エレク",
+            "close": "59,470",
+            "contribution": "+124.70",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-13"
           },
           {
             "rank": 3,
-            "code": "6098",
-            "name": "リクルート（6098）",
-            "shortName": "リクルート",
-            "close": "16,660",
-            "contribution": "+49.78",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-12"
+            "code": "4062",
+            "name": "イビデン（4062）",
+            "shortName": "イビデン",
+            "close": "21,560",
+            "contribution": "+72.41",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-13"
           },
           {
             "rank": 4,
-            "code": "5803",
-            "name": "フジクラ（5803）",
-            "shortName": "フジクラ",
-            "close": "5,800",
-            "contribution": "+44.25",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-12"
+            "code": "6981",
+            "name": "村田製（6981）",
+            "shortName": "村田製",
+            "close": "8,311",
+            "contribution": "+62.19",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-13"
           },
           {
             "rank": 5,
-            "code": "285A",
-            "name": "キオクシア（285A）",
-            "shortName": "キオクシア",
-            "close": "49,870",
-            "contribution": "+43.65",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-12"
+            "code": "6762",
+            "name": "ＴＤＫ（6762）",
+            "shortName": "ＴＤＫ",
+            "close": "3,235.0",
+            "contribution": "+60.84",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-13"
           }
         ],
         "bottom": [
@@ -2942,45 +2954,45 @@
             "code": "9983",
             "name": "ファストリ（9983）",
             "shortName": "ファストリ",
-            "close": "78,050",
-            "contribution": "-53.90",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-12"
+            "close": "77,350",
+            "contribution": "-56.32",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-13"
           },
           {
             "rank": 2,
-            "code": "6367",
-            "name": "ダイキン（6367）",
-            "shortName": "ダイキン",
-            "close": "21,570",
-            "contribution": "-21.96",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-12"
+            "code": "6954",
+            "name": "ファナック（6954）",
+            "shortName": "ファナック",
+            "close": "6,505",
+            "contribution": "-36.04",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-13"
           },
           {
             "rank": 3,
-            "code": "8015",
-            "name": "豊田通商（8015）",
-            "shortName": "豊田通商",
-            "close": "7,204",
-            "contribution": "-17.70",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-12"
+            "code": "9766",
+            "name": "コナミＧ（9766）",
+            "shortName": "コナミＧ",
+            "close": "21,235",
+            "contribution": "-14.25",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-13"
           },
           {
             "rank": 4,
-            "code": "9843",
-            "name": "ニトリＨＤ（9843）",
-            "shortName": "ニトリＨＤ",
-            "close": "2,941.5",
-            "contribution": "-13.28",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-12"
+            "code": "7832",
+            "name": "バンナムＨＤ（7832）",
+            "shortName": "バンナムＨＤ",
+            "close": "5,252",
+            "contribution": "-11.06",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-13"
           },
           {
             "rank": 5,
-            "code": "4578",
-            "name": "大塚ＨＤ（4578）",
-            "shortName": "大塚ＨＤ",
-            "close": "12,250",
+            "code": "6758",
+            "name": "ソニーＧ（6758）",
+            "shortName": "ソニーＧ",
+            "close": "3,700",
             "contribution": "-10.39",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-12"
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-13"
           }
         ]
       }
@@ -3044,69 +3056,14 @@
     ],
     "note": "データ欠損がある場合は推測で補完せず、該当セルに「取得不能」と理由を表示します。本ページは株式市場分析用の表示構成です。",
     "usBreadth": {
-      "schemaVersion": "2.0.0",
+      "schemaVersion": "1.0.0",
       "marketDate": "2026-08-12",
-      "fetchedAt": "2026-08-13T07:24:52+09:00",
+      "fetchedAt": "2026-08-13T17:47:37+09:00",
       "status": "verified",
       "source": {
-        "name": "Yahoo Finance daily chart + TradingView America Stock Screener",
-        "method": "completed daily closes and exchange-filtered breadth including SMA200"
-      },
-      "indices": {
-        "^DJI": {
-          "symbol": "^DJI",
-          "marketDate": "2026-08-12",
-          "timestamp": 1786541400,
-          "close": 53770.26953125,
-          "previousClose": 53791.8515625,
-          "change": -21.58203125,
-          "changePercent": -0.04012137642245711
-        },
-        "^GSPC": {
-          "symbol": "^GSPC",
-          "marketDate": "2026-08-12",
-          "timestamp": 1786541400,
-          "close": 7748.5,
-          "previousClose": 7728.2001953125,
-          "change": 20.2998046875,
-          "changePercent": 0.2626718275208857
-        },
-        "^IXIC": {
-          "symbol": "^IXIC",
-          "marketDate": "2026-08-12",
-          "timestamp": 1786541400,
-          "close": 26588.48828125,
-          "previousClose": 26445.44921875,
-          "change": 143.0390625,
-          "changePercent": 0.5408834666290498
-        },
-        "^SOX": {
-          "symbol": "^SOX",
-          "marketDate": "2026-08-12",
-          "timestamp": 1786541400,
-          "close": 12399.3759765625,
-          "previousClose": 12098.4697265625,
-          "change": 300.90625,
-          "changePercent": 2.4871430585915557
-        },
-        "^RUT": {
-          "symbol": "^RUT",
-          "marketDate": "2026-08-12",
-          "timestamp": 1786541400,
-          "close": 3045.48291015625,
-          "previousClose": 3027.1201171875,
-          "change": 18.36279296875,
-          "changePercent": 0.6066093269470552
-        },
-        "^VIX": {
-          "symbol": "^VIX",
-          "marketDate": "2026-08-12",
-          "timestamp": 1786518000,
-          "close": 14.550000190734863,
-          "previousClose": 15.279999732971191,
-          "change": -0.7299995422363281,
-          "changePercent": -4.777483998649128
-        }
+        "name": "TradingView America Stock Screener",
+        "url": "https://www.tradingview.com/markets/stocks-usa/market-movers-all-stocks/",
+        "method": "exchange-filtered America scanner"
       },
       "exchanges": {
         "NYSE": {
@@ -3116,31 +3073,27 @@
           "total": 2124,
           "newHigh52Week": 0,
           "newLow52Week": 0,
-          "aboveSMA200": 1180,
-          "belowSMA200": 842,
-          "equalSMA200": 0,
-          "sma200Valid": 2022,
-          "sma200Column": "SMA200",
-          "advanceDeclineRatio": 1.224839
+          "advanceDeclineRatio": 1.224839,
+          "previousDayChange": 0.0,
+          "average20Day": 1.163327,
+          "versus20DayAveragePercent": 5.2876
         },
         "NASDAQ": {
-          "advancers": 1709,
-          "decliners": 1461,
+          "advancers": 1705,
+          "decliners": 1464,
           "unchanged": 150,
-          "total": 3320,
+          "total": 3319,
           "newHigh52Week": 0,
           "newLow52Week": 0,
-          "aboveSMA200": 1517,
-          "belowSMA200": 1531,
-          "equalSMA200": 0,
-          "sma200Valid": 3048,
-          "sma200Column": "SMA200",
-          "advanceDeclineRatio": 1.169747
+          "advanceDeclineRatio": 1.164617,
+          "previousDayChange": -0.00513,
+          "average20Day": 1.190403,
+          "versus20DayAveragePercent": -2.1661
         }
       },
-      "combinedAdvanceRate": 0.543636,
-      "judgement": "上昇優勢",
-      "note": "米国主要指数、NYSE/NASDAQ騰落、52週高安、200日線上下を同一取引日で保存。"
+      "combinedAdvanceRate": 0.542977,
+      "judgement": "拮抗",
+      "note": "値上がり・値下がりは前日比change、52週高値・安値は当日高安と52週高安の一致で集計。"
     },
     "marketDates": {
       "japan": "2026-08-07",
@@ -3157,38 +3110,38 @@
         "flag": "JP",
         "status": "東京寄り付きデータ取得済み",
         "dataDate": "2026-08-13",
-        "updatedAt": "2026-08-13T11:12:51+09:00",
+        "updatedAt": "2026-08-13T17:47:31+09:00",
         "source": "Yahoo Finance chart API（日経225・FX・CME参考先物） / Google Finance（TOPIX）",
         "metrics": [
           {
             "label": "日経225",
-            "value": "68,579.66",
-            "change": "+1.56%",
-            "note": "寄り値 68,033.17 / ギャップ +0.75% / 寄り後 +0.80%"
+            "value": "68,406.29",
+            "change": "+1.31%",
+            "note": "寄り値 68,033.17 / ギャップ +0.75% / 寄り後 +0.55%"
           },
           {
             "label": "TOPIX",
-            "value": "4,157.26",
-            "change": "+0.44%",
-            "note": "寄り値 4,158.97 / ギャップ +0.48% / 寄り後 -0.04%"
+            "value": "4,158.97",
+            "change": "+0.48%",
+            "note": "寄り値 4,158.97 / ギャップ +0.48% / 寄り後 +0.00%"
           },
           {
             "label": "USD/JPY",
-            "value": "159.389",
-            "change": "+0.03%",
+            "value": "159.419",
+            "change": "+0.04%",
             "note": "08:55以降の変化 / 08:55近辺 159.348"
           },
           {
             "label": "日経225先物（CME参考）",
-            "value": "68,535.00",
-            "change": "+0.04%",
+            "value": "68,225.00",
+            "change": "-0.42%",
             "note": "CME参考値。大阪取引所先物とは別銘柄として表示"
           }
         ],
         "insights": [
           "日経225はギャップアップ後も買いが継続。寄り付きの強さが維持されています。",
           "日経225とTOPIXが同方向で、市場全体の方向は比較的整合的です。",
-          "USD/JPYは08:55以降 +0.03%。日本株の外需・先物方向との整合性を確認します。"
+          "USD/JPYは08:55以降 +0.04%。日本株の外需・先物方向との整合性を確認します。"
         ],
         "judgement": "寄り後も買い優勢。先物・USD/JPY・TOPIXが追随する限り、東京時間は上方向を優先します。",
         "errors": []
@@ -3196,116 +3149,116 @@
       "usPremarket": {
         "title": "米国市場 プレマーケット分析",
         "flag": "US",
-        "status": "取得不能（当日プレマーケット時間外・休場、または株価データなし）",
-        "dataDate": "2026-08-12",
-        "updatedAt": "2026-08-12T23:33:43+09:00",
+        "status": "米国プレマーケットデータ取得済み",
+        "dataDate": "2026-08-13",
+        "updatedAt": "2026-08-13T17:47:32+09:00",
         "source": "Yahoo Finance chart API（指数先物・金利・FX・大型株）",
         "metrics": [
           {
             "label": "S&P500先物",
-            "value": "7,771.75",
-            "change": "+0.31%",
+            "value": "7,780.50",
+            "change": "+0.13%",
             "note": "前日通常取引終値比"
           },
           {
             "label": "Nasdaq100先物",
-            "value": "29,892.25",
-            "change": "+0.90%",
+            "value": "29,849.50",
+            "change": "-0.01%",
             "note": "前日通常取引終値比"
           },
           {
             "label": "Dow先物",
-            "value": "53,947.00",
-            "change": "+0.12%",
+            "value": "53,968.00",
+            "change": "+0.18%",
             "note": "前日通常取引終値比"
           },
           {
             "label": "Russell2000先物",
-            "value": "3,043.00",
-            "change": "+0.25%",
+            "value": "3,058.10",
+            "change": "+0.17%",
             "note": "前日通常取引終値比"
           },
           {
             "label": "VIX",
-            "value": "14.77",
-            "change": "-3.34%",
+            "value": "14.68",
+            "change": "+0.89%",
             "note": "前日通常取引終値比"
           },
           {
             "label": "米10年債利回り",
-            "value": "4.67%",
-            "change": "-0.34%",
+            "value": "4.68%",
+            "change": "-0.04%",
             "note": "前日通常取引終値比"
           },
           {
             "label": "ドル指数",
-            "value": "99.72",
-            "change": "-0.11%",
+            "value": "99.98",
+            "change": "-0.04%",
             "note": "前日通常取引終値比"
           },
           {
             "label": "USD/JPY",
-            "value": "159.085",
-            "change": "-0.12%",
+            "value": "159.386",
+            "change": "-0.01%",
             "note": "前日通常取引終値比"
           }
         ],
         "premarketMovers": [
           {
-            "symbol": "AVGO",
-            "price": 426.56,
-            "changePct": 2.518746394924065,
-            "volume": 0
-          },
-          {
             "symbol": "NVDA",
-            "price": 220.79,
-            "changePct": 1.5126436781609076,
-            "volume": 0
-          },
-          {
-            "symbol": "MSFT",
-            "price": 499.41,
-            "changePct": -0.8733451102598155,
-            "volume": 0
-          },
-          {
-            "symbol": "TSLA",
-            "price": 335.0584,
-            "changePct": 0.675580661638775,
-            "volume": 0
-          },
-          {
-            "symbol": "GOOGL",
-            "price": 346.01,
-            "changePct": 0.6428155904595556,
+            "price": 224.0,
+            "changePct": 2.9885057471264354,
             "volume": 0
           },
           {
             "symbol": "META",
-            "price": 600.96,
-            "changePct": 0.30711710508746215,
+            "price": 582.42,
+            "changePct": -2.7874215516090373,
+            "volume": 0
+          },
+          {
+            "symbol": "MSFT",
+            "price": 492.9472,
+            "changePct": -2.156130287211444,
+            "volume": 0
+          },
+          {
+            "symbol": "TSLA",
+            "price": 327.31,
+            "changePct": -1.6525945734803593,
             "volume": 0
           },
           {
             "symbol": "AMZN",
-            "price": 273.1,
-            "changePct": 0.3048444558710228,
+            "price": 267.97,
+            "changePct": -1.5793146508979894,
             "volume": 0
           },
           {
             "symbol": "AAPL",
-            "price": 305.2,
-            "changePct": 0.09511003246858163,
+            "price": 303.3917,
+            "changePct": -0.4979502148174886,
+            "volume": 0
+          },
+          {
+            "symbol": "GOOGL",
+            "price": 345.38,
+            "changePct": 0.45956951716112915,
+            "volume": 0
+          },
+          {
+            "symbol": "AVGO",
+            "price": 416.1,
+            "changePct": 0.00480676792924406,
             "volume": 0
           }
         ],
         "insights": [
-          "大型テック・主要株プレマーケット: AVGO +2.52%（出来高 0） / NVDA +1.51%（出来高 0） / MSFT -0.87%（出来高 0） / TSLA +0.68%（出来高 0） / GOOGL +0.64%（出来高 0）",
-          "S&P500先物とNasdaq100先物はともにプラス圏。NY寄り前の株式センチメントはリスクオン寄りです。",
-          "米10年債利回り 4.67%（前日比 -0.34%）。株先物との整合性を確認します。"
+          "大型テック・主要株プレマーケット: NVDA +2.99%（出来高 0） / META -2.79%（出来高 0） / MSFT -2.16%（出来高 0） / TSLA -1.65%（出来高 0） / AMZN -1.58%（出来高 0）",
+          "S&P500先物とNasdaq100先物が逆方向。大型テック偏重またはローテーションを確認します。",
+          "米10年債利回り 4.68%（前日比 -0.04%）。株先物との整合性を確認します。"
         ],
-        "judgement": "米株先物は明確に上方向。米金利急騰が伴わない限り、NY寄りはリスクオン継続を優先します。",
+        "judgement": "指数先物・米金利・ドル・大型テックのプレマーケット出来高を組み合わせて判断します。",
         "errors": []
       },
       "bridge": {
@@ -3313,11 +3266,11 @@
         "steps": [
           {
             "label": "東京市場",
-            "text": "2026-08-13 / 日経225 68,579.66 +1.56% / TOPIX 4,157.26 +0.44%"
+            "text": "2026-08-13 / 日経225 68,406.29 +1.31% / TOPIX 4,158.97 +0.48%"
           },
           {
             "label": "米国プレマーケット",
-            "text": "2026-08-12 / S&P500先物 7,771.75 +0.31% / Nasdaq100先物 29,892.25 +0.90%"
+            "text": "2026-08-13 / S&P500先物 7,780.50 +0.13% / Nasdaq100先物 29,849.50 -0.01%"
           },
           {
             "label": "米国通常市場（直近終値）",
@@ -3327,7 +3280,7 @@
         "conclusion": "東京市場と米国株先物の方向が一致。日米で同じリスク選好が引き継がれている可能性が高まっています。"
       }
     },
-    "sessionDataUpdatedAt": "2026-08-13T11:12:52+09:00"
+    "sessionDataUpdatedAt": "2026-08-13T17:47:36+09:00"
   },
   "optionsLatest": {
     "schemaVersion": "1.0.0",
