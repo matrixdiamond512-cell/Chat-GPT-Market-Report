@@ -45,6 +45,40 @@
     return Boolean(requestedDate && requestedDate < latest.date);
   }
 
+  function fullTextScore(value) {
+    const text = String(value || "").replace(/\r/g, "");
+    if (!text.trim()) return 0;
+    const bracketHeadings = (text.match(/^【[^\n】]{2,60}】\s*$/gm) || []).length;
+    const numberedHeadings = (text.match(/^\s*\d{1,2}[．.]\s*[^\n]+$/gm) || []).length;
+    const requiredHits = [
+      /今日の相場テーマ/,
+      /主要市場データ|主要市場まとめ/,
+      /材料と値動きの整合性/,
+      /主導市場/,
+      /クロスアセット資金フロー/,
+      /需給・ポジション/,
+      /個別(?:市場)?見通し|6市場の(?:個別)?見通し/,
+      /シナリオ/,
+      /崩れる条件/,
+      /結論|最終判断/
+    ].filter((pattern) => pattern.test(text)).length;
+    return bracketHeadings * 4 + numberedHeadings * 4 + requiredHits * 3 + Math.min(10, Math.floor(text.length / 800));
+  }
+
+  function chooseFullText(previous, candidate) {
+    const priorText = String(previous?.fullText || previous?.rawText || previous?.body || "");
+    const nextText = String(candidate?.fullText || candidate?.rawText || candidate?.body || "");
+    if (!priorText.trim()) return nextText;
+    if (!nextText.trim()) return priorText;
+    const priorScore = fullTextScore(priorText);
+    const nextScore = fullTextScore(nextText);
+    if (nextScore < priorScore) {
+      console.warn("short/incomplete latest-report fullText rejected; preserving richer history body", { priorScore, nextScore });
+      return priorText;
+    }
+    return nextText;
+  }
+
   async function mergeLatestOverride() {
     if (overrideLoaded) return;
     overrideLoaded = true;
@@ -68,7 +102,7 @@
       const proposed = {
         ...previous,
         ...candidate,
-        fullText: candidate.fullText || previous.fullText || ""
+        fullText: chooseFullText(previous, candidate)
       };
 
       if (!isPublishable(proposed)) {
