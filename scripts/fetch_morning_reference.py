@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 """Fetch source-verified morning reference values that are not in the core quote layer.
 
-This helper is intentionally narrow. It currently captures CME Nikkei 225 futures
-(yen- and dollar-denominated) plus the Osaka large Nikkei 225 future from the
-nikkei225jp summary page. The values are written to data/market/morning-reference.json
-and may be used by the 08:00 report renderer only when reportDate/reportSlot match.
-
-CME values are treated as the page's last displayed values, not as official CME
-settlement prices. This distinction is kept in the JSON note.
+This helper captures CME Nikkei 225 futures (yen- and dollar-denominated) plus the
+Osaka large Nikkei 225 future from the nikkei225jp summary page. CME rows on the
+site may end in either a page date (MM/DD) or a live quote time (HH:MM); both are
+accepted. Values are reference quotes, not official CME settlement prices.
 """
 
 from __future__ import annotations
@@ -65,19 +62,21 @@ def parse_cme(text: str, currency: str) -> dict[str, str] | None:
     pattern = re.compile(
         re.escape(marker)
         + r"\s+26年09月限\s+([0-9,]+)\s+([+\-][0-9,]+)\s+"
-          r"([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+(\d{2}/\d{2})"
+          r"([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+(\d{2}:\d{2}|\d{2}/\d{2})"
     )
     match = pattern.search(text)
     if not match:
         return None
     value = number(match.group(1))
     change = number(match.group(2))
+    stamp = match.group(6)
     return {
         "value": fmt_integer(value),
         "change": f"{change:+,.0f}",
         "rate": pct_from_change(value, change),
         "direction": "上昇" if change > 0 else "下落" if change < 0 else "横ばい",
-        "sourceDate": match.group(6),
+        "stamp": stamp,
+        "stampType": "time" if ":" in stamp else "date",
     }
 
 
@@ -100,6 +99,13 @@ def parse_ose(text: str) -> dict[str, str] | None:
     }
 
 
+def cme_as_of(report_date: dt.date, parsed: dict[str, str]) -> str:
+    if parsed.get("stampType") == "time":
+        return f"{report_date.isoformat()}T{parsed['stamp']}:00+09:00"
+    month, day = (int(part) for part in parsed["stamp"].split("/"))
+    return dt.date(report_date.year, month, day).isoformat()
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--report-date", default=now_jst().date().isoformat())
@@ -113,7 +119,7 @@ def main() -> int:
     ose = parse_ose(text)
 
     items: dict[str, dict[str, object]] = {}
-    source_dates: list[str] = []
+    reference_dates: list[str] = []
 
     for label, parsed, product in (
         ("CME日経225先物・円建て", yen, "CME NIY"),
@@ -121,13 +127,15 @@ def main() -> int:
     ):
         if not parsed:
             continue
-        source_dates.append(parsed["sourceDate"])
+        as_of = cme_as_of(report_date, parsed)
+        if parsed.get("stampType") == "date":
+            reference_dates.append(as_of[:10])
         items[label] = {
             "value": parsed["value"],
             "change": parsed["change"],
             "rate": parsed["rate"],
             "direction": parsed["direction"],
-            "asOf": f"{report_date.year}-{parsed['sourceDate'].replace('/', '-')}",
+            "asOf": as_of,
             "sourceName": f"nikkei225jp.com {product}",
             "sourceUrl": SOURCE_URL,
             "status": "verified_reference",
@@ -150,17 +158,12 @@ def main() -> int:
     if not items:
         raise SystemExit("No morning reference values parsed")
 
-    reference_date = report_date.isoformat()
-    if source_dates:
-        month, day = (int(part) for part in source_dates[0].split("/"))
-        reference_date = dt.date(report_date.year, month, day).isoformat()
-
     payload = {
-        "schemaVersion": "1.0.0",
+        "schemaVersion": "1.1.0",
         "generatedAt": now_jst().isoformat(),
         "reportDate": report_date.isoformat(),
         "reportSlot": args.slot,
-        "referenceDate": reference_date,
+        "referenceDate": max(reference_dates) if reference_dates else report_date.isoformat(),
         "items": items,
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
