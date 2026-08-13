@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Repair daily-close rows in the 08:00 report using date-matched Yahoo history.
+"""Repair 08:00 previous-close rows using date-matched daily history.
 
-Only a bar for the expected immediately preceding session date is accepted. If the
-source has not published that date yet, the row is explicitly marked unavailable
-instead of silently carrying an older quote forward. This is deliberately strict:
-a holiday edge case may temporarily show unavailable, but a stale close can never be
-presented as the prior-session close.
+The 08:00 market table is a previous-close table, not an 08:00 intraday snapshot.
+A close is valid when its market-data date matches the required prior session; the
+clock time at which the close is retrieved is irrelevant. This script therefore may
+repair a morning report later in the day with the correct prior-session close, while
+still prohibiting stale-date carry-forward or substitution of a later intraday quote.
 
 The helper also rewrites the textual 主要市場データ block from the structured 28-row
 table so repo fullText and the web table cannot disagree.
@@ -28,12 +28,23 @@ OUT = ROOT / "data" / "market" / "morning-daily-reference.json"
 JST = dt.timezone(dt.timedelta(hours=9))
 UA = "Mozilla/5.0 (compatible; ChatGPT-Market-Report/1.0)"
 
+# label -> Yahoo symbol, source name, display decimals
+# OSE futures and Japanese valuation/breadth rows are handled by the canonical
+# close-sheet / Japan-close capture because a different market must never be
+# substituted under the OSE label.
 SYMBOLS: dict[str, tuple[str, str, int]] = {
     "NYダウ": ("^DJI", "Yahoo Finance Dow Jones Industrial Average", 2),
     "NASDAQ総合": ("^IXIC", "Yahoo Finance Nasdaq Composite", 2),
     "S&P500": ("^GSPC", "Yahoo Finance S&P 500", 2),
     "Russell 2000": ("^RUT", "Yahoo Finance Russell 2000", 2),
     "日経225現物": ("^N225", "Yahoo Finance Nikkei 225", 2),
+    "CME日経225先物・円建て": ("NIY=F", "Yahoo Finance CME Nikkei/Yen Futures", 0),
+    "CME日経225先物・ドル建て": ("NKD=F", "Yahoo Finance CME Nikkei/USD Futures", 0),
+    "USD/JPY": ("JPY=X", "Yahoo Finance USD/JPY", 3),
+    "EUR/USD": ("EURUSD=X", "Yahoo Finance EUR/USD", 5),
+    "COMEX金先物": ("GC=F", "Yahoo Finance COMEX Gold Futures", 2),
+    "WTI原油": ("CL=F", "Yahoo Finance NYMEX WTI Futures", 2),
+    "BTCUSD": ("BTC-USD", "Yahoo Finance Bitcoin USD", 0),
     "VIX": ("^VIX", "Yahoo Finance CBOE Volatility Index", 2),
 }
 
@@ -98,10 +109,11 @@ def completed_bars(result: dict[str, Any], report_date: dt.date) -> list[tuple[d
     return bars
 
 
-def expected_prior_calendar_session(report_date: dt.date) -> dt.date:
-    # Normal weekday report: previous calendar day. Monday report: Friday.
-    # If that date is an exchange holiday and the source has no bar, we prefer
-    # explicit unavailable over incorrectly carrying an older close forward.
+def expected_prior_session(report_date: dt.date, label: str) -> dt.date:
+    # BTC trades every calendar day; the rest of the rows below use weekday
+    # trading sessions, so Monday's preceding session is normally Friday.
+    if label == "BTCUSD":
+        return report_date - dt.timedelta(days=1)
     return report_date - dt.timedelta(days=3 if report_date.weekday() == 0 else 1)
 
 
@@ -145,14 +157,13 @@ def main() -> int:
     payload = load(LATEST)
     report = payload.get("latestReport") or payload.get("report") or payload
     if not isinstance(report, dict) or report.get("time") != "08:00":
-        print("Latest report is not 08:00; daily repair skipped")
+        print("Latest report is not 08:00; previous-close repair skipped")
         return 0
     report_date = dt.date.fromisoformat(str(report.get("date")))
-    expected_date = expected_prior_calendar_session(report_date)
     table = report.get("marketDataTable") or {}
     rows = table.get("rows") if isinstance(table, dict) else None
     if not isinstance(rows, list) or len(rows) != 28:
-        raise SystemExit("08:00 marketDataTable must contain 28 rows before daily repair")
+        raise SystemExit("08:00 marketDataTable must contain 28 rows before previous-close repair")
     by_label = {str(row.get("label") or "").strip(): row for row in rows if isinstance(row, dict)}
 
     items: dict[str, Any] = {}
@@ -164,6 +175,7 @@ def main() -> int:
         if row is None:
             unavailable[label] = "structured row missing"
             continue
+        expected_date = expected_prior_session(report_date, label)
         try:
             result = fetch_chart(symbol)
             bars = completed_bars(result, report_date)
@@ -172,7 +184,7 @@ def main() -> int:
             target_date, value = bars[-1]
             if target_date != expected_date:
                 reason = (
-                    f"{expected_date.isoformat()}基準の確定終値を取得できず。"
+                    f"{expected_date.isoformat()}基準の前日終値を取得できず。"
                     f"取得可能な最新日付は{target_date.isoformat()}のため不採用"
                 )
                 set_unavailable(row, reason)
@@ -195,19 +207,21 @@ def main() -> int:
                 "previousDate": previous_date.isoformat(),
                 "sourceName": source_name,
                 "sourceUrl": f"https://finance.yahoo.com/quote/{urllib.parse.quote(symbol, safe='')}/history/",
-                "status": "verified_date_matched_daily_close",
+                "status": "verified_date_matched_previous_close",
+                "retrievedAt": now_jst().isoformat(),
             }
             repaired.append(label)
             if label == "日経225現物":
                 nikkei_date_verified = True
         except Exception as exc:
-            reason = f"{expected_date.isoformat()}基準の確定終値を取得できず: {exc}"
+            reason = f"{expected_date.isoformat()}基準の前日終値を取得できず: {exc}"
             set_unavailable(row, reason)
             unavailable[label] = reason
 
     # 25/200-day deviations cannot be trusted for the report date when the
     # underlying Nikkei close itself is not date-matched.
     if not nikkei_date_verified:
+        expected_date = expected_prior_session(report_date, "日経225現物")
         for label in DERIVED_FROM_NIKKEI_CLOSE:
             row = by_label.get(label)
             if row is not None:
@@ -218,18 +232,18 @@ def main() -> int:
     rewrite_market_block(report)
     report.setdefault("dataProvenance", {})["dailyCloseRepair"] = {
         "generatedAt": now_jst().isoformat(),
-        "expectedDataDate": expected_date.isoformat(),
-        "rule": "expected prior session date must match exactly; stale carry-forward is prohibited",
+        "semantics": "previous_close",
+        "rule": "08:00 uses date-matched prior-session closes; retrieval after 08:00 is allowed, stale-date carry-forward is prohibited",
         "repairedLabels": repaired,
         "unavailable": unavailable,
     }
     save(LATEST, payload)
     save(OUT, {
-        "schemaVersion": "1.1.0",
+        "schemaVersion": "2.0.0",
         "generatedAt": now_jst().isoformat(),
         "reportDate": report_date.isoformat(),
         "reportSlot": "08:00",
-        "expectedDataDate": expected_date.isoformat(),
+        "semantics": "previous_close",
         "items": items,
         "unavailable": unavailable,
     })
