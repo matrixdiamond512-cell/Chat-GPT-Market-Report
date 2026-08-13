@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-08-14T01:10:13+09:00",
-  "publishedAt": "2026-08-14T01:10:13+09:00",
-  "dataAsOf": "2026-08-14T01:10:13+09:00",
+  "generatedAt": "2026-08-14T02:13:50+09:00",
+  "publishedAt": "2026-08-14T02:13:50+09:00",
+  "dataAsOf": "2026-08-14T02:13:50+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -37,7 +37,7 @@
       "id": "event_result_repair",
       "name": "重要イベント実績値の補完取得",
       "status": "ok",
-      "note": "代替カレンダー照合 0件、公式PDF補完 0件、取得不能理由明記 0件。"
+      "note": "代替カレンダー照合 1件、公式PDF補完 0件、取得不能理由明記 0件。"
     },
     {
       "id": "weekly_claims_validation",
@@ -68,11 +68,11 @@
       "importanceLabel": "中",
       "forecast": "",
       "previous": "5.06|2.4",
-      "actual": "",
+      "actual": "3.665%",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "実績 3.665% は予想 なし に対して比較保留。名称差・国コード差を補正してTradingView実績データから照合しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -274,8 +274,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -293,7 +293,15 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-09T13:48:48+09:00",
-      "updatedAt": "2026-08-14T01:10:13+09:00"
+      "updatedAt": "2026-08-14T02:13:51+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "tradingview_repair",
+        "name": "Federal Reserve",
+        "url": "https://www.treasurydirect.gov"
+      },
+      "resultSavedAt": "2026-08-14T02:13:51+09:00"
     },
     {
       "id": "event-e18ea463fb42c7",
@@ -540,7 +548,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-09T13:48:48+09:00",
-      "updatedAt": "2026-08-14T01:10:13+09:00",
+      "updatedAt": "2026-08-14T02:13:50+09:00",
       "resultExpected": false,
       "resultType": "qualitative"
     },
@@ -789,7 +797,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-09T13:48:48+09:00",
-      "updatedAt": "2026-08-14T01:10:13+09:00"
+      "updatedAt": "2026-08-14T02:13:50+09:00"
     },
     {
       "id": "event-0a11ed81d6c9b7",
@@ -1036,7 +1044,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-09T13:48:48+09:00",
-      "updatedAt": "2026-08-14T01:10:13+09:00"
+      "updatedAt": "2026-08-14T02:13:50+09:00"
     },
     {
       "id": "event-5050eca2c73505",
@@ -1283,7 +1291,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-09T13:48:48+09:00",
-      "updatedAt": "2026-08-14T01:10:13+09:00"
+      "updatedAt": "2026-08-14T02:13:50+09:00"
     },
     {
       "id": "event-3938ef79a529e2",
@@ -1530,7 +1538,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-09T13:48:48+09:00",
-      "updatedAt": "2026-08-14T01:10:13+09:00"
+      "updatedAt": "2026-08-14T02:13:50+09:00"
     }
   ]
 }
