@@ -3,12 +3,12 @@
   "pageId": "rates-bonds",
   "pageTitle": "金利・債券市場分析",
   "subtitle": "米・日・欧の金利、イールドカーブ、実質金利、入札需給、他市場への波及を一画面で確認",
-  "generatedAt": "2026-08-13T17:07:43+09:00",
+  "generatedAt": "2026-08-13T21:36:18+09:00",
   "meta": {
     "page": "rates-bonds",
-    "asOfDate": "2026-08-12",
+    "asOfDate": "2026-08-13",
     "asOfTime": "各市場の公表時点",
-    "updatedAt": "2026-08-13T17:07:43+09:00",
+    "updatedAt": "2026-08-13T21:36:18+09:00",
     "status": "confirmed",
     "sourceStatus": "自動取得",
     "isStale": false,
@@ -18,7 +18,7 @@
   "summary": {
     "headline": "米2年 4.220%（-3.0bp）、米10年 4.700%（-2.0bp）",
     "theme": "短期金利は低下、長期金利は低下。米2年－10年カーブは前日から大きな形状変化なし。",
-    "conclusion": "米2年は低下、米10年は低下、実質金利は横ばい。現時点では日本10年国債の動きを主導シグナルとして、USD/JPY・金・日経225先物の追随を確認する。",
+    "conclusion": "米2年は低下、米10年は低下、実質金利は横ばい。現時点では米2年債の動きを主導シグナルとして、USD/JPY・金・日経225先物の追随を確認する。",
     "consistency": "米10年・実質金利・期待インフレは最新公表日が一致していないため、同日内訳としては扱わない。各系列の基準日を確認しながら株・為替・金との反応を見る。"
   },
   "cards": [
@@ -33,8 +33,8 @@
       "label": "日本金利",
       "direction": "上昇",
       "status": "confirmed",
-      "reason": "日本10年 2.856% / 前日比 +4.1bp",
-      "asOf": "2026-08-12"
+      "reason": "日本10年 2.874% / 前日比 +1.8bp",
+      "asOf": "2026-08-13"
     },
     {
       "label": "米イールドカーブ",
@@ -145,64 +145,64 @@
     },
     {
       "name": "日本2年国債利回り",
-      "value": 1.646,
+      "value": 1.654,
       "unit": "%",
-      "changeBp": 2.8,
-      "weekChangeBp": 7.7,
+      "changeBp": 0.8,
+      "weekChangeBp": 8.9,
       "direction": "上昇",
-      "asOf": "2026-08-12",
+      "asOf": "2026-08-13",
       "status": "confirmed",
-      "source": "財務省 国債金利情報",
+      "source": "TradingView JGB market snapshot (LSEG)",
       "meaning": "日銀の政策正常化・短期金利期待を確認",
       "missingReason": null
     },
     {
       "name": "日本5年国債利回り",
-      "value": 2.12,
+      "value": 2.147,
       "unit": "%",
-      "changeBp": 1.9,
-      "weekChangeBp": 5.2,
+      "changeBp": 2.7,
+      "weekChangeBp": 10.3,
       "direction": "上昇",
-      "asOf": "2026-08-12",
+      "asOf": "2026-08-13",
       "status": "confirmed",
-      "source": "財務省 国債金利情報",
+      "source": "TradingView JGB market snapshot (LSEG)",
       "meaning": "日本の中期金利とカーブ形状を確認",
       "missingReason": null
     },
     {
       "name": "日本10年国債利回り",
-      "value": 2.856,
+      "value": 2.874,
       "unit": "%",
-      "changeBp": 4.1,
-      "weekChangeBp": 4.3,
+      "changeBp": 1.8,
+      "weekChangeBp": 10.1,
       "direction": "上昇",
-      "asOf": "2026-08-12",
+      "asOf": "2026-08-13",
       "status": "confirmed",
-      "source": "財務省 国債金利情報",
+      "source": "TradingView JGB market snapshot (LSEG)",
       "meaning": "円・銀行株・日経225・円キャリーへの影響を確認",
       "missingReason": null
     },
     {
       "name": "日本30年国債利回り",
-      "value": 3.989,
+      "value": 4.016,
       "unit": "%",
-      "changeBp": 3.2,
-      "weekChangeBp": 2.3,
+      "changeBp": 2.7,
+      "weekChangeBp": 9.7,
       "direction": "上昇",
-      "asOf": "2026-08-12",
+      "asOf": "2026-08-13",
       "status": "confirmed",
-      "source": "財務省 国債金利情報",
+      "source": "TradingView JGB market snapshot (LSEG)",
       "meaning": "日本の財政・超長期債需給を確認",
       "missingReason": null
     },
     {
       "name": "ドイツ10年国債利回り",
-      "value": 3.16,
+      "value": 3.15,
       "unit": "%",
-      "changeBp": -4.0,
-      "weekChangeBp": 6.0,
+      "changeBp": -1.0,
+      "weekChangeBp": 4.0,
       "direction": "低下",
-      "asOf": "2026-08-12",
+      "asOf": "2026-08-13",
       "status": "confirmed",
       "source": "Deutsche Bundesbank",
       "meaning": "EUR/USDとユーロ圏長期金利の基準",
@@ -276,20 +276,20 @@
       },
       {
         "spread": "日本10年－2年",
-        "value": 121.0,
+        "value": 122.0,
         "unit": "bp",
-        "changeBp": 1.3,
-        "weekChangeBp": -3.4,
+        "changeBp": 1.0,
+        "weekChangeBp": 1.2,
         "shape": "順イールド",
         "reading": "スティープ化",
         "status": "calculated"
       },
       {
         "spread": "日本30年－10年",
-        "value": 113.3,
+        "value": 114.2,
         "unit": "bp",
-        "changeBp": -0.9,
-        "weekChangeBp": -2.0,
+        "changeBp": 0.9,
+        "weekChangeBp": -0.4,
         "shape": "順イールド",
         "reading": "形状は概ね不変",
         "status": "calculated"
@@ -320,22 +320,22 @@
     "jpCurve": [
       {
         "tenor": "2年",
-        "value": 1.646,
+        "value": 1.654,
         "status": "confirmed"
       },
       {
         "tenor": "5年",
-        "value": 2.12,
+        "value": 2.147,
         "status": "confirmed"
       },
       {
         "tenor": "10年",
-        "value": 2.856,
+        "value": 2.874,
         "status": "confirmed"
       },
       {
         "tenor": "30年",
-        "value": 3.989,
+        "value": 4.016,
         "status": "confirmed"
       }
     ]
@@ -374,8 +374,8 @@
       },
       {
         "policy": "日本2年債が示す政策期待",
-        "value": "1.646%",
-        "change": "前日比 +2.8bp",
+        "value": "1.654%",
+        "change": "前日比 +0.8bp",
         "status": "confirmed",
         "source": "財務省 国債金利情報",
         "note": "日銀会合の確率値ではなく、日本の短期金利期待の方向確認用。"
@@ -391,9 +391,9 @@
         "円相場",
         "日本株バリュエーション"
       ],
-      "actualStatus": "上昇（+1.60%）／概ね整合",
+      "actualStatus": "上昇（+0.23%）／概ね整合",
       "status": "confirmed",
-      "note": "金利基準日 2026-08-11、日経225先物基準時刻 2026-08-13T13:08:00+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+      "note": "金利基準日 2026-08-11、日経225先物基準時刻 2026-08-13T20:50:00+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
     },
     {
       "market": "USD/JPY",
@@ -403,9 +403,9 @@
         "日米金利差",
         "円キャリー/実需"
       ],
-      "actualStatus": "横ばい（+0.05%）",
+      "actualStatus": "横ばい（+0.04%）",
       "status": "confirmed",
-      "note": "金利基準日 2026-08-11、USD/JPY基準時刻 2026-08-13T17:00:40+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+      "note": "金利基準日 2026-08-11、USD/JPY基準時刻 2026-08-13T21:05:31+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
     },
     {
       "market": "EUR/USD",
@@ -415,9 +415,9 @@
         "ドル需要",
         "ユーロ評価"
       ],
-      "actualStatus": "下落（-0.13%）",
+      "actualStatus": "下落（-0.06%）",
       "status": "confirmed",
-      "note": "金利基準日 2026-08-11、EUR/USD基準時刻 2026-08-13T17:00:23+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+      "note": "金利基準日 2026-08-11、EUR/USD基準時刻 2026-08-13T21:05:23+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
     },
     {
       "market": "金",
@@ -427,9 +427,9 @@
         "ドル",
         "安全資産需要"
       ],
-      "actualStatus": "上昇（+0.43%）／概ね整合",
+      "actualStatus": "上昇（+0.72%）／概ね整合",
       "status": "confirmed",
-      "note": "金利基準日 2026-08-11、金基準時刻 2026-08-13T16:50:28+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+      "note": "金利基準日 2026-08-11、金基準時刻 2026-08-13T20:55:19+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
     },
     {
       "market": "BTCUSD",
@@ -439,22 +439,22 @@
         "リスク選好",
         "暗号資産フロー"
       ],
-      "actualStatus": "上昇（+0.65%）／概ね整合",
+      "actualStatus": "横ばい（+0.01%）／概ね整合",
       "status": "confirmed",
-      "note": "金利基準日 2026-08-11、BTCUSD基準時刻 2026-08-13T17:00:41+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+      "note": "金利基準日 2026-08-11、BTCUSD基準時刻 2026-08-13T21:05:35+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
     }
   ],
   "leadingRate": {
-    "name": "日本10年国債",
+    "name": "米2年債",
     "status": "calculated",
-    "reason": "主要金利の中で前日比変化が最大（+4.1bp）。",
-    "changeFromPrevious": "上昇 +4.1bp",
+    "reason": "主要金利の中で前日比変化が最大（-3.0bp）。",
+    "changeFromPrevious": "低下 -3.0bp",
     "switchCondition": "別年限の変化幅が上回る、または株・為替・商品への波及が別の金利に連動し始めた場合。"
   },
   "scenarios": {
     "main": {
       "title": "メインシナリオ",
-      "body": "米2年は低下、米10年は低下、実質金利は横ばい。現時点では日本10年国債の動きを主導シグナルとして、USD/JPY・金・日経225先物の追随を確認する。",
+      "body": "米2年は低下、米10年は低下、実質金利は横ばい。現時点では米2年債の動きを主導シグナルとして、USD/JPY・金・日経225先物の追随を確認する。",
       "status": "calculated"
     },
     "alternative": {
@@ -489,7 +489,7 @@
     },
     {
       "name": "TradingView / LSEG JGB",
-      "status": "standby",
+      "status": "confirmed",
       "note": "財務省の翌営業日公表が遅れている場合のみ、直近市場スナップショットで補完。"
     },
     {
