@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Fill missing 08:00 market-table cells from the canonical 終値一覧 Google Sheet.
+"""Populate the 08:00 market table from the canonical 終値一覧 previous-close row.
 
-The script is deliberately conservative: it only replaces a row when the sheet has a
-usable value. Existing non-empty live/reference values are preserved unless the row is
-explicitly unavailable. Each report keeps the 28-row / 5-column contract.
+The 08:00 report is a previous-close report. Therefore every mapped market row must
+prefer the latest valid row in 終値一覧 whose date is before the report date. The time
+at which that close is retrieved is not the market-data timestamp: a verified close
+for the correct prior session may be retrieved after 08:00 and is still valid for the
+08:00 report because the underlying value is the prior-session close.
 
-If GitHub Actions does not have the Google Sheets credentials configured, enrichment
-is skipped without failing the publication job. This is reported explicitly rather
-than pretending that sheet synchronization occurred.
+If GitHub Actions does not have Google Sheets credentials configured, enrichment is
+skipped without failing the publication job. Missing cells are left for the dedicated
+date-matched source repair steps.
 """
 from __future__ import annotations
 
@@ -160,18 +162,11 @@ def main() -> int:
         spec = MAP.get(label)
         if not spec: continue
         sheet_value = sheet_row.get(spec["value"], "")
-        if not usable(sheet_value): continue
+        if not usable(sheet_value):
+            continue
 
-        existing_value = str(row.get("value") or "").strip()
-        should_replace = not usable(existing_value) or label in {
-            "NYダウ","NASDAQ総合","S&P500","Russell 2000","日経225現物","VIX","日経VI",
-            "Fear & Greed Index","米10年債利回り","日本10年国債利回り","日経225予想PER",
-            "日経225 PBR","日経225予想EPS","日経225 25日移動平均乖離率","日経225 200日移動平均乖離率",
-            "東証プライム売買代金","東証プライム売買高","東証プライム値上がり銘柄数",
-            "東証プライム値下がり銘柄数","東証プライム25日騰落レシオ"
-        }
-        if not should_replace: continue
-
+        # 08:00 is a previous-close report. A valid canonical close always wins over
+        # any report-time/live value that may already be present in the draft report.
         change = sheet_row.get(spec.get("change", ""), "") if spec.get("change") else ""
         rate = sheet_row.get(spec.get("rate", ""), "") if spec.get("rate") else ""
         classification = sheet_row.get(spec.get("classification", ""), "") if spec.get("classification") else ""
@@ -187,6 +182,8 @@ def main() -> int:
         "dataDate": sheet_date,
         "syncedAt": dt.datetime.now(JST).replace(microsecond=0).isoformat(),
         "updatedLabels": updated,
+        "semantics": "previous_close",
+        "rule": "08:00 report uses the prior-session close; retrieval time does not invalidate a date-matched close",
     }
     dump_json(LATEST, payload)
     print(json.dumps({"sheetDate": sheet_date, "updated": updated}, ensure_ascii=False))
