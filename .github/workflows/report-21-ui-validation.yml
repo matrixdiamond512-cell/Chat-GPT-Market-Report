@@ -5,20 +5,18 @@ on:
   pull_request:
     paths:
       - 'report.html'
-      - 'assets/js/report-21-manual-layout.js'
-      - 'assets/js/report-21-navigation-fix.js'
-      - 'assets/css/report-21-manual-layout.css'
-      - 'assets/js/report-08-final-table-source.js'
+      - 'assets/js/report-sop-renderer.js'
+      - 'assets/js/latest-report-bootstrap.js'
+      - 'assets/js/morning-report-qa-gate.js'
       - '.github/workflows/report-21-ui-validation.yml'
   push:
     branches:
       - main
     paths:
       - 'report.html'
-      - 'assets/js/report-21-manual-layout.js'
-      - 'assets/js/report-21-navigation-fix.js'
-      - 'assets/css/report-21-manual-layout.css'
-      - 'assets/js/report-08-final-table-source.js'
+      - 'assets/js/report-sop-renderer.js'
+      - 'assets/js/latest-report-bootstrap.js'
+      - 'assets/js/morning-report-qa-gate.js'
       - '.github/workflows/report-21-ui-validation.yml'
 
 permissions:
@@ -36,29 +34,41 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Syntax-check report scripts
+      - name: Syntax-check active report scripts
         run: |
-          node --check assets/js/report-21-manual-layout.js
-          node --check assets/js/report-21-navigation-fix.js
-          node --check assets/js/report-08-final-table-source.js
+          node --check assets/js/report-fulltext.js
+          node --check assets/js/report-sop-renderer.js
+          node --check assets/js/latest-report-bootstrap.js
+          node --check assets/js/morning-report-qa-gate.js
 
-      - name: Confirm portal loads SOP assets
+      - name: Confirm portal loads unified SOP renderer
         run: |
-          grep -q 'report-21-manual-layout.css' report.html
-          grep -q 'report-21-manual-layout.js' report.html
-          grep -q 'report-21-navigation-fix.js' report.html
+          grep -q 'report-sop-renderer.js' report.html
           grep -q '08:00・12:00・16:00・21:00' report.html
+          grep -q '主要市場データを5列表で表示' report.html
 
-      - name: Confirm all-slot QA hold and five-column table
+      - name: Forbid legacy renderers that overwrite the SOP table
         run: |
-          grep -q 'ENFORCE_FROM = "2026-08-13"' assets/js/report-21-manual-layout.js
-          grep -q '"08:00"' assets/js/report-21-manual-layout.js
-          grep -q '"12:00"' assets/js/report-21-manual-layout.js
-          grep -q '"16:00"' assets/js/report-21-manual-layout.js
-          grep -q '"21:00"' assets/js/report-21-manual-layout.js
-          grep -q '公開保留中です' assets/js/report-21-manual-layout.js
-          grep -q '確定終値・現在値' assets/js/report-21-manual-layout.js
-          grep -q '前日比' assets/js/report-21-manual-layout.js
-          grep -q '騰落率' assets/js/report-21-manual-layout.js
-          grep -q '状態' assets/js/report-21-manual-layout.js
-          grep -q '28-row morning renderer' assets/js/report-21-manual-layout.js
+          ! grep -q 'report-21-manual-layout.js' report.html
+          ! grep -q 'report-21-navigation-fix.js' report.html
+          ! grep -q 'report-market-data-table-hardfix.js' report.html
+          ! grep -q 'report-08-final-table-source.js' report.html
+          ! grep -q 'report-fulltext-fix.js' report.html
+
+      - name: Confirm all-slot five-column renderer contract
+        run: |
+          grep -q '"08:00"' assets/js/report-sop-renderer.js
+          grep -q '"12:00"' assets/js/report-sop-renderer.js
+          grep -q '"16:00"' assets/js/report-sop-renderer.js
+          grep -q '"21:00"' assets/js/report-sop-renderer.js
+          grep -q '確定終値・現在値' assets/js/report-sop-renderer.js
+          grep -q '前日比' assets/js/report-sop-renderer.js
+          grep -q '騰落率' assets/js/report-sop-renderer.js
+          grep -q '状態' assets/js/report-sop-renderer.js
+          grep -q 'marketDataTable' assets/js/report-sop-renderer.js
+          grep -q '【' assets/js/report-sop-renderer.js
+
+      - name: Confirm short latest bodies cannot replace richer history bodies
+        run: |
+          grep -q 'fullTextScore' assets/js/latest-report-bootstrap.js
+          grep -q 'chooseFullText' assets/js/latest-report-bootstrap.js
