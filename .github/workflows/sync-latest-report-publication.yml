@@ -1,5 +1,7 @@
 name: Sync latest market report publication
 
+# The workflow itself is in the watched paths so an SOP/data-pipeline fix can re-run
+# publication against the current main branch immediately.
 on:
   push:
     branches: [main]
