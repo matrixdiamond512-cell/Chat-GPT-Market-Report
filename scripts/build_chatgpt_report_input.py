@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Build the report-time ChatGPT market input from the published report contract.
+"""Build ChatGPT market input from the published report contract.
 
-For the 08:00 report, the user-facing contract is exactly 28 rows / 5 columns.
-This script converts that structured table into the same market-data schema used by
-ChatGPT_Market_Input, without relabeling late quotes as 08:00 values. Rows whose
-published value is explicitly unavailable remain unavailable with the reason intact.
+For the 08:00 report, the user-facing contract is exactly 28 rows / 5 columns and
+represents prior-session closes, not an 08:00 intraday snapshot. A date-matched
+previous close remains valid even when retrieved later in the day; retrieval time is
+recorded separately from the market-data date.
 
-For compatibility with the already-installed Apps Script, 08:00 publication also
-replaces data/market/latest.json with this 28-item report snapshot. The next
-scheduled acquisition slot resets latest.json to a fresh independent quote snapshot.
+For compatibility with the installed Apps Script, 08:00 publication also replaces
+data/market/latest.json with this 28-item previous-close snapshot. The next scheduled
+intraday acquisition slot resets latest.json to a fresh quote snapshot.
 """
 from __future__ import annotations
 
@@ -30,14 +30,14 @@ ITEMS: list[tuple[str, str, str, str, str]] = [
     ("S&P500", "sp500", "pt", "index", "daily"),
     ("Russell 2000", "russell2000", "pt", "index", "daily"),
     ("日経225現物", "nikkei225_cash", "円", "index", "daily"),
-    ("CME日経225先物・円建て", "nikkei225_futures_cme_yen", "円", "futures_cme", "overnight"),
-    ("CME日経225先物・ドル建て", "nikkei225_futures_cme_usd", "円", "futures_cme", "overnight"),
-    ("日経225先物（大阪取引所）", "nikkei225_futures_ose", "円", "futures_ose", "day_through"),
-    ("USD/JPY", "usdjpy", "円", "spot", "continuous"),
-    ("EUR/USD", "eurusd", "USD", "spot", "continuous"),
-    ("COMEX金先物", "gold", "USD/oz", "continuous_futures", "global"),
-    ("WTI原油", "wti", "USD/bbl", "continuous_futures", "global"),
-    ("BTCUSD", "btcusd", "USD", "spot_crypto", "continuous"),
+    ("CME日経225先物・円建て", "nikkei225_futures_cme_yen", "円", "futures_cme", "daily_close"),
+    ("CME日経225先物・ドル建て", "nikkei225_futures_cme_usd", "円", "futures_cme", "daily_close"),
+    ("日経225先物（大阪取引所）", "nikkei225_futures_ose", "円", "futures_ose", "daily_close"),
+    ("USD/JPY", "usdjpy", "円", "spot", "daily_close"),
+    ("EUR/USD", "eurusd", "USD", "spot", "daily_close"),
+    ("COMEX金先物", "gold", "USD/oz", "continuous_futures", "daily_close"),
+    ("WTI原油", "wti", "USD/bbl", "continuous_futures", "daily_close"),
+    ("BTCUSD", "btcusd", "USD", "spot_crypto", "daily_close"),
     ("VIX", "vix", "pt", "index", "daily"),
     ("日経VI", "nikkei_vi", "pt", "index", "daily"),
     ("Fear & Greed Index", "fear_greed", "score", "sentiment", "daily"),
@@ -86,10 +86,24 @@ def report_object(payload: dict[str, Any]) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
-def publication_asof(report: dict[str, Any]) -> str:
-    date = str(report.get("date") or "")
-    slot = str(report.get("time") or "")
-    return f"{date}T{slot}:00+09:00" if date and slot else ""
+def previous_close_date(report: dict[str, Any]) -> str:
+    provenance = report.get("dataProvenance") or {}
+    for key, field in (("closeSheet", "dataDate"), ("japanCloseReference", "dataDate")):
+        block = provenance.get(key) or {}
+        if isinstance(block, dict) and block.get(field):
+            return str(block[field])
+    daily = provenance.get("dailyCloseRepair") or {}
+    if isinstance(daily, dict):
+        # The current repair step stores item-specific dates in its sidecar; for the
+        # report-level contract use the preceding weekday as a conservative fallback.
+        pass
+    date_text = str(report.get("date") or "")
+    try:
+        report_date = dt.date.fromisoformat(date_text)
+        prior = report_date - dt.timedelta(days=3 if report_date.weekday() == 0 else 1)
+        return prior.isoformat()
+    except ValueError:
+        return ""
 
 
 def source_document(report: dict[str, Any]) -> tuple[str, str]:
@@ -115,7 +129,8 @@ def row_market(
     direction = str(row.get("direction") or "—").strip() or "—"
     unavailable = bool(UNAVAILABLE_RE.search(value_text))
     source_name, source_url = source_document(report)
-    as_of = publication_asof(report)
+    data_date = previous_close_date(report)
+    fetched_at = dt.datetime.now(JST).replace(microsecond=0).isoformat()
     value = None if unavailable else numeric(value_text)
     change = None if unavailable else numeric(change_text)
     rate = None if unavailable else numeric(rate_text)
@@ -125,26 +140,26 @@ def row_market(
         "displayName": label,
         "value": value,
         "displayValue": value_text,
-        "previousClose": None,
+        "previousClose": value,
         "change": change,
         "changePercent": rate,
         "changeText": f"{change_text} / {rate_text}" if change_text != "—" or rate_text != "—" else "—",
         "unit": unit,
         "marketType": market_type,
         "session": session,
-        "asOf": as_of,
-        "fetchedAt": dt.datetime.now(JST).replace(microsecond=0).isoformat(),
-        "sourceId": "published_report_market_table",
+        "asOf": data_date,
+        "fetchedAt": fetched_at,
+        "sourceId": "published_report_previous_close_table",
         "sourceName": source_name,
         "sourceUrl": source_url,
         "rawReference": f"marketDataTable:{label}",
         "classification": direction,
         "verificationStatus": "unavailable" if unavailable else "verified",
-        "freshnessStatus": "report_time",
+        "freshnessStatus": "previous_close",
         "fallbackUsed": False,
-        "lastVerifiedAt": as_of if not unavailable else "",
+        "lastVerifiedAt": fetched_at if not unavailable else "",
         "error": reason or None,
-        "note": "08:00公開時点の構造化28項目表。後刻取得値で遡及上書きしない。",
+        "note": "08:00は前日終値表。市場データ日付が正しければ、取得時刻が08:00より後でも利用可。後刻のライブ値への置換は不可。",
     }
 
 
@@ -171,12 +186,14 @@ def build_morning(report: dict[str, Any]) -> dict[str, Any]:
     required_six = {"gold", "wti", "nikkei225_futures_ose", "usdjpy", "eurusd", "btcusd"}
     missing_required = [markets[key]["displayName"] for key in required_six if markets[key]["verificationStatus"] != "verified"]
     return {
-        "schemaVersion": "2.0.0",
+        "schemaVersion": "2.1.0",
         "pageId": "market-data",
         "generatedAt": dt.datetime.now(JST).replace(microsecond=0).isoformat(),
         "reportDate": report.get("date"),
         "reportSlot": report.get("time"),
         "reportTitle": report.get("title"),
+        "dataSemantics": "previous_close",
+        "previousCloseDate": previous_close_date(report),
         "overallStatus": "verified" if not unavailable else "degraded",
         "dataComplete": not unavailable,
         "availableCount": 28 - len(unavailable),
@@ -188,7 +205,9 @@ def build_morning(report: dict[str, Any]) -> dict[str, Any]:
         "contract": {
             "rowCount": 28,
             "source": "data/latest-report.json marketDataTable",
-            "lateBackfillAllowed": False,
+            "semantics": "previous_close",
+            "dateMatchedLateRetrievalAllowed": True,
+            "lateIntradayQuoteBackfillAllowed": False,
         },
     }
 
@@ -200,10 +219,6 @@ def main() -> int:
     slot = str(report.get("time") or "")
     if slot == "08:00":
         payload = build_morning(report)
-        # Compatibility path for the already-installed Apps Script, which reads
-        # data/market/latest.json. This guarantees the sheet sees the same 28
-        # rows as the published 08:00 report and removes the obsolete crypto
-        # sentiment row from this report-time snapshot.
         dump_json(RAW_MARKET, payload)
     else:
         raw = load_json(RAW_MARKET, {})
