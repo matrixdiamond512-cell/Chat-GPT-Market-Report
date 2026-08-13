@@ -28,9 +28,6 @@ import fetch_market_data as market_data  # noqa: E402
 ROOT = SCRIPT_DIR.parent
 JST = dt.timezone(dt.timedelta(hours=9))
 
-# Successful live quotes are refreshed about every ten minutes. Daily indicators
-# are retried when missing/fallback, but are not needlessly downloaded every five
-# minutes once a verified value exists in the same acquisition window.
 DEFAULT_REFRESH_MINUTES = 30
 REFRESH_MINUTES: dict[str, int] = {
     "gold": 9,
@@ -309,6 +306,10 @@ def main() -> int:
 
     payload = build_staged_payload(slot, args.mode)
     market_data.write_outputs(payload)
+    # Reset the ChatGPT input to the current independent acquisition while the
+    # report is still being assembled. Publication of the 08:00 report later
+    # replaces this with its exact structured 28-row contract.
+    market_data.write_json(ROOT / "data" / "market" / "chatgpt-input.json", payload)
     write_acquisition_status(payload)
 
     if args.print_summary:
