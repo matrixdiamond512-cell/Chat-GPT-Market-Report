@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.1.0",
   "pageId": "market-data",
-  "generatedAt": "2026-08-13T17:00:54+09:00",
+  "generatedAt": "2026-08-13T17:01:00+09:00",
   "reportSlot": "16:00",
   "overallStatus": "degraded",
   "missingRequired": [],
@@ -95,8 +95,8 @@
       "lastVerifiedAt": "2026-08-13T13:24:00+09:00",
       "error": "jpx_ose_futures_quote: PARSE_ERROR; jpx_ose_futures_quote: PARSE_ERROR; nikkei_nk225f_profile: REFERENCE_ONLY",
       "note": "今回の新規取得に失敗したため、前回確認値を保持しています。",
-      "attemptCount": 2,
-      "lastAttemptAt": "2026-08-13T17:00:54+09:00",
+      "attemptCount": 3,
+      "lastAttemptAt": "2026-08-13T17:01:00+09:00",
       "lastError": "nikkei_nk225f_profile: REFERENCE_ONLY: reference source is not allowed for dashboard publication",
       "retryPreserved": false
     },
@@ -350,8 +350,8 @@
   "acquisition": {
     "strategy": "staged_retry",
     "windowStartedAt": "2026-08-13T17:00:29+09:00",
-    "lastAttemptAt": "2026-08-13T17:00:54+09:00",
-    "runCount": 2,
+    "lastAttemptAt": "2026-08-13T17:01:00+09:00",
+    "runCount": 3,
     "mode": "incremental",
     "targetedSymbols": [
       "nikkei225_futures_ose"
