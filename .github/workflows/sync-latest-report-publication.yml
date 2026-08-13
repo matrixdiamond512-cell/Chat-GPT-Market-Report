@@ -6,6 +6,7 @@ on:
     paths:
       - "data/latest-report.json"
       - "scripts/enrich_latest_morning_from_sheet.py"
+      - "scripts/repair_morning_daily_references.py"
       - "scripts/build_chatgpt_report_input.py"
       - "scripts/build_market_sheet_exports.py"
       - "scripts/sync_latest_report_publication.py"
@@ -43,6 +44,9 @@ jobs:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: python scripts/enrich_latest_morning_from_sheet.py
+
+      - name: Repair date-matched daily closes
+        run: python scripts/repair_morning_daily_references.py
 
       - name: Build report-time ChatGPT input and CSV contract
         run: |
@@ -104,7 +108,7 @@ jobs:
           git add data/latest-report.json reports data/dashboard.json reports.json \
             data/market/latest.json data/market/chatgpt-input.json \
             data/market/chatgpt_input.csv data/market/verified_history.csv \
-            data/market/morning_report_qa.json
+            data/market/morning-daily-reference.json data/market/morning_report_qa.json
           if git diff --cached --quiet; then
             echo "Publication files already synchronized."
             exit 0
