@@ -40,6 +40,7 @@ MAP: dict[str, dict[str, str]] = {
     "米10年債利回り": {"value":"米10年債利回り","change":"米10年債前日比"},
     "日本10年国債利回り": {"value":"日本10年債利回り","change":"日本10年債前日比"},
     "日経225予想PER": {"value":"日経225予想PER"},
+    "日経225 PBR": {"value":"日経225予想PBR"},
     "日経225予想EPS": {"value":"日経225予想EPS"},
     "日経225 25日移動平均乖離率": {"value":"日経225_25日乖離率"},
     "日経225 200日移動平均乖離率": {"value":"日経225_200日乖離率"},
@@ -100,7 +101,7 @@ def signed_direction(change: Any, rate: Any, label: str, value: Any, classificat
 def fmt(label: str, value: Any) -> str:
     text = str(value or "").strip()
     if not text: return text
-    if label == "日経225予想PER" and not text.endswith("倍"): return text + "倍"
+    if label in {"日経225予想PER", "日経225 PBR"} and not text.endswith("倍"): return text + "倍"
     if label == "日経225予想EPS" and not text.endswith("円"): return text + "円"
     if label == "東証プライム売買代金":
         n = numeric(text)
@@ -164,8 +165,8 @@ def main() -> int:
         existing_value = str(row.get("value") or "").strip()
         should_replace = not usable(existing_value) or label in {
             "NYダウ","NASDAQ総合","S&P500","Russell 2000","日経225現物","VIX","日経VI",
-            "Fear & Greed Index","米10年債利回り","日本10年債利回り","日経225予想PER",
-            "日経225予想EPS","日経225 25日移動平均乖離率","日経225 200日移動平均乖離率",
+            "Fear & Greed Index","米10年債利回り","日本10年国債利回り","日経225予想PER",
+            "日経225 PBR","日経225予想EPS","日経225 25日移動平均乖離率","日経225 200日移動平均乖離率",
             "東証プライム売買代金","東証プライム売買高","東証プライム値上がり銘柄数",
             "東証プライム値下がり銘柄数","東証プライム25日騰落レシオ"
         }
