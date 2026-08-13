@@ -5,6 +5,9 @@ This helper captures CME Nikkei 225 futures (yen- and dollar-denominated) plus t
 Osaka large Nikkei 225 future from the nikkei225jp summary page. CME rows on the
 site may end in either a page date (MM/DD) or a live quote time (HH:MM); both are
 accepted. Values are reference quotes, not official CME settlement prices.
+
+A quote captured after the report slot is retained for diagnostics but is marked
+reference_after_report so it cannot overwrite the historical 08:00 table.
 """
 
 from __future__ import annotations
@@ -22,6 +25,7 @@ JST = dt.timezone(dt.timedelta(hours=9))
 SOURCE_URL = "https://nikkei225jp.com/cme/"
 OUT = ROOT / "data" / "market" / "morning-reference.json"
 USER_AGENT = "Mozilla/5.0 (compatible; ChatGPT-Market-Report/1.0)"
+REPORT_GRACE_MINUTES = 5
 
 
 def now_jst() -> dt.datetime:
@@ -106,6 +110,28 @@ def cme_as_of(report_date: dt.date, parsed: dict[str, str]) -> str:
     return dt.date(report_date.year, month, day).isoformat()
 
 
+def slot_cutoff(report_date: dt.date, slot: str) -> dt.datetime:
+    hour, minute = (int(part) for part in slot.split(":"))
+    return dt.datetime.combine(report_date, dt.time(hour, minute), tzinfo=JST) + dt.timedelta(minutes=REPORT_GRACE_MINUTES)
+
+
+def reference_status(as_of: str, report_date: dt.date, slot: str) -> str:
+    # Date-only values are treated as previous-close/reference dates and may be used.
+    if "T" not in as_of:
+        return "verified_reference"
+    try:
+        parsed = dt.datetime.fromisoformat(as_of).astimezone(JST)
+    except ValueError:
+        return "reference_invalid_time"
+    return "verified_reference" if parsed <= slot_cutoff(report_date, slot) else "reference_after_report"
+
+
+def note_for_status(base: str, status: str, slot: str) -> str:
+    if status == "reference_after_report":
+        return base + f" {slot}より後の時刻なので当該レポートの値には上書きしない。"
+    return base
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--report-date", default=now_jst().date().isoformat())
@@ -130,6 +156,8 @@ def main() -> int:
         as_of = cme_as_of(report_date, parsed)
         if parsed.get("stampType") == "date":
             reference_dates.append(as_of[:10])
+        status = reference_status(as_of, report_date, args.slot)
+        base_note = "26年09月限のページ上最終表示値。CME公式清算値ではないため、その区別を維持する。"
         items[label] = {
             "value": parsed["value"],
             "change": parsed["change"],
@@ -138,32 +166,36 @@ def main() -> int:
             "asOf": as_of,
             "sourceName": f"nikkei225jp.com {product}",
             "sourceUrl": SOURCE_URL,
-            "status": "verified_reference",
-            "note": "26年09月限のページ上最終表示値。CME公式清算値ではないため、その区別を維持する。",
+            "status": status,
+            "note": note_for_status(base_note, status, args.slot),
         }
 
     if ose:
+        as_of = f"{report_date.isoformat()}T{ose['time']}:00+09:00"
+        status = reference_status(as_of, report_date, args.slot)
+        base_note = "大証ラージ26年9月限。JPX/OSEの値とクロスチェックして使用する。"
         items["日経225先物（大阪取引所）"] = {
             "value": ose["value"],
             "change": ose["change"],
             "rate": ose["rate"],
             "direction": ose["direction"],
-            "asOf": f"{report_date.isoformat()}T{ose['time']}:00+09:00",
+            "asOf": as_of,
             "sourceName": "JPX/OSE mirrored quote on nikkei225jp.com",
             "sourceUrl": SOURCE_URL,
-            "status": "verified_reference",
-            "note": "大証ラージ26年9月限。JPX/OSEの値とクロスチェックして使用する。",
+            "status": status,
+            "note": note_for_status(base_note, status, args.slot),
         }
 
     if not items:
         raise SystemExit("No morning reference values parsed")
 
     payload = {
-        "schemaVersion": "1.1.0",
+        "schemaVersion": "1.2.0",
         "generatedAt": now_jst().isoformat(),
         "reportDate": report_date.isoformat(),
         "reportSlot": args.slot,
         "referenceDate": max(reference_dates) if reference_dates else report_date.isoformat(),
+        "reportCutoff": slot_cutoff(report_date, args.slot).isoformat(),
         "items": items,
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
