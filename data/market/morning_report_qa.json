@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-08-13T09:26:58+09:00",
+  "checkedAt": "2026-08-13T09:30:34+09:00",
   "reportDate": "2026-08-13",
   "reportSlot": "08:00",
   "ready": true,
@@ -8,7 +8,7 @@
   "latestReportDate": "2026-08-13",
   "latestReportTime": "08:00",
   "morningReferenceDate": "2026-08-13",
-  "morningReferenceGeneratedAt": "2026-08-13T08:26:12+09:00",
+  "morningReferenceGeneratedAt": "2026-08-13T09:28:33+09:00",
   "expectedRowCount": 28,
   "actualRowCount": 28,
   "expectedColumns": [
@@ -50,7 +50,10 @@
   ],
   "blockingReasons": [],
   "warnings": [
-    "marketDataTable structured rows used from latest-report"
+    "marketDataTable structured rows used from latest-report",
+    "CME日経225先物・円建て: verified morning-reference overlay applied",
+    "CME日経225先物・ドル建て: verified morning-reference overlay applied",
+    "日経225先物（大阪取引所）: verified morning-reference overlay applied"
   ],
   "rule": "Normal publication requires the current JST 08:00 latest-report, same-date morning-reference, and a valid structured 28-item / 5-column table. Legacy reports.json/fullText remains fallback only."
 }
