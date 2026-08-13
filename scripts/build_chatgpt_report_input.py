@@ -3,11 +3,12 @@
 
 For the 08:00 report, the user-facing contract is exactly 28 rows / 5 columns.
 This script converts that structured table into the same market-data schema used by
-ChatGPT_Market_Input, without relabeling late quotes as 08:00 values.  Rows whose
+ChatGPT_Market_Input, without relabeling late quotes as 08:00 values. Rows whose
 published value is explicitly unavailable remain unavailable with the reason intact.
 
-For intraday slots, the independently acquired data/market/latest.json remains the
-input source when its reportSlot matches the published report slot.
+For compatibility with the already-installed Apps Script, 08:00 publication also
+replaces data/market/latest.json with this 28-item report snapshot. The next
+scheduled acquisition slot resets latest.json to a fresh independent quote snapshot.
 """
 from __future__ import annotations
 
@@ -154,11 +155,10 @@ def build_morning(report: dict[str, Any]) -> dict[str, Any]:
         raise SystemExit(f"08:00 report requires 28 structured rows; got {len(rows) if isinstance(rows, list) else 'invalid'}")
     by_label = {str(row.get("label") or "").strip(): row for row in rows if isinstance(row, dict)}
     expected = [item[0] for item in ITEMS]
-    if list(by_label) != expected:
-        missing = [label for label in expected if label not in by_label]
-        extra = [label for label in by_label if label not in expected]
-        if missing or extra:
-            raise SystemExit(f"08:00 market labels mismatch. missing={missing}, extra={extra}")
+    missing = [label for label in expected if label not in by_label]
+    extra = [label for label in by_label if label not in expected]
+    if missing or extra:
+        raise SystemExit(f"08:00 market labels mismatch. missing={missing}, extra={extra}")
 
     markets: dict[str, Any] = {}
     unavailable: list[str] = []
@@ -172,7 +172,7 @@ def build_morning(report: dict[str, Any]) -> dict[str, Any]:
     missing_required = [markets[key]["displayName"] for key in required_six if markets[key]["verificationStatus"] != "verified"]
     return {
         "schemaVersion": "2.0.0",
-        "pageId": "chatgpt-report-input",
+        "pageId": "market-data",
         "generatedAt": dt.datetime.now(JST).replace(microsecond=0).isoformat(),
         "reportDate": report.get("date"),
         "reportSlot": report.get("time"),
@@ -183,6 +183,7 @@ def build_morning(report: dict[str, Any]) -> dict[str, Any]:
         "expectedCount": 28,
         "unavailableLabels": unavailable,
         "missingRequired": missing_required,
+        "fallbackCount": 0,
         "markets": markets,
         "contract": {
             "rowCount": 28,
@@ -199,6 +200,11 @@ def main() -> int:
     slot = str(report.get("time") or "")
     if slot == "08:00":
         payload = build_morning(report)
+        # Compatibility path for the already-installed Apps Script, which reads
+        # data/market/latest.json. This guarantees the sheet sees the same 28
+        # rows as the published 08:00 report and removes the obsolete crypto
+        # sentiment row from this report-time snapshot.
+        dump_json(RAW_MARKET, payload)
     else:
         raw = load_json(RAW_MARKET, {})
         if str(raw.get("reportSlot") or "") != slot:
