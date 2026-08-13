@@ -20,6 +20,7 @@ on:
     branches: [main]
     paths:
       - "scripts/fetch_morning_reference.py"
+      - "scripts/mark_late_morning_references.py"
       - ".github/workflows/market-data-08-anchor.yml"
   schedule:
     - cron: "28 21 * * 0-5" # 06:28 JST -> 06:30 acquisition
@@ -62,6 +63,7 @@ jobs:
           python -m py_compile scripts/run_market_data_window.py
           python -m py_compile scripts/verify_market_report_readiness.py
           python -m py_compile scripts/fetch_morning_reference.py
+          python -m py_compile scripts/mark_late_morning_references.py
 
       - name: Resolve intended Japan-time attempt
         id: intended
@@ -102,9 +104,10 @@ jobs:
           git pull --rebase
           REPORT_DATE="$(TZ=Asia/Tokyo date +%F)"
           python scripts/fetch_morning_reference.py --report-date "$REPORT_DATE" --slot "08:00"
-          git add data/market/morning-reference.json
+          python scripts/mark_late_morning_references.py
+          git add data/market/morning-reference.json data/latest-report.json
           if git diff --cached --quiet; then
-            echo "Morning reference unchanged"
+            echo "Morning reference and historical annotations unchanged"
             exit 0
           fi
           git commit -m "Refresh 08:00 CME/OSE morning reference"
