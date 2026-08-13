@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Build CSV exports consumed by the ChatGPT market-data Google Sheets tabs."""
+"""Build CSV exports consumed by the ChatGPT market-data Google Sheets tabs.
+
+The current ChatGPT input prefers data/market/chatgpt-input.json.  That file is
+built from the published 28-row table for 08:00 and from the independent market
+snapshot for intraday slots.  This prevents the 08:00 sheet from collapsing back
+to the old 10-row raw quote contract.
+"""
 
 from __future__ import annotations
 
@@ -44,8 +50,17 @@ def history_payloads(history_dir: Path) -> list[dict[str, Any]]:
     return [payloads[key] for key in sorted(payloads)]
 
 
+def current_input_payload(market_dir: Path) -> dict[str, Any]:
+    report_input = market_dir / "chatgpt-input.json"
+    if report_input.exists():
+        payload = load_json(report_input)
+        if isinstance(payload.get("markets"), dict) and payload.get("markets"):
+            return payload
+    return load_json(market_dir / "latest.json")
+
+
 def build_exports(market_dir: Path = MARKET_DIR) -> tuple[int, int]:
-    latest = load_json(market_dir / "latest.json")
+    latest = current_input_payload(market_dir)
     latest_rows = market_rows(latest)
     write_csv(market_dir / "chatgpt_input.csv", latest_rows)
 
