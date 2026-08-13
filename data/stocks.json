@@ -3,10 +3,10 @@
   "pageId": "stocks",
   "pageTitle": "株式市場分析",
   "generatedAt": "2026-08-04T00:00:00+09:00",
-  "updatedAt": "2026-08-14T07:24:28+09:00",
+  "updatedAt": "2026-08-14T07:25:35+09:00",
   "dataAsOf": "2026-08-13T16:00:00-04:00",
   "status": "ok",
-  "sourceStatus": "Google Sheets＋日経225寄与度検証済みデータ",
+  "sourceStatus": "米国市場と東京市場を独立更新・市場別基準日を明示",
   "sources": [
     {
       "id": "INITIAL_STOCKS_HTML",
@@ -28,91 +28,79 @@
       "rows": [
         [
           "Dow（NYダウ）",
-          "53,770.27",
-          "-21.58（-0.04%）",
-          "前日比下落。指数の終値ベースで確認。 基準日 2026-08-12"
+          "53,839.99",
+          "+69.72（+0.13%）",
+          "前日比上昇。指数の終値ベースで確認。 基準日 2026-08-13"
         ],
         [
           "S&P500",
-          "7,748.50",
-          "+20.30（+0.26%）",
-          "前日比上昇。指数の終値ベースで確認。 基準日 2026-08-12"
+          "7,798.99",
+          "+50.49（+0.65%）",
+          "前日比上昇。指数の終値ベースで確認。 基準日 2026-08-13"
         ],
         [
           "Nasdaq（総合）",
-          "26,588.49",
-          "+143.04（+0.54%）",
-          "前日比上昇。指数の終値ベースで確認。 基準日 2026-08-12"
+          "26,803.03",
+          "+214.54（+0.81%）",
+          "前日比上昇。指数の終値ベースで確認。 基準日 2026-08-13"
         ],
         [
           "SOX（半導体指数）",
-          "12,399.38",
-          "+300.91（+2.49%）",
-          "前日比上昇。半導体株全体の方向を確認。 基準日 2026-08-12"
+          "12,456.00",
+          "+56.62（+0.46%）",
+          "前日比上昇。半導体株全体の方向を確認。 基準日 2026-08-13"
         ],
         [
           "Russell2000（小型株）",
-          "3,045.48",
-          "+18.36（+0.61%）",
-          "前日比上昇。小型株への資金の広がりを確認。 基準日 2026-08-12"
+          "3,052.85",
+          "+7.37（+0.24%）",
+          "前日比上昇。小型株への資金の広がりを確認。 基準日 2026-08-13"
         ],
         [
           "VIX（恐怖指数）",
-          "14.55",
-          "-0.73（-4.78%）",
-          "前日比下落。警戒感は後退。 基準日 2026-08-12"
+          "14.63",
+          "+0.08（+0.55%）",
+          "前日比上昇。警戒感は上昇。 基準日 2026-08-13"
         ],
         [
           "NYSE 値上がり / 値下がり",
           "1,317 / 751",
           "-",
-          "基準日 2026-08-13"
+          "上昇優勢。A/D比 1.75倍。 基準日 2026-08-13"
         ],
         [
           "NASDAQ 値上がり / 値下がり",
           "1,766 / 1,398",
           "-",
-          "基準日 2026-08-13"
+          "上昇優勢。A/D比 1.26倍。 基準日 2026-08-13"
         ],
         [
           "NYSE 200日線上 / 下",
-          "1,180 / 842",
+          "1,210 / 812",
           "-",
-          "200日線上 58.4%。長期トレンドはやや上向き。 基準日 2026-08-12"
+          "200日線上 59.8%。長期トレンドはやや上向き。 基準日 2026-08-13"
         ],
         [
           "NASDAQ 200日線上 / 下",
-          "1,517 / 1,531",
+          "1,523 / 1,525",
           "-",
-          "200日線上 49.8%。長期トレンドは拮抗。 基準日 2026-08-12"
+          "200日線上 50.0%。長期トレンドは拮抗。 基準日 2026-08-13"
         ],
         [
           "52週高値 / 安値",
           "0 / 0",
           "-",
-          "NYSE・NASDAQ合算。基準日 2026-08-12"
+          "NYSE・NASDAQ合算。基準日 2026-08-13"
         ],
         [
           "Equal-Weight比較",
-          "-0.07pt",
+          "+0.05pt",
           "-",
-          "RSP騰落率－SPY騰落率。プラスは均等加重優位。基準日 2026-08-12"
-        ],
-        [
-          "NYSE 52週高値 / 安値",
-          "0 / 0",
-          "-",
-          "基準日 2026-08-13"
-        ],
-        [
-          "NASDAQ 52週高値 / 安値",
-          "0 / 0",
-          "-",
-          "基準日 2026-08-13"
+          "RSP騰落率－SPY騰落率。プラスは均等加重優位。基準日 2026-08-13"
         ]
       ],
-      "dataDate": "2026-08-12",
-      "updatedAt": "2026-08-13T07:24:52+09:00"
+      "dataDate": "2026-08-13",
+      "updatedAt": "2026-08-14T07:25:35+09:00"
     },
     "japan": {
       "title": "主要指数と市場内部（日本）",
@@ -782,14 +770,69 @@
   ],
   "note": "データ欠損がある場合は推測で補完せず、該当セルに「取得不能」と理由を表示します。本ページは株式市場分析用の表示構成です。",
   "usBreadth": {
-    "schemaVersion": "1.0.0",
+    "schemaVersion": "2.0.0",
     "marketDate": "2026-08-13",
-    "fetchedAt": "2026-08-14T07:11:26+09:00",
+    "fetchedAt": "2026-08-14T07:25:35+09:00",
     "status": "verified",
     "source": {
-      "name": "TradingView America Stock Screener",
-      "url": "https://www.tradingview.com/markets/stocks-usa/market-movers-all-stocks/",
-      "method": "exchange-filtered America scanner"
+      "name": "Yahoo Finance daily chart + TradingView America Stock Screener",
+      "method": "completed daily closes and exchange-filtered breadth including SMA200"
+    },
+    "indices": {
+      "^DJI": {
+        "symbol": "^DJI",
+        "marketDate": "2026-08-13",
+        "timestamp": 1786627800,
+        "close": 53839.98828125,
+        "previousClose": 53770.26953125,
+        "change": 69.71875,
+        "changePercent": 0.12966040640633414
+      },
+      "^GSPC": {
+        "symbol": "^GSPC",
+        "marketDate": "2026-08-13",
+        "timestamp": 1786627800,
+        "close": 7798.990234375,
+        "previousClose": 7748.5,
+        "change": 50.490234375,
+        "changePercent": 0.6516130138091244
+      },
+      "^IXIC": {
+        "symbol": "^IXIC",
+        "marketDate": "2026-08-13",
+        "timestamp": 1786627800,
+        "close": 26803.025390625,
+        "previousClose": 26588.490234375,
+        "change": 214.53515625,
+        "changePercent": 0.8068722757813366
+      },
+      "^SOX": {
+        "symbol": "^SOX",
+        "marketDate": "2026-08-13",
+        "timestamp": 1786627800,
+        "close": 12455.998046875,
+        "previousClose": 12399.3798828125,
+        "change": 56.6181640625,
+        "changePercent": 0.4566209326402018
+      },
+      "^RUT": {
+        "symbol": "^RUT",
+        "marketDate": "2026-08-13",
+        "timestamp": 1786627800,
+        "close": 3052.846923828125,
+        "previousClose": 3045.47998046875,
+        "change": 7.366943359375,
+        "changePercent": 0.24189761241645413
+      },
+      "^VIX": {
+        "symbol": "^VIX",
+        "marketDate": "2026-08-13",
+        "timestamp": 1786604400,
+        "close": 14.630000114440918,
+        "previousClose": 14.550000190734863,
+        "change": 0.07999992370605469,
+        "changePercent": 0.549827647129496
+      }
     },
     "exchanges": {
       "NYSE": {
@@ -799,10 +842,12 @@
         "total": 2123,
         "newHigh52Week": 0,
         "newLow52Week": 0,
-        "advanceDeclineRatio": 1.753662,
-        "previousDayChange": 0.528823,
-        "average20Day": 1.163327,
-        "versus20DayAveragePercent": 50.7454
+        "aboveSMA200": 1210,
+        "belowSMA200": 812,
+        "equalSMA200": 0,
+        "sma200Valid": 2022,
+        "sma200Column": "SMA200",
+        "advanceDeclineRatio": 1.753662
       },
       "NASDAQ": {
         "advancers": 1766,
@@ -811,23 +856,25 @@
         "total": 3319,
         "newHigh52Week": 0,
         "newLow52Week": 0,
-        "advanceDeclineRatio": 1.263233,
-        "previousDayChange": 0.098616,
-        "average20Day": 1.189547,
-        "versus20DayAveragePercent": 6.1944
+        "aboveSMA200": 1523,
+        "belowSMA200": 1525,
+        "equalSMA200": 0,
+        "sma200Valid": 3048,
+        "sma200Column": "SMA200",
+        "advanceDeclineRatio": 1.263233
       }
     },
     "combinedAdvanceRate": 0.589258,
     "judgement": "上昇優勢",
-    "note": "値上がり・値下がりは前日比change、52週高値・安値は当日高安と52週高安の一致で集計。"
+    "note": "米国主要指数、NYSE/NASDAQ騰落、52週高安、200日線上下を同一取引日で保存。"
   },
   "marketDates": {
     "japan": "2026-08-07",
-    "us": "2026-08-12"
+    "us": "2026-08-13"
   },
   "marketUpdatedAt": {
     "japan": "2026-08-08T20:15:00+09:00",
-    "us": "2026-08-13T07:24:52+09:00"
+    "us": "2026-08-14T07:25:35+09:00"
   },
   "nikkeiMetricsAsOf": "2026-08-07",
   "sessionAnalysis": {
