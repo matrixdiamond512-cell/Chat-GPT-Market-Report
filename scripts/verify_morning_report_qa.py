@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Validate the effective 08:00 28-item / 5-column publication table.
+"""Validate the effective 08:00 28-item / 5-column previous-close table.
 
-Normal publication QA is date-strict. The preferred source is structured
-marketDataTable.rows in data/latest-report.json. Legacy reports.json/fullText
-parsing remains as a fallback for compatibility.
+The 08:00 report is a previous-close report. QA validates the structured table itself
+and never overlays an intraday morning quote. A date-matched prior close may have been
+retrieved after 08:00; that retrieval time is not a reason to reject the value.
 """
-
 from __future__ import annotations
 
 import argparse
@@ -36,18 +35,6 @@ def load_json(path: Path, default: Any) -> Any:
         return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return default
-
-
-def parse_datetime(value: Any) -> dt.datetime | None:
-    if not value:
-        return None
-    try:
-        parsed = dt.datetime.fromisoformat(str(value).replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=JST)
-    return parsed.astimezone(JST)
 
 
 def normalize_label(value: str) -> str:
@@ -117,52 +104,13 @@ def select_report(reports: Any, latest_report_payload: dict[str, Any], date: str
     return report, "reports.json" if report else "none"
 
 
-def apply_reference(rows: list[dict[str, str]], reference: dict[str, Any], date: str, slot: str, warnings: list[str]) -> list[dict[str, str]]:
-    if reference.get("reportDate") != date or reference.get("reportSlot") != slot:
-        return rows
-    items = reference.get("items") or {}
-    out: list[dict[str, str]] = []
-    for row in rows:
-        ref = items.get(row["label"])
-        if isinstance(ref, dict) and str(ref.get("status") or "").startswith("verified") and ref.get("value") not in (None, ""):
-            replaced = dict(row)
-            for key, source_key in (("value", "value"), ("change", "change"), ("rate", "rate"), ("direction", "direction")):
-                if ref.get(source_key) is not None:
-                    replaced[key] = str(ref.get(source_key))
-            if replaced != row:
-                warnings.append(f"{row['label']}: verified morning-reference overlay applied")
-            out.append(replaced)
-        else:
-            out.append(row)
-    return out
-
-
-def validate_current_publication_context(*, target_date: str, slot: str, allow_historical: bool, latest_report_payload: dict[str, Any], reference: dict[str, Any], blocking: list[str]) -> None:
-    today = dt.datetime.now(JST).date().isoformat()
-    if not allow_historical and target_date != today:
-        blocking.append(f"report date is stale: expected current JST date {today}, got {target_date}")
-
-    latest_report = latest_report_payload.get("latestReport") or {}
-    if not allow_historical:
-        latest_date = str(latest_report.get("date") or "")
-        latest_slot = str(latest_report.get("time") or "")
-        if latest_date != target_date or latest_slot != slot:
-            blocking.append(f"latest-report mismatch: expected {target_date} {slot}, got {latest_date or 'empty'} {latest_slot or 'empty'}")
-
-    if reference.get("reportDate") != target_date:
-        blocking.append(f"morning-reference date mismatch: expected {target_date}, got {reference.get('reportDate') or 'empty'}")
-    if reference.get("reportSlot") != slot:
-        blocking.append(f"morning-reference slot mismatch: expected {slot}, got {reference.get('reportSlot') or 'empty'}")
-
-    generated = parse_datetime(reference.get("generatedAt"))
-    if generated is None:
-        blocking.append("morning-reference generatedAt is missing or invalid")
-    elif generated.date().isoformat() != target_date:
-        blocking.append(f"morning-reference generated date mismatch: expected {target_date}, got {generated.date().isoformat()}")
-
-
 def reasoned_unavailable(value: str) -> bool:
     return bool(re.match(r"^(取得不能|未公表)（.+）$", str(value or "").strip()))
+
+
+def expected_previous_weekday(report_date: dt.date) -> str:
+    prior = report_date - dt.timedelta(days=3 if report_date.weekday() == 0 else 1)
+    return prior.isoformat()
 
 
 def main() -> int:
@@ -170,7 +118,6 @@ def main() -> int:
     p.add_argument("--date", default=dt.datetime.now(JST).date().isoformat())
     p.add_argument("--slot", default="08:00", choices=("08:00",))
     p.add_argument("--reports", default=str(ROOT / "reports.json"))
-    p.add_argument("--reference", default=str(ROOT / "data/market/morning-reference.json"))
     p.add_argument("--latest-report", default=str(ROOT / "data/latest-report.json"))
     p.add_argument("--output", default=str(ROOT / "data/market/morning_report_qa.json"))
     p.add_argument("--allow-historical", action="store_true")
@@ -182,29 +129,29 @@ def main() -> int:
     latest_report_payload = load_json(Path(a.latest_report), {})
     report, report_source = select_report(reports, latest_report_payload, a.date, a.slot)
 
+    today = dt.datetime.now(JST).date().isoformat()
+    if not a.allow_historical and a.date != today:
+        blocking.append(f"report date is stale: expected current JST date {today}, got {a.date}")
+
+    latest_report = latest_report_payload.get("latestReport") or {}
+    if not a.allow_historical:
+        latest_date = str(latest_report.get("date") or "")
+        latest_slot = str(latest_report.get("time") or "")
+        if latest_date != a.date or latest_slot != a.slot:
+            blocking.append(f"latest-report mismatch: expected {a.date} {a.slot}, got {latest_date or 'empty'} {latest_slot or 'empty'}")
+
     if not report:
         blocking.append(f"report not found: {a.date} {a.slot}")
-        raw_rows: list[dict[str, str]] = []
+        rows: list[dict[str, str]] = []
     else:
-        raw_rows = structured_rows(report)
-        if raw_rows:
+        rows = structured_rows(report)
+        if rows:
             warnings.append(f"marketDataTable structured rows used from {report_source}")
         else:
-            raw_rows = parse_rows(str(report.get("fullText") or report.get("rawText") or report.get("body") or ""))
-            if not raw_rows:
+            rows = parse_rows(str(report.get("fullText") or report.get("rawText") or report.get("body") or ""))
+            if not rows:
                 blocking.append("28-item market table could not be parsed from report text")
 
-    reference = load_json(Path(a.reference), {})
-    validate_current_publication_context(
-        target_date=a.date,
-        slot=a.slot,
-        allow_historical=a.allow_historical,
-        latest_report_payload=latest_report_payload,
-        reference=reference,
-        blocking=blocking,
-    )
-
-    rows = apply_reference(raw_rows, reference, a.date, a.slot, warnings)
     if report:
         if len(rows) != 28:
             blocking.append(f"market table row count must be 28, got {len(rows)}")
@@ -232,8 +179,17 @@ def main() -> int:
             elif re.search(r"取得不能|未公表", r["value"]):
                 blocking.append(f"required six-market value unavailable: {label}")
 
+    provenance = (report or {}).get("dataProvenance") or {}
+    close_sheet = provenance.get("closeSheet") or {}
+    daily_repair = provenance.get("dailyCloseRepair") or {}
+    if isinstance(close_sheet, dict) and close_sheet.get("semantics") not in (None, "previous_close"):
+        blocking.append("closeSheet semantics is not previous_close")
+    if isinstance(daily_repair, dict) and daily_repair.get("semantics") not in (None, "previous_close"):
+        blocking.append("dailyCloseRepair semantics is not previous_close")
+
+    report_date = dt.date.fromisoformat(a.date)
+    expected_close_date = str(close_sheet.get("dataDate") or expected_previous_weekday(report_date))
     ready = not blocking
-    latest_report = latest_report_payload.get("latestReport") or {}
     result = {
         "checkedAt": dt.datetime.now(JST).replace(microsecond=0).isoformat(),
         "reportDate": a.date,
@@ -243,15 +199,15 @@ def main() -> int:
         "reportSource": report_source,
         "latestReportDate": latest_report.get("date"),
         "latestReportTime": latest_report.get("time"),
-        "morningReferenceDate": reference.get("reportDate"),
-        "morningReferenceGeneratedAt": reference.get("generatedAt"),
+        "dataSemantics": "previous_close",
+        "expectedPreviousCloseDate": expected_close_date,
         "expectedRowCount": 28,
         "actualRowCount": len(rows),
         "expectedColumns": ["項目", "終値・値", "前日比", "騰落率", "方向感"],
         "labels": [r.get("label") for r in rows],
         "blockingReasons": sorted(set(blocking)),
         "warnings": warnings,
-        "rule": "Normal publication requires the current JST 08:00 latest-report, same-date morning-reference, and a valid structured 28-item / 5-column table. Legacy reports.json/fullText remains fallback only."
+        "rule": "08:00 is a previous-close report. Validate market-data date, not retrieval clock time; do not overlay intraday morning quotes."
     }
     out = Path(a.output)
     out.parent.mkdir(parents=True, exist_ok=True)
