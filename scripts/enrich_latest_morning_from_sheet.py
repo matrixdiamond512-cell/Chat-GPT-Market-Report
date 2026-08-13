@@ -4,6 +4,10 @@
 The script is deliberately conservative: it only replaces a row when the sheet has a
 usable value. Existing non-empty live/reference values are preserved unless the row is
 explicitly unavailable. Each report keeps the 28-row / 5-column contract.
+
+If GitHub Actions does not have the Google Sheets credentials configured, enrichment
+is skipped without failing the publication job. This is reported explicitly rather
+than pretending that sheet synchronization occurred.
 """
 from __future__ import annotations
 
@@ -123,7 +127,8 @@ def main() -> int:
     spreadsheet_id = os.environ.get("MARKET_DATA_SPREADSHEET_ID", "").strip()
     credentials_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
     if not spreadsheet_id or not credentials_json:
-        raise SystemExit("Google Sheets credentials are not configured")
+        print("Google Sheets enrichment skipped: GitHub Actions Sheets credentials are not configured")
+        return 0
 
     payload = load_json(LATEST)
     report = payload.get("latestReport") or payload.get("report") or payload
@@ -159,7 +164,7 @@ def main() -> int:
         existing_value = str(row.get("value") or "").strip()
         should_replace = not usable(existing_value) or label in {
             "NYダウ","NASDAQ総合","S&P500","Russell 2000","日経225現物","VIX","日経VI",
-            "Fear & Greed Index","米10年債利回り","日本10年国債利回り","日経225予想PER",
+            "Fear & Greed Index","米10年債利回り","日本10年債利回り","日経225予想PER",
             "日経225予想EPS","日経225 25日移動平均乖離率","日経225 200日移動平均乖離率",
             "東証プライム売買代金","東証プライム売買高","東証プライム値上がり銘柄数",
             "東証プライム値下がり銘柄数","東証プライム25日騰落レシオ"
