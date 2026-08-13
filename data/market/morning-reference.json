@@ -1,42 +1,43 @@
 {
-  "schemaVersion": "1.1.0",
-  "generatedAt": "2026-08-13T09:28:33+09:00",
+  "schemaVersion": "1.2.0",
+  "generatedAt": "2026-08-13T09:36:05+09:00",
   "reportDate": "2026-08-13",
   "reportSlot": "08:00",
   "referenceDate": "2026-08-13",
+  "reportCutoff": "2026-08-13T08:05:00+09:00",
   "items": {
     "CME日経225先物・円建て": {
-      "value": "68,790",
-      "change": "+280",
-      "rate": "+0.41%",
+      "value": "68,800",
+      "change": "+290",
+      "rate": "+0.42%",
       "direction": "上昇",
-      "asOf": "2026-08-13T09:15:00+09:00",
+      "asOf": "2026-08-13T09:22:00+09:00",
       "sourceName": "nikkei225jp.com CME NIY",
       "sourceUrl": "https://nikkei225jp.com/cme/",
-      "status": "verified_reference",
-      "note": "26年09月限のページ上最終表示値。CME公式清算値ではないため、その区別を維持する。"
+      "status": "reference_after_report",
+      "note": "26年09月限のページ上最終表示値。CME公式清算値ではないため、その区別を維持する。 08:00より後の時刻なので当該レポートの値には上書きしない。"
     },
     "CME日経225先物・ドル建て": {
-      "value": "68,815",
-      "change": "+270",
-      "rate": "+0.39%",
+      "value": "68,840",
+      "change": "+295",
+      "rate": "+0.43%",
       "direction": "上昇",
-      "asOf": "2026-08-13T09:15:00+09:00",
+      "asOf": "2026-08-13T09:21:00+09:00",
       "sourceName": "nikkei225jp.com CME NKD",
       "sourceUrl": "https://nikkei225jp.com/cme/",
-      "status": "verified_reference",
-      "note": "26年09月限のページ上最終表示値。CME公式清算値ではないため、その区別を維持する。"
+      "status": "reference_after_report",
+      "note": "26年09月限のページ上最終表示値。CME公式清算値ではないため、その区別を維持する。 08:00より後の時刻なので当該レポートの値には上書きしない。"
     },
     "日経225先物（大阪取引所）": {
-      "value": "68,750円",
-      "change": "+1,090",
-      "rate": "+1.61%",
+      "value": "68,690円",
+      "change": "+1,030",
+      "rate": "+1.52%",
       "direction": "上昇",
-      "asOf": "2026-08-13T09:11:00+09:00",
+      "asOf": "2026-08-13T09:18:00+09:00",
       "sourceName": "JPX/OSE mirrored quote on nikkei225jp.com",
       "sourceUrl": "https://nikkei225jp.com/cme/",
-      "status": "verified_reference",
-      "note": "大証ラージ26年9月限。JPX/OSEの値とクロスチェックして使用する。"
+      "status": "reference_after_report",
+      "note": "大証ラージ26年9月限。JPX/OSEの値とクロスチェックして使用する。 08:00より後の時刻なので当該レポートの値には上書きしない。"
     }
   }
 }
