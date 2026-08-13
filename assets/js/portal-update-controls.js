@@ -157,3 +157,12 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", ensureRefreshButtons);
   else ensureRefreshButtons();
 })();
+
+(function () {
+  "use strict";
+  if (!/events\.html$/.test(location.pathname)) return;
+  var script = document.createElement("script");
+  script.src = "assets/js/events-forward-impact.js?v=20260814-0054";
+  script.defer = true;
+  document.head.appendChild(script);
+})();
