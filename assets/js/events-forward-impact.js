@@ -153,7 +153,10 @@
 
     Array.prototype.slice.call(body.querySelectorAll("tr:not(.completed-detail-row)")).forEach(function (row) {
       var button = row.querySelector("[data-completed-id]");
-      if (!button) return;
+      if (!button) {
+        if (row.cells.length === 1 && row.cells[0].classList.contains("empty")) row.cells[0].colSpan = 11;
+        return;
+      }
       var record = completedRecords.find(function (item) { return String(item.event_id) === String(button.dataset.completedId); });
       if (!record) return;
       var impact = forwardImpact(record);
@@ -210,7 +213,7 @@
     observer.observe(body, {childList:true, subtree:true});
 
     var style = document.createElement("style");
-    style.textContent = ".completed-table th:nth-child(10),.completed-table td:nth-child(10){min-width:330px}.forward-impact-cell{line-height:1.55;color:#173968;font-weight:750}.completed-detail-box strong{color:#0b3f91}";
+    style.textContent = ".completed-table th:nth-child(10),.completed-table td:nth-child(10){min-width:330px}.completed-table th:nth-child(11),.completed-table td:nth-child(11){min-width:90px;width:90px}.forward-impact-cell{line-height:1.55;color:#173968;font-weight:750}.completed-detail-box strong{color:#0b3f91}";
     document.head.appendChild(style);
   }
 
