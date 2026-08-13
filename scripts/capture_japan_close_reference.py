@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 """Capture date-strict Japanese close/valuation/breadth data for next morning report.
 
-The collector intentionally accepts only records that explicitly match the target
-Japan trading date. Sources that lag are recorded as unavailable and retried by the
-workflow. No older value is carried forward under a newer date.
+The collector accepts only records that explicitly match the target Japan trading
+date. Sources that lag are recorded as unavailable and retried by the workflow. No
+older value is carried forward under a newer date.
+
+Sources:
+- Yahoo daily history: Nikkei close and 25/200-day deviations
+- 投資の森: Nikkei PER/PBR/EPS and Prime advancers/decliners
+- Traders Web domestic market: Prime/TSE closing volume and turnover when the page
+  contains a close block for the exact target date
 """
 from __future__ import annotations
 
@@ -26,6 +32,7 @@ UA = "Mozilla/5.0 (compatible; ChatGPT-Market-Report/1.0)"
 
 PER_URL = "https://nikkeiyosoku.com/nikkeiper/"
 BREADTH_URL = "https://nikkeiyosoku.com/jp_index_rate/"
+TRADERS_URL = "https://www.traders.co.jp/market_jp/"
 
 
 def now_jst() -> dt.datetime:
@@ -113,7 +120,6 @@ def parse_valuation(target: dt.date) -> dict[str, Any] | None:
 
 def parse_breadth(target: dt.date) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
     text = get_text(BREADTH_URL)
-    # Rows contain: date, all up/down, prime up/down, standard up/down, growth up/down.
     row_re = re.compile(
         r"(?<!\d)(\d{1,2})/(\d{1,2})\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+"
         r"([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)"
@@ -121,8 +127,10 @@ def parse_breadth(target: dt.date) -> tuple[dict[str, Any] | None, list[dict[str
     rows=[]
     for m in row_re.finditer(text):
         month, day = int(m.group(1)), int(m.group(2))
-        year = target.year
-        date_value = dt.date(year, month, day)
+        try:
+            date_value = dt.date(target.year, month, day)
+        except ValueError:
+            continue
         vals=[int(m.group(i).replace(",","")) for i in range(3,11)]
         rows.append({"date":date_value.isoformat(),"primeAdvancers":vals[2],"primeDecliners":vals[3]})
     current=next((row for row in rows if row["date"]==target.isoformat()),None)
@@ -138,6 +146,42 @@ def compute_ratio25(rows: list[dict[str, Any]], target: dt.date) -> float | None
     down=sum(int(r["primeDecliners"]) for r in tail)
     up=sum(int(r["primeAdvancers"]) for r in tail)
     return up/down*100 if down else None
+
+
+def parse_traders_close(target: dt.date) -> dict[str, Any] | None:
+    """Parse a Traders Web close block only when its timestamp matches target."""
+    text = get_text(TRADERS_URL)
+    date_key = target.strftime("%Y/%m/%d")
+    candidates: list[str] = []
+    for match in re.finditer(re.escape(date_key), text):
+        start = max(0, match.start() - 500)
+        end = min(len(text), match.start() + 4500)
+        block = text[start:end]
+        if "出来高" in block and "売買代金" in block and ("騰落" in block or "日経平均" in block):
+            candidates.append(block)
+    if not candidates:
+        return None
+
+    for block in candidates:
+        volume_match = re.search(r"出来高\s*([0-9,.]+)\s*(億株|万株|百万株)", block)
+        turnover_match = re.search(r"売買代金\s*([0-9,.]+)\s*(兆円|億円)", block)
+        breadth_match = re.search(r"騰落\s*上\s*([0-9,]+)\s*/\s*下\s*([0-9,]+)", block)
+        if not (volume_match or turnover_match or breadth_match):
+            continue
+        result: dict[str, Any] = {"date": target.isoformat(), "sourceName":"トレーダーズ・ウェブ 国内市場", "sourceUrl":TRADERS_URL}
+        if volume_match:
+            raw=float(volume_match.group(1).replace(",",""));unit=volume_match.group(2)
+            million = raw*100 if unit=="億株" else raw*0.01 if unit=="万株" else raw
+            result["primeVolumeMillionShares"] = million
+        if turnover_match:
+            raw=float(turnover_match.group(1).replace(",",""));unit=turnover_match.group(2)
+            trillion = raw if unit=="兆円" else raw/10000
+            result["primeTurnoverTrillionYen"] = trillion
+        if breadth_match:
+            result["primeAdvancers"] = int(breadth_match.group(1).replace(",",""))
+            result["primeDecliners"] = int(breadth_match.group(2).replace(",",""))
+        return result
+    return None
 
 
 def main() -> int:
@@ -181,12 +225,34 @@ def main() -> int:
         ratio=compute_ratio25(history,target)
         if ratio is not None:
             items["東証プライム25日騰落レシオ"]={"value":f"{ratio:.2f}%","date":target.isoformat(),"sourceName":"投資の森 東証プライム騰落銘柄数から25営業日で算出","sourceUrl":BREADTH_URL}
+        else:
+            unavailable["東証プライム25日騰落レシオ"]=f"{target.isoformat()}までの連続25営業日分を同一ソースから取得できず"
     elif "東証プライム騰落" not in unavailable:
         unavailable["東証プライム騰落"]=f"{target.isoformat()}行がソースに未反映"
 
+    try:
+        traders=parse_traders_close(target)
+    except Exception as exc:
+        traders=None; unavailable["東証プライム売買高"]=f"トレーダーズ・ウェブ取得失敗: {exc}"
+    if traders:
+        if traders.get("primeVolumeMillionShares") is not None:
+            value=float(traders["primeVolumeMillionShares"])
+            items["東証プライム売買高"]={"value":f"{value:,.0f}百万株","date":target.isoformat(),"sourceName":traders["sourceName"],"sourceUrl":traders["sourceUrl"]}
+            unavailable.pop("東証プライム売買高",None)
+        if traders.get("primeTurnoverTrillionYen") is not None:
+            value=float(traders["primeTurnoverTrillionYen"])
+            items["東証プライム売買代金"]={"value":f"{value:.2f}兆円","date":target.isoformat(),"sourceName":traders["sourceName"],"sourceUrl":traders["sourceUrl"]}
+        if "東証プライム値上がり銘柄数" not in items and traders.get("primeAdvancers") is not None:
+            items["東証プライム値上がり銘柄数"]={"value":str(traders["primeAdvancers"]),"date":target.isoformat(),"sourceName":traders["sourceName"],"sourceUrl":traders["sourceUrl"]}
+        if "東証プライム値下がり銘柄数" not in items and traders.get("primeDecliners") is not None:
+            items["東証プライム値下がり銘柄数"]={"value":str(traders["primeDecliners"]),"date":target.isoformat(),"sourceName":traders["sourceName"],"sourceUrl":traders["sourceUrl"]}
+    elif "東証プライム売買高" not in unavailable:
+        unavailable["東証プライム売買高"]=f"{target.isoformat()}の大引けブロックがトレーダーズ・ウェブに取得時点で見つからず"
+
+    required=["日経225現物","日経225予想PER","日経225 PBR","日経225予想EPS","日経225 25日移動平均乖離率","日経225 200日移動平均乖離率","東証プライム売買高","東証プライム値上がり銘柄数","東証プライム値下がり銘柄数","東証プライム25日騰落レシオ"]
     payload={
-        "schemaVersion":"1.0.0","generatedAt":now_jst().isoformat(),"dataDate":target.isoformat(),
-        "complete": all(label in items for label in ["日経225現物","日経225予想PER","日経225 PBR","日経225予想EPS","日経225 25日移動平均乖離率","日経225 200日移動平均乖離率","東証プライム値上がり銘柄数","東証プライム値下がり銘柄数","東証プライム25日騰落レシオ"]),
+        "schemaVersion":"1.1.0","generatedAt":now_jst().isoformat(),"dataDate":target.isoformat(),
+        "complete": all(label in items for label in required),
         "items":items,"unavailable":unavailable,
         "rule":"accept exact target-date records only; never carry stale records forward",
     }
