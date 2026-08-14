@@ -1,39 +1,45 @@
 {
-  "schemaVersion": "2.0.0",
-  "generatedAt": "2026-08-08T20:04:00+09:00",
-  "dataAsOf": "2026-08-07",
-  "sourceSheet": "終値一覧",
-  "sourceRow": 47,
+  "schemaVersion": "2.1.0",
+  "generatedAt": "2026-08-14T20:44:57+09:00",
+  "dataAsOf": "2026-08-14",
+  "sourceMode": "公開ソース（exact-date fallback）",
+  "sourceSheet": "",
+  "reference": "data/market/japan-close-reference.json",
   "metrics": {
     "日経VI": {
-      "raw": "29.88",
-      "display": "29.88",
-      "change": "+0.10（+0.34%）",
-      "evaluation": "終値一覧の確定値。基準日 2026-08-07。"
+      "raw": "取得不能（対象日の確定値なし）",
+      "display": "取得不能（対象日の確定値なし）",
+      "change": "—",
+      "evaluation": "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-08-14。",
+      "source": "公開ソース"
     },
     "日経225予想PER": {
-      "raw": "17.32",
-      "display": "17.32倍",
+      "raw": "取得不能（対象日の確定値なし）",
+      "display": "取得不能（対象日の確定値なし）",
       "change": "—",
-      "evaluation": "予想利益に対する株価水準。EPSと指数水準を合わせて確認。基準日 2026-08-07。"
+      "evaluation": "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-08-14。",
+      "source": "公開ソース"
     },
     "日経225予想EPS": {
-      "raw": "3787.92",
-      "display": "3,787.92円",
+      "raw": "取得不能（対象日の確定値なし）",
+      "display": "取得不能（対象日の確定値なし）",
       "change": "—",
-      "evaluation": "日経225構成銘柄の予想利益水準。PERの分母として確認。基準日 2026-08-07。"
+      "evaluation": "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-08-14。",
+      "source": "公開ソース"
     },
     "日経225 25日乖離率": {
-      "raw": "-0.55%",
-      "display": "-0.55%",
+      "raw": "+4.35%",
+      "display": "+4.35%",
       "change": "—",
-      "evaluation": "25日線からの乖離率。基準日 2026-08-07。"
+      "evaluation": "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-08-14。",
+      "source": "Yahoo Finance Nikkei 225 daily history"
     },
     "日経225 200日乖離率": {
-      "raw": "+14.30%",
-      "display": "+14.30%",
+      "raw": "+18.87%",
+      "display": "+18.87%",
       "change": "—",
-      "evaluation": "200日線からの乖離率。基準日 2026-08-07。"
+      "evaluation": "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-08-14。",
+      "source": "Yahoo Finance Nikkei 225 daily history"
     }
   }
 }
