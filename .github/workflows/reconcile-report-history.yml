@@ -1,0 +1,87 @@
+name: Reconcile market report history
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "reports.json"
+      - "scripts/reconcile_report_history.py"
+      - ".github/workflows/reconcile-report-history.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: reconcile-market-report-history
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Reconcile direct publications with canonical history
+        run: |
+          python scripts/reconcile_report_history.py
+          python -m json.tool reports.json > /dev/null
+
+      - name: Verify every canonical report is indexed
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          index = json.loads(Path('reports.json').read_text(encoding='utf-8'))
+          index_keys = {(r['date'], r['time']) for r in index}
+          file_keys = set()
+          for path in Path('reports').glob('*.json'):
+              if path.name.startswith('_'):
+                  continue
+              report = json.loads(path.read_text(encoding='utf-8'))
+              file_keys.add((report['date'], report['time']))
+
+          if index_keys != file_keys:
+              raise SystemExit(f'history mismatch: index_only={sorted(index_keys-file_keys)}, file_only={sorted(file_keys-index_keys)}')
+          print(f'History verified: {len(index_keys)} slots')
+          PY
+
+      - name: Commit repaired history when needed
+        id: commit
+        shell: bash
+        run: |
+          if git diff --quiet -- reports reports.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Report history already consistent."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports reports.json
+          git commit -m "Reconcile market report history"
+          git pull --rebase origin main
+          git push origin main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Rebuild GitHub Pages after repair
+        if: steps.commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh api --method POST \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2026-03-10' \
+            "repos/${GITHUB_REPOSITORY}/pages/builds"
