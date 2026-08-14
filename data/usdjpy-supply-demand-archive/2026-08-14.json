@@ -2,27 +2,27 @@
   "schemaVersion": "1.0.0",
   "pageId": "usdjpy-supply-demand-archive",
   "reportDate": "2026-08-14",
-  "generatedAt": "2026-08-14T18:13:07+09:00",
+  "generatedAt": "2026-08-14T21:50:05+09:00",
   "market": {
     "schemaVersion": "1.1.0",
-    "generatedAt": "2026-08-14T16:57:52+09:00",
+    "generatedAt": "2026-08-14T21:03:55+09:00",
     "status": null,
     "markets": {
       "usdjpy": {
         "id": "usdjpy",
         "displayName": "USD/JPY",
         "dashboardKey": "usdjpy",
-        "value": 159.226,
-        "displayValue": "159.23",
+        "value": 159.057,
+        "displayValue": "159.06",
         "previousClose": 159.3280029296875,
-        "change": -0.10200292968750091,
-        "changePercent": -0.06402071689338706,
-        "changeText": "-0.10 / -0.06%",
+        "change": -0.27100292968751205,
+        "changePercent": -0.17009121102654623,
+        "changeText": "-0.27 / -0.17%",
         "unit": "円",
         "marketType": "spot",
         "session": "continuous",
-        "asOf": "2026-08-14T16:57:12+09:00",
-        "fetchedAt": "2026-08-14T16:57:12+09:00",
+        "asOf": "2026-08-14T21:03:34+09:00",
+        "fetchedAt": "2026-08-14T21:03:35+09:00",
         "sourceId": "yahoo_jpy_x",
         "sourceName": "Yahoo Finance USD/JPY",
         "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
@@ -31,11 +31,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-14T16:57:16+09:00",
+        "lastVerifiedAt": "2026-08-14T21:03:38+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-14T16:57:01+09:00",
+        "lastAttemptAt": "2026-08-14T21:03:27+09:00",
         "lastError": "stooq_usdjpy: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -53,7 +53,7 @@
         "marketType": "index",
         "session": "daily",
         "asOf": "2026-08-13T09:00:00+09:00",
-        "fetchedAt": "2026-08-14T16:57:23+09:00",
+        "fetchedAt": "2026-08-14T21:03:44+09:00",
         "sourceId": "cboe_vix_history",
         "sourceName": "Cboe VIX Historical Data",
         "sourceUrl": "https://www.cboe.com/tradable_products/vix/vix_historical_data/",
@@ -62,11 +62,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-14T16:57:23+09:00",
+        "lastVerifiedAt": "2026-08-14T21:03:44+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-14T16:57:01+09:00",
+        "lastAttemptAt": "2026-08-14T21:03:27+09:00",
         "lastError": "",
         "retryPreserved": false
       }
@@ -75,12 +75,12 @@
   "rates": {
     "schemaVersion": "2.0.0",
     "pageId": "rates-bonds",
-    "generatedAt": "2026-08-14T17:04:19+09:00",
+    "generatedAt": "2026-08-14T21:31:16+09:00",
     "meta": {
       "page": "rates-bonds",
-      "asOfDate": "2026-08-13",
+      "asOfDate": "2026-08-14",
       "asOfTime": "各市場の公表時点",
-      "updatedAt": "2026-08-14T17:04:19+09:00",
+      "updatedAt": "2026-08-14T21:31:16+09:00",
       "status": "confirmed",
       "sourceStatus": "自動取得",
       "isStale": false,
@@ -116,14 +116,14 @@
       },
       {
         "name": "日本10年国債利回り",
-        "value": 2.873,
+        "value": 2.874,
         "unit": "%",
-        "changeBp": 1.7,
-        "weekChangeBp": 10.0,
+        "changeBp": 0.1,
+        "weekChangeBp": 7.0,
         "direction": "上昇",
-        "asOf": "2026-08-13",
+        "asOf": "2026-08-14",
         "status": "confirmed",
-        "source": "財務省 国債金利情報",
+        "source": "TradingView JGB market snapshot (LSEG)",
         "meaning": "円・銀行株・日経225・円キャリーへの影響を確認",
         "missingReason": null
       }
@@ -131,7 +131,7 @@
   },
   "volume": {
     "schemaVersion": "1.0.0",
-    "generatedAt": "2026-08-14T16:32:45+09:00",
+    "generatedAt": "2026-08-14T21:35:03+09:00",
     "status": "ok",
     "data": {
       "sourceName": "日本銀行 外国為替市況（日次）",
@@ -140,12 +140,29 @@
       "priceSourceName": "Investing.com USD/JPY日足OHLC",
       "unit": "百万ドル",
       "latestJudgement": {
-        "targetDate": "2026-08-12",
-        "publicationDate": "2026-08-13",
+        "targetDate": "2026-08-13",
+        "publicationDate": "2026-08-14",
         "spotVolumeLevel": "少ない",
-        "summary": "直近のUSD/JPYスポット出来高は20営業日平均を下回っています。同日のUSD/JPY終値は159.26円です。"
+        "summary": "直近のUSD/JPYスポット出来高は20営業日平均を下回っています。同日のUSD/JPY終値は159.33円です。"
       },
       "records": [
+        {
+          "targetDate": "2026-08-13",
+          "publicationDate": "2026-08-14",
+          "sourcePdfName": "fx260814.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260814.pdf",
+          "spotVolume": 2316,
+          "volumeChange": -45,
+          "volumeChangePct": -1.91,
+          "avg20": 5461,
+          "vs20": -3145,
+          "vs20Pct": -57.59,
+          "close": 159.33,
+          "open": 159.32,
+          "high": 159.48,
+          "low": 159.03,
+          "priceChangePct": 0.04
+        },
         {
           "targetDate": "2026-08-12",
           "publicationDate": "2026-08-13",
@@ -808,31 +825,22 @@
           "high": 161.37,
           "low": 160.54,
           "priceChangePct": 0.11
-        },
-        {
-          "targetDate": "2026-06-17",
-          "publicationDate": "2026-06-18",
-          "sourcePdfName": "fx260618.pdf",
-          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260618.pdf",
-          "spotVolume": 2063,
-          "volumeChange": -1454,
-          "volumeChangePct": -41.34,
-          "avg20": 2789,
-          "vs20": -726,
-          "vs20Pct": -26.03,
-          "close": 160.42,
-          "open": 160.41,
-          "high": 160.42,
-          "low": 160.12,
-          "priceChangePct": 0.12
         }
       ],
       "priceRange": {
         "startDate": "2026-04-15",
-        "endDate": "2026-08-12",
-        "count": 83
+        "endDate": "2026-08-13",
+        "count": 84
       },
       "priceRecords": [
+        {
+          "date": "2026-08-13",
+          "close": 159.33,
+          "open": 159.32,
+          "high": 159.48,
+          "low": 159.03,
+          "priceChangePct": 0.04
+        },
         {
           "date": "2026-08-12",
           "close": 159.26,
@@ -1502,8 +1510,8 @@
   },
   "events": {
     "schemaVersion": "2.0.0",
-    "generatedAt": "2026-08-14T17:02:44+09:00",
-    "dataAsOf": "2026-08-14T17:02:44+09:00",
+    "generatedAt": "2026-08-14T21:05:29+09:00",
+    "dataAsOf": "2026-08-14T21:05:29+09:00",
     "status": "ok",
     "events": [
       {
@@ -1751,7 +1759,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-08-09T13:48:48+09:00",
-        "updatedAt": "2026-08-14T17:02:44+09:00"
+        "updatedAt": "2026-08-14T21:05:29+09:00"
       },
       {
         "id": "event-5050eca2c73505",
@@ -1998,7 +2006,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-08-09T13:48:48+09:00",
-        "updatedAt": "2026-08-14T17:02:44+09:00"
+        "updatedAt": "2026-08-14T21:05:29+09:00"
       },
       {
         "id": "event-70d2f06deee05d",
@@ -2245,7 +2253,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-08-09T13:48:48+09:00",
-        "updatedAt": "2026-08-14T17:02:44+09:00"
+        "updatedAt": "2026-08-14T21:05:29+09:00"
       },
       {
         "id": "event-0a11ed81d6c9b7",
@@ -2492,7 +2500,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-08-09T13:48:48+09:00",
-        "updatedAt": "2026-08-14T17:02:44+09:00"
+        "updatedAt": "2026-08-14T21:05:29+09:00"
       },
       {
         "id": "event-e18ea463fb42c7",
@@ -2739,7 +2747,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-08-09T13:48:48+09:00",
-        "updatedAt": "2026-08-14T17:02:45+09:00",
+        "updatedAt": "2026-08-14T21:05:30+09:00",
         "resultExpected": false,
         "resultType": "qualitative",
         "resultSource": {
@@ -2994,13 +3002,13 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-08-14T06:00:23+09:00",
-        "updatedAt": "2026-08-14T17:02:45+09:00",
-        "resultSavedAt": "2026-08-14T07:50:39+09:00",
+        "updatedAt": "2026-08-14T21:05:30+09:00",
         "resultSource": {
           "id": "federal_reserve",
           "name": "Federal Reserve FOMC calendar",
           "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
         },
+        "resultSavedAt": "2026-08-14T07:50:39+09:00",
         "resultExpected": false,
         "resultType": "qualitative"
       },
@@ -3248,20 +3256,20 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-08-09T13:48:48+09:00",
-        "updatedAt": "2026-08-14T17:02:44+09:00",
-        "resultSavedAt": "2026-08-14T17:02:44+09:00",
+        "updatedAt": "2026-08-14T21:05:29+09:00",
         "resultSource": {
           "id": "tradingview_economic_calendar",
           "name": "Federal Reserve",
           "url": "https://www.treasurydirect.gov"
-        }
+        },
+        "resultSavedAt": "2026-08-14T21:05:29+09:00"
       }
     ]
   },
   "config": {
     "schemaVersion": "3.2.0",
     "pageId": "usdjpy-supply-demand",
-    "generatedAt": "2026-08-14T18:13:07+09:00",
+    "generatedAt": "2026-08-14T21:50:05+09:00",
     "mode": "integrated-realistic",
     "sourceStatus": {
       "tradersWebFx": "confirmed",
@@ -3272,7 +3280,7 @@
       "name": "トレーダーズ・ウェブFX 無料ページ",
       "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
       "sourceUpdatedAt": "2026-08-14T06:24:00+09:00",
-      "checkedAt": "2026-08-14T18:13:09+09:00",
+      "checkedAt": "2026-08-14T21:50:07+09:00",
       "status": "confirmed",
       "pageConfirmed": true,
       "publicScope": "一般公開はUSD/JPYの直近情報",
@@ -3281,7 +3289,7 @@
       "sourceDate": "2026-08-14",
       "sourceTime": "06:24",
       "freshness": "today",
-      "ageHours": 11.8,
+      "ageHours": 15.4,
       "keyLevels": {
         "referenceSpot": "159.50",
         "referenceSpotDescription": "8/14 06:00現在（8/13 高値159.57円 - 安値159.02円）",
@@ -3784,7 +3792,7 @@
       "judgement": "円売り越し縮小",
       "judgementSub": "ドル買い圧力が弱まる方向",
       "priceStatus": "available",
-      "checkedAt": "2026-08-14T18:13:07+09:00",
+      "checkedAt": "2026-08-14T21:50:05+09:00",
       "comment": "円売り越し縮小。円先物のNetは-45,473枚、前週比+117,939枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
       "verifiedPoints": 52,
       "priceVerifiedPoints": 52,
@@ -3792,19 +3800,19 @@
     },
     "coreSnapshot": {
       "market": {
-        "generatedAt": "2026-08-14T16:57:52+09:00",
-        "asOf": "2026-08-14T16:57:12+09:00",
+        "generatedAt": "2026-08-14T21:03:55+09:00",
+        "asOf": "2026-08-14T21:03:34+09:00",
         "verificationStatus": "verified"
       },
       "ratesBonds": {
-        "generatedAt": "2026-08-14T17:04:19+09:00",
-        "asOfDate": "2026-08-13",
+        "generatedAt": "2026-08-14T21:31:16+09:00",
+        "asOfDate": "2026-08-14",
         "status": "confirmed"
       },
       "usdJpyVolume": {
-        "generatedAt": "2026-08-14T16:32:45+09:00",
-        "targetDate": "2026-08-12",
-        "publicationDate": "2026-08-13",
+        "generatedAt": "2026-08-14T21:35:03+09:00",
+        "targetDate": "2026-08-13",
+        "publicationDate": "2026-08-14",
         "status": "ok"
       }
     },
@@ -3824,7 +3832,7 @@
   "flow": {
     "schemaVersion": "1.0.0",
     "pageId": "usdjpy-flow-summary",
-    "generatedAt": "2026-08-14T18:13:09+09:00",
+    "generatedAt": "2026-08-14T21:50:07+09:00",
     "status": "ok",
     "realDemand": {
       "score": null,
@@ -3842,9 +3850,9 @@
           "direction": "neutral",
           "score": 0.0,
           "status": "calculated",
-          "asOf": "2026-08-12",
-          "updatedAt": "2026-08-14T16:32:45+09:00",
-          "valueText": "東京市場の始値→終値 159.28→159.26（-0.01%）。仲値実額ではなく価格代理",
+          "asOf": "2026-08-13",
+          "updatedAt": "2026-08-14T21:35:03+09:00",
+          "valueText": "東京市場の始値→終値 159.32→159.33（+0.01%）。仲値実額ではなく価格代理",
           "sourceName": "日本銀行 外国為替市況（日次）",
           "sourceUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/index.htm",
           "frequency": "daily proxy"
@@ -3856,9 +3864,9 @@
           "direction": "usd_buy",
           "score": 0.5,
           "status": "verified",
-          "asOf": "2026-08-12",
-          "updatedAt": "2026-08-14T16:32:45+09:00",
-          "valueText": "価格 +0.06%／20日平均比 -56.94%（方向は価格と併用）",
+          "asOf": "2026-08-13",
+          "updatedAt": "2026-08-14T21:35:03+09:00",
+          "valueText": "価格 +0.04%／20日平均比 -57.59%（方向は価格と併用）",
           "sourceName": "日本銀行 外国為替市況（日次）",
           "sourceUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/index.htm",
           "frequency": "daily"
@@ -3871,7 +3879,7 @@
           "score": 0.0,
           "status": "verified",
           "asOf": "2026-08-14",
-          "updatedAt": "2026-08-14T18:13:09+09:00",
+          "updatedAt": "2026-08-14T21:50:07+09:00",
           "valueText": "非該当",
           "sourceName": "",
           "sourceUrl": "",
@@ -3885,7 +3893,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-08-14T18:13:09+09:00",
+          "updatedAt": "2026-08-14T21:50:07+09:00",
           "valueText": "対外－対内ネット +7,528億円。企業の当日実額ではなく週次資本フロー代理（為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -3899,7 +3907,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-06",
-          "updatedAt": "2026-08-14T18:13:09+09:00",
+          "updatedAt": "2026-08-14T21:50:07+09:00",
           "valueText": "輸出 10.93兆円／輸入 11.34兆円／収支 -4099億円（構造要因）",
           "sourceName": "財務省 貿易統計",
           "sourceUrl": "https://www.customs.go.jp/toukei/shinbun/trade-st/2026/2026065.pdf",
@@ -3913,7 +3921,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-08-14T18:13:09+09:00",
+          "updatedAt": "2026-08-14T21:50:07+09:00",
           "valueText": "合計 +6,262億円（取得超は外貨需要候補、為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -3927,7 +3935,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-08-14T18:13:09+09:00",
+          "updatedAt": "2026-08-14T21:50:07+09:00",
           "valueText": "合計 -1,266億円（取得超は円需要候補、為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -3941,7 +3949,7 @@
           "score": 0.0,
           "status": "verified",
           "asOf": "2026-08-14",
-          "updatedAt": "2026-08-14T18:13:09+09:00",
+          "updatedAt": "2026-08-14T21:50:07+09:00",
           "valueText": "月末非該当",
           "sourceName": "",
           "sourceUrl": "",
@@ -3964,7 +3972,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-04",
-          "updatedAt": "2026-08-14T18:13:07+09:00",
+          "updatedAt": "2026-08-14T21:50:05+09:00",
           "valueText": "円Net前週比 +117,939枚（USD/JPY方向へ符号反転）／基準日から10日",
           "sourceName": "CFTC Commitments of Traders - Japanese Yen",
           "sourceUrl": "https://www.cftc.gov/dea/newcot/deafut.txt",
@@ -4019,9 +4027,9 @@
           "direction": "usd_sell",
           "score": -1.0,
           "status": "calculated",
-          "asOf": "2026-08-14T16:57:12+09:00",
-          "updatedAt": "2026-08-14T16:57:12+09:00",
-          "valueText": "USD/JPY -0.06%／米日2年金利変化差 -2.5bp（同時反応の代理、因果断定なし）",
+          "asOf": "2026-08-14T21:03:34+09:00",
+          "updatedAt": "2026-08-14T21:03:35+09:00",
+          "valueText": "USD/JPY -0.17%／米日2年金利変化差 -2.0bp（同時反応の代理、因果断定なし）",
           "sourceName": "市場価格・金利データ統合",
           "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
           "frequency": "daily proxy"
@@ -4033,14 +4041,14 @@
       "judgement": "判定保留",
       "leadingFlow": "保留",
       "relationship": "判定保留",
-      "sessionComment": "ロンドン時間は投機・金利・ストップを優先監視。",
+      "sessionComment": "NY時間は米金利・米指標・オプション・NYカット・ストップを優先監視。",
       "comment": "実需または投機の確認済みカテゴリーが不足しているため、総合判定を保留します。"
     },
     "previous": {
       "realDemand": null,
-      "speculative": 0.0,
+      "speculative": -1.0,
       "combined": null,
-      "generatedAt": "2026-08-14T16:52:37+09:00"
+      "generatedAt": "2026-08-14T18:13:09+09:00"
     },
     "officialFlows": {
       "trade": {
@@ -4064,8 +4072,8 @@
   "meta": {
     "priceDataDate": "2026-08-14",
     "usDataDate": "2026-08-12",
-    "japanDataDate": "2026-08-13",
-    "tokyoDataDate": "2026-08-12",
+    "japanDataDate": "2026-08-14",
+    "tokyoDataDate": "2026-08-13",
     "cftcDate": "2026-08-04"
   }
 }
