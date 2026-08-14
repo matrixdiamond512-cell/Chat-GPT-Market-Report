@@ -8,6 +8,7 @@ on:
       - "scripts/update_tokyo_stock_table_from_sheet.py"
       - "scripts/capture_japan_close_reference.py"
       - "scripts/export_tokyo_stock_table.py"
+      - "data/market/japan-close-reference.json"
       - ".github/workflows/update-tokyo-stock-table.yml"
   schedule:
     # Retry after the Tokyo close because public sources do not all publish at
@@ -67,6 +68,7 @@ jobs:
 
           data = json.loads(Path('data/stocks.json').read_text(encoding='utf-8'))
           overlay = json.loads(Path('data/market/tokyo-stock-table.json').read_text(encoding='utf-8'))
+          reference = json.loads(Path('data/market/japan-close-reference.json').read_text(encoding='utf-8'))
           dates = data.get('marketDates') or {}
           date_re = re.compile(r'^\d{4}-\d{2}-\d{2}$')
           if not date_re.fullmatch(str(dates.get('us') or '')):
@@ -81,9 +83,21 @@ jobs:
           if not breadth or len(breadth) < 2 or str(breadth[1]).startswith('取得不能'):
               raise SystemExit('Tokyo Prime advance/decline breadth is unavailable for the Tokyo market date')
 
+          # When the exact-date reference has a 25-day Prime ratio, it must reach
+          # stocks.json in the same run. This prevents a good collector result
+          # from remaining invisible on the portal.
+          ref_ratio = ((reference.get('items') or {}).get('東証プライム25日騰落レシオ') or {})
+          ratio_row = next((row for row in rows if isinstance(row, list) and row and row[0] == '騰落レシオ（25日）'), None)
+          if reference.get('dataDate') == dates.get('japan') and ref_ratio.get('value'):
+              if not ratio_row or len(ratio_row) < 2 or str(ratio_row[1]).startswith('取得不能'):
+                  raise SystemExit('Exact-date Prime 25-day ratio exists in reference but was not propagated to stocks.json')
+              if str(ratio_row[1]) != str(ref_ratio['value']):
+                  raise SystemExit(f"Prime 25-day ratio mismatch: {ratio_row[1]} != {ref_ratio['value']}")
+
           print('U.S. market date retained:', dates['us'])
           print('Tokyo market date updated:', dates['japan'])
           print('Tokyo Prime breadth:', breadth[1])
+          print('Tokyo Prime 25-day ratio:', ratio_row[1] if ratio_row else 'not available')
           PY
 
       - name: Commit Tokyo table, public reference and archive
