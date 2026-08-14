@@ -112,10 +112,14 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # morning_report_qa.json is owned and committed by qa-morning-report.yml.
+          # Restore it here so the publication sync cannot race that workflow and
+          # fail its rebase after all publication/QA steps have already succeeded.
+          git restore --source=HEAD -- data/market/morning_report_qa.json
           git add data/latest-report.json reports data/dashboard.json reports.json \
             data/market/latest.json data/market/chatgpt-input.json \
             data/market/chatgpt_input.csv data/market/verified_history.csv \
-            data/market/morning-daily-reference.json data/market/morning_report_qa.json
+            data/market/morning-daily-reference.json
           if git diff --cached --quiet; then
             echo "Publication files already synchronized."
             exit 0
