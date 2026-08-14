@@ -1,99 +1,40 @@
 {
-  "schemaVersion": "2.0.0",
-  "marketDate": "2026-08-13",
-  "fetchedAt": "2026-08-14T07:25:35+09:00",
+  "schemaVersion": "1.0.0",
+  "marketDate": "2026-08-14",
+  "fetchedAt": "2026-08-15T06:50:02+09:00",
   "status": "verified",
   "source": {
-    "name": "Yahoo Finance daily chart + TradingView America Stock Screener",
-    "method": "completed daily closes and exchange-filtered breadth including SMA200"
-  },
-  "indices": {
-    "^DJI": {
-      "symbol": "^DJI",
-      "marketDate": "2026-08-13",
-      "timestamp": 1786627800,
-      "close": 53839.98828125,
-      "previousClose": 53770.26953125,
-      "change": 69.71875,
-      "changePercent": 0.12966040640633414
-    },
-    "^GSPC": {
-      "symbol": "^GSPC",
-      "marketDate": "2026-08-13",
-      "timestamp": 1786627800,
-      "close": 7798.990234375,
-      "previousClose": 7748.5,
-      "change": 50.490234375,
-      "changePercent": 0.6516130138091244
-    },
-    "^IXIC": {
-      "symbol": "^IXIC",
-      "marketDate": "2026-08-13",
-      "timestamp": 1786627800,
-      "close": 26803.025390625,
-      "previousClose": 26588.490234375,
-      "change": 214.53515625,
-      "changePercent": 0.8068722757813366
-    },
-    "^SOX": {
-      "symbol": "^SOX",
-      "marketDate": "2026-08-13",
-      "timestamp": 1786627800,
-      "close": 12455.998046875,
-      "previousClose": 12399.3798828125,
-      "change": 56.6181640625,
-      "changePercent": 0.4566209326402018
-    },
-    "^RUT": {
-      "symbol": "^RUT",
-      "marketDate": "2026-08-13",
-      "timestamp": 1786627800,
-      "close": 3052.846923828125,
-      "previousClose": 3045.47998046875,
-      "change": 7.366943359375,
-      "changePercent": 0.24189761241645413
-    },
-    "^VIX": {
-      "symbol": "^VIX",
-      "marketDate": "2026-08-13",
-      "timestamp": 1786604400,
-      "close": 14.630000114440918,
-      "previousClose": 14.550000190734863,
-      "change": 0.07999992370605469,
-      "changePercent": 0.549827647129496
-    }
+    "name": "TradingView America Stock Screener",
+    "url": "https://www.tradingview.com/markets/stocks-usa/market-movers-all-stocks/",
+    "method": "exchange-filtered America scanner"
   },
   "exchanges": {
     "NYSE": {
-      "advancers": 1317,
-      "decliners": 751,
-      "unchanged": 55,
-      "total": 2123,
+      "advancers": 1112,
+      "decliners": 961,
+      "unchanged": 51,
+      "total": 2124,
       "newHigh52Week": 0,
       "newLow52Week": 0,
-      "aboveSMA200": 1210,
-      "belowSMA200": 812,
-      "equalSMA200": 0,
-      "sma200Valid": 2022,
-      "sma200Column": "SMA200",
-      "advanceDeclineRatio": 1.753662
+      "advanceDeclineRatio": 1.157128,
+      "previousDayChange": -0.596534,
+      "average20Day": 1.24766,
+      "versus20DayAveragePercent": -7.2562
     },
     "NASDAQ": {
-      "advancers": 1766,
-      "decliners": 1398,
-      "unchanged": 155,
-      "total": 3319,
+      "advancers": 1632,
+      "decliners": 1527,
+      "unchanged": 161,
+      "total": 3320,
       "newHigh52Week": 0,
       "newLow52Week": 0,
-      "aboveSMA200": 1523,
-      "belowSMA200": 1525,
-      "equalSMA200": 0,
-      "sma200Valid": 3048,
-      "sma200Column": "SMA200",
-      "advanceDeclineRatio": 1.263233
+      "advanceDeclineRatio": 1.068762,
+      "previousDayChange": -0.194471,
+      "average20Day": 1.200074,
+      "versus20DayAveragePercent": -10.942
     }
   },
-  "combinedAdvanceRate": 0.589258,
-  "judgement": "上昇優勢",
-  "note": "米国主要指数、NYSE/NASDAQ騰落、52週高安、200日線上下を同一取引日で保存。"
+  "combinedAdvanceRate": 0.524465,
+  "judgement": "拮抗",
+  "note": "値上がり・値下がりは前日比change、52週高値・安値は当日高安と52週高安の一致で集計。"
 }
