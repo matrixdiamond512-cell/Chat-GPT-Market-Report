@@ -27,20 +27,24 @@ def main() -> int:
     if len(us_date) != 10:
         raise SystemExit("U.S. market date is missing")
 
+    table_source = table.get("source") if isinstance(table.get("source"), dict) else {}
+    source_name = str(table_source.get("name") or "東京市場確定値統合")
     payload = {
-        "schemaVersion": "1.0.0",
+        "schemaVersion": "1.1.0",
         "market": "japan",
         "snapshotDate": snapshot_date,
         "dataDate": data_date,
         "fetchedAt": str((stocks.get("marketUpdatedAt") or {}).get("japan") or table.get("updatedAt") or now.isoformat()),
         "status": "verified",
         "source": {
-            "name": "マーケットレポート終値一覧2026",
-            "sheet": "終値一覧",
+            "name": source_name,
+            "sheet": str(table_source.get("sheet") or ""),
+            "reference": str(table_source.get("reference") or ""),
+            "sheetStatus": str(table_source.get("sheetStatus") or ""),
             "rowDate": data_date.replace("-", "/"),
         },
         "table": table,
-        "note": "東京市場だけを更新し、米国市場の確定済みデータと基準日は変更しない。",
+        "note": "東京市場だけを更新し、米国市場の確定済みデータと基準日は変更しない。古い東京データを新しい基準日に付け替えない。",
     }
 
     content = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
