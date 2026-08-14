@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.1.0",
-  "generatedAt": "2026-08-14T18:16:35+09:00",
+  "generatedAt": "2026-08-14T19:14:42+09:00",
   "dataDate": "2026-08-14",
   "complete": false,
   "items": {
@@ -21,11 +21,23 @@
       "date": "2026-08-14",
       "sourceName": "Yahoo Finance Nikkei 225 daily history",
       "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/"
+    },
+    "東証プライム値上がり銘柄数": {
+      "value": "1124",
+      "date": "2026-08-14",
+      "sourceName": "投資の森 値上がり・値下がり銘柄数",
+      "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
+    },
+    "東証プライム値下がり銘柄数": {
+      "value": "401",
+      "date": "2026-08-14",
+      "sourceName": "投資の森 値上がり・値下がり銘柄数",
+      "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
     }
   },
   "unavailable": {
     "日経225予想PER/PBR/EPS": "2026-08-14行がソースに未反映",
-    "東証プライム騰落": "2026-08-14行がソースに未反映",
+    "東証プライム25日騰落レシオ": "2026-08-14までの連続25営業日分を同一ソースから取得できず",
     "東証プライム売買高": "2026-08-14の大引けブロックがトレーダーズ・ウェブに取得時点で見つからず"
   },
   "rule": "accept exact target-date records only; never carry stale records forward"
