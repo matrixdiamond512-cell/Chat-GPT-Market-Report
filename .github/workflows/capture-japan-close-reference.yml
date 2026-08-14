@@ -46,9 +46,8 @@ jobs:
         run: |
           TARGET="${{ inputs.target_date }}"
           if [ -z "$TARGET" ]; then
-            TARGET="$(TZ=Asia/Tokyo python - <<'PY'
+            TARGET="$(python - <<'PY'
           import datetime as dt
-          import os
           from zoneinfo import ZoneInfo
 
           now = dt.datetime.now(ZoneInfo('Asia/Tokyo'))
@@ -60,7 +59,6 @@ jobs:
                   value -= dt.timedelta(days=1)
               return value
 
-          # Tokyo cash/Prime closing data is treated as completed from 16:00 JST.
           if day.weekday() < 5 and now.time() >= dt.time(16, 0):
               target = day
           else:
@@ -79,7 +77,6 @@ jobs:
         run: |
           python - <<'PY'
           import json
-          import os
           from pathlib import Path
           p=json.loads(Path('data/market/japan-close-reference.json').read_text(encoding='utf-8'))
           target='${{ steps.target.outputs.date }}'
@@ -96,16 +93,44 @@ jobs:
           })
           PY
 
-      - name: Commit capture result
+      - name: Commit capture result without stale-rebase conflicts
         shell: bash
         run: |
+          set -euo pipefail
+          TARGET="${{ steps.target.outputs.date }}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/market/japan-close-reference.json
-          if git diff --cached --quiet; then
-            echo "Reference unchanged"
-            exit 0
-          fi
-          git commit -m "Capture Japan close reference ${{ steps.target.outputs.date }}"
-          git pull --rebase origin main
-          git push origin main
+
+          # Other market workflows may push while this job is running. Always
+          # recompute the exact target date on the newest main before committing,
+          # then retry a rejected push instead of leaving a rebase conflict.
+          for ATTEMPT in 1 2 3; do
+            echo "Commit attempt $ATTEMPT"
+            git fetch origin main
+            git reset --hard origin/main
+            python scripts/capture_japan_close_reference.py --date "$TARGET"
+
+            python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('data/market/japan-close-reference.json').read_text(encoding='utf-8'))
+          target='${{ steps.target.outputs.date }}'
+          assert p.get('dataDate') == target
+          assert ((p.get('items') or {}).get('東証プライム値上がり銘柄数') or {}).get('value')
+          assert ((p.get('items') or {}).get('東証プライム値下がり銘柄数') or {}).get('value')
+          PY
+
+            git add data/market/japan-close-reference.json
+            if git diff --cached --quiet; then
+              echo "Reference unchanged on latest main"
+              exit 0
+            fi
+            git commit -m "Capture Japan close reference $TARGET"
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push raced with another workflow; retrying from latest main."
+            sleep $((ATTEMPT * 2))
+          done
+          echo "Failed to commit Japan close reference after 3 attempts" >&2
+          exit 1
