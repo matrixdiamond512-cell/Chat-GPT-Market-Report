@@ -1,13 +1,15 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "market": "japan",
   "snapshotDate": "2026-08-14",
   "dataDate": "2026-08-14",
-  "fetchedAt": "2026-08-14T20:44:57+09:00",
+  "fetchedAt": "2026-08-14T20:45:26+09:00",
   "status": "verified",
   "source": {
-    "name": "マーケットレポート終値一覧2026",
-    "sheet": "終値一覧",
+    "name": "公開ソース（exact-date fallback）",
+    "sheet": "",
+    "reference": "data/market/japan-close-reference.json",
+    "sheetStatus": "GOOGLE_SERVICE_ACCOUNT_JSON is not configured",
     "rowDate": "2026/08/14"
   },
   "table": {
@@ -94,7 +96,7 @@
       ]
     ],
     "dataDate": "2026-08-14",
-    "updatedAt": "2026-08-14T20:44:57+09:00",
+    "updatedAt": "2026-08-14T20:45:26+09:00",
     "source": {
       "name": "公開ソース（exact-date fallback）",
       "sheet": "",
@@ -102,5 +104,5 @@
       "sheetStatus": "GOOGLE_SERVICE_ACCOUNT_JSON is not configured"
     }
   },
-  "note": "東京市場だけを更新し、米国市場の確定済みデータと基準日は変更しない。"
+  "note": "東京市場だけを更新し、米国市場の確定済みデータと基準日は変更しない。古い東京データを新しい基準日に付け替えない。"
 }
