@@ -1,14 +1,14 @@
 {
-  "checkedAt": "2026-08-13T17:42:34+09:00",
-  "reportDate": "2026-08-13",
+  "checkedAt": "2026-08-14T09:54:56+09:00",
+  "reportDate": "2026-08-14",
   "reportSlot": "08:00",
-  "ready": false,
+  "ready": true,
   "historicalMode": false,
-  "reportSource": "reports.json",
-  "latestReportDate": "2026-08-13",
-  "latestReportTime": "16:00",
+  "reportSource": "latest-report",
+  "latestReportDate": "2026-08-14",
+  "latestReportTime": "08:00",
   "dataSemantics": "previous_close",
-  "expectedPreviousCloseDate": "2026-08-12",
+  "expectedPreviousCloseDate": "2026-08-13",
   "expectedRowCount": 28,
   "actualRowCount": 28,
   "expectedColumns": [
@@ -48,11 +48,9 @@
     "東証プライム値下がり銘柄数",
     "東証プライム25日騰落レシオ"
   ],
-  "blockingReasons": [
-    "latest-report mismatch: expected 2026-08-13 08:00, got 2026-08-13 16:00"
-  ],
+  "blockingReasons": [],
   "warnings": [
-    "marketDataTable structured rows used from reports.json"
+    "marketDataTable structured rows used from latest-report"
   ],
   "rule": "08:00 is a previous-close report. Validate market-data date, not retrieval clock time; do not overlay intraday morning quotes."
 }
