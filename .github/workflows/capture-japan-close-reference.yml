@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       target_date:
-        description: "Japan trading date YYYY-MM-DD; blank=today JST"
+        description: "Japan trading date YYYY-MM-DD; blank=latest completed Tokyo session"
         required: false
         type: string
   push:
@@ -40,31 +40,60 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Resolve target date
+      - name: Resolve latest completed Tokyo session
         id: target
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            TARGET="$(TZ=Asia/Tokyo date -d 'yesterday' +%F)"
-          else
-            TARGET="${{ inputs.target_date }}"
-            if [ -z "$TARGET" ]; then TARGET="$(TZ=Asia/Tokyo date +%F)"; fi
+          TARGET="${{ inputs.target_date }}"
+          if [ -z "$TARGET" ]; then
+            TARGET="$(TZ=Asia/Tokyo python - <<'PY'
+          import datetime as dt
+          import os
+          from zoneinfo import ZoneInfo
+
+          now = dt.datetime.now(ZoneInfo('Asia/Tokyo'))
+          day = now.date()
+
+          def previous_weekday(value: dt.date) -> dt.date:
+              value -= dt.timedelta(days=1)
+              while value.weekday() >= 5:
+                  value -= dt.timedelta(days=1)
+              return value
+
+          # Tokyo cash/Prime closing data is treated as completed from 16:00 JST.
+          if day.weekday() < 5 and now.time() >= dt.time(16, 0):
+              target = day
+          else:
+              target = previous_weekday(day)
+          print(target.isoformat())
+          PY
+          )"
           fi
           echo "date=$TARGET" >> "$GITHUB_OUTPUT"
+          echo "Resolved Tokyo session: $TARGET"
 
       - name: Capture exact-date Japanese close data
         run: python scripts/capture_japan_close_reference.py --date "${{ steps.target.outputs.date }}"
 
-      - name: Validate reference shape
+      - name: Validate reference shape and exact target date
         run: |
           python - <<'PY'
           import json
+          import os
           from pathlib import Path
           p=json.loads(Path('data/market/japan-close-reference.json').read_text(encoding='utf-8'))
-          assert p.get('dataDate'), 'dataDate missing'
+          target='${{ steps.target.outputs.date }}'
+          assert p.get('dataDate') == target, f"dataDate mismatch: {p.get('dataDate')} != {target}"
           assert isinstance(p.get('items'),dict), 'items missing'
           assert isinstance(p.get('unavailable'),dict), 'unavailable missing'
-          print({'dataDate':p['dataDate'],'itemCount':len(p['items']),'complete':p.get('complete')})
+          assert isinstance(p.get('breadthHistory'),list), 'breadthHistory missing'
+          print({
+              'dataDate':p['dataDate'],
+              'itemCount':len(p['items']),
+              'complete':p.get('complete'),
+              'breadthHistoryCount':len(p.get('breadthHistory') or []),
+              'primeRatio25':((p.get('items') or {}).get('東証プライム25日騰落レシオ') or {}).get('value'),
+          })
           PY
 
       - name: Commit capture result
