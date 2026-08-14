@@ -8,8 +8,15 @@ older value is carried forward under a newer date.
 Sources:
 - Yahoo daily history: Nikkei close and 25/200-day deviations
 - 投資の森: Nikkei PER/PBR/EPS and Prime advancers/decliners
+- 株式マーケットデータ: exact-date Prime 5/25/75-day advance-decline ratios
 - Traders Web domestic market: Prime/TSE closing volume and turnover when the page
   contains a close block for the exact target date
+
+Prime breadth history is persisted inside the output JSON. This allows the 25-day
+ratio to be calculated from exact-date Prime advance/decline counts even when the
+source's default web view exposes fewer than 25 trading sessions. A direct
+exact-date Prime 25-day ratio, when available, takes precedence and also provides
+an independent check on the locally calculated series.
 """
 from __future__ import annotations
 
@@ -32,7 +39,29 @@ UA = "Mozilla/5.0 (compatible; ChatGPT-Market-Report/1.0)"
 
 PER_URL = "https://nikkeiyosoku.com/nikkeiper/"
 BREADTH_URL = "https://nikkeiyosoku.com/jp_index_rate/"
+PRIME_RATIO_URL = "https://stock-marketdata.com/advance-decline-tse-prime-market"
 TRADERS_URL = "https://www.traders.co.jp/market_jp/"
+
+# Bootstrap rows are exact historical Prime counts from the same 投資の森 table
+# used by parse_breadth(). They only seed the rolling history once; live exact-date
+# rows always overwrite matching bootstrap dates. Keeping this small historical
+# seed avoids the old failure mode where the default 1-month page supplied only
+# about 20 sessions and a 25-day ratio could never be calculated.
+BREADTH_HISTORY_BOOTSTRAP = [
+    {"date":"2026-07-01","primeAdvancers":677,"primeDecliners":831},
+    {"date":"2026-07-02","primeAdvancers":1215,"primeDecliners":314},
+    {"date":"2026-07-03","primeAdvancers":1226,"primeDecliners":291},
+    {"date":"2026-07-06","primeAdvancers":1142,"primeDecliners":384},
+    {"date":"2026-07-07","primeAdvancers":746,"primeDecliners":772},
+    {"date":"2026-07-08","primeAdvancers":564,"primeDecliners":960},
+    {"date":"2026-07-09","primeAdvancers":585,"primeDecliners":917},
+    {"date":"2026-07-10","primeAdvancers":815,"primeDecliners":706},
+    {"date":"2026-07-13","primeAdvancers":571,"primeDecliners":941},
+    {"date":"2026-07-14","primeAdvancers":1185,"primeDecliners":327},
+    {"date":"2026-07-15","primeAdvancers":1152,"primeDecliners":371},
+    {"date":"2026-07-16","primeAdvancers":446,"primeDecliners":1070},
+    {"date":"2026-07-17","primeAdvancers":449,"primeDecliners":1081},
+]
 
 
 def now_jst() -> dt.datetime:
@@ -40,7 +69,10 @@ def now_jst() -> dt.datetime:
 
 
 def get_text(url: str) -> str:
-    request = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html,application/json"})
+    request = urllib.request.Request(
+        url,
+        headers={"User-Agent": UA, "Accept": "text/html,application/json"},
+    )
     with urllib.request.urlopen(request, timeout=30) as response:
         raw = response.read()
         encoding = response.headers.get_content_charset() or "utf-8"
@@ -85,12 +117,14 @@ def yahoo_nikkei(target: dt.date) -> dict[str, Any] | None:
     previous = bars[idx-1][1] if idx > 0 else None
     change = close - previous if previous not in (None,0) else None
     rate = change / previous * 100 if change is not None and previous else None
+
     def dev(period: int) -> float | None:
         if idx+1 < period:
             return None
         values = [value for _,value in bars[idx-period+1:idx+1]]
         average = sum(values)/period
         return (close/average-1)*100 if average else None
+
     return {
         "date": day.isoformat(), "close": close, "change": change, "rate": rate,
         "dev25": dev(25), "dev200": dev(200),
@@ -132,20 +166,81 @@ def parse_breadth(target: dt.date) -> tuple[dict[str, Any] | None, list[dict[str
         except ValueError:
             continue
         vals=[int(m.group(i).replace(",","")) for i in range(3,11)]
-        rows.append({"date":date_value.isoformat(),"primeAdvancers":vals[2],"primeDecliners":vals[3]})
+        rows.append({
+            "date":date_value.isoformat(),
+            "primeAdvancers":vals[2],
+            "primeDecliners":vals[3],
+        })
     current=next((row for row in rows if row["date"]==target.isoformat()),None)
     return current, rows
 
 
+def load_saved_breadth_history() -> list[dict[str, Any]]:
+    try:
+        payload=json.loads(OUT.read_text(encoding="utf-8"))
+    except (OSError,json.JSONDecodeError):
+        return []
+    rows=payload.get("breadthHistory") or []
+    return [row for row in rows if isinstance(row,dict)]
+
+
+def merge_breadth_history(live_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    merged: dict[str,dict[str,Any]]={}
+    for row in BREADTH_HISTORY_BOOTSTRAP:
+        merged[row["date"]]={
+            **row,
+            "sourceName":"投資の森 値上がり・値下がり銘柄数（履歴初期値）",
+            "sourceUrl":BREADTH_URL,
+        }
+    for row in load_saved_breadth_history():
+        day=str(row.get("date") or "")
+        if day:
+            merged[day]=row
+    for row in live_rows:
+        day=str(row.get("date") or "")
+        if day:
+            merged[day]={
+                **row,
+                "sourceName":"投資の森 値上がり・値下がり銘柄数",
+                "sourceUrl":BREADTH_URL,
+            }
+    rows=sorted(merged.values(),key=lambda row:str(row.get("date") or ""))
+    return rows[-120:]
+
+
 def compute_ratio25(rows: list[dict[str, Any]], target: dt.date) -> float | None:
-    eligible=[r for r in rows if r["date"]<=target.isoformat()]
-    eligible.sort(key=lambda r:r["date"])
+    eligible=[r for r in rows if str(r.get("date") or "")<=target.isoformat()]
+    eligible.sort(key=lambda r:str(r.get("date") or ""))
+    if not eligible or str(eligible[-1].get("date") or "")!=target.isoformat():
+        return None
     tail=eligible[-25:]
     if len(tail)<25:
         return None
-    down=sum(int(r["primeDecliners"]) for r in tail)
-    up=sum(int(r["primeAdvancers"]) for r in tail)
+    try:
+        down=sum(int(r["primeDecliners"]) for r in tail)
+        up=sum(int(r["primeAdvancers"]) for r in tail)
+    except (KeyError,TypeError,ValueError):
+        return None
     return up/down*100 if down else None
+
+
+def parse_direct_prime_ratio25(target: dt.date) -> dict[str, Any] | None:
+    """Read the exact-date Prime 25-day ratio from a dedicated Prime series."""
+    text=get_text(PRIME_RATIO_URL)
+    key=target.strftime("%Y/%m/%d")
+    # Time-series columns: date, 5-day, 25-day, 75-day.
+    pattern=re.compile(
+        rf"(?<!\d){re.escape(key)}\s+([0-9]+(?:\.\d+)?)\s+([0-9]+(?:\.\d+)?)\s+([0-9]+(?:\.\d+)?)"
+    )
+    m=pattern.search(text)
+    if not m:
+        return None
+    return {
+        "date":target.isoformat(),
+        "ratio25":float(m.group(2)),
+        "sourceName":"株式マーケットデータ 東証プライム騰落レシオ",
+        "sourceUrl":PRIME_RATIO_URL,
+    }
 
 
 def parse_traders_close(target: dt.date) -> dict[str, Any] | None:
@@ -168,13 +263,17 @@ def parse_traders_close(target: dt.date) -> dict[str, Any] | None:
         breadth_match = re.search(r"騰落\s*上\s*([0-9,]+)\s*/\s*下\s*([0-9,]+)", block)
         if not (volume_match or turnover_match or breadth_match):
             continue
-        result: dict[str, Any] = {"date": target.isoformat(), "sourceName":"トレーダーズ・ウェブ 国内市場", "sourceUrl":TRADERS_URL}
+        result: dict[str, Any] = {
+            "date": target.isoformat(),
+            "sourceName":"トレーダーズ・ウェブ 国内市場",
+            "sourceUrl":TRADERS_URL,
+        }
         if volume_match:
-            raw=float(volume_match.group(1).replace(",",""));unit=volume_match.group(2)
+            raw=float(volume_match.group(1).replace(",","")); unit=volume_match.group(2)
             million = raw*100 if unit=="億株" else raw*0.01 if unit=="万株" else raw
             result["primeVolumeMillionShares"] = million
         if turnover_match:
-            raw=float(turnover_match.group(1).replace(",",""));unit=turnover_match.group(2)
+            raw=float(turnover_match.group(1).replace(",","")); unit=turnover_match.group(2)
             trillion = raw if unit=="兆円" else raw/10000
             result["primeTurnoverTrillionYen"] = trillion
         if breadth_match:
@@ -216,19 +315,45 @@ def main() -> int:
         unavailable["日経225予想PER/PBR/EPS"]=f"{target.isoformat()}行がソースに未反映"
 
     try:
-        breadth, history=parse_breadth(target)
+        breadth, live_history=parse_breadth(target)
     except Exception as exc:
-        breadth=None; history=[]; unavailable["東証プライム騰落"]=f"取得失敗: {exc}"
+        breadth=None; live_history=[]; unavailable["東証プライム騰落"]=f"取得失敗: {exc}"
+    breadth_history=merge_breadth_history(live_history)
+
     if breadth:
         items["東証プライム値上がり銘柄数"]={"value":str(breadth["primeAdvancers"]),"date":target.isoformat(),"sourceName":"投資の森 値上がり・値下がり銘柄数","sourceUrl":BREADTH_URL}
         items["東証プライム値下がり銘柄数"]={"value":str(breadth["primeDecliners"]),"date":target.isoformat(),"sourceName":"投資の森 値上がり・値下がり銘柄数","sourceUrl":BREADTH_URL}
-        ratio=compute_ratio25(history,target)
-        if ratio is not None:
-            items["東証プライム25日騰落レシオ"]={"value":f"{ratio:.2f}%","date":target.isoformat(),"sourceName":"投資の森 東証プライム騰落銘柄数から25営業日で算出","sourceUrl":BREADTH_URL}
-        else:
-            unavailable["東証プライム25日騰落レシオ"]=f"{target.isoformat()}までの連続25営業日分を同一ソースから取得できず"
     elif "東証プライム騰落" not in unavailable:
         unavailable["東証プライム騰落"]=f"{target.isoformat()}行がソースに未反映"
+
+    try:
+        direct_ratio=parse_direct_prime_ratio25(target)
+    except Exception as exc:
+        direct_ratio=None
+        unavailable["東証プライム25日騰落レシオ直接値"]=f"取得失敗: {exc}"
+
+    if direct_ratio:
+        items["東証プライム25日騰落レシオ"]={
+            "value":f"{direct_ratio['ratio25']:.2f}%",
+            "date":target.isoformat(),
+            "sourceName":direct_ratio["sourceName"],
+            "sourceUrl":direct_ratio["sourceUrl"],
+            "method":"direct exact-date series",
+        }
+        unavailable.pop("東証プライム25日騰落レシオ直接値",None)
+    else:
+        ratio=compute_ratio25(breadth_history,target)
+        if ratio is not None:
+            items["東証プライム25日騰落レシオ"]={
+                "value":f"{ratio:.2f}%",
+                "date":target.isoformat(),
+                "sourceName":"投資の森 東証プライム騰落銘柄数の保存履歴から25営業日で算出",
+                "sourceUrl":BREADTH_URL,
+                "method":"25 exact-date Prime breadth sessions",
+            }
+            unavailable.pop("東証プライム25日騰落レシオ直接値",None)
+        else:
+            unavailable["東証プライム25日騰落レシオ"]=f"{target.isoformat()}までの連続25営業日分の正確なプライム騰落履歴を確保できず"
 
     try:
         traders=parse_traders_close(target)
@@ -249,16 +374,32 @@ def main() -> int:
     elif "東証プライム売買高" not in unavailable:
         unavailable["東証プライム売買高"]=f"{target.isoformat()}の大引けブロックがトレーダーズ・ウェブに取得時点で見つからず"
 
-    required=["日経225現物","日経225予想PER","日経225 PBR","日経225予想EPS","日経225 25日移動平均乖離率","日経225 200日移動平均乖離率","東証プライム売買高","東証プライム値上がり銘柄数","東証プライム値下がり銘柄数","東証プライム25日騰落レシオ"]
+    required=[
+        "日経225現物","日経225予想PER","日経225 PBR","日経225予想EPS",
+        "日経225 25日移動平均乖離率","日経225 200日移動平均乖離率",
+        "東証プライム売買高","東証プライム値上がり銘柄数",
+        "東証プライム値下がり銘柄数","東証プライム25日騰落レシオ",
+    ]
     payload={
-        "schemaVersion":"1.1.0","generatedAt":now_jst().isoformat(),"dataDate":target.isoformat(),
+        "schemaVersion":"1.2.0",
+        "generatedAt":now_jst().isoformat(),
+        "dataDate":target.isoformat(),
         "complete": all(label in items for label in required),
-        "items":items,"unavailable":unavailable,
+        "items":items,
+        "unavailable":unavailable,
+        "breadthHistory":breadth_history,
         "rule":"accept exact target-date records only; never carry stale records forward",
     }
     OUT.parent.mkdir(parents=True,exist_ok=True)
     OUT.write_text(json.dumps(payload,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
-    print(json.dumps({"date":target.isoformat(),"itemCount":len(items),"complete":payload["complete"],"unavailable":unavailable},ensure_ascii=False))
+    print(json.dumps({
+        "date":target.isoformat(),
+        "itemCount":len(items),
+        "complete":payload["complete"],
+        "breadthHistoryCount":len(breadth_history),
+        "primeRatio25":((items.get("東証プライム25日騰落レシオ") or {}).get("value")),
+        "unavailable":unavailable,
+    },ensure_ascii=False))
     return 0
 
 
