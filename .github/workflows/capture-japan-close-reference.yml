@@ -11,6 +11,7 @@ on:
     branches: [main]
     paths:
       - "scripts/capture_japan_close_reference.py"
+      - "scripts/correct_japan_close_reference.py"
       - ".github/workflows/capture-japan-close-reference.yml"
   schedule:
     - cron: "10 7 * * 1-5"   # 16:10 JST
@@ -79,6 +80,9 @@ jobs:
       - name: Capture exact-date Japanese close data
         run: python scripts/capture_japan_close_reference.py --date "${{ steps.target.outputs.date }}"
 
+      - name: Cross-check Nikkei close and recalculate deviations
+        run: python scripts/correct_japan_close_reference.py --date "${{ steps.target.outputs.date }}"
+
       - name: Validate reference shape and exact target date
         run: |
           python - <<'PY'
@@ -90,10 +94,14 @@ jobs:
           assert isinstance(p.get('items'),dict), 'items missing'
           assert isinstance(p.get('unavailable'),dict), 'unavailable missing'
           assert isinstance(p.get('breadthHistory'),list), 'breadthHistory missing'
+          close=((p.get('items') or {}).get('日経225現物') or {})
+          assert close.get('value'), 'Nikkei exact-date close missing'
           print({
               'dataDate':p['dataDate'],
               'itemCount':len(p['items']),
               'complete':p.get('complete'),
+              'nikkeiClose':close.get('value'),
+              'nikkeiCloseStatus':close.get('status'),
               'breadthHistoryCount':len(p.get('breadthHistory') or []),
               'primeRatio25':((p.get('items') or {}).get('東証プライム25日騰落レシオ') or {}).get('value'),
           })
@@ -115,6 +123,7 @@ jobs:
             git fetch origin main
             git reset --hard origin/main
             python scripts/capture_japan_close_reference.py --date "$TARGET"
+            python scripts/correct_japan_close_reference.py --date "$TARGET"
 
             python - <<'PY'
           import json
@@ -122,6 +131,7 @@ jobs:
           p=json.loads(Path('data/market/japan-close-reference.json').read_text(encoding='utf-8'))
           target='${{ steps.target.outputs.date }}'
           assert p.get('dataDate') == target
+          assert ((p.get('items') or {}).get('日経225現物') or {}).get('value')
           assert ((p.get('items') or {}).get('東証プライム値上がり銘柄数') or {}).get('value')
           assert ((p.get('items') or {}).get('東証プライム値下がり銘柄数') or {}).get('value')
           PY
