@@ -19,6 +19,12 @@ on:
     - cron: "10 9 * * 1-5"   # 18:10 JST
     - cron: "10 11 * * 1-5"  # 20:10 JST
     - cron: "10 14 * * 1-5"  # 23:10 JST
+    # Friday data sources may publish after the final Friday retry. Recheck on
+    # Saturday morning so the Saturday 08:00/09:00 reporting path can use the
+    # actual Friday close instead of freezing Friday-night unavailable markers.
+    - cron: "10 0 * * 6"      # 09:10 JST Saturday
+    - cron: "10 1 * * 6"      # 10:10 JST Saturday
+    - cron: "10 3 * * 6"      # 12:10 JST Saturday
 
 permissions:
   contents: write
