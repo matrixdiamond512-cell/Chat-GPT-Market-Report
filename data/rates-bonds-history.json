@@ -111,7 +111,7 @@
     },
     {
       "asOf": "2026-08-14",
-      "generatedAt": "2026-08-15T21:36:32+09:00",
+      "generatedAt": "2026-08-15T21:52:55+09:00",
       "rates": {
         "米2年債利回り": 4.15,
         "米5年債利回り": 4.32,
@@ -126,22 +126,33 @@
         "日本30年国債利回り": 4.015,
         "ドイツ10年国債利回り": 3.16
       },
-      "fedWatch": {
-        "status": "unavailable",
-        "source": "CME FedWatch",
-        "sourceUrl": "https://www.cmegroup.com/ja/markets/interest-rates/cme-fedwatch-tool.html",
-        "asOf": null,
-        "dataMode": "eod",
-        "currentTargetRange": null,
-        "summary": null,
-        "meetings": [],
-        "twoYearConsistency": {
-          "status": "unavailable",
-          "us2yChangeBp": null,
-          "interpretation": "CME FedWatch公式API未設定"
-        },
-        "unavailableReason": "CME FedWatch公式API未設定"
-      }
+      "policyExpectations": {
+        "status": "calculated",
+        "summary": "FF金利・EFFR・米短期金利から政策期待の方向を確認。FOMC結果確率は推定しない。",
+        "currentTargetRange": "3.50－3.75%",
+        "midpoint": 3.625,
+        "effr": 3.63,
+        "effrAsOf": "2026-08-13",
+        "us2y": 4.15,
+        "us2yPrevious": 4.2,
+        "us2yAsOf": "2026-08-13",
+        "us2yChangeBp": -5.0,
+        "us2yWeekChangeBp": -10.0,
+        "us10y": 4.63,
+        "us10yChangeBp": -5.0,
+        "us10yAsOf": "2026-08-13",
+        "curve2s10sBp": 48.0,
+        "curveChangeBp": 0.0,
+        "us2yVsFedMidBp": 52.5,
+        "us2yVsFedMidPreviousBp": 57.5,
+        "directionScore": -2,
+        "directionLabel": "緩和方向",
+        "dailyDirectionLabel": "金融緩和期待が強まる",
+        "directionMismatch": false,
+        "interpretation": "金融緩和期待が強まる。米2年は前日 -5.0bp、1週間 -10.0bp。 2年債には政策経路やリスクプレミアムも含まれるため、確率とは解釈しない。",
+        "source": "Federal Reserve / FRED"
+      },
+      "manualFedWatch": null
     }
   ]
 }

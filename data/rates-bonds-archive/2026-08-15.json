@@ -3,12 +3,12 @@
   "pageId": "rates-bonds",
   "pageTitle": "金利・債券市場分析",
   "subtitle": "米・日・欧の金利、イールドカーブ、実質金利、入札需給、他市場への波及を一画面で確認",
-  "generatedAt": "2026-08-15T21:36:32+09:00",
+  "generatedAt": "2026-08-15T21:52:55+09:00",
   "meta": {
     "page": "rates-bonds",
     "asOfDate": "2026-08-14",
     "asOfTime": "各市場の公表時点",
-    "updatedAt": "2026-08-15T21:36:32+09:00",
+    "updatedAt": "2026-08-15T21:52:55+09:00",
     "status": "confirmed",
     "sourceStatus": "自動取得",
     "isStale": false,
@@ -370,50 +370,32 @@
     ]
   },
   "policyExpectations": {
-    "summary": "確率推定を無理に表示せず、公式政策金利と短期国債利回りから市場期待の方向を確認。",
-    "rows": [
-      {
-        "policy": "FF金利目標レンジ",
-        "value": "3.50－3.75%",
-        "change": "政策金利の現行レンジ",
-        "status": "confirmed",
-        "source": "FRED DFEDTARL / DFEDTARU",
-        "note": "次回会合の確率ではなく、現在の公式目標レンジ。米2年債の動きと併せて市場期待を読む。"
-      },
-      {
-        "policy": "米2年債が示す政策期待",
-        "value": "4.150%",
-        "change": "前日比 -5.0bp",
-        "status": "confirmed",
-        "source": "FRED DGS2",
-        "note": "FedWatchの確率値ではない。短期金利期待の方向確認用。"
-      },
-      {
-        "policy": "日本2年債が示す政策期待",
-        "value": "1.661%",
-        "change": "前日比 +1.0bp",
-        "status": "confirmed",
-        "source": "財務省 国債金利情報",
-        "note": "日銀会合の確率値ではなく、日本の短期金利期待の方向確認用。"
-      }
-    ]
+    "status": "calculated",
+    "summary": "FF金利・EFFR・米短期金利から政策期待の方向を確認。FOMC結果確率は推定しない。",
+    "currentTargetRange": "3.50－3.75%",
+    "midpoint": 3.625,
+    "effr": 3.63,
+    "effrAsOf": "2026-08-13",
+    "us2y": 4.15,
+    "us2yPrevious": 4.2,
+    "us2yAsOf": "2026-08-13",
+    "us2yChangeBp": -5.0,
+    "us2yWeekChangeBp": -10.0,
+    "us10y": 4.63,
+    "us10yChangeBp": -5.0,
+    "us10yAsOf": "2026-08-13",
+    "curve2s10sBp": 48.0,
+    "curveChangeBp": 0.0,
+    "us2yVsFedMidBp": 52.5,
+    "us2yVsFedMidPreviousBp": 57.5,
+    "directionScore": -2,
+    "directionLabel": "緩和方向",
+    "dailyDirectionLabel": "金融緩和期待が強まる",
+    "directionMismatch": false,
+    "interpretation": "金融緩和期待が強まる。米2年は前日 -5.0bp、1週間 -10.0bp。 2年債には政策経路やリスクプレミアムも含まれるため、確率とは解釈しない。",
+    "source": "Federal Reserve / FRED"
   },
-  "fedWatch": {
-    "status": "unavailable",
-    "source": "CME FedWatch",
-    "sourceUrl": "https://www.cmegroup.com/ja/markets/interest-rates/cme-fedwatch-tool.html",
-    "asOf": null,
-    "dataMode": "eod",
-    "currentTargetRange": null,
-    "summary": null,
-    "meetings": [],
-    "twoYearConsistency": {
-      "status": "unavailable",
-      "us2yChangeBp": null,
-      "interpretation": "CME FedWatch公式API未設定"
-    },
-    "unavailableReason": "CME FedWatch公式API未設定"
-  },
+  "manualFedWatch": null,
   "crossAssetImpact": [
     {
       "market": "日経225先物",
@@ -511,13 +493,13 @@
   "sources": [
     {
       "name": "CME FedWatch",
-      "status": "unavailable",
-      "note": "公式FedWatch API（EOD）。未設定時は確率を推定しない。"
+      "status": "ready",
+      "note": "FOMC確率は公式ページで確認。自動取得・推定は行わない。"
     },
     {
       "name": "FRED / Federal Reserve",
       "status": "confirmed",
-      "note": "米2・5・10・30年、10年実質金利、10年期待インフレ、10年タームプレミアム、FF目標レンジ"
+      "note": "米2・5・10・30年、EFFR、10年実質金利、期待インフレ、タームプレミアム、FF目標レンジ"
     },
     {
       "name": "財務省 国債金利情報",
