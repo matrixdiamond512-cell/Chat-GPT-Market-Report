@@ -109,6 +109,27 @@
   color: var(--navy) !important;
 }
 
+.fedwatch-meta, .fedwatch-change { display:flex; flex-wrap:wrap; align-items:center; gap:8px 18px; color:#31476a; font-size:12px; font-weight:850; }
+.fedwatch-meta { margin-bottom:10px; }
+.fedwatch-meta .status-badge { margin-top:0; }
+.fedwatch-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; }
+.fedwatch-kpis article { display:grid; gap:3px; padding:11px 12px; border:1px solid var(--line); border-radius:7px; background:#fbfdff; }
+.fedwatch-kpis small { color:var(--muted); font-weight:900; }
+.fedwatch-kpis strong { color:var(--navy); font-size:21px; line-height:1.25; }
+.fedwatch-kpis span { color:#31476a; font-size:12px; font-weight:850; }
+.fedwatch-change { margin:10px 0; padding:9px 11px; border:1px solid var(--line); border-left:4px solid var(--blue); border-radius:6px; background:#f7faff; }
+.fedwatch-table { min-width:880px; }
+.fedwatch-extra { display:none; }
+.show-all-meetings .fedwatch-extra { display:table-row; }
+.fedwatch-toggle { margin-top:8px; border:1px solid #7fa1dc; border-radius:6px; background:#f7faff; color:var(--navy); padding:6px 10px; font-weight:900; cursor:pointer; }
+.fedwatch-reading { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin-top:10px; }
+.fedwatch-reading article { display:grid; gap:4px; padding:10px 11px; border:1px solid var(--line); border-radius:7px; }
+.fedwatch-reading strong { color:var(--navy); font-size:17px; }
+.fedwatch-reading small, .fedwatch-reading span { color:var(--muted); font-size:11.5px; font-weight:800; }
+.fedwatch-unavailable { display:grid; gap:8px; justify-items:start; }
+.fedwatch-unavailable .status-badge { margin:0; }
+.fedwatch-unavailable p { margin:0; color:#31476a; font-size:13px; font-weight:800; }
+
 .scenario-lists {
   margin-top: 8px;
 }
@@ -197,4 +218,15 @@
   .curve-point {
     grid-template-columns: 38px minmax(70px, 1fr) 68px;
   }
+  .fedwatch-kpis, .fedwatch-reading { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .fedwatch-table-wrap { overflow:visible; border:0; }
+  .fedwatch-table, .fedwatch-table tbody { display:block; min-width:0; }
+  .fedwatch-table thead { display:none; }
+  .fedwatch-table tr { display:grid; grid-template-columns:1fr 1fr; gap:3px 8px; margin-bottom:8px; padding:9px; border:1px solid var(--line); border-radius:7px; }
+  .fedwatch-table td { display:block; padding:2px; border:0; text-align:left; }
+  .fedwatch-table td:nth-child(3), .fedwatch-table td:nth-child(5), .fedwatch-table td:nth-child(6), .fedwatch-table td:nth-child(7) { display:none; }
+  .fedwatch-table td:nth-child(1)::before { content:"FOMC日："; }
+  .fedwatch-table td:nth-child(2)::before { content:"最有力："; }
+  .fedwatch-table td:nth-child(4)::before { content:"現在："; }
+  .fedwatch-table td:nth-child(8)::before { content:"1日前比："; }
 }

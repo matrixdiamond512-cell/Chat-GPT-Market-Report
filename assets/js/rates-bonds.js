@@ -51,6 +51,8 @@
     if (!Number.isFinite(num)) return esc(value);
     return `${num > 0 ? "+" : ""}${num.toFixed(1)}`;
   };
+  const pct = (value) => Number.isFinite(Number(value)) ? `${Number(value).toFixed(1)}%` : "—";
+  const signedPt = (value) => Number.isFinite(Number(value)) ? `${Number(value) > 0 ? "+" : ""}${Number(value).toFixed(1)}pt` : "—";
 
   function renderHeader(data) {
     const meta = data.meta || {};
@@ -176,7 +178,7 @@
     if (!rows.length && !usCurve.length && !jpCurve.length) return "";
     return `
       <section class="panel span-7">
-        <h2 class="panel-title"><span class="badge-num">4</span>イールドカーブ</h2>
+        <h2 class="panel-title"><span class="badge-num">5</span>イールドカーブ</h2>
         <div class="panel-body">
           <p class="plain-note curve-summary">${plainValue(curve.summary)}</p>
           <div class="curve-visual-grid">
@@ -195,7 +197,7 @@
     if (!factors.length) return "";
     return `
       <section class="panel span-5">
-        <h2 class="panel-title"><span class="badge-num">5</span>米10年金利の変化要因</h2>
+        <h2 class="panel-title"><span class="badge-num">6</span>米10年金利の変化要因</h2>
         <div class="panel-body">
           <p class="plain-note"><b>${plainValue(section.formula)}</b></p>
           <div class="factor-grid">
@@ -219,7 +221,7 @@
     if (!items.length) return "";
     return `
       <section class="panel span-6">
-        <h2 class="panel-title"><span class="badge-num">6</span>債券需給・米国債入札</h2>
+        <h2 class="panel-title"><span class="badge-num">7</span>債券需給・米国債入札</h2>
         <div class="panel-body">
           <p class="plain-note">${plainValue(section.summary)}</p>
           <div class="supply-grid">
@@ -236,13 +238,51 @@
     if (!rows.length) return "";
     return `
       <section class="panel span-6">
-        <h2 class="panel-title"><span class="badge-num">7</span>政策金利・短期金利期待</h2>
+        <h2 class="panel-title"><span class="badge-num">4</span>政策金利・短期金利期待</h2>
         <div class="panel-body">
           <p class="plain-note">${plainValue(section.summary)}</p>
           <div class="table-wrap"><table class="policy-table"><thead><tr><th>項目</th><th>現在</th><th>変化</th><th>出所</th><th>読み方</th></tr></thead><tbody>${rows.map((row) => `<tr><td>${plainValue(row.policy)}</td><td>${plainValue(row.value)}</td><td>${plainValue(row.change)}</td><td>${plainValue(row.source)}</td><td>${plainValue(row.note)}</td></tr>`).join("")}</tbody></table></div>
         </div>
       </section>
     `;
+  }
+
+  function defaultMeetings(meetings) {
+    if (meetings.length <= 4) return meetings;
+    const first = meetings.slice(0, 3);
+    const lastYear = meetings.filter((row) => String(row.meetingDate || "").slice(0, 4) === String(first[0]?.meetingDate || "").slice(0, 4)).at(-1);
+    return lastYear && !first.includes(lastYear) ? [...first, lastYear] : meetings.slice(0, 4);
+  }
+
+  function renderFedWatch(data) {
+    if (!Object.prototype.hasOwnProperty.call(data, "fedWatch")) return renderPolicy(data);
+    const fw = data.fedWatch || {};
+    const officialUrl = fw.sourceUrl || "https://www.cmegroup.com/ja/markets/interest-rates/cme-fedwatch-tool.html";
+    if (fw.status !== "confirmed") return `
+      <section class="panel span-12 fedwatch-panel">
+        <h2 class="panel-title"><span class="badge-num">4</span>CME FedWatch｜FOMC政策金利織り込み</h2>
+        <div class="panel-body fedwatch-unavailable">${badge("unavailable")}<strong>取得不能（${plainValue(fw.unavailableReason, "CME FedWatch公式API未設定")}）</strong><p>確率を他の金利から推定せず、既存の金利データ表示は継続します。</p><a href="${esc(officialUrl)}" target="_blank" rel="noopener noreferrer">CME FedWatch公式ページを開く</a></div>
+      </section>`;
+    const summary = fw.summary || {};
+    const meetings = arr(fw.meetings);
+    const primary = defaultMeetings(meetings);
+    const row = (meeting, hidden) => {
+      const outcomes = arr(meeting.outcomes);
+      const dominant = outcomes.find((item) => item.targetRange === meeting.dominantTargetRange) || outcomes.slice().sort((a, b) => Number(b.currentProbabilityPct || 0) - Number(a.currentProbabilityPct || 0))[0] || {};
+      const change = Number(dominant.currentProbabilityPct) - Number(dominant.oneDayAgoPct);
+      return `<tr class="fedwatch-row${hidden ? " fedwatch-extra" : ""}"><td>${plainValue(meeting.meetingDate)}</td><td>${plainValue(meeting.dominantTargetRange)}</td><td>${Number.isFinite(Number(dominant.moveBp)) ? `${Number(dominant.moveBp) > 0 ? "+" : ""}${dominant.moveBp}bp` : "—"}</td><td class="num">${pct(dominant.currentProbabilityPct)}</td><td class="num">${pct(dominant.oneDayAgoPct)}</td><td class="num">${pct(dominant.oneWeekAgoPct)}</td><td class="num">${pct(dominant.oneMonthAgoPct)}</td><td class="num ${change > 0 ? "up" : change < 0 ? "down" : "muted"}">${signedPt(change)}</td></tr>`;
+    };
+    const consistency = fw.twoYearConsistency || {};
+    return `<section class="panel span-12 fedwatch-panel">
+      <h2 class="panel-title"><span class="badge-num">4</span>CME FedWatch｜FOMC政策金利織り込み</h2>
+      <div class="panel-body">
+        <div class="fedwatch-meta"><span>出所：<a href="${esc(officialUrl)}" target="_blank" rel="noopener noreferrer">CME FedWatch</a></span><span>基準日時：${plainValue(fw.asOf)}</span><span>取得方式：${plainValue(fw.dataMode)}</span>${badge(fw.status)}</div>
+        <div class="fedwatch-kpis"><article><small>現在のFF金利</small><strong>${plainValue(fw.currentTargetRange)}</strong></article><article><small>次回FOMC</small><strong>${plainValue(summary.nextMeetingDate)}</strong></article><article><small>最有力シナリオ</small><strong>${plainValue(summary.dominantAction)}</strong><span>${plainValue(summary.dominantTargetRange)}</span></article><article><small>最有力確率</small><strong>${pct(summary.probabilityPct)}</strong></article></div>
+        <div class="fedwatch-change"><b>前回からの変化</b><span>現在 ${pct(summary.probabilityPct)}</span><span>1日前 ${pct(summary.oneDayAgoPct)}</span><span>1週間前 ${pct(summary.oneWeekAgoPct)}</span><span>1か月前 ${pct(summary.oneMonthAgoPct)}</span><strong class="${Number(summary.change1dPt) > 0 ? "up" : Number(summary.change1dPt) < 0 ? "down" : "muted"}">1日前比 ${signedPt(summary.change1dPt)}</strong></div>
+        <div class="table-wrap fedwatch-table-wrap"><table class="fedwatch-table"><thead><tr><th>FOMC日</th><th>最有力レンジ</th><th>変更幅</th><th>現在</th><th>1日前</th><th>1週前</th><th>1か月前</th><th>1日前比</th></tr></thead><tbody>${meetings.map((meeting) => row(meeting, !primary.includes(meeting))).join("")}</tbody></table></div>
+        ${meetings.length > primary.length ? '<button class="fedwatch-toggle" type="button" aria-expanded="false">すべてのFOMCを表示</button>' : ""}
+        <div class="fedwatch-reading"><article><b>利下げ織り込み</b><strong>${plainValue(summary.stanceShift)}</strong><small>ポータル側の分析ルール（CME公式判定ではありません）</small></article><article><b>米2年債との整合性</b><strong>${plainValue(consistency.status === "consistent" ? "整合" : consistency.status === "divergent" ? "乖離" : "判定保留")}</strong><span>${plainValue(consistency.interpretation)}</span></article></div>
+      </div></section>`;
   }
 
   function renderImpact(data) {
@@ -294,7 +334,13 @@
   }
 
   function render(data) {
-    root.innerHTML = `${renderHeader(data)}<div class="rb-grid">${renderConclusion(data)}${renderCards(data)}${renderRates(data)}${renderCurve(data)}${renderDecomposition(data)}${renderSupplyDemand(data)}${renderPolicy(data)}${renderImpact(data)}${renderLeadingAndScenarios(data)}${renderSources(data)}</div>`;
+    root.innerHTML = `${renderHeader(data)}<div class="rb-grid">${renderConclusion(data)}${renderCards(data)}${renderRates(data)}${renderFedWatch(data)}${renderCurve(data)}${renderDecomposition(data)}${renderSupplyDemand(data)}${renderImpact(data)}${renderLeadingAndScenarios(data)}${renderSources(data)}</div>`;
+    root.querySelectorAll(".fedwatch-toggle").forEach((button) => button.addEventListener("click", () => {
+      const expanded = button.getAttribute("aria-expanded") === "true";
+      button.setAttribute("aria-expanded", String(!expanded));
+      button.textContent = expanded ? "すべてのFOMCを表示" : "表示を戻す";
+      button.closest(".fedwatch-panel").classList.toggle("show-all-meetings", !expanded);
+    }));
   }
 
   function renderError(error) {
