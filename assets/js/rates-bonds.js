@@ -77,6 +77,7 @@
 
   function renderConclusion(data) {
     const summary = data.summary || {};
+    const analysis = data.analysis || {};
     const meta = data.meta || {};
     const missing = arr(meta.missingData);
     return `
@@ -84,10 +85,12 @@
         <h2 class="panel-title"><span class="badge-num">1</span>今日の金利・債券市場の結論</h2>
         <div class="panel-body conclusion-body">
           <div>
+            ${arr(analysis.topLines).length ? `<div class="top-three-lines">${arr(analysis.topLines).slice(0, 3).map((line, index) => `<p><b>${index + 1}</b>${plainValue(line)}</p>`).join("")}</div>` : ""}
             <h3 class="headline">${plainValue(summary.headline, "主要金利を取得中")}</h3>
             <p class="lead-text">${plainValue(summary.theme, "取得済みデータから方向を判定します。")}</p>
             <p class="lead-text">${plainValue(summary.conclusion, "未取得値は推測しません。")}</p>
             <div class="note-box"><b>材料と値動きの整合性：</b>${plainValue(summary.consistency, "判定待ち")}</div>
+            ${analysis.theme ? `<div class="conclusion-analysis-grid"><article><b>今日のテーマ</b><span>${plainValue(analysis.theme)}</span></article><article><b>金利市場の構造</b><span>米国：${plainValue(analysis.usRates?.structure)} / 日本：${plainValue(analysis.jpRates?.structure)}</span></article><article><b>日米比較</b><span>${plainValue(analysis.usJapanComparison?.rateGapDirection)} / USD/JPY示唆 ${plainValue(analysis.usJapanComparison?.usdJpyImplication)}</span></article><article><b>他市場との整合性</b><span>${arr(analysis.crossAssetAnalysis).filter((x) => ["USD/JPY", "金", "BTCUSD"].includes(x.market)).map((x) => `${plainValue(x.market)}：${plainValue(x.verdict)}`).join(" / ")}</span></article></div>` : ""}
           </div>
           <div class="status-stack">
             <div class="status-row"><b>データ状態</b><span>${badge(meta.status || "unavailable")}</span></div>
@@ -112,6 +115,7 @@
               <h3>${plainValue(card.label)}</h3>
               <strong class="${toneClass(card)}">${plainValue(card.direction)}</strong>
               <p>${plainValue(card.reason)}</p>
+              ${card.interpretation ? `<div class="card-analysis"><b>今回のデータから言えること</b><span>${plainValue(card.interpretation)}</span></div>` : ""}
               <p class="small-meta">基準日：${plainValue(card.asOf)} ｜ 最終取得：${plainValue(card.fetchedAt || card.updatedAt || data.meta?.updatedAt || data.generatedAt)} ｜ ${plainValue(card.frequency, "日次")} ｜ ${esc(statusLabel(card.status || "confirmed"))}</p>
             </article>
           `).join("")}
@@ -130,7 +134,7 @@
         <div class="panel-body">
           <div class="table-wrap">
             <table class="rates-table">
-              <thead><tr><th>地域</th><th>指標</th><th>現在値</th><th>前日比</th><th>1週間</th><th>方向</th><th>基準日</th><th>市場での意味</th></tr></thead>
+              <thead><tr><th>地域</th><th>指標</th><th>現在値</th><th>前日比</th><th>1週間</th><th>方向</th><th>基準日</th><th>今回のデータから言えること</th></tr></thead>
               <tbody>
                 ${rows.map((row) => `
                   <tr>
@@ -141,7 +145,7 @@
                     <td class="num">${signedBp(row.weekChangeBp)} bp</td>
                     <td class="${toneClass(row)}">${plainValue(row.direction)}</td>
                     <td>${plainValue(row.asOf)}</td>
-                    <td>${plainValue(row.meaning)}</td>
+                    <td>${plainValue(row.currentInterpretation || row.meaning)}${row.staticMeaning ? `<span class="static-meaning" title="${esc(row.staticMeaning)}">ⓘ ${plainValue(row.staticMeaning)}</span>` : ""}</td>
                   </tr>
                 `).join("")}
               </tbody>
@@ -175,6 +179,7 @@
     const rows = arr(curve.rows).filter((row) => available(row) && hasValue(row));
     const usCurve = arr(curve.usCurve).filter((row) => available(row) && hasValue(row));
     const jpCurve = arr(curve.jpCurve).filter((row) => available(row) && hasValue(row));
+    const analysis = data.analysis || {};
     if (!rows.length && !usCurve.length && !jpCurve.length) return "";
     return `
       <section class="panel span-7">
@@ -186,6 +191,7 @@
             ${jpCurve.length ? `<article class="curve-panel"><h3>日本国債</h3>${curveScale(jpCurve)}</article>` : ""}
           </div>
           ${rows.length ? `<div class="table-wrap"><table class="curve-table"><thead><tr><th>スプレッド</th><th>現在値</th><th>前日変化</th><th>1週間変化</th><th>形状</th><th>変化の読み方</th></tr></thead><tbody>${rows.map((row) => `<tr><td>${plainValue(row.spread)}</td><td class="num">${plainValue(row.value)} bp</td><td class="num">${signedBp(row.changeBp)} bp</td><td class="num">${signedBp(row.weekChangeBp)} bp</td><td class="${/逆イールド/.test(row.shape || "") ? "warn" : ""}">${plainValue(row.shape)}</td><td>${plainValue(row.reading)}</td></tr>`).join("")}</tbody></table></div>` : ""}
+          ${analysis.usCurveAnalysis ? `<div class="data-insight"><b>このカーブから言えること</b><p><strong>米国：${plainValue(analysis.usCurveAnalysis.type)}</strong> ${plainValue(analysis.usCurveAnalysis.interpretation)}</p><p><strong>日本：${plainValue(analysis.jpCurveAnalysis?.type)}</strong> ${plainValue(analysis.jpCurveAnalysis?.interpretation)}</p></div>` : ""}
         </div>
       </section>
     `;
@@ -197,7 +203,7 @@
     if (!factors.length) return "";
     return `
       <section class="panel span-5">
-        <h2 class="panel-title"><span class="badge-num">6</span>米10年金利の変化要因</h2>
+        <h2 class="panel-title"><span class="badge-num">7</span>米10年金利の変化要因</h2>
         <div class="panel-body">
           <p class="plain-note"><b>${plainValue(section.formula)}</b></p>
           <div class="factor-grid">
@@ -210,6 +216,7 @@
             `).join("")}
           </div>
           <div class="note-box">${plainValue(section.point)}</div>
+          ${section.analysis ? `<div class="data-insight"><b>今回のデータから言えること</b><p>${plainValue(section.analysis)}</p></div>` : ""}
         </div>
       </section>
     `;
@@ -221,12 +228,13 @@
     if (!items.length) return "";
     return `
       <section class="panel span-6">
-        <h2 class="panel-title"><span class="badge-num">7</span>債券需給・米国債入札</h2>
+        <h2 class="panel-title"><span class="badge-num">8</span>債券需給・米国債入札</h2>
         <div class="panel-body">
           <p class="plain-note">${plainValue(section.summary)}</p>
           <div class="supply-grid">
             ${items.map((item) => `<article class="mini-card"><h3>${plainValue(item.name)}</h3><p class="metric-line"><b>${valueWithUnit(item)}</b></p><p>${plainValue(item.note)}</p><p class="small-meta">基準日：${plainValue(item.asOf)} ｜ 最終取得：${plainValue(item.fetchedAt || data.meta?.updatedAt || data.generatedAt)} ｜ ${plainValue(item.frequency, "イベント時")}</p><p class="small-meta">出所：${plainValue(item.source)}</p></article>`).join("")}
           </div>
+          ${section.analysis ? `<div class="data-insight"><b>今回のデータから言えること</b><p>${plainValue(section.analysis)}</p></div>` : ""}
         </div>
       </section>
     `;
@@ -261,7 +269,9 @@
   }
 
   function renderImpact(data) {
+    const analysisItems = arr(data.analysis?.crossAssetAnalysis);
     const items = arr(data.crossAssetImpact).filter(available);
+    if (analysisItems.length) return `<section class="panel span-12"><h2 class="panel-title"><span class="badge-num">9</span>他市場への波及と実際の反応</h2><div class="panel-body cross-analysis-grid">${analysisItems.map((item) => `<article><h3>${plainValue(item.market)}</h3><dl><dt>金利から期待</dt><dd>${plainValue(item.expectedDirection)}</dd><dt>実際</dt><dd>${plainValue(item.actualDirection)}${item.actualChangePct != null ? `（${Number(item.actualChangePct).toFixed(2)}%）` : ""}</dd><dt>判定</dt><dd><span class="status-badge ${item.verdict === "整合" ? "confirmed" : item.verdict === "逆行" ? "manual" : "calculated"}">${plainValue(item.verdict)}</span></dd><dt>確度</dt><dd>${plainValue(item.confidence)}</dd></dl><p>${plainValue(item.interpretation)}</p><small>${plainValue(item.timingNote)}</small></article>`).join("")}</div></section>`;
     if (!items.length) return "";
     return `
       <section class="panel span-12">
@@ -273,6 +283,12 @@
     `;
   }
 
+  function renderUsJapanComparison(data) {
+    const comparison = data.analysis?.usJapanComparison;
+    if (!comparison) return "";
+    return `<section class="panel span-12"><h2 class="panel-title"><span class="badge-num">6</span>日米金利比較｜USD/JPYへの示唆</h2><div class="panel-body comparison-grid">${arr(comparison.tenors).map((row) => `<article><b>${plainValue(row.tenor)}金利</b><strong>米 ${row.usValue != null ? `${row.usValue}%` : "—"} / 日 ${row.jpValue != null ? `${row.jpValue}%` : "—"}</strong><span>前日：米 ${signedBp(row.usChangeBp)}bp / 日 ${signedBp(row.jpChangeBp)}bp</span><span>週間：米 ${signedBp(row.usWeekChangeBp)}bp / 日 ${signedBp(row.jpWeekChangeBp)}bp</span></article>`).join("")}<article><b>日米金利差</b><strong>${plainValue(comparison.rateGapDirection)}</strong></article><article><b>USD/JPY</b><strong>示唆 ${plainValue(comparison.usdJpyImplication)} / 実際 ${plainValue(comparison.actualUsdJpy)}</strong><span>${plainValue(comparison.verdict)}・確度 ${plainValue(comparison.confidence)}</span></article><div class="data-insight span-full"><b>このデータから言えること</b><p>${plainValue(comparison.interpretation)}</p></div></div></section>`;
+  }
+
   function renderLeadingAndScenarios(data) {
     const leading = data.leadingRate || {};
     const scenarios = data.scenarios || {};
@@ -280,11 +296,11 @@
     const alt = scenarios.alternative || {};
     return `
       <section class="panel span-4">
-        <h2 class="panel-title"><span class="badge-num">9</span>今日の主導金利</h2>
+        <h2 class="panel-title"><span class="badge-num">10</span>今日の主導金利</h2>
         <div class="panel-body"><article class="leading-card"><h3>${plainValue(leading.name)}</h3><p>${plainValue(leading.reason)}</p><p><b>前日から：</b>${plainValue(leading.changeFromPrevious)}</p><p><b>主導が変わる条件：</b>${plainValue(leading.switchCondition)}</p></article></div>
       </section>
       <section class="panel span-8">
-        <h2 class="panel-title"><span class="badge-num">10</span>シナリオと見方を変える条件</h2>
+        <h2 class="panel-title"><span class="badge-num">11</span>シナリオと見方を変える条件</h2>
         <div class="panel-body">
           <div class="scenario-grid"><article class="scenario-card"><h3>${plainValue(main.title, "メインシナリオ")}</h3><p>${plainValue(main.body)}</p></article><article class="scenario-card"><h3>${plainValue(alt.title, "代替シナリオ")}</h3><p>${plainValue(alt.body)}</p></article></div>
           <div class="scenario-grid scenario-lists"><article class="scenario-card"><h3>シナリオが崩れる条件</h3><ul class="watch-list">${arr(scenarios.breakConditions).map((item) => `<li>${plainValue(item)}</li>`).join("")}</ul></article><article class="scenario-card"><h3>次に見るポイント</h3><ul class="watch-list">${arr(scenarios.watchPoints).map((item) => `<li>${plainValue(item)}</li>`).join("")}</ul></article></div>
@@ -298,7 +314,7 @@
     const errors = arr(data.errors);
     return `
       <section class="panel span-12 source-panel">
-        <h2 class="panel-title"><span class="badge-num">11</span>データ出所・更新ルール</h2>
+        <h2 class="panel-title"><span class="badge-num">12</span>データ出所・更新ルール</h2>
         <div class="panel-body">
           <div class="source-chips">${sources.map((source) => `<span class="source-chip ${esc(source.status || "unavailable")}"><b>${plainValue(source.name)}</b><small>${plainValue(source.note)}</small></span>`).join("")}</div>
           ${errors.length ? `<details class="data-details"><summary>今回取得できなかった補助データ</summary><ul>${errors.map((error) => `<li>${plainValue(error.message)}</li>`).join("")}</ul></details>` : ""}
@@ -309,7 +325,7 @@
   }
 
   function render(data) {
-    root.innerHTML = `${renderHeader(data)}<div class="rb-grid">${renderConclusion(data)}${renderCards(data)}${renderRates(data)}${renderPolicy(data)}${renderCurve(data)}${renderDecomposition(data)}${renderSupplyDemand(data)}${renderImpact(data)}${renderLeadingAndScenarios(data)}${renderSources(data)}</div>`;
+    root.innerHTML = `${renderHeader(data)}<div class="rb-grid">${renderConclusion(data)}${renderCards(data)}${renderRates(data)}${renderPolicy(data)}${renderCurve(data)}${renderUsJapanComparison(data)}${renderDecomposition(data)}${renderSupplyDemand(data)}${renderImpact(data)}${renderLeadingAndScenarios(data)}${renderSources(data)}</div>`;
   }
 
   function renderError(error) {
