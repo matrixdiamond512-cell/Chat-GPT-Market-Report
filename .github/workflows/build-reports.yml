@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "reports/*.json"
+      - "reports.json"
       - "scripts/build_reports.py"
       - ".github/workflows/build-reports.yml"
   workflow_dispatch:
@@ -32,18 +33,19 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Validate and build reports.json
+      - name: Preserve history and build reports.json
         run: python scripts/build_reports.py
 
-      - name: Commit generated index
+      - name: Commit canonical backfills and generated index
         run: |
-          if git diff --quiet -- reports.json; then
-            echo "reports.json is already up to date."
+          if git diff --quiet -- reports reports.json; then
+            echo "Report history and reports.json are already up to date."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add reports.json
-          git commit -m "Auto-build reports index"
+          git add reports reports.json
+          git commit -m "Auto-build report history and index"
+          git pull --rebase origin main
           git push
