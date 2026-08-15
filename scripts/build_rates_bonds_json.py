@@ -582,12 +582,17 @@ def curve_analysis(short: dict[str, Any] | None, long: dict[str, Any] | None, sp
     short_change, long_change = safe_float((short or {}).get("changeBp")), safe_float((long or {}).get("changeBp"))
     if short_change is None or long_change is None:
         return {"type": "判定保留", "interpretation": f"{market_name}カーブは比較可能な年限が不足。"}
+    compare_short, compare_long = short_change, long_change
+    short_week, long_week = safe_float((short or {}).get("weekChangeBp")), safe_float((long or {}).get("weekChangeBp"))
+    period = "前日"
+    if abs(short_change - long_change) <= 1 and short_week is not None and long_week is not None:
+        compare_short, compare_long, period = short_week, long_week, "週間"
     if short_change < 0 and long_change < 0:
-        kind = "ブル・スティープニング" if short_change < long_change else "ブル・フラットニング"
-        reading = "短期金利の低下が長期を上回り、金融緩和期待の強まりを示唆。" if short_change < long_change else "長期側主導の金利低下。景気・インフレ期待や安全資産需要を確認。"
+        kind = "ブル・スティープニング" if compare_short < compare_long else "ブル・フラットニング"
+        reading = f"{period}では短期金利の低下が長期を上回り、金融緩和期待の強まりを示唆。" if compare_short < compare_long else f"{period}では長期側主導の金利低下。景気・インフレ期待や安全資産需要を確認。"
     elif short_change > 0 and long_change > 0:
-        kind = "ベア・スティープニング" if long_change > short_change else "ベア・フラットニング"
-        reading = "長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。" if long_change > short_change else "短期側主導の上昇で、金融引締め期待の強まりを示唆。"
+        kind = "ベア・スティープニング" if compare_long > compare_short else "ベア・フラットニング"
+        reading = f"{period}では長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。" if compare_long > compare_short else f"{period}では短期側主導の上昇で、金融引締め期待の強まりを示唆。"
     else:
         kind, reading = "ツイスト", "短期と長期が逆方向。政策期待と長期プレミアムを分けて確認。"
     shape = (spread or {}).get("shape", "形状未判定")
