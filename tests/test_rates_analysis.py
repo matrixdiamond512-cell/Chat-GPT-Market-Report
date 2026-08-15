@@ -16,6 +16,11 @@ class RatesAnalysisTests(unittest.TestCase):
         result = builder.curve_analysis(stat(4.1, -10), stat(4.6, -5), {"shape": "順イールド"}, "米国")
         self.assertEqual(result["type"], "ブル・スティープニング")
 
+    def test_weekly_breaks_daily_tie(self):
+        result = builder.curve_analysis(stat(4.1, -5, -10), stat(4.6, -5, -6), {"shape": "順イールド"}, "米国")
+        self.assertEqual(result["type"], "ブル・スティープニング")
+        self.assertIn("週間", result["interpretation"])
+
     def test_long_led_bear_steepening(self):
         result = builder.curve_analysis(stat(4.1, 3), stat(5.0, 12), {"shape": "順イールド"}, "米国")
         self.assertEqual(result["type"], "ベア・スティープニング")
