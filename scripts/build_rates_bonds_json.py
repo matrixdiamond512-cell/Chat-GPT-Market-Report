@@ -577,6 +577,103 @@ def cross_asset_note(rate_dir: str, asset_change: float | None, asset_name: str,
     return f"{asset_dir}（{asset_change:+.2f}%）／{consistency}", note
 
 
+def curve_analysis(short: dict[str, Any] | None, long: dict[str, Any] | None, spread: dict[str, Any] | None,
+                   market_name: str) -> dict[str, str]:
+    short_change, long_change = safe_float((short or {}).get("changeBp")), safe_float((long or {}).get("changeBp"))
+    if short_change is None or long_change is None:
+        return {"type": "判定保留", "interpretation": f"{market_name}カーブは比較可能な年限が不足。"}
+    if short_change < 0 and long_change < 0:
+        kind = "ブル・スティープニング" if short_change < long_change else "ブル・フラットニング"
+        reading = "短期金利の低下が長期を上回り、金融緩和期待の強まりを示唆。" if short_change < long_change else "長期側主導の金利低下。景気・インフレ期待や安全資産需要を確認。"
+    elif short_change > 0 and long_change > 0:
+        kind = "ベア・スティープニング" if long_change > short_change else "ベア・フラットニング"
+        reading = "長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。" if long_change > short_change else "短期側主導の上昇で、金融引締め期待の強まりを示唆。"
+    else:
+        kind, reading = "ツイスト", "短期と長期が逆方向。政策期待と長期プレミアムを分けて確認。"
+    shape = (spread or {}).get("shape", "形状未判定")
+    return {"type": kind, "interpretation": f"{shape}。{reading}"}
+
+
+def rates_block(rows: list[tuple[str, dict[str, Any] | None]], curve: dict[str, str], market_name: str) -> dict[str, str]:
+    valid = [(name, row) for name, row in rows if row and row.get("changeBp") is not None]
+    if not valid:
+        return {"structure": "判定保留", "direction": "判定保留", "interpretation": "比較可能な金利データが不足。", "leadingTenor": "—", "risk": "欠損データを推測しない"}
+    changes = [float(row["changeBp"]) for _, row in valid]
+    all_down, all_up = all(v < 0 for v in changes), all(v > 0 for v in changes)
+    direction_text = "全面的な金利低下" if all_down else "全面的な金利上昇" if all_up else "年限ごとに方向が分かれる"
+    lead_name, lead = max(valid, key=lambda pair: abs(float(pair[1]["changeBp"])))
+    weekly = safe_float(lead.get("weekChangeBp"))
+    interpretation = f"{market_name}は{direction_text}。{lead_name}が前日 {lead['changeBp']:+.1f}bp"
+    if weekly is not None: interpretation += f"、週間 {weekly:+.1f}bpで変化を主導。"
+    else: interpretation += "で変化を主導。"
+    return {"structure": curve["type"], "direction": direction_text, "interpretation": interpretation,
+            "leadingTenor": lead_name, "risk": curve["interpretation"]}
+
+
+def confidence(rate_date: Any, market_date: Any) -> tuple[str, str]:
+    left, right = parse_date(str(rate_date or "")), parse_date(str(market_date or ""))
+    if not left or not right: return "低", "基準日時が不足しているため方向比較に限定。"
+    gap = abs((left - right).days)
+    if gap == 0: return "高", "同一営業日のため方向整合の確度は高い。"
+    if gap == 1: return "中", f"金利基準日{left}、市場基準日{right}。因果ではなく方向比較。"
+    return "低", f"基準日が{gap}日ずれるため参考方向として表示。"
+
+
+def build_analysis(us: dict[str, dict[str, Any] | None], jp: dict[str, dict[str, Any] | None],
+                   curves: dict[str, dict[str, Any] | None], real10: dict[str, Any] | None,
+                   market: dict[str, Any]) -> dict[str, Any]:
+    us_curve = curve_analysis(us.get("2年"), us.get("10年"), curves.get("us"), "米国")
+    jp_curve = curve_analysis(jp.get("2年"), jp.get("30年"), curves.get("jp"), "日本")
+    us_block = rates_block(list(us.items()), us_curve, "米国債")
+    jp_block = rates_block(list(jp.items()), jp_curve, "日本国債")
+    us10c, jp10c = safe_float((us.get("10年") or {}).get("changeBp")), safe_float((jp.get("10年") or {}).get("changeBp"))
+    if us10c is not None and jp10c is not None and us10c < 0 < jp10c:
+        gap_dir, fx_expected = "縮小方向", "下落"
+    elif us10c is not None and jp10c is not None and us10c > 0 > jp10c:
+        gap_dir, fx_expected = "拡大方向", "上昇"
+    else:
+        gap_dir, fx_expected = "方向混在", "中立"
+    market_rows = (market.get("markets") or {})
+    real_change = safe_float((real10 or {}).get("changeBp"))
+    real_expected = "判定保留" if real_change is None else "上昇" if real_change < 0 else "下落"
+    us_expected = "判定保留" if us10c is None else "上昇" if us10c < 0 else "下落"
+    specs = [
+        ("USD/JPY", "usdjpy", fx_expected, us.get("10年"), "金利差以外のドル需要・円売りフローを確認"),
+        ("EUR/USD", "eurusd", us_expected, us.get("10年"), "米欧金利差とドル需要を確認"),
+        ("金", "gold", real_expected, real10, "実質金利とドル・ETFフローを確認"),
+        ("BTCUSD", "btcusd", real_expected, real10, "暗号資産固有需給・ETF・レバレッジを確認"),
+        ("日経225先物", "nikkei225_futures_ose", "混合", us.get("10年"), "米金利の追い風と日本金利の逆風を併せて確認"),
+    ]
+    cross = []
+    for name, key, expected, rate_row, alternative in specs:
+        actual_change = market_change(market, key)
+        actual = "上昇" if actual_change is not None and actual_change > .05 else "下落" if actual_change is not None and actual_change < -.05 else "横ばい" if actual_change is not None else "取得不能"
+        verdict = "判定保留" if actual == "取得不能" or expected == "判定保留" else "混合" if expected in {"混合", "中立"} else "整合" if actual == expected else "逆行"
+        conf, note = confidence((rate_row or {}).get("date"), (market_rows.get(key) or {}).get("asOf"))
+        reading = f"金利示唆は{expected}、実際は{actual}。" + ("方向が整合。" if verdict == "整合" else f"{alternative}。" if verdict == "逆行" else alternative + "。")
+        cross.append({"market": name, "expectedDirection": expected, "actualDirection": actual,
+                      "actualChangePct": actual_change, "verdict": verdict, "confidence": conf,
+                      "interpretation": reading, "timingNote": note})
+    fx_row = cross[0]
+    real_dir = direction((real10 or {}).get("changeBp"))
+    top_lines = [f"米国：{us_block['structure']}｜{us_block['direction']}",
+                 f"日本：{jp_block['structure']}｜{jp_block['direction']}",
+                 "クロスアセット：" + "、".join(f"{row['market']}は{row['verdict']}" for row in cross if row["market"] in {"USD/JPY", "金", "BTCUSD"})]
+    theme = f"米国は{us_block['structure']}、日本は{jp_block['structure']}。日米金利差は{gap_dir}。"
+    return {"topLines": top_lines, "theme": theme, "usRates": us_block, "jpRates": jp_block,
+            "usCurveAnalysis": us_curve, "jpCurveAnalysis": jp_curve,
+            "usJapanComparison": {"usDirection": us_block["direction"], "jpDirection": jp_block["direction"],
+                "rateGapDirection": gap_dir, "usdJpyImplication": fx_expected, "actualUsdJpy": fx_row["actualDirection"],
+                "verdict": fx_row["verdict"], "confidence": fx_row["confidence"], "interpretation": fx_row["interpretation"] + fx_row["timingNote"],
+                "tenors": [{"tenor": tenor, "usValue": (us.get(tenor) or {}).get("value"), "usChangeBp": (us.get(tenor) or {}).get("changeBp"), "usWeekChangeBp": (us.get(tenor) or {}).get("weekChangeBp"), "jpValue": (jp.get(tenor) or {}).get("value"), "jpChangeBp": (jp.get(tenor) or {}).get("changeBp"), "jpWeekChangeBp": (jp.get(tenor) or {}).get("weekChangeBp")} for tenor in ("2年", "10年")]},
+            "realYieldAnalysis": {"direction": real_dir, "goldImplication": cross[2]["expectedDirection"],
+                "btcImplication": cross[3]["expectedDirection"], "interpretation": f"実質金利は{real_dir}。金は{cross[2]['verdict']}、BTCUSDは{cross[3]['verdict']}。"},
+            "crossAssetAnalysis": cross, "marketConclusion": theme + us_block["interpretation"] + jp_block["interpretation"],
+            "mainScenario": f"{us_block['leadingTenor']}の方向が続く間は{us_block['structure']}を基本シナリオとし、ドルは{fx_expected}、金は{cross[2]['expectedDirection']}方向を確認。",
+            "alternativeScenario": "米2年が反転しカーブ分類が変わる場合、政策期待の巻き戻しとクロスアセットの再連動を確認。",
+            "breakConditions": ["米2年が前日比で明確に反転", "10年－2年が急速に逆方向へ変化", "米30年だけが大きく上昇", "実質金利と金の逆行が継続", "日本10年・30年が急変"]}
+
+
 def build_payload() -> dict[str, Any]:
     errors: list[dict[str, str]] = []
     fred: dict[str, dict[str, Any]] = {}
@@ -779,6 +876,28 @@ def build_payload() -> dict[str, Any]:
     else:
         consistency = "材料と値動きの整合性は取得済み系列の範囲で判定。"
 
+    analysis = build_analysis(
+        {"2年": us2, "5年": us5, "10年": us10, "30年": us30},
+        {"2年": jp2, "5年": jp5, "10年": jp10, "30年": jp30},
+        {"us": us2s10s, "jp": curve_rows[3] if len(curve_rows) > 3 else None}, real10, market)
+    rate_analysis = {
+        "米2年債利回り": policy_expectations.get("interpretation"),
+        "米5年債利回り": analysis["usRates"]["interpretation"],
+        "米10年債利回り": analysis["usCurveAnalysis"]["interpretation"],
+        "米30年債利回り": analysis["usRates"]["risk"],
+        "日本2年国債利回り": analysis["jpRates"]["interpretation"],
+        "日本5年国債利回り": analysis["jpRates"]["interpretation"],
+        "日本10年国債利回り": analysis["jpCurveAnalysis"]["interpretation"],
+        "日本30年国債利回り": analysis["jpRates"]["risk"],
+        "米10年実質金利": analysis["realYieldAnalysis"]["interpretation"],
+    }
+    for row in rates:
+        row["staticMeaning"] = row.pop("meaning", None)
+        change, weekly = row.get("changeBp"), row.get("weekChangeBp")
+        row["currentInterpretation"] = rate_analysis.get(row.get("name")) or (
+            f"前日 {change:+.1f}bp、週間 {weekly:+.1f}bp。{row.get('direction') or '方向未判定'}が継続しているかを確認。"
+            if change is not None and weekly is not None else "取得済みデータの範囲で方向を確認。")
+
     cards = []
     if us10:
         cards.append({"label": "米金利", "direction": us10_dir, "status": "confirmed", "reason": f"米10年 {us10['value']:.3f}% / 前日比 {us10.get('changeBp', 0):+.1f}bp", "asOf": us10["date"].isoformat()})
@@ -788,18 +907,19 @@ def build_payload() -> dict[str, Any]:
         cards.append({"label": "米イールドカーブ", "direction": us2s10s.get("reading", "未判定"), "status": "calculated", "reason": f"10年－2年 {us2s10s.get('value')}bp / {us2s10s.get('shape')}", "asOf": us10["date"].isoformat() if us10 else None})
     if real10:
         cards.append({"label": "実質金利", "direction": real10_dir, "status": "confirmed", "reason": f"米10年実質 {real10['value']:.3f}% / 前日比 {real10.get('changeBp', 0):+.1f}bp", "asOf": real10["date"].isoformat()})
+    card_analysis = [analysis["usRates"]["interpretation"], analysis["jpRates"]["interpretation"],
+                     analysis["usCurveAnalysis"]["interpretation"], analysis["realYieldAnalysis"]["interpretation"]]
+    for card, interpretation in zip(cards, card_analysis): card["interpretation"] = interpretation
+    if candidates:
+        lead_raw = next((row for name, row in [("米2年債", us2), ("米10年債", us10), ("米30年債", us30), ("日本10年国債", jp10), ("米10年実質金利", real10)] if name == leading.get("name")), None)
+        if lead_raw:
+            leading["reason"] = f"前日 {lead_raw.get('changeBp', 0):+.1f}bp、週間 {lead_raw.get('weekChangeBp', 0):+.1f}bp。{analysis['usRates']['interpretation'] if str(leading.get('name')).startswith('米') else analysis['jpRates']['interpretation']}"
 
     missing_data = [r["name"] for r in rates if r["status"] == "unavailable"]
     status = "confirmed" if len(confirmed_rates) >= 8 else "partial" if confirmed_rates else "unavailable"
 
-    scenario_main_body = (
-        f"米2年は{us2_dir}、米10年は{us10_dir}、実質金利は{real10_dir}。"
-        f"現時点では{leading.get('name')}の動きを主導シグナルとして、USD/JPY・金・日経225先物の追随を確認する。"
-    )
-    scenario_alt_body = (
-        "雇用・物価・原油・国債入札・財政材料で長短金利の方向が入れ替わる場合、"
-        "カーブ形状とドル・金・株の反応を再判定する。"
-    )
+    scenario_main_body = analysis["mainScenario"]
+    scenario_alt_body = analysis["alternativeScenario"]
 
     sources = [
         {"name": "CME FedWatch", "status": "manual" if manual_fedwatch else "ready", "note": "FOMC確率は公式ページで確認。自動取得・推定は行わない。"},
@@ -830,10 +950,11 @@ def build_payload() -> dict[str, Any]:
         },
         "summary": {
             "headline": headline,
-            "theme": theme,
-            "conclusion": scenario_main_body,
+            "theme": analysis["theme"],
+            "conclusion": analysis["marketConclusion"],
             "consistency": consistency,
         },
+        "analysis": analysis,
         "cards": cards,
         "rates": rates,
         "decomposition": {
@@ -841,6 +962,7 @@ def build_payload() -> dict[str, Any]:
             "point": decomposition_point,
             "status": "confirmed" if factors else "partial",
             "factors": factors,
+            "analysis": decomposition_point,
         },
         "curve": {
             "summary": curve_summary,
@@ -862,6 +984,7 @@ def build_payload() -> dict[str, Any]:
         "supplyDemand": {
             "summary": "米国債入札は公式FiscalDataから取得できた場合のみ表示。ETFフローやCFTCは未取得値を推測しない。",
             "items": supply_items,
+            "analysis": (f"直近入札のBid-to-Coverは{latest_auction.get('bidToCover'):.2f}倍。需要判断は間接入札者比率など取得済み指標と併せて確認。" if latest_auction and latest_auction.get("bidToCover") is not None else None),
         },
         "policyExpectations": policy_expectations,
         "manualFedWatch": manual_fedwatch,
@@ -870,12 +993,7 @@ def build_payload() -> dict[str, Any]:
         "scenarios": {
             "main": {"title": "メインシナリオ", "body": scenario_main_body, "status": "calculated" if candidates else "unavailable"},
             "alternative": {"title": "代替シナリオ", "body": scenario_alt_body, "status": "calculated" if candidates else "unavailable"},
-            "breakConditions": [
-                "米2年債と米10年債の方向が反転し、カーブ変化の主因が変わる",
-                "米10年実質金利と金・BTCの連動が明確に崩れる",
-                "日本10年国債が急変し、USD/JPYが米金利より日本金利主導へ移る",
-                "30年債主導の急なスティープ化で財政・供給懸念が前面に出る",
-            ],
+            "breakConditions": analysis["breakConditions"],
             "watchPoints": [
                 "米雇用・CPI/PCEなど次の重要指標",
                 "米国債2年・5年・10年・30年入札",
@@ -901,6 +1019,7 @@ def update_history(payload: dict[str, Any]) -> None:
         "rates": {item["name"]: item.get("value") for item in payload.get("rates", []) if item.get("value") is not None},
         "policyExpectations": payload.get("policyExpectations"),
         "manualFedWatch": payload.get("manualFedWatch"),
+        "analysis": payload.get("analysis"),
     }
     if not snapshots or snapshots[-1].get("asOf") != snapshot["asOf"]:
         snapshots.append(snapshot)

@@ -47,6 +47,7 @@ jobs:
           python -m py_compile scripts/build_rates_bonds_json_v2.py
           python -m py_compile scripts/build_rates_bonds_archive.py
           python -m unittest discover -s tests -p "test_policy_expectations.py"
+          python -m unittest discover -s tests -p "test_rates_analysis.py"
 
       - name: Build rates and bonds JSON and archive
         run: python scripts/build_rates_bonds_archive.py
