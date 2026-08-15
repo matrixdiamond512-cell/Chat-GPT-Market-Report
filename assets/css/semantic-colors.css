@@ -1,0 +1,357 @@
+/* Market direction colors: positive/up is pink, negative/down is blue. */
+:root {
+  --semantic-positive: #d94e68;
+  --semantic-positive-soft: #fff0f3;
+  --semantic-positive-border: #efcbd4;
+  --semantic-negative: #397bc2;
+  --semantic-negative-soft: #edf5ff;
+  --semantic-negative-border: #bfd4ed;
+
+  /* Keep legacy page tokens in sync with the portal-wide semantic palette. */
+  --dash-green: var(--semantic-positive);
+  --dash-green-soft: var(--semantic-positive-soft);
+  --dash-red: var(--semantic-negative);
+  --dash-red-soft: var(--semantic-negative-soft);
+  --mr-green: var(--semantic-positive);
+  --mr-green-soft: var(--semantic-positive-soft);
+  --mr-red: var(--semantic-negative);
+  --mr-red-soft: var(--semantic-negative-soft);
+  --good: var(--semantic-positive-soft);
+  --risk: var(--semantic-negative-soft);
+}
+
+.up,
+.positive,
+.pos,
+.increase,
+.plus,
+.rise,
+.bullish,
+[data-trend="up"],
+[data-direction="up"] {
+  color: var(--semantic-positive) !important;
+}
+
+.down,
+.negative,
+.neg,
+.decrease,
+.minus,
+.fall,
+.bearish,
+[data-trend="down"],
+[data-direction="down"] {
+  color: var(--semantic-negative) !important;
+}
+
+.state-up,
+.chip.green {
+  color: var(--semantic-positive) !important;
+  background: var(--semantic-positive-soft) !important;
+  border-color: var(--semantic-positive-border) !important;
+}
+
+.state-down,
+.chip.red {
+  color: var(--semantic-negative) !important;
+  background: var(--semantic-negative-soft) !important;
+  border-color: var(--semantic-negative-border) !important;
+}
+
+.judgement.buy {
+  color: var(--semantic-positive) !important;
+}
+
+.judgement.sell {
+  color: var(--semantic-negative) !important;
+}
+
+/* Directional labels that are emitted without the generic up/down class. */
+.market-card dt.positive-label {
+  color: var(--semantic-positive) !important;
+}
+
+.market-card dt.negative-label {
+  color: var(--semantic-negative) !important;
+}
+
+.market-card dt {
+  color: #17437f !important;
+}
+
+/* Cross-asset flow: money moving in is positive, money moving out is negative. */
+.flow-column-in {
+  border-color: var(--semantic-positive-border) !important;
+  background: linear-gradient(180deg, var(--semantic-positive-soft) 0, #fff 42%) !important;
+}
+
+.flow-column-in h3 {
+  color: var(--semantic-positive) !important;
+  background: var(--semantic-positive-soft) !important;
+}
+
+.flow-symbol.in {
+  color: var(--semantic-positive) !important;
+}
+
+.flow-column-out {
+  border-color: var(--semantic-negative-border) !important;
+  background: linear-gradient(180deg, var(--semantic-negative-soft) 0, #fff 42%) !important;
+}
+
+.flow-column-out h3 {
+  color: var(--semantic-negative) !important;
+  background: var(--semantic-negative-soft) !important;
+}
+
+.flow-symbol.out {
+  color: var(--semantic-negative) !important;
+}
+
+.flow-box.in {
+  color: var(--semantic-positive) !important;
+  background: var(--semantic-positive-soft) !important;
+  border-color: var(--semantic-positive-border) !important;
+}
+
+.flow-box.out {
+  color: var(--semantic-negative) !important;
+  background: var(--semantic-negative-soft) !important;
+  border-color: var(--semantic-negative-border) !important;
+}
+
+.reason-box.buy > b {
+  color: var(--semantic-positive) !important;
+}
+
+.reason-box.sell > b {
+  color: var(--semantic-negative) !important;
+}
+
+.conclusion-main {
+  color: var(--semantic-positive) !important;
+}
+
+.info-card.conclusion {
+  border-color: var(--semantic-positive-border) !important;
+  background: var(--semantic-positive-soft) !important;
+}
+
+.judge-text {
+  color: var(--semantic-negative) !important;
+}
+
+.summary-card.up,
+.direction.up,
+.tag.up,
+.heatmap-cell.up,
+.metric.up,
+.reason-box.buy,
+.scenario.buy,
+.subhead.positive,
+.ds-probabilities .up,
+.prediction-card .signal.buy {
+  background: var(--semantic-positive-soft) !important;
+  border-color: var(--semantic-positive-border) !important;
+}
+
+.summary-card.down,
+.direction.down,
+.tag.down,
+.heatmap-cell.down,
+.metric.down,
+.reason-box.sell,
+.scenario.sell,
+.subhead.negative,
+.ds-probabilities .down,
+.prediction-card .signal.weak {
+  background: var(--semantic-negative-soft) !important;
+  border-color: var(--semantic-negative-border) !important;
+}
+
+.summary-card.up strong {
+  color: var(--semantic-positive) !important;
+}
+
+.summary-card.down strong {
+  color: var(--semantic-negative) !important;
+}
+
+.breadth-up,
+.range-greed,
+.range-extreme-greed {
+  background: var(--semantic-positive) !important;
+}
+
+.breadth-down,
+.range-fear,
+.range-extreme-fear {
+  background: var(--semantic-negative) !important;
+}
+
+.range-greed,
+.range-extreme-greed {
+  border-color: var(--semantic-positive-border) !important;
+}
+
+.range-fear,
+.range-extreme-fear {
+  border-color: var(--semantic-negative-border) !important;
+}
+
+.temperature-tone-extreme-fear .temperature-mini-bar span,
+.temperature-tone-fear .temperature-mini-bar span,
+.environment-color-key .key-extreme-fear,
+.environment-color-key .key-fear {
+  background: var(--semantic-negative) !important;
+}
+
+.temperature-tone-greed .temperature-mini-bar span,
+.temperature-tone-extreme-greed .temperature-mini-bar span,
+.environment-color-key .key-greed,
+.environment-color-key .key-extreme-greed {
+  background: var(--semantic-positive) !important;
+  color: #fff !important;
+}
+
+.environment-verdict.tone-greed,
+.environment-verdict.tone-extreme-greed {
+  border-left-color: var(--semantic-positive) !important;
+  background: var(--semantic-positive-soft) !important;
+}
+
+.environment-verdict.tone-fear,
+.environment-verdict.tone-extreme-fear {
+  border-left-color: var(--semantic-negative) !important;
+  background: var(--semantic-negative-soft) !important;
+}
+
+.environment-verdict.tone-greed strong,
+.environment-verdict.tone-extreme-greed strong,
+.temperature-tone-greed .temperature-mini-foot b,
+.temperature-tone-extreme-greed .temperature-mini-foot b {
+  color: var(--semantic-positive) !important;
+}
+
+.environment-verdict.tone-fear strong,
+.environment-verdict.tone-extreme-fear strong,
+.temperature-tone-fear .temperature-mini-foot b,
+.temperature-tone-extreme-fear .temperature-mini-foot b {
+  color: var(--semantic-negative) !important;
+}
+
+.range-greed,
+.range-extreme-greed {
+  color: #fff !important;
+}
+
+.scenario th:nth-child(2) {
+  background: var(--semantic-positive-soft) !important;
+  color: var(--semantic-positive) !important;
+}
+
+.scenario th:nth-child(4) {
+  background: var(--semantic-negative-soft) !important;
+  color: var(--semantic-negative) !important;
+}
+
+td.positive,
+td.negative,
+.legend.up,
+.legend.down,
+.mini-title.up,
+.mini-title.down,
+.market-depth-value.up,
+.market-depth-value.down,
+.scenario-row .hit,
+.scenario-row .miss {
+  font-weight: 900;
+}
+
+.prediction-card .signal.buy,
+.metric.up strong {
+  color: var(--semantic-positive) !important;
+}
+
+.prediction-card .signal.weak,
+.metric.down strong {
+  color: var(--semantic-negative) !important;
+}
+
+/* Legacy page-specific direction classes still used by the published pages. */
+.flow-out,
+.flow-column.flow-out,
+.flow-column-out {
+  border-color: var(--semantic-negative-border) !important;
+  background: linear-gradient(180deg, var(--semantic-negative-soft) 0, #fff 42%) !important;
+}
+
+.flow-out h3,
+.flow-column.flow-out h3,
+.flow-column-out h3 {
+  color: var(--semantic-negative) !important;
+  background: var(--semantic-negative-soft) !important;
+}
+
+.surprise-up,
+.gold-summary-value.up,
+.nikkei-total-value.buy,
+.nikkei-foreign-metric-value.buy,
+.usd-flow-direction.buy,
+.arb-kpi.buy {
+  color: var(--semantic-positive) !important;
+}
+
+.surprise-down,
+.gold-summary-value.down,
+.nikkei-total-value.sell,
+.nikkei-foreign-metric-value.sell,
+.usd-flow-direction.sell,
+.arb-kpi.sell,
+.negative {
+  color: var(--semantic-negative) !important;
+}
+
+.gold-card.positive,
+.gold-summary-card.positive,
+.gmc-bar.buy,
+.nikkei-demand-bucket.buy,
+.nikkei-demand-factor.buy,
+.nikkei-matrix-cell.buy,
+.usd-flow-direction.buy {
+  color: var(--semantic-positive) !important;
+  background: var(--semantic-positive-soft) !important;
+  border-color: var(--semantic-positive-border) !important;
+}
+
+.gold-card.negative,
+.gold-summary-card.negative,
+.gmc-bar.sell,
+.nikkei-demand-bucket.sell,
+.nikkei-demand-factor.sell,
+.nikkei-matrix-cell.sell,
+.usd-flow-direction.sell {
+  color: var(--semantic-negative) !important;
+  background: var(--semantic-negative-soft) !important;
+  border-color: var(--semantic-negative-border) !important;
+}
+
+.subhead.positive,
+.subhead.positive strong,
+.direction.up,
+.tag.up {
+  color: var(--semantic-positive) !important;
+}
+
+.subhead.negative,
+.subhead.negative strong,
+.direction.down,
+.tag.down {
+  color: var(--semantic-negative) !important;
+}
+
+.environment-color-key .key-fear,
+.environment-color-key .key-extreme-fear {
+  color: #fff !important;
+}
+
