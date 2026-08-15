@@ -17,6 +17,19 @@ on:
       - "scripts/verify_morning_report_qa.py"
       - ".github/workflows/sync-latest-report-publication.yml"
   workflow_dispatch:
+  schedule:
+    # Run shortly after each Japan-close capture retry. GITHUB_TOKEN commits do not
+    # reliably trigger a second workflow, so this independent schedule guarantees
+    # that newly captured exact-date Japanese data reaches the published report.
+    - cron: "20 7 * * 1-5"   # 16:20 JST
+    - cron: "50 7 * * 1-5"   # 16:50 JST
+    - cron: "20 8 * * 1-5"   # 17:20 JST
+    - cron: "20 9 * * 1-5"   # 18:20 JST
+    - cron: "20 11 * * 1-5"  # 20:20 JST
+    - cron: "20 14 * * 1-5"  # 23:20 JST
+    - cron: "20 0 * * 6"     # 09:20 JST Saturday
+    - cron: "20 1 * * 6"     # 10:20 JST Saturday
+    - cron: "20 3 * * 6"     # 12:20 JST Saturday
 
 permissions:
   contents: write
@@ -40,9 +53,9 @@ jobs:
         with:
           python-version: "3.12"
 
-      # Google Sheets is now an optional enrichment source. The publication path
-      # must continue even when repository secrets are not configured because the
-      # canonical GitHub market datasets and specialist pages are the durable source.
+      # Google Sheets is an optional enrichment source. Publication must continue
+      # when repository secrets are absent because the canonical GitHub datasets
+      # and specialist pages are the durable sources.
       - name: Install optional Google Sheets dependencies
         run: python -m pip install --disable-pip-version-check gspread google-auth
 
@@ -76,18 +89,10 @@ jobs:
               '東証プライム値上がり銘柄数', '東証プライム値下がり銘柄数', '東証プライム25日騰落レシオ',
           ]
           aliases = {
-              'Dow Jones': 'NYダウ',
-              'Dow': 'NYダウ',
-              'NASDAQ Composite': 'NASDAQ総合',
-              'Nasdaq Composite': 'NASDAQ総合',
-              'Nasdaq': 'NASDAQ総合',
-              'S&P 500': 'S&P500',
-              'Nikkei 225': '日経225現物',
-              '日経225': '日経225現物',
-              '日経平均': '日経225現物',
-              '金': 'COMEX金先物',
-              'COMEX金': 'COMEX金先物',
-              '原油': 'WTI原油',
+              'Dow Jones': 'NYダウ', 'Dow': 'NYダウ',
+              'NASDAQ Composite': 'NASDAQ総合', 'Nasdaq Composite': 'NASDAQ総合', 'Nasdaq': 'NASDAQ総合',
+              'S&P 500': 'S&P500', 'Nikkei 225': '日経225現物', '日経225': '日経225現物', '日経平均': '日経225現物',
+              '金': 'COMEX金先物', 'COMEX金': 'COMEX金先物', '原油': 'WTI原油',
               '日経225先物・大阪取引所': '日経225先物（大阪取引所）',
               '日経225先物(大阪取引所)': '日経225先物（大阪取引所）',
               '日経225 25日乖離率': '日経225 25日移動平均乖離率',
@@ -96,17 +101,13 @@ jobs:
 
           table = report.setdefault('marketDataTable', {})
           raw_rows = table.get('rows') if isinstance(table, dict) else []
-          if not isinstance(raw_rows, list):
-              raw_rows = []
-
+          if not isinstance(raw_rows, list): raw_rows = []
           by_label = {}
           for raw in raw_rows:
-              if not isinstance(raw, dict):
-                  continue
+              if not isinstance(raw, dict): continue
               label = str(raw.get('label') or raw.get('item') or raw.get('name') or '').strip()
               label = aliases.get(label, label)
-              if label not in expected or label in by_label:
-                  continue
+              if label not in expected or label in by_label: continue
               row = {
                   'label': label,
                   'value': str(raw.get('value') or '').strip(),
@@ -114,41 +115,27 @@ jobs:
                   'rate': str(raw.get('rate') or raw.get('changePercent') or '').strip(),
                   'direction': str(raw.get('direction') or '').strip(),
               }
-              if not row['value']:
-                  row['value'] = '取得不能（08:00構造化表の元データが空欄）'
-              if not row['change']:
-                  row['change'] = '—'
-              if not row['rate']:
-                  row['rate'] = '—'
-              if not row['direction']:
-                  row['direction'] = '取得不能' if row['value'].startswith('取得不能') else '横ばい・方向確認'
+              if not row['value']: row['value'] = '取得不能（08:00構造化表の元データが空欄）'
+              if not row['change']: row['change'] = '—'
+              if not row['rate']: row['rate'] = '—'
+              if not row['direction']: row['direction'] = '取得不能' if row['value'].startswith('取得不能') else '横ばい・方向確認'
               by_label[label] = row
 
           missing_reason = '08:00構造化表に元データなし。後続の前営業日終値修復・日本終値参照で補完'
-          normalized = []
-          for label in expected:
-              normalized.append(by_label.get(label) or {
-                  'label': label,
-                  'value': f'取得不能（{missing_reason}）',
-                  'change': '—',
-                  'rate': '—',
-                  'direction': '取得不能',
-              })
+          normalized = [by_label.get(label) or {
+              'label': label, 'value': f'取得不能（{missing_reason}）',
+              'change': '—', 'rate': '—', 'direction': '取得不能'
+          } for label in expected]
 
           table['columns'] = ['項目', '終値・値', '前日比', '騰落率', '方向感']
           table['rows'] = normalized
           report.setdefault('dataProvenance', {})['tableNormalization'] = {
               'rule': '08:00 publication always carries the canonical 28-row contract before repair',
-              'inputRowCount': len(raw_rows),
-              'outputRowCount': len(normalized),
+              'inputRowCount': len(raw_rows), 'outputRowCount': len(normalized),
               'missingFilled': [label for label in expected if label not in by_label],
           }
           path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-          print(json.dumps({
-              'inputRowCount': len(raw_rows),
-              'outputRowCount': len(normalized),
-              'missingFilled': [label for label in expected if label not in by_label],
-          }, ensure_ascii=False))
+          print(json.dumps({'inputRowCount':len(raw_rows),'outputRowCount':len(normalized),'missingFilled':[label for label in expected if label not in by_label]}, ensure_ascii=False))
           PY
 
       - name: Repair date-matched previous closes
@@ -197,18 +184,12 @@ jobs:
           qa=json.loads(Path('data/market/morning_report_qa.json').read_text(encoding='utf-8'))
           payload=json.loads(Path('data/market/chatgpt-input.json').read_text(encoding='utf-8'))
           rows=list(csv.reader(Path('data/market/chatgpt_input.csv').open(encoding='utf-8')))
-          if len(payload.get('markets') or {}) != 28:
-              raise SystemExit('ChatGPT 08:00 input must contain exactly 28 markets')
-          if len(rows) != 29:
-              raise SystemExit(f'ChatGPT CSV must contain header + 28 rows; got {len(rows)} lines')
-          qa['structureReady']=bool(qa.get('ready'))
-          qa['dataComplete']=bool(payload.get('dataComplete'))
-          qa['availableCount']=payload.get('availableCount')
-          qa['expectedDataCount']=payload.get('expectedCount')
-          qa['unavailableLabels']=payload.get('unavailableLabels') or []
-          qa['chatgptInputMarketCount']=len(payload.get('markets') or {})
-          qa['dataSemantics']=payload.get('dataSemantics')
-          qa['previousCloseDate']=payload.get('previousCloseDate')
+          if len(payload.get('markets') or {}) != 28: raise SystemExit('ChatGPT 08:00 input must contain exactly 28 markets')
+          if len(rows) != 29: raise SystemExit(f'ChatGPT CSV must contain header + 28 rows; got {len(rows)} lines')
+          qa['structureReady']=bool(qa.get('ready')); qa['dataComplete']=bool(payload.get('dataComplete'))
+          qa['availableCount']=payload.get('availableCount'); qa['expectedDataCount']=payload.get('expectedCount')
+          qa['unavailableLabels']=payload.get('unavailableLabels') or []; qa['chatgptInputMarketCount']=len(payload.get('markets') or {})
+          qa['dataSemantics']=payload.get('dataSemantics'); qa['previousCloseDate']=payload.get('previousCloseDate')
           Path('data/market/morning_report_qa.json').write_text(json.dumps(qa,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
           print(json.dumps({k:qa.get(k) for k in ('structureReady','dataComplete','availableCount','expectedDataCount','unavailableLabels','dataSemantics','previousCloseDate')},ensure_ascii=False))
           PY
@@ -219,9 +200,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # morning_report_qa.json is owned and committed by qa-morning-report.yml.
-          # Restore it here so the publication sync cannot race that workflow and
-          # fail its rebase after all publication/QA steps have already succeeded.
           git restore --source=HEAD -- data/market/morning_report_qa.json
           git add data/latest-report.json reports data/dashboard.json reports.json \
             data/market/latest.json data/market/chatgpt-input.json \
