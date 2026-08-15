@@ -427,3 +427,35 @@ td.negative,
 .nikkei-status-bad {
   color: var(--semantic-negative) !important;
 }
+
+
+/* Gold dashboard: apply the portal semantic palette to directional panels. */
+.gold-summary-card.positive,
+.gold-matrix-cell.good {
+  background: var(--semantic-positive-soft) !important;
+  border-color: var(--semantic-positive-border) !important;
+}
+
+.gold-summary-card.positive .gold-summary-value,
+.gold-matrix-cell.good strong {
+  color: var(--semantic-positive) !important;
+}
+
+.gold-summary-card.negative,
+.gold-matrix-cell.bad {
+  background: var(--semantic-negative-soft) !important;
+  border-color: var(--semantic-negative-border) !important;
+}
+
+.gold-summary-card.negative .gold-summary-value,
+.gold-matrix-cell.bad strong {
+  color: var(--semantic-negative) !important;
+}
+
+.gold-matrix-cell.good.active {
+  box-shadow: inset 0 0 0 2px var(--semantic-positive) !important;
+}
+
+.gold-matrix-cell.bad.active {
+  box-shadow: inset 0 0 0 2px var(--semantic-negative) !important;
+}
