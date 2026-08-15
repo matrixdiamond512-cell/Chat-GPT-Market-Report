@@ -46,13 +46,10 @@ jobs:
           python -m py_compile scripts/build_rates_bonds_json.py
           python -m py_compile scripts/build_rates_bonds_json_v2.py
           python -m py_compile scripts/build_rates_bonds_archive.py
-          python -m unittest discover -s tests -p "test_fedwatch.py"
+          python -m unittest discover -s tests -p "test_policy_expectations.py"
 
       - name: Build rates and bonds JSON and archive
         run: python scripts/build_rates_bonds_archive.py
-        env:
-          CME_FEDWATCH_API_KEY: ${{ secrets.CME_FEDWATCH_API_KEY }}
-          CME_FEDWATCH_API_URL: ${{ secrets.CME_FEDWATCH_API_URL }}
 
       - name: Validate generated JSON
         run: |
