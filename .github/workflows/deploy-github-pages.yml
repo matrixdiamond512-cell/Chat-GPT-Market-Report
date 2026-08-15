@@ -26,6 +26,25 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check report publication integrity
+        id: report_integrity
+        shell: bash
+        run: |
+          python scripts/build_reports.py
+          if git diff --quiet -- reports reports.json; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "Canonical report history and reports.json are consistent."
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Report publication is not canonical yet; this Pages rebuild is deferred."
+            git status --short -- reports reports.json
+          fi
+
       - name: Validate current main publication files
         shell: bash
         run: |
@@ -37,6 +56,7 @@ jobs:
           grep -q 'nikkei225-basis-options-display.js' nikkei225-supply-demand.html
 
       - name: Request GitHub Pages rebuild using configured source
+        if: steps.report_integrity.outputs.ready == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
