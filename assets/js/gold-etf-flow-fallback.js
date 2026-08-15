@@ -47,10 +47,13 @@ function cumulativeSvg(rows){
   const pad=(max-min)*.15||1;min-=pad;max+=pad;
   const x=i=>L+i*plotW/(points.length-1),y=v=>T+(max-v)/(max-min)*plotH;
   let d='';points.forEach((p,i)=>{d+=`${i?'L':'M'}${x(i).toFixed(1)},${y(p.value).toFixed(1)} `;});
+  const rangeLine=startTonnes!==null&&endTonnes!==null
+    ?`期間始点（${startRow.date}）：${startTonnes.toFixed(2)}t → 期間終点（${endRow.date}）：${endTonnes.toFixed(2)}t`
+    :`表示期間：${startRow.date}〜${endRow.date}`;
   const meaning=startTonnes!==null&&endTonnes!==null
-    ?`意味：GLD金保有量の期間差　${endTonnes.toFixed(2)}t − ${startTonnes.toFixed(2)}t = ${total>0?'+':''}${total.toFixed(2)}t`
-    :`意味：${startRow.date}〜${endRow.date}の日次GLD保有量変化の累計`;
-  let svg=`<div class="gold-etf-cum-total ${total>0?'up':total<0?'down':''}">${total>0?'+':''}${total.toFixed(2)}t</div><div class="gold-etf-cum-explainer">${esc(meaning)}</div><svg class="gold-etf-chart-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="GLD累積フロー折れ線グラフ">`;
+    ?`計算：${endTonnes.toFixed(2)}t − ${startTonnes.toFixed(2)}t = ${total>0?'+':''}${total.toFixed(2)}t`
+    :`計算：表示期間の日次GLD保有量変化の累計`;
+  let svg=`<div class="gold-etf-cum-total ${total>0?'up':total<0?'down':''}">${total>0?'+':''}${total.toFixed(2)}t</div><div class="gold-etf-cum-explainer"><div>${esc(rangeLine)}</div><div>${esc(meaning)}</div></div><svg class="gold-etf-chart-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="GLD累積フロー折れ線グラフ">`;
   [0,.25,.5,.75,1].forEach(fr=>{const yy=T+plotH*fr,val=max-(max-min)*fr;svg+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}"></line><text class="axis-text" x="${L-6}" y="${yy+3}" text-anchor="end">${val.toFixed(1)}</text>`;});
   svg+=`<path class="cum-line" d="${d.trim()}"></path>`;
   points.slice(1).forEach((p,i)=>{const prev=points[i],trend=p.value>=prev.value?'cum-positive':'cum-negative';svg+=`<line class="cum-segment ${trend}" x1="${x(i)}" y1="${y(prev.value)}" x2="${x(i+1)}" y2="${y(p.value)}"><title>${esc(p.date)} ${p.value>=prev.value?'増加':'減少'} ${p.value.toFixed(2)}t</title></line>`;});
