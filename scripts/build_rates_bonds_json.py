@@ -18,6 +18,7 @@ import datetime as dt
 import io
 import json
 import math
+import os
 import re
 import urllib.error
 import urllib.parse
@@ -61,6 +62,7 @@ TREASURY_AUCTION_URL = (
     "https://api.fiscaldata.treasury.gov/services/api/fiscal_service/"
     "v1/accounting/od/auctions_query"
 )
+CME_FEDWATCH_PAGE = "https://www.cmegroup.com/ja/markets/interest-rates/cme-fedwatch-tool.html"
 
 
 def now_jst() -> dt.datetime:
@@ -111,6 +113,88 @@ def http_json_post(url: str, payload: dict[str, Any], timeout: int = 25) -> Any:
             return json.loads(response.read().decode("utf-8"))
     except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
         raise RuntimeError(f"{type(exc).__name__}: {exc}") from exc
+
+
+def fedwatch_unavailable(reason: str = "CME FedWatch公式API未設定") -> dict[str, Any]:
+    return {"status": "unavailable", "source": "CME FedWatch", "sourceUrl": CME_FEDWATCH_PAGE,
+            "asOf": None, "dataMode": "eod", "currentTargetRange": None, "summary": None,
+            "meetings": [], "twoYearConsistency": {"status": "unavailable", "us2yChangeBp": None,
+            "interpretation": reason}, "unavailableReason": reason}
+
+
+def stance_shift(change: float | None) -> str:
+    if change is None: return "判定不能"
+    if change >= 10: return "利下げ織り込みが大きく強まる"
+    if change >= 3: return "利下げ織り込みが強まる"
+    if change > -3: return "利下げ織り込みは横ばい"
+    if change > -10: return "利下げ織り込みが弱まる"
+    return "利下げ織り込みが大きく弱まる"
+
+
+def validate_fedwatch(payload: dict[str, Any]) -> tuple[bool, str | None]:
+    summary = payload.get("summary") or {}
+    required_summary = ("nextMeetingDate", "dominantAction", "dominantTargetRange", "probabilityPct",
+                        "oneDayAgoPct", "oneWeekAgoPct", "oneMonthAgoPct")
+    if not payload.get("asOf") or not payload.get("currentTargetRange") or any(summary.get(key) is None for key in required_summary):
+        return False, "必須メタ情報または比較確率が不足しています"
+    meetings = payload.get("meetings") or []
+    if not meetings: return False, "会合別確率がありません"
+    for meeting in meetings:
+        outcomes = meeting.get("outcomes") or []
+        current = [safe_float(row.get("currentProbabilityPct")) for row in outcomes]
+        if not current or any(value is None or not 0 <= value <= 100 for value in current):
+            return False, "確率が0～100の範囲外です"
+        total = sum(value for value in current if value is not None)
+        if not 99.5 <= total <= 100.5:
+            return False, f"{meeting.get('meetingDate', '会合')}の確率合計が{total:.1f}%です"
+        for row in outcomes:
+            for key in ("oneDayAgoPct", "oneWeekAgoPct", "oneMonthAgoPct"):
+                value = safe_float(row.get(key))
+                if value is None or not 0 <= value <= 100:
+                    return False, f"{key}が未取得または0～100の範囲外です"
+    return True, None
+
+
+def fetch_fedwatch(us2y: dict[str, Any] | None) -> dict[str, Any]:
+    """Use only a contract-confirmed CME JSON endpoint; never guess or scrape."""
+    endpoint = os.environ.get("CME_FEDWATCH_API_URL", "").strip()
+    api_key = os.environ.get("CME_FEDWATCH_API_KEY", "").strip()
+    if not endpoint or not api_key: return fedwatch_unavailable()
+    request = urllib.request.Request(endpoint, headers={"User-Agent": USER_AGENT, "Accept": "application/json",
+        "Authorization": f"Bearer {api_key}", "X-API-Key": api_key})
+    try:
+        with urllib.request.urlopen(request, timeout=25) as response:
+            raw = json.loads(response.read().decode("utf-8"))
+    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+        return fedwatch_unavailable(f"CME FedWatch公式API取得失敗：{type(exc).__name__}")
+    payload = raw.get("fedWatch", raw) if isinstance(raw, dict) else {}
+    if not isinstance(payload, dict): return fedwatch_unavailable("CME FedWatch公式APIの応答形式が不正です")
+    payload = dict(payload)
+    payload.update({"source": "CME FedWatch", "sourceUrl": CME_FEDWATCH_PAGE})
+    payload.setdefault("dataMode", "eod")
+    summary = payload.get("summary") or {}
+    if summary:
+        current, previous = safe_float(summary.get("probabilityPct")), safe_float(summary.get("oneDayAgoPct"))
+        change = round(current - previous, 1) if current is not None and previous is not None else None
+        summary.update({"change1dPt": change, "stanceShift": stance_shift(change)})
+        payload["summary"] = summary
+    valid, reason = validate_fedwatch(payload)
+    payload["status"] = "confirmed" if valid else "unavailable"
+    if not valid: payload["unavailableReason"] = reason
+    us2_change = safe_float((us2y or {}).get("changeBp"))
+    if valid and summary.get("change1dPt") is not None and us2_change is not None:
+        shift = float(summary["change1dPt"])
+        if abs(shift) < 3 or abs(us2_change) < 0.05:
+            status, interpretation = "neutral", "変化が小さく、明確な方向判定はしない"
+        else:
+            consistent = (shift > 0 and us2_change < 0) or (shift < 0 and us2_change > 0)
+            status = "consistent" if consistent else "divergent"
+            interpretation = "利下げ織り込み変化と米2年債利回りが整合" if consistent else "FedWatchと米2年債が逆方向。需給・インフレ・基準時刻差を確認"
+        payload["twoYearConsistency"] = {"status": status, "us2yChangeBp": us2_change, "interpretation": interpretation}
+    else:
+        payload["twoYearConsistency"] = {"status": "unavailable", "us2yChangeBp": us2_change,
+            "interpretation": reason or "比較に必要な確率または米2年債前日比がありません"}
+    return payload
 
 
 def safe_float(value: Any) -> float | None:
@@ -746,7 +830,9 @@ def build_payload() -> dict[str, Any]:
         "カーブ形状とドル・金・株の反応を再判定する。"
     )
 
+    fedwatch = fetch_fedwatch(us2)
     sources = [
+        {"name": "CME FedWatch", "status": fedwatch.get("status", "unavailable"), "note": "公式FedWatch API（EOD）。未設定時は確率を推定しない。"},
         {"name": "FRED / Federal Reserve", "status": "confirmed" if fred else "unavailable", "note": "米2・5・10・30年、10年実質金利、10年期待インフレ、10年タームプレミアム、FF目標レンジ"},
         {"name": "財務省 国債金利情報", "status": "confirmed" if jgb else "unavailable", "note": "JGBコンスタントマチュリティ金利。市場終値ベース、翌営業日公表。"},
         {"name": "TradingView / LSEG JGB", "status": "confirmed" if any(x.get("source", "").startswith("TradingView") for x in jgb.values()) else "standby", "note": "財務省の翌営業日公表が遅れている場合のみ、直近市場スナップショットで補完。"},
@@ -811,6 +897,7 @@ def build_payload() -> dict[str, Any]:
             "summary": "確率推定を無理に表示せず、公式政策金利と短期国債利回りから市場期待の方向を確認。",
             "rows": policy_rows,
         },
+        "fedWatch": fedwatch,
         "crossAssetImpact": cross_asset,
         "leadingRate": leading,
         "scenarios": {
@@ -845,6 +932,7 @@ def update_history(payload: dict[str, Any]) -> None:
         "asOf": stamp,
         "generatedAt": payload.get("generatedAt"),
         "rates": {item["name"]: item.get("value") for item in payload.get("rates", []) if item.get("value") is not None},
+        "fedWatch": payload.get("fedWatch"),
     }
     if not snapshots or snapshots[-1].get("asOf") != snapshot["asOf"]:
         snapshots.append(snapshot)
