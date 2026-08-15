@@ -2,20 +2,14 @@ name: Structure Market Reports
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - reports.json
-      - scripts/structure_reports.py
-      - scripts/complete_report_schema.py
-      - scripts/validate_market_reports.py
-      - .github/workflows/structure-market-reports.yml
   pull_request:
     paths:
       - reports.json
+      - "reports/*.json"
+      - scripts/build_reports.py
       - scripts/structure_reports.py
       - scripts/complete_report_schema.py
+      - scripts/persist_report_index_to_canonical.py
       - scripts/validate_market_reports.py
       - .github/workflows/structure-market-reports.yml
 
@@ -41,8 +35,8 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Validate JSON before processing
-        run: python -m json.tool reports.json > /dev/null
+      - name: Preserve history and build canonical index first
+        run: python scripts/build_reports.py
 
       - name: Fill dashboard fields from full report text
         run: python scripts/structure_reports.py reports.json
@@ -78,19 +72,29 @@ jobs:
               raise SystemExit('Some structured reports do not contain all six markets.')
           PY
 
-      - name: Strictly validate latest report before commit
+      - name: Strictly validate latest report before persistence
         run: python scripts/validate_market_reports.py --file reports.json
 
-      - name: Commit structured reports
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+      - name: Persist validated structured reports to canonical files
+        run: python scripts/persist_report_index_to_canonical.py
+
+      - name: Rebuild and verify canonical index
         run: |
-          if git diff --quiet -- reports.json; then
-            echo 'reports.json is already fully structured and validated.'
+          python scripts/build_reports.py
+          python -m json.tool reports.json > /dev/null
+          python scripts/validate_market_reports.py --file reports.json
+
+      - name: Commit structured canonical reports
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if git diff --quiet -- reports reports.json; then
+            echo 'Canonical reports and reports.json are already fully structured and validated.'
             exit 0
           fi
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add reports.json
-          git commit -m 'Structure and validate imported market report content'
+          git add reports reports.json
+          git commit -m 'Structure and validate canonical market reports'
+          git pull --rebase origin main
           git push
