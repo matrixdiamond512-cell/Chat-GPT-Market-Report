@@ -282,8 +282,15 @@ td.negative,
 .flow-out,
 .flow-column.flow-out,
 .flow-column-out {
+  color: var(--semantic-negative) !important;
   border-color: var(--semantic-negative-border) !important;
   background: linear-gradient(180deg, var(--semantic-negative-soft) 0, #fff 42%) !important;
+}
+
+.flow-column.flow-column-in {
+  color: var(--semantic-positive) !important;
+  border-color: var(--semantic-positive-border) !important;
+  background: linear-gradient(180deg, var(--semantic-positive-soft) 0, #fff 42%) !important;
 }
 
 .flow-out h3,
@@ -347,6 +354,15 @@ td.negative,
 .subhead.negative strong,
 .direction.down,
 .tag.down {
+  color: var(--semantic-negative) !important;
+}
+
+/* The USD/JPY judgement uses an ID-qualified legacy rule. */
+#kpi-judgement.up {
+  color: var(--semantic-positive) !important;
+}
+
+#kpi-judgement.down {
   color: var(--semantic-negative) !important;
 }
 
