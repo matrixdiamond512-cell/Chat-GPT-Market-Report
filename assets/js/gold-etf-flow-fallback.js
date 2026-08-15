@@ -9,7 +9,8 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 function normalize(rows){
   return (Array.isArray(rows)?rows:[]).map(row=>({
     date:String(row&&row.asOfDate||'').slice(0,10),
-    value:n(row&&row.changeTonnes)
+    value:n(row&&row.changeTonnes),
+    tonnes:n(row&&row.tonnes)
   })).filter(x=>x.date&&x.value!==null).sort((a,b)=>a.date.localeCompare(b.date));
 }
 
@@ -37,6 +38,8 @@ function barSvg(rows){
 function cumulativeSvg(rows){
   if(rows.length<2)return '<div class="gold-etf-chart-empty">GLD履歴を蓄積中です。</div>';
   let total=0;
+  const startRow=rows[0],endRow=rows[rows.length-1];
+  const startTonnes=n(startRow.tonnes),endTonnes=n(endRow.tonnes);
   const points=rows.map(x=>({date:x.date,value:(total+=x.value)}));
   const W=1180,H=280,L=48,R=18,T=28,B=54,plotW=W-L-R,plotH=H-T-B;
   const vals=points.map(x=>x.value).concat([0]);
@@ -44,7 +47,10 @@ function cumulativeSvg(rows){
   const pad=(max-min)*.15||1;min-=pad;max+=pad;
   const x=i=>L+i*plotW/(points.length-1),y=v=>T+(max-v)/(max-min)*plotH;
   let d='';points.forEach((p,i)=>{d+=`${i?'L':'M'}${x(i).toFixed(1)},${y(p.value).toFixed(1)} `;});
-  let svg=`<div class="gold-etf-cum-total">${total>0?'+':''}${total.toFixed(2)}t</div><svg class="gold-etf-chart-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="GLD累積フロー折れ線グラフ">`;
+  const meaning=startTonnes!==null&&endTonnes!==null
+    ?`意味：GLD金保有量の期間差　${endTonnes.toFixed(2)}t − ${startTonnes.toFixed(2)}t = ${total>0?'+':''}${total.toFixed(2)}t`
+    :`意味：${startRow.date}〜${endRow.date}の日次GLD保有量変化の累計`;
+  let svg=`<div class="gold-etf-cum-total ${total>0?'up':total<0?'down':''}">${total>0?'+':''}${total.toFixed(2)}t</div><div class="gold-etf-cum-explainer">${esc(meaning)}</div><svg class="gold-etf-chart-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="GLD累積フロー折れ線グラフ">`;
   [0,.25,.5,.75,1].forEach(fr=>{const yy=T+plotH*fr,val=max-(max-min)*fr;svg+=`<line class="grid" x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}"></line><text class="axis-text" x="${L-6}" y="${yy+3}" text-anchor="end">${val.toFixed(1)}</text>`;});
   svg+=`<path class="cum-line" d="${d.trim()}"></path>`;
   points.slice(1).forEach((p,i)=>{const prev=points[i],trend=p.value>=prev.value?'cum-positive':'cum-negative';svg+=`<line class="cum-segment ${trend}" x1="${x(i)}" y1="${y(prev.value)}" x2="${x(i+1)}" y2="${y(p.value)}"><title>${esc(p.date)} ${p.value>=prev.value?'増加':'減少'} ${p.value.toFixed(2)}t</title></line>`;});
@@ -69,7 +75,7 @@ async function install(){
     if(cumulative)cumulative.innerHTML=cumulativeSvg(slice);
     const cards=[...document.querySelectorAll('.gold-etf-chart-card')];
     if(cards[0]){const t=cards[0].querySelector('.gold-etf-chart-title');if(t)t.textContent='直近の日次ETFフロー（GLD・IAU履歴蓄積中）';}
-    const cum=document.querySelector('.gold-etf-chart-card.cumulative .gold-etf-chart-title');if(cum)cum.textContent='累積フロー（GLD・暫定）';
+    const cum=document.querySelector('.gold-etf-chart-card.cumulative .gold-etf-chart-title');if(cum)cum.textContent='GLD金保有量の累積増減（暫定）';
     let note=document.querySelector('[data-etf-fallback-note]');
     if(!note&&cards[0]){
       note=document.createElement('div');note.className='gold-etf-footnote';note.setAttribute('data-etf-fallback-note','');
