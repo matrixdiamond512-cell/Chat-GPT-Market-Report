@@ -129,6 +129,30 @@
 .fedwatch-unavailable { display:grid; gap:8px; justify-items:start; }
 .fedwatch-unavailable .status-badge { margin:0; }
 .fedwatch-unavailable p { margin:0; color:#31476a; font-size:13px; font-weight:800; }
+.policy-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; margin-top:10px; }
+.policy-kpis article { display:grid; gap:3px; padding:11px 12px; border:1px solid var(--line); border-radius:7px; background:#fbfdff; }
+.policy-kpis small { color:var(--muted); font-weight:900; }
+.policy-kpis strong { color:var(--navy); font-size:21px; }
+.policy-kpis span { color:#31476a; font-size:12px; font-weight:850; }
+.policy-direction { margin-top:10px; padding:12px; border:1px solid var(--line); border-radius:7px; background:#fff; }
+.policy-gauge-labels, .policy-score-axis { display:flex; justify-content:space-between; gap:8px; color:#31476a; font-size:12px; font-weight:900; }
+.policy-gauge-labels b { color:var(--navy); font-size:15px; text-align:center; }
+.policy-gauge { position:relative; height:8px; margin:12px 6px 6px; border-radius:999px; background:linear-gradient(90deg,#dce8f8,#eef2f7,#f5e3e7); }
+.policy-gauge i { position:absolute; top:50%; width:18px; height:18px; border:3px solid #fff; border-radius:50%; background:var(--navy); box-shadow:0 0 0 1px #52657f; transform:translate(-50%,-50%); }
+.policy-direction>small { display:block; margin-top:7px; color:var(--muted); text-align:center; font-weight:800; }
+.policy-changes { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:10px; }
+.policy-changes article { display:grid; gap:3px; padding:9px 10px; border:1px solid var(--line); border-radius:6px; }
+.policy-changes span, .policy-changes strong { color:#31476a; font-size:12px; }
+.policy-reading { display:grid; gap:6px; margin-top:10px; padding:11px; border:1px solid var(--line); border-radius:7px; }
+.policy-reading p { margin:0; color:#31476a; font-size:13px; font-weight:800; }
+.policy-reading small { color:var(--muted); font-size:11.5px; font-weight:800; }
+.cme-official-button { display:inline-flex; justify-content:center; width:fit-content; margin-top:5px; padding:8px 13px; border-radius:6px; background:var(--navy2); color:#fff; text-decoration:none; font-weight:900; }
+.manual-fedwatch { margin-top:10px; padding:11px; border:1px solid #d9b86c; border-radius:7px; background:#fffaf0; }
+.manual-fedwatch>div:first-child { display:flex; align-items:center; gap:8px; }
+.manual-fedwatch p { color:#6b5320; font-size:12px; font-weight:800; }
+.manual-outcomes { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; }
+.manual-outcomes article { display:grid; gap:2px; padding:8px; border:1px solid #ead6a8; border-radius:6px; background:#fff; }
+.manual-outcomes strong { color:var(--navy); font-size:19px; }
 
 .scenario-lists {
   margin-top: 8px;
@@ -219,6 +243,8 @@
     grid-template-columns: 38px minmax(70px, 1fr) 68px;
   }
   .fedwatch-kpis, .fedwatch-reading { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .policy-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .policy-changes { grid-template-columns:1fr; }
   .fedwatch-table-wrap { overflow:visible; border:0; }
   .fedwatch-table, .fedwatch-table tbody { display:block; min-width:0; }
   .fedwatch-table thead { display:none; }
