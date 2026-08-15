@@ -50,6 +50,17 @@
   color: var(--semantic-negative) !important;
 }
 
+/* USD/JPY verdict CSS has higher-specificity legacy rules. */
+.usd-verdict-panel .is-bullish,
+.usd-factor-grid b.is-bullish {
+  color: var(--semantic-positive) !important;
+}
+
+.usd-verdict-panel .is-bearish,
+.usd-factor-grid b.is-bearish {
+  color: var(--semantic-negative) !important;
+}
+
 .state-up,
 .chip.green {
   color: var(--semantic-positive) !important;
