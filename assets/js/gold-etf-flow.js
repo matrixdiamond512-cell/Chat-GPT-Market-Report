@@ -53,10 +53,12 @@ function normalizeHistory(etf){
     const date=firstText(row,['asOfDate','date','day']);
     const gldChange=firstNumber(row,['gldChangeTonnes','gldChange','gldFlowTonnes']);
     const iauChange=firstNumber(row,['iauChangeTonnes','iauChange','iauFlowTonnes']);
+    const gldTonnes=firstNumber(row,['gldTonnes','gldHoldingsTonnes','gldHoldings']);
+    const iauTonnes=firstNumber(row,['iauTonnes','iauHoldingsTonnes','iauHoldings']);
     const explicit=firstNumber(row,['combinedChangeTonnes','combinedChange','totalChangeTonnes']);
     const aligned=row&&row.aligned===false?false:true;
     const combined=explicit!==null?explicit:(aligned&&gldChange!==null&&iauChange!==null?gldChange+iauChange:null);
-    return {date,gldChange,iauChange,combined};
+    return {date,gldChange,iauChange,combined,gldTonnes,iauTonnes};
   }).filter(x=>x.date&&x.combined!==null);
   rows.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
 
@@ -64,7 +66,7 @@ function normalizeHistory(etf){
   if(sameDate(gld.asOfDate,iau.asOfDate)&&n(gld.changeTonnes)!==null&&n(iau.changeTonnes)!==null){
     const date=String(gld.asOfDate).slice(0,10);
     if(!rows.some(x=>String(x.date).slice(0,10)===date)){
-      rows.push({date,gldChange:Number(gld.changeTonnes),iauChange:Number(iau.changeTonnes),combined:Number(gld.changeTonnes)+Number(iau.changeTonnes)});
+      rows.push({date,gldChange:Number(gld.changeTonnes),iauChange:Number(iau.changeTonnes),combined:Number(gld.changeTonnes)+Number(iau.changeTonnes),gldTonnes:n(gld.tonnes),iauTonnes:n(iau.tonnes)});
     }
   }
   rows.sort((a,b)=>String(a.date).localeCompare(String(b.date)));
@@ -145,6 +147,9 @@ function buildBarSvg(rows){
 function buildCumulativeSvg(rows){
   if(rows.length<2)return '<div class="gold-etf-chart-empty">累積フローは同一基準日の履歴が2営業日以上蓄積すると表示します。</div>';
   let total=0;
+  const startRow=rows[0],endRow=rows[rows.length-1];
+  const combinedHoldings=row=>{const g=n(row.gldTonnes),i=n(row.iauTonnes);return g!==null&&i!==null?g+i:null};
+  const startHoldings=combinedHoldings(startRow),endHoldings=combinedHoldings(endRow);
   const points=rows.map(x=>{total+=x.combined;return {date:x.date,value:total};});
   const W=1180,H=280,L=48,R=18,T=28,B=54,plotW=W-L-R,plotH=H-T-B;
   const vals=points.map(x=>x.value).concat([0]);
@@ -168,7 +173,10 @@ function buildCumulativeSvg(rows){
   const labelEvery=Math.max(1,Math.ceil(points.length/12));
   points.forEach((p,i)=>{if(i%labelEvery===0||i===points.length-1){const label=String(p.date).slice(5).replace('-','/');svg+=`<text class="axis-text" x="${x(i)}" y="${H-18}" text-anchor="middle">${esc(label)}</text>`;}});
   svg+='</svg>';
-  return `<div class="gold-etf-cum-total">${total>0?'+':''}${total.toFixed(2)}t</div>${svg}`;
+  const meaning=startHoldings!==null&&endHoldings!==null
+    ?`意味：GLD＋IAU金保有量の期間差　${endHoldings.toFixed(2)}t − ${startHoldings.toFixed(2)}t = ${total>0?'+':''}${total.toFixed(2)}t`
+    :`意味：${startRow.date}〜${endRow.date}の同一基準日GLD＋IAU日次合計フローの累計`;
+  return `<div class="gold-etf-cum-total ${total>0?'up':total<0?'down':''}">${total>0?'+':''}${total.toFixed(2)}t</div><div class="gold-etf-cum-explainer">${esc(meaning)}</div>${svg}`;
 }
 
 function rowHtml(name,fundClass,x,change,holdings,statusText,asOf,updated){
@@ -213,7 +221,7 @@ function renderCard(card,data){
         <div class="gold-etf-chart-wrap" data-etf-bar>${buildBarSvg(history.slice(-132))}</div>
       </div>
       <div class="gold-etf-chart-card cumulative">
-        <div class="gold-etf-chart-head"><div class="gold-etf-chart-title">累積フロー（GLD＋IAU）</div></div>
+        <div class="gold-etf-chart-head"><div class="gold-etf-chart-title">GLD＋IAU金保有量の累積増減</div></div>
         <div class="gold-etf-chart-wrap" data-etf-cumulative>${buildCumulativeSvg(history.slice(-132))}</div>
       </div>
     </div>
