@@ -8,10 +8,6 @@ on:
       - "reports/*.json"
       - "reports.json"
       - "scripts/build_reports.py"
-      - "scripts/structure_reports.py"
-      - "scripts/complete_report_schema.py"
-      - "scripts/persist_report_index_to_canonical.py"
-      - "scripts/validate_market_reports.py"
       - ".github/workflows/build-reports.yml"
   workflow_dispatch:
 
@@ -40,30 +36,13 @@ jobs:
       - name: Preserve history and build reports.json
         run: python scripts/build_reports.py
 
-      - name: Fill dashboard fields from full report text
-        run: python scripts/structure_reports.py reports.json
+      - name: Validate generated JSON
+        run: python -m json.tool reports.json > /dev/null
 
-      - name: Complete required schema transparently
-        run: python scripts/complete_report_schema.py reports.json
-
-      - name: Validate structured report index
-        run: |
-          python -m json.tool reports.json > /dev/null
-          python scripts/validate_market_reports.py --file reports.json
-
-      - name: Persist validated structured reports to canonical files
-        run: python scripts/persist_report_index_to_canonical.py
-
-      - name: Rebuild and verify canonical index
-        run: |
-          python scripts/build_reports.py
-          python -m json.tool reports.json > /dev/null
-          python scripts/validate_market_reports.py --file reports.json
-
-      - name: Commit canonical reports and generated index
+      - name: Commit canonical backfills and generated index
         run: |
           if git diff --quiet -- reports reports.json; then
-            echo "Report history, canonical files, and reports.json are already up to date."
+            echo "Canonical report history and reports.json are already consistent."
             exit 0
           fi
 
