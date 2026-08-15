@@ -41,10 +41,43 @@ def sop_headings(full_text: str) -> list[str]:
     return [h for line in str(full_text or "").replace("\r", "").split("\n") if (h := normalize_heading(line))]
 
 
-def require_heading(headings: list[str], pattern: str, label: str) -> None:
-    rx = re.compile(pattern)
-    if not any(rx.search(h) for h in headings):
-        raise SystemExit(f"SOP fullText missing required section: {label}")
+def has_structured_value(report: dict, fields: tuple[str, ...]) -> bool:
+    for field in fields:
+        value = report.get(field)
+        if isinstance(value, str) and value.strip():
+            continue
+        if isinstance(value, (list, dict)) and value:
+            continue
+        return False
+    return True
+
+
+def require_semantic_section(
+    report: dict,
+    headings: list[str],
+    pattern: str,
+    label: str,
+    fields: tuple[str, ...] = (),
+) -> None:
+    if any(re.search(pattern, h) for h in headings):
+        return
+    if fields and has_structured_value(report, fields):
+        return
+    raise SystemExit(f"SOP fullText missing required section: {label}")
+
+
+def sanitize_public_full_text(report: dict) -> None:
+    """Remove internal pipeline diagnostics from the public report body.
+
+    data/latest-report.json remains the internal publication source of truth. The
+    portal/report-history copy must not expose implementation details such as JSON
+    paths, import formulas, or the literal internal verification status.
+    """
+    text = str(report.get("fullText") or "").replace("\r", "")
+    if not text:
+        return
+    pattern = re.compile(r"\n*【データ検証】\s*\n.*?(?=\n【[^\n]+】)", re.S)
+    report["fullText"] = pattern.sub("\n", text, count=1).strip()
 
 
 def validate_sop_body(report: dict) -> None:
@@ -61,31 +94,33 @@ def validate_sop_body(report: dict) -> None:
     if len(headings) < 9:
         raise SystemExit(f"{slot} SOP fullText requires multiple explicit sections; found {len(headings)}")
 
-    common = [
-        (r"今日の相場テーマ", "今日の相場テーマ"),
-        (r"主要市場データ|主要市場まとめ", "主要市場データ"),
-        (r"材料と値動きの整合性|価格の動きと材料の整合性", "材料と値動きの整合性"),
-        (r"(?:今日の)?主導市場|どの市場が主導", "主導市場"),
-        (r"重要ニュース|重要ニュースと市場への伝播", "重要ニュース"),
-        (r"クロスアセット資金フロー", "クロスアセット資金フロー"),
-        (r"需給・ポジション", "需給・ポジション"),
-        (r"個別(?:市場)?見通し|6市場の(?:個別)?見通し", "個別市場見通し"),
-        (r"シナリオ", "シナリオ"),
-        (r"崩れる条件", "シナリオが崩れる条件"),
-        (r"結論|最終判断", "結論"),
+    requirements = [
+        (r"今日の相場テーマ", "今日の相場テーマ", ("theme",)),
+        (r"主要市場データ|主要市場まとめ", "主要市場データ", ("marketDataTable",)),
+        (r"材料と値動きの整合性|価格の動きと材料の整合性", "材料と値動きの整合性", ("consistency",)),
+        (r"(?:今日の)?主導市場|どの市場が主導", "主導市場", ("leadingMarket",)),
+        (r"重要ニュース|重要ニュースと市場への伝播|昨夜のNY市場で何が起きたか", "重要ニュース", ("news",)),
+        (r"クロスアセット資金フロー", "クロスアセット資金フロー", ("crossAssetFlow",)),
+        (r"需給・ポジション", "需給・ポジション", ("positioning",)),
+        (r"個別(?:市場)?見通し|6市場の(?:個別)?見通し", "個別市場見通し", ("markets",)),
+        (r"シナリオ", "シナリオ", ("mainScenario", "alternativeScenario")),
+        (r"崩れる条件", "シナリオが崩れる条件", ("breakConditions",)),
+        (r"結論|最終判断", "結論", ()),
     ]
-    for pattern, label in common:
-        require_heading(headings, pattern, label)
+    for pattern, label, fields in requirements:
+        require_semantic_section(report, headings, pattern, label, fields)
 
     transition_patterns = {
-        "08:00": r"前回からの(?:主な)?変化|東京時間への引き継ぎ|本日の監視順",
+        "08:00": r"前回からの(?:主な)?変化|前回から市場解釈は変わったか|東京時間への引き継ぎ|本日の監視順",
         "12:00": r"08:00からの(?:主な)?変化|欧州時間への引き継ぎ|次の時間帯への引き継ぎ",
         "16:00": r"12:00からの(?:主な)?変化|NY時間への引き継ぎ|次の時間帯への引き継ぎ",
         "21:00": r"16:00からの(?:主な)?変化|翌東京時間への引き継ぎ|NY時間への引き継ぎ|次の時間帯への引き継ぎ",
     }
-    # Some morning documents use NY summary + monitoring order rather than a literal "前回からの変化" heading.
-    if slot != "08:00" and not any(re.search(transition_patterns[slot], h) for h in headings):
-        raise SystemExit(f"{slot} SOP fullText missing time-slot transition/change section")
+    if not any(re.search(transition_patterns[slot], h) for h in headings):
+        if slot == "08:00" and has_structured_value(report, ("changes",)):
+            pass
+        else:
+            raise SystemExit(f"{slot} SOP fullText missing time-slot transition/change section")
 
     public_forbidden = [r"\bverified\b", r"JSONにありません", r"構造化JSON", r"内部構造"]
     for pattern in public_forbidden:
@@ -155,9 +190,13 @@ def sync_dashboard(report: dict) -> None:
 
 def main() -> None:
     payload = load_json(LATEST, {})
-    report = payload.get("latestReport") or payload.get("report") or payload
-    if not isinstance(report, dict):
+    source_report = payload.get("latestReport") or payload.get("report") or payload
+    if not isinstance(source_report, dict):
         raise SystemExit("data/latest-report.json does not contain a report object")
+
+    # Keep the canonical latest-report payload intact and sanitize only the public copy.
+    report = json.loads(json.dumps(source_report, ensure_ascii=False))
+    sanitize_public_full_text(report)
     validate_report(report)
     report_path = sync_report_file(report)
     sync_dashboard(report)
