@@ -25,6 +25,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Preserve report history before deployment
+        run: python scripts/build_reports.py
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
