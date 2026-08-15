@@ -1,9 +1,13 @@
 /* Market direction colors: positive/up is pink, negative/down is blue. */
 :root {
   --semantic-positive: #d94e68;
+  --semantic-positive-light: #e77d95;
+  --semantic-positive-strong: #c02f54;
   --semantic-positive-soft: #fff0f3;
   --semantic-positive-border: #efcbd4;
   --semantic-negative: #397bc2;
+  --semantic-negative-light: #78a8d8;
+  --semantic-negative-strong: #235c9f;
   --semantic-negative-soft: #edf5ff;
   --semantic-negative-border: #bfd4ed;
 
@@ -177,72 +181,98 @@
   color: var(--semantic-negative) !important;
 }
 
-.breadth-up,
-.range-greed,
-.range-extreme-greed {
+.breadth-up {
   background: var(--semantic-positive) !important;
 }
 
-.breadth-down,
-.range-fear,
-.range-extreme-fear {
+.breadth-down {
   background: var(--semantic-negative) !important;
 }
 
-.range-greed,
+.range-greed {
+  background: var(--semantic-positive-light) !important;
+  border-color: #d96780 !important;
+  color: #64162c !important;
+}
+
 .range-extreme-greed {
-  border-color: var(--semantic-positive-border) !important;
-}
-
-.range-fear,
-.range-extreme-fear {
-  border-color: var(--semantic-negative-border) !important;
-}
-
-.temperature-tone-extreme-fear .temperature-mini-bar span,
-.temperature-tone-fear .temperature-mini-bar span,
-.environment-color-key .key-extreme-fear,
-.environment-color-key .key-fear {
-  background: var(--semantic-negative) !important;
-}
-
-.temperature-tone-greed .temperature-mini-bar span,
-.temperature-tone-extreme-greed .temperature-mini-bar span,
-.environment-color-key .key-greed,
-.environment-color-key .key-extreme-greed {
-  background: var(--semantic-positive) !important;
+  background: var(--semantic-positive-strong) !important;
+  border-color: #a82445 !important;
   color: #fff !important;
 }
 
-.environment-verdict.tone-greed,
-.environment-verdict.tone-extreme-greed {
+.range-fear {
+  background: var(--semantic-negative-light) !important;
+  border-color: #5e91c6 !important;
+  color: #092d55 !important;
+}
+
+.range-extreme-fear {
+  background: var(--semantic-negative-strong) !important;
+  border-color: #1b4a82 !important;
+  color: #fff !important;
+}
+
+.temperature-tone-fear .temperature-mini-bar span,
+.environment-color-key .key-fear {
+  background: var(--semantic-negative-light) !important;
+}
+
+.temperature-tone-extreme-fear .temperature-mini-bar span,
+.environment-color-key .key-extreme-fear {
+  background: var(--semantic-negative-strong) !important;
+}
+
+.temperature-tone-greed .temperature-mini-bar span,
+.environment-color-key .key-greed {
+  background: var(--semantic-positive-light) !important;
+  color: #64162c !important;
+}
+
+.temperature-tone-extreme-greed .temperature-mini-bar span,
+.environment-color-key .key-extreme-greed {
+  background: var(--semantic-positive-strong) !important;
+  color: #fff !important;
+}
+
+.environment-verdict.tone-greed {
   border-left-color: var(--semantic-positive) !important;
   background: var(--semantic-positive-soft) !important;
 }
 
-.environment-verdict.tone-fear,
-.environment-verdict.tone-extreme-fear {
+.environment-verdict.tone-extreme-greed {
+  border-left-color: var(--semantic-positive-strong) !important;
+  background: #ffe2e8 !important;
+}
+
+.environment-verdict.tone-fear {
   border-left-color: var(--semantic-negative) !important;
   background: var(--semantic-negative-soft) !important;
 }
 
+.environment-verdict.tone-extreme-fear {
+  border-left-color: var(--semantic-negative-strong) !important;
+  background: #e1efff !important;
+}
+
 .environment-verdict.tone-greed strong,
-.environment-verdict.tone-extreme-greed strong,
-.temperature-tone-greed .temperature-mini-foot b,
-.temperature-tone-extreme-greed .temperature-mini-foot b {
+.temperature-tone-greed .temperature-mini-foot b {
   color: var(--semantic-positive) !important;
 }
 
+.environment-verdict.tone-extreme-greed strong,
+.temperature-tone-extreme-greed .temperature-mini-foot b {
+  color: var(--semantic-positive-strong) !important;
+}
+
 .environment-verdict.tone-fear strong,
-.environment-verdict.tone-extreme-fear strong,
-.temperature-tone-fear .temperature-mini-foot b,
-.temperature-tone-extreme-fear .temperature-mini-foot b {
+.temperature-tone-fear .temperature-mini-foot b {
   color: var(--semantic-negative) !important;
 }
 
-.range-greed,
-.range-extreme-greed {
-  color: #fff !important;
+.environment-verdict.tone-extreme-fear strong,
+.temperature-tone-extreme-fear .temperature-mini-foot b {
+  color: var(--semantic-negative-strong) !important;
 }
 
 .scenario th:nth-child(2) {
@@ -366,7 +396,10 @@ td.negative,
   color: var(--semantic-negative) !important;
 }
 
-.environment-color-key .key-fear,
+.environment-color-key .key-fear {
+  color: #092d55 !important;
+}
+
 .environment-color-key .key-extreme-fear {
   color: #fff !important;
 }
