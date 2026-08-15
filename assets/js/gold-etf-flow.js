@@ -173,10 +173,13 @@ function buildCumulativeSvg(rows){
   const labelEvery=Math.max(1,Math.ceil(points.length/12));
   points.forEach((p,i)=>{if(i%labelEvery===0||i===points.length-1){const label=String(p.date).slice(5).replace('-','/');svg+=`<text class="axis-text" x="${x(i)}" y="${H-18}" text-anchor="middle">${esc(label)}</text>`;}});
   svg+='</svg>';
+  const rangeLine=startHoldings!==null&&endHoldings!==null
+    ?`期間始点（${startRow.date}）：${startHoldings.toFixed(2)}t → 期間終点（${endRow.date}）：${endHoldings.toFixed(2)}t`
+    :`表示期間：${startRow.date}〜${endRow.date}`;
   const meaning=startHoldings!==null&&endHoldings!==null
-    ?`意味：GLD＋IAU金保有量の期間差　${endHoldings.toFixed(2)}t − ${startHoldings.toFixed(2)}t = ${total>0?'+':''}${total.toFixed(2)}t`
-    :`意味：${startRow.date}〜${endRow.date}の同一基準日GLD＋IAU日次合計フローの累計`;
-  return `<div class="gold-etf-cum-total ${total>0?'up':total<0?'down':''}">${total>0?'+':''}${total.toFixed(2)}t</div><div class="gold-etf-cum-explainer">${esc(meaning)}</div>${svg}`;
+    ?`計算：${endHoldings.toFixed(2)}t − ${startHoldings.toFixed(2)}t = ${total>0?'+':''}${total.toFixed(2)}t`
+    :`計算：表示期間の同一基準日GLD＋IAU日次合計フローの累計`;
+  return `<div class="gold-etf-cum-total ${total>0?'up':total<0?'down':''}">${total>0?'+':''}${total.toFixed(2)}t</div><div class="gold-etf-cum-explainer"><div>${esc(rangeLine)}</div><div>${esc(meaning)}</div></div>${svg}`;
 }
 
 function rowHtml(name,fundClass,x,change,holdings,statusText,asOf,updated){
