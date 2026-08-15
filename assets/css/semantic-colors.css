@@ -417,3 +417,13 @@ td.negative,
   color: #fff !important;
 }
 
+/* Nikkei 225 pages retain legacy direction class names. */
+.nikkei-up,
+.nikkei-status-good {
+  color: var(--semantic-positive) !important;
+}
+
+.nikkei-down,
+.nikkei-status-bad {
+  color: var(--semantic-negative) !important;
+}
