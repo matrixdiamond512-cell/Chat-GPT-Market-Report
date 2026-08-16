@@ -1,16 +1,16 @@
 {
-  "checkedAt": "2026-08-15T08:09:51+09:00",
-  "reportDate": "2026-08-15",
+  "checkedAt": "2026-08-17T08:09:02+09:00",
+  "reportDate": "2026-08-17",
   "reportSlot": "08:00",
   "ready": false,
   "historicalMode": false,
   "reportSource": "latest-report",
-  "latestReportDate": "2026-08-15",
+  "latestReportDate": "2026-08-17",
   "latestReportTime": "08:00",
   "dataSemantics": "previous_close",
   "expectedPreviousCloseDate": "2026-08-14",
   "expectedRowCount": 28,
-  "actualRowCount": 14,
+  "actualRowCount": 22,
   "expectedColumns": [
     "項目",
     "終値・値",
@@ -19,27 +19,34 @@
     "方向感"
   ],
   "labels": [
-    "Dow Jones",
-    "S&P 500",
-    "Nasdaq Composite",
+    "NYダウ",
+    "NASDAQ総合",
+    "S&P500",
     "Russell 2000",
-    "金",
-    "WTI原油",
+    "日経225現物",
+    "CME日経225先物・円建て",
     "日経225先物（大阪取引所）",
     "USD/JPY",
     "EUR/USD",
+    "金",
+    "WTI原油",
     "BTCUSD",
     "VIX",
     "日経VI",
     "Fear & Greed Index",
-    "米10年債利回り"
+    "米10年債利回り",
+    "日本10年国債利回り",
+    "日経225予想PER",
+    "日経225 PBR",
+    "日経225予想EPS",
+    "25日移動平均乖離率",
+    "200日移動平均乖離率"
   ],
   "blockingReasons": [
-    "Fear & Greed Index: 5-column empty cell",
     "market table order/labels mismatch",
-    "market table row count must be 28, got 14",
+    "market table row count must be 28, got 22",
     "required six-market row missing: COMEX金先物",
-    "米10年債利回り: 5-column empty cell"
+    "required six-market value unavailable: 日経225先物（大阪取引所）"
   ],
   "warnings": [
     "marketDataTable structured rows used from latest-report"
