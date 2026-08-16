@@ -111,7 +111,7 @@
     },
     {
       "asOf": "2026-08-14",
-      "generatedAt": "2026-08-15T22:09:11+09:00",
+      "generatedAt": "2026-08-17T06:57:27+09:00",
       "rates": {
         "米2年債利回り": 4.15,
         "米5年債利回り": 4.32,
@@ -157,7 +157,7 @@
         "topLines": [
           "米国：ブル・スティープニング｜全面的な金利低下",
           "日本：ベア・スティープニング｜全面的な金利上昇",
-          "クロスアセット：USD/JPYは逆行、金は整合、BTCUSDは逆行"
+          "クロスアセット：USD/JPYは整合、金は逆行、BTCUSDは逆行"
         ],
         "theme": "米国はブル・スティープニング、日本はベア・スティープニング。日米金利差は縮小方向。",
         "usRates": {
@@ -187,10 +187,10 @@
           "jpDirection": "全面的な金利上昇",
           "rateGapDirection": "縮小方向",
           "usdJpyImplication": "下落",
-          "actualUsdJpy": "上昇",
-          "verdict": "逆行",
-          "confidence": "中",
-          "interpretation": "金利示唆は下落、実際は上昇。金利差以外のドル需要・円売りフローを確認。金利基準日2026-08-13、市場基準日2026-08-14。因果ではなく方向比較。",
+          "actualUsdJpy": "下落",
+          "verdict": "整合",
+          "confidence": "低",
+          "interpretation": "金利示唆は下落、実際は下落。方向が整合。基準日が4日ずれるため参考方向として表示。",
           "tenors": [
             {
               "tenor": "2年",
@@ -216,58 +216,58 @@
           "direction": "低下",
           "goldImplication": "上昇",
           "btcImplication": "上昇",
-          "interpretation": "実質金利は低下。金は整合、BTCUSDは逆行。"
+          "interpretation": "実質金利は低下。金は逆行、BTCUSDは逆行。"
         },
         "crossAssetAnalysis": [
           {
             "market": "USD/JPY",
             "expectedDirection": "下落",
-            "actualDirection": "上昇",
-            "actualChangePct": 0.06,
-            "verdict": "逆行",
-            "confidence": "中",
-            "interpretation": "金利示唆は下落、実際は上昇。金利差以外のドル需要・円売りフローを確認。",
-            "timingNote": "金利基準日2026-08-13、市場基準日2026-08-14。因果ではなく方向比較。"
+            "actualDirection": "下落",
+            "actualChangePct": -0.06648531384815248,
+            "verdict": "整合",
+            "confidence": "低",
+            "interpretation": "金利示唆は下落、実際は下落。方向が整合。",
+            "timingNote": "基準日が4日ずれるため参考方向として表示。"
           },
           {
             "market": "EUR/USD",
             "expectedDirection": "上昇",
             "actualDirection": "上昇",
-            "actualChangePct": 0.37,
+            "actualChangePct": 0.3466100777546055,
             "verdict": "整合",
-            "confidence": "中",
+            "confidence": "低",
             "interpretation": "金利示唆は上昇、実際は上昇。方向が整合。",
-            "timingNote": "金利基準日2026-08-13、市場基準日2026-08-14。因果ではなく方向比較。"
+            "timingNote": "基準日が4日ずれるため参考方向として表示。"
           },
           {
             "market": "金",
             "expectedDirection": "上昇",
-            "actualDirection": "上昇",
-            "actualChangePct": 0.38,
-            "verdict": "整合",
-            "confidence": "中",
-            "interpretation": "金利示唆は上昇、実際は上昇。方向が整合。",
-            "timingNote": "金利基準日2026-08-13、市場基準日2026-08-14。因果ではなく方向比較。"
+            "actualDirection": "横ばい",
+            "actualChangePct": 0.0,
+            "verdict": "逆行",
+            "confidence": "低",
+            "interpretation": "金利示唆は上昇、実際は横ばい。実質金利とドル・ETFフローを確認。",
+            "timingNote": "基準日が2日ずれるため参考方向として表示。"
           },
           {
             "market": "BTCUSD",
             "expectedDirection": "上昇",
-            "actualDirection": "下落",
-            "actualChangePct": -0.94,
+            "actualDirection": "横ばい",
+            "actualChangePct": -1.493655887863099e-06,
             "verdict": "逆行",
-            "confidence": "中",
-            "interpretation": "金利示唆は上昇、実際は下落。暗号資産固有需給・ETF・レバレッジを確認。",
-            "timingNote": "金利基準日2026-08-13、市場基準日2026-08-14。因果ではなく方向比較。"
+            "confidence": "低",
+            "interpretation": "金利示唆は上昇、実際は横ばい。暗号資産固有需給・ETF・レバレッジを確認。",
+            "timingNote": "基準日が4日ずれるため参考方向として表示。"
           },
           {
             "market": "日経225先物",
             "expectedDirection": "混合",
             "actualDirection": "横ばい",
-            "actualChangePct": 0.04,
+            "actualChangePct": 0.043674479545785516,
             "verdict": "混合",
-            "confidence": "中",
+            "confidence": "低",
             "interpretation": "金利示唆は混合、実際は横ばい。米金利の追い風と日本金利の逆風を併せて確認。",
-            "timingNote": "金利基準日2026-08-13、市場基準日2026-08-14。因果ではなく方向比較。"
+            "timingNote": "基準日が2日ずれるため参考方向として表示。"
           }
         ],
         "marketConclusion": "米国はブル・スティープニング、日本はベア・スティープニング。日米金利差は縮小方向。米国債は全面的な金利低下。5年が前日 -6.0bp、週間 -8.0bpで変化を主導。日本国債は全面的な金利上昇。30年が前日 +1.3bp、週間 +9.0bpで変化を主導。",
