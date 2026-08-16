@@ -29,7 +29,7 @@
       "id": "INDEPENDENT_MARKET_DATA",
       "name": "独立市場データ取得・検証基盤",
       "path": "data/market/latest.json",
-      "asOf": "2026-08-17T07:53:29+09:00",
+      "asOf": "2026-08-17T07:56:24+09:00",
       "status": "degraded",
       "note": "価格カードと市場温度カードは、この検証済み市場データを本文解析より優先します。"
     }
@@ -415,7 +415,7 @@
     "marketData": {
       "schemaVersion": "1.1.0",
       "pageId": "market-data",
-      "generatedAt": "2026-08-17T07:53:29+09:00",
+      "generatedAt": "2026-08-17T07:56:24+09:00",
       "reportSlot": "08:00",
       "overallStatus": "degraded",
       "missingRequired": [],
@@ -509,8 +509,8 @@
           "lastVerifiedAt": "2026-08-15T08:08:38+09:00",
           "error": "jpx_ose_futures_quote: STALE_DATA; nikkei_nk225f_profile: REFERENCE_ONLY",
           "note": "今回の新規取得に失敗したため、前回確認値を保持しています。",
-          "attemptCount": 7,
-          "lastAttemptAt": "2026-08-17T07:53:29+09:00",
+          "attemptCount": 8,
+          "lastAttemptAt": "2026-08-17T07:56:24+09:00",
           "lastError": "nikkei_nk225f_profile: REFERENCE_ONLY: reference source is not allowed for dashboard publication",
           "retryPreserved": false
         },
@@ -750,13 +750,11 @@
       "acquisition": {
         "strategy": "staged_retry",
         "windowStartedAt": "2026-08-17T06:40:07+09:00",
-        "lastAttemptAt": "2026-08-17T07:53:29+09:00",
-        "runCount": 7,
+        "lastAttemptAt": "2026-08-17T07:56:24+09:00",
+        "runCount": 8,
         "mode": "incremental",
         "targetedSymbols": [
-          "nikkei225_futures_ose",
-          "vix",
-          "nikkei_vi"
+          "nikkei225_futures_ose"
         ],
         "recoveredSymbols": [],
         "preservedVerifiedSymbols": [],
@@ -1062,7 +1060,7 @@
       "marketData": {
         "schemaVersion": "1.1.0",
         "pageId": "market-data",
-        "generatedAt": "2026-08-17T07:53:29+09:00",
+        "generatedAt": "2026-08-17T07:56:24+09:00",
         "reportSlot": "08:00",
         "overallStatus": "degraded",
         "missingRequired": [],
@@ -1156,8 +1154,8 @@
             "lastVerifiedAt": "2026-08-15T08:08:38+09:00",
             "error": "jpx_ose_futures_quote: STALE_DATA; nikkei_nk225f_profile: REFERENCE_ONLY",
             "note": "今回の新規取得に失敗したため、前回確認値を保持しています。",
-            "attemptCount": 7,
-            "lastAttemptAt": "2026-08-17T07:53:29+09:00",
+            "attemptCount": 8,
+            "lastAttemptAt": "2026-08-17T07:56:24+09:00",
             "lastError": "nikkei_nk225f_profile: REFERENCE_ONLY: reference source is not allowed for dashboard publication",
             "retryPreserved": false
           },
@@ -1397,13 +1395,11 @@
         "acquisition": {
           "strategy": "staged_retry",
           "windowStartedAt": "2026-08-17T06:40:07+09:00",
-          "lastAttemptAt": "2026-08-17T07:53:29+09:00",
-          "runCount": 7,
+          "lastAttemptAt": "2026-08-17T07:56:24+09:00",
+          "runCount": 8,
           "mode": "incremental",
           "targetedSymbols": [
-            "nikkei225_futures_ose",
-            "vix",
-            "nikkei_vi"
+            "nikkei225_futures_ose"
           ],
           "recoveredSymbols": [],
           "preservedVerifiedSymbols": [],
@@ -1556,7 +1552,7 @@
   "marketData": {
     "schemaVersion": "1.1.0",
     "pageId": "market-data",
-    "generatedAt": "2026-08-17T07:53:29+09:00",
+    "generatedAt": "2026-08-17T07:56:24+09:00",
     "reportSlot": "08:00",
     "overallStatus": "degraded",
     "missingRequired": [],
@@ -1650,8 +1646,8 @@
         "lastVerifiedAt": "2026-08-15T08:08:38+09:00",
         "error": "jpx_ose_futures_quote: STALE_DATA; nikkei_nk225f_profile: REFERENCE_ONLY",
         "note": "今回の新規取得に失敗したため、前回確認値を保持しています。",
-        "attemptCount": 7,
-        "lastAttemptAt": "2026-08-17T07:53:29+09:00",
+        "attemptCount": 8,
+        "lastAttemptAt": "2026-08-17T07:56:24+09:00",
         "lastError": "nikkei_nk225f_profile: REFERENCE_ONLY: reference source is not allowed for dashboard publication",
         "retryPreserved": false
       },
@@ -1891,13 +1887,11 @@
     "acquisition": {
       "strategy": "staged_retry",
       "windowStartedAt": "2026-08-17T06:40:07+09:00",
-      "lastAttemptAt": "2026-08-17T07:53:29+09:00",
-      "runCount": 7,
+      "lastAttemptAt": "2026-08-17T07:56:24+09:00",
+      "runCount": 8,
       "mode": "incremental",
       "targetedSymbols": [
-        "nikkei225_futures_ose",
-        "vix",
-        "nikkei_vi"
+        "nikkei225_futures_ose"
       ],
       "recoveredSymbols": [],
       "preservedVerifiedSymbols": [],
@@ -2045,5 +2039,5 @@
       }
     ]
   },
-  "marketDataUpdatedAt": "2026-08-17T07:53:29+09:00"
+  "marketDataUpdatedAt": "2026-08-17T07:56:24+09:00"
 }
