@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-08-17T07:09:20+09:00",
+  "generatedAt": "2026-08-17T07:22:19+09:00",
   "reportSlot": "08:00",
   "overallStatus": "degraded",
   "missingRequired": [],
-  "fallbackCount": 3,
+  "fallbackCount": 1,
   "strategy": "staged_retry",
   "windowStartedAt": "2026-08-17T06:40:07+09:00",
-  "lastAttemptAt": "2026-08-17T07:09:20+09:00",
-  "runCount": 2,
+  "lastAttemptAt": "2026-08-17T07:22:19+09:00",
+  "runCount": 3,
   "mode": "incremental",
   "targetedSymbols": [
     "gold",
@@ -15,13 +15,16 @@
     "nikkei225_futures_ose",
     "usdjpy",
     "eurusd",
-    "btcusd"
+    "btcusd",
+    "vix",
+    "nikkei_vi"
   ],
-  "recoveredSymbols": [],
+  "recoveredSymbols": [
+    "gold",
+    "wti"
+  ],
   "preservedVerifiedSymbols": [],
   "remainingFallback": [
-    "gold",
-    "wti",
     "nikkei225_futures_ose"
   ],
   "remainingUnavailable": []
