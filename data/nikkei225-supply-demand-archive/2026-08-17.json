@@ -2,12 +2,12 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-supply-demand",
   "reportDate": "2026-08-17",
-  "generatedAt": "2026-08-17T07:01:55+09:00",
+  "generatedAt": "2026-08-17T12:37:02+09:00",
   "nikkei": {
     "schemaVersion": "2.1.0",
     "pageId": "nikkei225-supply-demand",
     "pageTitle": "日経225需給分析",
-    "generatedAt": "2026-08-17T07:01:55+09:00",
+    "generatedAt": "2026-08-17T12:37:02+09:00",
     "spot": {
       "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
@@ -16,26 +16,26 @@
       "value": 68713.8,
       "asOfDate": "2026-08-14",
       "status": "verified",
-      "fetchedAt": "2026-08-17T07:01:55+09:00"
+      "fetchedAt": "2026-08-17T12:37:02+09:00"
     },
     "futures": {
       "sourceName": "JPX / 大阪取引所 日経225先物",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
-      "price": 68720.0,
-      "priceChange": 30.0,
-      "priceChangePercent": 0.043674479545785516,
+      "price": 68750.0,
+      "priceChange": 60.0,
+      "priceChangePercent": 0.08734895909157103,
       "asOfDate": "2026-08-14",
-      "priceAsOf": "2026-08-15T06:00:00+09:00",
+      "priceAsOf": "2026-08-17T12:09:00+09:00",
       "volume": 35833,
       "openInterest": 192180,
       "miniVolume": 523066,
       "miniOpenInterest": 295731,
       "openInterestChange": -2921,
       "miniOpenInterestChange": 1553,
-      "volumeChangePercent": null,
-      "miniVolumeChangePercent": null,
+      "volumeChangePercent": -84.67892724583484,
+      "miniVolumeChangePercent": 0.0,
       "status": "verified",
-      "fetchedAt": "2026-08-17T07:00:35+09:00",
+      "fetchedAt": "2026-08-17T12:35:35+09:00",
       "previousOpenInterest": 195101,
       "miniPreviousOpenInterest": 294178,
       "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260814open_interest.xlsx"
@@ -46,16 +46,16 @@
       "comment": "JPX公式のセッション別出来高を使用。価格差が同一基準で確認できないため、日中/ナイトの価格変化は推測しません。",
       "dayChange": null,
       "nightChange": null,
-      "dayVolume": 26497,
-      "nightVolume": 9336,
-      "daySharePercent": 73.94580414701532,
-      "nightSharePercent": 26.05419585298468,
+      "dayVolume": 30343,
+      "nightVolume": 5490,
+      "daySharePercent": 84.67892724583484,
+      "nightSharePercent": 15.321072754165154,
       "dayDriver": "日中出来高",
       "nightDriver": "ナイト出来高",
-      "asOfDate": "2026-08-14",
-      "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260814_derivatives_market_data_night.xlsx",
+      "asOfDate": "2026-08-17",
+      "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260817_derivatives_market_data_night.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-08-17T07:01:46+09:00"
+      "fetchedAt": "2026-08-17T12:36:53+09:00"
     },
     "arbitrage": {
       "sourceName": "JPX 裁定取引の状況",
@@ -69,9 +69,9 @@
       "buyChange": 14906,
       "status": "verified",
       "frequency": "daily",
-      "lastAttemptAt": "2026-08-17T07:00:33+09:00",
-      "lastSuccessAt": "2026-08-17T07:00:33+09:00",
-      "fetchedAt": "2026-08-17T07:00:33+09:00",
+      "lastAttemptAt": "2026-08-17T12:35:28+09:00",
+      "lastSuccessAt": "2026-08-17T12:35:28+09:00",
+      "fetchedAt": "2026-08-17T12:35:28+09:00",
       "error": null
     },
     "options": {
@@ -85,7 +85,7 @@
       "ivChange": null,
       "asOfDate": "2026-08-17",
       "status": "calculated",
-      "fetchedAt": "2026-08-17T07:01:55+09:00",
+      "fetchedAt": "2026-08-17T12:37:02+09:00",
       "putVolume": null,
       "callVolume": null,
       "putCallStatus": "unavailable",
@@ -161,7 +161,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202608/20260814_volume_by_participant_whole_day.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-08-17T07:01:48+09:00"
+      "fetchedAt": "2026-08-17T12:36:54+09:00"
     },
     "foreignInvestors": {
       "sourceName": "JPX 投資部門別売買状況",
@@ -774,7 +774,7 @@
         ]
       },
       "status": "verified",
-      "fetchedAt": "2026-08-17T07:01:45+09:00"
+      "fetchedAt": "2026-08-17T12:36:52+09:00"
     },
     "participantOpenInterest": {
       "sourceName": "JPX 取引参加者別建玉残高",
@@ -888,7 +888,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20260807_indexfut_oi_by_tp.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-08-17T07:01:49+09:00"
+      "fetchedAt": "2026-08-17T12:36:56+09:00"
     },
     "shortSelling": {
       "sourceName": "JPX 空売り集計",
@@ -948,7 +948,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-08-17T07:00:34+09:00"
+      "fetchedAt": "2026-08-17T12:35:33+09:00"
     },
     "margin": {
       "sourceName": "JPX 信用取引現在高",
@@ -1009,7 +1009,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-08-17T07:00:36+09:00"
+      "fetchedAt": "2026-08-17T12:35:37+09:00"
     },
     "assessment": {
       "overall": "やや買い優勢",
@@ -1304,19 +1304,19 @@
       "market": null,
       "status": "partial",
       "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202608.xlsx",
-      "fetchedAt": "2026-08-17T07:01:52+09:00",
+      "fetchedAt": "2026-08-17T12:36:59+09:00",
       "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
     },
     "nikkeiFuturesDailyHistory": [
       {
         "asOfDate": "2026-08-14",
-        "price": 68720.0,
+        "price": 68750.0,
         "openInterest": 192180,
         "volume": 35833,
         "sourceName": "JPX / 大阪取引所 日経225先物",
         "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
         "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260814open_interest.xlsx",
-        "capturedAt": "2026-08-17T07:01:51+09:00",
+        "capturedAt": "2026-08-17T12:36:58+09:00",
         "status": "verified"
       }
     ],
@@ -1333,7 +1333,7 @@
       "status": "verified",
       "releaseFrequency": "weekly",
       "lookbackWeeks": 52,
-      "fetchedAt": "2026-08-17T07:01:55+09:00",
+      "fetchedAt": "2026-08-17T12:37:02+09:00",
       "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
       "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
       "priceStatus": "available",
@@ -1740,7 +1740,7 @@
           "long": 5707,
           "short": 3172,
           "net": 2535,
-          "price": 66232.1875
+          "price": 64141.12109375
         },
         {
           "label": "2週前",
@@ -1772,40 +1772,40 @@
   "market": {
     "schemaVersion": "1.1.0",
     "pageId": "market-data",
-    "generatedAt": "2026-08-17T06:40:07+09:00",
-    "reportSlot": "08:00",
-    "overallStatus": "degraded",
+    "generatedAt": "2026-08-17T12:24:41+09:00",
+    "reportSlot": "12:00",
+    "overallStatus": "verified",
     "missingRequired": [],
-    "fallbackCount": 3,
+    "fallbackCount": 0,
     "markets": {
       "gold": {
         "id": "gold",
         "displayName": "金",
         "dashboardKey": "gold",
-        "value": 4432.0,
-        "displayValue": "4,432.00",
-        "previousClose": 4432.0,
-        "change": 0.0,
-        "changePercent": 0.0,
-        "changeText": "+0.00 / +0.00%",
+        "value": 4445.9,
+        "displayValue": "4,445.90",
+        "previousClose": 4380.39990234375,
+        "change": 65.50009765624964,
+        "changePercent": 1.4952994958566057,
+        "changeText": "+65.50 / +1.50%",
         "unit": "USD/oz",
         "marketType": "continuous_futures",
         "session": "global",
-        "asOf": "2026-08-15T06:00:00+09:00",
-        "fetchedAt": "2026-08-15T08:08:31+09:00",
+        "asOf": "2026-08-17T12:14:06+09:00",
+        "fetchedAt": "2026-08-17T12:24:13+09:00",
         "sourceId": "yahoo_gc_f",
         "sourceName": "Yahoo Finance Gold Futures",
         "sourceUrl": "https://finance.yahoo.com/quote/GC=F/",
         "rawReference": "GC=F",
         "classification": "",
-        "verificationStatus": "fallback",
-        "freshnessStatus": "last_verified",
-        "fallbackUsed": true,
-        "lastVerifiedAt": "2026-08-15T08:08:34+09:00",
-        "error": "stooq_xauusd: HTTP_404; stooq_xauusd: HTTP_404; stooq_xauusd: HTTP_404",
-        "note": "今回の新規取得に失敗したため、前回確認値を保持しています。",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-08-17T12:24:16+09:00",
+        "error": null,
+        "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-17T06:40:07+09:00",
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "stooq_xauusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1813,30 +1813,30 @@
         "id": "wti",
         "displayName": "WTI原油",
         "dashboardKey": "oil",
-        "value": 82.4,
-        "displayValue": "82.40",
+        "value": 82.3,
+        "displayValue": "82.30",
         "previousClose": 82.4000015258789,
-        "change": -1.5258789005656581e-06,
-        "changePercent": -1.8517947508733812e-06,
-        "changeText": "-0.00 / -0.00%",
+        "change": -0.10000152587890909,
+        "changePercent": -0.1213610728484027,
+        "changeText": "-0.10 / -0.12%",
         "unit": "USD/bbl",
         "marketType": "continuous_futures",
         "session": "global",
-        "asOf": "2026-08-15T05:59:59+09:00",
-        "fetchedAt": "2026-08-15T08:08:34+09:00",
+        "asOf": "2026-08-17T12:14:07+09:00",
+        "fetchedAt": "2026-08-17T12:24:16+09:00",
         "sourceId": "yahoo_cl_f",
         "sourceName": "Yahoo Finance WTI Crude Oil Futures",
         "sourceUrl": "https://finance.yahoo.com/quote/CL=F/",
         "rawReference": "CL=F",
         "classification": "",
-        "verificationStatus": "fallback",
-        "freshnessStatus": "last_verified",
-        "fallbackUsed": true,
-        "lastVerifiedAt": "2026-08-15T08:08:37+09:00",
-        "error": "stooq_cl_f: HTTP_404; stooq_cl_f: HTTP_404; stooq_cl_f: HTTP_404",
-        "note": "今回の新規取得に失敗したため、前回確認値を保持しています。",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-08-17T12:24:20+09:00",
+        "error": null,
+        "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-17T06:40:07+09:00",
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "stooq_cl_f: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1844,30 +1844,30 @@
         "id": "nikkei225_futures_ose",
         "displayName": "日経225先物（大阪取引所）",
         "dashboardKey": "nikkei",
-        "value": 68720.0,
-        "displayValue": "68,720",
+        "value": 68750.0,
+        "displayValue": "68,750",
         "previousClose": 68690.0,
-        "change": 30.0,
-        "changePercent": 0.043674479545785516,
-        "changeText": "+30 / +0.04%",
+        "change": 60.0,
+        "changePercent": 0.08734895909157103,
+        "changeText": "+60 / +0.09%",
         "unit": "円",
         "marketType": "futures_ose",
         "session": "day_through",
-        "asOf": "2026-08-15T06:00:00+09:00",
-        "fetchedAt": "2026-08-15T08:08:38+09:00",
+        "asOf": "2026-08-17T12:09:00+09:00",
+        "fetchedAt": "2026-08-17T12:24:21+09:00",
         "sourceId": "jpx_ose_futures_quote",
         "sourceName": "JPX/OSE Futures Quotes",
         "sourceUrl": "https://port.jpx.co.jp/jpxhp/main/index.aspx?disptype=day_through&f=e_future",
         "rawReference": "JPX/OSE 日経225先物 26年9月限; delayed quote endpoint; TTCODE=101.2609/O",
         "classification": "",
-        "verificationStatus": "fallback",
-        "freshnessStatus": "last_verified",
-        "fallbackUsed": true,
-        "lastVerifiedAt": "2026-08-15T08:08:38+09:00",
-        "error": "jpx_ose_futures_quote: STALE_DATA; nikkei_nk225f_profile: REFERENCE_ONLY",
-        "note": "今回の新規取得に失敗したため、前回確認値を保持しています。",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-08-17T12:24:21+09:00",
+        "error": null,
+        "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-17T06:40:07+09:00",
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "nikkei_nk225f_profile: REFERENCE_ONLY: reference source is not allowed for dashboard publication",
         "retryPreserved": false
       },
@@ -1875,17 +1875,17 @@
         "id": "usdjpy",
         "displayName": "USD/JPY",
         "dashboardKey": "usdjpy",
-        "value": 159.32,
-        "displayValue": "159.32",
+        "value": 159.064,
+        "displayValue": "159.06",
         "previousClose": 159.42599487304688,
-        "change": -0.10599487304688182,
-        "changePercent": -0.06648531384815248,
-        "changeText": "-0.11 / -0.07%",
+        "change": -0.36199487304688205,
+        "changePercent": -0.22706138565116163,
+        "changeText": "-0.36 / -0.23%",
         "unit": "円",
         "marketType": "spot",
         "session": "continuous",
-        "asOf": "2026-08-17T06:40:11+09:00",
-        "fetchedAt": "2026-08-17T06:40:15+09:00",
+        "asOf": "2026-08-17T12:24:20+09:00",
+        "fetchedAt": "2026-08-17T12:24:21+09:00",
         "sourceId": "yahoo_jpy_x",
         "sourceName": "Yahoo Finance USD/JPY",
         "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
@@ -1894,11 +1894,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T06:40:18+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:24+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-17T06:40:07+09:00",
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "stooq_usdjpy: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1906,17 +1906,17 @@
         "id": "eurusd",
         "displayName": "EUR/USD",
         "dashboardKey": "eurusd",
-        "value": 1.157,
-        "displayValue": "1.15700",
+        "value": 1.1583,
+        "displayValue": "1.15830",
         "previousClose": 1.1530035734176636,
-        "change": 0.003996426582336454,
-        "changePercent": 0.3466100777546055,
-        "changeText": "+0.00400 / +0.35%",
+        "change": 0.005296426582336533,
+        "changePercent": 0.45935907784198093,
+        "changeText": "+0.00530 / +0.46%",
         "unit": "USD",
         "marketType": "spot",
         "session": "continuous",
-        "asOf": "2026-08-17T06:39:55+09:00",
-        "fetchedAt": "2026-08-17T06:40:19+09:00",
+        "asOf": "2026-08-17T12:23:56+09:00",
+        "fetchedAt": "2026-08-17T12:24:24+09:00",
         "sourceId": "yahoo_eurusd_x",
         "sourceName": "Yahoo Finance EUR/USD",
         "sourceUrl": "https://finance.yahoo.com/quote/EURUSD=X/",
@@ -1925,11 +1925,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T06:40:22+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:27+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-17T06:40:07+09:00",
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "stooq_eurusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1937,17 +1937,17 @@
         "id": "btcusd",
         "displayName": "BTCUSD",
         "dashboardKey": "btc",
-        "value": 62765.46,
-        "displayValue": "62,765",
-        "previousClose": 62765.4609375,
-        "change": -0.0009375000008731149,
-        "changePercent": -1.493655887863099e-06,
-        "changeText": "-0 / -0.00%",
+        "value": 63299.89,
+        "displayValue": "63,300",
+        "previousClose": 63024.3203125,
+        "change": 275.5696874999994,
+        "changePercent": 0.4372434103749434,
+        "changeText": "+276 / +0.44%",
         "unit": "USD",
         "marketType": "spot_crypto",
         "session": "continuous",
-        "asOf": "2026-08-17T06:40:18+09:00",
-        "fetchedAt": "2026-08-17T06:40:22+09:00",
+        "asOf": "2026-08-17T12:24:23+09:00",
+        "fetchedAt": "2026-08-17T12:24:27+09:00",
         "sourceId": "yahoo_btc_usd",
         "sourceName": "Yahoo Finance Bitcoin USD",
         "sourceUrl": "https://finance.yahoo.com/quote/BTC-USD/",
@@ -1956,11 +1956,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T06:40:25+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:30+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-17T06:40:07+09:00",
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "stooq_btcusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1978,7 +1978,7 @@
         "marketType": "index",
         "session": "daily",
         "asOf": "2026-08-14T09:00:00+09:00",
-        "fetchedAt": "2026-08-17T06:40:25+09:00",
+        "fetchedAt": "2026-08-17T12:24:30+09:00",
         "sourceId": "cboe_vix_history",
         "sourceName": "Cboe VIX Historical Data",
         "sourceUrl": "https://www.cboe.com/tradable_products/vix/vix_historical_data/",
@@ -1987,11 +1987,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T06:40:25+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:30+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-17T06:40:07+09:00",
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "",
         "retryPreserved": false
       },
@@ -1999,17 +1999,17 @@
         "id": "nikkei_vi",
         "displayName": "日経VI",
         "dashboardKey": "nikkei_vi",
-        "value": 30.96,
-        "displayValue": "30.96",
-        "previousClose": 31.650000000000002,
-        "change": -0.69,
-        "changePercent": -2.18,
-        "changeText": "-0.69 / -2.18%",
+        "value": 31.4,
+        "displayValue": "31.40",
+        "previousClose": 30.959999999999997,
+        "change": 0.44,
+        "changePercent": 1.42,
+        "changeText": "+0.44 / +1.42%",
         "unit": "pt",
         "marketType": "index",
         "session": "daily",
-        "asOf": "2026-08-14T15:50:00+09:00",
-        "fetchedAt": "2026-08-17T06:40:26+09:00",
+        "asOf": "2026-08-17T12:24:00+09:00",
+        "fetchedAt": "2026-08-17T12:24:31+09:00",
         "sourceId": "nikkei_nk225vi_profile",
         "sourceName": "Nikkei 225 VI official profile",
         "sourceUrl": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
@@ -2018,11 +2018,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T06:40:26+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:31+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-17T06:40:07+09:00",
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "",
         "retryPreserved": false
       },
@@ -2040,7 +2040,7 @@
         "marketType": "sentiment",
         "session": "daily",
         "asOf": "2026-08-15T08:59:53+09:00",
-        "fetchedAt": "2026-08-17T06:40:27+09:00",
+        "fetchedAt": "2026-08-17T12:24:32+09:00",
         "sourceId": "cnn_fear_greed_graphdata",
         "sourceName": "CNN Fear & Greed graphdata",
         "sourceUrl": "https://edition-prod-cf.sitemirror.cnn.com/markets/fear-and-greed",
@@ -2049,11 +2049,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T06:40:27+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:32+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-17T06:40:07+09:00",
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "",
         "retryPreserved": false
       },
@@ -2070,8 +2070,8 @@
         "unit": "score",
         "marketType": "crypto_sentiment",
         "session": "daily",
-        "asOf": "2026-08-15T09:00:00+09:00",
-        "fetchedAt": "2026-08-17T06:40:27+09:00",
+        "asOf": "2026-08-16T09:00:00+09:00",
+        "fetchedAt": "2026-08-17T12:24:32+09:00",
         "sourceId": "coinmarketcap_crypto_fear_greed",
         "sourceName": "CoinMarketCap Crypto Fear and Greed Index",
         "sourceUrl": "https://coinmarketcap.com/ja/charts/fear-and-greed-index/",
@@ -2080,174 +2080,26 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T06:40:27+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:32+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-17T06:40:07+09:00",
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "",
         "retryPreserved": false
       }
     },
-    "errors": [
-      {
-        "symbol": "gold",
-        "sourceId": "yahoo_gc_f",
-        "code": "STALE_DATA",
-        "message": "age 48.7h > 36h",
-        "attempt": 1
-      },
-      {
-        "symbol": "gold",
-        "sourceId": "stooq_xauusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "gold",
-        "sourceId": "stooq_xauusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "gold",
-        "sourceId": "stooq_xauusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "wti",
-        "sourceId": "yahoo_cl_f",
-        "code": "STALE_DATA",
-        "message": "age 48.7h > 36h",
-        "attempt": 1
-      },
-      {
-        "symbol": "wti",
-        "sourceId": "stooq_cl_f",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "wti",
-        "sourceId": "stooq_cl_f",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "wti",
-        "sourceId": "stooq_cl_f",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "nikkei225_futures_ose",
-        "sourceId": "jpx_ose_futures_quote",
-        "code": "STALE_DATA",
-        "message": "age 48.7h > 36h",
-        "attempt": 1
-      },
-      {
-        "symbol": "nikkei225_futures_ose",
-        "sourceId": "nikkei_nk225f_profile",
-        "code": "REFERENCE_ONLY",
-        "message": "reference source is not allowed for dashboard publication"
-      },
-      {
-        "symbol": "usdjpy",
-        "sourceId": "stooq_usdjpy",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "usdjpy",
-        "sourceId": "stooq_usdjpy",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "usdjpy",
-        "sourceId": "stooq_usdjpy",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "eurusd",
-        "sourceId": "stooq_eurusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "eurusd",
-        "sourceId": "stooq_eurusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "eurusd",
-        "sourceId": "stooq_eurusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "btcusd",
-        "sourceId": "stooq_btcusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "btcusd",
-        "sourceId": "stooq_btcusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "btcusd",
-        "sourceId": "stooq_btcusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      }
-    ],
+    "errors": [],
     "acquisition": {
       "strategy": "staged_retry",
-      "windowStartedAt": "2026-08-17T06:40:07+09:00",
-      "lastAttemptAt": "2026-08-17T06:40:07+09:00",
-      "runCount": 1,
-      "mode": "full",
-      "targetedSymbols": [
-        "gold",
-        "wti",
-        "nikkei225_futures_ose",
-        "usdjpy",
-        "eurusd",
-        "btcusd",
-        "vix",
-        "nikkei_vi",
-        "fear_greed",
-        "crypto_fear_greed"
-      ],
+      "windowStartedAt": "2026-08-17T12:24:13+09:00",
+      "lastAttemptAt": "2026-08-17T12:24:41+09:00",
+      "runCount": 6,
+      "mode": "incremental",
+      "targetedSymbols": [],
       "recoveredSymbols": [],
       "preservedVerifiedSymbols": [],
-      "remainingFallback": [
-        "gold",
-        "wti",
-        "nikkei225_futures_ose"
-      ],
+      "remainingFallback": [],
       "remainingUnavailable": []
     },
     "sources": [
@@ -3279,41 +3131,40 @@
         "title": "東京市場 朝の寄り付き分析",
         "flag": "JP",
         "status": "東京寄り付きデータ取得済み",
-        "dataDate": "2026-08-14",
-        "updatedAt": "2026-08-14T23:27:49+09:00",
+        "dataDate": "2026-08-17",
+        "updatedAt": "2026-08-17T10:26:39+09:00",
         "source": "Yahoo Finance chart API（日経225・FX・CME参考先物） / Google Finance（TOPIX）",
         "metrics": [
           {
             "label": "日経225",
-            "value": "68,718.33",
-            "change": "+0.60%",
-            "note": "寄り値 68,811.17 / ギャップ +0.74% / 寄り後 -0.13%"
+            "value": "68,579.40",
+            "change": "-0.20%",
+            "note": "寄り値 68,882.06 / ギャップ +0.24% / 寄り後 -0.44%"
           },
           {
             "label": "TOPIX",
-            "value": "4,181.44",
-            "change": "+0.13%",
-            "note": "寄り値 4,181.44 / ギャップ +0.13% / 寄り後 +0.00%"
+            "value": "4,174.09",
+            "change": "-0.55%",
+            "note": "寄り値 4,204.36 / ギャップ +0.17% / 寄り後 -0.72%"
           },
           {
             "label": "USD/JPY",
-            "value": "159.266",
-            "change": "-0.11%",
-            "note": "08:55以降の変化 / 08:55近辺 159.439"
+            "value": "159.025",
+            "change": "-0.13%",
+            "note": "08:55以降の変化 / 08:55近辺 159.229"
           },
           {
             "label": "日経225先物（CME参考）",
-            "value": "68,910.00",
-            "change": "-0.39%",
+            "value": "68,555.00",
+            "change": "-0.23%",
             "note": "CME参考値。大阪取引所先物とは別銘柄として表示"
           }
         ],
         "insights": [
           "日経225は高寄り後に失速。寄り天リスクを優先して確認します。",
-          "日経225とTOPIXが同方向で、市場全体の方向は比較的整合的です。",
-          "USD/JPYは08:55以降 -0.11%。日本株の外需・先物方向との整合性を確認します。"
+          "USD/JPYは08:55以降 -0.13%。日本株の外需・先物方向との整合性を確認します。"
         ],
-        "judgement": "寄り後15分の方向と日経225/TOPIXの一致を優先。高寄り・安寄りだけでは方向判定しません。",
+        "judgement": "寄り後は売り優勢。高寄りでも上昇継続とは見なさず、寄り天警戒を優先します。",
         "errors": []
       },
       "usPremarket": {
@@ -3436,7 +3287,7 @@
         "steps": [
           {
             "label": "東京市場",
-            "text": "2026-08-14 / 日経225 68,718.33 +0.60% / TOPIX 4,181.44 +0.13%"
+            "text": "2026-08-17 / 日経225 68,579.40 -0.20% / TOPIX 4,174.09 -0.55%"
           },
           {
             "label": "米国プレマーケット",
@@ -3444,13 +3295,13 @@
           },
           {
             "label": "米国通常市場（直近終値）",
-            "text": "S&P500 +50.49（+0.65%） / Nasdaq +214.54（+0.81%）"
+            "text": "S&P500 -13.23（-0.17%） / Nasdaq -73.87（-0.28%）"
           }
         ],
-        "conclusion": "東京市場と米国株先物の方向が一致。日米で同じリスク選好が引き継がれている可能性が高まっています。"
+        "conclusion": "東京市場と米国株先物の方向が逆転。欧州時間の金利・為替・ニュースで市場テーマが変化した可能性を優先して確認します。"
       }
     },
-    "sessionDataUpdatedAt": "2026-08-14T23:27:52+09:00"
+    "sessionDataUpdatedAt": "2026-08-17T10:26:39+09:00"
   },
   "optionsLatest": {
     "schemaVersion": "1.0.0",
@@ -3458,354 +3309,305 @@
     "sourceName": "JPX公表データ集計（公開サイト経由）",
     "sourceUrl": "https://matsutoushi.github.io/nk225-option-site/",
     "officialSourceUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/daily/index.html",
-    "asOfDate": "2026-08-13",
-    "fetchedAt": "2026-08-14T12:30:58+09:00",
+    "asOfDate": "2026-08-14",
+    "fetchedAt": "2026-08-17T11:35:08+09:00",
     "optionContractMonth": "202608",
     "strikeOiCoverage": "8月限・前営業日終値の上下3,000円範囲",
     "strikeOpenInterest": [
       {
-        "strike": 71250,
-        "callOi": 110,
-        "putOi": 45,
+        "strike": 71625,
+        "callOi": 2,
+        "putOi": 0,
         "callOiChange": 26,
         "putOiChange": 26
       },
       {
-        "strike": 71125,
-        "callOi": 14,
+        "strike": 71500,
+        "callOi": 1351,
         "putOi": 0,
-        "callOiChange": -59,
+        "callOiChange": 0,
+        "putOiChange": null
+      },
+      {
+        "strike": 71250,
+        "callOi": 14,
+        "putOi": 1,
+        "callOiChange": -1,
+        "putOiChange": null
+      },
+      {
+        "strike": 71125,
+        "callOi": 57,
+        "putOi": 0,
+        "callOiChange": 0,
         "putOiChange": 0
       },
       {
         "strike": 71000,
-        "callOi": 2667,
-        "putOi": 248,
-        "callOiChange": 3,
+        "callOi": 1910,
+        "putOi": 100,
+        "callOiChange": 0,
         "putOiChange": null
       },
       {
         "strike": 70875,
-        "callOi": 21,
+        "callOi": 61,
         "putOi": 0,
-        "callOiChange": -198,
+        "callOiChange": 2,
         "putOiChange": 0
       },
       {
         "strike": 70750,
-        "callOi": 58,
-        "putOi": 3,
-        "callOiChange": 1,
+        "callOi": 17,
+        "putOi": 0,
+        "callOiChange": 0,
         "putOiChange": null
       },
       {
         "strike": 70625,
-        "callOi": 22,
+        "callOi": 55,
         "putOi": 0,
-        "callOiChange": 4,
-        "putOiChange": 0
-      },
-      {
-        "strike": 70500,
-        "callOi": 339,
-        "putOi": 10,
-        "callOiChange": 1,
+        "callOiChange": 0,
         "putOiChange": null
       },
       {
-        "strike": 70375,
-        "callOi": 38,
-        "putOi": 1,
-        "callOiChange": 43,
-        "putOiChange": 0
-      },
-      {
-        "strike": 70250,
-        "callOi": 86,
-        "putOi": 1,
-        "callOiChange": 3,
-        "putOiChange": 0
-      },
-      {
-        "strike": 70125,
-        "callOi": 14,
-        "putOi": 1,
-        "callOiChange": 12,
-        "putOiChange": 0
-      },
-      {
-        "strike": 70000,
-        "callOi": 4582,
-        "putOi": 3124,
-        "callOiChange": -4,
-        "putOiChange": 0
-      },
-      {
-        "strike": 69875,
-        "callOi": 15,
-        "putOi": 0,
-        "callOiChange": -355,
-        "putOiChange": 1
-      },
-      {
-        "strike": 69750,
-        "callOi": 631,
+        "strike": 70500,
+        "callOi": 314,
         "putOi": 2,
         "callOiChange": 0,
         "putOiChange": null
       },
       {
-        "strike": 69625,
-        "callOi": 26,
+        "strike": 70375,
+        "callOi": 0,
         "putOi": 0,
-        "callOiChange": 25,
+        "callOiChange": 2,
+        "putOiChange": 2
+      },
+      {
+        "strike": 70250,
+        "callOi": 12,
+        "putOi": 0,
+        "callOiChange": 0,
+        "putOiChange": null
+      },
+      {
+        "strike": 70000,
+        "callOi": 3144,
+        "putOi": 1481,
+        "callOiChange": 4,
+        "putOiChange": null
+      },
+      {
+        "strike": 69875,
+        "callOi": 44,
+        "putOi": 0,
+        "callOiChange": 5,
         "putOiChange": 0
+      },
+      {
+        "strike": 69750,
+        "callOi": 1114,
+        "putOi": 0,
+        "callOiChange": 44,
+        "putOiChange": null
       },
       {
         "strike": 69500,
-        "callOi": 995,
-        "putOi": 604,
-        "callOiChange": 0,
+        "callOi": 679,
+        "putOi": 8,
+        "callOiChange": 632,
         "putOiChange": null
-      },
-      {
-        "strike": 69375,
-        "callOi": 52,
-        "putOi": 0,
-        "callOiChange": -9,
-        "putOiChange": 0
       },
       {
         "strike": 69250,
-        "callOi": 209,
-        "putOi": 11,
-        "callOiChange": 0,
-        "putOiChange": null
+        "callOi": 114,
+        "putOi": 1,
+        "callOiChange": 23,
+        "putOiChange": 1
       },
       {
         "strike": 69125,
-        "callOi": 61,
-        "putOi": 10,
-        "callOiChange": 99,
+        "callOi": 52,
+        "putOi": 0,
+        "callOiChange": 7,
         "putOiChange": 1
       },
       {
         "strike": 69000,
-        "callOi": 2931,
-        "putOi": 1740,
-        "callOiChange": 13,
-        "putOiChange": 0
+        "callOi": 1577,
+        "putOi": 1154,
+        "callOiChange": 52,
+        "putOiChange": null
       },
       {
         "strike": 68875,
-        "callOi": 47,
-        "putOi": 11,
-        "callOiChange": -254,
-        "putOiChange": -3
-      },
-      {
-        "strike": 68750,
-        "callOi": 117,
-        "putOi": 79,
-        "callOiChange": 3,
-        "putOiChange": 5
-      },
-      {
-        "strike": 68625,
-        "callOi": 44,
-        "putOi": 12,
-        "callOiChange": 63,
-        "putOiChange": 57
-      },
-      {
-        "strike": 68500,
-        "callOi": 1307,
-        "putOi": 522,
-        "callOiChange": -16,
-        "putOiChange": 10
-      },
-      {
-        "strike": 68375,
-        "callOi": 35,
-        "putOi": 20,
-        "callOiChange": 81,
-        "putOiChange": 260
-      },
-      {
-        "strike": 68250,
-        "callOi": 370,
-        "putOi": 206,
-        "callOiChange": 1,
-        "putOiChange": 11
-      },
-      {
-        "strike": 68125,
-        "callOi": 483,
-        "putOi": 160,
-        "callOiChange": -62,
-        "putOiChange": 3
-      },
-      {
-        "strike": 68000,
-        "callOi": 3141,
-        "putOi": 2433,
-        "callOiChange": 0,
-        "putOiChange": 158
-      },
-      {
-        "strike": 67875,
-        "callOi": 21,
-        "putOi": 14,
-        "callOiChange": -62,
-        "putOiChange": 120
-      },
-      {
-        "strike": 67750,
-        "callOi": 90,
-        "putOi": 115,
-        "callOiChange": -2,
-        "putOiChange": 13
-      },
-      {
-        "strike": 67625,
-        "callOi": 28,
-        "putOi": 10,
-        "callOiChange": -5,
-        "putOiChange": 99
-      },
-      {
-        "strike": 67500,
-        "callOi": 884,
-        "putOi": 560,
-        "callOiChange": -2,
+        "callOi": 67,
+        "putOi": 0,
+        "callOiChange": 18,
         "putOiChange": 8
       },
       {
+        "strike": 68750,
+        "callOi": 305,
+        "putOi": 5,
+        "callOiChange": 0,
+        "putOiChange": null
+      },
+      {
+        "strike": 68625,
+        "callOi": 1,
+        "putOi": 0,
+        "callOiChange": 1,
+        "putOiChange": 0
+      },
+      {
+        "strike": 68500,
+        "callOi": 215,
+        "putOi": 151,
+        "callOiChange": 0,
+        "putOiChange": null
+      },
+      {
+        "strike": 68375,
+        "callOi": 5,
+        "putOi": 1,
+        "callOiChange": -1,
+        "putOiChange": 40
+      },
+      {
+        "strike": 68250,
+        "callOi": 20,
+        "putOi": 110,
+        "callOiChange": 5,
+        "putOiChange": 0
+      },
+      {
+        "strike": 68125,
+        "callOi": 0,
+        "putOi": 0,
+        "callOiChange": 14,
+        "putOiChange": 37
+      },
+      {
+        "strike": 68000,
+        "callOi": 2231,
+        "putOi": 2156,
+        "callOiChange": -1,
+        "putOiChange": 67
+      },
+      {
+        "strike": 67875,
+        "callOi": 23,
+        "putOi": 0,
+        "callOiChange": 0,
+        "putOiChange": null
+      },
+      {
+        "strike": 67750,
+        "callOi": 477,
+        "putOi": 256,
+        "callOiChange": 0,
+        "putOiChange": 34
+      },
+      {
+        "strike": 67625,
+        "callOi": 31,
+        "putOi": 0,
+        "callOiChange": 0,
+        "putOiChange": null
+      },
+      {
+        "strike": 67500,
+        "callOi": 2123,
+        "putOi": 565,
+        "callOiChange": -4,
+        "putOiChange": -12
+      },
+      {
         "strike": 67375,
-        "callOi": 70,
-        "putOi": 19,
-        "callOiChange": 110,
-        "putOiChange": 173
+        "callOi": 1,
+        "putOi": 0,
+        "callOiChange": 0,
+        "putOiChange": null
       },
       {
         "strike": 67250,
-        "callOi": 92,
-        "putOi": 71,
-        "callOiChange": -4,
-        "putOiChange": 15
+        "callOi": 2,
+        "putOi": 111,
+        "callOiChange": 0,
+        "putOiChange": 35
       },
       {
         "strike": 67125,
-        "callOi": 215,
-        "putOi": 11,
-        "callOiChange": -1,
-        "putOiChange": 49
+        "callOi": 1,
+        "putOi": 0,
+        "callOiChange": 0,
+        "putOiChange": null
       },
       {
         "strike": 67000,
-        "callOi": 2082,
-        "putOi": 1735,
-        "callOiChange": 0,
-        "putOiChange": 9
-      },
-      {
-        "strike": 66875,
-        "callOi": 111,
-        "putOi": 8,
-        "callOiChange": -11,
-        "putOiChange": 206
+        "callOi": 3115,
+        "putOi": 2269,
+        "callOiChange": -53,
+        "putOiChange": 67
       },
       {
         "strike": 66750,
-        "callOi": 18,
-        "putOi": 43,
+        "callOi": 8,
+        "putOi": 149,
         "callOiChange": 0,
-        "putOiChange": 1
+        "putOiChange": 34
       },
       {
         "strike": 66625,
-        "callOi": 7,
-        "putOi": 35,
-        "callOiChange": 0,
-        "putOiChange": -16
+        "callOi": 0,
+        "putOi": 18,
+        "callOiChange": null,
+        "putOiChange": 3
       },
       {
         "strike": 66500,
-        "callOi": 665,
-        "putOi": 886,
+        "callOi": 759,
+        "putOi": 1981,
+        "callOiChange": 0,
+        "putOiChange": -7
+      },
+      {
+        "strike": 66250,
+        "callOi": 47,
+        "putOi": 12,
         "callOiChange": 0,
         "putOiChange": 0
       },
       {
-        "strike": 66375,
-        "callOi": 12,
-        "putOi": 36,
-        "callOiChange": -3,
-        "putOiChange": 143
-      },
-      {
-        "strike": 66250,
-        "callOi": 28,
-        "putOi": 28,
-        "callOiChange": 0,
-        "putOiChange": 6
-      },
-      {
         "strike": 66125,
-        "callOi": 11,
-        "putOi": 219,
+        "callOi": 39,
+        "putOi": 0,
         "callOiChange": 0,
-        "putOiChange": -3
+        "putOiChange": null
       },
       {
         "strike": 66000,
-        "callOi": 2227,
-        "putOi": 2292,
+        "callOi": 1628,
+        "putOi": 2312,
         "callOiChange": 0,
-        "putOiChange": 105
-      },
-      {
-        "strike": 65875,
-        "callOi": 38,
-        "putOi": 501,
-        "callOiChange": -17,
-        "putOiChange": -10
+        "putOiChange": -269
       },
       {
         "strike": 65750,
-        "callOi": 484,
-        "putOi": 482,
+        "callOi": 2,
+        "putOi": 696,
         "callOiChange": 0,
-        "putOiChange": 23
-      },
-      {
-        "strike": 65625,
-        "callOi": 11,
-        "putOi": 98,
-        "callOiChange": 0,
-        "putOiChange": 100
-      },
-      {
-        "strike": 65500,
-        "callOi": 874,
-        "putOi": 1676,
-        "callOiChange": -22,
-        "putOiChange": 8
-      },
-      {
-        "strike": 65375,
-        "callOi": 8,
-        "putOi": 56,
-        "callOiChange": -1,
-        "putOiChange": 51
+        "putOiChange": 2
       }
     ],
-    "putCallRatio": 0.6872797544617483,
+    "putCallRatio": 0.6263126243234491,
     "putCallDefinition": "表示範囲の建玉残高ベース（Put OI / Call OI）",
-    "putVolume": 35821,
-    "callVolume": 25264,
-    "publishedPutCallVolumeRatio": 1.418,
-    "publishedPutCallVolumeRatioPrevious": 1.349,
+    "putVolume": 24514,
+    "callVolume": 8529,
+    "publishedPutCallVolumeRatio": 2.874,
+    "publishedPutCallVolumeRatioPrevious": 1.418,
     "publishedPutCallDefinition": "出来高ベース（Put出来高 / Call出来高）",
     "upperCallConcentrationStrike": null,
     "lowerPutConcentrationStrike": null,
