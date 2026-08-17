@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-08-17T08:09:02+09:00",
+  "checkedAt": "2026-08-17T09:08:13+09:00",
   "reportDate": "2026-08-17",
   "reportSlot": "08:00",
   "ready": false,
@@ -28,7 +28,7 @@
     "日経225先物（大阪取引所）",
     "USD/JPY",
     "EUR/USD",
-    "金",
+    "COMEX金先物",
     "WTI原油",
     "BTCUSD",
     "VIX",
@@ -39,17 +39,16 @@
     "日経225予想PER",
     "日経225 PBR",
     "日経225予想EPS",
-    "25日移動平均乖離率",
-    "200日移動平均乖離率"
+    "日経225 25日移動平均乖離率",
+    "日経225 200日移動平均乖離率"
   ],
   "blockingReasons": [
     "market table order/labels mismatch",
-    "market table row count must be 28, got 22",
-    "required six-market row missing: COMEX金先物",
-    "required six-market value unavailable: 日経225先物（大阪取引所）"
+    "market table row count must be 28, got 22"
   ],
   "warnings": [
-    "marketDataTable structured rows used from latest-report"
+    "marketDataTable structured rows used from latest-report",
+    "required six-market value unavailable with reason: 日経225先物（大阪取引所）"
   ],
-  "rule": "08:00 is a previous-close report. Validate market-data date, not retrieval clock time; do not overlay intraday morning quotes."
+  "rule": "08:00 is a previous-close report. Validate market-data date, not retrieval clock time; reasoned unavailable values publish as degraded warnings."
 }
