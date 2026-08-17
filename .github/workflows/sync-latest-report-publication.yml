@@ -12,6 +12,7 @@ on:
       - "scripts/apply_japan_close_reference.py"
       - "scripts/force_exact_japan_close_reference.py"
       - "scripts/restore_morning_published_values.py"
+      - "scripts/restore_monday_from_saturday_report.py"
       - "scripts/build_chatgpt_report_input.py"
       - "scripts/build_market_sheet_exports.py"
       - "scripts/sync_latest_report_publication.py"
@@ -166,6 +167,9 @@ jobs:
 
       - name: Restore originally published usable values
         run: python scripts/restore_morning_published_values.py
+
+      - name: Recover Monday previous-close rows from Saturday report
+        run: python scripts/restore_monday_from_saturday_report.py
 
       - name: Build previous-close ChatGPT input and CSV contract
         run: |
