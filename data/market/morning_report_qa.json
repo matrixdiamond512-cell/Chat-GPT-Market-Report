@@ -1,14 +1,14 @@
 {
-  "checkedAt": "2026-08-17T22:27:54+09:00",
-  "reportDate": "2026-08-17",
+  "checkedAt": "2026-08-18T08:11:38+09:00",
+  "reportDate": "2026-08-18",
   "reportSlot": "08:00",
-  "ready": false,
+  "ready": true,
   "historicalMode": false,
-  "reportSource": "reports.json",
-  "latestReportDate": "2026-08-17",
-  "latestReportTime": "21:00",
+  "reportSource": "latest-report",
+  "latestReportDate": "2026-08-18",
+  "latestReportTime": "08:00",
   "dataSemantics": "previous_close",
-  "expectedPreviousCloseDate": "2026-08-14",
+  "expectedPreviousCloseDate": "2026-08-17",
   "expectedRowCount": 28,
   "actualRowCount": 28,
   "expectedColumns": [
@@ -48,11 +48,22 @@
     "東証プライム値下がり銘柄数",
     "東証プライム25日騰落レシオ"
   ],
-  "blockingReasons": [
-    "latest-report mismatch: expected 2026-08-17 08:00, got 2026-08-17 21:00"
-  ],
+  "blockingReasons": [],
   "warnings": [
-    "marketDataTable structured rows used from reports.json"
+    "marketDataTable structured rows used from latest-report"
   ],
-  "rule": "08:00 is a previous-close report. Validate market-data date, not retrieval clock time; reasoned unavailable values publish as degraded warnings."
+  "rule": "08:00 is a previous-close report. Validate market-data date, not retrieval clock time; reasoned unavailable values publish as degraded warnings.",
+  "structureReady": true,
+  "dataComplete": false,
+  "availableCount": 23,
+  "expectedDataCount": 28,
+  "unavailableLabels": [
+    "日経225予想PER",
+    "日経225 PBR",
+    "日経225予想EPS",
+    "東証プライム売買代金",
+    "東証プライム売買高"
+  ],
+  "chatgptInputMarketCount": 28,
+  "previousCloseDate": "2026-08-17"
 }
