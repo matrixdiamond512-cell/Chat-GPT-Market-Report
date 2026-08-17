@@ -127,6 +127,7 @@ jobs:
               raise SystemExit('stocks.json US mover/contribution blocks are not synced')
           print('Verified U.S. mover/contribution data for', date, validation)
           PY
+          python scripts/validate_stock_data_freshness.py
 
       - name: Save stock-analysis history snapshot
         if: steps.fetch.outcome == 'success' && steps.crosscheck.outcome == 'success'
@@ -156,3 +157,4 @@ jobs:
       - name: Fail workflow after diagnostic is saved
         if: steps.fetch.outcome != 'success' || steps.crosscheck.outcome != 'success'
         run: exit 1
+
