@@ -1,133 +1,17 @@
 {
-  "schemaVersion": "1.1.0",
-  "status": "verified-estimate",
-  "dataDate": "2026-08-14",
-  "updatedAt": "2026-08-15T07:45:04+09:00",
+  "schemaVersion": "1.0.0",
+  "status": "unavailable",
+  "freshness": "unavailable",
+  "dataDate": null,
+  "asOf": null,
+  "updatedAt": "2026-08-18T00:00:00+09:00",
   "unit": "bp",
   "official": false,
-  "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
-  "source": {
-    "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-    "url": "https://www.slickcharts.com/sp500",
-    "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
-  },
-  "validation": {
-    "estimatedWeightedReturnPct": -0.1316,
-    "verifiedSP500ReturnPct": null,
-    "differencePt": null
-  },
-  "top": [
-    {
-      "rank": 1,
-      "symbol": "AMD",
-      "name": "Advanced Micro Devices Inc（AMD）",
-      "close": "514.88",
-      "change": "+6.60%",
-      "weight": "1.19%",
-      "contribution": "+7.85bp",
-      "contributionBps": 7.854,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-14。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 2,
-      "symbol": "MU",
-      "name": "Micron Technology Inc（MU）",
-      "close": "972.5",
-      "change": "+2.39%",
-      "weight": "1.55%",
-      "contribution": "+3.70bp",
-      "contributionBps": 3.7045,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-14。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 3,
-      "symbol": "SNDK",
-      "name": "Sandisk Corp/DE（SNDK）",
-      "close": "1,658.26",
-      "change": "+8.52%",
-      "weight": "0.34%",
-      "contribution": "+2.90bp",
-      "contributionBps": 2.8968,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-14。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 4,
-      "symbol": "STX",
-      "name": "Seagate Technology Holdings PLC（STX）",
-      "close": "975.6",
-      "change": "+5.89%",
-      "weight": "0.31%",
-      "contribution": "+1.83bp",
-      "contributionBps": 1.8259,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-14。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 5,
-      "symbol": "TSLA",
-      "name": "Tesla Inc（TSLA）",
-      "close": "341.99",
-      "change": "+0.60%",
-      "weight": "1.91%",
-      "contribution": "+1.15bp",
-      "contributionBps": 1.146,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-14。公式S&P寄与度ではない。"
-    }
-  ],
-  "bottom": [
-    {
-      "rank": 1,
-      "symbol": "AVGO",
-      "name": "Broadcom Inc（AVGO）",
-      "close": "393.63",
-      "change": "-5.79%",
-      "weight": "2.65%",
-      "contribution": "-15.34bp",
-      "contributionBps": -15.3435,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-14。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 2,
-      "symbol": "LLY",
-      "name": "Eli Lilly & Co（LLY）",
-      "close": "1,180.97",
-      "change": "-2.32%",
-      "weight": "1.49%",
-      "contribution": "-3.46bp",
-      "contributionBps": -3.4568,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-14。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 3,
-      "symbol": "AMZN",
-      "name": "Amazon.com Inc（AMZN）",
-      "close": "262.9",
-      "change": "-0.84%",
-      "weight": "4.01%",
-      "contribution": "-3.37bp",
-      "contributionBps": -3.3684,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-14。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 4,
-      "symbol": "AMAT",
-      "name": "Applied Materials Inc（AMAT）",
-      "close": "506.8",
-      "change": "-5.19%",
-      "weight": "0.57%",
-      "contribution": "-2.96bp",
-      "contributionBps": -2.9583,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-14。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 5,
-      "symbol": "ORCL",
-      "name": "Oracle Corp（ORCL）",
-      "close": "150.68",
-      "change": "-3.55%",
-      "weight": "0.61%",
-      "contribution": "-2.17bp",
-      "contributionBps": -2.1655,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-14。公式S&P寄与度ではない。"
-    }
-  ]
+  "source": {"name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)"},
+  "error": "検証済み米国取引セッション日と一致するS&P500寄与度推計を取得できませんでした。",
+  "top": [],
+  "bottom": [],
+  "current": {"status": "unavailable", "freshness": "unavailable", "dataDate": null, "asOf": null, "updatedAt": "2026-08-18T00:00:00+09:00", "unit": "bp", "official": false, "source": {"name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)"}, "error": "検証済み米国取引セッション日と一致するS&P500寄与度推計を取得できませんでした。", "top": [], "bottom": []},
+  "lastGood": {"status": "verified-estimate", "freshness": "stale", "dataDate": "2026-08-14", "updatedAt": "2026-08-15T07:45:04+09:00", "note": "履歴・診断専用。currentには表示しない。"}
 }
+

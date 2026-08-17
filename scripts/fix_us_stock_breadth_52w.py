@@ -74,11 +74,20 @@ def update_stocks(stocks: dict[str, Any], payload: dict[str, Any]) -> None:
 
 def main() -> int:
     payload = json.loads(LATEST.read_text(encoding="utf-8"))
+    current = payload.get("current") if isinstance(payload.get("current"), dict) else payload
+    if current.get("status") == "unavailable":
+        print("US breadth is unavailable; 52-week correction skipped")
+        return 0
     for exchange in ("NYSE", "NASDAQ"):
         highs, lows = scan(exchange)
-        payload["exchanges"][exchange]["newHigh52Week"] = highs
-        payload["exchanges"][exchange]["newLow52Week"] = lows
-    payload["note"] = "値上がり・値下がりは前日比change、52週高値・安値は当日高安と52週高安の一致で集計。"
+        current["exchanges"][exchange]["newHigh52Week"] = highs
+        current["exchanges"][exchange]["newLow52Week"] = lows
+    current["note"] = "値上がり・値下がりは前日比change、52週高値・安値は当日高安と52週高安の一致で集計。"
+    if isinstance(payload.get("current"), dict):
+        payload["exchanges"] = current["exchanges"]
+        payload["note"] = current["note"]
+    else:
+        payload = current
     LATEST.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     history = json.loads(HISTORY.read_text(encoding="utf-8")) if HISTORY.exists() else []
@@ -95,3 +104,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
