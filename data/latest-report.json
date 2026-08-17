@@ -80,13 +80,13 @@
       {
         "name": "USD/JPY",
         "direction": "中立",
-        "price": "159.426円",
+        "price": "159.16円",
         "outlook": "160円は政策警戒。158.50円割れなら円買い加速を警戒。"
       },
       {
         "name": "EUR/USD",
         "direction": "中立～やや強気",
-        "price": "1.15354",
+        "price": "1.15780",
         "outlook": "1.1600突破で上方向、1.1500割れで弱気化。"
       },
       {
@@ -110,21 +110,21 @@
           "value": "53,732.41",
           "change": "-107.58",
           "rate": "-0.20%",
-          "direction": "下落"
+          "direction": "小幅安"
         },
         {
           "label": "NASDAQ総合",
           "value": "26,729.16",
           "change": "-73.87",
           "rate": "-0.28%",
-          "direction": "下落"
+          "direction": "小幅安"
         },
         {
           "label": "S&P500",
           "value": "7,785.76",
           "change": "-13.23",
           "rate": "-0.17%",
-          "direction": "下落"
+          "direction": "小幅安"
         },
         {
           "label": "Russell 2000",
@@ -138,14 +138,14 @@
           "value": "68,713.80",
           "change": "+405.21",
           "rate": "+0.59%",
-          "direction": "上昇"
+          "direction": "8/14確定"
         },
         {
           "label": "CME日経225先物・円建て",
-          "value": "取得不能（2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用）",
+          "value": "68,715",
           "change": "—",
           "rate": "—",
-          "direction": "取得不能"
+          "direction": "8/14確定"
         },
         {
           "label": "CME日経225先物・ドル建て",
@@ -163,31 +163,31 @@
         },
         {
           "label": "USD/JPY",
-          "value": "159.426",
-          "change": "+0.098",
-          "rate": "+0.06%",
-          "direction": "上昇"
+          "value": "159.16",
+          "change": "-0.26",
+          "rate": "-0.16%",
+          "direction": "小幅円高"
         },
         {
           "label": "EUR/USD",
-          "value": "取得不能（2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-13のため不採用）",
-          "change": "—",
-          "rate": "—",
-          "direction": "取得不能"
+          "value": "1.15780",
+          "change": "+0.00480",
+          "rate": "+0.42%",
+          "direction": "上昇"
         },
         {
           "label": "COMEX金先物",
-          "value": "取得不能（2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用）",
-          "change": "—",
-          "rate": "—",
-          "direction": "取得不能"
+          "value": "4,437.60",
+          "change": "+57.20",
+          "rate": "+1.31%",
+          "direction": "強い"
         },
         {
           "label": "WTI原油",
-          "value": "取得不能（2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用）",
-          "change": "—",
-          "rate": "—",
-          "direction": "取得不能"
+          "value": "82.38",
+          "change": "-0.02",
+          "rate": "-0.02%",
+          "direction": "横ばい"
         },
         {
           "label": "BTCUSD",
@@ -201,7 +201,7 @@
           "value": "14.25",
           "change": "-0.38",
           "rate": "-2.60%",
-          "direction": "低下"
+          "direction": "低位"
         },
         {
           "label": "日経VI",
@@ -236,35 +236,35 @@
           "value": "17.65倍",
           "change": "—",
           "rate": "—",
-          "direction": "確定値"
+          "direction": "8/14確定"
         },
         {
           "label": "日経225 PBR",
           "value": "1.94倍",
           "change": "—",
           "rate": "—",
-          "direction": "確定値"
+          "direction": "8/14確定"
         },
         {
           "label": "日経225予想EPS",
           "value": "3,893.13円",
           "change": "—",
           "rate": "—",
-          "direction": "確定値"
+          "direction": "8/14確定"
         },
         {
           "label": "日経225 25日移動平均乖離率",
           "value": "+3.84%",
           "change": "—",
           "rate": "—",
-          "direction": "上方乖離"
+          "direction": "過熱警戒未満"
         },
         {
           "label": "日経225 200日移動平均乖離率",
           "value": "+19.42%",
           "change": "—",
           "rate": "—",
-          "direction": "上方乖離"
+          "direction": "中長期上方乖離"
         },
         {
           "label": "東証プライム売買代金",
@@ -312,7 +312,7 @@
         "missingFilled": []
       },
       "dailyCloseRepair": {
-        "generatedAt": "2026-08-17T09:08:44+09:00",
+        "generatedAt": "2026-08-17T09:17:27+09:00",
         "semantics": "previous_close",
         "rule": "08:00 uses date-matched prior-session closes; retrieval after 08:00 is allowed, stale-date carry-forward is prohibited; BTCUSD keeps its dedicated 24/7-market convention",
         "repairedLabels": [
@@ -322,19 +322,19 @@
           "Russell 2000",
           "日経225現物",
           "USD/JPY",
+          "EUR/USD",
           "VIX"
         ],
         "unavailable": {
           "CME日経225先物・円建て": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用",
           "CME日経225先物・ドル建て": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用",
-          "EUR/USD": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-13のため不採用",
           "COMEX金先物": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用",
           "WTI原油": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用"
         }
       },
       "japanCloseReference": {
         "dataDate": "2026-08-14",
-        "appliedAt": "2026-08-17T09:08:45+09:00",
+        "appliedAt": "2026-08-17T09:17:27+09:00",
         "appliedLabels": [],
         "preservedUsableLabels": [
           "日経225現物",
@@ -355,7 +355,7 @@
       },
       "exactJapanCloseOverride": {
         "dataDate": "2026-08-14",
-        "appliedAt": "2026-08-17T09:08:45+09:00",
+        "appliedAt": "2026-08-17T09:17:27+09:00",
         "appliedLabels": [
           "日経225現物",
           "日経225 25日移動平均乖離率",
@@ -369,6 +369,41 @@
         ],
         "source": "data/market/japan-close-reference.json",
         "rule": "Exact-date dedicated Japanese reference overrides generic previous-close feeds for matching Japanese rows."
+      },
+      "publishedValueRecovery": {
+        "sourceCommit": "cbaf31dd0d94d14d12bdf97d9670fd0a3c686368",
+        "rule": "canonical source > original published value > external repair > reasoned unavailable",
+        "protectedCanonicalLabels": [],
+        "restoredRows": [
+          "NYダウ",
+          "NASDAQ総合",
+          "S&P500",
+          "Russell 2000",
+          "日経225現物",
+          "CME日経225先物・円建て",
+          "USD/JPY",
+          "EUR/USD",
+          "COMEX金先物",
+          "WTI原油",
+          "BTCUSD",
+          "VIX",
+          "日経VI",
+          "Fear & Greed Index",
+          "米10年債利回り",
+          "日本10年国債利回り",
+          "日経225予想PER",
+          "日経225 PBR",
+          "日経225予想EPS",
+          "日経225 25日移動平均乖離率",
+          "日経225 200日移動平均乖離率"
+        ],
+        "restoredMarkets": [
+          "金",
+          "原油",
+          "USD/JPY",
+          "EUR/USD",
+          "BTCUSD"
+        ]
       }
     }
   }
