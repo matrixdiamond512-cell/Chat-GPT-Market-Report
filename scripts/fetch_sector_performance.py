@@ -90,6 +90,11 @@ JP_SECTORS = {
     "0283": "サービス業",
 }
 
+TRADERS_WEB_SECTOR_ALIASES = {
+    "倉庫・運輸関連": "倉庫・運輸関連業",
+    "証券・商品先物取引": "証券・商品先物取引業",
+}
+
 SHEET_HEADERS = [
     *[item for i in range(1, 6) for item in (f"米国セクター上昇{i}業種", f"米国セクター上昇{i}騰落率")],
     *[item for i in range(1, 6) for item in (f"米国セクター下落{i}業種", f"米国セクター下落{i}騰落率")],
@@ -287,6 +292,7 @@ def parse_japan_traders_web_html(html: str, expected_date: str | None = None) ->
         name = ""
         for cell in cells:
             normalized = re.sub(r"[（(]東証[）)]", "", cell).strip()
+            normalized = TRADERS_WEB_SECTOR_ALIASES.get(normalized, normalized)
             if normalized in JP_SECTORS.values():
                 name = normalized
                 break
@@ -298,7 +304,7 @@ def parse_japan_traders_web_html(html: str, expected_date: str | None = None) ->
             continue
         seen.add(name)
         values.append(sector_row(name, "", float(match.group(0).replace("−", "-")), source_date or expected_date or "", "トレーダーズ・ウェブ業種別ランキング"))
-    if len(values) < 30:
+    if len(values) < len(JP_SECTORS):
         raise ValueError(f"Traders Web sector ranking returned only {len(values)} sectors")
     return values
 
