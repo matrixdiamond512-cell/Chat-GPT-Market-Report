@@ -1,12 +1,12 @@
 {
-  "checkedAt": "2026-08-17T09:54:12+09:00",
+  "checkedAt": "2026-08-17T12:25:33+09:00",
   "reportDate": "2026-08-17",
   "reportSlot": "08:00",
-  "ready": true,
+  "ready": false,
   "historicalMode": false,
-  "reportSource": "latest-report",
+  "reportSource": "reports.json",
   "latestReportDate": "2026-08-17",
-  "latestReportTime": "08:00",
+  "latestReportTime": "12:00",
   "dataSemantics": "previous_close",
   "expectedPreviousCloseDate": "2026-08-14",
   "expectedRowCount": 28,
@@ -48,19 +48,11 @@
     "東証プライム値下がり銘柄数",
     "東証プライム25日騰落レシオ"
   ],
-  "blockingReasons": [],
+  "blockingReasons": [
+    "latest-report mismatch: expected 2026-08-17 08:00, got 2026-08-17 12:00"
+  ],
   "warnings": [
-    "marketDataTable structured rows used from latest-report"
+    "marketDataTable structured rows used from reports.json"
   ],
-  "rule": "08:00 is a previous-close report. Validate market-data date, not retrieval clock time; reasoned unavailable values publish as degraded warnings.",
-  "structureReady": true,
-  "dataComplete": false,
-  "availableCount": 26,
-  "expectedDataCount": 28,
-  "unavailableLabels": [
-    "東証プライム売買代金",
-    "東証プライム売買高"
-  ],
-  "chatgptInputMarketCount": 28,
-  "previousCloseDate": "2026-08-14"
+  "rule": "08:00 is a previous-close report. Validate market-data date, not retrieval clock time; reasoned unavailable values publish as degraded warnings."
 }
