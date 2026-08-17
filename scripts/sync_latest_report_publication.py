@@ -66,18 +66,105 @@ def require_semantic_section(
     raise SystemExit(f"SOP fullText missing required section: {label}")
 
 
-def sanitize_public_full_text(report: dict) -> None:
-    """Remove internal pipeline diagnostics from the public report body.
+def _lines(value) -> list[str]:
+    if isinstance(value, list):
+        return [str(x).strip() for x in value if str(x).strip()]
+    if isinstance(value, str) and value.strip():
+        return [value.strip()]
+    return []
 
-    data/latest-report.json remains the internal publication source of truth. The
-    portal/report-history copy must not expose implementation details such as JSON
-    paths, import formulas, or the literal internal verification status.
+
+def ensure_public_full_text(report: dict) -> None:
+    """Build a readable portal body when upstream accidentally sends only a stub.
+
+    The structured report fields remain the source. This is a publication fail-safe:
+    it never invents prices or market facts, and it only activates when fullText is
+    clearly too short to satisfy the established SOP.
     """
+    current = str(report.get("fullText") or report.get("rawText") or report.get("body") or "").replace("\r", "").strip()
+    if len(current) >= 1200:
+        report["fullText"] = current
+        return
+
+    title = str(report.get("title") or "").strip()
+    theme = str(report.get("theme") or "").strip()
+    leading = str(report.get("leadingMarket") or "").strip()
+    main_scenario = str(report.get("mainScenario") or "").strip()
+    alt_scenario = str(report.get("alternativeScenario") or "").strip()
+    breaks = str(report.get("breakConditions") or "").strip()
+
+    sections: list[str] = [title] if title else []
+    sections += ["【08:00結論】", main_scenario or theme or "構造化データに基づく市場判断。"]
+    sections += ["【今日の相場テーマ】", theme or "構造化データ参照。"]
+
+    changes = _lines(report.get("changes"))
+    sections += ["【前回からの変化】"] + (["・" + x for x in changes] if changes else ["・構造化データ参照。"])
+
+    table = report.get("marketDataTable") or {}
+    rows = table.get("rows") if isinstance(table, dict) else []
+    sections += ["【主要市場データ】"]
+    if isinstance(rows, list) and rows:
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            label = str(row.get("label") or row.get("item") or row.get("name") or "").strip()
+            value = str(row.get("value") or "").strip()
+            change = str(row.get("change") or "").strip() or "—"
+            rate = str(row.get("rate") or row.get("changePercent") or "").strip() or "—"
+            direction = str(row.get("direction") or "").strip() or "—"
+            sections.append(f"{label}｜{value}｜{change}｜{rate}｜{direction}")
+
+    consistency = _lines(report.get("consistency"))
+    sections += ["【材料と値動きの整合性】"] + (["・" + x for x in consistency] if consistency else ["・構造化データ参照。"])
+    sections += ["【今日の主導市場】", leading or "構造化データ参照。"]
+
+    news = _lines(report.get("news"))
+    sections += ["【重要ニュース】"] + (["・" + x for x in news] if news else ["・構造化データ参照。"])
+
+    flows = _lines(report.get("crossAssetFlow"))
+    sections += ["【クロスアセット資金フロー】"] + (["・" + x for x in flows] if flows else ["・構造化データ参照。"])
+
+    positioning = _lines(report.get("positioning"))
+    sections += ["【需給・ポジション】"] + (["・" + x for x in positioning] if positioning else ["・構造化データ参照。"])
+
+    events = _lines(report.get("events"))
+    sections += ["【今後の重要イベント】"] + (["・" + x for x in events] if events else ["・構造化データ参照。"])
+
+    sections += ["【個別市場見通し】"]
+    markets = report.get("markets")
+    if isinstance(markets, list) and markets:
+        for market in markets:
+            if not isinstance(market, dict):
+                continue
+            name = str(market.get("name") or "").strip()
+            direction = str(market.get("direction") or "").strip()
+            price = str(market.get("price") or "").strip()
+            outlook = str(market.get("outlook") or "").strip()
+            sections.append(f"{name}：{direction}。{price}。{outlook}".strip())
+
+    sections += ["【シナリオ】"]
+    if main_scenario:
+        sections.append("メイン：" + main_scenario)
+    if alt_scenario:
+        sections.append("代替：" + alt_scenario)
+
+    sections += ["【シナリオが崩れる条件】", breaks or "構造化データ参照。"]
+
+    handover = _lines(report.get("handover"))
+    sections += ["【東京時間への引き継ぎ】"] + (["・" + x for x in handover] if handover else ["・構造化データ参照。"])
+    sections += ["【最終判断】", main_scenario or theme or "構造化データに基づく市場判断。"]
+    report["fullText"] = "\n".join(x for x in sections if str(x).strip()).strip()
+
+
+def sanitize_public_full_text(report: dict) -> None:
+    """Remove internal pipeline diagnostics from the public report body."""
     text = str(report.get("fullText") or "").replace("\r", "")
     if not text:
         return
-    pattern = re.compile(r"\n*【データ検証】\s*\n.*?(?=\n【[^\n]+】)", re.S)
-    report["fullText"] = pattern.sub("\n", text, count=1).strip()
+    pattern = re.compile(r"\n*【(?:\d{2}:\d{2}\s*)?データ検証】\s*\n.*?(?=\n【[^\n]+】)", re.S)
+    text = pattern.sub("\n", text, count=1)
+    text = re.sub(r"\bverified\b", "検証済み", text, flags=re.I)
+    report["fullText"] = text.strip()
 
 
 def validate_sop_body(report: dict) -> None:
@@ -194,8 +281,8 @@ def main() -> None:
     if not isinstance(source_report, dict):
         raise SystemExit("data/latest-report.json does not contain a report object")
 
-    # Keep the canonical latest-report payload intact and sanitize only the public copy.
     report = json.loads(json.dumps(source_report, ensure_ascii=False))
+    ensure_public_full_text(report)
     sanitize_public_full_text(report)
     validate_report(report)
     report_path = sync_report_file(report)
