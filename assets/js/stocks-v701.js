@@ -155,7 +155,9 @@
   function preopen(comp) {
     if (comp.freshness === "unavailable") return sessionShell("東京市場 朝の寄り前分析", comp, warning(comp));
     var summary = comp.summary || {};
-    var kpis = "<div class=\"session-kpis\"><div class=\"kpi\"><span class=\"kpi-label\">全体</span><span class=\"kpi-value\">" + esc(summary.tone || "取得不能") + "</span></div><div class=\"kpi\"><span class=\"kpi-label\">広がり</span><span class=\"kpi-value\">" + esc(summary.breadth || "取得不能") + "</span></div><div class=\"kpi\"><span class=\"kpi-label\">主導業種</span><span class=\"kpi-value\">" + esc(arr(summary.leadingSectors).join("・") || "取得不能") + "</span></div></div>";
+    var leadingSectors = arr(summary.leadingSectors).filter(Boolean);
+    var sectorKpi = leadingSectors.length ? "<div class=\"kpi\"><span class=\"kpi-label\">主導業種</span><span class=\"kpi-value\">" + esc(leadingSectors.join("・")) + "</span></div>" : "";
+    var kpis = "<div class=\"session-kpis\"><div class=\"kpi\"><span class=\"kpi-label\">全体</span><span class=\"kpi-value\">" + esc(summary.tone || "取得不能") + "</span></div><div class=\"kpi\"><span class=\"kpi-label\">広がり</span><span class=\"kpi-value\">" + esc(summary.breadth || "取得不能") + "</span></div>" + sectorKpi + "</div>";
     var insights = "<div class=\"session-insights\"><h3>分析コメント</h3><p class=\"comment\">" + esc(summary.comment || "取得できたランキングだけを集計しています。") + "</p></div>";
     var orders = arr(comp.buyOrderLeaders).length || arr(comp.sellOrderLeaders).length ? "<div class=\"panel-body split\">" + preopenTable("買い注文上位", comp.buyOrderLeaders, "up") + preopenTable("売り注文上位", comp.sellOrderLeaders, "down") + "</div>" : "";
     return sessionShell("東京市場 朝の寄り前分析", comp, (comp.freshness === "stale" ? warning(comp) : "") + kpis + insights + "<div class=\"panel-body split\">" + preopenTable("上昇気配TOP10", comp.gainers, "up") + preopenTable("下落気配TOP10", comp.decliners, "down") + "</div>" + orders);
