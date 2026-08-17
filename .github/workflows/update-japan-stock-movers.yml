@@ -50,9 +50,15 @@ jobs:
           import json
           from pathlib import Path
           movers = json.loads(Path('data/market/japan-stock-movers.json').read_text(encoding='utf-8'))
+          current = movers.get('current') or movers
           stocks = json.loads(Path('data/stocks.json').read_text(encoding='utf-8'))
           date = str((stocks.get('marketDates') or {}).get('japan') or '')[:10]
-          if movers.get('status') != 'verified' or movers.get('dataDate') != date:
+          if current.get('status') == 'unavailable':
+              if any(current.get(key) for key in ('gainers', 'losers')):
+                  raise SystemExit('Unavailable Japan movers current must not contain rows')
+              print('Japan movers unavailable; committed as unavailable with lastGood boundary')
+              raise SystemExit(0)
+          if current.get('status') != 'verified' or current.get('freshness') != 'fresh' or current.get('dataDate') != date:
               raise SystemExit('Japan movers are not synced to the verified Tokyo market date')
           for key in ('gainers','losers'):
               rows = movers.get(key) or []
@@ -61,10 +67,12 @@ jobs:
               if any('東証プライム' not in str(row.get('reason') or '') for row in rows):
                   raise SystemExit('Japan mover row is not labeled as Tokyo Prime')
           block = ((stocks.get('movers') or {}).get('japan') or {})
-          if block.get('status') != 'verified' or block.get('dataDate') != date:
+          if block.get('status') != 'verified' or block.get('freshness') != 'fresh' or block.get('dataDate') != date:
               raise SystemExit('stocks.json Japan mover block is not synced')
           print('Verified Tokyo Prime movers for', date)
           PY
+      - name: Validate cross-component freshness
+        run: python scripts/validate_stock_data_freshness.py
 
       - name: Save stock-analysis history snapshot
         run: |
@@ -84,3 +92,4 @@ jobs:
           git commit -m "Update verified Tokyo Prime stock movers"
           git pull --rebase
           git push
+
