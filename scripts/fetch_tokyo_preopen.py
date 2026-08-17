@@ -80,6 +80,17 @@ def fetch_html(url: str) -> str:
     return response.text
 
 
+def article_text(html: str) -> str:
+    """Return visible article prose, including Traders Web's hidden body_text."""
+    soup = BeautifulSoup(html, "html.parser")
+    visible = soup.get_text(" ", strip=True)
+    hidden_body = soup.find("input", id="body_text")
+    if hidden_body and hidden_body.get("value"):
+        hidden = html_lib.unescape(str(hidden_body["value"])).strip()
+        return f"{visible} {hidden}".strip()
+    return visible
+
+
 def source_date(text: str) -> tuple[str | None, str | None]:
     match = DATE_RE.search(html_lib.unescape(text))
     if not match:
@@ -128,7 +139,7 @@ def fetch_current_article(
         candidates = article_candidates(index_url, fetch_html(index_url), title_pattern)
     for url in candidates[:12]:
         article_html = fetch_html(url)
-        data_date, as_of = source_date(BeautifulSoup(article_html, "html.parser").get_text(" ", strip=True))
+        data_date, as_of = source_date(article_text(article_html))
         if data_date == expected_date and as_of:
             return url, article_html, data_date, as_of
     raise RuntimeError(f"当日の記事が見つかりません: index={index_url}, expected={expected_date}")
@@ -139,8 +150,7 @@ def parse_traders_web_article(
     expected_date: str | None = None,
 ) -> tuple[list[dict[str, Any]], str | None, str | None, list[dict[str, Any]]]:
     """Parse Market Flash prose, including code/percentage mentions and highlights."""
-    soup = BeautifulSoup(html, "html.parser")
-    text = soup.get_text(" ", strip=True)
+    text = article_text(html)
     data_date, as_of = source_date(text)
     if expected_date and data_date != expected_date:
         raise ValueError(f"Traders Web article date mismatch: source={data_date}, expected={expected_date}")
@@ -188,8 +198,7 @@ def parse_kabutan_order_article(
     expected_date: str | None = None,
 ) -> tuple[list[dict[str, Any]], str | None, str | None]:
     """Parse Kabutan's buy/sell order-value article rows."""
-    soup = BeautifulSoup(html, "html.parser")
-    text = soup.get_text(" ", strip=True)
+    text = article_text(html)
     data_date, as_of = source_date(text)
     if expected_date and data_date != expected_date:
         raise ValueError(f"Kabutan article date mismatch: source={data_date}, expected={expected_date}")
