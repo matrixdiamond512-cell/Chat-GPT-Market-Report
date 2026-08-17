@@ -73,8 +73,8 @@
       },
       {
         "name": "日経225先物",
-        "direction": "取得不能",
-        "price": "取得不能（8/17新規取得失敗）",
+        "direction": "上昇",
+        "price": "68,720円",
         "outlook": "8/15最終確認68,720円は参考値のみ。東京開始後に再確認。"
       },
       {
@@ -156,10 +156,10 @@
         },
         {
           "label": "日経225先物（大阪取引所）",
-          "value": "取得不能（8/17新規取得失敗）",
-          "change": "—",
-          "rate": "—",
-          "direction": "8/15最終確認68,720円は参考値"
+          "value": "68,720",
+          "change": "+30",
+          "rate": "+0.04%",
+          "direction": "上昇"
         },
         {
           "label": "USD/JPY",
@@ -312,7 +312,7 @@
         "missingFilled": []
       },
       "dailyCloseRepair": {
-        "generatedAt": "2026-08-17T09:17:27+09:00",
+        "generatedAt": "2026-08-17T09:22:09+09:00",
         "semantics": "previous_close",
         "rule": "08:00 uses date-matched prior-session closes; retrieval after 08:00 is allowed, stale-date carry-forward is prohibited; BTCUSD keeps its dedicated 24/7-market convention",
         "repairedLabels": [
@@ -322,19 +322,19 @@
           "Russell 2000",
           "日経225現物",
           "USD/JPY",
-          "EUR/USD",
           "VIX"
         ],
         "unavailable": {
           "CME日経225先物・円建て": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用",
           "CME日経225先物・ドル建て": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用",
+          "EUR/USD": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-13のため不採用",
           "COMEX金先物": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用",
           "WTI原油": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用"
         }
       },
       "japanCloseReference": {
         "dataDate": "2026-08-14",
-        "appliedAt": "2026-08-17T09:17:27+09:00",
+        "appliedAt": "2026-08-17T09:22:09+09:00",
         "appliedLabels": [],
         "preservedUsableLabels": [
           "日経225現物",
@@ -355,7 +355,7 @@
       },
       "exactJapanCloseOverride": {
         "dataDate": "2026-08-14",
-        "appliedAt": "2026-08-17T09:17:27+09:00",
+        "appliedAt": "2026-08-17T09:22:09+09:00",
         "appliedLabels": [
           "日経225現物",
           "日経225 25日移動平均乖離率",
@@ -372,7 +372,7 @@
       },
       "publishedValueRecovery": {
         "sourceCommit": "cbaf31dd0d94d14d12bdf97d9670fd0a3c686368",
-        "rule": "canonical source > original published value > external repair > reasoned unavailable",
+        "rule": "canonical source > verified exchange-session history > original published value > external repair > reasoned unavailable",
         "protectedCanonicalLabels": [],
         "restoredRows": [
           "NYダウ",
@@ -395,15 +395,27 @@
           "日経225 PBR",
           "日経225予想EPS",
           "日経225 25日移動平均乖離率",
-          "日経225 200日移動平均乖離率"
+          "日経225 200日移動平均乖離率",
+          "日経225先物（大阪取引所）"
         ],
         "restoredMarkets": [
           "金",
           "原油",
           "USD/JPY",
           "EUR/USD",
-          "BTCUSD"
-        ]
+          "BTCUSD",
+          "日経225先物"
+        ],
+        "osePreviousCloseRecovery": {
+          "value": "68,720",
+          "change": "+30",
+          "rate": "+0.04%",
+          "direction": "上昇",
+          "asOf": "2026-08-15T06:00:00+09:00",
+          "tradingDate": "2026-08-14",
+          "sourceName": "JPX/OSE Futures Quotes",
+          "sourceUrl": "https://port.jpx.co.jp/jpxhp/main/index.aspx?disptype=day_through&f=e_future"
+        }
       }
     }
   }
