@@ -24,12 +24,20 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+from stock_freshness import current_block, last_good_from
+
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_PATH = ROOT / "data" / "sector-performance.json"
+MARKET_OUTPUT_PATH = ROOT / "data" / "market" / "sector-performance.json"
+STOCKS_PATH = ROOT / "data" / "stocks.json"
 JST = dt.timezone(dt.timedelta(hours=9))
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"
+)
+TRADERS_WEB_SECTOR_URL = os.getenv(
+    "TRADERS_WEB_SECTOR_URL",
+    "https://www.traders.co.jp/market_jp/sector",
 )
 
 US_SECTORS = {
@@ -247,9 +255,67 @@ def fetch_japan_market() -> tuple[list[dict[str, Any]], list[str]]:
     return result, errors
 
 
+def fetch_japan_traders_web(expected_date: str | None = None) -> tuple[list[dict[str, Any]], list[str]]:
+    """Fetch the preferred one-page Traders Web 33-sector ranking."""
+    errors: list[str] = []
+    try:
+        html = request_bytes(TRADERS_WEB_SECTOR_URL).decode("utf-8", errors="replace")
+        from bs4 import BeautifulSoup
+
+        soup = BeautifulSoup(html, "html.parser")
+        text = soup.get_text(" ", strip=True)
+        date_match = re.search(r"(20\d{2})[/-](\d{1,2})[/-](\d{1,2}).{0,40}(?:15|16):\d{2}", text)
+        source_date = None
+        if date_match:
+            source_date = f"{int(date_match.group(1)):04d}-{int(date_match.group(2)):02d}-{int(date_match.group(3)):02d}"
+        if expected_date and source_date != expected_date:
+            raise ValueError(f"Traders Web sector date mismatch: source={source_date}, expected={expected_date}")
+        table = next(
+            (
+                candidate
+                for candidate in soup.find_all("table")
+                if "騰落率" in " ".join(list(candidate.stripped_strings)[:40])
+                and ("業種" in " ".join(list(candidate.stripped_strings)[:40]) or "セクター" in " ".join(list(candidate.stripped_strings)[:40]))
+            ),
+            None,
+        )
+        if table is None:
+            raise ValueError("Traders Web sector table was not found")
+        values: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        for row in table.find_all("tr"):
+            cells = [" ".join(cell.stripped_strings).strip() for cell in row.find_all(["th", "td"])]
+            if len(cells) < 2:
+                continue
+            name = next((cell for cell in cells if cell in JP_SECTORS.values()), "")
+            if not name:
+                name = next((cell for cell in cells if 2 <= len(cell) <= 20 and not re.fullmatch(r"[+−-]?[\d,.]+%?", cell)), "")
+            pct_cell = next((cell for cell in cells if re.search(r"[+−-]?\d+(?:\.\d+)?\s*%", cell)), "")
+            if not name or not pct_cell or name in seen:
+                continue
+            match = re.search(r"[+−-]?\d+(?:\.\d+)?", pct_cell)
+            if not match:
+                continue
+            seen.add(name)
+            values.append(sector_row(name, "", float(match.group(0).replace("−", "-")), source_date or expected_date or "", "トレーダーズ・ウェブ業種別ランキング"))
+        if len(values) < 30:
+            raise ValueError(f"Traders Web sector table returned only {len(values)} sectors")
+        return values, errors
+    except Exception as error:  # noqa: BLE001
+        errors.append(f"Traders Web: {error}")
+        return [], errors
+
+
 def load_existing() -> dict[str, Any]:
     try:
         return json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+def load_stocks() -> dict[str, Any]:
+    try:
+        return json.loads(STOCKS_PATH.read_text(encoding="utf-8"))
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
 
@@ -268,40 +334,46 @@ def build_market(
     previous = ((existing.get("markets") or {}).get(key) or {})
     minimum = 11 if key == "us" else 30
     if len(values) < minimum:
-        if previous.get("gainers") and previous.get("losers"):
-            preserved = dict(previous)
-            preserved["status"] = "preserved_after_fetch_error"
-            preserved["lastAttemptAt"] = now_jst().isoformat()
-            preserved["lastErrors"] = errors[-20:]
-            return preserved
-        return {
-            "title": "米国市場のセクター・業種" if key == "us" else "東京市場のセクター・業種",
-            "flag": "US" if key == "us" else "JP",
-            "status": "unavailable",
-            "gainers": [],
-            "losers": [],
-            "all": values,
-            "lastErrors": errors[-20:],
-        }
+        current = current_block(
+            status="unavailable",
+            data_date=None,
+            as_of=None,
+            updated_at=now_jst().isoformat(),
+            source={"name": "Yahoo Finance / Stooq" if key == "us" else "Traders Web / 株探"},
+            error="; ".join(errors[-20:]) or "当日の業種データを取得できませんでした",
+            title="米国市場のセクター・業種" if key == "us" else "東京市場のセクター・業種",
+            flag="US" if key == "us" else "JP",
+            gainers=[], losers=[], all=[], lastErrors=errors[-20:],
+        )
+        return {**current, "lastGood": last_good_from(previous)}
     gainers, losers = top_groups(values)
     as_of = max((item.get("asOf") or "" for item in values), default="")
-    return {
-        "title": "米国市場のセクター・業種" if key == "us" else "東京市場のセクター・業種",
-        "flag": "US" if key == "us" else "JP",
-        "status": "verified",
-        "asOf": as_of,
-        "sourceLabel": "Select Sector SPDR ETF" if key == "us" else "東証33業種指数",
-        "gainers": gainers,
-        "losers": losers,
-        "all": sorted(values, key=lambda item: float(item["changePct"]), reverse=True),
-        "lastErrors": errors[-20:],
-    }
+    current = current_block(
+        status="verified",
+        data_date=as_of,
+        as_of=as_of,
+        updated_at=now_jst().isoformat(),
+        source={"name": "Select Sector SPDR ETF" if key == "us" else "Traders Web / 株探"},
+        title="米国市場のセクター・業種" if key == "us" else "東京市場のセクター・業種",
+        flag="US" if key == "us" else "JP",
+        sourceLabel="Select Sector SPDR ETF" if key == "us" else "東証33業種指数",
+        gainers=gainers,
+        losers=losers,
+        all=sorted(values, key=lambda item: float(item["changePct"]), reverse=True),
+        lastErrors=errors[-20:],
+    )
+    return {**current, "lastGood": last_good_from(previous)}
 
 
 def build_payload() -> dict[str, Any]:
     existing = load_existing()
     us_values, us_errors = fetch_us_market()
-    japan_values, japan_errors = fetch_japan_market()
+    stocks = load_stocks()
+    expected_japan_date = str((stocks.get("marketDates") or {}).get("japan") or "")[:10]
+    japan_values, japan_errors = fetch_japan_traders_web(expected_japan_date or None)
+    if len(japan_values) < 30:
+        fallback_values, fallback_errors = fetch_japan_market()
+        japan_values, japan_errors = fallback_values, japan_errors + fallback_errors
     generated = now_jst()
     us = build_market("us", us_values, existing, us_errors)
     japan = build_market("japan", japan_values, existing, japan_errors)
@@ -320,9 +392,9 @@ def build_payload() -> dict[str, Any]:
                 "url": "https://query1.finance.yahoo.com/v8/finance/chart/",
             },
             {
-                "id": "JPX_33_INDUSTRY_KABUTAN",
-                "name": "株探 東証33業種指数ページ",
-                "url": "https://s.kabutan.jp/stocks/0251/",
+                "id": "JP_33_SECTOR_TRADERS_WEB_KABUTAN",
+                "name": "トレーダーズ・ウェブ業種別ランキング / 株探 東証33業種指数ページ",
+                "url": TRADERS_WEB_SECTOR_URL,
             },
         ],
     }
@@ -331,6 +403,11 @@ def build_payload() -> dict[str, Any]:
 def write_output(payload: dict[str, Any]) -> None:
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    MARKET_OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    MARKET_OUTPUT_PATH.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
@@ -488,3 +565,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
