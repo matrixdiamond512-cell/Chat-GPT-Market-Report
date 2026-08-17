@@ -1,0 +1,75 @@
+name: Update Tokyo pre-open analysis
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "50 23 * * 0-4" # 08:50 JST, Monday-Friday
+    - cron: "58 23 * * 0-4" # 08:58 JST, Monday-Friday
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-tokyo-preopen
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install parser dependencies
+        run: python -m pip install --disable-pip-version-check requests beautifulsoup4
+      - name: Skip second run when first snapshot is already current
+        id: freshness
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from datetime import datetime
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+          path = Path('data/market/tokyo-preopen.json')
+          payload = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
+          current = payload.get('current') or {}
+          expected = datetime.now(ZoneInfo('Asia/Tokyo')).date().isoformat()
+          skip = current.get('status') in {'ok', 'verified'} and current.get('dataDate') == expected and current.get('freshness') == 'fresh'
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as handle:
+              handle.write(f'skip={str(skip).lower()}\n')
+          print('skip fetch:', skip)
+          PY
+      - name: Fetch Tokyo pre-open snapshot
+        if: steps.freshness.outputs.skip != 'true'
+        run: python scripts/fetch_tokyo_preopen.py
+      - name: Validate current/lastGood boundary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          payload = json.loads(Path('data/market/tokyo-preopen.json').read_text(encoding='utf-8'))
+          current = payload.get('current') or {}
+          if payload.get('status') not in {'ok', 'unavailable'}:
+              raise SystemExit('Unexpected Tokyo pre-open status')
+          if current.get('status') == 'unavailable' and any(current.get(key) for key in ('gainers','decliners','buyOrderLeaders','sellOrderLeaders')):
+              raise SystemExit('Unavailable Tokyo pre-open current must not contain old rows')
+          if payload.get('lastGood') and payload['lastGood'].get('freshness') != 'stale':
+              raise SystemExit('lastGood must be explicitly stale')
+          print('Tokyo pre-open freshness boundary validated')
+          PY
+      - name: Commit snapshot
+        shell: bash
+        run: |
+          git add data/market/tokyo-preopen.json data/stocks.json
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update Tokyo pre-open analysis"
+          git pull --rebase
+          git push
+
