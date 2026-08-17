@@ -78,6 +78,35 @@ def yahoo_chart(symbol: str, retries: int = 2) -> dict[str, Any]:
     raise RuntimeError(f"{symbol}: Yahoo premarket fetch failed: {last_error}")
 
 
+def aggregate_premarket_rows(
+    symbol: str,
+    rows: list[tuple[datetime, float, float | None]],
+    previous_close: float | None,
+) -> dict[str, Any]:
+    if not rows:
+        raise RuntimeError(f"{symbol}: no pre-market rows")
+    dt, price, _ = rows[-1]
+    numeric_volumes = [int(volume) for _, _, volume in rows if volume is not None]
+    cumulative_volume = sum(numeric_volumes) if numeric_volumes else None
+    previous_float = float(previous_close) if isinstance(previous_close, (int, float)) and previous_close else None
+    change_pct = (price / previous_float - 1) * 100 if previous_float else None
+    if change_pct is None:
+        raise RuntimeError(f"{symbol}: previous close unavailable")
+    return {
+        "symbol": symbol,
+        "name": symbol,
+        "sector": SYMBOL_GROUP.get(symbol, "クロスアセット"),
+        "price": round(price, 6),
+        "changePct": round(change_pct, 6),
+        "change": f"{change_pct:+.2f}%",
+        "volume": cumulative_volume,
+        "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+        "volumeWindowStart": rows[0][0].isoformat(timespec="minutes"),
+        "volumeWindowEnd": dt.isoformat(timespec="minutes"),
+        "asOf": dt.isoformat(timespec="minutes"),
+    }
+
+
 def latest_premarket(symbol: str, expected_date: str) -> dict[str, Any]:
     result = yahoo_chart(symbol)
     timestamps = result.get("timestamp") or []
@@ -95,21 +124,7 @@ def latest_premarket(symbol: str, expected_date: str) -> dict[str, Any]:
             rows.append((dt, float(close), float(volume) if isinstance(volume, (int, float)) else None))
     if not rows:
         raise RuntimeError(f"{symbol}: no 04:00-09:30 data for {expected_date}")
-    dt, price, volume = rows[-1]
-    previous_float = float(previous) if isinstance(previous, (int, float)) and previous else None
-    change_pct = (price / previous_float - 1) * 100 if previous_float else None
-    if change_pct is None:
-        raise RuntimeError(f"{symbol}: previous close unavailable")
-    return {
-        "symbol": symbol,
-        "name": symbol,
-        "sector": SYMBOL_GROUP.get(symbol, "クロスアセット"),
-        "price": round(price, 6),
-        "changePct": round(change_pct, 6),
-        "change": f"{change_pct:+.2f}%",
-        "volume": int(volume) if volume is not None else None,
-        "asOf": dt.isoformat(timespec="minutes"),
-    }
+    return aggregate_premarket_rows(symbol, rows, previous)
 
 
 def fetch_universe(expected_date: str) -> tuple[list[dict[str, Any]], list[str]]:
