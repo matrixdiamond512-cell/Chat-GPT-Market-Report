@@ -1,0 +1,86 @@
+name: Inspect live six-market dashboard data
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "assets/js/dashboard-report-price-fallback-fix.js"
+      - "assets/js/dashboard-canonical-market-final.js"
+      - ".github/workflows/inspect-dashboard-six-market-live.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for live Pages assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report'
+          for i in $(seq 1 30); do
+            CB="$(date +%s)-$i"
+            curl -fsSL --retry 2 --retry-delay 1 "${BASE}/index.html?date=2026-08-17&time=16%3A00&cb=${CB}" -o /tmp/index.html || true
+            curl -fsSL --retry 2 --retry-delay 1 "${BASE}/data/market/latest.json?cb=${CB}" -o /tmp/latest.json || true
+            if grep -q 'dashboard-report-price-fallback-fix.js?v=20260817-1949-verified2' /tmp/index.html 2>/dev/null \
+               && grep -q 'dashboard-canonical-market-final.js?v=20260817-1949-canonical2' /tmp/index.html 2>/dev/null; then
+              break
+            fi
+            sleep 3
+          done
+          grep -q 'dashboard-report-price-fallback-fix.js?v=20260817-1949-verified2' /tmp/index.html
+          grep -q 'dashboard-canonical-market-final.js?v=20260817-1949-canonical2' /tmp/index.html
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/js/dashboard-report-price-fallback-fix.js
+          node --check assets/js/dashboard-canonical-market-final.js
+
+      - name: Validate final live cards in headless Chrome
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          [ -n "$CHROME" ] || { echo 'Chrome not found'; exit 1; }
+          URL="https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/index.html?date=2026-08-17&time=16%3A00&cb=$(date +%s)"
+          "$CHROME" --headless --disable-gpu --no-sandbox --virtual-time-budget=12000 --dump-dom "$URL" > /tmp/dashboard-dom.html
+          python - <<'PY'
+          import json, re, html, pathlib
+          payload=json.loads(pathlib.Path('/tmp/latest.json').read_text(encoding='utf-8'))
+          dom=pathlib.Path('/tmp/dashboard-dom.html').read_text(encoding='utf-8',errors='replace')
+          text=html.unescape(re.sub(r'<[^>]+>', ' ', dom))
+          text=re.sub(r'\s+', ' ', text)
+
+          def segment(start, end):
+              a=text.find(start)
+              if a < 0: raise SystemExit(f'{start} card not found')
+              b=text.find(end, a+len(start))
+              if b < 0: b=min(len(text), a+2500)
+              return text[a:b]
+
+          usd=payload['markets']['usdjpy']
+          btc=payload['markets']['btcusd']
+          usd_seg=segment('USD/JPY', 'EUR/USD')
+          btc_seg=segment('BTCUSD', '総合市場環境')
+
+          checks={
+              'usd_verified_source': (usd.get('sourceName') or '') in usd_seg,
+              'usd_change_available': '前日比：取得不能' not in usd_seg,
+              'usd_change_present': (usd.get('changeText') or '').split(' / ')[0] in usd_seg,
+              'btc_verified_source': (btc.get('sourceName') or '') in btc_seg,
+              'btc_change_available': '前日比：取得不能' not in btc_seg,
+              'btc_change_present': (btc.get('changeText') or '').split(' / ')[0] in btc_seg,
+          }
+          print('USD_SEG=', usd_seg[:1200])
+          print('BTC_SEG=', btc_seg[:1200])
+          print('CHECKS=', checks)
+          if not all(checks.values()):
+              raise SystemExit('verified market data is not the final six-market card source')
+          PY
