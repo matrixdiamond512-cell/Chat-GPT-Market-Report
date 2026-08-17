@@ -3,8 +3,8 @@
   "pageId": "stocks",
   "pageTitle": "株式市場分析",
   "generatedAt": "2026-08-04T00:00:00+09:00",
-  "updatedAt": "2026-08-17T16:58:35+09:00",
-  "dataAsOf": "2026-08-14T16:00:00-04:00",
+  "updatedAt": "2026-08-17T17:05:00+09:00",
+  "dataAsOf": "2026-08-16T16:00:00-04:00",
   "status": "ok",
   "sourceStatus": "Google Sheets＋日経225寄与度検証済みデータ",
   "sources": [
@@ -64,15 +64,15 @@
         ],
         [
           "NYSE 値上がり / 値下がり",
-          "1,112 / 961",
+          "1,111 / 960",
           "-",
-          "上昇優勢。A/D比 1.16倍。 基準日 2026-08-14"
+          "基準日 2026-08-16"
         ],
         [
           "NASDAQ 値上がり / 値下がり",
-          "1,632 / 1,527",
+          "1,631 / 1,527",
           "-",
-          "上昇優勢。A/D比 1.07倍。 基準日 2026-08-14"
+          "基準日 2026-08-16"
         ],
         [
           "NYSE 200日線上 / 下",
@@ -97,6 +97,18 @@
           "+0.22pt",
           "-",
           "RSP騰落率－SPY騰落率。プラスは均等加重優位。基準日 2026-08-14"
+        ],
+        [
+          "NYSE 52週高値 / 安値",
+          "0 / 0",
+          "-",
+          "基準日 2026-08-16"
+        ],
+        [
+          "NASDAQ 52週高値 / 安値",
+          "0 / 0",
+          "-",
+          "基準日 2026-08-16"
         ]
       ],
       "dataDate": "2026-08-14",
@@ -873,103 +885,44 @@
   ],
   "note": "データ欠損がある場合は推測で補完せず、該当セルに「取得不能」と理由を表示します。本ページは株式市場分析用の表示構成です。",
   "usBreadth": {
-    "schemaVersion": "2.0.0",
-    "marketDate": "2026-08-14",
-    "fetchedAt": "2026-08-17T06:58:46+09:00",
+    "schemaVersion": "1.0.0",
+    "marketDate": "2026-08-16",
+    "fetchedAt": "2026-08-17T17:05:00+09:00",
     "status": "verified",
     "source": {
-      "name": "Yahoo Finance daily chart + TradingView America Stock Screener",
-      "method": "completed daily closes and exchange-filtered breadth including SMA200"
-    },
-    "indices": {
-      "^DJI": {
-        "symbol": "^DJI",
-        "marketDate": "2026-08-14",
-        "timestamp": 1786714200,
-        "close": 53732.41015625,
-        "previousClose": 53839.98828125,
-        "change": -107.578125,
-        "changePercent": -0.19981082543709341
-      },
-      "^GSPC": {
-        "symbol": "^GSPC",
-        "marketDate": "2026-08-14",
-        "timestamp": 1786714200,
-        "close": 7785.759765625,
-        "previousClose": 7798.990234375,
-        "change": -13.23046875,
-        "changePercent": -0.1696433557729704
-      },
-      "^IXIC": {
-        "symbol": "^IXIC",
-        "marketDate": "2026-08-14",
-        "timestamp": 1786714200,
-        "close": 26729.16015625,
-        "previousClose": 26803.029296875,
-        "change": -73.869140625,
-        "changePercent": -0.2755999697154101
-      },
-      "^SOX": {
-        "symbol": "^SOX",
-        "marketDate": "2026-08-14",
-        "timestamp": 1786714200,
-        "close": 12417.0498046875,
-        "previousClose": 12456.0,
-        "change": -38.9501953125,
-        "changePercent": -0.31270227450626203
-      },
-      "^RUT": {
-        "symbol": "^RUT",
-        "marketDate": "2026-08-14",
-        "timestamp": 1786714200,
-        "close": 3068.419921875,
-        "previousClose": 3052.85009765625,
-        "change": 15.56982421875,
-        "changePercent": 0.510009457415002
-      },
-      "^VIX": {
-        "symbol": "^VIX",
-        "marketDate": "2026-08-14",
-        "timestamp": 1786690800,
-        "close": 14.25,
-        "previousClose": 14.630000114440918,
-        "change": -0.38000011444091797,
-        "changePercent": -2.5974033593193826
-      }
+      "name": "TradingView America Stock Screener",
+      "url": "https://www.tradingview.com/markets/stocks-usa/market-movers-all-stocks/",
+      "method": "exchange-filtered America scanner"
     },
     "exchanges": {
       "NYSE": {
-        "advancers": 1112,
-        "decliners": 961,
+        "advancers": 1111,
+        "decliners": 960,
         "unchanged": 51,
-        "total": 2124,
+        "total": 2122,
         "newHigh52Week": 0,
         "newLow52Week": 0,
-        "aboveSMA200": 1216,
-        "belowSMA200": 808,
-        "equalSMA200": 0,
-        "sma200Valid": 2024,
-        "sma200Column": "SMA200",
-        "advanceDeclineRatio": 1.157128
+        "advanceDeclineRatio": 1.157292,
+        "previousDayChange": 0.000164,
+        "average20Day": 1.236344,
+        "versus20DayAveragePercent": -6.394
       },
       "NASDAQ": {
-        "advancers": 1632,
+        "advancers": 1631,
         "decliners": 1527,
         "unchanged": 161,
-        "total": 3320,
+        "total": 3319,
         "newHigh52Week": 0,
         "newLow52Week": 0,
-        "aboveSMA200": 1519,
-        "belowSMA200": 1529,
-        "equalSMA200": 0,
-        "sma200Valid": 3048,
-        "sma200Column": "SMA200",
-        "advanceDeclineRatio": 1.068762
+        "advanceDeclineRatio": 1.068107,
+        "previousDayChange": -0.000655,
+        "average20Day": 1.18366,
+        "versus20DayAveragePercent": -9.7623
       }
     },
-    "combinedAdvanceRate": 0.524465,
-    "judgement": "上昇優勢",
-    "note": "米国主要指数、NYSE/NASDAQ騰落、52週高安、200日線上下を同一取引日で保存。"
+    "combinedAdvanceRate": 0.524383,
+    "judgement": "拮抗",
+    "note": "値上がり・値下がりは前日比change、52週高値・安値は当日高安と52週高安の一致で集計。"
   },
   "marketDates": {
     "us": "2026-08-14",
@@ -986,152 +939,153 @@
       "flag": "JP",
       "status": "東京寄り付きデータ取得済み",
       "dataDate": "2026-08-17",
-      "updatedAt": "2026-08-17T10:26:39+09:00",
+      "updatedAt": "2026-08-17T17:04:52+09:00",
       "source": "Yahoo Finance chart API（日経225・FX・CME参考先物） / Google Finance（TOPIX）",
       "metrics": [
         {
           "label": "日経225",
-          "value": "68,579.40",
-          "change": "-0.20%",
-          "note": "寄り値 68,882.06 / ギャップ +0.24% / 寄り後 -0.44%"
+          "value": "69,169.66",
+          "change": "+0.66%",
+          "note": "寄り値 68,882.06 / ギャップ +0.24% / 寄り後 +0.42%"
         },
         {
           "label": "TOPIX",
-          "value": "4,174.09",
-          "change": "-0.55%",
-          "note": "寄り値 4,204.36 / ギャップ +0.17% / 寄り後 -0.72%"
+          "value": "4,204.36",
+          "change": "+0.17%",
+          "note": "寄り値 4,204.36 / ギャップ +0.17% / 寄り後 +0.00%"
         },
         {
           "label": "USD/JPY",
-          "value": "159.025",
-          "change": "-0.13%",
+          "value": "159.032",
+          "change": "-0.12%",
           "note": "08:55以降の変化 / 08:55近辺 159.229"
         },
         {
           "label": "日経225先物（CME参考）",
-          "value": "68,555.00",
-          "change": "-0.23%",
+          "value": "69,280.00",
+          "change": "+0.82%",
           "note": "CME参考値。大阪取引所先物とは別銘柄として表示"
         }
       ],
       "insights": [
-        "日経225は高寄り後に失速。寄り天リスクを優先して確認します。",
-        "USD/JPYは08:55以降 -0.13%。日本株の外需・先物方向との整合性を確認します。"
+        "日経225はギャップアップ後も買いが継続。寄り付きの強さが維持されています。",
+        "日経225とTOPIXが同方向で、市場全体の方向は比較的整合的です。",
+        "USD/JPYは08:55以降 -0.12%。日本株の外需・先物方向との整合性を確認します。"
       ],
-      "judgement": "寄り後は売り優勢。高寄りでも上昇継続とは見なさず、寄り天警戒を優先します。",
+      "judgement": "寄り後も買い優勢。先物・USD/JPY・TOPIXが追随する限り、東京時間は上方向を優先します。",
       "errors": []
     },
     "usPremarket": {
       "title": "米国市場 プレマーケット分析",
       "flag": "US",
-      "status": "取得不能（当日プレマーケット時間外・休場、または株価データなし）",
-      "dataDate": "2026-08-14",
-      "updatedAt": "2026-08-14T23:27:50+09:00",
+      "status": "米国プレマーケットデータ取得済み",
+      "dataDate": "2026-08-17",
+      "updatedAt": "2026-08-17T17:04:53+09:00",
       "source": "Yahoo Finance chart API（指数先物・金利・FX・大型株）",
       "metrics": [
         {
           "label": "S&P500先物",
-          "value": "7,824.25",
-          "change": "+0.02%",
+          "value": "7,818.25",
+          "change": "+0.17%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "Nasdaq100先物",
-          "value": "30,200.25",
-          "change": "+0.04%",
+          "value": "30,309.00",
+          "change": "+0.55%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "Dow先物",
-          "value": "53,922.00",
-          "change": "-0.02%",
+          "value": "53,760.00",
+          "change": "-0.09%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "Russell2000先物",
-          "value": "3,070.10",
-          "change": "+0.32%",
+          "value": "3,073.70",
+          "change": "-0.04%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "VIX",
-          "value": "14.58",
-          "change": "-0.34%",
+          "value": "14.93",
+          "change": "+4.77%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "米10年債利回り",
-          "value": "4.66%",
-          "change": "+0.39%",
+          "value": "4.70%",
+          "change": "+1.19%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "ドル指数",
-          "value": "99.51",
-          "change": "-0.45%",
+          "value": "99.36",
+          "change": "-0.31%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "USD/JPY",
-          "value": "158.945",
-          "change": "-0.35%",
+          "value": "158.995",
+          "change": "-0.19%",
           "note": "前日通常取引終値比"
         }
       ],
       "premarketMovers": [
         {
           "symbol": "AVGO",
-          "price": 412.0,
-          "changePct": -1.3929443300942923,
+          "price": 397.7,
+          "changePct": -4.815466220643638,
           "volume": 0
         },
         {
           "symbol": "TSLA",
-          "price": 342.4,
-          "changePct": 0.7177314978232818,
-          "volume": 0
-        },
-        {
-          "symbol": "NVDA",
-          "price": 226.75,
-          "changePct": 0.6435863293386523,
-          "volume": 0
-        },
-        {
-          "symbol": "META",
-          "price": 596.85,
-          "changePct": 0.31598231843621427,
-          "volume": 0
-        },
-        {
-          "symbol": "AAPL",
-          "price": 305.82,
-          "changePct": 0.18345017362249028,
+          "price": 344.62,
+          "changePct": 1.3707494999411818,
           "volume": 0
         },
         {
           "symbol": "MSFT",
-          "price": 496.14,
-          "changePct": -0.14892931895025274,
+          "price": 491.7,
+          "changePct": -1.042505232651747,
+          "volume": 0
+        },
+        {
+          "symbol": "META",
+          "price": 590.05,
+          "changePct": -0.8269324503756614,
+          "volume": 0
+        },
+        {
+          "symbol": "AAPL",
+          "price": 306.916,
+          "changePct": 0.5424949579044158,
           "volume": 0
         },
         {
           "symbol": "GOOGL",
-          "price": 346.73,
-          "changePct": 0.10682526850676055,
+          "price": 347.9616,
+          "changePct": 0.46240905416328193,
+          "volume": 0
+        },
+        {
+          "symbol": "NVDA",
+          "price": 226.161,
+          "changePct": 0.382157123834892,
           "volume": 0
         },
         {
           "symbol": "AMZN",
-          "price": 264.94,
-          "changePct": -0.07166295779429399,
+          "price": 264.8988,
+          "changePct": -0.08720250443179367,
           "volume": 0
         }
       ],
       "insights": [
-        "大型テック・主要株プレマーケット: AVGO -1.39%（出来高 0） / TSLA +0.72%（出来高 0） / NVDA +0.64%（出来高 0） / META +0.32%（出来高 0） / AAPL +0.18%（出来高 0）",
+        "大型テック・主要株プレマーケット: AVGO -4.82%（出来高 0） / TSLA +1.37%（出来高 0） / MSFT -1.04%（出来高 0） / META -0.83%（出来高 0） / AAPL +0.54%（出来高 0）",
         "S&P500先物とNasdaq100先物はともにプラス圏。NY寄り前の株式センチメントはリスクオン寄りです。",
-        "米10年債利回り 4.66%（前日比 +0.39%）。株先物との整合性を確認します。"
+        "米10年債利回り 4.70%（前日比 +1.19%）。株先物との整合性を確認します。"
       ],
       "judgement": "指数先物・米金利・ドル・大型テックのプレマーケット出来高を組み合わせて判断します。",
       "errors": []
@@ -1141,23 +1095,23 @@
       "steps": [
         {
           "label": "東京市場",
-          "text": "2026-08-17 / 日経225 68,579.40 -0.20% / TOPIX 4,174.09 -0.55%"
+          "text": "2026-08-17 / 日経225 69,169.66 +0.66% / TOPIX 4,204.36 +0.17%"
         },
         {
           "label": "米国プレマーケット",
-          "text": "2026-08-14 / S&P500先物 7,824.25 +0.02% / Nasdaq100先物 30,200.25 +0.04%"
+          "text": "2026-08-17 / S&P500先物 7,818.25 +0.17% / Nasdaq100先物 30,309.00 +0.55%"
         },
         {
           "label": "米国通常市場（直近終値）",
           "text": "S&P500 -13.23（-0.17%） / Nasdaq -73.87（-0.28%）"
         }
       ],
-      "conclusion": "東京市場と米国株先物の方向が逆転。欧州時間の金利・為替・ニュースで市場テーマが変化した可能性を優先して確認します。"
+      "conclusion": "東京市場と米国株先物の方向が一致。日米で同じリスク選好が引き継がれている可能性が高まっています。"
     }
   },
-  "sessionDataUpdatedAt": "2026-08-17T10:26:39+09:00",
+  "sessionDataUpdatedAt": "2026-08-17T17:04:54+09:00",
   "snapshotDate": "2026-08-17",
-  "savedAt": "2026-08-17T16:58:35+09:00",
+  "savedAt": "2026-08-17T17:26:08+09:00",
   "snapshotPolicy": {
     "type": "independent-market-session-dates",
     "description": "米国市場と東京市場は、それぞれの取引終了後に独立更新。未更新側は直前の確定データを保持する。"
