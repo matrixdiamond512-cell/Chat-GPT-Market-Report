@@ -13,7 +13,7 @@ from fetch_us_premarket import aggregate_premarket_rows
 TRADERS_ARTICLE = """
 <html><h1>〔Market Flash〕寄り前気配は住友不、フジクラが高い気配値</h1>
 <p>2026/08/18(火) 08:48</p>
-<article>主力株の寄り前気配では、住友不動産&lt;8830.T&gt;が前日比2.1%高い気配値、フジクラ&lt;5803.T&gt;が1.8%高い気配値。</article>
+<input id="body_text" value="主力株の寄り前気配では住友不動産&lt;8830&gt;+2.1%、フジクラ&lt;5803&gt;+1.8%が高い気配値。" />
 </html>
 """
 
