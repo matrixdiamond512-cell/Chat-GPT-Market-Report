@@ -3,17 +3,19 @@
 
 Precedence for the morning publication pipeline is:
 1. canonical Google Sheets / exact-date specialist references,
-2. values already present in the originally published report for the same slot,
-3. external repair sources,
-4. reasoned unavailable markers.
+2. verified repository history for exchange-session closes,
+3. values already present in the originally published report for the same slot,
+4. external repair sources,
+5. reasoned unavailable markers.
 
-This script protects level 2. It scans git history for the earliest version of the
-same report date/time and restores usable rows only when no canonical source has
-explicitly updated that row. This prevents a later fallback/date-gate mismatch from
-turning an already published numeric value into 取得不能.
+The special OSE recovery is date-strict. The Friday Osaka night session closes at
+06:00 JST on Saturday, so a Monday 08:00 previous-close report must accept that
+Saturday 06:00 verified quote as the close of Friday's trading day.
 """
 from __future__ import annotations
 
+import csv
+import datetime as dt
 import json
 import re
 import subprocess
@@ -22,6 +24,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 LATEST = ROOT / "data" / "latest-report.json"
+VERIFIED_HISTORY = ROOT / "data" / "market" / "verified_history.csv"
 UNAVAILABLE_RE = re.compile(r"取得不能|未取得|未公表|入力に値なし|入力待ち|取得継続")
 ALIASES = {
     "Dow Jones": "NYダウ",
@@ -149,6 +152,116 @@ def find_original_report(date: str, slot: str) -> tuple[str, dict[str, Any] | No
     return "", None
 
 
+def previous_business_day(report_date: dt.date) -> dt.date:
+    day = report_date - dt.timedelta(days=1)
+    while day.weekday() >= 5:
+        day -= dt.timedelta(days=1)
+    return day
+
+
+def parse_iso(value: Any) -> dt.datetime | None:
+    text = str(value or "").strip()
+    if not text:
+        return None
+    try:
+        return dt.datetime.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+def verified_ose_previous_close(report_date: dt.date) -> dict[str, str] | None:
+    """Find the verified OSE close belonging to the prior business session.
+
+    OSE night trading for a Tokyo trading day ends at 06:00 JST on the next calendar
+    day. Therefore the target timestamp date is previous_business_day + 1 day.
+    Only verified, usable JPX/OSE rows are eligible; fallback/current report rows are
+    rejected.
+    """
+    if not VERIFIED_HISTORY.is_file():
+        return None
+    prior_day = previous_business_day(report_date)
+    session_end_date = prior_day + dt.timedelta(days=1)
+    candidates: list[tuple[dt.datetime, dict[str, str]]] = []
+    try:
+        with VERIFIED_HISTORY.open(encoding="utf-8-sig", newline="") as handle:
+            for row in csv.DictReader(handle):
+                if str(row.get("銘柄ID") or "") != "nikkei225_futures_ose":
+                    continue
+                if str(row.get("利用判定") or "") != "使用可":
+                    continue
+                if str(row.get("検証状態") or "") != "verified":
+                    continue
+                if str(row.get("前回確認値利用") or "").lower() == "true":
+                    continue
+                if "JPX/OSE" not in str(row.get("取得元") or ""):
+                    continue
+                target_at = parse_iso(row.get("対象時刻"))
+                if target_at is None or target_at.date() != session_end_date:
+                    continue
+                if target_at.time() > dt.time(6, 5):
+                    continue
+                value = str(row.get("現在値") or "").strip()
+                if not usable_value(value):
+                    continue
+                candidates.append((target_at, row))
+    except (OSError, csv.Error):
+        return None
+    if not candidates:
+        return None
+    candidates.sort(key=lambda pair: pair[0])
+    target_at, row = candidates[-1]
+    value = float(str(row.get("現在値") or "0").replace(",", ""))
+    change_raw = str(row.get("前回比") or "").strip()
+    rate_raw = str(row.get("前回比率(%)") or "").strip()
+    try:
+        change = float(change_raw)
+    except ValueError:
+        change = None
+    try:
+        rate = float(rate_raw)
+    except ValueError:
+        rate = None
+    return {
+        "value": f"{value:,.0f}",
+        "change": f"{change:+,.0f}" if change is not None else "—",
+        "rate": f"{rate:+.2f}%" if rate is not None else "—",
+        "direction": "上昇" if (change or 0) > 0 else "下落" if (change or 0) < 0 else "横ばい",
+        "asOf": target_at.isoformat(),
+        "tradingDate": prior_day.isoformat(),
+        "sourceName": str(row.get("取得元") or "JPX/OSE Futures Quotes"),
+        "sourceUrl": str(row.get("取得元URL") or ""),
+    }
+
+
+def apply_verified_ose_close(report: dict[str, Any], protected: set[str]) -> dict[str, str] | None:
+    label = "日経225先物（大阪取引所）"
+    if label in protected:
+        return None
+    try:
+        report_date = dt.date.fromisoformat(str(report.get("date") or ""))
+    except ValueError:
+        return None
+    recovered = verified_ose_previous_close(report_date)
+    if not recovered:
+        return None
+    row = rows_by_label(report).get(label)
+    if not row:
+        return None
+    for key in ("value", "change", "rate", "direction"):
+        row[key] = recovered[key]
+
+    markets = report.get("markets")
+    if isinstance(markets, list):
+        for market in markets:
+            if not isinstance(market, dict):
+                continue
+            if str(market.get("name") or "").strip() in {"日経225先物", label}:
+                market["price"] = f"{recovered['value']}円"
+                market["direction"] = recovered["direction"]
+                break
+    return recovered
+
+
 def restore_market_summaries(
     current: dict[str, Any], original: dict[str, Any], protected: set[str]
 ) -> list[str]:
@@ -205,8 +318,6 @@ def main() -> int:
             continue
         if not usable_value(source.get("value")):
             continue
-        # The originally published value is the fallback source of truth whenever
-        # canonical sources did not explicitly replace it.
         for key in ("value", "change", "rate", "direction"):
             if key in source:
                 target[key] = source.get(key)
@@ -214,18 +325,28 @@ def main() -> int:
         restored_rows.append(label)
 
     restored_markets = restore_market_summaries(report, original, protected)
+    ose_recovery = apply_verified_ose_close(report, protected)
+    if ose_recovery:
+        label = "日経225先物（大阪取引所）"
+        if label not in restored_rows:
+            restored_rows.append(label)
+        if "日経225先物" not in restored_markets:
+            restored_markets.append("日経225先物")
+
     report.setdefault("dataProvenance", {})["publishedValueRecovery"] = {
         "sourceCommit": commit,
-        "rule": "canonical source > original published value > external repair > reasoned unavailable",
+        "rule": "canonical source > verified exchange-session history > original published value > external repair > reasoned unavailable",
         "protectedCanonicalLabels": sorted(protected),
         "restoredRows": restored_rows,
         "restoredMarkets": restored_markets,
+        "osePreviousCloseRecovery": ose_recovery,
     }
     save(LATEST, payload)
     print(json.dumps({
         "sourceCommit": commit,
         "restoredRows": restored_rows,
         "restoredMarkets": restored_markets,
+        "osePreviousCloseRecovery": ose_recovery,
         "protected": sorted(protected),
     }, ensure_ascii=False))
     return 0
