@@ -1,19 +1,19 @@
 {
   "schemaVersion": "1.1.0",
   "pageId": "dashboard",
-  "generatedAt": "2026-08-15T13:49:05+09:00",
-  "publishedAt": "2026-08-15T13:49:05+09:00",
-  "dataAsOf": "2026-08-15T08:00:00+09:00",
+  "generatedAt": "2026-08-17T09:08:18+09:00",
+  "publishedAt": "2026-08-17T09:08:18+09:00",
+  "dataAsOf": "2026-08-17T08:00:00+09:00",
   "status": "ok",
   "isStale": false,
   "staleReason": "",
-  "currentReportKey": "2026-08-15 08:00",
+  "currentReportKey": "2026-08-17 08:00",
   "sources": [
     {
       "id": "MARKET_REPORTS_JSON",
       "name": "マーケットレポート本文の構造化JSON",
       "path": "reports.json",
-      "asOf": "2026-08-15 08:00",
+      "asOf": "2026-08-17 08:00",
       "status": "ok",
       "note": "Google Docsのマーケットレポート本文をGASで構造化したデータ。トップページ本文要素はこのJSONを優先して表示します。"
     },
@@ -38,9 +38,9 @@
     "市場データ取得基盤: degraded / missing="
   ],
   "latestReport": {
-    "date": "2026-08-15",
+    "date": "2026-08-17",
     "time": "08:00",
-    "title": "マーケットレポート｜2026/08/15（土）08:00",
+    "title": "マーケットレポート｜2026/08/17（月）08:00",
     "tags": [
       "ドル円",
       "ユーロドル",
@@ -51,85 +51,85 @@
       "米10年債",
       "Russell 2000"
     ],
-    "theme": "弱い米消費でFed追加利上げ観測は後退した一方、原油高・長期債供給・財政懸念で米長期金利が下がり切らない。大型株一服と小型株優位が併存する選別的リスクオン。",
-    "leadingMarket": "第1位は米10年債利回り、第2位はWTI原油、第3位はUSD/JPY、第4位はRussell 2000とNasdaqの相対強弱、第5位は日経VI。",
-    "mainScenario": "確率55%：選別的リスクオン継続。米10年債4.75%未満、WTI85ドル未満、USD/JPY160円明確突破なしが条件。",
-    "alternativeScenario": "強気20%：米10年債4.60%方向・WTI80ドル方向・Nasdaq再上昇。弱気25%：WTI85ドル超・米10年債4.75%超・USD/JPY160円接近が重なる再インフレ型リスクオフ。",
-    "breakConditions": "米10年債4.75%超定着、WTI85ドル超、USD/JPY160円明確突破、日経225先物68,000円割れ、BTC62,000ドル割れ、ホルムズ海峡情勢の一段悪化。",
+    "theme": "Fed追加利上げ観測の後退と、ホルムズ海峡の供給リスク・米長期金利高止まりの綱引き。08:00のWTIは82ドル台で急騰せず、金が4,400ドル台へ上昇する選別的ヘッジ相場。",
+    "leadingMarket": "第1位WTI原油、第2位米10年債利回り、第3位USD/JPY、第4位日経VI、第5位Russell 2000対Nasdaq。",
+    "mainScenario": "確率55%：選別的リスクオン継続。WTI85ドル未満、米10年4.75%未満、USD/JPY160円明確突破なしが条件。",
+    "alternativeScenario": "強気20%：WTI80～82ドル安定・米10年4.60%方向・Nasdaq/BTC追随。弱気25%：ホルムズ悪化→WTI85ドル超→米10年4.75%超→USD/JPY160円接近。",
+    "breakConditions": "WTI85ドル超定着、米10年4.75%超、USD/JPY160円明確突破、日経VI再上昇、BTC62,000ドル割れ。",
     "changes": [
-      "米7月小売売上高は前月比-0.6%と予想外に減少。",
-      "ミシガン大学8月消費者信頼感指数は51.0へ低下。",
-      "S&P500 -0.17%、Nasdaq -0.28%、Dow -0.20%に対しRussell 2000は+0.51%。",
-      "08:00検証済みWTIは82.40ドル、USD/JPYは159.31円、日経225先物は68,720円。"
+      "週末も米・イラン協議は進展せず、ホルムズ海峡の通航停滞が継続。",
+      "08:01のWTIは82.38ドルで金曜終値近辺にとどまり、新たな原油急騰は未確認。",
+      "金は4,437.60ドル、USD/JPYは159.16円、EUR/USDは1.15780。",
+      "8/14米株は大型3指数小幅安に対しRussell 2000は+0.51%。"
     ],
     "consistency": [
-      "弱い米小売→ドル安・EUR/USD上昇は整合的。",
-      "追加利上げ観測後退→Russell 2000上昇は整合的。",
-      "ホルムズ緊張→WTI上昇・金高値圏は整合的。",
-      "景気指標悪化にもかかわらず米10年債4.695%は、長期債供給・財政・原油インフレを反映。"
+      "ドル軟化と金上昇は整合的。",
+      "中東緊張継続に対し金は強いがWTIは横ばいで、新たな供給ショックの価格織り込みは限定的。",
+      "大型株小幅安・Russell 2000上昇は全面リスクオフではなく資金ローテーション。",
+      "日経VI30.96は日本株のヘッジ需要がなお強いことを示す。"
     ],
     "positioning": [
-      "USD/JPYは160円手前で介入警戒・日銀追加利上げ観測と、日米金利差・実需ドル需要・キャリー需要が衝突。",
-      "日経225先物は68,720円、日経VIは30.96で高ボラ警戒が残る。",
-      "BTCは62,000ドル台、Crypto Fear & Greed 37 / Fearで米株よりリスク選好が弱い。"
+      "USD/JPYは160円手前の介入・政策警戒と日米金利差・実需ドル需要が衝突。",
+      "日経225先物（OSE）は8/17新規取得失敗。8/15最終確認68,720円は参考値のみ。",
+      "BTCは62,877ドル、Crypto Fear & Greed 36/Fearで米株より慎重。"
     ],
     "news": [
-      "米7月小売売上高が前月比-0.6%と予想外に減少し、9月Fed利上げ観測が後退。",
-      "ミシガン大学8月消費者信頼感指数は51.0、1年先インフレ期待は4.3%。",
-      "ホルムズ海峡の通航が大きく制約され、原油供給不安が再燃。",
-      "米大型株は小幅安、小型株Russell 2000は逆行高。"
+      "8/14米株はS&P500 -0.17%、Nasdaq -0.28%、Dow -0.20%、Russell 2000 +0.51%。",
+      "8/14 WTI終値82.40ドル、Brent88.52ドル。ホルムズ海峡の通航制約が供給リスクを維持。",
+      "8/16も米・イラン協議に進展がなく、米国は追加経済圧力を検討。",
+      "今週は8/19 FOMC議事要旨が主要イベント。"
     ],
     "crossAssetFlow": [
-      "株式：大型株から一部小型株へ資金分散。",
-      "債券：短期はFed据え置き期待、長期は財政・供給懸念で高止まり。",
-      "金：ドル安と地政学需要が支え。",
-      "原油：需給悪化より地政学プレミアムが優勢。",
-      "為替：ドル弱含みだが円高は限定的。",
-      "暗号資産：BTCは米株より弱く、全面リスクオンではない。"
+      "株式：大型株から小型株へ一部資金分散。",
+      "債券：短期はFed据え置き期待、長期は財政・供給・原油で高止まり。",
+      "金：ドル軟化と地政学ヘッジで4,400ドル台。",
+      "原油：供給リスクと需要・在庫の弱さが綱引き、08:00は82ドル台。",
+      "為替：ドル全面高ではなくEUR/USD上昇、円も小幅買い戻し。",
+      "暗号資産：BTCは米株より慎重。"
     ],
     "events": [
-      "土曜日のため東京現物市場は休場。週末の米・イラン情勢、ホルムズ海峡通航、原油の時間外反応を最優先。",
-      "週明けはWTI85/80ドル、米10年4.75/4.60%、USD/JPY160/158.50円、日経VI30、日経225先物69,000/68,000円を監視。"
+      "8/17 NY時間：Empire State Manufacturing Survey（米東部8:30、日本時間21:30）。",
+      "8/19：FOMC議事要旨。7月会合の内部対立と追加利上げ条件を確認。"
     ],
     "handover": [
-      "週明け東京市場は原油→米長期金利→USD/JPY→日経VI→日経225先物の順で確認。"
+      "東京時間は原油→USD/JPY→日経VIを優先し、欧州時間で中東ニュースとBrent、NY時間で米指標を確認。"
     ],
     "markets": [
       {
         "name": "金",
-        "direction": "中立～やや強気",
-        "price": "4,380.40ドル/oz",
-        "outlook": "4,400ドル維持で支え。4,500ドル超で上放れ、4,380ドル割れで短期弱気。"
+        "direction": "やや強気",
+        "price": "4,437.60ドル/oz",
+        "outlook": "4,400ドル維持で支え。4,450～4,500ドルが上値確認帯、4,380ドル割れで短期強気を弱める。"
       },
       {
         "name": "原油",
         "direction": "中立～やや強気・高ボラ",
-        "price": "82.40ドル/bbl",
-        "outlook": "85ドル超で再インフレ警戒、80ドル割れで供給不安後退。"
+        "price": "82.38ドル/bbl",
+        "outlook": "85ドル超で再インフレ警戒、80ドル割れで供給プレミアム後退。"
       },
       {
         "name": "日経225先物",
-        "direction": "中立～やや強気・高ボラ",
-        "price": "68,720円",
-        "outlook": "69,000円回復で強気再開、68,000円割れで慎重化。"
+        "direction": "取得不能",
+        "price": "取得不能（8/17新規取得失敗）",
+        "outlook": "8/15最終確認68,720円は参考値のみ。東京開始後に再確認。"
       },
       {
         "name": "USD/JPY",
         "direction": "中立",
         "price": "159.426円",
-        "outlook": "160円は介入・政策警戒。158.50円割れで円高加速警戒。"
+        "outlook": "160円は政策警戒。158.50円割れなら円買い加速を警戒。"
       },
       {
         "name": "EUR/USD",
         "direction": "中立～やや強気",
-        "price": "1.15727",
-        "outlook": "1.1600突破で上方向、1.1500割れで弱気。"
+        "price": "1.15354",
+        "outlook": "1.1600突破で上方向、1.1500割れで弱気化。"
       },
       {
         "name": "BTCUSD",
         "direction": "中立～やや弱気",
-        "price": "62,809ドル",
-        "outlook": "63,500～64,000ドル回復で改善、62,000ドル割れでリスク回避。"
+        "price": "62,877ドル",
+        "outlook": "64,000ドル回復で改善、62,000ドル割れでリスク回避色。"
       }
     ],
     "marketDataTable": {
@@ -178,24 +178,24 @@
         },
         {
           "label": "CME日経225先物・円建て",
-          "value": "68,715",
-          "change": "-346",
-          "rate": "-0.50%",
-          "direction": "下落"
+          "value": "取得不能（2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用）",
+          "change": "—",
+          "rate": "—",
+          "direction": "取得不能"
         },
         {
           "label": "CME日経225先物・ドル建て",
-          "value": "68,735",
-          "change": "-465",
-          "rate": "-0.67%",
-          "direction": "下落"
+          "value": "取得不能（2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用）",
+          "change": "—",
+          "rate": "—",
+          "direction": "取得不能"
         },
         {
           "label": "日経225先物（大阪取引所）",
-          "value": "68,720円",
-          "change": "+30",
-          "rate": "+0.04%",
-          "direction": "高値圏"
+          "value": "取得不能（8/17新規取得失敗）",
+          "change": "—",
+          "rate": "—",
+          "direction": "8/15最終確認68,720円は参考値"
         },
         {
           "label": "USD/JPY",
@@ -206,31 +206,31 @@
         },
         {
           "label": "EUR/USD",
-          "value": "1.15727",
-          "change": "+0.00427",
-          "rate": "+0.37%",
+          "value": "1.15354",
+          "change": "+0.00053",
+          "rate": "+0.05%",
           "direction": "上昇"
         },
         {
           "label": "COMEX金先物",
-          "value": "4,380.40",
-          "change": "+16.80",
-          "rate": "+0.38%",
-          "direction": "上昇"
+          "value": "取得不能（2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用）",
+          "change": "—",
+          "rate": "—",
+          "direction": "取得不能"
         },
         {
           "label": "WTI原油",
-          "value": "82.40",
-          "change": "+1.15",
-          "rate": "+1.42%",
-          "direction": "上昇"
+          "value": "取得不能（2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用）",
+          "change": "—",
+          "rate": "—",
+          "direction": "取得不能"
         },
         {
           "label": "BTCUSD",
-          "value": "62,809ドル",
-          "change": "約-596",
-          "rate": "約-0.94%",
-          "direction": "弱い"
+          "value": "62,877",
+          "change": "—",
+          "rate": "—",
+          "direction": "中立～やや弱い"
         },
         {
           "label": "VIX",
@@ -256,16 +256,16 @@
         {
           "label": "米10年債利回り",
           "value": "4.695%",
-          "change": "+約5.5bp",
+          "change": "—",
           "rate": "—",
-          "direction": "上昇"
+          "direction": "高止まり"
         },
         {
           "label": "日本10年国債利回り",
           "value": "2.874%",
-          "change": "+0.1bp",
+          "change": "—",
           "rate": "—",
-          "direction": "上昇"
+          "direction": "8/14確定"
         },
         {
           "label": "日経225予想PER",
@@ -339,22 +339,25 @@
         }
       ]
     },
-    "sourceDocument": {
-      "id": "1mfonbEO4XASbAomYdyrExb301WYvgVlbeascj3eY1mw",
-      "name": "マーケットレポート_2026-08-15_08-00",
-      "url": "https://docs.google.com/document/d/1mfonbEO4XASbAomYdyrExb301WYvgVlbeascj3eY1mw/edit",
-      "updatedAt": "2026-08-15T08:04:00+09:00"
-    },
-    "fullText": "マーケットレポート｜2026/08/15（土）08:00\n\n作成日時：2026/08/15 08:04 JST\nデータ基準：GitHub検証済み08:00スナップショット（generatedAt 2026-08-15T08:00:03+09:00）および8月14日（金）の米国・日本市場確定データ\n\n【08:00時点の結論】\n総合判断は「中立～やや強気。ただし米大型株は一服、原油・長期金利・円の組み合わせに警戒」です。\n\n昨夜の米国市場では、7月小売売上高が前月比-0.6%と予想外に減少し、8月ミシガン大学消費者信頼感指数も51.0へ低下しました。これにより9月FOMCの追加利上げ観測は後退し、ドルには下押し圧力がかかりました。一方で、米10年債利回りは4.695%まで上昇し、短期金利低下期待と長期ゾーンの財政・供給・インフレ懸念が併存しています。\n\n株式はS&P500 -0.17%、Nasdaq -0.28%、Dow -0.20%と小幅安でしたが、Russell 2000は+0.51%と逆行高。大型AI・半導体株の高値警戒が出る一方、金融環境の極端な悪化を示す動きではありません。WTIは82ドル台へ反発し、ホルムズ海峡を巡る緊張が再びインフレ警戒を支えています。\n\n08:00の検証済み市場データでは、金4,432ドル、WTI82.40ドル、日経225先物（大阪取引所）68,720円、USD/JPY159.426円、EUR/USD1.15727、BTCUSD62,809ドル、日経VI30.96、Fear & Greed Index 65（Greed）です。\n\n【主要市場データ】\n項目\t終値・値\t前日比\t騰落率\t方向感\nNYダウ\t53,732.41\t-107.58\t-0.20%\t下落\nNASDAQ総合\t26,729.16\t-73.87\t-0.28%\t下落\nS&P500\t7,785.76\t-13.23\t-0.17%\t下落\nRussell 2000\t3,068.42\t+15.57\t+0.51%\t上昇\n日経225現物\t68,713.80\t+405.21\t+0.59%\t上昇\nCME日経225先物・円建て\t68,715\t-346\t-0.50%\t下落\nCME日経225先物・ドル建て\t68,735\t-465\t-0.67%\t下落\n日経225先物（大阪取引所）\t68,720円\t+30\t+0.04%\t高値圏\nUSD/JPY\t159.426\t+0.098\t+0.06%\t上昇\nEUR/USD\t1.15727\t+0.00427\t+0.37%\t上昇\nCOMEX金先物\t4,380.40\t+16.80\t+0.38%\t上昇\nWTI原油\t82.40\t+1.15\t+1.42%\t上昇\nBTCUSD\t62,809ドル\t約-596\t約-0.94%\t弱い\nVIX\t14.25\t-0.38\t-2.60%\t低下\n日経VI\t30.96\t-0.69\t-2.18%\tなお高水準\nFear & Greed Index\t65 / Greed\t-1\t—\tGreed\n米10年債利回り\t4.695%\t+約5.5bp\t—\t上昇\n日本10年国債利回り\t2.874%\t+0.1bp\t—\t上昇\n日経225予想PER\t17.65倍\t—\t—\t確定値\n日経225 PBR\t1.94倍\t—\t—\t確定値\n日経225予想EPS\t3,893.13円\t—\t—\t確定値\n日経225 25日移動平均乖離率\t+3.84%\t—\t—\t上方乖離\n日経225 200日移動平均乖離率\t+19.42%\t—\t—\t上方乖離\n東証プライム売買代金\t取得不能（08:00構造化表に元データなし。後続の前営業日終値修復・日本終値参照で補完）\t—\t—\t取得不能\n東証プライム売買高\t取得不能（08:00構造化表に元データなし。後続の前営業日終値修復・日本終値参照で補完）\t—\t—\t取得不能\n東証プライム値上がり銘柄数\t1124\t—\t—\t確定値\n東証プライム値下がり銘柄数\t401\t—\t—\t確定値\n東証プライム25日騰落レシオ\t121.78%\t—\t—\t確定値\n【昨夜のNY市場で何が起きたか】\n第1の材料は米7月小売売上高です。前月比-0.6%と、6月の+0.2%から急減し、市場予想にも届きませんでした。景気の減速を示すため本来は金利低下・グロース株支援材料ですが、今回は株式が小幅安になりました。市場は「追加利上げ回避」を好感するよりも、「高値圏の大型株で利益確定」「消費の弱さ」「原油高」を重く見たと解釈できます。\n\n第2の材料は消費者心理です。ミシガン大学の8月速報値は51.0で、7月55.2から低下し予想54.5も下回りました。1年先インフレ期待は4.3%へ上昇、5年先は3.3%で横ばいでした。つまり「需要は弱いのに、生活コストへの警戒は残る」という、Fedにとって扱いにくい組み合わせです。\n\n第3の材料は原油です。ホルムズ海峡の通航がほぼ停止状態となり、追加の船舶攻撃や米国の対イラン封鎖長期化姿勢が供給不安を再燃させました。WTIは82ドル台へ上昇。小売売上高悪化が示す需要減速と、地政学が示す供給制約が正面衝突しています。\n\n【今日の相場テーマ】\n今日のテーマは「弱い米消費でFed追加利上げ観測は後退したが、長期金利と原油が下がり切らない」です。\n\n前回までの「CPI・PPI鈍化→金利低下→株高」という単純な流れは弱まりました。昨夜は小売売上高が弱いにもかかわらず、米10年債は4.695%へ上昇し、大型株は小幅安でした。短期の政策金利期待と長期の資本コストが別方向に動き始めています。\n\n【前回から市場解釈は変わったか】\n変わりました。\n\n前回は米インフレ鈍化を中心に「追加利上げ警戒後退＝株式に追い風」と整理できました。しかし現在は、\n弱い小売売上高 → Fed利上げ観測後退\n一方で\n原油高・財政赤字・債券供給 → 長期金利高止まり\nとなっています。\n\nそのため「政策金利が上がらなければ株は全面高」という局面ではなくなりました。\n\n【価格の動きと材料の整合性】\n・米小売売上高悪化 → ドル安、EUR/USD上昇：整合的\n・Fed利上げ観測後退 → Russell 2000上昇：整合的\n・大型AI株の高値警戒 → Nasdaq小幅安：整合的\n・ホルムズ緊張 → WTI上昇、金高値圏：整合的\n・米景気指標悪化にもかかわらず米10年債4.695%：短期政策期待だけでは説明できず、長期債供給・財政・原油インフレを反映\n・USD/JPY159円台維持：米ドル全面安でも円が大幅高になっておらず、日米金利差・実需ドル需要・キャリー需要が残っている\n\n【どの市場が主導しているか】\n第1位：米10年債利回り\n第2位：WTI原油\n第3位：USD/JPY\n第4位：Russell 2000とNasdaqの相対差\n第5位：日経VI\n第6位：BTCと米株の連動性\n\n特に「米2年債が利上げ観測後退で低下しやすいのに、10年・30年が高止まりする」場合はイールドカーブのスティープ化が進み、長期デュレーション株には逆風です。\n\n【クロスアセット資金フロー】\n株式：全面高ではありません。大型株から一部小型株へ資金が移動しており、Russell 2000が逆行高となりました。\n債券：短期はFed据え置き期待が支えですが、長期は財政赤字・AI関連債発行・国債供給の重さが残ります。\n金：弱いドルと地政学需要が支え。4,400ドル台を維持しており、リスク回避需要も残っています。\n原油：需給悪化より地政学プレミアムが優勢に転換。82ドル台。\n為替：ドル指数は弱含み、EUR/USDは上昇。ただしUSD/JPYは159円台で、円高は限定的。\n暗号資産：BTCは62,000ドル台で米株より弱く、Crypto Fear & Greedも37 / Fear。全面的リスクオンではありません。\n\n【需給・ポジション】\nUSD/JPY：\n159円台で、160円の介入警戒と日銀の追加利上げ観測が上値を抑える一方、日米金利差・エネルギー輸入・実需ドル需要・キャリー需要が下値を支えています。最新の東京市場スポット出来高は未公表のため、実需主導か投機主導かの数量判定は行いません。\n\n日経225先物：\n68,720円。日経VIは30.96と30台に残っており、先物価格が高値圏でもヘッジ需要は消えていません。8月14日の先物・オプションSQ通過後もVIが30台であるため、値動きの大きさへの警戒は継続とみます。最新のオプション建玉詳細は取得できていないため、特定ストライクへのガンマ集中は断定しません。\n\n金：\n地政学需要とドル安が支える一方、4,500ドル近辺は直近で利益確定が出た価格帯です。ETFフロー・COTの当日更新値は確認できていないため、ポジション偏りを数量で断定しません。\n\nWTI：\n在庫増・需要見通し悪化という弱材料に対し、ホルムズ海峡の供給リスクがショートカバーを誘発しやすい構造です。80ドル割れなら地政学プレミアム剥落、85ドル超なら再インフレ警戒が一段強まります。\n\nBTC：\n株式が高値圏でもBTCは62,000ドル台、Crypto Fear & Greedは37。レバレッジを伴うリスク選好は米株ほど強くないと判断します。\n\n【個別市場見通し】\n金：中立～やや強気\n4,432ドル。4,400ドルを維持する限り地政学・ドル安が支え。4,500ドル超で上放れ確認、4,380ドル割れで短期弱気へ。\n\nWTI原油：中立～やや強気・高ボラ\n82.40ドル。80～82ドルが下値帯。85ドル超で再インフレ警戒が強まり、米長期金利・USD/JPYにも波及しやすい。80ドル割れなら供給不安の後退を示唆。\n\n日経225先物（大阪取引所）：中立～やや強気・高ボラ\n68,720円。米大型株は小幅安でもRussell 2000が上昇し、世界的なリスク回避ではありません。一方、円高・原油高・日経VI30台が上値を抑えます。69,000円回復で強気再開、68,000円割れで慎重化。\n\nUSD/JPY：中立\n159.426円。160円は介入・政策警戒。158.50円割れなら円高加速、160円明確突破なら介入リスクを含む高ボラ化を警戒。\n\nEUR/USD：中立～やや強気\n1.15727。弱い米小売売上高とドル安が支え。1.1600突破なら上方向、1.1500割れで弱気へ。\n\nBTCUSD：中立～やや弱気\n62,809ドル。米株より弱い。63,500～64,000ドル回復で改善、62,000ドル割れならリスク回避を警戒。\n\n【メインシナリオ】\n確率55%：選別的リスクオン継続。\n条件は、米10年債が4.75%を明確に超えず、WTIが85ドル未満、USD/JPYが160円を明確突破しないこと。大型株は高値もみ合い、小型株・金・一部景気敏感へ資金が分散する。\n\n【強気シナリオ】\n確率20%：長期金利低下を伴う全面リスクオン。\n米10年債4.60%方向、WTI80ドル方向、USD/JPY158円台、Nasdaq再上昇が同時に進む場合。金・BTCも追随しやすい。\n\n【弱気シナリオ】\n確率25%：原油高・長期金利高による再インフレ型リスクオフ。\nWTI85ドル超、米10年債4.75%超、USD/JPY160円接近または突破が重なる場合。Nasdaq・BTC・日経225先物に下押し圧力。金は初期的に安全需要で上がっても、実質金利上昇が強ければ上値を抑えられる可能性があります。\n\n【メインシナリオが崩れる条件】\n・米10年債利回り4.75%超が定着\n・WTI85ドル超\n・USD/JPY160円明確突破による介入警戒急上昇\n・日経225先物68,000円割れ\n・Nasdaqの下落拡大とRussell 2000の逆行高解消\n・BTC62,000ドル割れ\n・ホルムズ海峡情勢の一段悪化\n\n【次の時間帯への引き継ぎポイント】\n本日は土曜日で東京現物市場は休場です。次の主要な現物市場は週明けとなるため、週末中の米・イラン情勢、ホルムズ海峡通航、原油の時間外反応が最優先です。\n週明け東京市場では、\n1. WTIが85ドル方向か80ドル方向か\n2. 米10年債が4.75%を超えるか\n3. USD/JPYが160円へ接近するか、158円台へ戻るか\n4. 日経VIが30を割れるか\n5. 日経225先物が69,000円を回復するか\nを確認します。\n\n【ポジションの偏りは残っているか】\n残っていますが、方向は一枚岩ではありません。\n米大型株は高値圏で利益確定が出る一方、小型株は強い。円は介入警戒があるのに159円台。原油は需給悪化でも地政学で上昇。BTCは株式に追随しない。このため「リスクオンの偏り」より、「市場ごとに異なるポジション解消・再構築」が進んでいるとみる方が適切です。\n\n【今日の監視順】\n1. ホルムズ海峡・米イラン情勢\n2. WTI原油 80 / 85ドル\n3. 米10年債 4.60 / 4.75%\n4. USD/JPY 158.50 / 160円\n5. 日経225先物 68,000 / 69,000円\n6. 日経VI 30\n7. NasdaqとRussell 2000の相対強弱\n8. BTC 62,000 / 64,000ドル\n\n【まとめ】\n今朝の市場は「景気減速でFedは利上げしにくい」一方、「原油高と長期債の供給不安で長期金利は下がり切らない」という二重構造です。\n\n弱い小売売上高を単純な株高材料と見る局面ではありません。昨夜の米大型株は小幅安、Russell 2000は逆行高で、資金は選別的に動いています。日経225先物は68,720円ですが、日経VIは30.96と高く、週末の地政学ニュースに対するヘッジ需要も意識されます。\n\n現時点の総合判断は「中立～やや強気」。ただし、強気を維持できる条件は米10年債4.75%未満、WTI85ドル未満、USD/JPY160円明確突破なしです。週末は原油と長期金利の組み合わせが最重要です。\n\n【主な確認ソース】\n・GitHub検証済み市場データ：data/market/latest.json、data/market/chatgpt_input.csv\n・Google Sheets「マーケットレポート終値一覧2026」\n・Reuters：2026/08/14 米国株、米小売売上高、消費者信頼感、原油・ホルムズ海峡、為替\n・Cboe VIX Historical Data\n・Nikkei 225 VI official profile\n・CNN Fear & Greed Index\n・JPX/OSE Futures Quotes\n\n※本レポートは情報提供を目的とし、投資助言ではありません。推測値は使用していません。取得できない項目は理由を明記しました。",
+    "fullText": "マーケットレポート｜2026/08/17（月）08:00\n【08:00結論】\n確率55%：選別的リスクオン継続。WTI85ドル未満、米10年4.75%未満、USD/JPY160円明確突破なしが条件。\n【今日の相場テーマ】\nFed追加利上げ観測の後退と、ホルムズ海峡の供給リスク・米長期金利高止まりの綱引き。08:00のWTIは82ドル台で急騰せず、金が4,400ドル台へ上昇する選別的ヘッジ相場。\n【前回からの変化】\n・週末も米・イラン協議は進展せず、ホルムズ海峡の通航停滞が継続。\n・08:01のWTIは82.38ドルで金曜終値近辺にとどまり、新たな原油急騰は未確認。\n・金は4,437.60ドル、USD/JPYは159.16円、EUR/USDは1.15780。\n・8/14米株は大型3指数小幅安に対しRussell 2000は+0.51%。\n【主要市場データ】\nNYダウ｜53,732.41｜-107.58｜-0.20%｜下落\nNASDAQ総合｜26,729.16｜-73.87｜-0.28%｜下落\nS&P500｜7,785.76｜-13.23｜-0.17%｜下落\nRussell 2000｜3,068.42｜+15.57｜+0.51%｜上昇\n日経225現物｜68,713.80｜+405.21｜+0.59%｜上昇\nCME日経225先物・円建て｜取得不能（2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用）｜—｜—｜取得不能\nCME日経225先物・ドル建て｜取得不能（2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用）｜—｜—｜取得不能\n日経225先物（大阪取引所）｜取得不能（8/17新規取得失敗）｜—｜—｜8/15最終確認68,720円は参考値\nUSD/JPY｜159.426｜+0.098｜+0.06%｜上昇\nEUR/USD｜1.15354｜+0.00053｜+0.05%｜上昇\nCOMEX金先物｜取得不能（2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用）｜—｜—｜取得不能\nWTI原油｜取得不能（2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用）｜—｜—｜取得不能\nBTCUSD｜62,877｜—｜—｜中立～やや弱い\nVIX｜14.25｜-0.38｜-2.60%｜低下\n日経VI｜30.96｜-0.69｜-2.18%｜なお高水準\nFear & Greed Index｜65 / Greed｜-1｜—｜Greed\n米10年債利回り｜4.695%｜—｜—｜高止まり\n日本10年国債利回り｜2.874%｜—｜—｜8/14確定\n日経225予想PER｜17.65倍｜—｜—｜確定値\n日経225 PBR｜1.94倍｜—｜—｜確定値\n日経225予想EPS｜3,893.13円｜—｜—｜確定値\n日経225 25日移動平均乖離率｜+3.84%｜—｜—｜上方乖離\n日経225 200日移動平均乖離率｜+19.42%｜—｜—｜上方乖離\n東証プライム売買代金｜取得不能（08:00構造化表に元データなし。後続の前営業日終値修復・日本終値参照で補完）｜—｜—｜取得不能\n東証プライム売買高｜取得不能（08:00構造化表に元データなし。後続の前営業日終値修復・日本終値参照で補完）｜—｜—｜取得不能\n東証プライム値上がり銘柄数｜1124｜—｜—｜確定値\n東証プライム値下がり銘柄数｜401｜—｜—｜確定値\n東証プライム25日騰落レシオ｜121.78%｜—｜—｜確定値\n【材料と値動きの整合性】\n・ドル軟化と金上昇は整合的。\n・中東緊張継続に対し金は強いがWTIは横ばいで、新たな供給ショックの価格織り込みは限定的。\n・大型株小幅安・Russell 2000上昇は全面リスクオフではなく資金ローテーション。\n・日経VI30.96は日本株のヘッジ需要がなお強いことを示す。\n【今日の主導市場】\n第1位WTI原油、第2位米10年債利回り、第3位USD/JPY、第4位日経VI、第5位Russell 2000対Nasdaq。\n【重要ニュース】\n・8/14米株はS&P500 -0.17%、Nasdaq -0.28%、Dow -0.20%、Russell 2000 +0.51%。\n・8/14 WTI終値82.40ドル、Brent88.52ドル。ホルムズ海峡の通航制約が供給リスクを維持。\n・8/16も米・イラン協議に進展がなく、米国は追加経済圧力を検討。\n・今週は8/19 FOMC議事要旨が主要イベント。\n【クロスアセット資金フロー】\n・株式：大型株から小型株へ一部資金分散。\n・債券：短期はFed据え置き期待、長期は財政・供給・原油で高止まり。\n・金：ドル軟化と地政学ヘッジで4,400ドル台。\n・原油：供給リスクと需要・在庫の弱さが綱引き、08:00は82ドル台。\n・為替：ドル全面高ではなくEUR/USD上昇、円も小幅買い戻し。\n・暗号資産：BTCは米株より慎重。\n【需給・ポジション】\n・USD/JPYは160円手前の介入・政策警戒と日米金利差・実需ドル需要が衝突。\n・日経225先物（OSE）は8/17新規取得失敗。8/15最終確認68,720円は参考値のみ。\n・BTCは62,877ドル、Crypto Fear & Greed 36/Fearで米株より慎重。\n【今後の重要イベント】\n・8/17 NY時間：Empire State Manufacturing Survey（米東部8:30、日本時間21:30）。\n・8/19：FOMC議事要旨。7月会合の内部対立と追加利上げ条件を確認。\n【個別市場見通し】\n金：やや強気。4,437.60ドル/oz。4,400ドル維持で支え。4,450～4,500ドルが上値確認帯、4,380ドル割れで短期強気を弱める。\n原油：中立～やや強気・高ボラ。82.38ドル/bbl。85ドル超で再インフレ警戒、80ドル割れで供給プレミアム後退。\n日経225先物：取得不能。取得不能（8/17新規取得失敗）。8/15最終確認68,720円は参考値のみ。東京開始後に再確認。\nUSD/JPY：中立。159.426円。160円は政策警戒。158.50円割れなら円買い加速を警戒。\nEUR/USD：中立～やや強気。1.15354。1.1600突破で上方向、1.1500割れで弱気化。\nBTCUSD：中立～やや弱気。62,877ドル。64,000ドル回復で改善、62,000ドル割れでリスク回避色。\n【シナリオ】\nメイン：確率55%：選別的リスクオン継続。WTI85ドル未満、米10年4.75%未満、USD/JPY160円明確突破なしが条件。\n代替：強気20%：WTI80～82ドル安定・米10年4.60%方向・Nasdaq/BTC追随。弱気25%：ホルムズ悪化→WTI85ドル超→米10年4.75%超→USD/JPY160円接近。\n【シナリオが崩れる条件】\nWTI85ドル超定着、米10年4.75%超、USD/JPY160円明確突破、日経VI再上昇、BTC62,000ドル割れ。\n【東京時間への引き継ぎ】\n・東京時間は原油→USD/JPY→日経VIを優先し、欧州時間で中東ニュースとBrent、NY時間で米指標を確認。\n【最終判断】\n確率55%：選別的リスクオン継続。WTI85ドル未満、米10年4.75%未満、USD/JPY160円明確突破なしが条件。",
     "dataProvenance": {
       "tableNormalization": {
         "rule": "08:00 publication always carries the canonical 28-row contract before repair",
-        "inputRowCount": 28,
+        "inputRowCount": 22,
         "outputRowCount": 28,
-        "missingFilled": []
+        "missingFilled": [
+          "CME日経225先物・ドル建て",
+          "日経225 25日移動平均乖離率",
+          "日経225 200日移動平均乖離率",
+          "東証プライム売買代金",
+          "東証プライム売買高",
+          "東証プライム値上がり銘柄数",
+          "東証プライム値下がり銘柄数",
+          "東証プライム25日騰落レシオ"
+        ]
       },
       "dailyCloseRepair": {
-        "generatedAt": "2026-08-15T13:49:05+09:00",
+        "generatedAt": "2026-08-17T09:08:17+09:00",
         "semantics": "previous_close",
         "rule": "08:00 uses date-matched prior-session closes; retrieval after 08:00 is allowed, stale-date carry-forward is prohibited; BTCUSD keeps its dedicated 24/7-market convention",
         "repairedLabels": [
@@ -363,30 +366,32 @@
           "S&P500",
           "Russell 2000",
           "日経225現物",
-          "CME日経225先物・円建て",
-          "CME日経225先物・ドル建て",
           "USD/JPY",
           "EUR/USD",
-          "COMEX金先物",
-          "WTI原油",
           "VIX"
         ],
-        "unavailable": {}
+        "unavailable": {
+          "CME日経225先物・円建て": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用",
+          "CME日経225先物・ドル建て": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用",
+          "COMEX金先物": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用",
+          "WTI原油": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用"
+        }
       },
       "japanCloseReference": {
         "dataDate": "2026-08-14",
-        "appliedAt": "2026-08-15T13:49:05+09:00",
-        "appliedLabels": [],
-        "preservedUsableLabels": [
-          "日経225現物",
+        "appliedAt": "2026-08-17T09:08:17+09:00",
+        "appliedLabels": [
           "日経225 25日移動平均乖離率",
           "日経225 200日移動平均乖離率",
-          "日経225予想PER",
-          "日経225 PBR",
-          "日経225予想EPS",
           "東証プライム値上がり銘柄数",
           "東証プライム値下がり銘柄数",
           "東証プライム25日騰落レシオ"
+        ],
+        "preservedUsableLabels": [
+          "日経225現物",
+          "日経225予想PER",
+          "日経225 PBR",
+          "日経225予想EPS"
         ],
         "source": "data/market/japan-close-reference.json",
         "ratesReference": {
@@ -396,7 +401,7 @@
       },
       "exactJapanCloseOverride": {
         "dataDate": "2026-08-14",
-        "appliedAt": "2026-08-15T13:49:05+09:00",
+        "appliedAt": "2026-08-17T09:08:17+09:00",
         "appliedLabels": [
           "日経225現物",
           "日経225 25日移動平均乖離率",
@@ -411,496 +416,6 @@
         "source": "data/market/japan-close-reference.json",
         "rule": "Exact-date dedicated Japanese reference overrides generic previous-close feeds for matching Japanese rows."
       }
-    },
-    "marketData": {
-      "schemaVersion": "1.1.0",
-      "pageId": "market-data",
-      "generatedAt": "2026-08-17T08:07:24+09:00",
-      "reportSlot": "08:00",
-      "overallStatus": "degraded",
-      "missingRequired": [],
-      "fallbackCount": 1,
-      "markets": {
-        "gold": {
-          "id": "gold",
-          "displayName": "金",
-          "dashboardKey": "gold",
-          "value": 4437.6,
-          "displayValue": "4,437.60",
-          "previousClose": 4380.39990234375,
-          "change": 57.200097656250364,
-          "changePercent": 1.3058190788846735,
-          "changeText": "+57.20 / +1.31%",
-          "unit": "USD/oz",
-          "marketType": "continuous_futures",
-          "session": "global",
-          "asOf": "2026-08-17T07:51:26+09:00",
-          "fetchedAt": "2026-08-17T08:01:31+09:00",
-          "sourceId": "yahoo_gc_f",
-          "sourceName": "Yahoo Finance Gold Futures",
-          "sourceUrl": "https://finance.yahoo.com/quote/GC=F/",
-          "rawReference": "GC=F",
-          "classification": "",
-          "verificationStatus": "verified",
-          "freshnessStatus": "fresh",
-          "fallbackUsed": false,
-          "lastVerifiedAt": "2026-08-17T08:01:34+09:00",
-          "error": null,
-          "note": "",
-          "attemptCount": 1,
-          "lastAttemptAt": "2026-08-17T08:01:31+09:00",
-          "lastError": "stooq_xauusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-          "retryPreserved": false
-        },
-        "wti": {
-          "id": "wti",
-          "displayName": "WTI原油",
-          "dashboardKey": "oil",
-          "value": 82.38,
-          "displayValue": "82.38",
-          "previousClose": 82.4000015258789,
-          "change": -0.020001525878910797,
-          "changePercent": -0.02427369600549456,
-          "changeText": "-0.02 / -0.02%",
-          "unit": "USD/bbl",
-          "marketType": "continuous_futures",
-          "session": "global",
-          "asOf": "2026-08-17T07:51:29+09:00",
-          "fetchedAt": "2026-08-17T08:01:34+09:00",
-          "sourceId": "yahoo_cl_f",
-          "sourceName": "Yahoo Finance WTI Crude Oil Futures",
-          "sourceUrl": "https://finance.yahoo.com/quote/CL=F/",
-          "rawReference": "CL=F",
-          "classification": "",
-          "verificationStatus": "verified",
-          "freshnessStatus": "fresh",
-          "fallbackUsed": false,
-          "lastVerifiedAt": "2026-08-17T08:01:37+09:00",
-          "error": null,
-          "note": "",
-          "attemptCount": 1,
-          "lastAttemptAt": "2026-08-17T08:01:31+09:00",
-          "lastError": "stooq_cl_f: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-          "retryPreserved": false
-        },
-        "nikkei225_futures_ose": {
-          "id": "nikkei225_futures_ose",
-          "displayName": "日経225先物（大阪取引所）",
-          "dashboardKey": "nikkei",
-          "value": 68720.0,
-          "displayValue": "68,720",
-          "previousClose": 68690.0,
-          "change": 30.0,
-          "changePercent": 0.043674479545785516,
-          "changeText": "+30 / +0.04%",
-          "unit": "円",
-          "marketType": "futures_ose",
-          "session": "day_through",
-          "asOf": "2026-08-15T06:00:00+09:00",
-          "fetchedAt": "2026-08-15T08:08:38+09:00",
-          "sourceId": "jpx_ose_futures_quote",
-          "sourceName": "JPX/OSE Futures Quotes",
-          "sourceUrl": "https://port.jpx.co.jp/jpxhp/main/index.aspx?disptype=day_through&f=e_future",
-          "rawReference": "JPX/OSE 日経225先物 26年9月限; delayed quote endpoint; TTCODE=101.2609/O",
-          "classification": "",
-          "verificationStatus": "fallback",
-          "freshnessStatus": "last_verified",
-          "fallbackUsed": true,
-          "lastVerifiedAt": "2026-08-15T08:08:38+09:00",
-          "error": "jpx_ose_futures_quote: STALE_DATA; nikkei_nk225f_profile: REFERENCE_ONLY",
-          "note": "今回の新規取得に失敗したため、前回確認値を保持しています。",
-          "attemptCount": 2,
-          "lastAttemptAt": "2026-08-17T08:07:24+09:00",
-          "lastError": "nikkei_nk225f_profile: REFERENCE_ONLY: reference source is not allowed for dashboard publication",
-          "retryPreserved": false
-        },
-        "usdjpy": {
-          "id": "usdjpy",
-          "displayName": "USD/JPY",
-          "dashboardKey": "usdjpy",
-          "value": 159.164,
-          "displayValue": "159.16",
-          "previousClose": 159.42599487304688,
-          "change": -0.26199487304688773,
-          "changePercent": -0.16433635760311205,
-          "changeText": "-0.26 / -0.16%",
-          "unit": "円",
-          "marketType": "spot",
-          "session": "continuous",
-          "asOf": "2026-08-17T08:01:38+09:00",
-          "fetchedAt": "2026-08-17T08:01:39+09:00",
-          "sourceId": "yahoo_jpy_x",
-          "sourceName": "Yahoo Finance USD/JPY",
-          "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
-          "rawReference": "JPY=X",
-          "classification": "",
-          "verificationStatus": "verified",
-          "freshnessStatus": "fresh",
-          "fallbackUsed": false,
-          "lastVerifiedAt": "2026-08-17T08:01:42+09:00",
-          "error": null,
-          "note": "",
-          "attemptCount": 1,
-          "lastAttemptAt": "2026-08-17T08:01:31+09:00",
-          "lastError": "stooq_usdjpy: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-          "retryPreserved": false
-        },
-        "eurusd": {
-          "id": "eurusd",
-          "displayName": "EUR/USD",
-          "dashboardKey": "eurusd",
-          "value": 1.1578,
-          "displayValue": "1.15780",
-          "previousClose": 1.1530035734176636,
-          "change": 0.004796426582336366,
-          "changePercent": 0.41599407780836817,
-          "changeText": "+0.00480 / +0.42%",
-          "unit": "USD",
-          "marketType": "spot",
-          "session": "continuous",
-          "asOf": "2026-08-17T08:00:56+09:00",
-          "fetchedAt": "2026-08-17T08:01:42+09:00",
-          "sourceId": "yahoo_eurusd_x",
-          "sourceName": "Yahoo Finance EUR/USD",
-          "sourceUrl": "https://finance.yahoo.com/quote/EURUSD=X/",
-          "rawReference": "EURUSD=X",
-          "classification": "",
-          "verificationStatus": "verified",
-          "freshnessStatus": "fresh",
-          "fallbackUsed": false,
-          "lastVerifiedAt": "2026-08-17T08:01:45+09:00",
-          "error": null,
-          "note": "",
-          "attemptCount": 1,
-          "lastAttemptAt": "2026-08-17T08:01:31+09:00",
-          "lastError": "stooq_eurusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-          "retryPreserved": false
-        },
-        "btcusd": {
-          "id": "btcusd",
-          "displayName": "BTCUSD",
-          "dashboardKey": "btc",
-          "value": 62877.17,
-          "displayValue": "62,877",
-          "previousClose": 62877.171875,
-          "change": -0.0018750000017462298,
-          "changePercent": -2.9820043545569774e-06,
-          "changeText": "-0 / -0.00%",
-          "unit": "USD",
-          "marketType": "spot_crypto",
-          "session": "continuous",
-          "asOf": "2026-08-17T08:01:43+09:00",
-          "fetchedAt": "2026-08-17T08:01:45+09:00",
-          "sourceId": "yahoo_btc_usd",
-          "sourceName": "Yahoo Finance Bitcoin USD",
-          "sourceUrl": "https://finance.yahoo.com/quote/BTC-USD/",
-          "rawReference": "BTC-USD",
-          "classification": "",
-          "verificationStatus": "verified",
-          "freshnessStatus": "fresh",
-          "fallbackUsed": false,
-          "lastVerifiedAt": "2026-08-17T08:01:48+09:00",
-          "error": null,
-          "note": "",
-          "attemptCount": 1,
-          "lastAttemptAt": "2026-08-17T08:01:31+09:00",
-          "lastError": "stooq_btcusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-          "retryPreserved": false
-        },
-        "vix": {
-          "id": "vix",
-          "displayName": "VIX",
-          "dashboardKey": "vix",
-          "value": 14.25,
-          "displayValue": "14.25",
-          "previousClose": 14.63,
-          "change": -0.3800000000000008,
-          "changePercent": -2.5974025974025983,
-          "changeText": "-0.38 / -2.60%",
-          "unit": "pt",
-          "marketType": "index",
-          "session": "daily",
-          "asOf": "2026-08-14T09:00:00+09:00",
-          "fetchedAt": "2026-08-17T08:01:48+09:00",
-          "sourceId": "cboe_vix_history",
-          "sourceName": "Cboe VIX Historical Data",
-          "sourceUrl": "https://www.cboe.com/tradable_products/vix/vix_historical_data/",
-          "rawReference": "VIX_History.csv",
-          "classification": "",
-          "verificationStatus": "verified",
-          "freshnessStatus": "fresh",
-          "fallbackUsed": false,
-          "lastVerifiedAt": "2026-08-17T08:01:48+09:00",
-          "error": null,
-          "note": "",
-          "attemptCount": 1,
-          "lastAttemptAt": "2026-08-17T08:01:31+09:00",
-          "lastError": "",
-          "retryPreserved": false
-        },
-        "nikkei_vi": {
-          "id": "nikkei_vi",
-          "displayName": "日経VI",
-          "dashboardKey": "nikkei_vi",
-          "value": 30.96,
-          "displayValue": "30.96",
-          "previousClose": 31.650000000000002,
-          "change": -0.69,
-          "changePercent": -2.18,
-          "changeText": "-0.69 / -2.18%",
-          "unit": "pt",
-          "marketType": "index",
-          "session": "daily",
-          "asOf": "2026-08-14T15:50:00+09:00",
-          "fetchedAt": "2026-08-17T08:01:48+09:00",
-          "sourceId": "nikkei_nk225vi_profile",
-          "sourceName": "Nikkei 225 VI official profile",
-          "sourceUrl": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
-          "rawReference": "Nikkei Stock Average Volatility Index",
-          "classification": "",
-          "verificationStatus": "verified",
-          "freshnessStatus": "fresh",
-          "fallbackUsed": false,
-          "lastVerifiedAt": "2026-08-17T08:01:48+09:00",
-          "error": null,
-          "note": "",
-          "attemptCount": 1,
-          "lastAttemptAt": "2026-08-17T08:01:31+09:00",
-          "lastError": "",
-          "retryPreserved": false
-        },
-        "fear_greed": {
-          "id": "fear_greed",
-          "displayName": "Fear & Greed Index",
-          "dashboardKey": "fear_greed",
-          "value": 64.9714285714286,
-          "displayValue": "65",
-          "previousClose": 66.1428571428571,
-          "change": -1.1714285714284927,
-          "changePercent": -1.7710583153346504,
-          "changeText": "-1 / -1.77%",
-          "unit": "score",
-          "marketType": "sentiment",
-          "session": "daily",
-          "asOf": "2026-08-15T08:59:53+09:00",
-          "fetchedAt": "2026-08-17T08:01:49+09:00",
-          "sourceId": "cnn_fear_greed_graphdata",
-          "sourceName": "CNN Fear & Greed graphdata",
-          "sourceUrl": "https://edition-prod-cf.sitemirror.cnn.com/markets/fear-and-greed",
-          "rawReference": "fear_and_greed.score",
-          "classification": "greed",
-          "verificationStatus": "verified",
-          "freshnessStatus": "fresh",
-          "fallbackUsed": false,
-          "lastVerifiedAt": "2026-08-17T08:01:49+09:00",
-          "error": null,
-          "note": "",
-          "attemptCount": 1,
-          "lastAttemptAt": "2026-08-17T08:01:31+09:00",
-          "lastError": "",
-          "retryPreserved": false
-        },
-        "crypto_fear_greed": {
-          "id": "crypto_fear_greed",
-          "displayName": "Crypto Fear & Greed",
-          "dashboardKey": "crypto_fear_greed",
-          "value": 36.0,
-          "displayValue": "36",
-          "previousClose": 36.0,
-          "change": 0.0,
-          "changePercent": 0.0,
-          "changeText": "+0 / +0.00%",
-          "unit": "score",
-          "marketType": "crypto_sentiment",
-          "session": "daily",
-          "asOf": "2026-08-15T09:00:00+09:00",
-          "fetchedAt": "2026-08-17T08:01:49+09:00",
-          "sourceId": "coinmarketcap_crypto_fear_greed",
-          "sourceName": "CoinMarketCap Crypto Fear and Greed Index",
-          "sourceUrl": "https://coinmarketcap.com/ja/charts/fear-and-greed-index/",
-          "rawReference": "v3/fear-and-greed/historical data[0]",
-          "classification": "Fear",
-          "verificationStatus": "verified",
-          "freshnessStatus": "fresh",
-          "fallbackUsed": false,
-          "lastVerifiedAt": "2026-08-17T08:01:49+09:00",
-          "error": null,
-          "note": "",
-          "attemptCount": 1,
-          "lastAttemptAt": "2026-08-17T08:01:31+09:00",
-          "lastError": "",
-          "retryPreserved": false
-        }
-      },
-      "errors": [
-        {
-          "symbol": "nikkei225_futures_ose",
-          "sourceId": "jpx_ose_futures_quote",
-          "code": "STALE_DATA",
-          "message": "age 50.1h > 36h",
-          "attempt": 1
-        },
-        {
-          "symbol": "nikkei225_futures_ose",
-          "sourceId": "nikkei_nk225f_profile",
-          "code": "REFERENCE_ONLY",
-          "message": "reference source is not allowed for dashboard publication"
-        }
-      ],
-      "acquisition": {
-        "strategy": "staged_retry",
-        "windowStartedAt": "2026-08-17T08:01:31+09:00",
-        "lastAttemptAt": "2026-08-17T08:07:24+09:00",
-        "runCount": 2,
-        "mode": "incremental",
-        "targetedSymbols": [
-          "nikkei225_futures_ose"
-        ],
-        "recoveredSymbols": [],
-        "preservedVerifiedSymbols": [],
-        "remainingFallback": [
-          "nikkei225_futures_ose"
-        ],
-        "remainingUnavailable": []
-      },
-      "sources": [
-        {
-          "id": "yahoo_gc_f",
-          "name": "Yahoo Finance Gold Futures",
-          "kind": "yahoo_chart",
-          "url": "https://finance.yahoo.com/quote/GC=F/",
-          "marketType": "continuous_futures",
-          "session": "global"
-        },
-        {
-          "id": "stooq_xauusd",
-          "name": "Stooq XAU/USD",
-          "kind": "stooq_quote",
-          "url": "https://stooq.com/q/?s=xauusd",
-          "marketType": "spot",
-          "session": "global"
-        },
-        {
-          "id": "yahoo_cl_f",
-          "name": "Yahoo Finance WTI Crude Oil Futures",
-          "kind": "yahoo_chart",
-          "url": "https://finance.yahoo.com/quote/CL=F/",
-          "marketType": "continuous_futures",
-          "session": "global"
-        },
-        {
-          "id": "stooq_cl_f",
-          "name": "Stooq WTI Crude Oil Futures",
-          "kind": "stooq_quote",
-          "url": "https://stooq.com/q/?s=cl.f",
-          "marketType": "continuous_futures",
-          "session": "global"
-        },
-        {
-          "id": "jpx_ose_futures_quote",
-          "name": "JPX/OSE Futures Quotes",
-          "kind": "jpx_html",
-          "url": "https://port.jpx.co.jp/jpxhp/main/index.aspx?disptype=day_through&f=e_future",
-          "marketType": "futures_ose",
-          "session": "day_through"
-        },
-        {
-          "id": "nikkei_nk225f_profile",
-          "name": "Nikkei 225 Futures Index",
-          "kind": "nikkei_profile",
-          "url": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=3&idx=nk225f",
-          "marketType": "ose_futures_index",
-          "session": "daily_index"
-        },
-        {
-          "id": "yahoo_jpy_x",
-          "name": "Yahoo Finance USD/JPY",
-          "kind": "yahoo_chart",
-          "url": "https://finance.yahoo.com/quote/JPY=X/",
-          "marketType": "spot",
-          "session": "continuous"
-        },
-        {
-          "id": "stooq_usdjpy",
-          "name": "Stooq USD/JPY",
-          "kind": "stooq_quote",
-          "url": "https://stooq.com/q/?s=usdjpy",
-          "marketType": "spot",
-          "session": "continuous"
-        },
-        {
-          "id": "yahoo_eurusd_x",
-          "name": "Yahoo Finance EUR/USD",
-          "kind": "yahoo_chart",
-          "url": "https://finance.yahoo.com/quote/EURUSD=X/",
-          "marketType": "spot",
-          "session": "continuous"
-        },
-        {
-          "id": "stooq_eurusd",
-          "name": "Stooq EUR/USD",
-          "kind": "stooq_quote",
-          "url": "https://stooq.com/q/?s=eurusd",
-          "marketType": "spot",
-          "session": "continuous"
-        },
-        {
-          "id": "yahoo_btc_usd",
-          "name": "Yahoo Finance Bitcoin USD",
-          "kind": "yahoo_chart",
-          "url": "https://finance.yahoo.com/quote/BTC-USD/",
-          "marketType": "spot_crypto",
-          "session": "continuous"
-        },
-        {
-          "id": "stooq_btcusd",
-          "name": "Stooq BTC/USD",
-          "kind": "stooq_quote",
-          "url": "https://stooq.com/q/?s=btcusd",
-          "marketType": "spot_crypto",
-          "session": "continuous"
-        },
-        {
-          "id": "cboe_vix_history",
-          "name": "Cboe VIX Historical Data",
-          "kind": "cboe_history_csv",
-          "url": "https://www.cboe.com/tradable_products/vix/vix_historical_data/",
-          "marketType": "index",
-          "session": "daily"
-        },
-        {
-          "id": "yahoo_vix",
-          "name": "Yahoo Finance VIX",
-          "kind": "yahoo_chart",
-          "url": "https://finance.yahoo.com/quote/%5EVIX/",
-          "marketType": "index",
-          "session": "delayed"
-        },
-        {
-          "id": "nikkei_nk225vi_profile",
-          "name": "Nikkei 225 VI official profile",
-          "kind": "nikkei_profile",
-          "url": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
-          "marketType": "index",
-          "session": "daily"
-        },
-        {
-          "id": "cnn_fear_greed_graphdata",
-          "name": "CNN Fear & Greed graphdata",
-          "kind": "cnn_fear_greed",
-          "url": "https://edition-prod-cf.sitemirror.cnn.com/markets/fear-and-greed",
-          "marketType": "sentiment",
-          "session": "daily"
-        },
-        {
-          "id": "coinmarketcap_crypto_fear_greed",
-          "name": "CoinMarketCap Crypto Fear and Greed Index",
-          "kind": "coinmarketcap_fear_greed",
-          "url": "https://coinmarketcap.com/ja/charts/fear-and-greed-index/",
-          "marketType": "crypto_sentiment",
-          "session": "daily"
-        }
-      ]
     }
   },
   "reports": [
