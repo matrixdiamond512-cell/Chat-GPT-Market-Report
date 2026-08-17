@@ -192,8 +192,8 @@
         {
           "label": "BTCUSD",
           "value": "62,877",
-          "change": "—",
-          "rate": "—",
+          "change": "-142",
+          "rate": "-0.22%",
           "direction": "中立～やや弱い"
         },
         {
@@ -312,7 +312,7 @@
         "missingFilled": []
       },
       "dailyCloseRepair": {
-        "generatedAt": "2026-08-17T09:29:20+09:00",
+        "generatedAt": "2026-08-17T09:54:11+09:00",
         "semantics": "previous_close",
         "rule": "08:00 uses date-matched prior-session closes; retrieval after 08:00 is allowed, stale-date carry-forward is prohibited; BTCUSD keeps its dedicated 24/7-market convention",
         "repairedLabels": [
@@ -334,7 +334,7 @@
       },
       "japanCloseReference": {
         "dataDate": "2026-08-14",
-        "appliedAt": "2026-08-17T09:29:20+09:00",
+        "appliedAt": "2026-08-17T09:54:11+09:00",
         "appliedLabels": [],
         "preservedUsableLabels": [
           "日経225現物",
@@ -355,7 +355,7 @@
       },
       "exactJapanCloseOverride": {
         "dataDate": "2026-08-14",
-        "appliedAt": "2026-08-17T09:29:20+09:00",
+        "appliedAt": "2026-08-17T09:54:11+09:00",
         "appliedLabels": [
           "日経225現物",
           "日経225 25日移動平均乖離率",
@@ -428,6 +428,18 @@
         "restoredRows": [
           "CME日経225先物・ドル建て"
         ]
+      },
+      "btc24hComparisonRepair": {
+        "rule": "BTCUSD 08:00 comparison uses report-time price versus nearest Yahoo BTC-USD hourly close exactly 24h earlier",
+        "reportPrice": 62877.0,
+        "referencePrice": 63018.76171875,
+        "reportTimeJST": "2026-08-17T08:00:00+09:00",
+        "referenceTimeJST": "2026-08-16T08:00:00+09:00",
+        "change": -141.76171875,
+        "changePercent": -0.22495160946303006,
+        "source": "Yahoo Finance Bitcoin USD",
+        "sourceUrl": "https://finance.yahoo.com/quote/BTC-USD/",
+        "fetchedAt": "2026-08-17T09:54:12+09:00"
       }
     }
   }
