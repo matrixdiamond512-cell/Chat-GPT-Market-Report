@@ -45,9 +45,25 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           US_BREADTH_MARKET_DATE: ${{ inputs.market_date }}
         run: python scripts/fetch_us_stock_breadth.py
+      - name: Check current breadth state
+        id: breadth_state
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          payload = json.loads(Path('data/market/us-stock-breadth.json').read_text(encoding='utf-8'))
+          current = payload.get('current') or payload
+          available = current.get('status') != 'unavailable' and bool(current.get('exchanges'))
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as handle:
+              handle.write(f'available={str(available).lower()}\n')
+          print('breadth available:', available)
+          PY
       - name: Correct 52-week high and low counts
+        if: steps.breadth_state.outputs.available == 'true'
         run: python scripts/fix_us_stock_breadth_52w.py
       - name: Recalculate prior-day and 20-day comparisons
+        if: steps.breadth_state.outputs.available == 'true'
         run: python scripts/recalculate_us_stock_breadth_history.py
       - name: Build public CSV history for Google Sheets
         run: python scripts/build_us_stock_breadth_csv.py
@@ -57,6 +73,7 @@ jobs:
           python -m json.tool data/market/us-stock-breadth-history.json > /dev/null
           python -m json.tool data/stocks.json > /dev/null
           test -s data/market/us-stock-breadth-history.csv
+          python scripts/validate_stock_data_freshness.py
       - name: Commit generated breadth data
         shell: bash
         run: |
@@ -70,3 +87,4 @@ jobs:
           git commit -m "Update US stock breadth"
           git pull --rebase
           git push
+

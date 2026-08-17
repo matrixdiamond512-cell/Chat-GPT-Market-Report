@@ -24,6 +24,8 @@ from typing import Any
 import requests
 from bs4 import BeautifulSoup
 
+from stock_freshness import current_block, envelope, last_good_from
+
 ROOT = Path(__file__).resolve().parents[1]
 STOCKS_PATH = ROOT / "data" / "stocks.json"
 OUTPUT_PATH = ROOT / "data" / "market" / "japan-stock-movers.json"
@@ -181,22 +183,36 @@ def same_rankings(old: dict[str, Any], new: dict[str, Any]) -> bool:
 
 
 def merge_into_stocks(stocks: dict[str, Any], payload: dict[str, Any]) -> None:
-    market_date = payload["dataDate"]
+    current = payload.get("current") or payload
+    market_date = current["dataDate"]
     current_date = str((stocks.get("marketDates") or {}).get("japan") or "")[:10]
     if current_date and current_date > market_date:
         raise RuntimeError(f"refusing stale Tokyo mover update: {market_date} < {current_date}")
+    previous = (stocks.get("movers") or {}).get("japan") or {}
+    previous_good = last_good_from(previous)
     stocks.setdefault("movers", {})["japan"] = {
         "title": "日本市場の大幅上昇・下落銘柄（東証プライム）",
         "flag": "JP",
-        "status": "verified",
-        "dataDate": market_date,
-        "updatedAt": payload["updatedAt"],
-        "source": SOURCE_NAME,
-        "sourceAt": payload["sourceAt"],
-        "gainers": payload["gainers"],
-        "losers": payload["losers"],
+        **current,
+        "lastGood": previous_good,
     }
-    stocks["updatedAt"] = payload["updatedAt"]
+
+
+def merge_unavailable_into_stocks(stocks: dict[str, Any], error: str, updated_at: str) -> None:
+    previous = (stocks.get("movers") or {}).get("japan") or {}
+    current = current_block(
+        status="unavailable",
+        data_date=None,
+        as_of=None,
+        updated_at=updated_at,
+        source={"name": SOURCE_NAME, "gainersUrl": UP_URL, "losersUrl": DOWN_URL},
+        error=error,
+        title="日本市場の大幅上昇・下落銘柄（東証プライム）",
+        flag="JP",
+        gainers=[],
+        losers=[],
+    )
+    stocks.setdefault("movers", {})["japan"] = {**current, "lastGood": last_good_from(previous)}
 
 
 def sync_stock_analysis_json(stocks: dict[str, Any]) -> None:
@@ -218,7 +234,6 @@ def sync_stock_analysis_json(stocks: dict[str, Any]) -> None:
         return
     sheet_payload = json.loads(raw)
     sheet_payload.setdefault("movers", {})["japan"] = stocks["movers"]["japan"]
-    sheet_payload["updatedAt"] = stocks["updatedAt"]
     client.update("Stock_Analysis_JSON", "B2", [[json.dumps(sheet_payload, ensure_ascii=False)]])
 
 
@@ -230,26 +245,47 @@ def main() -> int:
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", expected_date):
         raise SystemExit("verified Tokyo market date is unavailable")
 
-    gainers, up_date, up_at = parse_page(UP_URL, True)
-    losers, down_date, down_at = parse_page(DOWN_URL, False)
+    old = load_json(OUTPUT_PATH, {})
+    fetched_at = now_jst().isoformat()
+    try:
+        gainers, up_date, up_at = parse_page(UP_URL, True)
+        losers, down_date, down_at = parse_page(DOWN_URL, False)
+    except Exception as error:  # noqa: BLE001
+        message = f"当日の東証プライムランキングを取得できませんでした: {error}"
+        current = current_block(
+            status="unavailable",
+            data_date=None,
+            as_of=None,
+            updated_at=fetched_at,
+            source={"name": SOURCE_NAME, "gainersUrl": UP_URL, "losersUrl": DOWN_URL},
+            error=message,
+            gainers=[],
+            losers=[],
+        )
+        unavailable = envelope(current, old)
+        merge_unavailable_into_stocks(stocks, message, fetched_at)
+        OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+        OUTPUT_PATH.write_text(json.dumps(unavailable, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        STOCKS_PATH.write_text(json.dumps(stocks, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps({"status": "unavailable", "error": message}, ensure_ascii=False))
+        return 0
     if up_date != down_date:
         raise SystemExit(f"Traders Web up/down basis dates disagree: {up_date} / {down_date}")
     if up_date != expected_date:
         raise SystemExit(f"Traders Web ranking is not current: source={up_date}, expected={expected_date}")
 
-    fetched_at = now_jst().isoformat()
-    payload = {
-        "schemaVersion": "1.0.0",
-        "status": "verified",
-        "dataDate": expected_date,
-        "updatedAt": fetched_at,
-        "sourceAt": {"gainers": up_at, "losers": down_at},
-        "source": {"name": SOURCE_NAME, "gainersUrl": UP_URL, "losersUrl": DOWN_URL},
-        "gainers": [public_row(row, expected_date) for row in gainers],
-        "losers": [public_row(row, expected_date) for row in losers],
-    }
-
-    old = load_json(OUTPUT_PATH, {})
+    source_at = {"gainers": up_at, "losers": down_at}
+    current = current_block(
+        status="verified",
+        data_date=expected_date,
+        as_of=max(up_at, down_at),
+        updated_at=fetched_at,
+        source={"name": SOURCE_NAME, "gainersUrl": UP_URL, "losersUrl": DOWN_URL},
+        sourceAt=source_at,
+        gainers=[public_row(row, expected_date) for row in gainers],
+        losers=[public_row(row, expected_date) for row in losers],
+    )
+    payload = envelope(current, old)
     if same_rankings(old, payload):
         print(json.dumps({"status": "already-current", "marketDate": expected_date}, ensure_ascii=False))
         return 0
@@ -271,3 +307,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

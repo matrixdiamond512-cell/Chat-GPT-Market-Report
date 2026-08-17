@@ -25,6 +25,8 @@ from typing import Any
 import requests
 from bs4 import BeautifulSoup
 
+from stock_freshness import current_block, envelope, last_good_from
+
 ROOT = Path(__file__).resolve().parent.parent
 STOCKS_PATH = ROOT / "data" / "stocks.json"
 OUTPUT_PATH = ROOT / "data" / "nikkei-contributions.json"
@@ -219,6 +221,9 @@ def build_payload() -> dict[str, Any]:
         "schemaVersion": "1.0.0",
         "generatedAt": generated,
         "status": "verified",
+        "freshness": "fresh",
+        "dataDate": desc_date,
+        "updatedAt": generated,
         "asOf": desc_date,
         "sourceAt": {"top": desc_at, "bottom": asc_at},
         "source": {
@@ -236,16 +241,17 @@ def merge_into_stocks(payload: dict[str, Any]) -> None:
     if not stocks:
         raise RuntimeError("data/stocks.json がありません")
     contributions = stocks.setdefault("contributions", {})
+    previous = contributions.get("japan") or {}
+    current = payload.get("current") or payload
     contributions["japan"] = {
         "title": "日本市場（日経225寄与度 上位・下位）",
         "flag": "JP",
-        "status": "verified",
-        "asOf": payload["asOf"],
-        "source": payload["source"]["name"],
+        **current,
+        "source": payload["source"],
         "top": payload["top"],
         "bottom": payload["bottom"],
+        "lastGood": last_good_from(previous),
     }
-    stocks["updatedAt"] = now_jst().isoformat()
     stocks["sourceStatus"] = "Google Sheets＋日経225寄与度検証済みデータ"
     STOCKS_PATH.write_text(json.dumps(stocks, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -343,7 +349,21 @@ def sync_google_sheets(payload: dict[str, Any]) -> None:
 def main() -> int:
     previous = load_json(OUTPUT_PATH, {})
     try:
-        payload = build_payload()
+        raw_payload = build_payload()
+        payload = envelope(
+            current_block(
+                status="verified",
+                data_date=raw_payload["dataDate"],
+                as_of=raw_payload["asOf"],
+                updated_at=raw_payload["updatedAt"],
+                source=raw_payload["source"],
+                generatedAt=raw_payload["generatedAt"],
+                sourceAt=raw_payload["sourceAt"],
+                top=raw_payload["top"],
+                bottom=raw_payload["bottom"],
+            ),
+            previous,
+        )
         OUTPUT_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         merge_into_stocks(payload)
         sync_google_sheets(payload)
@@ -355,16 +375,40 @@ def main() -> int:
         }, ensure_ascii=False, indent=2))
         return 0
     except Exception as error:  # noqa: BLE001
-        failed = {
-            "schemaVersion": "1.0.0",
-            "generatedAt": now_jst().isoformat(),
-            "status": "fetch_failed",
-            "error": str(error),
-            "previousVerifiedAsOf": previous.get("asOf") if previous.get("status") == "verified" else "",
-        }
+        generated = now_jst().isoformat()
+        failed = envelope(
+            current_block(
+                status="unavailable",
+                data_date=None,
+                as_of=None,
+                updated_at=generated,
+                source=previous.get("source") or {"name": "株探 日経平均の寄与度ランキング", "topUrl": DESC_URL, "bottomUrl": ASC_URL},
+                error=str(error),
+                generatedAt=generated,
+                sourceAt={},
+                top=[],
+                bottom=[],
+            ),
+            previous,
+        )
         OUTPUT_PATH.write_text(json.dumps(failed, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        raise
+        stocks = load_json(STOCKS_PATH, {})
+        if stocks:
+            contributions = stocks.setdefault("contributions", {})
+            old = contributions.get("japan") or {}
+            contributions["japan"] = {
+                "title": "日本市場（日経225寄与度 上位・下位）",
+                "flag": "JP",
+                **failed["current"],
+                "top": [],
+                "bottom": [],
+                "lastGood": last_good_from(old),
+            }
+            STOCKS_PATH.write_text(json.dumps(stocks, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(json.dumps({"status": "unavailable", "error": str(error)}, ensure_ascii=False))
+        return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

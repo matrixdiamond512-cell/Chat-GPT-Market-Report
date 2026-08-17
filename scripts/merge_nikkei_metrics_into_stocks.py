@@ -87,7 +87,6 @@ def main() -> int:
     japan["updatedAt"] = now.isoformat()
     stocks.setdefault("marketDates", {})["japan"] = data_date
     stocks.setdefault("marketUpdatedAt", {})["japan"] = now.isoformat()
-    stocks["updatedAt"] = now.isoformat()
     stocks["nikkeiMetricsAsOf"] = data_date
     stocks["sourceStatus"] = "米国市場と東京市場を独立更新・市場別基準日を明示"
 
@@ -112,3 +111,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

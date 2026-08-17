@@ -10,6 +10,7 @@ on:
     paths:
       - "data/stocks.json"
       - "data/sector-performance.json"
+      - "data/market/sector-performance.json"
       - "data/nikkei-metrics.json"
       - "scripts/archive_stocks_snapshot.py"
       - "scripts/snapshot_stocks_history.py"
@@ -45,6 +46,9 @@ jobs:
 
       - name: Create stock history snapshot
         run: python scripts/snapshot_stocks_history.py
+
+      - name: Validate stock freshness boundary
+        run: python scripts/validate_stock_data_freshness.py
 
       - name: Validate independent market dates
         run: |
@@ -89,3 +93,4 @@ jobs:
           git commit -m "Update stock analysis history with independent dates"
           git pull --rebase
           git push
+

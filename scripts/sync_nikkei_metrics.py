@@ -269,7 +269,6 @@ def main() -> int:
     stocks = json.loads(STOCKS_PATH.read_text(encoding="utf-8"))
     merge_rows(stocks, values, as_of)
     timestamp = now_jst().isoformat()
-    stocks["updatedAt"] = timestamp
     stocks["sourceStatus"] = "Google Sheetsから更新＋日経VI・日経バリュエーション自動連携"
     stocks["nikkeiMetricsAsOf"] = as_of
     STOCKS_PATH.write_text(json.dumps(stocks, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -306,3 +305,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
