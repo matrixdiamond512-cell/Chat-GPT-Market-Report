@@ -9,8 +9,10 @@ on:
         default: ""
   push:
     paths:
+      # data/latest-report.json is intentionally excluded. The sync workflow
+      # normalizes the raw report to the canonical 28-row contract first and
+      # commits the authoritative QA result together with the publication.
       - "reports.json"
-      - "data/latest-report.json"
       - "data/market/morning-reference.json"
       - "scripts/verify_morning_report_qa.py"
       - "assets/js/morning-report-qa-gate.js"
