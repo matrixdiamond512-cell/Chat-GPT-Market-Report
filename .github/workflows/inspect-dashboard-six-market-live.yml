@@ -57,6 +57,10 @@ jobs:
           dom=pathlib.Path('/tmp/dashboard-dom.html').read_text(encoding='utf-8',errors='replace')
           text=html.unescape(re.sub(r'<[^>]+>', ' ', dom))
           text=re.sub(r'\s+', ' ', text)
+          market_start=text.find('6市場サマリー（なぜ買われたか／売られたか）')
+          if market_start < 0:
+              raise SystemExit('six-market summary not found')
+          text=text[market_start:]
 
           def segment(start, end):
               a=text.find(start)
