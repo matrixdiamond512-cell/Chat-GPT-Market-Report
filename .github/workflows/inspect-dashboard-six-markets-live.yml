@@ -64,14 +64,16 @@ jobs:
               return f"{fmt(ch,digits)} / {fmt(pct,2)}%"
 
           def card_text(label):
-              m=re.search(r'<(?:a|article) class="market-card"[^>]*>(.*?)</(?:a|article)>', dom, re.S)
-              # find all cards so nested anchors do not confuse a single regex match
               cards=re.findall(r'<(?:a|article) class="market-card"[^>]*>(.*?)</(?:a|article)>', dom, re.S)
               for block in cards:
+                  hm=re.search(r'<h3[^>]*>(.*?)</h3>', block, re.S)
+                  if not hm:
+                      continue
+                  heading=re.sub(r'<[^>]+>','',html.unescape(hm.group(1))).strip()
+                  if heading != label:
+                      continue
                   text=re.sub(r'<[^>]+>',' ',html.unescape(block))
-                  text=re.sub(r'\s+',' ',text).strip()
-                  if label in text:
-                      return text
+                  return re.sub(r'\s+',' ',text).strip()
               raise SystemExit(f'card not found: {label}')
 
           checks={
