@@ -2,12 +2,12 @@
   "schemaVersion": "1.0.0",
   "pageId": "gold-supply-demand",
   "reportDate": "2026-08-17",
-  "generatedAt": "2026-08-17T07:32:59+09:00",
+  "generatedAt": "2026-08-17T12:57:10+09:00",
   "gold": {
     "schemaVersion": "2.0.0",
     "pageTitle": "ゴールド需給分析",
     "subtitle": "COMEX先物・投機筋・ETF・中国/インド現物需要から総合判定",
-    "generatedAt": "2026-08-17T07:32:59+09:00",
+    "generatedAt": "2026-08-17T12:57:10+09:00",
     "comex": {
       "status": "preserved_after_fetch_error",
       "asOfDate": "2026-08-06",
@@ -21,7 +21,7 @@
       "sourceUrl": "https://www.cmegroup.com/daily_bulletin/current/Section02B_Summary_Volume_And_Open_Interest_Metals_Futures_And_Options.pdf",
       "note": "CME Daily Bulletin PG02BのGC COMEX GOLD FUTURES。価格×建玉判定は同一基準日の価格取得後に実施。",
       "error": "CME取得失敗: RuntimeError: HTTP取得失敗（3回試行）: HTTPSConnectionPool(host='www.cmegroup.com', port=443): Read timed out. (read timeout=45)",
-      "lastAttemptAt": "2026-08-17T07:34:38+09:00"
+      "lastAttemptAt": "2026-08-17T12:58:48+09:00"
     },
     "cftc": {
       "status": "verified",
@@ -34,7 +34,7 @@
       "judgement": "投機筋の買い増加",
       "sourceName": "CFTC Disaggregated COT - Futures Only",
       "sourceUrl": "https://publicreporting.cftc.gov/Commitments-of-Traders/Disaggregated-Futures-Only/72hh-3qpy",
-      "fetchedAt": "2026-08-17T07:34:38+09:00",
+      "fetchedAt": "2026-08-17T12:58:49+09:00",
       "historyWeeks": [
         {
           "asOfDate": "2025-08-19",
@@ -614,17 +614,17 @@
       "managedMoneyLongChange": 8825,
       "managedMoneyShortChange": 1929,
       "goldPrice": 4383.0,
-      "historyFetchedAt": "2026-08-16T22:34:44+00:00"
+      "historyFetchedAt": "2026-08-17T03:58:53+00:00"
     },
     "etf": {
       "gld": {
         "status": "verified",
-        "asOfDate": "2026-08-13",
-        "tonnes": 1023.24,
-        "changeTonnes": -2.5699999999999363,
+        "asOfDate": "2026-08-14",
+        "tonnes": 1023.53,
+        "changeTonnes": 0.2899999999999636,
         "sourceName": "SPDR Gold Shares Historical Archive",
         "sourceUrl": "https://www.spdrgoldshares.com/usa/gld/",
-        "fetchedAt": "2026-08-17T07:34:40+09:00"
+        "fetchedAt": "2026-08-17T12:58:49+09:00"
       },
       "iau": {
         "status": "verified",
@@ -633,7 +633,7 @@
         "changeTonnes": 0.17000000000001592,
         "sourceName": "iShares Gold Trust",
         "sourceUrl": "https://www.ishares.com/us/products/239561/ishares-gold-trust-fund",
-        "fetchedAt": "2026-08-17T07:34:41+09:00"
+        "fetchedAt": "2026-08-17T12:58:50+09:00"
       },
       "global": {
         "status": "verified",
@@ -646,15 +646,10 @@
         "frequency": "monthly",
         "sourceName": "World Gold Council Gold ETF Flows",
         "sourceUrl": "https://www.gold.org/goldhub/research/gold-etfs-holdings-and-flows/2026/08",
-        "fetchedAt": "2026-08-17T07:34:44+09:00",
+        "fetchedAt": "2026-08-17T12:58:52+09:00",
         "note": "WGC公式月次レポート本文から公開値を抽出。週次チャートがログイン必須の場合は月次公開値を使用。"
       },
       "gldHistory": [
-        {
-          "asOfDate": "2026-04-07",
-          "tonnes": 1054.42,
-          "changeTonnes": 0.0
-        },
         {
           "asOfDate": "2026-04-08",
           "tonnes": 1052.99,
@@ -1099,6 +1094,11 @@
           "asOfDate": "2026-08-13",
           "tonnes": 1023.24,
           "changeTonnes": -2.5699999999999363
+        },
+        {
+          "asOfDate": "2026-08-14",
+          "tonnes": 1023.53,
+          "changeTonnes": 0.2899999999999636
         }
       ],
       "iauHistory": [
@@ -1178,9 +1178,18 @@
           "iauChangeTonnes": -0.5199999999999818,
           "combinedChangeTonnes": -3.089999999999918,
           "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-14",
+          "gldTonnes": 1023.53,
+          "iauTonnes": 456.49,
+          "gldChangeTonnes": 0.2899999999999636,
+          "iauChangeTonnes": 0.17000000000001592,
+          "combinedChangeTonnes": 0.45999999999997954,
+          "aligned": true
         }
       ],
-      "historyDaysCount": 5,
+      "historyDaysCount": 6,
       "historyStatus": "collecting",
       "historyFallback": "GLD"
     },
@@ -1189,7 +1198,7 @@
       "frequency": "weekly",
       "sourceName": "World Gold Council Local gold price premium/discount",
       "sourceUrl": "https://www.gold.org/goldhub/data/gold-premium",
-      "fetchedAt": "2026-08-17T07:34:42+09:00",
+      "fetchedAt": "2026-08-17T12:58:51+09:00",
       "error": "WGC現物プレミアム取得不能: RuntimeError: HTTP取得失敗（1回試行）: 403 Client Error: Forbidden for url: https://www.gold.org/download/file/11657/gold-premiums.xlsx",
       "note": "一般公開経路を確認できないため旧値を最新値として表示しません。"
     },
@@ -1230,7 +1239,7 @@
         "sourceName": "FRED DFII10",
         "sourceUrl": "https://fred.stlouisfed.org/series/DFII10",
         "label": "米10年実質金利",
-        "fetchedAt": "2026-08-17T07:34:43+09:00"
+        "fetchedAt": "2026-08-17T12:58:51+09:00"
       },
       "dollarBroad": {
         "status": "verified",
@@ -1240,14 +1249,14 @@
         "sourceName": "FRED DTWEXBGS",
         "sourceUrl": "https://fred.stlouisfed.org/series/DTWEXBGS",
         "label": "米ドル実効指数（Broad）",
-        "fetchedAt": "2026-08-17T07:34:43+09:00"
+        "fetchedAt": "2026-08-17T12:58:51+09:00"
       },
       "usdjpy": {
         "status": "verified",
-        "asOfDateTime": "2026-08-17T07:22:26+09:00",
-        "value": 159.336,
-        "change": -0.08999487304686227,
-        "changePercent": -0.05644930936045123,
+        "asOfDateTime": "2026-08-17T12:24:20+09:00",
+        "value": 159.064,
+        "change": -0.36199487304688205,
+        "changePercent": -0.22706138565116163,
         "sourceName": "Yahoo Finance USD/JPY",
         "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/"
       }
@@ -1255,7 +1264,7 @@
     "assessment": {
       "shortTerm": "買い優勢",
       "structural": "買い需要あり（確認項目限定）",
-      "score": 68,
+      "score": 85,
       "components": [
         {
           "name": "CFTC",
@@ -1263,7 +1272,7 @@
         },
         {
           "name": "ETF",
-          "score": -1.0
+          "score": 1.0
         },
         {
           "name": "実質金利",
@@ -1280,37 +1289,37 @@
       "total": 7
     },
     "aiSummary": [
-      "金先物は前回比+1.25%です。COMEXの出来高・建玉は別の基準日で表示し、日付を合わせられた場合だけ価格×建玉判定を行います。",
+      "金先物は前回比+1.50%です。COMEXの出来高・建玉は別の基準日で表示し、日付を合わせられた場合だけ価格×建玉判定を行います。",
       "COMEX出来高・建玉は取得待ちです。取得不能時は推測値を表示しません。",
       "CFTC Managed Moneyのネットは137,662枚、前週比+6,896枚です。週次データとして短期需給に反映します。",
-      "主要金ETF保有量は GLD 1023.24t / IAU 456.49t。金融需要の実流入・流出を先物と分けて確認します。",
+      "主要金ETF保有量は GLD 1023.53t / IAU 456.49t。金融需要の実流入・流出を先物と分けて確認します。",
       "中国・インドの現物プレミアムはWGCの公開更新を確認できる場合だけ表示します。ログイン等で取得できない場合は前回値を捏造せず保留します。"
     ]
   },
   "market": {
     "schemaVersion": "1.1.0",
     "pageId": "market-data",
-    "generatedAt": "2026-08-17T07:22:19+09:00",
-    "reportSlot": "08:00",
-    "overallStatus": "degraded",
+    "generatedAt": "2026-08-17T12:24:41+09:00",
+    "reportSlot": "12:00",
+    "overallStatus": "verified",
     "missingRequired": [],
-    "fallbackCount": 1,
+    "fallbackCount": 0,
     "markets": {
       "gold": {
         "id": "gold",
         "displayName": "金",
         "dashboardKey": "gold",
-        "value": 4435.1,
-        "displayValue": "4,435.10",
+        "value": 4445.9,
+        "displayValue": "4,445.90",
         "previousClose": 4380.39990234375,
-        "change": 54.700097656250364,
-        "changePercent": 1.2487466641340816,
-        "changeText": "+54.70 / +1.25%",
+        "change": 65.50009765624964,
+        "changePercent": 1.4952994958566057,
+        "changeText": "+65.50 / +1.50%",
         "unit": "USD/oz",
         "marketType": "continuous_futures",
         "session": "global",
-        "asOf": "2026-08-17T07:12:16+09:00",
-        "fetchedAt": "2026-08-17T07:22:19+09:00",
+        "asOf": "2026-08-17T12:14:06+09:00",
+        "fetchedAt": "2026-08-17T12:24:13+09:00",
         "sourceId": "yahoo_gc_f",
         "sourceName": "Yahoo Finance Gold Futures",
         "sourceUrl": "https://finance.yahoo.com/quote/GC=F/",
@@ -1319,11 +1328,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T07:22:22+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:16+09:00",
         "error": null,
         "note": "",
-        "attemptCount": 3,
-        "lastAttemptAt": "2026-08-17T07:22:19+09:00",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "stooq_xauusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1331,17 +1340,17 @@
         "id": "wti",
         "displayName": "WTI原油",
         "dashboardKey": "oil",
-        "value": 82.61,
-        "displayValue": "82.61",
+        "value": 82.3,
+        "displayValue": "82.30",
         "previousClose": 82.4000015258789,
-        "change": 0.20999847412109318,
-        "changePercent": 0.2548525124179024,
-        "changeText": "+0.21 / +0.25%",
+        "change": -0.10000152587890909,
+        "changePercent": -0.1213610728484027,
+        "changeText": "-0.10 / -0.12%",
         "unit": "USD/bbl",
         "marketType": "continuous_futures",
         "session": "global",
-        "asOf": "2026-08-17T07:12:19+09:00",
-        "fetchedAt": "2026-08-17T07:22:23+09:00",
+        "asOf": "2026-08-17T12:14:07+09:00",
+        "fetchedAt": "2026-08-17T12:24:16+09:00",
         "sourceId": "yahoo_cl_f",
         "sourceName": "Yahoo Finance WTI Crude Oil Futures",
         "sourceUrl": "https://finance.yahoo.com/quote/CL=F/",
@@ -1350,11 +1359,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T07:22:26+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:20+09:00",
         "error": null,
         "note": "",
-        "attemptCount": 3,
-        "lastAttemptAt": "2026-08-17T07:22:19+09:00",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "stooq_cl_f: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1362,30 +1371,30 @@
         "id": "nikkei225_futures_ose",
         "displayName": "日経225先物（大阪取引所）",
         "dashboardKey": "nikkei",
-        "value": 68720.0,
-        "displayValue": "68,720",
+        "value": 68750.0,
+        "displayValue": "68,750",
         "previousClose": 68690.0,
-        "change": 30.0,
-        "changePercent": 0.043674479545785516,
-        "changeText": "+30 / +0.04%",
+        "change": 60.0,
+        "changePercent": 0.08734895909157103,
+        "changeText": "+60 / +0.09%",
         "unit": "円",
         "marketType": "futures_ose",
         "session": "day_through",
-        "asOf": "2026-08-15T06:00:00+09:00",
-        "fetchedAt": "2026-08-15T08:08:38+09:00",
+        "asOf": "2026-08-17T12:09:00+09:00",
+        "fetchedAt": "2026-08-17T12:24:21+09:00",
         "sourceId": "jpx_ose_futures_quote",
         "sourceName": "JPX/OSE Futures Quotes",
         "sourceUrl": "https://port.jpx.co.jp/jpxhp/main/index.aspx?disptype=day_through&f=e_future",
         "rawReference": "JPX/OSE 日経225先物 26年9月限; delayed quote endpoint; TTCODE=101.2609/O",
         "classification": "",
-        "verificationStatus": "fallback",
-        "freshnessStatus": "last_verified",
-        "fallbackUsed": true,
-        "lastVerifiedAt": "2026-08-15T08:08:38+09:00",
-        "error": "jpx_ose_futures_quote: STALE_DATA; nikkei_nk225f_profile: REFERENCE_ONLY",
-        "note": "今回の新規取得に失敗したため、前回確認値を保持しています。",
-        "attemptCount": 3,
-        "lastAttemptAt": "2026-08-17T07:22:19+09:00",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-08-17T12:24:21+09:00",
+        "error": null,
+        "note": "",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "nikkei_nk225f_profile: REFERENCE_ONLY: reference source is not allowed for dashboard publication",
         "retryPreserved": false
       },
@@ -1393,17 +1402,17 @@
         "id": "usdjpy",
         "displayName": "USD/JPY",
         "dashboardKey": "usdjpy",
-        "value": 159.336,
-        "displayValue": "159.34",
+        "value": 159.064,
+        "displayValue": "159.06",
         "previousClose": 159.42599487304688,
-        "change": -0.08999487304686227,
-        "changePercent": -0.05644930936045123,
-        "changeText": "-0.09 / -0.06%",
+        "change": -0.36199487304688205,
+        "changePercent": -0.22706138565116163,
+        "changeText": "-0.36 / -0.23%",
         "unit": "円",
         "marketType": "spot",
         "session": "continuous",
-        "asOf": "2026-08-17T07:22:26+09:00",
-        "fetchedAt": "2026-08-17T07:22:27+09:00",
+        "asOf": "2026-08-17T12:24:20+09:00",
+        "fetchedAt": "2026-08-17T12:24:21+09:00",
         "sourceId": "yahoo_jpy_x",
         "sourceName": "Yahoo Finance USD/JPY",
         "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
@@ -1412,11 +1421,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T07:22:30+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:24+09:00",
         "error": null,
         "note": "",
-        "attemptCount": 3,
-        "lastAttemptAt": "2026-08-17T07:22:19+09:00",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "stooq_usdjpy: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1424,17 +1433,17 @@
         "id": "eurusd",
         "displayName": "EUR/USD",
         "dashboardKey": "eurusd",
-        "value": 1.1571,
-        "displayValue": "1.15710",
+        "value": 1.1583,
+        "displayValue": "1.15830",
         "previousClose": 1.1530035734176636,
-        "change": 0.004096426582336443,
-        "changePercent": 0.35528307776133694,
-        "changeText": "+0.00410 / +0.36%",
+        "change": 0.005296426582336533,
+        "changePercent": 0.45935907784198093,
+        "changeText": "+0.00530 / +0.46%",
         "unit": "USD",
         "marketType": "spot",
         "session": "continuous",
-        "asOf": "2026-08-17T07:21:56+09:00",
-        "fetchedAt": "2026-08-17T07:22:31+09:00",
+        "asOf": "2026-08-17T12:23:56+09:00",
+        "fetchedAt": "2026-08-17T12:24:24+09:00",
         "sourceId": "yahoo_eurusd_x",
         "sourceName": "Yahoo Finance EUR/USD",
         "sourceUrl": "https://finance.yahoo.com/quote/EURUSD=X/",
@@ -1443,11 +1452,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T07:22:34+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:27+09:00",
         "error": null,
         "note": "",
-        "attemptCount": 3,
-        "lastAttemptAt": "2026-08-17T07:22:19+09:00",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "stooq_eurusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1455,17 +1464,17 @@
         "id": "btcusd",
         "displayName": "BTCUSD",
         "dashboardKey": "btc",
-        "value": 62816.94,
-        "displayValue": "62,817",
-        "previousClose": 62816.94140625,
-        "change": -0.0014062499976716936,
-        "changePercent": -2.238647678343142e-06,
-        "changeText": "-0 / -0.00%",
+        "value": 63299.89,
+        "displayValue": "63,300",
+        "previousClose": 63024.3203125,
+        "change": 275.5696874999994,
+        "changePercent": 0.4372434103749434,
+        "changeText": "+276 / +0.44%",
         "unit": "USD",
         "marketType": "spot_crypto",
         "session": "continuous",
-        "asOf": "2026-08-17T07:22:33+09:00",
-        "fetchedAt": "2026-08-17T07:22:34+09:00",
+        "asOf": "2026-08-17T12:24:23+09:00",
+        "fetchedAt": "2026-08-17T12:24:27+09:00",
         "sourceId": "yahoo_btc_usd",
         "sourceName": "Yahoo Finance Bitcoin USD",
         "sourceUrl": "https://finance.yahoo.com/quote/BTC-USD/",
@@ -1474,11 +1483,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T07:22:37+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:30+09:00",
         "error": null,
         "note": "",
-        "attemptCount": 3,
-        "lastAttemptAt": "2026-08-17T07:22:19+09:00",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "stooq_btcusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1496,7 +1505,7 @@
         "marketType": "index",
         "session": "daily",
         "asOf": "2026-08-14T09:00:00+09:00",
-        "fetchedAt": "2026-08-17T07:22:38+09:00",
+        "fetchedAt": "2026-08-17T12:24:30+09:00",
         "sourceId": "cboe_vix_history",
         "sourceName": "Cboe VIX Historical Data",
         "sourceUrl": "https://www.cboe.com/tradable_products/vix/vix_historical_data/",
@@ -1505,11 +1514,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T07:22:38+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:30+09:00",
         "error": null,
         "note": "",
-        "attemptCount": 2,
-        "lastAttemptAt": "2026-08-17T07:22:19+09:00",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "",
         "retryPreserved": false
       },
@@ -1517,17 +1526,17 @@
         "id": "nikkei_vi",
         "displayName": "日経VI",
         "dashboardKey": "nikkei_vi",
-        "value": 30.96,
-        "displayValue": "30.96",
-        "previousClose": 31.650000000000002,
-        "change": -0.69,
-        "changePercent": -2.18,
-        "changeText": "-0.69 / -2.18%",
+        "value": 31.4,
+        "displayValue": "31.40",
+        "previousClose": 30.959999999999997,
+        "change": 0.44,
+        "changePercent": 1.42,
+        "changeText": "+0.44 / +1.42%",
         "unit": "pt",
         "marketType": "index",
         "session": "daily",
-        "asOf": "2026-08-14T15:50:00+09:00",
-        "fetchedAt": "2026-08-17T07:22:39+09:00",
+        "asOf": "2026-08-17T12:24:00+09:00",
+        "fetchedAt": "2026-08-17T12:24:31+09:00",
         "sourceId": "nikkei_nk225vi_profile",
         "sourceName": "Nikkei 225 VI official profile",
         "sourceUrl": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
@@ -1536,11 +1545,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T07:22:39+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:31+09:00",
         "error": null,
         "note": "",
-        "attemptCount": 2,
-        "lastAttemptAt": "2026-08-17T07:22:19+09:00",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "",
         "retryPreserved": false
       },
@@ -1558,7 +1567,7 @@
         "marketType": "sentiment",
         "session": "daily",
         "asOf": "2026-08-15T08:59:53+09:00",
-        "fetchedAt": "2026-08-17T06:40:27+09:00",
+        "fetchedAt": "2026-08-17T12:24:32+09:00",
         "sourceId": "cnn_fear_greed_graphdata",
         "sourceName": "CNN Fear & Greed graphdata",
         "sourceUrl": "https://edition-prod-cf.sitemirror.cnn.com/markets/fear-and-greed",
@@ -1567,11 +1576,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T06:40:27+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:32+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-17T06:40:07+09:00",
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "",
         "retryPreserved": false
       },
@@ -1588,8 +1597,8 @@
         "unit": "score",
         "marketType": "crypto_sentiment",
         "session": "daily",
-        "asOf": "2026-08-15T09:00:00+09:00",
-        "fetchedAt": "2026-08-17T06:40:27+09:00",
+        "asOf": "2026-08-16T09:00:00+09:00",
+        "fetchedAt": "2026-08-17T12:24:32+09:00",
         "sourceId": "coinmarketcap_crypto_fear_greed",
         "sourceName": "CoinMarketCap Crypto Fear and Greed Index",
         "sourceUrl": "https://coinmarketcap.com/ja/charts/fear-and-greed-index/",
@@ -1598,159 +1607,26 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-17T06:40:27+09:00",
+        "lastVerifiedAt": "2026-08-17T12:24:32+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-17T06:40:07+09:00",
+        "lastAttemptAt": "2026-08-17T12:24:13+09:00",
         "lastError": "",
         "retryPreserved": false
       }
     },
-    "errors": [
-      {
-        "symbol": "gold",
-        "sourceId": "stooq_xauusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "gold",
-        "sourceId": "stooq_xauusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "gold",
-        "sourceId": "stooq_xauusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "wti",
-        "sourceId": "stooq_cl_f",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "wti",
-        "sourceId": "stooq_cl_f",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "wti",
-        "sourceId": "stooq_cl_f",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "nikkei225_futures_ose",
-        "sourceId": "jpx_ose_futures_quote",
-        "code": "STALE_DATA",
-        "message": "age 49.4h > 36h",
-        "attempt": 1
-      },
-      {
-        "symbol": "nikkei225_futures_ose",
-        "sourceId": "nikkei_nk225f_profile",
-        "code": "REFERENCE_ONLY",
-        "message": "reference source is not allowed for dashboard publication"
-      },
-      {
-        "symbol": "usdjpy",
-        "sourceId": "stooq_usdjpy",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "usdjpy",
-        "sourceId": "stooq_usdjpy",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "usdjpy",
-        "sourceId": "stooq_usdjpy",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "eurusd",
-        "sourceId": "stooq_eurusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "eurusd",
-        "sourceId": "stooq_eurusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "eurusd",
-        "sourceId": "stooq_eurusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "btcusd",
-        "sourceId": "stooq_btcusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "btcusd",
-        "sourceId": "stooq_btcusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "btcusd",
-        "sourceId": "stooq_btcusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      }
-    ],
+    "errors": [],
     "acquisition": {
       "strategy": "staged_retry",
-      "windowStartedAt": "2026-08-17T06:40:07+09:00",
-      "lastAttemptAt": "2026-08-17T07:22:19+09:00",
-      "runCount": 3,
+      "windowStartedAt": "2026-08-17T12:24:13+09:00",
+      "lastAttemptAt": "2026-08-17T12:24:41+09:00",
+      "runCount": 6,
       "mode": "incremental",
-      "targetedSymbols": [
-        "gold",
-        "wti",
-        "nikkei225_futures_ose",
-        "usdjpy",
-        "eurusd",
-        "btcusd",
-        "vix",
-        "nikkei_vi"
-      ],
-      "recoveredSymbols": [
-        "gold",
-        "wti"
-      ],
+      "targetedSymbols": [],
+      "recoveredSymbols": [],
       "preservedVerifiedSymbols": [],
-      "remainingFallback": [
-        "nikkei225_futures_ose"
-      ],
+      "remainingFallback": [],
       "remainingUnavailable": []
     },
     "sources": [
@@ -1894,13 +1770,8 @@
   },
   "etfHistory": {
     "schemaVersion": "1.0.0",
-    "updatedAt": "2026-08-17T07:34:44+09:00",
+    "updatedAt": "2026-08-17T12:58:52+09:00",
     "gld": [
-      {
-        "asOfDate": "2026-02-23",
-        "tonnes": 1086.47,
-        "changeTonnes": 7.720000000000027
-      },
       {
         "asOfDate": "2026-02-24",
         "tonnes": 1094.19,
@@ -2495,6 +2366,11 @@
         "asOfDate": "2026-08-13",
         "tonnes": 1023.24,
         "changeTonnes": -2.5699999999999363
+      },
+      {
+        "asOfDate": "2026-08-14",
+        "tonnes": 1023.53,
+        "changeTonnes": 0.2899999999999636
       }
     ],
     "iau": [
