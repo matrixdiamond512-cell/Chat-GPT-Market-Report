@@ -48,6 +48,12 @@ jobs:
           from pathlib import Path
 
           payload = json.loads(Path('data/nikkei-contributions.json').read_text(encoding='utf-8'))
+          if payload.get('status') == 'unavailable':
+              current = payload.get('current') or {}
+              if current.get('top') or current.get('bottom'):
+                  raise SystemExit('Unavailable Nikkei contribution current must not contain rows')
+              print('Nikkei contributions unavailable; committed with lastGood boundary')
+              raise SystemExit(0)
           if payload.get('status') != 'verified':
               raise SystemExit('nikkei-contributions.json is not verified')
           top = payload.get('top') or []
@@ -91,3 +97,4 @@ jobs:
           git commit -m "Update verified Nikkei 225 contributions"
           git pull --rebase
           git push
+
