@@ -4,6 +4,10 @@
 The 08:00 report is a previous-close report. QA validates the structured table itself
 and never overlays an intraday morning quote. A date-matched prior close may have been
 retrieved after 08:00; that retrieval time is not a reason to reject the value.
+
+A reasoned unavailable value (取得不能（理由） / 未公表（理由）) is publishable as a
+degraded warning. Missing rows, empty cells, parser failures, and unavailable values
+without a reason remain blocking.
 """
 from __future__ import annotations
 
@@ -40,10 +44,24 @@ def load_json(path: Path, default: Any) -> Any:
 def normalize_label(value: str) -> str:
     label = NUMBER_PREFIX.sub("", str(value or "").strip())
     return {
+        "Dow Jones": "NYダウ",
+        "Dow": "NYダウ",
+        "NASDAQ Composite": "NASDAQ総合",
+        "Nasdaq Composite": "NASDAQ総合",
+        "Nasdaq": "NASDAQ総合",
+        "S&P 500": "S&P500",
+        "Nikkei 225": "日経225現物",
+        "日経225": "日経225現物",
+        "日経平均": "日経225現物",
+        "金": "COMEX金先物",
+        "COMEX金": "COMEX金先物",
+        "原油": "WTI原油",
         "日経225先物・大阪取引所": "日経225先物（大阪取引所）",
         "日経225先物(大阪取引所)": "日経225先物（大阪取引所）",
         "日経225 25日乖離率": "日経225 25日移動平均乖離率",
+        "25日移動平均乖離率": "日経225 25日移動平均乖離率",
         "日経225 200日乖離率": "日経225 200日移動平均乖離率",
+        "200日移動平均乖離率": "日経225 200日移動平均乖離率",
     }.get(label, label)
 
 
@@ -177,7 +195,10 @@ def main() -> int:
             if not r:
                 blocking.append(f"required six-market row missing: {label}")
             elif re.search(r"取得不能|未公表", r["value"]):
-                blocking.append(f"required six-market value unavailable: {label}")
+                if reasoned_unavailable(r["value"]):
+                    warnings.append(f"required six-market value unavailable with reason: {label}")
+                else:
+                    blocking.append(f"required six-market value unavailable without reason: {label}")
 
     provenance = (report or {}).get("dataProvenance") or {}
     close_sheet = provenance.get("closeSheet") or {}
@@ -207,7 +228,7 @@ def main() -> int:
         "labels": [r.get("label") for r in rows],
         "blockingReasons": sorted(set(blocking)),
         "warnings": warnings,
-        "rule": "08:00 is a previous-close report. Validate market-data date, not retrieval clock time; do not overlay intraday morning quotes."
+        "rule": "08:00 is a previous-close report. Validate market-data date, not retrieval clock time; reasoned unavailable values publish as degraded warnings.",
     }
     out = Path(a.output)
     out.parent.mkdir(parents=True, exist_ok=True)
