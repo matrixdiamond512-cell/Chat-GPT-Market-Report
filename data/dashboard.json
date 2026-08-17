@@ -29,7 +29,7 @@
       "id": "INDEPENDENT_MARKET_DATA",
       "name": "独立市場データ取得・検証基盤",
       "path": "data/market/latest.json",
-      "asOf": "2026-08-18T07:56:07+09:00",
+      "asOf": "2026-08-18T08:00:12+09:00",
       "status": "verified",
       "note": "価格カードと市場温度カードは、この検証済み市場データを本文解析より優先します。"
     }
@@ -139,7 +139,7 @@
     "marketData": {
       "schemaVersion": "1.1.0",
       "pageId": "market-data",
-      "generatedAt": "2026-08-18T07:56:07+09:00",
+      "generatedAt": "2026-08-18T08:00:12+09:00",
       "reportSlot": "08:00",
       "overallStatus": "verified",
       "missingRequired": [],
@@ -345,7 +345,7 @@
           "marketType": "index",
           "session": "delayed",
           "asOf": "2026-08-18T05:15:01+09:00",
-          "fetchedAt": "2026-08-18T07:26:45+09:00",
+          "fetchedAt": "2026-08-18T08:00:12+09:00",
           "sourceId": "yahoo_vix",
           "sourceName": "Yahoo Finance VIX",
           "sourceUrl": "https://finance.yahoo.com/quote/%5EVIX/",
@@ -354,12 +354,12 @@
           "verificationStatus": "verified",
           "freshnessStatus": "fresh",
           "fallbackUsed": false,
-          "lastVerifiedAt": "2026-08-18T07:26:45+09:00",
+          "lastVerifiedAt": "2026-08-18T08:00:12+09:00",
           "error": null,
           "note": "",
-          "attemptCount": 2,
-          "lastAttemptAt": "2026-08-18T07:26:24+09:00",
-          "lastError": "cboe_vix_history: STALE_DATA: age 94.4h > 84h",
+          "attemptCount": 3,
+          "lastAttemptAt": "2026-08-18T08:00:12+09:00",
+          "lastError": "cboe_vix_history: STALE_DATA: age 95.0h > 84h",
           "retryPreserved": false
         },
         "nikkei_vi": {
@@ -376,7 +376,7 @@
           "marketType": "index",
           "session": "daily",
           "asOf": "2026-08-17T15:50:00+09:00",
-          "fetchedAt": "2026-08-18T07:26:46+09:00",
+          "fetchedAt": "2026-08-18T08:00:13+09:00",
           "sourceId": "nikkei_nk225vi_profile",
           "sourceName": "Nikkei 225 VI official profile",
           "sourceUrl": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
@@ -385,11 +385,11 @@
           "verificationStatus": "verified",
           "freshnessStatus": "fresh",
           "fallbackUsed": false,
-          "lastVerifiedAt": "2026-08-18T07:26:46+09:00",
+          "lastVerifiedAt": "2026-08-18T08:00:13+09:00",
           "error": null,
           "note": "",
-          "attemptCount": 2,
-          "lastAttemptAt": "2026-08-18T07:26:24+09:00",
+          "attemptCount": 3,
+          "lastAttemptAt": "2026-08-18T08:00:12+09:00",
           "lastError": "",
           "retryPreserved": false
         },
@@ -456,14 +456,25 @@
           "retryPreserved": false
         }
       },
-      "errors": [],
+      "errors": [
+        {
+          "symbol": "vix",
+          "sourceId": "cboe_vix_history",
+          "code": "STALE_DATA",
+          "message": "age 95.0h > 84h",
+          "attempt": 1
+        }
+      ],
       "acquisition": {
         "strategy": "staged_retry",
         "windowStartedAt": "2026-08-18T06:45:55+09:00",
-        "lastAttemptAt": "2026-08-18T07:56:07+09:00",
-        "runCount": 6,
+        "lastAttemptAt": "2026-08-18T08:00:12+09:00",
+        "runCount": 7,
         "mode": "incremental",
-        "targetedSymbols": [],
+        "targetedSymbols": [
+          "vix",
+          "nikkei_vi"
+        ],
         "recoveredSymbols": [],
         "preservedVerifiedSymbols": [],
         "remainingFallback": [],
@@ -772,7 +783,7 @@
       "marketData": {
         "schemaVersion": "1.1.0",
         "pageId": "market-data",
-        "generatedAt": "2026-08-18T07:56:07+09:00",
+        "generatedAt": "2026-08-18T08:00:12+09:00",
         "reportSlot": "08:00",
         "overallStatus": "verified",
         "missingRequired": [],
@@ -978,7 +989,7 @@
             "marketType": "index",
             "session": "delayed",
             "asOf": "2026-08-18T05:15:01+09:00",
-            "fetchedAt": "2026-08-18T07:26:45+09:00",
+            "fetchedAt": "2026-08-18T08:00:12+09:00",
             "sourceId": "yahoo_vix",
             "sourceName": "Yahoo Finance VIX",
             "sourceUrl": "https://finance.yahoo.com/quote/%5EVIX/",
@@ -987,12 +998,12 @@
             "verificationStatus": "verified",
             "freshnessStatus": "fresh",
             "fallbackUsed": false,
-            "lastVerifiedAt": "2026-08-18T07:26:45+09:00",
+            "lastVerifiedAt": "2026-08-18T08:00:12+09:00",
             "error": null,
             "note": "",
-            "attemptCount": 2,
-            "lastAttemptAt": "2026-08-18T07:26:24+09:00",
-            "lastError": "cboe_vix_history: STALE_DATA: age 94.4h > 84h",
+            "attemptCount": 3,
+            "lastAttemptAt": "2026-08-18T08:00:12+09:00",
+            "lastError": "cboe_vix_history: STALE_DATA: age 95.0h > 84h",
             "retryPreserved": false
           },
           "nikkei_vi": {
@@ -1009,7 +1020,7 @@
             "marketType": "index",
             "session": "daily",
             "asOf": "2026-08-17T15:50:00+09:00",
-            "fetchedAt": "2026-08-18T07:26:46+09:00",
+            "fetchedAt": "2026-08-18T08:00:13+09:00",
             "sourceId": "nikkei_nk225vi_profile",
             "sourceName": "Nikkei 225 VI official profile",
             "sourceUrl": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
@@ -1018,11 +1029,11 @@
             "verificationStatus": "verified",
             "freshnessStatus": "fresh",
             "fallbackUsed": false,
-            "lastVerifiedAt": "2026-08-18T07:26:46+09:00",
+            "lastVerifiedAt": "2026-08-18T08:00:13+09:00",
             "error": null,
             "note": "",
-            "attemptCount": 2,
-            "lastAttemptAt": "2026-08-18T07:26:24+09:00",
+            "attemptCount": 3,
+            "lastAttemptAt": "2026-08-18T08:00:12+09:00",
             "lastError": "",
             "retryPreserved": false
           },
@@ -1089,14 +1100,25 @@
             "retryPreserved": false
           }
         },
-        "errors": [],
+        "errors": [
+          {
+            "symbol": "vix",
+            "sourceId": "cboe_vix_history",
+            "code": "STALE_DATA",
+            "message": "age 95.0h > 84h",
+            "attempt": 1
+          }
+        ],
         "acquisition": {
           "strategy": "staged_retry",
           "windowStartedAt": "2026-08-18T06:45:55+09:00",
-          "lastAttemptAt": "2026-08-18T07:56:07+09:00",
-          "runCount": 6,
+          "lastAttemptAt": "2026-08-18T08:00:12+09:00",
+          "runCount": 7,
           "mode": "incremental",
-          "targetedSymbols": [],
+          "targetedSymbols": [
+            "vix",
+            "nikkei_vi"
+          ],
           "recoveredSymbols": [],
           "preservedVerifiedSymbols": [],
           "remainingFallback": [],
@@ -1246,7 +1268,7 @@
   "marketData": {
     "schemaVersion": "1.1.0",
     "pageId": "market-data",
-    "generatedAt": "2026-08-18T07:56:07+09:00",
+    "generatedAt": "2026-08-18T08:00:12+09:00",
     "reportSlot": "08:00",
     "overallStatus": "verified",
     "missingRequired": [],
@@ -1452,7 +1474,7 @@
         "marketType": "index",
         "session": "delayed",
         "asOf": "2026-08-18T05:15:01+09:00",
-        "fetchedAt": "2026-08-18T07:26:45+09:00",
+        "fetchedAt": "2026-08-18T08:00:12+09:00",
         "sourceId": "yahoo_vix",
         "sourceName": "Yahoo Finance VIX",
         "sourceUrl": "https://finance.yahoo.com/quote/%5EVIX/",
@@ -1461,12 +1483,12 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-18T07:26:45+09:00",
+        "lastVerifiedAt": "2026-08-18T08:00:12+09:00",
         "error": null,
         "note": "",
-        "attemptCount": 2,
-        "lastAttemptAt": "2026-08-18T07:26:24+09:00",
-        "lastError": "cboe_vix_history: STALE_DATA: age 94.4h > 84h",
+        "attemptCount": 3,
+        "lastAttemptAt": "2026-08-18T08:00:12+09:00",
+        "lastError": "cboe_vix_history: STALE_DATA: age 95.0h > 84h",
         "retryPreserved": false
       },
       "nikkei_vi": {
@@ -1483,7 +1505,7 @@
         "marketType": "index",
         "session": "daily",
         "asOf": "2026-08-17T15:50:00+09:00",
-        "fetchedAt": "2026-08-18T07:26:46+09:00",
+        "fetchedAt": "2026-08-18T08:00:13+09:00",
         "sourceId": "nikkei_nk225vi_profile",
         "sourceName": "Nikkei 225 VI official profile",
         "sourceUrl": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
@@ -1492,11 +1514,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-18T07:26:46+09:00",
+        "lastVerifiedAt": "2026-08-18T08:00:13+09:00",
         "error": null,
         "note": "",
-        "attemptCount": 2,
-        "lastAttemptAt": "2026-08-18T07:26:24+09:00",
+        "attemptCount": 3,
+        "lastAttemptAt": "2026-08-18T08:00:12+09:00",
         "lastError": "",
         "retryPreserved": false
       },
@@ -1563,14 +1585,25 @@
         "retryPreserved": false
       }
     },
-    "errors": [],
+    "errors": [
+      {
+        "symbol": "vix",
+        "sourceId": "cboe_vix_history",
+        "code": "STALE_DATA",
+        "message": "age 95.0h > 84h",
+        "attempt": 1
+      }
+    ],
     "acquisition": {
       "strategy": "staged_retry",
       "windowStartedAt": "2026-08-18T06:45:55+09:00",
-      "lastAttemptAt": "2026-08-18T07:56:07+09:00",
-      "runCount": 6,
+      "lastAttemptAt": "2026-08-18T08:00:12+09:00",
+      "runCount": 7,
       "mode": "incremental",
-      "targetedSymbols": [],
+      "targetedSymbols": [
+        "vix",
+        "nikkei_vi"
+      ],
       "recoveredSymbols": [],
       "preservedVerifiedSymbols": [],
       "remainingFallback": [],
@@ -1715,5 +1748,5 @@
       }
     ]
   },
-  "marketDataUpdatedAt": "2026-08-18T07:56:07+09:00"
+  "marketDataUpdatedAt": "2026-08-18T08:00:12+09:00"
 }
