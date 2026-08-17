@@ -37,7 +37,7 @@ USER_AGENT = (
 )
 TRADERS_WEB_SECTOR_URL = os.getenv(
     "TRADERS_WEB_SECTOR_URL",
-    "https://www.traders.co.jp/market_jp/sector",
+    "https://www.traders.co.jp/market_jp/sector_ranking/day",
 )
 
 US_SECTORS = {
@@ -255,55 +255,61 @@ def fetch_japan_market() -> tuple[list[dict[str, Any]], list[str]]:
     return result, errors
 
 
+def parse_japan_traders_web_html(html: str, expected_date: str | None = None) -> list[dict[str, Any]]:
+    """Parse the one-page Traders Web 33-sector ranking."""
+    from bs4 import BeautifulSoup
+
+    soup = BeautifulSoup(html, "html.parser")
+    text = soup.get_text(" ", strip=True)
+    date_match = re.search(r"(20\d{2})[/-](\d{1,2})[/-](\d{1,2})\s+\d{1,2}:\d{2}", text)
+    source_date = None
+    if date_match:
+        source_date = f"{int(date_match.group(1)):04d}-{int(date_match.group(2)):02d}-{int(date_match.group(3)):02d}"
+    if expected_date and source_date != expected_date:
+        raise ValueError(f"Traders Web sector date mismatch: source={source_date}, expected={expected_date}")
+    table = next(
+        (
+            candidate
+            for candidate in soup.find_all("table")
+            if "騰落率" in " ".join(list(candidate.stripped_strings)[:40])
+            and ("業種" in " ".join(list(candidate.stripped_strings)[:40]) or "セクター" in " ".join(list(candidate.stripped_strings)[:40]))
+        ),
+        None,
+    )
+    if table is None:
+        raise ValueError("Traders Web sector ranking table was not found")
+    values: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for row in table.find_all("tr"):
+        cells = [" ".join(cell.stripped_strings).strip() for cell in row.find_all(["th", "td"])]
+        if len(cells) < 2:
+            continue
+        name = ""
+        for cell in cells:
+            normalized = re.sub(r"[（(]東証[）)]", "", cell).strip()
+            if normalized in JP_SECTORS.values():
+                name = normalized
+                break
+        pct_cell = next((cell for cell in cells if re.search(r"[+−-]?\d+(?:\.\d+)?\s*%", cell)), "")
+        if not name or not pct_cell or name in seen:
+            continue
+        match = re.search(r"[+−-]?\d+(?:\.\d+)?", pct_cell)
+        if not match:
+            continue
+        seen.add(name)
+        values.append(sector_row(name, "", float(match.group(0).replace("−", "-")), source_date or expected_date or "", "トレーダーズ・ウェブ業種別ランキング"))
+    if len(values) < 30:
+        raise ValueError(f"Traders Web sector ranking returned only {len(values)} sectors")
+    return values
+
+
 def fetch_japan_traders_web(expected_date: str | None = None) -> tuple[list[dict[str, Any]], list[str]]:
     """Fetch the preferred one-page Traders Web 33-sector ranking."""
-    errors: list[str] = []
     try:
         html = request_bytes(TRADERS_WEB_SECTOR_URL).decode("utf-8", errors="replace")
-        from bs4 import BeautifulSoup
-
-        soup = BeautifulSoup(html, "html.parser")
-        text = soup.get_text(" ", strip=True)
-        date_match = re.search(r"(20\d{2})[/-](\d{1,2})[/-](\d{1,2}).{0,40}(?:15|16):\d{2}", text)
-        source_date = None
-        if date_match:
-            source_date = f"{int(date_match.group(1)):04d}-{int(date_match.group(2)):02d}-{int(date_match.group(3)):02d}"
-        if expected_date and source_date != expected_date:
-            raise ValueError(f"Traders Web sector date mismatch: source={source_date}, expected={expected_date}")
-        table = next(
-            (
-                candidate
-                for candidate in soup.find_all("table")
-                if "騰落率" in " ".join(list(candidate.stripped_strings)[:40])
-                and ("業種" in " ".join(list(candidate.stripped_strings)[:40]) or "セクター" in " ".join(list(candidate.stripped_strings)[:40]))
-            ),
-            None,
-        )
-        if table is None:
-            raise ValueError("Traders Web sector table was not found")
-        values: list[dict[str, Any]] = []
-        seen: set[str] = set()
-        for row in table.find_all("tr"):
-            cells = [" ".join(cell.stripped_strings).strip() for cell in row.find_all(["th", "td"])]
-            if len(cells) < 2:
-                continue
-            name = next((cell for cell in cells if cell in JP_SECTORS.values()), "")
-            if not name:
-                name = next((cell for cell in cells if 2 <= len(cell) <= 20 and not re.fullmatch(r"[+−-]?[\d,.]+%?", cell)), "")
-            pct_cell = next((cell for cell in cells if re.search(r"[+−-]?\d+(?:\.\d+)?\s*%", cell)), "")
-            if not name or not pct_cell or name in seen:
-                continue
-            match = re.search(r"[+−-]?\d+(?:\.\d+)?", pct_cell)
-            if not match:
-                continue
-            seen.add(name)
-            values.append(sector_row(name, "", float(match.group(0).replace("−", "-")), source_date or expected_date or "", "トレーダーズ・ウェブ業種別ランキング"))
-        if len(values) < 30:
-            raise ValueError(f"Traders Web sector table returned only {len(values)} sectors")
-        return values, errors
+        return parse_japan_traders_web_html(html, expected_date), []
     except Exception as error:  # noqa: BLE001
-        errors.append(f"Traders Web: {error}")
-        return [], errors
+        return [], [f"Traders Web: {error}"]
 
 
 def load_existing() -> dict[str, Any]:
