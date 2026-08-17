@@ -11,6 +11,7 @@ on:
       - "scripts/repair_morning_daily_references.py"
       - "scripts/apply_japan_close_reference.py"
       - "scripts/force_exact_japan_close_reference.py"
+      - "scripts/restore_morning_published_values.py"
       - "scripts/build_chatgpt_report_input.py"
       - "scripts/build_market_sheet_exports.py"
       - "scripts/sync_latest_report_publication.py"
@@ -162,6 +163,9 @@ jobs:
 
       - name: Force exact-date Japanese reference over generic feeds
         run: python scripts/force_exact_japan_close_reference.py
+
+      - name: Restore originally published usable values
+        run: python scripts/restore_morning_published_values.py
 
       - name: Build previous-close ChatGPT input and CSV contract
         run: |
