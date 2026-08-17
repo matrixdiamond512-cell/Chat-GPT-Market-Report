@@ -34,7 +34,7 @@
     ],
     "positioning": [
       "USD/JPYは160円手前の介入・政策警戒と日米金利差・実需ドル需要が衝突。",
-      "日経225先物（OSE）は8/17新規取得失敗。8/15最終確認68,720円は参考値のみ。",
+      "日経225先物（大阪取引所）の前営業日終値は68,720円（+30円、+0.04%）。2026-08-14取引日のナイトセッション終値として確認。",
       "BTCは62,877ドル、Crypto Fear & Greed 36/Fearで米株より慎重。"
     ],
     "news": [
@@ -75,7 +75,7 @@
         "name": "日経225先物",
         "direction": "上昇",
         "price": "68,720円",
-        "outlook": "8/15最終確認68,720円は参考値のみ。東京開始後に再確認。"
+        "outlook": "前営業日終値68,720円。69,000円回復で強気再開、68,000円割れで慎重化。"
       },
       {
         "name": "USD/JPY",
@@ -268,14 +268,14 @@
         },
         {
           "label": "東証プライム売買代金",
-          "value": "取得不能（08:00構造化表に元データなし。後続の前営業日終値修復・日本終値参照で補完）",
+          "value": "取得不能（前営業日の確定売買代金を検証済みソースで照合できず）",
           "change": "—",
           "rate": "—",
           "direction": "取得不能"
         },
         {
           "label": "東証プライム売買高",
-          "value": "取得不能（08:00構造化表に元データなし。後続の前営業日終値修復・日本終値参照で補完）",
+          "value": "取得不能（2026-08-14の大引けブロックがトレーダーズ・ウェブに取得時点で見つからず）",
           "change": "—",
           "rate": "—",
           "direction": "取得不能"
@@ -312,7 +312,7 @@
         "missingFilled": []
       },
       "dailyCloseRepair": {
-        "generatedAt": "2026-08-17T09:26:45+09:00",
+        "generatedAt": "2026-08-17T09:29:20+09:00",
         "semantics": "previous_close",
         "rule": "08:00 uses date-matched prior-session closes; retrieval after 08:00 is allowed, stale-date carry-forward is prohibited; BTCUSD keeps its dedicated 24/7-market convention",
         "repairedLabels": [
@@ -322,19 +322,19 @@
           "Russell 2000",
           "日経225現物",
           "USD/JPY",
+          "EUR/USD",
           "VIX"
         ],
         "unavailable": {
           "CME日経225先物・円建て": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用",
           "CME日経225先物・ドル建て": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用",
-          "EUR/USD": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-13のため不採用",
           "COMEX金先物": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用",
           "WTI原油": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用"
         }
       },
       "japanCloseReference": {
         "dataDate": "2026-08-14",
-        "appliedAt": "2026-08-17T09:26:45+09:00",
+        "appliedAt": "2026-08-17T09:29:20+09:00",
         "appliedLabels": [],
         "preservedUsableLabels": [
           "日経225現物",
@@ -355,7 +355,7 @@
       },
       "exactJapanCloseOverride": {
         "dataDate": "2026-08-14",
-        "appliedAt": "2026-08-17T09:26:45+09:00",
+        "appliedAt": "2026-08-17T09:29:20+09:00",
         "appliedLabels": [
           "日経225現物",
           "日経225 25日移動平均乖離率",
@@ -415,7 +415,11 @@
           "tradingDate": "2026-08-14",
           "sourceName": "JPX/OSE Futures Quotes",
           "sourceUrl": "https://port.jpx.co.jp/jpxhp/main/index.aspx?disptype=day_through&f=e_future"
-        }
+        },
+        "refinedUnavailableReasons": [
+          "東証プライム売買高",
+          "東証プライム売買代金"
+        ]
       },
       "mondaySaturdayRecovery": {
         "sourceReport": "reports/2026-08-15_08-00.json",
