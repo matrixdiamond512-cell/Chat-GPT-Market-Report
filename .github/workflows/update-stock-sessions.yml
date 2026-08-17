@@ -17,8 +17,6 @@ on:
     # Keep one index/FX/TOPIX snapshot after the open. Individual-stock
     # real-time tracking is intentionally not part of this workflow.
     - cron: '5 0 * * 1-5'   # 09:05 JST
-    # U.S. premarket: 20:30, 20:45, 20:55 JST on weekdays.
-    - cron: '30,45,55 11 * * 1-5'
   push:
     branches: [main]
     paths:
@@ -60,7 +58,6 @@ jobs:
         run: |
           case "${{ github.event.schedule }}" in
             "5 0 * * 1-5") MODE="tokyo" ;;
-            "30,45,55 11 * * 1-5") MODE="us" ;;
             *) MODE="${{ github.event.inputs.mode || 'auto' }}" ;;
           esac
           echo "mode=$MODE" >> "$GITHUB_OUTPUT"
