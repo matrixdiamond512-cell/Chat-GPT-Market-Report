@@ -18,51 +18,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch live report assets with cache busting
+      - name: Fetch live v3 assets
         shell: bash
         run: |
           set -euo pipefail
           BASE='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report'
-          for i in $(seq 1 20); do
+          for i in $(seq 1 30); do
             CB="$(date +%s)-$i"
             curl -fsSL --retry 2 --retry-delay 1 "${BASE}/report.html?date=2026-08-17&time=16%3A00&cb=${CB}" -o /tmp/report.html || true
-            curl -fsSL --retry 2 --retry-delay 1 "${BASE}/assets/js/report-core-v2.js?cb=${CB}" -o /tmp/report-core-v2.js || true
+            curl -fsSL --retry 2 --retry-delay 1 "${BASE}/assets/js/report-core-v3.js?cb=${CB}" -o /tmp/report-core-v3.js || true
             curl -fsSL --retry 2 --retry-delay 1 "${BASE}/reports.json?cb=${CB}" -o /tmp/reports.json || true
-            if grep -q 'report-core-v2.js?v=20260817-1830-core-v2' /tmp/report.html 2>/dev/null \
-               && grep -q 'MarketReportRendererVersion="20260817-1830-core-v2"' /tmp/report-core-v2.js 2>/dev/null; then
+            if grep -q 'report-core-v3.js?v=20260817-1845-core-v3' /tmp/report.html 2>/dev/null \
+               && grep -q 'MarketReportRendererVersion = "20260817-1845-core-v3"' /tmp/report-core-v3.js 2>/dev/null; then
               break
             fi
             sleep 3
           done
           grep -oE '<script[^>]+src="[^"]+"' /tmp/report.html || true
-          grep -o 'MarketReportRendererVersion[^;]*' /tmp/report-core-v2.js || true
+          grep -o 'MarketReportRendererVersion[^;]*' /tmp/report-core-v3.js || true
+          grep -q 'report-core-v3.js?v=20260817-1845-core-v3' /tmp/report.html
+          ! grep -q 'latest-report-bootstrap.js' /tmp/report.html
+          ! grep -q 'report-core-v2.js' /tmp/report.html
 
-      - name: Validate public JavaScript syntax
-        run: node --check /tmp/report-core-v2.js
+      - name: Check v3 JavaScript syntax
+        run: node --check /tmp/report-core-v3.js
 
-      - name: Validate public 16:00 rendering logic
-        shell: bash
-        run: |
-          node <<'NODE'
-          const fs = require('fs');
-          const vm = require('vm');
-          const src = fs.readFileSync('/tmp/report-core-v2.js','utf8').replace(/\ninit\(\);\s*$/,'\n');
-          const context = { console, window:{}, document:{getElementById(){return null;}}, URL, URLSearchParams, Date, Set, Map, RegExp, String, Array, Object, Number, Math };
-          vm.createContext(context);
-          vm.runInContext(src, context, {filename:'report-core-v2.js'});
-          const payload = JSON.parse(fs.readFileSync('/tmp/reports.json','utf8'));
-          const list = Array.isArray(payload) ? payload : (payload.reports || []);
-          const report = list.find(r => r.date === '2026-08-17' && r.time === '16:00');
-          if (!report) throw new Error('16:00 report not found');
-          const parsed = context.parseDocument(context.fullTextOf(report) || context.structuredFallback(report), report.title);
-          const market = parsed.sections.find(s => context.isMarketSection(s.title));
-          if (!market) throw new Error('market section missing in direct parser');
-          const html = context.renderMarketTable(report, market.lines);
-          if (!/<table/.test(html)) throw new Error('table not generated');
-          console.log('DIRECT SECTIONS=', parsed.sections.map(s=>s.title));
-          NODE
-
-      - name: Dump final live DOM in headless Chrome
+      - name: Validate final live DOM in headless Chrome
         shell: bash
         run: |
           set -euo pipefail
@@ -70,42 +51,27 @@ jobs:
           [ -n "$CHROME" ] || { echo 'Chrome not found'; exit 1; }
           URL="https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/report.html?date=2026-08-17&time=16%3A00&cb=$(date +%s)"
           "$CHROME" --headless --disable-gpu --no-sandbox --virtual-time-budget=10000 --dump-dom "$URL" > /tmp/report-dom.html
-          echo '--- FINAL DOM STATUS ---'
-          grep -o '本文全文を表示中[^<]*' /tmp/report-dom.html | head -1 || true
-          echo '--- FINAL DOM H2 ---'
           python - <<'PY'
           import re, html as h, pathlib
           s=pathlib.Path('/tmp/report-dom.html').read_text(encoding='utf-8',errors='replace')
-          for x in re.findall(r'<h2[^>]*>(.*?)</h2>', s, re.S):
-              print(re.sub(r'<[^>]+>','',h.unescape(x)).strip())
-          print('HAS_MAJOR_TEXT=', '主要市場データ' in s)
-          print('HAS_DATA_ATTR=', 'data-sop-title="主要市場データ"' in s)
-          print('HAS_TABLE=', '<table' in s)
-          idx=s.find('主要市場データ')
-          if idx >= 0:
-              print('AROUND_MAJOR=', s[max(0,idx-500):idx+1500])
+          print('STATUS=', re.findall(r'id="reportStatus"[^>]*>(.*?)</div>', s, re.S)[:1])
+          headings=[re.sub(r'<[^>]+>','',h.unescape(x)).strip() for x in re.findall(r'<h2[^>]*>(.*?)</h2>',s,re.S)]
+          print('H2=', headings)
+          checks={
+            'v3': '統合レンダラー v3' in s,
+            'reportsJsonSource': 'reports.json正本' in s,
+            'majorHeading': '主要市場データ' in headings,
+            'majorAttr': 'data-sop-title="主要市場データ"' in s,
+            'table': '<table' in s,
+            'fiveHeaders': all(x in s for x in ['市場・指標','現在値・確認値','前日比','騰落率','方向・状態']),
+            'gold': '金' in s,
+            'oil': '原油' in s,
+            'nikkei': '日経225先物' in s,
+            'usdjpy': 'USD/JPY' in s,
+            'eurusd': 'EUR/USD' in s,
+            'btc': 'BTCUSD' in s,
+          }
+          print('CHECKS=', checks)
+          if not all(checks.values()):
+              raise SystemExit('live v3 DOM validation failed')
           PY
-
-      - name: Validate final live DOM table
-        shell: bash
-        run: |
-          python - <<'PY'
-          import re, pathlib
-          html=pathlib.Path('/tmp/report-dom.html').read_text(encoding='utf-8',errors='replace')
-          if '統合レンダラー v2' not in html:
-              raise SystemExit('renderer v2 status missing')
-          if '主要市場データ' not in html:
-              raise SystemExit('主要市場データ text missing in final DOM')
-          if '<table' not in html:
-              raise SystemExit('table missing in final DOM')
-          for x in ['市場・指標','現在値・確認値','前日比','騰落率','方向・状態']:
-              if x not in html: raise SystemExit(f'header missing: {x}')
-          PY
-
-      - name: Fail if live HTML still references legacy report renderers
-        shell: bash
-        run: |
-          set -euo pipefail
-          ! grep -q 'report-fulltext.js' /tmp/report.html
-          ! grep -q 'report-sop-renderer.js' /tmp/report.html
-          grep -q 'report-core-v2.js?v=20260817-1830-core-v2' /tmp/report.html
