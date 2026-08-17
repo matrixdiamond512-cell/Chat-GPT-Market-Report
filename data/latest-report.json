@@ -149,16 +149,16 @@
         },
         {
           "label": "CME日経225先物・円建て",
-          "value": "68,980",
-          "change": "+265",
-          "rate": "+0.39%",
+          "value": "68,955",
+          "change": "+240",
+          "rate": "+0.35%",
           "direction": "上昇"
         },
         {
           "label": "CME日経225先物・ドル建て",
-          "value": "68,995",
-          "change": "+260",
-          "rate": "+0.38%",
+          "value": "68,985",
+          "change": "+250",
+          "rate": "+0.36%",
           "direction": "上昇"
         },
         {
@@ -319,7 +319,7 @@
         "missingFilled": []
       },
       "dailyCloseRepair": {
-        "generatedAt": "2026-08-18T08:11:37+09:00",
+        "generatedAt": "2026-08-18T08:34:12+09:00",
         "semantics": "previous_close",
         "rule": "08:00 uses date-matched prior-session closes; retrieval after 08:00 is allowed, stale-date carry-forward is prohibited; BTCUSD keeps its dedicated 24/7-market convention",
         "repairedLabels": [
@@ -343,16 +343,17 @@
       },
       "japanCloseReference": {
         "dataDate": "2026-08-17",
-        "appliedAt": "2026-08-18T08:11:38+09:00",
+        "appliedAt": "2026-08-18T08:34:12+09:00",
         "appliedLabels": [
           "日経225現物",
           "日経225 25日移動平均乖離率",
-          "日経225 200日移動平均乖離率",
+          "日経225 200日移動平均乖離率"
+        ],
+        "preservedUsableLabels": [
           "東証プライム値上がり銘柄数",
           "東証プライム値下がり銘柄数",
           "東証プライム25日騰落レシオ"
         ],
-        "preservedUsableLabels": [],
         "source": "data/market/japan-close-reference.json",
         "ratesReference": {
           "applied": [],
@@ -361,7 +362,7 @@
       },
       "exactJapanCloseOverride": {
         "dataDate": "2026-08-17",
-        "appliedAt": "2026-08-18T08:11:38+09:00",
+        "appliedAt": "2026-08-18T08:34:12+09:00",
         "appliedLabels": [
           "日経225現物",
           "日経225 25日移動平均乖離率",
@@ -427,7 +428,7 @@
         "changePercent": 2.225356726905727,
         "source": "Yahoo Finance Bitcoin USD",
         "sourceUrl": "https://finance.yahoo.com/quote/BTC-USD/",
-        "fetchedAt": "2026-08-18T08:11:38+09:00"
+        "fetchedAt": "2026-08-18T08:34:13+09:00"
       }
     }
   }
