@@ -1,15 +1,14 @@
 /*
- * Dashboard market-price / previous-day-change fallback fix.
+ * Dashboard six-market data priority guard.
  *
- * Priority:
- *   1. Canonical/verified dashboard market data
- *   2. Structured report marketDataTable row (change / rate)
- *   3. Structured reports[].markets price/change
+ * Final priority:
+ *   1. data/market/latest.json item when it is VERIFIED and matches report date/slot
+ *   2. Existing dashboard renderer result
+ *   3. Structured report marketDataTable row (change / rate)
+ *   4. Structured reports[].markets price/change
  *
- * Important: if a usable price already exists but its displayed change says
- * "取得不能", do not stop there. The 08:00 report may already contain the
- * verified previous-day change in marketDataTable.rows[]. This patch merges it
- * into the 6-market card instead of showing a false unavailable state.
+ * This prevents a report-text fallback price from replacing a newer verified
+ * market quote and accidentally dropping previous-close change data.
  */
 (() => {
   "use strict";
@@ -17,6 +16,7 @@
   if (typeof parseMetric !== "function" || typeof reportMarket !== "function") return;
 
   const baseParseMetric = parseMetric;
+  let verifiedMarketPayload = null;
 
   const TABLE_LABELS = {
     gold: ["COMEX金先物", "金", "金（XAU/USD）"],
@@ -27,11 +27,25 @@
     btc: ["BTCUSD", "BTC/USD", "BTC"]
   };
 
+  const DATA_KEY_BY_DEFINITION = {
+    gold: "gold",
+    oil: "wti",
+    nikkei: "nikkei225_futures_ose",
+    usdjpy: "usdjpy",
+    eurusd: "eurusd",
+    btc: "btcusd"
+  };
+
   function normalizeLabel(value) {
     return String(value || "")
       .replace(/[　\s]/g, "")
       .replace(/[()（）]/g, "")
       .toUpperCase();
+  }
+
+  function finiteNumber(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
   }
 
   function isUnavailableText(value) {
@@ -47,6 +61,79 @@
   function isUnavailableChange(metric) {
     if (!metric) return true;
     return isUnavailableText(metric.change) || /前日比\s*[：:]?\s*取得不能/.test(String(metric.change || ""));
+  }
+
+  function reportMatchesVerifiedPayload(report) {
+    if (!report || !verifiedMarketPayload) return false;
+    const generatedDate = String(verifiedMarketPayload.generatedAt || "").slice(0, 10);
+    return generatedDate === String(report.date || "")
+      && String(verifiedMarketPayload.reportSlot || "") === String(report.time || "");
+  }
+
+  function verifiedItemFor(report, definition) {
+    if (!reportMatchesVerifiedPayload(report)) return null;
+    const dataKey = DATA_KEY_BY_DEFINITION[definition?.key];
+    if (!dataKey) return null;
+    const item = verifiedMarketPayload?.markets?.[dataKey];
+    if (!item || item.verificationStatus !== "verified") return null;
+    if (finiteNumber(item.value) === null) return null;
+    return item;
+  }
+
+  function formatVerifiedChange(item) {
+    const value = finiteNumber(item?.value);
+    const previous = finiteNumber(item?.previousClose);
+    let change = finiteNumber(item?.change);
+    let rate = finiteNumber(item?.changePercent);
+
+    if (value !== null && previous !== null) {
+      change = value - previous;
+      if (previous !== 0) rate = ((value / previous) - 1) * 100;
+    }
+
+    const absValue = value === null ? null : Math.abs(value);
+    const digits = absValue !== null && absValue < 10 ? 5 : absValue !== null && absValue < 1000 ? 2 : 0;
+    const parts = [];
+
+    if (change !== null) {
+      parts.push(change.toLocaleString("ja-JP", {
+        signDisplay: "always",
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits
+      }));
+    }
+    if (rate !== null && Math.abs(rate) <= 100) {
+      parts.push(`${rate.toLocaleString("ja-JP", {
+        signDisplay: "always",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}%`);
+    }
+    return parts.join(" / ") || String(item?.changeText || "").trim() || "前日比：取得不能";
+  }
+
+  function trendFromVerifiedItem(item) {
+    const change = finiteNumber(item?.change);
+    const rate = finiteNumber(item?.changePercent);
+    const value = change ?? rate;
+    if (value > 0) return "up";
+    if (value < 0) return "down";
+    return "flat";
+  }
+
+  function metricFromVerifiedPayload(report, definition) {
+    const item = verifiedItemFor(report, definition);
+    if (!item) return null;
+    const value = finiteNumber(item.value);
+    return {
+      value: item.displayValue || value.toLocaleString("ja-JP", { maximumFractionDigits: 5 }),
+      unit: item.unit || definition?.unit || "",
+      change: formatVerifiedChange(item),
+      trend: trendFromVerifiedItem(item),
+      raw: "verified-market-data",
+      sourceNote: `確認済み：${item.sourceName || item.sourceId || "市場データ"}`,
+      sourceClass: "verified"
+    };
   }
 
   function tableRows(report) {
@@ -145,7 +232,7 @@
       trend: trendFromStructuredMarket(market),
       raw: `${market.name || definition?.display || definition?.label || "市場"}：${price}`,
       sourceNote: "マーケットレポート構造化JSON",
-      sourceClass: "verified"
+      sourceClass: "fallback"
     };
   }
 
@@ -162,21 +249,47 @@
       change: changeText,
       trend: trendFromTableRow(row),
       sourceNote: metric.sourceNote || "マーケットレポート前日終値表",
-      sourceClass: metric.sourceClass || "verified"
+      sourceClass: metric.sourceClass || "fallback"
     };
   }
 
   parseMetric = function(report, definition) {
-    const primary = baseParseMetric(report, definition);
+    // Hard priority: verified live/slot market data must beat report-text fallbacks.
+    const verified = metricFromVerifiedPayload(report, definition);
+    if (verified) return verified;
 
-    // A valid price with a false "前日比：取得不能" is the main bug fixed here.
+    const primary = baseParseMetric(report, definition);
     if (!isUnavailableMetric(primary)) {
       return mergeTableChange(report, definition, primary);
     }
 
-    // If the primary price is unavailable, keep the existing structured-price fallback,
-    // then enrich its change/rate from marketDataTable when available.
     const reportFallback = metricFromStructuredReport(report, definition);
     return mergeTableChange(report, definition, reportFallback || primary);
   };
+
+  async function loadVerifiedMarketPayload() {
+    try {
+      const response = await fetch(`data/market/latest.json?verifiedPriority=${Date.now()}`, { cache: "no-store" });
+      if (!response.ok) return;
+      const payload = await response.json();
+      if (!payload || typeof payload !== "object" || payload.overallStatus === "blocked") return;
+      if (!payload.markets || typeof payload.markets !== "object") return;
+      verifiedMarketPayload = payload;
+
+      // Repaint after the verified payload arrives so an earlier report fallback cannot remain visible.
+      try {
+        if (typeof render === "function" && typeof selectedReport !== "undefined" && selectedReport) render();
+      } catch (error) {
+        console.warn("verified six-market rerender failed", error);
+      }
+    } catch (error) {
+      console.warn("verified six-market payload load failed", error);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", loadVerifiedMarketPayload, { once: true });
+  } else {
+    loadVerifiedMarketPayload();
+  }
 })();
