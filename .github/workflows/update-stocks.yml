@@ -37,6 +37,8 @@ jobs:
             update-nikkei-contributions.yml
             update-us-stock-breadth.yml
             update-us-stock-movers-contributions.yml
+            update-tokyo-preopen.yml
+            update-us-premarket.yml
           )
           for workflow in "${workflows[@]}"; do
             echo "Dispatching ${workflow}"
@@ -47,3 +49,4 @@ jobs:
         run: |
           echo "Each component validates and commits independently."
           echo "A failed sector parser must not block the other stock components."
+
