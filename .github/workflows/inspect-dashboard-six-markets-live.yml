@@ -1,0 +1,99 @@
+name: Inspect live six-market dashboard
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "assets/js/dashboard-canonical-market-final.js"
+      - ".github/workflows/inspect-dashboard-six-markets-live.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for public assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report'
+          for i in $(seq 1 30); do
+            CB="$(date +%s)-$i"
+            curl -fsSL --retry 2 --retry-delay 1 "${BASE}/index.html?date=2026-08-17&time=16%3A00&cb=${CB}" -o /tmp/index.html || true
+            curl -fsSL --retry 2 --retry-delay 1 "${BASE}/assets/js/dashboard-canonical-market-final.js?cb=${CB}" -o /tmp/canonical.js || true
+            curl -fsSL --retry 2 --retry-delay 1 "${BASE}/data/market/latest.json?cb=${CB}" -o /tmp/latest.json || true
+            if grep -q 'dashboard-canonical-market-final.js?v=20260817-1903-canonical1' /tmp/index.html 2>/dev/null \
+               && grep -q 'verified data/market/latest.json' /tmp/canonical.js 2>/dev/null; then
+              break
+            fi
+            sleep 3
+          done
+          grep -q 'dashboard-canonical-market-final.js?v=20260817-1903-canonical1' /tmp/index.html
+          node --check /tmp/canonical.js
+
+      - name: Validate live dashboard DOM
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          [ -n "$CHROME" ] || { echo 'Chrome not found'; exit 1; }
+          URL="https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/index.html?date=2026-08-17&time=16%3A00&cb=$(date +%s)"
+          "$CHROME" --headless --disable-gpu --no-sandbox --virtual-time-budget=12000 --dump-dom "$URL" > /tmp/dashboard-dom.html
+          python - <<'PY'
+          import json, re, html, pathlib
+
+          payload=json.loads(pathlib.Path('/tmp/latest.json').read_text(encoding='utf-8'))
+          dom=pathlib.Path('/tmp/dashboard-dom.html').read_text(encoding='utf-8',errors='replace')
+
+          def expected(item):
+              value=float(item['value'])
+              prev=float(item['previousClose'])
+              ch=value-prev
+              pct=(value/prev-1)*100
+              digits=5 if abs(value)<10 else 2 if abs(value)<1000 else 0
+              def fmt(x,d):
+                  sign='+' if x>=0 else '-'
+                  return f"{sign}{abs(x):,.{d}f}"
+              return f"{fmt(ch,digits)} / {fmt(pct,2)}%"
+
+          def card_text(label):
+              m=re.search(r'<(?:a|article) class="market-card"[^>]*>(.*?)</(?:a|article)>', dom, re.S)
+              # find all cards so nested anchors do not confuse a single regex match
+              cards=re.findall(r'<(?:a|article) class="market-card"[^>]*>(.*?)</(?:a|article)>', dom, re.S)
+              for block in cards:
+                  text=re.sub(r'<[^>]+>',' ',html.unescape(block))
+                  text=re.sub(r'\s+',' ',text).strip()
+                  if label in text:
+                      return text
+              raise SystemExit(f'card not found: {label}')
+
+          checks={
+              'USD/JPY': ('usdjpy', 'Yahoo Finance USD/JPY'),
+              'BTCUSD': ('btcusd', 'Yahoo Finance Bitcoin USD'),
+              '金（XAU/USD）': ('gold', 'Yahoo Finance Gold Futures'),
+              'WTI原油（CL）': ('wti', 'Yahoo Finance WTI Crude Oil Futures'),
+              '日経225先物（大阪取引所）': ('nikkei225_futures_ose', 'JPX/OSE Futures Quotes'),
+              'EUR/USD': ('eurusd', 'Yahoo Finance EUR/USD'),
+          }
+
+          for label,(key,source) in checks.items():
+              item=payload['markets'][key]
+              if item.get('verificationStatus')!='verified':
+                  raise SystemExit(f'{key} is not verified in latest.json')
+              text=card_text(label)
+              exp=expected(item)
+              if exp not in text:
+                  raise SystemExit(f'{label}: expected change {exp!r} not in card: {text}')
+              if source not in text:
+                  raise SystemExit(f'{label}: source {source!r} not in card: {text}')
+              if '前日比：取得不能' in text:
+                  raise SystemExit(f'{label}: unavailable change still visible')
+              print(label, 'OK', exp)
+          PY
