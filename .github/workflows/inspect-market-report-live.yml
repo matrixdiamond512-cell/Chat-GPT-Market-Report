@@ -14,7 +14,7 @@ permissions:
 jobs:
   inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
 
@@ -97,6 +97,44 @@ jobs:
             rendererVersion: context.window.MarketReportRendererVersion || null
           }, null, 2));
           NODE
+
+      - name: Validate final live DOM in headless Chrome
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$CHROME" ]; then
+            echo 'Chrome/Chromium not found on runner'
+            exit 1
+          fi
+          URL="https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/report.html?date=2026-08-17&time=16%3A00&cb=$(date +%s)"
+          "$CHROME" --headless --disable-gpu --no-sandbox --virtual-time-budget=10000 --dump-dom "$URL" > /tmp/report-dom.html
+          echo '--- FINAL DOM STATUS ---'
+          grep -o '本文全文を表示中[^<]*' /tmp/report-dom.html | head -1 || true
+          echo '--- FINAL DOM MARKET SECTION ---'
+          python - <<'PY'
+          import re, pathlib
+          html=pathlib.Path('/tmp/report-dom.html').read_text(encoding='utf-8',errors='replace')
+          status='統合レンダラー v2' in html
+          m=re.search(r'<section[^>]*data-sop-title="主要市場データ"[^>]*>(.*?)</section>', html, re.S)
+          if not m:
+              raise SystemExit('主要市場データ section not found in final DOM')
+          block=m.group(1)
+          checks={
+              'rendererStatus': status,
+              'hasTable': '<table' in block,
+              'hasFiveHeaders': all(x in block for x in ['市場・指標','現在値・確認値','前日比','騰落率','方向・状態']),
+              'hasGold': '金' in block,
+              'hasOil': '原油' in block,
+              'hasNikkei': '日経225先物' in block,
+              'hasUsdJpy': 'USD/JPY' in block,
+              'hasEurUsd': 'EUR/USD' in block,
+              'hasBtc': 'BTCUSD' in block,
+          }
+          print(checks)
+          if not all(checks.values()):
+              raise SystemExit('Final browser DOM validation failed')
+          PY
 
       - name: Fail if live HTML still references legacy report renderers
         shell: bash
