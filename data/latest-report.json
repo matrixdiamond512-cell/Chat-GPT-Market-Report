@@ -170,10 +170,10 @@
         },
         {
           "label": "EUR/USD",
-          "value": "1.15354",
-          "change": "+0.00053",
-          "rate": "+0.05%",
-          "direction": "上昇"
+          "value": "取得不能（2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-13のため不採用）",
+          "change": "—",
+          "rate": "—",
+          "direction": "取得不能"
         },
         {
           "label": "COMEX金先物",
@@ -307,21 +307,12 @@
     "dataProvenance": {
       "tableNormalization": {
         "rule": "08:00 publication always carries the canonical 28-row contract before repair",
-        "inputRowCount": 22,
+        "inputRowCount": 28,
         "outputRowCount": 28,
-        "missingFilled": [
-          "CME日経225先物・ドル建て",
-          "日経225 25日移動平均乖離率",
-          "日経225 200日移動平均乖離率",
-          "東証プライム売買代金",
-          "東証プライム売買高",
-          "東証プライム値上がり銘柄数",
-          "東証プライム値下がり銘柄数",
-          "東証プライム25日騰落レシオ"
-        ]
+        "missingFilled": []
       },
       "dailyCloseRepair": {
-        "generatedAt": "2026-08-17T09:08:17+09:00",
+        "generatedAt": "2026-08-17T09:08:44+09:00",
         "semantics": "previous_close",
         "rule": "08:00 uses date-matched prior-session closes; retrieval after 08:00 is allowed, stale-date carry-forward is prohibited; BTCUSD keeps its dedicated 24/7-market convention",
         "repairedLabels": [
@@ -331,31 +322,30 @@
           "Russell 2000",
           "日経225現物",
           "USD/JPY",
-          "EUR/USD",
           "VIX"
         ],
         "unavailable": {
           "CME日経225先物・円建て": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用",
           "CME日経225先物・ドル建て": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用",
+          "EUR/USD": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-13のため不採用",
           "COMEX金先物": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用",
           "WTI原油": "2026-08-14基準の前日終値を取得できず。取得可能な最新日付は2026-08-16のため不採用"
         }
       },
       "japanCloseReference": {
         "dataDate": "2026-08-14",
-        "appliedAt": "2026-08-17T09:08:17+09:00",
-        "appliedLabels": [
+        "appliedAt": "2026-08-17T09:08:45+09:00",
+        "appliedLabels": [],
+        "preservedUsableLabels": [
+          "日経225現物",
           "日経225 25日移動平均乖離率",
           "日経225 200日移動平均乖離率",
+          "日経225予想PER",
+          "日経225 PBR",
+          "日経225予想EPS",
           "東証プライム値上がり銘柄数",
           "東証プライム値下がり銘柄数",
           "東証プライム25日騰落レシオ"
-        ],
-        "preservedUsableLabels": [
-          "日経225現物",
-          "日経225予想PER",
-          "日経225 PBR",
-          "日経225予想EPS"
         ],
         "source": "data/market/japan-close-reference.json",
         "ratesReference": {
@@ -365,7 +355,7 @@
       },
       "exactJapanCloseOverride": {
         "dataDate": "2026-08-14",
-        "appliedAt": "2026-08-17T09:08:17+09:00",
+        "appliedAt": "2026-08-17T09:08:45+09:00",
         "appliedLabels": [
           "日経225現物",
           "日経225 25日移動平均乖離率",

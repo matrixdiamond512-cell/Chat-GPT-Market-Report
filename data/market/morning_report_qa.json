@@ -1,8 +1,8 @@
 {
-  "checkedAt": "2026-08-17T09:08:13+09:00",
+  "checkedAt": "2026-08-17T09:08:45+09:00",
   "reportDate": "2026-08-17",
   "reportSlot": "08:00",
-  "ready": false,
+  "ready": true,
   "historicalMode": false,
   "reportSource": "latest-report",
   "latestReportDate": "2026-08-17",
@@ -10,7 +10,7 @@
   "dataSemantics": "previous_close",
   "expectedPreviousCloseDate": "2026-08-14",
   "expectedRowCount": 28,
-  "actualRowCount": 22,
+  "actualRowCount": 28,
   "expectedColumns": [
     "項目",
     "終値・値",
@@ -25,6 +25,7 @@
     "Russell 2000",
     "日経225現物",
     "CME日経225先物・円建て",
+    "CME日経225先物・ドル建て",
     "日経225先物（大阪取引所）",
     "USD/JPY",
     "EUR/USD",
@@ -40,15 +41,36 @@
     "日経225 PBR",
     "日経225予想EPS",
     "日経225 25日移動平均乖離率",
-    "日経225 200日移動平均乖離率"
+    "日経225 200日移動平均乖離率",
+    "東証プライム売買代金",
+    "東証プライム売買高",
+    "東証プライム値上がり銘柄数",
+    "東証プライム値下がり銘柄数",
+    "東証プライム25日騰落レシオ"
   ],
-  "blockingReasons": [
-    "market table order/labels mismatch",
-    "market table row count must be 28, got 22"
-  ],
+  "blockingReasons": [],
   "warnings": [
     "marketDataTable structured rows used from latest-report",
-    "required six-market value unavailable with reason: 日経225先物（大阪取引所）"
+    "required six-market value unavailable with reason: EUR/USD",
+    "required six-market value unavailable with reason: COMEX金先物",
+    "required six-market value unavailable with reason: 日経225先物（大阪取引所）",
+    "required six-market value unavailable with reason: WTI原油"
   ],
-  "rule": "08:00 is a previous-close report. Validate market-data date, not retrieval clock time; reasoned unavailable values publish as degraded warnings."
+  "rule": "08:00 is a previous-close report. Validate market-data date, not retrieval clock time; reasoned unavailable values publish as degraded warnings.",
+  "structureReady": true,
+  "dataComplete": false,
+  "availableCount": 20,
+  "expectedDataCount": 28,
+  "unavailableLabels": [
+    "CME日経225先物・円建て",
+    "CME日経225先物・ドル建て",
+    "日経225先物（大阪取引所）",
+    "EUR/USD",
+    "COMEX金先物",
+    "WTI原油",
+    "東証プライム売買代金",
+    "東証プライム売買高"
+  ],
+  "chatgptInputMarketCount": 28,
+  "previousCloseDate": "2026-08-14"
 }
