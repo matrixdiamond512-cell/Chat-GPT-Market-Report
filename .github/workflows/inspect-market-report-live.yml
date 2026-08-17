@@ -1,0 +1,114 @@
+name: Inspect live market report page
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/inspect-market-report-live.yml"
+      - ".github/market-report-inspect-trigger.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch live report assets with cache busting
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report'
+          for i in $(seq 1 20); do
+            CB="$(date +%s)-$i"
+            curl -fsSL --retry 2 --retry-delay 1 "${BASE}/report.html?date=2026-08-17&time=16%3A00&cb=${CB}" -o /tmp/report.html || true
+            curl -fsSL --retry 2 --retry-delay 1 "${BASE}/assets/js/report-core-v2.js?cb=${CB}" -o /tmp/report-core-v2.js || true
+            curl -fsSL --retry 2 --retry-delay 1 "${BASE}/reports.json?cb=${CB}" -o /tmp/reports.json || true
+            if grep -q 'report-core-v2.js?v=20260817-1830-core-v2' /tmp/report.html 2>/dev/null \
+               && grep -q 'MarketReportRendererVersion="20260817-1830-core-v2"' /tmp/report-core-v2.js 2>/dev/null; then
+              break
+            fi
+            sleep 3
+          done
+          echo '--- LIVE HTML SCRIPT TAGS ---'
+          grep -oE '<script[^>]+src="[^"]+"' /tmp/report.html || true
+          echo '--- LIVE STATUS TEXT ---'
+          grep -o '統合レンダラー[^<]*' /tmp/report.html || true
+          echo '--- LIVE RENDERER VERSION ---'
+          grep -o 'MarketReportRendererVersion[^;]*' /tmp/report-core-v2.js || true
+
+      - name: Validate public JavaScript syntax
+        run: node --check /tmp/report-core-v2.js
+
+      - name: Validate public 16:00 rendering logic
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const vm = require('vm');
+          const src = fs.readFileSync('/tmp/report-core-v2.js','utf8').replace(/\ninit\(\);\s*$/,'\n');
+          const context = {
+            console,
+            window: {},
+            document: { getElementById(){ return null; } },
+            URL,
+            URLSearchParams,
+            Date,
+            Set,
+            Map,
+            RegExp,
+            String,
+            Array,
+            Object,
+            Number,
+            Math,
+          };
+          vm.createContext(context);
+          vm.runInContext(src, context, {filename:'report-core-v2.js'});
+          const reports = JSON.parse(fs.readFileSync('/tmp/reports.json','utf8'));
+          const list = Array.isArray(reports) ? reports : (reports.reports || []);
+          const report = list.find(r => r.date === '2026-08-17' && r.time === '16:00');
+          if (!report) throw new Error('2026-08-17 16:00 report not found in public reports.json');
+          const source = context.fullTextOf(report) || context.structuredFallback(report);
+          const parsed = context.parseDocument(source, report.title);
+          const titles = parsed.sections.map(s => s.title);
+          for (const required of ['16:00時点の結論','データ同期・確認状況','主要市場データ','今日の相場テーマ','12:00からの変化','6市場の見通し']) {
+            if (!titles.includes(required)) throw new Error(`section missing: ${required}`);
+          }
+          const market = parsed.sections.find(s => context.isMarketSection(s.title));
+          if (!market) throw new Error('market section missing');
+          const html = context.renderMarketTable(report, market.lines);
+          if (!/<table/.test(html)) throw new Error('market table not generated');
+          for (const header of ['市場・指標','現在値・確認値','前日比','騰落率','方向・状態']) {
+            if (!html.includes(header)) throw new Error(`table header missing: ${header}`);
+          }
+          for (const label of ['金','原油','日経225先物','USD/JPY','EUR/USD','BTCUSD']) {
+            if (!html.includes(label)) throw new Error(`market row missing: ${label}`);
+          }
+          console.log(JSON.stringify({
+            reportTitle: report.title,
+            sectionCount: parsed.sections.length,
+            sections: titles,
+            marketTableGenerated: true,
+            rendererVersion: context.window.MarketReportRendererVersion || null
+          }, null, 2));
+          NODE
+
+      - name: Fail if live HTML still references legacy report renderers
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -q 'report-fulltext.js' /tmp/report.html; then
+            echo 'ERROR: live report.html still references report-fulltext.js'
+            exit 1
+          fi
+          if grep -q 'report-sop-renderer.js' /tmp/report.html; then
+            echo 'ERROR: live report.html still references report-sop-renderer.js'
+            exit 1
+          fi
+          grep -q 'report-core-v2.js?v=20260817-1830-core-v2' /tmp/report.html
+          grep -q '統合レンダラー' /tmp/report.html
