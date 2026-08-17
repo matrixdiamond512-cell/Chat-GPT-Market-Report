@@ -319,7 +319,6 @@ def update_files(
 
     stocks.setdefault("marketDates", {})["us"] = market_date
     stocks.setdefault("marketUpdatedAt", {})["us"] = now.isoformat()
-    stocks["updatedAt"] = now.isoformat()
     stocks["usBreadth"] = payload
     stocks["sourceStatus"] = "米国市場と東京市場を独立更新・市場別基準日を明示"
     STOCKS_PATH.write_text(json.dumps(stocks, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -347,3 +346,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
