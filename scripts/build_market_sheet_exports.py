@@ -5,6 +5,10 @@ The current ChatGPT input prefers data/market/chatgpt-input.json.  That file is
 built from the published 28-row table for 08:00 and from the independent market
 snapshot for intraday slots.  This prevents the 08:00 sheet from collapsing back
 to the old 10-row raw quote contract.
+
+For the 08:00 report, BTCUSD is repaired immediately before export so its
+comparison remains a verified 24-hour comparison instead of inheriting the
+weekday previous-business-day rule used by equities.
 """
 
 from __future__ import annotations
@@ -16,8 +20,10 @@ from typing import Any
 
 try:
     from scripts.write_market_data_to_sheets import SHEET_HEADERS, market_rows
+    from scripts.repair_btc_24h_change import main as repair_btc_24h_change
 except ModuleNotFoundError:  # Direct execution: python scripts/build_market_sheet_exports.py
     from write_market_data_to_sheets import SHEET_HEADERS, market_rows
+    from repair_btc_24h_change import main as repair_btc_24h_change
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -74,6 +80,10 @@ def build_exports(market_dir: Path = MARKET_DIR) -> tuple[int, int]:
 
 
 def main() -> int:
+    # build_chatgpt_report_input.py runs immediately before this script in the
+    # publication workflow. Repair BTCUSD here so JSON, CSV, and dashboard
+    # synchronization all receive the same verified comparison.
+    repair_btc_24h_change()
     latest_count, history_count = build_exports()
     print(f"Built ChatGPT market CSV exports: latest={latest_count}, history={history_count}")
     return 0
