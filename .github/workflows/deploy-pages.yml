@@ -5,6 +5,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Sync latest market report publication"
+    types:
+      - completed
 
 permissions:
   contents: read
@@ -17,6 +22,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -24,6 +30,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # For workflow_run, deploy current main after the synchronization workflow
+          # has committed reports.json/dashboard.json. For push/manual runs this is
+          # also the intended publication source.
+          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@v5
