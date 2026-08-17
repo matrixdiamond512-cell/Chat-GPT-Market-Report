@@ -25,6 +25,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 LATEST = ROOT / "data" / "latest-report.json"
 VERIFIED_HISTORY = ROOT / "data" / "market" / "verified_history.csv"
+JAPAN_REFERENCE = ROOT / "data" / "market" / "japan-close-reference.json"
 UNAVAILABLE_RE = re.compile(r"取得不能|未取得|未公表|入力に値なし|入力待ち|取得継続")
 ALIASES = {
     "Dow Jones": "NYダウ",
@@ -170,13 +171,7 @@ def parse_iso(value: Any) -> dt.datetime | None:
 
 
 def verified_ose_previous_close(report_date: dt.date) -> dict[str, str] | None:
-    """Find the verified OSE close belonging to the prior business session.
-
-    OSE night trading for a Tokyo trading day ends at 06:00 JST on the next calendar
-    day. Therefore the target timestamp date is previous_business_day + 1 day.
-    Only verified, usable JPX/OSE rows are eligible; fallback/current report rows are
-    rejected.
-    """
+    """Find the verified OSE close belonging to the prior business session."""
     if not VERIFIED_HISTORY.is_file():
         return None
     prior_day = previous_business_day(report_date)
@@ -233,6 +228,40 @@ def verified_ose_previous_close(report_date: dt.date) -> dict[str, str] | None:
     }
 
 
+def harmonize_ose_narrative(report: dict[str, Any], recovered: dict[str, str]) -> None:
+    """Keep narrative fields consistent with the verified previous-close table."""
+    trading_date = recovered.get("tradingDate") or "前営業日"
+    summary = (
+        f"日経225先物（大阪取引所）の前営業日終値は{recovered['value']}円"
+        f"（{recovered['change']}円、{recovered['rate']}）。"
+        f"{trading_date}取引日のナイトセッション終値として確認。"
+    )
+    positioning = report.get("positioning")
+    if isinstance(positioning, list):
+        replaced = False
+        for i, item in enumerate(positioning):
+            if "日経225先物" in str(item or ""):
+                positioning[i] = summary
+                replaced = True
+                break
+        if not replaced:
+            positioning.append(summary)
+
+    markets = report.get("markets")
+    if isinstance(markets, list):
+        for market in markets:
+            if not isinstance(market, dict):
+                continue
+            if str(market.get("name") or "").strip() in {"日経225先物", "日経225先物（大阪取引所）"}:
+                market["price"] = f"{recovered['value']}円"
+                market["direction"] = recovered["direction"]
+                market["outlook"] = (
+                    f"前営業日終値{recovered['value']}円。"
+                    "69,000円回復で強気再開、68,000円割れで慎重化。"
+                )
+                break
+
+
 def apply_verified_ose_close(report: dict[str, Any], protected: set[str]) -> dict[str, str] | None:
     label = "日経225先物（大阪取引所）"
     if label in protected:
@@ -249,17 +278,44 @@ def apply_verified_ose_close(report: dict[str, Any], protected: set[str]) -> dic
         return None
     for key in ("value", "change", "rate", "direction"):
         row[key] = recovered[key]
-
-    markets = report.get("markets")
-    if isinstance(markets, list):
-        for market in markets:
-            if not isinstance(market, dict):
-                continue
-            if str(market.get("name") or "").strip() in {"日経225先物", label}:
-                market["price"] = f"{recovered['value']}円"
-                market["direction"] = recovered["direction"]
-                break
+    harmonize_ose_narrative(report, recovered)
     return recovered
+
+
+def refine_prime_unavailable_reasons(report: dict[str, Any]) -> list[str]:
+    """Replace generic placeholders with source-grounded reasons for genuine gaps."""
+    by_label = rows_by_label(report)
+    try:
+        reference = load(JAPAN_REFERENCE) if JAPAN_REFERENCE.is_file() else {}
+    except (OSError, json.JSONDecodeError):
+        reference = {}
+    unavailable = reference.get("unavailable") or {}
+    if not isinstance(unavailable, dict):
+        unavailable = {}
+
+    changed: list[str] = []
+    volume = by_label.get("東証プライム売買高")
+    if volume and not usable_value(volume.get("value")):
+        reason = str(unavailable.get("東証プライム売買高") or "").strip()
+        if not reason:
+            reason = "前営業日の確定売買高を検証済みソースから取得できず"
+        volume["value"] = f"取得不能（{reason}）"
+        volume["change"] = "—"
+        volume["rate"] = "—"
+        volume["direction"] = "取得不能"
+        changed.append("東証プライム売買高")
+
+    turnover = by_label.get("東証プライム売買代金")
+    if turnover and not usable_value(turnover.get("value")):
+        reason = str(unavailable.get("東証プライム売買代金") or "").strip()
+        if not reason:
+            reason = "前営業日の確定売買代金を検証済みソースで照合できず"
+        turnover["value"] = f"取得不能（{reason}）"
+        turnover["change"] = "—"
+        turnover["rate"] = "—"
+        turnover["direction"] = "取得不能"
+        changed.append("東証プライム売買代金")
+    return changed
 
 
 def restore_market_summaries(
@@ -333,6 +389,8 @@ def main() -> int:
         if "日経225先物" not in restored_markets:
             restored_markets.append("日経225先物")
 
+    refined_unavailable = refine_prime_unavailable_reasons(report)
+
     report.setdefault("dataProvenance", {})["publishedValueRecovery"] = {
         "sourceCommit": commit,
         "rule": "canonical source > verified exchange-session history > original published value > external repair > reasoned unavailable",
@@ -340,6 +398,7 @@ def main() -> int:
         "restoredRows": restored_rows,
         "restoredMarkets": restored_markets,
         "osePreviousCloseRecovery": ose_recovery,
+        "refinedUnavailableReasons": refined_unavailable,
     }
     save(LATEST, payload)
     print(json.dumps({
@@ -347,6 +406,7 @@ def main() -> int:
         "restoredRows": restored_rows,
         "restoredMarkets": restored_markets,
         "osePreviousCloseRecovery": ose_recovery,
+        "refinedUnavailableReasons": refined_unavailable,
         "protected": sorted(protected),
     }, ensure_ascii=False))
     return 0
