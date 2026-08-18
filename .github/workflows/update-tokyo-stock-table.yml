@@ -9,6 +9,7 @@ on:
       - "scripts/capture_japan_close_reference.py"
       - "scripts/repair_tokyo_market_internals.py"
       - "scripts/repair_tokyo_current_indexes.py"
+      - "scripts/repair_tokyo_turnover.py"
       - "scripts/export_tokyo_stock_table.py"
       - "data/market/japan-close-reference.json"
       - ".github/workflows/update-tokyo-stock-table.yml"
@@ -58,6 +59,7 @@ jobs:
           python -m py_compile scripts/update_tokyo_stock_table_from_sheet.py
           python -m py_compile scripts/repair_tokyo_market_internals.py
           python -m py_compile scripts/repair_tokyo_current_indexes.py
+          python -m py_compile scripts/repair_tokyo_turnover.py
           python -m py_compile scripts/export_tokyo_stock_table.py
 
       - name: Update completed Tokyo session with exact-date fallback
@@ -68,6 +70,9 @@ jobs:
 
       - name: Repair current-session TOPIX and Growth 250 quotes
         run: python scripts/repair_tokyo_current_indexes.py
+
+      - name: Repair Tokyo Prime turnover from post-close commentary
+        run: python scripts/repair_tokyo_turnover.py
 
       - name: Export independently dated Tokyo table
         run: python scripts/export_tokyo_stock_table.py
@@ -105,7 +110,7 @@ jobs:
                   raise SystemExit(f"Prime 25-day ratio mismatch: {ratio_row[1]} != {ref_ratio['value']}")
 
           repaired = {}
-          for label in ('TOPIX', 'グロース250', '日経VI', '海外投資家動向（現物）'):
+          for label in ('TOPIX', 'グロース250', '日経VI', '東証プライム売買代金', '海外投資家動向（現物）'):
               row = next((r for r in rows if isinstance(r, list) and r and r[0] == label), None)
               repaired[label] = row[1] if row and len(row) > 1 else 'missing'
 
