@@ -6,7 +6,7 @@
   "updatedAt": "2026-08-18T07:45:29+09:00",
   "dataAsOf": "2026-08-17T16:00:00-04:00",
   "status": "ok",
-  "sourceStatus": "米国市場と東京市場を独立更新・市場別基準日を明示",
+  "sourceStatus": "米国市場と東京市場を独立更新・項目別基準日を明示・欠損は複数ソースで補完",
   "sources": [
     {
       "id": "INITIAL_STOCKS_HTML",
@@ -168,13 +168,13 @@
         ],
         [
           "日経225 25日乖離率",
-          "+2.09%",
+          "+2.47%",
           "—",
           "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-08-18。"
         ],
         [
           "日経225 200日乖離率",
-          "+17.04%",
+          "+16.52%",
           "—",
           "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-08-18。"
         ],
@@ -186,7 +186,7 @@
         ]
       ],
       "dataDate": "2026-08-18",
-      "updatedAt": "2026-08-18T23:37:36+09:00",
+      "updatedAt": "2026-08-18T23:50:29+09:00",
       "source": {
         "name": "東京市場確定値統合（複数ソース・項目別基準日）",
         "sheet": "",
@@ -202,9 +202,10 @@
           "日経225予想PER": "exact-date reference unavailable",
           "日経225予想EPS": "exact-date reference unavailable",
           "日経VI": "repaired from verified generic market acquisition",
-          "TOPIX": "repaired from current-session closing quote",
+          "TOPIX": "current-session quote unavailable",
           "グロース250": "dated current-session quote unavailable",
-          "海外投資家動向（現物）": "repaired from verified JPX weekly flow 2026-08-07"
+          "海外投資家動向（現物）": "repaired from verified JPX weekly flow 2026-08-07",
+          "TOPIX-google": "URLError: <urlopen error [Errno 104] Connection reset by peer>"
         }
       }
     }
@@ -558,181 +559,249 @@
       "title": "日本市場の大幅上昇・下落銘柄（東証プライム）",
       "flag": "JP",
       "status": "verified",
-      "dataDate": "2026-08-07",
-      "updatedAt": "2026-08-08T20:35:34+09:00",
-      "source": "トレーダーズ・ウェブ 国内市場ランキング（東証プライム・前日比）",
+      "freshness": "fresh",
+      "dataDate": "2026-08-18",
+      "asOf": "2026-08-18T15:45:00+09:00",
+      "updatedAt": "2026-08-18T23:52:02+09:00",
+      "source": {
+        "name": "トレーダーズ・ウェブ 国内市場ランキング（東証プライム・前日比）",
+        "gainersUrl": "https://www.traders.co.jp/market_jp/stock_ranking/price_up/day/tp/all",
+        "losersUrl": "https://www.traders.co.jp/market_jp/stock_ranking/price_down/day/tp/all"
+      },
+      "error": null,
       "sourceAt": {
-        "gainers": "2026-08-07T15:45:00+09:00",
-        "losers": "2026-08-07T15:45:00+09:00"
+        "gainers": "2026-08-18T15:45:00+09:00",
+        "losers": "2026-08-18T15:45:00+09:00"
       },
       "gainers": [
         {
           "rank": 1,
-          "code": "4527",
-          "name": "ロート（4527）",
-          "close": "2,862.5",
-          "change": "+21.16%",
+          "code": "3778",
+          "name": "さくら（3778）",
+          "close": "4,300",
+          "change": "+13.16%",
           "dayChange": "+500",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-07。材料要因は別途ニュース確認。"
+          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
         },
         {
           "rank": 2,
-          "code": "5142",
-          "name": "アキレス（5142）",
-          "close": "1,689",
-          "change": "+21.16%",
-          "dayChange": "+295",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-07。材料要因は別途ニュース確認。"
+          "code": "6027",
+          "name": "弁護士コム（6027）",
+          "close": "3,740",
+          "change": "+11.31%",
+          "dayChange": "+380",
+          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
         },
         {
           "rank": 3,
-          "code": "6523",
-          "name": "ＰＨＣＨＤ（6523）",
-          "close": "1,311",
-          "change": "+20.50%",
-          "dayChange": "+223",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-07。材料要因は別途ニュース確認。"
+          "code": "8070",
+          "name": "東京産（8070）",
+          "close": "948",
+          "change": "+8.10%",
+          "dayChange": "+71",
+          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
         },
         {
           "rank": 4,
-          "code": "3676",
-          "name": "デジハＨＤ（3676）",
-          "close": "903",
-          "change": "+19.92%",
-          "dayChange": "+150",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-07。材料要因は別途ニュース確認。"
+          "code": "4784",
+          "name": "ＧＭＯインター（4784）",
+          "close": "584",
+          "change": "+7.95%",
+          "dayChange": "+43",
+          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
         },
         {
           "rank": 5,
-          "code": "5711",
-          "name": "三菱マ（5711）",
-          "close": "5,157",
-          "change": "+15.71%",
-          "dayChange": "+700",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-07。材料要因は別途ニュース確認。"
+          "code": "4392",
+          "name": "ＦＩＧ（4392）",
+          "close": "1,325",
+          "change": "+7.72%",
+          "dayChange": "+95",
+          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
         }
       ],
       "losers": [
         {
           "rank": 1,
-          "code": "6787",
-          "name": "メイコー（6787）",
-          "close": "18,790",
-          "change": "-21.02%",
-          "dayChange": "-5,000",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-07。材料要因は別途ニュース確認。"
+          "code": "6976",
+          "name": "太陽誘電（6976）",
+          "close": "9,991",
+          "change": "-11.54%",
+          "dayChange": "-1,304",
+          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
         },
         {
           "rank": 2,
-          "code": "2413",
-          "name": "エムスリー（2413）",
-          "close": "1,530",
-          "change": "-16.89%",
-          "dayChange": "-311",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-07。材料要因は別途ニュース確認。"
+          "code": "6981",
+          "name": "村田製（6981）",
+          "close": "7,496",
+          "change": "-9.58%",
+          "dayChange": "-794",
+          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
         },
         {
           "rank": 3,
-          "code": "3984",
-          "name": "ユーザローカル（3984）",
-          "close": "1,528",
-          "change": "-16.78%",
-          "dayChange": "-308",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-07。材料要因は別途ニュース確認。"
+          "code": "268A",
+          "name": "リガク（268A）",
+          "close": "1,911",
+          "change": "-9.47%",
+          "dayChange": "-200",
+          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
         },
         {
           "rank": 4,
-          "code": "4901",
-          "name": "富士フイルム（4901）",
-          "close": "3,236",
-          "change": "-16.55%",
-          "dayChange": "-642",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-07。材料要因は別途ニュース確認。"
+          "code": "5074",
+          "name": "テスＨＤ（5074）",
+          "close": "622",
+          "change": "-9.33%",
+          "dayChange": "-64",
+          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
         },
         {
           "rank": 5,
-          "code": "3656",
-          "name": "ＫＬａｂ（3656）",
-          "close": "209",
-          "change": "-15.73%",
-          "dayChange": "-39",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-07。材料要因は別途ニュース確認。"
+          "code": "6324",
+          "name": "ハーモニック（6324）",
+          "close": "5,960",
+          "change": "-8.45%",
+          "dayChange": "-550",
+          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
         }
-      ]
+      ],
+      "lastGood": {
+        "status": "verified",
+        "freshness": "stale",
+        "dataDate": "2026-08-18",
+        "asOf": "2026-08-18T15:45:00+09:00",
+        "updatedAt": "2026-08-18T23:52:02+09:00",
+        "source": {
+          "name": "トレーダーズ・ウェブ 国内市場ランキング（東証プライム・前日比）",
+          "gainersUrl": "https://www.traders.co.jp/market_jp/stock_ranking/price_up/day/tp/all",
+          "losersUrl": "https://www.traders.co.jp/market_jp/stock_ranking/price_down/day/tp/all"
+        },
+        "error": null,
+        "sourceAt": {
+          "gainers": "2026-08-18T15:45:00+09:00",
+          "losers": "2026-08-18T15:45:00+09:00"
+        },
+        "gainers": [
+          {
+            "rank": 1,
+            "code": "3778",
+            "name": "さくら（3778）",
+            "close": "4,300",
+            "change": "+13.16%",
+            "dayChange": "+500",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 2,
+            "code": "6027",
+            "name": "弁護士コム（6027）",
+            "close": "3,740",
+            "change": "+11.31%",
+            "dayChange": "+380",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 3,
+            "code": "8070",
+            "name": "東京産（8070）",
+            "close": "948",
+            "change": "+8.10%",
+            "dayChange": "+71",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 4,
+            "code": "4784",
+            "name": "ＧＭＯインター（4784）",
+            "close": "584",
+            "change": "+7.95%",
+            "dayChange": "+43",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 5,
+            "code": "4392",
+            "name": "ＦＩＧ（4392）",
+            "close": "1,325",
+            "change": "+7.72%",
+            "dayChange": "+95",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
+          }
+        ],
+        "losers": [
+          {
+            "rank": 1,
+            "code": "6976",
+            "name": "太陽誘電（6976）",
+            "close": "9,991",
+            "change": "-11.54%",
+            "dayChange": "-1,304",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 2,
+            "code": "6981",
+            "name": "村田製（6981）",
+            "close": "7,496",
+            "change": "-9.58%",
+            "dayChange": "-794",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 3,
+            "code": "268A",
+            "name": "リガク（268A）",
+            "close": "1,911",
+            "change": "-9.47%",
+            "dayChange": "-200",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 4,
+            "code": "5074",
+            "name": "テスＨＤ（5074）",
+            "close": "622",
+            "change": "-9.33%",
+            "dayChange": "-64",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 5,
+            "code": "6324",
+            "name": "ハーモニック（6324）",
+            "close": "5,960",
+            "change": "-8.45%",
+            "dayChange": "-550",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-18。材料要因は別途ニュース確認。"
+          }
+        ]
+      }
     }
   },
   "sectors": {
     "us": {
       "title": "米国市場のセクター・業種（上昇率TOP5）",
       "flag": "US",
-      "rows": [
-        {
-          "rank": 1,
-          "name": "コミュニケーション・サービス",
-          "change": "+1.78%",
-          "note": "大型ネット関連が主導。決算期待、継続性は中程度。"
-        },
-        {
-          "rank": 2,
-          "name": "ヘルスケア",
-          "change": "+1.33%",
-          "note": "ディフェンシブ買い。金利低下時に支え。"
-        },
-        {
-          "rank": 3,
-          "name": "一般消費財・サービス",
-          "change": "+1.07%",
-          "note": "選別買い。消費関連は銘柄差が残る。"
-        },
-        {
-          "rank": 4,
-          "name": "金融",
-          "change": "+0.93%",
-          "note": "景気懸念後退で買い。金利動向を確認。"
-        },
-        {
-          "rank": 5,
-          "name": "エネルギー",
-          "change": "+0.46%",
-          "note": "原油高が支援。継続性は在庫・地政学次第。"
-        }
-      ]
+      "rows": [],
+      "status": "unavailable",
+      "freshness": "unavailable",
+      "dataDate": null,
+      "asOf": null
     },
     "japan": {
-      "title": "東京市場のセクター・業種（上昇率TOP5）",
+      "title": "東京市場のセクター・業種",
       "flag": "JP",
-      "rows": [
-        {
-          "rank": 1,
-          "name": "電気機器",
-          "change": "+1.72%",
-          "note": "半導体関連が主導。米SOXとの連動を確認。"
-        },
-        {
-          "rank": 2,
-          "name": "情報・通信業",
-          "change": "+1.34%",
-          "note": "大型通信・ネット株に買い。継続性は中程度。"
-        },
-        {
-          "rank": 3,
-          "name": "輸送用機器",
-          "change": "+1.05%",
-          "note": "円安が支援。ドル円の反転に注意。"
-        },
-        {
-          "rank": 4,
-          "name": "化学",
-          "change": "+0.78%",
-          "note": "半導体材料の見直し買い。利確圧力も残る。"
-        },
-        {
-          "rank": 5,
-          "name": "銀行業",
-          "change": "+0.42%",
-          "note": "金利見通しが支え。日銀イベントを確認。"
-        }
-      ]
+      "rows": [],
+      "gainers": [],
+      "losers": [],
+      "dataAsOf": "2026-08-18",
+      "sourceLabel": "東証33業種指数",
+      "status": "unavailable",
+      "freshness": "unavailable",
+      "dataDate": null,
+      "asOf": null
     }
   },
   "contributions": {
@@ -1633,7 +1702,7 @@
     "japan": "2026-08-18"
   },
   "marketUpdatedAt": {
-    "japan": "2026-08-18T23:37:36+09:00",
+    "japan": "2026-08-18T23:50:29+09:00",
     "us": "2026-08-18T07:02:15+09:00"
   },
   "nikkeiMetricsAsOf": "2026-08-18",
@@ -2975,7 +3044,7 @@
     }
   },
   "snapshotDate": "2026-08-18",
-  "savedAt": "2026-08-18T23:50:18+09:00",
+  "savedAt": "2026-08-18T23:52:06+09:00",
   "snapshotPolicy": {
     "type": "independent-market-session-dates",
     "description": "米国市場と東京市場は、それぞれの取引終了後に独立更新。未更新側は直前の確定データを保持する。"
