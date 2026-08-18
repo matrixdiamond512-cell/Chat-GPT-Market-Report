@@ -5,6 +5,7 @@
 
   const originalStockBreadthFor = stockBreadthFor;
   let usBreadthData = null;
+  let japanCloseReference = null;
 
   function reportText(report) {
     if (!report || typeof report !== "object") return "";
@@ -73,6 +74,30 @@
     return null;
   }
 
+  function verifiedJapanBreadth(report) {
+    const payload = japanCloseReference;
+    const items = payload?.items || {};
+    const dataDate = String(payload?.dataDate || "");
+    if (!dataDate) return null;
+    if (report?.date && dataDate > report.date) return null;
+
+    const advancers = Number(String(items["東証プライム値上がり銘柄数"]?.value ?? "").replace(/,/g, ""));
+    const decliners = Number(String(items["東証プライム値下がり銘柄数"]?.value ?? "").replace(/,/g, ""));
+    if (!Number.isFinite(advancers) || !Number.isFinite(decliners) || advancers + decliners === 0) return null;
+
+    return {
+      status: "available",
+      advancers,
+      decliners,
+      unchanged: null,
+      total: advancers + decliners,
+      ratio: decliners > 0 ? advancers / decliners : null,
+      advanceDeclineRatio: decliners > 0 ? advancers / decliners : null,
+      asOf: dataDate,
+      source: items["東証プライム値上がり銘柄数"]?.sourceName || "日本株終値検証済みデータ"
+    };
+  }
+
   function verifiedUsBreadth(report) {
     const payload = usBreadthData;
     const nyse = payload?.exchanges?.NYSE;
@@ -107,10 +132,22 @@
       const verified = verifiedUsBreadth(report);
       if (verified) return verified;
     }
+    if (region === "japan") {
+      const verified = verifiedJapanBreadth(report);
+      if (verified) return verified;
+    }
     const primary = originalStockBreadthFor(region, report);
     if (region !== "japan" || primary?.status === "available") return primary;
     return latestJapanBreadth(report) || primary;
   };
+
+  function rerenderDashboard() {
+    if (typeof renderDashboard === "function" && typeof selectedReport !== "undefined" && selectedReport) {
+      renderDashboard(selectedReport);
+    } else if (typeof renderEnvironment === "function" && typeof selectedReport !== "undefined" && selectedReport) {
+      renderEnvironment(selectedReport);
+    }
+  }
 
   function autoSelectLatestPublishedReport() {
     let attempts = 0;
@@ -155,6 +192,17 @@
 
   autoSelectLatestPublishedReport();
 
+  fetch(`data/market/japan-close-reference.json?t=${Date.now()}`, { cache: "no-store" })
+    .then((response) => {
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return response.json();
+    })
+    .then((payload) => {
+      japanCloseReference = payload;
+      rerenderDashboard();
+    })
+    .catch((error) => console.warn("Japan stock breadth JSON load failed", error));
+
   fetch(`data/market/us-stock-breadth.json?t=${Date.now()}`, { cache: "no-store" })
     .then((response) => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -162,13 +210,7 @@
     })
     .then((payload) => {
       usBreadthData = payload;
-      if (typeof renderDashboard === "function" && typeof selectedReport !== "undefined" && selectedReport) {
-        renderDashboard(selectedReport);
-      } else if (typeof renderEnvironment === "function" && typeof selectedReport !== "undefined" && selectedReport) {
-        renderEnvironment(selectedReport);
-      } else {
-        window.dispatchEvent(new CustomEvent("us-stock-breadth-loaded", { detail: payload }));
-      }
+      rerenderDashboard();
     })
     .catch((error) => console.warn("US stock breadth JSON load failed", error));
 })();
