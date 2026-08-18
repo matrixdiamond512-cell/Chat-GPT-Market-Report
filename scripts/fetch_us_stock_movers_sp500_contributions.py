@@ -30,6 +30,8 @@ from typing import Any
 import requests
 from bs4 import BeautifulSoup
 
+from stock_freshness import current_block, envelope, last_good_from
+
 ROOT = Path(__file__).resolve().parents[1]
 STOCKS_PATH = ROOT / "data" / "stocks.json"
 BREADTH_PATH = ROOT / "data" / "market" / "us-stock-breadth.json"
@@ -278,23 +280,20 @@ def merge_into_stocks(stocks: dict[str, Any], movers: dict[str, Any], contributi
     current_date = str((stocks.get("marketDates") or {}).get("us") or "")[:10]
     if current_date and current_date > market_date:
         raise RuntimeError(f"refusing stale U.S. mover update: {market_date} < {current_date}")
-    stocks.setdefault("movers", {})["us"] = {
+    previous_movers = (stocks.get("movers") or {}).get("us") or {}
+    previous_contributions = (stocks.get("contributions") or {}).get("us") or {}
+    mover_current = {
         "title": "米国市場の大幅上昇・下落銘柄（S&P500構成銘柄）",
         "flag": "US",
-        "status": "verified",
-        "dataDate": market_date,
-        "updatedAt": movers["updatedAt"],
-        "source": SOURCE_NAME,
+        **(movers.get("current") or movers),
         "validation": movers["validation"],
         "gainers": movers["gainers"],
         "losers": movers["losers"],
     }
-    stocks.setdefault("contributions", {})["us"] = {
+    contribution_current = {
         "title": "米国市場（S&P500寄与度 推計・bp）",
         "flag": "US",
-        "status": "verified-estimate",
-        "dataDate": market_date,
-        "updatedAt": contributions["updatedAt"],
+        **(contributions.get("current") or contributions),
         "unit": "bp",
         "official": False,
         "method": contributions["method"],
@@ -303,7 +302,70 @@ def merge_into_stocks(stocks: dict[str, Any], movers: dict[str, Any], contributi
         "top": contributions["top"],
         "bottom": contributions["bottom"],
     }
-    stocks["updatedAt"] = movers["updatedAt"]
+    stocks.setdefault("movers", {})["us"] = {**mover_current, "lastGood": last_good_from(previous_movers)}
+    stocks.setdefault("contributions", {})["us"] = {**contribution_current, "lastGood": last_good_from(previous_contributions)}
+
+
+def merge_unavailable_into_stocks(
+    stocks: dict[str, Any], movers: dict[str, Any], contributions: dict[str, Any]
+) -> None:
+    previous_movers = (stocks.get("movers") or {}).get("us") or {}
+    previous_contributions = (stocks.get("contributions") or {}).get("us") or {}
+    stocks.setdefault("movers", {})["us"] = {
+        "title": "米国市場の大幅上昇・下落銘柄（S&P500構成銘柄）",
+        "flag": "US",
+        **movers["current"],
+        "lastGood": last_good_from(previous_movers),
+    }
+    stocks.setdefault("contributions", {})["us"] = {
+        "title": "米国市場（S&P500寄与度 推計・bp）",
+        "flag": "US",
+        **contributions["current"],
+        "lastGood": last_good_from(previous_contributions),
+    }
+
+
+def write_unavailable(stocks: dict[str, Any], error: Exception) -> None:
+    fetched_at = now_jst().isoformat()
+    previous_movers = load_json(MOVERS_PATH, {})
+    previous_contributions = load_json(CONTRIB_PATH, {})
+    movers = envelope(
+        current_block(
+            status="unavailable",
+            data_date=None,
+            as_of=None,
+            updated_at=fetched_at,
+            source={"name": SOURCE_NAME, "url": SLICKCHARTS_URL, "basisDateUrl": SLICKCHARTS_RETURN_DETAILS_URL},
+            error=str(error),
+            universe="S&P 500 constituents",
+            validation={},
+            gainers=[],
+            losers=[],
+        ),
+        previous_movers,
+    )
+    contributions = envelope(
+        current_block(
+            status="unavailable",
+            data_date=None,
+            as_of=None,
+            updated_at=fetched_at,
+            source={"name": SOURCE_NAME, "url": SLICKCHARTS_URL, "basisDateUrl": SLICKCHARTS_RETURN_DETAILS_URL},
+            error=str(error),
+            unit="bp",
+            official=False,
+            method="estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
+            validation={},
+            top=[],
+            bottom=[],
+        ),
+        previous_contributions,
+    )
+    merge_unavailable_into_stocks(stocks, movers, contributions)
+    MOVERS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    MOVERS_PATH.write_text(json.dumps(movers, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    CONTRIB_PATH.write_text(json.dumps(contributions, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    STOCKS_PATH.write_text(json.dumps(stocks, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def sync_stock_analysis_json(stocks: dict[str, Any]) -> None:
@@ -326,7 +388,6 @@ def sync_stock_analysis_json(stocks: dict[str, Any]) -> None:
     payload = json.loads(raw)
     payload.setdefault("movers", {})["us"] = stocks["movers"]["us"]
     payload.setdefault("contributions", {})["us"] = stocks["contributions"]["us"]
-    payload["updatedAt"] = stocks["updatedAt"]
     client.update("Stock_Analysis_JSON", "B2", [[json.dumps(payload, ensure_ascii=False)]])
 
 
@@ -334,18 +395,46 @@ def main() -> int:
     stocks = load_json(STOCKS_PATH, {})
     if not stocks:
         raise SystemExit("data/stocks.json is unavailable")
-    expected_date = verified_market_date(stocks)
-    source_date = slickcharts_market_date()
-    if source_date != expected_date:
-        raise SystemExit(f"Slickcharts is not on the verified U.S. session: source={source_date}, expected={expected_date}")
-
-    rows = fetch_components()
-    validation = validate_weighted_return(rows, stocks)
-    fetched_at = now_jst().isoformat()
-    movers, contributions = build_payloads(rows, expected_date, fetched_at, validation)
+    try:
+        expected_date = verified_market_date(stocks)
+        source_date = slickcharts_market_date()
+        if source_date != expected_date:
+            raise RuntimeError(f"Slickcharts is not on the verified U.S. session: source={source_date}, expected={expected_date}")
+        rows = fetch_components()
+        validation = validate_weighted_return(rows, stocks)
+        fetched_at = now_jst().isoformat()
+        movers, contributions = build_payloads(rows, expected_date, fetched_at, validation)
+    except Exception as error:  # noqa: BLE001
+        write_unavailable(stocks, error)
+        print(json.dumps({"status": "unavailable", "error": str(error)}, ensure_ascii=False))
+        return 0
 
     old_movers = load_json(MOVERS_PATH, {})
     old_contrib = load_json(CONTRIB_PATH, {})
+    movers = envelope(
+        current_block(
+            status="verified",
+            data_date=expected_date,
+            as_of=f"{expected_date}T16:00:00-04:00",
+            updated_at=fetched_at,
+            source=movers["source"],
+            universe=movers["universe"], validation=movers["validation"],
+            gainers=movers["gainers"], losers=movers["losers"],
+        ),
+        old_movers,
+    )
+    contributions = envelope(
+        current_block(
+            status="verified-estimate",
+            data_date=expected_date,
+            as_of=f"{expected_date}T16:00:00-04:00",
+            updated_at=fetched_at,
+            source=contributions["source"],
+            unit=contributions["unit"], official=False, method=contributions["method"],
+            validation=contributions["validation"], top=contributions["top"], bottom=contributions["bottom"],
+        ),
+        old_contrib,
+    )
     if same_rankings(old_movers, movers, ("gainers", "losers")) and same_rankings(old_contrib, contributions, ("top", "bottom")):
         print(json.dumps({"status": "already-current", "marketDate": expected_date, "validation": validation}, ensure_ascii=False))
         return 0
@@ -370,3 +459,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

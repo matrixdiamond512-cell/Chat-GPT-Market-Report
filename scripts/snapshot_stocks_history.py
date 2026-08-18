@@ -11,7 +11,8 @@ from archive_stocks_snapshot import archive_snapshot, infer_market_date
 
 ROOT = Path(__file__).resolve().parents[1]
 STOCKS_PATH = ROOT / "data" / "stocks.json"
-SECTOR_PATH = ROOT / "data" / "sector-performance.json"
+SECTOR_PATH = ROOT / "data" / "market" / "sector-performance.json"
+LEGACY_SECTOR_PATH = ROOT / "data" / "sector-performance.json"
 NIKKEI_PATH = ROOT / "data" / "nikkei-metrics.json"
 
 METRIC_NAMES = [
@@ -31,7 +32,7 @@ def load_json(path: Path, default: Any) -> Any:
 
 
 def sector_date(market: dict[str, Any]) -> str:
-    return str(market.get("dataAsOf") or market.get("asOf") or "")[:10]
+    return str(market.get("dataDate") or market.get("dataAsOf") or market.get("asOf") or "")[:10]
 
 
 def merge_matching_sectors(stocks: dict[str, Any], sector_payload: dict[str, Any]) -> None:
@@ -40,7 +41,12 @@ def merge_matching_sectors(stocks: dict[str, Any], sector_payload: dict[str, Any
     for key in ("us", "japan"):
         market = markets.get(key) or {}
         expected_date = infer_market_date(stocks, key)
-        if not market or sector_date(market) != expected_date:
+        if (
+            not market
+            or market.get("status") not in {"verified", "ok"}
+            or market.get("freshness") != "fresh"
+            or sector_date(market) != expected_date
+        ):
             continue
         current = dict(sectors.get(key) or {})
         current.update({
@@ -95,13 +101,40 @@ def merge_matching_nikkei(stocks: dict[str, Any], payload: dict[str, Any]) -> No
     stocks["nikkeiMetricsAsOf"] = data_date
 
 
+def sanitize_stale_components(stocks: dict[str, Any]) -> None:
+    """Prevent stale compatibility blocks from entering today's archive."""
+    dates = stocks.get("marketDates") or {}
+    for group in ("movers", "sectors", "contributions"):
+        collection = stocks.get(group) or {}
+        for market in ("japan", "us"):
+            block = collection.get(market)
+            if not isinstance(block, dict):
+                continue
+            expected = str(dates.get(market) or "")[:10]
+            actual = str(block.get("dataDate") or block.get("asOf") or "")[:10]
+            usable = block.get("status") in {"ok", "verified", "verified-estimate"} and block.get("freshness") == "fresh" and actual == expected
+            if usable:
+                continue
+            block["status"] = "unavailable"
+            block["freshness"] = "unavailable"
+            block["dataDate"] = None
+            block["asOf"] = None
+            for key in ("gainers", "losers", "rows", "top", "bottom"):
+                if key in block:
+                    block[key] = []
+
+
 def main() -> int:
     stocks = load_json(STOCKS_PATH, {})
     if not stocks:
         raise SystemExit("data/stocks.json is missing or invalid")
 
-    merge_matching_sectors(stocks, load_json(SECTOR_PATH, {}))
+    sector_payload = load_json(SECTOR_PATH, {})
+    if not sector_payload:
+        sector_payload = load_json(LEGACY_SECTOR_PATH, {})
+    merge_matching_sectors(stocks, sector_payload)
     merge_matching_nikkei(stocks, load_json(NIKKEI_PATH, {}))
+    sanitize_stale_components(stocks)
 
     with tempfile.NamedTemporaryFile("w", suffix=".json", encoding="utf-8", delete=False) as handle:
         temp_path = Path(handle.name)
@@ -122,3 +155,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

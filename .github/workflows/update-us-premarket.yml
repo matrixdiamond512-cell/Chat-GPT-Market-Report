@@ -1,0 +1,82 @@
+name: Update US pre-market monitoring universe
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "40 11 * * 1-5" # 20:40 JST during U.S. daylight time
+    - cron: "55 11 * * 1-5" # 20:55 JST only when the first snapshot is incomplete
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-us-premarket
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install HTTP dependency
+        run: python -m pip install --disable-pip-version-check requests
+      - name: Skip second fetch when the first snapshot is complete
+        id: freshness
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          if [ "$SCHEDULE" != "55 11 * * 1-5" ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          python - <<'PY'
+          import json
+          import os
+          from datetime import datetime
+          from pathlib import Path
+          from zoneinfo import ZoneInfo
+
+          path = Path('data/market/us-premarket.json')
+          payload = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
+          expected = datetime.now(ZoneInfo('America/New_York')).date().isoformat()
+          skip = payload.get('status') == 'ok' and payload.get('dataDate') == expected and float(payload.get('coverageRatio') or 0) >= 90
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as handle:
+              handle.write(f'skip={str(skip).lower()}\n')
+          print('skip second fetch:', skip)
+          PY
+      - name: Fetch 50-symbol US pre-market snapshot
+        if: steps.freshness.outputs.skip != 'true'
+        run: python scripts/fetch_us_premarket.py
+      - name: Validate coverage and labels
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          payload = json.loads(Path('data/market/us-premarket.json').read_text(encoding='utf-8'))
+          if payload.get('universeSize', 0) < 45:
+              raise SystemExit('US pre-market universe unexpectedly small')
+          if 'S&P500 Breadth' in json.dumps(payload, ensure_ascii=False):
+              raise SystemExit('US pre-market breadth must be monitoring-universe based')
+          coverage = float(payload.get('coverageRatio') or 0)
+          expected = 'ok' if coverage >= 90 else 'partial' if coverage >= 70 else 'unavailable'
+          if payload.get('status') != expected:
+              raise SystemExit(f'coverage/status mismatch: {coverage} -> {payload.get("status")}')
+          print('US pre-market coverage validated:', coverage)
+          PY
+      - name: Commit snapshot
+        shell: bash
+        run: |
+          git add data/market/us-premarket.json data/stocks.json
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update US pre-market monitoring universe"
+          git pull --rebase
+          git push
+

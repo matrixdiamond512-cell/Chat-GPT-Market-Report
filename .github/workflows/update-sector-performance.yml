@@ -36,7 +36,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Google Sheets dependencies
-        run: python -m pip install --disable-pip-version-check gspread google-auth
+        run: python -m pip install --disable-pip-version-check gspread google-auth beautifulsoup4
 
       - name: Fetch sectors and update Google Sheets
         env:
@@ -52,6 +52,7 @@ jobs:
 
           path = Path("data/sector-performance.json")
           payload = json.loads(path.read_text(encoding="utf-8"))
+          stocks = json.loads(Path("data/stocks.json").read_text(encoding="utf-8"))
           markets = payload.get("markets") or {}
           if not {"us", "japan"}.issubset(markets):
               raise SystemExit("sector-performance.json is missing a market section")
@@ -60,22 +61,31 @@ jobs:
               section = markets[key]
               gainers = section.get("gainers") or []
               losers = section.get("losers") or []
-              if len(gainers) < 5 or len(losers) < 5:
+              expected = str((stocks.get("marketDates") or {}).get(key) or "")[:10]
+              actual = str(section.get("dataDate") or section.get("asOf") or "")[:10]
+              if section.get("status") == "unavailable":
+                  if gainers or losers:
+                      incomplete.append(key + "(unavailable-with-rows)")
+                  continue
+              if section.get("status") not in {"verified", "ok"} or section.get("freshness") != "fresh" or actual != expected or len(gainers) < 5 or len(losers) < 5:
                   incomplete.append(key)
           if incomplete:
-              raise SystemExit("Incomplete sector Top 5 data: " + ", ".join(incomplete))
-          print("Validated complete sector Top 5 data for US and Japan")
+              raise SystemExit("Incomplete sector data: " + ", ".join(incomplete))
+          print("Validated sector data; unavailable markets contain no current rows")
           PY
+      - name: Validate cross-component freshness
+        run: python scripts/validate_stock_data_freshness.py
 
       - name: Commit updated sector data
         run: |
-          if git diff --quiet -- data/sector-performance.json; then
+          if git diff --quiet -- data/sector-performance.json data/market/sector-performance.json; then
             echo "Sector data is already up to date."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/sector-performance.json
+          git add data/sector-performance.json data/market/sector-performance.json
           git commit -m "Update sector performance data"
           git pull --rebase
           git push
+

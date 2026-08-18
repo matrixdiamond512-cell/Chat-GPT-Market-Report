@@ -64,7 +64,8 @@
       .sector-mover-heading{display:flex;align-items:center;justify-content:space-between;margin:0 0 6px;font-size:14px;font-weight:1000}
       .sector-mover-heading.up{color:#008453}.sector-mover-heading.down{color:#e00022}
       .sector-mover-source{color:#68758a;font-size:10.5px;font-weight:800}
-      .sector-row .bar.down-bar,.sector-row .bar.jp.down-bar{background:linear-gradient(90deg,#d60021,#f15b70)}
+      .sector-row .bar,.sector-row .bar.jp,.sector-row .bar:not(.down-bar){background:linear-gradient(90deg,#d34a6a,#ad2046)!important}
+      .sector-row .bar.down-bar,.sector-row .bar.jp.down-bar{background:linear-gradient(90deg,#4d87c4,#1f5795)!important}
       .sector-data-missing{margin:8px 0;padding:10px;border:1px dashed #b8c8df;border-radius:6px;background:#f8fbff;color:#49617e;font-size:12px;font-weight:850}
       .stocks-date-control{display:flex;align-items:center;justify-content:center;gap:8px;max-width:1640px;margin:0 auto 8px;padding:2px 20px 8px}
       .stocks-date-button{display:grid;place-items:center;width:42px;height:42px;border:1px solid #bfd0e9;border-radius:7px;background:#fff;color:#073674;font-size:25px;font-weight:1000;cursor:pointer}
@@ -427,3 +428,4 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
   else init();
 })();
+

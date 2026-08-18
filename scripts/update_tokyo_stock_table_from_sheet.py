@@ -454,7 +454,6 @@ def main() -> int:
     })
     stocks.setdefault("marketDates", {})["japan"] = target_date
     stocks.setdefault("marketUpdatedAt", {})["japan"] = now.isoformat()
-    stocks["updatedAt"] = now.isoformat()
     stocks["nikkeiMetricsAsOf"] = target_date
     stocks["sourceStatus"] = "米国市場と東京市場を独立更新・市場別基準日を明示"
     STOCKS_PATH.write_text(
@@ -506,3 +505,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
