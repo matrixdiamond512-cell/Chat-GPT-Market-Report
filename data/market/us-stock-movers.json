@@ -1,19 +1,36 @@
 {
   "schemaVersion": "1.0.0",
-  "status": "verified",
-  "freshness": "fresh",
-  "dataDate": "2026-08-17",
-  "asOf": "2026-08-17T16:00:00-04:00",
-  "updatedAt": "2026-08-18T23:00:34+09:00",
+  "status": "unavailable",
+  "freshness": "unavailable",
+  "dataDate": null,
+  "asOf": null,
+  "updatedAt": "2026-08-19T06:57:35+09:00",
   "source": {
     "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
     "url": "https://www.slickcharts.com/sp500",
     "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
   },
-  "error": null,
+  "error": "Slickcharts is not on the verified U.S. session: source=2026-08-18, expected=2026-08-17",
   "current": {
+    "status": "unavailable",
+    "freshness": "unavailable",
+    "dataDate": null,
+    "asOf": null,
+    "updatedAt": "2026-08-19T06:57:35+09:00",
+    "source": {
+      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+      "url": "https://www.slickcharts.com/sp500",
+      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
+    },
+    "error": "Slickcharts is not on the verified U.S. session: source=2026-08-18, expected=2026-08-17",
+    "universe": "S&P 500 constituents",
+    "validation": {},
+    "gainers": [],
+    "losers": []
+  },
+  "lastGood": {
     "status": "verified",
-    "freshness": "fresh",
+    "freshness": "stale",
     "dataDate": "2026-08-17",
     "asOf": "2026-08-17T16:00:00-04:00",
     "updatedAt": "2026-08-18T23:00:34+09:00",
@@ -124,219 +141,8 @@
       }
     ]
   },
-  "lastGood": {
-    "status": "verified",
-    "freshness": "stale",
-    "dataDate": "2026-08-17",
-    "asOf": "2026-08-17T16:00:00-04:00",
-    "updatedAt": "2026-08-18T13:08:56+09:00",
-    "source": {
-      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-      "url": "https://www.slickcharts.com/sp500",
-      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
-    },
-    "error": null,
-    "universe": "S&P 500 constituents",
-    "validation": {
-      "estimatedWeightedReturnPct": -0.5214,
-      "verifiedSP500ReturnPct": null,
-      "differencePt": null
-    },
-    "gainers": [
-      {
-        "rank": 1,
-        "symbol": "SNDK",
-        "name": "Sandisk Corp/DE（SNDK）",
-        "close": "1,786.85",
-        "dayChange": "+145.74",
-        "change": "+8.88%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "COHR",
-        "name": "Coherent Corp（COHR）",
-        "close": "351.22",
-        "dayChange": "+25.39",
-        "change": "+7.79%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "FIX",
-        "name": "Comfort Systems USA Inc（FIX）",
-        "close": "1,881.18",
-        "dayChange": "+107.12",
-        "change": "+6.04%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "TER",
-        "name": "Teradyne Inc（TER）",
-        "close": "443.14",
-        "dayChange": "+24.35",
-        "change": "+5.81%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "AMAT",
-        "name": "Applied Materials Inc（AMAT）",
-        "close": "535.31",
-        "dayChange": "+28.13",
-        "change": "+5.55%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-      }
-    ],
-    "losers": [
-      {
-        "rank": 1,
-        "symbol": "CVNA",
-        "name": "Carvana Co（CVNA）",
-        "close": "70.09",
-        "dayChange": "-5.5",
-        "change": "-7.28%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "CHTR",
-        "name": "Charter Communications Inc（CHTR）",
-        "close": "144.1",
-        "dayChange": "-10.17",
-        "change": "-6.59%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "STZ",
-        "name": "Constellation Brands Inc（STZ）",
-        "close": "130.56",
-        "dayChange": "-8.62",
-        "change": "-6.19%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "ALGN",
-        "name": "Align Technology Inc（ALGN）",
-        "close": "171.16",
-        "dayChange": "-10.15",
-        "change": "-5.60%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "TTD",
-        "name": "Trade Desk Inc/The（TTD）",
-        "close": "13.4",
-        "dayChange": "-0.74",
-        "change": "-5.23%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-      }
-    ]
-  },
   "universe": "S&P 500 constituents",
-  "validation": {
-    "estimatedWeightedReturnPct": -0.4749,
-    "verifiedSP500ReturnPct": -0.52,
-    "differencePt": 0.0451,
-    "tolerancePt": 0.2,
-    "status": "passed"
-  },
-  "gainers": [
-    {
-      "rank": 1,
-      "symbol": "TRGP",
-      "name": "Targa Resources Corp（TRGP）",
-      "close": "297.11",
-      "dayChange": "+19.17",
-      "change": "+6.90%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "INTU",
-      "name": "Intuit Inc（INTU）",
-      "close": "352.87",
-      "dayChange": "+17.27",
-      "change": "+5.14%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "GDDY",
-      "name": "GoDaddy Inc（GDDY）",
-      "close": "97.05",
-      "dayChange": "+4.68",
-      "change": "+5.07%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "TPR",
-      "name": "Tapestry Inc（TPR）",
-      "close": "134.9",
-      "dayChange": "+5.88",
-      "change": "+4.56%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "ULTA",
-      "name": "Ulta Beauty Inc（ULTA）",
-      "close": "515.41",
-      "dayChange": "+22.08",
-      "change": "+4.48%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-    }
-  ],
-  "losers": [
-    {
-      "rank": 1,
-      "symbol": "COHR",
-      "name": "Coherent Corp（COHR）",
-      "close": "314.79",
-      "dayChange": "-36.43",
-      "change": "-10.37%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "TER",
-      "name": "Teradyne Inc（TER）",
-      "close": "407.81",
-      "dayChange": "-35.33",
-      "change": "-7.97%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "MRVL",
-      "name": "Marvell Technology（MRVL）",
-      "close": "218.43",
-      "dayChange": "-15.9",
-      "change": "-6.79%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "SNDK",
-      "name": "Sandisk Corp/DE（SNDK）",
-      "close": "1,665.72",
-      "dayChange": "-121.13",
-      "change": "-6.78%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "CIEN",
-      "name": "Ciena Corp（CIEN）",
-      "close": "416.61",
-      "dayChange": "-28.57",
-      "change": "-6.42%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-    }
-  ]
+  "validation": {},
+  "gainers": [],
+  "losers": []
 }
