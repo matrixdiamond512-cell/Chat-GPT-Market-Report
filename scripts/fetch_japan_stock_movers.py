@@ -9,7 +9,8 @@ Safety rules:
 - source time must be 15:00 JST or later so intraday rankings are not saved as close data;
 - require five Tokyo Prime rows on both gainers and losers pages;
 - never reuse a previous day's ranking under a new basis date;
-- if the same verified ranking is already stored, do not churn generated files.
+- source-date mismatch is recorded as unavailable, not treated as a workflow crash;
+- the last verified ranking is retained only under lastGood with freshness=stale.
 """
 from __future__ import annotations
 
@@ -71,17 +72,6 @@ def source_timestamp(text: str) -> tuple[str, str]:
     return market_date, source_at
 
 
-def parse_signed(value: str) -> str:
-    text = value.replace("−", "-").replace("＋", "+").strip()
-    match = re.search(r"[-+±]?\s*[\d,.]+(?:\.\d+)?", text)
-    if not match:
-        return "—"
-    result = match.group(0).replace(" ", "")
-    if result.startswith("±"):
-        return "±0"
-    return result
-
-
 def parse_percent(value: str) -> float:
     text = value.replace("−", "-").replace("＋", "+").replace(",", "")
     match = re.search(r"[-+]?\d+(?:\.\d+)?\s*%", text)
@@ -99,8 +89,8 @@ def find_ranking_table(soup: BeautifulSoup) -> Any:
 
 
 def parse_page(url: str, positive: bool) -> tuple[list[dict[str, Any]], str, str]:
-    html = fetch_html(url)
-    soup = BeautifulSoup(html, "html.parser")
+    page = fetch_html(url)
+    soup = BeautifulSoup(page, "html.parser")
     full_text = soup.get_text(" ", strip=True)
     market_date, source_at = source_timestamp(full_text)
     table = find_ranking_table(soup)
@@ -182,6 +172,19 @@ def same_rankings(old: dict[str, Any], new: dict[str, Any]) -> bool:
     return True
 
 
+def has_rankings(candidate: Any) -> bool:
+    return isinstance(candidate, dict) and bool(candidate.get("gainers") or candidate.get("losers"))
+
+
+def best_last_good(old_file: dict[str, Any], previous_stock_block: dict[str, Any]) -> dict[str, Any] | None:
+    """Prefer a retained verified snapshot that still contains ranking rows."""
+    candidates = [last_good_from(old_file), last_good_from(previous_stock_block)]
+    for candidate in candidates:
+        if has_rankings(candidate):
+            return candidate
+    return next((candidate for candidate in candidates if isinstance(candidate, dict)), None)
+
+
 def merge_into_stocks(stocks: dict[str, Any], payload: dict[str, Any]) -> None:
     current = payload.get("current") or payload
     market_date = current["dataDate"]
@@ -189,7 +192,7 @@ def merge_into_stocks(stocks: dict[str, Any], payload: dict[str, Any]) -> None:
     if current_date and current_date > market_date:
         raise RuntimeError(f"refusing stale Tokyo mover update: {market_date} < {current_date}")
     previous = (stocks.get("movers") or {}).get("japan") or {}
-    previous_good = last_good_from(previous)
+    previous_good = best_last_good(payload, previous) or last_good_from(previous)
     stocks.setdefault("movers", {})["japan"] = {
         "title": "日本市場の大幅上昇・下落銘柄（東証プライム）",
         "flag": "JP",
@@ -198,8 +201,12 @@ def merge_into_stocks(stocks: dict[str, Any], payload: dict[str, Any]) -> None:
     }
 
 
-def merge_unavailable_into_stocks(stocks: dict[str, Any], error: str, updated_at: str) -> None:
-    previous = (stocks.get("movers") or {}).get("japan") or {}
+def merge_unavailable_into_stocks(
+    stocks: dict[str, Any],
+    error: str,
+    updated_at: str,
+    last_good: dict[str, Any] | None,
+) -> None:
     current = current_block(
         status="unavailable",
         data_date=None,
@@ -212,7 +219,7 @@ def merge_unavailable_into_stocks(stocks: dict[str, Any], error: str, updated_at
         gainers=[],
         losers=[],
     )
-    stocks.setdefault("movers", {})["japan"] = {**current, "lastGood": last_good_from(previous)}
+    stocks.setdefault("movers", {})["japan"] = {**current, "lastGood": last_good}
 
 
 def sync_stock_analysis_json(stocks: dict[str, Any]) -> None:
@@ -237,6 +244,44 @@ def sync_stock_analysis_json(stocks: dict[str, Any]) -> None:
     client.update("Stock_Analysis_JSON", "B2", [[json.dumps(sheet_payload, ensure_ascii=False)]])
 
 
+def persist_unavailable(
+    stocks: dict[str, Any],
+    old: dict[str, Any],
+    message: str,
+    fetched_at: str,
+) -> int:
+    previous_stock = (stocks.get("movers") or {}).get("japan") or {}
+    last_good = best_last_good(old, previous_stock)
+    current = current_block(
+        status="unavailable",
+        data_date=None,
+        as_of=None,
+        updated_at=fetched_at,
+        source={"name": SOURCE_NAME, "gainersUrl": UP_URL, "losersUrl": DOWN_URL},
+        error=message,
+        gainers=[],
+        losers=[],
+    )
+    # Feed the best verified snapshot into envelope so lastGood keeps its rows,
+    # while current remains explicitly unavailable and undated.
+    unavailable = envelope(current, last_good or old)
+    merge_unavailable_into_stocks(stocks, message, fetched_at, last_good)
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT_PATH.write_text(json.dumps(unavailable, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    STOCKS_PATH.write_text(json.dumps(stocks, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    sync_stock_analysis_json(stocks)
+    print(json.dumps({
+        "status": "unavailable",
+        "error": message,
+        "lastGoodDate": (last_good or {}).get("dataDate"),
+        "lastGoodRows": {
+            "gainers": len((last_good or {}).get("gainers") or []),
+            "losers": len((last_good or {}).get("losers") or []),
+        },
+    }, ensure_ascii=False))
+    return 0
+
+
 def main() -> int:
     stocks = load_json(STOCKS_PATH, {})
     if not stocks:
@@ -250,29 +295,13 @@ def main() -> int:
     try:
         gainers, up_date, up_at = parse_page(UP_URL, True)
         losers, down_date, down_at = parse_page(DOWN_URL, False)
+        if up_date != down_date:
+            raise RuntimeError(f"Traders Web up/down basis dates disagree: {up_date} / {down_date}")
+        if up_date != expected_date:
+            raise RuntimeError(f"Traders Web ranking source is stale: source={up_date}, expected={expected_date}")
     except Exception as error:  # noqa: BLE001
         message = f"当日の東証プライムランキングを取得できませんでした: {error}"
-        current = current_block(
-            status="unavailable",
-            data_date=None,
-            as_of=None,
-            updated_at=fetched_at,
-            source={"name": SOURCE_NAME, "gainersUrl": UP_URL, "losersUrl": DOWN_URL},
-            error=message,
-            gainers=[],
-            losers=[],
-        )
-        unavailable = envelope(current, old)
-        merge_unavailable_into_stocks(stocks, message, fetched_at)
-        OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-        OUTPUT_PATH.write_text(json.dumps(unavailable, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        STOCKS_PATH.write_text(json.dumps(stocks, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        print(json.dumps({"status": "unavailable", "error": message}, ensure_ascii=False))
-        return 0
-    if up_date != down_date:
-        raise SystemExit(f"Traders Web up/down basis dates disagree: {up_date} / {down_date}")
-    if up_date != expected_date:
-        raise SystemExit(f"Traders Web ranking is not current: source={up_date}, expected={expected_date}")
+        return persist_unavailable(stocks, old, message, fetched_at)
 
     source_at = {"gainers": up_at, "losers": down_at}
     current = current_block(
@@ -307,4 +336,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
