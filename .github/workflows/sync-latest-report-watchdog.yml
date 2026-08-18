@@ -1,0 +1,102 @@
+name: Market report publication watchdog
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Recovery checks shortly after each regular report slot.
+    - cron: "5,15,30 23 * * 0-4"  # 08:05/08:15/08:30 JST Mon-Fri
+    - cron: "5,15,30 3 * * 1-5"   # 12:05/12:15/12:30 JST Mon-Fri
+    - cron: "5,15,30,50 7 * * 1-5" # 16:05/16:15/16:30/16:50 JST Mon-Fri
+    - cron: "10 8 * * 1-5"         # 17:10 JST correction recovery
+    - cron: "5,15,30 12 * * 1-5"  # 21:05/21:15/21:30 JST Mon-Fri
+    - cron: "5,20 0 * * 6"         # 09:05/09:20 JST Saturday
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-report-publication-watchdog
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Rebuild publication from latest report
+        run: |
+          python scripts/sync_latest_report_publication.py
+          python scripts/build_reports.py
+
+      - name: Verify dashboard matches latest report
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          latest_payload = json.loads(Path('data/latest-report.json').read_text(encoding='utf-8'))
+          latest = latest_payload.get('latestReport') or latest_payload.get('report') or latest_payload
+          dashboard = json.loads(Path('data/dashboard.json').read_text(encoding='utf-8'))
+          published = dashboard.get('latestReport') or {}
+
+          expected_key = f"{latest.get('date','')} {latest.get('time','')}"
+          actual_key = str(dashboard.get('currentReportKey') or '')
+          if actual_key != expected_key:
+              raise SystemExit(f'dashboard currentReportKey mismatch: {actual_key} != {expected_key}')
+
+          # Compare the public report payload after the sync script has normalized it.
+          if published != latest:
+              raise SystemExit('dashboard.latestReport does not match data/latest-report.json')
+
+          generated = str(dashboard.get('generatedAt') or '')
+          if not generated:
+              raise SystemExit('dashboard.generatedAt is missing')
+
+          report_file = Path('reports') / f"{latest['date']}_{latest['time'].replace(':','-')}.json"
+          if not report_file.exists():
+              raise SystemExit(f'missing report history file: {report_file}')
+          history = json.loads(report_file.read_text(encoding='utf-8'))
+          if history != latest:
+              raise SystemExit(f'history report does not match latest report: {report_file}')
+
+          reports = json.loads(Path('reports.json').read_text(encoding='utf-8'))
+          items = reports if isinstance(reports, list) else reports.get('reports') or reports.get('items') or []
+          if not any(isinstance(x, dict) and x.get('date') == latest.get('date') and x.get('time') == latest.get('time') for x in items):
+              raise SystemExit('reports.json does not contain latest report key')
+
+          print(json.dumps({
+              'status': 'ok',
+              'currentReportKey': actual_key,
+              'dashboardGeneratedAt': generated,
+              'historyFile': str(report_file),
+          }, ensure_ascii=False))
+          PY
+
+      - name: Commit repaired publication files
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/latest-report.json data/dashboard.json reports reports.json
+          if git diff --cached --quiet; then
+            echo "Publication already synchronized."
+            exit 0
+          fi
+          git commit -m "Reconcile market report publication"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push origin main && exit 0
+            echo "Push attempt $attempt failed; retrying..."
+            sleep $((attempt * 5))
+          done
+          exit 1
