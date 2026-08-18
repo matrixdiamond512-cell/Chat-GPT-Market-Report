@@ -3,9 +3,9 @@
 
 The dashboard's target date is the latest completed Tokyo session. Historical
 pages can lag the closing quote. For the current calendar session only, this
-script accepts a current closing quote from Google Finance (TOPIX) or a Kabutan
-basic page that explicitly carries the target date. It never applies a current
-quote to an older target date.
+script accepts explicitly dated closing quotes from Traders Web first, then
+Google Finance / Kabutan fallbacks. It never applies a current quote to an older
+target date.
 """
 from __future__ import annotations
 
@@ -24,6 +24,7 @@ JST = dt.timezone(dt.timedelta(hours=9))
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/136 Safari/537.36"
 TOPIX_SYMBOL = "TOPIX:INDEXTOPIX"
 TOPIX_URL = "https://www.google.com/finance/quote/TOPIX:INDEXTOPIX?hl=en&gl=jp"
+TRADERS_MARKET_URL = "https://www.traders.co.jp/market_jp/"
 _NUMBER = re.compile(r"^[+-]?\d{1,3}(?:,\d{3})*(?:\.\d+)?$")
 _CHANGE = re.compile(r"^\(([+-]?\d{1,3}(?:,\d{3})*(?:\.\d+)?)\)")
 _PERCENT = re.compile(r"^([+-]?\d+(?:\.\d+)?)%$")
@@ -59,12 +60,19 @@ def fetch_html(url: str, *, language: str = "ja,en-US;q=0.8,en;q=0.7") -> str:
             "User-Agent": UA,
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": language,
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
         },
     )
     with urllib.request.urlopen(request, timeout=30) as response:
         raw = response.read()
         encoding = response.headers.get_content_charset() or "utf-8"
     return raw.decode(encoding, errors="replace")
+
+
+def clean_text(source: str) -> str:
+    source = re.sub(r"(?is)<script.*?</script>|<style.*?</style>", " ", source)
+    return html.unescape(re.sub(r"\s+", " ", re.sub(r"(?s)<[^>]+>", " ", source))).strip()
 
 
 def numeric(token: str) -> float | None:
@@ -75,6 +83,55 @@ def numeric(token: str) -> float | None:
         return float(token.replace(",", ""))
     except ValueError:
         return None
+
+
+def signed_number(value: str) -> float:
+    return float(value.replace(",", "").replace("＋", "+").replace("−", "-"))
+
+
+def traders_current_indexes(target: dt.date) -> dict[str, tuple[float, float, float]]:
+    """Parse the dated post-close market table from Traders Web.
+
+    The table is accepted only when the page explicitly contains the target
+    date and a 15:00-or-later timestamp. This avoids turning cached prior-day
+    market data into today's values.
+    """
+    text = clean_text(fetch_html(TRADERS_MARKET_URL))
+    date_token = f"{target.year:04d}/{target.month:02d}/{target.day:02d}"
+    timestamp = re.compile(rf"{re.escape(date_token)}\s+(1[5-9]|2[0-3]):([0-5]\d)")
+    starts = [match.end() for match in timestamp.finditer(text)]
+    if not starts:
+        return {}
+
+    label_patterns = {
+        "TOPIX": r"TOPIX",
+        "グロース250": r"グロース250",
+    }
+    result: dict[str, tuple[float, float, float]] = {}
+    for start in starts:
+        segment = text[start : start + 2600]
+        if "日経平均" not in segment or "TOPIX" not in segment or "グロース250" not in segment:
+            continue
+        for label, label_pattern in label_patterns.items():
+            if label in result:
+                continue
+            match = re.search(
+                label_pattern
+                + r"\s+([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]+)?)\s+"
+                + r"([+＋\-−][0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]+)?)\s+"
+                + r"([+＋\-−][0-9]+(?:\.[0-9]+)?)%",
+                segment,
+            )
+            if not match:
+                continue
+            result[label] = (
+                float(match.group(1).replace(",", "")),
+                signed_number(match.group(2)),
+                signed_number(match.group(3)),
+            )
+        if len(result) == len(label_patterns):
+            break
+    return result
 
 
 def google_topix() -> tuple[float, float, float] | None:
@@ -127,9 +184,7 @@ def google_topix() -> tuple[float, float, float] | None:
 
 def kabutan_current(target: dt.date, code: str, heading: str) -> tuple[float, float, float] | None:
     url = f"https://s.kabutan.jp/stocks/{code}/"
-    source = fetch_html(url)
-    source = re.sub(r"(?is)<script.*?</script>|<style.*?</style>", " ", source)
-    text = html.unescape(re.sub(r"\s+", " ", re.sub(r"(?s)<[^>]+>", " ", source))).strip()
+    text = clean_text(fetch_html(url))
     date_markers = (
         f"({target.month}/{target.day}時点)",
         f"{target.month}/{target.day}時点",
@@ -159,8 +214,6 @@ def kabutan_current(target: dt.date, code: str, heading: str) -> tuple[float, fl
 
 def current_calendar_session_allowed(target: dt.date) -> bool:
     today = dt.datetime.now(JST).date()
-    # Current quotes are only safe for today's completed session. Weekend
-    # carry-forward is intentionally not guessed here; historical source handles it.
     return target == today and today.weekday() < 5
 
 
@@ -195,42 +248,46 @@ def main() -> int:
         return 0
 
     diagnostics: dict[str, str] = {}
-
     try:
-        quote = google_topix()
+        traders = traders_current_indexes(target)
     except Exception as exc:
-        quote = None
-        diagnostics["TOPIX-google"] = f"{type(exc).__name__}: {exc}"
+        traders = {}
+        diagnostics["TradersWeb-indexes"] = f"{type(exc).__name__}: {exc}"
+
+    quote = traders.get("TOPIX")
+    topix_source = "トレーダーズ・ウェブ 国内市場"
+    if quote is None:
+        try:
+            quote = google_topix()
+            topix_source = "Google Finance"
+        except Exception as exc:
+            quote = None
+            diagnostics["TOPIX-google"] = f"{type(exc).__name__}: {exc}"
     if quote is None:
         try:
             quote = kabutan_current(target, "0010", "ＴＯＰＩＸ 株価・基本情報")
+            topix_source = "株探"
         except Exception as exc:
             quote = None
             diagnostics["TOPIX-kabutan"] = f"{type(exc).__name__}: {exc}"
     if quote is not None:
-        patch_row(
-            rows,
-            "TOPIX",
-            quote,
-            f"Google Finance / 株探の当日終値確認。基準日 {target_text}。",
-        )
-        diagnostics["TOPIX"] = "repaired from current-session closing quote"
+        patch_row(rows, "TOPIX", quote, f"{topix_source}の当日終値確認。基準日 {target_text}。")
+        diagnostics["TOPIX"] = f"repaired from {topix_source} current-session close"
     else:
         diagnostics.setdefault("TOPIX", "current-session quote unavailable")
 
-    try:
-        growth = kabutan_current(target, "0012", "東証グロース市場250指数 株価・基本情報")
-    except Exception as exc:
-        growth = None
-        diagnostics["グロース250-kabutan"] = f"{type(exc).__name__}: {exc}"
+    growth = traders.get("グロース250")
+    growth_source = "トレーダーズ・ウェブ 国内市場"
+    if growth is None:
+        try:
+            growth = kabutan_current(target, "0012", "東証グロース市場250指数 株価・基本情報")
+            growth_source = "株探"
+        except Exception as exc:
+            growth = None
+            diagnostics["グロース250-kabutan"] = f"{type(exc).__name__}: {exc}"
     if growth is not None:
-        patch_row(
-            rows,
-            "グロース250",
-            growth,
-            f"株探 東証グロース市場250指数の当日終値確認。基準日 {target_text}。",
-        )
-        diagnostics["グロース250"] = "repaired from dated current-session closing quote"
+        patch_row(rows, "グロース250", growth, f"{growth_source}の当日終値確認。基準日 {target_text}。")
+        diagnostics["グロース250"] = f"repaired from {growth_source} dated current-session close"
     else:
         diagnostics.setdefault("グロース250", "dated current-session quote unavailable")
 
