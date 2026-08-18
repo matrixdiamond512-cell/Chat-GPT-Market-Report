@@ -8,10 +8,15 @@ on:
       - "scripts/fetch_japan_stock_movers.py"
       - ".github/workflows/update-japan-stock-movers.yml"
   schedule:
-    # Run after the Tokyo close table and Nikkei contribution jobs.
-    - cron: "30 7 * * 1-5" # 16:30 JST
-    - cron: "50 7 * * 1-5" # 16:50 JST
-    - cron: "10 8 * * 1-5" # 17:10 JST
+    # Run after the Tokyo close table and keep retrying because the public
+    # ranking page can publish later than the close. Exact-date validation in
+    # the collector prevents a stale ranking from being relabelled as current.
+    - cron: "30 7 * * 1-5"  # 16:30 JST
+    - cron: "50 7 * * 1-5"  # 16:50 JST
+    - cron: "10 8 * * 1-5"  # 17:10 JST
+    - cron: "30 9 * * 1-5"  # 18:30 JST
+    - cron: "30 11 * * 1-5" # 20:30 JST
+    - cron: "30 14 * * 1-5" # 23:30 JST
 
 permissions:
   contents: write
@@ -56,7 +61,10 @@ jobs:
           if current.get('status') == 'unavailable':
               if any(current.get(key) for key in ('gainers', 'losers')):
                   raise SystemExit('Unavailable Japan movers current must not contain rows')
-              print('Japan movers unavailable; committed as unavailable with lastGood boundary')
+              last_good = movers.get('lastGood') or {}
+              if last_good and last_good.get('freshness') != 'stale':
+                  raise SystemExit('Japan movers lastGood must be marked stale')
+              print('Japan movers unavailable; current is empty and lastGood is isolated')
               raise SystemExit(0)
           if current.get('status') != 'verified' or current.get('freshness') != 'fresh' or current.get('dataDate') != date:
               raise SystemExit('Japan movers are not synced to the verified Tokyo market date')
@@ -80,7 +88,7 @@ jobs:
             python scripts/snapshot_stocks_history.py
           fi
 
-      - name: Commit verified data
+      - name: Commit verified or explicitly unavailable data
         run: |
           git add data/market/japan-stock-movers.json data/stocks.json data/history/stocks 2>/dev/null || true
           if git diff --cached --quiet; then
@@ -89,7 +97,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Update verified Tokyo Prime stock movers"
+          git commit -m "Update Tokyo Prime stock mover state"
           git pull --rebase
           git push
-
