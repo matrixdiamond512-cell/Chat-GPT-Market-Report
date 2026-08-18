@@ -8,6 +8,7 @@ on:
       - "scripts/update_tokyo_stock_table_from_sheet.py"
       - "scripts/capture_japan_close_reference.py"
       - "scripts/repair_tokyo_market_internals.py"
+      - "scripts/repair_tokyo_current_indexes.py"
       - "scripts/export_tokyo_stock_table.py"
       - "data/market/japan-close-reference.json"
       - ".github/workflows/update-tokyo-stock-table.yml"
@@ -53,6 +54,7 @@ jobs:
           python -m py_compile scripts/capture_japan_close_reference.py
           python -m py_compile scripts/update_tokyo_stock_table_from_sheet.py
           python -m py_compile scripts/repair_tokyo_market_internals.py
+          python -m py_compile scripts/repair_tokyo_current_indexes.py
           python -m py_compile scripts/export_tokyo_stock_table.py
 
       - name: Update completed Tokyo session with exact-date fallback
@@ -60,6 +62,9 @@ jobs:
 
       - name: Repair missing Tokyo internals from independent verified sources
         run: python scripts/repair_tokyo_market_internals.py
+
+      - name: Repair current-session TOPIX and Growth 250 quotes
+        run: python scripts/repair_tokyo_current_indexes.py
 
       - name: Export independently dated Tokyo table
         run: python scripts/export_tokyo_stock_table.py
