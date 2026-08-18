@@ -189,15 +189,26 @@ def fetch_us_stooq(ticker: str, name: str) -> dict[str, Any]:
     return sector_row(name, ticker, change_pct, latest["Date"], f"{ticker}終値の前営業日比（予備取得）")
 
 
-def fetch_us_market() -> tuple[list[dict[str, Any]], list[str]]:
+def accept_source_date(row: dict[str, Any], expected_date: str | None, label: str) -> dict[str, Any]:
+    """Accept same-day or newer public data, but never silently publish older data."""
+    actual_date = str(row.get("asOf") or "")[:10]
+    if expected_date and (not actual_date or actual_date < expected_date):
+        raise ValueError(
+            f"{label}: public source returned {actual_date or 'no date'}; "
+            f"expected at least {expected_date}"
+        )
+    return row
+
+
+def fetch_us_market(expected_date: str | None = None) -> tuple[list[dict[str, Any]], list[str]]:
     result: list[dict[str, Any]] = []
     errors: list[str] = []
     for ticker, name in US_SECTORS.items():
         try:
-            result.append(fetch_us_yahoo(ticker, name))
+            result.append(accept_source_date(fetch_us_yahoo(ticker, name), expected_date, f"{ticker} Yahoo"))
         except Exception as first_error:  # noqa: BLE001
             try:
-                result.append(fetch_us_stooq(ticker, name))
+                result.append(accept_source_date(fetch_us_stooq(ticker, name), expected_date, f"{ticker} Stooq"))
             except Exception as second_error:  # noqa: BLE001
                 errors.append(f"{ticker}: Yahoo={first_error}; Stooq={second_error}")
     return result, errors
@@ -270,8 +281,11 @@ def parse_japan_traders_web_html(html: str, expected_date: str | None = None) ->
     source_date = None
     if date_match:
         source_date = f"{int(date_match.group(1)):04d}-{int(date_match.group(2)):02d}-{int(date_match.group(3)):02d}"
-    if expected_date and source_date != expected_date:
-        raise ValueError(f"Traders Web sector date mismatch: source={source_date}, expected={expected_date}")
+    if expected_date and (not source_date or source_date < expected_date):
+        raise ValueError(
+            f"Traders Web sector date is older than the target: "
+            f"source={source_date or 'missing'}, expected at least {expected_date}"
+        )
     table = next(
         (
             candidate
@@ -379,9 +393,10 @@ def build_market(
 
 def build_payload() -> dict[str, Any]:
     existing = load_existing()
-    us_values, us_errors = fetch_us_market()
     stocks = load_stocks()
+    expected_us_date = str((stocks.get("marketDates") or {}).get("us") or "")[:10]
     expected_japan_date = str((stocks.get("marketDates") or {}).get("japan") or "")[:10]
+    us_values, us_errors = fetch_us_market(expected_us_date or None)
     japan_values, japan_errors = fetch_japan_traders_web(expected_japan_date or None)
     if len(japan_values) < 30:
         fallback_values, fallback_errors = fetch_japan_market()
@@ -577,4 +592,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
