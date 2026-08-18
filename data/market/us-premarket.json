@@ -4,38 +4,288 @@
   "freshness": "unavailable",
   "dataDate": null,
   "asOf": null,
-  "updatedAt": "2026-08-18T00:00:00+09:00",
-  "source": {"name": "Yahoo Finance Chart API", "method": "1m interval, includePrePost=true, New York 04:00-09:30"},
-  "error": "初回の当日プレマーケットスナップショットは未取得です。",
-  "universeSize": 50,
-  "fetchedCount": 0,
-  "coverageRatio": 0,
-  "topGainers": [],
-  "topLosers": [],
-  "topVolume": [],
-  "breadth": {},
-  "sectorBreadth": {},
-  "indexFutures": {},
-  "analysis": {"label": "判定保留", "comment": "取得率70%未満のため、市場全体の強い断定は行いません。"},
+  "updatedAt": "2026-08-18T16:58:17+09:00",
+  "source": {
+    "name": "Yahoo Finance Chart API",
+    "method": "1m interval, includePrePost=true, New York 04:00-09:30"
+  },
+  "error": null,
   "current": {
     "status": "unavailable",
     "freshness": "unavailable",
     "dataDate": null,
     "asOf": null,
-    "updatedAt": "2026-08-18T00:00:00+09:00",
-    "source": {"name": "Yahoo Finance Chart API"},
-    "error": "初回の当日プレマーケットスナップショットは未取得です。",
+    "updatedAt": "2026-08-18T16:58:17+09:00",
+    "source": {
+      "name": "Yahoo Finance Chart API",
+      "method": "1m interval, includePrePost=true, New York 04:00-09:30"
+    },
+    "error": null,
     "universeSize": 50,
     "fetchedCount": 0,
-    "coverageRatio": 0,
+    "coverageRatio": 0.0,
     "topGainers": [],
     "topLosers": [],
     "topVolume": [],
     "breadth": {},
     "sectorBreadth": {},
-    "indexFutures": {},
-    "analysis": {"label": "判定保留", "comment": "取得率70%未満のため、市場全体の強い断定は行いません。"}
+    "indexFutures": {
+      "sp500": {
+        "symbol": "ES=F",
+        "label": "S&P500先物",
+        "status": "unavailable",
+        "error": "ES=F: no 04:00-09:30 data for 2026-08-18"
+      },
+      "nasdaq100": {
+        "symbol": "NQ=F",
+        "label": "Nasdaq100先物",
+        "status": "unavailable",
+        "error": "NQ=F: no 04:00-09:30 data for 2026-08-18"
+      },
+      "dow": {
+        "symbol": "YM=F",
+        "label": "Dow先物",
+        "status": "unavailable",
+        "error": "YM=F: no 04:00-09:30 data for 2026-08-18"
+      },
+      "russell2000": {
+        "symbol": "RTY=F",
+        "label": "Russell2000先物",
+        "status": "unavailable",
+        "error": "RTY=F: no 04:00-09:30 data for 2026-08-18"
+      },
+      "vix": {
+        "symbol": "^VIX",
+        "label": "VIX",
+        "status": "unavailable",
+        "error": "^VIX: no 04:00-09:30 data for 2026-08-18"
+      },
+      "us10y": {
+        "symbol": "^TNX",
+        "label": "米10年債",
+        "status": "unavailable",
+        "error": "^TNX: no 04:00-09:30 data for 2026-08-18"
+      },
+      "dxy": {
+        "symbol": "DX-Y.NYB",
+        "label": "ドル指数",
+        "status": "unavailable",
+        "error": "DX-Y.NYB: no 04:00-09:30 data for 2026-08-18"
+      },
+      "usdjpy": {
+        "symbol": "JPY=X",
+        "label": "USD/JPY",
+        "status": "unavailable",
+        "error": "JPY=X: no 04:00-09:30 data for 2026-08-18"
+      },
+      "gold": {
+        "symbol": "GC=F",
+        "label": "Gold",
+        "status": "unavailable",
+        "error": "GC=F: no 04:00-09:30 data for 2026-08-18"
+      },
+      "wti": {
+        "symbol": "CL=F",
+        "label": "WTI",
+        "status": "unavailable",
+        "error": "CL=F: no 04:00-09:30 data for 2026-08-18"
+      },
+      "btc": {
+        "symbol": "BTC-USD",
+        "label": "BTCUSD",
+        "status": "unavailable",
+        "error": "BTC-USD: no 04:00-09:30 data for 2026-08-18"
+      }
+    },
+    "analysis": {
+      "label": "判定保留",
+      "comment": "取得率70%未満のため、市場全体の強い断定は行いません。"
+    },
+    "errors": [
+      "MU: MU: no 04:00-09:30 data for 2026-08-18",
+      "AVGO: AVGO: no 04:00-09:30 data for 2026-08-18",
+      "QCOM: QCOM: no 04:00-09:30 data for 2026-08-18",
+      "NVDA: NVDA: no 04:00-09:30 data for 2026-08-18",
+      "INTC: INTC: no 04:00-09:30 data for 2026-08-18",
+      "AMD: AMD: no 04:00-09:30 data for 2026-08-18",
+      "AMAT: AMAT: no 04:00-09:30 data for 2026-08-18",
+      "MSFT: MSFT: no 04:00-09:30 data for 2026-08-18",
+      "AAPL: AAPL: no 04:00-09:30 data for 2026-08-18",
+      "GOOGL: GOOGL: no 04:00-09:30 data for 2026-08-18",
+      "LRCX: LRCX: no 04:00-09:30 data for 2026-08-18",
+      "META: META: no 04:00-09:30 data for 2026-08-18",
+      "ORCL: ORCL: no 04:00-09:30 data for 2026-08-18",
+      "NFLX: NFLX: no 04:00-09:30 data for 2026-08-18",
+      "CRM: CRM: no 04:00-09:30 data for 2026-08-18",
+      "TSLA: TSLA: no 04:00-09:30 data for 2026-08-18",
+      "UBER: UBER: no 04:00-09:30 data for 2026-08-18",
+      "PLTR: PLTR: no 04:00-09:30 data for 2026-08-18",
+      "AMZN: AMZN: no 04:00-09:30 data for 2026-08-18",
+      "ABNB: ABNB: no 04:00-09:30 data for 2026-08-18",
+      "WFC: WFC: no 04:00-09:30 data for 2026-08-18",
+      "BAC: BAC: no 04:00-09:30 data for 2026-08-18",
+      "C: C: no 04:00-09:30 data for 2026-08-18",
+      "GS: GS: no 04:00-09:30 data for 2026-08-18",
+      "MS: MS: no 04:00-09:30 data for 2026-08-18",
+      "JPM: JPM: no 04:00-09:30 data for 2026-08-18",
+      "XOM: XOM: no 04:00-09:30 data for 2026-08-18",
+      "COP: COP: no 04:00-09:30 data for 2026-08-18",
+      "SLB: SLB: no 04:00-09:30 data for 2026-08-18",
+      "CVX: CVX: no 04:00-09:30 data for 2026-08-18",
+      "BRK-B: BRK-B: no 04:00-09:30 data for 2026-08-18",
+      "WMT: WMT: no 04:00-09:30 data for 2026-08-18",
+      "COST: COST: no 04:00-09:30 data for 2026-08-18",
+      "HD: HD: no 04:00-09:30 data for 2026-08-18",
+      "MCD: MCD: no 04:00-09:30 data for 2026-08-18",
+      "NKE: NKE: no 04:00-09:30 data for 2026-08-18",
+      "TGT: TGT: no 04:00-09:30 data for 2026-08-18",
+      "UNH: UNH: no 04:00-09:30 data for 2026-08-18",
+      "LLY: LLY: no 04:00-09:30 data for 2026-08-18",
+      "MRK: MRK: no 04:00-09:30 data for 2026-08-18",
+      "ABBV: ABBV: no 04:00-09:30 data for 2026-08-18",
+      "PFE: PFE: no 04:00-09:30 data for 2026-08-18",
+      "GE: GE: no 04:00-09:30 data for 2026-08-18",
+      "BA: BA: no 04:00-09:30 data for 2026-08-18",
+      "RTX: RTX: no 04:00-09:30 data for 2026-08-18",
+      "JNJ: JNJ: no 04:00-09:30 data for 2026-08-18",
+      "LMT: LMT: no 04:00-09:30 data for 2026-08-18",
+      "DIS: DIS: no 04:00-09:30 data for 2026-08-18",
+      "T: T: no 04:00-09:30 data for 2026-08-18",
+      "CAT: CAT: no 04:00-09:30 data for 2026-08-18"
+    ]
   },
-  "lastGood": null
+  "lastGood": null,
+  "universeSize": 50,
+  "fetchedCount": 0,
+  "coverageRatio": 0.0,
+  "topGainers": [],
+  "topLosers": [],
+  "topVolume": [],
+  "breadth": {},
+  "sectorBreadth": {},
+  "indexFutures": {
+    "sp500": {
+      "symbol": "ES=F",
+      "label": "S&P500先物",
+      "status": "unavailable",
+      "error": "ES=F: no 04:00-09:30 data for 2026-08-18"
+    },
+    "nasdaq100": {
+      "symbol": "NQ=F",
+      "label": "Nasdaq100先物",
+      "status": "unavailable",
+      "error": "NQ=F: no 04:00-09:30 data for 2026-08-18"
+    },
+    "dow": {
+      "symbol": "YM=F",
+      "label": "Dow先物",
+      "status": "unavailable",
+      "error": "YM=F: no 04:00-09:30 data for 2026-08-18"
+    },
+    "russell2000": {
+      "symbol": "RTY=F",
+      "label": "Russell2000先物",
+      "status": "unavailable",
+      "error": "RTY=F: no 04:00-09:30 data for 2026-08-18"
+    },
+    "vix": {
+      "symbol": "^VIX",
+      "label": "VIX",
+      "status": "unavailable",
+      "error": "^VIX: no 04:00-09:30 data for 2026-08-18"
+    },
+    "us10y": {
+      "symbol": "^TNX",
+      "label": "米10年債",
+      "status": "unavailable",
+      "error": "^TNX: no 04:00-09:30 data for 2026-08-18"
+    },
+    "dxy": {
+      "symbol": "DX-Y.NYB",
+      "label": "ドル指数",
+      "status": "unavailable",
+      "error": "DX-Y.NYB: no 04:00-09:30 data for 2026-08-18"
+    },
+    "usdjpy": {
+      "symbol": "JPY=X",
+      "label": "USD/JPY",
+      "status": "unavailable",
+      "error": "JPY=X: no 04:00-09:30 data for 2026-08-18"
+    },
+    "gold": {
+      "symbol": "GC=F",
+      "label": "Gold",
+      "status": "unavailable",
+      "error": "GC=F: no 04:00-09:30 data for 2026-08-18"
+    },
+    "wti": {
+      "symbol": "CL=F",
+      "label": "WTI",
+      "status": "unavailable",
+      "error": "CL=F: no 04:00-09:30 data for 2026-08-18"
+    },
+    "btc": {
+      "symbol": "BTC-USD",
+      "label": "BTCUSD",
+      "status": "unavailable",
+      "error": "BTC-USD: no 04:00-09:30 data for 2026-08-18"
+    }
+  },
+  "analysis": {
+    "label": "判定保留",
+    "comment": "取得率70%未満のため、市場全体の強い断定は行いません。"
+  },
+  "errors": [
+    "MU: MU: no 04:00-09:30 data for 2026-08-18",
+    "AVGO: AVGO: no 04:00-09:30 data for 2026-08-18",
+    "QCOM: QCOM: no 04:00-09:30 data for 2026-08-18",
+    "NVDA: NVDA: no 04:00-09:30 data for 2026-08-18",
+    "INTC: INTC: no 04:00-09:30 data for 2026-08-18",
+    "AMD: AMD: no 04:00-09:30 data for 2026-08-18",
+    "AMAT: AMAT: no 04:00-09:30 data for 2026-08-18",
+    "MSFT: MSFT: no 04:00-09:30 data for 2026-08-18",
+    "AAPL: AAPL: no 04:00-09:30 data for 2026-08-18",
+    "GOOGL: GOOGL: no 04:00-09:30 data for 2026-08-18",
+    "LRCX: LRCX: no 04:00-09:30 data for 2026-08-18",
+    "META: META: no 04:00-09:30 data for 2026-08-18",
+    "ORCL: ORCL: no 04:00-09:30 data for 2026-08-18",
+    "NFLX: NFLX: no 04:00-09:30 data for 2026-08-18",
+    "CRM: CRM: no 04:00-09:30 data for 2026-08-18",
+    "TSLA: TSLA: no 04:00-09:30 data for 2026-08-18",
+    "UBER: UBER: no 04:00-09:30 data for 2026-08-18",
+    "PLTR: PLTR: no 04:00-09:30 data for 2026-08-18",
+    "AMZN: AMZN: no 04:00-09:30 data for 2026-08-18",
+    "ABNB: ABNB: no 04:00-09:30 data for 2026-08-18",
+    "WFC: WFC: no 04:00-09:30 data for 2026-08-18",
+    "BAC: BAC: no 04:00-09:30 data for 2026-08-18",
+    "C: C: no 04:00-09:30 data for 2026-08-18",
+    "GS: GS: no 04:00-09:30 data for 2026-08-18",
+    "MS: MS: no 04:00-09:30 data for 2026-08-18",
+    "JPM: JPM: no 04:00-09:30 data for 2026-08-18",
+    "XOM: XOM: no 04:00-09:30 data for 2026-08-18",
+    "COP: COP: no 04:00-09:30 data for 2026-08-18",
+    "SLB: SLB: no 04:00-09:30 data for 2026-08-18",
+    "CVX: CVX: no 04:00-09:30 data for 2026-08-18",
+    "BRK-B: BRK-B: no 04:00-09:30 data for 2026-08-18",
+    "WMT: WMT: no 04:00-09:30 data for 2026-08-18",
+    "COST: COST: no 04:00-09:30 data for 2026-08-18",
+    "HD: HD: no 04:00-09:30 data for 2026-08-18",
+    "MCD: MCD: no 04:00-09:30 data for 2026-08-18",
+    "NKE: NKE: no 04:00-09:30 data for 2026-08-18",
+    "TGT: TGT: no 04:00-09:30 data for 2026-08-18",
+    "UNH: UNH: no 04:00-09:30 data for 2026-08-18",
+    "LLY: LLY: no 04:00-09:30 data for 2026-08-18",
+    "MRK: MRK: no 04:00-09:30 data for 2026-08-18",
+    "ABBV: ABBV: no 04:00-09:30 data for 2026-08-18",
+    "PFE: PFE: no 04:00-09:30 data for 2026-08-18",
+    "GE: GE: no 04:00-09:30 data for 2026-08-18",
+    "BA: BA: no 04:00-09:30 data for 2026-08-18",
+    "RTX: RTX: no 04:00-09:30 data for 2026-08-18",
+    "JNJ: JNJ: no 04:00-09:30 data for 2026-08-18",
+    "LMT: LMT: no 04:00-09:30 data for 2026-08-18",
+    "DIS: DIS: no 04:00-09:30 data for 2026-08-18",
+    "T: T: no 04:00-09:30 data for 2026-08-18",
+    "CAT: CAT: no 04:00-09:30 data for 2026-08-18"
+  ],
+  "marketDate": null
 }
-
