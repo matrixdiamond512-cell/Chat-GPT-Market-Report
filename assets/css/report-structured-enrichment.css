@@ -1,0 +1,95 @@
+/* Detailed structured report sections. Created 2026-08-18 JST. */
+.structured-section {
+  margin-top: 28px;
+}
+
+.structured-section > h2 {
+  margin-bottom: 14px;
+}
+
+.structured-section ul {
+  margin: 0;
+  padding-left: 1.35em;
+}
+
+.structured-section li + li {
+  margin-top: 8px;
+}
+
+.market-outlook-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.market-outlook-card {
+  border: 1px solid #d8e2ef;
+  border-radius: 10px;
+  background: #fff;
+  padding: 15px 16px;
+}
+
+.market-outlook-card h3 {
+  margin: 0 0 10px;
+  color: #0b2d5c;
+  font-size: 17px;
+}
+
+.market-outlook-card dl,
+.market-outlook-card dd {
+  margin: 0;
+}
+
+.market-outlook-card dl > div {
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr);
+  gap: 8px 12px;
+  padding: 8px 0;
+  border-top: 1px solid #e7edf5;
+}
+
+.market-outlook-card dl > div:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.market-outlook-card dt {
+  color: #526987;
+  font-weight: 800;
+}
+
+.market-outlook-card dd {
+  color: #10284d;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 720px) {
+  .market-outlook-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .market-outlook-card {
+    padding: 13px 14px;
+  }
+
+  .market-outlook-card dl > div {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+
+  /* Do not pin the first column on phones. It previously covered the values
+     while the table was horizontally scrolled, making the table look empty. */
+  .market-table-five tbody th,
+  .market-table-five thead th:first-child {
+    position: static !important;
+    left: auto !important;
+    min-width: 145px !important;
+    max-width: 180px !important;
+    box-shadow: none !important;
+  }
+
+  .market-table-five {
+    min-width: 760px !important;
+  }
+}
