@@ -3,7 +3,7 @@
   "market": "japan",
   "snapshotDate": "2026-08-18",
   "dataDate": "2026-08-18",
-  "fetchedAt": "2026-08-18T23:54:42+09:00",
+  "fetchedAt": "2026-08-18T23:56:27+09:00",
   "status": "verified",
   "source": {
     "name": "東京市場確定値統合（複数ソース・項目別基準日）",
@@ -54,9 +54,9 @@
       ],
       [
         "東証プライム売買代金",
-        "取得不能（対象日の確定値なし）",
+        "10.15 兆円",
         "—",
-        "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-08-18。"
+        "トレーダーズ・ウェブ 後場概況の確定値。基準日 2026-08-18。"
       ],
       [
         "騰落レシオ（25日）",
@@ -78,13 +78,13 @@
       ],
       [
         "日経225 25日乖離率",
-        "+2.09%",
+        "+2.47%",
         "—",
         "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-08-18。"
       ],
       [
         "日経225 200日乖離率",
-        "+17.04%",
+        "+16.52%",
         "—",
         "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-08-18。"
       ],
@@ -96,7 +96,7 @@
       ]
     ],
     "dataDate": "2026-08-18",
-    "updatedAt": "2026-08-18T23:54:42+09:00",
+    "updatedAt": "2026-08-18T23:56:27+09:00",
     "source": {
       "name": "東京市場確定値統合（複数ソース・項目別基準日）",
       "sheet": "",
@@ -105,10 +105,11 @@
       "supportingData": [
         "data/market/latest.json（日経VI）",
         "株探 日次時系列（TOPIX・グロース250）",
-        "data/nikkei225-supply-demand.json（海外投資家・週次）"
+        "data/nikkei225-supply-demand.json（海外投資家・週次）",
+        "トレーダーズ・ウェブ マーケットの話題（東証プライム売買代金）"
       ],
       "repairDiagnostics": {
-        "東証プライム売買代金": "exact-date reference unavailable",
+        "東証プライム売買代金": "repaired from exact-date Traders Web post-close commentary",
         "日経225予想PER": "exact-date reference unavailable",
         "日経225予想EPS": "exact-date reference unavailable",
         "日経VI": "repaired from verified generic market acquisition",
