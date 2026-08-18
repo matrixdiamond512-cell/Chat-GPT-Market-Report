@@ -19,6 +19,9 @@ on:
     - cron: "10 7 * * 1-5"   # 16:10 JST
     - cron: "40 7 * * 1-5"   # 16:40 JST
     - cron: "10 8 * * 1-5"   # 17:10 JST
+    - cron: "10 9 * * 1-5"   # 18:10 JST
+    - cron: "10 11 * * 1-5"  # 20:10 JST
+    - cron: "10 14 * * 1-5"  # 23:10 JST
 
 permissions:
   contents: write
@@ -93,9 +96,6 @@ jobs:
           if not breadth or len(breadth) < 2 or str(breadth[1]).startswith('取得不能'):
               raise SystemExit('Tokyo Prime advance/decline breadth is unavailable for the Tokyo market date')
 
-          # When the exact-date reference has a 25-day Prime ratio, it must reach
-          # stocks.json in the same run. This prevents a good collector result
-          # from remaining invisible on the portal.
           ref_ratio = ((reference.get('items') or {}).get('東証プライム25日騰落レシオ') or {})
           ratio_row = next((row for row in rows if isinstance(row, list) and row and row[0] == '騰落レシオ（25日）'), None)
           if reference.get('dataDate') == dates.get('japan') and ref_ratio.get('value'):
