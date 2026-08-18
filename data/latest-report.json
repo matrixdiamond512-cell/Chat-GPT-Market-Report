@@ -164,16 +164,16 @@
         },
         {
           "label": "CME日経225先物・円建て",
-          "value": "66,070",
-          "change": "-3,015",
+          "value": "66,075",
+          "change": "-3,010",
           "rate": "-4.36%",
           "direction": "下落"
         },
         {
           "label": "CME日経225先物・ドル建て",
-          "value": "66,075",
-          "change": "-3,015",
-          "rate": "-4.36%",
+          "value": "66,095",
+          "change": "-2,995",
+          "rate": "-4.33%",
           "direction": "下落"
         },
         {
@@ -214,7 +214,7 @@
         {
           "label": "BTCUSD",
           "value": "64,582ドル",
-          "change": "+102",
+          "change": "+105",
           "rate": "+0.16%",
           "direction": "中立"
         },
@@ -361,29 +361,12 @@
     "dataProvenance": {
       "tableNormalization": {
         "rule": "08:00 publication always carries the canonical 28-row contract before repair",
-        "inputRowCount": 15,
+        "inputRowCount": 28,
         "outputRowCount": 28,
-        "missingFilled": [
-          "CME日経225先物・円建て",
-          "CME日経225先物・ドル建て",
-          "VIX",
-          "Fear & Greed Index",
-          "米10年債利回り",
-          "日本10年国債利回り",
-          "日経225予想PER",
-          "日経225 PBR",
-          "日経225予想EPS",
-          "日経225 25日移動平均乖離率",
-          "日経225 200日移動平均乖離率",
-          "東証プライム売買代金",
-          "東証プライム売買高",
-          "東証プライム値上がり銘柄数",
-          "東証プライム値下がり銘柄数",
-          "東証プライム25日騰落レシオ"
-        ]
+        "missingFilled": []
       },
       "dailyCloseRepair": {
-        "generatedAt": "2026-08-19T08:33:59+09:00",
+        "generatedAt": "2026-08-19T08:41:28+09:00",
         "semantics": "previous_close",
         "rule": "08:00 uses date-matched prior-session closes; retrieval after 08:00 is allowed, stale-date carry-forward is prohibited; BTCUSD keeps its dedicated 24/7-market convention",
         "repairedLabels": [
@@ -407,30 +390,26 @@
       },
       "japanCloseReference": {
         "dataDate": "2026-08-18",
-        "appliedAt": "2026-08-19T08:33:59+09:00",
+        "appliedAt": "2026-08-19T08:41:28+09:00",
         "appliedLabels": [
           "日経225現物",
           "日経225 25日移動平均乖離率",
-          "日経225 200日移動平均乖離率",
+          "日経225 200日移動平均乖離率"
+        ],
+        "preservedUsableLabels": [
           "東証プライム値上がり銘柄数",
           "東証プライム値下がり銘柄数",
-          "東証プライム25日騰落レシオ",
-          "日本10年国債利回り"
+          "東証プライム25日騰落レシオ"
         ],
-        "preservedUsableLabels": [],
         "source": "data/market/japan-close-reference.json",
         "ratesReference": {
-          "applied": [
-            "日本10年国債利回り"
-          ],
-          "reason": "",
-          "source": "TradingView JGB market snapshot (LSEG)",
-          "asOf": "2026-08-18"
+          "applied": [],
+          "reason": "existing usable value preserved"
         }
       },
       "exactJapanCloseOverride": {
         "dataDate": "2026-08-18",
-        "appliedAt": "2026-08-19T08:33:59+09:00",
+        "appliedAt": "2026-08-19T08:41:29+09:00",
         "appliedLabels": [
           "日経225現物",
           "日経225 25日移動平均乖離率",
@@ -487,14 +466,14 @@
       "btc24hComparisonRepair": {
         "rule": "BTCUSD 08:00 comparison uses report-time price versus nearest Yahoo BTC-USD hourly close exactly 24h earlier",
         "reportPrice": 64582.0,
-        "referencePrice": 64480.0,
+        "referencePrice": 64477.25,
         "reportTimeJST": "2026-08-19T08:00:00+09:00",
         "referenceTimeJST": "2026-08-18T08:00:00+09:00",
-        "change": 102.0,
-        "changePercent": 0.15818858560794044,
+        "change": 104.75,
+        "changePercent": 0.1624604027001772,
         "source": "Yahoo Finance Bitcoin USD",
         "sourceUrl": "https://finance.yahoo.com/quote/BTC-USD/",
-        "fetchedAt": "2026-08-19T08:34:00+09:00"
+        "fetchedAt": "2026-08-19T08:41:29+09:00"
       }
     },
     "fullText": ""
