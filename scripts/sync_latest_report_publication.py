@@ -5,8 +5,11 @@ import json
 import re
 from pathlib import Path
 
+from reconcile_latest_report_market_data import reconcile_report_market_data
+
 ROOT = Path(__file__).resolve().parents[1]
 LATEST = ROOT / "data/latest-report.json"
+MARKET_SNAPSHOT = ROOT / "data/market/latest.json"
 DASHBOARD = ROOT / "data/dashboard.json"
 REPORTS_DIR = ROOT / "reports"
 JST = dt.timezone(dt.timedelta(hours=9))
