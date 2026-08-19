@@ -31,7 +31,7 @@
     var judgement = correctedJudgement(record);
     var c = marketContext(record.country);
 
-    if (["fomc", "frb", "fed ", "日銀", "boj", "ecb", "発言"].some(function (word) { return title.indexOf(word) >= 0; })) {
+    if (["fomc", "frb", "fed ", "日銀", "日銀関連", "boj", "ecb", "ecb関連", "発言"].some(function (word) { return title.indexOf(word) >= 0; })) {
       return {
         summary:"発言が政策金利見通しを変えたかが翌日への影響を決める。タカ派なら金利・通貨高、ハト派なら金利・通貨安が基本線。",
         continueIf:c.rate + "と" + c.fx + "が翌営業日も発言方向へ追随し、政策金利の織り込みが変化する。",
@@ -135,20 +135,20 @@
       var heading = section.querySelector(".panel-title");
       if (heading) {
         var badge = heading.querySelector(".badge");
-        heading.textContent = "終了した重要イベント｜結果・翌日以降の影響";
+        heading.textContent = "終了した重要イベント｜今後の相場影響シナリオ";
         if (badge) heading.insertBefore(badge, heading.firstChild);
       }
       var note = section.querySelector(".footer-note");
-      if (note) note.textContent = "発表直後の値動きではなく、結果が翌営業日以降の金利・為替・株・商品へどう波及し得るかを整理します。実際の持続性は翌日のフォロースルーで確認します。";
+      if (note) note.textContent = "発表後5分・30分の値動きではなく、結果の予想差と政策含意をもとに、翌日以降の相場への影響シナリオを表示します。実際の持続性は後続の金利・為替・株・商品で確認します。";
     }
 
     var head = table.querySelector("thead tr");
-    if (head && head.cells.length === 12) {
-      head.deleteCell(10);
-      head.deleteCell(9);
-      var th = document.createElement("th");
-      th.textContent = "翌日以降の相場への示唆";
-      head.insertBefore(th, head.cells[9]);
+    if (head) {
+      if (head.cells.length === 12) {
+        head.deleteCell(10);
+        head.deleteCell(9);
+      }
+      if (head.cells[9]) head.cells[9].textContent = "今後の相場影響シナリオ";
     }
 
     Array.prototype.slice.call(body.querySelectorAll("tr:not(.completed-detail-row)")).forEach(function (row) {
@@ -167,6 +167,9 @@
         td.className = "forward-impact-cell";
         td.textContent = impact.summary;
         row.insertBefore(td, row.cells[9]);
+      } else if (row.cells[9]) {
+        row.cells[9].className = "forward-impact-cell";
+        row.cells[9].textContent = impact.summary;
       }
       if (row.cells[8]) row.cells[8].textContent = correctedJudgement(record);
 
@@ -176,6 +179,8 @@
       var boxes = detail.querySelectorAll(".completed-detail-box > div");
       if (boxes.length < 2) return;
 
+      var firstTitle = boxes[0].querySelector("h4");
+      if (firstTitle) firstTitle.textContent = "結果とサプライズ";
       var firstP = boxes[0].querySelector("p");
       if (firstP) {
         firstP.replaceChildren();
@@ -185,9 +190,11 @@
         addLine(firstP, "予想差：", record.surprise || "取得不能");
         addLine(firstP, "判定：", correctedJudgement(record));
       }
+      var firstParagraphs = boxes[0].querySelectorAll("p");
+      if (firstParagraphs.length > 1) firstParagraphs[1].textContent = record.details || "結果の内容を確認します。";
 
       var secondTitle = boxes[1].querySelector("h4");
-      if (secondTitle) secondTitle.textContent = "翌日以降の相場への影響";
+      if (secondTitle) secondTitle.textContent = "今後の相場影響シナリオ";
       var secondP = boxes[1].querySelector("p");
       if (secondP) {
         secondP.replaceChildren();
@@ -213,10 +220,11 @@
     observer.observe(body, {childList:true, subtree:true});
 
     var style = document.createElement("style");
-    style.textContent = ".completed-table th:nth-child(10),.completed-table td:nth-child(10){min-width:330px}.completed-table th:nth-child(11),.completed-table td:nth-child(11){min-width:90px;width:90px}.forward-impact-cell{line-height:1.55;color:#173968;font-weight:750}.completed-detail-box strong{color:#0b3f91}";
+    style.textContent = ".completed-table th:nth-child(10),.completed-table td:nth-child(10){min-width:330px}.completed-table th:nth-child(11),.completed-table td:nth-child(11){min-width:90px;width:90px}.completed-table th:nth-child(11)::after{content:none!important}.completed-table .completed-event-row>td:nth-child(10):before{content:\"今後の相場影響シナリオ\"}.forward-impact-cell{line-height:1.55;color:#173968;font-weight:750}.completed-detail-box strong{color:#0b3f91}";
     document.head.appendChild(style);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", install);
   else install();
 })();
+
