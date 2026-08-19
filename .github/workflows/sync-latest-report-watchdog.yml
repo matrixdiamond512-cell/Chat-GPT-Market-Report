@@ -33,6 +33,12 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Test verified market-data reconciliation
+        run: python scripts/test_reconcile_latest_report_market_data.py
+
+      - name: Reconcile verified intraday market data into latest report
+        run: python scripts/reconcile_latest_report_market_data.py
+
       - name: Rebuild publication from latest report
         run: |
           python scripts/sync_latest_report_publication.py
