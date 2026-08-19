@@ -35,7 +35,7 @@ SYMBOL_ALIASES: dict[str, set[str]] = {
     "btcusd": {"BTCUSD", "BTC/USD", "ビットコイン"},
 }
 
-VALUE_UNAVAILABLE_MARKERS = ("取得不能", "unavailable", "not available", "n/a")
+VALUE_UNAVAILABLE_MARKERS = ("取得不能", "取得不可", "確定できず", "unavailable", "not available", "n/a", "—")
 DISPLAY_UNITS = {
     "gold": "ドル/oz",
     "wti": "ドル/bbl",
@@ -170,7 +170,7 @@ def reconcile_report_market_data(
         return []
 
     generated = parse_jst(snapshot.get("generatedAt"))
-    if generated and generated.date().isoformat() != report_date:
+    if not generated or generated.date().isoformat() != report_date:
         return []
 
     if snapshot.get("overallStatus") not in {"verified", "degraded"}:
