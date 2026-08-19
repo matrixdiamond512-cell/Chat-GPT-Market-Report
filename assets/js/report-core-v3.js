@@ -26,15 +26,19 @@ function resolveAvailableDate(d) {
   const asc = dates.slice().sort();
   return asc.filter(x => x <= d).at(-1) || asc[0];
 }
+function syncSelectedReportUrl(report) {
+  if (!report?.date || !report?.time) return;
+  const url = new URL(location.href);
+  url.searchParams.set("date", report.date);
+  url.searchParams.set("time", report.time);
+  history.replaceState(null, "", url);
+}
 function selectReport(dateText, timeText) {
   const d = resolveAvailableDate(dateText);
   const same = reportsForDate(d);
   selectedReport = same.find(r => r.time === timeText) || same.at(-1) || reports[0];
   render();
-  const url = new URL(location.href);
-  url.searchParams.set("date", selectedReport.date || "");
-  url.searchParams.set("time", selectedReport.time || "");
-  history.replaceState(null, "", url);
+  syncSelectedReportUrl(selectedReport);
 }
 function renderControls(report) {
   const dates = uniqueDates();
@@ -177,6 +181,9 @@ async function init() {
     const date = params.get("date"), time = params.get("time");
     selectedReport = reports.find(r => r.date === date && r.time === time) || reports[0];
     render();
+    // The enrichment script needs the resolved default slot as well as explicit selections.
+    // Keep the canonical slot in the URL so the bare report.html route gets full details.
+    syncSelectedReportUrl(selectedReport);
   } catch (error) {
     $("lastUpdated").textContent = "読込エラー";
     $("reportStatus").textContent = "マーケットレポート本文を読み込めませんでした";
@@ -184,5 +191,6 @@ async function init() {
     $("app").innerHTML = `マーケットレポート本文を表示できません。理由：${esc(error.message)}`;
   }
 }
-window.MarketReportRendererVersion = "20260817-1845-core-v3";
+window.MarketReportRendererVersion = "20260819-default-detail-fix";
 init();
+
