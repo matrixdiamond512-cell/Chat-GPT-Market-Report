@@ -1,11 +1,12 @@
 name: Build report index
 
-# Rebuild marker: 2026-08-18 report index refresh
+# Rebuild marker: 2026-08-19 latest-to-history guard
 on:
   push:
     branches:
       - main
     paths:
+      - "data/latest-report.json"
       - "reports/*.json"
       - "reports.json"
       - "scripts/build_reports.py"
@@ -34,13 +35,33 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Preserve history and build reports.json
+      - name: Sync latest report, preserve history and build reports.json
         run: python scripts/build_reports.py
 
       - name: Validate generated JSON
-        run: python -m json.tool reports.json > /dev/null
+        run: |
+          python -m json.tool data/latest-report.json > /dev/null
+          python -m json.tool reports.json > /dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
 
-      - name: Commit canonical backfills and generated index
+          payload = json.loads(Path('data/latest-report.json').read_text(encoding='utf-8'))
+          latest = payload.get('latestReport', payload)
+          path = Path('reports') / f"{latest['date']}_{latest['time'].replace(':', '-')}.json"
+          if not path.exists():
+              raise SystemExit(f'canonical history file missing: {path}')
+          archived = json.loads(path.read_text(encoding='utf-8'))
+          if archived != latest:
+              raise SystemExit(f'canonical history does not match latest report: {path}')
+          index = json.loads(Path('reports.json').read_text(encoding='utf-8'))
+          matches = [r for r in index if r.get('date') == latest['date'] and r.get('time') == latest['time']]
+          if len(matches) != 1 or matches[0] != latest:
+              raise SystemExit('reports.json does not contain exactly one matching latest report')
+          print(f"Publication guard passed: {latest['date']} {latest['time']} -> {path}")
+          PY
+
+      - name: Commit canonical history and generated index
         run: |
           if git diff --quiet -- reports reports.json; then
             echo "Canonical report history and reports.json are already consistent."
@@ -50,6 +71,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add reports reports.json
-          git commit -m "Auto-build canonical report history and index"
+          git commit -m "Auto-sync latest report into canonical history"
           git pull --rebase origin main
           git push
