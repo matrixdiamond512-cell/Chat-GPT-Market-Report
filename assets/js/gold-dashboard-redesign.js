@@ -7,6 +7,8 @@ function arrange(){
   const cftc=root.querySelector('[data-cftc-history-card]');
   const etf=root.querySelector('[data-gold-etf-enhanced],.gold-etf-enhanced');
   if(!grid||!cftc||!etf)return false;
+  const macro=root.querySelector('[data-gold-macro-comparison],.gmc');
+  if(macro&&macro.closest('.gold-content-grid'))grid.insertAdjacentElement('beforebegin',macro);
   let charts=root.querySelector('.gold-fullwidth-charts');
   if(!charts){charts=document.createElement('section');charts.className='gold-fullwidth-charts';charts.setAttribute('aria-label','ゴールド需給チャート');grid.insertAdjacentElement('beforebegin',charts)}
   if(cftc.parentElement!==charts)charts.appendChild(cftc);
@@ -23,7 +25,10 @@ function arrange(){
   let laneA=grid.querySelector('.gold-detail-lane-a'),laneB=grid.querySelector('.gold-detail-lane-b');
   if(!laneA){laneA=document.createElement('div');laneA.className='gold-detail-lane gold-detail-lane-a';grid.prepend(laneA)}
   if(!laneB){laneB=document.createElement('div');laneB.className='gold-detail-lane gold-detail-lane-b';grid.append(laneB)}
-  const laneATitles=new Set(['需給サマリー','先物カーブ','中国・インド現物需要']);
+  // Keep the detail lanes visually balanced. 更新頻度 is a compact card, so
+  // placing it after the physical-demand cards prevents the right lane from
+  // stretching while the left side becomes an empty column.
+  const laneATitles=new Set(['需給サマリー','先物カーブ','中国・インド現物需要','更新頻度']);
   cards.forEach(card=>{
     const title=card.matches('[data-gold-supply-summary]')?'需給サマリー':card.querySelector('.gold-section-title')?.textContent?.trim()||'';
     (laneATitles.has(title)?laneA:laneB).appendChild(card);
