@@ -6,7 +6,7 @@
   "updatedAt": "2026-08-18T07:45:29+09:00",
   "dataAsOf": "2026-08-17T16:00:00-04:00",
   "status": "ok",
-  "sourceStatus": "米国市場と東京市場を独立更新・市場別基準日を明示",
+  "sourceStatus": "Google Sheets＋日経225寄与度検証済みデータ",
   "sources": [
     {
       "id": "INITIAL_STOCKS_HTML",
@@ -214,29 +214,127 @@
     "us": {
       "title": "米国市場の大幅上昇・下落銘柄（S&P500構成銘柄）",
       "flag": "US",
-      "status": "unavailable",
-      "freshness": "unavailable",
-      "dataDate": null,
-      "asOf": null,
-      "updatedAt": "2026-08-19T06:57:35+09:00",
+      "status": "verified",
+      "freshness": "fresh",
+      "dataDate": "2026-08-18",
+      "asOf": "2026-08-18T16:00:00-04:00",
+      "updatedAt": "2026-08-19T07:45:50+09:00",
       "source": {
         "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
         "url": "https://www.slickcharts.com/sp500",
         "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
       },
-      "error": "Slickcharts is not on the verified U.S. session: source=2026-08-18, expected=2026-08-17",
+      "error": null,
       "universe": "S&P 500 constituents",
-      "validation": {},
-      "gainers": [],
-      "losers": [],
+      "validation": {
+        "estimatedWeightedReturnPct": -0.6628,
+        "verifiedSP500ReturnPct": -0.69,
+        "differencePt": 0.0272,
+        "tolerancePt": 0.2,
+        "status": "passed"
+      },
+      "gainers": [
+        {
+          "rank": 1,
+          "symbol": "TRGP",
+          "name": "Targa Resources Corp（TRGP）",
+          "close": "300.37",
+          "dayChange": "+22.43",
+          "change": "+8.07%",
+          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
+        },
+        {
+          "rank": 2,
+          "symbol": "PODD",
+          "name": "Insulet Corp（PODD）",
+          "close": "147.85",
+          "dayChange": "+8.16",
+          "change": "+5.84%",
+          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
+        },
+        {
+          "rank": 3,
+          "symbol": "ULTA",
+          "name": "Ulta Beauty Inc（ULTA）",
+          "close": "520.5",
+          "dayChange": "+27.17",
+          "change": "+5.51%",
+          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
+        },
+        {
+          "rank": 4,
+          "symbol": "MNST",
+          "name": "Monster Beverage Corp（MNST）",
+          "close": "47.55",
+          "dayChange": "+2.03",
+          "change": "+4.46%",
+          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
+        },
+        {
+          "rank": 5,
+          "symbol": "TRMB",
+          "name": "Trimble Inc（TRMB）",
+          "close": "58.02",
+          "dayChange": "+2.34",
+          "change": "+4.19%",
+          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
+        }
+      ],
+      "losers": [
+        {
+          "rank": 1,
+          "symbol": "COHR",
+          "name": "Coherent Corp（COHR）",
+          "close": "304.54",
+          "dayChange": "-46.69",
+          "change": "-13.29%",
+          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
+        },
+        {
+          "rank": 2,
+          "symbol": "LITE",
+          "name": "Lumentum Holdings Inc（LITE）",
+          "close": "868.85",
+          "dayChange": "-100.05",
+          "change": "-10.33%",
+          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
+        },
+        {
+          "rank": 3,
+          "symbol": "SNDK",
+          "name": "Sandisk Corp/DE（SNDK）",
+          "close": "1,605.04",
+          "dayChange": "-181.81",
+          "change": "-10.17%",
+          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
+        },
+        {
+          "rank": 4,
+          "symbol": "STX",
+          "name": "Seagate Technology Holdings PLC（STX）",
+          "close": "897.45",
+          "dayChange": "-97.34",
+          "change": "-9.79%",
+          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
+        },
+        {
+          "rank": 5,
+          "symbol": "TER",
+          "name": "Teradyne Inc（TER）",
+          "close": "402.15",
+          "dayChange": "-40.99",
+          "change": "-9.25%",
+          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
+        }
+      ],
       "lastGood": {
         "title": "米国市場の大幅上昇・下落銘柄（S&P500構成銘柄）",
         "flag": "US",
         "status": "verified",
         "freshness": "stale",
-        "dataDate": "2026-08-17",
-        "asOf": "2026-08-17T16:00:00-04:00",
-        "updatedAt": "2026-08-18T23:00:34+09:00",
+        "dataDate": "2026-08-18",
+        "asOf": "2026-08-18T16:00:00-04:00",
+        "updatedAt": "2026-08-19T07:36:04+09:00",
         "source": {
           "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
           "url": "https://www.slickcharts.com/sp500",
@@ -245,9 +343,9 @@
         "error": null,
         "universe": "S&P 500 constituents",
         "validation": {
-          "estimatedWeightedReturnPct": -0.4749,
-          "verifiedSP500ReturnPct": -0.52,
-          "differencePt": 0.0451,
+          "estimatedWeightedReturnPct": -0.6297,
+          "verifiedSP500ReturnPct": -0.69,
+          "differencePt": 0.0603,
           "tolerancePt": 0.2,
           "status": "passed"
         },
@@ -256,46 +354,46 @@
             "rank": 1,
             "symbol": "TRGP",
             "name": "Targa Resources Corp（TRGP）",
-            "close": "297.11",
-            "dayChange": "+19.17",
-            "change": "+6.90%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
+            "close": "300.37",
+            "dayChange": "+22.43",
+            "change": "+8.07%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
           },
           {
             "rank": 2,
-            "symbol": "INTU",
-            "name": "Intuit Inc（INTU）",
-            "close": "352.87",
-            "dayChange": "+17.27",
-            "change": "+5.14%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
+            "symbol": "PODD",
+            "name": "Insulet Corp（PODD）",
+            "close": "147.86",
+            "dayChange": "+8.16",
+            "change": "+5.84%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
           },
           {
             "rank": 3,
-            "symbol": "GDDY",
-            "name": "GoDaddy Inc（GDDY）",
-            "close": "97.05",
-            "dayChange": "+4.68",
-            "change": "+5.07%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
+            "symbol": "ULTA",
+            "name": "Ulta Beauty Inc（ULTA）",
+            "close": "520.5",
+            "dayChange": "+27.17",
+            "change": "+5.51%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
           },
           {
             "rank": 4,
-            "symbol": "TPR",
-            "name": "Tapestry Inc（TPR）",
-            "close": "134.9",
-            "dayChange": "+5.88",
-            "change": "+4.56%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
+            "symbol": "MNST",
+            "name": "Monster Beverage Corp（MNST）",
+            "close": "47.55",
+            "dayChange": "+2.03",
+            "change": "+4.46%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
           },
           {
             "rank": 5,
-            "symbol": "ULTA",
-            "name": "Ulta Beauty Inc（ULTA）",
-            "close": "515.41",
-            "dayChange": "+22.08",
-            "change": "+4.48%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
+            "symbol": "INTU",
+            "name": "Intuit Inc（INTU）",
+            "close": "349.95",
+            "dayChange": "+14.35",
+            "change": "+4.28%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
           }
         ],
         "losers": [
@@ -303,275 +401,49 @@
             "rank": 1,
             "symbol": "COHR",
             "name": "Coherent Corp（COHR）",
-            "close": "314.79",
-            "dayChange": "-36.43",
-            "change": "-10.37%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
+            "close": "305.7",
+            "dayChange": "-45.52",
+            "change": "-12.96%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
           },
           {
             "rank": 2,
-            "symbol": "TER",
-            "name": "Teradyne Inc（TER）",
-            "close": "407.81",
-            "dayChange": "-35.33",
-            "change": "-7.97%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
+            "symbol": "LITE",
+            "name": "Lumentum Holdings Inc（LITE）",
+            "close": "870.5",
+            "dayChange": "-98.4",
+            "change": "-10.16%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
           },
           {
             "rank": 3,
-            "symbol": "MRVL",
-            "name": "Marvell Technology（MRVL）",
-            "close": "218.43",
-            "dayChange": "-15.9",
-            "change": "-6.79%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
+            "symbol": "SNDK",
+            "name": "Sandisk Corp/DE（SNDK）",
+            "close": "1,612.92",
+            "dayChange": "-173.93",
+            "change": "-9.73%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
           },
           {
             "rank": 4,
-            "symbol": "SNDK",
-            "name": "Sandisk Corp/DE（SNDK）",
-            "close": "1,665.72",
-            "dayChange": "-121.13",
-            "change": "-6.78%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
+            "symbol": "STX",
+            "name": "Seagate Technology Holdings PLC（STX）",
+            "close": "900.84",
+            "dayChange": "-93.95",
+            "change": "-9.44%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
           },
           {
             "rank": 5,
             "symbol": "CIEN",
             "name": "Ciena Corp（CIEN）",
-            "close": "416.61",
-            "dayChange": "-28.57",
-            "change": "-6.42%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
+            "close": "404",
+            "dayChange": "-41.18",
+            "change": "-9.25%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-18。材料要因は別途ニュース確認。"
           }
         ],
-        "lastGood": {
-          "title": "米国市場の大幅上昇・下落銘柄（S&P500構成銘柄）",
-          "flag": "US",
-          "status": "verified",
-          "freshness": "stale",
-          "dataDate": "2026-08-17",
-          "asOf": "2026-08-17T16:00:00-04:00",
-          "updatedAt": "2026-08-18T13:08:56+09:00",
-          "source": {
-            "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-            "url": "https://www.slickcharts.com/sp500",
-            "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
-          },
-          "error": null,
-          "universe": "S&P 500 constituents",
-          "validation": {
-            "estimatedWeightedReturnPct": -0.5214,
-            "verifiedSP500ReturnPct": -0.52,
-            "differencePt": -0.0014,
-            "tolerancePt": 0.2,
-            "status": "passed"
-          },
-          "gainers": [
-            {
-              "rank": 1,
-              "symbol": "SNDK",
-              "name": "Sandisk Corp/DE（SNDK）",
-              "close": "1,786.85",
-              "dayChange": "+145.74",
-              "change": "+8.88%",
-              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-            },
-            {
-              "rank": 2,
-              "symbol": "COHR",
-              "name": "Coherent Corp（COHR）",
-              "close": "351.22",
-              "dayChange": "+25.39",
-              "change": "+7.79%",
-              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-            },
-            {
-              "rank": 3,
-              "symbol": "FIX",
-              "name": "Comfort Systems USA Inc（FIX）",
-              "close": "1,881.18",
-              "dayChange": "+107.12",
-              "change": "+6.04%",
-              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-            },
-            {
-              "rank": 4,
-              "symbol": "TER",
-              "name": "Teradyne Inc（TER）",
-              "close": "443.14",
-              "dayChange": "+24.35",
-              "change": "+5.81%",
-              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-            },
-            {
-              "rank": 5,
-              "symbol": "AMAT",
-              "name": "Applied Materials Inc（AMAT）",
-              "close": "535.31",
-              "dayChange": "+28.13",
-              "change": "+5.55%",
-              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-            }
-          ],
-          "losers": [
-            {
-              "rank": 1,
-              "symbol": "CVNA",
-              "name": "Carvana Co（CVNA）",
-              "close": "70.09",
-              "dayChange": "-5.5",
-              "change": "-7.28%",
-              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-            },
-            {
-              "rank": 2,
-              "symbol": "CHTR",
-              "name": "Charter Communications Inc（CHTR）",
-              "close": "144.1",
-              "dayChange": "-10.17",
-              "change": "-6.59%",
-              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-            },
-            {
-              "rank": 3,
-              "symbol": "STZ",
-              "name": "Constellation Brands Inc（STZ）",
-              "close": "130.56",
-              "dayChange": "-8.62",
-              "change": "-6.19%",
-              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-            },
-            {
-              "rank": 4,
-              "symbol": "ALGN",
-              "name": "Align Technology Inc（ALGN）",
-              "close": "171.16",
-              "dayChange": "-10.15",
-              "change": "-5.60%",
-              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-            },
-            {
-              "rank": 5,
-              "symbol": "TTD",
-              "name": "Trade Desk Inc/The（TTD）",
-              "close": "13.4",
-              "dayChange": "-0.74",
-              "change": "-5.23%",
-              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-            }
-          ],
-          "lastGood": {
-            "title": "米国市場の大幅上昇・下落銘柄（S&P500構成銘柄）",
-            "flag": "US",
-            "status": "verified",
-            "dataDate": "2026-08-17",
-            "updatedAt": "2026-08-18T07:45:29+09:00",
-            "source": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-            "validation": {
-              "estimatedWeightedReturnPct": -0.4765,
-              "verifiedSP500ReturnPct": -0.52,
-              "differencePt": 0.0435,
-              "tolerancePt": 0.2,
-              "status": "passed"
-            },
-            "gainers": [
-              {
-                "rank": 1,
-                "symbol": "SNDK",
-                "name": "Sandisk Corp/DE（SNDK）",
-                "close": "1,806.62",
-                "dayChange": "+165.51",
-                "change": "+10.09%",
-                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-              },
-              {
-                "rank": 2,
-                "symbol": "COHR",
-                "name": "Coherent Corp（COHR）",
-                "close": "352",
-                "dayChange": "+26.17",
-                "change": "+8.03%",
-                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-              },
-              {
-                "rank": 3,
-                "symbol": "MRVL",
-                "name": "Marvell Technology（MRVL）",
-                "close": "235.54",
-                "dayChange": "+13.52",
-                "change": "+6.09%",
-                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-              },
-              {
-                "rank": 4,
-                "symbol": "FIX",
-                "name": "Comfort Systems USA Inc（FIX）",
-                "close": "1,881.45",
-                "dayChange": "+107.39",
-                "change": "+6.05%",
-                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-              },
-              {
-                "rank": 5,
-                "symbol": "TER",
-                "name": "Teradyne Inc（TER）",
-                "close": "443.25",
-                "dayChange": "+24.46",
-                "change": "+5.84%",
-                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-              }
-            ],
-            "losers": [
-              {
-                "rank": 1,
-                "symbol": "CVNA",
-                "name": "Carvana Co（CVNA）",
-                "close": "70.18",
-                "dayChange": "-5.41",
-                "change": "-7.16%",
-                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-              },
-              {
-                "rank": 2,
-                "symbol": "TKO",
-                "name": "TKO Group Holdings Inc（TKO）",
-                "close": "188.14",
-                "dayChange": "-13.14",
-                "change": "-6.53%",
-                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-              },
-              {
-                "rank": 3,
-                "symbol": "CHTR",
-                "name": "Charter Communications Inc（CHTR）",
-                "close": "144.56",
-                "dayChange": "-9.72",
-                "change": "-6.30%",
-                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-              },
-              {
-                "rank": 4,
-                "symbol": "STZ",
-                "name": "Constellation Brands Inc（STZ）",
-                "close": "130.8",
-                "dayChange": "-8.38",
-                "change": "-6.02%",
-                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-              },
-              {
-                "rank": 5,
-                "symbol": "NOW",
-                "name": "ServiceNow Inc（NOW）",
-                "close": "117.44",
-                "dayChange": "-6.56",
-                "change": "-5.29%",
-                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-17。材料要因は別途ニュース確認。"
-              }
-            ],
-            "freshness": "stale"
-          }
-        }
+        "lastGood": null
       }
     },
     "japan": {
@@ -801,174 +673,242 @@
   },
   "sectors": {
     "us": {
-      "title": "米国市場のセクター・業種（上昇率TOP5）",
+      "title": "米国市場のセクター・業種",
       "flag": "US",
-      "rows": [
-        {
-          "rank": 1,
-          "name": "コミュニケーション・サービス",
-          "change": "+1.78%",
-          "note": "大型ネット関連が主導。決算期待、継続性は中程度。"
-        },
-        {
-          "rank": 2,
-          "name": "ヘルスケア",
-          "change": "+1.33%",
-          "note": "ディフェンシブ買い。金利低下時に支え。"
-        },
-        {
-          "rank": 3,
-          "name": "一般消費財・サービス",
-          "change": "+1.07%",
-          "note": "選別買い。消費関連は銘柄差が残る。"
-        },
-        {
-          "rank": 4,
-          "name": "金融",
-          "change": "+0.93%",
-          "note": "景気懸念後退で買い。金利動向を確認。"
-        },
-        {
-          "rank": 5,
-          "name": "エネルギー",
-          "change": "+0.46%",
-          "note": "原油高が支援。継続性は在庫・地政学次第。"
-        }
-      ]
+      "rows": [],
+      "gainers": [],
+      "losers": [],
+      "dataAsOf": "2026-08-18",
+      "sourceLabel": "Select Sector SPDR ETF",
+      "status": "unavailable",
+      "freshness": "unavailable",
+      "dataDate": null,
+      "asOf": null
     },
     "japan": {
-      "title": "東京市場のセクター・業種（上昇率TOP5）",
+      "title": "東京市場のセクター・業種",
       "flag": "JP",
-      "rows": [
-        {
-          "rank": 1,
-          "name": "電気機器",
-          "change": "+1.72%",
-          "note": "半導体関連が主導。米SOXとの連動を確認。"
-        },
-        {
-          "rank": 2,
-          "name": "情報・通信業",
-          "change": "+1.34%",
-          "note": "大型通信・ネット株に買い。継続性は中程度。"
-        },
-        {
-          "rank": 3,
-          "name": "輸送用機器",
-          "change": "+1.05%",
-          "note": "円安が支援。ドル円の反転に注意。"
-        },
-        {
-          "rank": 4,
-          "name": "化学",
-          "change": "+0.78%",
-          "note": "半導体材料の見直し買い。利確圧力も残る。"
-        },
-        {
-          "rank": 5,
-          "name": "銀行業",
-          "change": "+0.42%",
-          "note": "金利見通しが支え。日銀イベントを確認。"
-        }
-      ]
+      "rows": [],
+      "gainers": [],
+      "losers": [],
+      "dataAsOf": "2026-08-18",
+      "sourceLabel": "東証33業種指数",
+      "status": "unavailable",
+      "freshness": "unavailable",
+      "dataDate": null,
+      "asOf": null
     }
   },
   "contributions": {
     "us": {
       "title": "米国市場（S&P500寄与度 推計・bp）",
       "flag": "US",
-      "status": "unavailable",
-      "freshness": "unavailable",
-      "dataDate": null,
-      "asOf": null,
-      "updatedAt": "2026-08-19T06:57:35+09:00",
-      "source": {
-        "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-        "url": "https://www.slickcharts.com/sp500",
-        "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
-      },
-      "error": "Slickcharts is not on the verified U.S. session: source=2026-08-18, expected=2026-08-17",
+      "status": "verified-estimate",
+      "freshness": "fresh",
+      "dataDate": "2026-08-18",
+      "asOf": "2026-08-18T16:00:00-04:00",
+      "updatedAt": "2026-08-19T07:45:50+09:00",
+      "source": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+      "error": null,
       "unit": "bp",
       "official": false,
       "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
-      "validation": {},
-      "top": [],
-      "bottom": [],
+      "validation": {
+        "estimatedWeightedReturnPct": -0.6628,
+        "verifiedSP500ReturnPct": -0.69,
+        "differencePt": 0.0272,
+        "tolerancePt": 0.2,
+        "status": "passed"
+      },
+      "top": [
+        {
+          "rank": 1,
+          "symbol": "AAPL",
+          "name": "Apple Inc（AAPL）",
+          "close": "309.71",
+          "change": "+1.35%",
+          "weight": "6.48%",
+          "contribution": "+8.75bp",
+          "contributionBps": 8.748,
+          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
+        },
+        {
+          "rank": 2,
+          "symbol": "LLY",
+          "name": "Eli Lilly & Co（LLY）",
+          "close": "1,224.88",
+          "change": "+3.53%",
+          "weight": "1.56%",
+          "contribution": "+5.51bp",
+          "contributionBps": 5.5068,
+          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
+        },
+        {
+          "rank": 3,
+          "symbol": "JNJ",
+          "name": "Johnson & Johnson（JNJ）",
+          "close": "271.2",
+          "change": "+3.37%",
+          "weight": "0.94%",
+          "contribution": "+3.17bp",
+          "contributionBps": 3.1678,
+          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
+        },
+        {
+          "rank": 4,
+          "symbol": "XOM",
+          "name": "Exxon Mobil Corp（XOM）",
+          "close": "165.69",
+          "change": "+2.62%",
+          "weight": "0.98%",
+          "contribution": "+2.57bp",
+          "contributionBps": 2.5676,
+          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
+        },
+        {
+          "rank": 5,
+          "symbol": "ABBV",
+          "name": "AbbVie Inc（ABBV）",
+          "close": "258.72",
+          "change": "+3.35%",
+          "weight": "0.66%",
+          "contribution": "+2.21bp",
+          "contributionBps": 2.211,
+          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
+        }
+      ],
+      "bottom": [
+        {
+          "rank": 1,
+          "symbol": "NVDA",
+          "name": "NVIDIA Corp（NVDA）",
+          "close": "219.26",
+          "change": "-2.55%",
+          "weight": "7.61%",
+          "contribution": "-19.41bp",
+          "contributionBps": -19.4055,
+          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
+        },
+        {
+          "rank": 2,
+          "symbol": "MU",
+          "name": "Micron Technology Inc（MU）",
+          "close": "936.64",
+          "change": "-7.42%",
+          "weight": "1.52%",
+          "contribution": "-11.28bp",
+          "contributionBps": -11.2784,
+          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
+        },
+        {
+          "rank": 3,
+          "symbol": "AVGO",
+          "name": "Broadcom Inc（AVGO）",
+          "close": "379.49",
+          "change": "-3.30%",
+          "weight": "2.59%",
+          "contribution": "-8.55bp",
+          "contributionBps": -8.547,
+          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
+        },
+        {
+          "rank": 4,
+          "symbol": "META",
+          "name": "Meta Platforms Inc（META）",
+          "close": "544.91",
+          "change": "-4.23%",
+          "weight": "1.99%",
+          "contribution": "-8.42bp",
+          "contributionBps": -8.4177,
+          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
+        },
+        {
+          "rank": 5,
+          "symbol": "AMD",
+          "name": "Advanced Micro Devices Inc（AMD）",
+          "close": "481.17",
+          "change": "-4.91%",
+          "weight": "1.13%",
+          "contribution": "-5.55bp",
+          "contributionBps": -5.5483,
+          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
+        }
+      ],
       "lastGood": {
         "title": "米国市場（S&P500寄与度 推計・bp）",
         "flag": "US",
         "status": "verified-estimate",
         "freshness": "stale",
-        "dataDate": "2026-08-17",
-        "asOf": "2026-08-17T16:00:00-04:00",
-        "updatedAt": "2026-08-18T23:00:34+09:00",
+        "dataDate": "2026-08-18",
+        "asOf": "2026-08-18T16:00:00-04:00",
+        "updatedAt": "2026-08-19T07:36:04+09:00",
         "source": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
         "error": null,
         "unit": "bp",
         "official": false,
         "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
         "validation": {
-          "estimatedWeightedReturnPct": -0.4749,
-          "verifiedSP500ReturnPct": -0.52,
-          "differencePt": 0.0451,
+          "estimatedWeightedReturnPct": -0.6297,
+          "verifiedSP500ReturnPct": -0.69,
+          "differencePt": 0.0603,
           "tolerancePt": 0.2,
           "status": "passed"
         },
         "top": [
           {
             "rank": 1,
-            "symbol": "LLY",
-            "name": "Eli Lilly & Co（LLY）",
-            "close": "1,213.05",
-            "change": "+2.53%",
-            "weight": "1.55%",
-            "contribution": "+3.92bp",
-            "contributionBps": 3.9215,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
+            "symbol": "AAPL",
+            "name": "Apple Inc（AAPL）",
+            "close": "309.96",
+            "change": "+1.43%",
+            "weight": "6.48%",
+            "contribution": "+9.27bp",
+            "contributionBps": 9.2664,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
           },
           {
             "rank": 2,
-            "symbol": "AAPL",
-            "name": "Apple Inc（AAPL）",
-            "close": "307.45",
-            "change": "+0.61%",
-            "weight": "6.42%",
-            "contribution": "+3.92bp",
-            "contributionBps": 3.9162,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
+            "symbol": "LLY",
+            "name": "Eli Lilly & Co（LLY）",
+            "close": "1,224.88",
+            "change": "+3.53%",
+            "weight": "1.56%",
+            "contribution": "+5.51bp",
+            "contributionBps": 5.5068,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
           },
           {
             "rank": 3,
             "symbol": "JNJ",
             "name": "Johnson & Johnson（JNJ）",
-            "close": "269.59",
-            "change": "+2.75%",
-            "weight": "0.93%",
-            "contribution": "+2.56bp",
-            "contributionBps": 2.5575,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
+            "close": "271.2",
+            "change": "+3.37%",
+            "weight": "0.94%",
+            "contribution": "+3.17bp",
+            "contributionBps": 3.1678,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
           },
           {
             "rank": 4,
-            "symbol": "ABBV",
-            "name": "AbbVie Inc（ABBV）",
-            "close": "256.77",
-            "change": "+2.57%",
-            "weight": "0.65%",
-            "contribution": "+1.67bp",
-            "contributionBps": 1.6705,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
+            "symbol": "XOM",
+            "name": "Exxon Mobil Corp（XOM）",
+            "close": "165.65",
+            "change": "+2.59%",
+            "weight": "0.98%",
+            "contribution": "+2.54bp",
+            "contributionBps": 2.5382,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
           },
           {
             "rank": 5,
-            "symbol": "XOM",
-            "name": "Exxon Mobil Corp（XOM）",
-            "close": "164.05",
-            "change": "+1.60%",
-            "weight": "0.96%",
-            "contribution": "+1.54bp",
-            "contributionBps": 1.536,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
+            "symbol": "ABBV",
+            "name": "AbbVie Inc（ABBV）",
+            "close": "258.72",
+            "change": "+3.35%",
+            "weight": "0.65%",
+            "contribution": "+2.18bp",
+            "contributionBps": 2.1775,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
           }
         ],
         "bottom": [
@@ -976,441 +916,82 @@
             "rank": 1,
             "symbol": "NVDA",
             "name": "NVIDIA Corp（NVDA）",
-            "close": "219.85",
-            "change": "-2.29%",
+            "close": "219.41",
+            "change": "-2.49%",
             "weight": "7.61%",
-            "contribution": "-17.43bp",
-            "contributionBps": -17.4269,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
+            "contribution": "-18.95bp",
+            "contributionBps": -18.9489,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
           },
           {
             "rank": 2,
-            "symbol": "AVGO",
-            "name": "Broadcom Inc（AVGO）",
-            "close": "378.94",
-            "change": "-3.44%",
-            "weight": "2.58%",
-            "contribution": "-8.88bp",
-            "contributionBps": -8.8752,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
+            "symbol": "MU",
+            "name": "Micron Technology Inc（MU）",
+            "close": "939.81",
+            "change": "-7.11%",
+            "weight": "1.52%",
+            "contribution": "-10.81bp",
+            "contributionBps": -10.8072,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
           },
           {
             "rank": 3,
-            "symbol": "MU",
-            "name": "Micron Technology Inc（MU）",
-            "close": "958.22",
-            "change": "-5.29%",
-            "weight": "1.55%",
-            "contribution": "-8.20bp",
-            "contributionBps": -8.1995,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
+            "symbol": "AVGO",
+            "name": "Broadcom Inc（AVGO）",
+            "close": "379.78",
+            "change": "-3.22%",
+            "weight": "2.59%",
+            "contribution": "-8.34bp",
+            "contributionBps": -8.3398,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
           },
           {
             "rank": 4,
             "symbol": "META",
             "name": "Meta Platforms Inc（META）",
-            "close": "547.82",
-            "change": "-3.72%",
-            "weight": "2.00%",
-            "contribution": "-7.44bp",
-            "contributionBps": -7.44,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
+            "close": "545.26",
+            "change": "-4.17%",
+            "weight": "1.99%",
+            "contribution": "-8.30bp",
+            "contributionBps": -8.2983,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
           },
           {
             "rank": 5,
             "symbol": "AMD",
             "name": "Advanced Micro Devices Inc（AMD）",
-            "close": "480.16",
-            "change": "-5.11%",
-            "weight": "1.12%",
-            "contribution": "-5.72bp",
-            "contributionBps": -5.7232,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
+            "close": "481.73",
+            "change": "-4.80%",
+            "weight": "1.13%",
+            "contribution": "-5.42bp",
+            "contributionBps": -5.424,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-18。公式S&P寄与度ではない。"
           }
         ],
-        "lastGood": {
-          "title": "米国市場（S&P500寄与度 推計・bp）",
-          "flag": "US",
-          "status": "verified-estimate",
-          "freshness": "stale",
-          "dataDate": "2026-08-17",
-          "asOf": "2026-08-17T16:00:00-04:00",
-          "updatedAt": "2026-08-18T13:08:56+09:00",
-          "source": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-          "error": null,
-          "unit": "bp",
-          "official": false,
-          "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
-          "validation": {
-            "estimatedWeightedReturnPct": -0.5214,
-            "verifiedSP500ReturnPct": -0.52,
-            "differencePt": -0.0014,
-            "tolerancePt": 0.2,
-            "status": "passed"
-          },
-          "top": [
-            {
-              "rank": 1,
-              "symbol": "MU",
-              "name": "Micron Technology Inc（MU）",
-              "close": "1,011.75",
-              "change": "+4.13%",
-              "weight": "1.63%",
-              "contribution": "+6.73bp",
-              "contributionBps": 6.7319,
-              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-            },
-            {
-              "rank": 2,
-              "symbol": "AMAT",
-              "name": "Applied Materials Inc（AMAT）",
-              "close": "535.31",
-              "change": "+5.55%",
-              "weight": "0.60%",
-              "contribution": "+3.33bp",
-              "contributionBps": 3.33,
-              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-            },
-            {
-              "rank": 3,
-              "symbol": "SNDK",
-              "name": "Sandisk Corp/DE（SNDK）",
-              "close": "1,786.85",
-              "change": "+8.88%",
-              "weight": "0.37%",
-              "contribution": "+3.29bp",
-              "contributionBps": 3.2856,
-              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-            },
-            {
-              "rank": 4,
-              "symbol": "LRCX",
-              "name": "Lam Research Corp（LRCX）",
-              "close": "343.84",
-              "change": "+3.45%",
-              "weight": "0.61%",
-              "contribution": "+2.10bp",
-              "contributionBps": 2.1045,
-              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-            },
-            {
-              "rank": 5,
-              "symbol": "CAT",
-              "name": "Caterpillar Inc（CAT）",
-              "close": "881.65",
-              "change": "+2.93%",
-              "weight": "0.58%",
-              "contribution": "+1.70bp",
-              "contributionBps": 1.6994,
-              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-            }
-          ],
-          "bottom": [
-            {
-              "rank": 1,
-              "symbol": "MSFT",
-              "name": "Microsoft Corp（MSFT）",
-              "close": "480.35",
-              "change": "-3.04%",
-              "weight": "5.07%",
-              "contribution": "-15.41bp",
-              "contributionBps": -15.4128,
-              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-            },
-            {
-              "rank": 2,
-              "symbol": "META",
-              "name": "Meta Platforms Inc（META）",
-              "close": "568.97",
-              "change": "-3.54%",
-              "weight": "2.06%",
-              "contribution": "-7.29bp",
-              "contributionBps": -7.2924,
-              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-            },
-            {
-              "rank": 3,
-              "symbol": "AMZN",
-              "name": "Amazon.com Inc（AMZN）",
-              "close": "261.31",
-              "change": "-0.51%",
-              "weight": "4.01%",
-              "contribution": "-2.05bp",
-              "contributionBps": -2.0451,
-              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-            },
-            {
-              "rank": 4,
-              "symbol": "AMD",
-              "name": "Advanced Micro Devices Inc（AMD）",
-              "close": "506",
-              "change": "-1.63%",
-              "weight": "1.17%",
-              "contribution": "-1.91bp",
-              "contributionBps": -1.9071,
-              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-            },
-            {
-              "rank": 5,
-              "symbol": "GOOG",
-              "name": "Alphabet Inc（GOOG）",
-              "close": "341.45",
-              "change": "-0.61%",
-              "weight": "2.88%",
-              "contribution": "-1.76bp",
-              "contributionBps": -1.7568,
-              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-            }
-          ],
-          "lastGood": {
-            "title": "米国市場（S&P500寄与度 推計・bp）",
-            "flag": "US",
-            "status": "verified-estimate",
-            "dataDate": "2026-08-17",
-            "updatedAt": "2026-08-18T07:45:29+09:00",
-            "unit": "bp",
-            "official": false,
-            "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
-            "source": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-            "validation": {
-              "estimatedWeightedReturnPct": -0.4765,
-              "verifiedSP500ReturnPct": -0.52,
-              "differencePt": 0.0435,
-              "tolerancePt": 0.2,
-              "status": "passed"
-            },
-            "top": [
-              {
-                "rank": 1,
-                "symbol": "MU",
-                "name": "Micron Technology Inc（MU）",
-                "close": "1,019.08",
-                "change": "+4.88%",
-                "weight": "1.64%",
-                "contribution": "+8.00bp",
-                "contributionBps": 8.0032,
-                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-              },
-              {
-                "rank": 2,
-                "symbol": "SNDK",
-                "name": "Sandisk Corp/DE（SNDK）",
-                "close": "1,806.62",
-                "change": "+10.09%",
-                "weight": "0.38%",
-                "contribution": "+3.83bp",
-                "contributionBps": 3.8342,
-                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-              },
-              {
-                "rank": 3,
-                "symbol": "AMAT",
-                "name": "Applied Materials Inc（AMAT）",
-                "close": "534.42",
-                "change": "+5.37%",
-                "weight": "0.60%",
-                "contribution": "+3.22bp",
-                "contributionBps": 3.222,
-                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-              },
-              {
-                "rank": 4,
-                "symbol": "LRCX",
-                "name": "Lam Research Corp（LRCX）",
-                "close": "344.25",
-                "change": "+3.58%",
-                "weight": "0.61%",
-                "contribution": "+2.18bp",
-                "contributionBps": 2.1838,
-                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-              },
-              {
-                "rank": 5,
-                "symbol": "MRVL",
-                "name": "Marvell Technology（MRVL）",
-                "close": "235.54",
-                "change": "+6.09%",
-                "weight": "0.30%",
-                "contribution": "+1.83bp",
-                "contributionBps": 1.827,
-                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-              }
-            ],
-            "bottom": [
-              {
-                "rank": 1,
-                "symbol": "MSFT",
-                "name": "Microsoft Corp（MSFT）",
-                "close": "479.53",
-                "change": "-3.20%",
-                "weight": "5.06%",
-                "contribution": "-16.19bp",
-                "contributionBps": -16.192,
-                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-              },
-              {
-                "rank": 2,
-                "symbol": "META",
-                "name": "Meta Platforms Inc（META）",
-                "close": "568.36",
-                "change": "-3.64%",
-                "weight": "2.06%",
-                "contribution": "-7.50bp",
-                "contributionBps": -7.4984,
-                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-              },
-              {
-                "rank": 3,
-                "symbol": "AMZN",
-                "name": "Amazon.com Inc（AMZN）",
-                "close": "260.88",
-                "change": "-0.67%",
-                "weight": "4.00%",
-                "contribution": "-2.68bp",
-                "contributionBps": -2.68,
-                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-              },
-              {
-                "rank": 4,
-                "symbol": "AAPL",
-                "name": "Apple Inc（AAPL）",
-                "close": "304.82",
-                "change": "-0.36%",
-                "weight": "6.33%",
-                "contribution": "-2.28bp",
-                "contributionBps": -2.2788,
-                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-              },
-              {
-                "rank": 5,
-                "symbol": "GOOG",
-                "name": "Alphabet Inc（GOOG）",
-                "close": "341.12",
-                "change": "-0.71%",
-                "weight": "2.88%",
-                "contribution": "-2.04bp",
-                "contributionBps": -2.0448,
-                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-17。公式S&P寄与度ではない。"
-              }
-            ],
-            "freshness": "stale"
-          }
-        }
+        "lastGood": null
       }
     },
     "japan": {
       "title": "日本市場（日経225寄与度 上位・下位）",
       "flag": "JP",
-      "status": "verified",
-      "freshness": "fresh",
-      "dataDate": "2026-08-18",
-      "asOf": "2026-08-18",
-      "updatedAt": "2026-08-18T16:58:14+09:00",
+      "status": "unavailable",
+      "freshness": "unavailable",
+      "dataDate": null,
+      "asOf": null,
+      "updatedAt": "2026-08-19T16:51:11+09:00",
       "source": {
         "name": "株探 日経平均の寄与度ランキング",
         "topUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=desc&market=all&order=contrib_price",
         "bottomUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=asc&market=all&order=contrib_price"
       },
       "error": null,
-      "generatedAt": "2026-08-18T16:58:14+09:00",
+      "generatedAt": "2026-08-19T16:51:11+09:00",
       "sourceAt": {
-        "top": "2026-08-18T16:00:00+09:00",
-        "bottom": "2026-08-18T16:00:00+09:00"
+        "top": "2026-08-19T16:00:00+09:00",
+        "bottom": "2026-08-19T16:00:00+09:00"
       },
-      "top": [
-        {
-          "rank": 1,
-          "code": "9433",
-          "name": "ＫＤＤＩ（9433）",
-          "shortName": "ＫＤＤＩ",
-          "close": "2,854.0",
-          "contribution": "+8.25",
-          "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
-        },
-        {
-          "rank": 2,
-          "code": "8058",
-          "name": "三菱商（8058）",
-          "shortName": "三菱商",
-          "close": "4,778",
-          "contribution": "+6.94",
-          "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
-        },
-        {
-          "rank": 3,
-          "code": "4502",
-          "name": "武田（4502）",
-          "shortName": "武田",
-          "close": "5,702",
-          "contribution": "+6.34",
-          "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
-        },
-        {
-          "rank": 4,
-          "code": "4704",
-          "name": "トレンド（4704）",
-          "shortName": "トレンド",
-          "close": "5,516",
-          "contribution": "+5.50",
-          "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
-        },
-        {
-          "rank": 5,
-          "code": "7733",
-          "name": "オリンパス（7733）",
-          "shortName": "オリンパス",
-          "close": "2,116.0",
-          "contribution": "+5.36",
-          "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
-        }
-      ],
-      "bottom": [
-        {
-          "rank": 1,
-          "code": "6857",
-          "name": "アドテスト（6857）",
-          "shortName": "アドテスト",
-          "close": "35,860",
-          "contribution": "-463.41",
-          "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
-        },
-        {
-          "rank": 2,
-          "code": "8035",
-          "name": "東エレク（8035）",
-          "shortName": "東エレク",
-          "close": "56,380",
-          "contribution": "-373.10",
-          "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
-        },
-        {
-          "rank": 3,
-          "code": "9983",
-          "name": "ファストリ（9983）",
-          "shortName": "ファストリ",
-          "close": "75,010",
-          "contribution": "-145.62",
-          "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
-        },
-        {
-          "rank": 4,
-          "code": "285A",
-          "name": "キオクシア（285A）",
-          "shortName": "キオクシア",
-          "close": "57,150",
-          "contribution": "-110.05",
-          "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
-        },
-        {
-          "rank": 5,
-          "code": "6981",
-          "name": "村田製（6981）",
-          "shortName": "村田製",
-          "close": "7,496",
-          "contribution": "-63.88",
-          "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
-        }
-      ],
+      "top": [],
+      "bottom": [],
       "lastGood": {
         "title": "日本市場（日経225寄与度 上位・下位）",
         "flag": "JP",
@@ -1418,62 +999,62 @@
         "freshness": "stale",
         "dataDate": "2026-08-18",
         "asOf": "2026-08-18",
-        "updatedAt": "2026-08-18T13:09:16+09:00",
+        "updatedAt": "2026-08-18T16:58:14+09:00",
         "source": {
           "name": "株探 日経平均の寄与度ランキング",
           "topUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=desc&market=all&order=contrib_price",
           "bottomUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=asc&market=all&order=contrib_price"
         },
         "error": null,
-        "generatedAt": "2026-08-18T13:09:16+09:00",
+        "generatedAt": "2026-08-18T16:58:14+09:00",
         "sourceAt": {
-          "top": "2026-08-18T12:54:00+09:00",
-          "bottom": "2026-08-18T12:54:00+09:00"
+          "top": "2026-08-18T16:00:00+09:00",
+          "bottom": "2026-08-18T16:00:00+09:00"
         },
         "top": [
           {
             "rank": 1,
-            "code": "9984",
-            "name": "ＳＢＧ（9984）",
-            "shortName": "ＳＢＧ",
-            "close": "6,004",
-            "contribution": "+86.08",
+            "code": "9433",
+            "name": "ＫＤＤＩ（9433）",
+            "shortName": "ＫＤＤＩ",
+            "close": "2,854.0",
+            "contribution": "+8.25",
             "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
           },
           {
             "rank": 2,
-            "code": "4502",
-            "name": "武田（4502）",
-            "shortName": "武田",
-            "close": "5,715",
-            "contribution": "+6.77",
+            "code": "8058",
+            "name": "三菱商（8058）",
+            "shortName": "三菱商",
+            "close": "4,778",
+            "contribution": "+6.94",
             "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
           },
           {
             "rank": 3,
-            "code": "8058",
-            "name": "三菱商（8058）",
-            "shortName": "三菱商",
-            "close": "4,767",
+            "code": "4502",
+            "name": "武田（4502）",
+            "shortName": "武田",
+            "close": "5,702",
             "contribution": "+6.34",
             "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
           },
           {
             "rank": 4,
-            "code": "8031",
-            "name": "三井物（8031）",
-            "shortName": "三井物",
-            "close": "4,881",
-            "contribution": "+5.83",
+            "code": "4704",
+            "name": "トレンド（4704）",
+            "shortName": "トレンド",
+            "close": "5,516",
+            "contribution": "+5.50",
             "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
           },
           {
             "rank": 5,
-            "code": "7267",
-            "name": "ホンダ（7267）",
-            "shortName": "ホンダ",
-            "close": "1,715.5",
-            "contribution": "+5.63",
+            "code": "7733",
+            "name": "オリンパス（7733）",
+            "shortName": "オリンパス",
+            "close": "2,116.0",
+            "contribution": "+5.36",
             "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
           }
         ],
@@ -1483,8 +1064,8 @@
             "code": "6857",
             "name": "アドテスト（6857）",
             "shortName": "アドテスト",
-            "close": "36,320",
-            "contribution": "-352.38",
+            "close": "35,860",
+            "contribution": "-463.41",
             "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
           },
           {
@@ -1492,8 +1073,8 @@
             "code": "8035",
             "name": "東エレク（8035）",
             "shortName": "東エレク",
-            "close": "57,010",
-            "contribution": "-306.73",
+            "close": "56,380",
+            "contribution": "-373.10",
             "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
           },
           {
@@ -1501,8 +1082,8 @@
             "code": "9983",
             "name": "ファストリ（9983）",
             "shortName": "ファストリ",
-            "close": "75,520",
-            "contribution": "-97.35",
+            "close": "75,010",
+            "contribution": "-145.62",
             "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
           },
           {
@@ -1510,8 +1091,8 @@
             "code": "285A",
             "name": "キオクシア（285A）",
             "shortName": "キオクシア",
-            "close": "58,720",
-            "contribution": "-70.16",
+            "close": "57,150",
+            "contribution": "-110.05",
             "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
           },
           {
@@ -1519,8 +1100,8 @@
             "code": "6981",
             "name": "村田製（6981）",
             "shortName": "村田製",
-            "close": "7,526",
-            "contribution": "-60.98",
+            "close": "7,496",
+            "contribution": "-63.88",
             "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
           }
         ],
@@ -1528,104 +1109,218 @@
           "title": "日本市場（日経225寄与度 上位・下位）",
           "flag": "JP",
           "status": "verified",
-          "asOf": "2026-08-17",
-          "source": "株探 日経平均の寄与度ランキング",
+          "freshness": "stale",
+          "dataDate": "2026-08-18",
+          "asOf": "2026-08-18",
+          "updatedAt": "2026-08-18T13:09:16+09:00",
+          "source": {
+            "name": "株探 日経平均の寄与度ランキング",
+            "topUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=desc&market=all&order=contrib_price",
+            "bottomUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=asc&market=all&order=contrib_price"
+          },
+          "error": null,
+          "generatedAt": "2026-08-18T13:09:16+09:00",
+          "sourceAt": {
+            "top": "2026-08-18T12:54:00+09:00",
+            "bottom": "2026-08-18T12:54:00+09:00"
+          },
           "top": [
             {
               "rank": 1,
-              "code": "6857",
-              "name": "アドテスト（6857）",
-              "shortName": "アドテスト",
-              "close": "37,780",
-              "contribution": "+219.64",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
-            },
-            {
-              "rank": 2,
-              "code": "285A",
-              "name": "キオクシア（285A）",
-              "shortName": "キオクシア",
-              "close": "61,840",
-              "contribution": "+190.07",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
-            },
-            {
-              "rank": 3,
               "code": "9984",
               "name": "ＳＢＧ（9984）",
               "shortName": "ＳＢＧ",
-              "close": "5,886",
-              "contribution": "+118.27",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              "close": "6,004",
+              "contribution": "+86.08",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
+            },
+            {
+              "rank": 2,
+              "code": "4502",
+              "name": "武田（4502）",
+              "shortName": "武田",
+              "close": "5,715",
+              "contribution": "+6.77",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
+            },
+            {
+              "rank": 3,
+              "code": "8058",
+              "name": "三菱商（8058）",
+              "shortName": "三菱商",
+              "close": "4,767",
+              "contribution": "+6.34",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
             },
             {
               "rank": 4,
-              "code": "8035",
-              "name": "東エレク（8035）",
-              "shortName": "東エレク",
-              "close": "60,090",
-              "contribution": "+96.54",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              "code": "8031",
+              "name": "三井物（8031）",
+              "shortName": "三井物",
+              "close": "4,881",
+              "contribution": "+5.83",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
             },
             {
               "rank": 5,
-              "code": "5803",
-              "name": "フジクラ（5803）",
-              "shortName": "フジクラ",
-              "close": "6,078",
-              "contribution": "+83.07",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              "code": "7267",
+              "name": "ホンダ（7267）",
+              "shortName": "ホンダ",
+              "close": "1,715.5",
+              "contribution": "+5.63",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
             }
           ],
           "bottom": [
             {
               "rank": 1,
-              "code": "9983",
-              "name": "ファストリ（9983）",
-              "shortName": "ファストリ",
-              "close": "76,820",
-              "contribution": "-24.14",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              "code": "6857",
+              "name": "アドテスト（6857）",
+              "shortName": "アドテスト",
+              "close": "36,320",
+              "contribution": "-352.38",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
             },
             {
               "rank": 2,
-              "code": "6758",
-              "name": "ソニーＧ（6758）",
-              "shortName": "ソニーＧ",
-              "close": "3,780",
-              "contribution": "-22.12",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              "code": "8035",
+              "name": "東エレク（8035）",
+              "shortName": "東エレク",
+              "close": "57,010",
+              "contribution": "-306.73",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
             },
             {
               "rank": 3,
-              "code": "9433",
-              "name": "ＫＤＤＩ（9433）",
-              "shortName": "ＫＤＤＩ",
-              "close": "2,833.5",
-              "contribution": "-17.70",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              "code": "9983",
+              "name": "ファストリ（9983）",
+              "shortName": "ファストリ",
+              "close": "75,520",
+              "contribution": "-97.35",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
             },
             {
               "rank": 4,
-              "code": "6988",
-              "name": "日東電（6988）",
-              "shortName": "日東電",
-              "close": "3,476.0",
-              "contribution": "-16.93",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              "code": "285A",
+              "name": "キオクシア（285A）",
+              "shortName": "キオクシア",
+              "close": "58,720",
+              "contribution": "-70.16",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
             },
             {
               "rank": 5,
-              "code": "4704",
-              "name": "トレンド（4704）",
-              "shortName": "トレンド",
-              "close": "5,352",
-              "contribution": "-16.73",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              "code": "6981",
+              "name": "村田製（6981）",
+              "shortName": "村田製",
+              "close": "7,526",
+              "contribution": "-60.98",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-18"
             }
           ],
-          "dataDate": "2026-08-17",
-          "freshness": "stale"
+          "lastGood": {
+            "title": "日本市場（日経225寄与度 上位・下位）",
+            "flag": "JP",
+            "status": "verified",
+            "asOf": "2026-08-17",
+            "source": "株探 日経平均の寄与度ランキング",
+            "top": [
+              {
+                "rank": 1,
+                "code": "6857",
+                "name": "アドテスト（6857）",
+                "shortName": "アドテスト",
+                "close": "37,780",
+                "contribution": "+219.64",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              },
+              {
+                "rank": 2,
+                "code": "285A",
+                "name": "キオクシア（285A）",
+                "shortName": "キオクシア",
+                "close": "61,840",
+                "contribution": "+190.07",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              },
+              {
+                "rank": 3,
+                "code": "9984",
+                "name": "ＳＢＧ（9984）",
+                "shortName": "ＳＢＧ",
+                "close": "5,886",
+                "contribution": "+118.27",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              },
+              {
+                "rank": 4,
+                "code": "8035",
+                "name": "東エレク（8035）",
+                "shortName": "東エレク",
+                "close": "60,090",
+                "contribution": "+96.54",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              },
+              {
+                "rank": 5,
+                "code": "5803",
+                "name": "フジクラ（5803）",
+                "shortName": "フジクラ",
+                "close": "6,078",
+                "contribution": "+83.07",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              }
+            ],
+            "bottom": [
+              {
+                "rank": 1,
+                "code": "9983",
+                "name": "ファストリ（9983）",
+                "shortName": "ファストリ",
+                "close": "76,820",
+                "contribution": "-24.14",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              },
+              {
+                "rank": 2,
+                "code": "6758",
+                "name": "ソニーＧ（6758）",
+                "shortName": "ソニーＧ",
+                "close": "3,780",
+                "contribution": "-22.12",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              },
+              {
+                "rank": 3,
+                "code": "9433",
+                "name": "ＫＤＤＩ（9433）",
+                "shortName": "ＫＤＤＩ",
+                "close": "2,833.5",
+                "contribution": "-17.70",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              },
+              {
+                "rank": 4,
+                "code": "6988",
+                "name": "日東電（6988）",
+                "shortName": "日東電",
+                "close": "3,476.0",
+                "contribution": "-16.93",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              },
+              {
+                "rank": 5,
+                "code": "4704",
+                "name": "トレンド（4704）",
+                "shortName": "トレンド",
+                "close": "5,352",
+                "contribution": "-16.73",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-08-17"
+              }
+            ],
+            "dataDate": "2026-08-17",
+            "freshness": "stale"
+          }
         }
       }
     }
@@ -1979,7 +1674,7 @@
     "freshness": "unavailable",
     "dataDate": null,
     "asOf": null,
-    "updatedAt": "2026-08-18T23:00:47+09:00",
+    "updatedAt": "2026-08-19T10:16:35+09:00",
     "source": {
       "tradersWeb": {
         "name": "トレーダーズ・ウェブ Market Flash",
@@ -1990,7 +1685,7 @@
         "url": "https://s.kabutan.jp/news/"
       }
     },
-    "error": "当日の寄り前データを取得できませんでした: 当日の記事が見つかりません: index=https://www.traders.co.jp/market_jp/wadai, expected=2026-08-18",
+    "error": "当日の寄り前データを取得できませんでした: 当日の記事が見つかりません: index=https://www.traders.co.jp/market_jp/wadai, expected=2026-08-19",
     "summary": {},
     "tradersWebHighlights": [],
     "gainers": [],
@@ -3134,7 +2829,7 @@
     }
   },
   "snapshotDate": "2026-08-19",
-  "savedAt": "2026-08-19T07:00:40+09:00",
+  "savedAt": "2026-08-19T16:51:12+09:00",
   "snapshotPolicy": {
     "type": "independent-market-session-dates",
     "description": "米国市場と東京市場は、それぞれの取引終了後に独立更新。未更新側は直前の確定データを保持する。"
