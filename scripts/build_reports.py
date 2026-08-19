@@ -4,6 +4,8 @@ import json
 import re
 from pathlib import Path
 
+from reconcile_latest_report_market_data import load_json, update_latest_report
+
 REPORTS_DIR = Path("reports")
 OUTPUT_FILE = Path("reports.json")
 LATEST_FILE = Path("data/latest-report.json")
@@ -214,6 +216,12 @@ def verify_latest_is_published() -> None:
 
 
 def main() -> None:
+    snapshot = load_json(Path("data/market/latest.json"), {})
+    if isinstance(snapshot, dict):
+        reconciled = update_latest_report(snapshot)
+        if reconciled:
+            print("Reconciled verified market data before index build: " + ", ".join(reconciled))
+
     previous_index = load_existing_index()
     previous_keys = {slot_key(report) for report in previous_index}
 
