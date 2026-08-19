@@ -121,6 +121,14 @@ class ReconcileMarketDataTests(unittest.TestCase):
         self.assertEqual(reconcile_report_market_data(report, snapshot), [])
         self.assertEqual(report["marketDataTable"]["rows"][0]["value"], "取得不能")
 
+    def test_skips_stale_snapshot_date(self):
+        report = sample_report()
+        snapshot = copy.deepcopy(sample_snapshot())
+        snapshot["generatedAt"] = "2026-08-20T12:15:54+09:00"
+
+        self.assertEqual(reconcile_report_market_data(report, snapshot), [])
+        self.assertEqual(report["marketDataTable"]["rows"][0]["value"], "取得不能")
+
 
 if __name__ == "__main__":
     unittest.main()
