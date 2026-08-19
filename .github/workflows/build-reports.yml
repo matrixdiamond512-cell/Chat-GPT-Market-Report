@@ -1,15 +1,17 @@
 name: Build report index
 
-# Rebuild marker: 2026-08-19 latest-to-history guard
+# Rebuild marker: 2026-08-19 drive-receipt publication guard
 on:
   push:
     branches:
       - main
     paths:
       - "data/latest-report.json"
+      - "publication-receipts/*.json"
       - "reports/*.json"
       - "reports.json"
       - "scripts/build_reports.py"
+      - "scripts/validate_drive_publication_receipt.py"
       - ".github/workflows/build-reports.yml"
   workflow_dispatch:
 
@@ -34,6 +36,14 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Require verified Google Drive save receipt
+        run: |
+          python scripts/validate_drive_publication_receipt.py \
+            --latest data/latest-report.json \
+            --receipts publication-receipts \
+            --enforce-from "2026-08-19T21:00:00+09:00" \
+            --require-publisher chatgpt
 
       - name: Sync latest report, preserve history and build reports.json
         run: python scripts/build_reports.py
