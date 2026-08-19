@@ -220,7 +220,7 @@
     observer.observe(body, {childList:true, subtree:true});
 
     var style = document.createElement("style");
-    style.textContent = ".completed-table th:nth-child(10),.completed-table td:nth-child(10){min-width:330px}.completed-table th:nth-child(11),.completed-table td:nth-child(11){min-width:90px;width:90px}.completed-table th:nth-child(11)::after{content:none!important}.completed-table .completed-event-row>td:nth-child(10):before{content:\"今後の相場影響シナリオ\";display:block;margin-bottom:4px;color:#0b55c8;font-weight:1000;font-size:12px}.forward-impact-cell{line-height:1.55;color:#173968;font-weight:750}.completed-detail-box strong{color:#0b3f91}";
+    style.textContent = ".completed-table th:nth-child(10),.completed-table td:nth-child(10){min-width:330px}.completed-table th:nth-child(11),.completed-table td:nth-child(11){min-width:90px;width:90px}.completed-table th:nth-child(11)::after{content:none!important}.completed-table .completed-event-row>td:nth-child(10):before{content:none!important;display:none!important}@media(max-width:700px){.completed-table .completed-event-row>td:nth-child(10):before{content:\"今後の相場影響シナリオ\"!important;display:block!important;margin-bottom:5px;color:#173968;font-size:12px;font-weight:1000}}.forward-impact-cell{line-height:1.55;color:#173968;font-weight:750}.completed-detail-box strong{color:#0b3f91}";
     document.head.appendChild(style);
   }
 
