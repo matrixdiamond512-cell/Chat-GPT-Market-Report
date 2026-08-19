@@ -61,9 +61,16 @@
     return rows;
   }
 
-  function numericReportPrice(value) {
+  function numericReportPrice(value, definition) {
     var source = String(value || "");
     if (!source || /取得不能|確認中|未取得|データなし|—/.test(source)) return null;
+    var unitPattern = definition && (definition.key === "usdjpy" || definition.key === "nikkei")
+      ? /([-+]?\d[\d,]*(?:\.\d+)?)\s*円/
+      : definition && ["gold", "wti", "btc"].indexOf(definition.key) >= 0
+        ? /([-+]?\d[\d,]*(?:\.\d+)?)\s*ドル/
+        : null;
+    var unitMatch = unitPattern ? source.replace(/,/g, "").match(unitPattern) : null;
+    if (unitMatch) return Number(unitMatch[1]);
     var match = source.replace(/,/g, "").match(/[-+]?\d+(?:\.\d+)?/);
     return match ? Number(match[0]) : null;
   }
@@ -75,7 +82,7 @@
       for (var j = 0; j < rows.length; j += 1) {
         var name = String(rows[j].name || "").toLowerCase();
         if (name === alias || name.indexOf(alias) >= 0) {
-          var value = numericReportPrice(rows[j].value);
+          var value = numericReportPrice(rows[j].value, definition);
           if (value !== null) return {value:value, raw:String(rows[j].value || "")};
         }
       }
