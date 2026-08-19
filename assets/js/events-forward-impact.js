@@ -2,6 +2,8 @@
   "use strict";
   if (!/events\.html$/.test(location.pathname)) return;
 
+  var reportHistory = [];
+
   function deltaValue(value) {
     var m = String(value || "").replace(/,/g, "").match(/^([+-]?\d+(?:\.\d+)?)/);
     return m ? Number(m[1]) : null;
@@ -25,93 +27,139 @@
     return {rate:"対象国の国債利回り", fx:"対象国通貨", stock:"対象国株式"};
   }
 
-  function forwardImpact(record) {
+  function reportTime(report) {
+    if (!report || !/^\d{4}-\d{2}-\d{2}$/.test(String(report.date || "")) || !/^\d{2}:\d{2}$/.test(String(report.time || ""))) return NaN;
+    return new Date(String(report.date) + "T" + String(report.time) + ":00+09:00").getTime();
+  }
+
+  function eventTime(record) {
+    var parsed = Date.parse(String(record && record.release_datetime_jst || ""));
+    return Number.isFinite(parsed) ? parsed : NaN;
+  }
+
+  function isUsEvent(record) {
+    return String(record && record.country || "") === "米国" || String(record && record.currency || "").toUpperCase() === "USD";
+  }
+
+  var reportMarketDefinitions = [
+    {key:"usdjpy", label:"USD/JPY", aliases:["USD/JPY", "ドル円"]},
+    {key:"nikkei", label:"日経225先物", aliases:["日経225先物（大阪取引所）", "日経225先物", "日経225"]},
+    {key:"gold", label:"金", aliases:["COMEX金先物", "金"]},
+    {key:"wti", label:"WTI原油", aliases:["WTI原油", "原油"]},
+    {key:"eurusd", label:"EUR/USD", aliases:["EUR/USD", "ユーロドル"]},
+    {key:"btc", label:"BTCUSD", aliases:["BTCUSD", "BTC"]}
+  ];
+
+  function reportRows(report) {
+    var rows = [];
+    if (report && Array.isArray(report.markets)) rows = rows.concat(report.markets.map(function (market) {
+      return {name: market && market.name, value: market && market.price};
+    }));
+    if (report && report.marketDataTable && Array.isArray(report.marketDataTable.rows)) rows = rows.concat(report.marketDataTable.rows.map(function (row) {
+      return {name: row && row.label, value: row && row.value};
+    }));
+    return rows;
+  }
+
+  function numericReportPrice(value) {
+    var source = String(value || "");
+    if (!source || /取得不能|確認中|未取得|データなし|—/.test(source)) return null;
+    var match = source.replace(/,/g, "").match(/[-+]?\d+(?:\.\d+)?/);
+    return match ? Number(match[0]) : null;
+  }
+
+  function reportPrice(report, definition) {
+    var rows = reportRows(report);
+    for (var i = 0; i < definition.aliases.length; i += 1) {
+      var alias = definition.aliases[i].toLowerCase();
+      for (var j = 0; j < rows.length; j += 1) {
+        var name = String(rows[j].name || "").toLowerCase();
+        if (name === alias || name.indexOf(alias) >= 0) {
+          var value = numericReportPrice(rows[j].value);
+          if (value !== null) return {value:value, raw:String(rows[j].value || "")};
+        }
+      }
+    }
+    return null;
+  }
+
+  function reportPairFor(record) {
+    if (!isUsEvent(record)) return null;
+    var release = eventTime(record);
+    if (!Number.isFinite(release)) return {isUs:true, status:"missing", message:"発表時刻を解釈できないため、レポート間比較を行いません。"};
+    var before = reportHistory.filter(function (report) {
+      return report.time === "21:00" && reportTime(report) < release;
+    }).sort(function (a, b) { return reportTime(b) - reportTime(a); })[0] || null;
+    var after = reportHistory.filter(function (report) {
+      return report.time === "08:00" && reportTime(report) > release;
+    }).sort(function (a, b) { return reportTime(a) - reportTime(b); })[0] || null;
+    if (!before || !after) {
+      return {isUs:true, status:"missing", before:before, after:after, message:"21:00→次回08:00の比較対象がそろっていないため、実測方向は判定しません。"};
+    }
+
+    var changes = reportMarketDefinitions.map(function (definition) {
+      var beforePrice = reportPrice(before, definition);
+      var afterPrice = reportPrice(after, definition);
+      if (!beforePrice || !afterPrice || !Number.isFinite(beforePrice.value) || !Number.isFinite(afterPrice.value) || beforePrice.value === 0) return null;
+      var change = afterPrice.value - beforePrice.value;
+      var percent = change / beforePrice.value * 100;
+      var trend = Math.abs(percent) < 0.05 ? "横ばい" : percent > 0 ? "上昇" : "下落";
+      return {definition:definition, before:beforePrice, after:afterPrice, change:change, percent:percent, trend:trend};
+    }).filter(Boolean);
+    return {isUs:true, status:"ready", before:before, after:after, changes:changes};
+  }
+
+  function reportPriceText(value, definition) {
+    var digits = definition.key === "eurusd" ? 5 : definition.key === "usdjpy" ? 3 : definition.key === "nikkei" || definition.key === "btc" ? 0 : 2;
+    return Number(value).toLocaleString("ja-JP", {minimumFractionDigits:digits, maximumFractionDigits:digits});
+  }
+
+  function reportComparisonText(pair) {
+    if (!pair || !pair.isUs) return "";
+    if (pair.status !== "ready") return pair.message;
+    var counts = {"上昇":0, "下落":0, "横ばい":0};
+    var details = pair.changes.slice(0, 5).map(function (item) {
+      counts[item.trend] += 1;
+      var sign = item.percent > 0 ? "+" : "";
+      return item.definition.label + " " + reportPriceText(item.before.value, item.definition) + "→" + reportPriceText(item.after.value, item.definition) + "（" + sign + item.percent.toFixed(2) + "%）";
+    });
+    if (!details.length) return "21:00→08:00の価格項目が取得できないため、実測方向は判定しません。";
+    var direction = counts["上昇"] > counts["下落"] ? "上昇優勢" : counts["下落"] > counts["上昇"] ? "下落優勢" : "方向まちまち";
+    return "21:00→08:00レポート比較：" + details.join("、") + "。市場横断では" + direction + "（上昇" + counts["上昇"] + "・下落" + counts["下落"] + "・横ばい" + counts["横ばい"] + "）。";
+  }
+
+  function forwardImpact(record, pair) {
     var title = String(record.event_name || "").toLowerCase();
     var delta = deltaValue(record.surprise);
     var judgement = correctedJudgement(record);
     var c = marketContext(record.country);
+    var base;
 
     if (["fomc", "frb", "fed ", "日銀", "日銀関連", "boj", "ecb", "ecb関連", "発言"].some(function (word) { return title.indexOf(word) >= 0; })) {
-      return {
-        summary:"発言が政策金利見通しを変えたかが翌日への影響を決める。タカ派なら金利・通貨高、ハト派なら金利・通貨安が基本線。",
-        continueIf:c.rate + "と" + c.fx + "が翌営業日も発言方向へ追随し、政策金利の織り込みが変化する。",
-        changeIf:"従来見解の繰り返しにとどまり、金利市場の政策織り込みが変わらない。"
-      };
-    }
-
-    if (["国債入札", "bond auction", "note auction", "treasury auction", "-y 国債"].some(function (word) { return title.indexOf(word) >= 0; })) {
-      return {
-        summary:"国債入札は単純な予想差より、テール・応札倍率・間接入札比率など需給の質が重要。弱い入札なら金利上昇が翌日にも残りやすい。",
-        continueIf:"入札後も" + c.rate + "が高止まりし、" + c.fx + "や" + c.stock + "へ波及する。",
-        changeIf:"入札後の金利変化が巻き戻される、または後続の重要材料で金利方向が反転する。"
-      };
-    }
-
-    if (["原油在庫", "crude oil inventories", "eia crude"].some(function (word) { return title.indexOf(word) >= 0; }) && delta !== null) {
-      return delta > 0 ? {
-        summary:"予想以上の在庫増は原油の需給緩和材料。WTIの上値を抑え、持続すればインフレ期待をやや低下させる方向。",
-        continueIf:"WTIが翌営業日も弱く、製品在庫や稼働率も需給緩和を示す。",
-        changeIf:"OPEC方針、地政学、ドル、需要見通しなど、より強い材料が逆方向に出る。"
-      } : {
-        summary:"予想以上の在庫減は原油の需給引き締まり材料。WTIを支え、持続すればインフレ期待を押し上げる方向。",
-        continueIf:"WTIが翌営業日も強く、製品在庫や稼働率も需給引き締まりを示す。",
-        changeIf:"OPEC方針、地政学、ドル、需要見通しなど、より強い材料が逆方向に出る。"
-      };
-    }
-
-    if (["cpi", "pce", "ppi", "物価", "インフレ"].some(function (word) { return title.indexOf(word) >= 0; }) && delta !== null) {
+      base = {summary:"発言が政策金利見通しを変えたかが翌日への影響を決める。タカ派なら金利・通貨高、ハト派なら金利・通貨安が基本線。", continueIf:c.rate + "と" + c.fx + "が翌営業日も発言方向へ追随し、政策金利の織り込みが変化する。", changeIf:"従来見解の繰り返しにとどまり、金利市場の政策織り込みが変わらない。"};
+    } else if (["国債入札", "bond auction", "note auction", "treasury auction", "-y 国債"].some(function (word) { return title.indexOf(word) >= 0; })) {
+      base = {summary:"国債入札は単純な予想差より、テール・応札倍率・間接入札比率など需給の質が重要。弱い入札なら金利上昇が翌日にも残りやすい。", continueIf:"入札後も" + c.rate + "が高止まりし、" + c.fx + "や" + c.stock + "へ波及する。", changeIf:"入札後の金利変化が巻き戻される、または後続の重要材料で金利方向が反転する。"};
+    } else if (["原油在庫", "crude oil inventories", "eia crude"].some(function (word) { return title.indexOf(word) >= 0; }) && delta !== null) {
+      base = delta > 0 ? {summary:"予想以上の在庫増は原油の需給緩和材料。WTIの上値を抑え、持続すればインフレ期待をやや低下させる方向。", continueIf:"WTIが翌営業日も弱く、製品在庫や稼働率も需給緩和を示す。", changeIf:"OPEC方針、地政学、ドル、需要見通しなど、より強い材料が逆方向に出る。"} : {summary:"予想以上の在庫減は原油の需給引き締まり材料。WTIを支え、持続すればインフレ期待を押し上げる方向。", continueIf:"WTIが翌営業日も強く、製品在庫や稼働率も需給引き締まりを示す。", changeIf:"OPEC方針、地政学、ドル、需要見通しなど、より強い材料が逆方向に出る。"};
+    } else if (["cpi", "pce", "ppi", "物価", "インフレ"].some(function (word) { return title.indexOf(word) >= 0; }) && delta !== null) {
       if (record.country === "日本") {
-        return delta > 0 ? {
-          summary:"インフレ上振れは日銀の正常化観測を支えやすく、日本金利上昇・円高方向。円高が強まれば日経225先物には重し。",
-          continueIf:"日本国債利回りと円が翌営業日も同方向に動き、政策金利の織り込みが変化する。",
-          changeIf:"金利が逆行する、後続指標が反対方向、または中銀発言で政策見通しが反転する。"
-        } : {
-          summary:"インフレ下振れは日銀の正常化観測を弱めやすく、日本金利低下・円安方向。円安が続けば日経225先物には支え。",
-          continueIf:"日本国債利回りと円が翌営業日も同方向に動き、政策金利の織り込みが変化する。",
-          changeIf:"金利が逆行する、後続指標が反対方向、または中銀発言で政策見通しが反転する。"
-        };
+        base = delta > 0 ? {summary:"インフレ上振れは日銀の正常化観測を支えやすく、日本金利上昇・円高方向。円高が強まれば日経225先物には重し。", continueIf:"日本国債利回りと円が翌営業日も同方向に動き、政策金利の織り込みが変化する。", changeIf:"金利が逆行する、後続指標が反対方向、または中銀発言で政策見通しが反転する。"} : {summary:"インフレ下振れは日銀の正常化観測を弱めやすく、日本金利低下・円安方向。円安が続けば日経225先物には支え。", continueIf:"日本国債利回りと円が翌営業日も同方向に動き、政策金利の織り込みが変化する。", changeIf:"金利が逆行する、後続指標が反対方向、または中銀発言で政策見通しが反転する。"};
+      } else {
+        base = delta > 0 ? {summary:"インフレ上振れは利下げ期待を後退させやすく、" + c.rate + "上昇・" + c.fx + "高が基本線。株と金には逆風になりやすい。", continueIf:"翌営業日も" + c.rate + "が上昇し、政策金利の織り込みが同方向へ変化する。", changeIf:"金利が逆行する、後続の雇用・景気指標が反対方向、または中銀発言で政策織り込みが反転する。"} : {summary:"インフレ下振れは利下げ期待を支えやすく、" + c.rate + "低下・" + c.fx + "安が基本線。株と金には支援材料になりやすい。", continueIf:"翌営業日も" + c.rate + "が低下し、政策金利の織り込みが同方向へ変化する。", changeIf:"金利が逆行する、後続の雇用・景気指標が反対方向、または中銀発言で政策織り込みが反転する。"};
       }
-      return delta > 0 ? {
-        summary:"インフレ上振れは利下げ期待を後退させやすく、" + c.rate + "上昇・" + c.fx + "高が基本線。株と金には逆風になりやすい。",
-        continueIf:"翌営業日も" + c.rate + "が上昇し、政策金利の織り込みが同方向へ変化する。",
-        changeIf:"金利が逆行する、後続の雇用・景気指標が反対方向、または中銀発言で政策織り込みが反転する。"
-      } : {
-        summary:"インフレ下振れは利下げ期待を支えやすく、" + c.rate + "低下・" + c.fx + "安が基本線。株と金には支援材料になりやすい。",
-        continueIf:"翌営業日も" + c.rate + "が低下し、政策金利の織り込みが同方向へ変化する。",
-        changeIf:"金利が逆行する、後続の雇用・景気指標が反対方向、または中銀発言で政策織り込みが反転する。"
-      };
-    }
-
-    if (["雇用", "失業", "賃金", "payroll", "jobless", "unemployment", "claims"].some(function (word) { return title.indexOf(word) >= 0; })) {
+    } else if (["雇用", "失業", "賃金", "payroll", "jobless", "unemployment", "claims"].some(function (word) { return title.indexOf(word) >= 0; })) {
       var weak = judgement.indexOf("雇用弱") >= 0;
-      return weak ? {
-        summary:"雇用弱含みは利下げ期待を支え、" + c.rate + "低下・" + c.fx + "安に傾きやすい。株は金利低下が支えになる一方、景気懸念が強いと上値が重くなる。",
-        continueIf:"翌営業日も" + c.rate + "と" + c.fx + "が同方向を維持し、他の雇用指標も弱さを示す。",
-        changeIf:"賃金・雇用者数・失業率など他の雇用指標が逆方向、または金利市場が政策見通しを変えない。"
-      } : {
-        summary:"雇用の強さは利下げ期待を後退させ、" + c.rate + "上昇・" + c.fx + "高に傾きやすい。株は景気の強さと金利上昇の綱引き。",
-        continueIf:"翌営業日も" + c.rate + "と" + c.fx + "が同方向を維持し、他の雇用指標も強さを示す。",
-        changeIf:"他の雇用指標が逆方向、または金利市場が政策見通しを変えない。"
-      };
+      base = weak ? {summary:"雇用弱含みは利下げ期待を支え、" + c.rate + "低下・" + c.fx + "安に傾きやすい。株は金利低下が支えになる一方、景気懸念が強いと上値が重くなる。", continueIf:"翌営業日も" + c.rate + "と" + c.fx + "が同方向を維持し、他の雇用指標も弱さを示す。", changeIf:"賃金・雇用者数・失業率など他の雇用指標が逆方向、または金利市場が政策見通しを変えない。"} : {summary:"雇用の強さは利下げ期待を後退させ、" + c.rate + "上昇・" + c.fx + "高に傾きやすい。株は景気の強さと金利上昇の綱引き。", continueIf:"翌営業日も" + c.rate + "と" + c.fx + "が同方向を維持し、他の雇用指標も強さを示す。", changeIf:"他の雇用指標が逆方向、または金利市場が政策見通しを変えない。"};
+    } else if (["gdp", "国内総生産"].some(function (word) { return title.indexOf(word) >= 0; }) && delta !== null) {
+      base = delta > 0 ? {summary:"景気上振れは" + c.fx + "と景気敏感株を支えやすい一方、" + c.rate + "が大きく上昇するとグロース株には逆風。", continueIf:"翌営業日に" + c.stock + "と" + c.fx + "が景気判断を追認し、金利方向と矛盾しない。", changeIf:"同時発表のインフレ・雇用指標が逆方向、または金利上昇が株の景気評価を打ち消す。"} : {summary:"景気下振れは" + c.fx + "と景気敏感株の重し。金利低下は一部株式を支えるが、景気懸念が強い場合はリスク回避が優勢になりやすい。", continueIf:"翌営業日に" + c.stock + "と" + c.fx + "が景気判断を追認する。", changeIf:"同時発表のインフレ・雇用指標が逆方向、または後続材料で景気判断が反転する。"};
+    } else {
+      base = {summary:"予想差だけでは翌日の方向を固定しない。金利・為替・株式の複数市場が同じ解釈を示すかを確認する。", continueIf:c.rate + "、" + c.fx + "、" + c.stock + "のうち複数が翌営業日も同方向に推移する。", changeIf:"市場間で方向がそろわない、または後続のより重要な材料が解釈を上書きする。"};
     }
 
-    if (["gdp", "国内総生産"].some(function (word) { return title.indexOf(word) >= 0; }) && delta !== null) {
-      return delta > 0 ? {
-        summary:"景気上振れは" + c.fx + "と景気敏感株を支えやすい一方、" + c.rate + "が大きく上昇するとグロース株には逆風。",
-        continueIf:"翌営業日に" + c.stock + "と" + c.fx + "が景気判断を追認し、金利方向と矛盾しない。",
-        changeIf:"同時発表のインフレ・雇用指標が逆方向、または金利上昇が株の景気評価を打ち消す。"
-      } : {
-        summary:"景気下振れは" + c.fx + "と景気敏感株の重し。金利低下は一部株式を支えるが、景気懸念が強い場合はリスク回避が優勢になりやすい。",
-        continueIf:"翌営業日に" + c.stock + "と" + c.fx + "が景気判断を追認する。",
-        changeIf:"同時発表のインフレ・雇用指標が逆方向、または後続材料で景気判断が反転する。"
-      };
-    }
-
-    return {
-      summary:"予想差だけでは翌日の方向を固定しない。金利・為替・株式の複数市場が同じ解釈を示すかを確認する。",
-      continueIf:c.rate + "、" + c.fx + "、" + c.stock + "のうち複数が翌営業日も同方向に推移する。",
-      changeIf:"市場間で方向がそろわない、または後続のより重要な材料が解釈を上書きする。"
-    };
+    var comparison = reportComparisonText(pair);
+    if (comparison) base.summary += " " + comparison;
+    base.comparison = comparison;
+    return base;
   }
 
   function addLine(parent, label, value) {
@@ -139,7 +187,7 @@
         if (badge) heading.insertBefore(badge, heading.firstChild);
       }
       var note = section.querySelector(".footer-note");
-      if (note) note.textContent = "発表後5分・30分の値動きではなく、結果の予想差と政策含意をもとに、翌日以降の相場への影響シナリオを表示します。実際の持続性は後続の金利・為替・株・商品で確認します。";
+      if (note) note.textContent = "発表後5分・30分の値動きは使わず、結果の予想差と政策含意をもとに翌日以降のシナリオを表示します。米国イベントは発表前の21:00レポートと、発表後に最初に取得できる08:00レポートの価格差も確認します。";
     }
 
     var head = table.querySelector("thead tr");
@@ -159,7 +207,8 @@
       }
       var record = completedRecords.find(function (item) { return String(item.event_id) === String(button.dataset.completedId); });
       if (!record) return;
-      var impact = forwardImpact(record);
+      var pair = reportPairFor(record);
+      var impact = forwardImpact(record, pair);
       if (row.cells.length === 12) {
         row.deleteCell(10);
         row.deleteCell(9);
@@ -199,6 +248,7 @@
       if (secondP) {
         secondP.replaceChildren();
         addLine(secondP, "基本シナリオ：", impact.summary);
+        if (impact.comparison) addLine(secondP, "レポート間比較：", impact.comparison);
         addLine(secondP, "影響が続く条件：", impact.continueIf);
         addLine(secondP, "見方を変える条件：", impact.changeIf);
         addLine(secondP, "関連市場：", Array.isArray(record.related_markets) ? record.related_markets.join("・") : "確認対象なし");
@@ -206,6 +256,22 @@
     });
 
     table.style.minWidth = "1480px";
+  }
+
+  function loadReportHistory() {
+    fetch("reports.json?ts=" + Date.now(), {cache:"no-store"})
+      .then(function (response) {
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        return response.json();
+      })
+      .then(function (payload) {
+        reportHistory = Array.isArray(payload) ? payload : Array.isArray(payload.reports) ? payload.reports : [];
+        processTable();
+      })
+      .catch(function () {
+        reportHistory = [];
+        processTable();
+      });
   }
 
   function install() {
@@ -224,7 +290,11 @@
     document.head.appendChild(style);
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", install);
-  else install();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () { install(); loadReportHistory(); });
+  } else {
+    install();
+    loadReportHistory();
+  }
 })();
 
