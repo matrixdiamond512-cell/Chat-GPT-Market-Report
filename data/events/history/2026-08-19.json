@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-08-20T00:04:43+09:00",
-  "publishedAt": "2026-08-20T00:04:43+09:00",
-  "dataAsOf": "2026-08-20T00:04:43+09:00",
+  "generatedAt": "2026-08-20T00:43:57+09:00",
+  "publishedAt": "2026-08-20T00:43:57+09:00",
+  "dataAsOf": "2026-08-20T00:43:57+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -20,7 +20,7 @@
       "name": "TradingView Economic Calendar",
       "url": "https://www.tradingview.com/economic-calendar/",
       "status": "ok",
-      "note": "実績値を8件照合。生データは公開保存しません。"
+      "note": "実績値を9件照合。生データは公開保存しません。"
     },
     {
       "id": "official_source_map",
@@ -292,7 +292,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-16T14:03:41+09:00",
-      "updatedAt": "2026-08-20T00:04:43+09:00"
+      "updatedAt": "2026-08-20T00:43:57+09:00"
     },
     {
       "id": "event-e8859874c65aa3",
@@ -539,8 +539,8 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-16T14:03:41+09:00",
-      "updatedAt": "2026-08-20T00:04:43+09:00",
-      "resultSavedAt": "2026-08-20T00:04:43+09:00",
+      "updatedAt": "2026-08-20T00:43:57+09:00",
+      "resultSavedAt": "2026-08-20T00:43:57+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Bureau of Statistics",
@@ -792,8 +792,8 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-16T14:03:41+09:00",
-      "updatedAt": "2026-08-20T00:04:43+09:00",
-      "resultSavedAt": "2026-08-20T00:04:43+09:00",
+      "updatedAt": "2026-08-20T00:43:57+09:00",
+      "resultSavedAt": "2026-08-20T00:43:57+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Office for National Statistics",
@@ -1043,7 +1043,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-16T14:03:41+09:00",
-      "updatedAt": "2026-08-20T00:04:44+09:00",
+      "updatedAt": "2026-08-20T00:43:58+09:00",
       "resultSavedAt": "2026-08-19T16:23:09+09:00",
       "resultSource": {
         "id": "ecb",
@@ -1297,7 +1297,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-19T18:58:37+09:00",
-      "updatedAt": "2026-08-20T00:04:43+09:00",
+      "updatedAt": "2026-08-20T00:43:57+09:00",
       "resultSavedAt": "2026-08-19T19:37:26+09:00",
       "resultSource": {
         "id": "tradingview_repair",
@@ -1548,7 +1548,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-19T02:48:52+09:00",
-      "updatedAt": "2026-08-20T00:04:44+09:00",
+      "updatedAt": "2026-08-20T00:43:58+09:00",
       "resultSavedAt": "2026-08-19T19:37:26+09:00",
       "resultSource": {
         "id": "ecb",
@@ -1577,11 +1577,11 @@
       "importanceLabel": "中",
       "forecast": "0.2M",
       "previous": "17.4M",
-      "actual": "",
+      "actual": "-1.754M",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
-      "status": "result_pending",
+      "resultComparison": "市場予想を下回る",
+      "resultExplanation": "実績 -1.754M は予想 0.2M に対して市場予想を下回る。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1782,8 +1782,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "結果確認中",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を下回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1801,7 +1801,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-16T14:03:41+09:00",
-      "updatedAt": "2026-08-20T00:04:43+09:00"
+      "updatedAt": "2026-08-20T00:43:57+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "U.S. Energy Information Administration",
+        "url": "https://www.eia.gov"
+      },
+      "resultSavedAt": "2026-08-20T00:43:57+09:00"
     }
   ]
 }
