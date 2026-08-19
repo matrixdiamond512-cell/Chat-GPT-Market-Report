@@ -60,14 +60,14 @@
     ],
     "conclusion": "12:00時点の主役は株価ではなく原油と長期金利。08:00からWTIは上昇し、日本株はさらに弱含んだ。欧州時間もWTI86ドル・米10年4.75%・日本10年3.00%を最重要監視とする。",
     "riskManagement": [
-      "同日12:00時点で未確定だった金・日経225先物・EUR/USD・BTCUSDは、後続の検証済み取得値（12:00～12:15 JST）を反映。"
+      "同日12:00水準を確定できない銘柄は数値を補完せず取得不能とした。"
     ],
     "markets": [
       {
         "name": "金",
         "direction": "中立～やや強気",
-        "price": "4,408.40ドル/oz（12:05 JST再取得）",
-        "change": "+42.40 / +0.97%",
+        "price": "取得不能（同日12:00の確認値を確定できず）",
+        "change": "—",
         "outlook": "地政学買いは支えだが、米長期金利高は上値を抑える。"
       },
       {
@@ -80,8 +80,8 @@
       {
         "name": "日経225先物（大阪取引所）",
         "direction": "弱気寄り",
-        "price": "65,820円（12:00 JST確認）",
-        "change": "-1,720 / -2.55%",
+        "price": "取得不能（同日12:00のOSE先物値を確定できず）",
+        "change": "参考：日経225現物65,604.25まで下落",
         "outlook": "長期金利と原油が低下しない限り戻りは限定的。"
       },
       {
@@ -94,15 +94,15 @@
       {
         "name": "EUR/USD",
         "direction": "中立～やや弱気",
-        "price": "1.15870（12:14 JST再取得）",
-        "change": "+0.00042 / +0.04%",
+        "price": "取得不能（同日12:00の確認値を確定できず）",
+        "change": "—",
         "outlook": "原油高と欧州金利上昇、リスク回避はユーロに重い。"
       },
       {
         "name": "BTCUSD",
         "direction": "中立",
-        "price": "64,308ドル（12:15 JST再取得）",
-        "change": "-198 / -0.31%",
+        "price": "取得不能（同日12:00の確認値を確定できず）",
+        "change": "—",
         "outlook": "米長期金利上昇とNASDAQ安が逆風。"
       }
     ],
@@ -116,9 +116,9 @@
       "rows": [
         {
           "label": "金",
-          "value": "4,408.40ドル/oz（12:05 JST再取得）",
-          "change": "+42.40 / +0.97%",
-          "rate": "+0.97%",
+          "value": "取得不能",
+          "change": "同日12:00値を確定できず",
+          "rate": "—",
           "direction": "中立～やや強気"
         },
         {
@@ -130,9 +130,9 @@
         },
         {
           "label": "日経225先物（大阪取引所）",
-          "value": "65,820円（12:00 JST確認）",
-          "change": "-1,720 / -2.55%",
-          "rate": "-2.55%",
+          "value": "取得不能",
+          "change": "参考：現物65,604.25まで下落",
+          "rate": "—",
           "direction": "弱気寄り"
         },
         {
@@ -144,16 +144,16 @@
         },
         {
           "label": "EUR/USD",
-          "value": "1.15870（12:14 JST再取得）",
-          "change": "+0.00042 / +0.04%",
-          "rate": "+0.04%",
+          "value": "取得不能",
+          "change": "同日12:00値を確定できず",
+          "rate": "—",
           "direction": "中立～やや弱気"
         },
         {
           "label": "BTCUSD",
-          "value": "64,308ドル（12:15 JST再取得）",
-          "change": "-198 / -0.31%",
-          "rate": "-0.31%",
+          "value": "取得不能",
+          "change": "同日12:00値を確定できず",
+          "rate": "—",
           "direction": "中立"
         }
       ]
@@ -624,7 +624,7 @@
       },
       "btc24hComparisonRepair": {
         "rule": "BTCUSD 08:00 comparison uses report-time price versus nearest Yahoo BTC-USD hourly close exactly 24h earlier",
-        "reportPrice": 64582,
+        "reportPrice": 64582.0,
         "referencePrice": 64477.25,
         "reportTimeJST": "2026-08-19T08:00:00+09:00",
         "referenceTimeJST": "2026-08-18T08:00:00+09:00",
@@ -1597,7 +1597,7 @@
       },
       "btc24hComparisonRepair": {
         "rule": "BTCUSD 08:00 comparison uses report-time price versus nearest Yahoo BTC-USD hourly close exactly 24h earlier",
-        "reportPrice": 64235,
+        "reportPrice": 64235.0,
         "referencePrice": 62836.66015625,
         "reportTimeJST": "2026-08-18T08:00:00+09:00",
         "referenceTimeJST": "2026-08-17T08:00:00+09:00",
@@ -2345,7 +2345,7 @@
       },
       "btc24hComparisonRepair": {
         "rule": "BTCUSD 08:00 comparison uses report-time price versus nearest Yahoo BTC-USD hourly close exactly 24h earlier",
-        "reportPrice": 62877,
+        "reportPrice": 62877.0,
         "referencePrice": 63018.76171875,
         "reportTimeJST": "2026-08-17T08:00:00+09:00",
         "referenceTimeJST": "2026-08-16T08:00:00+09:00",
