@@ -285,6 +285,17 @@ def main() -> None:
         raise SystemExit("data/latest-report.json does not contain a report object")
 
     report = json.loads(json.dumps(source_report, ensure_ascii=False))
+    snapshot = load_json(MARKET_SNAPSHOT, {})
+    reconciled = reconcile_report_market_data(report, snapshot) if isinstance(snapshot, dict) else []
+    if reconciled:
+        if isinstance(payload.get("latestReport"), dict):
+            payload["latestReport"] = report
+        elif isinstance(payload.get("report"), dict):
+            payload["report"] = report
+        else:
+            payload = report
+        dump_json(LATEST, payload)
+        print("Reconciled verified market data: " + ", ".join(reconciled))
     ensure_public_full_text(report)
     sanitize_public_full_text(report)
     validate_report(report)
