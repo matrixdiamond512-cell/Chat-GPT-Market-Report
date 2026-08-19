@@ -115,7 +115,8 @@ class ReconcileMarketDataTests(unittest.TestCase):
     def test_skips_unverified_values(self):
         report = sample_report()
         snapshot = copy.deepcopy(sample_snapshot())
-        snapshot["markets"]["gold"]["verificationStatus"] = "fallback"
+        for market in snapshot["markets"].values():
+            market["verificationStatus"] = "fallback"
 
         self.assertEqual(reconcile_report_market_data(report, snapshot), [])
         self.assertEqual(report["marketDataTable"]["rows"][0]["value"], "取得不能")
