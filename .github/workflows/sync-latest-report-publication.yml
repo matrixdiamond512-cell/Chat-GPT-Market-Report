@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "data/latest-report.json"
+      - "data/market/latest.json"
       - "data/market/japan-close-reference.json"
       - "data/rates-bonds.json"
       - "scripts/enrich_latest_morning_from_sheet.py"
@@ -16,6 +17,8 @@ on:
       - "scripts/build_chatgpt_report_input.py"
       - "scripts/build_market_sheet_exports.py"
       - "scripts/sync_latest_report_publication.py"
+      - "scripts/reconcile_latest_report_market_data.py"
+      - "scripts/test_reconcile_latest_report_market_data.py"
       - "scripts/verify_morning_report_qa.py"
       - ".github/workflows/sync-latest-report-publication.yml"
   workflow_dispatch:
@@ -177,6 +180,12 @@ jobs:
           python scripts/build_market_sheet_exports.py
           python -m json.tool data/market/chatgpt-input.json > /dev/null
           test -s data/market/chatgpt_input.csv
+
+      - name: Test verified market-data reconciliation
+        run: python scripts/test_reconcile_latest_report_market_data.py
+
+      - name: Reconcile verified intraday market data into latest report
+        run: python scripts/reconcile_latest_report_market_data.py
 
       - name: Sync latest report into history and dashboard
         run: |
