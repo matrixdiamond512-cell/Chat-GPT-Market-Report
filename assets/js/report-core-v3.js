@@ -158,6 +158,7 @@ function renderMarketTable(report, lines, sectionTitle = "") {
   if (!rows.length) return `<p class="sop-empty">主要市場データを表として構成できませんでした。</p>`;
   const headers = previousClose ? previousCloseHeaders(report) : CURRENT_MARKET_HEADERS;
   return `<div class="market-table-wrap"><table class="market-table market-table-five" data-market-table-mode="${previousClose ? "previous-close" : "current-value"}"><thead><tr>${headers.map(header => `<th>${esc(header)}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr><th scope="row">${esc(r.label)}</th><td>${esc(r.value || "—")}</td><td>${esc(r.change || "—")}</td><td>${esc(r.rate || "—")}</td><td>${esc(r.direction || "—")}</td></tr>`).join("")}</tbody></table></div>`;
+}
 
 function ensureMarketSection(report, parsed) {
   const sections = parsed.sections.slice();
