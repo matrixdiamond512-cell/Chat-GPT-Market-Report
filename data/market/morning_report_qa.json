@@ -1,12 +1,12 @@
 {
-  "checkedAt": "2026-08-20T12:25:36+09:00",
+  "checkedAt": "2026-08-20T21:34:52+09:00",
   "reportDate": "2026-08-20",
   "reportSlot": "08:00",
   "ready": false,
   "historicalMode": false,
   "reportSource": "reports.json",
   "latestReportDate": "2026-08-20",
-  "latestReportTime": "12:00",
+  "latestReportTime": "21:00",
   "dataSemantics": "previous_close",
   "expectedPreviousCloseDate": "2026-08-19",
   "expectedRowCount": 28,
@@ -31,15 +31,24 @@
     "VIX"
   ],
   "blockingReasons": [
+    "BTCUSD: intraday/current-value marker remains in previous-close table",
+    "COMEX金先物: intraday/current-value marker remains in previous-close table",
+    "EUR/USD: intraday/current-value marker remains in previous-close table",
     "Fear & Greed Index: 5-column empty cell",
+    "USD/JPY: intraday/current-value marker remains in previous-close table",
     "VIX: 5-column empty cell",
-    "latest-report mismatch: expected 2026-08-20 08:00, got 2026-08-20 12:00",
+    "WTI原油: intraday/current-value marker remains in previous-close table",
+    "latest-report mismatch: expected 2026-08-20 08:00, got 2026-08-20 21:00",
     "market table order/labels mismatch",
     "market table row count must be 28, got 10",
+    "marketDataTable columns contain intraday/current-value semantics",
+    "marketDataTable dataDate is missing or invalid",
+    "marketDataTable semantics must be previous_close, got empty",
+    "日経225先物（大阪取引所）: intraday/current-value marker remains in previous-close table",
     "米10年債利回り: 5-column empty cell"
   ],
   "warnings": [
     "marketDataTable structured rows used from reports.json"
   ],
-  "rule": "08:00 is a previous-close report. Validate market-data date, not retrieval clock time; reasoned unavailable values publish as degraded warnings."
+  "rule": "08:00 is a previous-close report. Same-day/current snapshots are prohibited in the previous-close table; missing closes remain reasoned unavailable."
 }
