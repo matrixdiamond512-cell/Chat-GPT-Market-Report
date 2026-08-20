@@ -117,11 +117,47 @@ function extraRows(lines, rows) {
 }
 function dedupe(rows) { const seen = new Set(); return rows.filter(r => r.label && !seen.has(r.label) && seen.add(r.label)); }
 function isMarketSection(title) { return /主要市場データ|市場データ|前営業日終値|終値一覧|主要価格/.test(title || ""); }
-function renderMarketTable(report, lines) {
+const CURRENT_MARKET_HEADERS = ["市場・指標", "現在値・確認値", "前日比", "騰落率", "方向・状態"];
+const PREVIOUS_CLOSE_HEADERS = ["項目", "終値・値", "前日比", "騰落率", "方向感"];
+function previousCloseDataDate(report) {
+  const value = report?.marketDataTable?.dataDate || report?.dataProvenance?.closeSheet?.dataDate || "";
+  return compact(value).split("-").join("/");
+}
+function isPreviousCloseTable(report, sectionTitle = "") {
+  if (report?.time !== "08:00") return false;
+  return report?.marketDataTable?.semantics === "previous_close"
+    || Boolean(report?.marketDataTable?.dataDate)
+    || Boolean(report?.dataProvenance?.closeSheet?.dataDate)
+    || /前営業日終値/.test(sectionTitle || "");
+}
+function previousCloseHeaders(report) {
+  const columns = Array.isArray(report?.marketDataTable?.columns) ? report.marketDataTable.columns.map(compact) : [];
+  const valid = columns.length === PREVIOUS_CLOSE_HEADERS.length
+    && columns[0] === "項目"
+    && columns[2] === "前日比"
+    && columns[3] === "騰落率"
+    && columns[4] === "方向感"
+    && !columns.includes("現在値・確認値")
+    && !columns.includes("市場・指標")
+    && !columns.includes("方向・状態");
+  return valid ? columns : PREVIOUS_CLOSE_HEADERS;
+}
+function marketSectionTitle(report, title) {
+  const base = compact(title) || "主要市場データ";
+  if (!isPreviousCloseTable(report, base)) return base;
+  const dataDate = previousCloseDataDate(report);
+  return dataDate ? `主要市場データ（前営業日終値：${dataDate}）` : "主要市場データ（前営業日終値）";
+}
+function renderMarketTable(report, lines, sectionTitle = "") {
+  const previousClose = isPreviousCloseTable(report, sectionTitle);
+  const hasStructuredRows = Array.isArray(report?.marketDataTable?.rows) && report.marketDataTable.rows.length > 0;
   let rows = marketRows(report);
-  rows = dedupe(rows.concat(extraRows(lines || [], rows)));
+  // A structured 08:00 table is the canonical 28-row contract. Do not append
+  // guesses extracted from prose, which can reintroduce current-value rows.
+  if (!(previousClose && hasStructuredRows)) rows = dedupe(rows.concat(extraRows(lines || [], rows)));
   if (!rows.length) return `<p class="sop-empty">主要市場データを表として構成できませんでした。</p>`;
-  return `<div class="market-table-wrap"><table class="market-table market-table-five"><thead><tr><th>市場・指標</th><th>現在値・確認値</th><th>前日比</th><th>騰落率</th><th>方向・状態</th></tr></thead><tbody>${rows.map(r => `<tr><th scope="row">${esc(r.label)}</th><td>${esc(r.value || "—")}</td><td>${esc(r.change || "—")}</td><td>${esc(r.rate || "—")}</td><td>${esc(r.direction || "—")}</td></tr>`).join("")}</tbody></table></div>`;
+  const headers = previousClose ? previousCloseHeaders(report) : CURRENT_MARKET_HEADERS;
+  return `<div class="market-table-wrap"><table class="market-table market-table-five" data-market-table-mode="${previousClose ? "previous-close" : "current-value"}"><thead><tr>${headers.map(header => `<th>${esc(header)}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr><th scope="row">${esc(r.label)}</th><td>${esc(r.value || "—")}</td><td>${esc(r.change || "—")}</td><td>${esc(r.rate || "—")}</td><td>${esc(r.direction || "—")}</td></tr>`).join("")}</tbody></table></div>`;
 }
 
 function ensureMarketSection(report, parsed) {
@@ -166,9 +202,9 @@ function renderDocument(report) {
   $("lastUpdated").textContent = `表示中：${dateToJp(report.date)} ${report.time || ""}`;
   $("reportStatus").textContent = `本文全文を表示中｜reports.json正本｜統合レンダラー v3`;
   $("app").className = "report sop-report-applied";
-  $("app").innerHTML = `<header class="report-head"><h1 class="report-title">${esc(parsed.title || fallback)}</h1><div class="source-badge">reports.json正本</div></header><article class="report-body">${renderPreface(parsed.preface)}${sections.map(s => `<section class="section sop-section" data-sop-title="${esc(s.title)}"><h2>${s.number ? `${esc(s.number)}．` : ""}${esc(s.title)}</h2>${isMarketSection(s.title) ? renderMarketTable(report, s.lines) : renderRichText(s.lines)}</section>`).join("")}</article>`;
+  $("app").innerHTML = `<header class="report-head"><h1 class="report-title">${esc(parsed.title || fallback)}</h1><div class="source-badge">reports.json正本</div></header><article class="report-body">${renderPreface(parsed.preface)}${sections.map(s => { const market = isMarketSection(s.title); const title = market ? marketSectionTitle(report, s.title) : s.title; return `<section class="section sop-section" data-sop-title="${esc(title)}"><h2>${s.number ? `${esc(s.number)}．` : ""}${esc(title)}</h2>${market ? renderMarketTable(report, s.lines, s.title) : renderRichText(s.lines)}</section>`; }).join("")}</article>`;
 }
-function render() { if (!selectedReport) return; renderControls(selectedReport); renderDocument(selectedReport); }
+function render() { if (!selectedReport) return; renderControls(selectedReport); renderDocument(selectedReport); window.MarketReportLastRendered = selectedReport; window.dispatchEvent(new CustomEvent("market-report-rendered", { detail: { report: selectedReport } })); }
 
 async function init() {
   try {
@@ -191,6 +227,6 @@ async function init() {
     $("app").innerHTML = `マーケットレポート本文を表示できません。理由：${esc(error.message)}`;
   }
 }
-window.MarketReportRendererVersion = "20260819-default-detail-fix";
+window.MarketReportRendererVersion = "20260820-2148-morning-close-table";
 init();
 

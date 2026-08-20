@@ -120,5 +120,50 @@
     return { ready: reasons.length === 0, enforced: true, reasons: [...new Set(reasons)], rows: parsed };
   }
 
-  window.MorningReportQA = { loadReference, validate, rows, effectiveRows, expectedItems: ITEMS.slice() };
+  const PREVIOUS_CLOSE_HEADERS = ["項目", "終値・値", "前日比", "騰落率", "方向感"];
+  const REQUIRED_DOM_LABELS = ["COMEX金先物", "WTI原油", "日経225先物（大阪取引所）", "USD/JPY", "EUR/USD", "BTCUSD"];
+  function domTable(report, root = document) {
+    const tables = [...root.querySelectorAll(".sop-section .market-table")];
+    return tables.find((table) => {
+      const heading = table.closest(".sop-section")?.querySelector("h2")?.textContent || "";
+      return /主要市場データ|前営業日終値/.test(heading);
+    }) || null;
+  }
+  function closeDataDate(report) {
+    return String(report?.marketDataTable?.dataDate || report?.dataProvenance?.closeSheet?.dataDate || "").trim();
+  }
+  function validateRendered(report, root = document) {
+    if (!enforce(report)) return { ready: true, enforced: false, reasons: [], sourceRows: 0, domRows: 0 };
+    const reasons = [];
+    const source = structuredRows(report);
+    const table = domTable(report, root);
+    if (source.length !== 28) reasons.push(`marketDataTable source rows: ${source.length}行`);
+    if (!table) return { ready: false, enforced: true, reasons: [...new Set([...reasons, "主要市場データのDOM tableなし"])], sourceRows: source.length, domRows: 0 };
+    const headers = [...table.querySelectorAll("thead th")].map((cell) => cell.textContent.trim());
+    const domRows = [...table.querySelectorAll("tbody tr")];
+    if (domRows.length !== 28) reasons.push(`DOM tbody rows: ${domRows.length}行`);
+    if (headers.length !== 5 || headers.join(String.fromCharCode(0)) !== PREVIOUS_CLOSE_HEADERS.join(String.fromCharCode(0))) reasons.push(`08:00ヘッダー不一致: ${headers.join(" / ")}`);
+    const labels = domRows.map((row) => row.querySelector("th")?.textContent.trim() || "");
+    REQUIRED_DOM_LABELS.forEach((label) => { if (!labels.includes(label)) reasons.push(`${label}: DOM必須行なし`); });
+    ["現在値・確認値", "市場・指標", "方向・状態"].forEach((forbidden) => { if (headers.includes(forbidden)) reasons.push(`禁止ヘッダー: ${forbidden}`); });
+    const tableText = table.textContent || "";
+    if (tableText.includes("前回21:00比")) reasons.push("主要市場データ表に前回21:00比あり");
+    const dataDate = closeDataDate(report);
+    const normalizedDataDate = dataDate.split("/").join("-");
+    if (!dataDate) reasons.push("前営業日終値のdataDateなし");
+    else if (/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(normalizedDataDate) && normalizedDataDate >= String(report.date || "")) reasons.push(`dataDateがreport.date以降: ${dataDate}`);
+    const result = { ready: reasons.length === 0, enforced: true, reasons: [...new Set(reasons)], sourceRows: source.length, domRows: domRows.length, headers, labels };
+    return result;
+  }
+  function runRenderedQA(report) {
+    const result = validateRendered(report);
+    window.MorningReportQA.lastRendered = result;
+    document.documentElement.dataset.morningReportQa = result.ready ? "pass" : "fail";
+    if (result.ready) console.info("[MorningReportQA] DOM PASS", result);
+    else console.error("[MorningReportQA] DOM FAIL", result);
+    return result;
+  }
+  window.MorningReportQA = { loadReference, validate, validateRendered, runRenderedQA, rows, effectiveRows, expectedItems: ITEMS.slice() };
+  window.addEventListener("market-report-rendered", (event) => runRenderedQA(event.detail?.report));
+  if (window.MarketReportLastRendered) runRenderedQA(window.MarketReportLastRendered);
 })();
