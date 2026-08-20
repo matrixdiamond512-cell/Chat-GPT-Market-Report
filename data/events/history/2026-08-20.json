@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-08-20T10:06:13+09:00",
-  "publishedAt": "2026-08-20T10:06:13+09:00",
-  "dataAsOf": "2026-08-20T10:06:13+09:00",
+  "generatedAt": "2026-08-20T11:21:54+09:00",
+  "publishedAt": "2026-08-20T11:21:54+09:00",
+  "dataAsOf": "2026-08-20T11:21:54+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -20,7 +20,7 @@
       "name": "TradingView Economic Calendar",
       "url": "https://www.tradingview.com/economic-calendar/",
       "status": "ok",
-      "note": "実績値を9件照合。生データは公開保存しません。"
+      "note": "実績値を11件照合。生データは公開保存しません。"
     },
     {
       "id": "official_source_map",
@@ -294,7 +294,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-16T14:03:41+09:00",
-      "updatedAt": "2026-08-20T10:06:13+09:00"
+      "updatedAt": "2026-08-20T11:21:54+09:00"
     },
     {
       "id": "event-056e4951f1e5ec",
@@ -541,13 +541,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-19T12:14:57+09:00",
-      "updatedAt": "2026-08-20T10:06:14+09:00",
+      "updatedAt": "2026-08-20T11:21:55+09:00",
+      "resultSavedAt": "2026-08-20T03:55:06+09:00",
       "resultSource": {
         "id": "forex_factory",
         "name": "Forex Factory Economic Calendar",
         "url": "https://www.forexfactory.com/calendar"
       },
-      "resultSavedAt": "2026-08-20T03:55:06+09:00",
       "resultExpected": false,
       "resultType": "qualitative"
     },
@@ -570,11 +570,11 @@
       "importanceLabel": "高",
       "forecast": "11.7K",
       "previous": "76.3K",
-      "actual": "",
+      "actual": "-15.8K",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultComparison": "市場予想を下回る",
+      "resultExplanation": "実績 -15.8K は予想 11.7K に対して市場予想を下回る。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -777,8 +777,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を下回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -796,7 +796,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-16T14:03:41+09:00",
-      "updatedAt": "2026-08-20T10:06:13+09:00"
+      "updatedAt": "2026-08-20T11:21:54+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "Bureau of Statistics",
+        "url": "http://www.abs.gov.au"
+      },
+      "resultSavedAt": "2026-08-20T11:21:54+09:00"
     },
     {
       "id": "event-122217a7ec04ba",
@@ -817,11 +823,11 @@
       "importanceLabel": "高",
       "forecast": "4.4%",
       "previous": "4.4%",
-      "actual": "",
+      "actual": "4.5%",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultComparison": "市場予想を上回る",
+      "resultExplanation": "実績 4.5% は予想 4.4% に対して市場予想を上回る。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1024,8 +1030,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を上回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1043,7 +1049,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-16T14:03:41+09:00",
-      "updatedAt": "2026-08-20T10:06:13+09:00"
+      "updatedAt": "2026-08-20T11:21:54+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "Bureau of Statistics",
+        "url": "http://www.abs.gov.au/"
+      },
+      "resultSavedAt": "2026-08-20T11:21:54+09:00"
     },
     {
       "id": "event-e1b92477606467",
@@ -1290,7 +1302,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-16T14:03:41+09:00",
-      "updatedAt": "2026-08-20T10:06:13+09:00"
+      "updatedAt": "2026-08-20T11:21:54+09:00"
     },
     {
       "id": "event-ff7d9423fb2436",
@@ -1537,7 +1549,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-16T14:03:41+09:00",
-      "updatedAt": "2026-08-20T10:06:13+09:00"
+      "updatedAt": "2026-08-20T11:21:54+09:00"
     }
   ]
 }
