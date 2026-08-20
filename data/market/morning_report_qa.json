@@ -1,12 +1,12 @@
 {
-  "checkedAt": "2026-08-20T21:35:51+09:00",
+  "checkedAt": "2026-08-20T22:25:21+09:00",
   "reportDate": "2026-08-20",
   "reportSlot": "08:00",
-  "ready": true,
-  "historicalMode": true,
+  "ready": false,
+  "historicalMode": false,
   "reportSource": "reports.json",
-  "latestReportDate": null,
-  "latestReportTime": null,
+  "latestReportDate": "2026-08-20",
+  "latestReportTime": "21:00",
   "dataSemantics": "previous_close",
   "expectedPreviousCloseDate": "2026-08-19",
   "expectedRowCount": 28,
@@ -48,12 +48,14 @@
     "東証プライム値下がり銘柄数",
     "東証プライム25日騰落レシオ"
   ],
-  "blockingReasons": [],
+  "blockingReasons": [
+    "latest-report mismatch: expected 2026-08-20 08:00, got 2026-08-20 21:00"
+  ],
   "warnings": [
     "marketDataTable structured rows used from reports.json",
+    "required six-market value unavailable with reason: USD/JPY",
     "required six-market value unavailable with reason: EUR/USD",
-    "required six-market value unavailable with reason: BTCUSD",
-    "required six-market value unavailable with reason: USD/JPY"
+    "required six-market value unavailable with reason: BTCUSD"
   ],
   "rule": "08:00 is a previous-close report. Same-day/current snapshots are prohibited in the previous-close table; missing closes remain reasoned unavailable."
 }
