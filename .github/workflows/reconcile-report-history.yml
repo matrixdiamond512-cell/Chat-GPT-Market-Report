@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - "reports/*.json"
       - "reports.json"
       - "scripts/reconcile_report_history.py"
       - ".github/workflows/reconcile-report-history.yml"
