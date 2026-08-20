@@ -2,14 +2,18 @@
 """Populate the 08:00 market table from the canonical 終値一覧 previous-close row.
 
 The 08:00 report is a previous-close report. Therefore every mapped market row must
-prefer the latest valid row in 終値一覧 whose date is before the report date. The time
-at which that close is retrieved is not the market-data timestamp: a verified close
-for the correct prior session may be retrieved after 08:00 and is still valid for the
-08:00 report because the underlying value is the prior-session close.
+use the latest valid row in 終値一覧 whose date is before the report date.
 
-If GitHub Actions does not have Google Sheets credentials configured, enrichment is
-skipped without failing the publication job. Missing cells are left for the dedicated
-date-matched source repair steps.
+Most importantly, a missing/unusable previous close must NEVER leave a pre-existing
+08:00 live quote in the previous-close table. Such a row is explicitly replaced by a
+reasoned unavailable marker so that later date-matched repair steps may fill it. This
+also protects the row from the historical "original published value" recovery step,
+which must not be allowed to re-introduce an intraday quote into the previous-close
+table.
+
+The time at which a valid close is retrieved is not the market-data timestamp: a
+verified close for the correct prior session may be retrieved later and is still a
+previous-session close.
 """
 from __future__ import annotations
 
@@ -54,6 +58,7 @@ MAP: dict[str, dict[str, str]] = {
 }
 
 UNAVAILABLE_RE = re.compile(r"取得不能|未取得|未公表|入力に値なし|入力待ち|取得継続|休場")
+REASONED_UNAVAILABLE_RE = re.compile(r"^(取得不能|未公表)（.+）$")
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -92,23 +97,38 @@ def signed_direction(change: Any, rate: Any, label: str, value: Any, classificat
         return classification or "センチメント指標"
     if "乖離率" in label:
         n = numeric(value)
-        if n is None: return "基準値"
+        if n is None:
+            return "基準値"
         return "上方乖離" if n > 0 else "下方乖離" if n < 0 else "乖離なし"
     n = numeric(change)
-    if n is None: n = numeric(rate)
-    if n is None: return "確定値"
+    if n is None:
+        n = numeric(rate)
+    if n is None:
+        return "確定値"
     return "上昇" if n > 0 else "下落" if n < 0 else "横ばい"
 
 
 def fmt(label: str, value: Any) -> str:
     text = str(value or "").strip()
-    if not text: return text
-    if label in {"日経225予想PER", "日経225 PBR"} and not text.endswith("倍"): return text + "倍"
-    if label == "日経225予想EPS" and not text.endswith("円"): return text + "円"
+    if not text:
+        return text
+    if label in {"日経225予想PER", "日経225 PBR"} and not text.endswith("倍"):
+        return text + "倍"
+    if label == "日経225予想EPS" and not text.endswith("円"):
+        return text + "円"
     if label == "東証プライム売買代金":
         n = numeric(text)
         return f"{n:g}兆円" if n is not None else text
     return text
+
+
+def reasoned_unavailable(sheet_value: Any, sheet_date: str, label: str) -> str:
+    text = str(sheet_value or "").strip()
+    if REASONED_UNAVAILABLE_RE.match(text):
+        return text
+    if text:
+        return f"取得不能（{sheet_date}の{label}前営業日終値を終値一覧で利用できず：{text}）"
+    return f"取得不能（{sheet_date}の{label}前営業日終値が終値一覧で空欄）"
 
 
 def latest_prior_row(table: list[list[str]], report_date: dt.date) -> tuple[dict[str, str], str]:
@@ -116,7 +136,8 @@ def latest_prior_row(table: list[list[str]], report_date: dt.date) -> tuple[dict
     date_index = headers.index("日付")
     candidates: list[tuple[dt.date, list[str]]] = []
     for row in table[1:]:
-        if len(row) <= date_index: continue
+        if len(row) <= date_index:
+            continue
         d = parse_date(row[date_index])
         if d and d < report_date:
             candidates.append((d, row))
@@ -155,18 +176,37 @@ def main() -> int:
     if not isinstance(rows, list) or len(rows) != 28:
         raise SystemExit(f"08:00 table must already have 28 rows; got {len(rows) if isinstance(rows,list) else 'invalid'}")
 
+    market_table["columns"] = ["項目", "終値・値", "前日比", "騰落率", "方向感"]
+    market_table["semantics"] = "previous_close"
+    market_table["dataDate"] = sheet_date
+
+    by_label = {
+        str(row.get("label") or "").strip(): row
+        for row in rows
+        if isinstance(row, dict) and str(row.get("label") or "").strip()
+    }
+
     updated: list[str] = []
-    for row in rows:
-        if not isinstance(row, dict): continue
-        label = str(row.get("label") or "").strip()
-        spec = MAP.get(label)
-        if not spec: continue
-        sheet_value = sheet_row.get(spec["value"], "")
-        if not usable(sheet_value):
+    unavailable: list[str] = []
+    for label, spec in MAP.items():
+        row = by_label.get(label)
+        if not isinstance(row, dict):
             continue
 
-        # 08:00 is a previous-close report. A valid canonical close always wins over
-        # any report-time/live value that may already be present in the draft report.
+        sheet_value = sheet_row.get(spec["value"], "")
+        # Every mapped row is marked as canonical-processed, even when unavailable.
+        # This prevents the later historical recovery step from restoring the old
+        # intraday 08:00 quote into a previous-close cell.
+        updated.append(label)
+
+        if not usable(sheet_value):
+            row["value"] = reasoned_unavailable(sheet_value, sheet_date, label)
+            row["change"] = "—"
+            row["rate"] = "—"
+            row["direction"] = "取得不能"
+            unavailable.append(label)
+            continue
+
         change = sheet_row.get(spec.get("change", ""), "") if spec.get("change") else ""
         rate = sheet_row.get(spec.get("rate", ""), "") if spec.get("rate") else ""
         classification = sheet_row.get(spec.get("classification", ""), "") if spec.get("classification") else ""
@@ -174,19 +214,18 @@ def main() -> int:
         row["change"] = str(change or "—")
         row["rate"] = str(rate or "—")
         row["direction"] = signed_direction(change, rate, label, sheet_value, classification)
-        updated.append(label)
 
-    market_table["columns"] = ["項目", "終値・値", "前日比", "騰落率", "方向感"]
     report.setdefault("dataProvenance", {})["closeSheet"] = {
         "sheet": "終値一覧",
         "dataDate": sheet_date,
         "syncedAt": dt.datetime.now(JST).replace(microsecond=0).isoformat(),
         "updatedLabels": updated,
+        "unavailableLabels": unavailable,
         "semantics": "previous_close",
-        "rule": "08:00 report uses the prior-session close; retrieval time does not invalidate a date-matched close",
+        "rule": "08:00 previous-close table never retains a same-day live quote when the canonical prior close is missing",
     }
     dump_json(LATEST, payload)
-    print(json.dumps({"sheetDate": sheet_date, "updated": updated}, ensure_ascii=False))
+    print(json.dumps({"sheetDate": sheet_date, "updated": updated, "unavailable": unavailable}, ensure_ascii=False))
     return 0
 
 
