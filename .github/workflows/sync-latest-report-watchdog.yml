@@ -33,6 +33,71 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Require the scheduled report slot to exist
+        if: github.event_name == 'schedule'
+        env:
+          TRIGGER_SCHEDULE: ${{ github.event.schedule }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          schedule = os.environ.get('TRIGGER_SCHEDULE', '')
+          expected_by_schedule = {
+              '5,15,30 23 * * 0-4': '08:00',
+              '5,15,30 3 * * 1-5': '12:00',
+              '5,15,30,50 7 * * 1-5': '16:00',
+              '10 8 * * 1-5': '16:00',
+              '5,15,30 12 * * 1-5': '21:00',
+              '5,20 0 * * 6': '09:00',
+          }
+          expected_time = expected_by_schedule.get(schedule)
+          if not expected_time:
+              raise SystemExit(f'unknown watchdog schedule: {schedule}')
+
+          jst = timezone(timedelta(hours=9))
+          expected_date = datetime.now(jst).date().isoformat()
+          expected_key = (expected_date, expected_time)
+
+          latest_payload = json.loads(Path('data/latest-report.json').read_text(encoding='utf-8'))
+          latest = latest_payload.get('latestReport') or latest_payload.get('report') or latest_payload
+          latest_key = (str(latest.get('date') or ''), str(latest.get('time') or ''))
+
+          if latest_key != expected_key:
+              market_path = Path('data/market/latest.json')
+              market_note = ''
+              if market_path.exists():
+                  market = json.loads(market_path.read_text(encoding='utf-8'))
+                  market_key = (str(market.get('generatedAt') or '')[:10], str(market.get('reportSlot') or ''))
+                  market_note = f'; market snapshot={market_key[0]} {market_key[1]} status={market.get("overallStatus")}'
+              raise SystemExit(
+                  'scheduled report publication gap: '
+                  f'expected {expected_key[0]} {expected_key[1]}, '
+                  f'latest-report is {latest_key[0]} {latest_key[1]}' + market_note
+              )
+
+          canonical = Path('reports') / f"{expected_date}_{expected_time.replace(':', '-')}.json"
+          if not canonical.exists():
+              raise SystemExit(f'scheduled canonical report missing: {canonical}')
+
+          index = json.loads(Path('reports.json').read_text(encoding='utf-8'))
+          items = index if isinstance(index, list) else index.get('reports') or index.get('items') or []
+          if not any(
+              isinstance(item, dict)
+              and item.get('date') == expected_date
+              and item.get('time') == expected_time
+              for item in items
+          ):
+              raise SystemExit(
+                  f'scheduled report missing from reports.json: {expected_date} {expected_time}'
+              )
+
+          print(f'Scheduled slot verified: {expected_date} {expected_time}')
+          PY
+
       - name: Test verified market-data reconciliation
         run: python scripts/test_reconcile_latest_report_market_data.py
 
@@ -61,7 +126,6 @@ jobs:
           if actual_key != expected_key:
               raise SystemExit(f'dashboard currentReportKey mismatch: {actual_key} != {expected_key}')
 
-          # Compare the public report payload after the sync script has normalized it.
           if published != latest:
               raise SystemExit('dashboard.latestReport does not match data/latest-report.json')
 
