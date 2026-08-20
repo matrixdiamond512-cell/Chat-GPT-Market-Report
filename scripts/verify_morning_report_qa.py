@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Validate the effective 08:00 28-item / 5-column previous-close table.
 
-The 08:00 report is a previous-close report. QA validates the structured table itself
-and never overlays an intraday morning quote. A date-matched prior close may have been
-retrieved after 08:00; that retrieval time is not a reason to reject the value.
+The 08:00 report is a previous-close report. The structured table must explicitly
+identify itself as previous_close, carry a market-data date earlier than the report
+date, and must not contain same-day/intraday comparison markers such as
+"08:00確認値" or "前回21:00比".
 
 A reasoned unavailable value (取得不能（理由） / 未公表（理由）) is publishable as a
-degraded warning. Missing rows, empty cells, parser failures, and unavailable values
-without a reason remain blocking.
+degraded warning. Missing rows, empty cells, parser failures, date/semantics mismatch,
+and unavailable values without a reason remain blocking.
 """
 from __future__ import annotations
 
@@ -32,6 +33,8 @@ ITEMS = [
 NUMBER_PREFIX = re.compile(r"^[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘]\s*")
 REQUIRED_SIX = {"COMEX金先物", "WTI原油", "日経225先物（大阪取引所）", "USD/JPY", "EUR/USD", "BTCUSD"}
 BAD_MARKERS = ("主要市場データ入力に該当行なし", "最終修正版本文に該当行なし", "undefined", "null")
+INTRADAY_COLUMN_RE = re.compile(r"08:00|現在値|確認値|スナップショット")
+INTRADAY_CELL_RE = re.compile(r"前回\s*21:00\s*比|JST\s*(?:確認|再取得)|08:00\s*(?:時点|確認)")
 
 
 def load_json(path: Path, default: Any) -> Any:
@@ -67,7 +70,7 @@ def normalize_label(value: str) -> str:
 
 def parse_rows(text: str) -> list[dict[str, str]]:
     lines = [x.strip() for x in str(text or "").replace("\r", "").split("\n") if x.strip()]
-    start = next((i for i, x in enumerate(lines) if "主要市場データ" in x), -1)
+    start = next((i for i, x in enumerate(lines) if "主要市場データ" in x or "前営業日終値" in x), -1)
     if start < 0:
         return []
     end = next((i for i in range(start + 1, len(lines)) if re.match(r"^3[.．]\s*", lines[i])), len(lines))
@@ -87,11 +90,16 @@ def parse_rows(text: str) -> list[dict[str, str]]:
     return rows
 
 
-def structured_rows(report: dict[str, Any] | None) -> list[dict[str, str]]:
+def market_table(report: dict[str, Any] | None) -> dict[str, Any]:
     if not isinstance(report, dict):
-        return []
+        return {}
     table = report.get("marketDataTable") or {}
-    raw = table.get("rows") if isinstance(table, dict) else None
+    return table if isinstance(table, dict) else {}
+
+
+def structured_rows(report: dict[str, Any] | None) -> list[dict[str, str]]:
+    table = market_table(report)
+    raw = table.get("rows")
     if not isinstance(raw, list):
         return []
     rows: list[dict[str, str]] = []
@@ -126,6 +134,13 @@ def reasoned_unavailable(value: str) -> bool:
     return bool(re.match(r"^(取得不能|未公表)（.+）$", str(value or "").strip()))
 
 
+def parse_date(value: Any) -> dt.date | None:
+    try:
+        return dt.date.fromisoformat(str(value or "").strip())
+    except ValueError:
+        return None
+
+
 def expected_previous_weekday(report_date: dt.date) -> str:
     prior = report_date - dt.timedelta(days=3 if report_date.weekday() == 0 else 1)
     return prior.isoformat()
@@ -158,9 +173,13 @@ def main() -> int:
         if latest_date != a.date or latest_slot != a.slot:
             blocking.append(f"latest-report mismatch: expected {a.date} {a.slot}, got {latest_date or 'empty'} {latest_slot or 'empty'}")
 
+    rows: list[dict[str, str]] = []
+    table = market_table(report)
+    report_date = dt.date.fromisoformat(a.date)
+    table_date: dt.date | None = None
+
     if not report:
         blocking.append(f"report not found: {a.date} {a.slot}")
-        rows: list[dict[str, str]] = []
     else:
         rows = structured_rows(report)
         if rows:
@@ -170,7 +189,20 @@ def main() -> int:
             if not rows:
                 blocking.append("28-item market table could not be parsed from report text")
 
-    if report:
+        semantics = str(table.get("semantics") or "").strip()
+        if semantics != "previous_close":
+            blocking.append(f"marketDataTable semantics must be previous_close, got {semantics or 'empty'}")
+
+        table_date = parse_date(table.get("dataDate"))
+        if table_date is None:
+            blocking.append("marketDataTable dataDate is missing or invalid")
+        elif table_date >= report_date:
+            blocking.append(f"marketDataTable dataDate must be before report date: {table_date.isoformat()} >= {a.date}")
+
+        columns = [str(x or "") for x in (table.get("columns") or [])]
+        if any(INTRADAY_COLUMN_RE.search(col) for col in columns):
+            blocking.append("marketDataTable columns contain intraday/current-value semantics")
+
         if len(rows) != 28:
             blocking.append(f"market table row count must be 28, got {len(rows)}")
         labels = [r["label"] for r in rows]
@@ -184,6 +216,8 @@ def main() -> int:
             joined = " | ".join(cells)
             if any(m in joined for m in BAD_MARKERS):
                 blocking.append(f"{r['label']}: parser failure marker remains")
+            if INTRADAY_CELL_RE.search(joined):
+                blocking.append(f"{r['label']}: intraday/current-value marker remains in previous-close table")
             if not all(str(c).strip() for c in cells):
                 blocking.append(f"{r['label']}: 5-column empty cell")
             if r["value"] == "取得不能":
@@ -203,13 +237,37 @@ def main() -> int:
     provenance = (report or {}).get("dataProvenance") or {}
     close_sheet = provenance.get("closeSheet") or {}
     daily_repair = provenance.get("dailyCloseRepair") or {}
-    if isinstance(close_sheet, dict) and close_sheet.get("semantics") not in (None, "previous_close"):
-        blocking.append("closeSheet semantics is not previous_close")
+    published_recovery = provenance.get("publishedValueRecovery") or {}
+
+    if isinstance(close_sheet, dict):
+        if close_sheet.get("semantics") not in (None, "previous_close"):
+            blocking.append("closeSheet semantics is not previous_close")
+        close_date = parse_date(close_sheet.get("dataDate"))
+        if close_sheet and close_date is None:
+            blocking.append("closeSheet dataDate is missing or invalid")
+        if close_date is not None and close_date >= report_date:
+            blocking.append(f"closeSheet dataDate must be before report date: {close_date.isoformat()} >= {a.date}")
+        if close_date is not None and table_date is not None and close_date != table_date:
+            blocking.append(f"marketDataTable/closeSheet dataDate mismatch: {table_date.isoformat()} != {close_date.isoformat()}")
+
     if isinstance(daily_repair, dict) and daily_repair.get("semantics") not in (None, "previous_close"):
         blocking.append("dailyCloseRepair semantics is not previous_close")
 
-    report_date = dt.date.fromisoformat(a.date)
-    expected_close_date = str(close_sheet.get("dataDate") or expected_previous_weekday(report_date))
+    # Original published values are not a safe source for the previous-close table:
+    # the original draft may itself contain the 08:00 live snapshot. Only the OSE
+    # row is exempt when the recovery carries a date-matched verified tradingDate.
+    if isinstance(published_recovery, dict):
+        restored = [normalize_label(x) for x in (published_recovery.get("restoredRows") or [])]
+        ose = published_recovery.get("osePreviousCloseRecovery") or {}
+        ose_ok = False
+        if isinstance(ose, dict):
+            ose_date = parse_date(ose.get("tradingDate"))
+            ose_ok = bool(ose_date and table_date and ose_date == table_date)
+        unsafe_restored = [x for x in restored if not (x == "日経225先物（大阪取引所）" and ose_ok)]
+        if unsafe_restored:
+            blocking.append("original published values restored into previous-close table: " + ", ".join(sorted(set(unsafe_restored))))
+
+    expected_close_date = table_date.isoformat() if table_date else expected_previous_weekday(report_date)
     ready = not blocking
     result = {
         "checkedAt": dt.datetime.now(JST).replace(microsecond=0).isoformat(),
@@ -228,7 +286,7 @@ def main() -> int:
         "labels": [r.get("label") for r in rows],
         "blockingReasons": sorted(set(blocking)),
         "warnings": warnings,
-        "rule": "08:00 is a previous-close report. Validate market-data date, not retrieval clock time; reasoned unavailable values publish as degraded warnings.",
+        "rule": "08:00 is a previous-close report. Same-day/current snapshots are prohibited in the previous-close table; missing closes remain reasoned unavailable.",
     }
     out = Path(a.output)
     out.parent.mkdir(parents=True, exist_ok=True)
