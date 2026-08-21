@@ -2,12 +2,12 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-supply-demand",
   "reportDate": "2026-08-21",
-  "generatedAt": "2026-08-21T18:50:34+09:00",
+  "generatedAt": "2026-08-21T20:41:55+09:00",
   "nikkei": {
     "schemaVersion": "2.1.0",
     "pageId": "nikkei225-supply-demand",
     "pageTitle": "日経225需給分析",
-    "generatedAt": "2026-08-21T18:50:34+09:00",
+    "generatedAt": "2026-08-21T20:41:55+09:00",
     "spot": {
       "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
@@ -16,7 +16,7 @@
       "value": 66016.36,
       "asOfDate": "2026-08-21",
       "status": "verified",
-      "fetchedAt": "2026-08-21T18:50:34+09:00"
+      "fetchedAt": "2026-08-21T20:41:55+09:00"
     },
     "futures": {
       "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -24,21 +24,21 @@
       "price": 66090.0,
       "priceChange": -270.0,
       "priceChangePercent": -0.4068716094032587,
-      "asOfDate": "2026-08-20",
+      "asOfDate": "2026-08-21",
       "priceAsOf": "2026-08-21T15:45:00+09:00",
-      "volume": 39732,
-      "openInterest": 195838,
-      "miniVolume": 588267,
-      "miniOpenInterest": 312523,
-      "openInterestChange": 607,
-      "miniOpenInterestChange": 3641,
+      "volume": 32673,
+      "openInterest": 196851,
+      "miniVolume": 571733,
+      "miniOpenInterest": 307118,
+      "openInterestChange": 1013,
+      "miniOpenInterestChange": -5405,
       "volumeChangePercent": -67.09705023658512,
       "miniVolumeChangePercent": 0.0,
       "status": "verified",
-      "fetchedAt": "2026-08-21T18:48:59+09:00",
-      "previousOpenInterest": 195231,
-      "miniPreviousOpenInterest": 308882,
-      "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260820open_interest.xlsx"
+      "fetchedAt": "2026-08-21T20:40:29+09:00",
+      "previousOpenInterest": 195838,
+      "miniPreviousOpenInterest": 312523,
+      "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260821open_interest.xlsx"
     },
     "sessions": {
       "sourceName": "JPX デリバティブ取引市況（ナイト・日通し）",
@@ -46,16 +46,16 @@
       "comment": "JPX公式のセッション別出来高を使用。価格差が同一基準で確認できないため、日中/ナイトの価格変化は推測しません。",
       "dayChange": null,
       "nightChange": null,
-      "dayVolume": 26659,
+      "dayVolume": 19600,
       "nightVolume": 13073,
-      "daySharePercent": 67.09705023658512,
-      "nightSharePercent": 32.90294976341488,
+      "daySharePercent": 59.9883696018119,
+      "nightSharePercent": 40.01163039818811,
       "dayDriver": "日中出来高",
       "nightDriver": "ナイト出来高",
       "asOfDate": "2026-08-21",
       "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260821_derivatives_market_data_night.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-08-21T18:50:23+09:00"
+      "fetchedAt": "2026-08-21T20:41:46+09:00"
     },
     "arbitrage": {
       "sourceName": "JPX 裁定取引の状況",
@@ -69,9 +69,9 @@
       "buyChange": -16369,
       "status": "verified",
       "frequency": "daily",
-      "lastAttemptAt": "2026-08-21T18:48:49+09:00",
-      "lastSuccessAt": "2026-08-21T18:48:49+09:00",
-      "fetchedAt": "2026-08-21T18:48:49+09:00",
+      "lastAttemptAt": "2026-08-21T20:40:20+09:00",
+      "lastSuccessAt": "2026-08-21T20:40:20+09:00",
+      "fetchedAt": "2026-08-21T20:40:20+09:00",
       "error": null
     },
     "options": {
@@ -85,7 +85,7 @@
       "ivChange": null,
       "asOfDate": "2026-08-21",
       "status": "calculated",
-      "fetchedAt": "2026-08-21T18:50:34+09:00",
+      "fetchedAt": "2026-08-21T20:41:55+09:00",
       "putVolume": null,
       "callVolume": null,
       "putCallStatus": "unavailable",
@@ -161,7 +161,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202608/20260821_volume_by_participant_whole_day.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-08-21T18:50:25+09:00"
+      "fetchedAt": "2026-08-21T20:41:48+09:00"
     },
     "foreignInvestors": {
       "sourceName": "JPX 投資部門別売買状況",
@@ -774,7 +774,7 @@
         ]
       },
       "status": "verified",
-      "fetchedAt": "2026-08-21T18:50:22+09:00"
+      "fetchedAt": "2026-08-21T20:41:45+09:00"
     },
     "participantOpenInterest": {
       "sourceName": "JPX 取引参加者別建玉残高",
@@ -888,7 +888,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20260814_indexfut_oi_by_tp.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-08-21T18:50:27+09:00"
+      "fetchedAt": "2026-08-21T20:41:49+09:00"
     },
     "shortSelling": {
       "sourceName": "JPX 空売り集計",
@@ -973,7 +973,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-08-21T18:48:58+09:00"
+      "fetchedAt": "2026-08-21T20:40:28+09:00"
     },
     "margin": {
       "sourceName": "JPX 信用取引現在高",
@@ -1034,7 +1034,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-08-21T18:49:02+09:00"
+      "fetchedAt": "2026-08-21T20:40:32+09:00"
     },
     "assessment": {
       "overall": "やや売り優勢",
@@ -1329,19 +1329,19 @@
       "market": null,
       "status": "partial",
       "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202608.xlsx",
-      "fetchedAt": "2026-08-21T18:50:31+09:00",
+      "fetchedAt": "2026-08-21T20:41:52+09:00",
       "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
     },
     "nikkeiFuturesDailyHistory": [
       {
-        "asOfDate": "2026-08-20",
+        "asOfDate": "2026-08-21",
         "price": 66090.0,
-        "openInterest": 195838,
-        "volume": 39732,
+        "openInterest": 196851,
+        "volume": 32673,
         "sourceName": "JPX / 大阪取引所 日経225先物",
         "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
-        "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260820open_interest.xlsx",
-        "capturedAt": "2026-08-21T18:50:30+09:00",
+        "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260821open_interest.xlsx",
+        "capturedAt": "2026-08-21T20:41:52+09:00",
         "status": "verified"
       }
     ],
@@ -1358,7 +1358,7 @@
       "status": "verified",
       "releaseFrequency": "weekly",
       "lookbackWeeks": 52,
-      "fetchedAt": "2026-08-21T18:50:35+09:00",
+      "fetchedAt": "2026-08-21T20:41:56+09:00",
       "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
       "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
       "priceStatus": "available",
@@ -2274,7 +2274,7 @@
     "updatedAt": "2026-08-18T07:45:29+09:00",
     "dataAsOf": "2026-08-17T16:00:00-04:00",
     "status": "ok",
-    "sourceStatus": "Google Sheets＋日経225寄与度検証済みデータ",
+    "sourceStatus": "米国市場と東京市場を独立更新・項目別基準日を明示・欠損は複数ソースで補完",
     "sources": [
       {
         "id": "INITIAL_STOCKS_HTML",
@@ -2382,69 +2382,69 @@
         "rows": [
           [
             "日経225",
-            "66,216.79",
+            "66,016.36",
             "—",
-            "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-08-20。"
+            "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-08-21。"
           ],
           [
             "TOPIX",
-            "4,059.73",
-            "+47.42（+1.18%）",
-            "トレーダーズ・ウェブ 国内市場の当日終値確認。基準日 2026-08-20。"
+            "4,067.29",
+            "+7.56（+0.19%）",
+            "トレーダーズ・ウェブ 国内市場の当日終値確認。基準日 2026-08-21。"
           ],
           [
             "グロース250",
-            "776.98",
-            "+34.70（+4.67%）",
-            "トレーダーズ・ウェブ 国内市場の当日終値確認。基準日 2026-08-20。"
+            "768.47",
+            "-8.51（-1.10%）",
+            "トレーダーズ・ウェブ 国内市場の当日終値確認。基準日 2026-08-21。"
           ],
           [
             "日経VI",
-            "29.68",
-            "-2.76（-8.51%）",
-            "Nikkei 225 VI official profileの確認済み値。基準日 2026-08-20。"
+            "28.38",
+            "-1.30（-4.38%）",
+            "Nikkei 225 VI official profileの確認済み値。基準日 2026-08-21。"
           ],
           [
             "値上がり銘柄 / 値下がり銘柄",
-            "1320 / 204",
+            "883 / 622",
             "—",
-            "投資の森 値上がり・値下がり銘柄数の確定値。基準日 2026-08-20。"
+            "投資の森 値上がり・値下がり銘柄数の確定値。基準日 2026-08-21。"
           ],
           [
             "東証プライム売買代金",
-            "8.6 兆円",
+            "7.91 兆円",
             "—",
-            "トレーダーズ・ウェブ 後場概況の確定値。基準日 2026-08-20。"
+            "トレーダーズ・ウェブ 後場概況の確定値。基準日 2026-08-21。"
           ],
           [
             "騰落レシオ（25日）",
-            "120.06%",
+            "116.81%",
             "—",
-            "投資の森 東証プライム騰落銘柄数の保存履歴から25営業日で算出の確定値。基準日 2026-08-20。"
+            "投資の森 東証プライム騰落銘柄数の保存履歴から25営業日で算出の確定値。基準日 2026-08-21。"
           ],
           [
             "日経225予想PER",
             "取得不能（対象日の確定値なし）",
             "—",
-            "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-08-20。"
+            "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-08-21。"
           ],
           [
             "日経225予想EPS",
             "取得不能（対象日の確定値なし）",
             "—",
-            "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-08-20。"
+            "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-08-21。"
           ],
           [
             "日経225 25日乖離率",
-            "+0.75%",
+            "+0.61%",
             "—",
-            "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-08-20。"
+            "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-08-21。"
           ],
           [
             "日経225 200日乖離率",
-            "+13.85%",
+            "+13.34%",
             "—",
-            "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-08-20。"
+            "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-08-21。"
           ],
           [
             "海外投資家動向（現物）",
@@ -2453,8 +2453,8 @@
             "JPX 投資部門別売買状況の東証プライム現物・週次公表値。買い越し。基準週末 2026-08-14。日次値ではない。"
           ]
         ],
-        "dataDate": "2026-08-20",
-        "updatedAt": "2026-08-20T18:47:08+09:00",
+        "dataDate": "2026-08-21",
+        "updatedAt": "2026-08-21T18:49:36+09:00",
         "source": {
           "name": "東京市場確定値統合（複数ソース・項目別基準日）",
           "sheet": "",
@@ -2715,27 +2715,123 @@
         }
       },
       "japan": {
-        "status": "unavailable",
-        "freshness": "unavailable",
-        "dataDate": null,
-        "asOf": null,
-        "updatedAt": "2026-08-21T17:54:43+09:00",
+        "title": "日本市場の大幅上昇・下落銘柄（東証プライム）",
+        "flag": "JP",
+        "status": "verified",
+        "freshness": "fresh",
+        "dataDate": "2026-08-21",
+        "asOf": "2026-08-21T15:45:00+09:00",
+        "updatedAt": "2026-08-21T19:01:16+09:00",
         "source": {
           "name": "トレーダーズ・ウェブ 国内市場ランキング（東証プライム・前日比）",
           "gainersUrl": "https://www.traders.co.jp/market_jp/stock_ranking/price_up/day/tp/all",
           "losersUrl": "https://www.traders.co.jp/market_jp/stock_ranking/price_down/day/tp/all"
         },
-        "error": "当日の東証プライムランキングを取得できませんでした: Traders Web ranking source is stale: source=2026-08-21, expected=2026-08-20",
-        "title": "日本市場の大幅上昇・下落銘柄（東証プライム）",
-        "flag": "JP",
-        "gainers": [],
-        "losers": [],
+        "error": null,
+        "sourceAt": {
+          "gainers": "2026-08-21T15:45:00+09:00",
+          "losers": "2026-08-21T15:45:00+09:00"
+        },
+        "gainers": [
+          {
+            "rank": 1,
+            "code": "9107",
+            "name": "川崎船（9107）",
+            "close": "3,405",
+            "change": "+7.28%",
+            "dayChange": "+231",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 2,
+            "code": "4005",
+            "name": "住友化（4005）",
+            "close": "559.8",
+            "change": "+7.18%",
+            "dayChange": "+37.5",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 3,
+            "code": "9722",
+            "name": "藤田観（9722）",
+            "close": "2,651",
+            "change": "+6.17%",
+            "dayChange": "+154",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 4,
+            "code": "4784",
+            "name": "ＧＭＯインター（4784）",
+            "close": "603",
+            "change": "+5.42%",
+            "dayChange": "+31",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 5,
+            "code": "9501",
+            "name": "東電力ＨＤ（9501）",
+            "close": "549.3",
+            "change": "+4.65%",
+            "dayChange": "+24.4",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
+          }
+        ],
+        "losers": [
+          {
+            "rank": 1,
+            "code": "4392",
+            "name": "ＦＩＧ（4392）",
+            "close": "1,132",
+            "change": "-12.99%",
+            "dayChange": "-169",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 2,
+            "code": "8050",
+            "name": "セイコーＧ（8050）",
+            "close": "10,530",
+            "change": "-4.88%",
+            "dayChange": "-540",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 3,
+            "code": "6235",
+            "name": "オプトラン（6235）",
+            "close": "2,674",
+            "change": "-4.84%",
+            "dayChange": "-136",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 4,
+            "code": "4368",
+            "name": "扶桑化学（4368）",
+            "close": "3,075",
+            "change": "-4.80%",
+            "dayChange": "-155",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
+          },
+          {
+            "rank": 5,
+            "code": "8798",
+            "name": "アドバンスク（8798）",
+            "close": "140",
+            "change": "-4.76%",
+            "dayChange": "-7",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
+          }
+        ],
         "lastGood": {
           "status": "verified",
           "freshness": "stale",
-          "dataDate": "2026-08-20",
-          "asOf": "2026-08-20T15:45:00+09:00",
-          "updatedAt": "2026-08-20T19:01:07+09:00",
+          "dataDate": "2026-08-21",
+          "asOf": "2026-08-21T15:45:00+09:00",
+          "updatedAt": "2026-08-21T19:01:16+09:00",
           "source": {
             "name": "トレーダーズ・ウェブ 国内市場ランキング（東証プライム・前日比）",
             "gainersUrl": "https://www.traders.co.jp/market_jp/stock_ranking/price_up/day/tp/all",
@@ -2743,101 +2839,101 @@
           },
           "error": null,
           "sourceAt": {
-            "gainers": "2026-08-20T15:45:00+09:00",
-            "losers": "2026-08-20T15:45:00+09:00"
+            "gainers": "2026-08-21T15:45:00+09:00",
+            "losers": "2026-08-21T15:45:00+09:00"
           },
           "gainers": [
             {
               "rank": 1,
-              "code": "9552",
-              "name": "クオンツ総研（9552）",
-              "close": "1,105",
-              "change": "+15.71%",
-              "dayChange": "+150",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-20。材料要因は別途ニュース確認。"
+              "code": "9107",
+              "name": "川崎船（9107）",
+              "close": "3,405",
+              "change": "+7.28%",
+              "dayChange": "+231",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 2,
-              "code": "8237",
-              "name": "松　屋（8237）",
-              "close": "2,387",
-              "change": "+12.49%",
-              "dayChange": "+265",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-20。材料要因は別途ニュース確認。"
+              "code": "4005",
+              "name": "住友化（4005）",
+              "close": "559.8",
+              "change": "+7.18%",
+              "dayChange": "+37.5",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 3,
-              "code": "5713",
-              "name": "住友鉱（5713）",
-              "close": "10,630",
-              "change": "+10.76%",
-              "dayChange": "+1,033",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-20。材料要因は別途ニュース確認。"
+              "code": "9722",
+              "name": "藤田観（9722）",
+              "close": "2,651",
+              "change": "+6.17%",
+              "dayChange": "+154",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 4,
-              "code": "3993",
-              "name": "ＰＫＳＨＡ（3993）",
-              "close": "3,310",
-              "change": "+9.78%",
-              "dayChange": "+295",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-20。材料要因は別途ニュース確認。"
+              "code": "4784",
+              "name": "ＧＭＯインター（4784）",
+              "close": "603",
+              "change": "+5.42%",
+              "dayChange": "+31",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 5,
-              "code": "3673",
-              "name": "ブロドリーフ（3673）",
-              "close": "487",
-              "change": "+9.68%",
-              "dayChange": "+43",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-20。材料要因は別途ニュース確認。"
+              "code": "9501",
+              "name": "東電力ＨＤ（9501）",
+              "close": "549.3",
+              "change": "+4.65%",
+              "dayChange": "+24.4",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
             }
           ],
           "losers": [
             {
               "rank": 1,
-              "code": "3778",
-              "name": "さくら（3778）",
-              "close": "3,570",
-              "change": "-8.81%",
-              "dayChange": "-345",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-20。材料要因は別途ニュース確認。"
+              "code": "4392",
+              "name": "ＦＩＧ（4392）",
+              "close": "1,132",
+              "change": "-12.99%",
+              "dayChange": "-169",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 2,
-              "code": "4392",
-              "name": "ＦＩＧ（4392）",
-              "close": "1,301",
-              "change": "-7.27%",
-              "dayChange": "-102",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-20。材料要因は別途ニュース確認。"
+              "code": "8050",
+              "name": "セイコーＧ（8050）",
+              "close": "10,530",
+              "change": "-4.88%",
+              "dayChange": "-540",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 3,
-              "code": "5444",
-              "name": "大和工（5444）",
-              "close": "12,045",
-              "change": "-3.87%",
-              "dayChange": "-485",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-20。材料要因は別途ニュース確認。"
+              "code": "6235",
+              "name": "オプトラン（6235）",
+              "close": "2,674",
+              "change": "-4.84%",
+              "dayChange": "-136",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 4,
-              "code": "8167",
-              "name": "リテールＰＴ（8167）",
-              "close": "1,429",
-              "change": "-3.84%",
-              "dayChange": "-57",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-20。材料要因は別途ニュース確認。"
+              "code": "4368",
+              "name": "扶桑化学（4368）",
+              "close": "3,075",
+              "change": "-4.80%",
+              "dayChange": "-155",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 5,
-              "code": "8304",
-              "name": "あおぞら（8304）",
-              "close": "3,238",
-              "change": "-3.11%",
-              "dayChange": "-104",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-20。材料要因は別途ニュース確認。"
+              "code": "8798",
+              "name": "アドバンスク（8798）",
+              "close": "140",
+              "change": "-4.76%",
+              "dayChange": "-7",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
             }
           ]
         }
@@ -4363,14 +4459,14 @@
       "note": "米国主要指数、NYSE/NASDAQ騰落、52週高安、200日線上下を同一取引日で保存。"
     },
     "marketDates": {
-      "japan": "2026-08-20",
+      "japan": "2026-08-21",
       "us": "2026-08-20"
     },
     "marketUpdatedAt": {
-      "japan": "2026-08-20T18:47:08+09:00",
+      "japan": "2026-08-21T18:49:36+09:00",
       "us": "2026-08-21T07:03:45+09:00"
     },
-    "nikkeiMetricsAsOf": "2026-08-20",
+    "nikkeiMetricsAsOf": "2026-08-21",
     "sessionAnalysis": {
       "tokyoOpen": {
         "title": "東京市場 朝の寄り付き分析",
