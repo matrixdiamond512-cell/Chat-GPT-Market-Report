@@ -1,16 +1,16 @@
 {
-  "checkedAt": "2026-08-20T22:25:21+09:00",
-  "reportDate": "2026-08-20",
+  "checkedAt": "2026-08-21T21:27:18+09:00",
+  "reportDate": "2026-08-21",
   "reportSlot": "08:00",
   "ready": false,
   "historicalMode": false,
   "reportSource": "reports.json",
-  "latestReportDate": "2026-08-20",
+  "latestReportDate": "2026-08-21",
   "latestReportTime": "21:00",
   "dataSemantics": "previous_close",
-  "expectedPreviousCloseDate": "2026-08-19",
+  "expectedPreviousCloseDate": "2026-08-20",
   "expectedRowCount": 28,
-  "actualRowCount": 28,
+  "actualRowCount": 6,
   "expectedColumns": [
     "項目",
     "終値・値",
@@ -19,43 +19,26 @@
     "方向感"
   ],
   "labels": [
-    "NYダウ",
-    "NASDAQ総合",
-    "S&P500",
-    "Russell 2000",
-    "日経225現物",
-    "CME日経225先物・円建て",
-    "CME日経225先物・ドル建て",
+    "COMEX金先物",
+    "WTI原油",
     "日経225先物（大阪取引所）",
     "USD/JPY",
     "EUR/USD",
-    "COMEX金先物",
-    "WTI原油",
-    "BTCUSD",
-    "VIX",
-    "日経VI",
-    "Fear & Greed Index",
-    "米10年債利回り",
-    "日本10年国債利回り",
-    "日経225予想PER",
-    "日経225 PBR",
-    "日経225予想EPS",
-    "日経225 25日移動平均乖離率",
-    "日経225 200日移動平均乖離率",
-    "東証プライム売買代金",
-    "東証プライム売買高",
-    "東証プライム値上がり銘柄数",
-    "東証プライム値下がり銘柄数",
-    "東証プライム25日騰落レシオ"
+    "BTCUSD"
   ],
   "blockingReasons": [
-    "latest-report mismatch: expected 2026-08-20 08:00, got 2026-08-20 21:00"
+    "BTCUSD: 5-column empty cell",
+    "COMEX金先物: 5-column empty cell",
+    "WTI原油: 5-column empty cell",
+    "latest-report mismatch: expected 2026-08-21 08:00, got 2026-08-21 21:00",
+    "market table order/labels mismatch",
+    "market table row count must be 28, got 6",
+    "marketDataTable columns contain intraday/current-value semantics",
+    "marketDataTable dataDate is missing or invalid",
+    "marketDataTable semantics must be previous_close, got empty"
   ],
   "warnings": [
-    "marketDataTable structured rows used from reports.json",
-    "required six-market value unavailable with reason: USD/JPY",
-    "required six-market value unavailable with reason: EUR/USD",
-    "required six-market value unavailable with reason: BTCUSD"
+    "marketDataTable structured rows used from reports.json"
   ],
   "rule": "08:00 is a previous-close report. Same-day/current snapshots are prohibited in the previous-close table; missing closes remain reasoned unavailable."
 }
