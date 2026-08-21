@@ -47,21 +47,21 @@
     }
   ],
   "errors": [],
-  "date": "2026-08-02",
+  "date": "2026-08-22",
   "events": [
     {
-      "id": "event-bd2f63fbf54e69",
-      "sourceKey": "2026-08-02|18:15|All|opec-jmmc meetings",
-      "date": "2026-08-02",
-      "time": "18:15",
-      "datetimeJst": "2026-08-02T18:15:00+09:00",
-      "scheduledAtSource": "2026-08-02T05:15:00-04:00",
-      "scheduledAtUtc": "2026-08-02T09:15:00Z",
-      "country": "複数",
-      "currency": "All",
-      "title": "OPEC関連会合",
-      "eventNameOriginal": "OPEC-JMMC Meetings",
-      "category": "energy",
+      "id": "event-2126461e8d1917",
+      "sourceKey": "2026-08-22|08:00|USD|president trump speaks",
+      "date": "2026-08-22",
+      "time": "08:00",
+      "datetimeJst": "2026-08-22T08:00:00+09:00",
+      "scheduledAtSource": "2026-08-21T19:00:00-04:00",
+      "scheduledAtUtc": "2026-08-21T23:00:00Z",
+      "country": "米国",
+      "currency": "USD",
+      "title": "President Trump Speaks",
+      "eventNameOriginal": "President Trump Speaks",
+      "category": "speech",
       "impactOriginal": "Medium",
       "ffImportance": 2,
       "importance": 2,
@@ -71,23 +71,25 @@
       "actual": "",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
-      "status": "result_pending",
+      "resultExplanation": "発表後に実績値と市場反応を更新します。",
+      "status": "scheduled",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
-        "原油",
+        "米2年債",
         "米10年債",
-        "ダウ先物",
         "USD/JPY",
+        "ダウ先物",
+        "ナスダック先物",
+        "日経225先物",
         "金"
       ],
       "focusMarkets": [
-        "原油",
+        "米2年債",
         "米10年債",
-        "ダウ先物",
         "USD/JPY",
-        "金"
+        "ダウ先物",
+        "ナスダック先物"
       ],
       "pricedIn": [
         "市場予想：予想なし",
@@ -97,9 +99,9 @@
       "scenarios": [
         [
           "米2年債",
-          "反応は限定的",
+          "上昇しやすい",
           "小動き",
-          "反応は限定的"
+          "低下しやすい"
         ],
         [
           "米10年債",
@@ -145,9 +147,9 @@
         ],
         [
           "原油",
-          "在庫減・供給不安なら上昇",
-          "予想通りなら限定的",
-          "在庫増・供給懸念後退なら下落"
+          "景気上振れなら支え",
+          "小動き",
+          "景気減速なら重い"
         ]
       ],
       "outlook": [
@@ -273,7 +275,7 @@
         ]
       ],
       "conclusion": {
-        "narrative": "結果確認中",
+        "narrative": "発表前",
         "reaction": "結果待ち",
         "watch": [
           "米2年債の初動",
@@ -284,15 +286,17 @@
         ]
       },
       "officialSource": {
-        "id": "opec",
-        "name": "OPEC",
-        "url": "https://www.opec.org/"
+        "id": "forex_factory",
+        "name": "Forex Factory Economic Calendar",
+        "url": "https://www.forexfactory.com/calendar"
       },
       "sourceType": "forex_factory_weekly",
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
-      "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-08-09T09:03:40+09:00"
+      "createdAt": "2026-08-21T11:59:55+09:00",
+      "updatedAt": "2026-08-21T11:59:55+09:00",
+      "resultExpected": false,
+      "resultType": "qualitative"
     }
   ]
 }
