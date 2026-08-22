@@ -244,8 +244,60 @@
     return blocks.join("");
   }
 
+  function tokyoContextMetrics(comp) {
+    var market = comp.contextMarket || {};
+    var rows = arr(market.rows);
+    var find = function (pattern, label) {
+      var row = rows.find(function (item) { return Array.isArray(item) && pattern.test(String(item[0] || "")); });
+      return row ? {label: label, value: row[1] || "取得不能", change: row[2] || "", note: row[3] || ""} : null;
+    };
+    return [
+      find(/^日経225$/, "日経225"),
+      find(/^TOPIX$/, "TOPIX"),
+      find(/^グロース250$/, "グロース250"),
+      find(/^日経VI$/, "日経VI"),
+      find(/値上がり銘柄/, "値上がり / 値下がり"),
+      find(/売買代金/, "東証プライム売買代金"),
+      find(/騰落レシオ（25日）/, "騰落レシオ（25日）"),
+      find(/海外投資家動向/, "海外投資家動向（現物）")
+    ].filter(Boolean);
+  }
+
+  function tokyoUnavailableContext(comp) {
+    var market = comp.contextMarket || {};
+    var metrics = tokyoContextMetrics(comp);
+    if (!metrics.length) return "";
+    var rows = arr(market.rows);
+    var valueOf = function (pattern) {
+      var row = rows.find(function (item) { return Array.isArray(item) && pattern.test(String(item[0] || "")); });
+      return row ? (row[1] || "取得不能") : "取得不能";
+    };
+    var changeOf = function (pattern) {
+      var row = rows.find(function (item) { return Array.isArray(item) && pattern.test(String(item[0] || "")); });
+      return row ? (row[2] || "—") : "—";
+    };
+    var sectors = comp.contextSectors || {};
+    var sectorNames = arr(sectors.gainers || sectors.rows).slice(0, 3).map(function (item) {
+      return item && item.name ? item.name + " " + (item.change || item.changePct || "") : "";
+    }).filter(Boolean);
+    var date = comp.contextDataDate || market.dataDate || "取得不能";
+    var insights = [
+      "専用の寄り前板データは取得不能のため、直近確定値を補助表示しています。基準日 " + date + "。",
+      "日経225 " + valueOf(/^日経225$/) + "、TOPIX " + valueOf(/^TOPIX$/) + "（" + changeOf(/^TOPIX$/) + "）、グロース250 " + changeOf(/^グロース250$/) + "。",
+      "市場内部：値上がり/値下がり " + valueOf(/値上がり銘柄/) + "、売買代金 " + valueOf(/売買代金/) + "。主導業種は " + (sectorNames.join("・") || "取得不能") + "。"
+    ];
+    var movers = comp.contextMovers || {};
+    var moverBlock = arr(movers.gainers).length || arr(movers.losers).length
+      ? "<div class="panel-body split">" + moverTable("上昇率TOP5（直近確定値）", movers.gainers, "up") + moverTable("下落率TOP5（直近確定値）", movers.losers, "down") + "</div>"
+      : "";
+    var sectorBlock = arr(sectors.gainers || sectors.rows).length || arr(sectors.losers).length
+      ? "<div class="panel-body"><div class="context-label">直近確定値：東京市場セクター強弱</div>" + sectorGroup(sectors.gainers || sectors.rows, "上昇率TOP5", "up", sectors) + sectorGroup(sectors.losers, "下落率TOP5", "down", sectors) + "</div>"
+      : "";
+    return metricGrid(metrics) + "<div class="session-insights"><h3>日本市場の確認ポイント</h3>" + list(insights) + "</div>" + moverBlock + sectorBlock + tokyoContext(comp);
+  }
+
   function preopen(comp) {
-    if (comp.freshness === "unavailable" && !arr(comp.metrics).length) return sessionShell("東京市場 朝の寄り前分析", comp, warning(comp));
+    if (comp.freshness === "unavailable" && !arr(comp.metrics).length) return sessionShell("東京市場 朝の寄り前分析", comp, warning(comp) + tokyoUnavailableContext(comp));
     var summary = comp.summary || {};
     var leadingSectors = arr(summary.leadingSectors).filter(Boolean);
     var sectorKpi = leadingSectors.length ? "<div class=\"kpi\"><span class=\"kpi-label\">主導業種</span><span class=\"kpi-value\">" + esc(leadingSectors.join("・")) + "</span></div>" : "";
@@ -317,6 +369,11 @@
     var jpContrib = normalize(jpContribPayload, dates.japan, "日本市場（日経225寄与度 上位・下位）", "JP");
     var usInternal = normalize(stocks.marketInternals && stocks.marketInternals.us, dates.us, "米国市場の主要指数・市場内部", "US");
     var jpInternal = normalize(stocks.marketInternals && stocks.marketInternals.japan, dates.japan, "日本市場の主要指数・市場内部", "JP");
+    jpPre.contextMarket = jpInternal;
+    jpPre.contextMovers = jpMovers;
+    jpPre.contextSectors = jpSectors;
+    jpPre.contextContributions = jpContrib;
+    jpPre.contextDataDate = dates.japan || jpInternal.dataDate || "取得不能";
     var components = [jpPre, usPre, jpMovers, usMovers, jpSectors, usSectors, usBreadth, usContrib, jpContrib, usInternal, jpInternal];
     var freshCount = components.filter(function (item) { return item.freshness === "fresh"; }).length;
     var unavailableCount = components.filter(function (item) { return item.freshness === "unavailable"; }).length;
