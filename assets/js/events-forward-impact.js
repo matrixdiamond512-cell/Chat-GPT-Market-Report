@@ -262,7 +262,7 @@
       }
     });
 
-    table.style.minWidth = "1480px";
+    table.style.minWidth = window.matchMedia("(max-width:700px)").matches ? "0" : "1480px";
   }
 
   function loadReportHistory() {
