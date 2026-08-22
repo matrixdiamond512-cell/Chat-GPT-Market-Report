@@ -172,6 +172,38 @@ def safe_fetch(symbol: str) -> tuple[dict[str, Any] | None, str | None]:
         return None, str(exc)
 
 
+def unavailable_snapshot(title: str, flag: str, source: str, error: Exception) -> dict[str, Any]:
+    """Write a fresh unavailable boundary instead of leaving yesterday visible.
+
+    A collector failure must still produce a dated write so the publication
+    workflow can advance and the browser can distinguish today's failure from
+    an old successful snapshot.
+    """
+    return {
+        "title": title,
+        "flag": flag,
+        "status": "unavailable",
+        "freshness": "unavailable",
+        "dataDate": now_jst().date().isoformat(),
+        "asOf": None,
+        "updatedAt": iso_jst(),
+        "source": source,
+        "metrics": [],
+        "insights": [],
+        "judgement": "当日のセッションデータを取得できないため、方向判定を保留します。",
+        "error": f"{type(error).__name__}: {error}",
+        "errors": [f"{type(error).__name__}: {error}"],
+    }
+
+
+def run_snapshot(snapshot, existing: dict[str, Any], title: str, flag: str, source: str) -> dict[str, Any]:
+    try:
+        return snapshot(existing)
+    except Exception as exc:  # Keep the scheduled writer alive on source/parser failures.
+        print(f"{title} update failed; publishing unavailable boundary: {exc}", file=sys.stderr)
+        return unavailable_snapshot(title, flag, source, exc)
+
+
 def tokyo_snapshot(existing: dict[str, Any]) -> dict[str, Any]:
     now = now_jst()
     date_iso = now.date().isoformat()
@@ -440,9 +472,21 @@ def main() -> int:
     sessions = stored.setdefault("sessionAnalysis", {})
 
     if mode in ("tokyo", "both"):
-        sessions["tokyoOpen"] = tokyo_snapshot(sessions.get("tokyoOpen") or {})
+        sessions["tokyoOpen"] = run_snapshot(
+            tokyo_snapshot,
+            sessions.get("tokyoOpen") or {},
+            "東京市場 朝の寄り付き分析",
+            "JP",
+            "Yahoo Finance chart API / Google Finance（TOPIX）",
+        )
     if mode in ("us", "both"):
-        sessions["usPremarket"] = us_snapshot(sessions.get("usPremarket") or {})
+        sessions["usPremarket"] = run_snapshot(
+            us_snapshot,
+            sessions.get("usPremarket") or {},
+            "米国市場 プレマーケット分析",
+            "US",
+            "Yahoo Finance chart API",
+        )
 
     sessions["bridge"] = build_bridge(stocks, sessions)
     stored["schemaVersion"] = "1.1.0"
@@ -469,3 +513,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+

@@ -17,6 +17,7 @@ on:
       - "scripts/build_chatgpt_report_input.py"
       - "scripts/build_market_sheet_exports.py"
       - "scripts/sync_latest_report_publication.py"
+      - "scripts/sync_stock_judgement_from_latest_report.py"
       - "scripts/reconcile_latest_report_market_data.py"
       - "scripts/test_reconcile_latest_report_market_data.py"
       - "scripts/verify_morning_report_qa.py"
@@ -191,6 +192,7 @@ jobs:
         run: |
           python scripts/sync_latest_report_publication.py
           python scripts/build_reports.py
+          python scripts/sync_stock_judgement_from_latest_report.py
 
       - name: Validate 08:00 publication QA when applicable
         shell: bash
@@ -246,6 +248,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/latest-report.json reports data/dashboard.json reports.json \
+            data/stocks.json \
             data/market/latest.json data/market/chatgpt-input.json \
             data/market/chatgpt_input.csv data/market/verified_history.csv \
             data/market/morning-daily-reference.json data/market/morning_report_qa.json

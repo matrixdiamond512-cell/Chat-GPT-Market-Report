@@ -32,7 +32,10 @@
     var raw = Object.assign({}, currentOf(payload));
     var actual = dateText(raw.dataDate || raw.marketDate || raw.asOf);
     var hasRows = ["rows","gainers","losers","top","bottom","topGainers","topLosers"].some(function (key) { return arr(raw[key]).length > 0; });
+    var statusText = String(raw.status || "");
+    var explicitlyUnavailable = raw.freshness === "unavailable" || raw.status === "unavailable" || /^取得不能|^未取得/.test(statusText);
     if (!raw.status) raw.status = actual && hasRows ? "ok" : "unavailable";
+    if (explicitlyUnavailable) raw.freshness = "unavailable";
     if (!raw.freshness) raw.freshness = raw.status === "unavailable" ? "unavailable" : (expected && actual === expected ? "fresh" : "stale");
     if (expected && raw.status !== "unavailable" && actual && actual !== expected) raw.freshness = "stale";
     if (raw.status === "unavailable") raw.freshness = "unavailable";
@@ -40,6 +43,60 @@
     raw.title = raw.title || title;
     raw.flag = raw.flag || marketFlag;
     return raw;
+  }
+
+  function sessionFallback(payload, expected, title, marketFlag) {
+    var raw = Object.assign({}, payload || {});
+    var actual = dateText(raw.dataDate || raw.marketDate || raw.asOf);
+    if (!actual || !arr(raw.metrics).length) return null;
+    var completed = /取得済み|verified|^ok$/i.test(String(raw.status || ""));
+    raw.title = title;
+    raw.flag = marketFlag;
+    raw.dataDate = actual;
+    raw.asOf = raw.asOf || raw.updatedAt || null;
+    raw.freshness = completed && expected && actual === expected ? "fresh" : "stale";
+    raw.status = raw.freshness === "fresh" ? "ok" : "stale";
+    return raw;
+  }
+
+  function sameDate(source, date) {
+    return source && dateText(source.dataDate || source.marketDate || source.asOf || source.generatedAt) === date;
+  }
+
+  function enrichTokyoSession(session, sectorsPayload, contributionsPayload) {
+    if (!session || !session.dataDate) return session;
+    var enriched = Object.assign({}, session);
+    if (sameDate(sectorsPayload, session.dataDate)) enriched.contextSectors = sectorsPayload;
+    if (sameDate(contributionsPayload, session.dataDate)) enriched.contextContributions = contributionsPayload;
+    return enriched;
+  }
+
+  function combineSession(primaryPayload, fallbackPayload, expected, title, marketFlag) {
+    var primary = normalize(primaryPayload, expected, title, marketFlag);
+    var fallback = sessionFallback(fallbackPayload, expected, title, marketFlag);
+    if (!fallback) return primary;
+    // An explicit unavailable current is newer information than a previous
+    // session snapshot. Do not let the old snapshot replace today's failure;
+    // otherwise the page appears frozen at the last successful date.
+    if (primary.freshness === "unavailable") {
+      primary.fallbackUsed = false;
+      return primary;
+    }
+    if (primary.freshness === "fresh") {
+      var mergedFresh = Object.assign({}, fallback, primary);
+      if (!arr(primary.metrics).length) mergedFresh.metrics = fallback.metrics;
+      if (!arr(primary.insights).length) mergedFresh.insights = fallback.insights;
+      if (!primary.judgement) mergedFresh.judgement = fallback.judgement;
+      return mergedFresh;
+    }
+    var merged = Object.assign({}, fallback);
+    ["summary", "gainers", "decliners", "buyOrderLeaders", "sellOrderLeaders", "topGainers", "topLosers", "topVolume", "breadth", "sectorBreadth", "indexFutures"].forEach(function (key) {
+      if (primary.freshness !== "unavailable" && ((Array.isArray(primary[key]) && primary[key].length) || (primary[key] && typeof primary[key] === "object" && Object.keys(primary[key]).length))) merged[key] = primary[key];
+    });
+    merged.fallbackUsed = true;
+    merged.fallbackReason = primary.error || "専用セッションデータが未取得のため、共通セッションスナップショットを表示しています。";
+    merged.error = primary.error || merged.fallbackReason;
+    return merged;
   }
 
   function meta(comp, session) {
@@ -126,10 +183,32 @@
     return "<ul>" + arr(items).map(function (item) { return "<li>" + esc(item) + "</li>"; }).join("") + "</ul>";
   }
 
-  function judgement(data) {
+  function metricGrid(items) {
+    if (!arr(items).length) return "";
+    return "<div class=\"session-kpis\">" + arr(items).map(function (item) {
+      return "<div class=\"kpi\"><span class=\"kpi-label\">" + esc(item.label || "指標") + "</span><span class=\"kpi-value " + cls(item.change) + "\">" + esc(item.value == null ? "取得不能" : item.value) + "</span>" + (item.change ? "<span class=\"kpi-change " + cls(item.change) + "\">" + esc(item.change) + "</span>" : "") + (item.note ? "<span class=\"reason\">" + esc(item.note) + "</span>" : "") + "</div>";
+    }).join("") + "</div>";
+  }
+
+  function fallbackNotice(comp) {
+    if (!comp.fallbackUsed) return "";
+    return "<div class=\"session-judgement\">専用データは未取得のため、共通セッションスナップショットを表示しています。基準日 " + esc(comp.dataDate || "取得不能") + "／取得日時 " + esc(comp.updatedAt || "取得不能") + "。当日値として扱わない項目は前回データです。</div>";
+  }
+
+  function judgement(data, stocks) {
     if (!data || typeof data !== "object") return "";
     var conclusion = data.conclusion || {};
-    return "<section class=\"bottom-cards\"><article class=\"info-card conclusion\"><h2><span class=\"icon\">✓</span>" + esc(conclusion.title || "総合判断") + "</h2><p class=\"conclusion-main\">" + esc(conclusion.main || "取得不能") + "</p><p class=\"conclusion-sub\">" + esc(conclusion.sub || "") + "</p></article><article class=\"info-card reason-card\"><h2><span class=\"icon\">▮</span>" + esc(data.reason && data.reason.title || "理由") + "</h2>" + list(data.reason && data.reason.items) + "</article><article class=\"info-card risk\"><h2><span class=\"icon\">!</span>" + esc(data.risk && data.risk.title || "リスク") + "</h2>" + list(data.risk && data.risk.items) + "</article><article class=\"info-card watch\"><h2><span class=\"icon\">◎</span>" + esc(data.watch && data.watch.title || "注目") + "</h2>" + list(data.watch && data.watch.items) + "</article></section>";
+    var reportKey = String(stocks && stocks.judgementReportKey || "");
+    var reportDate = dateText(reportKey) || dateText(stocks && stocks.marketDates && stocks.marketDates.japan);
+    var reportTime = reportKey.length >= 16 ? reportKey.slice(11, 16) : "";
+    var updatedAt = stocks && (stocks.judgementUpdatedAt || stocks.updatedAt);
+    var freshness = reportDate || updatedAt
+      ? "<div class=\"component-freshness\"><span>基準日 " + esc(reportDate || "取得不能") + (reportTime ? "（" + esc(reportTime) + "レポート）" : "") + "</span><span>更新日時 " + esc(updatedAt || "取得不能") + "</span></div>"
+      : "";
+    var card = function (className, icon, item, body) {
+      return "<article class=\"info-card " + className + "\">" + freshness + "<h2><span class=\"icon\">" + icon + "</span>" + esc(item && item.title || "取得不能") + "</h2>" + body + "</article>";
+    };
+    return "<section class=\"bottom-cards\">" + card("conclusion", "✓", conclusion, "<p class=\"conclusion-main\">" + esc(conclusion.main || "取得不能") + "</p><p class=\"conclusion-sub\">" + esc(conclusion.sub || "") + "</p>") + card("reason-card", "▮", data.reason, list(data.reason && data.reason.items)) + card("risk", "!", data.risk, list(data.risk && data.risk.items)) + card("watch", "◎", data.watch, list(data.watch && data.watch.items)) + "</section>";
   }
 
   function analyses(items) {
@@ -152,15 +231,29 @@
     return "<div class=\"table-wrap\"><h3 class=\"mini-title " + kind + "\">" + title + "</h3><table class=\"rank-table\"><thead><tr><th>順位</th><th>銘柄名</th><th>気配値</th><th>騰落率</th></tr></thead><tbody>" + rows + "</tbody></table></div>";
   }
 
+  function tokyoContext(comp) {
+    var blocks = [];
+    var contributions = comp.contextContributions || {};
+    if (arr(contributions.top).length || arr(contributions.bottom).length) {
+      blocks.push("<div class=\"panel-body split\"><div class=\"context-label\">同日確認：日経225寄与度</div>" + contributionTable("寄与度上位5", contributions.top, "up") + contributionTable("寄与度下位5", contributions.bottom, "down") + "</div>");
+    }
+    var sectors = comp.contextSectors || {};
+    if (arr(sectors.gainers).length || arr(sectors.losers).length) {
+      blocks.push("<div class=\"panel-body\"><div class=\"context-label\">同日確認：東京市場セクター強弱</div>" + sectorGroup(sectors.gainers, "上昇率TOP5", "up", sectors) + sectorGroup(sectors.losers, "下落率TOP5", "down", sectors) + "</div>");
+    }
+    return blocks.join("");
+  }
+
   function preopen(comp) {
-    if (comp.freshness === "unavailable") return sessionShell("東京市場 朝の寄り前分析", comp, warning(comp));
+    if (comp.freshness === "unavailable" && !arr(comp.metrics).length) return sessionShell("東京市場 朝の寄り前分析", comp, warning(comp));
     var summary = comp.summary || {};
     var leadingSectors = arr(summary.leadingSectors).filter(Boolean);
     var sectorKpi = leadingSectors.length ? "<div class=\"kpi\"><span class=\"kpi-label\">主導業種</span><span class=\"kpi-value\">" + esc(leadingSectors.join("・")) + "</span></div>" : "";
-    var kpis = "<div class=\"session-kpis\"><div class=\"kpi\"><span class=\"kpi-label\">全体</span><span class=\"kpi-value\">" + esc(summary.tone || "取得不能") + "</span></div><div class=\"kpi\"><span class=\"kpi-label\">広がり</span><span class=\"kpi-value\">" + esc(summary.breadth || "取得不能") + "</span></div>" + sectorKpi + "</div>";
-    var insights = "<div class=\"session-insights\"><h3>分析コメント</h3><p class=\"comment\">" + esc(summary.comment || "取得できたランキングだけを集計しています。") + "</p></div>";
+    var kpis = metricGrid(comp.metrics) || (summary.tone || summary.breadth || sectorKpi ? "<div class=\"session-kpis\"><div class=\"kpi\"><span class=\"kpi-label\">全体</span><span class=\"kpi-value\">" + esc(summary.tone || "取得不能") + "</span></div><div class=\"kpi\"><span class=\"kpi-label\">広がり</span><span class=\"kpi-value\">" + esc(summary.breadth || "取得不能") + "</span></div>" + sectorKpi + "</div>" : "");
+    var insights = arr(comp.insights).length ? "<div class=\"session-insights\"><h3>見るポイント</h3>" + list(comp.insights) + "</div>" : "<div class=\"session-insights\"><h3>分析コメント</h3><p class=\"comment\">" + esc(summary.comment || "取得できたランキングだけを集計しています。") + "</p></div>";
     var orders = arr(comp.buyOrderLeaders).length || arr(comp.sellOrderLeaders).length ? "<div class=\"panel-body split\">" + preopenTable("買い注文上位", comp.buyOrderLeaders, "up") + preopenTable("売り注文上位", comp.sellOrderLeaders, "down") + "</div>" : "";
-    return sessionShell("東京市場 朝の寄り前分析", comp, (comp.freshness === "stale" ? warning(comp) : "") + kpis + insights + "<div class=\"panel-body split\">" + preopenTable("上昇気配TOP10", comp.gainers, "up") + preopenTable("下落気配TOP10", comp.decliners, "down") + "</div>" + orders);
+    var detail = arr(comp.gainers).length || arr(comp.decliners).length ? "<div class=\"panel-body split\">" + preopenTable("上昇気配TOP10", comp.gainers, "up") + preopenTable("下落気配TOP10", comp.decliners, "down") + "</div>" : "";
+    return sessionShell("東京市場 朝の寄り前分析", comp, fallbackNotice(comp) + (comp.freshness === "stale" ? warning(comp) : "") + kpis + insights + detail + orders + tokyoContext(comp) + (comp.judgement ? "<div class=\"session-judgement\">" + esc(comp.judgement) + "</div>" : ""));
   }
 
   function futuresTable(comp) {
@@ -183,18 +276,24 @@
   }
 
   function premarket(comp) {
-    if (comp.freshness === "unavailable") return sessionShell("米国市場 プレマーケット分析", comp, warning(comp));
+    if (comp.freshness === "unavailable" && !arr(comp.metrics).length) return sessionShell("米国市場 プレマーケット分析", comp, warning(comp));
     var breadth = comp.breadth || {};
-    var kpis = "<div class=\"session-kpis\"><div class=\"kpi\"><span class=\"kpi-label\">監視銘柄</span><span class=\"kpi-value\">" + esc((comp.fetchedCount == null ? 0 : comp.fetchedCount) + " / " + (comp.universeSize == null ? 50 : comp.universeSize)) + "</span></div><div class=\"kpi\"><span class=\"kpi-label\">coverage</span><span class=\"kpi-value\">" + esc((comp.coverageRatio == null ? 0 : comp.coverageRatio) + "%") + "</span></div><div class=\"kpi\"><span class=\"kpi-label\">上昇 / 下落 / 横ばい</span><span class=\"kpi-value\">" + esc((breadth.up || 0) + " / " + (breadth.down || 0) + " / " + (breadth.flat || 0)) + "</span></div></div>";
+    var kpis = metricGrid(comp.metrics) || "<div class=\"session-kpis\"><div class=\"kpi\"><span class=\"kpi-label\">監視銘柄</span><span class=\"kpi-value\">" + esc((comp.fetchedCount == null ? 0 : comp.fetchedCount) + " / " + (comp.universeSize == null ? 50 : comp.universeSize)) + "</span></div><div class=\"kpi\"><span class=\"kpi-label\">coverage</span><span class=\"kpi-value\">" + esc((comp.coverageRatio == null ? 0 : comp.coverageRatio) + "%") + "</span></div><div class=\"kpi\"><span class=\"kpi-label\">上昇 / 下落 / 横ばい</span><span class=\"kpi-value\">" + esc((breadth.up || 0) + " / " + (breadth.down || 0) + " / " + (breadth.flat || 0)) + "</span></div></div>";
     var comment = comp.analysis && comp.analysis.comment || "監視銘柄ベース。S&P500全体のBreadthとは別集計です。";
-    var insights = "<div class=\"session-insights\"><h3>総合判定</h3><p class=\"comment\">" + esc(comment) + "</p></div>";
-    return sessionShell("米国市場 プレマーケット分析", comp, (comp.freshness === "stale" ? warning(comp) : "") + kpis + insights + "<div class=\"panel-body split\">" + moverTable("上昇率TOP10", comp.topGainers, "up") + moverTable("下落率TOP10", comp.topLosers, "down") + "</div><div class=\"panel-body\">" + moverTable("出来高TOP10", comp.topVolume, "up") + futuresTable(comp) + "<div class=\"sector-mover-group\"><h3 class=\"mini-title\">セクター強弱（監視銘柄ベース）</h3>" + premarketSectorRows(comp) + "</div></div>");
+    var insights = arr(comp.insights).length ? "<div class=\"session-insights\"><h3>見るポイント</h3>" + list(comp.insights) + "</div>" : "<div class=\"session-insights\"><h3>総合判定</h3><p class=\"comment\">" + esc(comment) + "</p></div>";
+    var detail = arr(comp.topGainers).length || arr(comp.topLosers).length || arr(comp.topVolume).length ? "<div class=\"panel-body split\">" + moverTable("上昇率TOP10", comp.topGainers, "up") + moverTable("下落率TOP10", comp.topLosers, "down") + "</div><div class=\"panel-body\">" + moverTable("出来高TOP10", comp.topVolume, "up") + futuresTable(comp) + "<div class=\"sector-mover-group\"><h3 class=\"mini-title\">セクター強弱（監視銘柄ベース）</h3>" + premarketSectorRows(comp) + "</div></div>" : "";
+    return sessionShell("米国市場 プレマーケット分析", comp, fallbackNotice(comp) + (comp.freshness === "stale" ? warning(comp) : "") + kpis + insights + detail + (comp.judgement ? "<div class=\"session-judgement\">" + esc(comp.judgement) + "</div>" : ""));
   }
 
   function bridgeSection(japanPre, usPre, usInternal, pageStatus) {
-    var jpText = japanPre.freshness === "fresh" ? japanPre.dataDate + " / " + (japanPre.summary && japanPre.summary.tone || "寄り前判定取得済み") : "東京寄り前データ取得不能";
-    var usText = usPre.freshness === "fresh" ? usPre.dataDate + " / coverage " + (usPre.coverageRatio == null ? 0 : usPre.coverageRatio) + "%" : "米国プレマーケット取得不能";
-    var closeText = usInternal.freshness === "fresh" ? usInternal.dataDate + " / 通常市場内部データ" : "米国通常市場内部データ取得不能";
+    var bridgeText = function (comp, label, freshText) {
+      if (comp.freshness === "fresh") return comp.dataDate + " / " + freshText;
+      if (comp.freshness === "stale") return "前回データ " + (comp.dataDate || "日付取得不能") + " / 更新待ち";
+      return label + "取得不能";
+    };
+    var jpText = bridgeText(japanPre, "東京寄り前データ", (japanPre.summary && japanPre.summary.tone) || "寄り前判定取得済み");
+    var usText = bridgeText(usPre, "米国プレマーケット", "coverage " + (usPre.coverageRatio == null ? 0 : usPre.coverageRatio) + "%");
+    var closeText = bridgeText(usInternal, "米国通常市場内部データ", "通常市場内部データ");
     var conclusion = pageStatus === "ok" ? "東京寄り前・米国プレマーケット・通常市場内部が同時にfreshです。" : pageStatus === "degraded" ? "一部カードが更新待ちです。カード別の基準日とfreshnessを確認してください。" : "主要市場データが取得不能です。前回データを当日値として扱わないでください。";
     return "<section class=\"bridge\"><h2>日米市場の引き継ぎ分析</h2><div class=\"bridge-flow\"><div class=\"flow-step\"><b>東京市場</b><p>" + esc(jpText) + "</p></div><div class=\"flow-arrow\">→</div><div class=\"flow-step\"><b>米国プレマーケット</b><p>" + esc(usText) + "</p></div><div class=\"flow-arrow\">→</div><div class=\"flow-step\"><b>米国通常市場</b><p>" + esc(closeText) + "</p></div></div><p class=\"bridge-conclusion\">" + esc(conclusion) + "</p></section>";
   }
@@ -203,17 +302,18 @@
     return "<section class=\"section-head\"><div><h2>時間軸で見る株式市場</h2></div><p>寄り付き → プレマーケット → 通常取引の流れを確認<br>ページ状態：" + esc(pageStatus) + " ／ 最新カード " + freshCount + "件 ／ 取得不能 " + unavailableCount + "件</p></section>";
   }
 
-  function render(stocks, tokyo, uspre, moversJp, sectorPayload, breadthPayload, moversUs, contribUs, contribJp) {
+  function render(stocks, tokyo, uspre, moversJp, sectorPayload, breadthPayload, moversUs, contribUs, contribJp, sessionsPayload) {
     var dates = stocks.marketDates || {};
-    var jpPre = normalize(tokyo, jstDate(), "東京市場 朝の寄り前分析", "JP");
-    var usPre = normalize(uspre, nyDate(), "米国市場 プレマーケット分析", "US");
+    var sessions = (sessionsPayload && sessionsPayload.sessionAnalysis) || stocks.sessionAnalysis || {};
+    var jpContribPayload = Object.keys(contribJp || {}).length ? contribJp : stocks.contributions && stocks.contributions.japan;
+    var jpPre = enrichTokyoSession(combineSession(tokyo, sessions.tokyoOpen, jstDate(), "東京市場 朝の寄り前分析", "JP"), sectorPayload.markets && sectorPayload.markets.japan, jpContribPayload);
+    var usPre = combineSession(uspre, sessions.usPremarket, nyDate(), "米国市場 プレマーケット分析", "US");
     var jpMovers = normalize(moversJp, dates.japan, "日本市場の大幅上昇・下落銘柄（東証プライム）", "JP");
     var usMovers = normalize(moversUs, dates.us, "米国市場の大幅上昇・下落銘柄（S&P500構成銘柄）", "US");
     var jpSectors = normalize(sectorPayload.markets && sectorPayload.markets.japan, dates.japan, "東京市場のセクター・業種", "JP");
     var usSectors = normalize(sectorPayload.markets && sectorPayload.markets.us, dates.us, "米国市場のセクター・業種", "US");
     var usBreadth = normalize(breadthPayload, dates.us, "米国市場内部 Breadth", "US");
     var usContrib = normalize(contribUs, dates.us, "米国市場（S&P500寄与度 推計・bp）", "US");
-    var jpContribPayload = Object.keys(contribJp || {}).length ? contribJp : stocks.contributions && stocks.contributions.japan;
     var jpContrib = normalize(jpContribPayload, dates.japan, "日本市場（日経225寄与度 上位・下位）", "JP");
     var usInternal = normalize(stocks.marketInternals && stocks.marketInternals.us, dates.us, "米国市場の主要指数・市場内部", "US");
     var jpInternal = normalize(stocks.marketInternals && stocks.marketInternals.japan, dates.japan, "日本市場の主要指数・市場内部", "JP");
@@ -230,7 +330,7 @@
       "<section class=\"pair-grid\" aria-label=\"大幅上昇・下落銘柄\">" + movers(usMovers) + movers(jpMovers) + "</section>" +
       "<section class=\"pair-grid\" aria-label=\"セクター・業種\">" + sectors(usSectors) + sectors(jpSectors) + "</section>" +
       "<section class=\"pair-grid\" aria-label=\"指数寄与度\">" + contributions(usContrib) + contributions(jpContrib) + "</section>" +
-      judgement(stocks.judgement) + analyses(stocks.analysisCards) +
+      judgement(stocks.judgement, stocks) + analyses(stocks.analysisCards) +
       "<p class=\"note\">" + esc(stocks.note || "データが存在しない項目は「取得不能」と表示します。") + "</p>";
   }
 
@@ -238,7 +338,8 @@
     "data/stocks.json", "data/market/tokyo-preopen.json", "data/market/us-premarket.json",
     "data/market/japan-stock-movers.json", "data/market/sector-performance.json",
     "data/market/us-stock-breadth.json", "data/market/us-stock-movers.json",
-    "data/market/sp500-contributions.json", "data/nikkei-contributions.json"
+    "data/market/sp500-contributions.json", "data/nikkei-contributions.json",
+    "data/stock-sessions.json"
   ];
   var get = function (path) {
     return fetch(path + "?ts=" + Date.now(), {cache:"no-store"}).then(function (response) {
@@ -247,10 +348,11 @@
   };
   Promise.all(paths.map(get)).then(function (values) {
     if (!values[0]) throw new Error("data/stocks.jsonを取得できません");
-    render(values[0], values[1] || {}, values[2] || {}, values[3] || {}, values[4] || {}, values[5] || {}, values[6] || {}, values[7] || {}, values[8] || {});
+    render(values[0], values[1] || {}, values[2] || {}, values[3] || {}, values[4] || {}, values[5] || {}, values[6] || {}, values[7] || {}, values[8] || {}, values[9] || {});
   }).catch(function (error) {
     updated.textContent = "ページ状態：unavailable";
     root.innerHTML = "<div class=\"empty\">株式市場分析を表示できません。理由：" + esc(error.message) + "</div>";
   });
 })();
+
 
