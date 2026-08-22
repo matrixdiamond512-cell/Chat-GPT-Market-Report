@@ -17,6 +17,7 @@
   ];
 
   let latestStocksPayload = null;
+  let sessionPayload = null;
   let nikkeiPayload = null;
   let sectorPayload = null;
   let historyIndex = null;
@@ -116,7 +117,8 @@
     });
     const status = document.querySelector("[data-updated]");
     if (status) {
-      const prefix = requestedDate ? `保存日 ${displayDate(requestedDate)}` : `更新日時 ${displayDateTime(data.updatedAt || data.savedAt || data.generatedAt)}`;
+      const pageUpdatedAt = data.judgementUpdatedAt || sessionPayload?.updatedAt || data.updatedAt || data.savedAt || data.generatedAt;
+      const prefix = requestedDate ? `保存日 ${displayDate(requestedDate)}` : `更新日時 ${displayDateTime(pageUpdatedAt)}`;
       status.textContent = `${prefix} / 米国市場 ${displayDate(dates.us)} / 東京市場 ${displayDate(dates.japan)}`;
     }
     const calendarStatus = document.querySelector(".stocks-date-status");
@@ -254,6 +256,22 @@
     return true;
   }
 
+  function withSessionData(data) {
+    if (!data || !sessionPayload?.sessionAnalysis) return data;
+    return { ...data, sessionAnalysis: sessionPayload.sessionAnalysis };
+  }
+
+  function reportCardSource(source, data) {
+    const reportDate = dateOnly(data?.judgementReportKey);
+    if (!reportDate) return source || {};
+    return { ...(source || {}), dataDate: reportDate, updatedAt: data.judgementUpdatedAt || source?.updatedAt };
+  }
+
+  function sessionBridgeSource(source) {
+    const updatedAt = sessionPayload?.updatedAt || source?.updatedAt || "";
+    return { ...(source || {}), dataDate: dateOnly(updatedAt) || source?.dataDate, updatedAt };
+  }
+
   function sectionPanels(label) {
     const section = Array.from(document.querySelectorAll("section"))
       .find(node => (node.getAttribute("aria-label") || "").includes(label));
@@ -283,39 +301,41 @@
 
   function applyAllCardMeta(data) {
     if (!data) return false;
-    applySessionMeta(data);
+    const viewData = withSessionData(data);
+    applySessionMeta(viewData);
 
     const pairSpecs = [
-      ["主要指数と市場内部", [data?.marketInternals?.us, data?.marketInternals?.japan], ["us", "japan"], [null, null]],
-      ["大幅上昇・下落銘柄", [data?.movers?.us, data?.movers?.japan], ["us", "japan"], [null, null]],
-      ["セクター・業種", [requestedDate ? data?.sectors?.us : (sectorPayload?.markets?.us || data?.sectors?.us), requestedDate ? data?.sectors?.japan : (sectorPayload?.markets?.japan || data?.sectors?.japan)], ["us", "japan"], [requestedDate ? null : sectorPayload?.generatedAt, requestedDate ? null : sectorPayload?.generatedAt]],
-      ["指数寄与度", [data?.contributions?.us, data?.contributions?.japan], ["us", "japan"], [null, null]]
+      ["主要指数と市場内部", [viewData?.marketInternals?.us, viewData?.marketInternals?.japan], ["us", "japan"], [null, null]],
+      ["大幅上昇・下落銘柄", [viewData?.movers?.us, viewData?.movers?.japan], ["us", "japan"], [null, null]],
+      ["セクター・業種", [requestedDate ? viewData?.sectors?.us : (sectorPayload?.markets?.us || viewData?.sectors?.us), requestedDate ? viewData?.sectors?.japan : (sectorPayload?.markets?.japan || viewData?.sectors?.japan)], ["us", "japan"], [requestedDate ? null : sectorPayload?.generatedAt, requestedDate ? null : sectorPayload?.generatedAt]],
+      ["指数寄与度", [viewData?.contributions?.us, viewData?.contributions?.japan], ["us", "japan"], [null, null]]
     ];
     pairSpecs.forEach(([label, sources, markets, updates]) => {
       const panels = sectionPanels(label);
       panels.slice(0, 2).forEach((panel, index) => upsertCardMeta(panel, sources[index] || {}, markets[index], data, updates[index]));
     });
 
-    const judgementItems = [data?.judgement?.conclusion, data?.judgement?.reason, data?.judgement?.risk, data?.judgement?.watch];
+    const judgementItems = [viewData?.judgement?.conclusion, viewData?.judgement?.reason, viewData?.judgement?.risk, viewData?.judgement?.watch];
     Array.from(document.querySelectorAll(".bottom-cards > .info-card")).forEach((card, index) => {
-      upsertCardMeta(card, judgementItems[index] || {}, null, data);
+      upsertCardMeta(card, reportCardSource(judgementItems[index] || {}, viewData), null, viewData);
     });
 
     Array.from(document.querySelectorAll(".analysis-grid > .analysis-card")).forEach((card, index) => {
-      upsertCardMeta(card, arr(data?.analysisCards)[index] || {}, null, data);
+      upsertCardMeta(card, reportCardSource(arr(viewData?.analysisCards)[index] || {}, viewData), null, viewData);
     });
 
     const bridge = document.querySelector(".bridge");
-    if (bridge) upsertCardMeta(bridge, data?.sessionAnalysis?.bridge || {}, null, data);
+    if (bridge) upsertCardMeta(bridge, sessionBridgeSource(viewData?.sessionAnalysis?.bridge || {}), null, viewData);
     return true;
   }
 
   function applyLatest() {
     if (requestedDate) return;
+    const viewData = withSessionData(latestStocksPayload);
     applyNikkeiMetrics();
     applySectors();
-    applyMarketDateLabels(latestStocksPayload);
-    applyAllCardMeta(latestStocksPayload);
+    applyMarketDateLabels(viewData);
+    applyAllCardMeta(viewData);
   }
 
   const panel = (s, body) => `<article class="panel"><h2 class="panel-title"><span class="flag">${flag(s?.flag)}</span>${esc((s?.title || "取得不能").replace("（上昇率TOP5）", ""))}</h2>${body}</article>`;
@@ -395,12 +415,14 @@
       loadJson(STOCKS_URL),
       loadJson(NIKKEI_URL),
       loadJson(SECTOR_URL),
-      loadJson(HISTORY_INDEX_URL)
+      loadJson(HISTORY_INDEX_URL),
+      loadJson("data/stock-sessions.json")
     ]);
     if (results[0].status === "fulfilled") latestStocksPayload = results[0].value;
     if (results[1].status === "fulfilled") nikkeiPayload = results[1].value;
     if (results[2].status === "fulfilled") sectorPayload = results[2].value;
     if (results[3].status === "fulfilled") historyIndex = results[3].value;
+    if (results[4].status === "fulfilled") sessionPayload = results[4].value;
 
     injectCalendar();
     if (requestedDate) {
@@ -428,4 +450,5 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
   else init();
 })();
+
 
