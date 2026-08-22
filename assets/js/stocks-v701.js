@@ -29,11 +29,27 @@
   };
 
   function normalize(payload, expected, title, marketFlag) {
+    var source = payload && typeof payload === "object" ? payload : {};
     var raw = Object.assign({}, currentOf(payload));
-    var actual = dateText(raw.dataDate || raw.marketDate || raw.asOf);
-    var hasRows = ["rows","gainers","losers","top","bottom","topGainers","topLosers"].some(function (key) { return arr(raw[key]).length > 0; });
     var statusText = String(raw.status || "");
     var explicitlyUnavailable = raw.freshness === "unavailable" || raw.status === "unavailable" || /^取得不能|^未取得/.test(statusText);
+    var lastGood = raw.lastGood && typeof raw.lastGood === "object" ? raw.lastGood : (source.lastGood && typeof source.lastGood === "object" ? source.lastGood : null);
+    var lastGoodHasRows = lastGood && ["rows","gainers","losers","top","bottom","topGainers","topLosers"].some(function (key) { return arr(lastGood[key]).length > 0; });
+    if (explicitlyUnavailable && lastGoodHasRows) {
+      var currentError = raw.error || source.error;
+      var currentAttemptAt = raw.updatedAt || source.updatedAt;
+      raw = Object.assign({}, lastGood);
+      raw.status = "stale";
+      raw.freshness = "stale";
+      raw.error = currentError || "当日の確定値へ更新されるまで最新値として扱いません。";
+      raw.fallbackUsed = true;
+      raw.lastGoodUpdatedAt = raw.updatedAt || null;
+      raw.fetchAttemptUpdatedAt = currentAttemptAt || null;
+    }
+    var actual = dateText(raw.dataDate || raw.marketDate || raw.asOf);
+    var hasRows = ["rows","gainers","losers","top","bottom","topGainers","topLosers"].some(function (key) { return arr(raw[key]).length > 0; });
+    statusText = String(raw.status || "");
+    explicitlyUnavailable = raw.freshness === "unavailable" || raw.status === "unavailable" || /^取得不能|^未取得/.test(statusText);
     if (!raw.status) raw.status = actual && hasRows ? "ok" : "unavailable";
     if (explicitlyUnavailable) raw.freshness = "unavailable";
     if (!raw.freshness) raw.freshness = raw.status === "unavailable" ? "unavailable" : (expected && actual === expected ? "fresh" : "stale");

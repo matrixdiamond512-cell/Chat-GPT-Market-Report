@@ -13,6 +13,9 @@ on:
     - cron: "45 21 * * 1-5" # 06:45 JST Tue-Sat
     - cron: "5 22 * * 1-5"  # 07:05 JST Tue-Sat
     - cron: "25 22 * * 1-5" # 07:25 JST Tue-Sat
+  workflow_run:
+    workflows: ["Update US stock table and daily archive"]
+    types: [completed]
 
 permissions:
   contents: write
@@ -23,6 +26,7 @@ concurrency:
 
 jobs:
   update:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -30,6 +34,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@v5
