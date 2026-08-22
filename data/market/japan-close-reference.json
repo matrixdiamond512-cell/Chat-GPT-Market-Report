@@ -1,26 +1,50 @@
 {
   "schemaVersion": "1.2.0",
-  "generatedAt": "2026-08-21T23:52:33+09:00",
+  "generatedAt": "2026-08-22T10:45:38+09:00",
   "dataDate": "2026-08-21",
   "complete": false,
   "items": {
     "日経225現物": {
       "value": "66,016.36",
+      "change": "-200.43",
+      "rate": "-0.30%",
+      "direction": "下落",
       "date": "2026-08-21",
-      "sourceName": "Yahoo Finance Nikkei 225 daily history",
-      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/"
+      "sourceName": "投資の森 日経平均PER・PBR（同日終値・前日差）",
+      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/",
+      "status": "exact_date_close_anchor"
     },
     "日経225 25日移動平均乖離率": {
       "value": "+0.61%",
       "date": "2026-08-21",
-      "sourceName": "Yahoo Finance Nikkei 225 daily history",
-      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/"
+      "sourceName": "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）",
+      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
+      "status": "calculated_with_exact_date_close_anchor"
     },
     "日経225 200日移動平均乖離率": {
       "value": "+13.34%",
       "date": "2026-08-21",
-      "sourceName": "Yahoo Finance Nikkei 225 daily history",
-      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/"
+      "sourceName": "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）",
+      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
+      "status": "calculated_with_exact_date_close_anchor"
+    },
+    "日経225予想PER": {
+      "value": "17.11倍",
+      "date": "2026-08-21",
+      "sourceName": "投資の森 日経平均PER・PBR",
+      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
+    },
+    "日経225 PBR": {
+      "value": "1.87倍",
+      "date": "2026-08-21",
+      "sourceName": "投資の森 日経平均PER・PBR",
+      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
+    },
+    "日経225予想EPS": {
+      "value": "3,858.35円",
+      "date": "2026-08-21",
+      "sourceName": "投資の森 日経平均PER・PBR",
+      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
     },
     "東証プライム値上がり銘柄数": {
       "value": "883",
@@ -43,7 +67,6 @@
     }
   },
   "unavailable": {
-    "日経225予想PER/PBR/EPS": "2026-08-21行がソースに未反映",
     "東証プライム売買高": "2026-08-21の大引けブロックがトレーダーズ・ウェブに取得時点で見つからず"
   },
   "breadthHistory": [
@@ -300,5 +323,18 @@
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
     }
   ],
-  "rule": "accept exact target-date records only; never carry stale records forward"
+  "rule": "accept exact target-date records only; never carry stale records forward",
+  "qualityChecks": {
+    "nikkeiCloseCrossCheck": {
+      "checkedAt": "2026-08-22T10:45:38+09:00",
+      "targetDate": "2026-08-21",
+      "authoritativeClose": 66016.36,
+      "authoritativeChange": -200.43,
+      "previousCloseDerived": 66216.79,
+      "oldReferenceClose": 66016.36,
+      "yahooTargetDayRawClose": 66016.359375,
+      "differenceVsYahoo": 0.0006250000005820766,
+      "rule": "Exact-date valuation-page close anchors the session; Yahoo is used only for the historical moving-average window after target-close replacement."
+    }
+  }
 }
