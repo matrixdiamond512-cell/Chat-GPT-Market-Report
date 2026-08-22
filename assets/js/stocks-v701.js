@@ -235,7 +235,7 @@
     var blocks = [];
     var contributions = comp.contextContributions || {};
     if (arr(contributions.top).length || arr(contributions.bottom).length) {
-      blocks.push("<div class=\"panel-body split\"><div class=\"context-label\">同日確認：日経225寄与度</div>" + contributionTable("寄与度上位5", contributions.top, "up") + contributionTable("寄与度下位5", contributions.bottom, "down") + "</div>");
+      blocks.push("<div class=\"panel-body\"><div class=\"context-label\">同日確認：日経225寄与度</div><div class=\"split\">" + contributionTable("寄与度上位5", contributions.top, "up") + contributionTable("寄与度下位5", contributions.bottom, "down") + "</div></div>");
     }
     var sectors = comp.contextSectors || {};
     if (arr(sectors.gainers).length || arr(sectors.losers).length) {
