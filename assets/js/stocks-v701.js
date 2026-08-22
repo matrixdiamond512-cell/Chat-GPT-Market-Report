@@ -288,12 +288,12 @@
     ];
     var movers = comp.contextMovers || {};
     var moverBlock = arr(movers.gainers).length || arr(movers.losers).length
-      ? "<div class="panel-body split">" + moverTable("上昇率TOP5（直近確定値）", movers.gainers, "up") + moverTable("下落率TOP5（直近確定値）", movers.losers, "down") + "</div>"
+      ? "<div class=\"panel-body split\">" + moverTable("上昇率TOP5（直近確定値）", movers.gainers, "up") + moverTable("下落率TOP5（直近確定値）", movers.losers, "down") + "</div>"
       : "";
     var sectorBlock = arr(sectors.gainers || sectors.rows).length || arr(sectors.losers).length
-      ? "<div class="panel-body"><div class="context-label">直近確定値：東京市場セクター強弱</div>" + sectorGroup(sectors.gainers || sectors.rows, "上昇率TOP5", "up", sectors) + sectorGroup(sectors.losers, "下落率TOP5", "down", sectors) + "</div>"
+      ? "<div class=\"panel-body\"><div class=\"context-label\">直近確定値：東京市場セクター強弱</div>" + sectorGroup(sectors.gainers || sectors.rows, "上昇率TOP5", "up", sectors) + sectorGroup(sectors.losers, "下落率TOP5", "down", sectors) + "</div>"
       : "";
-    return metricGrid(metrics) + "<div class="session-insights"><h3>日本市場の確認ポイント</h3>" + list(insights) + "</div>" + moverBlock + sectorBlock + tokyoContext(comp);
+    return metricGrid(metrics) + "<div class=\"session-insights\"><h3>日本市場の確認ポイント</h3>" + list(insights) + "</div>" + moverBlock + sectorBlock + tokyoContext(comp);
   }
 
   function preopen(comp) {
