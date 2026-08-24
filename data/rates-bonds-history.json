@@ -976,7 +976,7 @@
     },
     {
       "asOf": "2026-08-21",
-      "generatedAt": "2026-08-24T12:40:10+09:00",
+      "generatedAt": "2026-08-24T16:45:34+09:00",
       "rates": {
         "米2年債利回り": 4.19,
         "米5年債利回り": 4.39,
@@ -1022,7 +1022,7 @@
         "topLines": [
           "米国：ツイスト｜年限ごとに方向が分かれる",
           "日本：ツイスト｜年限ごとに方向が分かれる",
-          "クロスアセット：USD/JPYは混合、金は逆行、BTCUSDは逆行"
+          "クロスアセット：USD/JPYは混合、金は逆行、BTCUSDは整合"
         ],
         "theme": "米国はツイスト、日本はツイスト。日米金利差は方向混在。",
         "usRates": {
@@ -1052,10 +1052,10 @@
           "jpDirection": "年限ごとに方向が分かれる",
           "rateGapDirection": "方向混在",
           "usdJpyImplication": "中立",
-          "actualUsdJpy": "横ばい",
+          "actualUsdJpy": "上昇",
           "verdict": "混合",
           "confidence": "低",
-          "interpretation": "金利示唆は中立、実際は横ばい。金利差以外のドル需要・円売りフローを確認。基準日が4日ずれるため参考方向として表示。",
+          "interpretation": "金利示唆は中立、実際は上昇。金利差以外のドル需要・円売りフローを確認。基準日が4日ずれるため参考方向として表示。",
           "tenors": [
             {
               "tenor": "2年",
@@ -1081,34 +1081,34 @@
           "direction": "横ばい",
           "goldImplication": "下落",
           "btcImplication": "下落",
-          "interpretation": "実質金利は横ばい。金は逆行、BTCUSDは逆行。"
+          "interpretation": "実質金利は横ばい。金は逆行、BTCUSDは整合。"
         },
         "crossAssetAnalysis": [
           {
             "market": "USD/JPY",
             "expectedDirection": "中立",
-            "actualDirection": "横ばい",
-            "actualChangePct": 0.015737615240674074,
+            "actualDirection": "上昇",
+            "actualChangePct": 0.13595186426846873,
             "verdict": "混合",
             "confidence": "低",
-            "interpretation": "金利示唆は中立、実際は横ばい。金利差以外のドル需要・円売りフローを確認。",
+            "interpretation": "金利示唆は中立、実際は上昇。金利差以外のドル需要・円売りフローを確認。",
             "timingNote": "基準日が4日ずれるため参考方向として表示。"
           },
           {
             "market": "EUR/USD",
             "expectedDirection": "下落",
-            "actualDirection": "横ばい",
-            "actualChangePct": -0.024310865490762,
-            "verdict": "逆行",
+            "actualDirection": "下落",
+            "actualChangePct": -0.06709036447858363,
+            "verdict": "整合",
             "confidence": "低",
-            "interpretation": "金利示唆は下落、実際は横ばい。米欧金利差とドル需要を確認。",
+            "interpretation": "金利示唆は下落、実際は下落。方向が整合。",
             "timingNote": "基準日が4日ずれるため参考方向として表示。"
           },
           {
             "market": "金",
             "expectedDirection": "下落",
             "actualDirection": "上昇",
-            "actualChangePct": 1.5851711856519346,
+            "actualChangePct": 1.6695119204465092,
             "verdict": "逆行",
             "confidence": "低",
             "interpretation": "金利示唆は下落、実際は上昇。実質金利とドル・ETFフローを確認。",
@@ -1117,18 +1117,18 @@
           {
             "market": "BTCUSD",
             "expectedDirection": "下落",
-            "actualDirection": "上昇",
-            "actualChangePct": 0.08900220408554205,
-            "verdict": "逆行",
+            "actualDirection": "下落",
+            "actualChangePct": -0.3590825942857201,
+            "verdict": "整合",
             "confidence": "低",
-            "interpretation": "金利示唆は下落、実際は上昇。暗号資産固有需給・ETF・レバレッジを確認。",
+            "interpretation": "金利示唆は下落、実際は下落。方向が整合。",
             "timingNote": "基準日が4日ずれるため参考方向として表示。"
           },
           {
             "market": "日経225先物",
             "expectedDirection": "混合",
             "actualDirection": "下落",
-            "actualChangePct": -0.3328794068694241,
+            "actualChangePct": -0.9835073384778292,
             "verdict": "混合",
             "confidence": "低",
             "interpretation": "金利示唆は混合、実際は下落。米金利の追い風と日本金利の逆風を併せて確認。",
