@@ -330,117 +330,21 @@
       "lastGood": null
     },
     "japan": {
-      "title": "日本市場の大幅上昇・下落銘柄（東証プライム）",
-      "flag": "JP",
-      "status": "verified",
-      "freshness": "fresh",
-      "dataDate": "2026-08-21",
-      "asOf": "2026-08-21T15:45:00+09:00",
-      "updatedAt": "2026-08-21T19:01:16+09:00",
+      "status": "unavailable",
+      "freshness": "unavailable",
+      "dataDate": null,
+      "asOf": null,
+      "updatedAt": "2026-08-24T17:08:26+09:00",
       "source": {
         "name": "トレーダーズ・ウェブ 国内市場ランキング（東証プライム・前日比）",
         "gainersUrl": "https://www.traders.co.jp/market_jp/stock_ranking/price_up/day/tp/all",
         "losersUrl": "https://www.traders.co.jp/market_jp/stock_ranking/price_down/day/tp/all"
       },
-      "error": null,
-      "sourceAt": {
-        "gainers": "2026-08-21T15:45:00+09:00",
-        "losers": "2026-08-21T15:45:00+09:00"
-      },
-      "gainers": [
-        {
-          "rank": 1,
-          "code": "9107",
-          "name": "川崎船（9107）",
-          "close": "3,405",
-          "change": "+7.28%",
-          "dayChange": "+231",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 2,
-          "code": "4005",
-          "name": "住友化（4005）",
-          "close": "559.8",
-          "change": "+7.18%",
-          "dayChange": "+37.5",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 3,
-          "code": "9722",
-          "name": "藤田観（9722）",
-          "close": "2,651",
-          "change": "+6.17%",
-          "dayChange": "+154",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 4,
-          "code": "4784",
-          "name": "ＧＭＯインター（4784）",
-          "close": "603",
-          "change": "+5.42%",
-          "dayChange": "+31",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 5,
-          "code": "9501",
-          "name": "東電力ＨＤ（9501）",
-          "close": "549.3",
-          "change": "+4.65%",
-          "dayChange": "+24.4",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
-        }
-      ],
-      "losers": [
-        {
-          "rank": 1,
-          "code": "4392",
-          "name": "ＦＩＧ（4392）",
-          "close": "1,132",
-          "change": "-12.99%",
-          "dayChange": "-169",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 2,
-          "code": "8050",
-          "name": "セイコーＧ（8050）",
-          "close": "10,530",
-          "change": "-4.88%",
-          "dayChange": "-540",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 3,
-          "code": "6235",
-          "name": "オプトラン（6235）",
-          "close": "2,674",
-          "change": "-4.84%",
-          "dayChange": "-136",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 4,
-          "code": "4368",
-          "name": "扶桑化学（4368）",
-          "close": "3,075",
-          "change": "-4.80%",
-          "dayChange": "-155",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 5,
-          "code": "8798",
-          "name": "アドバンスク（8798）",
-          "close": "140",
-          "change": "-4.76%",
-          "dayChange": "-7",
-          "reason": "東証プライム前日比騰落率ランキング。基準日 2026-08-21。材料要因は別途ニュース確認。"
-        }
-      ],
+      "error": "当日の東証プライムランキングを取得できませんでした: Traders Web ranking source is stale: source=2026-08-24, expected=2026-08-21",
+      "title": "日本市場の大幅上昇・下落銘柄（東証プライム）",
+      "flag": "JP",
+      "gainers": [],
+      "losers": [],
       "lastGood": {
         "status": "verified",
         "freshness": "stale",
@@ -569,13 +473,9 @@
       "asOf": null
     },
     "japan": {
-      "title": "東京市場のセクター・業種",
+      "title": "東京市場のセクター・業種（上昇率TOP5）",
       "flag": "JP",
       "rows": [],
-      "gainers": [],
-      "losers": [],
-      "dataAsOf": "2026-08-21",
-      "sourceLabel": "東証33業種指数",
       "status": "unavailable",
       "freshness": "unavailable",
       "dataDate": null,
@@ -7746,7 +7646,7 @@
   "judgementUpdatedAt": "2026-08-22T08:04:00+09:00",
   "judgementSource": "data/stocks.json（指数・市場内部・セクター・上昇下落銘柄・セッション分析）",
   "snapshotDate": "2026-08-24",
-  "savedAt": "2026-08-24T17:02:54+09:00",
+  "savedAt": "2026-08-24T17:08:30+09:00",
   "snapshotPolicy": {
     "type": "independent-market-session-dates",
     "description": "米国市場と東京市場は、それぞれの取引終了後に独立更新。未更新側は直前の確定データを保持する。"
