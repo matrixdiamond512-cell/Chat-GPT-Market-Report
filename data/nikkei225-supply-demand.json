@@ -2,7 +2,7 @@
   "schemaVersion": "2.1.0",
   "pageId": "nikkei225-supply-demand",
   "pageTitle": "日経225需給分析",
-  "generatedAt": "2026-08-24T21:18:07+09:00",
+  "generatedAt": "2026-08-25T07:10:48+09:00",
   "spot": {
     "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
     "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
@@ -11,16 +11,16 @@
     "value": 65528.09,
     "asOfDate": "2026-08-24",
     "status": "verified",
-    "fetchedAt": "2026-08-24T21:18:07+09:00"
+    "fetchedAt": "2026-08-25T07:10:48+09:00"
   },
   "futures": {
     "sourceName": "JPX / 大阪取引所 日経225先物",
     "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
-    "price": 65760.0,
-    "priceChange": 320.0,
-    "priceChangePercent": 0.4889975550122161,
+    "price": 65360.0,
+    "priceChange": -80.0,
+    "priceChangePercent": -0.12224938875305957,
     "asOfDate": "2026-08-24",
-    "priceAsOf": "2026-08-24T20:34:00+09:00",
+    "priceAsOf": "2026-08-25T06:00:00+09:00",
     "volume": 23220,
     "openInterest": 197596,
     "miniVolume": 455333,
@@ -30,7 +30,7 @@
     "volumeChangePercent": null,
     "miniVolumeChangePercent": null,
     "status": "verified",
-    "fetchedAt": "2026-08-24T21:16:52+09:00",
+    "fetchedAt": "2026-08-25T07:09:14+09:00",
     "previousOpenInterest": 196851,
     "miniPreviousOpenInterest": 307118,
     "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260824open_interest.xlsx"
@@ -50,7 +50,7 @@
     "asOfDate": "2026-08-24",
     "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260824_derivatives_market_data_night.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-08-24T21:17:59+09:00"
+    "fetchedAt": "2026-08-25T07:10:39+09:00"
   },
   "arbitrage": {
     "sourceName": "JPX 裁定取引の状況",
@@ -64,9 +64,9 @@
     "buyChange": -18958,
     "status": "verified",
     "frequency": "daily",
-    "lastAttemptAt": "2026-08-24T21:16:43+09:00",
-    "lastSuccessAt": "2026-08-24T21:16:43+09:00",
-    "fetchedAt": "2026-08-24T21:16:43+09:00",
+    "lastAttemptAt": "2026-08-25T07:09:03+09:00",
+    "lastSuccessAt": "2026-08-25T07:09:03+09:00",
+    "fetchedAt": "2026-08-25T07:09:03+09:00",
     "error": null
   },
   "options": {
@@ -74,13 +74,13 @@
     "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
     "comment": "SQ日程、Put/Call、IVは別々に鮮度管理します。取得できない指標は推測しません。",
     "nextSqDate": "2026-09-11",
-    "businessDaysToSq": 14,
+    "businessDaysToSq": 13,
     "putCallRatio": null,
     "iv": 30.73,
     "ivChange": null,
-    "asOfDate": "2026-08-24",
+    "asOfDate": "2026-08-25",
     "status": "calculated",
-    "fetchedAt": "2026-08-24T21:18:07+09:00",
+    "fetchedAt": "2026-08-25T07:10:48+09:00",
     "putVolume": null,
     "callVolume": null,
     "putCallStatus": "unavailable",
@@ -156,7 +156,7 @@
     ],
     "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202608/20260824_volume_by_participant_whole_day.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-08-24T21:18:01+09:00"
+    "fetchedAt": "2026-08-25T07:10:40+09:00"
   },
   "foreignInvestors": {
     "sourceName": "JPX 投資部門別売買状況",
@@ -769,7 +769,7 @@
       ]
     },
     "status": "verified",
-    "fetchedAt": "2026-08-24T21:17:58+09:00"
+    "fetchedAt": "2026-08-25T07:10:37+09:00"
   },
   "participantOpenInterest": {
     "sourceName": "JPX 取引参加者別建玉残高",
@@ -883,7 +883,7 @@
     ],
     "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20260821_indexfut_oi_by_tp.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-08-24T21:18:02+09:00"
+    "fetchedAt": "2026-08-25T07:10:42+09:00"
   },
   "shortSelling": {
     "sourceName": "JPX 空売り集計",
@@ -973,7 +973,7 @@
       }
     ],
     "status": "verified",
-    "fetchedAt": "2026-08-24T21:16:51+09:00"
+    "fetchedAt": "2026-08-25T07:09:12+09:00"
   },
   "margin": {
     "sourceName": "JPX 信用取引現在高",
@@ -1034,15 +1034,15 @@
       }
     ],
     "status": "verified",
-    "fetchedAt": "2026-08-24T21:16:54+09:00"
+    "fetchedAt": "2026-08-25T07:09:17+09:00"
   },
   "assessment": {
-    "overall": "やや買い優勢",
-    "shortTerm": "強気（新規買い）",
+    "overall": "やや売り優勢",
+    "shortTerm": "弱気（新規売り）",
     "arbitrage": "やや弱い",
     "options": "SQ日程のみ確認済み",
     "foreign": "現物買い・先物売り",
-    "reason": "短期先物=強気（新規買い）、裁定=やや弱い、オプション=中立（SQ日程のみ）、海外投資家=現物買い・先物売り。各データの鮮度を分離して判定。",
+    "reason": "短期先物=弱気（新規売り）、裁定=やや弱い、オプション=中立（SQ日程のみ）、海外投資家=現物買い・先物売り。各データの鮮度を分離して判定。",
     "comment": "価格×建玉を中心に、裁定・オプション・海外投資家を補助線として重ねます。"
   },
   "watchpoints": [
@@ -1329,19 +1329,19 @@
     "market": null,
     "status": "partial",
     "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202608.xlsx",
-    "fetchedAt": "2026-08-24T21:18:05+09:00",
+    "fetchedAt": "2026-08-25T07:10:45+09:00",
     "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
   },
   "nikkeiFuturesDailyHistory": [
     {
       "asOfDate": "2026-08-24",
-      "price": 65760.0,
+      "price": 65360.0,
       "openInterest": 197596,
       "volume": 23220,
       "sourceName": "JPX / 大阪取引所 日経225先物",
       "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
       "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260824open_interest.xlsx",
-      "capturedAt": "2026-08-24T21:18:04+09:00",
+      "capturedAt": "2026-08-25T07:10:45+09:00",
       "status": "verified"
     }
   ],
@@ -1358,7 +1358,7 @@
     "status": "verified",
     "releaseFrequency": "weekly",
     "lookbackWeeks": 52,
-    "fetchedAt": "2026-08-24T21:18:08+09:00",
+    "fetchedAt": "2026-08-25T07:10:50+09:00",
     "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
     "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
     "priceStatus": "available",
