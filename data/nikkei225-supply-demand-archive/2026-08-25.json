@@ -2,12 +2,12 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-supply-demand",
   "reportDate": "2026-08-25",
-  "generatedAt": "2026-08-25T07:10:48+09:00",
+  "generatedAt": "2026-08-25T12:36:03+09:00",
   "nikkei": {
     "schemaVersion": "2.1.0",
     "pageId": "nikkei225-supply-demand",
     "pageTitle": "日経225需給分析",
-    "generatedAt": "2026-08-25T07:10:48+09:00",
+    "generatedAt": "2026-08-25T12:36:03+09:00",
     "spot": {
       "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
@@ -16,26 +16,26 @@
       "value": 65528.09,
       "asOfDate": "2026-08-24",
       "status": "verified",
-      "fetchedAt": "2026-08-25T07:10:48+09:00"
+      "fetchedAt": "2026-08-25T12:36:03+09:00"
     },
     "futures": {
       "sourceName": "JPX / 大阪取引所 日経225先物",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
-      "price": 65360.0,
-      "priceChange": -80.0,
-      "priceChangePercent": -0.12224938875305957,
+      "price": 65780.0,
+      "priceChange": 340.0,
+      "priceChangePercent": 0.5195599022004949,
       "asOfDate": "2026-08-24",
-      "priceAsOf": "2026-08-25T06:00:00+09:00",
+      "priceAsOf": "2026-08-25T12:07:00+09:00",
       "volume": 23220,
       "openInterest": 197596,
       "miniVolume": 455333,
       "miniOpenInterest": 310807,
       "openInterestChange": 745,
       "miniOpenInterestChange": 3689,
-      "volumeChangePercent": null,
-      "miniVolumeChangePercent": null,
+      "volumeChangePercent": -74.77605512489234,
+      "miniVolumeChangePercent": 0.0,
       "status": "verified",
-      "fetchedAt": "2026-08-25T07:09:14+09:00",
+      "fetchedAt": "2026-08-25T12:34:34+09:00",
       "previousOpenInterest": 196851,
       "miniPreviousOpenInterest": 307118,
       "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260824open_interest.xlsx"
@@ -46,16 +46,16 @@
       "comment": "JPX公式のセッション別出来高を使用。価格差が同一基準で確認できないため、日中/ナイトの価格変化は推測しません。",
       "dayChange": null,
       "nightChange": null,
-      "dayVolume": 16419,
-      "nightVolume": 6801,
-      "daySharePercent": 70.71059431524547,
-      "nightSharePercent": 29.28940568475452,
+      "dayVolume": 17363,
+      "nightVolume": 5857,
+      "daySharePercent": 74.77605512489234,
+      "nightSharePercent": 25.22394487510767,
       "dayDriver": "日中出来高",
       "nightDriver": "ナイト出来高",
-      "asOfDate": "2026-08-24",
-      "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260824_derivatives_market_data_night.xlsx",
+      "asOfDate": "2026-08-25",
+      "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260825_derivatives_market_data_night.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-08-25T07:10:39+09:00"
+      "fetchedAt": "2026-08-25T12:35:55+09:00"
     },
     "arbitrage": {
       "sourceName": "JPX 裁定取引の状況",
@@ -69,9 +69,9 @@
       "buyChange": -18958,
       "status": "verified",
       "frequency": "daily",
-      "lastAttemptAt": "2026-08-25T07:09:03+09:00",
-      "lastSuccessAt": "2026-08-25T07:09:03+09:00",
-      "fetchedAt": "2026-08-25T07:09:03+09:00",
+      "lastAttemptAt": "2026-08-25T12:34:25+09:00",
+      "lastSuccessAt": "2026-08-25T12:34:25+09:00",
+      "fetchedAt": "2026-08-25T12:34:25+09:00",
       "error": null
     },
     "options": {
@@ -85,7 +85,7 @@
       "ivChange": null,
       "asOfDate": "2026-08-25",
       "status": "calculated",
-      "fetchedAt": "2026-08-25T07:10:48+09:00",
+      "fetchedAt": "2026-08-25T12:36:03+09:00",
       "putVolume": null,
       "callVolume": null,
       "putCallStatus": "unavailable",
@@ -161,7 +161,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202608/20260824_volume_by_participant_whole_day.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-08-25T07:10:40+09:00"
+      "fetchedAt": "2026-08-25T12:35:56+09:00"
     },
     "foreignInvestors": {
       "sourceName": "JPX 投資部門別売買状況",
@@ -774,7 +774,7 @@
         ]
       },
       "status": "verified",
-      "fetchedAt": "2026-08-25T07:10:37+09:00"
+      "fetchedAt": "2026-08-25T12:35:53+09:00"
     },
     "participantOpenInterest": {
       "sourceName": "JPX 取引参加者別建玉残高",
@@ -888,7 +888,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20260821_indexfut_oi_by_tp.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-08-25T07:10:42+09:00"
+      "fetchedAt": "2026-08-25T12:35:57+09:00"
     },
     "shortSelling": {
       "sourceName": "JPX 空売り集計",
@@ -978,7 +978,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-08-25T07:09:12+09:00"
+      "fetchedAt": "2026-08-25T12:34:33+09:00"
     },
     "margin": {
       "sourceName": "JPX 信用取引現在高",
@@ -1039,15 +1039,15 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-08-25T07:09:17+09:00"
+      "fetchedAt": "2026-08-25T12:34:37+09:00"
     },
     "assessment": {
-      "overall": "やや売り優勢",
-      "shortTerm": "弱気（新規売り）",
+      "overall": "やや買い優勢",
+      "shortTerm": "強気（新規買い）",
       "arbitrage": "やや弱い",
       "options": "SQ日程のみ確認済み",
       "foreign": "現物買い・先物売り",
-      "reason": "短期先物=弱気（新規売り）、裁定=やや弱い、オプション=中立（SQ日程のみ）、海外投資家=現物買い・先物売り。各データの鮮度を分離して判定。",
+      "reason": "短期先物=強気（新規買い）、裁定=やや弱い、オプション=中立（SQ日程のみ）、海外投資家=現物買い・先物売り。各データの鮮度を分離して判定。",
       "comment": "価格×建玉を中心に、裁定・オプション・海外投資家を補助線として重ねます。"
     },
     "watchpoints": [
@@ -1334,19 +1334,19 @@
       "market": null,
       "status": "partial",
       "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202608.xlsx",
-      "fetchedAt": "2026-08-25T07:10:45+09:00",
+      "fetchedAt": "2026-08-25T12:36:00+09:00",
       "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
     },
     "nikkeiFuturesDailyHistory": [
       {
         "asOfDate": "2026-08-24",
-        "price": 65360.0,
+        "price": 65780.0,
         "openInterest": 197596,
         "volume": 23220,
         "sourceName": "JPX / 大阪取引所 日経225先物",
         "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
         "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260824open_interest.xlsx",
-        "capturedAt": "2026-08-25T07:10:45+09:00",
+        "capturedAt": "2026-08-25T12:36:00+09:00",
         "status": "verified"
       }
     ],
@@ -1363,7 +1363,7 @@
       "status": "verified",
       "releaseFrequency": "weekly",
       "lookbackWeeks": 52,
-      "fetchedAt": "2026-08-25T07:10:50+09:00",
+      "fetchedAt": "2026-08-25T12:36:04+09:00",
       "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
       "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
       "priceStatus": "available",
@@ -1802,8 +1802,8 @@
   "market": {
     "schemaVersion": "1.1.0",
     "pageId": "market-data",
-    "generatedAt": "2026-08-25T06:49:26+09:00",
-    "reportSlot": "08:00",
+    "generatedAt": "2026-08-25T12:23:23+09:00",
+    "reportSlot": "12:00",
     "overallStatus": "verified",
     "missingRequired": [],
     "fallbackCount": 0,
@@ -1812,17 +1812,17 @@
         "id": "gold",
         "displayName": "金",
         "dashboardKey": "gold",
-        "value": 4710.0,
-        "displayValue": "4,710.00",
-        "previousClose": 4710.0,
-        "change": 0.0,
-        "changePercent": 0.0,
-        "changeText": "+0.00 / +0.00%",
+        "value": 4689.6,
+        "displayValue": "4,689.60",
+        "previousClose": 4640.7998046875,
+        "change": 48.800195312500364,
+        "changePercent": 1.0515470902926927,
+        "changeText": "+48.80 / +1.05%",
         "unit": "USD/oz",
         "marketType": "continuous_futures",
         "session": "global",
-        "asOf": "2026-08-25T05:59:57+09:00",
-        "fetchedAt": "2026-08-25T06:49:26+09:00",
+        "asOf": "2026-08-25T12:12:47+09:00",
+        "fetchedAt": "2026-08-25T12:22:55+09:00",
         "sourceId": "yahoo_gc_f",
         "sourceName": "Yahoo Finance Gold Futures",
         "sourceUrl": "https://finance.yahoo.com/quote/GC=F/",
@@ -1831,11 +1831,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-25T06:49:30+09:00",
+        "lastVerifiedAt": "2026-08-25T12:22:59+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-25T06:49:26+09:00",
+        "lastAttemptAt": "2026-08-25T12:22:55+09:00",
         "lastError": "stooq_xauusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1843,17 +1843,17 @@
         "id": "wti",
         "displayName": "WTI原油",
         "dashboardKey": "oil",
-        "value": 84.98,
-        "displayValue": "84.98",
-        "previousClose": 84.9800033569336,
-        "change": -3.3569335897709607e-06,
-        "changePercent": -3.9502629500809405e-06,
-        "changeText": "-0.00 / -0.00%",
+        "value": 85.23,
+        "displayValue": "85.23",
+        "previousClose": 85.01000213623047,
+        "change": 0.21999786376953523,
+        "changePercent": 0.25879056374682463,
+        "changeText": "+0.22 / +0.26%",
         "unit": "USD/bbl",
         "marketType": "continuous_futures",
         "session": "global",
-        "asOf": "2026-08-25T05:59:58+09:00",
-        "fetchedAt": "2026-08-25T06:49:30+09:00",
+        "asOf": "2026-08-25T12:12:56+09:00",
+        "fetchedAt": "2026-08-25T12:22:59+09:00",
         "sourceId": "yahoo_cl_f",
         "sourceName": "Yahoo Finance WTI Crude Oil Futures",
         "sourceUrl": "https://finance.yahoo.com/quote/CL=F/",
@@ -1862,11 +1862,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-25T06:49:33+09:00",
+        "lastVerifiedAt": "2026-08-25T12:23:02+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-25T06:49:26+09:00",
+        "lastAttemptAt": "2026-08-25T12:22:55+09:00",
         "lastError": "stooq_cl_f: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1874,17 +1874,17 @@
         "id": "nikkei225_futures_ose",
         "displayName": "日経225先物（大阪取引所）",
         "dashboardKey": "nikkei",
-        "value": 65360.0,
-        "displayValue": "65,360",
+        "value": 65780.0,
+        "displayValue": "65,780",
         "previousClose": 65440.0,
-        "change": -80.0,
-        "changePercent": -0.12224938875305957,
-        "changeText": "-80 / -0.12%",
+        "change": 340.0,
+        "changePercent": 0.5195599022004949,
+        "changeText": "+340 / +0.52%",
         "unit": "円",
         "marketType": "futures_ose",
         "session": "day_through",
-        "asOf": "2026-08-25T06:00:00+09:00",
-        "fetchedAt": "2026-08-25T06:49:34+09:00",
+        "asOf": "2026-08-25T12:07:00+09:00",
+        "fetchedAt": "2026-08-25T12:23:03+09:00",
         "sourceId": "jpx_ose_futures_quote",
         "sourceName": "JPX/OSE Futures Quotes",
         "sourceUrl": "https://port.jpx.co.jp/jpxhp/main/index.aspx?disptype=day_through&f=e_future",
@@ -1893,11 +1893,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-25T06:49:34+09:00",
+        "lastVerifiedAt": "2026-08-25T12:23:03+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-25T06:49:26+09:00",
+        "lastAttemptAt": "2026-08-25T12:22:55+09:00",
         "lastError": "nikkei_nk225f_profile: REFERENCE_ONLY: reference source is not allowed for dashboard publication",
         "retryPreserved": false
       },
@@ -1905,17 +1905,17 @@
         "id": "usdjpy",
         "displayName": "USD/JPY",
         "dashboardKey": "usdjpy",
-        "value": 159.056,
-        "displayValue": "159.06",
+        "value": 159.368,
+        "displayValue": "159.37",
         "previousClose": 158.9040069580078,
-        "change": 0.1519930419921991,
-        "changePercent": 0.09565085544529506,
-        "changeText": "+0.15 / +0.10%",
+        "change": 0.4639930419921825,
+        "changePercent": 0.2919958098443587,
+        "changeText": "+0.46 / +0.29%",
         "unit": "円",
         "marketType": "spot",
         "session": "continuous",
-        "asOf": "2026-08-25T06:49:33+09:00",
-        "fetchedAt": "2026-08-25T06:49:35+09:00",
+        "asOf": "2026-08-25T12:23:02+09:00",
+        "fetchedAt": "2026-08-25T12:23:03+09:00",
         "sourceId": "yahoo_jpy_x",
         "sourceName": "Yahoo Finance USD/JPY",
         "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
@@ -1924,11 +1924,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-25T06:49:38+09:00",
+        "lastVerifiedAt": "2026-08-25T12:23:06+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-25T06:49:26+09:00",
+        "lastAttemptAt": "2026-08-25T12:22:55+09:00",
         "lastError": "stooq_usdjpy: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1936,17 +1936,17 @@
         "id": "eurusd",
         "displayName": "EUR/USD",
         "dashboardKey": "eurusd",
-        "value": 1.1667,
-        "displayValue": "1.16670",
+        "value": 1.1665,
+        "displayValue": "1.16650",
         "previousClose": 1.1681560277938843,
-        "change": -0.001456027793884207,
-        "changePercent": -0.12464326333477826,
-        "changeText": "-0.00146 / -0.12%",
+        "change": -0.001656027793884185,
+        "changePercent": -0.14176426388962104,
+        "changeText": "-0.00166 / -0.14%",
         "unit": "USD",
         "marketType": "spot",
         "session": "continuous",
-        "asOf": "2026-08-25T06:49:33+09:00",
-        "fetchedAt": "2026-08-25T06:49:38+09:00",
+        "asOf": "2026-08-25T12:22:30+09:00",
+        "fetchedAt": "2026-08-25T12:23:06+09:00",
         "sourceId": "yahoo_eurusd_x",
         "sourceName": "Yahoo Finance EUR/USD",
         "sourceUrl": "https://finance.yahoo.com/quote/EURUSD=X/",
@@ -1955,11 +1955,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-25T06:49:42+09:00",
+        "lastVerifiedAt": "2026-08-25T12:23:09+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-25T06:49:26+09:00",
+        "lastAttemptAt": "2026-08-25T12:22:55+09:00",
         "lastError": "stooq_eurusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1967,17 +1967,17 @@
         "id": "btcusd",
         "displayName": "BTCUSD",
         "dashboardKey": "btc",
-        "value": 79036.25,
-        "displayValue": "79,036",
-        "previousClose": 79036.25,
-        "change": 0.0,
-        "changePercent": 0.0,
-        "changeText": "+0 / +0.00%",
+        "value": 80701.03,
+        "displayValue": "80,701",
+        "previousClose": 77755.265625,
+        "change": 2945.764374999999,
+        "changePercent": 3.78850789245182,
+        "changeText": "+2,946 / +3.79%",
         "unit": "USD",
         "marketType": "spot_crypto",
         "session": "continuous",
-        "asOf": "2026-08-25T06:49:36+09:00",
-        "fetchedAt": "2026-08-25T06:49:42+09:00",
+        "asOf": "2026-08-25T12:23:08+09:00",
+        "fetchedAt": "2026-08-25T12:23:09+09:00",
         "sourceId": "yahoo_btc_usd",
         "sourceName": "Yahoo Finance Bitcoin USD",
         "sourceUrl": "https://finance.yahoo.com/quote/BTC-USD/",
@@ -1986,11 +1986,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-25T06:49:45+09:00",
+        "lastVerifiedAt": "2026-08-25T12:23:12+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-25T06:49:26+09:00",
+        "lastAttemptAt": "2026-08-25T12:22:55+09:00",
         "lastError": "stooq_btcusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -2000,46 +2000,46 @@
         "dashboardKey": "vix",
         "value": 15.85,
         "displayValue": "15.85",
-        "previousClose": 15.850000381469727,
-        "change": -3.8146972691777137e-07,
-        "changePercent": -2.4067490111967516e-06,
-        "changeText": "-0.00 / -0.00%",
+        "previousClose": 15.13,
+        "change": 0.7199999999999989,
+        "changePercent": 4.758757435558492,
+        "changeText": "+0.72 / +4.76%",
         "unit": "pt",
         "marketType": "index",
-        "session": "delayed",
-        "asOf": "2026-08-25T05:15:01+09:00",
-        "fetchedAt": "2026-08-25T06:49:45+09:00",
-        "sourceId": "yahoo_vix",
-        "sourceName": "Yahoo Finance VIX",
-        "sourceUrl": "https://finance.yahoo.com/quote/%5EVIX/",
-        "rawReference": "^VIX",
+        "session": "daily",
+        "asOf": "2026-08-24T09:00:00+09:00",
+        "fetchedAt": "2026-08-25T12:23:13+09:00",
+        "sourceId": "cboe_vix_history",
+        "sourceName": "Cboe VIX Historical Data",
+        "sourceUrl": "https://www.cboe.com/tradable_products/vix/vix_historical_data/",
+        "rawReference": "VIX_History.csv",
         "classification": "",
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-25T06:49:45+09:00",
+        "lastVerifiedAt": "2026-08-25T12:23:13+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-25T06:49:26+09:00",
-        "lastError": "cboe_vix_history: STALE_DATA: age 93.8h > 84h",
+        "lastAttemptAt": "2026-08-25T12:22:55+09:00",
+        "lastError": "",
         "retryPreserved": false
       },
       "nikkei_vi": {
         "id": "nikkei_vi",
         "displayName": "日経VI",
         "dashboardKey": "nikkei_vi",
-        "value": 28.13,
-        "displayValue": "28.13",
-        "previousClose": 28.38,
-        "change": -0.25,
-        "changePercent": -0.88,
-        "changeText": "-0.25 / -0.88%",
+        "value": 32.6,
+        "displayValue": "32.60",
+        "previousClose": 28.130000000000003,
+        "change": 4.47,
+        "changePercent": 15.89,
+        "changeText": "+4.47 / +15.89%",
         "unit": "pt",
         "marketType": "index",
         "session": "daily",
-        "asOf": "2026-08-24T15:50:00+09:00",
-        "fetchedAt": "2026-08-25T06:49:46+09:00",
+        "asOf": "2026-08-25T12:23:00+09:00",
+        "fetchedAt": "2026-08-25T12:23:13+09:00",
         "sourceId": "nikkei_nk225vi_profile",
         "sourceName": "Nikkei 225 VI official profile",
         "sourceUrl": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
@@ -2048,11 +2048,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-25T06:49:46+09:00",
+        "lastVerifiedAt": "2026-08-25T12:23:13+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-25T06:49:26+09:00",
+        "lastAttemptAt": "2026-08-25T12:22:55+09:00",
         "lastError": "",
         "retryPreserved": false
       },
@@ -2069,8 +2069,8 @@
         "unit": "score",
         "marketType": "sentiment",
         "session": "daily",
-        "asOf": "2026-08-25T06:30:34+09:00",
-        "fetchedAt": "2026-08-25T06:49:46+09:00",
+        "asOf": "2026-08-25T08:59:54+09:00",
+        "fetchedAt": "2026-08-25T12:23:14+09:00",
         "sourceId": "cnn_fear_greed_graphdata",
         "sourceName": "CNN Fear & Greed graphdata",
         "sourceUrl": "https://edition-prod-cf.sitemirror.cnn.com/markets/fear-and-greed",
@@ -2079,11 +2079,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-25T06:49:46+09:00",
+        "lastVerifiedAt": "2026-08-25T12:23:14+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-25T06:49:26+09:00",
+        "lastAttemptAt": "2026-08-25T12:22:55+09:00",
         "lastError": "",
         "retryPreserved": false
       },
@@ -2091,172 +2091,42 @@
         "id": "crypto_fear_greed",
         "displayName": "Crypto Fear & Greed",
         "dashboardKey": "crypto_fear_greed",
-        "value": 78.0,
-        "displayValue": "78",
-        "previousClose": 76.0,
-        "change": 2.0,
-        "changePercent": 2.6315789473684292,
-        "changeText": "+2 / +2.63%",
+        "value": 81.0,
+        "displayValue": "81",
+        "previousClose": 78.0,
+        "change": 3.0,
+        "changePercent": 3.8461538461538547,
+        "changeText": "+3 / +3.85%",
         "unit": "score",
         "marketType": "crypto_sentiment",
         "session": "daily",
-        "asOf": "2026-08-23T09:00:00+09:00",
-        "fetchedAt": "2026-08-25T06:49:46+09:00",
+        "asOf": "2026-08-24T09:00:00+09:00",
+        "fetchedAt": "2026-08-25T12:23:14+09:00",
         "sourceId": "coinmarketcap_crypto_fear_greed",
         "sourceName": "CoinMarketCap Crypto Fear and Greed Index",
         "sourceUrl": "https://coinmarketcap.com/ja/charts/fear-and-greed-index/",
         "rawReference": "v3/fear-and-greed/historical data[0]",
-        "classification": "Greed",
+        "classification": "Extreme greed",
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-08-25T06:49:46+09:00",
+        "lastVerifiedAt": "2026-08-25T12:23:14+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-08-25T06:49:26+09:00",
+        "lastAttemptAt": "2026-08-25T12:22:55+09:00",
         "lastError": "",
         "retryPreserved": false
       }
     },
-    "errors": [
-      {
-        "symbol": "gold",
-        "sourceId": "stooq_xauusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "gold",
-        "sourceId": "stooq_xauusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "gold",
-        "sourceId": "stooq_xauusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "wti",
-        "sourceId": "stooq_cl_f",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "wti",
-        "sourceId": "stooq_cl_f",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "wti",
-        "sourceId": "stooq_cl_f",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "nikkei225_futures_ose",
-        "sourceId": "nikkei_nk225f_profile",
-        "code": "REFERENCE_ONLY",
-        "message": "reference source is not allowed for dashboard publication"
-      },
-      {
-        "symbol": "usdjpy",
-        "sourceId": "stooq_usdjpy",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "usdjpy",
-        "sourceId": "stooq_usdjpy",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "usdjpy",
-        "sourceId": "stooq_usdjpy",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "eurusd",
-        "sourceId": "stooq_eurusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "eurusd",
-        "sourceId": "stooq_eurusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "eurusd",
-        "sourceId": "stooq_eurusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "btcusd",
-        "sourceId": "stooq_btcusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "btcusd",
-        "sourceId": "stooq_btcusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "btcusd",
-        "sourceId": "stooq_btcusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "vix",
-        "sourceId": "cboe_vix_history",
-        "code": "STALE_DATA",
-        "message": "age 93.8h > 84h",
-        "attempt": 1
-      }
-    ],
+    "errors": [],
     "acquisition": {
       "strategy": "staged_retry",
-      "windowStartedAt": "2026-08-25T06:49:26+09:00",
-      "lastAttemptAt": "2026-08-25T06:49:26+09:00",
-      "runCount": 1,
-      "mode": "full",
-      "targetedSymbols": [
-        "gold",
-        "wti",
-        "nikkei225_futures_ose",
-        "usdjpy",
-        "eurusd",
-        "btcusd",
-        "vix",
-        "nikkei_vi",
-        "fear_greed",
-        "crypto_fear_greed"
-      ],
+      "windowStartedAt": "2026-08-25T12:22:55+09:00",
+      "lastAttemptAt": "2026-08-25T12:23:23+09:00",
+      "runCount": 6,
+      "mode": "incremental",
+      "targetedSymbols": [],
       "recoveredSymbols": [],
       "preservedVerifiedSymbols": [],
       "remainingFallback": [],
@@ -2621,7 +2491,7 @@
         "freshness": "fresh",
         "dataDate": "2026-08-24",
         "asOf": "2026-08-24T16:00:00-04:00",
-        "updatedAt": "2026-08-25T07:03:52+09:00",
+        "updatedAt": "2026-08-25T07:48:34+09:00",
         "source": {
           "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
           "url": "https://www.slickcharts.com/sp500",
@@ -2630,9 +2500,9 @@
         "error": null,
         "universe": "S&P 500 constituents",
         "validation": {
-          "estimatedWeightedReturnPct": -0.1513,
+          "estimatedWeightedReturnPct": -0.1637,
           "verifiedSP500ReturnPct": -0.28,
-          "differencePt": 0.1287,
+          "differencePt": 0.1163,
           "tolerancePt": 0.2,
           "status": "passed"
         },
@@ -2641,9 +2511,9 @@
             "rank": 1,
             "symbol": "EXPE",
             "name": "Expedia Group Inc（EXPE）",
-            "close": "340.05",
-            "dayChange": "+18.42",
-            "change": "+5.73%",
+            "close": "340",
+            "dayChange": "+18.37",
+            "change": "+5.71%",
             "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
           },
           {
@@ -2659,27 +2529,27 @@
             "rank": 3,
             "symbol": "CHD",
             "name": "Church & Dwight Co Inc（CHD）",
-            "close": "102.5",
-            "dayChange": "+3.7",
-            "change": "+3.74%",
+            "close": "102.55",
+            "dayChange": "+3.75",
+            "change": "+3.80%",
             "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
           },
           {
             "rank": 4,
-            "symbol": "MO",
-            "name": "Altria Group Inc（MO）",
-            "close": "68.48",
-            "dayChange": "+2.39",
+            "symbol": "GDDY",
+            "name": "GoDaddy Inc（GDDY）",
+            "close": "100.59",
+            "dayChange": "+3.52",
             "change": "+3.62%",
             "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
           },
           {
             "rank": 5,
-            "symbol": "GDDY",
-            "name": "GoDaddy Inc（GDDY）",
-            "close": "100.56",
-            "dayChange": "+3.49",
-            "change": "+3.59%",
+            "symbol": "MO",
+            "name": "Altria Group Inc（MO）",
+            "close": "68.44",
+            "dayChange": "+2.35",
+            "change": "+3.56%",
             "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
           }
         ],
@@ -2688,49 +2558,283 @@
             "rank": 1,
             "symbol": "SNDK",
             "name": "Sandisk Corp/DE（SNDK）",
-            "close": "1,487.55",
-            "dayChange": "-108.53",
-            "change": "-6.80%",
+            "close": "1,481.4",
+            "dayChange": "-114.68",
+            "change": "-7.18%",
             "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
           },
           {
             "rank": 2,
             "symbol": "STX",
             "name": "Seagate Technology Holdings PLC（STX）",
-            "close": "795.5",
-            "dayChange": "-54.5",
-            "change": "-6.41%",
+            "close": "792.51",
+            "dayChange": "-57.49",
+            "change": "-6.76%",
             "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
           },
           {
             "rank": 3,
-            "symbol": "CIEN",
-            "name": "Ciena Corp（CIEN）",
-            "close": "371.75",
-            "dayChange": "-24.04",
-            "change": "-6.07%",
+            "symbol": "MU",
+            "name": "Micron Technology Inc（MU）",
+            "close": "907.19",
+            "dayChange": "-59.59",
+            "change": "-6.16%",
             "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
           },
           {
             "rank": 4,
-            "symbol": "MU",
-            "name": "Micron Technology Inc（MU）",
-            "close": "909.88",
-            "dayChange": "-56.9",
-            "change": "-5.89%",
+            "symbol": "CIEN",
+            "name": "Ciena Corp（CIEN）",
+            "close": "373.5",
+            "dayChange": "-22.29",
+            "change": "-5.63%",
             "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
           },
           {
             "rank": 5,
-            "symbol": "JBHT",
-            "name": "JB Hunt Transport Services Inc（JBHT）",
-            "close": "259.95",
-            "dayChange": "-15.5",
-            "change": "-5.63%",
+            "symbol": "SMCI",
+            "name": "Super Micro Computer Inc（SMCI）",
+            "close": "35.16",
+            "dayChange": "-2.08",
+            "change": "-5.60%",
             "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
           }
         ],
-        "lastGood": null
+        "lastGood": {
+          "title": "米国市場の大幅上昇・下落銘柄（S&P500構成銘柄）",
+          "flag": "US",
+          "status": "verified",
+          "freshness": "stale",
+          "dataDate": "2026-08-24",
+          "asOf": "2026-08-24T16:00:00-04:00",
+          "updatedAt": "2026-08-25T07:38:21+09:00",
+          "source": {
+            "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+            "url": "https://www.slickcharts.com/sp500",
+            "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
+          },
+          "error": null,
+          "universe": "S&P 500 constituents",
+          "validation": {
+            "estimatedWeightedReturnPct": -0.1697,
+            "verifiedSP500ReturnPct": -0.28,
+            "differencePt": 0.1103,
+            "tolerancePt": 0.2,
+            "status": "passed"
+          },
+          "gainers": [
+            {
+              "rank": 1,
+              "symbol": "EXPE",
+              "name": "Expedia Group Inc（EXPE）",
+              "close": "340",
+              "dayChange": "+18.37",
+              "change": "+5.71%",
+              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+            },
+            {
+              "rank": 2,
+              "symbol": "DLTR",
+              "name": "Dollar Tree Inc（DLTR）",
+              "close": "137.28",
+              "dayChange": "+5.8",
+              "change": "+4.41%",
+              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+            },
+            {
+              "rank": 3,
+              "symbol": "CHD",
+              "name": "Church & Dwight Co Inc（CHD）",
+              "close": "102.55",
+              "dayChange": "+3.75",
+              "change": "+3.80%",
+              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+            },
+            {
+              "rank": 4,
+              "symbol": "GDDY",
+              "name": "GoDaddy Inc（GDDY）",
+              "close": "100.59",
+              "dayChange": "+3.52",
+              "change": "+3.62%",
+              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+            },
+            {
+              "rank": 5,
+              "symbol": "MO",
+              "name": "Altria Group Inc（MO）",
+              "close": "68.44",
+              "dayChange": "+2.35",
+              "change": "+3.56%",
+              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+            }
+          ],
+          "losers": [
+            {
+              "rank": 1,
+              "symbol": "SNDK",
+              "name": "Sandisk Corp/DE（SNDK）",
+              "close": "1,481.61",
+              "dayChange": "-114.47",
+              "change": "-7.17%",
+              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+            },
+            {
+              "rank": 2,
+              "symbol": "STX",
+              "name": "Seagate Technology Holdings PLC（STX）",
+              "close": "792.5",
+              "dayChange": "-57.5",
+              "change": "-6.76%",
+              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+            },
+            {
+              "rank": 3,
+              "symbol": "MU",
+              "name": "Micron Technology Inc（MU）",
+              "close": "908.3",
+              "dayChange": "-58.48",
+              "change": "-6.05%",
+              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+            },
+            {
+              "rank": 4,
+              "symbol": "CIEN",
+              "name": "Ciena Corp（CIEN）",
+              "close": "373.5",
+              "dayChange": "-22.29",
+              "change": "-5.63%",
+              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+            },
+            {
+              "rank": 5,
+              "symbol": "SMCI",
+              "name": "Super Micro Computer Inc（SMCI）",
+              "close": "35.2",
+              "dayChange": "-2.04",
+              "change": "-5.48%",
+              "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+            }
+          ],
+          "lastGood": {
+            "title": "米国市場の大幅上昇・下落銘柄（S&P500構成銘柄）",
+            "flag": "US",
+            "status": "verified",
+            "freshness": "stale",
+            "dataDate": "2026-08-24",
+            "asOf": "2026-08-24T16:00:00-04:00",
+            "updatedAt": "2026-08-25T07:03:52+09:00",
+            "source": {
+              "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+              "url": "https://www.slickcharts.com/sp500",
+              "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
+            },
+            "error": null,
+            "universe": "S&P 500 constituents",
+            "validation": {
+              "estimatedWeightedReturnPct": -0.1513,
+              "verifiedSP500ReturnPct": -0.28,
+              "differencePt": 0.1287,
+              "tolerancePt": 0.2,
+              "status": "passed"
+            },
+            "gainers": [
+              {
+                "rank": 1,
+                "symbol": "EXPE",
+                "name": "Expedia Group Inc（EXPE）",
+                "close": "340.05",
+                "dayChange": "+18.42",
+                "change": "+5.73%",
+                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+              },
+              {
+                "rank": 2,
+                "symbol": "DLTR",
+                "name": "Dollar Tree Inc（DLTR）",
+                "close": "137.28",
+                "dayChange": "+5.8",
+                "change": "+4.41%",
+                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+              },
+              {
+                "rank": 3,
+                "symbol": "CHD",
+                "name": "Church & Dwight Co Inc（CHD）",
+                "close": "102.5",
+                "dayChange": "+3.7",
+                "change": "+3.74%",
+                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+              },
+              {
+                "rank": 4,
+                "symbol": "MO",
+                "name": "Altria Group Inc（MO）",
+                "close": "68.48",
+                "dayChange": "+2.39",
+                "change": "+3.62%",
+                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+              },
+              {
+                "rank": 5,
+                "symbol": "GDDY",
+                "name": "GoDaddy Inc（GDDY）",
+                "close": "100.56",
+                "dayChange": "+3.49",
+                "change": "+3.59%",
+                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+              }
+            ],
+            "losers": [
+              {
+                "rank": 1,
+                "symbol": "SNDK",
+                "name": "Sandisk Corp/DE（SNDK）",
+                "close": "1,487.55",
+                "dayChange": "-108.53",
+                "change": "-6.80%",
+                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+              },
+              {
+                "rank": 2,
+                "symbol": "STX",
+                "name": "Seagate Technology Holdings PLC（STX）",
+                "close": "795.5",
+                "dayChange": "-54.5",
+                "change": "-6.41%",
+                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+              },
+              {
+                "rank": 3,
+                "symbol": "CIEN",
+                "name": "Ciena Corp（CIEN）",
+                "close": "371.75",
+                "dayChange": "-24.04",
+                "change": "-6.07%",
+                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+              },
+              {
+                "rank": 4,
+                "symbol": "MU",
+                "name": "Micron Technology Inc（MU）",
+                "close": "909.88",
+                "dayChange": "-56.9",
+                "change": "-5.89%",
+                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+              },
+              {
+                "rank": 5,
+                "symbol": "JBHT",
+                "name": "JB Hunt Transport Services Inc（JBHT）",
+                "close": "259.95",
+                "dayChange": "-15.5",
+                "change": "-5.63%",
+                "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
+              }
+            ],
+            "lastGood": null
+          }
+        }
       },
       "japan": {
         "title": "日本市場の大幅上昇・下落銘柄（東証プライム）",
@@ -3039,16 +3143,16 @@
         "freshness": "fresh",
         "dataDate": "2026-08-24",
         "asOf": "2026-08-24T16:00:00-04:00",
-        "updatedAt": "2026-08-25T07:03:52+09:00",
+        "updatedAt": "2026-08-25T07:48:34+09:00",
         "source": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
         "error": null,
         "unit": "bp",
         "official": false,
         "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
         "validation": {
-          "estimatedWeightedReturnPct": -0.1513,
+          "estimatedWeightedReturnPct": -0.1637,
           "verifiedSP500ReturnPct": -0.28,
-          "differencePt": 0.1287,
+          "differencePt": 0.1163,
           "tolerancePt": 0.2,
           "status": "passed"
         },
@@ -3057,55 +3161,55 @@
             "rank": 1,
             "symbol": "AMZN",
             "name": "Amazon.com Inc（AMZN）",
-            "close": "262.68",
-            "change": "+1.57%",
-            "weight": "4.07%",
-            "contribution": "+6.39bp",
-            "contributionBps": 6.3899,
+            "close": "262.76",
+            "change": "+1.60%",
+            "weight": "4.08%",
+            "contribution": "+6.53bp",
+            "contributionBps": 6.528,
             "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
           },
           {
             "rank": 2,
             "symbol": "MSFT",
             "name": "Microsoft Corp（MSFT）",
-            "close": "487.85",
-            "change": "+0.95%",
+            "close": "487.5",
+            "change": "+0.88%",
             "weight": "5.21%",
-            "contribution": "+4.95bp",
-            "contributionBps": 4.9495,
+            "contribution": "+4.58bp",
+            "contributionBps": 4.5848,
             "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
           },
           {
             "rank": 3,
             "symbol": "META",
             "name": "Meta Platforms Inc（META）",
-            "close": "559.25",
-            "change": "+1.70%",
+            "close": "559.72",
+            "change": "+1.79%",
             "weight": "2.05%",
-            "contribution": "+3.48bp",
-            "contributionBps": 3.485,
+            "contribution": "+3.67bp",
+            "contributionBps": 3.6695,
             "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
           },
           {
             "rank": 4,
-            "symbol": "AAPL",
-            "name": "Apple Inc（AAPL）",
-            "close": "310.92",
-            "change": "+0.51%",
-            "weight": "6.52%",
-            "contribution": "+3.33bp",
-            "contributionBps": 3.3252,
+            "symbol": "V",
+            "name": "Visa Inc（V）",
+            "close": "383.68",
+            "change": "+3.41%",
+            "weight": "1.03%",
+            "contribution": "+3.51bp",
+            "contributionBps": 3.5123,
             "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
           },
           {
             "rank": 5,
-            "symbol": "V",
-            "name": "Visa Inc（V）",
-            "close": "382.95",
-            "change": "+3.21%",
-            "weight": "1.03%",
-            "contribution": "+3.31bp",
-            "contributionBps": 3.3063,
+            "symbol": "AAPL",
+            "name": "Apple Inc（AAPL）",
+            "close": "310.9",
+            "change": "+0.50%",
+            "weight": "6.52%",
+            "contribution": "+3.26bp",
+            "contributionBps": 3.26,
             "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
           }
         ],
@@ -3114,59 +3218,329 @@
             "rank": 1,
             "symbol": "NVDA",
             "name": "NVIDIA Corp（NVDA）",
-            "close": "208.88",
-            "change": "-2.72%",
+            "close": "208.71",
+            "change": "-2.80%",
             "weight": "7.27%",
-            "contribution": "-19.77bp",
-            "contributionBps": -19.7744,
+            "contribution": "-20.36bp",
+            "contributionBps": -20.356,
             "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
           },
           {
             "rank": 2,
             "symbol": "MU",
             "name": "Micron Technology Inc（MU）",
-            "close": "909.88",
-            "change": "-5.89%",
-            "weight": "1.48%",
-            "contribution": "-8.72bp",
-            "contributionBps": -8.7172,
+            "close": "907.19",
+            "change": "-6.16%",
+            "weight": "1.47%",
+            "contribution": "-9.06bp",
+            "contributionBps": -9.0552,
             "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
           },
           {
             "rank": 3,
             "symbol": "TSLA",
             "name": "Tesla Inc（TSLA）",
-            "close": "349.42",
-            "change": "-3.70%",
+            "close": "349.25",
+            "change": "-3.75%",
             "weight": "1.98%",
-            "contribution": "-7.33bp",
-            "contributionBps": -7.326,
+            "contribution": "-7.42bp",
+            "contributionBps": -7.425,
             "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
           },
           {
             "rank": 4,
             "symbol": "AVGO",
             "name": "Broadcom Inc（AVGO）",
-            "close": "359.11",
-            "change": "-2.53%",
+            "close": "358.99",
+            "change": "-2.57%",
             "weight": "2.46%",
-            "contribution": "-6.22bp",
-            "contributionBps": -6.2238,
+            "contribution": "-6.32bp",
+            "contributionBps": -6.3222,
             "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
           },
           {
             "rank": 5,
             "symbol": "AMD",
             "name": "Advanced Micro Devices Inc（AMD）",
-            "close": "457.1",
-            "change": "-3.41%",
+            "close": "456.55",
+            "change": "-3.53%",
             "weight": "1.07%",
-            "contribution": "-3.65bp",
-            "contributionBps": -3.6487,
+            "contribution": "-3.78bp",
+            "contributionBps": -3.7771,
             "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
           }
         ],
-        "lastGood": null
+        "lastGood": {
+          "title": "米国市場（S&P500寄与度 推計・bp）",
+          "flag": "US",
+          "status": "verified-estimate",
+          "freshness": "stale",
+          "dataDate": "2026-08-24",
+          "asOf": "2026-08-24T16:00:00-04:00",
+          "updatedAt": "2026-08-25T07:38:21+09:00",
+          "source": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+          "error": null,
+          "unit": "bp",
+          "official": false,
+          "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
+          "validation": {
+            "estimatedWeightedReturnPct": -0.1697,
+            "verifiedSP500ReturnPct": -0.28,
+            "differencePt": 0.1103,
+            "tolerancePt": 0.2,
+            "status": "passed"
+          },
+          "top": [
+            {
+              "rank": 1,
+              "symbol": "AMZN",
+              "name": "Amazon.com Inc（AMZN）",
+              "close": "262.94",
+              "change": "+1.66%",
+              "weight": "4.08%",
+              "contribution": "+6.77bp",
+              "contributionBps": 6.7728,
+              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+            },
+            {
+              "rank": 2,
+              "symbol": "MSFT",
+              "name": "Microsoft Corp（MSFT）",
+              "close": "487.48",
+              "change": "+0.88%",
+              "weight": "5.21%",
+              "contribution": "+4.58bp",
+              "contributionBps": 4.5848,
+              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+            },
+            {
+              "rank": 3,
+              "symbol": "META",
+              "name": "Meta Platforms Inc（META）",
+              "close": "558.87",
+              "change": "+1.63%",
+              "weight": "2.05%",
+              "contribution": "+3.34bp",
+              "contributionBps": 3.3415,
+              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+            },
+            {
+              "rank": 4,
+              "symbol": "V",
+              "name": "Visa Inc（V）",
+              "close": "382.95",
+              "change": "+3.21%",
+              "weight": "1.03%",
+              "contribution": "+3.31bp",
+              "contributionBps": 3.3063,
+              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+            },
+            {
+              "rank": 5,
+              "symbol": "GOOGL",
+              "name": "Alphabet Inc（GOOGL）",
+              "close": "348.29",
+              "change": "+1.01%",
+              "weight": "3.15%",
+              "contribution": "+3.18bp",
+              "contributionBps": 3.1815,
+              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+            }
+          ],
+          "bottom": [
+            {
+              "rank": 1,
+              "symbol": "NVDA",
+              "name": "NVIDIA Corp（NVDA）",
+              "close": "208.71",
+              "change": "-2.80%",
+              "weight": "7.27%",
+              "contribution": "-20.36bp",
+              "contributionBps": -20.356,
+              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+            },
+            {
+              "rank": 2,
+              "symbol": "MU",
+              "name": "Micron Technology Inc（MU）",
+              "close": "908.3",
+              "change": "-6.05%",
+              "weight": "1.48%",
+              "contribution": "-8.95bp",
+              "contributionBps": -8.954,
+              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+            },
+            {
+              "rank": 3,
+              "symbol": "TSLA",
+              "name": "Tesla Inc（TSLA）",
+              "close": "349.14",
+              "change": "-3.78%",
+              "weight": "1.98%",
+              "contribution": "-7.48bp",
+              "contributionBps": -7.4844,
+              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+            },
+            {
+              "rank": 4,
+              "symbol": "AVGO",
+              "name": "Broadcom Inc（AVGO）",
+              "close": "358.93",
+              "change": "-2.58%",
+              "weight": "2.46%",
+              "contribution": "-6.35bp",
+              "contributionBps": -6.3468,
+              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+            },
+            {
+              "rank": 5,
+              "symbol": "AMD",
+              "name": "Advanced Micro Devices Inc（AMD）",
+              "close": "456.34",
+              "change": "-3.57%",
+              "weight": "1.07%",
+              "contribution": "-3.82bp",
+              "contributionBps": -3.8199,
+              "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+            }
+          ],
+          "lastGood": {
+            "title": "米国市場（S&P500寄与度 推計・bp）",
+            "flag": "US",
+            "status": "verified-estimate",
+            "freshness": "stale",
+            "dataDate": "2026-08-24",
+            "asOf": "2026-08-24T16:00:00-04:00",
+            "updatedAt": "2026-08-25T07:03:52+09:00",
+            "source": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+            "error": null,
+            "unit": "bp",
+            "official": false,
+            "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
+            "validation": {
+              "estimatedWeightedReturnPct": -0.1513,
+              "verifiedSP500ReturnPct": -0.28,
+              "differencePt": 0.1287,
+              "tolerancePt": 0.2,
+              "status": "passed"
+            },
+            "top": [
+              {
+                "rank": 1,
+                "symbol": "AMZN",
+                "name": "Amazon.com Inc（AMZN）",
+                "close": "262.68",
+                "change": "+1.57%",
+                "weight": "4.07%",
+                "contribution": "+6.39bp",
+                "contributionBps": 6.3899,
+                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+              },
+              {
+                "rank": 2,
+                "symbol": "MSFT",
+                "name": "Microsoft Corp（MSFT）",
+                "close": "487.85",
+                "change": "+0.95%",
+                "weight": "5.21%",
+                "contribution": "+4.95bp",
+                "contributionBps": 4.9495,
+                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+              },
+              {
+                "rank": 3,
+                "symbol": "META",
+                "name": "Meta Platforms Inc（META）",
+                "close": "559.25",
+                "change": "+1.70%",
+                "weight": "2.05%",
+                "contribution": "+3.48bp",
+                "contributionBps": 3.485,
+                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+              },
+              {
+                "rank": 4,
+                "symbol": "AAPL",
+                "name": "Apple Inc（AAPL）",
+                "close": "310.92",
+                "change": "+0.51%",
+                "weight": "6.52%",
+                "contribution": "+3.33bp",
+                "contributionBps": 3.3252,
+                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+              },
+              {
+                "rank": 5,
+                "symbol": "V",
+                "name": "Visa Inc（V）",
+                "close": "382.95",
+                "change": "+3.21%",
+                "weight": "1.03%",
+                "contribution": "+3.31bp",
+                "contributionBps": 3.3063,
+                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+              }
+            ],
+            "bottom": [
+              {
+                "rank": 1,
+                "symbol": "NVDA",
+                "name": "NVIDIA Corp（NVDA）",
+                "close": "208.88",
+                "change": "-2.72%",
+                "weight": "7.27%",
+                "contribution": "-19.77bp",
+                "contributionBps": -19.7744,
+                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+              },
+              {
+                "rank": 2,
+                "symbol": "MU",
+                "name": "Micron Technology Inc（MU）",
+                "close": "909.88",
+                "change": "-5.89%",
+                "weight": "1.48%",
+                "contribution": "-8.72bp",
+                "contributionBps": -8.7172,
+                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+              },
+              {
+                "rank": 3,
+                "symbol": "TSLA",
+                "name": "Tesla Inc（TSLA）",
+                "close": "349.42",
+                "change": "-3.70%",
+                "weight": "1.98%",
+                "contribution": "-7.33bp",
+                "contributionBps": -7.326,
+                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+              },
+              {
+                "rank": 4,
+                "symbol": "AVGO",
+                "name": "Broadcom Inc（AVGO）",
+                "close": "359.11",
+                "change": "-2.53%",
+                "weight": "2.46%",
+                "contribution": "-6.22bp",
+                "contributionBps": -6.2238,
+                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+              },
+              {
+                "rank": 5,
+                "symbol": "AMD",
+                "name": "Advanced Micro Devices Inc（AMD）",
+                "close": "457.1",
+                "change": "-3.41%",
+                "weight": "1.07%",
+                "contribution": "-3.65bp",
+                "contributionBps": -3.6487,
+                "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
+              }
+            ],
+            "lastGood": null
+          }
+        }
       },
       "japan": {
         "title": "日本市場（日経225寄与度 上位・下位）",
@@ -4302,20 +4676,20 @@
       "conclusion": {
         "title": "今日の結論",
         "main": "米国主要指数は下落、日本はTOPIXが小幅高だがグロース250は下落。大型株・半導体を軸に強弱が分かれる株式市場。",
-        "sub": "日経225 65,528.09 / TOPIX 4,073.29 / S&P500 7,674.37 / Nasdaq 26,180.46。"
+        "sub": "日経225 65,528.09 / TOPIX 4,073.29 / S&P500 7,652.86 / Nasdaq 25,980.19。"
       },
       "reason": {
         "title": "なぜ買われたか／売られたか",
         "items": [
           "日本：TOPIX +6.00（+0.15%）、値上がり/値下がり 843 / 662。",
-          "米国：SOX -59.65（-0.51%）に対し、S&P500 +33.21（+0.43%）、Nasdaq +113.29（+0.43%）。",
+          "米国：SOX -317.20（-2.70%）に対し、S&P500 -21.51（-0.28%）、Nasdaq -200.27（-0.76%）。",
           "日本の強いセクター：電気機器 +1.72%、情報・通信業 +1.34%。個別では松 屋（8237） +10.29%、洋エンジ（6330） +7.22%。"
         ]
       },
       "risk": {
         "title": "リスク",
         "items": [
-          "米国はVIX -0.88（-5.50%）、NYSE値上がり/値下がり 1,257 / 818で内部下落が優勢。",
+          "米国はVIX +0.72（+4.76%）、NYSE値上がり/値下がり 1,088 / 987で内部下落が優勢。",
           "日本はグロース250 +2.90（+0.38%）で、TOPIXとの乖離に注意。",
           "日本の下落率上位：ＦＩＧ（4392） -12.10%、キオクシアＨＤ（285A） -6.24%。"
         ]
@@ -4323,9 +4697,9 @@
       "watch": {
         "title": "次の注目点",
         "items": [
-          "S&P500 +33.21（+0.43%）・Nasdaq +113.29（+0.43%）の下落が続くか、SOX -59.65（-0.51%）が下支えを維持するか。",
+          "S&P500 -21.51（-0.28%）・Nasdaq -200.27（-0.76%）の下落が続くか、SOX -317.20（-2.70%）が下支えを維持するか。",
           "日経225 / TOPIX / グロース250の方向と、値上がり・値下がり 843 / 662の広がり。",
-          "次回寄り付き：TOPIX 4,074.83 +0.19%、日経225先物（CME参考） 65,020.00 -1.36%。"
+          "次回寄り付き：TOPIX 4,067.56 -0.14%、日経225先物（CME参考） 65,190.00 -0.27%。"
         ]
       }
     },
@@ -4335,7 +4709,7 @@
         "items": [
           "日本：値上がり/値下がり 843 / 662、東証プライム売買代金 7.06 兆円。",
           "海外投資家動向（週次）：+2,109.41億円。",
-          "米国：NYSE 1,257 / 818、NASDAQ 1,971 / 1,208で下落優勢。"
+          "米国：NYSE 1,088 / 987、NASDAQ 1,332 / 1,855で下落優勢。"
         ]
       },
       {
@@ -4343,21 +4717,21 @@
         "items": [
           "日本：TOPIX +6.00（+0.15%）に対し、グロース250 +2.90（+0.38%）。指数間の強弱が残る。",
           "日本の上位セクター：電気機器 +1.72%、情報・通信業 +1.34%、輸送用機器 +1.05%。米国の上位セクター：コミュニケーション・サービス +1.78%、ヘルスケア +1.33%、一般消費財・サービス +1.07%。",
-          "米国：SOX -59.65（-0.51%）、Russell2000 +25.44（+0.85%）。資金の広がりは未確認。"
+          "米国：SOX -317.20（-2.70%）、Russell2000 -22.79（-0.76%）。資金の広がりは未確認。"
         ]
       },
       {
         "title": "メインシナリオ",
         "items": [
           "TOPIX +6.00（+0.15%）の相対優位が続くか、グロース250 +2.90（+0.38%）の下落が縮小するかを確認。",
-          "米国はSOX -59.65（-0.51%）の底堅さが、S&P500 +33.21（+0.43%）・Nasdaq +113.29（+0.43%）の下落を吸収できるかが分岐。",
-          "寄り付き確認：TOPIX 4,074.83 +0.19%。"
+          "米国はSOX -317.20（-2.70%）の底堅さが、S&P500 -21.51（-0.28%）・Nasdaq -200.27（-0.76%）の下落を吸収できるかが分岐。",
+          "寄り付き確認：TOPIX 4,067.56 -0.14%。"
         ]
       },
       {
         "title": "崩れる条件",
         "items": [
-          "米国でS&P500/Nasdaqの下落とVIX -0.88（-5.50%）の上昇が同時に続く場合。",
+          "米国でS&P500/Nasdaqの下落とVIX +0.72（+4.76%）の上昇が同時に続く場合。",
           "日本でTOPIXの上昇が広がりを伴わず、グロース250 +2.90（+0.38%）の下落が拡大する場合。",
           "個別株の下落が拡大：ＦＩＧ（4392） -12.10%、キオクシアＨＤ（285A） -6.24%、ｉｐｓ（4390） -5.78%。"
         ]
@@ -4367,7 +4741,7 @@
         "items": [
           "日本の上昇率上位：松 屋（8237） +10.29%、洋エンジ（6330） +7.22%、住友鉱（5713） +6.64%。",
           "日本の下落率上位：ＦＩＧ（4392） -12.10%、キオクシアＨＤ（285A） -6.24%、ｉｐｓ（4390） -5.78%。",
-          "米国の主要指数：S&P500 +33.21（+0.43%）、Nasdaq +113.29（+0.43%）、SOX -59.65（-0.51%）。"
+          "米国の主要指数：S&P500 -21.51（-0.28%）、Nasdaq -200.27（-0.76%）、SOX -317.20（-2.70%）。"
         ]
       }
     ],
@@ -4485,39 +4859,38 @@
         "title": "東京市場 朝の寄り付き分析",
         "flag": "JP",
         "status": "東京寄り付きデータ取得済み",
-        "dataDate": "2026-08-24",
-        "updatedAt": "2026-08-24T23:06:40+09:00",
+        "dataDate": "2026-08-25",
+        "updatedAt": "2026-08-25T10:48:06+09:00",
         "source": "Yahoo Finance chart API（日経225・FX・CME参考先物） / Google Finance（TOPIX）",
         "metrics": [
           {
             "label": "日経225",
-            "value": "65,537.33",
-            "change": "-0.73%",
-            "note": "寄り値 65,978.95 / ギャップ -0.06% / 寄り後 -0.67%"
+            "value": "65,030.35",
+            "change": "-0.76%",
+            "note": "寄り値 65,195.26 / ギャップ -0.51% / 寄り後 -0.25%"
           },
           {
             "label": "TOPIX",
-            "value": "4,074.83",
-            "change": "+0.19%",
-            "note": "寄り値 4,074.83 / ギャップ +0.19% / 寄り後 +0.00%"
+            "value": "4,067.56",
+            "change": "-0.14%",
+            "note": "寄り値 4,073.89 / ギャップ +0.02% / 寄り後 -0.16%"
           },
           {
             "label": "USD/JPY",
-            "value": "158.941",
-            "change": "+0.00%",
-            "note": "08:55以降の変化 / 08:55近辺 158.937"
+            "value": "159.223",
+            "change": "+0.05%",
+            "note": "08:55以降の変化 / 08:55近辺 159.138"
           },
           {
             "label": "日経225先物（CME参考）",
-            "value": "65,020.00",
-            "change": "-1.36%",
+            "value": "65,190.00",
+            "change": "-0.27%",
             "note": "CME参考値。大阪取引所先物とは別銘柄として表示"
           }
         ],
         "insights": [
           "日経225はギャップダウン後も売りが継続。リスクオフの持続を確認します。",
-          "日経225とTOPIXが逆方向。指数寄与度の偏りやセクターローテーションに注意します。",
-          "USD/JPYは08:55以降 +0.00%。日本株の外需・先物方向との整合性を確認します。"
+          "USD/JPYは08:55以降 +0.05%。日本株の外需・先物方向との整合性を確認します。"
         ],
         "judgement": "寄り後は売り優勢。高寄りでも上昇継続とは見なさず、寄り天警戒を優先します。",
         "errors": []
@@ -4642,7 +5015,7 @@
         "steps": [
           {
             "label": "東京市場",
-            "text": "2026-08-24 / 日経225 65,537.33 -0.73% / TOPIX 4,074.83 +0.19%"
+            "text": "2026-08-25 / 日経225 65,030.35 -0.76% / TOPIX 4,067.56 -0.14%"
           },
           {
             "label": "米国プレマーケット",
@@ -4650,20 +5023,20 @@
           },
           {
             "label": "米国通常市場（直近終値）",
-            "text": "S&P500 +33.21（+0.43%） / Nasdaq +113.29（+0.43%）"
+            "text": "S&P500 -21.51（-0.28%） / Nasdaq -200.27（-0.76%）"
           }
         ],
         "conclusion": "東京市場と米国株先物の方向が一致。日米で同じリスク選好が引き継がれている可能性が高まっています。"
       }
     },
-    "sessionDataUpdatedAt": "2026-08-24T23:06:42+09:00",
+    "sessionDataUpdatedAt": "2026-08-25T10:48:07+09:00",
     "pageStatus": "ok",
     "preopen": {
       "status": "unavailable",
       "freshness": "unavailable",
       "dataDate": null,
       "asOf": null,
-      "updatedAt": "2026-08-24T23:06:55+09:00",
+      "updatedAt": "2026-08-25T10:17:09+09:00",
       "source": {
         "tradersWeb": {
           "name": "トレーダーズ・ウェブ Market Flash",
@@ -4674,7 +5047,7 @@
           "url": "https://s.kabutan.jp/news/"
         }
       },
-      "error": "当日の寄り前データを取得できませんでした: 当日の記事が見つかりません: index=https://www.traders.co.jp/market_jp/wadai, expected=2026-08-24",
+      "error": "当日の寄り前データを取得できませんでした: 当日の記事が見つかりません: index=https://www.traders.co.jp/market_jp/wadai, expected=2026-08-25",
       "summary": {},
       "tradersWebHighlights": [],
       "gainers": [],
@@ -11466,51 +11839,23 @@
     "sourceName": "JPX公表データ集計（公開サイト経由）",
     "sourceUrl": "https://matsutoushi.github.io/nk225-option-site/",
     "officialSourceUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/daily/index.html",
-    "asOfDate": "2026-08-21",
-    "fetchedAt": "2026-08-24T11:38:10+09:00",
+    "asOfDate": "2026-08-24",
+    "fetchedAt": "2026-08-25T11:32:05+09:00",
     "optionContractMonth": "202608",
     "strikeOiCoverage": "8月限・前営業日終値の上下3,000円範囲",
     "strikeOpenInterest": [
       {
-        "strike": 69000,
-        "callOi": 1987,
-        "putOi": 1257,
+        "strike": 68500,
+        "callOi": 175,
+        "putOi": 214,
         "callOiChange": 26,
         "putOiChange": 26
-      },
-      {
-        "strike": 68875,
-        "callOi": 77,
-        "putOi": 0,
-        "callOiChange": 178,
-        "putOiChange": 0
-      },
-      {
-        "strike": 68750,
-        "callOi": 484,
-        "putOi": 194,
-        "callOiChange": 0,
-        "putOiChange": null
-      },
-      {
-        "strike": 68625,
-        "callOi": 6,
-        "putOi": 0,
-        "callOiChange": 0,
-        "putOiChange": 0
-      },
-      {
-        "strike": 68500,
-        "callOi": 166,
-        "putOi": 214,
-        "callOiChange": 0,
-        "putOiChange": 0
       },
       {
         "strike": 68375,
         "callOi": 5,
         "putOi": 2,
-        "callOiChange": 6,
+        "callOiChange": 9,
         "putOiChange": 0
       },
       {
@@ -11529,7 +11874,7 @@
       },
       {
         "strike": 68000,
-        "callOi": 2089,
+        "callOi": 2083,
         "putOi": 2156,
         "callOiChange": 0,
         "putOiChange": null
@@ -11538,8 +11883,8 @@
         "strike": 67875,
         "callOi": 36,
         "putOi": 0,
-        "callOiChange": 13,
-        "putOiChange": -4
+        "callOiChange": -8,
+        "putOiChange": 0
       },
       {
         "strike": 67750,
@@ -11557,7 +11902,7 @@
       },
       {
         "strike": 67500,
-        "callOi": 2140,
+        "callOi": 2142,
         "putOi": 582,
         "callOiChange": 0,
         "putOiChange": 0
@@ -11566,112 +11911,112 @@
         "strike": 67375,
         "callOi": 29,
         "putOi": 0,
-        "callOiChange": -2,
-        "putOiChange": -60
+        "callOiChange": 1,
+        "putOiChange": 0
       },
       {
         "strike": 67250,
-        "callOi": 8,
+        "callOi": 10,
         "putOi": 116,
         "callOiChange": 0,
-        "putOiChange": -58
+        "putOiChange": null
       },
       {
         "strike": 67125,
-        "callOi": 1,
+        "callOi": 5,
         "putOi": 0,
-        "callOiChange": 0,
+        "callOiChange": 2,
         "putOiChange": 0
       },
       {
         "strike": 67000,
-        "callOi": 3480,
-        "putOi": 2751,
-        "callOiChange": 0,
+        "callOi": 3394,
+        "putOi": 2748,
+        "callOiChange": 4,
         "putOiChange": null
       },
       {
         "strike": 66875,
         "callOi": 0,
         "putOi": 0,
-        "callOiChange": -103,
-        "putOiChange": 4
+        "callOiChange": -88,
+        "putOiChange": -3
       },
       {
         "strike": 66750,
         "callOi": 1212,
         "putOi": 250,
-        "callOiChange": 200,
-        "putOiChange": 100
+        "callOiChange": null,
+        "putOiChange": 0
       },
       {
         "strike": 66625,
-        "callOi": 1,
+        "callOi": 3,
         "putOi": 23,
         "callOiChange": 0,
-        "putOiChange": 1
+        "putOiChange": 0
       },
       {
         "strike": 66500,
-        "callOi": 926,
+        "callOi": 991,
         "putOi": 2236,
-        "callOiChange": 48,
-        "putOiChange": -2
+        "callOiChange": 2,
+        "putOiChange": 0
       },
       {
         "strike": 66375,
-        "callOi": 0,
-        "putOi": 1,
-        "callOiChange": null,
+        "callOi": 1,
+        "putOi": 2,
+        "callOiChange": 64,
         "putOiChange": 0
       },
       {
         "strike": 66250,
         "callOi": 40,
         "putOi": 16,
+        "callOiChange": 1,
+        "putOiChange": 1
+      },
+      {
+        "strike": 66125,
+        "callOi": 41,
+        "putOi": 63,
         "callOiChange": 0,
         "putOiChange": 0
       },
       {
-        "strike": 66125,
-        "callOi": 39,
-        "putOi": 63,
-        "callOiChange": 0,
-        "putOiChange": 59
-      },
-      {
         "strike": 66000,
-        "callOi": 1788,
-        "putOi": 2413,
+        "callOi": 1947,
+        "putOi": 2419,
         "callOiChange": 2,
-        "putOiChange": 1
+        "putOiChange": 0
       },
       {
         "strike": 65875,
         "callOi": 1,
         "putOi": 1,
-        "callOiChange": 1,
-        "putOiChange": 0
+        "callOiChange": 158,
+        "putOiChange": 4
       },
       {
         "strike": 65750,
-        "callOi": 3,
-        "putOi": 702,
+        "callOi": 4,
+        "putOi": 703,
         "callOiChange": 0,
-        "putOiChange": 1
+        "putOiChange": 0
       },
       {
         "strike": 65625,
         "callOi": 0,
         "putOi": 27,
-        "callOiChange": 0,
-        "putOiChange": 1
+        "callOiChange": 1,
+        "putOiChange": 0
       },
       {
         "strike": 65500,
-        "callOi": 174,
-        "putOi": 820,
-        "callOiChange": 1,
+        "callOi": 177,
+        "putOi": 821,
+        "callOiChange": 0,
         "putOiChange": 0
       },
       {
@@ -11679,40 +12024,40 @@
         "callOi": 1,
         "putOi": 32,
         "callOiChange": 0,
-        "putOiChange": 0
+        "putOiChange": -4
       },
       {
         "strike": 65250,
         "callOi": 4,
-        "putOi": 91,
-        "callOiChange": 1,
+        "putOi": 90,
+        "callOiChange": 0,
         "putOiChange": 0
       },
       {
         "strike": 65125,
         "callOi": 0,
         "putOi": 34,
-        "callOiChange": 0,
-        "putOiChange": 1
+        "callOiChange": -1,
+        "putOiChange": -1
       },
       {
         "strike": 65000,
-        "callOi": 5387,
-        "putOi": 3957,
-        "callOiChange": 2,
-        "putOiChange": 282
+        "callOi": 5386,
+        "putOi": 3853,
+        "callOiChange": 0,
+        "putOiChange": 0
       },
       {
         "strike": 64875,
         "callOi": 1,
         "putOi": 11,
-        "callOiChange": 1,
-        "putOiChange": 0
+        "callOiChange": -1,
+        "putOiChange": -103
       },
       {
         "strike": 64750,
         "callOi": 14,
-        "putOi": 486,
+        "putOi": 485,
         "callOiChange": 0,
         "putOiChange": 0
       },
@@ -11720,14 +12065,14 @@
         "strike": 64625,
         "callOi": 0,
         "putOi": 46,
-        "callOiChange": null,
+        "callOiChange": 0,
         "putOiChange": 0
       },
       {
         "strike": 64500,
         "callOi": 120,
-        "putOi": 688,
-        "callOiChange": 0,
+        "putOi": 687,
+        "callOiChange": null,
         "putOiChange": 0
       },
       {
@@ -11735,90 +12080,118 @@
         "callOi": 0,
         "putOi": 27,
         "callOiChange": 0,
-        "putOiChange": 0
+        "putOiChange": 1
       },
       {
         "strike": 64250,
         "callOi": 135,
         "putOi": 42,
         "callOiChange": 0,
-        "putOiChange": 1
+        "putOiChange": 0
       },
       {
         "strike": 64125,
         "callOi": 0,
         "putOi": 27,
-        "callOiChange": null,
+        "callOiChange": 0,
         "putOiChange": 0
       },
       {
         "strike": 64000,
         "callOi": 1704,
-        "putOi": 3338,
-        "callOiChange": 0,
-        "putOiChange": 156
+        "putOi": 3364,
+        "callOiChange": null,
+        "putOiChange": 0
       },
       {
         "strike": 63875,
         "callOi": 0,
         "putOi": 29,
-        "callOiChange": null,
-        "putOiChange": -55
+        "callOiChange": 0,
+        "putOiChange": 26
       },
       {
         "strike": 63750,
         "callOi": 32,
         "putOi": 36,
-        "callOiChange": 0,
+        "callOiChange": null,
         "putOiChange": 0
       },
       {
         "strike": 63625,
         "callOi": 0,
         "putOi": 40,
-        "callOiChange": null,
+        "callOiChange": 0,
         "putOiChange": 0
       },
       {
         "strike": 63500,
         "callOi": 7,
-        "putOi": 733,
-        "callOiChange": 0,
-        "putOiChange": -199
+        "putOi": 732,
+        "callOiChange": null,
+        "putOiChange": 0
       },
       {
         "strike": 63375,
         "callOi": 0,
         "putOi": 57,
-        "callOiChange": null,
-        "putOiChange": 0
+        "callOiChange": 0,
+        "putOiChange": -1
       },
       {
         "strike": 63250,
         "callOi": 7,
-        "putOi": 54,
-        "callOiChange": 0,
-        "putOiChange": 1
+        "putOi": 53,
+        "callOiChange": null,
+        "putOiChange": 0
       },
       {
         "strike": 63125,
         "callOi": 0,
         "putOi": 73,
+        "callOiChange": 0,
+        "putOiChange": -1
+      },
+      {
+        "strike": 63000,
+        "callOi": 971,
+        "putOi": 3683,
         "callOiChange": null,
         "putOiChange": 0
+      },
+      {
+        "strike": 62875,
+        "callOi": 0,
+        "putOi": 26,
+        "callOiChange": 0,
+        "putOiChange": -49
+      },
+      {
+        "strike": 62750,
+        "callOi": 3,
+        "putOi": 799,
+        "callOiChange": null,
+        "putOiChange": 24
+      },
+      {
+        "strike": 62625,
+        "callOi": 0,
+        "putOi": 94,
+        "callOiChange": 0,
+        "putOiChange": 4
       }
     ],
-    "putCallRatio": 1.0600854587903616,
+    "putCallRatio": 1.2754488203778551,
     "putCallDefinition": "表示範囲の建玉残高ベース（Put OI / Call OI）",
-    "putVolume": 15636,
-    "callVolume": 11301,
-    "publishedPutCallVolumeRatio": 1.384,
-    "publishedPutCallVolumeRatioPrevious": 1.017,
+    "putVolume": 18390,
+    "callVolume": 11847,
+    "publishedPutCallVolumeRatio": 1.552,
+    "publishedPutCallVolumeRatioPrevious": 1.384,
     "publishedPutCallDefinition": "出来高ベース（Put出来高 / Call出来高）",
     "upperCallConcentrationStrike": null,
     "lowerPutConcentrationStrike": null,
     "nextSqDate": "2026-09-11",
-    "businessDaysToSq": 20,
+    "businessDaysToSq": 17,
     "comment": "JPX公表データを基礎にした公開集計をフォールバック利用。権利行使価格別建玉・前日比・出来高PCRを取得し、方向予想ではなくヘッジ圧力が変わりやすい価格帯の確認に使用する。"
   }
 }
