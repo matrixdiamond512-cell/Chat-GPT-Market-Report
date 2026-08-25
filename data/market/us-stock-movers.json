@@ -1,19 +1,36 @@
 {
   "schemaVersion": "1.0.0",
-  "status": "verified",
-  "freshness": "fresh",
-  "dataDate": "2026-08-24",
-  "asOf": "2026-08-24T16:00:00-04:00",
-  "updatedAt": "2026-08-25T23:09:34+09:00",
+  "status": "unavailable",
+  "freshness": "unavailable",
+  "dataDate": null,
+  "asOf": null,
+  "updatedAt": "2026-08-26T06:59:26+09:00",
   "source": {
     "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
     "url": "https://www.slickcharts.com/sp500",
     "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
   },
-  "error": null,
+  "error": "Slickcharts is not on the verified U.S. session: source=2026-08-25, expected=2026-08-24",
   "current": {
+    "status": "unavailable",
+    "freshness": "unavailable",
+    "dataDate": null,
+    "asOf": null,
+    "updatedAt": "2026-08-26T06:59:26+09:00",
+    "source": {
+      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+      "url": "https://www.slickcharts.com/sp500",
+      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
+    },
+    "error": "Slickcharts is not on the verified U.S. session: source=2026-08-25, expected=2026-08-24",
+    "universe": "S&P 500 constituents",
+    "validation": {},
+    "gainers": [],
+    "losers": []
+  },
+  "lastGood": {
     "status": "verified",
-    "freshness": "fresh",
+    "freshness": "stale",
     "dataDate": "2026-08-24",
     "asOf": "2026-08-24T16:00:00-04:00",
     "updatedAt": "2026-08-25T23:09:34+09:00",
@@ -124,217 +141,8 @@
       }
     ]
   },
-  "lastGood": {
-    "status": "verified",
-    "freshness": "stale",
-    "dataDate": "2026-08-24",
-    "asOf": "2026-08-24T16:00:00-04:00",
-    "updatedAt": "2026-08-25T17:03:53+09:00",
-    "source": {
-      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-      "url": "https://www.slickcharts.com/sp500",
-      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
-    },
-    "error": null,
-    "universe": "S&P 500 constituents",
-    "validation": {
-      "estimatedWeightedReturnPct": 0.2217,
-      "verifiedSP500ReturnPct": null,
-      "differencePt": null
-    },
-    "gainers": [
-      {
-        "rank": 1,
-        "symbol": "INTC",
-        "name": "Intel Corp（INTC）",
-        "close": "89.14",
-        "dayChange": "+1.88",
-        "change": "+2.15%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "FLEX",
-        "name": "Flex（FLEX）",
-        "close": "108.85",
-        "dayChange": "+2.2",
-        "change": "+2.06%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "MRNA",
-        "name": "Moderna Inc（MRNA）",
-        "close": "141.7",
-        "dayChange": "+2.81",
-        "change": "+2.02%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "COIN",
-        "name": "Coinbase Global Inc（COIN）",
-        "close": "183.08",
-        "dayChange": "+3.6",
-        "change": "+2.01%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "MSCI",
-        "name": "MSCI Inc（MSCI）",
-        "close": "582.73",
-        "dayChange": "+11.37",
-        "change": "+1.99%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-      }
-    ],
-    "losers": [
-      {
-        "rank": 1,
-        "symbol": "A",
-        "name": "Agilent Technologies Inc（A）",
-        "close": "141.5",
-        "dayChange": "-11.93",
-        "change": "-7.78%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "ALB",
-        "name": "Albemarle Corp（ALB）",
-        "close": "137.51",
-        "dayChange": "-4",
-        "change": "-2.82%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "CF",
-        "name": "CF Industries Holdings Inc（CF）",
-        "close": "126.05",
-        "dayChange": "-3.19",
-        "change": "-2.47%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "CHRW",
-        "name": "CH Robinson Worldwide Inc（CHRW）",
-        "close": "140",
-        "dayChange": "-2.86",
-        "change": "-2.00%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "EQIX",
-        "name": "Equinix Inc（EQIX）",
-        "close": "1,038.15",
-        "dayChange": "-17.05",
-        "change": "-1.62%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-      }
-    ]
-  },
   "universe": "S&P 500 constituents",
-  "validation": {
-    "estimatedWeightedReturnPct": 0.2499,
-    "verifiedSP500ReturnPct": null,
-    "differencePt": null
-  },
-  "gainers": [
-    {
-      "rank": 1,
-      "symbol": "MRNA",
-      "name": "Moderna Inc（MRNA）",
-      "close": "154.54",
-      "dayChange": "+15.65",
-      "change": "+11.27%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "SMCI",
-      "name": "Super Micro Computer Inc（SMCI）",
-      "close": "37.75",
-      "dayChange": "+2.58",
-      "change": "+7.35%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "MRVL",
-      "name": "Marvell Technology（MRVL）",
-      "close": "245.55",
-      "dayChange": "+16.26",
-      "change": "+7.09%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "COHR",
-      "name": "Coherent Corp（COHR）",
-      "close": "287.99",
-      "dayChange": "+12.5",
-      "change": "+4.54%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "DELL",
-      "name": "Dell Technologies Inc（DELL）",
-      "close": "451.92",
-      "dayChange": "+18.73",
-      "change": "+4.32%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-    }
-  ],
-  "losers": [
-    {
-      "rank": 1,
-      "symbol": "ALB",
-      "name": "Albemarle Corp（ALB）",
-      "close": "133.62",
-      "dayChange": "-7.89",
-      "change": "-5.57%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "TGT",
-      "name": "Target Corp（TGT）",
-      "close": "162.79",
-      "dayChange": "-7.1",
-      "change": "-4.18%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "DECK",
-      "name": "Deckers Outdoor Corp（DECK）",
-      "close": "88.58",
-      "dayChange": "-3.5",
-      "change": "-3.80%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "SWKS",
-      "name": "Skyworks Solutions Inc（SWKS）",
-      "close": "64.39",
-      "dayChange": "-2.47",
-      "change": "-3.69%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "LULU",
-      "name": "Lululemon Athletica Inc（LULU）",
-      "close": "118.27",
-      "dayChange": "-4.51",
-      "change": "-3.67%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-24。材料要因は別途ニュース確認。"
-    }
-  ]
+  "validation": {},
+  "gainers": [],
+  "losers": []
 }

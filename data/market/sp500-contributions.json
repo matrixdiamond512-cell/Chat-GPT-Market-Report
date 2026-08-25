@@ -1,19 +1,38 @@
 {
   "schemaVersion": "1.0.0",
-  "status": "verified-estimate",
-  "freshness": "fresh",
-  "dataDate": "2026-08-24",
-  "asOf": "2026-08-24T16:00:00-04:00",
-  "updatedAt": "2026-08-25T23:09:34+09:00",
+  "status": "unavailable",
+  "freshness": "unavailable",
+  "dataDate": null,
+  "asOf": null,
+  "updatedAt": "2026-08-26T06:59:26+09:00",
   "source": {
     "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
     "url": "https://www.slickcharts.com/sp500",
     "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
   },
-  "error": null,
+  "error": "Slickcharts is not on the verified U.S. session: source=2026-08-25, expected=2026-08-24",
   "current": {
+    "status": "unavailable",
+    "freshness": "unavailable",
+    "dataDate": null,
+    "asOf": null,
+    "updatedAt": "2026-08-26T06:59:26+09:00",
+    "source": {
+      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+      "url": "https://www.slickcharts.com/sp500",
+      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
+    },
+    "error": "Slickcharts is not on the verified U.S. session: source=2026-08-25, expected=2026-08-24",
+    "unit": "bp",
+    "official": false,
+    "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
+    "validation": {},
+    "top": [],
+    "bottom": []
+  },
+  "lastGood": {
     "status": "verified-estimate",
-    "freshness": "fresh",
+    "freshness": "stale",
     "dataDate": "2026-08-24",
     "asOf": "2026-08-24T16:00:00-04:00",
     "updatedAt": "2026-08-25T23:09:34+09:00",
@@ -146,261 +165,10 @@
       }
     ]
   },
-  "lastGood": {
-    "status": "verified-estimate",
-    "freshness": "stale",
-    "dataDate": "2026-08-24",
-    "asOf": "2026-08-24T16:00:00-04:00",
-    "updatedAt": "2026-08-25T17:03:53+09:00",
-    "source": {
-      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-      "url": "https://www.slickcharts.com/sp500",
-      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
-    },
-    "error": null,
-    "unit": "bp",
-    "official": false,
-    "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
-    "validation": {
-      "estimatedWeightedReturnPct": 0.2217,
-      "verifiedSP500ReturnPct": null,
-      "differencePt": null
-    },
-    "top": [
-      {
-        "rank": 1,
-        "symbol": "NVDA",
-        "name": "NVIDIA Corp（NVDA）",
-        "close": "210.34",
-        "change": "+0.89%",
-        "weight": "7.31%",
-        "contribution": "+6.51bp",
-        "contributionBps": 6.5059,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 2,
-        "symbol": "MU",
-        "name": "Micron Technology Inc（MU）",
-        "close": "922.29",
-        "change": "+1.30%",
-        "weight": "1.50%",
-        "contribution": "+1.95bp",
-        "contributionBps": 1.95,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 3,
-        "symbol": "AMD",
-        "name": "Advanced Micro Devices Inc（AMD）",
-        "close": "464.5",
-        "change": "+1.70%",
-        "weight": "1.09%",
-        "contribution": "+1.85bp",
-        "contributionBps": 1.853,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 4,
-        "symbol": "AVGO",
-        "name": "Broadcom Inc（AVGO）",
-        "close": "361.15",
-        "change": "+0.67%",
-        "weight": "2.47%",
-        "contribution": "+1.65bp",
-        "contributionBps": 1.6549,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 5,
-        "symbol": "TSLA",
-        "name": "Tesla Inc（TSLA）",
-        "close": "351.6",
-        "change": "+0.76%",
-        "weight": "1.99%",
-        "contribution": "+1.51bp",
-        "contributionBps": 1.5124,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-      }
-    ],
-    "bottom": [
-      {
-        "rank": 1,
-        "symbol": "AAPL",
-        "name": "Apple Inc（AAPL）",
-        "close": "309.23",
-        "change": "-0.36%",
-        "weight": "6.48%",
-        "contribution": "-2.33bp",
-        "contributionBps": -2.3328,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 2,
-        "symbol": "MSFT",
-        "name": "Microsoft Corp（MSFT）",
-        "close": "485.79",
-        "change": "-0.31%",
-        "weight": "5.18%",
-        "contribution": "-1.61bp",
-        "contributionBps": -1.6058,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 3,
-        "symbol": "XOM",
-        "name": "Exxon Mobil Corp（XOM）",
-        "close": "163.22",
-        "change": "-0.51%",
-        "weight": "0.96%",
-        "contribution": "-0.49bp",
-        "contributionBps": -0.4896,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 4,
-        "symbol": "A",
-        "name": "Agilent Technologies Inc（A）",
-        "close": "141.5",
-        "change": "-7.78%",
-        "weight": "0.06%",
-        "contribution": "-0.47bp",
-        "contributionBps": -0.4668,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 5,
-        "symbol": "BRK.B",
-        "name": "Berkshire Hathaway Inc（BRK.B）",
-        "close": "503",
-        "change": "-0.26%",
-        "weight": "1.55%",
-        "contribution": "-0.40bp",
-        "contributionBps": -0.403,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-      }
-    ]
-  },
   "unit": "bp",
   "official": false,
   "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
-  "validation": {
-    "estimatedWeightedReturnPct": 0.2499,
-    "verifiedSP500ReturnPct": null,
-    "differencePt": null
-  },
-  "top": [
-    {
-      "rank": 1,
-      "symbol": "NVDA",
-      "name": "NVIDIA Corp（NVDA）",
-      "close": "213.35",
-      "change": "+2.33%",
-      "weight": "7.42%",
-      "contribution": "+17.29bp",
-      "contributionBps": 17.2886,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 2,
-      "symbol": "AMD",
-      "name": "Advanced Micro Devices Inc（AMD）",
-      "close": "474.36",
-      "change": "+3.86%",
-      "weight": "1.11%",
-      "contribution": "+4.28bp",
-      "contributionBps": 4.2846,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 3,
-      "symbol": "MU",
-      "name": "Micron Technology Inc（MU）",
-      "close": "928.7",
-      "change": "+2.01%",
-      "weight": "1.51%",
-      "contribution": "+3.04bp",
-      "contributionBps": 3.0351,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 4,
-      "symbol": "MRVL",
-      "name": "Marvell Technology（MRVL）",
-      "close": "245.55",
-      "change": "+7.09%",
-      "weight": "0.32%",
-      "contribution": "+2.27bp",
-      "contributionBps": 2.2688,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 5,
-      "symbol": "DELL",
-      "name": "Dell Technologies Inc（DELL）",
-      "close": "451.92",
-      "change": "+4.32%",
-      "weight": "0.42%",
-      "contribution": "+1.81bp",
-      "contributionBps": 1.8144,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-    }
-  ],
-  "bottom": [
-    {
-      "rank": 1,
-      "symbol": "MSFT",
-      "name": "Microsoft Corp（MSFT）",
-      "close": "485.86",
-      "change": "-0.30%",
-      "weight": "5.18%",
-      "contribution": "-1.55bp",
-      "contributionBps": -1.554,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 2,
-      "symbol": "WMT",
-      "name": "Walmart Inc（WMT）",
-      "close": "105.22",
-      "change": "-1.19%",
-      "weight": "1.20%",
-      "contribution": "-1.43bp",
-      "contributionBps": -1.428,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 3,
-      "symbol": "AMZN",
-      "name": "Amazon.com Inc（AMZN）",
-      "close": "261.27",
-      "change": "-0.30%",
-      "weight": "4.04%",
-      "contribution": "-1.21bp",
-      "contributionBps": -1.212,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 4,
-      "symbol": "AVGO",
-      "name": "Broadcom Inc（AVGO）",
-      "close": "357.44",
-      "change": "-0.37%",
-      "weight": "2.44%",
-      "contribution": "-0.90bp",
-      "contributionBps": -0.9028,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-    },
-    {
-      "rank": 5,
-      "symbol": "XOM",
-      "name": "Exxon Mobil Corp（XOM）",
-      "close": "162.53",
-      "change": "-0.93%",
-      "weight": "0.96%",
-      "contribution": "-0.89bp",
-      "contributionBps": -0.8928,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-08-24。公式S&P寄与度ではない。"
-    }
-  ]
+  "validation": {},
+  "top": [],
+  "bottom": []
 }
