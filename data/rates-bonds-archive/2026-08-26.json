@@ -3,12 +3,12 @@
   "pageId": "rates-bonds",
   "pageTitle": "金利・債券市場分析",
   "subtitle": "米・日・欧の金利、イールドカーブ、実質金利、入札需給、他市場への波及を一画面で確認",
-  "generatedAt": "2026-08-26T12:40:47+09:00",
+  "generatedAt": "2026-08-26T16:34:00+09:00",
   "meta": {
     "page": "rates-bonds",
     "asOfDate": "2026-08-25",
     "asOfTime": "各市場の公表時点",
-    "updatedAt": "2026-08-26T12:40:47+09:00",
+    "updatedAt": "2026-08-26T16:34:00+09:00",
     "status": "confirmed",
     "sourceStatus": "自動取得",
     "isStale": false,
@@ -25,7 +25,7 @@
     "topLines": [
       "米国：ツイスト｜年限ごとに方向が分かれる",
       "日本：ツイスト｜年限ごとに方向が分かれる",
-      "クロスアセット：USD/JPYは整合、金は整合、BTCUSDは整合"
+      "クロスアセット：USD/JPYは整合、金は整合、BTCUSDは逆行"
     ],
     "theme": "米国はツイスト、日本はツイスト。日米金利差は縮小方向。",
     "usRates": {
@@ -84,14 +84,14 @@
       "direction": "低下",
       "goldImplication": "上昇",
       "btcImplication": "上昇",
-      "interpretation": "実質金利は低下。金は整合、BTCUSDは整合。"
+      "interpretation": "実質金利は低下。金は整合、BTCUSDは逆行。"
     },
     "crossAssetAnalysis": [
       {
         "market": "USD/JPY",
         "expectedDirection": "下落",
         "actualDirection": "下落",
-        "actualChangePct": -0.10682960196691793,
+        "actualChangePct": -0.07729567391360215,
         "verdict": "整合",
         "confidence": "低",
         "interpretation": "金利示唆は下落、実際は下落。方向が整合。",
@@ -101,7 +101,7 @@
         "market": "EUR/USD",
         "expectedDirection": "上昇",
         "actualDirection": "横ばい",
-        "actualChangePct": 0.014237025485619448,
+        "actualChangePct": 0.04851782652262049,
         "verdict": "逆行",
         "confidence": "低",
         "interpretation": "金利示唆は上昇、実際は横ばい。米欧金利差とドル需要を確認。",
@@ -111,7 +111,7 @@
         "market": "金",
         "expectedDirection": "上昇",
         "actualDirection": "上昇",
-        "actualChangePct": 1.405745908258793,
+        "actualChangePct": 1.175047998021661,
         "verdict": "整合",
         "confidence": "低",
         "interpretation": "金利示唆は上昇、実際は上昇。方向が整合。",
@@ -120,18 +120,18 @@
       {
         "market": "BTCUSD",
         "expectedDirection": "上昇",
-        "actualDirection": "上昇",
-        "actualChangePct": 0.09765861907460316,
-        "verdict": "整合",
+        "actualDirection": "横ばい",
+        "actualChangePct": -0.0417584883394051,
+        "verdict": "逆行",
         "confidence": "低",
-        "interpretation": "金利示唆は上昇、実際は上昇。方向が整合。",
+        "interpretation": "金利示唆は上昇、実際は横ばい。暗号資産固有需給・ETF・レバレッジを確認。",
         "timingNote": "基準日が2日ずれるため参考方向として表示。"
       },
       {
         "market": "日経225先物",
         "expectedDirection": "混合",
         "actualDirection": "上昇",
-        "actualChangePct": 0.6066120715802148,
+        "actualChangePct": 0.7127691841067652,
         "verdict": "混合",
         "confidence": "低",
         "interpretation": "金利示唆は混合、実際は上昇。米金利の追い風と日本金利の逆風を併せて確認。",
@@ -180,7 +180,7 @@
       "status": "confirmed",
       "reason": "米10年実質 2.380% / 前日比 -2.0bp",
       "asOf": "2026-08-24",
-      "interpretation": "実質金利は低下。金は整合、BTCUSDは整合。"
+      "interpretation": "実質金利は低下。金は整合、BTCUSDは逆行。"
     }
   ],
   "rates": [
@@ -252,7 +252,7 @@
       "source": "FRED DFII10",
       "missingReason": null,
       "staticMeaning": "金・高PER株・BTCへの割引率/保有コストを確認",
-      "currentInterpretation": "実質金利は低下。金は整合、BTCUSDは整合。"
+      "currentInterpretation": "実質金利は低下。金は整合、BTCUSDは逆行。"
     },
     {
       "name": "米10年期待インフレ率",
@@ -535,9 +535,9 @@
         "円相場",
         "日本株バリュエーション"
       ],
-      "actualStatus": "上昇（+0.61%）／概ね整合",
+      "actualStatus": "上昇（+0.71%）／概ね整合",
       "status": "confirmed",
-      "note": "金利基準日 2026-08-24、日経225先物基準時刻 2026-08-26T12:14:00+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+      "note": "金利基準日 2026-08-24、日経225先物基準時刻 2026-08-26T15:45:00+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
     },
     {
       "market": "USD/JPY",
@@ -547,9 +547,9 @@
         "日米金利差",
         "円キャリー/実需"
       ],
-      "actualStatus": "下落（-0.11%）",
+      "actualStatus": "下落（-0.08%）",
       "status": "confirmed",
-      "note": "金利基準日 2026-08-24、USD/JPY基準時刻 2026-08-26T12:29:47+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+      "note": "金利基準日 2026-08-24、USD/JPY基準時刻 2026-08-26T16:25:12+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
     },
     {
       "market": "EUR/USD",
@@ -559,9 +559,9 @@
         "ドル需要",
         "ユーロ評価"
       ],
-      "actualStatus": "横ばい（+0.01%）",
+      "actualStatus": "横ばい（+0.05%）",
       "status": "confirmed",
-      "note": "金利基準日 2026-08-24、EUR/USD基準時刻 2026-08-26T12:29:04+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+      "note": "金利基準日 2026-08-24、EUR/USD基準時刻 2026-08-26T16:25:04+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
     },
     {
       "market": "金",
@@ -571,9 +571,9 @@
         "ドル",
         "安全資産需要"
       ],
-      "actualStatus": "上昇（+1.41%）／概ね整合",
+      "actualStatus": "上昇（+1.18%）／概ね整合",
       "status": "confirmed",
-      "note": "金利基準日 2026-08-24、金基準時刻 2026-08-26T12:19:36+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+      "note": "金利基準日 2026-08-24、金基準時刻 2026-08-26T16:15:01+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
     },
     {
       "market": "BTCUSD",
@@ -583,9 +583,9 @@
         "リスク選好",
         "暗号資産フロー"
       ],
-      "actualStatus": "上昇（+0.10%）／概ね整合",
+      "actualStatus": "横ばい（-0.04%）／概ね整合",
       "status": "confirmed",
-      "note": "金利基準日 2026-08-24、BTCUSD基準時刻 2026-08-26T12:29:53+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
+      "note": "金利基準日 2026-08-24、BTCUSD基準時刻 2026-08-26T16:25:15+09:00。同時刻比較ではないため、因果を断定せず方向確認として扱う。"
     }
   ],
   "leadingRate": {
