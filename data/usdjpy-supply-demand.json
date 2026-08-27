@@ -1,7 +1,7 @@
 {
   "schemaVersion": "3.2.0",
   "pageId": "usdjpy-supply-demand",
-  "generatedAt": "2026-08-28T04:00:13+09:00",
+  "generatedAt": "2026-08-28T06:33:20+09:00",
   "mode": "integrated-realistic",
   "sourceStatus": {
     "tradersWebFx": "confirmed",
@@ -11,48 +11,48 @@
   "tradersWebFx": {
     "name": "トレーダーズ・ウェブFX 無料ページ",
     "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
-    "sourceUpdatedAt": "2026-08-27T06:22:00+09:00",
-    "checkedAt": "2026-08-28T04:00:16+09:00",
+    "sourceUpdatedAt": "2026-08-28T06:22:00+09:00",
+    "checkedAt": "2026-08-28T06:33:22+09:00",
     "status": "confirmed",
     "pageConfirmed": true,
     "publicScope": "一般公開はUSD/JPYの直近情報",
     "redistributionMode": "key-levels-excerpt-with-attribution",
     "note": "無料公開データから需給判断に必要な主要水準のみ抜粋し、基準日時と出典を明示する。",
-    "sourceDate": "2026-08-27",
+    "sourceDate": "2026-08-28",
     "sourceTime": "06:22",
-    "freshness": "previous-session",
-    "ageHours": 21.6,
+    "freshness": "today",
+    "ageHours": 0.2,
     "keyLevels": {
-      "referenceSpot": "159.31",
-      "referenceSpotDescription": "8/27 6:00現在（高値159.45円 - 安値158.88円）",
+      "referenceSpot": "159.39",
+      "referenceSpotDescription": "8/28 6:00現在（高値159.53円 - 安値159.12円）",
       "sellOrders": [
-        {
-          "price": "159.50",
-          "description": "売りやや小さめ・超えるとストップロス買いやや小さめ"
-        },
         {
           "price": "159.60",
           "description": "売りやや小さめ、OP2日NYカット大きめ"
+        },
+        {
+          "price": "159.70",
+          "description": "売り"
         }
       ],
       "buyOrders": [
         {
-          "price": "158.80",
-          "description": "買いやや小さめ・割り込むとストップロス売りやや小さめ"
+          "price": "158.40-50",
+          "description": "買い小さめ"
         },
         {
-          "price": "158.50",
-          "description": "買いやや小さめ"
+          "price": "158.00",
+          "description": "買い、OP3日NYカット"
         }
       ],
       "stops": [
         {
-          "price": "159.50",
-          "description": "売りやや小さめ・超えるとストップロス買いやや小さめ"
+          "price": "159.20",
+          "description": "割り込むとストップロス売りやや小さめ"
         },
         {
-          "price": "158.90",
-          "description": "割り込むとストップロス売り"
+          "price": "159.00",
+          "description": "割り込むとストップロス売りやや小さめ、OP31・3日NYカット大きめ"
         }
       ],
       "nyCutOptions": [
@@ -65,8 +65,8 @@
           "description": "売りやや小さめ、OP2日NYカット大きめ"
         },
         {
-          "price": "159.00",
-          "description": "OP31日NYカット大きめ"
+          "price": "159.65",
+          "description": "OP31日NYカット"
         }
       ],
       "optionAnalysis": {
@@ -74,14 +74,14 @@
         "headline": "上下のNYカットに挟まれ、カット前はレンジ化しやすい",
         "summary": "NYカットは方向を保証せず、カット時刻までは吸着、その後は反動が出る可能性を注文・ストップとの重複で評価します。",
         "nearestPrice": "159.25",
-        "nearestDistancePips": 6,
+        "nearestDistancePips": 14,
         "points": [
-          "最接近は159.25円（現在値から下へ約6pips、大きめ）。NYカット接近時は同水準へ値が寄る動きと、通過後の反動に注意。",
+          "最接近は159.25円（現在値から下へ約14pips、大きめ）。NYカット接近時は同水準へ値が寄る動きと、通過後の反動に注意。",
           "159.60円はNYカットと売り注文が重複。カット前後は上値を抑えやすい水準。",
           "複数期日のNYカットが同一水準に重なるため、単一期日より意識されやすい価格帯があります。"
         ]
       },
-      "extractedRowCount": 22,
+      "extractedRowCount": 18,
       "displayMode": "key-levels-excerpt"
     }
   },
@@ -524,7 +524,7 @@
     "judgement": "円売り越し拡大",
     "judgementSub": "USD/JPYの上昇圧力",
     "priceStatus": "available",
-    "checkedAt": "2026-08-28T04:00:13+09:00",
+    "checkedAt": "2026-08-28T06:33:20+09:00",
     "comment": "円売り越し拡大。円先物のNetは-52,893枚、前週比-10,808枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
     "verifiedPoints": 52,
     "priceVerifiedPoints": 52,
@@ -537,12 +537,12 @@
       "verificationStatus": "verified"
     },
     "ratesBonds": {
-      "generatedAt": "2026-08-28T02:55:03+09:00",
+      "generatedAt": "2026-08-28T06:19:41+09:00",
       "asOfDate": "2026-08-27",
       "status": "confirmed"
     },
     "usdJpyVolume": {
-      "generatedAt": "2026-08-27T21:35:06+09:00",
+      "generatedAt": "2026-08-28T06:08:11+09:00",
       "targetDate": "2026-08-26",
       "publicationDate": "2026-08-27",
       "status": "ok"
