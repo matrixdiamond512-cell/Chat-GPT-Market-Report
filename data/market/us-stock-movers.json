@@ -1,19 +1,36 @@
 {
   "schemaVersion": "1.0.0",
-  "status": "verified",
-  "freshness": "fresh",
-  "dataDate": "2026-08-26",
-  "asOf": "2026-08-26T16:00:00-04:00",
-  "updatedAt": "2026-08-28T03:20:02+09:00",
+  "status": "unavailable",
+  "freshness": "unavailable",
+  "dataDate": null,
+  "asOf": null,
+  "updatedAt": "2026-08-28T07:59:25+09:00",
   "source": {
     "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
     "url": "https://www.slickcharts.com/sp500",
     "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
   },
-  "error": null,
+  "error": "Slickcharts is not on the verified U.S. session: source=2026-08-27, expected=2026-08-26",
   "current": {
+    "status": "unavailable",
+    "freshness": "unavailable",
+    "dataDate": null,
+    "asOf": null,
+    "updatedAt": "2026-08-28T07:59:25+09:00",
+    "source": {
+      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+      "url": "https://www.slickcharts.com/sp500",
+      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
+    },
+    "error": "Slickcharts is not on the verified U.S. session: source=2026-08-27, expected=2026-08-26",
+    "universe": "S&P 500 constituents",
+    "validation": {},
+    "gainers": [],
+    "losers": []
+  },
+  "lastGood": {
     "status": "verified",
-    "freshness": "fresh",
+    "freshness": "stale",
     "dataDate": "2026-08-26",
     "asOf": "2026-08-26T16:00:00-04:00",
     "updatedAt": "2026-08-28T03:20:02+09:00",
@@ -124,217 +141,8 @@
       }
     ]
   },
-  "lastGood": {
-    "status": "verified",
-    "freshness": "stale",
-    "dataDate": "2026-08-26",
-    "asOf": "2026-08-26T16:00:00-04:00",
-    "updatedAt": "2026-08-27T11:13:42+09:00",
-    "source": {
-      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-      "url": "https://www.slickcharts.com/sp500",
-      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
-    },
-    "error": null,
-    "universe": "S&P 500 constituents",
-    "validation": {
-      "estimatedWeightedReturnPct": -0.0134,
-      "verifiedSP500ReturnPct": null,
-      "differencePt": null
-    },
-    "gainers": [
-      {
-        "rank": 1,
-        "symbol": "LITE",
-        "name": "Lumentum Holdings Inc（LITE）",
-        "close": "939.03",
-        "dayChange": "+53.46",
-        "change": "+6.04%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "ANET",
-        "name": "Arista Networks Inc（ANET）",
-        "close": "202.25",
-        "dayChange": "+11.31",
-        "change": "+5.92%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "CHRW",
-        "name": "CH Robinson Worldwide Inc（CHRW）",
-        "close": "151.73",
-        "dayChange": "+8.07",
-        "change": "+5.62%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "WMB",
-        "name": "Williams Cos Inc/The（WMB）",
-        "close": "74.41",
-        "dayChange": "+3.33",
-        "change": "+4.68%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "FFIV",
-        "name": "F5 Inc（FFIV）",
-        "close": "399.59",
-        "dayChange": "+16.84",
-        "change": "+4.40%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-      }
-    ],
-    "losers": [
-      {
-        "rank": 1,
-        "symbol": "MRNA",
-        "name": "Moderna Inc（MRNA）",
-        "close": "149.66",
-        "dayChange": "-9.17",
-        "change": "-5.77%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "RDDT",
-        "name": "Reddit（RDDT）",
-        "close": "155.36",
-        "dayChange": "-7.09",
-        "change": "-4.36%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "GDDY",
-        "name": "GoDaddy Inc（GDDY）",
-        "close": "95.54",
-        "dayChange": "-4.25",
-        "change": "-4.26%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "LLY",
-        "name": "Eli Lilly & Co（LLY）",
-        "close": "1,189.41",
-        "dayChange": "-44.25",
-        "change": "-3.59%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "BSX",
-        "name": "Boston Scientific Corp（BSX）",
-        "close": "48.17",
-        "dayChange": "-1.69",
-        "change": "-3.39%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-      }
-    ]
-  },
   "universe": "S&P 500 constituents",
-  "validation": {
-    "estimatedWeightedReturnPct": 0.653,
-    "verifiedSP500ReturnPct": null,
-    "differencePt": null
-  },
-  "gainers": [
-    {
-      "rank": 1,
-      "symbol": "CRM",
-      "name": "Salesforce Inc（CRM）",
-      "close": "248.73",
-      "dayChange": "+43.11",
-      "change": "+20.97%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "CRWD",
-      "name": "Crowdstrike Holdings Inc（CRWD）",
-      "close": "225.55",
-      "dayChange": "+36.37",
-      "change": "+19.22%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "VEEV",
-      "name": "Veeva Systems（VEEV）",
-      "close": "284.6",
-      "dayChange": "+39.69",
-      "change": "+16.20%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "PANW",
-      "name": "Palo Alto Networks Inc（PANW）",
-      "close": "385.35",
-      "dayChange": "+46.04",
-      "change": "+13.57%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "SNPS",
-      "name": "Synopsys Inc（SNPS）",
-      "close": "458.62",
-      "dayChange": "+48.62",
-      "change": "+11.86%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-    }
-  ],
-  "losers": [
-    {
-      "rank": 1,
-      "symbol": "HRL",
-      "name": "Hormel Foods Corp（HRL）",
-      "close": "21.43",
-      "dayChange": "-2.28",
-      "change": "-9.62%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "GNRC",
-      "name": "Generac Holdings Inc（GNRC）",
-      "close": "192.17",
-      "dayChange": "-14.45",
-      "change": "-6.99%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "TPR",
-      "name": "Tapestry Inc（TPR）",
-      "close": "123.82",
-      "dayChange": "-6.43",
-      "change": "-4.94%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "EXPE",
-      "name": "Expedia Group Inc（EXPE）",
-      "close": "318.94",
-      "dayChange": "-14.5",
-      "change": "-4.35%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "MRNA",
-      "name": "Moderna Inc（MRNA）",
-      "close": "143.47",
-      "dayChange": "-6.19",
-      "change": "-4.13%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-08-26。材料要因は別途ニュース確認。"
-    }
-  ]
+  "validation": {},
+  "gainers": [],
+  "losers": []
 }
