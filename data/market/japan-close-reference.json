@@ -1,33 +1,60 @@
 {
   "schemaVersion": "1.2.0",
-  "generatedAt": "2026-08-27T00:51:05+09:00",
-  "dataDate": "2026-08-26",
+  "generatedAt": "2026-08-28T08:44:52+09:00",
+  "dataDate": "2026-08-27",
   "complete": false,
   "items": {
+    "日経225予想PER": {
+      "value": "17.27倍",
+      "date": "2026-08-27",
+      "sourceName": "投資の森 日経平均PER・PBR",
+      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
+    },
+    "日経225 PBR": {
+      "value": "1.89倍",
+      "date": "2026-08-27",
+      "sourceName": "投資の森 日経平均PER・PBR",
+      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
+    },
+    "日経225予想EPS": {
+      "value": "3,829.30円",
+      "date": "2026-08-27",
+      "sourceName": "投資の森 日経平均PER・PBR",
+      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
+    },
     "東証プライム値上がり銘柄数": {
-      "value": "978",
-      "date": "2026-08-26",
+      "value": "712",
+      "date": "2026-08-27",
       "sourceName": "投資の森 値上がり・値下がり銘柄数",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
     },
     "東証プライム値下がり銘柄数": {
-      "value": "518",
-      "date": "2026-08-26",
+      "value": "769",
+      "date": "2026-08-27",
       "sourceName": "投資の森 値上がり・値下がり銘柄数",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
     },
     "東証プライム25日騰落レシオ": {
-      "value": "124.27%",
-      "date": "2026-08-26",
+      "value": "122.81%",
+      "date": "2026-08-27",
       "sourceName": "投資の森 東証プライム騰落銘柄数の保存履歴から25営業日で算出",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/",
       "method": "25 exact-date Prime breadth sessions"
+    },
+    "日経225現物": {
+      "value": "66,131.98",
+      "change": "-130.18",
+      "rate": "-0.20%",
+      "direction": "下落",
+      "date": "2026-08-27",
+      "sourceName": "投資の森 日経平均PER・PBR（同日終値・前日差）",
+      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/",
+      "status": "exact_date_close_anchor"
     }
   },
   "unavailable": {
-    "日経225現物": "2026-08-26の確定日足がソースに未反映",
-    "日経225予想PER/PBR/EPS": "2026-08-26行がソースに未反映",
-    "東証プライム売買高": "2026-08-26の大引けブロックがトレーダーズ・ウェブに取得時点で見つからず"
+    "日経225現物": "2026-08-27の確定日足がソースに未反映",
+    "東証プライム売買高": "2026-08-27の大引けブロックがトレーダーズ・ウェブに取得時点で見つからず"
   },
   "breadthHistory": [
     {
@@ -302,7 +329,27 @@
       "primeDecliners": 518,
       "sourceName": "投資の森 値上がり・値下がり銘柄数",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
+    },
+    {
+      "date": "2026-08-27",
+      "primeAdvancers": 712,
+      "primeDecliners": 769,
+      "sourceName": "投資の森 値上がり・値下がり銘柄数",
+      "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
     }
   ],
-  "rule": "accept exact target-date records only; never carry stale records forward"
+  "rule": "accept exact target-date records only; never carry stale records forward",
+  "qualityChecks": {
+    "nikkeiCloseCrossCheck": {
+      "checkedAt": "2026-08-28T08:44:52+09:00",
+      "targetDate": "2026-08-27",
+      "authoritativeClose": 66131.98,
+      "authoritativeChange": -130.18,
+      "previousCloseDerived": 66262.15999999999,
+      "oldReferenceClose": null,
+      "yahooTargetDayRawClose": null,
+      "differenceVsYahoo": null,
+      "rule": "Exact-date valuation-page close anchors the session; Yahoo is used only for the historical moving-average window after target-close replacement."
+    }
+  }
 }
