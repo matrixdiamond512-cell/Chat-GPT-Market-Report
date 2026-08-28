@@ -2,7 +2,7 @@
   "schemaVersion": "1.0.0",
   "pageId": "usdjpy-supply-demand-archive",
   "reportDate": "2026-08-29",
-  "generatedAt": "2026-08-29T03:45:16+09:00",
+  "generatedAt": "2026-08-29T05:07:57+09:00",
   "market": {
     "schemaVersion": "1.1.0",
     "generatedAt": "2026-08-27T23:04:44+09:00",
@@ -75,12 +75,12 @@
   "rates": {
     "schemaVersion": "2.0.0",
     "pageId": "rates-bonds",
-    "generatedAt": "2026-08-28T23:36:30+09:00",
+    "generatedAt": "2026-08-29T04:01:53+09:00",
     "meta": {
       "page": "rates-bonds",
       "asOfDate": "2026-08-28",
       "asOfTime": "各市場の公表時点",
-      "updatedAt": "2026-08-28T23:36:30+09:00",
+      "updatedAt": "2026-08-29T04:01:53+09:00",
       "status": "confirmed",
       "sourceStatus": "自動取得",
       "isStale": false,
@@ -118,10 +118,10 @@
       },
       {
         "name": "日本10年国債利回り",
-        "value": 2.926,
+        "value": 2.919,
         "unit": "%",
-        "changeBp": 2.9,
-        "weekChangeBp": 4.4,
+        "changeBp": 2.2,
+        "weekChangeBp": 3.7,
         "direction": "上昇",
         "asOf": "2026-08-28",
         "status": "confirmed",
@@ -1585,8 +1585,8 @@
   },
   "events": {
     "schemaVersion": "2.0.0",
-    "generatedAt": "2026-08-28T15:24:38+09:00",
-    "dataAsOf": "2026-08-28T15:24:38+09:00",
+    "generatedAt": "2026-08-29T03:55:36+09:00",
+    "dataAsOf": "2026-08-29T03:55:36+09:00",
     "status": "ok",
     "events": [
       {
@@ -1611,8 +1611,8 @@
         "actual": "",
         "revised": "",
         "resultComparison": "",
-        "resultExplanation": "発表後に実績値と市場反応を更新します。",
-        "status": "scheduled",
+        "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
+        "status": "result_pending",
         "isTimed": true,
         "isImportantEvent": true,
         "affectedMarkets": [
@@ -1815,7 +1815,7 @@
           ]
         ],
         "conclusion": {
-          "narrative": "発表前",
+          "narrative": "結果確認中",
           "reaction": "結果待ち",
           "watch": [
             "米2年債の初動",
@@ -1834,14 +1834,14 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-08-23T13:45:14+09:00",
-        "updatedAt": "2026-08-28T15:24:38+09:00"
+        "updatedAt": "2026-08-29T03:55:36+09:00"
       }
     ]
   },
   "config": {
     "schemaVersion": "3.2.0",
     "pageId": "usdjpy-supply-demand",
-    "generatedAt": "2026-08-29T03:45:16+09:00",
+    "generatedAt": "2026-08-29T05:07:57+09:00",
     "mode": "integrated-realistic",
     "sourceStatus": {
       "tradersWebFx": "confirmed",
@@ -1852,7 +1852,7 @@
       "name": "トレーダーズ・ウェブFX 無料ページ",
       "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
       "sourceUpdatedAt": "2026-08-28T06:22:00+09:00",
-      "checkedAt": "2026-08-29T03:45:18+09:00",
+      "checkedAt": "2026-08-29T05:07:59+09:00",
       "status": "confirmed",
       "pageConfirmed": true,
       "publicScope": "一般公開はUSD/JPYの直近情報",
@@ -1861,7 +1861,7 @@
       "sourceDate": "2026-08-28",
       "sourceTime": "06:22",
       "freshness": "previous-session",
-      "ageHours": 21.4,
+      "ageHours": 22.8,
       "keyLevels": {
         "referenceSpot": "159.39",
         "referenceSpotDescription": "8/28 6:00現在（高値159.53円 - 安値159.12円）",
@@ -1930,27 +1930,19 @@
       "url": "https://www.cftc.gov/dea/newcot/deafut.txt",
       "historyUrl": "https://www.cftc.gov/files/dea/history/deacot2026.zip",
       "status": "verified",
-      "asOf": "2026-08-18",
-      "long": 128932,
-      "short": 181825,
-      "net": -52893,
-      "previousNet": -42085,
+      "asOf": "2026-08-25",
+      "long": 128340,
+      "short": 191638,
+      "net": -63298,
+      "previousNet": -52893,
       "series": [
-        {
-          "date": "2025-08-26",
-          "long": 170765,
-          "short": 86281,
-          "net": 84484,
-          "price": 147.46200561523438,
-          "label": "51週前"
-        },
         {
           "date": "2025-09-02",
           "long": 174774,
           "short": 101516,
           "net": 73258,
           "price": 148.54800415039062,
-          "label": "50週前"
+          "label": "51週前"
         },
         {
           "date": "2025-09-09",
@@ -1958,7 +1950,7 @@
           "short": 89081,
           "net": 91643,
           "price": 147.39199829101562,
-          "label": "49週前"
+          "label": "50週前"
         },
         {
           "date": "2025-09-16",
@@ -1966,7 +1958,7 @@
           "short": 100262,
           "net": 61411,
           "price": 146.41299438476562,
-          "label": "48週前"
+          "label": "49週前"
         },
         {
           "date": "2025-09-23",
@@ -1974,7 +1966,7 @@
           "short": 96900,
           "net": 79500,
           "price": 147.61300659179688,
-          "label": "47週前"
+          "label": "48週前"
         },
         {
           "date": "2025-09-30",
@@ -1982,7 +1974,7 @@
           "short": 106346,
           "net": 61465,
           "price": 147.9969940185547,
-          "label": "46週前"
+          "label": "47週前"
         },
         {
           "date": "2025-10-07",
@@ -1990,7 +1982,7 @@
           "short": 112890,
           "net": 46307,
           "price": 152.05099487304688,
-          "label": "45週前"
+          "label": "46週前"
         },
         {
           "date": "2025-10-14",
@@ -1998,7 +1990,7 @@
           "short": 123473,
           "net": 37166,
           "price": 151.7310028076172,
-          "label": "44週前"
+          "label": "45週前"
         },
         {
           "date": "2025-10-21",
@@ -2006,7 +1998,7 @@
           "short": 105310,
           "net": 70414,
           "price": 151.89300537109375,
-          "label": "43週前"
+          "label": "44週前"
         },
         {
           "date": "2025-10-28",
@@ -2014,7 +2006,7 @@
           "short": 110630,
           "net": 68115,
           "price": 152.69200134277344,
-          "label": "42週前"
+          "label": "43週前"
         },
         {
           "date": "2025-11-04",
@@ -2022,7 +2014,7 @@
           "short": 118915,
           "net": 51265,
           "price": 154.20399475097656,
-          "label": "41週前"
+          "label": "42週前"
         },
         {
           "date": "2025-11-10",
@@ -2030,7 +2022,7 @@
           "short": 123873,
           "net": 48476,
           "price": 153.81700134277344,
-          "label": "40週前"
+          "label": "41週前"
         },
         {
           "date": "2025-11-18",
@@ -2038,7 +2030,7 @@
           "short": 138733,
           "net": 31157,
           "price": 155.2729949951172,
-          "label": "39週前"
+          "label": "40週前"
         },
         {
           "date": "2025-11-25",
@@ -2046,7 +2038,7 @@
           "short": 142701,
           "net": 26517,
           "price": 156.93899536132812,
-          "label": "38週前"
+          "label": "39週前"
         },
         {
           "date": "2025-12-02",
@@ -2054,7 +2046,7 @@
           "short": 148540,
           "net": 36418,
           "price": 155.5570068359375,
-          "label": "37週前"
+          "label": "38週前"
         },
         {
           "date": "2025-12-09",
@@ -2062,7 +2054,7 @@
           "short": 167040,
           "net": 17448,
           "price": 155.843994140625,
-          "label": "36週前"
+          "label": "37週前"
         },
         {
           "date": "2025-12-16",
@@ -2070,7 +2062,7 @@
           "short": 149217,
           "net": -2942,
           "price": 155.01499938964844,
-          "label": "35週前"
+          "label": "36週前"
         },
         {
           "date": "2025-12-23",
@@ -2078,7 +2070,7 @@
           "short": 139910,
           "net": 1223,
           "price": 156.8769989013672,
-          "label": "34週前"
+          "label": "35週前"
         },
         {
           "date": "2025-12-30",
@@ -2086,7 +2078,7 @@
           "short": 130528,
           "net": 14068,
           "price": 156.01300048828125,
-          "label": "33週前"
+          "label": "34週前"
         },
         {
           "date": "2026-01-06",
@@ -2094,7 +2086,7 @@
           "short": 131626,
           "net": 8815,
           "price": 156.62600708007812,
-          "label": "32週前"
+          "label": "33週前"
         },
         {
           "date": "2026-01-13",
@@ -2102,7 +2094,7 @@
           "short": 156907,
           "net": -45164,
           "price": 157.98599243164062,
-          "label": "31週前"
+          "label": "32週前"
         },
         {
           "date": "2026-01-20",
@@ -2110,7 +2102,7 @@
           "short": 151968,
           "net": -44829,
           "price": 158.177001953125,
-          "label": "30週前"
+          "label": "31週前"
         },
         {
           "date": "2026-01-27",
@@ -2118,7 +2110,7 @@
           "short": 138393,
           "net": -33933,
           "price": 154.33599853515625,
-          "label": "29週前"
+          "label": "30週前"
         },
         {
           "date": "2026-02-03",
@@ -2126,7 +2118,7 @@
           "short": 133650,
           "net": -19222,
           "price": 155.4429931640625,
-          "label": "28週前"
+          "label": "29週前"
         },
         {
           "date": "2026-02-10",
@@ -2134,7 +2126,7 @@
           "short": 147196,
           "net": -19106,
           "price": 156.1320037841797,
-          "label": "27週前"
+          "label": "28週前"
         },
         {
           "date": "2026-02-17",
@@ -2142,7 +2134,7 @@
           "short": 130217,
           "net": 12955,
           "price": 153.60899353027344,
-          "label": "26週前"
+          "label": "27週前"
         },
         {
           "date": "2026-02-24",
@@ -2150,7 +2142,7 @@
           "short": 137825,
           "net": 11539,
           "price": 154.63499450683594,
-          "label": "25週前"
+          "label": "26週前"
         },
         {
           "date": "2026-03-03",
@@ -2158,7 +2150,7 @@
           "short": 151520,
           "net": -16575,
           "price": 157.2570037841797,
-          "label": "24週前"
+          "label": "25週前"
         },
         {
           "date": "2026-03-10",
@@ -2166,7 +2158,7 @@
           "short": 160798,
           "net": -41387,
           "price": 157.84800720214844,
-          "label": "23週前"
+          "label": "24週前"
         },
         {
           "date": "2026-03-17",
@@ -2174,7 +2166,7 @@
           "short": 174599,
           "net": -67780,
           "price": 159.10499572753906,
-          "label": "22週前"
+          "label": "23週前"
         },
         {
           "date": "2026-03-24",
@@ -2182,7 +2174,7 @@
           "short": 161077,
           "net": -62806,
           "price": 158.47900390625,
-          "label": "21週前"
+          "label": "22週前"
         },
         {
           "date": "2026-03-31",
@@ -2190,7 +2182,7 @@
           "short": 168228,
           "net": -72872,
           "price": 158.57899475097656,
-          "label": "20週前"
+          "label": "21週前"
         },
         {
           "date": "2026-04-07",
@@ -2198,7 +2190,7 @@
           "short": 185302,
           "net": -93742,
           "price": 158.71600341796875,
-          "label": "19週前"
+          "label": "20週前"
         },
         {
           "date": "2026-04-14",
@@ -2206,7 +2198,7 @@
           "short": 185322,
           "net": -83208,
           "price": 158.79200744628906,
-          "label": "18週前"
+          "label": "19週前"
         },
         {
           "date": "2026-04-21",
@@ -2214,7 +2206,7 @@
           "short": 195846,
           "net": -94460,
           "price": 159.3730010986328,
-          "label": "17週前"
+          "label": "18週前"
         },
         {
           "date": "2026-04-28",
@@ -2222,7 +2214,7 @@
           "short": 208589,
           "net": -102059,
           "price": 159.552001953125,
-          "label": "16週前"
+          "label": "17週前"
         },
         {
           "date": "2026-05-05",
@@ -2230,7 +2222,7 @@
           "short": 170773,
           "net": -61738,
           "price": 157.677001953125,
-          "label": "15週前"
+          "label": "16週前"
         },
         {
           "date": "2026-05-12",
@@ -2238,7 +2230,7 @@
           "short": 175257,
           "net": -75102,
           "price": 157.67100524902344,
-          "label": "14週前"
+          "label": "15週前"
         },
         {
           "date": "2026-05-19",
@@ -2246,7 +2238,7 @@
           "short": 200508,
           "net": -93905,
           "price": 159.03500366210938,
-          "label": "13週前"
+          "label": "14週前"
         },
         {
           "date": "2026-05-26",
@@ -2254,7 +2246,7 @@
           "short": 227660,
           "net": -114667,
           "price": 159.2429962158203,
-          "label": "12週前"
+          "label": "13週前"
         },
         {
           "date": "2026-06-02",
@@ -2262,7 +2254,7 @@
           "short": 244416,
           "net": -129567,
           "price": 159.96800231933594,
-          "label": "11週前"
+          "label": "12週前"
         },
         {
           "date": "2026-06-09",
@@ -2270,7 +2262,7 @@
           "short": 267338,
           "net": -145818,
           "price": 160.38400268554688,
-          "label": "10週前"
+          "label": "11週前"
         },
         {
           "date": "2026-06-16",
@@ -2278,7 +2270,7 @@
           "short": 267507,
           "net": -150132,
           "price": 160.41900634765625,
-          "label": "9週前"
+          "label": "10週前"
         },
         {
           "date": "2026-06-23",
@@ -2286,7 +2278,7 @@
           "short": 259802,
           "net": -146104,
           "price": 161.5989990234375,
-          "label": "8週前"
+          "label": "9週前"
         },
         {
           "date": "2026-06-30",
@@ -2294,7 +2286,7 @@
           "short": 266964,
           "net": -155092,
           "price": 162.6280059814453,
-          "label": "7週前"
+          "label": "8週前"
         },
         {
           "date": "2026-07-07",
@@ -2302,7 +2294,7 @@
           "short": 236025,
           "net": -123778,
           "price": 162.36300659179688,
-          "label": "6週前"
+          "label": "7週前"
         },
         {
           "date": "2026-07-14",
@@ -2310,7 +2302,7 @@
           "short": 238628,
           "net": -122663,
           "price": 162.18699645996094,
-          "label": "5週前"
+          "label": "6週前"
         },
         {
           "date": "2026-07-21",
@@ -2318,7 +2310,7 @@
           "short": 259715,
           "net": -152125,
           "price": 163.18600463867188,
-          "label": "4週前"
+          "label": "5週前"
         },
         {
           "date": "2026-07-28",
@@ -2326,7 +2318,7 @@
           "short": 264683,
           "net": -163412,
           "price": 163.86399841308594,
-          "label": "3週前"
+          "label": "4週前"
         },
         {
           "date": "2026-08-04",
@@ -2334,7 +2326,7 @@
           "short": 192701,
           "net": -45473,
           "price": 157.69200134277344,
-          "label": "2週前"
+          "label": "3週前"
         },
         {
           "date": "2026-08-11",
@@ -2342,7 +2334,7 @@
           "short": 176273,
           "net": -42085,
           "price": 159.26499938964844,
-          "label": "1週前"
+          "label": "2週前"
         },
         {
           "date": "2026-08-18",
@@ -2350,6 +2342,14 @@
           "short": 181825,
           "net": -52893,
           "price": 159.5500030517578,
+          "label": "1週前"
+        },
+        {
+          "date": "2026-08-25",
+          "long": 128340,
+          "short": 191638,
+          "net": -63298,
+          "price": 159.22300720214844,
           "label": "今週"
         }
       ],
@@ -2357,15 +2357,15 @@
       "note": "CFTC公式のJapanese Yen・Non-Commercial Long/Shortを使用。直近52週を年次履歴から取得し、各CFTC基準日のUSD/JPY価格を重ねる。",
       "priceSourceName": "Yahoo!ファイナンス USD/JPY時系列",
       "priceSourceUrl": "https://finance.yahoo.co.jp/quote/USDJPY=X/history",
-      "netChange": -10808,
-      "netChangePct": -25.7,
-      "longChange": -5256,
-      "shortChange": 5552,
+      "netChange": -10405,
+      "netChangePct": -19.7,
+      "longChange": -592,
+      "shortChange": 9813,
       "judgement": "円売り越し拡大",
       "judgementSub": "USD/JPYの上昇圧力",
       "priceStatus": "available",
-      "checkedAt": "2026-08-29T03:45:16+09:00",
-      "comment": "円売り越し拡大。円先物のNetは-52,893枚、前週比-10,808枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
+      "checkedAt": "2026-08-29T05:07:57+09:00",
+      "comment": "円売り越し拡大。円先物のNetは-63,298枚、前週比-10,405枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
       "verifiedPoints": 52,
       "priceVerifiedPoints": 52,
       "frequency": "weekly"
@@ -2377,7 +2377,7 @@
         "verificationStatus": "verified"
       },
       "ratesBonds": {
-        "generatedAt": "2026-08-28T23:36:30+09:00",
+        "generatedAt": "2026-08-29T04:01:53+09:00",
         "asOfDate": "2026-08-28",
         "status": "confirmed"
       },
@@ -2404,7 +2404,7 @@
   "flow": {
     "schemaVersion": "1.0.0",
     "pageId": "usdjpy-flow-summary",
-    "generatedAt": "2026-08-29T03:45:18+09:00",
+    "generatedAt": "2026-08-29T05:07:59+09:00",
     "status": "ok",
     "realDemand": {
       "score": null,
@@ -2451,7 +2451,7 @@
           "score": 0.0,
           "status": "verified",
           "asOf": "2026-08-29",
-          "updatedAt": "2026-08-29T03:45:18+09:00",
+          "updatedAt": "2026-08-29T05:07:59+09:00",
           "valueText": "非該当",
           "sourceName": "",
           "sourceUrl": "",
@@ -2465,7 +2465,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-08-29T03:45:18+09:00",
+          "updatedAt": "2026-08-29T05:07:59+09:00",
           "valueText": "対外－対内ネット +7,528億円。企業の当日実額ではなく週次資本フロー代理（為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -2479,7 +2479,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-06",
-          "updatedAt": "2026-08-29T03:45:18+09:00",
+          "updatedAt": "2026-08-29T05:07:59+09:00",
           "valueText": "輸出 10.93兆円／輸入 11.34兆円／収支 -4099億円（構造要因）",
           "sourceName": "財務省 貿易統計",
           "sourceUrl": "https://www.customs.go.jp/toukei/shinbun/trade-st/2026/2026065.pdf",
@@ -2493,7 +2493,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-08-29T03:45:18+09:00",
+          "updatedAt": "2026-08-29T05:07:59+09:00",
           "valueText": "合計 +6,262億円（取得超は外貨需要候補、為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -2507,7 +2507,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-08-29T03:45:18+09:00",
+          "updatedAt": "2026-08-29T05:07:59+09:00",
           "valueText": "合計 -1,266億円（取得超は円需要候補、為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -2521,7 +2521,7 @@
           "score": 0.0,
           "status": "verified",
           "asOf": "2026-08-29",
-          "updatedAt": "2026-08-29T03:45:18+09:00",
+          "updatedAt": "2026-08-29T05:07:59+09:00",
           "valueText": "月末非該当",
           "sourceName": "",
           "sourceUrl": "",
@@ -2530,22 +2530,22 @@
       ]
     },
     "speculative": {
-      "score": 1.0,
-      "judgement": "中立",
-      "verifiedCount": 4,
-      "confirmedCount": 4,
+      "score": 2.0,
+      "judgement": "ややドル買い",
+      "verifiedCount": 5,
+      "confirmedCount": 5,
       "minimumRequired": 2,
       "drivers": [
         {
           "id": "cftc",
           "name": "CFTC円先物",
           "category": "speculative",
-          "direction": "unknown",
-          "score": null,
-          "status": "stale",
-          "asOf": "2026-08-18",
-          "updatedAt": "2026-08-29T03:45:16+09:00",
-          "valueText": "円Net前週比 -10,808枚（USD/JPY方向へ符号反転）／基準日から11日",
+          "direction": "usd_buy",
+          "score": 0.5,
+          "status": "verified",
+          "asOf": "2026-08-25",
+          "updatedAt": "2026-08-29T05:07:57+09:00",
+          "valueText": "円Net前週比 -10,405枚（USD/JPY方向へ符号反転）／基準日から4日",
           "sourceName": "CFTC Commitments of Traders - Japanese Yen",
           "sourceUrl": "https://www.cftc.gov/dea/newcot/deafut.txt",
           "frequency": "weekly"
@@ -2601,7 +2601,7 @@
           "status": "calculated",
           "asOf": "2026-08-27T23:04:54+09:00",
           "updatedAt": "2026-08-27T23:04:54+09:00",
-          "valueText": "USD/JPY +0.08%／米日2年金利変化差 +1.8bp（同時反応の代理、因果断定なし）",
+          "valueText": "USD/JPY +0.08%／米日2年金利変化差 +1.2bp（同時反応の代理、因果断定なし）",
           "sourceName": "市場価格・金利データ統合",
           "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
           "frequency": "daily proxy"
@@ -2620,7 +2620,7 @@
       "realDemand": null,
       "speculative": 1.0,
       "combined": null,
-      "generatedAt": "2026-08-28T14:35:54+09:00"
+      "generatedAt": "2026-08-29T03:45:18+09:00"
     },
     "officialFlows": {
       "trade": {
@@ -2646,6 +2646,6 @@
     "usDataDate": "2026-08-26",
     "japanDataDate": "2026-08-28",
     "tokyoDataDate": "2026-08-26",
-    "cftcDate": "2026-08-18"
+    "cftcDate": "2026-08-25"
   }
 }
