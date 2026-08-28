@@ -1838,6 +1838,179 @@
           "日本10年・30年が急変"
         ]
       }
+    },
+    {
+      "asOf": "2026-08-28",
+      "generatedAt": "2026-08-28T23:36:30+09:00",
+      "rates": {
+        "米2年債利回り": 4.19,
+        "米5年債利回り": 4.37,
+        "米10年債利回り": 4.66,
+        "米30年債利回り": 5.18,
+        "米10年実質金利": 2.34,
+        "米10年期待インフレ率": 2.33,
+        "米10年タームプレミアム": 0.868,
+        "日本2年国債利回り": 1.698,
+        "日本5年国債利回り": 2.188,
+        "日本10年国債利回り": 2.926,
+        "日本30年国債利回り": 4.119,
+        "ドイツ10年国債利回り": 3.27
+      },
+      "policyExpectations": {
+        "status": "calculated",
+        "summary": "FF金利・EFFR・米短期金利から政策期待の方向を確認。FOMC結果確率は推定しない。",
+        "currentTargetRange": "3.50－3.75%",
+        "midpoint": 3.625,
+        "effr": 3.63,
+        "effrAsOf": "2026-08-26",
+        "us2y": 4.19,
+        "us2yPrevious": 4.17,
+        "us2yAsOf": "2026-08-26",
+        "us2yChangeBp": 2.0,
+        "us2yWeekChangeBp": 0.0,
+        "us10y": 4.66,
+        "us10yChangeBp": 2.0,
+        "us10yAsOf": "2026-08-26",
+        "curve2s10sBp": 47.0,
+        "curveChangeBp": 0.0,
+        "us2yVsFedMidBp": 56.5,
+        "us2yVsFedMidPreviousBp": 54.5,
+        "directionScore": 0,
+        "directionLabel": "中立",
+        "dailyDirectionLabel": "大きな変化なし",
+        "directionMismatch": false,
+        "interpretation": "大きな変化なし。米2年は前日 +2.0bp、1週間 +0.0bp。 2年債には政策経路やリスクプレミアムも含まれるため、確率とは解釈しない。",
+        "source": "Federal Reserve / FRED"
+      },
+      "manualFedWatch": null,
+      "analysis": {
+        "topLines": [
+          "米国：ベア・スティープニング｜全面的な金利上昇",
+          "日本：ベア・スティープニング｜全面的な金利上昇",
+          "クロスアセット：USD/JPYは混合、金は逆行、BTCUSDは逆行"
+        ],
+        "theme": "米国はベア・スティープニング、日本はベア・スティープニング。日米金利差は方向混在。",
+        "usRates": {
+          "structure": "ベア・スティープニング",
+          "direction": "全面的な金利上昇",
+          "interpretation": "米国債は全面的な金利上昇。2年が前日 +2.0bp、週間 +0.0bpで変化を主導。",
+          "leadingTenor": "2年",
+          "risk": "順イールド。週間では長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。"
+        },
+        "jpRates": {
+          "structure": "ベア・スティープニング",
+          "direction": "全面的な金利上昇",
+          "interpretation": "日本国債は全面的な金利上昇。30年が前日 +8.1bp、週間 +7.7bpで変化を主導。",
+          "leadingTenor": "30年",
+          "risk": "順イールド。前日では長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。"
+        },
+        "usCurveAnalysis": {
+          "type": "ベア・スティープニング",
+          "interpretation": "順イールド。週間では長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。"
+        },
+        "jpCurveAnalysis": {
+          "type": "ベア・スティープニング",
+          "interpretation": "順イールド。前日では長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。"
+        },
+        "usJapanComparison": {
+          "usDirection": "全面的な金利上昇",
+          "jpDirection": "全面的な金利上昇",
+          "rateGapDirection": "方向混在",
+          "usdJpyImplication": "中立",
+          "actualUsdJpy": "上昇",
+          "verdict": "混合",
+          "confidence": "中",
+          "interpretation": "金利示唆は中立、実際は上昇。金利差以外のドル需要・円売りフローを確認。金利基準日2026-08-26、市場基準日2026-08-27。因果ではなく方向比較。",
+          "tenors": [
+            {
+              "tenor": "2年",
+              "usValue": 4.19,
+              "usChangeBp": 2.000000000000046,
+              "usWeekChangeBp": 0.0,
+              "jpValue": 1.698,
+              "jpChangeBp": 0.20000000000000018,
+              "jpWeekChangeBp": 1.6000000000000014
+            },
+            {
+              "tenor": "10年",
+              "usValue": 4.66,
+              "usChangeBp": 2.000000000000046,
+              "usWeekChangeBp": 0.9999999999999787,
+              "jpValue": 2.926,
+              "jpChangeBp": 2.900000000000036,
+              "jpWeekChangeBp": 4.400000000000004
+            }
+          ]
+        },
+        "realYieldAnalysis": {
+          "direction": "上昇",
+          "goldImplication": "下落",
+          "btcImplication": "下落",
+          "interpretation": "実質金利は上昇。金は逆行、BTCUSDは逆行。"
+        },
+        "crossAssetAnalysis": [
+          {
+            "market": "USD/JPY",
+            "expectedDirection": "中立",
+            "actualDirection": "上昇",
+            "actualChangePct": 0.07598951933995846,
+            "verdict": "混合",
+            "confidence": "中",
+            "interpretation": "金利示唆は中立、実際は上昇。金利差以外のドル需要・円売りフローを確認。",
+            "timingNote": "金利基準日2026-08-26、市場基準日2026-08-27。因果ではなく方向比較。"
+          },
+          {
+            "market": "EUR/USD",
+            "expectedDirection": "下落",
+            "actualDirection": "下落",
+            "actualChangePct": -0.16053037719062635,
+            "verdict": "整合",
+            "confidence": "中",
+            "interpretation": "金利示唆は下落、実際は下落。方向が整合。",
+            "timingNote": "金利基準日2026-08-26、市場基準日2026-08-27。因果ではなく方向比較。"
+          },
+          {
+            "market": "金",
+            "expectedDirection": "下落",
+            "actualDirection": "上昇",
+            "actualChangePct": 0.6045801293262487,
+            "verdict": "逆行",
+            "confidence": "中",
+            "interpretation": "金利示唆は下落、実際は上昇。実質金利とドル・ETFフローを確認。",
+            "timingNote": "金利基準日2026-08-26、市場基準日2026-08-27。因果ではなく方向比較。"
+          },
+          {
+            "market": "BTCUSD",
+            "expectedDirection": "下落",
+            "actualDirection": "上昇",
+            "actualChangePct": 0.8486271082723595,
+            "verdict": "逆行",
+            "confidence": "中",
+            "interpretation": "金利示唆は下落、実際は上昇。暗号資産固有需給・ETF・レバレッジを確認。",
+            "timingNote": "金利基準日2026-08-26、市場基準日2026-08-27。因果ではなく方向比較。"
+          },
+          {
+            "market": "日経225先物",
+            "expectedDirection": "混合",
+            "actualDirection": "下落",
+            "actualChangePct": -0.5291005291005346,
+            "verdict": "混合",
+            "confidence": "中",
+            "interpretation": "金利示唆は混合、実際は下落。米金利の追い風と日本金利の逆風を併せて確認。",
+            "timingNote": "金利基準日2026-08-26、市場基準日2026-08-27。因果ではなく方向比較。"
+          }
+        ],
+        "marketConclusion": "米国はベア・スティープニング、日本はベア・スティープニング。日米金利差は方向混在。米国債は全面的な金利上昇。2年が前日 +2.0bp、週間 +0.0bpで変化を主導。日本国債は全面的な金利上昇。30年が前日 +8.1bp、週間 +7.7bpで変化を主導。",
+        "mainScenario": "2年の方向が続く間はベア・スティープニングを基本シナリオとし、ドルは中立、金は下落方向を確認。",
+        "alternativeScenario": "米2年が反転しカーブ分類が変わる場合、政策期待の巻き戻しとクロスアセットの再連動を確認。",
+        "breakConditions": [
+          "米2年が前日比で明確に反転",
+          "10年－2年が急速に逆方向へ変化",
+          "米30年だけが大きく上昇",
+          "実質金利と金の逆行が継続",
+          "日本10年・30年が急変"
+        ]
+      }
     }
   ]
 }
