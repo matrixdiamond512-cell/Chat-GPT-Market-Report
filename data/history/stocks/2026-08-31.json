@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "2.0.0",
   "pageId": "stocks",
   "pageTitle": "株式市場分析",
   "generatedAt": "2026-08-04T00:00:00+09:00",
@@ -2769,8 +2769,8 @@
     "note": "米国主要指数、NYSE/NASDAQ騰落、52週高安、200日線上下を同一取引日で保存。"
   },
   "marketDates": {
-    "japan": "2026-08-28",
-    "us": "2026-08-28"
+    "us": "2026-08-28",
+    "japan": "2026-08-28"
   },
   "marketUpdatedAt": {
     "japan": "2026-08-29T08:32:43+09:00",
@@ -14266,5 +14266,11 @@
   },
   "judgementReportKey": "2026-08-22 08:00",
   "judgementUpdatedAt": "2026-08-22T08:04:00+09:00",
-  "judgementSource": "data/stocks.json（指数・市場内部・セクター・上昇下落銘柄・セッション分析）"
+  "judgementSource": "data/stocks.json（指数・市場内部・セクター・上昇下落銘柄・セッション分析）",
+  "snapshotDate": "2026-08-31",
+  "savedAt": "2026-08-31T08:56:19+09:00",
+  "snapshotPolicy": {
+    "type": "independent-market-session-dates",
+    "description": "米国市場と東京市場は、それぞれの取引終了後に独立更新。未更新側は直前の確定データを保持する。"
+  }
 }
