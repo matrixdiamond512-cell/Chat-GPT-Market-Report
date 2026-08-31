@@ -1,505 +1,13 @@
 {
   "schemaVersion": "2.0.0",
   "status": "ok",
-  "updatedAt": "2026-08-31T11:40:58+09:00",
+  "updatedAt": "2026-08-31T17:54:40+09:00",
   "timezone": "Asia/Tokyo",
   "provider": "forex_factory_weekly",
   "range": {
     "days": 7
   },
   "events": [
-    {
-      "id": "event-91b71cdb09738f",
-      "sourceKey": "2026-08-31|15:29|EUR|german prelim cpi m/m",
-      "date": "2026-08-31",
-      "time": "15:29",
-      "datetimeJst": "2026-08-31T15:29:00+09:00",
-      "scheduledAtSource": "2026-08-31T02:29:00-04:00",
-      "scheduledAtUtc": "2026-08-31T06:29:00Z",
-      "country": "欧州",
-      "currency": "EUR",
-      "title": "欧州 消費者物価指数（CPI）",
-      "eventNameOriginal": "German Prelim CPI m/m",
-      "category": "inflation",
-      "impactOriginal": "Medium",
-      "ffImportance": 2,
-      "importance": 3,
-      "importanceLabel": "高",
-      "forecast": "0.3%",
-      "previous": "0.8%",
-      "actual": "",
-      "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
-      "isTimed": true,
-      "isImportantEvent": true,
-      "affectedMarkets": [
-        "EUR/USD",
-        "欧州金利",
-        "米10年債",
-        "金",
-        "株価指数先物"
-      ],
-      "focusMarkets": [
-        "EUR/USD",
-        "欧州金利",
-        "米10年債",
-        "金",
-        "株価指数先物"
-      ],
-      "pricedIn": [
-        "市場予想：0.3%",
-        "前回値：0.8%",
-        "発表直後は米2年債、米10年債、株価指数先物、為替の順に確認"
-      ],
-      "scenarios": [
-        [
-          "米2年債",
-          "上昇しやすい",
-          "小動き",
-          "低下しやすい"
-        ],
-        [
-          "米10年債",
-          "上昇しやすい",
-          "小動き",
-          "低下しやすい"
-        ],
-        [
-          "ダウ先物",
-          "金利上昇なら重い",
-          "小動き",
-          "金利低下なら支え"
-        ],
-        [
-          "ナスダック先物",
-          "高金利なら重い",
-          "小動き",
-          "金利低下なら支え"
-        ],
-        [
-          "日経225先物",
-          "米株安・円高なら重い",
-          "小動き",
-          "米株高・円安なら支え"
-        ],
-        [
-          "USD/JPY",
-          "ドル高で上昇しやすい",
-          "小動き",
-          "ドル安で下落しやすい"
-        ],
-        [
-          "EUR/USD",
-          "ユーロ高になりやすい",
-          "小動き",
-          "ユーロ安になりやすい"
-        ],
-        [
-          "金",
-          "実質金利上昇なら重い",
-          "小動き",
-          "実質金利低下なら支え"
-        ],
-        [
-          "原油",
-          "景気上振れなら支え",
-          "小動き",
-          "景気減速なら重い"
-        ]
-      ],
-      "outlook": [
-        [
-          "米2年債",
-          "政策金利見通しに反応",
-          "初動と翌営業日の持続性を確認",
-          "利下げ期待後退",
-          "利下げ期待拡大"
-        ],
-        [
-          "米10年債",
-          "成長・インフレ・国債需給に反応",
-          "2年債との方向差を確認",
-          "インフレ再燃・需給悪化",
-          "成長鈍化・利下げ期待"
-        ],
-        [
-          "ダウ先物",
-          "景気敏感株の反応を確認",
-          "金利と業績期待の綱引きを確認",
-          "景気悪化・金利上昇",
-          "景気底堅さ・金利低下"
-        ],
-        [
-          "ナスダック先物",
-          "高PER株の金利感応度を確認",
-          "実質金利への耐性を見る",
-          "実質金利上昇",
-          "金利低下・買い戻し"
-        ],
-        [
-          "日経225先物",
-          "米株と円相場に反応",
-          "USD/JPYとの組み合わせを見る",
-          "米株安・円高",
-          "米株高・円安"
-        ],
-        [
-          "USD/JPY",
-          "米金利差とドルに反応",
-          "米2年・10年債との連動を確認",
-          "米金利上昇・ドル高",
-          "米金利低下・ドル安"
-        ],
-        [
-          "EUR/USD",
-          "ドルと欧州固有材料に反応",
-          "ドル全面高かを確認",
-          "米金利上昇・ドル高",
-          "米金利低下・ドル安"
-        ],
-        [
-          "金",
-          "実質金利とドルに反応",
-          "安全資産需要との整合性を確認",
-          "実質金利上昇・ドル高",
-          "実質金利低下・ドル安"
-        ],
-        [
-          "原油",
-          "需要見通しと供給材料に反応",
-          "景気と在庫のどちらが主導か確認",
-          "需要上振れ・供給不安",
-          "需要鈍化・供給懸念後退"
-        ]
-      ],
-      "postReleaseReactions": [],
-      "comparison": [
-        [
-          "米2年債",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "米10年債",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "ダウ先物",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "ナスダック先物",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "日経225先物",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "USD/JPY",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "EUR/USD",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "金",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "原油",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ]
-      ],
-      "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
-        "watch": [
-          "米2年債の初動",
-          "米10年債への波及",
-          "ダウ・ナスダック先物",
-          "USD/JPYとEUR/USD",
-          "日経225先物・金・原油"
-        ]
-      },
-      "officialSource": {
-        "id": "forex_factory",
-        "name": "Forex Factory Economic Calendar",
-        "url": "https://www.forexfactory.com/calendar"
-      },
-      "sourceType": "forex_factory_weekly",
-      "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
-      "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
-      "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
-    },
-    {
-      "id": "event-aeee9c7d72be5f",
-      "sourceKey": "2026-08-31|16:00|GBP|bank holiday",
-      "date": "2026-08-31",
-      "time": "16:00",
-      "datetimeJst": "2026-08-31T16:00:00+09:00",
-      "scheduledAtSource": "2026-08-31T03:00:00-04:00",
-      "scheduledAtUtc": "2026-08-31T07:00:00Z",
-      "country": "英国",
-      "currency": "GBP",
-      "title": "休場",
-      "eventNameOriginal": "Bank Holiday",
-      "category": "holiday",
-      "impactOriginal": "Holiday",
-      "ffImportance": 0,
-      "importance": 0,
-      "importanceLabel": "休場",
-      "forecast": "",
-      "previous": "",
-      "actual": "",
-      "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
-      "isTimed": true,
-      "isImportantEvent": true,
-      "affectedMarkets": [
-        "米2年債",
-        "米10年債",
-        "USD/JPY",
-        "ダウ先物",
-        "ナスダック先物",
-        "日経225先物",
-        "金"
-      ],
-      "focusMarkets": [
-        "米2年債",
-        "米10年債",
-        "USD/JPY",
-        "ダウ先物",
-        "ナスダック先物"
-      ],
-      "pricedIn": [
-        "市場予想：予想なし",
-        "前回値：前回値なし",
-        "発表直後は米2年債、米10年債、株価指数先物、為替の順に確認"
-      ],
-      "scenarios": [
-        [
-          "米2年債",
-          "上昇しやすい",
-          "小動き",
-          "低下しやすい"
-        ],
-        [
-          "米10年債",
-          "上昇しやすい",
-          "小動き",
-          "低下しやすい"
-        ],
-        [
-          "ダウ先物",
-          "金利上昇なら重い",
-          "小動き",
-          "金利低下なら支え"
-        ],
-        [
-          "ナスダック先物",
-          "高金利なら重い",
-          "小動き",
-          "金利低下なら支え"
-        ],
-        [
-          "日経225先物",
-          "米株安・円高なら重い",
-          "小動き",
-          "米株高・円安なら支え"
-        ],
-        [
-          "USD/JPY",
-          "ドル高で上昇しやすい",
-          "小動き",
-          "ドル安で下落しやすい"
-        ],
-        [
-          "EUR/USD",
-          "ドル高で下落しやすい",
-          "小動き",
-          "ドル安で上昇しやすい"
-        ],
-        [
-          "金",
-          "実質金利上昇なら重い",
-          "小動き",
-          "実質金利低下なら支え"
-        ],
-        [
-          "原油",
-          "景気上振れなら支え",
-          "小動き",
-          "景気減速なら重い"
-        ]
-      ],
-      "outlook": [
-        [
-          "米2年債",
-          "流動性低下に注意",
-          "スプレッド拡大と値飛びを確認",
-          "薄商いの急変",
-          "通常取引再開"
-        ],
-        [
-          "米10年債",
-          "流動性低下に注意",
-          "スプレッド拡大と値飛びを確認",
-          "薄商いの急変",
-          "通常取引再開"
-        ],
-        [
-          "ダウ先物",
-          "流動性低下に注意",
-          "スプレッド拡大と値飛びを確認",
-          "薄商いの急変",
-          "通常取引再開"
-        ],
-        [
-          "ナスダック先物",
-          "流動性低下に注意",
-          "スプレッド拡大と値飛びを確認",
-          "薄商いの急変",
-          "通常取引再開"
-        ],
-        [
-          "日経225先物",
-          "流動性低下に注意",
-          "スプレッド拡大と値飛びを確認",
-          "薄商いの急変",
-          "通常取引再開"
-        ],
-        [
-          "USD/JPY",
-          "流動性低下に注意",
-          "スプレッド拡大と値飛びを確認",
-          "薄商いの急変",
-          "通常取引再開"
-        ],
-        [
-          "EUR/USD",
-          "流動性低下に注意",
-          "スプレッド拡大と値飛びを確認",
-          "薄商いの急変",
-          "通常取引再開"
-        ],
-        [
-          "金",
-          "流動性低下に注意",
-          "スプレッド拡大と値飛びを確認",
-          "薄商いの急変",
-          "通常取引再開"
-        ],
-        [
-          "原油",
-          "流動性低下に注意",
-          "スプレッド拡大と値飛びを確認",
-          "薄商いの急変",
-          "通常取引再開"
-        ]
-      ],
-      "postReleaseReactions": [],
-      "comparison": [
-        [
-          "米2年債",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "米10年債",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "ダウ先物",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "ナスダック先物",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "日経225先物",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "USD/JPY",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "EUR/USD",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "金",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ],
-        [
-          "原油",
-          "データ次第",
-          "未計測",
-          "確認中"
-        ]
-      ],
-      "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
-        "watch": [
-          "米2年債の初動",
-          "米10年債への波及",
-          "ダウ・ナスダック先物",
-          "USD/JPYとEUR/USD",
-          "日経225先物・金・原油"
-        ]
-      },
-      "officialSource": {
-        "id": "forex_factory",
-        "name": "Forex Factory Economic Calendar",
-        "url": "https://www.forexfactory.com/calendar"
-      },
-      "sourceType": "forex_factory_weekly",
-      "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
-      "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
-      "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
-    },
     {
       "id": "event-1eb82d3099c351",
       "sourceKey": "2026-09-01|12:35|JPY|10-y bond auction",
@@ -739,7 +247,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-485e4b011eb7a2",
@@ -984,7 +492,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-b0935584583841",
@@ -1229,7 +737,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-f722c53b3f13eb",
@@ -1476,7 +984,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-cc6cc9269a7a92",
@@ -1723,7 +1231,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-16566a6ce16ce6",
@@ -1970,7 +1478,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-648b7197bcd278",
@@ -2217,7 +1725,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-a28128a6324f15",
@@ -2462,7 +1970,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-b642daa0e88555",
@@ -2709,7 +2217,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-aa573dff8fe83c",
@@ -2956,7 +2464,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-1f661e6604ff32",
@@ -3203,7 +2711,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-8a8db8dfb6af60",
@@ -3450,7 +2958,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-5af7a509e1d0e6",
@@ -3697,7 +3205,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-f027361b97ab01",
@@ -3944,7 +3452,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-1fdc5c98562fe8",
@@ -4191,7 +3699,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-ba912d870b9d2a",
@@ -4438,7 +3946,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-e87184220c49fe",
@@ -4685,7 +4193,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-596981cb8a0eed",
@@ -4930,7 +4438,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-faeedbf0db0599",
@@ -5171,7 +4679,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-33c74f852015e1",
@@ -5418,7 +4926,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-41e563edccd916",
@@ -5664,7 +5172,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-c34c46351d69d9",
@@ -5910,7 +5418,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-a6179216ee25d2",
@@ -6157,7 +5665,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-5e84914099d2a1",
@@ -6404,7 +5912,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-fe508b50e93f6c",
@@ -6651,7 +6159,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-80fdb93d1dcc08",
@@ -6898,7 +6406,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-31T08:51:31+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-fb67223fb7df78",
@@ -7145,7 +6653,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-31T08:51:31+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-0973bd356e2932",
@@ -7392,7 +6900,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-27f0a774bd29d9",
@@ -7639,7 +7147,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-7335c59b369448",
@@ -7886,7 +7394,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-259ed7cfb18ee2",
@@ -8133,7 +7641,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-0860160537ab21",
@@ -8380,7 +7888,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-703c89cdd45697",
@@ -8627,7 +8135,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     },
     {
       "id": "event-7b36283436e817",
@@ -8874,7 +8382,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-08-31T11:40:58+09:00"
+      "updatedAt": "2026-08-31T17:54:40+09:00"
     }
   ],
   "errors": []
