@@ -1,12 +1,12 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "2.0.0",
   "pageId": "stocks",
   "pageTitle": "株式市場分析",
   "generatedAt": "2026-08-04T00:00:00+09:00",
   "updatedAt": "2026-08-22T08:04:00+09:00",
   "dataAsOf": "2026-08-17T16:00:00-04:00",
   "status": "ok",
-  "sourceStatus": "米国市場と東京市場を独立更新・項目別基準日を明示・欠損は複数ソースで補完",
+  "sourceStatus": "米国市場と東京市場を独立更新・市場別基準日を明示",
   "sources": [
     {
       "id": "INITIAL_STOCKS_HTML",
@@ -132,9 +132,9 @@
         ],
         [
           "日経VI",
-          "25.98",
-          "-1.85（-6.65%）",
-          "Nikkei 225 VI official profileの確認済み値。基準日 2026-09-01。"
+          "取得不能（対象日の確定値なし）",
+          "—",
+          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-09-01。"
         ],
         [
           "値上がり銘柄 / 値下がり銘柄",
@@ -144,9 +144,9 @@
         ],
         [
           "東証プライム売買代金",
-          "7.5 兆円",
+          "取得不能（対象日の確定値なし）",
           "—",
-          "トレーダーズ・ウェブ 後場概況の確定値。基準日 2026-09-01。"
+          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-09-01。"
         ],
         [
           "騰落レシオ（25日）",
@@ -186,27 +186,12 @@
         ]
       ],
       "dataDate": "2026-09-01",
-      "updatedAt": "2026-09-02T00:27:44+09:00",
+      "updatedAt": "2026-09-02T00:27:34+09:00",
       "source": {
-        "name": "東京市場確定値統合（複数ソース・項目別基準日）",
+        "name": "公開ソース（exact-date fallback）",
         "sheet": "",
         "reference": "data/market/japan-close-reference.json",
-        "sheetStatus": "GOOGLE_SERVICE_ACCOUNT_JSON is not configured",
-        "supportingData": [
-          "data/market/latest.json（日経VI）",
-          "株探 日次時系列（TOPIX・グロース250）",
-          "data/nikkei225-supply-demand.json（海外投資家・週次）",
-          "トレーダーズ・ウェブ マーケットの話題（東証プライム売買代金）"
-        ],
-        "repairDiagnostics": {
-          "東証プライム売買代金": "repaired from exact-date Traders Web post-close commentary",
-          "日経225予想PER": "exact-date reference unavailable",
-          "日経225予想EPS": "exact-date reference unavailable",
-          "日経VI": "repaired from verified generic market acquisition",
-          "TOPIX": "exact target-date row not found",
-          "グロース250": "exact target-date row not found",
-          "海外投資家動向（現物）": "repaired from verified JPX weekly flow 2026-08-21"
-        }
+        "sheetStatus": "GOOGLE_SERVICE_ACCOUNT_JSON is not configured"
       }
     }
   },
@@ -3095,11 +3080,11 @@
     "note": "米国主要指数、NYSE/NASDAQ騰落、52週高安、200日線上下を同一取引日で保存。"
   },
   "marketDates": {
-    "japan": "2026-09-01",
-    "us": "2026-08-31"
+    "us": "2026-08-31",
+    "japan": "2026-09-01"
   },
   "marketUpdatedAt": {
-    "japan": "2026-09-02T00:27:44+09:00",
+    "japan": "2026-09-02T00:27:34+09:00",
     "us": "2026-09-01T09:48:27+09:00"
   },
   "nikkeiMetricsAsOf": "2026-09-01",
@@ -16306,5 +16291,11 @@
   },
   "judgementReportKey": "2026-08-22 08:00",
   "judgementUpdatedAt": "2026-08-22T08:04:00+09:00",
-  "judgementSource": "data/stocks.json（指数・市場内部・セクター・上昇下落銘柄・セッション分析）"
+  "judgementSource": "data/stocks.json（指数・市場内部・セクター・上昇下落銘柄・セッション分析）",
+  "snapshotDate": "2026-09-02",
+  "savedAt": "2026-09-02T00:27:34+09:00",
+  "snapshotPolicy": {
+    "type": "independent-market-session-dates",
+    "description": "米国市場と東京市場は、それぞれの取引終了後に独立更新。未更新側は直前の確定データを保持する。"
+  }
 }
