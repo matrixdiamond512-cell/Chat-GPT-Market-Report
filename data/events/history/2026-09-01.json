@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-09-01T14:45:22+09:00",
-  "publishedAt": "2026-09-01T14:45:22+09:00",
-  "dataAsOf": "2026-09-01T14:45:22+09:00",
+  "generatedAt": "2026-09-01T19:31:55+09:00",
+  "publishedAt": "2026-09-01T19:31:55+09:00",
+  "dataAsOf": "2026-09-01T19:31:55+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -20,7 +20,7 @@
       "name": "TradingView Economic Calendar",
       "url": "https://www.tradingview.com/economic-calendar/",
       "status": "ok",
-      "note": "実績値を1件照合。生データは公開保存しません。"
+      "note": "実績値を3件照合。生データは公開保存しません。"
     },
     {
       "id": "official_source_map",
@@ -288,13 +288,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-01T14:45:22+09:00",
+      "updatedAt": "2026-09-01T19:31:55+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Ministry of Finance",
         "url": "http://www.mof.go.jp"
       },
-      "resultSavedAt": "2026-09-01T14:45:22+09:00"
+      "resultSavedAt": "2026-09-01T19:31:55+09:00"
     },
     {
       "id": "event-485e4b011eb7a2",
@@ -315,11 +315,11 @@
       "importanceLabel": "高",
       "forecast": "2.5%",
       "previous": "2.5%",
-      "actual": "",
+      "actual": "2.4%",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultComparison": "市場予想を下回る",
+      "resultExplanation": "実績 2.4% は予想 2.5% に対して市場予想を下回る。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -520,8 +520,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を下回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -539,7 +539,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-01T14:45:22+09:00"
+      "updatedAt": "2026-09-01T19:31:55+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "EUROSTAT",
+        "url": "https://ec.europa.eu/eurostat/"
+      },
+      "resultSavedAt": "2026-09-01T19:31:55+09:00"
     },
     {
       "id": "event-b0935584583841",
@@ -560,11 +566,11 @@
       "importanceLabel": "高",
       "forecast": "3.3%",
       "previous": "2.9%",
-      "actual": "",
+      "actual": "3.3%",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultComparison": "市場予想と一致",
+      "resultExplanation": "実績 3.3% は予想 3.3% に対して市場予想と一致。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -765,8 +771,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想と一致",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -784,7 +790,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-01T14:45:22+09:00"
+      "updatedAt": "2026-09-01T19:31:55+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "EUROSTAT",
+        "url": "https://ec.europa.eu/eurostat/"
+      },
+      "resultSavedAt": "2026-09-01T19:31:55+09:00"
     },
     {
       "id": "event-f722c53b3f13eb",
@@ -1031,7 +1043,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-01T14:45:22+09:00",
+      "updatedAt": "2026-09-01T19:31:55+09:00",
       "resultExpected": false,
       "resultType": "qualitative"
     },
@@ -1280,7 +1292,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-01T14:45:22+09:00"
+      "updatedAt": "2026-09-01T19:31:55+09:00"
     },
     {
       "id": "event-16566a6ce16ce6",
@@ -1527,7 +1539,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-01T14:45:22+09:00"
+      "updatedAt": "2026-09-01T19:31:55+09:00"
     },
     {
       "id": "event-648b7197bcd278",
@@ -1774,7 +1786,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-01T14:45:22+09:00"
+      "updatedAt": "2026-09-01T19:31:55+09:00"
     }
   ]
 }
