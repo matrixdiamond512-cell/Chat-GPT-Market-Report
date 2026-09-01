@@ -1,10 +1,10 @@
 {
-  "schemaVersion": "3.2.0",
+  "schemaVersion": "3.3.2",
   "pageId": "usdjpy-supply-demand",
-  "generatedAt": "2026-09-01T09:45:55+09:00",
+  "generatedAt": "2026-09-01T20:42:19+09:00",
   "mode": "integrated-realistic",
   "sourceStatus": {
-    "tradersWebFx": "confirmed",
+    "tradersWebFx": "preserved_after_fetch_error",
     "cftc": "confirmed",
     "core": "referenced-existing-json"
   },
@@ -12,12 +12,12 @@
     "name": "トレーダーズ・ウェブFX 無料ページ",
     "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
     "sourceUpdatedAt": "2026-09-01T06:22:00+09:00",
-    "checkedAt": "2026-09-01T09:46:02+09:00",
-    "status": "confirmed",
+    "checkedAt": "2026-09-01T20:42:19+09:00",
+    "status": "preserved_after_fetch_error",
     "pageConfirmed": true,
     "publicScope": "一般公開はUSD/JPYの直近情報",
     "redistributionMode": "key-levels-excerpt-with-attribution",
-    "note": "無料公開データから需給判断に必要な主要水準のみ抜粋し、基準日時と出典を明示する。",
+    "note": "無料ページの公開状況・基準日時を取得して表示する。取得済みの主要水準がある場合は前回値を保持し、基準日時を明示する。",
     "sourceDate": "2026-09-01",
     "sourceTime": "06:22",
     "freshness": "today",
@@ -83,7 +83,9 @@
       },
       "extractedRowCount": 23,
       "displayMode": "key-levels-excerpt"
-    }
+    },
+    "error": "HTTPError: HTTP Error 403: Forbidden",
+    "lastAttemptAt": "2026-09-01T20:42:19+09:00"
   },
   "cftc": {
     "name": "CFTC Commitments of Traders - Japanese Yen",
@@ -524,7 +526,7 @@
     "judgement": "円売り越し拡大",
     "judgementSub": "USD/JPYの上昇圧力",
     "priceStatus": "available",
-    "checkedAt": "2026-09-01T09:45:55+09:00",
+    "checkedAt": "2026-09-01T20:42:18+09:00",
     "comment": "円売り越し拡大。円先物のNetは-63,298枚、前週比-10,405枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
     "verifiedPoints": 52,
     "priceVerifiedPoints": 52,
@@ -532,12 +534,12 @@
   },
   "coreSnapshot": {
     "market": {
-      "generatedAt": "2026-08-31T18:37:49+09:00",
-      "asOf": "2026-08-31T18:37:57+09:00",
+      "generatedAt": "2026-09-01T17:33:29+09:00",
+      "asOf": "2026-09-01T17:33:36+09:00",
       "verificationStatus": "verified"
     },
     "ratesBonds": {
-      "generatedAt": "2026-09-01T03:12:20+09:00",
+      "generatedAt": "2026-09-01T16:59:51+09:00",
       "asOfDate": "2026-08-31",
       "status": "confirmed"
     },
@@ -558,6 +560,6 @@
     ],
     "assessment": "価格方向、日米10年金利差の変化、東京スポット出来高、CFTC円先物の52週ポジション推移を中核とし、オーダー情報を補助材料として総合判断する。",
     "cftc": "Japanese Yen / Non-CommercialのLong・Short・Netを52週で表示し、USD/JPY価格との整合性を確認する。Netプラスは円買い越し、Netマイナスは円売り越しとして読む。",
-    "tradersWebFx": "無料ページから主要な売り・買い・ストップ・NYカット水準を抜粋し、基準日時・鮮度・出典を明示する。"
+    "tradersWebFx": "無料ページの取得確認、基準日・時刻、最終確認時刻を表示する。取得済みの主要水準は基準日時を明示して利用する。"
   }
 }
