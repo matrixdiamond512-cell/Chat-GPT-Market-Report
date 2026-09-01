@@ -1,11 +1,11 @@
 {
   "schemaVersion": "1.1.0",
-  "updatedAt": "2026-09-01T00:11:46+09:00",
-  "status": "ok",
+  "updatedAt": "2026-09-01T09:47:43+09:00",
+  "status": "failed",
   "fetchOutcome": "success",
-  "crosscheckOutcome": "success",
+  "crosscheckOutcome": "failure",
   "logTail": [
-    "{\"status\": \"verified\", \"marketDate\": \"2026-08-28\", \"componentCount\": 503, \"topGainer\": \"Tesla Inc（TSLA）\", \"topLoser\": \"Edison International（EIX）\", \"topContribution\": \"Tesla Inc（TSLA）\", \"validation\": {\"estimatedWeightedReturnPct\": -0.4321, \"verifiedSP500ReturnPct\": null, \"differencePt\": null}}",
-    "{\"status\": \"passed\", \"marketDate\": \"2026-08-28\", \"estimatedWeightedReturnPct\": -0.4321, \"verifiedSP500ReturnPct\": -0.25, \"differencePt\": -0.1821, \"tolerancePt\": 0.2}"
+    "{\"status\": \"unavailable\", \"error\": \"Slickcharts is not on the verified U.S. session: source=2026-08-31, expected=2026-08-28\"}",
+    "mover/contribution basis date does not match verified U.S. market date"
   ]
 }
