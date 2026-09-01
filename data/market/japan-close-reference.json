@@ -1,60 +1,50 @@
 {
   "schemaVersion": "1.2.0",
-  "generatedAt": "2026-08-29T19:00:07+09:00",
-  "dataDate": "2026-08-28",
+  "generatedAt": "2026-09-01T21:32:34+09:00",
+  "dataDate": "2026-09-01",
   "complete": false,
   "items": {
-    "日経225予想PER": {
-      "value": "17.36倍",
-      "date": "2026-08-28",
-      "sourceName": "投資の森 日経平均PER・PBR",
-      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
+    "日経225現物": {
+      "value": "66,215.34",
+      "date": "2026-09-01",
+      "sourceName": "Yahoo Finance Nikkei 225 daily history",
+      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/"
     },
-    "日経225 PBR": {
-      "value": "1.90倍",
-      "date": "2026-08-28",
-      "sourceName": "投資の森 日経平均PER・PBR",
-      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
+    "日経225 25日移動平均乖離率": {
+      "value": "+0.80%",
+      "date": "2026-09-01",
+      "sourceName": "Yahoo Finance Nikkei 225 daily history",
+      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/"
     },
-    "日経225予想EPS": {
-      "value": "3,825.21円",
-      "date": "2026-08-28",
-      "sourceName": "投資の森 日経平均PER・PBR",
-      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
+    "日経225 200日移動平均乖離率": {
+      "value": "+12.82%",
+      "date": "2026-09-01",
+      "sourceName": "Yahoo Finance Nikkei 225 daily history",
+      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/"
     },
     "東証プライム値上がり銘柄数": {
-      "value": "873",
-      "date": "2026-08-28",
+      "value": "845",
+      "date": "2026-09-01",
       "sourceName": "投資の森 値上がり・値下がり銘柄数",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
     },
     "東証プライム値下がり銘柄数": {
-      "value": "631",
-      "date": "2026-08-28",
+      "value": "662",
+      "date": "2026-09-01",
       "sourceName": "投資の森 値上がり・値下がり銘柄数",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
     },
     "東証プライム25日騰落レシオ": {
-      "value": "125.34%",
-      "date": "2026-08-28",
+      "value": "121.51%",
+      "date": "2026-09-01",
       "sourceName": "投資の森 東証プライム騰落銘柄数の保存履歴から25営業日で算出",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/",
       "method": "25 exact-date Prime breadth sessions"
-    },
-    "日経225現物": {
-      "value": "66,405.56",
-      "change": "+273.58",
-      "rate": "+0.41%",
-      "direction": "上昇",
-      "date": "2026-08-28",
-      "sourceName": "投資の森 日経平均PER・PBR（同日終値・前日差）",
-      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/",
-      "status": "exact_date_close_anchor"
     }
   },
   "unavailable": {
-    "日経225現物": "2026-08-28の確定日足がソースに未反映",
-    "東証プライム売買高": "2026-08-28の大引けブロックがトレーダーズ・ウェブに取得時点で見つからず"
+    "日経225予想PER/PBR/EPS": "2026-09-01行がソースに未反映",
+    "東証プライム売買高": "2026-09-01の大引けブロックがトレーダーズ・ウェブに取得時点で見つからず"
   },
   "breadthHistory": [
     {
@@ -343,20 +333,21 @@
       "primeDecliners": 631,
       "sourceName": "投資の森 値上がり・値下がり銘柄数",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
+    },
+    {
+      "date": "2026-08-31",
+      "primeAdvancers": 881,
+      "primeDecliners": 634,
+      "sourceName": "投資の森 値上がり・値下がり銘柄数",
+      "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
+    },
+    {
+      "date": "2026-09-01",
+      "primeAdvancers": 845,
+      "primeDecliners": 662,
+      "sourceName": "投資の森 値上がり・値下がり銘柄数",
+      "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
     }
   ],
-  "rule": "accept exact target-date records only; never carry stale records forward",
-  "qualityChecks": {
-    "nikkeiCloseCrossCheck": {
-      "checkedAt": "2026-08-29T19:00:07+09:00",
-      "targetDate": "2026-08-28",
-      "authoritativeClose": 66405.56,
-      "authoritativeChange": 273.58,
-      "previousCloseDerived": 66131.98,
-      "oldReferenceClose": null,
-      "yahooTargetDayRawClose": null,
-      "differenceVsYahoo": null,
-      "rule": "Exact-date valuation-page close anchors the session; Yahoo is used only for the historical moving-average window after target-close replacement."
-    }
-  }
+  "rule": "accept exact target-date records only; never carry stale records forward"
 }
