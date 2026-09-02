@@ -1,91 +1,89 @@
 {
-  "schemaVersion": "3.3.2",
+  "schemaVersion": "3.2.0",
   "pageId": "usdjpy-supply-demand",
-  "generatedAt": "2026-09-02T08:32:20+09:00",
+  "generatedAt": "2026-09-02T20:22:31+09:00",
   "mode": "integrated-realistic",
   "sourceStatus": {
-    "tradersWebFx": "preserved_after_fetch_error",
+    "tradersWebFx": "confirmed",
     "cftc": "confirmed",
     "core": "referenced-existing-json"
   },
   "tradersWebFx": {
     "name": "トレーダーズ・ウェブFX 無料ページ",
     "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
-    "sourceUpdatedAt": "2026-09-01T06:22:00+09:00",
-    "checkedAt": "2026-09-02T08:32:20+09:00",
-    "status": "preserved_after_fetch_error",
+    "sourceUpdatedAt": "2026-09-02T06:22:00+09:00",
+    "checkedAt": "2026-09-02T20:22:33+09:00",
+    "status": "confirmed",
     "pageConfirmed": true,
     "publicScope": "一般公開はUSD/JPYの直近情報",
     "redistributionMode": "key-levels-excerpt-with-attribution",
-    "note": "無料ページの公開状況・基準日時を取得して表示する。取得済みの主要水準がある場合は前回値を保持し、基準日時を明示する。",
-    "sourceDate": "2026-09-01",
+    "note": "無料公開データから需給判断に必要な主要水準のみ抜粋し、基準日時と出典を明示する。",
+    "sourceDate": "2026-09-02",
     "sourceTime": "06:22",
     "freshness": "today",
-    "ageHours": 3.4,
+    "ageHours": 14.0,
     "keyLevels": {
-      "referenceSpot": "159.74",
-      "referenceSpotDescription": "9/1 06:00現在（高値160.20円 - 安値159.48円）",
+      "referenceSpot": "160.18",
+      "referenceSpotDescription": "9/1 06:00現在（高値160.27円 - 安値159.64円）",
       "sellOrders": [
         {
-          "price": "160.20",
-          "description": "売り・超えるとストップロス買い"
+          "price": "160.30",
+          "description": "売りやや小さめ・ストップロス買い小さめ"
         },
         {
-          "price": "160.30",
-          "description": "売りやや小さめ・超えるとストップロス買い小さめ"
+          "price": "160.40-50",
+          "description": "売り"
         }
       ],
       "buyOrders": [
         {
-          "price": "159.40",
+          "price": "159.80-90",
           "description": "買い"
         },
         {
-          "price": "159.00-10",
-          "description": "買い小さめ（159.00円 OP3・4日NYカット大きめ）"
+          "price": "159.30",
+          "description": "買い"
         }
       ],
       "stops": [
         {
-          "price": "159.30",
-          "description": "割り込むとストップロス売り"
+          "price": "160.30",
+          "description": "売りやや小さめ・ストップロス買い小さめ"
         },
         {
-          "price": "160.20",
-          "description": "売り・超えるとストップロス買い"
+          "price": "159.70",
+          "description": "ストップロス売りやや小さめ"
         }
       ],
       "nyCutOptions": [
         {
-          "price": "159.68",
-          "description": "OP1日NYカット"
+          "price": "160.00",
+          "description": "OP2・8日NYカット/OP3日NYカット大きめ/OP4日NYカット非常に大きめ"
         },
         {
           "price": "159.60",
-          "description": "OP2日NYカット大きめ"
+          "description": "割り込むとストップロス売り、OP2日NYカット大きめ"
         },
         {
-          "price": "160.00",
-          "description": "OP2日NYカット/OP3日NYカット大きめ/OP4日NYカット非常に大きめ"
+          "price": "159.25",
+          "description": "OP2日NYカット大きめ"
         }
       ],
       "optionAnalysis": {
         "status": "calculated",
         "headline": "上下のNYカットに挟まれ、カット前はレンジ化しやすい",
         "summary": "NYカットは方向を保証せず、カット時刻までは吸着、その後は反動が出る可能性を注文・ストップとの重複で評価します。",
-        "nearestPrice": "159.68",
-        "nearestDistancePips": 6,
+        "nearestPrice": "160.00",
+        "nearestDistancePips": 18,
         "points": [
-          "最接近は159.68円（現在値から下へ約6pips、通常規模）。NYカット接近時は同水準へ値が寄る動きと、通過後の反動に注意。",
-          "159.00-10円はNYカットと買い注文が重複。カット前後は下値を支えやすい水準。",
+          "最接近は160.00円（現在値から下へ約18pips、大きめ）。NYカット接近時は同水準へ値が寄る動きと、通過後の反動に注意。",
+          "159.60円はNYカットと売りストップが重複。カット前後は通過時に値動きが加速しやすい水準。",
           "複数期日のNYカットが同一水準に重なるため、単一期日より意識されやすい価格帯があります。"
         ]
       },
-      "extractedRowCount": 23,
+      "extractedRowCount": 21,
       "displayMode": "key-levels-excerpt"
-    },
-    "error": "HTTPError: HTTP Error 403: Forbidden",
-    "lastAttemptAt": "2026-09-02T08:32:20+09:00"
+    }
   },
   "cftc": {
     "name": "CFTC Commitments of Traders - Japanese Yen",
@@ -526,7 +524,7 @@
     "judgement": "円売り越し拡大",
     "judgementSub": "USD/JPYの上昇圧力",
     "priceStatus": "available",
-    "checkedAt": "2026-09-02T08:32:20+09:00",
+    "checkedAt": "2026-09-02T20:22:31+09:00",
     "comment": "円売り越し拡大。円先物のNetは-63,298枚、前週比-10,405枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
     "verifiedPoints": 52,
     "priceVerifiedPoints": 52,
@@ -534,12 +532,12 @@
   },
   "coreSnapshot": {
     "market": {
-      "generatedAt": "2026-09-01T21:31:14+09:00",
-      "asOf": "2026-09-01T21:31:20+09:00",
+      "generatedAt": "2026-09-02T16:50:46+09:00",
+      "asOf": "2026-09-02T16:50:57+09:00",
       "verificationStatus": "verified"
     },
     "ratesBonds": {
-      "generatedAt": "2026-09-02T00:34:55+09:00",
+      "generatedAt": "2026-09-02T08:34:31+09:00",
       "asOfDate": "2026-09-01",
       "status": "confirmed"
     },
@@ -560,6 +558,6 @@
     ],
     "assessment": "価格方向、日米10年金利差の変化、東京スポット出来高、CFTC円先物の52週ポジション推移を中核とし、オーダー情報を補助材料として総合判断する。",
     "cftc": "Japanese Yen / Non-CommercialのLong・Short・Netを52週で表示し、USD/JPY価格との整合性を確認する。Netプラスは円買い越し、Netマイナスは円売り越しとして読む。",
-    "tradersWebFx": "無料ページの取得確認、基準日・時刻、最終確認時刻を表示する。取得済みの主要水準は基準日時を明示して利用する。"
+    "tradersWebFx": "無料ページから主要な売り・買い・ストップ・NYカット水準を抜粋し、基準日時・鮮度・出典を明示する。"
   }
 }
