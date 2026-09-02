@@ -1,19 +1,36 @@
 {
   "schemaVersion": "1.0.0",
-  "status": "verified",
-  "freshness": "fresh",
-  "dataDate": "2026-09-01",
-  "asOf": "2026-09-01T16:00:00-04:00",
-  "updatedAt": "2026-09-02T21:09:46+09:00",
+  "status": "unavailable",
+  "freshness": "unavailable",
+  "dataDate": null,
+  "asOf": null,
+  "updatedAt": "2026-09-03T08:33:28+09:00",
   "source": {
     "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
     "url": "https://www.slickcharts.com/sp500",
     "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
   },
-  "error": null,
+  "error": "Slickcharts is not on the verified U.S. session: source=2026-09-02, expected=2026-09-01",
   "current": {
+    "status": "unavailable",
+    "freshness": "unavailable",
+    "dataDate": null,
+    "asOf": null,
+    "updatedAt": "2026-09-03T08:33:28+09:00",
+    "source": {
+      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+      "url": "https://www.slickcharts.com/sp500",
+      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
+    },
+    "error": "Slickcharts is not on the verified U.S. session: source=2026-09-02, expected=2026-09-01",
+    "universe": "S&P 500 constituents",
+    "validation": {},
+    "gainers": [],
+    "losers": []
+  },
+  "lastGood": {
     "status": "verified",
-    "freshness": "fresh",
+    "freshness": "stale",
     "dataDate": "2026-09-01",
     "asOf": "2026-09-01T16:00:00-04:00",
     "updatedAt": "2026-09-02T21:09:46+09:00",
@@ -124,217 +141,8 @@
       }
     ]
   },
-  "lastGood": {
-    "status": "verified",
-    "freshness": "stale",
-    "dataDate": "2026-09-01",
-    "asOf": "2026-09-01T16:00:00-04:00",
-    "updatedAt": "2026-09-02T09:02:36+09:00",
-    "source": {
-      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-      "url": "https://www.slickcharts.com/sp500",
-      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
-    },
-    "error": null,
-    "universe": "S&P 500 constituents",
-    "validation": {
-      "estimatedWeightedReturnPct": -0.7148,
-      "verifiedSP500ReturnPct": null,
-      "differencePt": null
-    },
-    "gainers": [
-      {
-        "rank": 1,
-        "symbol": "MRNA",
-        "name": "Moderna, Inc. Common Stock（MRNA）",
-        "close": "154.27",
-        "dayChange": "+13.93",
-        "change": "+9.93%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "EIX",
-        "name": "Edison International（EIX）",
-        "close": "58.8",
-        "dayChange": "+4.82",
-        "change": "+8.93%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "PCG",
-        "name": "PG&E Corporation（PCG）",
-        "close": "14.06",
-        "dayChange": "+0.79",
-        "change": "+5.95%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "HPQ",
-        "name": "HP Inc.（HPQ）",
-        "close": "31.32",
-        "dayChange": "+1.3",
-        "change": "+4.33%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "CF",
-        "name": "CF Industries Holding, Inc.（CF）",
-        "close": "135.6",
-        "dayChange": "+5.57",
-        "change": "+4.28%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-      }
-    ],
-    "losers": [
-      {
-        "rank": 1,
-        "symbol": "AXON",
-        "name": "Axon Enterprise, Inc. Common Stock（AXON）",
-        "close": "518.3",
-        "dayChange": "-48.26",
-        "change": "-8.52%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "CDNS",
-        "name": "Cadence Design Systems（CDNS）",
-        "close": "313.04",
-        "dayChange": "-25.74",
-        "change": "-7.60%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "IBKR",
-        "name": "Interactive Brokers Group, Inc. Class A Common Stock（IBKR）",
-        "close": "90.39",
-        "dayChange": "-6.9",
-        "change": "-7.09%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "CRWD",
-        "name": "CrowdStrike Holdings, Inc. Class A Common Stock（CRWD）",
-        "close": "215.07",
-        "dayChange": "-15.93",
-        "change": "-6.90%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "DELL",
-        "name": "Dell Technologies Inc.（DELL）",
-        "close": "425",
-        "dayChange": "-31.01",
-        "change": "-6.80%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-      }
-    ]
-  },
   "universe": "S&P 500 constituents",
-  "validation": {
-    "estimatedWeightedReturnPct": 0.1492,
-    "verifiedSP500ReturnPct": null,
-    "differencePt": null
-  },
-  "gainers": [
-    {
-      "rank": 1,
-      "symbol": "DELL",
-      "name": "Dell Technologies Inc.（DELL）",
-      "close": "463.13",
-      "dayChange": "+38.13",
-      "change": "+8.97%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "HPE",
-      "name": "Hewlett Packard Enterprise Company（HPE）",
-      "close": "53.03",
-      "dayChange": "+2.16",
-      "change": "+4.25%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "XYL",
-      "name": "Xylem Inc（XYL）",
-      "close": "109.39",
-      "dayChange": "+2.5",
-      "change": "+2.34%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "BR",
-      "name": "Broadridge Financial Solutions Inc（BR）",
-      "close": "184.31",
-      "dayChange": "+3.92",
-      "change": "+2.17%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "CARR",
-      "name": "Carrier Global Corporation（CARR）",
-      "close": "58.48",
-      "dayChange": "+1.23",
-      "change": "+2.14%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-    }
-  ],
-  "losers": [
-    {
-      "rank": 1,
-      "symbol": "DDOG",
-      "name": "Datadog, Inc. Class A Common Stock（DDOG）",
-      "close": "217.5",
-      "dayChange": "-6.34",
-      "change": "-2.83%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "MRNA",
-      "name": "Moderna, Inc. Common Stock（MRNA）",
-      "close": "150.56",
-      "dayChange": "-3.71",
-      "change": "-2.40%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "NOW",
-      "name": "SERVICENOW, INC.（NOW）",
-      "close": "139.75",
-      "dayChange": "-3.15",
-      "change": "-2.20%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "EXPE",
-      "name": "Expedia Group, Inc. Common Stock（EXPE）",
-      "close": "299.24",
-      "dayChange": "-4.99",
-      "change": "-1.64%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "ALLE",
-      "name": "Allegion Public Limited Company（ALLE）",
-      "close": "149.34",
-      "dayChange": "-2.47",
-      "change": "-1.63%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-01。材料要因は別途ニュース確認。"
-    }
-  ]
+  "validation": {},
+  "gainers": [],
+  "losers": []
 }
