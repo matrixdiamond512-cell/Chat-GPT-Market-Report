@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-09-03T14:50:21+09:00",
-  "publishedAt": "2026-09-03T14:50:21+09:00",
-  "dataAsOf": "2026-09-03T14:50:21+09:00",
+  "generatedAt": "2026-09-03T19:19:43+09:00",
+  "publishedAt": "2026-09-03T19:19:43+09:00",
+  "dataAsOf": "2026-09-03T19:19:43+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -37,7 +37,7 @@
       "id": "event_result_repair",
       "name": "重要イベント実績値の補完取得",
       "status": "ok",
-      "note": "代替カレンダー照合 0件、公式PDF補完 0件、取得不能理由明記 0件。"
+      "note": "代替カレンダー照合 2件、公式PDF補完 0件、取得不能理由明記 0件。"
     },
     {
       "id": "weekly_claims_validation",
@@ -294,13 +294,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-09-01T19:31:55+09:00",
-      "updatedAt": "2026-09-03T14:50:22+09:00",
+      "updatedAt": "2026-09-03T19:19:44+09:00",
+      "resultSavedAt": "2026-09-03T05:59:39+09:00",
       "resultSource": {
         "id": "forex_factory",
         "name": "Forex Factory Economic Calendar",
         "url": "https://www.forexfactory.com/calendar"
       },
-      "resultSavedAt": "2026-09-03T05:59:39+09:00",
       "resultExpected": false,
       "resultType": "qualitative"
     },
@@ -543,13 +543,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-03T14:50:21+09:00",
+      "updatedAt": "2026-09-03T19:19:43+09:00",
+      "resultSavedAt": "2026-09-03T19:19:43+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Ministry of Finance",
         "url": "http://www.mof.go.jp"
-      },
-      "resultSavedAt": "2026-09-03T14:50:21+09:00"
+      }
     },
     {
       "id": "event-33c74f852015e1",
@@ -573,8 +573,8 @@
       "actual": "",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
+      "status": "result_pending",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -777,7 +777,7 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
+        "narrative": "結果確認中",
         "reaction": "結果待ち",
         "watch": [
           "米2年債の初動",
@@ -796,16 +796,16 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-03T14:50:21+09:00"
+      "updatedAt": "2026-09-03T19:19:43+09:00"
     },
     {
-      "id": "event-41e563edccd916",
-      "sourceKey": "2026-09-03|18:03|EUR|spanish 10-y bond auction",
+      "id": "event-8b486656c9fb3d",
+      "sourceKey": "2026-09-03|17:43|EUR|spanish 10-y bond auction",
       "date": "2026-09-03",
-      "time": "18:03",
-      "datetimeJst": "2026-09-03T18:03:00+09:00",
-      "scheduledAtSource": "2026-09-03T05:03:00-04:00",
-      "scheduledAtUtc": "2026-09-03T09:03:00Z",
+      "time": "17:43",
+      "datetimeJst": "2026-09-03T17:43:00+09:00",
+      "scheduledAtSource": "2026-09-03T04:43:00-04:00",
+      "scheduledAtUtc": "2026-09-03T08:43:00Z",
       "country": "欧州",
       "currency": "EUR",
       "title": "欧州 Spanish 10-y 国債入札",
@@ -817,11 +817,11 @@
       "importanceLabel": "中",
       "forecast": "",
       "previous": "3.54|2.4",
-      "actual": "",
+      "actual": "3.079%",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "実績 3.079% は予想 なし に対して比較保留。名称差・国コード差を補正してTradingView実績データから照合しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1023,8 +1023,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1041,17 +1041,25 @@
       "sourceType": "forex_factory_weekly",
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
-      "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-03T14:50:21+09:00"
+      "createdAt": "2026-09-03T19:19:43+09:00",
+      "updatedAt": "2026-09-03T19:19:44+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "tradingview_repair",
+        "name": "Tesoro Público",
+        "url": "http://www.tesoro.es"
+      },
+      "resultSavedAt": "2026-09-03T19:19:44+09:00"
     },
     {
-      "id": "event-c34c46351d69d9",
-      "sourceKey": "2026-09-03|18:18|EUR|french 10-y bond auction",
+      "id": "event-14e20c2906ae9f",
+      "sourceKey": "2026-09-03|17:57|EUR|french 10-y bond auction",
       "date": "2026-09-03",
-      "time": "18:18",
-      "datetimeJst": "2026-09-03T18:18:00+09:00",
-      "scheduledAtSource": "2026-09-03T05:18:00-04:00",
-      "scheduledAtUtc": "2026-09-03T09:18:00Z",
+      "time": "17:57",
+      "datetimeJst": "2026-09-03T17:57:00+09:00",
+      "scheduledAtSource": "2026-09-03T04:57:00-04:00",
+      "scheduledAtUtc": "2026-09-03T08:57:00Z",
       "country": "欧州",
       "currency": "EUR",
       "title": "欧州 French 10-y 国債入札",
@@ -1063,11 +1071,11 @@
       "importanceLabel": "中",
       "forecast": "",
       "previous": "3.86|3.7",
-      "actual": "",
+      "actual": "4.51%",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "実績 4.51% は予想 なし に対して比較保留。名称差・国コード差を補正してTradingView実績データから照合しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1269,8 +1277,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1287,8 +1295,16 @@
       "sourceType": "forex_factory_weekly",
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
-      "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-03T14:50:21+09:00"
+      "createdAt": "2026-09-03T19:19:43+09:00",
+      "updatedAt": "2026-09-03T19:19:44+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "tradingview_repair",
+        "name": "TradingView Economic Calendar",
+        "url": "https://www.iea.org"
+      },
+      "resultSavedAt": "2026-09-03T19:19:44+09:00"
     },
     {
       "id": "event-a6179216ee25d2",
@@ -1535,7 +1551,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-03T14:50:21+09:00",
+      "updatedAt": "2026-09-03T19:19:43+09:00",
       "resultExpected": false,
       "resultType": "qualitative"
     },
@@ -1784,7 +1800,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-03T14:50:21+09:00"
+      "updatedAt": "2026-09-03T19:19:43+09:00"
     },
     {
       "id": "event-fe508b50e93f6c",
@@ -2031,7 +2047,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-03T14:50:21+09:00"
+      "updatedAt": "2026-09-03T19:19:43+09:00"
     }
   ]
 }
