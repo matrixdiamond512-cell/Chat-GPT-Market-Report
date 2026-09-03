@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-09-03T19:19:43+09:00",
-  "publishedAt": "2026-09-03T19:19:43+09:00",
-  "dataAsOf": "2026-09-03T19:19:43+09:00",
+  "generatedAt": "2026-09-03T23:39:00+09:00",
+  "publishedAt": "2026-09-03T23:39:00+09:00",
+  "dataAsOf": "2026-09-03T23:39:00+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -43,7 +43,7 @@
       "id": "weekly_claims_validation",
       "name": "米新規失業保険申請件数の公式検証",
       "status": "ok",
-      "note": "公式PDFで訂正・検証 0件、誤照合値を除外 0件。"
+      "note": "公式PDFで訂正・検証 5件、誤照合値を除外 0件。"
     }
   ],
   "errors": [],
@@ -294,7 +294,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-09-03T19:19:44+09:00",
+      "updatedAt": "2026-09-03T23:39:01+09:00",
       "resultSource": {
         "id": "federal_reserve",
         "name": "Federal Reserve FOMC calendar",
@@ -549,7 +549,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-09-03T19:19:44+09:00",
+      "updatedAt": "2026-09-03T23:39:01+09:00",
       "resultSource": {
         "id": "forex_factory",
         "name": "Forex Factory Economic Calendar",
@@ -804,7 +804,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-09-03T19:19:44+09:00",
+      "updatedAt": "2026-09-03T23:39:01+09:00",
       "resultSource": {
         "id": "federal_reserve",
         "name": "Federal Reserve FOMC calendar",
@@ -1557,7 +1557,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-06T20:37:20+09:00",
-      "updatedAt": "2026-09-03T19:19:44+09:00",
+      "updatedAt": "2026-09-03T23:39:01+09:00",
       "resultFetchStatus": "unavailable"
     },
     {
@@ -1579,10 +1579,10 @@
       "importanceLabel": "中",
       "forecast": "203K",
       "previous": "197K",
-      "actual": "203K",
-      "revised": "207K",
-      "resultComparison": "市場予想と一致",
-      "resultExplanation": "実績 203K は予想 203K に対して市場予想と一致。同時刻に公表される継続受給者数との取り違えを防ぐため、米労働省の公式Weekly Claims PDFで検証しました。",
+      "actual": "206K",
+      "revised": "204K",
+      "resultComparison": "市場予想を上回る",
+      "resultExplanation": "実績 206K は予想 203K に対して市場予想を上回る。同時刻に公表される継続受給者数との取り違えを防ぐため、米労働省の公式Weekly Claims PDFで検証しました。",
       "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
@@ -1787,7 +1787,7 @@
       ],
       "conclusion": {
         "narrative": "結果確認済み",
-        "reaction": "市場予想と一致",
+        "reaction": "市場予想を上回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1805,13 +1805,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-05T23:03:06+09:00",
-      "updatedAt": "2026-09-03T19:19:44+09:00",
+      "updatedAt": "2026-09-03T23:39:02+09:00",
       "resultSource": {
         "id": "us_dol_claims_pdf",
         "name": "U.S. Department of Labor - Unemployment Insurance Weekly Claims",
         "url": "https://www.dol.gov/ui/data.pdf"
       },
-      "resultSavedAt": "2026-09-03T19:19:44+09:00",
+      "resultSavedAt": "2026-09-03T23:39:02+09:00",
       "resultExpected": true,
       "resultType": "numeric",
       "resultValidation": "official_pdf_verified"

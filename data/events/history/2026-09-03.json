@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-09-03T19:19:43+09:00",
-  "publishedAt": "2026-09-03T19:19:43+09:00",
-  "dataAsOf": "2026-09-03T19:19:43+09:00",
+  "generatedAt": "2026-09-03T23:39:00+09:00",
+  "publishedAt": "2026-09-03T23:39:00+09:00",
+  "dataAsOf": "2026-09-03T23:39:00+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -43,7 +43,7 @@
       "id": "weekly_claims_validation",
       "name": "米新規失業保険申請件数の公式検証",
       "status": "ok",
-      "note": "公式PDFで訂正・検証 0件、誤照合値を除外 0件。"
+      "note": "公式PDFで訂正・検証 5件、誤照合値を除外 0件。"
     }
   ],
   "errors": [],
@@ -294,7 +294,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-09-01T19:31:55+09:00",
-      "updatedAt": "2026-09-03T19:19:44+09:00",
+      "updatedAt": "2026-09-03T23:39:01+09:00",
       "resultSavedAt": "2026-09-03T05:59:39+09:00",
       "resultSource": {
         "id": "forex_factory",
@@ -543,8 +543,8 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-03T19:19:43+09:00",
-      "resultSavedAt": "2026-09-03T19:19:43+09:00",
+      "updatedAt": "2026-09-03T23:39:00+09:00",
+      "resultSavedAt": "2026-09-03T23:39:00+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Ministry of Finance",
@@ -796,7 +796,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-03T19:19:43+09:00"
+      "updatedAt": "2026-09-03T23:39:00+09:00"
     },
     {
       "id": "event-8b486656c9fb3d",
@@ -1042,15 +1042,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-09-03T19:19:43+09:00",
-      "updatedAt": "2026-09-03T19:19:44+09:00",
-      "resultExpected": true,
-      "resultType": "numeric",
+      "updatedAt": "2026-09-03T23:39:00+09:00",
+      "resultSavedAt": "2026-09-03T19:19:44+09:00",
       "resultSource": {
         "id": "tradingview_repair",
         "name": "Tesoro Público",
         "url": "http://www.tesoro.es"
-      },
-      "resultSavedAt": "2026-09-03T19:19:44+09:00"
+      }
     },
     {
       "id": "event-14e20c2906ae9f",
@@ -1296,15 +1294,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-09-03T19:19:43+09:00",
-      "updatedAt": "2026-09-03T19:19:44+09:00",
-      "resultExpected": true,
-      "resultType": "numeric",
+      "updatedAt": "2026-09-03T23:39:00+09:00",
+      "resultSavedAt": "2026-09-03T19:19:44+09:00",
       "resultSource": {
         "id": "tradingview_repair",
         "name": "TradingView Economic Calendar",
         "url": "https://www.iea.org"
-      },
-      "resultSavedAt": "2026-09-03T19:19:44+09:00"
+      }
     },
     {
       "id": "event-a6179216ee25d2",
@@ -1323,13 +1319,13 @@
       "ffImportance": 1,
       "importance": 2,
       "importanceLabel": "中",
-      "forecast": "",
-      "previous": "",
-      "actual": "",
+      "forecast": "数値発表なし",
+      "previous": "数値発表なし",
+      "actual": "数値発表なし（発言イベント）",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "数値の実績値が発表されるイベントではありません。発言内容と、金利・為替・株価指数先物の反応を確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1532,8 +1528,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "発言イベント終了",
+        "reaction": "発言内容と市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1551,9 +1547,15 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-03T19:19:43+09:00",
+      "updatedAt": "2026-09-03T23:39:01+09:00",
       "resultExpected": false,
-      "resultType": "qualitative"
+      "resultType": "qualitative",
+      "resultSource": {
+        "id": "federal_reserve",
+        "name": "Federal Reserve FOMC calendar",
+        "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+      },
+      "resultSavedAt": "2026-09-03T23:39:01+09:00"
     },
     {
       "id": "event-5e84914099d2a1",
@@ -1574,11 +1576,11 @@
       "importanceLabel": "中",
       "forecast": "205K",
       "previous": "203K",
-      "actual": "",
-      "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "actual": "206K",
+      "revised": "204K",
+      "resultComparison": "市場予想を上回る",
+      "resultExplanation": "実績 206K は予想 205K に対して市場予想を上回る。同時刻に公表される継続受給者数との取り違えを防ぐため、米労働省の公式Weekly Claims PDFで検証しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1781,8 +1783,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を上回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1800,7 +1802,16 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-03T19:19:43+09:00"
+      "updatedAt": "2026-09-03T23:39:02+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "us_dol_claims_pdf",
+        "name": "U.S. Department of Labor - Unemployment Insurance Weekly Claims",
+        "url": "https://www.dol.gov/ui/data.pdf"
+      },
+      "resultSavedAt": "2026-09-03T23:39:02+09:00",
+      "resultValidation": "official_pdf_verified"
     },
     {
       "id": "event-fe508b50e93f6c",
@@ -1821,11 +1832,11 @@
       "importanceLabel": "高",
       "forecast": "54.2",
       "previous": "54.1",
-      "actual": "",
+      "actual": "56.5",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultComparison": "市場予想を上回る",
+      "resultExplanation": "実績 56.5 は予想 54.2 に対して市場予想を上回る。名称差・国コード差を補正してTradingView実績データから照合しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -2028,8 +2039,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を上回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -2047,7 +2058,15 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-08-30T14:53:17+09:00",
-      "updatedAt": "2026-09-03T19:19:43+09:00"
+      "updatedAt": "2026-09-03T23:39:01+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "tradingview_repair",
+        "name": "S&P Global",
+        "url": "https://www.pmi.spglobal.com/public"
+      },
+      "resultSavedAt": "2026-09-03T23:39:01+09:00"
     }
   ]
 }
