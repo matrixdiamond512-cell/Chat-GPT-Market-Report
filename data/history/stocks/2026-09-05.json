@@ -6,7 +6,7 @@
   "updatedAt": "2026-08-22T08:04:00+09:00",
   "dataAsOf": "2026-08-17T16:00:00-04:00",
   "status": "ok",
-  "sourceStatus": "米国市場と東京市場を独立更新・市場別基準日を明示",
+  "sourceStatus": "米国市場と東京市場を独立更新・項目別基準日を明示・欠損は複数ソースで補完",
   "sources": [
     {
       "id": "INITIAL_STOCKS_HTML",
@@ -132,9 +132,9 @@
         ],
         [
           "日経VI",
-          "取得不能（対象日の確定値なし）",
-          "—",
-          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-09-04。"
+          "27.19",
+          "-1.13（-3.99%）",
+          "Nikkei 225 VI official profileの確認済み値。基準日 2026-09-04。"
         ],
         [
           "値上がり銘柄 / 値下がり銘柄",
@@ -144,9 +144,9 @@
         ],
         [
           "東証プライム売買代金",
-          "取得不能（対象日の確定値なし）",
+          "8.32 兆円",
           "—",
-          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-09-04。"
+          "トレーダーズ・ウェブ 後場概況の確定値。基準日 2026-09-04。"
         ],
         [
           "騰落レシオ（25日）",
@@ -186,12 +186,27 @@
         ]
       ],
       "dataDate": "2026-09-04",
-      "updatedAt": "2026-09-05T02:35:17+09:00",
+      "updatedAt": "2026-09-05T02:35:27+09:00",
       "source": {
-        "name": "公開ソース（exact-date fallback）",
+        "name": "東京市場確定値統合（複数ソース・項目別基準日）",
         "sheet": "",
         "reference": "data/market/japan-close-reference.json",
-        "sheetStatus": "GOOGLE_SERVICE_ACCOUNT_JSON is not configured"
+        "sheetStatus": "GOOGLE_SERVICE_ACCOUNT_JSON is not configured",
+        "supportingData": [
+          "data/market/latest.json（日経VI）",
+          "株探 日次時系列（TOPIX・グロース250）",
+          "data/nikkei225-supply-demand.json（海外投資家・週次）",
+          "トレーダーズ・ウェブ マーケットの話題（東証プライム売買代金）"
+        ],
+        "repairDiagnostics": {
+          "東証プライム売買代金": "repaired from exact-date Traders Web post-close commentary",
+          "日経225予想PER": "exact-date reference unavailable",
+          "日経225予想EPS": "exact-date reference unavailable",
+          "日経VI": "repaired from verified generic market acquisition",
+          "TOPIX": "exact target-date row not found",
+          "グロース250": "exact target-date row not found",
+          "海外投資家動向（現物）": "repaired from verified JPX weekly flow 2026-08-28"
+        }
       }
     }
   },
@@ -892,74 +907,24 @@
     "us": {
       "title": "米国市場のセクター・業種（上昇率TOP5）",
       "flag": "US",
-      "rows": [
-        {
-          "rank": 1,
-          "name": "コミュニケーション・サービス",
-          "change": "+1.78%",
-          "note": "大型ネット関連が主導。決算期待、継続性は中程度。"
-        },
-        {
-          "rank": 2,
-          "name": "ヘルスケア",
-          "change": "+1.33%",
-          "note": "ディフェンシブ買い。金利低下時に支え。"
-        },
-        {
-          "rank": 3,
-          "name": "一般消費財・サービス",
-          "change": "+1.07%",
-          "note": "選別買い。消費関連は銘柄差が残る。"
-        },
-        {
-          "rank": 4,
-          "name": "金融",
-          "change": "+0.93%",
-          "note": "景気懸念後退で買い。金利動向を確認。"
-        },
-        {
-          "rank": 5,
-          "name": "エネルギー",
-          "change": "+0.46%",
-          "note": "原油高が支援。継続性は在庫・地政学次第。"
-        }
-      ]
+      "rows": [],
+      "status": "unavailable",
+      "freshness": "unavailable",
+      "dataDate": null,
+      "asOf": null
     },
     "japan": {
-      "title": "東京市場のセクター・業種（上昇率TOP5）",
+      "title": "東京市場のセクター・業種",
       "flag": "JP",
-      "rows": [
-        {
-          "rank": 1,
-          "name": "電気機器",
-          "change": "+1.72%",
-          "note": "半導体関連が主導。米SOXとの連動を確認。"
-        },
-        {
-          "rank": 2,
-          "name": "情報・通信業",
-          "change": "+1.34%",
-          "note": "大型通信・ネット株に買い。継続性は中程度。"
-        },
-        {
-          "rank": 3,
-          "name": "輸送用機器",
-          "change": "+1.05%",
-          "note": "円安が支援。ドル円の反転に注意。"
-        },
-        {
-          "rank": 4,
-          "name": "化学",
-          "change": "+0.78%",
-          "note": "半導体材料の見直し買い。利確圧力も残る。"
-        },
-        {
-          "rank": 5,
-          "name": "銀行業",
-          "change": "+0.42%",
-          "note": "金利見通しが支え。日銀イベントを確認。"
-        }
-      ]
+      "rows": [],
+      "gainers": [],
+      "losers": [],
+      "dataAsOf": "2026-09-04",
+      "sourceLabel": "東証33業種指数",
+      "status": "unavailable",
+      "freshness": "unavailable",
+      "dataDate": null,
+      "asOf": null
     }
   },
   "contributions": {
@@ -4369,7 +4334,7 @@
       "items": [
         "S&P500 +81.11（+1.06%）・Nasdaq +366.23（+1.40%）の下落が続くか、SOX +12.88（+0.11%）が下支えを維持するか。",
         "日経225 / TOPIX / グロース250の方向と、値上がり・値下がり 788 / 712の広がり。",
-        "次回寄り付き：TOPIX 4,103.46 +0.03%、日経225先物（CME参考） 64,930.00 +0.57%。"
+        "次回寄り付き：TOPIX 4,103.23 +0.03%、日経225先物（CME参考） 65,850.00 +2.00%。"
       ]
     }
   },
@@ -4395,7 +4360,7 @@
       "items": [
         "TOPIX +1.19（+0.03%）の相対優位が続くか、グロース250 +20.73（+2.67%）の下落が縮小するかを確認。",
         "米国はSOX +12.88（+0.11%）の底堅さが、S&P500 +81.11（+1.06%）・Nasdaq +366.23（+1.40%）の下落を吸収できるかが分岐。",
-        "寄り付き確認：TOPIX 4,103.46 +0.03%。"
+        "寄り付き確認：TOPIX 4,103.23 +0.03%。"
       ]
     },
     {
@@ -4520,7 +4485,7 @@
     "japan": "2026-09-04"
   },
   "marketUpdatedAt": {
-    "japan": "2026-09-05T02:35:17+09:00",
+    "japan": "2026-09-05T02:35:27+09:00",
     "us": "2026-09-04T08:33:02+09:00"
   },
   "nikkeiMetricsAsOf": "2026-09-04",
@@ -22817,7 +22782,7 @@
   "judgementUpdatedAt": "2026-08-22T08:04:00+09:00",
   "judgementSource": "data/stocks.json（指数・市場内部・セクター・上昇下落銘柄・セッション分析）",
   "snapshotDate": "2026-09-05",
-  "savedAt": "2026-09-05T02:35:17+09:00",
+  "savedAt": "2026-09-05T02:42:12+09:00",
   "snapshotPolicy": {
     "type": "independent-market-session-dates",
     "description": "米国市場と東京市場は、それぞれの取引終了後に独立更新。未更新側は直前の確定データを保持する。"
