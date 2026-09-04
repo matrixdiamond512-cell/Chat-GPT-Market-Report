@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.1.0",
   "pageId": "market-data",
-  "generatedAt": "2026-09-04T09:18:25+09:00",
+  "generatedAt": "2026-09-04T09:21:31+09:00",
   "reportSlot": "08:00",
   "overallStatus": "verified",
   "missingRequired": [],
@@ -318,133 +318,14 @@
       "retryPreserved": false
     }
   },
-  "errors": [
-    {
-      "symbol": "gold",
-      "sourceId": "stooq_xauusd",
-      "code": "HTTP_404",
-      "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 1
-    },
-    {
-      "symbol": "gold",
-      "sourceId": "stooq_xauusd",
-      "code": "HTTP_404",
-      "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 2
-    },
-    {
-      "symbol": "gold",
-      "sourceId": "stooq_xauusd",
-      "code": "HTTP_404",
-      "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 3
-    },
-    {
-      "symbol": "wti",
-      "sourceId": "stooq_cl_f",
-      "code": "HTTP_404",
-      "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 1
-    },
-    {
-      "symbol": "wti",
-      "sourceId": "stooq_cl_f",
-      "code": "HTTP_404",
-      "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 2
-    },
-    {
-      "symbol": "wti",
-      "sourceId": "stooq_cl_f",
-      "code": "HTTP_404",
-      "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 3
-    },
-    {
-      "symbol": "nikkei225_futures_ose",
-      "sourceId": "nikkei_nk225f_profile",
-      "code": "REFERENCE_ONLY",
-      "message": "reference source is not allowed for dashboard publication"
-    },
-    {
-      "symbol": "usdjpy",
-      "sourceId": "stooq_usdjpy",
-      "code": "HTTP_404",
-      "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 1
-    },
-    {
-      "symbol": "usdjpy",
-      "sourceId": "stooq_usdjpy",
-      "code": "HTTP_404",
-      "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 2
-    },
-    {
-      "symbol": "usdjpy",
-      "sourceId": "stooq_usdjpy",
-      "code": "HTTP_404",
-      "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 3
-    },
-    {
-      "symbol": "eurusd",
-      "sourceId": "stooq_eurusd",
-      "code": "HTTP_404",
-      "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 1
-    },
-    {
-      "symbol": "eurusd",
-      "sourceId": "stooq_eurusd",
-      "code": "HTTP_404",
-      "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 2
-    },
-    {
-      "symbol": "eurusd",
-      "sourceId": "stooq_eurusd",
-      "code": "HTTP_404",
-      "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 3
-    },
-    {
-      "symbol": "btcusd",
-      "sourceId": "stooq_btcusd",
-      "code": "HTTP_404",
-      "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 1
-    },
-    {
-      "symbol": "btcusd",
-      "sourceId": "stooq_btcusd",
-      "code": "HTTP_404",
-      "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 2
-    },
-    {
-      "symbol": "btcusd",
-      "sourceId": "stooq_btcusd",
-      "code": "HTTP_404",
-      "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 3
-    }
-  ],
+  "errors": [],
   "acquisition": {
     "strategy": "staged_retry",
     "windowStartedAt": "2026-09-04T08:20:57+09:00",
-    "lastAttemptAt": "2026-09-04T09:18:25+09:00",
-    "runCount": 5,
+    "lastAttemptAt": "2026-09-04T09:21:31+09:00",
+    "runCount": 6,
     "mode": "incremental",
-    "targetedSymbols": [
-      "gold",
-      "wti",
-      "nikkei225_futures_ose",
-      "usdjpy",
-      "eurusd",
-      "btcusd"
-    ],
+    "targetedSymbols": [],
     "recoveredSymbols": [],
     "preservedVerifiedSymbols": [],
     "remainingFallback": [],
