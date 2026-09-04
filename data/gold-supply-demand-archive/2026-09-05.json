@@ -1,0 +1,2798 @@
+{
+  "schemaVersion": "1.0.0",
+  "pageId": "gold-supply-demand",
+  "reportDate": "2026-09-05",
+  "generatedAt": "2026-09-05T01:18:03+09:00",
+  "gold": {
+    "schemaVersion": "2.0.0",
+    "pageTitle": "ゴールド需給分析",
+    "subtitle": "COMEX先物・投機筋・ETF・中国/インド現物需要から総合判定",
+    "generatedAt": "2026-09-05T01:18:03+09:00",
+    "comex": {
+      "status": "preserved_after_fetch_error",
+      "asOfDate": "2026-08-06",
+      "volume": 201455,
+      "openInterest": 389008,
+      "openInterestChange": -2323,
+      "alignedPrice": null,
+      "alignedPriceChangePercent": null,
+      "interpretation": null,
+      "sourceName": "CME Group Daily Bulletin",
+      "sourceUrl": "https://www.cmegroup.com/daily_bulletin/current/Section02B_Summary_Volume_And_Open_Interest_Metals_Futures_And_Options.pdf",
+      "note": "CME Daily Bulletin PG02BのGC COMEX GOLD FUTURES。価格×建玉判定は同一基準日の価格取得後に実施。",
+      "error": "CME取得失敗: RuntimeError: HTTP取得失敗（3回試行）: HTTPSConnectionPool(host='www.cmegroup.com', port=443): Read timed out. (read timeout=45)",
+      "lastAttemptAt": "2026-09-05T01:19:41+09:00"
+    },
+    "cftc": {
+      "status": "verified",
+      "asOfDate": "2026-08-25",
+      "managedMoneyLong": 159819,
+      "managedMoneyShort": 15072,
+      "managedMoneyNet": 144747,
+      "managedMoneyNetChange": 3099,
+      "openInterest": 427957,
+      "judgement": "投機筋の買い増加",
+      "sourceName": "CFTC Disaggregated COT - Futures Only",
+      "sourceUrl": "https://publicreporting.cftc.gov/Commitments-of-Traders/Disaggregated-Futures-Only/72hh-3qpy",
+      "fetchedAt": "2026-09-05T01:19:42+09:00",
+      "historyWeeks": [
+        {
+          "asOfDate": "2025-09-02",
+          "long": 196127,
+          "short": 34625,
+          "net": 161502,
+          "openInterest": 492908,
+          "goldPrice": 3549.4,
+          "longChange": null,
+          "shortChange": null,
+          "netChange": null
+        },
+        {
+          "asOfDate": "2025-09-09",
+          "long": 198907,
+          "short": 35388,
+          "net": 163519,
+          "openInterest": 509625,
+          "goldPrice": 3643.3,
+          "longChange": 2780,
+          "shortChange": 763,
+          "netChange": 2017
+        },
+        {
+          "asOfDate": "2025-09-16",
+          "long": 195347,
+          "short": 36376,
+          "net": 158971,
+          "openInterest": 516221,
+          "goldPrice": 3688.9,
+          "longChange": -3560,
+          "shortChange": 988,
+          "netChange": -4548
+        },
+        {
+          "asOfDate": "2025-09-23",
+          "long": 198826,
+          "short": 38277,
+          "net": 160549,
+          "openInterest": 528789,
+          "goldPrice": 3780.6,
+          "longChange": 3479,
+          "shortChange": 1901,
+          "netChange": 1578
+        },
+        {
+          "asOfDate": "2025-09-30",
+          "long": 184199,
+          "short": 38972,
+          "net": 145227,
+          "openInterest": 493748,
+          "goldPrice": 3840.8,
+          "longChange": -14627,
+          "shortChange": 695,
+          "netChange": -15322
+        },
+        {
+          "asOfDate": "2025-10-07",
+          "long": 170587,
+          "short": 40828,
+          "net": 129759,
+          "openInterest": 485559,
+          "goldPrice": 3976.6,
+          "longChange": -13612,
+          "shortChange": 1856,
+          "netChange": -15468
+        },
+        {
+          "asOfDate": "2025-10-14",
+          "long": 152187,
+          "short": 43877,
+          "net": 108310,
+          "openInterest": 485788,
+          "goldPrice": 4138.7,
+          "longChange": -18400,
+          "shortChange": 3049,
+          "netChange": -21449
+        },
+        {
+          "asOfDate": "2025-10-21",
+          "long": 135503,
+          "short": 43276,
+          "net": 92227,
+          "openInterest": 472421,
+          "goldPrice": 4087.7,
+          "longChange": -16684,
+          "shortChange": -601,
+          "netChange": -16083
+        },
+        {
+          "asOfDate": "2025-10-28",
+          "long": 138605,
+          "short": 34446,
+          "net": 104159,
+          "openInterest": 457122,
+          "goldPrice": 3966.2,
+          "longChange": 3102,
+          "shortChange": -8830,
+          "netChange": 11932
+        },
+        {
+          "asOfDate": "2025-11-04",
+          "long": 130688,
+          "short": 30143,
+          "net": 100545,
+          "openInterest": 450399,
+          "goldPrice": 3947.7,
+          "longChange": -7917,
+          "shortChange": -4303,
+          "netChange": -3614
+        },
+        {
+          "asOfDate": "2025-11-10",
+          "long": 134155,
+          "short": 30068,
+          "net": 104087,
+          "openInterest": 459997,
+          "goldPrice": 4111.8,
+          "longChange": 3467,
+          "shortChange": -75,
+          "netChange": 3542
+        },
+        {
+          "asOfDate": "2025-11-18",
+          "long": 130222,
+          "short": 32017,
+          "net": 98205,
+          "openInterest": 471953,
+          "goldPrice": 4061.3,
+          "longChange": -3933,
+          "shortChange": 1949,
+          "netChange": -5882
+        },
+        {
+          "asOfDate": "2025-11-25",
+          "long": 136979,
+          "short": 27670,
+          "net": 109309,
+          "openInterest": 432946,
+          "goldPrice": 4139.2,
+          "longChange": 6757,
+          "shortChange": -4347,
+          "netChange": 11104
+        },
+        {
+          "asOfDate": "2025-12-02",
+          "long": 140143,
+          "short": 19819,
+          "net": 120324,
+          "openInterest": 418490,
+          "goldPrice": 4186.6,
+          "longChange": 3164,
+          "shortChange": -7851,
+          "netChange": 11015
+        },
+        {
+          "asOfDate": "2025-12-09",
+          "long": 143383,
+          "short": 19835,
+          "net": 123548,
+          "openInterest": 432569,
+          "goldPrice": 4206.7,
+          "longChange": 3240,
+          "shortChange": 16,
+          "netChange": 3224
+        },
+        {
+          "asOfDate": "2025-12-16",
+          "long": 152873,
+          "short": 20277,
+          "net": 132596,
+          "openInterest": 471093,
+          "goldPrice": 4304.5,
+          "longChange": 9490,
+          "shortChange": 442,
+          "netChange": 9048
+        },
+        {
+          "asOfDate": "2025-12-23",
+          "long": 160581,
+          "short": 24311,
+          "net": 136270,
+          "openInterest": 492103,
+          "goldPrice": 4482.8,
+          "longChange": 7708,
+          "shortChange": 4034,
+          "netChange": 3674
+        },
+        {
+          "asOfDate": "2025-12-30",
+          "long": 148642,
+          "short": 22602,
+          "net": 126040,
+          "openInterest": 481866,
+          "goldPrice": 4370.1,
+          "longChange": -11939,
+          "shortChange": -1709,
+          "netChange": -10230
+        },
+        {
+          "asOfDate": "2026-01-06",
+          "long": 146445,
+          "short": 23232,
+          "net": 123213,
+          "openInterest": 488116,
+          "goldPrice": 4482.2,
+          "longChange": -2197,
+          "shortChange": 630,
+          "netChange": -2827
+        },
+        {
+          "asOfDate": "2026-01-13",
+          "long": 158825,
+          "short": 24080,
+          "net": 134745,
+          "openInterest": 527455,
+          "goldPrice": 4589.2,
+          "longChange": 12380,
+          "shortChange": 848,
+          "netChange": 11532
+        },
+        {
+          "asOfDate": "2026-01-20",
+          "long": 163668,
+          "short": 26224,
+          "net": 137444,
+          "openInterest": 528004,
+          "goldPrice": 4759.6,
+          "longChange": 4843,
+          "shortChange": 2144,
+          "netChange": 2699
+        },
+        {
+          "asOfDate": "2026-01-27",
+          "long": 143321,
+          "short": 25162,
+          "net": 118159,
+          "openInterest": 488463,
+          "goldPrice": 5079.9,
+          "longChange": -20347,
+          "shortChange": -1062,
+          "netChange": -19285
+        },
+        {
+          "asOfDate": "2026-02-03",
+          "long": 118936,
+          "short": 26864,
+          "net": 92072,
+          "openInterest": 409694,
+          "goldPrice": 4903.7,
+          "longChange": -24385,
+          "shortChange": 1702,
+          "netChange": -26087
+        },
+        {
+          "asOfDate": "2026-02-10",
+          "long": 119232,
+          "short": 27210,
+          "net": 92022,
+          "openInterest": 404391,
+          "goldPrice": 5003.8,
+          "longChange": 296,
+          "shortChange": 346,
+          "netChange": -50
+        },
+        {
+          "asOfDate": "2026-02-17",
+          "long": 123011,
+          "short": 27118,
+          "net": 95893,
+          "openInterest": 407078,
+          "goldPrice": 4882.9,
+          "longChange": 3779,
+          "shortChange": -92,
+          "netChange": 3871
+        },
+        {
+          "asOfDate": "2026-02-24",
+          "long": 121233,
+          "short": 25259,
+          "net": 95974,
+          "openInterest": 420182,
+          "goldPrice": 5155.8,
+          "longChange": -1778,
+          "shortChange": -1859,
+          "netChange": 81
+        },
+        {
+          "asOfDate": "2026-03-03",
+          "long": 123456,
+          "short": 25539,
+          "net": 97917,
+          "openInterest": 409789,
+          "goldPrice": 5107.4,
+          "longChange": 2223,
+          "shortChange": 280,
+          "netChange": 1943
+        },
+        {
+          "asOfDate": "2026-03-10",
+          "long": 125077,
+          "short": 26678,
+          "net": 98399,
+          "openInterest": 413956,
+          "goldPrice": 5229.7,
+          "longChange": 1621,
+          "shortChange": 1139,
+          "netChange": 482
+        },
+        {
+          "asOfDate": "2026-03-17",
+          "long": 130147,
+          "short": 28104,
+          "net": 102043,
+          "openInterest": 411388,
+          "goldPrice": 5001.0,
+          "longChange": 5070,
+          "shortChange": 1426,
+          "netChange": 3644
+        },
+        {
+          "asOfDate": "2026-03-24",
+          "long": 119562,
+          "short": 27941,
+          "net": 91621,
+          "openInterest": 403925,
+          "goldPrice": 4399.3,
+          "longChange": -10585,
+          "shortChange": -163,
+          "netChange": -10422
+        },
+        {
+          "asOfDate": "2026-03-31",
+          "long": 120092,
+          "short": 27278,
+          "net": 92814,
+          "openInterest": 361409,
+          "goldPrice": 4647.6,
+          "longChange": 530,
+          "shortChange": -663,
+          "netChange": 1193
+        },
+        {
+          "asOfDate": "2026-04-07",
+          "long": 120726,
+          "short": 30694,
+          "net": 90032,
+          "openInterest": 354877,
+          "goldPrice": 4657.1,
+          "longChange": 634,
+          "shortChange": 3416,
+          "netChange": -2782
+        },
+        {
+          "asOfDate": "2026-04-14",
+          "long": 125422,
+          "short": 30281,
+          "net": 95141,
+          "openInterest": 362274,
+          "goldPrice": 4825.0,
+          "longChange": 4696,
+          "shortChange": -413,
+          "netChange": 5109
+        },
+        {
+          "asOfDate": "2026-04-21",
+          "long": 123681,
+          "short": 30705,
+          "net": 92976,
+          "openInterest": 365842,
+          "goldPrice": 4698.4,
+          "longChange": -1741,
+          "shortChange": 424,
+          "netChange": -2165
+        },
+        {
+          "asOfDate": "2026-04-28",
+          "long": 122257,
+          "short": 32505,
+          "net": 89752,
+          "openInterest": 369530,
+          "goldPrice": 4591.5,
+          "longChange": -1424,
+          "shortChange": 1800,
+          "netChange": -3224
+        },
+        {
+          "asOfDate": "2026-05-05",
+          "long": 123353,
+          "short": 29099,
+          "net": 94254,
+          "openInterest": 367932,
+          "goldPrice": 4555.8,
+          "longChange": 1096,
+          "shortChange": -3406,
+          "netChange": 4502
+        },
+        {
+          "asOfDate": "2026-05-12",
+          "long": 127242,
+          "short": 29227,
+          "net": 98015,
+          "openInterest": 376496,
+          "goldPrice": 4677.6,
+          "longChange": 3889,
+          "shortChange": 128,
+          "netChange": 3761
+        },
+        {
+          "asOfDate": "2026-05-19",
+          "long": 122894,
+          "short": 29354,
+          "net": 93540,
+          "openInterest": 379325,
+          "goldPrice": 4506.3,
+          "longChange": -4348,
+          "shortChange": 127,
+          "netChange": -4475
+        },
+        {
+          "asOfDate": "2026-05-26",
+          "long": 124277,
+          "short": 26831,
+          "net": 97446,
+          "openInterest": 353489,
+          "goldPrice": 4500.4,
+          "longChange": 1383,
+          "shortChange": -2523,
+          "netChange": 3906
+        },
+        {
+          "asOfDate": "2026-06-02",
+          "long": 129367,
+          "short": 17188,
+          "net": 112179,
+          "openInterest": 326052,
+          "goldPrice": 4489.1,
+          "longChange": 5090,
+          "shortChange": -9643,
+          "netChange": 14733
+        },
+        {
+          "asOfDate": "2026-06-09",
+          "long": 126280,
+          "short": 20417,
+          "net": 105863,
+          "openInterest": 332709,
+          "goldPrice": 4260.0,
+          "longChange": -3087,
+          "shortChange": 3229,
+          "netChange": -6316
+        },
+        {
+          "asOfDate": "2026-06-16",
+          "long": 128043,
+          "short": 14322,
+          "net": 113721,
+          "openInterest": 339330,
+          "goldPrice": 4330.9,
+          "longChange": 1763,
+          "shortChange": -6095,
+          "netChange": 7858
+        },
+        {
+          "asOfDate": "2026-06-23",
+          "long": 131102,
+          "short": 15707,
+          "net": 115395,
+          "openInterest": 352167,
+          "goldPrice": 4129.9,
+          "longChange": 3059,
+          "shortChange": 1385,
+          "netChange": 1674
+        },
+        {
+          "asOfDate": "2026-06-30",
+          "long": 134577,
+          "short": 14486,
+          "net": 120091,
+          "openInterest": 369541,
+          "goldPrice": 4022.9,
+          "longChange": 3475,
+          "shortChange": -1221,
+          "netChange": 4696
+        },
+        {
+          "asOfDate": "2026-07-07",
+          "long": 134941,
+          "short": 18780,
+          "net": 116161,
+          "openInterest": 371776,
+          "goldPrice": 4145.3,
+          "longChange": 364,
+          "shortChange": 4294,
+          "netChange": -3930
+        },
+        {
+          "asOfDate": "2026-07-14",
+          "long": 136905,
+          "short": 16126,
+          "net": 120779,
+          "openInterest": 383689,
+          "goldPrice": 4061.1,
+          "longChange": 1964,
+          "shortChange": -2654,
+          "netChange": 4618
+        },
+        {
+          "asOfDate": "2026-07-21",
+          "long": 141487,
+          "short": 16656,
+          "net": 124831,
+          "openInterest": 383368,
+          "goldPrice": 4071.1,
+          "longChange": 4582,
+          "shortChange": 530,
+          "netChange": 4052
+        },
+        {
+          "asOfDate": "2026-07-28",
+          "long": 135093,
+          "short": 15298,
+          "net": 119795,
+          "openInterest": 384603,
+          "goldPrice": 4036.3,
+          "longChange": -6394,
+          "shortChange": -1358,
+          "netChange": -5036
+        },
+        {
+          "asOfDate": "2026-08-04",
+          "long": 139809,
+          "short": 9043,
+          "net": 130766,
+          "openInterest": 371551,
+          "goldPrice": 4095.4,
+          "longChange": 4716,
+          "shortChange": -6255,
+          "netChange": 10971
+        },
+        {
+          "asOfDate": "2026-08-11",
+          "long": 148634,
+          "short": 10972,
+          "net": 137662,
+          "openInterest": 400309,
+          "goldPrice": 4383.0,
+          "longChange": 8825,
+          "shortChange": 1929,
+          "netChange": 6896
+        },
+        {
+          "asOfDate": "2026-08-18",
+          "long": 154595,
+          "short": 12947,
+          "net": 141648,
+          "openInterest": 406260,
+          "goldPrice": 4366.0,
+          "longChange": 5961,
+          "shortChange": 1975,
+          "netChange": 3986
+        },
+        {
+          "asOfDate": "2026-08-25",
+          "long": 159819,
+          "short": 15072,
+          "net": 144747,
+          "openInterest": 427957,
+          "goldPrice": 4638.1,
+          "longChange": 5224,
+          "shortChange": 2125,
+          "netChange": 3099
+        }
+      ],
+      "historyStatus": "verified",
+      "historyWeeksCount": 52,
+      "managedMoneyLongChange": 5224,
+      "managedMoneyShortChange": 2125,
+      "goldPrice": 4638.1,
+      "historyFetchedAt": "2026-09-04T16:19:46+00:00"
+    },
+    "etf": {
+      "gld": {
+        "status": "verified",
+        "asOfDate": "2026-09-03",
+        "tonnes": 1053.48,
+        "changeTonnes": -3.1399999999998727,
+        "sourceName": "SPDR Gold Shares Historical Archive",
+        "sourceUrl": "https://www.spdrgoldshares.com/usa/gld/",
+        "fetchedAt": "2026-09-05T01:19:42+09:00"
+      },
+      "iau": {
+        "status": "verified",
+        "asOfDate": "2026-09-03",
+        "tonnes": 460.57,
+        "changeTonnes": 0.17000000000001592,
+        "sourceName": "iShares Gold Trust",
+        "sourceUrl": "https://www.ishares.com/us/products/239561/ishares-gold-trust-fund",
+        "fetchedAt": "2026-09-05T01:19:43+09:00"
+      },
+      "global": {
+        "status": "verified",
+        "asOfDate": "2026-07-31",
+        "period": "2026-07",
+        "tonnes": 4068.0,
+        "changeTonnes": 23.0,
+        "ytdChangeTonnes": null,
+        "monthlyFlowUsdBillion": null,
+        "frequency": "monthly",
+        "sourceName": "World Gold Council Gold ETF Flows",
+        "sourceUrl": "https://www.gold.org/goldhub/research/gold-etfs-holdings-and-flows/2026/08",
+        "fetchedAt": "2026-09-05T01:19:45+09:00",
+        "note": "WGC公式月次レポート本文から公開値を抽出。週次チャートがログイン必須の場合は月次公開値を使用。"
+      },
+      "gldHistory": [
+        {
+          "asOfDate": "2026-04-28",
+          "tonnes": 1040.91,
+          "changeTonnes": -3.4299999999998363
+        },
+        {
+          "asOfDate": "2026-04-29",
+          "tonnes": 1039.2,
+          "changeTonnes": -1.7100000000000364
+        },
+        {
+          "asOfDate": "2026-04-30",
+          "tonnes": 1035.77,
+          "changeTonnes": -3.4300000000000637
+        },
+        {
+          "asOfDate": "2026-05-01",
+          "tonnes": 1035.77,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-05-04",
+          "tonnes": 1035.77,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-05-05",
+          "tonnes": 1034.05,
+          "changeTonnes": -1.7200000000000273
+        },
+        {
+          "asOfDate": "2026-05-06",
+          "tonnes": 1033.2,
+          "changeTonnes": -0.849999999999909
+        },
+        {
+          "asOfDate": "2026-05-07",
+          "tonnes": 1033.48,
+          "changeTonnes": 0.2799999999999727
+        },
+        {
+          "asOfDate": "2026-05-08",
+          "tonnes": 1034.0,
+          "changeTonnes": 0.5199999999999818
+        },
+        {
+          "asOfDate": "2026-05-11",
+          "tonnes": 1036.28,
+          "changeTonnes": 2.2799999999999727
+        },
+        {
+          "asOfDate": "2026-05-12",
+          "tonnes": 1038.28,
+          "changeTonnes": 2.0
+        },
+        {
+          "asOfDate": "2026-05-13",
+          "tonnes": 1039.99,
+          "changeTonnes": 1.7100000000000364
+        },
+        {
+          "asOfDate": "2026-05-14",
+          "tonnes": 1039.99,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-05-15",
+          "tonnes": 1037.42,
+          "changeTonnes": -2.5699999999999363
+        },
+        {
+          "asOfDate": "2026-05-18",
+          "tonnes": 1038.85,
+          "changeTonnes": 1.4299999999998363
+        },
+        {
+          "asOfDate": "2026-05-19",
+          "tonnes": 1036.85,
+          "changeTonnes": -2.0
+        },
+        {
+          "asOfDate": "2026-05-20",
+          "tonnes": 1036.85,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-05-21",
+          "tonnes": 1037.71,
+          "changeTonnes": 0.8600000000001273
+        },
+        {
+          "asOfDate": "2026-05-22",
+          "tonnes": 1034.85,
+          "changeTonnes": -2.8600000000001273
+        },
+        {
+          "asOfDate": "2026-05-26",
+          "tonnes": 1034.85,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-05-27",
+          "tonnes": 1034.85,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-05-28",
+          "tonnes": 1032.57,
+          "changeTonnes": -2.2799999999999727
+        },
+        {
+          "asOfDate": "2026-05-29",
+          "tonnes": 1029.14,
+          "changeTonnes": -3.4299999999998363
+        },
+        {
+          "asOfDate": "2026-06-01",
+          "tonnes": 1028.86,
+          "changeTonnes": -0.2800000000002001
+        },
+        {
+          "asOfDate": "2026-06-02",
+          "tonnes": 1028.0,
+          "changeTonnes": -0.8599999999999
+        },
+        {
+          "asOfDate": "2026-06-03",
+          "tonnes": 1026.86,
+          "changeTonnes": -1.1400000000001
+        },
+        {
+          "asOfDate": "2026-06-04",
+          "tonnes": 1025.14,
+          "changeTonnes": -1.7199999999998
+        },
+        {
+          "asOfDate": "2026-06-05",
+          "tonnes": 1019.92,
+          "changeTonnes": -5.220000000000141
+        },
+        {
+          "asOfDate": "2026-06-08",
+          "tonnes": 1019.92,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-06-09",
+          "tonnes": 1016.49,
+          "changeTonnes": -3.42999999999995
+        },
+        {
+          "asOfDate": "2026-06-10",
+          "tonnes": 1013.64,
+          "changeTonnes": -2.8500000000000227
+        },
+        {
+          "asOfDate": "2026-06-11",
+          "tonnes": 1013.64,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-06-12",
+          "tonnes": 1013.64,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-06-15",
+          "tonnes": 1012.21,
+          "changeTonnes": -1.42999999999995
+        },
+        {
+          "asOfDate": "2026-06-16",
+          "tonnes": 1012.21,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-06-17",
+          "tonnes": 1013.07,
+          "changeTonnes": 0.8600000000000136
+        },
+        {
+          "asOfDate": "2026-06-18",
+          "tonnes": 1020.49,
+          "changeTonnes": 7.419999999999959
+        },
+        {
+          "asOfDate": "2026-06-22",
+          "tonnes": 1022.2,
+          "changeTonnes": 1.7100000000000364
+        },
+        {
+          "asOfDate": "2026-06-23",
+          "tonnes": 1017.64,
+          "changeTonnes": -4.560000000000059
+        },
+        {
+          "asOfDate": "2026-06-24",
+          "tonnes": 1013.35,
+          "changeTonnes": -4.289999999999964
+        },
+        {
+          "asOfDate": "2026-06-25",
+          "tonnes": 1007.08,
+          "changeTonnes": -6.269999999999982
+        },
+        {
+          "asOfDate": "2026-06-26",
+          "tonnes": 1005.08,
+          "changeTonnes": -2.0
+        },
+        {
+          "asOfDate": "2026-06-29",
+          "tonnes": 1005.08,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-06-30",
+          "tonnes": 1005.08,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-07-01",
+          "tonnes": 1005.36,
+          "changeTonnes": 0.2799999999999727
+        },
+        {
+          "asOfDate": "2026-07-02",
+          "tonnes": 1001.37,
+          "changeTonnes": -3.990000000000009
+        },
+        {
+          "asOfDate": "2026-07-06",
+          "tonnes": 1002.79,
+          "changeTonnes": 1.419999999999959
+        },
+        {
+          "asOfDate": "2026-07-07",
+          "tonnes": 1002.51,
+          "changeTonnes": -0.2799999999999727
+        },
+        {
+          "asOfDate": "2026-07-08",
+          "tonnes": 1002.51,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-07-09",
+          "tonnes": 1005.65,
+          "changeTonnes": 3.1399999999999864
+        },
+        {
+          "asOfDate": "2026-07-10",
+          "tonnes": 1002.45,
+          "changeTonnes": -3.199999999999932
+        },
+        {
+          "asOfDate": "2026-07-13",
+          "tonnes": 1002.45,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-07-14",
+          "tonnes": 1004.45,
+          "changeTonnes": 2.0
+        },
+        {
+          "asOfDate": "2026-07-15",
+          "tonnes": 1001.88,
+          "changeTonnes": -2.57000000000005
+        },
+        {
+          "asOfDate": "2026-07-16",
+          "tonnes": 1001.88,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-07-17",
+          "tonnes": 999.02,
+          "changeTonnes": -2.8600000000000136
+        },
+        {
+          "asOfDate": "2026-07-20",
+          "tonnes": 1003.59,
+          "changeTonnes": 4.57000000000005
+        },
+        {
+          "asOfDate": "2026-07-21",
+          "tonnes": 1005.87,
+          "changeTonnes": 2.2799999999999727
+        },
+        {
+          "asOfDate": "2026-07-22",
+          "tonnes": 1007.87,
+          "changeTonnes": 2.0
+        },
+        {
+          "asOfDate": "2026-07-23",
+          "tonnes": 1009.3,
+          "changeTonnes": 1.42999999999995
+        },
+        {
+          "asOfDate": "2026-07-24",
+          "tonnes": 1009.3,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-07-27",
+          "tonnes": 1009.3,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-07-28",
+          "tonnes": 1008.73,
+          "changeTonnes": -0.5699999999999363
+        },
+        {
+          "asOfDate": "2026-07-29",
+          "tonnes": 1009.3,
+          "changeTonnes": 0.5699999999999363
+        },
+        {
+          "asOfDate": "2026-07-30",
+          "tonnes": 1007.87,
+          "changeTonnes": -1.42999999999995
+        },
+        {
+          "asOfDate": "2026-07-31",
+          "tonnes": 1007.01,
+          "changeTonnes": -0.8600000000000136
+        },
+        {
+          "asOfDate": "2026-08-03",
+          "tonnes": 1005.87,
+          "changeTonnes": -1.1399999999999864
+        },
+        {
+          "asOfDate": "2026-08-04",
+          "tonnes": 1009.3,
+          "changeTonnes": 3.42999999999995
+        },
+        {
+          "asOfDate": "2026-08-05",
+          "tonnes": 1014.15,
+          "changeTonnes": 4.850000000000023
+        },
+        {
+          "asOfDate": "2026-08-06",
+          "tonnes": 1014.72,
+          "changeTonnes": 0.57000000000005
+        },
+        {
+          "asOfDate": "2026-08-07",
+          "tonnes": 1017.54,
+          "changeTonnes": 2.8199999999999363
+        },
+        {
+          "asOfDate": "2026-08-10",
+          "tonnes": 1020.96,
+          "changeTonnes": 3.4200000000000728
+        },
+        {
+          "asOfDate": "2026-08-11",
+          "tonnes": 1022.67,
+          "changeTonnes": 1.7099999999999227
+        },
+        {
+          "asOfDate": "2026-08-12",
+          "tonnes": 1025.81,
+          "changeTonnes": 3.1399999999999864
+        },
+        {
+          "asOfDate": "2026-08-13",
+          "tonnes": 1023.24,
+          "changeTonnes": -2.5699999999999363
+        },
+        {
+          "asOfDate": "2026-08-14",
+          "tonnes": 1023.53,
+          "changeTonnes": 0.2899999999999636
+        },
+        {
+          "asOfDate": "2026-08-17",
+          "tonnes": 1030.66,
+          "changeTonnes": 7.130000000000109
+        },
+        {
+          "asOfDate": "2026-08-18",
+          "tonnes": 1025.24,
+          "changeTonnes": -5.420000000000073
+        },
+        {
+          "asOfDate": "2026-08-19",
+          "tonnes": 1034.65,
+          "changeTonnes": 9.410000000000082
+        },
+        {
+          "asOfDate": "2026-08-20",
+          "tonnes": 1038.93,
+          "changeTonnes": 4.279999999999973
+        },
+        {
+          "asOfDate": "2026-08-21",
+          "tonnes": 1047.21,
+          "changeTonnes": 8.279999999999973
+        },
+        {
+          "asOfDate": "2026-08-24",
+          "tonnes": 1049.49,
+          "changeTonnes": 2.2799999999999727
+        },
+        {
+          "asOfDate": "2026-08-25",
+          "tonnes": 1048.35,
+          "changeTonnes": -1.1400000000001
+        },
+        {
+          "asOfDate": "2026-08-26",
+          "tonnes": 1045.5,
+          "changeTonnes": -2.849999999999909
+        },
+        {
+          "asOfDate": "2026-08-27",
+          "tonnes": 1046.64,
+          "changeTonnes": 1.1400000000001
+        },
+        {
+          "asOfDate": "2026-08-28",
+          "tonnes": 1042.36,
+          "changeTonnes": -4.2800000000002
+        },
+        {
+          "asOfDate": "2026-08-31",
+          "tonnes": 1042.36,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-09-01",
+          "tonnes": 1046.64,
+          "changeTonnes": 4.2800000000002
+        },
+        {
+          "asOfDate": "2026-09-02",
+          "tonnes": 1056.62,
+          "changeTonnes": 9.97999999999979
+        },
+        {
+          "asOfDate": "2026-09-03",
+          "tonnes": 1053.48,
+          "changeTonnes": -3.1399999999998727
+        }
+      ],
+      "iauHistory": [
+        {
+          "asOfDate": "2026-08-07",
+          "tonnes": 457.89,
+          "changeTonnes": -1.1200000000000045
+        },
+        {
+          "asOfDate": "2026-08-10",
+          "tonnes": 456.84,
+          "changeTonnes": -1.0500000000000114
+        },
+        {
+          "asOfDate": "2026-08-11",
+          "tonnes": 456.84,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-08-12",
+          "tonnes": 456.84,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-08-13",
+          "tonnes": 456.32,
+          "changeTonnes": -0.5199999999999818
+        },
+        {
+          "asOfDate": "2026-08-14",
+          "tonnes": 456.49,
+          "changeTonnes": 0.17000000000001592
+        },
+        {
+          "asOfDate": "2026-08-17",
+          "tonnes": 456.2,
+          "changeTonnes": -0.29000000000002046
+        },
+        {
+          "asOfDate": "2026-08-18",
+          "tonnes": 456.2,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-08-19",
+          "tonnes": 456.75,
+          "changeTonnes": 0.5500000000000114
+        },
+        {
+          "asOfDate": "2026-08-20",
+          "tonnes": 457.81,
+          "changeTonnes": 1.0600000000000023
+        },
+        {
+          "asOfDate": "2026-08-21",
+          "tonnes": 458.65,
+          "changeTonnes": 0.839999999999975
+        },
+        {
+          "asOfDate": "2026-08-24",
+          "tonnes": 460.12,
+          "changeTonnes": 1.4700000000000273
+        },
+        {
+          "asOfDate": "2026-08-25",
+          "tonnes": 460.5,
+          "changeTonnes": 0.37999999999999545
+        },
+        {
+          "asOfDate": "2026-08-26",
+          "tonnes": 460.5,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-08-27",
+          "tonnes": 460.85,
+          "changeTonnes": 0.35000000000002274
+        },
+        {
+          "asOfDate": "2026-08-28",
+          "tonnes": 460.85,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-08-31",
+          "tonnes": 460.5,
+          "changeTonnes": -0.35000000000002274
+        },
+        {
+          "asOfDate": "2026-09-01",
+          "tonnes": 460.5,
+          "changeTonnes": 0.0
+        },
+        {
+          "asOfDate": "2026-09-02",
+          "tonnes": 460.4,
+          "changeTonnes": -0.10000000000002274
+        },
+        {
+          "asOfDate": "2026-09-03",
+          "tonnes": 460.57,
+          "changeTonnes": 0.17000000000001592
+        }
+      ],
+      "historyDaily": [
+        {
+          "asOfDate": "2026-08-07",
+          "gldTonnes": 1017.54,
+          "iauTonnes": 457.89,
+          "gldChangeTonnes": 2.8199999999999363,
+          "iauChangeTonnes": -1.1200000000000045,
+          "combinedChangeTonnes": 1.6999999999999318,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-10",
+          "gldTonnes": 1020.96,
+          "iauTonnes": 456.84,
+          "gldChangeTonnes": 3.4200000000000728,
+          "iauChangeTonnes": -1.0500000000000114,
+          "combinedChangeTonnes": 2.3700000000000614,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-11",
+          "gldTonnes": 1022.67,
+          "iauTonnes": 456.84,
+          "gldChangeTonnes": 1.7099999999999227,
+          "iauChangeTonnes": 0.0,
+          "combinedChangeTonnes": 1.7099999999999227,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-12",
+          "gldTonnes": 1025.81,
+          "iauTonnes": 456.84,
+          "gldChangeTonnes": 3.1399999999999864,
+          "iauChangeTonnes": 0.0,
+          "combinedChangeTonnes": 3.1399999999999864,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-13",
+          "gldTonnes": 1023.24,
+          "iauTonnes": 456.32,
+          "gldChangeTonnes": -2.5699999999999363,
+          "iauChangeTonnes": -0.5199999999999818,
+          "combinedChangeTonnes": -3.089999999999918,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-14",
+          "gldTonnes": 1023.53,
+          "iauTonnes": 456.49,
+          "gldChangeTonnes": 0.2899999999999636,
+          "iauChangeTonnes": 0.17000000000001592,
+          "combinedChangeTonnes": 0.45999999999997954,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-17",
+          "gldTonnes": 1030.66,
+          "iauTonnes": 456.2,
+          "gldChangeTonnes": 7.130000000000109,
+          "iauChangeTonnes": -0.29000000000002046,
+          "combinedChangeTonnes": 6.840000000000089,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-18",
+          "gldTonnes": 1025.24,
+          "iauTonnes": 456.2,
+          "gldChangeTonnes": -5.420000000000073,
+          "iauChangeTonnes": 0.0,
+          "combinedChangeTonnes": -5.420000000000073,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-19",
+          "gldTonnes": 1034.65,
+          "iauTonnes": 456.75,
+          "gldChangeTonnes": 9.410000000000082,
+          "iauChangeTonnes": 0.5500000000000114,
+          "combinedChangeTonnes": 9.960000000000093,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-20",
+          "gldTonnes": 1038.93,
+          "iauTonnes": 457.81,
+          "gldChangeTonnes": 4.279999999999973,
+          "iauChangeTonnes": 1.0600000000000023,
+          "combinedChangeTonnes": 5.339999999999975,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-21",
+          "gldTonnes": 1047.21,
+          "iauTonnes": 458.65,
+          "gldChangeTonnes": 8.279999999999973,
+          "iauChangeTonnes": 0.839999999999975,
+          "combinedChangeTonnes": 9.119999999999948,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-24",
+          "gldTonnes": 1049.49,
+          "iauTonnes": 460.12,
+          "gldChangeTonnes": 2.2799999999999727,
+          "iauChangeTonnes": 1.4700000000000273,
+          "combinedChangeTonnes": 3.75,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-25",
+          "gldTonnes": 1048.35,
+          "iauTonnes": 460.5,
+          "gldChangeTonnes": -1.1400000000001,
+          "iauChangeTonnes": 0.37999999999999545,
+          "combinedChangeTonnes": -0.7600000000001046,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-26",
+          "gldTonnes": 1045.5,
+          "iauTonnes": 460.5,
+          "gldChangeTonnes": -2.849999999999909,
+          "iauChangeTonnes": 0.0,
+          "combinedChangeTonnes": -2.849999999999909,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-27",
+          "gldTonnes": 1046.64,
+          "iauTonnes": 460.85,
+          "gldChangeTonnes": 1.1400000000001,
+          "iauChangeTonnes": 0.35000000000002274,
+          "combinedChangeTonnes": 1.4900000000001228,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-28",
+          "gldTonnes": 1042.36,
+          "iauTonnes": 460.85,
+          "gldChangeTonnes": -4.2800000000002,
+          "iauChangeTonnes": 0.0,
+          "combinedChangeTonnes": -4.2800000000002,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-08-31",
+          "gldTonnes": 1042.36,
+          "iauTonnes": 460.5,
+          "gldChangeTonnes": 0.0,
+          "iauChangeTonnes": -0.35000000000002274,
+          "combinedChangeTonnes": -0.35000000000002274,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-09-01",
+          "gldTonnes": 1046.64,
+          "iauTonnes": 460.5,
+          "gldChangeTonnes": 4.2800000000002,
+          "iauChangeTonnes": 0.0,
+          "combinedChangeTonnes": 4.2800000000002,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-09-02",
+          "gldTonnes": 1056.62,
+          "iauTonnes": 460.4,
+          "gldChangeTonnes": 9.97999999999979,
+          "iauChangeTonnes": -0.10000000000002274,
+          "combinedChangeTonnes": 9.879999999999768,
+          "aligned": true
+        },
+        {
+          "asOfDate": "2026-09-03",
+          "gldTonnes": 1053.48,
+          "iauTonnes": 460.57,
+          "gldChangeTonnes": -3.1399999999998727,
+          "iauChangeTonnes": 0.17000000000001592,
+          "combinedChangeTonnes": -2.9699999999998568,
+          "aligned": true
+        }
+      ],
+      "historyDaysCount": 20,
+      "historyStatus": "verified",
+      "historyFallback": null
+    },
+    "physical": {
+      "status": "unavailable",
+      "frequency": "weekly",
+      "sourceName": "World Gold Council Local gold price premium/discount",
+      "sourceUrl": "https://www.gold.org/goldhub/data/gold-premium",
+      "fetchedAt": "2026-09-05T01:19:44+09:00",
+      "error": "WGC現物プレミアム取得不能: RuntimeError: HTTP取得失敗（1回試行）: 403 Client Error: Forbidden for url: https://www.gold.org/download/file/11657/gold-premiums.xlsx",
+      "note": "一般公開経路を確認できないため旧値を最新値として表示しません。"
+    },
+    "curve": {
+      "status": "unavailable",
+      "implementationStatus": "not_implemented",
+      "frequency": "daily",
+      "error": "未実装・安定データソース確認中",
+      "note": "安定した無料公開データ連携を確認後に実装します。"
+    },
+    "centralBank": {
+      "status": "stale",
+      "period": "2026-05",
+      "netPurchasesTonnes": 41,
+      "sourceName": "World Gold Council central bank gold statistics",
+      "sourceUrl": "https://www.gold.org/goldhub/gold-focus/2026/07/central-bank-gold-statistics-central-banks-remain-committed-gold",
+      "note": "2026年5月の世界中央銀行純購入量。月次・構造的需給として使用。",
+      "frequency": "monthly",
+      "pBoC": {
+        "status": "verified",
+        "period": "2026-06",
+        "holdingsTonnes": 2346,
+        "monthlyPurchaseTonnes": 15,
+        "consecutivePurchaseMonths": 20,
+        "ytdPurchaseTonnes": 40,
+        "sourceName": "World Gold Council（中国人民銀行公表値の集計）",
+        "sourceUrl": "https://www.gold.org/goldhub/gold-focus/2026/07/china-gold-market-update-june-concludes-divided-h1",
+        "note": "中国人民銀行の2026年6月末公表値。中国の金輸入量とは別の公的需要として扱い、合算しない。",
+        "frequency": "monthly"
+      }
+    },
+    "environment": {
+      "realYield10y": {
+        "status": "verified",
+        "asOfDate": "2026-09-02",
+        "value": 2.45,
+        "change": 0.010000000000000231,
+        "sourceName": "FRED DFII10",
+        "sourceUrl": "https://fred.stlouisfed.org/series/DFII10",
+        "label": "米10年実質金利",
+        "fetchedAt": "2026-09-05T01:19:44+09:00"
+      },
+      "dollarBroad": {
+        "status": "verified",
+        "asOfDate": "2026-08-28",
+        "value": 118.7479,
+        "change": 0.3896000000000015,
+        "sourceName": "FRED DTWEXBGS",
+        "sourceUrl": "https://fred.stlouisfed.org/series/DTWEXBGS",
+        "label": "米ドル実効指数（Broad）",
+        "fetchedAt": "2026-09-05T01:19:44+09:00"
+      },
+      "usdjpy": {
+        "status": "verified",
+        "asOfDateTime": "2026-09-04T21:05:42+09:00",
+        "value": 156.223,
+        "change": -2.700004150390612,
+        "changePercent": -1.6989385299031823,
+        "sourceName": "Yahoo Finance USD/JPY",
+        "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/"
+      }
+    },
+    "assessment": {
+      "shortTerm": "売り優勢",
+      "structural": "買い需要あり（確認項目限定）",
+      "score": 32,
+      "components": [
+        {
+          "name": "CFTC",
+          "score": 1.0
+        },
+        {
+          "name": "ETF",
+          "score": -1.0
+        },
+        {
+          "name": "実質金利",
+          "score": -1.0
+        },
+        {
+          "name": "ドル",
+          "score": -1.0
+        }
+      ]
+    },
+    "dataStatus": {
+      "connected": 5,
+      "total": 7
+    },
+    "aiSummary": [
+      "金先物は前回比+0.54%です。COMEXの出来高・建玉は別の基準日で表示し、日付を合わせられた場合だけ価格×建玉判定を行います。",
+      "COMEX出来高・建玉は取得待ちです。取得不能時は推測値を表示しません。",
+      "CFTC Managed Moneyのネットは144,747枚、前週比+3,099枚です。週次データとして短期需給に反映します。",
+      "主要金ETF保有量は GLD 1053.48t / IAU 460.57t。金融需要の実流入・流出を先物と分けて確認します。",
+      "中国・インドの現物プレミアムはWGCの公開更新を確認できる場合だけ表示します。ログイン等で取得できない場合は前回値を捏造せず保留します。"
+    ]
+  },
+  "market": {
+    "schemaVersion": "1.1.0",
+    "pageId": "market-data",
+    "generatedAt": "2026-09-04T21:05:35+09:00",
+    "reportSlot": "16:00",
+    "overallStatus": "verified",
+    "missingRequired": [],
+    "fallbackCount": 0,
+    "markets": {
+      "gold": {
+        "id": "gold",
+        "displayName": "金",
+        "dashboardKey": "gold",
+        "value": 4515.8,
+        "displayValue": "4,515.80",
+        "previousClose": 4491.7001953125,
+        "change": 24.099804687500182,
+        "changePercent": 0.5365408117097958,
+        "changeText": "+24.10 / +0.54%",
+        "unit": "USD/oz",
+        "marketType": "continuous_futures",
+        "session": "global",
+        "asOf": "2026-09-04T20:55:32+09:00",
+        "fetchedAt": "2026-09-04T21:05:35+09:00",
+        "sourceId": "yahoo_gc_f",
+        "sourceName": "Yahoo Finance Gold Futures",
+        "sourceUrl": "https://finance.yahoo.com/quote/GC=F/",
+        "rawReference": "GC=F",
+        "classification": "",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-09-04T21:05:39+09:00",
+        "error": null,
+        "note": "",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-09-04T21:05:35+09:00",
+        "lastError": "stooq_xauusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
+        "retryPreserved": false
+      },
+      "wti": {
+        "id": "wti",
+        "displayName": "WTI原油",
+        "dashboardKey": "oil",
+        "value": 90.73,
+        "displayValue": "90.73",
+        "previousClose": 91.30000305175781,
+        "change": -0.5700030517578085,
+        "changePercent": -0.6243187652848925,
+        "changeText": "-0.57 / -0.62%",
+        "unit": "USD/bbl",
+        "marketType": "continuous_futures",
+        "session": "global",
+        "asOf": "2026-09-04T20:55:37+09:00",
+        "fetchedAt": "2026-09-04T21:05:39+09:00",
+        "sourceId": "yahoo_cl_f",
+        "sourceName": "Yahoo Finance WTI Crude Oil Futures",
+        "sourceUrl": "https://finance.yahoo.com/quote/CL=F/",
+        "rawReference": "CL=F",
+        "classification": "",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-09-04T21:05:42+09:00",
+        "error": null,
+        "note": "",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-09-04T21:05:35+09:00",
+        "lastError": "stooq_cl_f: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
+        "retryPreserved": false
+      },
+      "nikkei225_futures_ose": {
+        "id": "nikkei225_futures_ose",
+        "displayName": "日経225先物（大阪取引所）",
+        "dashboardKey": "nikkei",
+        "value": 65250.0,
+        "displayValue": "65,250",
+        "previousClose": 65020.0,
+        "change": 230.0,
+        "changePercent": 0.35373731159642485,
+        "changeText": "+230 / +0.35%",
+        "unit": "円",
+        "marketType": "futures_ose",
+        "session": "day_through",
+        "asOf": "2026-09-04T20:50:00+09:00",
+        "fetchedAt": "2026-09-04T21:05:43+09:00",
+        "sourceId": "jpx_ose_futures_quote",
+        "sourceName": "JPX/OSE Futures Quotes",
+        "sourceUrl": "https://port.jpx.co.jp/jpxhp/main/index.aspx?disptype=day_through&f=e_future",
+        "rawReference": "JPX/OSE 日経225先物 26年9月限; delayed quote endpoint; TTCODE=101.2609/O",
+        "classification": "",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-09-04T21:05:43+09:00",
+        "error": null,
+        "note": "",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-09-04T21:05:35+09:00",
+        "lastError": "nikkei_nk225f_profile: REFERENCE_ONLY: reference source is not allowed for dashboard publication",
+        "retryPreserved": false
+      },
+      "usdjpy": {
+        "id": "usdjpy",
+        "displayName": "USD/JPY",
+        "dashboardKey": "usdjpy",
+        "value": 156.223,
+        "displayValue": "156.22",
+        "previousClose": 158.92300415039062,
+        "change": -2.700004150390612,
+        "changePercent": -1.6989385299031823,
+        "changeText": "-2.70 / -1.70%",
+        "unit": "円",
+        "marketType": "spot",
+        "session": "continuous",
+        "asOf": "2026-09-04T21:05:42+09:00",
+        "fetchedAt": "2026-09-04T21:05:43+09:00",
+        "sourceId": "yahoo_jpy_x",
+        "sourceName": "Yahoo Finance USD/JPY",
+        "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
+        "rawReference": "JPY=X",
+        "classification": "",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-09-04T21:05:47+09:00",
+        "error": null,
+        "note": "",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-09-04T21:05:35+09:00",
+        "lastError": "stooq_usdjpy: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
+        "retryPreserved": false
+      },
+      "eurusd": {
+        "id": "eurusd",
+        "displayName": "EUR/USD",
+        "dashboardKey": "eurusd",
+        "value": 1.1627,
+        "displayValue": "1.16270",
+        "previousClose": 1.1585336923599243,
+        "change": 0.00416630764007575,
+        "changePercent": 0.35961903115557803,
+        "changeText": "+0.00417 / +0.36%",
+        "unit": "USD",
+        "marketType": "spot",
+        "session": "continuous",
+        "asOf": "2026-09-04T21:04:53+09:00",
+        "fetchedAt": "2026-09-04T21:05:47+09:00",
+        "sourceId": "yahoo_eurusd_x",
+        "sourceName": "Yahoo Finance EUR/USD",
+        "sourceUrl": "https://finance.yahoo.com/quote/EURUSD=X/",
+        "rawReference": "EURUSD=X",
+        "classification": "",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-09-04T21:05:50+09:00",
+        "error": null,
+        "note": "",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-09-04T21:05:35+09:00",
+        "lastError": "stooq_eurusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
+        "retryPreserved": false
+      },
+      "btcusd": {
+        "id": "btcusd",
+        "displayName": "BTCUSD",
+        "dashboardKey": "btc",
+        "value": 81225.88,
+        "displayValue": "81,226",
+        "previousClose": 81271.7421875,
+        "change": -45.86218749999534,
+        "changePercent": -0.05643066860088197,
+        "changeText": "-46 / -0.06%",
+        "unit": "USD",
+        "marketType": "spot_crypto",
+        "session": "continuous",
+        "asOf": "2026-09-04T21:05:43+09:00",
+        "fetchedAt": "2026-09-04T21:05:50+09:00",
+        "sourceId": "yahoo_btc_usd",
+        "sourceName": "Yahoo Finance Bitcoin USD",
+        "sourceUrl": "https://finance.yahoo.com/quote/BTC-USD/",
+        "rawReference": "BTC-USD",
+        "classification": "",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-09-04T21:05:54+09:00",
+        "error": null,
+        "note": "",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-09-04T21:05:35+09:00",
+        "lastError": "stooq_btcusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
+        "retryPreserved": false
+      },
+      "vix": {
+        "id": "vix",
+        "displayName": "VIX",
+        "dashboardKey": "vix",
+        "value": 14.32,
+        "displayValue": "14.32",
+        "previousClose": 15.2,
+        "change": -0.879999999999999,
+        "changePercent": -5.789473684210522,
+        "changeText": "-0.88 / -5.79%",
+        "unit": "pt",
+        "marketType": "index",
+        "session": "daily",
+        "asOf": "2026-09-03T09:00:00+09:00",
+        "fetchedAt": "2026-09-04T21:05:54+09:00",
+        "sourceId": "cboe_vix_history",
+        "sourceName": "Cboe VIX Historical Data",
+        "sourceUrl": "https://www.cboe.com/tradable_products/vix/vix_historical_data/",
+        "rawReference": "VIX_History.csv",
+        "classification": "",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-09-04T21:05:54+09:00",
+        "error": null,
+        "note": "",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-09-04T21:05:35+09:00",
+        "lastError": "",
+        "retryPreserved": false
+      },
+      "nikkei_vi": {
+        "id": "nikkei_vi",
+        "displayName": "日経VI",
+        "dashboardKey": "nikkei_vi",
+        "value": 27.19,
+        "displayValue": "27.19",
+        "previousClose": 28.32,
+        "change": -1.13,
+        "changePercent": -3.99,
+        "changeText": "-1.13 / -3.99%",
+        "unit": "pt",
+        "marketType": "index",
+        "session": "daily",
+        "asOf": "2026-09-04T15:50:00+09:00",
+        "fetchedAt": "2026-09-04T21:05:55+09:00",
+        "sourceId": "nikkei_nk225vi_profile",
+        "sourceName": "Nikkei 225 VI official profile",
+        "sourceUrl": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
+        "rawReference": "Nikkei Stock Average Volatility Index",
+        "classification": "",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-09-04T21:05:55+09:00",
+        "error": null,
+        "note": "",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-09-04T21:05:35+09:00",
+        "lastError": "",
+        "retryPreserved": false
+      },
+      "fear_greed": {
+        "id": "fear_greed",
+        "displayName": "Fear & Greed Index",
+        "dashboardKey": "fear_greed",
+        "value": 44.7714285714286,
+        "displayValue": "45",
+        "previousClose": 35.2285714285714,
+        "change": 9.542857142857201,
+        "changePercent": 27.088402270884202,
+        "changeText": "+10 / +27.09%",
+        "unit": "score",
+        "marketType": "sentiment",
+        "session": "daily",
+        "asOf": "2026-09-04T20:47:01+09:00",
+        "fetchedAt": "2026-09-04T21:05:55+09:00",
+        "sourceId": "cnn_fear_greed_graphdata",
+        "sourceName": "CNN Fear & Greed graphdata",
+        "sourceUrl": "https://edition-prod-cf.sitemirror.cnn.com/markets/fear-and-greed",
+        "rawReference": "fear_and_greed.score",
+        "classification": "fear",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-09-04T21:05:55+09:00",
+        "error": null,
+        "note": "",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-09-04T21:05:35+09:00",
+        "lastError": "",
+        "retryPreserved": false
+      },
+      "crypto_fear_greed": {
+        "id": "crypto_fear_greed",
+        "displayName": "Crypto Fear & Greed",
+        "dashboardKey": "crypto_fear_greed",
+        "value": 78.0,
+        "displayValue": "78",
+        "previousClose": 71.0,
+        "change": 7.0,
+        "changePercent": 9.859154929577475,
+        "changeText": "+7 / +9.86%",
+        "unit": "score",
+        "marketType": "crypto_sentiment",
+        "session": "daily",
+        "asOf": "2026-09-03T09:00:00+09:00",
+        "fetchedAt": "2026-09-04T21:05:55+09:00",
+        "sourceId": "coinmarketcap_crypto_fear_greed",
+        "sourceName": "CoinMarketCap Crypto Fear and Greed Index",
+        "sourceUrl": "https://coinmarketcap.com/ja/charts/fear-and-greed-index/",
+        "rawReference": "v3/fear-and-greed/historical data[0]",
+        "classification": "Greed",
+        "verificationStatus": "verified",
+        "freshnessStatus": "fresh",
+        "fallbackUsed": false,
+        "lastVerifiedAt": "2026-09-04T21:05:55+09:00",
+        "error": null,
+        "note": "",
+        "attemptCount": 1,
+        "lastAttemptAt": "2026-09-04T21:05:35+09:00",
+        "lastError": "",
+        "retryPreserved": false
+      }
+    },
+    "errors": [
+      {
+        "symbol": "gold",
+        "sourceId": "stooq_xauusd",
+        "code": "HTTP_404",
+        "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
+        "attempt": 1
+      },
+      {
+        "symbol": "gold",
+        "sourceId": "stooq_xauusd",
+        "code": "HTTP_404",
+        "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
+        "attempt": 2
+      },
+      {
+        "symbol": "gold",
+        "sourceId": "stooq_xauusd",
+        "code": "HTTP_404",
+        "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
+        "attempt": 3
+      },
+      {
+        "symbol": "wti",
+        "sourceId": "stooq_cl_f",
+        "code": "HTTP_404",
+        "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
+        "attempt": 1
+      },
+      {
+        "symbol": "wti",
+        "sourceId": "stooq_cl_f",
+        "code": "HTTP_404",
+        "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
+        "attempt": 2
+      },
+      {
+        "symbol": "wti",
+        "sourceId": "stooq_cl_f",
+        "code": "HTTP_404",
+        "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
+        "attempt": 3
+      },
+      {
+        "symbol": "nikkei225_futures_ose",
+        "sourceId": "nikkei_nk225f_profile",
+        "code": "REFERENCE_ONLY",
+        "message": "reference source is not allowed for dashboard publication"
+      },
+      {
+        "symbol": "usdjpy",
+        "sourceId": "stooq_usdjpy",
+        "code": "HTTP_404",
+        "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
+        "attempt": 1
+      },
+      {
+        "symbol": "usdjpy",
+        "sourceId": "stooq_usdjpy",
+        "code": "HTTP_404",
+        "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
+        "attempt": 2
+      },
+      {
+        "symbol": "usdjpy",
+        "sourceId": "stooq_usdjpy",
+        "code": "HTTP_404",
+        "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
+        "attempt": 3
+      },
+      {
+        "symbol": "eurusd",
+        "sourceId": "stooq_eurusd",
+        "code": "HTTP_404",
+        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
+        "attempt": 1
+      },
+      {
+        "symbol": "eurusd",
+        "sourceId": "stooq_eurusd",
+        "code": "HTTP_404",
+        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
+        "attempt": 2
+      },
+      {
+        "symbol": "eurusd",
+        "sourceId": "stooq_eurusd",
+        "code": "HTTP_404",
+        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
+        "attempt": 3
+      },
+      {
+        "symbol": "btcusd",
+        "sourceId": "stooq_btcusd",
+        "code": "HTTP_404",
+        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
+        "attempt": 1
+      },
+      {
+        "symbol": "btcusd",
+        "sourceId": "stooq_btcusd",
+        "code": "HTTP_404",
+        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
+        "attempt": 2
+      },
+      {
+        "symbol": "btcusd",
+        "sourceId": "stooq_btcusd",
+        "code": "HTTP_404",
+        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
+        "attempt": 3
+      }
+    ],
+    "acquisition": {
+      "strategy": "staged_retry",
+      "windowStartedAt": "2026-09-04T21:05:35+09:00",
+      "lastAttemptAt": "2026-09-04T21:05:35+09:00",
+      "runCount": 1,
+      "mode": "full",
+      "targetedSymbols": [
+        "gold",
+        "wti",
+        "nikkei225_futures_ose",
+        "usdjpy",
+        "eurusd",
+        "btcusd",
+        "vix",
+        "nikkei_vi",
+        "fear_greed",
+        "crypto_fear_greed"
+      ],
+      "recoveredSymbols": [],
+      "preservedVerifiedSymbols": [],
+      "remainingFallback": [],
+      "remainingUnavailable": []
+    },
+    "sources": [
+      {
+        "id": "yahoo_gc_f",
+        "name": "Yahoo Finance Gold Futures",
+        "kind": "yahoo_chart",
+        "url": "https://finance.yahoo.com/quote/GC=F/",
+        "marketType": "continuous_futures",
+        "session": "global"
+      },
+      {
+        "id": "stooq_xauusd",
+        "name": "Stooq XAU/USD",
+        "kind": "stooq_quote",
+        "url": "https://stooq.com/q/?s=xauusd",
+        "marketType": "spot",
+        "session": "global"
+      },
+      {
+        "id": "yahoo_cl_f",
+        "name": "Yahoo Finance WTI Crude Oil Futures",
+        "kind": "yahoo_chart",
+        "url": "https://finance.yahoo.com/quote/CL=F/",
+        "marketType": "continuous_futures",
+        "session": "global"
+      },
+      {
+        "id": "stooq_cl_f",
+        "name": "Stooq WTI Crude Oil Futures",
+        "kind": "stooq_quote",
+        "url": "https://stooq.com/q/?s=cl.f",
+        "marketType": "continuous_futures",
+        "session": "global"
+      },
+      {
+        "id": "jpx_ose_futures_quote",
+        "name": "JPX/OSE Futures Quotes",
+        "kind": "jpx_html",
+        "url": "https://port.jpx.co.jp/jpxhp/main/index.aspx?disptype=day_through&f=e_future",
+        "marketType": "futures_ose",
+        "session": "day_through"
+      },
+      {
+        "id": "nikkei_nk225f_profile",
+        "name": "Nikkei 225 Futures Index",
+        "kind": "nikkei_profile",
+        "url": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=3&idx=nk225f",
+        "marketType": "ose_futures_index",
+        "session": "daily_index"
+      },
+      {
+        "id": "yahoo_jpy_x",
+        "name": "Yahoo Finance USD/JPY",
+        "kind": "yahoo_chart",
+        "url": "https://finance.yahoo.com/quote/JPY=X/",
+        "marketType": "spot",
+        "session": "continuous"
+      },
+      {
+        "id": "stooq_usdjpy",
+        "name": "Stooq USD/JPY",
+        "kind": "stooq_quote",
+        "url": "https://stooq.com/q/?s=usdjpy",
+        "marketType": "spot",
+        "session": "continuous"
+      },
+      {
+        "id": "yahoo_eurusd_x",
+        "name": "Yahoo Finance EUR/USD",
+        "kind": "yahoo_chart",
+        "url": "https://finance.yahoo.com/quote/EURUSD=X/",
+        "marketType": "spot",
+        "session": "continuous"
+      },
+      {
+        "id": "stooq_eurusd",
+        "name": "Stooq EUR/USD",
+        "kind": "stooq_quote",
+        "url": "https://stooq.com/q/?s=eurusd",
+        "marketType": "spot",
+        "session": "continuous"
+      },
+      {
+        "id": "yahoo_btc_usd",
+        "name": "Yahoo Finance Bitcoin USD",
+        "kind": "yahoo_chart",
+        "url": "https://finance.yahoo.com/quote/BTC-USD/",
+        "marketType": "spot_crypto",
+        "session": "continuous"
+      },
+      {
+        "id": "stooq_btcusd",
+        "name": "Stooq BTC/USD",
+        "kind": "stooq_quote",
+        "url": "https://stooq.com/q/?s=btcusd",
+        "marketType": "spot_crypto",
+        "session": "continuous"
+      },
+      {
+        "id": "cboe_vix_history",
+        "name": "Cboe VIX Historical Data",
+        "kind": "cboe_history_csv",
+        "url": "https://www.cboe.com/tradable_products/vix/vix_historical_data/",
+        "marketType": "index",
+        "session": "daily"
+      },
+      {
+        "id": "yahoo_vix",
+        "name": "Yahoo Finance VIX",
+        "kind": "yahoo_chart",
+        "url": "https://finance.yahoo.com/quote/%5EVIX/",
+        "marketType": "index",
+        "session": "delayed"
+      },
+      {
+        "id": "nikkei_nk225vi_profile",
+        "name": "Nikkei 225 VI official profile",
+        "kind": "nikkei_profile",
+        "url": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
+        "marketType": "index",
+        "session": "daily"
+      },
+      {
+        "id": "cnn_fear_greed_graphdata",
+        "name": "CNN Fear & Greed graphdata",
+        "kind": "cnn_fear_greed",
+        "url": "https://edition-prod-cf.sitemirror.cnn.com/markets/fear-and-greed",
+        "marketType": "sentiment",
+        "session": "daily"
+      },
+      {
+        "id": "coinmarketcap_crypto_fear_greed",
+        "name": "CoinMarketCap Crypto Fear and Greed Index",
+        "kind": "coinmarketcap_fear_greed",
+        "url": "https://coinmarketcap.com/ja/charts/fear-and-greed-index/",
+        "marketType": "crypto_sentiment",
+        "session": "daily"
+      }
+    ]
+  },
+  "etfHistory": {
+    "schemaVersion": "1.0.0",
+    "updatedAt": "2026-09-05T01:19:45+09:00",
+    "gld": [
+      {
+        "asOfDate": "2026-03-16",
+        "tonnes": 1070.71,
+        "changeTonnes": -0.849999999999909
+      },
+      {
+        "asOfDate": "2026-03-17",
+        "tonnes": 1069.56,
+        "changeTonnes": -1.150000000000091
+      },
+      {
+        "asOfDate": "2026-03-18",
+        "tonnes": 1066.99,
+        "changeTonnes": -2.5699999999999363
+      },
+      {
+        "asOfDate": "2026-03-19",
+        "tonnes": 1062.13,
+        "changeTonnes": -4.8599999999999
+      },
+      {
+        "asOfDate": "2026-03-20",
+        "tonnes": 1056.99,
+        "changeTonnes": -5.1400000000001
+      },
+      {
+        "asOfDate": "2026-03-23",
+        "tonnes": 1052.7,
+        "changeTonnes": -4.289999999999964
+      },
+      {
+        "asOfDate": "2026-03-24",
+        "tonnes": 1052.99,
+        "changeTonnes": 0.2899999999999636
+      },
+      {
+        "asOfDate": "2026-03-25",
+        "tonnes": 1052.42,
+        "changeTonnes": -0.5699999999999363
+      },
+      {
+        "asOfDate": "2026-03-26",
+        "tonnes": 1052.7,
+        "changeTonnes": 0.2799999999999727
+      },
+      {
+        "asOfDate": "2026-03-27",
+        "tonnes": 1049.56,
+        "changeTonnes": -3.1400000000001
+      },
+      {
+        "asOfDate": "2026-03-30",
+        "tonnes": 1046.13,
+        "changeTonnes": -3.4299999999998363
+      },
+      {
+        "asOfDate": "2026-03-31",
+        "tonnes": 1047.28,
+        "changeTonnes": 1.1499999999998636
+      },
+      {
+        "asOfDate": "2026-04-01",
+        "tonnes": 1050.99,
+        "changeTonnes": 3.7100000000000364
+      },
+      {
+        "asOfDate": "2026-04-02",
+        "tonnes": 1050.99,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-04-06",
+        "tonnes": 1054.42,
+        "changeTonnes": 3.4300000000000637
+      },
+      {
+        "asOfDate": "2026-04-07",
+        "tonnes": 1054.42,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-04-08",
+        "tonnes": 1052.99,
+        "changeTonnes": -1.4300000000000637
+      },
+      {
+        "asOfDate": "2026-04-09",
+        "tonnes": 1052.42,
+        "changeTonnes": -0.5699999999999363
+      },
+      {
+        "asOfDate": "2026-04-10",
+        "tonnes": 1052.42,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-04-13",
+        "tonnes": 1047.19,
+        "changeTonnes": -5.230000000000018
+      },
+      {
+        "asOfDate": "2026-04-14",
+        "tonnes": 1049.48,
+        "changeTonnes": 2.2899999999999636
+      },
+      {
+        "asOfDate": "2026-04-15",
+        "tonnes": 1051.76,
+        "changeTonnes": 2.2799999999999727
+      },
+      {
+        "asOfDate": "2026-04-16",
+        "tonnes": 1052.91,
+        "changeTonnes": 1.150000000000091
+      },
+      {
+        "asOfDate": "2026-04-17",
+        "tonnes": 1060.62,
+        "changeTonnes": 7.709999999999809
+      },
+      {
+        "asOfDate": "2026-04-20",
+        "tonnes": 1059.76,
+        "changeTonnes": -0.8599999999999
+      },
+      {
+        "asOfDate": "2026-04-21",
+        "tonnes": 1055.48,
+        "changeTonnes": -4.279999999999973
+      },
+      {
+        "asOfDate": "2026-04-22",
+        "tonnes": 1050.91,
+        "changeTonnes": -4.569999999999936
+      },
+      {
+        "asOfDate": "2026-04-23",
+        "tonnes": 1049.19,
+        "changeTonnes": -1.7200000000000273
+      },
+      {
+        "asOfDate": "2026-04-24",
+        "tonnes": 1046.62,
+        "changeTonnes": -2.5700000000001637
+      },
+      {
+        "asOfDate": "2026-04-27",
+        "tonnes": 1044.34,
+        "changeTonnes": -2.2799999999999727
+      },
+      {
+        "asOfDate": "2026-04-28",
+        "tonnes": 1040.91,
+        "changeTonnes": -3.4299999999998363
+      },
+      {
+        "asOfDate": "2026-04-29",
+        "tonnes": 1039.2,
+        "changeTonnes": -1.7100000000000364
+      },
+      {
+        "asOfDate": "2026-04-30",
+        "tonnes": 1035.77,
+        "changeTonnes": -3.4300000000000637
+      },
+      {
+        "asOfDate": "2026-05-01",
+        "tonnes": 1035.77,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-05-04",
+        "tonnes": 1035.77,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-05-05",
+        "tonnes": 1034.05,
+        "changeTonnes": -1.7200000000000273
+      },
+      {
+        "asOfDate": "2026-05-06",
+        "tonnes": 1033.2,
+        "changeTonnes": -0.849999999999909
+      },
+      {
+        "asOfDate": "2026-05-07",
+        "tonnes": 1033.48,
+        "changeTonnes": 0.2799999999999727
+      },
+      {
+        "asOfDate": "2026-05-08",
+        "tonnes": 1034.0,
+        "changeTonnes": 0.5199999999999818
+      },
+      {
+        "asOfDate": "2026-05-11",
+        "tonnes": 1036.28,
+        "changeTonnes": 2.2799999999999727
+      },
+      {
+        "asOfDate": "2026-05-12",
+        "tonnes": 1038.28,
+        "changeTonnes": 2.0
+      },
+      {
+        "asOfDate": "2026-05-13",
+        "tonnes": 1039.99,
+        "changeTonnes": 1.7100000000000364
+      },
+      {
+        "asOfDate": "2026-05-14",
+        "tonnes": 1039.99,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-05-15",
+        "tonnes": 1037.42,
+        "changeTonnes": -2.5699999999999363
+      },
+      {
+        "asOfDate": "2026-05-18",
+        "tonnes": 1038.85,
+        "changeTonnes": 1.4299999999998363
+      },
+      {
+        "asOfDate": "2026-05-19",
+        "tonnes": 1036.85,
+        "changeTonnes": -2.0
+      },
+      {
+        "asOfDate": "2026-05-20",
+        "tonnes": 1036.85,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-05-21",
+        "tonnes": 1037.71,
+        "changeTonnes": 0.8600000000001273
+      },
+      {
+        "asOfDate": "2026-05-22",
+        "tonnes": 1034.85,
+        "changeTonnes": -2.8600000000001273
+      },
+      {
+        "asOfDate": "2026-05-26",
+        "tonnes": 1034.85,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-05-27",
+        "tonnes": 1034.85,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-05-28",
+        "tonnes": 1032.57,
+        "changeTonnes": -2.2799999999999727
+      },
+      {
+        "asOfDate": "2026-05-29",
+        "tonnes": 1029.14,
+        "changeTonnes": -3.4299999999998363
+      },
+      {
+        "asOfDate": "2026-06-01",
+        "tonnes": 1028.86,
+        "changeTonnes": -0.2800000000002001
+      },
+      {
+        "asOfDate": "2026-06-02",
+        "tonnes": 1028.0,
+        "changeTonnes": -0.8599999999999
+      },
+      {
+        "asOfDate": "2026-06-03",
+        "tonnes": 1026.86,
+        "changeTonnes": -1.1400000000001
+      },
+      {
+        "asOfDate": "2026-06-04",
+        "tonnes": 1025.14,
+        "changeTonnes": -1.7199999999998
+      },
+      {
+        "asOfDate": "2026-06-05",
+        "tonnes": 1019.92,
+        "changeTonnes": -5.220000000000141
+      },
+      {
+        "asOfDate": "2026-06-08",
+        "tonnes": 1019.92,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-06-09",
+        "tonnes": 1016.49,
+        "changeTonnes": -3.42999999999995
+      },
+      {
+        "asOfDate": "2026-06-10",
+        "tonnes": 1013.64,
+        "changeTonnes": -2.8500000000000227
+      },
+      {
+        "asOfDate": "2026-06-11",
+        "tonnes": 1013.64,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-06-12",
+        "tonnes": 1013.64,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-06-15",
+        "tonnes": 1012.21,
+        "changeTonnes": -1.42999999999995
+      },
+      {
+        "asOfDate": "2026-06-16",
+        "tonnes": 1012.21,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-06-17",
+        "tonnes": 1013.07,
+        "changeTonnes": 0.8600000000000136
+      },
+      {
+        "asOfDate": "2026-06-18",
+        "tonnes": 1020.49,
+        "changeTonnes": 7.419999999999959
+      },
+      {
+        "asOfDate": "2026-06-22",
+        "tonnes": 1022.2,
+        "changeTonnes": 1.7100000000000364
+      },
+      {
+        "asOfDate": "2026-06-23",
+        "tonnes": 1017.64,
+        "changeTonnes": -4.560000000000059
+      },
+      {
+        "asOfDate": "2026-06-24",
+        "tonnes": 1013.35,
+        "changeTonnes": -4.289999999999964
+      },
+      {
+        "asOfDate": "2026-06-25",
+        "tonnes": 1007.08,
+        "changeTonnes": -6.269999999999982
+      },
+      {
+        "asOfDate": "2026-06-26",
+        "tonnes": 1005.08,
+        "changeTonnes": -2.0
+      },
+      {
+        "asOfDate": "2026-06-29",
+        "tonnes": 1005.08,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-06-30",
+        "tonnes": 1005.08,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-07-01",
+        "tonnes": 1005.36,
+        "changeTonnes": 0.2799999999999727
+      },
+      {
+        "asOfDate": "2026-07-02",
+        "tonnes": 1001.37,
+        "changeTonnes": -3.990000000000009
+      },
+      {
+        "asOfDate": "2026-07-06",
+        "tonnes": 1002.79,
+        "changeTonnes": 1.419999999999959
+      },
+      {
+        "asOfDate": "2026-07-07",
+        "tonnes": 1002.51,
+        "changeTonnes": -0.2799999999999727
+      },
+      {
+        "asOfDate": "2026-07-08",
+        "tonnes": 1002.51,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-07-09",
+        "tonnes": 1005.65,
+        "changeTonnes": 3.1399999999999864
+      },
+      {
+        "asOfDate": "2026-07-10",
+        "tonnes": 1002.45,
+        "changeTonnes": -3.199999999999932
+      },
+      {
+        "asOfDate": "2026-07-13",
+        "tonnes": 1002.45,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-07-14",
+        "tonnes": 1004.45,
+        "changeTonnes": 2.0
+      },
+      {
+        "asOfDate": "2026-07-15",
+        "tonnes": 1001.88,
+        "changeTonnes": -2.57000000000005
+      },
+      {
+        "asOfDate": "2026-07-16",
+        "tonnes": 1001.88,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-07-17",
+        "tonnes": 999.02,
+        "changeTonnes": -2.8600000000000136
+      },
+      {
+        "asOfDate": "2026-07-20",
+        "tonnes": 1003.59,
+        "changeTonnes": 4.57000000000005
+      },
+      {
+        "asOfDate": "2026-07-21",
+        "tonnes": 1005.87,
+        "changeTonnes": 2.2799999999999727
+      },
+      {
+        "asOfDate": "2026-07-22",
+        "tonnes": 1007.87,
+        "changeTonnes": 2.0
+      },
+      {
+        "asOfDate": "2026-07-23",
+        "tonnes": 1009.3,
+        "changeTonnes": 1.42999999999995
+      },
+      {
+        "asOfDate": "2026-07-24",
+        "tonnes": 1009.3,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-07-27",
+        "tonnes": 1009.3,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-07-28",
+        "tonnes": 1008.73,
+        "changeTonnes": -0.5699999999999363
+      },
+      {
+        "asOfDate": "2026-07-29",
+        "tonnes": 1009.3,
+        "changeTonnes": 0.5699999999999363
+      },
+      {
+        "asOfDate": "2026-07-30",
+        "tonnes": 1007.87,
+        "changeTonnes": -1.42999999999995
+      },
+      {
+        "asOfDate": "2026-07-31",
+        "tonnes": 1007.01,
+        "changeTonnes": -0.8600000000000136
+      },
+      {
+        "asOfDate": "2026-08-03",
+        "tonnes": 1005.87,
+        "changeTonnes": -1.1399999999999864
+      },
+      {
+        "asOfDate": "2026-08-04",
+        "tonnes": 1009.3,
+        "changeTonnes": 3.42999999999995
+      },
+      {
+        "asOfDate": "2026-08-05",
+        "tonnes": 1014.15,
+        "changeTonnes": 4.850000000000023
+      },
+      {
+        "asOfDate": "2026-08-06",
+        "tonnes": 1014.72,
+        "changeTonnes": 0.57000000000005
+      },
+      {
+        "asOfDate": "2026-08-07",
+        "tonnes": 1017.54,
+        "changeTonnes": 2.8199999999999363
+      },
+      {
+        "asOfDate": "2026-08-10",
+        "tonnes": 1020.96,
+        "changeTonnes": 3.4200000000000728
+      },
+      {
+        "asOfDate": "2026-08-11",
+        "tonnes": 1022.67,
+        "changeTonnes": 1.7099999999999227
+      },
+      {
+        "asOfDate": "2026-08-12",
+        "tonnes": 1025.81,
+        "changeTonnes": 3.1399999999999864
+      },
+      {
+        "asOfDate": "2026-08-13",
+        "tonnes": 1023.24,
+        "changeTonnes": -2.5699999999999363
+      },
+      {
+        "asOfDate": "2026-08-14",
+        "tonnes": 1023.53,
+        "changeTonnes": 0.2899999999999636
+      },
+      {
+        "asOfDate": "2026-08-17",
+        "tonnes": 1030.66,
+        "changeTonnes": 7.130000000000109
+      },
+      {
+        "asOfDate": "2026-08-18",
+        "tonnes": 1025.24,
+        "changeTonnes": -5.420000000000073
+      },
+      {
+        "asOfDate": "2026-08-19",
+        "tonnes": 1034.65,
+        "changeTonnes": 9.410000000000082
+      },
+      {
+        "asOfDate": "2026-08-20",
+        "tonnes": 1038.93,
+        "changeTonnes": 4.279999999999973
+      },
+      {
+        "asOfDate": "2026-08-21",
+        "tonnes": 1047.21,
+        "changeTonnes": 8.279999999999973
+      },
+      {
+        "asOfDate": "2026-08-24",
+        "tonnes": 1049.49,
+        "changeTonnes": 2.2799999999999727
+      },
+      {
+        "asOfDate": "2026-08-25",
+        "tonnes": 1048.35,
+        "changeTonnes": -1.1400000000001
+      },
+      {
+        "asOfDate": "2026-08-26",
+        "tonnes": 1045.5,
+        "changeTonnes": -2.849999999999909
+      },
+      {
+        "asOfDate": "2026-08-27",
+        "tonnes": 1046.64,
+        "changeTonnes": 1.1400000000001
+      },
+      {
+        "asOfDate": "2026-08-28",
+        "tonnes": 1042.36,
+        "changeTonnes": -4.2800000000002
+      },
+      {
+        "asOfDate": "2026-08-31",
+        "tonnes": 1042.36,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-09-01",
+        "tonnes": 1046.64,
+        "changeTonnes": 4.2800000000002
+      },
+      {
+        "asOfDate": "2026-09-02",
+        "tonnes": 1056.62,
+        "changeTonnes": 9.97999999999979
+      },
+      {
+        "asOfDate": "2026-09-03",
+        "tonnes": 1053.48,
+        "changeTonnes": -3.1399999999998727
+      }
+    ],
+    "iau": [
+      {
+        "asOfDate": "2026-08-07",
+        "tonnes": 457.89,
+        "changeTonnes": -1.1200000000000045
+      },
+      {
+        "asOfDate": "2026-08-10",
+        "tonnes": 456.84,
+        "changeTonnes": -1.0500000000000114
+      },
+      {
+        "asOfDate": "2026-08-11",
+        "tonnes": 456.84,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-08-12",
+        "tonnes": 456.84,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-08-13",
+        "tonnes": 456.32,
+        "changeTonnes": -0.5199999999999818
+      },
+      {
+        "asOfDate": "2026-08-14",
+        "tonnes": 456.49,
+        "changeTonnes": 0.17000000000001592
+      },
+      {
+        "asOfDate": "2026-08-17",
+        "tonnes": 456.2,
+        "changeTonnes": -0.29000000000002046
+      },
+      {
+        "asOfDate": "2026-08-18",
+        "tonnes": 456.2,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-08-19",
+        "tonnes": 456.75,
+        "changeTonnes": 0.5500000000000114
+      },
+      {
+        "asOfDate": "2026-08-20",
+        "tonnes": 457.81,
+        "changeTonnes": 1.0600000000000023
+      },
+      {
+        "asOfDate": "2026-08-21",
+        "tonnes": 458.65,
+        "changeTonnes": 0.839999999999975
+      },
+      {
+        "asOfDate": "2026-08-24",
+        "tonnes": 460.12,
+        "changeTonnes": 1.4700000000000273
+      },
+      {
+        "asOfDate": "2026-08-25",
+        "tonnes": 460.5,
+        "changeTonnes": 0.37999999999999545
+      },
+      {
+        "asOfDate": "2026-08-26",
+        "tonnes": 460.5,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-08-27",
+        "tonnes": 460.85,
+        "changeTonnes": 0.35000000000002274
+      },
+      {
+        "asOfDate": "2026-08-28",
+        "tonnes": 460.85,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-08-31",
+        "tonnes": 460.5,
+        "changeTonnes": -0.35000000000002274
+      },
+      {
+        "asOfDate": "2026-09-01",
+        "tonnes": 460.5,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-09-02",
+        "tonnes": 460.4,
+        "changeTonnes": -0.10000000000002274
+      },
+      {
+        "asOfDate": "2026-09-03",
+        "tonnes": 460.57,
+        "changeTonnes": 0.17000000000001592
+      }
+    ]
+  }
+}
