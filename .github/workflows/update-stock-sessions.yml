@@ -33,7 +33,7 @@ permissions:
 # events together. A newer Tokyo retry is more useful than an old queued one.
 concurrency:
   group: update-stock-sessions
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   update:
@@ -97,22 +97,6 @@ jobs:
 
       - name: Commit updated data
         shell: bash
-        run: |
-          if git diff --quiet -- data/stock-sessions.json data/stocks.json; then
-            echo "No data changes"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/stock-sessions.json data/stocks.json
-          git commit -m "Update stock session analysis"
-          for attempt in 1 2 3; do
-            if git pull --rebase origin main && git push origin HEAD:main; then
-              exit 0
-            fi
-            echo "Session update push attempt $attempt failed; retrying..."
-            sleep $((attempt * 5))
-          done
-          exit 1
+        run: bash scripts/publish_stock_update.sh "Update stock session analysis" data/stock-sessions.json data/stocks.json
 
 

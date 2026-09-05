@@ -57,14 +57,4 @@ jobs:
 
       - name: Commit updated US table and archive
         shell: bash
-        run: |
-          if git diff --quiet -- data/stocks.json data/market/us-stock-breadth.json data/history/stocks; then
-            echo "No data changes"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/stocks.json data/market/us-stock-breadth.json data/history/stocks
-          git commit -m "Update completed US session and stock archive"
-          git pull --rebase
-          git push
+        run: bash scripts/publish_stock_update.sh "Update completed US session and stock archive" data/stocks.json data/market/us-stock-breadth.json data/history/stocks

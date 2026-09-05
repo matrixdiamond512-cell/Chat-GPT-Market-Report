@@ -24,7 +24,7 @@ permissions:
 
 concurrency:
   group: update-us-stock-breadth
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   update:
@@ -76,15 +76,5 @@ jobs:
           python scripts/validate_stock_data_freshness.py
       - name: Commit generated breadth data
         shell: bash
-        run: |
-          if git diff --quiet -- data/market/us-stock-breadth.json data/market/us-stock-breadth-history.json data/market/us-stock-breadth-history.csv data/stocks.json; then
-            echo "US stock breadth files are already up to date."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/market/us-stock-breadth.json data/market/us-stock-breadth-history.json data/market/us-stock-breadth-history.csv data/stocks.json
-          git commit -m "Update US stock breadth"
-          git pull --rebase
-          git push
+        run: bash scripts/publish_stock_update.sh "Update US stock breadth" data/market/us-stock-breadth.json data/market/us-stock-breadth-history.json data/market/us-stock-breadth-history.csv data/stocks.json
 

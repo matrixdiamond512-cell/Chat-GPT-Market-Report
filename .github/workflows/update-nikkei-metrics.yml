@@ -68,14 +68,5 @@ jobs:
           PY
 
       - name: Commit updated data
-        run: |
-          if git diff --quiet -- data/stocks.json data/nikkei-metrics.json; then
-            echo "Nikkei metrics are already up to date."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/stocks.json data/nikkei-metrics.json
-          git commit -m "Update Nikkei VI and valuation metrics"
-          git pull --rebase
-          git push
+        shell: bash
+        run: bash scripts/publish_stock_update.sh "Update Nikkei VI and valuation metrics" data/stocks.json data/nikkei-metrics.json

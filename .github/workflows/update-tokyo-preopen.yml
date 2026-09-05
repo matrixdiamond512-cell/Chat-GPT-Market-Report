@@ -51,11 +51,16 @@ jobs:
         run: |
           python - <<'PY'
           import json
+          from datetime import datetime
           from pathlib import Path
+          from zoneinfo import ZoneInfo
           payload = json.loads(Path('data/market/tokyo-preopen.json').read_text(encoding='utf-8'))
           current = payload.get('current') or {}
           if payload.get('status') not in {'ok', 'unavailable'}:
               raise SystemExit('Unexpected Tokyo pre-open status')
+          expected = datetime.now(ZoneInfo('Asia/Tokyo')).date().isoformat()
+          if current.get('status') == 'ok' and (current.get('freshness') != 'fresh' or current.get('dataDate') != expected):
+              raise SystemExit(f'Tokyo pre-open is not current: {current.get("dataDate")} / {current.get("freshness")}')
           if current.get('status') == 'unavailable' and any(current.get(key) for key in ('gainers','decliners','buyOrderLeaders','sellOrderLeaders')):
               raise SystemExit('Unavailable Tokyo pre-open current must not contain old rows')
           if payload.get('lastGood') and payload['lastGood'].get('freshness') != 'stale':
@@ -64,12 +69,5 @@ jobs:
           PY
       - name: Commit snapshot
         shell: bash
-        run: |
-          git add data/market/tokyo-preopen.json data/stocks.json
-          if git diff --cached --quiet; then exit 0; fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "Update Tokyo pre-open analysis"
-          git pull --rebase
-          git push
+        run: bash scripts/publish_stock_update.sh "Update Tokyo pre-open analysis" data/market/tokyo-preopen.json data/stocks.json
 

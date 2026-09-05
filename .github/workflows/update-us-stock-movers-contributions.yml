@@ -22,7 +22,7 @@ permissions:
 
 concurrency:
   group: update-us-stock-movers-contributions
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   update:
@@ -143,21 +143,13 @@ jobs:
 
       - name: Commit result or diagnostic
         if: always()
+        shell: bash
         run: |
-          git add data/market/us-stock-pipeline-status.json data/market/us-stock-movers.json data/market/sp500-contributions.json data/stocks.json data/history/stocks 2>/dev/null || true
-          if git diff --cached --quiet; then
-            echo "U.S. stock pipeline files are already current."
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            if [ "${{ steps.fetch.outcome }}" = "success" ] && [ "${{ steps.crosscheck.outcome }}" = "success" ]; then
-              git commit -m "Update verified US stock movers and S&P contributions"
-            else
-              git commit -m "Record US stock mover pipeline failure"
-            fi
-            git pull --rebase
-            git push
+          message="Record US stock mover pipeline failure"
+          if [ "${{ steps.fetch.outcome }}" = "success" ] && [ "${{ steps.crosscheck.outcome }}" = "success" ]; then
+            message="Update verified US stock movers and S&P contributions"
           fi
+          bash scripts/publish_stock_update.sh "$message" data/market/us-stock-pipeline-status.json data/market/us-stock-movers.json data/market/sp500-contributions.json data/stocks.json data/history/stocks
 
       - name: Fail workflow after diagnostic is saved
         if: steps.fetch.outcome != 'success' || steps.crosscheck.outcome != 'success'

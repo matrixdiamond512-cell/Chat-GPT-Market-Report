@@ -67,14 +67,5 @@ jobs:
           PY
 
       - name: Commit Tokyo table and archive
-        run: |
-          if git diff --quiet -- data/stocks.json data/history/stocks; then
-            echo "Tokyo data and archive are already current."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/stocks.json data/history/stocks
-          git commit -m "Update completed Tokyo session and stock archive"
-          git pull --rebase
-          git push
+        shell: bash
+        run: bash scripts/publish_stock_update.sh "Update completed Tokyo session and stock archive" data/stocks.json data/history/stocks

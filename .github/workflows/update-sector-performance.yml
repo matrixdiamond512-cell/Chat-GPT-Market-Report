@@ -75,14 +75,5 @@ jobs:
           print("Validated sector data; unavailable markets contain no current rows")
           PY
       - name: Commit updated sector data
-        run: |
-          if git diff --quiet -- data/sector-performance.json data/market/sector-performance.json; then
-            echo "Sector data is already up to date."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/sector-performance.json data/market/sector-performance.json
-          git commit -m "Update sector performance data"
-          git pull --rebase
-          git push
+        shell: bash
+        run: bash scripts/publish_stock_update.sh "Update sector performance data" data/sector-performance.json data/market/sector-performance.json

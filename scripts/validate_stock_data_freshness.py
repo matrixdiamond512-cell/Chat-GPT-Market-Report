@@ -43,7 +43,7 @@ def rows_in(block: dict[str, Any]) -> list[Any]:
     return []
 
 
-def check_component(name: str, payload: dict[str, Any], expected: str | None, errors: list[str], *, allow_partial: bool = False) -> None:
+def check_component(name: str, payload: dict[str, Any], expected: str | None, errors: list[str], *, reference_date: str, allow_partial: bool = False) -> None:
     current = current_of(payload)
     status = current.get("status")
     freshness = current.get("freshness")
@@ -57,7 +57,10 @@ def check_component(name: str, payload: dict[str, Any], expected: str | None, er
         errors.append(f"{name}: usable current is not fresh ({freshness!r})")
     if expected and status != "unavailable" and data_date != expected:
         errors.append(f"{name}: dataDate {data_date!r} != expected {expected!r}")
-    if data_date and data_date > date.today().isoformat():
+    # GitHub Actions runs in UTC.  A Tokyo morning run is still on the
+    # previous UTC date, so future-data validation must use the caller's
+    # market-local reference date rather than date.today().
+    if data_date and data_date > reference_date:
         errors.append(f"{name}: future dataDate {data_date}")
     last_good = payload.get("lastGood")
     if isinstance(last_good, dict) and last_good.get("freshness") != "stale":
@@ -73,6 +76,9 @@ def main() -> int:
     parser.add_argument("--report-only", action="store_true")
     parser.add_argument("--today", default=datetime.now(JST).date().isoformat())
     args = parser.parse_args()
+    reference_date = date_text(args.today)
+    if not reference_date:
+        parser.error(f"--today must be YYYY-MM-DD: {args.today!r}")
     root = args.root
     errors: list[str] = []
     warnings: list[str] = []
@@ -109,19 +115,19 @@ def main() -> int:
         except ValueError as error:
             errors.append(str(error))
 
-    check_component("japan-movers", payloads.get("japan-movers", {}), japan_date, errors)
-    check_component("us-breadth", payloads.get("us-breadth", {}), us_date, errors)
-    check_component("us-movers", payloads.get("us-movers", {}), us_date, errors)
-    check_component("sp500-contributions", payloads.get("sp500-contributions", {}), us_date, errors)
-    check_component("nikkei-contributions", payloads.get("nikkei-contributions", {}), japan_date, errors)
-    check_component("tokyo-preopen", payloads.get("tokyo-preopen", {}), args.today, errors)
-    check_component("us-premarket", payloads.get("us-premarket", {}), None, errors, allow_partial=True)
+    check_component("japan-movers", payloads.get("japan-movers", {}), japan_date, errors, reference_date=reference_date)
+    check_component("us-breadth", payloads.get("us-breadth", {}), us_date, errors, reference_date=reference_date)
+    check_component("us-movers", payloads.get("us-movers", {}), us_date, errors, reference_date=reference_date)
+    check_component("sp500-contributions", payloads.get("sp500-contributions", {}), us_date, errors, reference_date=reference_date)
+    check_component("nikkei-contributions", payloads.get("nikkei-contributions", {}), japan_date, errors, reference_date=reference_date)
+    check_component("tokyo-preopen", payloads.get("tokyo-preopen", {}), reference_date, errors, reference_date=reference_date)
+    check_component("us-premarket", payloads.get("us-premarket", {}), None, errors, reference_date=reference_date, allow_partial=True)
 
     sectors = payloads.get("sectors") or {}
     for key, expected in (("japan", japan_date), ("us", us_date)):
         market = (sectors.get("markets") or {}).get(key)
         if isinstance(market, dict):
-            check_component(f"sectors.{key}", market, expected, errors)
+            check_component(f"sectors.{key}", market, expected, errors, reference_date=reference_date)
             if market.get("status") in {"ok", "verified"}:
                 if len(market.get("gainers") or []) < 5 or len(market.get("losers") or []) < 5:
                     errors.append(f"sectors.{key}: fewer than five gainers/losers")

@@ -7,9 +7,9 @@ on:
     paths:
       - "data/stocks-update-trigger/**"
       - ".github/workflows/update-stocks.yml"
-  schedule:
-    - cron: "20 7 * * 1-5"
-    - cron: "20 13 * * 1-5"
+  # Each component owns its market-session schedule.  Do not fan out all
+  # writers from a scheduled dispatcher: GitHub keeps only one pending run
+  # per concurrency group, which would silently drop most component updates.
 
 permissions:
   actions: write

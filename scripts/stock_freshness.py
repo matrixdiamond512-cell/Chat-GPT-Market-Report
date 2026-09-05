@@ -75,6 +75,8 @@ def last_good_from(payload: Any) -> dict[str, Any] | None:
     legacy_good = candidate.get("freshness") is None and candidate.get("status") in {"ok", "verified", "verified-estimate"}
     if candidate.get("freshness") not in {"fresh", "stale"} and not legacy_good:
         return None
+    if candidate.get("status") not in {"ok", "partial", "verified", "verified-estimate"}:
+        return None
     candidate_date = candidate.get("dataDate") or candidate.get("marketDate") or candidate.get("asOf")
     if not normal_date(candidate_date):
         return None
