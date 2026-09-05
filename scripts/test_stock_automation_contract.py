@@ -1,6 +1,8 @@
 import unittest
 from pathlib import Path
 
+from merge_stock_json_rebase import merge
+
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOWS = [
@@ -42,6 +44,14 @@ class StockAutomationContractTests(unittest.TestCase):
     def test_scheduled_dispatcher_does_not_fan_out_all_writers(self):
         text = (ROOT / ".github" / "workflows" / "update-stocks.yml").read_text(encoding="utf-8")
         self.assertNotRegex(text, r"(?ms)^\s+schedule:\s*\n\s+- cron:")
+
+    def test_shared_aggregate_merge_keeps_independent_upstream_changes(self):
+        base = {"preopen": {"value": 1}, "breadth": {"value": 1}}
+        upstream = {"preopen": {"value": 1}, "breadth": {"value": 2}}
+        incoming = {"preopen": {"value": 3}, "breadth": {"value": 1}}
+        merged = merge(base, upstream, incoming)
+        self.assertEqual(merged["preopen"]["value"], 3)
+        self.assertEqual(merged["breadth"]["value"], 2)
 
 
 if __name__ == "__main__":
