@@ -2,12 +2,12 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-supply-demand",
   "reportDate": "2026-09-09",
-  "generatedAt": "2026-09-09T00:25:47+09:00",
+  "generatedAt": "2026-09-09T08:45:02+09:00",
   "nikkei": {
     "schemaVersion": "2.1.0",
     "pageId": "nikkei225-supply-demand",
     "pageTitle": "日経225需給分析",
-    "generatedAt": "2026-09-09T00:25:47+09:00",
+    "generatedAt": "2026-09-09T08:45:02+09:00",
     "spot": {
       "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
@@ -16,26 +16,26 @@
       "value": 65269.33,
       "asOfDate": "2026-09-08",
       "status": "verified",
-      "fetchedAt": "2026-09-09T00:25:47+09:00"
+      "fetchedAt": "2026-09-09T08:45:02+09:00"
     },
     "futures": {
       "sourceName": "JPX / 大阪取引所 日経225先物",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
-      "price": 65290.0,
-      "priceChange": 80.0,
-      "priceChangePercent": 0.12268057046465053,
+      "price": 65040.0,
+      "priceChange": -170.0,
+      "priceChangePercent": -0.2606962122373879,
       "asOfDate": "2026-09-08",
-      "priceAsOf": "2026-09-08T20:50:00+09:00",
+      "priceAsOf": "2026-09-09T06:00:00+09:00",
       "volume": 240471,
       "openInterest": 242170,
       "miniVolume": 685283,
       "miniOpenInterest": 460607,
       "openInterestChange": 32751,
       "miniOpenInterestChange": 101119,
-      "volumeChangePercent": null,
-      "miniVolumeChangePercent": null,
+      "volumeChangePercent": -89.68357930893954,
+      "miniVolumeChangePercent": 0.0,
       "status": "verified",
-      "fetchedAt": "2026-09-09T00:23:42+09:00",
+      "fetchedAt": "2026-09-09T08:43:37+09:00",
       "previousOpenInterest": 209419,
       "miniPreviousOpenInterest": 359488,
       "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260908open_interest.xlsx"
@@ -46,16 +46,16 @@
       "comment": "JPX公式のセッション別出来高を使用。価格差が同一基準で確認できないため、日中/ナイトの価格変化は推測しません。",
       "dayChange": null,
       "nightChange": null,
-      "dayVolume": 219196,
-      "nightVolume": 21275,
-      "daySharePercent": 91.15277933721738,
-      "nightSharePercent": 8.847220662782622,
+      "dayVolume": 215663,
+      "nightVolume": 24808,
+      "daySharePercent": 89.68357930893954,
+      "nightSharePercent": 10.31642069106046,
       "dayDriver": "日中出来高",
       "nightDriver": "ナイト出来高",
-      "asOfDate": "2026-09-08",
-      "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260908_derivatives_market_data_night.xlsx",
+      "asOfDate": "2026-09-09",
+      "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260909_derivatives_market_data_night.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-09-09T00:25:36+09:00"
+      "fetchedAt": "2026-09-09T08:44:53+09:00"
     },
     "arbitrage": {
       "sourceName": "JPX 裁定取引の状況",
@@ -69,9 +69,9 @@
       "buyChange": 9168,
       "status": "verified",
       "frequency": "daily",
-      "lastAttemptAt": "2026-09-09T00:23:35+09:00",
-      "lastSuccessAt": "2026-09-09T00:23:35+09:00",
-      "fetchedAt": "2026-09-09T00:23:35+09:00",
+      "lastAttemptAt": "2026-09-09T08:43:36+09:00",
+      "lastSuccessAt": "2026-09-09T08:43:36+09:00",
+      "fetchedAt": "2026-09-09T08:43:36+09:00",
       "error": null
     },
     "options": {
@@ -85,7 +85,7 @@
       "ivChange": null,
       "asOfDate": "2026-09-09",
       "status": "calculated",
-      "fetchedAt": "2026-09-09T00:25:47+09:00",
+      "fetchedAt": "2026-09-09T08:45:02+09:00",
       "putVolume": null,
       "callVolume": null,
       "putCallStatus": "unavailable",
@@ -161,7 +161,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202609/20260908_volume_by_participant_whole_day.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-09-09T00:25:38+09:00"
+      "fetchedAt": "2026-09-09T08:44:55+09:00"
     },
     "foreignInvestors": {
       "sourceName": "JPX 投資部門別売買状況",
@@ -774,7 +774,7 @@
         ]
       },
       "status": "verified",
-      "fetchedAt": "2026-09-09T00:25:35+09:00"
+      "fetchedAt": "2026-09-09T08:44:52+09:00"
     },
     "participantOpenInterest": {
       "sourceName": "JPX 取引参加者別建玉残高",
@@ -888,7 +888,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20260904_indexfut_oi_by_tp.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-09-09T00:25:40+09:00"
+      "fetchedAt": "2026-09-09T08:44:56+09:00"
     },
     "shortSelling": {
       "sourceName": "JPX 空売り集計",
@@ -933,7 +933,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-09-09T00:23:41+09:00"
+      "fetchedAt": "2026-09-09T08:43:36+09:00"
     },
     "margin": {
       "sourceName": "JPX 信用取引現在高",
@@ -994,15 +994,15 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-09-09T00:23:45+09:00"
+      "fetchedAt": "2026-09-09T08:43:38+09:00"
     },
     "assessment": {
-      "overall": "やや買い優勢",
-      "shortTerm": "強気（新規買い）",
+      "overall": "売り優勢",
+      "shortTerm": "弱気（新規売り）",
       "arbitrage": "強い",
       "options": "SQ日程のみ確認済み",
       "foreign": "現物売り・先物売り",
-      "reason": "短期先物=強気（新規買い）、裁定=強い、オプション=中立（SQ日程のみ）、海外投資家=現物売り・先物売り。各データの鮮度を分離して判定。",
+      "reason": "短期先物=弱気（新規売り）、裁定=強い、オプション=中立（SQ日程のみ）、海外投資家=現物売り・先物売り。各データの鮮度を分離して判定。",
       "comment": "価格×建玉を中心に、裁定・オプション・海外投資家を補助線として重ねます。"
     },
     "watchpoints": [
@@ -1289,19 +1289,19 @@
       "market": null,
       "status": "partial",
       "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202609.xlsx",
-      "fetchedAt": "2026-09-09T00:25:44+09:00",
+      "fetchedAt": "2026-09-09T08:44:59+09:00",
       "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
     },
     "nikkeiFuturesDailyHistory": [
       {
         "asOfDate": "2026-09-08",
-        "price": 65290.0,
+        "price": 65040.0,
         "openInterest": 242170,
         "volume": 240471,
         "sourceName": "JPX / 大阪取引所 日経225先物",
         "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
         "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260908open_interest.xlsx",
-        "capturedAt": "2026-09-09T00:25:43+09:00",
+        "capturedAt": "2026-09-09T08:44:59+09:00",
         "status": "verified"
       }
     ],
@@ -1318,7 +1318,7 @@
       "status": "verified",
       "releaseFrequency": "weekly",
       "lookbackWeeks": 52,
-      "fetchedAt": "2026-09-09T00:25:48+09:00",
+      "fetchedAt": "2026-09-09T08:45:03+09:00",
       "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
       "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
       "priceStatus": "available",
@@ -1757,8 +1757,8 @@
   "market": {
     "schemaVersion": "1.1.0",
     "pageId": "market-data",
-    "generatedAt": "2026-09-08T21:06:00+09:00",
-    "reportSlot": "16:00",
+    "generatedAt": "2026-09-09T08:27:56+09:00",
+    "reportSlot": "08:00",
     "overallStatus": "verified",
     "missingRequired": [],
     "fallbackCount": 0,
@@ -1767,17 +1767,17 @@
         "id": "gold",
         "displayName": "金",
         "dashboardKey": "gold",
-        "value": 4447.1,
-        "displayValue": "4,447.10",
+        "value": 4396.7,
+        "displayValue": "4,396.70",
         "previousClose": 4429.7998046875,
-        "change": 17.300195312500364,
-        "changePercent": 0.3905412450962986,
-        "changeText": "+17.30 / +0.39%",
+        "change": -33.09980468750018,
+        "changePercent": -0.7472076876357869,
+        "changeText": "-33.10 / -0.75%",
         "unit": "USD/oz",
         "marketType": "continuous_futures",
         "session": "global",
-        "asOf": "2026-09-08T20:55:58+09:00",
-        "fetchedAt": "2026-09-08T21:06:00+09:00",
+        "asOf": "2026-09-09T08:17:52+09:00",
+        "fetchedAt": "2026-09-09T08:27:56+09:00",
         "sourceId": "yahoo_gc_f",
         "sourceName": "Yahoo Finance Gold Futures",
         "sourceUrl": "https://finance.yahoo.com/quote/GC=F/",
@@ -1786,11 +1786,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-09-08T21:06:03+09:00",
+        "lastVerifiedAt": "2026-09-09T08:27:59+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-09-08T21:06:00+09:00",
+        "lastAttemptAt": "2026-09-09T08:27:56+09:00",
         "lastError": "stooq_xauusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1798,17 +1798,17 @@
         "id": "wti",
         "displayName": "WTI原油",
         "dashboardKey": "oil",
-        "value": 93.84,
-        "displayValue": "93.84",
+        "value": 94.33,
+        "displayValue": "94.33",
         "previousClose": 91.4800033569336,
-        "change": 2.3599966430664097,
-        "changePercent": 2.5797950988898144,
-        "changeText": "+2.36 / +2.58%",
+        "change": 2.8499966430664045,
+        "changePercent": 3.1154312838690856,
+        "changeText": "+2.85 / +3.12%",
         "unit": "USD/bbl",
         "marketType": "continuous_futures",
         "session": "global",
-        "asOf": "2026-09-08T20:56:01+09:00",
-        "fetchedAt": "2026-09-08T21:06:03+09:00",
+        "asOf": "2026-09-09T08:17:55+09:00",
+        "fetchedAt": "2026-09-09T08:28:00+09:00",
         "sourceId": "yahoo_cl_f",
         "sourceName": "Yahoo Finance WTI Crude Oil Futures",
         "sourceUrl": "https://finance.yahoo.com/quote/CL=F/",
@@ -1817,11 +1817,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-09-08T21:06:06+09:00",
+        "lastVerifiedAt": "2026-09-09T08:28:03+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-09-08T21:06:00+09:00",
+        "lastAttemptAt": "2026-09-09T08:27:56+09:00",
         "lastError": "stooq_cl_f: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1829,17 +1829,17 @@
         "id": "nikkei225_futures_ose",
         "displayName": "日経225先物（大阪取引所）",
         "dashboardKey": "nikkei",
-        "value": 65290.0,
-        "displayValue": "65,290",
+        "value": 65040.0,
+        "displayValue": "65,040",
         "previousClose": 65210.0,
-        "change": 80.0,
-        "changePercent": 0.12268057046465053,
-        "changeText": "+80 / +0.12%",
+        "change": -170.0,
+        "changePercent": -0.2606962122373879,
+        "changeText": "-170 / -0.26%",
         "unit": "円",
         "marketType": "futures_ose",
         "session": "day_through",
-        "asOf": "2026-09-08T20:50:00+09:00",
-        "fetchedAt": "2026-09-08T21:06:07+09:00",
+        "asOf": "2026-09-09T06:00:00+09:00",
+        "fetchedAt": "2026-09-09T08:28:04+09:00",
         "sourceId": "jpx_ose_futures_quote",
         "sourceName": "JPX/OSE Futures Quotes",
         "sourceUrl": "https://port.jpx.co.jp/jpxhp/main/index.aspx?disptype=day_through&f=e_future",
@@ -1848,11 +1848,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-09-08T21:06:07+09:00",
+        "lastVerifiedAt": "2026-09-09T08:28:04+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-09-08T21:06:00+09:00",
+        "lastAttemptAt": "2026-09-09T08:27:56+09:00",
         "lastError": "nikkei_nk225f_profile: REFERENCE_ONLY: reference source is not allowed for dashboard publication",
         "retryPreserved": false
       },
@@ -1860,17 +1860,17 @@
         "id": "usdjpy",
         "displayName": "USD/JPY",
         "dashboardKey": "usdjpy",
-        "value": 154.27,
-        "displayValue": "154.27",
-        "previousClose": 156.19700622558594,
-        "change": -1.9270062255859273,
-        "changePercent": -1.2337024070761426,
-        "changeText": "-1.93 / -1.23%",
+        "value": 153.537,
+        "displayValue": "153.54",
+        "previousClose": 153.85499572753906,
+        "change": -0.31799572753905636,
+        "changePercent": -0.2066853442329486,
+        "changeText": "-0.32 / -0.21%",
         "unit": "円",
         "marketType": "spot",
         "session": "continuous",
-        "asOf": "2026-09-08T21:06:07+09:00",
-        "fetchedAt": "2026-09-08T21:06:07+09:00",
+        "asOf": "2026-09-09T08:28:02+09:00",
+        "fetchedAt": "2026-09-09T08:28:04+09:00",
         "sourceId": "yahoo_jpy_x",
         "sourceName": "Yahoo Finance USD/JPY",
         "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
@@ -1879,11 +1879,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-09-08T21:06:10+09:00",
+        "lastVerifiedAt": "2026-09-09T08:28:07+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-09-08T21:06:00+09:00",
+        "lastAttemptAt": "2026-09-09T08:27:56+09:00",
         "lastError": "stooq_usdjpy: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1891,17 +1891,17 @@
         "id": "eurusd",
         "displayName": "EUR/USD",
         "dashboardKey": "eurusd",
-        "value": 1.1617,
-        "displayValue": "1.16170",
-        "previousClose": 1.1613997220993042,
-        "change": 0.00030027790069575566,
-        "changePercent": 0.025854828013294195,
-        "changeText": "+0.00030 / +0.03%",
+        "value": 1.1631,
+        "displayValue": "1.16310",
+        "previousClose": 1.1627637147903442,
+        "change": 0.00033628520965578446,
+        "changePercent": 0.028921199154940957,
+        "changeText": "+0.00034 / +0.03%",
         "unit": "USD",
         "marketType": "spot",
         "session": "continuous",
-        "asOf": "2026-09-08T21:05:34+09:00",
-        "fetchedAt": "2026-09-08T21:06:10+09:00",
+        "asOf": "2026-09-09T08:27:32+09:00",
+        "fetchedAt": "2026-09-09T08:28:07+09:00",
         "sourceId": "yahoo_eurusd_x",
         "sourceName": "Yahoo Finance EUR/USD",
         "sourceUrl": "https://finance.yahoo.com/quote/EURUSD=X/",
@@ -1910,11 +1910,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-09-08T21:06:13+09:00",
+        "lastVerifiedAt": "2026-09-09T08:28:10+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-09-08T21:06:00+09:00",
+        "lastAttemptAt": "2026-09-09T08:27:56+09:00",
         "lastError": "stooq_eurusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1922,17 +1922,17 @@
         "id": "btcusd",
         "displayName": "BTCUSD",
         "dashboardKey": "btc",
-        "value": 78262.58,
-        "displayValue": "78,263",
-        "previousClose": 79115.8515625,
-        "change": -853.2715624999983,
-        "changePercent": -1.0785089784768775,
-        "changeText": "-853 / -1.08%",
+        "value": 78439.36,
+        "displayValue": "78,439",
+        "previousClose": 78439.359375,
+        "change": 0.0006250000005820766,
+        "changePercent": 7.967938531194818e-07,
+        "changeText": "+0 / +0.00%",
         "unit": "USD",
         "marketType": "spot_crypto",
         "session": "continuous",
-        "asOf": "2026-09-08T21:06:07+09:00",
-        "fetchedAt": "2026-09-08T21:06:13+09:00",
+        "asOf": "2026-09-09T08:28:07+09:00",
+        "fetchedAt": "2026-09-09T08:28:10+09:00",
         "sourceId": "yahoo_btc_usd",
         "sourceName": "Yahoo Finance Bitcoin USD",
         "sourceUrl": "https://finance.yahoo.com/quote/BTC-USD/",
@@ -1941,11 +1941,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-09-08T21:06:17+09:00",
+        "lastVerifiedAt": "2026-09-09T08:28:13+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-09-08T21:06:00+09:00",
+        "lastAttemptAt": "2026-09-09T08:27:56+09:00",
         "lastError": "stooq_btcusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1963,7 +1963,7 @@
         "marketType": "index",
         "session": "daily",
         "asOf": "2026-09-07T09:00:00+09:00",
-        "fetchedAt": "2026-09-08T21:06:17+09:00",
+        "fetchedAt": "2026-09-09T08:28:13+09:00",
         "sourceId": "cboe_vix_history",
         "sourceName": "Cboe VIX Historical Data",
         "sourceUrl": "https://www.cboe.com/tradable_products/vix/vix_historical_data/",
@@ -1972,11 +1972,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-09-08T21:06:17+09:00",
+        "lastVerifiedAt": "2026-09-09T08:28:14+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-09-08T21:06:00+09:00",
+        "lastAttemptAt": "2026-09-09T08:27:56+09:00",
         "lastError": "",
         "retryPreserved": false
       },
@@ -1994,7 +1994,7 @@
         "marketType": "index",
         "session": "daily",
         "asOf": "2026-09-08T15:50:00+09:00",
-        "fetchedAt": "2026-09-08T21:06:17+09:00",
+        "fetchedAt": "2026-09-09T08:28:14+09:00",
         "sourceId": "nikkei_nk225vi_profile",
         "sourceName": "Nikkei 225 VI official profile",
         "sourceUrl": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
@@ -2003,11 +2003,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-09-08T21:06:17+09:00",
+        "lastVerifiedAt": "2026-09-09T08:28:14+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-09-08T21:06:00+09:00",
+        "lastAttemptAt": "2026-09-09T08:27:56+09:00",
         "lastError": "",
         "retryPreserved": false
       },
@@ -2015,17 +2015,17 @@
         "id": "fear_greed",
         "displayName": "Fear & Greed Index",
         "dashboardKey": "fear_greed",
-        "value": 41.8571428571429,
-        "displayValue": "42",
+        "value": 40.8,
+        "displayValue": "41",
         "previousClose": 41.8571428571429,
-        "change": 0.0,
-        "changePercent": 0.0,
-        "changeText": "+0 / +0.00%",
+        "change": -1.0571428571428996,
+        "changePercent": -2.5255972696246687,
+        "changeText": "-1 / -2.53%",
         "unit": "score",
         "marketType": "sentiment",
         "session": "daily",
-        "asOf": "2026-09-08T20:47:31+09:00",
-        "fetchedAt": "2026-09-08T21:06:18+09:00",
+        "asOf": "2026-09-09T08:04:27+09:00",
+        "fetchedAt": "2026-09-09T08:28:14+09:00",
         "sourceId": "cnn_fear_greed_graphdata",
         "sourceName": "CNN Fear & Greed graphdata",
         "sourceUrl": "https://edition-prod-cf.sitemirror.cnn.com/markets/fear-and-greed",
@@ -2034,11 +2034,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-09-08T21:06:18+09:00",
+        "lastVerifiedAt": "2026-09-09T08:28:14+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-09-08T21:06:00+09:00",
+        "lastAttemptAt": "2026-09-09T08:27:56+09:00",
         "lastError": "",
         "retryPreserved": false
       },
@@ -2056,7 +2056,7 @@
         "marketType": "crypto_sentiment",
         "session": "daily",
         "asOf": "2026-09-07T09:00:00+09:00",
-        "fetchedAt": "2026-09-08T21:06:18+09:00",
+        "fetchedAt": "2026-09-09T08:28:14+09:00",
         "sourceId": "coinmarketcap_crypto_fear_greed",
         "sourceName": "CoinMarketCap Crypto Fear and Greed Index",
         "sourceUrl": "https://coinmarketcap.com/ja/charts/fear-and-greed-index/",
@@ -2065,11 +2065,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-09-08T21:06:18+09:00",
+        "lastVerifiedAt": "2026-09-09T08:28:14+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-09-08T21:06:00+09:00",
+        "lastAttemptAt": "2026-09-09T08:27:56+09:00",
         "lastError": "",
         "retryPreserved": false
       }
@@ -2189,8 +2189,8 @@
     ],
     "acquisition": {
       "strategy": "staged_retry",
-      "windowStartedAt": "2026-09-08T21:06:00+09:00",
-      "lastAttemptAt": "2026-09-08T21:06:00+09:00",
+      "windowStartedAt": "2026-09-09T08:27:56+09:00",
+      "lastAttemptAt": "2026-09-09T08:27:56+09:00",
       "runCount": 1,
       "mode": "full",
       "targetedSymbols": [
@@ -2357,7 +2357,7 @@
     "updatedAt": "2026-08-22T08:04:00+09:00",
     "dataAsOf": "2026-08-17T16:00:00-04:00",
     "status": "ok",
-    "sourceStatus": "米国市場と東京市場を独立更新・項目別基準日を明示・欠損は複数ソースで補完",
+    "sourceStatus": "米国市場と東京市場を独立更新・市場別基準日を明示",
     "sources": [
       {
         "id": "INITIAL_STOCKS_HTML",
@@ -2379,79 +2379,79 @@
         "rows": [
           [
             "Dow（NYダウ）",
-            "53,414.25",
-            "-271.86（-0.51%）",
-            "前日比下落。指数の終値ベースで確認。 基準日 2026-09-04"
+            "52,786.07",
+            "-628.18（-1.18%）",
+            "前日比下落。指数の終値ベースで確認。 基準日 2026-09-08"
           ],
           [
             "S&P500",
-            "7,718.60",
-            "-29.11（-0.38%）",
-            "前日比下落。指数の終値ベースで確認。 基準日 2026-09-04"
+            "7,673.52",
+            "-45.08（-0.58%）",
+            "前日比下落。指数の終値ベースで確認。 基準日 2026-09-08"
           ],
           [
             "Nasdaq（総合）",
-            "26,506.99",
-            "-77.07（-0.29%）",
-            "前日比下落。指数の終値ベースで確認。 基準日 2026-09-04"
+            "26,421.41",
+            "-85.58（-0.32%）",
+            "前日比下落。指数の終値ベースで確認。 基準日 2026-09-08"
           ],
           [
             "SOX（半導体指数）",
-            "11,735.26",
-            "+383.13（+3.37%）",
-            "前日比上昇。半導体株全体の方向を確認。 基準日 2026-09-04"
+            "11,887.87",
+            "+152.61（+1.30%）",
+            "前日比上昇。半導体株全体の方向を確認。 基準日 2026-09-08"
           ],
           [
             "Russell2000（小型株）",
-            "2,975.65",
-            "+7.38（+0.25%）",
-            "前日比上昇。小型株への資金の広がりを確認。 基準日 2026-09-04"
+            "2,960.20",
+            "-15.45（-0.52%）",
+            "前日比下落。小型株への資金の広がりを確認。 基準日 2026-09-08"
           ],
           [
             "VIX（恐怖指数）",
-            "14.53",
-            "+0.21（+1.47%）",
-            "前日比上昇。警戒感は上昇。 基準日 2026-09-04"
+            "15.72",
+            "+0.42（+2.75%）",
+            "前日比上昇。警戒感は上昇。 基準日 2026-09-08"
           ],
           [
             "NYSE 値上がり / 値下がり",
-            "1,063 / 1,004",
+            "676 / 1,398",
             "-",
-            "上昇優勢。A/D比 1.06倍。 基準日 2026-09-04"
+            "下落優勢。A/D比 0.48倍。 基準日 2026-09-08"
           ],
           [
             "NASDAQ 値上がり / 値下がり",
-            "1,707 / 1,465",
+            "1,173 / 2,034",
             "-",
-            "上昇優勢。A/D比 1.17倍。 基準日 2026-09-04"
+            "下落優勢。A/D比 0.58倍。 基準日 2026-09-08"
           ],
           [
             "NYSE 200日線上 / 下",
-            "1,091 / 947",
+            "1,052 / 987",
             "-",
-            "200日線上 53.5%。長期トレンドはやや上向き。 基準日 2026-09-04"
+            "200日線上 51.6%。長期トレンドはやや上向き。 基準日 2026-09-08"
           ],
           [
             "NASDAQ 200日線上 / 下",
-            "1,479 / 1,571",
+            "1,431 / 1,621",
             "-",
-            "200日線上 48.5%。長期トレンドは拮抗。 基準日 2026-09-04"
+            "200日線上 46.9%。長期トレンドは拮抗。 基準日 2026-09-08"
           ],
           [
             "52週高値 / 安値",
             "0 / 0",
             "-",
-            "NYSE・NASDAQ合算。基準日 2026-09-04"
+            "NYSE・NASDAQ合算。基準日 2026-09-08"
           ],
           [
             "Equal-Weight比較",
-            "-0.09pt",
+            "-0.49pt",
             "-",
-            "RSP騰落率－SPY騰落率。プラスは均等加重優位。基準日 2026-09-04"
+            "RSP騰落率－SPY騰落率。プラスは均等加重優位。基準日 2026-09-08"
           ]
         ],
-        "dataDate": "2026-09-04",
-        "updatedAt": "2026-09-07T08:13:54+09:00"
+        "dataDate": "2026-09-08",
+        "updatedAt": "2026-09-09T08:41:49+09:00"
       },
       "japan": {
         "title": "主要指数と市場内部（日本）",
@@ -2567,9 +2567,9 @@
         "flag": "US",
         "status": "verified",
         "freshness": "fresh",
-        "dataDate": "2026-09-04",
-        "asOf": "2026-09-04T16:00:00-04:00",
-        "updatedAt": "2026-09-07T08:14:49+09:00",
+        "dataDate": "2026-09-08",
+        "asOf": "2026-09-08T16:00:00-04:00",
+        "updatedAt": "2026-09-09T08:42:19+09:00",
         "source": {
           "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
           "url": "https://www.slickcharts.com/sp500",
@@ -2578,104 +2578,104 @@
         "error": null,
         "universe": "S&P 500 constituents",
         "validation": {
-          "estimatedWeightedReturnPct": -0.353,
-          "verifiedSP500ReturnPct": -0.38,
-          "differencePt": 0.027,
+          "estimatedWeightedReturnPct": -0.46,
+          "verifiedSP500ReturnPct": -0.58,
+          "differencePt": 0.12,
           "tolerancePt": 0.2,
           "status": "passed"
         },
         "gainers": [
           {
             "rank": 1,
-            "symbol": "SNDK",
-            "name": "Sandisk Corporation Common Stock（SNDK）",
-            "close": "1,740",
-            "dayChange": "+185.01",
-            "change": "+11.90%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-04。材料要因は別途ニュース確認。"
+            "symbol": "LITE",
+            "name": "Lumentum Holdings Inc. Common Stock（LITE）",
+            "close": "975.5",
+            "dayChange": "+94.25",
+            "change": "+10.69%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
           },
           {
             "rank": 2,
-            "symbol": "KLAC",
-            "name": "KLA Corporation Common Stock（KLAC）",
-            "close": "185.6",
-            "dayChange": "+12.66",
-            "change": "+7.32%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-04。材料要因は別途ニュース確認。"
+            "symbol": "INTC",
+            "name": "Intel Corp（INTC）",
+            "close": "104.09",
+            "dayChange": "+8.29",
+            "change": "+8.65%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
           },
           {
             "rank": 3,
-            "symbol": "MRVL",
-            "name": "Marvell Technology, Inc. Common Stock（MRVL）",
-            "close": "223.55",
-            "dayChange": "+14.72",
-            "change": "+7.05%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-04。材料要因は別途ニュース確認。"
+            "symbol": "GLW",
+            "name": "Corning Incorporated（GLW）",
+            "close": "166.34",
+            "dayChange": "+12.04",
+            "change": "+7.81%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
           },
           {
             "rank": 4,
-            "symbol": "COHR",
-            "name": "Coherent Corp.（COHR）",
-            "close": "281.86",
-            "dayChange": "+17.45",
-            "change": "+6.60%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-04。材料要因は別途ニュース確認。"
+            "symbol": "HPE",
+            "name": "Hewlett Packard Enterprise Company（HPE）",
+            "close": "55.81",
+            "dayChange": "+3.81",
+            "change": "+7.33%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
           },
           {
             "rank": 5,
-            "symbol": "NRG",
-            "name": "NRG Energy, Inc.（NRG）",
-            "close": "119.02",
-            "dayChange": "+7.18",
-            "change": "+6.42%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-04。材料要因は別途ニュース確認。"
+            "symbol": "COHR",
+            "name": "Coherent Corp.（COHR）",
+            "close": "300.56",
+            "dayChange": "+18.69",
+            "change": "+6.63%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
           }
         ],
         "losers": [
           {
             "rank": 1,
-            "symbol": "LULU",
-            "name": "lululemon athletica inc.（LULU）",
-            "close": "100.61",
-            "dayChange": "-21.16",
-            "change": "-17.38%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-04。材料要因は別途ニュース確認。"
+            "symbol": "HWM",
+            "name": "Howmet Aerospace Inc.（HWM）",
+            "close": "230.42",
+            "dayChange": "-28.85",
+            "change": "-11.13%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
           },
           {
             "rank": 2,
-            "symbol": "FICO",
-            "name": "Fair Isaac Corporation（FICO）",
-            "close": "932.26",
-            "dayChange": "-186.67",
-            "change": "-16.68%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-04。材料要因は別途ニュース確認。"
+            "symbol": "CASY",
+            "name": "Casey's General Stores Inc（CASY）",
+            "close": "672.38",
+            "dayChange": "-83.72",
+            "change": "-11.07%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
           },
           {
             "rank": 3,
-            "symbol": "ADSK",
-            "name": "Autodesk Inc（ADSK）",
-            "close": "217.9",
-            "dayChange": "-19.62",
-            "change": "-8.26%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-04。材料要因は別途ニュース確認。"
+            "symbol": "AMGN",
+            "name": "Amgen Inc（AMGN）",
+            "close": "393.61",
+            "dayChange": "-43.62",
+            "change": "-9.98%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
           },
           {
             "rank": 4,
-            "symbol": "ADBE",
-            "name": "Adobe Inc.（ADBE）",
-            "close": "266.51",
-            "dayChange": "-19.24",
-            "change": "-6.73%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-04。材料要因は別途ニュース確認。"
+            "symbol": "SYK",
+            "name": "Stryker Corporation（SYK）",
+            "close": "278.68",
+            "dayChange": "-24.45",
+            "change": "-8.07%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
           },
           {
             "rank": 5,
-            "symbol": "EFX",
-            "name": "Equifax, Incorporated（EFX）",
-            "close": "177.05",
-            "dayChange": "-12.04",
-            "change": "-6.37%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-04。材料要因は別途ニュース確認。"
+            "symbol": "GDDY",
+            "name": "GoDaddy Inc（GDDY）",
+            "close": "93.35",
+            "dayChange": "-7.96",
+            "change": "-7.86%",
+            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
           }
         ],
         "lastGood": null
@@ -2985,133 +2985,133 @@
         "flag": "US",
         "status": "verified-estimate",
         "freshness": "fresh",
-        "dataDate": "2026-09-04",
-        "asOf": "2026-09-04T16:00:00-04:00",
-        "updatedAt": "2026-09-07T08:14:49+09:00",
+        "dataDate": "2026-09-08",
+        "asOf": "2026-09-08T16:00:00-04:00",
+        "updatedAt": "2026-09-09T08:42:19+09:00",
         "source": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
         "error": null,
         "unit": "bp",
         "official": false,
         "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
         "validation": {
-          "estimatedWeightedReturnPct": -0.353,
-          "verifiedSP500ReturnPct": -0.38,
-          "differencePt": 0.027,
+          "estimatedWeightedReturnPct": -0.46,
+          "verifiedSP500ReturnPct": -0.58,
+          "differencePt": 0.12,
           "tolerancePt": 0.2,
           "status": "passed"
         },
         "top": [
           {
             "rank": 1,
-            "symbol": "MU",
-            "name": "Micron Technology, Inc.（MU）",
-            "close": "1,016.59",
-            "change": "+6.10%",
-            "weight": "1.64%",
-            "contribution": "+10.00bp",
-            "contributionBps": 10.004,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-04。公式S&P寄与度ではない。"
+            "symbol": "TSLA",
+            "name": "Tesla, Inc. Common Stock（TSLA）",
+            "close": "366.6",
+            "change": "+3.54%",
+            "weight": "2.08%",
+            "contribution": "+7.36bp",
+            "contributionBps": 7.3632,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-08。公式S&P寄与度ではない。"
           },
           {
             "rank": 2,
-            "symbol": "NVDA",
-            "name": "Nvidia Corp（NVDA）",
-            "close": "230.36",
-            "change": "+0.84%",
-            "weight": "7.94%",
-            "contribution": "+6.67bp",
-            "contributionBps": 6.6696,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-04。公式S&P寄与度ではない。"
+            "symbol": "AMD",
+            "name": "Advanced Micro Devices（AMD）",
+            "close": "505.69",
+            "change": "+5.89%",
+            "weight": "1.18%",
+            "contribution": "+6.95bp",
+            "contributionBps": 6.9502,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-08。公式S&P寄与度ではない。"
           },
           {
             "rank": 3,
-            "symbol": "AMD",
-            "name": "Advanced Micro Devices（AMD）",
-            "close": "477.57",
-            "change": "+4.69%",
-            "weight": "1.11%",
-            "contribution": "+5.21bp",
-            "contributionBps": 5.2059,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-04。公式S&P寄与度ではない。"
+            "symbol": "INTC",
+            "name": "Intel Corp（INTC）",
+            "close": "104.09",
+            "change": "+8.65%",
+            "weight": "0.79%",
+            "contribution": "+6.83bp",
+            "contributionBps": 6.8335,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-08。公式S&P寄与度ではない。"
           },
           {
             "rank": 4,
-            "symbol": "SNDK",
-            "name": "Sandisk Corporation Common Stock（SNDK）",
-            "close": "1,740",
-            "change": "+11.90%",
-            "weight": "0.36%",
-            "contribution": "+4.28bp",
-            "contributionBps": 4.284,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-04。公式S&P寄与度ではない。"
+            "symbol": "AVGO",
+            "name": "Broadcom Inc. Common Stock（AVGO）",
+            "close": "366.74",
+            "change": "+2.47%",
+            "weight": "2.50%",
+            "contribution": "+6.18bp",
+            "contributionBps": 6.175,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-08。公式S&P寄与度ではない。"
           },
           {
             "rank": 5,
-            "symbol": "INTC",
-            "name": "Intel Corp（INTC）",
-            "close": "95.8",
-            "change": "+4.51%",
-            "weight": "0.72%",
-            "contribution": "+3.25bp",
-            "contributionBps": 3.2472,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-04。公式S&P寄与度ではない。"
+            "symbol": "LRCX",
+            "name": "Lam Research Corp（LRCX）",
+            "close": "322.8",
+            "change": "+4.92%",
+            "weight": "0.58%",
+            "contribution": "+2.85bp",
+            "contributionBps": 2.8536,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-08。公式S&P寄与度ではない。"
           }
         ],
         "bottom": [
           {
             "rank": 1,
-            "symbol": "AAPL",
-            "name": "Apple Inc.（AAPL）",
-            "close": "319.97",
-            "change": "-2.51%",
-            "weight": "6.66%",
-            "contribution": "-16.72bp",
-            "contributionBps": -16.7166,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-04。公式S&P寄与度ではない。"
+            "symbol": "NVDA",
+            "name": "Nvidia Corp（NVDA）",
+            "close": "225.45",
+            "change": "-2.13%",
+            "weight": "7.81%",
+            "contribution": "-16.64bp",
+            "contributionBps": -16.6353,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-08。公式S&P寄与度ではない。"
           },
           {
             "rank": 2,
-            "symbol": "TSLA",
-            "name": "Tesla, Inc. Common Stock（TSLA）",
-            "close": "354.08",
-            "change": "-5.92%",
-            "weight": "2.00%",
-            "contribution": "-11.84bp",
-            "contributionBps": -11.84,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-04。公式S&P寄与度ではない。"
+            "symbol": "AAPL",
+            "name": "Apple Inc.（AAPL）",
+            "close": "316.3",
+            "change": "-1.15%",
+            "weight": "6.62%",
+            "contribution": "-7.61bp",
+            "contributionBps": -7.613,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-08。公式S&P寄与度ではない。"
           },
           {
             "rank": 3,
             "symbol": "MSFT",
             "name": "Microsoft Corp（MSFT）",
-            "close": "499.7",
-            "change": "-2.04%",
-            "weight": "5.29%",
-            "contribution": "-10.79bp",
-            "contributionBps": -10.7916,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-04。公式S&P寄与度ではない。"
+            "close": "493.21",
+            "change": "-1.30%",
+            "weight": "5.25%",
+            "contribution": "-6.83bp",
+            "contributionBps": -6.825,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-08。公式S&P寄与度ではない。"
           },
           {
             "rank": 4,
-            "symbol": "GOOGL",
-            "name": "Alphabet Inc. Class A Common Stock（GOOGL）",
-            "close": "338.46",
-            "change": "-1.17%",
-            "weight": "3.04%",
-            "contribution": "-3.56bp",
-            "contributionBps": -3.5568,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-04。公式S&P寄与度ではない。"
+            "symbol": "AMGN",
+            "name": "Amgen Inc（AMGN）",
+            "close": "393.61",
+            "change": "-9.98%",
+            "weight": "0.31%",
+            "contribution": "-3.09bp",
+            "contributionBps": -3.0938,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-08。公式S&P寄与度ではない。"
           },
           {
             "rank": 5,
-            "symbol": "GOOG",
-            "name": "Alphabet Inc. Class C Capital Stock（GOOG）",
-            "close": "335.31",
-            "change": "-1.11%",
-            "weight": "2.84%",
-            "contribution": "-3.15bp",
-            "contributionBps": -3.1524,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-04。公式S&P寄与度ではない。"
+            "symbol": "LLY",
+            "name": "Eli Lilly & Co.（LLY）",
+            "close": "1,125.5",
+            "change": "-2.08%",
+            "weight": "1.44%",
+            "contribution": "-3.00bp",
+            "contributionBps": -2.9952,
+            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-08。公式S&P寄与度ではない。"
           }
         ],
         "lastGood": null
@@ -6374,8 +6374,8 @@
     "note": "データ欠損がある場合は推測で補完せず、該当セルに「取得不能」と理由を表示します。本ページは株式市場分析用の表示構成です。",
     "usBreadth": {
       "schemaVersion": "2.0.0",
-      "marketDate": "2026-09-04",
-      "fetchedAt": "2026-09-07T08:13:54+09:00",
+      "marketDate": "2026-09-08",
+      "fetchedAt": "2026-09-09T08:41:49+09:00",
       "status": "verified",
       "source": {
         "name": "Yahoo Finance daily chart + TradingView America Stock Screener",
@@ -6384,100 +6384,100 @@
       "indices": {
         "^DJI": {
           "symbol": "^DJI",
-          "marketDate": "2026-09-04",
-          "timestamp": 1788528600,
-          "close": 53414.25,
-          "previousClose": 53686.109375,
-          "change": -271.859375,
-          "changePercent": -0.5063868068759638
+          "marketDate": "2026-09-08",
+          "timestamp": 1788874200,
+          "close": 52786.0703125,
+          "previousClose": 53414.25,
+          "change": -628.1796875,
+          "changePercent": -1.1760526217254759
         },
         "^GSPC": {
           "symbol": "^GSPC",
-          "marketDate": "2026-09-04",
-          "timestamp": 1788528600,
-          "close": 7718.60009765625,
-          "previousClose": 7747.7099609375,
-          "change": -29.10986328125,
-          "changePercent": -0.375722160845159
+          "marketDate": "2026-09-08",
+          "timestamp": 1788874200,
+          "close": 7673.52001953125,
+          "previousClose": 7718.60009765625,
+          "change": -45.080078125,
+          "changePercent": -0.5840447432778457
         },
         "^IXIC": {
           "symbol": "^IXIC",
-          "marketDate": "2026-09-04",
-          "timestamp": 1788528600,
-          "close": 26506.990234375,
-          "previousClose": 26584.060546875,
-          "change": -77.0703125,
-          "changePercent": -0.28991174002219816
+          "marketDate": "2026-09-08",
+          "timestamp": 1788874200,
+          "close": 26421.412109375,
+          "previousClose": 26506.990234375,
+          "change": -85.578125,
+          "changePercent": -0.3228511582918981
         },
         "^SOX": {
           "symbol": "^SOX",
-          "marketDate": "2026-09-04",
-          "timestamp": 1788528600,
-          "close": 11735.259765625,
-          "previousClose": 11352.1298828125,
-          "change": 383.1298828125,
-          "changePercent": 3.374960353409727
+          "marketDate": "2026-09-08",
+          "timestamp": 1788874200,
+          "close": 11887.869140625,
+          "previousClose": 11735.259765625,
+          "change": 152.609375,
+          "changePercent": 1.3004345710950889
         },
         "^RUT": {
           "symbol": "^RUT",
-          "marketDate": "2026-09-04",
-          "timestamp": 1788528600,
-          "close": 2975.64990234375,
-          "previousClose": 2968.27001953125,
-          "change": 7.3798828125,
-          "changePercent": 0.24862572353392004
+          "marketDate": "2026-09-08",
+          "timestamp": 1788874200,
+          "close": 2960.20361328125,
+          "previousClose": 2975.64990234375,
+          "change": -15.4462890625,
+          "changePercent": -0.5190895962032979
         },
         "^VIX": {
           "symbol": "^VIX",
-          "marketDate": "2026-09-04",
-          "timestamp": 1788505200,
-          "close": 14.529999732971191,
-          "previousClose": 14.319999694824219,
-          "change": 0.21000003814697266,
-          "changePercent": 1.466480744569251
+          "marketDate": "2026-09-08",
+          "timestamp": 1788850800,
+          "close": 15.720000267028809,
+          "previousClose": 15.300000190734863,
+          "change": 0.4200000762939453,
+          "changePercent": 2.7450985036476174
         }
       },
       "exchanges": {
         "NYSE": {
-          "advancers": 1063,
-          "decliners": 1004,
-          "unchanged": 63,
-          "total": 2130,
+          "advancers": 676,
+          "decliners": 1398,
+          "unchanged": 57,
+          "total": 2131,
           "newHigh52Week": 0,
           "newLow52Week": 0,
-          "aboveSMA200": 1091,
-          "belowSMA200": 947,
+          "aboveSMA200": 1052,
+          "belowSMA200": 987,
           "equalSMA200": 0,
-          "sma200Valid": 2038,
+          "sma200Valid": 2039,
           "sma200Column": "SMA200",
-          "advanceDeclineRatio": 1.058765
+          "advanceDeclineRatio": 0.483548
         },
         "NASDAQ": {
-          "advancers": 1707,
-          "decliners": 1465,
-          "unchanged": 156,
-          "total": 3328,
+          "advancers": 1173,
+          "decliners": 2034,
+          "unchanged": 120,
+          "total": 3327,
           "newHigh52Week": 0,
           "newLow52Week": 0,
-          "aboveSMA200": 1479,
-          "belowSMA200": 1571,
+          "aboveSMA200": 1431,
+          "belowSMA200": 1621,
           "equalSMA200": 0,
-          "sma200Valid": 3050,
+          "sma200Valid": 3052,
           "sma200Column": "SMA200",
-          "advanceDeclineRatio": 1.165188
+          "advanceDeclineRatio": 0.576696
         }
       },
-      "combinedAdvanceRate": 0.528727,
-      "judgement": "上昇優勢",
+      "combinedAdvanceRate": 0.350123,
+      "judgement": "下落優勢",
       "note": "米国主要指数、NYSE/NASDAQ騰落、52週高安、200日線上下を同一取引日で保存。"
     },
     "marketDates": {
       "japan": "2026-09-08",
-      "us": "2026-09-04"
+      "us": "2026-09-08"
     },
     "marketUpdatedAt": {
       "japan": "2026-09-09T00:04:21+09:00",
-      "us": "2026-09-07T08:13:54+09:00"
+      "us": "2026-09-09T08:41:49+09:00"
     },
     "nikkeiMetricsAsOf": "2026-09-08",
     "sessionAnalysis": {
