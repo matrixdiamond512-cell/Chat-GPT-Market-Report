@@ -1,11 +1,11 @@
 {
   "schemaVersion": "1.1.0",
-  "updatedAt": "2026-09-09T09:22:17+09:00",
-  "status": "ok",
+  "updatedAt": "2026-09-10T08:30:17+09:00",
+  "status": "failed",
   "fetchOutcome": "success",
-  "crosscheckOutcome": "success",
+  "crosscheckOutcome": "failure",
   "logTail": [
-    "{\"status\": \"already-current\", \"marketDate\": \"2026-09-08\", \"validation\": {\"estimatedWeightedReturnPct\": -0.4844, \"verifiedSP500ReturnPct\": null, \"differencePt\": null}}",
-    "{\"status\": \"passed\", \"marketDate\": \"2026-09-08\", \"estimatedWeightedReturnPct\": -0.4844, \"verifiedSP500ReturnPct\": -0.58, \"differencePt\": 0.0956, \"tolerancePt\": 0.2}"
+    "{\"status\": \"unavailable\", \"error\": \"Slickcharts is not on the verified U.S. session: source=2026-09-09, expected=2026-09-08\"}",
+    "mover/contribution basis date does not match verified U.S. market date"
   ]
 }

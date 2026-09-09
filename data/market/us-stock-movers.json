@@ -1,19 +1,36 @@
 {
   "schemaVersion": "1.0.0",
-  "status": "verified",
-  "freshness": "fresh",
-  "dataDate": "2026-09-08",
-  "asOf": "2026-09-08T16:00:00-04:00",
-  "updatedAt": "2026-09-09T09:06:45+09:00",
+  "status": "unavailable",
+  "freshness": "unavailable",
+  "dataDate": null,
+  "asOf": null,
+  "updatedAt": "2026-09-10T08:30:17+09:00",
   "source": {
     "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
     "url": "https://www.slickcharts.com/sp500",
     "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
   },
-  "error": null,
+  "error": "Slickcharts is not on the verified U.S. session: source=2026-09-09, expected=2026-09-08",
   "current": {
+    "status": "unavailable",
+    "freshness": "unavailable",
+    "dataDate": null,
+    "asOf": null,
+    "updatedAt": "2026-09-10T08:30:17+09:00",
+    "source": {
+      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+      "url": "https://www.slickcharts.com/sp500",
+      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
+    },
+    "error": "Slickcharts is not on the verified U.S. session: source=2026-09-09, expected=2026-09-08",
+    "universe": "S&P 500 constituents",
+    "validation": {},
+    "gainers": [],
+    "losers": []
+  },
+  "lastGood": {
     "status": "verified",
-    "freshness": "fresh",
+    "freshness": "stale",
     "dataDate": "2026-09-08",
     "asOf": "2026-09-08T16:00:00-04:00",
     "updatedAt": "2026-09-09T09:06:45+09:00",
@@ -124,219 +141,8 @@
       }
     ]
   },
-  "lastGood": {
-    "status": "verified",
-    "freshness": "stale",
-    "dataDate": "2026-09-08",
-    "asOf": "2026-09-08T16:00:00-04:00",
-    "updatedAt": "2026-09-09T08:42:19+09:00",
-    "source": {
-      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-      "url": "https://www.slickcharts.com/sp500",
-      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
-    },
-    "error": null,
-    "universe": "S&P 500 constituents",
-    "validation": {
-      "estimatedWeightedReturnPct": -0.46,
-      "verifiedSP500ReturnPct": null,
-      "differencePt": null
-    },
-    "gainers": [
-      {
-        "rank": 1,
-        "symbol": "LITE",
-        "name": "Lumentum Holdings Inc. Common Stock（LITE）",
-        "close": "975.5",
-        "dayChange": "+94.25",
-        "change": "+10.69%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "INTC",
-        "name": "Intel Corp（INTC）",
-        "close": "104.09",
-        "dayChange": "+8.29",
-        "change": "+8.65%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "GLW",
-        "name": "Corning Incorporated（GLW）",
-        "close": "166.34",
-        "dayChange": "+12.04",
-        "change": "+7.81%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "HPE",
-        "name": "Hewlett Packard Enterprise Company（HPE）",
-        "close": "55.81",
-        "dayChange": "+3.81",
-        "change": "+7.33%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "COHR",
-        "name": "Coherent Corp.（COHR）",
-        "close": "300.56",
-        "dayChange": "+18.69",
-        "change": "+6.63%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-      }
-    ],
-    "losers": [
-      {
-        "rank": 1,
-        "symbol": "HWM",
-        "name": "Howmet Aerospace Inc.（HWM）",
-        "close": "230.42",
-        "dayChange": "-28.85",
-        "change": "-11.13%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "CASY",
-        "name": "Casey's General Stores Inc（CASY）",
-        "close": "672.38",
-        "dayChange": "-83.72",
-        "change": "-11.07%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "AMGN",
-        "name": "Amgen Inc（AMGN）",
-        "close": "393.61",
-        "dayChange": "-43.62",
-        "change": "-9.98%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "SYK",
-        "name": "Stryker Corporation（SYK）",
-        "close": "278.68",
-        "dayChange": "-24.45",
-        "change": "-8.07%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "GDDY",
-        "name": "GoDaddy Inc（GDDY）",
-        "close": "93.35",
-        "dayChange": "-7.96",
-        "change": "-7.86%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-      }
-    ]
-  },
   "universe": "S&P 500 constituents",
-  "validation": {
-    "estimatedWeightedReturnPct": -0.4844,
-    "verifiedSP500ReturnPct": -0.58,
-    "differencePt": 0.0956,
-    "tolerancePt": 0.2,
-    "status": "passed"
-  },
-  "gainers": [
-    {
-      "rank": 1,
-      "symbol": "LITE",
-      "name": "Lumentum Holdings Inc. Common Stock（LITE）",
-      "close": "978.53",
-      "dayChange": "+97.28",
-      "change": "+11.04%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "INTC",
-      "name": "Intel Corp（INTC）",
-      "close": "104.47",
-      "dayChange": "+8.67",
-      "change": "+9.05%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "HPE",
-      "name": "Hewlett Packard Enterprise Company（HPE）",
-      "close": "56.03",
-      "dayChange": "+4.03",
-      "change": "+7.75%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "GLW",
-      "name": "Corning Incorporated（GLW）",
-      "close": "165.96",
-      "dayChange": "+11.66",
-      "change": "+7.56%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "COHR",
-      "name": "Coherent Corp.（COHR）",
-      "close": "301.88",
-      "dayChange": "+20.02",
-      "change": "+7.10%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-    }
-  ],
-  "losers": [
-    {
-      "rank": 1,
-      "symbol": "HWM",
-      "name": "Howmet Aerospace Inc.（HWM）",
-      "close": "231.53",
-      "dayChange": "-27.74",
-      "change": "-10.70%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "AMGN",
-      "name": "Amgen Inc（AMGN）",
-      "close": "393.17",
-      "dayChange": "-44.06",
-      "change": "-10.08%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "SYK",
-      "name": "Stryker Corporation（SYK）",
-      "close": "276.43",
-      "dayChange": "-26.7",
-      "change": "-8.81%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "GDDY",
-      "name": "GoDaddy Inc（GDDY）",
-      "close": "92.88",
-      "dayChange": "-8.43",
-      "change": "-8.32%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "EXPE",
-      "name": "Expedia Group, Inc. Common Stock（EXPE）",
-      "close": "274.55",
-      "dayChange": "-23.49",
-      "change": "-7.88%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-08。材料要因は別途ニュース確認。"
-    }
-  ]
+  "validation": {},
+  "gainers": [],
+  "losers": []
 }
