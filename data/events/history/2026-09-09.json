@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-09-09T18:56:14+09:00",
-  "publishedAt": "2026-09-09T18:56:14+09:00",
-  "dataAsOf": "2026-09-09T18:56:14+09:00",
+  "generatedAt": "2026-09-09T23:17:27+09:00",
+  "publishedAt": "2026-09-09T23:17:27+09:00",
+  "dataAsOf": "2026-09-09T23:17:27+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -37,7 +37,7 @@
       "id": "event_result_repair",
       "name": "重要イベント実績値の補完取得",
       "status": "ok",
-      "note": "代替カレンダー照合 0件、公式PDF補完 0件、取得不能理由明記 0件。"
+      "note": "代替カレンダー照合 1件、公式PDF補完 0件、取得不能理由明記 0件。"
     },
     {
       "id": "weekly_claims_validation",
@@ -50,13 +50,13 @@
   "date": "2026-09-09",
   "events": [
     {
-      "id": "event-b8effc2f9beec0",
-      "sourceKey": "2026-09-09|18:42|EUR|german 10-y bond auction",
+      "id": "event-38a97e5dc234f2",
+      "sourceKey": "2026-09-09|18:33|EUR|german 10-y bond auction",
       "date": "2026-09-09",
-      "time": "18:42",
-      "datetimeJst": "2026-09-09T18:42:00+09:00",
-      "scheduledAtSource": "2026-09-09T05:42:00-04:00",
-      "scheduledAtUtc": "2026-09-09T09:42:00Z",
+      "time": "18:33",
+      "datetimeJst": "2026-09-09T18:33:00+09:00",
+      "scheduledAtSource": "2026-09-09T05:33:00-04:00",
+      "scheduledAtUtc": "2026-09-09T09:33:00Z",
       "country": "欧州",
       "currency": "EUR",
       "title": "欧州 German 10-y 国債入札",
@@ -68,11 +68,11 @@
       "importanceLabel": "中",
       "forecast": "",
       "previous": "3.26|1.1",
-      "actual": "",
+      "actual": "3.39%",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
-      "status": "result_pending",
+      "resultExplanation": "実績 3.39% は予想 なし に対して比較保留。名称差・国コード差を補正してTradingView実績データから照合しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -274,8 +274,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "結果確認中",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -292,8 +292,16 @@
       "sourceType": "forex_factory_weekly",
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
-      "createdAt": "2026-09-06T14:00:56+09:00",
-      "updatedAt": "2026-09-09T18:56:14+09:00"
+      "createdAt": "2026-09-09T23:17:27+09:00",
+      "updatedAt": "2026-09-09T23:17:28+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "tradingview_repair",
+        "name": "Department of Treasury",
+        "url": "https://www.deutsche-finanzagentur.de"
+      },
+      "resultSavedAt": "2026-09-09T23:17:28+09:00"
     }
   ]
 }
