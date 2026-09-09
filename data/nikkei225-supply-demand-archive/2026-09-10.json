@@ -2,12 +2,12 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-supply-demand",
   "reportDate": "2026-09-10",
-  "generatedAt": "2026-09-10T00:08:46+09:00",
+  "generatedAt": "2026-09-10T00:23:29+09:00",
   "nikkei": {
     "schemaVersion": "2.1.0",
     "pageId": "nikkei225-supply-demand",
     "pageTitle": "日経225需給分析",
-    "generatedAt": "2026-09-10T00:08:46+09:00",
+    "generatedAt": "2026-09-10T00:23:29+09:00",
     "spot": {
       "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
@@ -16,7 +16,7 @@
       "value": 65142.78,
       "asOfDate": "2026-09-09",
       "status": "verified",
-      "fetchedAt": "2026-09-10T00:08:46+09:00"
+      "fetchedAt": "2026-09-10T00:23:29+09:00"
     },
     "futures": {
       "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -35,7 +35,7 @@
       "volumeChangePercent": null,
       "miniVolumeChangePercent": null,
       "status": "verified",
-      "fetchedAt": "2026-09-10T00:07:10+09:00",
+      "fetchedAt": "2026-09-10T00:21:48+09:00",
       "previousOpenInterest": 242170,
       "miniPreviousOpenInterest": 460607,
       "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260909open_interest.xlsx"
@@ -55,7 +55,7 @@
       "asOfDate": "2026-09-09",
       "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260909_derivatives_market_data_night.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-09-10T00:08:38+09:00"
+      "fetchedAt": "2026-09-10T00:23:19+09:00"
     },
     "arbitrage": {
       "sourceName": "JPX 裁定取引の状況",
@@ -69,9 +69,9 @@
       "buyChange": -1843,
       "status": "verified",
       "frequency": "daily",
-      "lastAttemptAt": "2026-09-10T00:07:05+09:00",
-      "lastSuccessAt": "2026-09-10T00:07:05+09:00",
-      "fetchedAt": "2026-09-10T00:07:05+09:00",
+      "lastAttemptAt": "2026-09-10T00:21:42+09:00",
+      "lastSuccessAt": "2026-09-10T00:21:42+09:00",
+      "fetchedAt": "2026-09-10T00:21:42+09:00",
       "error": null
     },
     "options": {
@@ -85,7 +85,7 @@
       "ivChange": null,
       "asOfDate": "2026-09-10",
       "status": "calculated",
-      "fetchedAt": "2026-09-10T00:08:46+09:00",
+      "fetchedAt": "2026-09-10T00:23:29+09:00",
       "putVolume": null,
       "callVolume": null,
       "putCallStatus": "unavailable",
@@ -161,7 +161,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202609/20260909_volume_by_participant_whole_day.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-09-10T00:08:39+09:00"
+      "fetchedAt": "2026-09-10T00:23:21+09:00"
     },
     "foreignInvestors": {
       "sourceName": "JPX 投資部門別売買状況",
@@ -774,7 +774,7 @@
         ]
       },
       "status": "verified",
-      "fetchedAt": "2026-09-10T00:08:36+09:00"
+      "fetchedAt": "2026-09-10T00:23:18+09:00"
     },
     "participantOpenInterest": {
       "sourceName": "JPX 取引参加者別建玉残高",
@@ -888,7 +888,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20260904_indexfut_oi_by_tp.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-09-10T00:08:40+09:00"
+      "fetchedAt": "2026-09-10T00:23:22+09:00"
     },
     "shortSelling": {
       "sourceName": "JPX 空売り集計",
@@ -938,7 +938,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-09-10T00:07:09+09:00"
+      "fetchedAt": "2026-09-10T00:21:47+09:00"
     },
     "margin": {
       "sourceName": "JPX 信用取引現在高",
@@ -999,7 +999,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-09-10T00:07:13+09:00"
+      "fetchedAt": "2026-09-10T00:21:50+09:00"
     },
     "assessment": {
       "overall": "売り優勢",
@@ -1294,7 +1294,7 @@
       "market": null,
       "status": "partial",
       "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202609.xlsx",
-      "fetchedAt": "2026-09-10T00:08:44+09:00",
+      "fetchedAt": "2026-09-10T00:23:26+09:00",
       "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
     },
     "nikkeiFuturesDailyHistory": [
@@ -1306,7 +1306,7 @@
         "sourceName": "JPX / 大阪取引所 日経225先物",
         "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
         "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260909open_interest.xlsx",
-        "capturedAt": "2026-09-10T00:08:43+09:00",
+        "capturedAt": "2026-09-10T00:23:25+09:00",
         "status": "verified"
       }
     ],
@@ -1323,7 +1323,7 @@
       "status": "verified",
       "releaseFrequency": "weekly",
       "lookbackWeeks": 52,
-      "fetchedAt": "2026-09-10T00:08:47+09:00",
+      "fetchedAt": "2026-09-10T00:23:30+09:00",
       "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
       "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
       "priceStatus": "available",
@@ -6897,113 +6897,113 @@
         "title": "米国市場 プレマーケット分析",
         "flag": "US",
         "status": "取得不能（当日プレマーケット時間外・休場、または株価データなし）",
-        "dataDate": "2026-09-08",
-        "updatedAt": "2026-09-09T00:14:08+09:00",
+        "dataDate": "2026-09-09",
+        "updatedAt": "2026-09-10T00:14:05+09:00",
         "source": "Yahoo Finance chart API（指数先物・金利・FX・大型株）",
         "metrics": [
           {
             "label": "S&P500先物",
-            "value": "7,697.50",
-            "change": "-0.32%",
+            "value": "7,648.00",
+            "change": "-0.42%",
             "note": "前日通常取引終値比"
           },
           {
             "label": "Nasdaq100先物",
-            "value": "29,553.75",
-            "change": "-0.04%",
+            "value": "29,490.25",
+            "change": "-0.16%",
             "note": "前日通常取引終値比"
           },
           {
             "label": "Dow先物",
-            "value": "52,922.00",
-            "change": "-0.97%",
+            "value": "52,441.00",
+            "change": "-0.74%",
             "note": "前日通常取引終値比"
           },
           {
             "label": "Russell2000先物",
-            "value": "2,970.10",
-            "change": "-0.22%",
+            "value": "2,932.40",
+            "change": "-1.05%",
             "note": "前日通常取引終値比"
           },
           {
             "label": "VIX",
-            "value": "15.44",
-            "change": "+6.26%",
+            "value": "16.05",
+            "change": "+2.10%",
             "note": "前日通常取引終値比"
           },
           {
             "label": "米10年債利回り",
-            "value": "4.79%",
-            "change": "+0.04%",
+            "value": "4.81%",
+            "change": "+0.17%",
             "note": "前日通常取引終値比"
           },
           {
             "label": "ドル指数",
-            "value": "98.81",
-            "change": "-0.35%",
+            "value": "98.72",
+            "change": "-0.07%",
             "note": "前日通常取引終値比"
           },
           {
             "label": "USD/JPY",
-            "value": "154.187",
-            "change": "-0.10%",
+            "value": "153.761",
+            "change": "-0.05%",
             "note": "前日通常取引終値比"
           }
         ],
         "premarketMovers": [
           {
-            "symbol": "AVGO",
-            "price": 363.72,
-            "changePct": 1.6275723326674152,
-            "volume": 0
-          },
-          {
-            "symbol": "MSFT",
-            "price": 493.39,
-            "changePct": -1.262757654592761,
-            "volume": 0
-          },
-          {
-            "symbol": "NVDA",
-            "price": 233.21,
-            "changePct": 1.237193957284255,
-            "volume": 0
-          },
-          {
-            "symbol": "TSLA",
-            "price": 357.16,
-            "changePct": 0.8698599186624634,
+            "symbol": "META",
+            "price": 648.95,
+            "changePct": 5.781769576840334,
             "volume": 0
           },
           {
             "symbol": "GOOGL",
-            "price": 335.54,
-            "changePct": -0.862731194232691,
-            "volume": 0
-          },
-          {
-            "symbol": "AAPL",
-            "price": 317.39,
-            "changePct": -0.8063255930243596,
+            "price": 331.5,
+            "changePct": -2.0274264097411065,
             "volume": 0
           },
           {
             "symbol": "AMZN",
-            "price": 256.71,
-            "changePct": -0.696298015550656,
+            "price": 253.02,
+            "changePct": -1.5371444137448065,
             "volume": 0
           },
           {
-            "symbol": "META",
-            "price": 616.26,
-            "changePct": -0.08268884673379162,
+            "symbol": "AVGO",
+            "price": 366.23,
+            "changePct": -0.6321901454308665,
+            "volume": 0
+          },
+          {
+            "symbol": "MSFT",
+            "price": 492.28,
+            "changePct": -0.3380908998886545,
+            "volume": 0
+          },
+          {
+            "symbol": "AAPL",
+            "price": 315.5688,
+            "changePct": -0.2059325785845334,
+            "volume": 0
+          },
+          {
+            "symbol": "NVDA",
+            "price": 225.31,
+            "changePct": -0.18606299561422235,
+            "volume": 0
+          },
+          {
+            "symbol": "TSLA",
+            "price": 368.0719,
+            "changePct": -0.02392981312472342,
             "volume": 0
           }
         ],
         "insights": [
-          "大型テック・主要株プレマーケット: AVGO +1.63%（出来高 0） / MSFT -1.26%（出来高 0） / NVDA +1.24%（出来高 0） / TSLA +0.87%（出来高 0） / GOOGL -0.86%（出来高 0）",
+          "大型テック・主要株プレマーケット: META +5.78%（出来高 0） / GOOGL -2.03%（出来高 0） / AMZN -1.54%（出来高 0） / AVGO -0.63%（出来高 0） / MSFT -0.34%（出来高 0）",
           "S&P500先物とNasdaq100先物はともにマイナス圏。NY寄り前はリスクオフ寄りです。",
-          "米10年債利回り 4.79%（前日比 +0.04%）。株先物との整合性を確認します。"
+          "米10年債利回り 4.81%（前日比 +0.17%）。株先物との整合性を確認します。"
         ],
         "judgement": "指数先物・米金利・ドル・大型テックのプレマーケット出来高を組み合わせて判断します。",
         "errors": []
@@ -7017,7 +7017,7 @@
           },
           {
             "label": "米国プレマーケット",
-            "text": "2026-09-08 / S&P500先物 7,697.50 -0.32% / Nasdaq100先物 29,553.75 -0.04%"
+            "text": "2026-09-09 / S&P500先物 7,648.00 -0.42% / Nasdaq100先物 29,490.25 -0.16%"
           },
           {
             "label": "米国通常市場（直近終値）",
@@ -7027,7 +7027,7 @@
         "conclusion": "東京市場と米国株先物の方向が一致。日米で同じリスク選好が引き継がれている可能性が高まっています。"
       }
     },
-    "sessionDataUpdatedAt": "2026-09-09T13:31:46+09:00",
+    "sessionDataUpdatedAt": "2026-09-10T00:14:09+09:00",
     "pageStatus": "ok",
     "preopen": {
       "status": "unavailable",
@@ -7057,9 +7057,9 @@
     "usPremarket": {
       "status": "ok",
       "freshness": "fresh",
-      "dataDate": "2026-09-08",
-      "asOf": "2026-09-08T09:29-04:00",
-      "updatedAt": "2026-09-09T00:18:13+09:00",
+      "dataDate": "2026-09-09",
+      "asOf": "2026-09-09T09:29-04:00",
+      "updatedAt": "2026-09-10T00:16:31+09:00",
       "source": {
         "name": "Yahoo Finance Chart API",
         "method": "1m interval, includePrePost=true, New York 04:00-09:30"
@@ -7070,266 +7070,266 @@
       "coverageRatio": 100.0,
       "topGainers": [
         {
-          "symbol": "QCOM",
-          "name": "QCOM",
-          "sector": "半導体・AI",
-          "price": 180.51,
-          "changePct": 6.975228,
-          "change": "+6.98%",
-          "volume": 0,
-          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
-        },
-        {
-          "symbol": "ORCL",
-          "name": "ORCL",
+          "symbol": "META",
+          "name": "META",
           "sector": "大型テック",
-          "price": 167.11,
-          "changePct": 5.246253,
-          "change": "+5.25%",
+          "price": 648.95,
+          "changePct": 5.78177,
+          "change": "+5.78%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:14-04:00",
-          "asOf": "2026-09-08T09:14-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:29-04:00",
+          "asOf": "2026-09-09T09:29-04:00"
         },
         {
-          "symbol": "INTC",
-          "name": "INTC",
-          "sector": "半導体・AI",
-          "price": 100.8001,
-          "changePct": 5.219311,
-          "change": "+5.22%",
+          "symbol": "COP",
+          "name": "COP",
+          "sector": "エネルギー",
+          "price": 137.31,
+          "changePct": 1.680983,
+          "change": "+1.68%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:14-04:00",
+          "asOf": "2026-09-09T09:14-04:00"
         },
         {
-          "symbol": "AMD",
-          "name": "AMD",
-          "sector": "半導体・AI",
-          "price": 488.32,
-          "changePct": 2.250979,
-          "change": "+2.25%",
+          "symbol": "UNH",
+          "name": "UNH",
+          "sector": "ヘルスケア",
+          "price": 407.11,
+          "changePct": 1.564215,
+          "change": "+1.56%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:14-04:00",
+          "asOf": "2026-09-09T09:14-04:00"
         },
         {
-          "symbol": "LRCX",
-          "name": "LRCX",
-          "sector": "半導体・AI",
-          "price": 314.5,
-          "changePct": 2.226556,
-          "change": "+2.23%",
+          "symbol": "CVX",
+          "name": "CVX",
+          "sector": "エネルギー",
+          "price": 212.3735,
+          "changePct": 1.226644,
+          "change": "+1.23%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:11-04:00",
+          "asOf": "2026-09-09T09:11-04:00"
         },
         {
-          "symbol": "AMAT",
-          "name": "AMAT",
-          "sector": "半導体・AI",
-          "price": 464.25,
-          "changePct": 2.098041,
-          "change": "+2.10%",
+          "symbol": "XOM",
+          "name": "XOM",
+          "sector": "エネルギー",
+          "price": 162.5,
+          "changePct": 1.145276,
+          "change": "+1.15%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
-        },
-        {
-          "symbol": "MU",
-          "name": "MU",
-          "sector": "半導体・AI",
-          "price": 1036.72,
-          "changePct": 1.980149,
-          "change": "+1.98%",
-          "volume": 0,
-          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
-        },
-        {
-          "symbol": "AVGO",
-          "name": "AVGO",
-          "sector": "半導体・AI",
-          "price": 363.72,
-          "changePct": 1.627572,
-          "change": "+1.63%",
-          "volume": 0,
-          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
-        },
-        {
-          "symbol": "NKE",
-          "name": "NKE",
-          "sector": "消費",
-          "price": 38.98,
-          "changePct": 1.510417,
-          "change": "+1.51%",
-          "volume": 0,
-          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:14-04:00",
-          "asOf": "2026-09-08T09:14-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:14-04:00",
+          "asOf": "2026-09-09T09:14-04:00"
         },
         {
           "symbol": "LMT",
           "name": "LMT",
           "sector": "資本財・防衛",
-          "price": 532.25,
-          "changePct": 1.326911,
-          "change": "+1.33%",
+          "price": 541.5,
+          "changePct": 0.997855,
+          "change": "+1.00%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:13-04:00",
-          "asOf": "2026-09-08T09:13-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:14-04:00",
+          "asOf": "2026-09-09T09:14-04:00"
+        },
+        {
+          "symbol": "SLB",
+          "name": "SLB",
+          "sector": "エネルギー",
+          "price": 57.6,
+          "changePct": 0.875657,
+          "change": "+0.88%",
+          "volume": 0,
+          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+          "volumeWindowStart": "2026-09-09T07:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:13-04:00",
+          "asOf": "2026-09-09T09:13-04:00"
+        },
+        {
+          "symbol": "UBER",
+          "name": "UBER",
+          "sector": "高β・成長",
+          "price": 73.6813,
+          "changePct": 0.753863,
+          "change": "+0.75%",
+          "volume": 0,
+          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:14-04:00",
+          "asOf": "2026-09-09T09:14-04:00"
+        },
+        {
+          "symbol": "ORCL",
+          "name": "ORCL",
+          "sector": "大型テック",
+          "price": 163.37,
+          "changePct": 0.523013,
+          "change": "+0.52%",
+          "volume": 0,
+          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:14-04:00",
+          "asOf": "2026-09-09T09:14-04:00"
+        },
+        {
+          "symbol": "QCOM",
+          "name": "QCOM",
+          "sector": "半導体・AI",
+          "price": 174.98,
+          "changePct": 0.51123,
+          "change": "+0.51%",
+          "volume": 0,
+          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:29-04:00",
+          "asOf": "2026-09-09T09:29-04:00"
         }
       ],
       "topLosers": [
         {
-          "symbol": "JNJ",
-          "name": "JNJ",
-          "sector": "ヘルスケア",
-          "price": 270.5,
-          "changePct": -1.718563,
-          "change": "-1.72%",
-          "volume": 0,
-          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:01-04:00",
-          "volumeWindowEnd": "2026-09-08T09:12-04:00",
-          "asOf": "2026-09-08T09:12-04:00"
-        },
-        {
-          "symbol": "PFE",
-          "name": "PFE",
-          "sector": "ヘルスケア",
-          "price": 28.07,
-          "changePct": -1.335677,
-          "change": "-1.34%",
-          "volume": 0,
-          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:13-04:00",
-          "asOf": "2026-09-08T09:13-04:00"
-        },
-        {
-          "symbol": "CRM",
-          "name": "CRM",
-          "sector": "大型テック",
-          "price": 255.78,
-          "changePct": -1.330864,
-          "change": "-1.33%",
-          "volume": 0,
-          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:14-04:00",
-          "asOf": "2026-09-08T09:14-04:00"
-        },
-        {
-          "symbol": "MSFT",
-          "name": "MSFT",
-          "sector": "大型テック",
-          "price": 493.39,
-          "changePct": -1.262758,
-          "change": "-1.26%",
-          "volume": 0,
-          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
-        },
-        {
-          "symbol": "MRK",
-          "name": "MRK",
-          "sector": "ヘルスケア",
-          "price": 148.5,
-          "changePct": -1.217322,
-          "change": "-1.22%",
-          "volume": 0,
-          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:13-04:00",
-          "asOf": "2026-09-08T09:13-04:00"
-        },
-        {
-          "symbol": "ABBV",
-          "name": "ABBV",
-          "sector": "ヘルスケア",
-          "price": 253.36,
-          "changePct": -1.208765,
-          "change": "-1.21%",
-          "volume": 0,
-          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:07-04:00",
-          "asOf": "2026-09-08T09:07-04:00"
-        },
-        {
-          "symbol": "MS",
-          "name": "MS",
-          "sector": "金融",
-          "price": 215.31,
-          "changePct": -1.106926,
-          "change": "-1.11%",
-          "volume": 0,
-          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:01-04:00",
-          "volumeWindowEnd": "2026-09-08T08:13-04:00",
-          "asOf": "2026-09-08T08:13-04:00"
-        },
-        {
-          "symbol": "LLY",
-          "name": "LLY",
-          "sector": "ヘルスケア",
-          "price": 1138.0,
-          "changePct": -0.988376,
-          "change": "-0.99%",
-          "volume": 0,
-          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:11-04:00",
-          "asOf": "2026-09-08T09:11-04:00"
-        },
-        {
-          "symbol": "NFLX",
-          "name": "NFLX",
-          "sector": "大型テック",
-          "price": 77.51,
-          "changePct": -0.945687,
-          "change": "-0.95%",
-          "volume": 0,
-          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
-        },
-        {
           "symbol": "GOOGL",
           "name": "GOOGL",
           "sector": "大型テック",
-          "price": 335.54,
-          "changePct": -0.862731,
-          "change": "-0.86%",
+          "price": 331.5,
+          "changePct": -2.027426,
+          "change": "-2.03%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:29-04:00",
+          "asOf": "2026-09-09T09:29-04:00"
+        },
+        {
+          "symbol": "INTC",
+          "name": "INTC",
+          "sector": "半導体・AI",
+          "price": 102.71,
+          "changePct": -1.684694,
+          "change": "-1.68%",
+          "volume": 0,
+          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:29-04:00",
+          "asOf": "2026-09-09T09:29-04:00"
+        },
+        {
+          "symbol": "AMZN",
+          "name": "AMZN",
+          "sector": "大型テック",
+          "price": 253.02,
+          "changePct": -1.537144,
+          "change": "-1.54%",
+          "volume": 0,
+          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:29-04:00",
+          "asOf": "2026-09-09T09:29-04:00"
+        },
+        {
+          "symbol": "AMAT",
+          "name": "AMAT",
+          "sector": "半導体・AI",
+          "price": 466.62,
+          "changePct": -1.305019,
+          "change": "-1.31%",
+          "volume": 0,
+          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:29-04:00",
+          "asOf": "2026-09-09T09:29-04:00"
+        },
+        {
+          "symbol": "HD",
+          "name": "HD",
+          "sector": "消費",
+          "price": 310.83,
+          "changePct": -0.914887,
+          "change": "-0.91%",
+          "volume": 0,
+          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:14-04:00",
+          "asOf": "2026-09-09T09:14-04:00"
+        },
+        {
+          "symbol": "ABNB",
+          "name": "ABNB",
+          "sector": "高β・成長",
+          "price": 173.09,
+          "changePct": -0.830755,
+          "change": "-0.83%",
+          "volume": 0,
+          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:28-04:00",
+          "asOf": "2026-09-09T09:28-04:00"
+        },
+        {
+          "symbol": "GS",
+          "name": "GS",
+          "sector": "金融",
+          "price": 1028.0,
+          "changePct": -0.822938,
+          "change": "-0.82%",
+          "volume": 0,
+          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+          "volumeWindowStart": "2026-09-09T04:20-04:00",
+          "volumeWindowEnd": "2026-09-09T08:57-04:00",
+          "asOf": "2026-09-09T08:57-04:00"
+        },
+        {
+          "symbol": "C",
+          "name": "C",
+          "sector": "金融",
+          "price": 135.74,
+          "changePct": -0.731315,
+          "change": "-0.73%",
+          "volume": 0,
+          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+          "volumeWindowStart": "2026-09-09T05:43-04:00",
+          "volumeWindowEnd": "2026-09-09T09:07-04:00",
+          "asOf": "2026-09-09T09:07-04:00"
+        },
+        {
+          "symbol": "T",
+          "name": "T",
+          "sector": "その他",
+          "price": 25.42,
+          "changePct": -0.703125,
+          "change": "-0.70%",
+          "volume": 0,
+          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+          "volumeWindowStart": "2026-09-09T04:46-04:00",
+          "volumeWindowEnd": "2026-09-09T09:09-04:00",
+          "asOf": "2026-09-09T09:09-04:00"
+        },
+        {
+          "symbol": "BA",
+          "name": "BA",
+          "sector": "資本財・防衛",
+          "price": 209.2511,
+          "changePct": -0.701799,
+          "change": "-0.70%",
+          "volume": 0,
+          "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:12-04:00",
+          "asOf": "2026-09-09T09:12-04:00"
         }
       ],
       "topVolume": [
@@ -7337,202 +7337,202 @@
           "symbol": "AAPL",
           "name": "AAPL",
           "sector": "大型テック",
-          "price": 317.39,
-          "changePct": -0.806326,
-          "change": "-0.81%",
+          "price": 315.5688,
+          "changePct": -0.205933,
+          "change": "-0.21%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:29-04:00",
+          "asOf": "2026-09-09T09:29-04:00"
         },
         {
           "symbol": "ABBV",
           "name": "ABBV",
           "sector": "ヘルスケア",
-          "price": 253.36,
-          "changePct": -1.208765,
-          "change": "-1.21%",
+          "price": 249.8,
+          "changePct": 0.410001,
+          "change": "+0.41%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:07-04:00",
-          "asOf": "2026-09-08T09:07-04:00"
+          "volumeWindowStart": "2026-09-09T04:05-04:00",
+          "volumeWindowEnd": "2026-09-09T08:35-04:00",
+          "asOf": "2026-09-09T08:35-04:00"
         },
         {
           "symbol": "ABNB",
           "name": "ABNB",
           "sector": "高β・成長",
-          "price": 181.05,
-          "changePct": -0.489172,
-          "change": "-0.49%",
+          "price": 173.09,
+          "changePct": -0.830755,
+          "change": "-0.83%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:28-04:00",
+          "asOf": "2026-09-09T09:28-04:00"
         },
         {
           "symbol": "AMAT",
           "name": "AMAT",
           "sector": "半導体・AI",
-          "price": 464.25,
-          "changePct": 2.098041,
-          "change": "+2.10%",
+          "price": 466.62,
+          "changePct": -1.305019,
+          "change": "-1.31%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:29-04:00",
+          "asOf": "2026-09-09T09:29-04:00"
         },
         {
           "symbol": "AMD",
           "name": "AMD",
           "sector": "半導体・AI",
-          "price": 488.32,
-          "changePct": 2.250979,
-          "change": "+2.25%",
+          "price": 507.72,
+          "changePct": 0.391506,
+          "change": "+0.39%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:29-04:00",
+          "asOf": "2026-09-09T09:29-04:00"
         },
         {
           "symbol": "AMZN",
           "name": "AMZN",
           "sector": "大型テック",
-          "price": 256.71,
-          "changePct": -0.696298,
-          "change": "-0.70%",
+          "price": 253.02,
+          "changePct": -1.537144,
+          "change": "-1.54%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:29-04:00",
+          "asOf": "2026-09-09T09:29-04:00"
         },
         {
           "symbol": "AVGO",
           "name": "AVGO",
           "sector": "半導体・AI",
-          "price": 363.72,
-          "changePct": 1.627572,
-          "change": "+1.63%",
+          "price": 366.23,
+          "changePct": -0.63219,
+          "change": "-0.63%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:29-04:00",
-          "asOf": "2026-09-08T09:29-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:29-04:00",
+          "asOf": "2026-09-09T09:29-04:00"
         },
         {
           "symbol": "BA",
           "name": "BA",
           "sector": "資本財・防衛",
-          "price": 211.11,
-          "changePct": -0.537102,
-          "change": "-0.54%",
+          "price": 209.2511,
+          "changePct": -0.701799,
+          "change": "-0.70%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:14-04:00",
-          "asOf": "2026-09-08T09:14-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:12-04:00",
+          "asOf": "2026-09-09T09:12-04:00"
         },
         {
           "symbol": "BAC",
           "name": "BAC",
           "sector": "金融",
-          "price": 62.4,
-          "changePct": -0.446713,
-          "change": "-0.45%",
+          "price": 62.05,
+          "changePct": -0.544959,
+          "change": "-0.54%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:13-04:00",
-          "asOf": "2026-09-08T09:13-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:14-04:00",
+          "asOf": "2026-09-09T09:14-04:00"
         },
         {
           "symbol": "BRK-B",
           "name": "BRK-B",
           "sector": "金融",
-          "price": 502.7,
-          "changePct": -0.658064,
-          "change": "-0.66%",
+          "price": 504.6,
+          "changePct": -0.243165,
+          "change": "-0.24%",
           "volume": 0,
           "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
-          "volumeWindowStart": "2026-09-08T04:00-04:00",
-          "volumeWindowEnd": "2026-09-08T09:13-04:00",
-          "asOf": "2026-09-08T09:13-04:00"
+          "volumeWindowStart": "2026-09-09T04:00-04:00",
+          "volumeWindowEnd": "2026-09-09T09:13-04:00",
+          "asOf": "2026-09-09T09:13-04:00"
         }
       ],
       "breadth": {
         "up": 19,
-        "down": 31,
-        "flat": 0,
+        "down": 30,
+        "flat": 1,
         "flatThresholdPct": 0.05,
         "label": "監視銘柄ベース"
       },
       "sectorBreadth": {
         "半導体・AI": {
-          "up": 8,
-          "down": 0,
+          "up": 3,
+          "down": 5,
           "flat": 0,
-          "averageChangePct": 2.9519,
-          "judgement": "強い"
+          "averageChangePct": -0.3638,
+          "judgement": "弱い"
         },
         "大型テック": {
-          "up": 1,
-          "down": 7,
+          "up": 3,
+          "down": 5,
           "flat": 0,
-          "averageChangePct": -0.0926,
+          "averageChangePct": 0.2121,
           "judgement": "弱い"
         },
         "高β・成長": {
           "up": 2,
-          "down": 2,
-          "flat": 0,
-          "averageChangePct": 0.2548,
-          "judgement": "拮抗"
+          "down": 1,
+          "flat": 1,
+          "averageChangePct": 0.0994,
+          "judgement": "強い"
         },
         "金融": {
           "up": 0,
           "down": 7,
           "flat": 0,
-          "averageChangePct": -0.5535,
+          "averageChangePct": -0.5722,
           "judgement": "弱い"
         },
         "エネルギー": {
           "up": 4,
           "down": 0,
           "flat": 0,
-          "averageChangePct": 0.8238,
+          "averageChangePct": 1.2321,
           "judgement": "強い"
         },
         "消費": {
           "up": 1,
           "down": 5,
           "flat": 0,
-          "averageChangePct": -0.1012,
+          "averageChangePct": -0.3062,
           "judgement": "弱い"
         },
         "ヘルスケア": {
-          "up": 0,
-          "down": 6,
+          "up": 5,
+          "down": 1,
           "flat": 0,
-          "averageChangePct": -1.2173,
-          "judgement": "弱い"
+          "averageChangePct": 0.3999,
+          "judgement": "強い"
         },
         "資本財・防衛": {
-          "up": 3,
-          "down": 2,
+          "up": 1,
+          "down": 4,
           "flat": 0,
-          "averageChangePct": 0.4225,
-          "judgement": "強い"
+          "averageChangePct": -0.2085,
+          "judgement": "弱い"
         },
         "その他": {
           "up": 0,
           "down": 2,
           "flat": 0,
-          "averageChangePct": -0.7123,
+          "averageChangePct": -0.6181,
           "judgement": "弱い"
         }
       },
@@ -7540,87 +7540,654 @@
         "sp500": {
           "symbol": "ES=F",
           "label": "S&P500先物",
-          "change": "-0.14%",
-          "changePct": -0.139213,
-          "asOf": "2026-09-08T09:29-04:00"
+          "change": "-0.26%",
+          "changePct": -0.2604,
+          "asOf": "2026-09-09T09:29-04:00"
         },
         "nasdaq100": {
           "symbol": "NQ=F",
           "label": "Nasdaq100先物",
-          "change": "+0.27%",
-          "changePct": 0.268051,
-          "asOf": "2026-09-08T09:29-04:00"
+          "change": "-0.29%",
+          "changePct": -0.285219,
+          "asOf": "2026-09-09T09:29-04:00"
         },
         "dow": {
           "symbol": "YM=F",
           "label": "Dow先物",
-          "change": "-0.72%",
-          "changePct": -0.720434,
-          "asOf": "2026-09-08T09:29-04:00"
+          "change": "-0.48%",
+          "changePct": -0.475091,
+          "asOf": "2026-09-09T09:29-04:00"
         },
         "russell2000": {
           "symbol": "RTY=F",
           "label": "Russell2000先物",
-          "change": "-0.21%",
-          "changePct": -0.211649,
-          "asOf": "2026-09-08T09:29-04:00"
+          "change": "-0.41%",
+          "changePct": -0.411665,
+          "asOf": "2026-09-09T09:29-04:00"
         },
         "vix": {
           "symbol": "^VIX",
           "label": "VIX",
-          "change": "+5.51%",
-          "changePct": 5.505849,
-          "asOf": "2026-09-08T09:25-04:00"
+          "change": "+2.93%",
+          "changePct": 2.926211,
+          "asOf": "2026-09-09T09:25-04:00"
         },
         "us10y": {
           "symbol": "^TNX",
           "label": "米10年債",
-          "change": "-0.17%",
-          "changePct": -0.167224,
-          "asOf": "2026-09-08T09:29-04:00"
+          "change": "-0.08%",
+          "changePct": -0.083228,
+          "asOf": "2026-09-09T09:29-04:00"
         },
         "dxy": {
           "symbol": "DX-Y.NYB",
           "label": "ドル指数",
-          "change": "-0.34%",
-          "changePct": -0.343834,
-          "asOf": "2026-09-08T09:29-04:00"
+          "change": "-0.13%",
+          "changePct": -0.133622,
+          "asOf": "2026-09-09T09:29-04:00"
         },
         "usdjpy": {
           "symbol": "JPY=X",
           "label": "USD/JPY",
-          "change": "-0.37%",
-          "changePct": -0.366064,
-          "asOf": "2026-09-08T09:29-04:00"
+          "change": "-0.33%",
+          "changePct": -0.329565,
+          "asOf": "2026-09-09T09:29-04:00"
         },
         "gold": {
           "symbol": "GC=F",
           "label": "Gold",
-          "change": "-0.71%",
-          "changePct": -0.710365,
-          "asOf": "2026-09-08T09:29-04:00"
+          "change": "+0.80%",
+          "changePct": 0.79522,
+          "asOf": "2026-09-09T09:29-04:00"
         },
         "wti": {
           "symbol": "CL=F",
           "label": "WTI",
-          "change": "+1.72%",
-          "changePct": 1.716225,
-          "asOf": "2026-09-08T09:29-04:00"
+          "change": "+3.06%",
+          "changePct": 3.063525,
+          "asOf": "2026-09-09T09:29-04:00"
         },
         "btc": {
           "symbol": "BTC-USD",
           "label": "BTCUSD",
-          "change": "-1.00%",
-          "changePct": -1.00213,
-          "asOf": "2026-09-08T09:29-04:00"
+          "change": "+1.47%",
+          "changePct": 1.469249,
+          "asOf": "2026-09-09T09:29-04:00"
         }
       },
       "analysis": {
         "label": "監視銘柄ベースの総合判定",
-        "comment": "指数は上昇しているが、監視銘柄の広がりは限定的。全面的なリスクオンとは断定しません。"
+        "comment": "指数先物・監視銘柄の方向が揃っているかを確認中です。"
       },
       "errors": [],
-      "lastGood": null
+      "lastGood": {
+        "status": "ok",
+        "freshness": "stale",
+        "dataDate": "2026-09-08",
+        "asOf": "2026-09-08T09:29-04:00",
+        "updatedAt": "2026-09-09T00:18:13+09:00",
+        "source": {
+          "name": "Yahoo Finance Chart API",
+          "method": "1m interval, includePrePost=true, New York 04:00-09:30"
+        },
+        "error": null,
+        "universeSize": 50,
+        "fetchedCount": 50,
+        "coverageRatio": 100.0,
+        "topGainers": [
+          {
+            "symbol": "QCOM",
+            "name": "QCOM",
+            "sector": "半導体・AI",
+            "price": 180.51,
+            "changePct": 6.975228,
+            "change": "+6.98%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          {
+            "symbol": "ORCL",
+            "name": "ORCL",
+            "sector": "大型テック",
+            "price": 167.11,
+            "changePct": 5.246253,
+            "change": "+5.25%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:14-04:00",
+            "asOf": "2026-09-08T09:14-04:00"
+          },
+          {
+            "symbol": "INTC",
+            "name": "INTC",
+            "sector": "半導体・AI",
+            "price": 100.8001,
+            "changePct": 5.219311,
+            "change": "+5.22%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          {
+            "symbol": "AMD",
+            "name": "AMD",
+            "sector": "半導体・AI",
+            "price": 488.32,
+            "changePct": 2.250979,
+            "change": "+2.25%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          {
+            "symbol": "LRCX",
+            "name": "LRCX",
+            "sector": "半導体・AI",
+            "price": 314.5,
+            "changePct": 2.226556,
+            "change": "+2.23%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          {
+            "symbol": "AMAT",
+            "name": "AMAT",
+            "sector": "半導体・AI",
+            "price": 464.25,
+            "changePct": 2.098041,
+            "change": "+2.10%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          {
+            "symbol": "MU",
+            "name": "MU",
+            "sector": "半導体・AI",
+            "price": 1036.72,
+            "changePct": 1.980149,
+            "change": "+1.98%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          {
+            "symbol": "AVGO",
+            "name": "AVGO",
+            "sector": "半導体・AI",
+            "price": 363.72,
+            "changePct": 1.627572,
+            "change": "+1.63%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          {
+            "symbol": "NKE",
+            "name": "NKE",
+            "sector": "消費",
+            "price": 38.98,
+            "changePct": 1.510417,
+            "change": "+1.51%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:14-04:00",
+            "asOf": "2026-09-08T09:14-04:00"
+          },
+          {
+            "symbol": "LMT",
+            "name": "LMT",
+            "sector": "資本財・防衛",
+            "price": 532.25,
+            "changePct": 1.326911,
+            "change": "+1.33%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:13-04:00",
+            "asOf": "2026-09-08T09:13-04:00"
+          }
+        ],
+        "topLosers": [
+          {
+            "symbol": "JNJ",
+            "name": "JNJ",
+            "sector": "ヘルスケア",
+            "price": 270.5,
+            "changePct": -1.718563,
+            "change": "-1.72%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:01-04:00",
+            "volumeWindowEnd": "2026-09-08T09:12-04:00",
+            "asOf": "2026-09-08T09:12-04:00"
+          },
+          {
+            "symbol": "PFE",
+            "name": "PFE",
+            "sector": "ヘルスケア",
+            "price": 28.07,
+            "changePct": -1.335677,
+            "change": "-1.34%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:13-04:00",
+            "asOf": "2026-09-08T09:13-04:00"
+          },
+          {
+            "symbol": "CRM",
+            "name": "CRM",
+            "sector": "大型テック",
+            "price": 255.78,
+            "changePct": -1.330864,
+            "change": "-1.33%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:14-04:00",
+            "asOf": "2026-09-08T09:14-04:00"
+          },
+          {
+            "symbol": "MSFT",
+            "name": "MSFT",
+            "sector": "大型テック",
+            "price": 493.39,
+            "changePct": -1.262758,
+            "change": "-1.26%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          {
+            "symbol": "MRK",
+            "name": "MRK",
+            "sector": "ヘルスケア",
+            "price": 148.5,
+            "changePct": -1.217322,
+            "change": "-1.22%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:13-04:00",
+            "asOf": "2026-09-08T09:13-04:00"
+          },
+          {
+            "symbol": "ABBV",
+            "name": "ABBV",
+            "sector": "ヘルスケア",
+            "price": 253.36,
+            "changePct": -1.208765,
+            "change": "-1.21%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:07-04:00",
+            "asOf": "2026-09-08T09:07-04:00"
+          },
+          {
+            "symbol": "MS",
+            "name": "MS",
+            "sector": "金融",
+            "price": 215.31,
+            "changePct": -1.106926,
+            "change": "-1.11%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:01-04:00",
+            "volumeWindowEnd": "2026-09-08T08:13-04:00",
+            "asOf": "2026-09-08T08:13-04:00"
+          },
+          {
+            "symbol": "LLY",
+            "name": "LLY",
+            "sector": "ヘルスケア",
+            "price": 1138.0,
+            "changePct": -0.988376,
+            "change": "-0.99%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:11-04:00",
+            "asOf": "2026-09-08T09:11-04:00"
+          },
+          {
+            "symbol": "NFLX",
+            "name": "NFLX",
+            "sector": "大型テック",
+            "price": 77.51,
+            "changePct": -0.945687,
+            "change": "-0.95%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          {
+            "symbol": "GOOGL",
+            "name": "GOOGL",
+            "sector": "大型テック",
+            "price": 335.54,
+            "changePct": -0.862731,
+            "change": "-0.86%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          }
+        ],
+        "topVolume": [
+          {
+            "symbol": "AAPL",
+            "name": "AAPL",
+            "sector": "大型テック",
+            "price": 317.39,
+            "changePct": -0.806326,
+            "change": "-0.81%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          {
+            "symbol": "ABBV",
+            "name": "ABBV",
+            "sector": "ヘルスケア",
+            "price": 253.36,
+            "changePct": -1.208765,
+            "change": "-1.21%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:07-04:00",
+            "asOf": "2026-09-08T09:07-04:00"
+          },
+          {
+            "symbol": "ABNB",
+            "name": "ABNB",
+            "sector": "高β・成長",
+            "price": 181.05,
+            "changePct": -0.489172,
+            "change": "-0.49%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          {
+            "symbol": "AMAT",
+            "name": "AMAT",
+            "sector": "半導体・AI",
+            "price": 464.25,
+            "changePct": 2.098041,
+            "change": "+2.10%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          {
+            "symbol": "AMD",
+            "name": "AMD",
+            "sector": "半導体・AI",
+            "price": 488.32,
+            "changePct": 2.250979,
+            "change": "+2.25%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          {
+            "symbol": "AMZN",
+            "name": "AMZN",
+            "sector": "大型テック",
+            "price": 256.71,
+            "changePct": -0.696298,
+            "change": "-0.70%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          {
+            "symbol": "AVGO",
+            "name": "AVGO",
+            "sector": "半導体・AI",
+            "price": 363.72,
+            "changePct": 1.627572,
+            "change": "+1.63%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:29-04:00",
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          {
+            "symbol": "BA",
+            "name": "BA",
+            "sector": "資本財・防衛",
+            "price": 211.11,
+            "changePct": -0.537102,
+            "change": "-0.54%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:14-04:00",
+            "asOf": "2026-09-08T09:14-04:00"
+          },
+          {
+            "symbol": "BAC",
+            "name": "BAC",
+            "sector": "金融",
+            "price": 62.4,
+            "changePct": -0.446713,
+            "change": "-0.45%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:13-04:00",
+            "asOf": "2026-09-08T09:13-04:00"
+          },
+          {
+            "symbol": "BRK-B",
+            "name": "BRK-B",
+            "sector": "金融",
+            "price": 502.7,
+            "changePct": -0.658064,
+            "change": "-0.66%",
+            "volume": 0,
+            "volumeWindow": "04:00〜最新時刻のプレマーケット累計",
+            "volumeWindowStart": "2026-09-08T04:00-04:00",
+            "volumeWindowEnd": "2026-09-08T09:13-04:00",
+            "asOf": "2026-09-08T09:13-04:00"
+          }
+        ],
+        "breadth": {
+          "up": 19,
+          "down": 31,
+          "flat": 0,
+          "flatThresholdPct": 0.05,
+          "label": "監視銘柄ベース"
+        },
+        "sectorBreadth": {
+          "半導体・AI": {
+            "up": 8,
+            "down": 0,
+            "flat": 0,
+            "averageChangePct": 2.9519,
+            "judgement": "強い"
+          },
+          "大型テック": {
+            "up": 1,
+            "down": 7,
+            "flat": 0,
+            "averageChangePct": -0.0926,
+            "judgement": "弱い"
+          },
+          "高β・成長": {
+            "up": 2,
+            "down": 2,
+            "flat": 0,
+            "averageChangePct": 0.2548,
+            "judgement": "拮抗"
+          },
+          "金融": {
+            "up": 0,
+            "down": 7,
+            "flat": 0,
+            "averageChangePct": -0.5535,
+            "judgement": "弱い"
+          },
+          "エネルギー": {
+            "up": 4,
+            "down": 0,
+            "flat": 0,
+            "averageChangePct": 0.8238,
+            "judgement": "強い"
+          },
+          "消費": {
+            "up": 1,
+            "down": 5,
+            "flat": 0,
+            "averageChangePct": -0.1012,
+            "judgement": "弱い"
+          },
+          "ヘルスケア": {
+            "up": 0,
+            "down": 6,
+            "flat": 0,
+            "averageChangePct": -1.2173,
+            "judgement": "弱い"
+          },
+          "資本財・防衛": {
+            "up": 3,
+            "down": 2,
+            "flat": 0,
+            "averageChangePct": 0.4225,
+            "judgement": "強い"
+          },
+          "その他": {
+            "up": 0,
+            "down": 2,
+            "flat": 0,
+            "averageChangePct": -0.7123,
+            "judgement": "弱い"
+          }
+        },
+        "indexFutures": {
+          "sp500": {
+            "symbol": "ES=F",
+            "label": "S&P500先物",
+            "change": "-0.14%",
+            "changePct": -0.139213,
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          "nasdaq100": {
+            "symbol": "NQ=F",
+            "label": "Nasdaq100先物",
+            "change": "+0.27%",
+            "changePct": 0.268051,
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          "dow": {
+            "symbol": "YM=F",
+            "label": "Dow先物",
+            "change": "-0.72%",
+            "changePct": -0.720434,
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          "russell2000": {
+            "symbol": "RTY=F",
+            "label": "Russell2000先物",
+            "change": "-0.21%",
+            "changePct": -0.211649,
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          "vix": {
+            "symbol": "^VIX",
+            "label": "VIX",
+            "change": "+5.51%",
+            "changePct": 5.505849,
+            "asOf": "2026-09-08T09:25-04:00"
+          },
+          "us10y": {
+            "symbol": "^TNX",
+            "label": "米10年債",
+            "change": "-0.17%",
+            "changePct": -0.167224,
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          "dxy": {
+            "symbol": "DX-Y.NYB",
+            "label": "ドル指数",
+            "change": "-0.34%",
+            "changePct": -0.343834,
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          "usdjpy": {
+            "symbol": "JPY=X",
+            "label": "USD/JPY",
+            "change": "-0.37%",
+            "changePct": -0.366064,
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          "gold": {
+            "symbol": "GC=F",
+            "label": "Gold",
+            "change": "-0.71%",
+            "changePct": -0.710365,
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          "wti": {
+            "symbol": "CL=F",
+            "label": "WTI",
+            "change": "+1.72%",
+            "changePct": 1.716225,
+            "asOf": "2026-09-08T09:29-04:00"
+          },
+          "btc": {
+            "symbol": "BTC-USD",
+            "label": "BTCUSD",
+            "change": "-1.00%",
+            "changePct": -1.00213,
+            "asOf": "2026-09-08T09:29-04:00"
+          }
+        },
+        "analysis": {
+          "label": "監視銘柄ベースの総合判定",
+          "comment": "指数は上昇しているが、監視銘柄の広がりは限定的。全面的なリスクオンとは断定しません。"
+        },
+        "errors": [],
+        "lastGood": null
+      }
     },
     "judgementReportKey": "2026-08-22 08:00",
     "judgementUpdatedAt": "2026-08-22T08:04:00+09:00",
