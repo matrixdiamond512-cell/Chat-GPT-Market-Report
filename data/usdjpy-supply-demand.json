@@ -1,7 +1,7 @@
 {
   "schemaVersion": "3.2.0",
   "pageId": "usdjpy-supply-demand",
-  "generatedAt": "2026-09-11T00:38:29+09:00",
+  "generatedAt": "2026-09-11T08:22:21+09:00",
   "mode": "integrated-realistic",
   "sourceStatus": {
     "tradersWebFx": "confirmed",
@@ -11,77 +11,77 @@
   "tradersWebFx": {
     "name": "トレーダーズ・ウェブFX 無料ページ",
     "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
-    "sourceUpdatedAt": "2026-09-10T06:22:00+09:00",
-    "checkedAt": "2026-09-11T00:38:31+09:00",
+    "sourceUpdatedAt": "2026-09-11T06:22:00+09:00",
+    "checkedAt": "2026-09-11T08:22:22+09:00",
     "status": "confirmed",
     "pageConfirmed": true,
     "publicScope": "一般公開はUSD/JPYの直近情報",
     "redistributionMode": "key-levels-excerpt-with-attribution",
     "note": "無料公開データから需給判断に必要な主要水準のみ抜粋し、基準日時と出典を明示する。",
-    "sourceDate": "2026-09-10",
+    "sourceDate": "2026-09-11",
     "sourceTime": "06:22",
-    "freshness": "previous-session",
-    "ageHours": 18.3,
+    "freshness": "today",
+    "ageHours": 2.0,
     "keyLevels": {
-      "referenceSpot": "153.55",
-      "referenceSpotDescription": "9/10 06:03現在（9/9 高値154.01円 - 安値152.95円）",
+      "referenceSpot": "154.37",
+      "referenceSpotDescription": "9/11 06:02現在（9/10 高値154.67円 - 安値153.29円）",
       "sellOrders": [
         {
-          "price": "154.00",
-          "description": "売り小さめ、OP11日NYカット非常に大きめ"
+          "price": "154.60",
+          "description": "売り小さめ"
         },
         {
-          "price": "154.10",
-          "description": "売り小さめ・ストップロス買い小さめ"
+          "price": "154.90",
+          "description": "売り小さめ・超えるとストップロス買い小さめ"
         }
       ],
       "buyOrders": [
         {
-          "price": "152.90",
-          "description": "買い"
+          "price": "153.50",
+          "description": "買い小さめ、OP17日NYカット"
         },
         {
-          "price": "152.80",
-          "description": "買いやや小さめ・ストップロス売り小さめ"
+          "price": "153.30",
+          "description": "買いやや小さめ"
         }
       ],
       "stops": [
         {
-          "price": "153.90",
-          "description": "超えるとストップロス買い小さめ"
+          "price": "154.90",
+          "description": "売り小さめ・超えるとストップロス買い小さめ"
         },
         {
-          "price": "154.10",
-          "description": "売り小さめ・ストップロス買い小さめ"
+          "price": "153.80",
+          "description": "割り込むとストップロス売り"
         }
       ],
       "nyCutOptions": [
         {
-          "price": "153.50",
-          "description": "OP10日NYカットやや小さめ"
+          "price": "154.50",
+          "description": "OP10・15日NYカット"
         },
         {
           "price": "154.00",
-          "description": "売り小さめ、OP11日NYカット非常に大きめ"
+          "description": "OP11日NYカット非常に大きめ"
         },
         {
-          "price": "153.00",
-          "description": "OP10・11日NYカット大きめ"
+          "price": "155.00",
+          "description": "売りやや小さめ、155.00円 OP15日NYカット/OP11・17日NYカット大きめ/OP18日NYカット非常に大きめ"
         }
       ],
       "optionAnalysis": {
         "status": "calculated",
         "headline": "上下のNYカットに挟まれ、カット前はレンジ化しやすい",
         "summary": "NYカットは方向を保証せず、カット時刻までは吸着、その後は反動が出る可能性を注文・ストップとの重複で評価します。",
-        "nearestPrice": "153.50",
-        "nearestDistancePips": 5,
+        "nearestPrice": "154.50",
+        "nearestDistancePips": 13,
         "points": [
-          "最接近は153.50円（現在値から下へ約5pips、通常規模）。NYカット接近時は同水準へ値が寄る動きと、通過後の反動に注意。",
-          "154.00円はNYカットと売り注文が重複。カット前後は上値を抑えやすい水準。",
+          "最接近は154.50円（現在値から上へ約13pips、通常規模）。NYカット接近時は同水準へ値が寄る動きと、通過後の反動に注意。",
+          "155.00円はNYカットと売り注文が重複。カット前後は上値を抑えやすい水準。",
           "複数期日のNYカットが同一水準に重なるため、単一期日より意識されやすい価格帯があります。"
         ]
       },
-      "extractedRowCount": 22,
+      "extractedRowCount": 26,
       "displayMode": "key-levels-excerpt"
     }
   },
@@ -524,7 +524,7 @@
     "judgement": "円売り越し拡大",
     "judgementSub": "USD/JPYの上昇圧力",
     "priceStatus": "available",
-    "checkedAt": "2026-09-11T00:38:29+09:00",
+    "checkedAt": "2026-09-11T08:22:21+09:00",
     "comment": "円売り越し拡大。円先物のNetは-92,227枚、前週比-28,929枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
     "verifiedPoints": 52,
     "priceVerifiedPoints": 52,
@@ -542,7 +542,7 @@
       "status": "confirmed"
     },
     "usdJpyVolume": {
-      "generatedAt": "2026-09-11T00:07:46+09:00",
+      "generatedAt": "2026-09-11T02:09:13+09:00",
       "targetDate": "2026-09-09",
       "publicationDate": "2026-09-10",
       "status": "ok"
