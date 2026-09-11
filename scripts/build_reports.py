@@ -17,10 +17,10 @@ def validate_report(report: object, source: str) -> dict:
     if not isinstance(report, dict):
         raise ValueError(f"{source}: report must be a JSON object")
 
-    # Some newer/legacy canonical files were accidentally stored with the
-    # data/latest-report.json envelope.  Accept both shapes and normalize to
-    # the inner report object so historical publishing is not blocked.
     required = {"date", "time", "title"}
+    # Accept historical report files that were accidentally stored in the
+    # data/latest-report.json envelope, while normalizing them in memory to
+    # the same canonical report object used by reports.json.
     if not required.issubset(report.keys()):
         nested = report.get("latestReport")
         if isinstance(nested, dict) and required.issubset(nested.keys()):
@@ -178,42 +178,72 @@ def verify_no_history_loss(previous_keys: set[tuple[str, str]]) -> None:
     canonical_reports = load_canonical_reports()
     canonical_keys = {slot_key(report) for report in canonical_reports}
 
-    missing_previous = previous_keys - rebuilt_keys
-    if missing_previous:
-        missing = ", ".join(
-            f"{date} {time}" for date, time in sorted(missing_previous)
+    if rebuilt_keys != canonical_keys:
+        missing_in_index = sorted(canonical_keys - rebuilt_keys)
+        missing_in_files = sorted(rebuilt_keys - canonical_keys)
+        raise SystemExit(
+            "report history mismatch after rebuild: "
+            f"missing_in_index={missing_in_index}, "
+            f"missing_in_files={missing_in_files}"
         )
-        raise RuntimeError(f"history loss detected from previous index: {missing}")
 
-    missing_canonical = canonical_keys - rebuilt_keys
-    if missing_canonical:
-        missing = ", ".join(
-            f"{date} {time}" for date, time in sorted(missing_canonical)
+    lost_previous_slots = sorted(previous_keys - rebuilt_keys)
+    if lost_previous_slots:
+        raise SystemExit(
+            "refusing to publish reports.json because previous report slots "
+            f"would be lost: {lost_previous_slots}"
         )
-        raise RuntimeError(f"canonical reports missing from rebuilt index: {missing}")
+
+
+def verify_latest_is_published() -> None:
+    latest = load_latest_report()
+    if latest is None:
+        return
+
+    key = slot_key(latest)
+    path = canonical_path(latest)
+    if not path.exists():
+        raise SystemExit(f"latest report missing canonical file: {path}")
+
+    canonical = validate_report(
+        json.loads(path.read_text(encoding="utf-8")), str(path)
+    )
+    if canonical != latest:
+        raise SystemExit(f"latest/canonical mismatch for {key[0]} {key[1]}")
+
+    index = json.loads(OUTPUT_FILE.read_text(encoding="utf-8"))
+    matches = [item for item in index if slot_key(item) == key]
+    if len(matches) != 1:
+        raise SystemExit(
+            f"latest report must appear exactly once in reports.json: {key[0]} {key[1]}"
+        )
+    if matches[0] != latest:
+        raise SystemExit(f"latest/index mismatch for {key[0]} {key[1]}")
+
+    print(f"Latest publication verified end-to-end: {key[0]} {key[1]}")
 
 
 def main() -> None:
-    latest_payload = load_json(LATEST_FILE)
-    latest_report = update_latest_report(latest_payload)
-    LATEST_FILE.write_text(
-        json.dumps(latest_payload, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    snapshot = load_json(Path("data/market/latest.json"), {})
+    if isinstance(snapshot, dict):
+        reconciled = update_latest_report(snapshot)
+        if reconciled:
+            print("Reconciled verified market data before index build: " + ", ".join(reconciled))
 
-    sync_latest_to_canonical()
+    previous_index = load_existing_index()
+    previous_keys = {slot_key(report) for report in previous_index}
 
-    existing_reports = load_existing_index()
-    previous_keys = {slot_key(report) for report in existing_reports}
-    backfill_missing_canonical_files(existing_reports)
-
+    latest_path = sync_latest_to_canonical()
+    backfilled = backfill_missing_canonical_files(previous_index)
     reports = load_canonical_reports()
     write_index(reports)
     verify_no_history_loss(previous_keys)
+    verify_latest_is_published()
 
     print(
-        f"Built {OUTPUT_FILE} with {len(reports)} reports; "
-        f"latest slot is {latest_report['date']} {latest_report['time']}."
+        f"Built {OUTPUT_FILE} from {len(reports)} canonical report files; "
+        f"latest={'synced' if latest_path else 'absent'}; "
+        f"backfilled {len(backfilled)} legacy slot(s); no report history lost."
     )
 
 
