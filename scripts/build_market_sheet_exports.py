@@ -6,9 +6,9 @@ built from the published 28-row table for 08:00 and from the independent market
 snapshot for intraday slots.  This prevents the 08:00 sheet from collapsing back
 to the old 10-row raw quote contract.
 
-For the 08:00 report, BTCUSD is repaired immediately before export so its
-comparison remains a verified 24-hour comparison instead of inheriting the
-weekday previous-business-day rule used by equities.
+For the 08:00 report, BTCUSD is repaired immediately before export when a usable
+published BTC price exists. If BTCUSD is explicitly unavailable, publication must
+continue with the unavailable reason preserved instead of failing the whole report.
 """
 
 from __future__ import annotations
@@ -81,9 +81,17 @@ def build_exports(market_dir: Path = MARKET_DIR) -> tuple[int, int]:
 
 def main() -> int:
     # build_chatgpt_report_input.py runs immediately before this script in the
-    # publication workflow. Repair BTCUSD here so JSON, CSV, and dashboard
-    # synchronization all receive the same verified comparison.
-    repair_btc_24h_change()
+    # publication workflow. Repair BTCUSD only when the report contains a usable
+    # numeric price. An explicit 取得不能 is valid under the publication contract
+    # and must not abort the remaining dashboard/history synchronization.
+    try:
+        repair_btc_24h_change()
+    except SystemExit as exc:
+        message = str(exc)
+        if "BTCUSD report value is not numeric" in message:
+            print("BTCUSD 24h repair skipped: published BTCUSD is unavailable; preserving unavailable state")
+        else:
+            raise
     latest_count, history_count = build_exports()
     print(f"Built ChatGPT market CSV exports: latest={latest_count}, history={history_count}")
     return 0
