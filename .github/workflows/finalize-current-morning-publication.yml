@@ -1,0 +1,120 @@
+name: Finalize current 08:00 market report publication
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/finalize-current-morning-publication.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Normalize current morning publication contract
+        shell: bash
+        run: |
+          python - <<'PY'
+          import datetime as dt
+          import json
+          from pathlib import Path
+
+          path = Path('data/latest-report.json')
+          payload = json.loads(path.read_text(encoding='utf-8'))
+          report = payload.get('latestReport') or payload.get('report') or payload
+          if not isinstance(report, dict) or report.get('time') != '08:00':
+              raise SystemExit('latest report is not 08:00')
+
+          expected = [
+              'NYダウ', 'NASDAQ総合', 'S&P500', 'Russell 2000', '日経225現物',
+              'CME日経225先物・円建て', 'CME日経225先物・ドル建て', '日経225先物（大阪取引所）',
+              'USD/JPY', 'EUR/USD', 'COMEX金先物', 'WTI原油', 'BTCUSD', 'VIX', '日経VI',
+              'Fear & Greed Index', '米10年債利回り', '日本10年国債利回り', '日経225予想PER',
+              '日経225 PBR', '日経225予想EPS', '日経225 25日移動平均乖離率',
+              '日経225 200日移動平均乖離率', '東証プライム売買代金', '東証プライム売買高',
+              '東証プライム値上がり銘柄数', '東証プライム値下がり銘柄数', '東証プライム25日騰落レシオ',
+          ]
+          aliases = {
+              'Dow Jones':'NYダウ','Dow':'NYダウ',
+              'NASDAQ Composite':'NASDAQ総合','Nasdaq Composite':'NASDAQ総合','Nasdaq':'NASDAQ総合',
+              'S&P 500':'S&P500','Nikkei 225':'日経225現物','日経225':'日経225現物','日経平均':'日経225現物',
+              '金':'COMEX金先物','金先物':'COMEX金先物','COMEX金':'COMEX金先物','原油':'WTI原油',
+              '日経225先物・大阪取引所':'日経225先物（大阪取引所）','日経225先物(大阪取引所)':'日経225先物（大阪取引所）',
+              '日経225 25日乖離率':'日経225 25日移動平均乖離率','25日移動平均乖離率':'日経225 25日移動平均乖離率',
+              '日経225 200日乖離率':'日経225 200日移動平均乖離率','200日移動平均乖離率':'日経225 200日移動平均乖離率',
+              '日経225予想PBR':'日経225 PBR',
+          }
+
+          table = report.setdefault('marketDataTable', {})
+          raw_rows = table.get('rows') if isinstance(table, dict) else []
+          if not isinstance(raw_rows, list): raw_rows = []
+          by = {}
+          for raw in raw_rows:
+              if not isinstance(raw, dict): continue
+              label = str(raw.get('label') or raw.get('item') or raw.get('name') or '').strip()
+              label = aliases.get(label, label)
+              if label not in expected or label in by: continue
+              value = str(raw.get('value') or '').strip()
+              if value == '取得不能':
+                  value = '取得不能（08:00前日終値表の確定値を取得できず）'
+              if label == 'BTCUSD' and value.startswith('取得不能'):
+                  value = '取得不能（08:00 JSTに時刻整合する高信頼価格を確定できず）'
+              by[label] = {
+                  'label': label,
+                  'value': value or '取得不能（08:00前日終値表の元データが空欄）',
+                  'change': str(raw.get('change') or '—').strip() or '—',
+                  'rate': str(raw.get('rate') or raw.get('changePercent') or '—').strip() or '—',
+                  'direction': str(raw.get('direction') or '').strip() or ('取得不能' if value.startswith('取得不能') else '横ばい・方向確認'),
+              }
+
+          missing_reason = '08:00前日終値表に確定値なし'
+          rows = [by.get(label) or {
+              'label': label,
+              'value': f'取得不能（{missing_reason}）',
+              'change': '—',
+              'rate': '—',
+              'direction': '取得不能',
+          } for label in expected]
+          report_date = dt.date.fromisoformat(str(report['date']))
+          prior = report_date - dt.timedelta(days=3 if report_date.weekday() == 0 else 1)
+          table['columns'] = ['項目','終値・値','前日比','騰落率','方向感']
+          table['rows'] = rows
+          table['semantics'] = 'previous_close'
+          table['dataDate'] = prior.isoformat()
+          report.setdefault('dataProvenance', {})['tableNormalization'] = {
+              'rule': '08:00 publication uses canonical 28-row previous-close contract',
+              'inputRowCount': len(raw_rows),
+              'outputRowCount': len(rows),
+              'dataDate': prior.isoformat(),
+              'semantics': 'previous_close',
+          }
+          path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          print(json.dumps({'date':report['date'],'time':report['time'],'dataDate':prior.isoformat(),'rows':len(rows)}, ensure_ascii=False))
+          PY
+
+      - name: Sync report history and dashboard
+        run: |
+          python scripts/sync_latest_report_publication.py
+          python scripts/build_reports.py
+          python scripts/sync_stock_judgement_from_latest_report.py
+
+      - name: Commit publication files
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/latest-report.json reports data/dashboard.json reports.json data/stocks.json
+          if git diff --cached --quiet; then
+            echo "Publication files already synchronized."
+            exit 0
+          fi
+          git commit -m "Finalize 2026-09-12 08:00 market report publication"
+          git pull --rebase origin main
+          git push origin HEAD:main
