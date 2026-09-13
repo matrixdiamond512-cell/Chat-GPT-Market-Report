@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-08-30T09:42:26+09:00",
-  "publishedAt": "2026-08-30T09:42:26+09:00",
-  "dataAsOf": "2026-08-30T09:42:26+09:00",
+  "generatedAt": "2026-09-14T08:37:58+09:00",
+  "publishedAt": "2026-09-14T08:37:58+09:00",
+  "dataAsOf": "2026-09-14T08:37:58+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -20,7 +20,7 @@
       "name": "TradingView Economic Calendar",
       "url": "https://www.tradingview.com/economic-calendar/",
       "status": "ok",
-      "note": "実績値を12件照合。生データは公開保存しません。"
+      "note": "実績値を0件照合。生データは公開保存しません。"
     },
     {
       "id": "official_source_map",
@@ -47,23 +47,23 @@
     }
   ],
   "errors": [],
-  "date": "2026-08-30",
+  "date": "2026-09-19",
   "events": [
     {
-      "id": "event-7f558d766530a6",
-      "sourceKey": "2026-08-30|01:15|All|jackson hole symposium",
-      "date": "2026-08-30",
-      "time": "01:15",
-      "datetimeJst": "2026-08-30T01:15:00+09:00",
-      "scheduledAtSource": "2026-08-29T12:15:00-04:00",
-      "scheduledAtUtc": "2026-08-29T16:15:00Z",
-      "country": "複数",
-      "currency": "All",
-      "title": "Jackson Hole Symposium",
-      "eventNameOriginal": "Jackson Hole Symposium",
-      "category": "other",
-      "impactOriginal": "Medium",
-      "ffImportance": 2,
+      "id": "event-f12a93c6ac47b1",
+      "sourceKey": "2026-09-19|00:45|USD|fomc member schmid speaks",
+      "date": "2026-09-19",
+      "time": "00:45",
+      "datetimeJst": "2026-09-19T00:45:00+09:00",
+      "scheduledAtSource": "2026-09-18T11:45:00-04:00",
+      "scheduledAtUtc": "2026-09-18T15:45:00Z",
+      "country": "米国",
+      "currency": "USD",
+      "title": "FOMCメンバー Schmid 発言",
+      "eventNameOriginal": "FOMC Member Schmid Speaks",
+      "category": "speech",
+      "impactOriginal": "Low",
+      "ffImportance": 1,
       "importance": 2,
       "importanceLabel": "中",
       "forecast": "",
@@ -71,8 +71,8 @@
       "actual": "",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
-      "status": "result_pending",
+      "resultExplanation": "発表後に実績値と市場反応を更新します。",
+      "status": "scheduled",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -275,7 +275,7 @@
         ]
       ],
       "conclusion": {
-        "narrative": "結果確認中",
+        "narrative": "発表前",
         "reaction": "結果待ち",
         "watch": [
           "米2年債の初動",
@@ -286,16 +286,17 @@
         ]
       },
       "officialSource": {
-        "id": "forex_factory",
-        "name": "Forex Factory Economic Calendar",
-        "url": "https://www.forexfactory.com/calendar"
+        "id": "federal_reserve",
+        "name": "Federal Reserve FOMC calendar",
+        "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
       },
       "sourceType": "forex_factory_weekly",
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
-      "createdAt": "2026-08-23T13:45:14+09:00",
-      "updatedAt": "2026-08-30T09:42:26+09:00"
+      "createdAt": "2026-09-14T08:37:58+09:00",
+      "updatedAt": "2026-09-14T08:37:58+09:00",
+      "resultExpected": false,
+      "resultType": "qualitative"
     }
-  ],
-  "legacyCleanupAt": "2026-09-14T08:37:59+09:00"
+  ]
 }
