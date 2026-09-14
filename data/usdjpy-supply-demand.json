@@ -1,7 +1,7 @@
 {
   "schemaVersion": "3.2.0",
   "pageId": "usdjpy-supply-demand",
-  "generatedAt": "2026-09-15T02:23:02+09:00",
+  "generatedAt": "2026-09-15T08:58:17+09:00",
   "mode": "integrated-realistic",
   "sourceStatus": {
     "tradersWebFx": "confirmed",
@@ -11,58 +11,58 @@
   "tradersWebFx": {
     "name": "トレーダーズ・ウェブFX 無料ページ",
     "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
-    "sourceUpdatedAt": "2026-09-14T06:47:00+09:00",
-    "checkedAt": "2026-09-15T02:23:03+09:00",
+    "sourceUpdatedAt": "2026-09-15T06:32:00+09:00",
+    "checkedAt": "2026-09-15T08:58:19+09:00",
     "status": "confirmed",
     "pageConfirmed": true,
     "publicScope": "一般公開はUSD/JPYの直近情報",
     "redistributionMode": "key-levels-excerpt-with-attribution",
     "note": "無料公開データから需給判断に必要な主要水準のみ抜粋し、基準日時と出典を明示する。",
-    "sourceDate": "2026-09-14",
-    "sourceTime": "06:47",
-    "freshness": "previous-session",
-    "ageHours": 19.6,
+    "sourceDate": "2026-09-15",
+    "sourceTime": "06:32",
+    "freshness": "today",
+    "ageHours": 2.4,
     "keyLevels": {
-      "referenceSpot": "153.48",
-      "referenceSpotDescription": "9/14 06:28現在（高値153.62円 - 安値153.42円）",
+      "referenceSpot": "154.35",
+      "referenceSpotDescription": "9/15 6:00現在（高値155.00円 - 安値153.38円）",
       "sellOrders": [
         {
-          "price": "154.60",
-          "description": "売り小さめ"
+          "price": "155.00",
+          "description": "売りやや小さめ、OP15・16日NYカット/OP17日NYカット大きめ/OP18日NYカット非常に大きめ"
         },
         {
-          "price": "155.00",
-          "description": "売りやや小さめ・超えるとストップロス買い小さめ、OP17日NYカット大きめ/OP15日NYカット/OP18日NYカット非常に大きめ"
+          "price": "155.30",
+          "description": "売り小さめ"
         }
       ],
       "buyOrders": [
         {
-          "price": "153.20",
+          "price": "153.80",
           "description": "買い小さめ"
         },
         {
-          "price": "153.00-10",
-          "description": "買い小さめ（153.00円 OP15・16日NYカット/OP17日NYカット非常に大きめ）"
+          "price": "153.00",
+          "description": "買い小さめ、OP15・16日NYカット/OP17日NYカット非常に大きめ"
         }
       ],
       "stops": [
         {
-          "price": "152.80",
+          "price": "153.20",
           "description": "割り込むとストップロス売り小さめ"
         },
         {
-          "price": "154.70-80",
-          "description": "ストップロス買い小さめ"
+          "price": "152.80",
+          "description": "割り込むとストップロス売り小さめ"
         }
       ],
       "nyCutOptions": [
         {
-          "price": "153.50",
-          "description": "OP17日NYカット"
+          "price": "154.50",
+          "description": "OP15日NYカット"
         },
         {
-          "price": "153.00-10",
-          "description": "買い小さめ（153.00円 OP15・16日NYカット/OP17日NYカット非常に大きめ）"
+          "price": "154.00",
+          "description": "OP21日NYカット"
         },
         {
           "price": "153.95",
@@ -73,15 +73,15 @@
         "status": "calculated",
         "headline": "上下のNYカットに挟まれ、カット前はレンジ化しやすい",
         "summary": "NYカットは方向を保証せず、カット時刻までは吸着、その後は反動が出る可能性を注文・ストップとの重複で評価します。",
-        "nearestPrice": "153.50",
-        "nearestDistancePips": 2,
+        "nearestPrice": "154.50",
+        "nearestDistancePips": 15,
         "points": [
-          "最接近は153.50円（現在値から上へ約2pips、通常規模）。NYカット接近時は同水準へ値が寄る動きと、通過後の反動に注意。",
-          "153.00-10円はNYカットと買い注文が重複。カット前後は下値を支えやすい水準。",
+          "最接近は154.50円（現在値から上へ約15pips、通常規模）。NYカット接近時は同水準へ値が寄る動きと、通過後の反動に注意。",
+          "155.00円はNYカットと売り注文が重複。カット前後は上値を抑えやすい水準。",
           "複数期日のNYカットが同一水準に重なるため、単一期日より意識されやすい価格帯があります。"
         ]
       },
-      "extractedRowCount": 22,
+      "extractedRowCount": 21,
       "displayMode": "key-levels-excerpt"
     }
   },
@@ -524,7 +524,7 @@
     "judgement": "円買い越し拡大",
     "judgementSub": "USD/JPYの下押し圧力",
     "priceStatus": "available",
-    "checkedAt": "2026-09-15T02:23:02+09:00",
+    "checkedAt": "2026-09-15T08:58:17+09:00",
     "comment": "円買い越し拡大。円先物のNetは+10,796枚、前週比+103,023枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
     "verifiedPoints": 52,
     "priceVerifiedPoints": 52,
@@ -542,7 +542,7 @@
       "status": "confirmed"
     },
     "usdJpyVolume": {
-      "generatedAt": "2026-09-15T02:02:03+09:00",
+      "generatedAt": "2026-09-15T03:50:55+09:00",
       "targetDate": "2026-09-11",
       "publicationDate": "2026-09-14",
       "status": "ok"
