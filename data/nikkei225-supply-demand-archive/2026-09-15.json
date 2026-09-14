@@ -2,12 +2,12 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-supply-demand",
   "reportDate": "2026-09-15",
-  "generatedAt": "2026-09-15T00:54:42+09:00",
+  "generatedAt": "2026-09-15T02:00:37+09:00",
   "nikkei": {
     "schemaVersion": "2.1.0",
     "pageId": "nikkei225-supply-demand",
     "pageTitle": "日経225需給分析",
-    "generatedAt": "2026-09-15T00:54:42+09:00",
+    "generatedAt": "2026-09-15T02:00:37+09:00",
     "spot": {
       "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
@@ -16,7 +16,7 @@
       "value": 63492.99,
       "asOfDate": "2026-09-14",
       "status": "verified",
-      "fetchedAt": "2026-09-15T00:54:42+09:00"
+      "fetchedAt": "2026-09-15T02:00:37+09:00"
     },
     "futures": {
       "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -35,7 +35,7 @@
       "volumeChangePercent": null,
       "miniVolumeChangePercent": null,
       "status": "verified",
-      "fetchedAt": "2026-09-15T00:52:46+09:00",
+      "fetchedAt": "2026-09-15T01:58:35+09:00",
       "previousOpenInterest": 156073,
       "miniPreviousOpenInterest": 235441,
       "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260914open_interest.xlsx"
@@ -55,7 +55,7 @@
       "asOfDate": "2026-09-14",
       "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260914_derivatives_market_data_night.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-09-15T00:54:32+09:00"
+      "fetchedAt": "2026-09-15T02:00:26+09:00"
     },
     "arbitrage": {
       "sourceName": "JPX 裁定取引の状況",
@@ -69,9 +69,9 @@
       "buyChange": 89198,
       "status": "verified",
       "frequency": "daily",
-      "lastAttemptAt": "2026-09-15T00:52:38+09:00",
-      "lastSuccessAt": "2026-09-15T00:52:38+09:00",
-      "fetchedAt": "2026-09-15T00:52:38+09:00",
+      "lastAttemptAt": "2026-09-15T01:58:25+09:00",
+      "lastSuccessAt": "2026-09-15T01:58:25+09:00",
+      "fetchedAt": "2026-09-15T01:58:25+09:00",
       "error": null
     },
     "options": {
@@ -85,7 +85,7 @@
       "ivChange": null,
       "asOfDate": "2026-09-15",
       "status": "calculated",
-      "fetchedAt": "2026-09-15T00:54:42+09:00",
+      "fetchedAt": "2026-09-15T02:00:37+09:00",
       "putVolume": null,
       "callVolume": null,
       "putCallStatus": "unavailable",
@@ -161,7 +161,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202609/20260914_volume_by_participant_whole_day.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-09-15T00:54:33+09:00"
+      "fetchedAt": "2026-09-15T02:00:28+09:00"
     },
     "foreignInvestors": {
       "sourceName": "JPX 投資部門別売買状況",
@@ -774,7 +774,7 @@
         ]
       },
       "status": "verified",
-      "fetchedAt": "2026-09-15T00:54:30+09:00"
+      "fetchedAt": "2026-09-15T02:00:24+09:00"
     },
     "participantOpenInterest": {
       "sourceName": "JPX 取引参加者別建玉残高",
@@ -888,7 +888,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20260911_indexfut_oi_by_tp.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-09-15T00:54:35+09:00"
+      "fetchedAt": "2026-09-15T02:00:29+09:00"
     },
     "shortSelling": {
       "sourceName": "JPX 空売り集計",
@@ -953,7 +953,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-09-15T00:52:45+09:00"
+      "fetchedAt": "2026-09-15T01:58:33+09:00"
     },
     "margin": {
       "sourceName": "JPX 信用取引現在高",
@@ -1014,7 +1014,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-09-15T00:52:49+09:00"
+      "fetchedAt": "2026-09-15T01:58:38+09:00"
     },
     "assessment": {
       "overall": "買い優勢",
@@ -1309,7 +1309,7 @@
       "market": null,
       "status": "partial",
       "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202609.xlsx",
-      "fetchedAt": "2026-09-15T00:54:39+09:00",
+      "fetchedAt": "2026-09-15T02:00:34+09:00",
       "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
     },
     "nikkeiFuturesDailyHistory": [
@@ -1321,7 +1321,7 @@
         "sourceName": "JPX / 大阪取引所 日経225先物",
         "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
         "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260914open_interest.xlsx",
-        "capturedAt": "2026-09-15T00:54:38+09:00",
+        "capturedAt": "2026-09-15T02:00:33+09:00",
         "status": "verified"
       }
     ],
@@ -1338,7 +1338,7 @@
       "status": "verified",
       "releaseFrequency": "weekly",
       "lookbackWeeks": 52,
-      "fetchedAt": "2026-09-15T00:54:43+09:00",
+      "fetchedAt": "2026-09-15T02:00:38+09:00",
       "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
       "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
       "priceStatus": "available",
@@ -2557,7 +2557,7 @@
           ]
         ],
         "dataDate": "2026-09-14",
-        "updatedAt": "2026-09-14T23:59:32+09:00",
+        "updatedAt": "2026-09-15T00:52:13+09:00",
         "source": {
           "name": "東京市場確定値統合（複数ソース・項目別基準日）",
           "sheet": "",
@@ -2574,8 +2574,8 @@
             "日経225予想PER": "exact-date reference unavailable",
             "日経225予想EPS": "exact-date reference unavailable",
             "日経VI": "not verified for target date: 2026-09-11",
-            "TOPIX": "repaired from トレーダーズ・ウェブ 国内市場 current-session close",
-            "グロース250": "repaired from トレーダーズ・ウェブ 国内市場 dated current-session close",
+            "TOPIX": "exact target-date row not found",
+            "グロース250": "exact target-date row not found",
             "海外投資家動向（現物）": "repaired from verified JPX weekly flow 2026-09-04"
           }
         }
@@ -6952,7 +6952,7 @@
       "us": "2026-09-11"
     },
     "marketUpdatedAt": {
-      "japan": "2026-09-14T23:59:32+09:00",
+      "japan": "2026-09-15T00:52:13+09:00",
       "us": "2026-09-14T08:37:24+09:00"
     },
     "nikkeiMetricsAsOf": "2026-09-14",
