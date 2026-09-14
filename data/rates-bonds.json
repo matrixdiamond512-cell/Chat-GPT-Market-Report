@@ -3,12 +3,12 @@
   "pageId": "rates-bonds",
   "pageTitle": "金利・債券市場分析",
   "subtitle": "米・日・欧の金利、イールドカーブ、実質金利、入札需給、他市場への波及を一画面で確認",
-  "generatedAt": "2026-09-14T08:34:33+09:00",
+  "generatedAt": "2026-09-14T17:07:38+09:00",
   "meta": {
     "page": "rates-bonds",
     "asOfDate": "2026-09-11",
     "asOfTime": "各市場の公表時点",
-    "updatedAt": "2026-09-14T08:34:33+09:00",
+    "updatedAt": "2026-09-14T17:07:38+09:00",
     "status": "confirmed",
     "sourceStatus": "自動取得",
     "isStale": false,
@@ -40,7 +40,7 @@
       "direction": "全面的な金利上昇",
       "interpretation": "日本国債は全面的な金利上昇。10年が前日 +6.7bp、週間 +7.7bpで変化を主導。",
       "leadingTenor": "10年",
-      "risk": "順イールド。前日では長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。"
+      "risk": "順イールド。週間では長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。"
     },
     "usCurveAnalysis": {
       "type": "ベア・フラットニング",
@@ -48,7 +48,7 @@
     },
     "jpCurveAnalysis": {
       "type": "ベア・スティープニング",
-      "interpretation": "順イールド。前日では長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。"
+      "interpretation": "順イールド。週間では長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。"
     },
     "usJapanComparison": {
       "usDirection": "全面的な金利上昇",
@@ -291,21 +291,21 @@
       "direction": "上昇",
       "asOf": "2026-09-11",
       "status": "confirmed",
-      "source": "TradingView JGB market snapshot (LSEG)",
+      "source": "財務省 国債金利情報",
       "missingReason": null,
       "staticMeaning": "日銀の政策正常化・短期金利期待を確認",
       "currentInterpretation": "日本国債は全面的な金利上昇。10年が前日 +6.7bp、週間 +7.7bpで変化を主導。"
     },
     {
       "name": "日本5年国債利回り",
-      "value": 2.275,
+      "value": 2.296,
       "unit": "%",
-      "changeBp": 3.1,
-      "weekChangeBp": 2.5,
+      "changeBp": 5.2,
+      "weekChangeBp": 4.6,
       "direction": "上昇",
       "asOf": "2026-09-11",
       "status": "confirmed",
-      "source": "TradingView JGB market snapshot (LSEG)",
+      "source": "財務省 国債金利情報",
       "missingReason": null,
       "staticMeaning": "日本の中期金利とカーブ形状を確認",
       "currentInterpretation": "日本国債は全面的な金利上昇。10年が前日 +6.7bp、週間 +7.7bpで変化を主導。"
@@ -319,24 +319,24 @@
       "direction": "上昇",
       "asOf": "2026-09-11",
       "status": "confirmed",
-      "source": "TradingView JGB market snapshot (LSEG)",
+      "source": "財務省 国債金利情報",
       "missingReason": null,
       "staticMeaning": "円・銀行株・日経225・円キャリーへの影響を確認",
-      "currentInterpretation": "順イールド。前日では長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。"
+      "currentInterpretation": "順イールド。週間では長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。"
     },
     {
       "name": "日本30年国債利回り",
-      "value": 4.057,
+      "value": 4.024,
       "unit": "%",
-      "changeBp": 6.2,
-      "weekChangeBp": 9.2,
+      "changeBp": 2.9,
+      "weekChangeBp": 5.9,
       "direction": "上昇",
       "asOf": "2026-09-11",
       "status": "confirmed",
-      "source": "TradingView JGB market snapshot (LSEG)",
+      "source": "財務省 国債金利情報",
       "missingReason": null,
       "staticMeaning": "日本の財政・超長期債需給を確認",
-      "currentInterpretation": "順イールド。前日では長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。"
+      "currentInterpretation": "順イールド。週間では長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。"
     },
     {
       "name": "ドイツ10年国債利回り",
@@ -431,12 +431,12 @@
       },
       {
         "spread": "日本30年－10年",
-        "value": 107.0,
+        "value": 103.7,
         "unit": "bp",
-        "changeBp": -0.5,
-        "weekChangeBp": 1.5,
+        "changeBp": -3.8,
+        "weekChangeBp": -1.8,
         "shape": "順イールド",
-        "reading": "形状は概ね不変",
+        "reading": "フラット化",
         "status": "calculated"
       }
     ],
@@ -470,7 +470,7 @@
       },
       {
         "tenor": "5年",
-        "value": 2.275,
+        "value": 2.296,
         "status": "confirmed"
       },
       {
@@ -480,7 +480,7 @@
       },
       {
         "tenor": "30年",
-        "value": 4.057,
+        "value": 4.024,
         "status": "confirmed"
       }
     ]
@@ -655,7 +655,7 @@
     },
     {
       "name": "TradingView / LSEG JGB",
-      "status": "confirmed",
+      "status": "standby",
       "note": "財務省の翌営業日公表が遅れている場合のみ、直近市場スナップショットで補完。"
     },
     {
