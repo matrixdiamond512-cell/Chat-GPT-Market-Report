@@ -1,19 +1,36 @@
 {
   "schemaVersion": "1.0.0",
-  "status": "verified",
-  "freshness": "fresh",
-  "dataDate": "2026-09-11",
-  "asOf": "2026-09-11T16:00:00-04:00",
-  "updatedAt": "2026-09-14T08:37:45+09:00",
+  "status": "unavailable",
+  "freshness": "unavailable",
+  "dataDate": null,
+  "asOf": null,
+  "updatedAt": "2026-09-15T08:59:08+09:00",
   "source": {
     "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
     "url": "https://www.slickcharts.com/sp500",
     "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
   },
-  "error": null,
+  "error": "Slickcharts is not on the verified U.S. session: source=2026-09-14, expected=2026-09-11",
   "current": {
+    "status": "unavailable",
+    "freshness": "unavailable",
+    "dataDate": null,
+    "asOf": null,
+    "updatedAt": "2026-09-15T08:59:08+09:00",
+    "source": {
+      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+      "url": "https://www.slickcharts.com/sp500",
+      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
+    },
+    "error": "Slickcharts is not on the verified U.S. session: source=2026-09-14, expected=2026-09-11",
+    "universe": "S&P 500 constituents",
+    "validation": {},
+    "gainers": [],
+    "losers": []
+  },
+  "lastGood": {
     "status": "verified",
-    "freshness": "fresh",
+    "freshness": "stale",
     "dataDate": "2026-09-11",
     "asOf": "2026-09-11T16:00:00-04:00",
     "updatedAt": "2026-09-14T08:37:45+09:00",
@@ -124,219 +141,8 @@
       }
     ]
   },
-  "lastGood": {
-    "status": "verified",
-    "freshness": "stale",
-    "dataDate": "2026-09-10",
-    "asOf": "2026-09-10T16:00:00-04:00",
-    "updatedAt": "2026-09-11T09:03:15+09:00",
-    "source": {
-      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-      "url": "https://www.slickcharts.com/sp500",
-      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
-    },
-    "error": null,
-    "universe": "S&P 500 constituents",
-    "validation": {
-      "estimatedWeightedReturnPct": -0.5675,
-      "verifiedSP500ReturnPct": null,
-      "differencePt": null
-    },
-    "gainers": [
-      {
-        "rank": 1,
-        "symbol": "SWKS",
-        "name": "Skyworks Solutions Inc（SWKS）",
-        "close": "84.03",
-        "dayChange": "+7.49",
-        "change": "+9.79%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-10。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "RDDT",
-        "name": "Reddit, Inc.（RDDT）",
-        "close": "155.34",
-        "dayChange": "+8.9",
-        "change": "+6.08%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-10。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "CHTR",
-        "name": "Charter Comm Inc Del CL A New（CHTR）",
-        "close": "140.56",
-        "dayChange": "+6.67",
-        "change": "+4.98%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-10。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "ELV",
-        "name": "Elevance Health, Inc.（ELV）",
-        "close": "416.54",
-        "dayChange": "+19.64",
-        "change": "+4.95%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-10。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "AAPL",
-        "name": "Apple Inc.（AAPL）",
-        "close": "326.57",
-        "dayChange": "+11.23",
-        "change": "+3.56%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-10。材料要因は別途ニュース確認。"
-      }
-    ],
-    "losers": [
-      {
-        "rank": 1,
-        "symbol": "COO",
-        "name": "The Cooper Companies, Inc. Common Stock（COO）",
-        "close": "54.17",
-        "dayChange": "-9.31",
-        "change": "-14.67%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-10。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "BKR",
-        "name": "Baker Hughes Company（BKR）",
-        "close": "59.4",
-        "dayChange": "-4.24",
-        "change": "-6.66%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-10。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "FCX",
-        "name": "Freeport-McMoran Inc.（FCX）",
-        "close": "71.21",
-        "dayChange": "-5.02",
-        "change": "-6.59%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-10。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "HPE",
-        "name": "Hewlett Packard Enterprise Company（HPE）",
-        "close": "55.22",
-        "dayChange": "-3.68",
-        "change": "-6.25%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-10。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "FDS",
-        "name": "Factset Research Systems（FDS）",
-        "close": "262.93",
-        "dayChange": "-16.24",
-        "change": "-5.82%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-10。材料要因は別途ニュース確認。"
-      }
-    ]
-  },
   "universe": "S&P 500 constituents",
-  "validation": {
-    "estimatedWeightedReturnPct": 0.9206,
-    "verifiedSP500ReturnPct": 0.86,
-    "differencePt": 0.0606,
-    "tolerancePt": 0.2,
-    "status": "passed"
-  },
-  "gainers": [
-    {
-      "rank": 1,
-      "symbol": "HPE",
-      "name": "Hewlett Packard Enterprise Company（HPE）",
-      "close": "62.09",
-      "dayChange": "+6.87",
-      "change": "+12.44%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-11。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "DELL",
-      "name": "Dell Technologies Inc.（DELL）",
-      "close": "567.29",
-      "dayChange": "+60.67",
-      "change": "+11.98%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-11。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "NTAP",
-      "name": "NetApp, Inc（NTAP）",
-      "close": "199.28",
-      "dayChange": "+15.68",
-      "change": "+8.54%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-11。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "ON",
-      "name": "ON Semiconductor Corp（ON）",
-      "close": "76.14",
-      "dayChange": "+5.97",
-      "change": "+8.51%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-11。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "HPQ",
-      "name": "HP Inc.（HPQ）",
-      "close": "35.48",
-      "dayChange": "+2.75",
-      "change": "+8.40%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-11。材料要因は別途ニュース確認。"
-    }
-  ],
-  "losers": [
-    {
-      "rank": 1,
-      "symbol": "ALB",
-      "name": "Albemarle Corporation（ALB）",
-      "close": "117.52",
-      "dayChange": "-4.59",
-      "change": "-3.76%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-11。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "STX",
-      "name": "Seagate Technology Holdings PLC Ordinary Shares (Ireland)（STX）",
-      "close": "830.17",
-      "dayChange": "-32.16",
-      "change": "-3.73%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-11。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "SNDK",
-      "name": "Sandisk Corporation Common Stock（SNDK）",
-      "close": "1,633.35",
-      "dayChange": "-59.24",
-      "change": "-3.50%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-11。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "WDC",
-      "name": "Western Digital Corp.（WDC）",
-      "close": "447.18",
-      "dayChange": "-13.75",
-      "change": "-2.98%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-11。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "EW",
-      "name": "Edwards Lifesciences Corp（EW）",
-      "close": "84.37",
-      "dayChange": "-2.4",
-      "change": "-2.77%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-11。材料要因は別途ニュース確認。"
-    }
-  ]
+  "validation": {},
+  "gainers": [],
+  "losers": []
 }
