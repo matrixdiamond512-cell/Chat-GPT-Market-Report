@@ -2,7 +2,7 @@
   "schemaVersion": "2.0.0",
   "pageTitle": "ゴールド需給分析",
   "subtitle": "COMEX先物・投機筋・ETF・中国/インド現物需要から総合判定",
-  "generatedAt": "2026-09-15T09:33:14+09:00",
+  "generatedAt": "2026-09-15T17:35:14+09:00",
   "comex": {
     "status": "preserved_after_fetch_error",
     "asOfDate": "2026-08-06",
@@ -16,7 +16,7 @@
     "sourceUrl": "https://www.cmegroup.com/daily_bulletin/current/Section02B_Summary_Volume_And_Open_Interest_Metals_Futures_And_Options.pdf",
     "note": "CME Daily Bulletin PG02BのGC COMEX GOLD FUTURES。価格×建玉判定は同一基準日の価格取得後に実施。",
     "error": "CME取得失敗: RuntimeError: HTTP取得失敗（3回試行）: HTTPSConnectionPool(host='www.cmegroup.com', port=443): Read timed out. (read timeout=45)",
-    "lastAttemptAt": "2026-09-15T09:34:52+09:00"
+    "lastAttemptAt": "2026-09-15T17:36:52+09:00"
   },
   "cftc": {
     "status": "verified",
@@ -29,7 +29,7 @@
     "judgement": "投機筋の売り増加",
     "sourceName": "CFTC Disaggregated COT - Futures Only",
     "sourceUrl": "https://publicreporting.cftc.gov/Commitments-of-Traders/Disaggregated-Futures-Only/72hh-3qpy",
-    "fetchedAt": "2026-09-15T09:34:53+09:00",
+    "fetchedAt": "2026-09-15T17:36:52+09:00",
     "historyWeeks": [
       {
         "asOfDate": "2025-09-16",
@@ -609,17 +609,17 @@
     "managedMoneyLongChange": -3917,
     "managedMoneyShortChange": -2118,
     "goldPrice": 4393.9,
-    "historyFetchedAt": "2026-09-15T00:34:57+00:00"
+    "historyFetchedAt": "2026-09-15T08:36:57+00:00"
   },
   "etf": {
     "gld": {
       "status": "verified",
-      "asOfDate": "2026-09-11",
+      "asOfDate": "2026-09-14",
       "tonnes": 1047.42,
-      "changeTonnes": -2.8599999999999,
+      "changeTonnes": 0.0,
       "sourceName": "SPDR Gold Shares Historical Archive",
       "sourceUrl": "https://www.spdrgoldshares.com/usa/gld/",
-      "fetchedAt": "2026-09-15T09:34:53+09:00"
+      "fetchedAt": "2026-09-15T17:36:53+09:00"
     },
     "iau": {
       "status": "verified",
@@ -628,7 +628,7 @@
       "changeTonnes": 1.0499999999999545,
       "sourceName": "iShares Gold Trust",
       "sourceUrl": "https://www.ishares.com/us/products/239561/ishares-gold-trust-fund",
-      "fetchedAt": "2026-09-15T09:34:54+09:00"
+      "fetchedAt": "2026-09-15T17:36:53+09:00"
     },
     "global": {
       "status": "verified",
@@ -641,15 +641,10 @@
       "frequency": "monthly",
       "sourceName": "World Gold Council Gold ETF Flows",
       "sourceUrl": "https://www.gold.org/goldhub/research/gold-etfs-holdings-and-flows/2026/09",
-      "fetchedAt": "2026-09-15T09:34:55+09:00",
+      "fetchedAt": "2026-09-15T17:36:56+09:00",
       "note": "WGC公式月次レポート本文から公開値を抽出。週次チャートがログイン必須の場合は月次公開値を使用。"
     },
     "gldHistory": [
-      {
-        "asOfDate": "2026-05-05",
-        "tonnes": 1034.05,
-        "changeTonnes": -1.7200000000000273
-      },
       {
         "asOfDate": "2026-05-06",
         "tonnes": 1033.2,
@@ -1094,6 +1089,11 @@
         "asOfDate": "2026-09-11",
         "tonnes": 1047.42,
         "changeTonnes": -2.8599999999999
+      },
+      {
+        "asOfDate": "2026-09-14",
+        "tonnes": 1047.42,
+        "changeTonnes": 0.0
       }
     ],
     "iauHistory": [
@@ -1453,9 +1453,18 @@
         "iauChangeTonnes": 0.18000000000000682,
         "combinedChangeTonnes": -2.679999999999893,
         "aligned": true
+      },
+      {
+        "asOfDate": "2026-09-14",
+        "gldTonnes": 1047.42,
+        "iauTonnes": 462.59,
+        "gldChangeTonnes": 0.0,
+        "iauChangeTonnes": 1.0499999999999545,
+        "combinedChangeTonnes": 1.0499999999999545,
+        "aligned": true
       }
     ],
-    "historyDaysCount": 25,
+    "historyDaysCount": 26,
     "historyStatus": "verified",
     "historyFallback": null
   },
@@ -1464,7 +1473,7 @@
     "frequency": "weekly",
     "sourceName": "World Gold Council Local gold price premium/discount",
     "sourceUrl": "https://www.gold.org/goldhub/data/gold-premium",
-    "fetchedAt": "2026-09-15T09:34:54+09:00",
+    "fetchedAt": "2026-09-15T17:36:55+09:00",
     "error": "WGC現物プレミアム取得不能: RuntimeError: HTTP取得失敗（1回試行）: 403 Client Error: Forbidden for url: https://www.gold.org/download/file/11657/gold-premiums.xlsx",
     "note": "一般公開経路を確認できないため旧値を最新値として表示しません。"
   },
@@ -1505,7 +1514,7 @@
       "sourceName": "FRED DFII10",
       "sourceUrl": "https://fred.stlouisfed.org/series/DFII10",
       "label": "米10年実質金利",
-      "fetchedAt": "2026-09-15T09:34:54+09:00"
+      "fetchedAt": "2026-09-15T17:36:55+09:00"
     },
     "dollarBroad": {
       "status": "verified",
@@ -1515,7 +1524,7 @@
       "sourceName": "FRED DTWEXBGS",
       "sourceUrl": "https://fred.stlouisfed.org/series/DTWEXBGS",
       "label": "米ドル実効指数（Broad）",
-      "fetchedAt": "2026-09-15T09:34:54+09:00"
+      "fetchedAt": "2026-09-15T17:36:55+09:00"
     },
     "usdjpy": {
       "status": "verified",
@@ -1530,7 +1539,7 @@
   "assessment": {
     "shortTerm": "売り優勢",
     "structural": "買い需要あり（確認項目限定）",
-    "score": 15,
+    "score": 32,
     "components": [
       {
         "name": "CFTC",
@@ -1538,7 +1547,7 @@
       },
       {
         "name": "ETF",
-        "score": -1.0
+        "score": 1.0
       },
       {
         "name": "実質金利",
