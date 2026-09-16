@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-09-16T18:53:07+09:00",
-  "publishedAt": "2026-09-16T18:53:07+09:00",
-  "dataAsOf": "2026-09-16T18:53:07+09:00",
+  "generatedAt": "2026-09-16T23:34:20+09:00",
+  "publishedAt": "2026-09-16T23:34:20+09:00",
+  "dataAsOf": "2026-09-16T23:34:20+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -20,7 +20,7 @@
       "name": "TradingView Economic Calendar",
       "url": "https://www.tradingview.com/economic-calendar/",
       "status": "ok",
-      "note": "実績値を7件照合。生データは公開保存しません。"
+      "note": "実績値を10件照合。生データは公開保存しません。"
     },
     {
       "id": "official_source_map",
@@ -292,7 +292,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-09-13T13:55:31+09:00",
-      "updatedAt": "2026-09-16T18:53:07+09:00"
+      "updatedAt": "2026-09-16T23:34:20+09:00"
     },
     {
       "id": "event-303bb014ef2cca",
@@ -539,22 +539,22 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-09-13T13:55:31+09:00",
-      "updatedAt": "2026-09-16T18:53:07+09:00",
+      "updatedAt": "2026-09-16T23:34:20+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Office for National Statistics",
         "url": "http://www.ons.gov.uk/"
       },
-      "resultSavedAt": "2026-09-16T18:53:07+09:00"
+      "resultSavedAt": "2026-09-16T23:34:20+09:00"
     },
     {
-      "id": "event-912b1fd745686f",
-      "sourceKey": "2026-09-16|18:34|EUR|german 30-y bond auction",
+      "id": "event-1a1ad8c5161c55",
+      "sourceKey": "2026-09-16|18:35|EUR|german 30-y bond auction",
       "date": "2026-09-16",
-      "time": "18:34",
-      "datetimeJst": "2026-09-16T18:34:00+09:00",
-      "scheduledAtSource": "2026-09-16T05:34:00-04:00",
-      "scheduledAtUtc": "2026-09-16T09:34:00Z",
+      "time": "18:35",
+      "datetimeJst": "2026-09-16T18:35:00+09:00",
+      "scheduledAtSource": "2026-09-16T05:35:00-04:00",
+      "scheduledAtUtc": "2026-09-16T09:35:00Z",
       "country": "欧州",
       "currency": "EUR",
       "title": "欧州 German 30-y 国債入札",
@@ -566,11 +566,11 @@
       "importanceLabel": "中",
       "forecast": "",
       "previous": "3.65|1.3",
-      "actual": "",
+      "actual": "2.81%",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
-      "status": "result_pending",
+      "resultExplanation": "実績 2.81% は予想 なし に対して比較保留。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -772,8 +772,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "結果確認中",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -790,8 +790,14 @@
       "sourceType": "forex_factory_weekly",
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
-      "createdAt": "2026-09-13T13:55:31+09:00",
-      "updatedAt": "2026-09-16T18:53:07+09:00"
+      "createdAt": "2026-09-16T23:34:20+09:00",
+      "updatedAt": "2026-09-16T23:34:20+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "TradingView Economic Calendar",
+        "url": "https://www.tradingview.com/economic-calendar/"
+      },
+      "resultSavedAt": "2026-09-16T23:34:20+09:00"
     },
     {
       "id": "event-15b1a10b7249d5",
@@ -812,11 +818,11 @@
       "importanceLabel": "中",
       "forecast": "0.6%",
       "previous": "-0.3%",
-      "actual": "",
+      "actual": "1.2%",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultComparison": "市場予想を上回る",
+      "resultExplanation": "実績 1.2% は予想 0.6% に対して市場予想を上回る。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1019,8 +1025,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を上回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1038,7 +1044,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-09-13T13:55:31+09:00",
-      "updatedAt": "2026-09-16T18:53:07+09:00"
+      "updatedAt": "2026-09-16T23:34:20+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "Census Bureau",
+        "url": "https://www.census.gov/"
+      },
+      "resultSavedAt": "2026-09-16T23:34:20+09:00"
     },
     {
       "id": "event-1924c93786607a",
@@ -1059,11 +1071,11 @@
       "importanceLabel": "中",
       "forecast": "0.8%",
       "previous": "-0.6%",
-      "actual": "",
+      "actual": "1.2%",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultComparison": "市場予想を上回る",
+      "resultExplanation": "実績 1.2% は予想 0.8% に対して市場予想を上回る。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1266,8 +1278,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を上回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1285,7 +1297,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-09-13T13:55:31+09:00",
-      "updatedAt": "2026-09-16T18:53:07+09:00"
+      "updatedAt": "2026-09-16T23:34:20+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "Census Bureau",
+        "url": "https://www.census.gov/"
+      },
+      "resultSavedAt": "2026-09-16T23:34:20+09:00"
     },
     {
       "id": "event-358b5832f8a5a3",
@@ -1309,8 +1327,8 @@
       "actual": "",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
+      "status": "result_pending",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1511,7 +1529,7 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
+        "narrative": "結果確認中",
         "reaction": "結果待ち",
         "watch": [
           "米2年債の初動",
@@ -1530,7 +1548,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-09-13T13:55:31+09:00",
-      "updatedAt": "2026-09-16T18:53:07+09:00"
+      "updatedAt": "2026-09-16T23:34:20+09:00"
     }
   ]
 }
