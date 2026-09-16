@@ -1,7 +1,7 @@
 {
   "schemaVersion": "3.2.0",
   "pageId": "usdjpy-supply-demand",
-  "generatedAt": "2026-09-17T00:54:09+09:00",
+  "generatedAt": "2026-09-17T08:47:43+09:00",
   "mode": "integrated-realistic",
   "sourceStatus": {
     "tradersWebFx": "confirmed",
@@ -11,77 +11,77 @@
   "tradersWebFx": {
     "name": "トレーダーズ・ウェブFX 無料ページ",
     "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
-    "sourceUpdatedAt": "2026-09-16T06:32:00+09:00",
-    "checkedAt": "2026-09-17T00:54:10+09:00",
+    "sourceUpdatedAt": "2026-09-17T06:38:00+09:00",
+    "checkedAt": "2026-09-17T08:47:45+09:00",
     "status": "confirmed",
     "pageConfirmed": true,
     "publicScope": "一般公開はUSD/JPYの直近情報",
     "redistributionMode": "key-levels-excerpt-with-attribution",
     "note": "無料公開データから需給判断に必要な主要水準のみ抜粋し、基準日時と出典を明示する。",
-    "sourceDate": "2026-09-16",
-    "sourceTime": "06:32",
-    "freshness": "previous-session",
-    "ageHours": 18.4,
+    "sourceDate": "2026-09-17",
+    "sourceTime": "06:38",
+    "freshness": "today",
+    "ageHours": 2.2,
     "keyLevels": {
-      "referenceSpot": "155.10",
-      "referenceSpotDescription": "9/16 6:00現在（高値155.24円 - 安値154.21円）",
+      "referenceSpot": "156.26",
+      "referenceSpotDescription": "9/17 6:00現在（高値156.42円 - 安値154.86円）",
       "sellOrders": [
         {
-          "price": "155.30",
-          "description": "売りやや小さめ・超えるとストップロス買い小さめ"
+          "price": "156.50",
+          "description": "売り小さめ、OP17・24日NYカット"
         },
         {
-          "price": "155.50",
-          "description": "売り小さめ、OP21日NYカット"
+          "price": "157.00",
+          "description": "売り小さめ・超えるとストップロス買い小さめ、OP17・18・23・24日NYカット/OP21日NYカット大きめ"
         }
       ],
       "buyOrders": [
         {
-          "price": "154.00",
-          "description": "買い小さめ、OP21日NYカット大きめ"
+          "price": "154.50",
+          "description": "買い小さめ"
         },
         {
-          "price": "153.00",
-          "description": "買い小さめ、OP16日NYカット/OP17日NYカット非常に大きめ"
+          "price": "154.00",
+          "description": "買い小さめ、OP21日NYカット大きめ"
         }
       ],
       "stops": [
         {
-          "price": "155.30",
-          "description": "売りやや小さめ・超えるとストップロス買い小さめ"
+          "price": "157.00",
+          "description": "売り小さめ・超えるとストップロス買い小さめ、OP17・18・23・24日NYカット/OP21日NYカット大きめ"
         },
         {
-          "price": "154.60",
-          "description": "割り込むとストップロス売りやや小さめ"
+          "price": "154.80",
+          "description": "割り込むとストップロス売り小さめ"
         }
       ],
       "nyCutOptions": [
         {
-          "price": "155.00",
-          "description": "OP16・17日NYカット大きめ/OP18日NYカット非常に大きめ"
+          "price": "156.50",
+          "description": "売り小さめ、OP17・24日NYカット"
         },
         {
-          "price": "154.90",
-          "description": "OP16日NYカット"
+          "price": "156.00",
+          "description": "OP17日NYカット非常に大きめ/OP18・23日NYカット/OP24日NYカット大きめ"
         },
         {
-          "price": "155.45",
-          "description": "OP17日NYカット"
+          "price": "155.80",
+          "description": "OP24日NYカット"
         }
       ],
       "optionAnalysis": {
         "status": "calculated",
         "headline": "上下のNYカットに挟まれ、カット前はレンジ化しやすい",
         "summary": "NYカットは方向を保証せず、カット時刻までは吸着、その後は反動が出る可能性を注文・ストップとの重複で評価します。",
-        "nearestPrice": "155.00",
-        "nearestDistancePips": 10,
+        "nearestPrice": "156.50",
+        "nearestDistancePips": 24,
         "points": [
-          "最接近は155.00円（現在値から下へ約10pips、大きめ）。NYカット接近時は同水準へ値が寄る動きと、通過後の反動に注意。",
-          "155.50円はNYカットと売り注文が重複。カット前後は上値を抑えやすい水準。",
+          "最接近は156.50円（現在値から上へ約24pips、通常規模）。NYカット接近時は同水準へ値が寄る動きと、通過後の反動に注意。",
+          "156.50円はNYカットと売り注文が重複。カット前後は上値を抑えやすい水準。",
           "複数期日のNYカットが同一水準に重なるため、単一期日より意識されやすい価格帯があります。"
         ]
       },
-      "extractedRowCount": 18,
+      "extractedRowCount": 19,
       "displayMode": "key-levels-excerpt"
     }
   },
@@ -524,7 +524,7 @@
     "judgement": "円買い越し拡大",
     "judgementSub": "USD/JPYの下押し圧力",
     "priceStatus": "available",
-    "checkedAt": "2026-09-17T00:54:09+09:00",
+    "checkedAt": "2026-09-17T08:47:43+09:00",
     "comment": "円買い越し拡大。円先物のNetは+10,796枚、前週比+103,023枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
     "verifiedPoints": 52,
     "priceVerifiedPoints": 52,
@@ -542,7 +542,7 @@
       "status": "confirmed"
     },
     "usdJpyVolume": {
-      "generatedAt": "2026-09-17T00:31:04+09:00",
+      "generatedAt": "2026-09-17T02:43:21+09:00",
       "targetDate": "2026-09-15",
       "publicationDate": "2026-09-16",
       "status": "ok"
