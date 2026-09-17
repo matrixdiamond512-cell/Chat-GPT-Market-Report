@@ -1,0 +1,65 @@
+name: Verify Sep 17 report restoration
+on:
+  push:
+    paths:
+      - '.github/workflows/verify-sep17-report-restoration.yml'
+      - 'index.html'
+      - 'report.html'
+      - 'assets/js/market-report-backfill-2026-09-17.js'
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate recovery JavaScript syntax
+        run: node --check assets/js/market-report-backfill-2026-09-17.js
+      - name: Wait for published HTML and recovery script
+        run: |
+          set -euo pipefail
+          BASE='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report'
+          for i in $(seq 1 45); do
+            T="$(date +%s)-${i}"
+            curl -fsSL "${BASE}/index.html?cb=${T}" -o /tmp/sep17-index || true
+            curl -fsSL "${BASE}/report.html?cb=${T}" -o /tmp/sep17-report || true
+            curl -fsSL "${BASE}/assets/js/market-report-backfill-2026-09-17.js?cb=${T}" -o /tmp/sep17-recovery || true
+            if grep -q 'market-report-backfill-2026-09-17.js' /tmp/sep17-index 2>/dev/null && grep -q 'market-report-backfill-2026-09-17.js' /tmp/sep17-report 2>/dev/null && grep -q 'MarketReportRecovery20260917' /tmp/sep17-recovery 2>/dev/null; then
+              echo 'Published HTML and recovery JavaScript available'; break
+            fi
+            sleep 4
+          done
+          grep -q 'market-report-backfill-2026-09-17.js' /tmp/sep17-index
+          grep -q 'market-report-backfill-2026-09-17.js' /tmp/sep17-report
+          grep -q 'MarketReportRecovery20260917' /tmp/sep17-recovery
+      - name: Confirm four 2026-09-17 slots render in headless Chrome
+        run: |
+          set -euo pipefail
+          CHROME="$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)"
+          test -n "$CHROME"
+          BASE='https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report'
+          for SLOT in '08:00' '12:00' '16:00' '21:00'; do
+            SLOT_URL="${BASE}/report.html?date=2026-09-17&time=${SLOT}&cb=$(date +%s%N)"
+            "$CHROME" --headless --disable-gpu --no-sandbox --disable-dev-shm-usage --virtual-time-budget=12000 --dump-dom "$SLOT_URL" > "/tmp/report-${SLOT}.html" 2>/tmp/chrome.log
+            python - "$SLOT" <<'PY'
+          import pathlib,sys,re,html
+          slot=sys.argv[1]
+          s=pathlib.Path(f'/tmp/report-{slot}.html').read_text(errors='replace')
+          clean=html.unescape(re.sub('<[^>]+>',' ',s))
+          assert f'2026/09/17（木）{slot}' in clean, f'{slot}: wrong selected report'
+          assert 'ダッシュボード用要約' in clean, f'{slot}: missing restored body'
+          assert 'Google Docsで原本全文を開く' in clean, f'{slot}: missing original source link'
+          assert '本文データを読み込んでいます' not in clean, f'{slot}: app did not render'
+          print(f'PASS {slot}: restored report visible and original link available')
+          PY
+          done
+          "$CHROME" --headless --disable-gpu --no-sandbox --disable-dev-shm-usage --virtual-time-budget=12000 --dump-dom "${BASE}/index.html?date=2026-09-17&time=21%3A00&cb=$(date +%s%N)" > /tmp/sep17-dashboard-dom.html 2>/tmp/chrome.log
+          python - <<'PY'
+          import pathlib,re,html
+          s=pathlib.Path('/tmp/sep17-dashboard-dom.html').read_text(errors='replace')
+          clean=html.unescape(re.sub('<[^>]+>',' ',s))
+          assert '2026/09/17' in clean or '2026-09-17' in s, 'dashboard date absent'
+          assert '原油安' in clean, 'dashboard latest theme absent'
+          print('PASS dashboard Sept 17: latest theme rendered')
+          PY
