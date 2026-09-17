@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 """Build CSV exports consumed by the ChatGPT market-data Google Sheets tabs.
 
-The current ChatGPT input prefers data/market/chatgpt-input.json.  That file is
-built from the published 28-row table for 08:00 and from the independent market
-snapshot for intraday slots.  This prevents the 08:00 sheet from collapsing back
-to the old 10-row raw quote contract.
-
-For the 08:00 report, BTCUSD is repaired immediately before export when a usable
-published BTC price exists. If BTCUSD is explicitly unavailable, publication must
-continue with the unavailable reason preserved instead of failing the whole report.
+A live 10-symbol acquisition is NOT a newly published 08:00 report. Repair the
+report BTCUSD 24-hour change only for a matching-date, published 28-row morning
+contract. In particular, never mutate an older data/latest-report.json while
+refreshing live quotes; that also leaves a dirty Git working tree and prevents
+scheduled acquisition from rebasing/pushing its genuinely fetched market data.
 """
 
 from __future__ import annotations
@@ -65,6 +62,29 @@ def current_input_payload(market_dir: Path) -> dict[str, Any]:
     return load_json(market_dir / "latest.json")
 
 
+def published_morning_contract_matches_current_input(market_dir: Path) -> bool:
+    """Do not run report mutations from the independent live-data pipeline."""
+    report_path = ROOT / "data" / "latest-report.json"
+    if not report_path.is_file():
+        return False
+    try:
+        publication = load_json(report_path)
+        report = publication.get("latestReport") or publication.get("report") or {}
+        current_input = current_input_payload(market_dir)
+        rows = (report.get("marketDataTable") or {}).get("rows") or []
+        markets = current_input.get("markets") or {}
+        bitcoin = markets.get("btcusd") or {}
+        return bool(
+            str(report.get("time") or "") == "08:00"
+            and len(rows) == 28
+            and len(markets) == 28
+            and str(report.get("date") or "") == str(current_input.get("generatedAt") or "")[:10]
+            and bitcoin.get("sourceId") == "published_report_previous_close_table"
+        )
+    except (OSError, ValueError, TypeError, AttributeError):
+        return False
+
+
 def build_exports(market_dir: Path = MARKET_DIR) -> tuple[int, int]:
     latest = current_input_payload(market_dir)
     latest_rows = market_rows(latest)
@@ -80,18 +100,16 @@ def build_exports(market_dir: Path = MARKET_DIR) -> tuple[int, int]:
 
 
 def main() -> int:
-    # build_chatgpt_report_input.py runs immediately before this script in the
-    # publication workflow. Repair BTCUSD only when the report contains a usable
-    # numeric price. An explicit 取得不能 is valid under the publication contract
-    # and must not abort the remaining dashboard/history synchronization.
-    try:
-        repair_btc_24h_change()
-    except SystemExit as exc:
-        message = str(exc)
-        if "BTCUSD report value is not numeric" in message:
-            print("BTCUSD 24h repair skipped: published BTCUSD is unavailable; preserving unavailable state")
-        else:
-            raise
+    if published_morning_contract_matches_current_input(MARKET_DIR):
+        try:
+            repair_btc_24h_change()
+        except SystemExit as exc:
+            if "BTCUSD report value is not numeric" in str(exc):
+                print("BTCUSD repair skipped: published price is unavailable")
+            else:
+                raise
+    else:
+        print("BTCUSD report repair skipped: no matching published 28-row morning contract")
     latest_count, history_count = build_exports()
     print(f"Built ChatGPT market CSV exports: latest={latest_count}, history={history_count}")
     return 0
