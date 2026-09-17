@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - '.github/workflows/market-data-live-recovery.yml'
+      - 'scripts/build_market_sheet_exports.py'
   schedule:
     # Backup starts in JST: weekdays 06:12, 11:12, 15:12, 20:12.
     # Choose the actual JST slot at runner start: GitHub schedules can be hours late.
