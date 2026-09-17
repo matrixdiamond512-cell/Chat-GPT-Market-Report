@@ -1,19 +1,36 @@
 {
   "schemaVersion": "1.0.0",
-  "status": "verified",
-  "freshness": "fresh",
-  "dataDate": "2026-09-16",
-  "asOf": "2026-09-16T16:00:00-04:00",
-  "updatedAt": "2026-09-17T09:22:46+09:00",
+  "status": "unavailable",
+  "freshness": "unavailable",
+  "dataDate": null,
+  "asOf": null,
+  "updatedAt": "2026-09-18T08:41:15+09:00",
   "source": {
     "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
     "url": "https://www.slickcharts.com/sp500",
     "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
   },
-  "error": null,
+  "error": "Slickcharts is not on the verified U.S. session: source=2026-09-17, expected=2026-09-16",
   "current": {
+    "status": "unavailable",
+    "freshness": "unavailable",
+    "dataDate": null,
+    "asOf": null,
+    "updatedAt": "2026-09-18T08:41:15+09:00",
+    "source": {
+      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+      "url": "https://www.slickcharts.com/sp500",
+      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
+    },
+    "error": "Slickcharts is not on the verified U.S. session: source=2026-09-17, expected=2026-09-16",
+    "universe": "S&P 500 constituents",
+    "validation": {},
+    "gainers": [],
+    "losers": []
+  },
+  "lastGood": {
     "status": "verified",
-    "freshness": "fresh",
+    "freshness": "stale",
     "dataDate": "2026-09-16",
     "asOf": "2026-09-16T16:00:00-04:00",
     "updatedAt": "2026-09-17T09:22:46+09:00",
@@ -124,219 +141,8 @@
       }
     ]
   },
-  "lastGood": {
-    "status": "verified",
-    "freshness": "stale",
-    "dataDate": "2026-09-16",
-    "asOf": "2026-09-16T16:00:00-04:00",
-    "updatedAt": "2026-09-17T08:53:21+09:00",
-    "source": {
-      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-      "url": "https://www.slickcharts.com/sp500",
-      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
-    },
-    "error": null,
-    "universe": "S&P 500 constituents",
-    "validation": {
-      "estimatedWeightedReturnPct": 0.0676,
-      "verifiedSP500ReturnPct": null,
-      "differencePt": null
-    },
-    "gainers": [
-      {
-        "rank": 1,
-        "symbol": "GNRC",
-        "name": "GENERAC HOLDINGS INC（GNRC）",
-        "close": "232.74",
-        "dayChange": "+57.71",
-        "change": "+32.97%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "LITE",
-        "name": "Lumentum Holdings Inc. Common Stock（LITE）",
-        "close": "929.77",
-        "dayChange": "+90.81",
-        "change": "+10.82%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "COHR",
-        "name": "Coherent Corp.（COHR）",
-        "close": "295.2",
-        "dayChange": "+24.03",
-        "change": "+8.86%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "AXON",
-        "name": "Axon Enterprise, Inc. Common Stock（AXON）",
-        "close": "469.15",
-        "dayChange": "+27.07",
-        "change": "+6.12%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "GEV",
-        "name": "GE Vernova Inc.（GEV）",
-        "close": "935.5",
-        "dayChange": "+52.69",
-        "change": "+5.97%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-      }
-    ],
-    "losers": [
-      {
-        "rank": 1,
-        "symbol": "JBHT",
-        "name": "JB Hunt Transport Services Inc（JBHT）",
-        "close": "236.78",
-        "dayChange": "-36.27",
-        "change": "-13.28%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "ON",
-        "name": "ON Semiconductor Corp（ON）",
-        "close": "67.86",
-        "dayChange": "-5.34",
-        "change": "-7.29%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "FANG",
-        "name": "Diamondback Energy, Inc.（FANG）",
-        "close": "196.27",
-        "dayChange": "-15.25",
-        "change": "-7.21%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "OXY",
-        "name": "Occidental Petroleum Corporation（OXY）",
-        "close": "59.51",
-        "dayChange": "-4.01",
-        "change": "-6.32%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "TPL",
-        "name": "Texas Pacific Land Corporation（TPL）",
-        "close": "349.94",
-        "dayChange": "-21.69",
-        "change": "-5.84%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-      }
-    ]
-  },
   "universe": "S&P 500 constituents",
-  "validation": {
-    "estimatedWeightedReturnPct": -0.4068,
-    "verifiedSP500ReturnPct": -0.45,
-    "differencePt": 0.0432,
-    "tolerancePt": 0.2,
-    "status": "passed"
-  },
-  "gainers": [
-    {
-      "rank": 1,
-      "symbol": "LITE",
-      "name": "Lumentum Holdings Inc. Common Stock（LITE）",
-      "close": "919.4",
-      "dayChange": "+80.44",
-      "change": "+9.59%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "COHR",
-      "name": "Coherent Corp.（COHR）",
-      "close": "289.93",
-      "dayChange": "+18.76",
-      "change": "+6.92%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "AXON",
-      "name": "Axon Enterprise, Inc. Common Stock（AXON）",
-      "close": "468.42",
-      "dayChange": "+26.34",
-      "change": "+5.96%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "GEV",
-      "name": "GE Vernova Inc.（GEV）",
-      "close": "925.09",
-      "dayChange": "+42.28",
-      "change": "+4.79%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "EW",
-      "name": "Edwards Lifesciences Corp（EW）",
-      "close": "89.28",
-      "dayChange": "+3.54",
-      "change": "+4.13%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-    }
-  ],
-  "losers": [
-    {
-      "rank": 1,
-      "symbol": "JBHT",
-      "name": "JB Hunt Transport Services Inc（JBHT）",
-      "close": "236.73",
-      "dayChange": "-36.32",
-      "change": "-13.30%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "ON",
-      "name": "ON Semiconductor Corp（ON）",
-      "close": "66.6",
-      "dayChange": "-6.6",
-      "change": "-9.02%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "FANG",
-      "name": "Diamondback Energy, Inc.（FANG）",
-      "close": "194.54",
-      "dayChange": "-16.99",
-      "change": "-8.03%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "OXY",
-      "name": "Occidental Petroleum Corporation（OXY）",
-      "close": "59.36",
-      "dayChange": "-4.16",
-      "change": "-6.55%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "TPL",
-      "name": "Texas Pacific Land Corporation（TPL）",
-      "close": "348.57",
-      "dayChange": "-23.06",
-      "change": "-6.21%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-16。材料要因は別途ニュース確認。"
-    }
-  ]
+  "validation": {},
+  "gainers": [],
+  "losers": []
 }
