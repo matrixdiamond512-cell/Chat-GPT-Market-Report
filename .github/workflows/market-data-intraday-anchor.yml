@@ -13,7 +13,7 @@ on:
           - "21:00"
   schedule:
     # JST weekdays: 11:28, 15:28, 20:28.
-    # Each runner stays alive through the six acquisition attempts before its report.
+    # A delayed GitHub runner must still fetch real data once, not just log expired attempts.
     - cron: "28 2 * * 1-5"
     - cron: "28 6 * * 1-5"
     - cron: "28 11 * * 1-5"
@@ -69,7 +69,7 @@ jobs:
           python -m py_compile scripts/run_market_data_acquisition.py
           python -m py_compile scripts/run_market_data_window.py
 
-      - name: Run the complete acquisition window
+      - name: Run the complete acquisition window (including late recovery)
         env:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
@@ -79,4 +79,5 @@ jobs:
             --slot "${{ steps.window.outputs.slot }}" \
             --times "${{ steps.window.outputs.times }}" \
             --trigger-source "intraday_primary_window" \
-            --max-catchup-minutes 90
+            --max-catchup-minutes 90 \
+            --recover-expired
