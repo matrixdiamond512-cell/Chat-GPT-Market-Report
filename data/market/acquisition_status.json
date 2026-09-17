@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-09-18T06:14:36+09:00",
+  "generatedAt": "2026-09-18T08:34:50+09:00",
   "reportSlot": "08:00",
-  "overallStatus": "degraded",
+  "overallStatus": "verified",
   "missingRequired": [],
-  "fallbackCount": 1,
+  "fallbackCount": 0,
   "strategy": "staged_retry",
   "windowStartedAt": "2026-09-18T06:14:36+09:00",
-  "lastAttemptAt": "2026-09-18T06:14:36+09:00",
-  "runCount": 1,
-  "mode": "full",
+  "lastAttemptAt": "2026-09-18T08:34:50+09:00",
+  "runCount": 2,
+  "mode": "incremental",
   "targetedSymbols": [
     "gold",
     "wti",
@@ -18,13 +18,12 @@
     "btcusd",
     "vix",
     "nikkei_vi",
-    "fear_greed",
     "crypto_fear_greed"
   ],
-  "recoveredSymbols": [],
+  "recoveredSymbols": [
+    "crypto_fear_greed"
+  ],
   "preservedVerifiedSymbols": [],
-  "remainingFallback": [
-    "crypto_fear_greed"
-  ],
+  "remainingFallback": [],
   "remainingUnavailable": []
 }
