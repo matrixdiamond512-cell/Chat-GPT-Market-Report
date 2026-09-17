@@ -16,12 +16,6 @@ on:
           - "07:40"
           - "07:45"
           - "07:50"
-  push:
-    branches: [main]
-    paths:
-      - "scripts/run_market_data_acquisition.py"
-      - "scripts/run_market_data_window.py"
-      - ".github/workflows/market-data-08-anchor.yml"
   schedule:
     - cron: "28 21 * * 0-5" # 06:28 JST -> 06:30 acquisition
     - cron: "58 21 * * 0-5" # 06:58 JST -> 07:00 acquisition
@@ -80,7 +74,7 @@ jobs:
           if [ -z "$TIME" ]; then TIME="07:50"; fi
           echo "time=$TIME" >> "$GITHUB_OUTPUT"
 
-      - name: Run one supporting acquisition attempt
+      - name: Run one supporting acquisition attempt (including late recovery)
         env:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
@@ -91,7 +85,8 @@ jobs:
             --times "${{ steps.intended.outputs.time }}" \
             --trigger-source "independent_schedule" \
             --max-catchup-minutes 180 \
-            --mode auto
+            --mode auto \
+            --recover-expired
 
       - name: Explain 08:00 data semantics
         run: |
