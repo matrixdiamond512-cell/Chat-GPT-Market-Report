@@ -1,0 +1,54 @@
+name: One-time USDJPY price source disclosure repair
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/repair-usdjpy-price-labels-once.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Disclose mixed USDJPY OHLC provenance without touching chart layout
+        run: python scripts/fix_usdjpy_volume_price_labels.py
+      - name: Confirm recent 20 sessions price coverage and source disclosure
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('data/usdjpy-volume.json').read_text(encoding='utf-8'))
+          rows=p['data']['records']
+          missing={r['targetDate']: [f for f in ('open','high','low','close','priceChangePct') if r.get(f) is None] for r in rows[:20]}
+          missing={d:f for d,f in missing.items() if f}
+          if missing:
+              raise SystemExit('Price gaps remain: '+str(missing))
+          html=Path('usdjpy-volume.html').read_text(encoding='utf-8')
+          if '欠損を補完したYahoo!ファイナンス日本版データ' not in html:
+              raise SystemExit('Source attribution HTML patch missing')
+          print('PASS: latest 20 sessions have OHLC and change, and dashboard labels disclose sources')
+          print('latest:',rows[0]['targetDate'],rows[0]['close'])
+          PY
+      - name: Commit the source disclosure patch
+        run: |
+          if git diff --quiet -- usdjpy-volume.html; then
+            echo 'Source attribution already updated.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add usdjpy-volume.html
+          git commit -m 'Correct price provenance and scope on USDJPY spot-volume chart'
+          git pull --rebase origin main
+          git push origin HEAD:main
