@@ -7,6 +7,7 @@ on:
       - .github/workflows/update-usdjpy-volume-prices.yml
       - scripts/run_usdjpy_volume_price_backfill.py
       - scripts/yahoo_jp_usdjpy_ohlc.py
+      - scripts/fix_usdjpy_volume_price_labels.py
   workflow_dispatch:
   schedule:
     - cron: "10 14 * * 1-5"
@@ -31,9 +32,10 @@ jobs:
           python-version: "3.12"
       - name: Backfill and cross-check Yahoo Japan USDJPY daily OHLC
         run: |
-          python -m py_compile scripts/update_usdjpy_volume_prices.py scripts/yahoo_jp_usdjpy_ohlc.py scripts/run_usdjpy_volume_price_backfill.py
+          python -m py_compile scripts/update_usdjpy_volume_prices.py scripts/yahoo_jp_usdjpy_ohlc.py scripts/run_usdjpy_volume_price_backfill.py scripts/fix_usdjpy_volume_price_labels.py
           python scripts/run_usdjpy_volume_price_backfill.py
-      - name: Validate the latest 20 spot-volume sessions have complete prices
+          python scripts/fix_usdjpy_volume_price_labels.py
+      - name: Validate all spot-volume sessions have complete prices
         run: |
           python - <<'PY'
           import json
@@ -41,23 +43,23 @@ jobs:
           payload=json.loads(Path('data/usdjpy-volume.json').read_text(encoding='utf-8'))
           rows=payload['data']['records']
           assert len(rows)>=20, 'Fewer than 20 spot-volume rows'
-          missing={r['targetDate']: [key for key in ('open','high','low','close','priceChangePct') if r.get(key) is None] for r in rows[:20]}
+          missing={r['targetDate']: [key for key in ('open','high','low','close','priceChangePct') if r.get(key) is None] for r in rows}
           missing={date: fields for date, fields in missing.items() if fields}
           if missing:
               raise SystemExit('Price backfill not complete: '+str(missing))
-          print('PASS: 20 newest BOJ volume dates include USDJPY open/high/low/close/change')
+          print('PASS: all',len(rows),'BOJ volume dates include USDJPY open/high/low/close/change')
           print('Newest volume date:',rows[0]['targetDate'],'USDJPY close:',rows[0]['close'])
           print('Price source:',payload['data'].get('priceSourceName'))
           PY
-      - name: Save backfilled data and publish to main
+      - name: Save backfilled data and updated dashboard attribution
         run: |
-          if git diff --quiet -- data/usdjpy-volume.json; then
-            echo 'No USDJPY missing price data left to update.'
+          if git diff --quiet -- data/usdjpy-volume.json usdjpy-volume.html; then
+            echo 'No USDJPY missing price data or dashboard label changes.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/usdjpy-volume.json
-          git commit -m 'Backfill verified USDJPY daily OHLC for BOJ spot turnover chart'
+          git add data/usdjpy-volume.json usdjpy-volume.html
+          git commit -m 'Complete BOJ USDJPY spot-volume chart and disclose daily OHLC sources'
           git pull --rebase origin main
           git push origin HEAD:main
