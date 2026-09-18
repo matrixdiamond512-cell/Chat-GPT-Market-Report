@@ -1,0 +1,62 @@
+name: Repair Tokyo USDJPY spot volume price gaps
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/update-usdjpy-volume-prices.yml
+      - scripts/update_usdjpy_volume_prices.py
+  workflow_dispatch:
+  schedule:
+    - cron: "10 14 * * 1-5"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tokyo-usdjpy-volume-prices
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check script syntax and backfill Yahoo USDJPY daily candles
+        run: |
+          python -m py_compile scripts/update_usdjpy_volume_prices.py
+          python scripts/update_usdjpy_volume_prices.py
+      - name: Validate the latest 20 spot-volume sessions have complete prices
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          payload=json.loads(Path('data/usdjpy-volume.json').read_text(encoding='utf-8'))
+          rows=payload['data']['records']
+          assert len(rows)>=20, 'Fewer than 20 spot-volume rows'
+          missing={r['targetDate']: [key for key in ('open','high','low','close','priceChangePct') if r.get(key) is None] for r in rows[:20]}
+          missing={date: fields for date, fields in missing.items() if fields}
+          if missing:
+              raise SystemExit('Price backfill not complete: '+str(missing))
+          print('PASS: 20 newest BOJ volume dates include USDJPY open/high/low/close/change')
+          print('Newest volume date:',rows[0]['targetDate'],'USDJPY close:',rows[0]['close'])
+          print('Price source:',payload['data'].get('priceSourceName'))
+          PY
+      - name: Save backfilled data and publish to main
+        run: |
+          if git diff --quiet -- data/usdjpy-volume.json; then
+            echo 'No USDJPY missing price data left to update.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/usdjpy-volume.json
+          git commit -m 'Backfill verified USDJPY daily OHLC for BOJ spot turnover chart'
+          git pull --rebase origin main
+          git push origin HEAD:main
