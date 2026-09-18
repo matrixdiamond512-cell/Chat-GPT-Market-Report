@@ -23,7 +23,7 @@ jobs:
       - name: Update from BOJ official API and latest PDFs
         run: python scripts/update_usdjpy_volume.py
       - name: Backfill missing USDJPY daily prices independently
-        run: python scripts/update_usdjpy_volume_prices.py
+        run: python scripts/run_usdjpy_volume_price_backfill.py
       - name: Validate spot volume dates and inspect price coverage
         run: |
           python -m json.tool data/usdjpy-volume.json > /dev/null
@@ -45,7 +45,7 @@ jobs:
           print('BOJ publication date:', latest['publicationDate'])
           print('Last 20-session price gaps:', price_missing)
           print('Acquired/generated:', payload.get('generatedAt'))
-          print('BOJ target date can precede publication date across weekends and holidays.')
+          print('BOJ target date can preced publication date across weekends and holidays.')
           if price_missing:
               print('::warning::Price backfill incomplete; committing BOJ volume, failing health check after commit.')
           PY
