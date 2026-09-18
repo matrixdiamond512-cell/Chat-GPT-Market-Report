@@ -5,7 +5,8 @@ on:
     branches: [main]
     paths:
       - .github/workflows/update-usdjpy-volume-prices.yml
-      - scripts/update_usdjpy_volume_prices.py
+      - scripts/run_usdjpy_volume_price_backfill.py
+      - scripts/yahoo_jp_usdjpy_ohlc.py
   workflow_dispatch:
   schedule:
     - cron: "10 14 * * 1-5"
@@ -28,14 +29,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Inspect Yahoo Japan, Stooq and BOJ price sources
+      - name: Backfill and cross-check Yahoo Japan USDJPY daily OHLC
         run: |
-          python -m pip install --disable-pip-version-check pypdf==6.10.0
-          python scripts/probe_usdjpy_price_sources.py
-      - name: Check script syntax and backfill USDJPY daily candles
-        run: |
-          python -m py_compile scripts/update_usdjpy_volume_prices.py
-          python scripts/update_usdjpy_volume_prices.py
+          python -m py_compile scripts/update_usdjpy_volume_prices.py scripts/yahoo_jp_usdjpy_ohlc.py scripts/run_usdjpy_volume_price_backfill.py
+          python scripts/run_usdjpy_volume_price_backfill.py
       - name: Validate the latest 20 spot-volume sessions have complete prices
         run: |
           python - <<'PY'
