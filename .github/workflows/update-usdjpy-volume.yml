@@ -12,7 +12,7 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -22,36 +22,54 @@ jobs:
         run: python -m pip install --disable-pip-version-check pypdf==6.10.0
       - name: Update from BOJ official API and latest PDFs
         run: python scripts/update_usdjpy_volume.py
-      - name: Validate publication date, target date and acquisition time
+      - name: Backfill missing USDJPY daily prices independently
+        run: python scripts/update_usdjpy_volume_prices.py
+      - name: Validate spot volume dates and inspect price coverage
         run: |
           python -m json.tool data/usdjpy-volume.json > /dev/null
           python - <<'PY'
           import json
           from pathlib import Path
 
-          data=json.loads(Path('data/usdjpy-volume.json').read_text(encoding='utf-8'))
-          rows=((data.get('data') or {}).get('records') or [])
+          payload=json.loads(Path('data/usdjpy-volume.json').read_text(encoding='utf-8'))
+          rows=((payload.get('data') or {}).get('records') or [])
           if not rows:
               raise SystemExit('No BOJ USDJPY spot-volume records')
           latest=rows[0]
           required=('targetDate','publicationDate','spotVolume')
           missing=[key for key in required if latest.get(key) in (None,'')]
           if missing:
-              raise SystemExit('Latest record is missing: '+', '.join(missing))
-          print('target date:', latest['targetDate'])
+              raise SystemExit('Latest volume record is missing: '+', '.join(missing))
+          price_missing=[r['targetDate'] for r in rows[:20] if any(r.get(k) is None for k in ('open','high','low','close','priceChangePct'))]
+          print('Target date:', latest['targetDate'])
           print('BOJ publication date:', latest['publicationDate'])
-          print('acquired/generated:', data.get('generatedAt'))
-          print('The target date can precede the BOJ publication date across weekends/holidays.')
+          print('Last 20-session price gaps:', price_missing)
+          print('Acquired/generated:', payload.get('generatedAt'))
+          print('BOJ target date can precede publication date across weekends and holidays.')
+          if price_missing:
+              print('::warning::Price backfill incomplete; committing BOJ volume, failing health check after commit.')
           PY
-      - name: Commit updated volume data
+      - name: Commit updated spot volume AND prices
         run: |
           if git diff --quiet -- data/usdjpy-volume.json; then
-            echo 'No USDJPY volume data change.'
+            echo 'No USDJPY volume or price data change.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/usdjpy-volume.json
-          git commit -m 'Update Tokyo USDJPY spot volume'
+          git commit -m 'Update Tokyo USDJPY spot volume and daily prices'
           git pull --rebase origin main
           git push origin HEAD:main
+      - name: Fail if the latest 20 spot-volume dates still lack prices
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path('data/usdjpy-volume.json').read_text(encoding='utf-8'))
+          rows=p['data']['records'][:20]
+          missing=[r['targetDate'] for r in rows if any(r.get(k) is None for k in ('open','high','low','close','priceChangePct'))]
+          if missing:
+              raise SystemExit('USDJPY OHLC price gap needs attention: '+', '.join(missing))
+          print('Verified: price OHLC + percentage change present on all latest 20 volume dates.')
+          PY
