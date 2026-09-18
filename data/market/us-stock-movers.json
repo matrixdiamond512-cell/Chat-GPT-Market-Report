@@ -1,19 +1,36 @@
 {
   "schemaVersion": "1.0.0",
-  "status": "verified",
-  "freshness": "fresh",
-  "dataDate": "2026-09-17",
-  "asOf": "2026-09-17T16:00:00-04:00",
-  "updatedAt": "2026-09-18T09:09:04+09:00",
+  "status": "unavailable",
+  "freshness": "unavailable",
+  "dataDate": null,
+  "asOf": null,
+  "updatedAt": "2026-09-19T08:34:52+09:00",
   "source": {
     "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
     "url": "https://www.slickcharts.com/sp500",
     "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
   },
-  "error": null,
+  "error": "Slickcharts is not on the verified U.S. session: source=2026-09-18, expected=2026-09-17",
   "current": {
+    "status": "unavailable",
+    "freshness": "unavailable",
+    "dataDate": null,
+    "asOf": null,
+    "updatedAt": "2026-09-19T08:34:52+09:00",
+    "source": {
+      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+      "url": "https://www.slickcharts.com/sp500",
+      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
+    },
+    "error": "Slickcharts is not on the verified U.S. session: source=2026-09-18, expected=2026-09-17",
+    "universe": "S&P 500 constituents",
+    "validation": {},
+    "gainers": [],
+    "losers": []
+  },
+  "lastGood": {
     "status": "verified",
-    "freshness": "fresh",
+    "freshness": "stale",
     "dataDate": "2026-09-17",
     "asOf": "2026-09-17T16:00:00-04:00",
     "updatedAt": "2026-09-18T09:09:04+09:00",
@@ -124,219 +141,8 @@
       }
     ]
   },
-  "lastGood": {
-    "status": "verified",
-    "freshness": "stale",
-    "dataDate": "2026-09-17",
-    "asOf": "2026-09-17T16:00:00-04:00",
-    "updatedAt": "2026-09-18T08:43:47+09:00",
-    "source": {
-      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-      "url": "https://www.slickcharts.com/sp500",
-      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
-    },
-    "error": null,
-    "universe": "S&P 500 constituents",
-    "validation": {
-      "estimatedWeightedReturnPct": 1.1413,
-      "verifiedSP500ReturnPct": null,
-      "differencePt": null
-    },
-    "gainers": [
-      {
-        "rank": 1,
-        "symbol": "GNRC",
-        "name": "GENERAC HOLDINGS INC（GNRC）",
-        "close": "208.33",
-        "dayChange": "+33.22",
-        "change": "+18.97%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "SMCI",
-        "name": "Super Micro Computer, Inc. Common Stock（SMCI）",
-        "close": "40.4",
-        "dayChange": "+3.55",
-        "change": "+9.62%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "MRNA",
-        "name": "Moderna, Inc. Common Stock（MRNA）",
-        "close": "158.79",
-        "dayChange": "+13.17",
-        "change": "+9.05%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "INTC",
-        "name": "Intel Corp（INTC）",
-        "close": "109.47",
-        "dayChange": "+8.42",
-        "change": "+8.33%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "HPE",
-        "name": "Hewlett Packard Enterprise Company（HPE）",
-        "close": "61.09",
-        "dayChange": "+4.41",
-        "change": "+7.79%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-      }
-    ],
-    "losers": [
-      {
-        "rank": 1,
-        "symbol": "TMUS",
-        "name": "T-Mobile US, Inc.（TMUS）",
-        "close": "166.75",
-        "dayChange": "-9.51",
-        "change": "-5.40%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 2,
-        "symbol": "DVA",
-        "name": "DaVita Inc.（DVA）",
-        "close": "184.38",
-        "dayChange": "-9.48",
-        "change": "-4.89%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 3,
-        "symbol": "CPRT",
-        "name": "Copart Inc（CPRT）",
-        "close": "29.7",
-        "dayChange": "-1.12",
-        "change": "-3.64%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 4,
-        "symbol": "PSKY",
-        "name": "Paramount Skydance Corporation Class B Common Stock（PSKY）",
-        "close": "10.74",
-        "dayChange": "-0.39",
-        "change": "-3.55%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-      },
-      {
-        "rank": 5,
-        "symbol": "BLDR",
-        "name": "Builders FirstSource, Inc.（BLDR）",
-        "close": "57.77",
-        "dayChange": "-1.88",
-        "change": "-3.15%",
-        "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-      }
-    ]
-  },
   "universe": "S&P 500 constituents",
-  "validation": {
-    "estimatedWeightedReturnPct": 1.1657,
-    "verifiedSP500ReturnPct": 1.14,
-    "differencePt": 0.0257,
-    "tolerancePt": 0.2,
-    "status": "passed"
-  },
-  "gainers": [
-    {
-      "rank": 1,
-      "symbol": "GNRC",
-      "name": "GENERAC HOLDINGS INC（GNRC）",
-      "close": "207.23",
-      "dayChange": "+32.12",
-      "change": "+18.34%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "SMCI",
-      "name": "Super Micro Computer, Inc. Common Stock（SMCI）",
-      "close": "40.35",
-      "dayChange": "+3.5",
-      "change": "+9.50%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "MRNA",
-      "name": "Moderna, Inc. Common Stock（MRNA）",
-      "close": "158.07",
-      "dayChange": "+12.45",
-      "change": "+8.55%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "HPE",
-      "name": "Hewlett Packard Enterprise Company（HPE）",
-      "close": "61.04",
-      "dayChange": "+4.36",
-      "change": "+7.69%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "INTC",
-      "name": "Intel Corp（INTC）",
-      "close": "108.8",
-      "dayChange": "+7.75",
-      "change": "+7.67%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-    }
-  ],
-  "losers": [
-    {
-      "rank": 1,
-      "symbol": "TMUS",
-      "name": "T-Mobile US, Inc.（TMUS）",
-      "close": "166.45",
-      "dayChange": "-9.81",
-      "change": "-5.57%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 2,
-      "symbol": "DVA",
-      "name": "DaVita Inc.（DVA）",
-      "close": "183.09",
-      "dayChange": "-10.77",
-      "change": "-5.56%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 3,
-      "symbol": "PSKY",
-      "name": "Paramount Skydance Corporation Class B Common Stock（PSKY）",
-      "close": "10.62",
-      "dayChange": "-0.52",
-      "change": "-4.63%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 4,
-      "symbol": "CPRT",
-      "name": "Copart Inc（CPRT）",
-      "close": "29.66",
-      "dayChange": "-1.16",
-      "change": "-3.76%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-    },
-    {
-      "rank": 5,
-      "symbol": "CSGP",
-      "name": "CoStar Group Inc（CSGP）",
-      "close": "29.3",
-      "dayChange": "-1.06",
-      "change": "-3.51%",
-      "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-17。材料要因は別途ニュース確認。"
-    }
-  ]
+  "validation": {},
+  "gainers": [],
+  "losers": []
 }
