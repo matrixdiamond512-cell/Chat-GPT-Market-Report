@@ -8,6 +8,8 @@ on:
   workflow_run:
     workflows:
       - "Sync latest market report publication"
+      - "Update Tokyo USDJPY spot volume"
+      - "Repair Tokyo USDJPY spot volume price gaps"
     types:
       - completed
 
