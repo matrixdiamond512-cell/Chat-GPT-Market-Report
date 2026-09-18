@@ -28,7 +28,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Check script syntax and backfill Yahoo USDJPY daily candles
+      - name: Inspect Yahoo Japan, Stooq and BOJ price sources
+        run: |
+          python -m pip install --disable-pip-version-check pypdf==6.10.0
+          python scripts/probe_usdjpy_price_sources.py
+      - name: Check script syntax and backfill USDJPY daily candles
         run: |
           python -m py_compile scripts/update_usdjpy_volume_prices.py
           python scripts/update_usdjpy_volume_prices.py
