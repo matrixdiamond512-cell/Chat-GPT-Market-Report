@@ -13,6 +13,12 @@ TIME_PATTERN = re.compile(r"^\d{2}:\d{2}$")
 def validate(report: dict, source: str) -> dict:
     if not isinstance(report, dict):
         raise ValueError(f"{source}: report must be an object")
+    # Some older canonical files retain the latest-report.json envelope.
+    # Normalize in memory without rewriting or discarding their original bytes.
+    if not all(report.get(key) for key in ("date", "time", "title")):
+        nested = report.get("latestReport")
+        if isinstance(nested, dict) and all(nested.get(key) for key in ("date", "time", "title")):
+            report = nested
     for key in ("date", "time", "title"):
         if not report.get(key):
             raise ValueError(f"{source}: missing {key}")
@@ -67,10 +73,8 @@ def load_canonical() -> list[dict]:
 def main() -> None:
     incoming = load_index()
 
-    # A direct publisher may update reports.json without writing a canonical
-    # reports/YYYY-MM-DD_HH-MM.json file. Preserve every missing incoming slot.
-    # For the newest incoming slot only, also carry the latest edited payload
-    # into its canonical file so a richer direct publication is not lost.
+    # Preserve missing direct-publication slots. Never replace a richer
+    # canonical record with a short index entry.
     newest_key = slot(incoming[0]) if incoming else None
     for report in incoming:
         path = canonical_path(report)
@@ -79,7 +83,9 @@ def main() -> None:
             print(f"Recovered missing canonical report: {path}")
         elif newest_key == slot(report):
             current = validate(read_json(path), str(path))
-            if current != report:
+            incoming_text = str(report.get("fullText") or "")
+            current_text = str(current.get("fullText") or "")
+            if current != report and len(incoming_text) >= len(current_text):
                 write_report(path, report)
                 print(f"Updated newest canonical report from direct publication: {path}")
 
