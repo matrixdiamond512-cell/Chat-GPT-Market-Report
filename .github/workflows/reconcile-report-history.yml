@@ -43,6 +43,7 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
+          from scripts.reconcile_report_history import validate
 
           index = json.loads(Path('reports.json').read_text(encoding='utf-8'))
           index_keys = {(r['date'], r['time']) for r in index}
@@ -50,7 +51,7 @@ jobs:
           for path in Path('reports').glob('*.json'):
               if path.name.startswith('_'):
                   continue
-              report = json.loads(path.read_text(encoding='utf-8'))
+              report = validate(json.loads(path.read_text(encoding='utf-8')), str(path))
               file_keys.add((report['date'], report['time']))
 
           if index_keys != file_keys:
