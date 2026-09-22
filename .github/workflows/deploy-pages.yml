@@ -33,9 +33,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # For workflow_run, deploy current main after the synchronization workflow
-          # has committed reports.json/dashboard.json. For push/manual runs this is
-          # also the intended publication source.
           ref: main
 
       - name: Set up Python
@@ -43,8 +40,28 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Preserve report history before deployment
-        run: python scripts/build_reports.py
+      - name: Verify canonical history and index without rewriting latest report
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          index = json.loads(Path('reports.json').read_text(encoding='utf-8'))
+          assert isinstance(index, list) and index, 'report index empty'
+          seen = set()
+          for item in index:
+              key = (item['date'], item['time'])
+              assert key not in seen, f'duplicate index slot: {key}'
+              seen.add(key)
+              path = Path('reports') / f'{key[0]}_{key[1].replace(":", "-")}.json'
+              canonical = json.loads(path.read_text(encoding='utf-8'))
+              if not all(canonical.get(k) for k in ('date', 'time', 'title')):
+                  canonical = canonical.get('latestReport', canonical)
+              assert item == canonical, f'index/canonical mismatch: {path}'
+          for time in ('12:00', '16:00'):
+              item = next((r for r in index if (r['date'], r['time']) == ('2026-09-22', time)), None)
+              assert item and item.get('fullText'), f'missing full text: {time}'
+          print('Canonical index and both requested report texts verified.')
+          PY
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -58,25 +75,13 @@ jobs:
           import os
           import re
           from pathlib import Path
-
           sha = os.environ.get('DEPLOY_SHA', 'latest')[:12]
-
           index_path = Path('index.html')
           text = index_path.read_text(encoding='utf-8')
           us_tag = f'<script src="assets/js/us-breadth-split-card-v2.js?v={sha}"></script>'
           crypto_remove_tag = f'<script src="assets/js/remove-crypto-fear-greed.js?v={sha}"></script>'
-
-          text = re.sub(
-              r'\s*<script src="assets/js/us-breadth-split-card(?:-v2)?\.js\?v=[^"]+"></script>',
-              '',
-              text,
-          )
-          text = re.sub(
-              r'\s*<script src="assets/js/remove-crypto-fear-greed\.js\?v=[^"]+"></script>',
-              '',
-              text,
-          )
-
+          text = re.sub(r'\s*<script src="assets/js/us-breadth-split-card(?:-v2)?\.js\?v=[^"]+"></script>', '', text)
+          text = re.sub(r'\s*<script src="assets/js/remove-crypto-fear-greed\.js\?v=[^"]+"></script>', '', text)
           marker = '<script src="assets/js/position-fulltext-fix.js'
           pos = text.find(marker)
           injected = '  ' + us_tag + '\n  ' + crypto_remove_tag + '\n  '
@@ -85,19 +90,10 @@ jobs:
           else:
               text = text.replace('</body>', injected + '</body>')
           index_path.write_text(text, encoding='utf-8')
-
           stocks_path = Path('stocks.html')
           stocks_text = stocks_path.read_text(encoding='utf-8')
-          stocks_text = re.sub(
-              r'<script src="assets/js/stock-sector-decliners\.js\?v=[^"]+"></script>',
-              f'<script src="assets/js/stock-sector-decliners.js?v={sha}"></script>',
-              stocks_text,
-          )
-          stocks_text = re.sub(
-              r'\s*<script src="assets/js/tokyo-stock-table-overlay\.js\?v=[^"]+"></script>',
-              '',
-              stocks_text,
-          )
+          stocks_text = re.sub(r'<script src="assets/js/stock-sector-decliners\.js\?v=[^"]+"></script>', f'<script src="assets/js/stock-sector-decliners.js?v={sha}"></script>', stocks_text)
+          stocks_text = re.sub(r'\s*<script src="assets/js/tokyo-stock-table-overlay\.js\?v=[^"]+"></script>', '', stocks_text)
           overlay_tag = f'<script src="assets/js/tokyo-stock-table-overlay.js?v={sha}"></script>'
           site_marker = '<script src="assets/js/site-common.js'
           site_pos = stocks_text.find(site_marker)
