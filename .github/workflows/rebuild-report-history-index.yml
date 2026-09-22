@@ -24,29 +24,43 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Rebuild index without replacing canonical report texts
+      - name: Rebuild index from canonical files without overwriting their text
         run: |
-          python scripts/reconcile_report_history.py
           python - <<'PY'
           import json
           from pathlib import Path
-          index = json.loads(Path('reports.json').read_text(encoding='utf-8'))
+          rows = []
+          seen = set()
+          for path in sorted(Path('reports').glob('*.json')):
+              if path.name.startswith('_'):
+                  continue
+              data = json.loads(path.read_text(encoding='utf-8'))
+              if not all(data.get(key) for key in ('date', 'time', 'title')):
+                  data = data.get('latestReport', data)
+              assert all(data.get(key) for key in ('date', 'time', 'title')), f'invalid report: {path}'
+              key = (data['date'], data['time'])
+              assert key not in seen, f'duplicate report: {key}'
+              assert path.name == f'{key[0]}_{key[1].replace(":", "-")}.json', f'filename mismatch: {path}'
+              seen.add(key)
+              rows.append(data)
+          old = json.loads(Path('reports.json').read_text(encoding='utf-8'))
+          assert {(r['date'], r['time']) for r in old}.issubset(seen), 'index-only history would be lost'
           for time in ('12:00', '16:00'):
-              rows = [r for r in index if r.get('date') == '2026-09-22' and r.get('time') == time]
-              assert len(rows) == 1 and rows[0].get('fullText'), f'missing full text: {time}'
-              source = json.loads(Path('reports', f'2026-09-22_{time.replace(":", "-")}.json').read_text(encoding='utf-8'))
-              assert rows[0] == source, f'canonical/index mismatch: {time}'
-          print('Both September 22 report texts are in the rebuilt index.')
+              matches = [r for r in rows if (r['date'], r['time']) == ('2026-09-22', time)]
+              assert len(matches) == 1 and matches[0].get('fullText'), f'missing full text: {time}'
+          rows.sort(key=lambda r: (r['date'], r['time']), reverse=True)
+          Path('reports.json').write_text(json.dumps(rows, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          print(f'Validated {len(rows)} canonical reports, including 2026-09-22 12:00 and 16:00.')
           PY
       - name: Commit rebuilt index
         run: |
-          if git diff --quiet -- reports reports.json; then
+          if git diff --quiet -- reports.json; then
             echo 'Report history index already consistent.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add reports reports.json
+          git add reports.json
           git commit -m 'Restore full canonical report history index'
           git pull --rebase origin main
           git push
