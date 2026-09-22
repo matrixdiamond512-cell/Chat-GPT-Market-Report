@@ -37,7 +37,7 @@
       "id": "INDEPENDENT_MARKET_DATA",
       "name": "独立市場データ取得・検証基盤",
       "path": "data/market/latest.json",
-      "asOf": "2026-09-22T09:50:29+09:00",
+      "asOf": "2026-09-22T09:56:39+09:00",
       "status": "degraded",
       "note": "価格カードと市場温度カードは、この検証済み市場データを本文解析より優先します。"
     }
@@ -92,7 +92,7 @@
     "marketData": {
       "schemaVersion": "1.1.0",
       "pageId": "market-data",
-      "generatedAt": "2026-09-22T09:50:29+09:00",
+      "generatedAt": "2026-09-22T09:56:39+09:00",
       "reportSlot": "08:00",
       "overallStatus": "degraded",
       "missingRequired": [],
@@ -341,9 +341,9 @@
           "lastVerifiedAt": "2026-09-21T22:08:42+09:00",
           "error": "nikkei_nk225vi_profile: STALE_DATA",
           "note": "今回の新規取得に失敗したため、前回確認値を保持しています。",
-          "attemptCount": 4,
-          "lastAttemptAt": "2026-09-22T09:50:29+09:00",
-          "lastError": "nikkei_nk225vi_profile: STALE_DATA: age 90.0h > 84h",
+          "attemptCount": 5,
+          "lastAttemptAt": "2026-09-22T09:56:39+09:00",
+          "lastError": "nikkei_nk225vi_profile: STALE_DATA: age 90.1h > 84h",
           "retryPreserved": false
         },
         "fear_greed": {
@@ -411,137 +411,20 @@
       },
       "errors": [
         {
-          "symbol": "gold",
-          "sourceId": "stooq_xauusd",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 1
-        },
-        {
-          "symbol": "gold",
-          "sourceId": "stooq_xauusd",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 2
-        },
-        {
-          "symbol": "gold",
-          "sourceId": "stooq_xauusd",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 3
-        },
-        {
-          "symbol": "wti",
-          "sourceId": "stooq_cl_f",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 1
-        },
-        {
-          "symbol": "wti",
-          "sourceId": "stooq_cl_f",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 2
-        },
-        {
-          "symbol": "wti",
-          "sourceId": "stooq_cl_f",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 3
-        },
-        {
-          "symbol": "nikkei225_futures_ose",
-          "sourceId": "nikkei_nk225f_profile",
-          "code": "REFERENCE_ONLY",
-          "message": "reference source is not allowed for dashboard publication"
-        },
-        {
-          "symbol": "usdjpy",
-          "sourceId": "stooq_usdjpy",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 1
-        },
-        {
-          "symbol": "usdjpy",
-          "sourceId": "stooq_usdjpy",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 2
-        },
-        {
-          "symbol": "usdjpy",
-          "sourceId": "stooq_usdjpy",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 3
-        },
-        {
-          "symbol": "eurusd",
-          "sourceId": "stooq_eurusd",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 1
-        },
-        {
-          "symbol": "eurusd",
-          "sourceId": "stooq_eurusd",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 2
-        },
-        {
-          "symbol": "eurusd",
-          "sourceId": "stooq_eurusd",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 3
-        },
-        {
-          "symbol": "btcusd",
-          "sourceId": "stooq_btcusd",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 1
-        },
-        {
-          "symbol": "btcusd",
-          "sourceId": "stooq_btcusd",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 2
-        },
-        {
-          "symbol": "btcusd",
-          "sourceId": "stooq_btcusd",
-          "code": "HTTP_404",
-          "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-          "attempt": 3
-        },
-        {
           "symbol": "nikkei_vi",
           "sourceId": "nikkei_nk225vi_profile",
           "code": "STALE_DATA",
-          "message": "age 90.0h > 84h",
+          "message": "age 90.1h > 84h",
           "attempt": 1
         }
       ],
       "acquisition": {
         "strategy": "staged_retry",
         "windowStartedAt": "2026-09-22T09:06:18+09:00",
-        "lastAttemptAt": "2026-09-22T09:50:29+09:00",
-        "runCount": 4,
+        "lastAttemptAt": "2026-09-22T09:56:39+09:00",
+        "runCount": 5,
         "mode": "incremental",
         "targetedSymbols": [
-          "gold",
-          "wti",
-          "nikkei225_futures_ose",
-          "usdjpy",
-          "eurusd",
-          "btcusd",
           "nikkei_vi"
         ],
         "recoveredSymbols": [],
@@ -691,11 +574,11 @@
       ]
     }
   },
-  "marketDataUpdatedAt": "2026-09-22T09:50:29+09:00",
+  "marketDataUpdatedAt": "2026-09-22T09:56:39+09:00",
   "marketData": {
     "schemaVersion": "1.1.0",
     "pageId": "market-data",
-    "generatedAt": "2026-09-22T09:50:29+09:00",
+    "generatedAt": "2026-09-22T09:56:39+09:00",
     "reportSlot": "08:00",
     "overallStatus": "degraded",
     "missingRequired": [],
@@ -944,9 +827,9 @@
         "lastVerifiedAt": "2026-09-21T22:08:42+09:00",
         "error": "nikkei_nk225vi_profile: STALE_DATA",
         "note": "今回の新規取得に失敗したため、前回確認値を保持しています。",
-        "attemptCount": 4,
-        "lastAttemptAt": "2026-09-22T09:50:29+09:00",
-        "lastError": "nikkei_nk225vi_profile: STALE_DATA: age 90.0h > 84h",
+        "attemptCount": 5,
+        "lastAttemptAt": "2026-09-22T09:56:39+09:00",
+        "lastError": "nikkei_nk225vi_profile: STALE_DATA: age 90.1h > 84h",
         "retryPreserved": false
       },
       "fear_greed": {
@@ -1014,137 +897,20 @@
     },
     "errors": [
       {
-        "symbol": "gold",
-        "sourceId": "stooq_xauusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "gold",
-        "sourceId": "stooq_xauusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "gold",
-        "sourceId": "stooq_xauusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "wti",
-        "sourceId": "stooq_cl_f",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "wti",
-        "sourceId": "stooq_cl_f",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "wti",
-        "sourceId": "stooq_cl_f",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "nikkei225_futures_ose",
-        "sourceId": "nikkei_nk225f_profile",
-        "code": "REFERENCE_ONLY",
-        "message": "reference source is not allowed for dashboard publication"
-      },
-      {
-        "symbol": "usdjpy",
-        "sourceId": "stooq_usdjpy",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "usdjpy",
-        "sourceId": "stooq_usdjpy",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "usdjpy",
-        "sourceId": "stooq_usdjpy",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "eurusd",
-        "sourceId": "stooq_eurusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "eurusd",
-        "sourceId": "stooq_eurusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "eurusd",
-        "sourceId": "stooq_eurusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
-        "symbol": "btcusd",
-        "sourceId": "stooq_btcusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 1
-      },
-      {
-        "symbol": "btcusd",
-        "sourceId": "stooq_btcusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 2
-      },
-      {
-        "symbol": "btcusd",
-        "sourceId": "stooq_btcusd",
-        "code": "HTTP_404",
-        "message": "HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-        "attempt": 3
-      },
-      {
         "symbol": "nikkei_vi",
         "sourceId": "nikkei_nk225vi_profile",
         "code": "STALE_DATA",
-        "message": "age 90.0h > 84h",
+        "message": "age 90.1h > 84h",
         "attempt": 1
       }
     ],
     "acquisition": {
       "strategy": "staged_retry",
       "windowStartedAt": "2026-09-22T09:06:18+09:00",
-      "lastAttemptAt": "2026-09-22T09:50:29+09:00",
-      "runCount": 4,
+      "lastAttemptAt": "2026-09-22T09:56:39+09:00",
+      "runCount": 5,
       "mode": "incremental",
       "targetedSymbols": [
-        "gold",
-        "wti",
-        "nikkei225_futures_ose",
-        "usdjpy",
-        "eurusd",
-        "btcusd",
         "nikkei_vi"
       ],
       "recoveredSymbols": [],
