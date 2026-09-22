@@ -1,7 +1,7 @@
 {
   "schemaVersion": "3.2.0",
   "pageId": "usdjpy-supply-demand",
-  "generatedAt": "2026-09-22T02:36:51+09:00",
+  "generatedAt": "2026-09-22T09:15:31+09:00",
   "mode": "integrated-realistic",
   "sourceStatus": {
     "tradersWebFx": "confirmed",
@@ -11,24 +11,24 @@
   "tradersWebFx": {
     "name": "トレーダーズ・ウェブFX 無料ページ",
     "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
-    "sourceUpdatedAt": "2026-09-21T06:23:00+09:00",
-    "checkedAt": "2026-09-22T02:36:52+09:00",
+    "sourceUpdatedAt": "2026-09-22T06:22:00+09:00",
+    "checkedAt": "2026-09-22T09:15:32+09:00",
     "status": "confirmed",
     "pageConfirmed": true,
     "publicScope": "一般公開はUSD/JPYの直近情報",
     "redistributionMode": "key-levels-excerpt-with-attribution",
     "note": "無料公開データから需給判断に必要な主要水準のみ抜粋し、基準日時と出典を明示する。",
-    "sourceDate": "2026-09-21",
-    "sourceTime": "06:23",
-    "freshness": "previous-session",
-    "ageHours": 20.2,
+    "sourceDate": "2026-09-22",
+    "sourceTime": "06:22",
+    "freshness": "today",
+    "ageHours": 2.9,
     "keyLevels": {
-      "referenceSpot": "156.84",
-      "referenceSpotDescription": "9/21 6:22現在（高値156.87円 - 安値156.79円）",
+      "referenceSpot": "157.36",
+      "referenceSpotDescription": "9/22 6:00現在（高値157.53円 - 安値156.58円）",
       "sellOrders": [
         {
-          "price": "157.20-30",
-          "description": "売りやや小さめ"
+          "price": "157.80",
+          "description": "売り小さめ"
         },
         {
           "price": "158.00",
@@ -37,51 +37,51 @@
       ],
       "buyOrders": [
         {
-          "price": "156.40",
-          "description": "買い小さめ"
+          "price": "156.00",
+          "description": "買い小さめ、OP23・24日NYカット大きめ"
         },
         {
-          "price": "156.20",
-          "description": "買いやや小さめ"
+          "price": "155.00",
+          "description": "買い小さめ、OP25日NYカット大きめ"
         }
       ],
       "stops": [
         {
-          "price": "155.80",
-          "description": "割り込むとストップロス売り、OP24日NYカット"
+          "price": "158.20",
+          "description": "売り小さめ・超えるとストップロス買い小さめ"
         },
         {
-          "price": "158.10",
-          "description": "超えるとストップロス買い"
+          "price": "156.50",
+          "description": "割り込むとストップロス売りやや小さめ、OP23日NYカット/OP24日NYカット大きめ"
         }
       ],
       "nyCutOptions": [
         {
-          "price": "157.00",
-          "description": "OP21日NYカット大きめ/OP22・23・24日NYカット"
-        },
-        {
-          "price": "156.50",
-          "description": "OP23・24日NYカット"
-        },
-        {
           "price": "157.50",
           "description": "OP23日NYカット/OP24日NYカット大きめ"
+        },
+        {
+          "price": "157.00",
+          "description": "OP22・24日NYカット/OP23日NYカット大きめ"
+        },
+        {
+          "price": "156.75",
+          "description": "OP28日NYカット"
         }
       ],
       "optionAnalysis": {
         "status": "calculated",
         "headline": "上下のNYカットに挟まれ、カット前はレンジ化しやすい",
         "summary": "NYカットは方向を保証せず、カット時刻までは吸着、その後は反動が出る可能性を注文・ストップとの重複で評価します。",
-        "nearestPrice": "157.00",
-        "nearestDistancePips": 16,
+        "nearestPrice": "157.50",
+        "nearestDistancePips": 14,
         "points": [
-          "最接近は157.00円（現在値から上へ約16pips、大きめ）。NYカット接近時は同水準へ値が寄る動きと、通過後の反動に注意。",
-          "156.00円はNYカットと買い注文が重複。カット前後は下値を支えやすい水準。",
+          "最接近は157.50円（現在値から上へ約14pips、大きめ）。NYカット接近時は同水準へ値が寄る動きと、通過後の反動に注意。",
+          "158.00円はNYカットと売り注文が重複。カット前後は上値を抑えやすい水準。",
           "複数期日のNYカットが同一水準に重なるため、単一期日より意識されやすい価格帯があります。"
         ]
       },
-      "extractedRowCount": 18,
+      "extractedRowCount": 16,
       "displayMode": "key-levels-excerpt"
     }
   },
@@ -524,7 +524,7 @@
     "judgement": "円買い越し拡大",
     "judgementSub": "USD/JPYの下押し圧力",
     "priceStatus": "available",
-    "checkedAt": "2026-09-22T02:36:51+09:00",
+    "checkedAt": "2026-09-22T09:15:31+09:00",
     "comment": "円買い越し拡大。円先物のNetは+120,359枚、前週比+109,563枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
     "verifiedPoints": 52,
     "priceVerifiedPoints": 52,
@@ -532,8 +532,8 @@
   },
   "coreSnapshot": {
     "market": {
-      "generatedAt": "2026-09-21T22:08:22+09:00",
-      "asOf": "2026-09-21T22:08:31+09:00",
+      "generatedAt": "2026-09-22T09:11:04+09:00",
+      "asOf": "2026-09-22T09:06:25+09:00",
       "verificationStatus": "verified"
     },
     "ratesBonds": {
@@ -542,7 +542,7 @@
       "status": "confirmed"
     },
     "usdJpyVolume": {
-      "generatedAt": "2026-09-22T02:10:29+09:00",
+      "generatedAt": "2026-09-22T03:53:24+09:00",
       "targetDate": "2026-09-17",
       "publicationDate": "2026-09-18",
       "status": "ok"
