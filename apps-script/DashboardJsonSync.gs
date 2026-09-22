@@ -72,7 +72,13 @@ function dashboardBuildPayloadFromReports_(reports) {
   // dashboard.json は最新レポートだけを保持する。
   // 過去レポート全文は reports.json をブラウザ側で結合して表示するため、
   // ここで120件分を複製・再加工しない。これによりGASの実行時間超過を防ぐ。
-  var latestSource = sourceReports[0];
+  var publishableReports = sourceReports.filter(function(report) {
+    return !dashboardReportSlotIsFuture_(report);
+  });
+  if (!publishableReports.length) {
+    throw new Error('未来時刻のマーケットレポートしかありません。ダッシュボード更新を保留します。');
+  }
+  var latestSource = publishableReports[0];
   var priceSource = dashboardFetchPriceSheetSource_(latestSource.date);
   var latest = dashboardPrepareReportForDashboard_(latestSource, priceSource, true);
   var generatedAt = dashboardIsoJst_(new Date());
@@ -94,6 +100,12 @@ function dashboardBuildPayloadFromReports_(reports) {
   };
 }
 
+function dashboardReportSlotIsFuture_(report) {
+  var slot = String(report && report.date || '') + 'T' + String(report && report.time || '') + ':00+09:00';
+  var timestamp = Date.parse(slot);
+  return Number.isFinite(timestamp) && timestamp > Date.now();
+}
+
 function dashboardBuildDashboardSources_(latestKey, priceSource) {
   return [
     {
@@ -110,7 +122,7 @@ function dashboardBuildDashboardSources_(latestKey, priceSource) {
       sheetName: DASHBOARD_JSON_CONFIG.priceSheetName,
       asOf: priceSource && priceSource.asOf ? priceSource.asOf : '',
       status: priceSource && priceSource.status ? priceSource.status : 'unavailable',
-      note: '終値一覧は日付一致時、または07:00・土曜09:00の直近営業日終値としてのみ利用します。'
+      note: '終値一覧は日付一致時、または08:00・土曜08:00の直近営業日終値としてのみ利用します。'
     }
   ];
 }

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from reconcile_latest_report_market_data import load_json, update_latest_report
 
@@ -67,6 +69,77 @@ def load_latest_report() -> dict | None:
     return validate_report(report, str(LATEST_FILE))
 
 
+def _revision_number(report: dict) -> int | None:
+    value = report.get("revision") or report.get("version")
+    if isinstance(value, int):
+        return value
+    if isinstance(value, str) and value.strip().isdigit():
+        return int(value.strip())
+    return None
+
+
+def _updated_at(report: dict) -> datetime | None:
+    candidates: list[Any] = [
+        report.get("updatedAt"),
+        report.get("savedAt"),
+        report.get("generatedAt"),
+        (report.get("sourceDocument") or {}).get("updatedAt")
+        if isinstance(report.get("sourceDocument"), dict)
+        else None,
+    ]
+    for value in candidates:
+        if not isinstance(value, str) or not value.strip():
+            continue
+        try:
+            return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+    return None
+
+
+def _choose_canonical_update(current: dict, incoming: dict, source: str) -> str:
+    """Return write/keep, refusing ambiguous same-slot overwrites.
+
+    A report slot is an identity, not a merge key. When two payloads for the
+    same slot differ, only an explicit newer revision or timestamp can replace
+    the canonical payload. This prevents a stale latest-report file from
+    silently erasing a correction.
+    """
+    if current == incoming:
+        return "keep"
+
+    current_revision = _revision_number(current)
+    incoming_revision = _revision_number(incoming)
+    if current_revision is not None or incoming_revision is not None:
+        if incoming_revision is None or (
+            current_revision is not None and incoming_revision <= current_revision
+        ):
+            raise SystemExit(
+                f"refusing ambiguous canonical overwrite for {source}: "
+                f"incoming revision {incoming_revision!r} is not newer than "
+                f"canonical revision {current_revision!r}"
+            )
+        return "write"
+
+    current_updated = _updated_at(current)
+    incoming_updated = _updated_at(incoming)
+    if current_updated is not None or incoming_updated is not None:
+        if incoming_updated is None or (
+            current_updated is not None and incoming_updated <= current_updated
+        ):
+            raise SystemExit(
+                f"refusing ambiguous canonical overwrite for {source}: "
+                f"incoming updatedAt {incoming_updated!r} is not newer than "
+                f"canonical updatedAt {current_updated!r}"
+            )
+        return "write"
+
+    raise SystemExit(
+        f"conflicting payloads for canonical report slot {source}; "
+        "add a monotonic revision or updatedAt before publishing a correction"
+    )
+
+
 def sync_latest_to_canonical() -> Path | None:
     """Guarantee that data/latest-report.json also exists as canonical history."""
     report = load_latest_report()
@@ -77,9 +150,14 @@ def sync_latest_to_canonical() -> Path | None:
     path = canonical_path(report)
     rendered = json.dumps(report, ensure_ascii=False, indent=2) + "\n"
 
-    if path.exists() and path.read_text(encoding="utf-8") == rendered:
-        print(f"Latest report already archived: {path}")
-        return path
+    if path.exists():
+        current = validate_report(
+            json.loads(path.read_text(encoding="utf-8")), str(path)
+        )
+        decision = _choose_canonical_update(current, report, str(path))
+        if decision == "keep":
+            print(f"Latest report already archived: {path}")
+            return path
 
     path.write_text(rendered, encoding="utf-8")
     print(f"Synchronized latest report into canonical history: {path}")

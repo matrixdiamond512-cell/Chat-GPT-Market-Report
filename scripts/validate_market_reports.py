@@ -20,6 +20,8 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 JST = ZoneInfo("Asia/Tokyo")
+ROOT = Path(__file__).resolve().parents[1]
+SCHEDULE_FILE = ROOT / "config" / "report_schedule.json"
 REQUIRED_MARKETS = {"金", "原油", "日経225先物", "USD/JPY", "EUR/USD", "BTCUSD"}
 REQUIRED_REPORT_FIELDS = {
     "date", "time", "title", "theme", "leadingMarket", "markets",
@@ -44,20 +46,20 @@ REQUIRED_21_FIELDS = {
     "changes", "consistency", "news", "crossAssetFlow", "positioning", "events", "handover"
 }
 REQUIRED_21_SECTIONS: dict[str, re.Pattern[str]] = {
-    "主要市場データ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?主要市場データ(?:（.*）)?\s*$"),
+    "主要市場データ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?主要市場(?:の確認値|データ)(?:（.*）)?\s*$"),
     "今日の相場テーマ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?今日の相場テーマ\s*$"),
-    "16:00からの変化": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:16:00|16時|前回)からの(?:主な)?変化\s*$"),
+    "16:00からの変化": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:(?:16:00|16時|前回)からの(?:主な)?変化|16:00から21:00のマーケットの動き|昨夜のNY市場)\s*$"),
     "材料と値動きの整合性": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?材料と値動きの整合性\s*$"),
     "主導市場": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:今日の)?主導市場\s*$"),
-    "重要ニュース": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?重要ニュース\s*$"),
+    "重要ニュース": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?重要ニュース(?:・金利)?\s*$"),
     "クロスアセット資金フロー": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?クロスアセット(?:資金フロー)?\s*$"),
     "需給・ポジション": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?需給・ポジション\s*$"),
     "重要イベント": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:今後の)?重要イベント\s*$"),
     "6市場の見通し": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?6市場の(?:個別)?見通し\s*$"),
-    "メインシナリオ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?メインシナリオ\s*$"),
-    "代替シナリオ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?代替シナリオ\s*$"),
-    "シナリオが崩れる条件": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:シナリオが)?崩れる条件\s*$"),
-    "引き継ぎ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:NY時間|次の時間帯|翌東京時間)への引き継ぎ\s*$"),
+    "メインシナリオ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:メインシナリオ|メイン\s*[：:])"),
+    "代替シナリオ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:代替シナリオ|代替\s*[：:])"),
+    "シナリオが崩れる条件": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:シナリオが)?崩れる条件(?:\s*[：:])?\s*"),
+    "引き継ぎ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:NY時間|次の時間帯|翌東京時間|明日|12:00)への引き継ぎ\s*$"),
 }
 REQUIRED_21_MARKET_PATTERNS: dict[str, re.Pattern[str]] = {
     "金": re.compile(r"(?mi)^\s*\|?\s*(?:金|ゴールド|COMEX金先物)(?:[・（|：:].*)?$"),
@@ -72,31 +74,36 @@ PUBLIC_INTERNAL_PATTERNS = {
     "未確認": re.compile(r"未確認"),
 }
 LEAKED_HEADING_RE = re.compile(
-    r"^(?:金利|6市場の(?:個別)?見通し|結論|シナリオが崩れる条件|翌東京時間への引き継ぎ)$"
+    r"^(?:金利|6市場の(?:個別)?見通し|結論|シナリオが崩れる条件|明日への引き継ぎ|翌東京時間への引き継ぎ)$"
 )
 EMBEDDED_HEADING_RE = re.compile(
-    r"(?:^|[。\s])(?:シナリオが崩れる条件|翌東京時間への引き継ぎ|NY時間への引き継ぎ|結論)(?:\s|$)"
+    r"(?:^|[。\s])(?:シナリオが崩れる条件|明日への引き継ぎ|翌東京時間への引き継ぎ|NY時間への引き継ぎ|結論)(?:\s|$)"
 )
+
+
+def _schedule_for_date(date_text: str) -> dict:
+    """Load the single schedule contract used by validation and watchdogs."""
+    try:
+        schedule = json.loads(SCHEDULE_FILE.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"report schedule cannot be loaded: {SCHEDULE_FILE}: {exc}") from exc
+    day = datetime.strptime(date_text, "%Y-%m-%d").weekday()  # Mon=0
+    key = "sunday" if day == 6 else "saturday" if day == 5 else "weekday"
+    value = schedule.get(key)
+    if not isinstance(value, dict):
+        raise RuntimeError(f"report schedule is missing the {key!r} definition")
+    return value
 
 
 def expected_slots(date_text: str) -> set[str]:
-    """Slots accepted in stored reports, including legacy morning variants."""
-    day = datetime.strptime(date_text, "%Y-%m-%d").weekday()  # Mon=0
-    if day == 6:
-        return set()
-    if day == 5:
-        return {"07:00", "09:00"}
-    return {"07:00", "08:00", "12:00", "16:00", "21:00"}
+    """Slots accepted in stored reports, including explicitly legacy variants."""
+    value = _schedule_for_date(date_text)
+    return set(value.get("publicationSlots", [])) | set(value.get("legacyStoredSlots", []))
 
 
 def publication_slots(date_text: str) -> set[str]:
-    """Slots used for due-time checks; 08:00 is the current weekday morning slot."""
-    day = datetime.strptime(date_text, "%Y-%m-%d").weekday()
-    if day == 6:
-        return set()
-    if day == 5:
-        return {"07:00", "09:00"}
-    return {"08:00", "12:00", "16:00", "21:00"}
+    """Current slots used for due-time checks."""
+    return set(_schedule_for_date(date_text).get("publicationSlots", []))
 
 
 def report_key(report: dict) -> tuple[str, str]:

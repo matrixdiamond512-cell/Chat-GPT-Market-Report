@@ -194,13 +194,17 @@ function publishMarketReportSlot_(hour, mode, throwOnError) {
     const file = findMarketReportDocForAutoPublishSlot_(hour);
 
     if (!file) {
-      return saveMarketReportSlotResult_({
-        ok: true,
-        skipped: true,
+      const missing = {
+        ok: false,
+        skipped: false,
+        retryable: true,
+        status: 'WAITING_INPUT',
         mode: mode,
         reason: 'Google Docs file for this slot was not found yet.',
         slot: formatMarketReportAutoSlot_(now, hour)
-      }, mode);
+      };
+      if (throwOnError) throw new Error(missing.reason + ' ' + missing.slot);
+      return saveMarketReportSlotResult_(missing, mode);
     }
 
     const fileVersion = String(file.getLastUpdated().getTime());
@@ -239,9 +243,12 @@ function publishMarketReportSlot_(hour, mode, throwOnError) {
       pagesUrl: result.pagesUrl
     }, mode);
   } catch (error) {
+    const waitingForInput = /Google Docs file for this slot was not found yet\./.test(String(error && error.message || ''));
     const payload = saveMarketReportSlotResult_({
       ok: false,
       skipped: false,
+      retryable: waitingForInput,
+      status: waitingForInput ? 'WAITING_INPUT' : 'FAILED',
       mode: mode,
       slot: formatMarketReportAutoSlot_(now, hour),
       error: error.message,

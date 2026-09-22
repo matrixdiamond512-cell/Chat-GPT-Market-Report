@@ -22,28 +22,28 @@ var MARKET_REPORT_PREPUBLISH_CONFIG = {
     'changes', 'consistency', 'news', 'crossAssetFlow', 'positioning', 'events', 'handover'
   ],
   commonSectionRules: [
-    { label: '主要市場データ', pattern: /^(?:主要市場データ|主要市場まとめ|主要価格)$/ },
+    { label: '主要市場データ', pattern: /^(?:主要市場データ|主要市場の確認値|主要市場まとめ|主要価格)$/ },
     { label: '今日の相場テーマ', pattern: /^(?:今日の相場テーマ|今日のテーマ)$/ },
     { label: '材料と値動きの整合性', pattern: /^材料.*値動き.*整合性$|^材料と値動きの整合性$/ },
     { label: '主導市場', pattern: /^(?:今日の)?主導市場$/ },
-    { label: '重要ニュース', pattern: /^(?:重要ニュース|重要材料)$/ },
-    { label: '金利', pattern: /^(?:金利|金利分析|金利・為替|金利・為替の連動)$/ },
+    { label: '重要ニュース', pattern: /^(?:重要ニュース|重要ニュース・金利|重要材料)$/ },
+    { label: '金利', pattern: /^(?:金利|金利分析|金利・為替|金利・為替の連動|重要ニュース・金利)$/ },
     { label: 'クロスアセット資金フロー', pattern: /^(?:クロスアセット|クロスアセット資金フロー|資金フロー)$/ },
     { label: '需給・ポジション', pattern: /^(?:需給・ポジション|需給・ポジショニング|ポジションの偏り)$/ },
     { label: '重要イベント', pattern: /^(?:今後の)?重要イベント$|^今後の予定$/ },
     { label: '個別市場見通し', pattern: /^(?:6市場の(?:個別)?見通し|個別市場見通し|個別見通し)$/ },
-    { label: 'メインシナリオ', pattern: /^(?:メインシナリオ|基本シナリオ)$/ },
-    { label: '代替シナリオ', pattern: /^(?:代替シナリオ|別シナリオ)$/ },
-    { label: 'シナリオが崩れる条件', pattern: /^(?:シナリオが)?崩れる条件$/ },
+    { label: 'メインシナリオ', pattern: /^(?:メインシナリオ|基本シナリオ|メイン[：:].*)$/ },
+    { label: '代替シナリオ', pattern: /^(?:代替シナリオ|別シナリオ|代替[：:].*)$/ },
+    { label: 'シナリオが崩れる条件', pattern: /^(?:シナリオが)?崩れる条件(?:[：:].*)?$/ },
     { label: 'リスク管理', pattern: /^(?:リスク管理|主なリスク|リスク要因)$/ },
     { label: '結論', pattern: /^(?:結論|まとめ|最終判断)$/ }
   ],
   slotRules: {
     '08:00': {
       changeLabel: '前回からの変化',
-      changePattern: /^(?:前回からの(?:主な)?変化|21:00からの変化|前日21:00からの変化|NY市場からの変化|前営業日からの変化)$/,
+      changePattern: /^(?:前回からの(?:主な)?変化|21:00からの変化|前日21:00からの変化|NY市場からの変化|前営業日からの変化|昨夜のNY市場)$/,
       handoverLabel: '東京時間への引き継ぎ',
-      handoverPattern: /^(?:東京時間|東京市場|次の時間帯)への引き継ぎ$/
+      handoverPattern: /^(?:東京時間|東京市場|12:00|次の時間帯)への引き継ぎ$/
     },
     '12:00': {
       changeLabel: '08:00からの変化',
@@ -59,9 +59,9 @@ var MARKET_REPORT_PREPUBLISH_CONFIG = {
     },
     '21:00': {
       changeLabel: '16:00からの変化',
-      changePattern: /^(?:16:00|16時|前回)からの(?:主な)?変化$/,
+      changePattern: /^(?:(?:16:00|16時|前回)からの(?:主な)?変化|16:00から21:00のマーケットの動き)$/,
       handoverLabel: 'NY時間・翌東京時間への引き継ぎ',
-      handoverPattern: /^(?:NY時間|NY市場|翌東京時間|次の時間帯)への引き継ぎ$/
+      handoverPattern: /^(?:NY時間|NY市場|翌東京時間|明日|次の時間帯)への引き継ぎ$/
     }
   },
   morningRequiredLabels: [
@@ -270,7 +270,7 @@ function validateMarketReportManualContract_(report, byName, errors) {
     });
   }
 
-  var headingOnly = /^(?:金利|金利分析|6市場の(?:個別)?見通し|個別市場見通し|結論|最終判断|シナリオが崩れる条件|東京時間への引き継ぎ|欧州時間への引き継ぎ|NY時間への引き継ぎ|翌東京時間への引き継ぎ)$/;
+  var headingOnly = /^(?:金利|金利分析|6市場の(?:個別)?見通し|個別市場見通し|結論|最終判断|シナリオが崩れる条件|東京時間への引き継ぎ|12:00への引き継ぎ|欧州時間への引き継ぎ|NY時間への引き継ぎ|明日への引き継ぎ|翌東京時間への引き継ぎ)$/;
   ['changes', 'consistency', 'news', 'crossAssetFlow', 'positioning', 'events', 'handover', 'riskManagement'].forEach(function(field) {
     var value = report[field];
     var items = Array.isArray(value) ? value : [value];
@@ -283,9 +283,9 @@ function validateMarketReportManualContract_(report, byName, errors) {
   });
 
   var foreignHeadings = {
-    mainScenario: /(?:^|[。\s])(?:代替シナリオ|シナリオが崩れる条件|東京時間への引き継ぎ|欧州時間への引き継ぎ|NY時間への引き継ぎ|翌東京時間への引き継ぎ|結論|最終判断)(?:\s|$)/,
-    alternativeScenario: /(?:^|[。\s])(?:メインシナリオ|シナリオが崩れる条件|東京時間への引き継ぎ|欧州時間への引き継ぎ|NY時間への引き継ぎ|翌東京時間への引き継ぎ|結論|最終判断)(?:\s|$)/,
-    breakConditions: /(?:^|[。\s])(?:メインシナリオ|代替シナリオ|東京時間への引き継ぎ|欧州時間への引き継ぎ|NY時間への引き継ぎ|翌東京時間への引き継ぎ|結論|最終判断)(?:\s|$)/
+    mainScenario: /(?:^|[。\s])(?:代替シナリオ|シナリオが崩れる条件|東京時間への引き継ぎ|12:00への引き継ぎ|欧州時間への引き継ぎ|NY時間への引き継ぎ|明日への引き継ぎ|翌東京時間への引き継ぎ|結論|最終判断)(?:\s|$)/,
+    alternativeScenario: /(?:^|[。\s])(?:メインシナリオ|シナリオが崩れる条件|東京時間への引き継ぎ|12:00への引き継ぎ|欧州時間への引き継ぎ|NY時間への引き継ぎ|明日への引き継ぎ|翌東京時間への引き継ぎ|結論|最終判断)(?:\s|$)/,
+    breakConditions: /(?:^|[。\s])(?:メインシナリオ|代替シナリオ|東京時間への引き継ぎ|12:00への引き継ぎ|欧州時間への引き継ぎ|NY時間への引き継ぎ|明日への引き継ぎ|翌東京時間への引き継ぎ|結論|最終判断)(?:\s|$)/
   };
   Object.keys(foreignHeadings).forEach(function(field) {
     if (foreignHeadings[field].test(String(report[field] || ''))) {
