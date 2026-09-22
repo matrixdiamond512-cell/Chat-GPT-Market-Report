@@ -26,16 +26,16 @@ var MR_MARKETS_ = [
 
 var MR_SECTION_RULES_ = [
   ['theme', /相場テーマ|今日のテーマ/],
-  ['changes', /前回から|からの変化|時間からの変化/],
+  ['changes', /前回から|からの変化|時間からの変化|昨夜のNY市場|16:00から21:00のマーケットの動き/],
   ['consistency', /整合性|材料と値動き/],
   ['leadingMarket', /主導市場|相場を主導/],
   ['positioning', /需給|ポジション|建玉|フローの偏り/],
-  ['news', /重要ニュース|相場に影響|ニュース|重要材料/],
+  ['news', /重要ニュース|重要ニュース・金利|相場に影響|ニュース|重要材料/],
   ['crossAssetFlow', /クロスアセット|資金フロー|何が買われ|何が売られ/],
   ['sectors', /セクター|業種|買われた|売られた/],
   ['events', /イベント|今後の予定|経済指標/],
-  ['handover', /引き継ぎ|次の時間帯|欧州時間|NY時間/],
-  ['scenario', /全体シナリオ|メインシナリオ|代替シナリオ/],
+  ['handover', /引き継ぎ|次の時間帯|12:00への|明日への|欧州時間|NY時間/],
+  ['scenario', /シナリオ分析|全体シナリオ|メインシナリオ|代替シナリオ/],
   ['riskManagement', /リスク管理|主なリスク|リスク要因/]
 ];
 
@@ -144,9 +144,13 @@ function mrBuildReportFromDoc_(file) {
       updatedAt: file.getLastUpdated().toISOString()
     },
     structuredFromGoogleDocs: true,
-    structureVersion: 3
+    structureVersion: 3,
+    revision: String(file.getLastUpdated().getTime())
   };
 
+  if ((!report.riskManagement || !report.riskManagement.length) && report.breakConditions) {
+    report.riskManagement = [report.breakConditions];
+  }
   mrFillFallbacks_(report, fullText);
   report.markets = MR_MARKETS_.map(function(market) {
     return mrExtractMarket_(market.name, market.re, sections, fullText);

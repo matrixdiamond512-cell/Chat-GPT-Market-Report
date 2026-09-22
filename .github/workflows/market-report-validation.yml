@@ -15,6 +15,8 @@ on:
     paths:
       - "reports.json"
       - "scripts/validate_market_reports.py"
+      - "scripts/verify_publication_consistency.py"
+      - "config/report_schedule.json"
       - ".github/workflows/market-report-validation.yml"
   pull_request:
     paths:

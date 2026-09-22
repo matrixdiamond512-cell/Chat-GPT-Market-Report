@@ -11,7 +11,22 @@ from typing import Any
 
 
 JST = dt.timezone(dt.timedelta(hours=9))
-REPORT_SLOTS = ("08:00", "12:00", "16:00", "21:00")
+SCHEDULE_FILE = Path(__file__).resolve().parents[1] / "config" / "report_schedule.json"
+
+
+def configured_publication_slots() -> tuple[str, ...]:
+    try:
+        schedule = json.loads(SCHEDULE_FILE.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"report schedule cannot be loaded: {SCHEDULE_FILE}: {exc}") from exc
+    slots: set[str] = set()
+    for value in schedule.values():
+        if isinstance(value, dict):
+            slots.update(str(slot) for slot in value.get("publicationSlots", []))
+    return tuple(sorted(slots))
+
+
+REPORT_SLOTS = configured_publication_slots()
 
 # GitHub cron strings are UTC. These schedules implement staged acquisition:
 # - 08:00: Monday-Saturday

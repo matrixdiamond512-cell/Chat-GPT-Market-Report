@@ -395,6 +395,22 @@ function marketReportDocInfoFromName_(fileName) {
   };
 }
 
+function scenarioFields_(text) {
+  const block = smartSectionBlock_(text, ['シナリオ分析', '全体シナリオ', 'シナリオ']);
+  const result = { mainScenario: '', alternativeScenario: '', breakConditions: '' };
+
+  splitMeaningfulLines_(block).forEach(line => {
+    const match = String(line || '').match(/^(メイン|基本|代替|サブ|崩れる条件|見方を変える条件)\s*[：:]\s*(.+)$/);
+    if (!match) return;
+    const value = match[2].trim();
+    if (match[1] === 'メイン' || match[1] === '基本') result.mainScenario = value;
+    if (match[1] === '代替' || match[1] === 'サブ') result.alternativeScenario = value;
+    if (match[1] === '崩れる条件' || match[1] === '見方を変える条件') result.breakConditions = value;
+  });
+
+  return result;
+}
+
 function buildWebReportFromGoogleDoc_(file) {
   const text = normalizeReportText_(DocumentApp.openById(file.getId()).getBody().getText());
   const meta = parseReportMetadata_(text, file.getName());
@@ -405,18 +421,18 @@ function buildWebReportFromGoogleDoc_(file) {
     title: meta.title,
     tags: ['ドル円', 'ユーロドル', '日経225先物', '金', '原油', 'BTCUSD'],
     theme: smartSectionText_(text, ['今日の相場テーマ', '相場テーマ', '本日のテーマ']) || inferTheme_(text),
-    changes: smartSectionLines_(text, ['前回からの変化', '07:00からの変化', '12:00からの変化', '16:00からの変化', '前回比']),
+    changes: smartSectionLines_(text, ['前回からの変化', '07:00からの変化', '12:00からの変化', '16:00からの変化', '16:00から21:00のマーケットの動き', '昨夜のNY市場', '前回比']),
     consistency: smartSectionLines_(text, ['材料と値動きの整合性', '材料と価格反応', '材料→市場→価格反応']),
     leadingMarket: smartSectionText_(text, ['今日の主導市場', '主導市場', '相場を主導している市場']) || inferLeadingMarket_(text),
     positioning: smartSectionLines_(text, ['需給・ポジション', '需給とポジション', 'ポジションの偏り', 'ポジショニング・需給']),
-    news: smartSectionLines_(text, ['重要ニュースと影響', '重要ニュース', '市場を動かすニュース', '相場に影響する重要ニュース', 'ニュース・材料']),
+    news: smartSectionLines_(text, ['重要ニュースと影響', '重要ニュース・金利', '重要ニュース', '市場を動かすニュース', '相場に影響する重要ニュース', 'ニュース・材料']),
     crossAssetFlow: smartSectionLines_(text, ['クロスアセット資金フロー', '資金フロー', '何が買われ、何が売られたか']),
     sectors: smartSectionLines_(text, ['セクター・業種動向', '買われた業種・売られた業種', 'セクター動向']),
-    handover: smartSectionLines_(text, ['NY時間への引き継ぎ', '欧州時間への引き継ぎ', '東京時間への引き継ぎ', '次の時間帯への引き継ぎ']),
+    handover: smartSectionLines_(text, ['NY時間への引き継ぎ', '欧州時間への引き継ぎ', '東京時間への引き継ぎ', '12:00への引き継ぎ', '明日への引き継ぎ', '翌東京時間への引き継ぎ', '次の時間帯への引き継ぎ']),
     events: smartSectionLines_(text, ['今後のイベント', '重要イベント', '本日の重要イベント', '今後の予定']),
-    mainScenario: smartSectionText_(text, ['メインシナリオ', '基本シナリオ']),
-    alternativeScenario: smartSectionText_(text, ['代替シナリオ', 'サブシナリオ', '弱気シナリオ', '強気シナリオ']),
-    breakConditions: smartSectionText_(text, ['シナリオが崩れる条件', '崩れる条件', '見方を変える条件']),
+    mainScenario: scenarioFields_(text).mainScenario || smartSectionText_(text, ['メインシナリオ', '基本シナリオ']),
+    alternativeScenario: scenarioFields_(text).alternativeScenario || smartSectionText_(text, ['代替シナリオ', 'サブシナリオ', '弱気シナリオ', '強気シナリオ']),
+    breakConditions: scenarioFields_(text).breakConditions || smartSectionText_(text, ['シナリオが崩れる条件', '崩れる条件', '見方を変える条件']),
     riskManagement: smartSectionLines_(text, ['リスク管理', 'リスク要因', '注意点']),
     markets: parseMarketsLenient_(text),
     sources: smartSectionLines_(text, ['主な確認情報源', '情報源', '参照元', '参照情報']).map(item => ({ name: item })),
@@ -428,9 +444,13 @@ function buildWebReportFromGoogleDoc_(file) {
       updatedAt: file.getLastUpdated().toISOString()
     },
     structuredFromFullText: true,
-    structureVersion: 7
+    structureVersion: 7,
+    revision: String(file.getLastUpdated().getTime())
   };
 
+  if ((!report.riskManagement || !report.riskManagement.length) && report.breakConditions) {
+    report.riskManagement = [report.breakConditions];
+  }
   enrichSparseReport_(report, text);
   return validateWebReportObject_(report);
 }
@@ -542,7 +562,7 @@ function marketOutlookMap_(text, definitions) {
 
 function marketMetricMap_(text, definitions) {
   const source = [
-    smartSectionBlock_(text, ['主要市場データ', '前営業日終値・主要市場データ', '前営業日終値', '市場データ']),
+    smartSectionBlock_(text, ['主要市場データ', '主要市場の確認値', '前営業日終値・主要市場データ', '前営業日終値', '市場データ']),
     String(text || '').split('\n').slice(0, 35).join('\n')
   ].join('\n');
   const map = {};
@@ -821,7 +841,7 @@ function looksLikeHeading_(line) {
   if (/^[【\[].+[】\]]$/.test(text)) return true;
   if (/^(?:■|●|◆|◇|▶|▷|#{1,4})\s*\S+/.test(text)) return true;
   if (/^\d+[.)．、]\s*\S+/.test(text) && text.length < 45) return true;
-  return /^(今日の相場テーマ|前回からの変化|材料と値動き|今日の主導市場|重要ニュース|クロスアセット|需給|ポジション|今後のイベント|個別見通し|メインシナリオ|代替シナリオ|リスク管理|まとめ)/.test(text) && text.length < 50;
+  return /^(今日の相場テーマ|前回からの変化|16:00から21:00のマーケットの動き|昨夜のNY市場|主要市場(?:の確認値|データ)?|材料と値動き|今日の主導市場|重要ニュース|クロスアセット|需給|ポジション|今後のイベント|個別見通し|シナリオ分析|メインシナリオ|代替シナリオ|リスク管理|明日への引き継ぎ|まとめ)/.test(text) && text.length < 50;
 }
 
 function inferTheme_(text) {

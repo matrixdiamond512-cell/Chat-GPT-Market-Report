@@ -11,7 +11,9 @@ on:
       - "reports/*.json"
       - "reports.json"
       - "scripts/build_reports.py"
+      - "scripts/verify_publication_consistency.py"
       - "scripts/validate_drive_publication_receipt.py"
+      - "config/report_schedule.json"
       - ".github/workflows/build-reports.yml"
   workflow_dispatch:
 
@@ -37,23 +39,13 @@ jobs:
         with:
           python-version: "3.12"
 
-      # Drive publication verification is important, but it must not block the
-      # market-analysis portal index. A missing/late receipt is reported as a
-      # warning and the canonical report/index rebuild continues.
-      - name: Check Google Drive save receipt without blocking portal sync
-        id: drive_receipt
-        continue-on-error: true
+      - name: Require Google Drive save receipt before portal sync
         run: |
           python scripts/validate_drive_publication_receipt.py \
             --latest data/latest-report.json \
             --receipts publication-receipts \
             --enforce-from "2026-08-19T21:00:00+09:00" \
             --require-publisher chatgpt
-
-      - name: Warn when Drive receipt is missing or invalid
-        if: steps.drive_receipt.outcome == 'failure'
-        run: |
-          echo "::warning::Google Drive publication receipt validation failed. Portal synchronization will continue so the market report is not omitted from the Market Analysis Portal."
 
       - name: Sync latest report, preserve history and build reports.json
         run: python scripts/build_reports.py
@@ -80,6 +72,9 @@ jobs:
               raise SystemExit('reports.json does not contain exactly one matching latest report')
           print(f"Portal publication verified: {latest['date']} {latest['time']} -> {path} -> reports.json")
           PY
+
+      - name: Verify latest report, canonical history and dashboard are one version
+        run: python scripts/verify_publication_consistency.py
 
       - name: Commit canonical history and generated index
         run: |
