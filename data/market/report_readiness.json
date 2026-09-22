@@ -1,10 +1,10 @@
 {
-  "checkedAt": "2026-09-21T09:35:14+09:00",
+  "checkedAt": "2026-09-22T10:16:02+09:00",
   "reportSlot": "08:00",
   "ready": false,
-  "overallStatus": "verified",
-  "generatedAt": "2026-09-21T09:34:49+09:00",
-  "ageMinutes": 0.4,
+  "overallStatus": "degraded",
+  "generatedAt": "2026-09-22T10:10:52+09:00",
+  "ageMinutes": 5.2,
   "maxAgeMinutes": 15,
   "requiredMarkets": [
     "gold",
@@ -24,13 +24,16 @@
   ],
   "morningReferenceDate": "2026-09-09",
   "blockingReasons": [
-    "morning reference reportDate mismatch: expected 2026-09-21, got 2026-09-09",
+    "morning reference reportDate mismatch: expected 2026-09-22, got 2026-09-09",
     "morning reference was generated on 2026-09-09, not today",
     "morning reference not verified: CME日経225先物・円建て status=reference_after_report",
     "morning reference not verified: CME日経225先物・ドル建て status=reference_after_report",
     "morning reference not verified: 日経225先物（大阪取引所） status=reference_after_report"
   ],
-  "warnings": [],
+  "warnings": [
+    "overallStatus is degraded; fallback values must be identified in the report",
+    "required markets using prior verified fallback: nikkei_vi"
+  ],
   "reportSourcePriority": [
     "ChatGPT_Market_Input when the expected report slot is present and current",
     "data/market/latest.json when Google Sheets is missing, stale, or not synchronized",
