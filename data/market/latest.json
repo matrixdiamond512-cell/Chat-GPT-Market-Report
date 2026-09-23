@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.1.0",
   "pageId": "market-data",
-  "generatedAt": "2026-09-23T09:52:40+09:00",
+  "generatedAt": "2026-09-23T09:54:03+09:00",
   "reportSlot": "08:00",
   "overallStatus": "degraded",
   "missingRequired": [],
@@ -250,9 +250,9 @@
       "lastVerifiedAt": "2026-09-21T22:08:42+09:00",
       "error": "nikkei_nk225vi_profile: STALE_DATA",
       "note": "今回の新規取得に失敗したため、前回確認値を保持しています。",
-      "attemptCount": 6,
-      "lastAttemptAt": "2026-09-23T09:52:40+09:00",
-      "lastError": "nikkei_nk225vi_profile: STALE_DATA: age 114.0h > 84h",
+      "attemptCount": 7,
+      "lastAttemptAt": "2026-09-23T09:54:03+09:00",
+      "lastError": "nikkei_nk225vi_profile: STALE_DATA: age 114.1h > 84h",
       "retryPreserved": false
     },
     "fear_greed": {
@@ -323,15 +323,15 @@
       "symbol": "nikkei_vi",
       "sourceId": "nikkei_nk225vi_profile",
       "code": "STALE_DATA",
-      "message": "age 114.0h > 84h",
+      "message": "age 114.1h > 84h",
       "attempt": 1
     }
   ],
   "acquisition": {
     "strategy": "staged_retry",
     "windowStartedAt": "2026-09-23T08:36:00+09:00",
-    "lastAttemptAt": "2026-09-23T09:52:40+09:00",
-    "runCount": 6,
+    "lastAttemptAt": "2026-09-23T09:54:03+09:00",
+    "runCount": 7,
     "mode": "incremental",
     "targetedSymbols": [
       "nikkei_vi"
