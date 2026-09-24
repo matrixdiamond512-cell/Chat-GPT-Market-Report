@@ -6,7 +6,7 @@
   "updatedAt": "2026-08-22T08:04:00+09:00",
   "dataAsOf": "2026-08-17T16:00:00-04:00",
   "status": "ok",
-  "sourceStatus": "Google Sheets＋日経225寄与度検証済みデータ",
+  "sourceStatus": "米国市場と東京市場を独立更新・市場別基準日を明示",
   "sources": [
     {
       "id": "INITIAL_STOCKS_HTML",
@@ -114,99 +114,84 @@
       "rows": [
         [
           "日経225",
-          "65,018.95",
+          "65,513.99",
           "—",
-          "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-09-18。"
+          "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-09-24。"
         ],
         [
           "TOPIX",
-          "4,091.14",
-          "-3.05（-0.07%）",
-          "トレーダーズ・ウェブ 国内市場の当日終値確認。基準日 2026-09-18。"
+          "取得不能（対象日の確定値なし）",
+          "—",
+          "取得不能（公開ソース／終値一覧で対象日の確定値を取得できず）。基準日 2026-09-24。"
         ],
         [
           "グロース250",
-          "808.98",
-          "+19.63（+2.49%）",
-          "トレーダーズ・ウェブ 国内市場の当日終値確認。基準日 2026-09-18。"
+          "取得不能（対象日の確定値なし）",
+          "—",
+          "取得不能（公開ソース／終値一覧で対象日の確定値を取得できず）。基準日 2026-09-24。"
         ],
         [
           "日経VI",
-          "24.23",
-          "-3.92（-13.93%）",
-          "Nikkei 225 VI official profileの確認済み値。基準日 2026-09-18。"
+          "取得不能（対象日の確定値なし）",
+          "—",
+          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-09-24。"
         ],
         [
           "値上がり銘柄 / 値下がり銘柄",
-          "511 / 1003",
+          "674 / 838",
           "—",
-          "投資の森 値上がり・値下がり銘柄数の確定値。基準日 2026-09-18。"
+          "投資の森 値上がり・値下がり銘柄数の確定値。基準日 2026-09-24。"
         ],
         [
           "東証プライム売買代金",
-          "10.39 兆円",
+          "取得不能（対象日の確定値なし）",
           "—",
-          "トレーダーズ・ウェブ 後場概況の確定値。基準日 2026-09-18。"
+          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-09-24。"
         ],
         [
           "騰落レシオ（25日）",
-          "104.65%",
+          "105.20%",
           "—",
-          "投資の森 東証プライム騰落銘柄数の保存履歴から25営業日で算出の確定値。基準日 2026-09-18。"
+          "投資の森 東証プライム騰落銘柄数の保存履歴から25営業日で算出の確定値。基準日 2026-09-24。"
         ],
         [
           "日経225予想PER",
           "取得不能（対象日の確定値なし）",
           "—",
-          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-09-18。"
+          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-09-24。"
         ],
         [
           "日経225予想EPS",
           "取得不能（対象日の確定値なし）",
           "—",
-          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-09-18。"
+          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-09-24。"
         ],
         [
           "日経225 25日乖離率",
-          "-0.68%",
+          "+0.30%",
           "—",
-          "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-09-18。"
+          "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-09-24。"
         ],
         [
           "日経225 200日乖離率",
-          "+8.87%",
+          "+9.55%",
           "—",
-          "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-09-18。"
+          "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-09-24。"
         ],
         [
           "海外投資家動向（現物）",
-          "-2,749.34億円",
+          "取得不能（対象日の確定値なし）",
           "—",
-          "JPX 投資部門別売買状況の東証プライム現物・週次公表値。売り越し。基準週末 2026-09-11。日次値ではない。"
+          "取得不能（公開ソース／終値一覧で対象日の確定値を取得できず）。基準日 2026-09-24。"
         ]
       ],
-      "dataDate": "2026-09-18",
-      "updatedAt": "2026-09-19T02:40:26+09:00",
+      "dataDate": "2026-09-24",
+      "updatedAt": "2026-09-24T21:40:49+09:00",
       "source": {
-        "name": "東京市場確定値統合（複数ソース・項目別基準日）",
+        "name": "公開ソース（exact-date fallback）",
         "sheet": "",
         "reference": "data/market/japan-close-reference.json",
-        "sheetStatus": "GOOGLE_SERVICE_ACCOUNT_JSON is not configured",
-        "supportingData": [
-          "data/market/latest.json（日経VI）",
-          "株探 日次時系列（TOPIX・グロース250）",
-          "data/nikkei225-supply-demand.json（海外投資家・週次）",
-          "トレーダーズ・ウェブ マーケットの話題（東証プライム売買代金）"
-        ],
-        "repairDiagnostics": {
-          "東証プライム売買代金": "repaired from exact-date Traders Web post-close commentary",
-          "日経225予想PER": "exact-date reference unavailable",
-          "日経225予想EPS": "exact-date reference unavailable",
-          "日経VI": "repaired from verified generic market acquisition",
-          "TOPIX": "exact target-date row not found",
-          "グロース250": "exact target-date row not found",
-          "海外投資家動向（現物）": "repaired from verified JPX weekly flow 2026-09-11"
-        }
+        "sheetStatus": "GOOGLE_SERVICE_ACCOUNT_JSON is not configured"
       }
     }
   },
@@ -214,237 +199,22 @@
     "us": {
       "title": "米国市場の大幅上昇・下落銘柄（S&P500構成銘柄）",
       "flag": "US",
-      "status": "verified",
-      "freshness": "fresh",
-      "dataDate": "2026-09-22",
-      "asOf": "2026-09-22T16:00:00-04:00",
-      "updatedAt": "2026-09-23T09:22:39+09:00",
+      "status": "unavailable",
+      "freshness": "unavailable",
+      "dataDate": null,
+      "asOf": null,
+      "updatedAt": "2026-09-24T09:36:24+09:00",
       "source": {
         "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
         "url": "https://www.slickcharts.com/sp500",
         "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
       },
-      "error": null,
+      "error": "Slickcharts is not on the verified U.S. session: source=2026-09-23, expected=2026-09-22",
       "universe": "S&P 500 constituents",
-      "validation": {
-        "estimatedWeightedReturnPct": 0.0172,
-        "verifiedSP500ReturnPct": -0.0,
-        "differencePt": 0.0172,
-        "tolerancePt": 0.2,
-        "status": "passed"
-      },
-      "gainers": [
-        {
-          "rank": 1,
-          "symbol": "MPWR",
-          "name": "Monolithic Power Systems, Inc.（MPWR）",
-          "close": "1,380.62",
-          "dayChange": "+102.94",
-          "change": "+8.06%",
-          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 2,
-          "symbol": "SNDK",
-          "name": "Sandisk Corporation Common Stock（SNDK）",
-          "close": "1,887.04",
-          "dayChange": "+120.4",
-          "change": "+6.82%",
-          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 3,
-          "symbol": "LEN",
-          "name": "Lennar Corporation Class A（LEN）",
-          "close": "83.06",
-          "dayChange": "+4.98",
-          "change": "+6.38%",
-          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 4,
-          "symbol": "MRNA",
-          "name": "Moderna, Inc. Common Stock（MRNA）",
-          "close": "182.56",
-          "dayChange": "+9.62",
-          "change": "+5.56%",
-          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 5,
-          "symbol": "MU",
-          "name": "Micron Technology, Inc.（MU）",
-          "close": "1,096.16",
-          "dayChange": "+52.2",
-          "change": "+5.00%",
-          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-        }
-      ],
-      "losers": [
-        {
-          "rank": 1,
-          "symbol": "GEN",
-          "name": "Gen Digital Inc. Common Stock（GEN）",
-          "close": "27.29",
-          "dayChange": "-1.86",
-          "change": "-6.38%",
-          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 2,
-          "symbol": "GDDY",
-          "name": "GoDaddy Inc（GDDY）",
-          "close": "98.24",
-          "dayChange": "-6.53",
-          "change": "-6.23%",
-          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 3,
-          "symbol": "RCL",
-          "name": "Royal Caribbean Group（RCL）",
-          "close": "234.89",
-          "dayChange": "-15.36",
-          "change": "-6.14%",
-          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 4,
-          "symbol": "SCHW",
-          "name": "The Charles Schwab Corporation（SCHW）",
-          "close": "100.35",
-          "dayChange": "-6.53",
-          "change": "-6.11%",
-          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-        },
-        {
-          "rank": 5,
-          "symbol": "ALL",
-          "name": "The Allstate Corporation（ALL）",
-          "close": "229.5",
-          "dayChange": "-13.36",
-          "change": "-5.50%",
-          "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-        }
-      ],
-      "lastGood": {
-        "title": "米国市場の大幅上昇・下落銘柄（S&P500構成銘柄）",
-        "flag": "US",
-        "status": "verified",
-        "freshness": "stale",
-        "dataDate": "2026-09-22",
-        "asOf": "2026-09-22T16:00:00-04:00",
-        "updatedAt": "2026-09-23T08:52:41+09:00",
-        "source": {
-          "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-          "url": "https://www.slickcharts.com/sp500",
-          "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
-        },
-        "error": null,
-        "universe": "S&P 500 constituents",
-        "validation": {
-          "estimatedWeightedReturnPct": 0.1286,
-          "verifiedSP500ReturnPct": -0.0,
-          "differencePt": 0.1286,
-          "tolerancePt": 0.2,
-          "status": "passed"
-        },
-        "gainers": [
-          {
-            "rank": 1,
-            "symbol": "MPWR",
-            "name": "Monolithic Power Systems, Inc.（MPWR）",
-            "close": "1,383.5",
-            "dayChange": "+105.82",
-            "change": "+8.28%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-          },
-          {
-            "rank": 2,
-            "symbol": "SNDK",
-            "name": "Sandisk Corporation Common Stock（SNDK）",
-            "close": "1,894.51",
-            "dayChange": "+127.87",
-            "change": "+7.24%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-          },
-          {
-            "rank": 3,
-            "symbol": "LEN",
-            "name": "Lennar Corporation Class A（LEN）",
-            "close": "83.47",
-            "dayChange": "+5.39",
-            "change": "+6.90%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-          },
-          {
-            "rank": 4,
-            "symbol": "MRNA",
-            "name": "Moderna, Inc. Common Stock（MRNA）",
-            "close": "182.43",
-            "dayChange": "+9.49",
-            "change": "+5.49%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-          },
-          {
-            "rank": 5,
-            "symbol": "AME",
-            "name": "Ametek, Inc.（AME）",
-            "close": "253.96",
-            "dayChange": "+12.73",
-            "change": "+5.28%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-          }
-        ],
-        "losers": [
-          {
-            "rank": 1,
-            "symbol": "GDDY",
-            "name": "GoDaddy Inc（GDDY）",
-            "close": "97.86",
-            "dayChange": "-6.91",
-            "change": "-6.60%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-          },
-          {
-            "rank": 2,
-            "symbol": "GEN",
-            "name": "Gen Digital Inc. Common Stock（GEN）",
-            "close": "27.25",
-            "dayChange": "-1.89",
-            "change": "-6.50%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-          },
-          {
-            "rank": 3,
-            "symbol": "SCHW",
-            "name": "The Charles Schwab Corporation（SCHW）",
-            "close": "100.62",
-            "dayChange": "-6.26",
-            "change": "-5.86%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-          },
-          {
-            "rank": 4,
-            "symbol": "ALL",
-            "name": "The Allstate Corporation（ALL）",
-            "close": "230",
-            "dayChange": "-12.86",
-            "change": "-5.29%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-          },
-          {
-            "rank": 5,
-            "symbol": "RCL",
-            "name": "Royal Caribbean Group（RCL）",
-            "close": "237.09",
-            "dayChange": "-13.16",
-            "change": "-5.26%",
-            "reason": "S&P500構成銘柄の前日比騰落率。基準日 2026-09-22。材料要因は別途ニュース確認。"
-          }
-        ],
-        "lastGood": null
-      }
+      "validation": {},
+      "gainers": [],
+      "losers": [],
+      "lastGood": null
     },
     "japan": {
       "title": "日本市場の大幅上昇・下落銘柄（東証プライム）",
@@ -675,297 +445,98 @@
     "us": {
       "title": "米国市場のセクター・業種（上昇率TOP5）",
       "flag": "US",
-      "rows": [],
-      "status": "unavailable",
-      "freshness": "unavailable",
-      "dataDate": null,
-      "asOf": null
+      "rows": [
+        {
+          "rank": 1,
+          "name": "コミュニケーション・サービス",
+          "change": "+1.78%",
+          "note": "大型ネット関連が主導。決算期待、継続性は中程度。"
+        },
+        {
+          "rank": 2,
+          "name": "ヘルスケア",
+          "change": "+1.33%",
+          "note": "ディフェンシブ買い。金利低下時に支え。"
+        },
+        {
+          "rank": 3,
+          "name": "一般消費財・サービス",
+          "change": "+1.07%",
+          "note": "選別買い。消費関連は銘柄差が残る。"
+        },
+        {
+          "rank": 4,
+          "name": "金融",
+          "change": "+0.93%",
+          "note": "景気懸念後退で買い。金利動向を確認。"
+        },
+        {
+          "rank": 5,
+          "name": "エネルギー",
+          "change": "+0.46%",
+          "note": "原油高が支援。継続性は在庫・地政学次第。"
+        }
+      ]
     },
     "japan": {
-      "title": "東京市場のセクター・業種",
+      "title": "東京市場のセクター・業種（上昇率TOP5）",
       "flag": "JP",
-      "rows": [],
-      "gainers": [],
-      "losers": [],
-      "dataAsOf": "2026-09-18",
-      "sourceLabel": "東証33業種指数",
-      "status": "unavailable",
-      "freshness": "unavailable",
-      "dataDate": null,
-      "asOf": null
+      "rows": [
+        {
+          "rank": 1,
+          "name": "電気機器",
+          "change": "+1.72%",
+          "note": "半導体関連が主導。米SOXとの連動を確認。"
+        },
+        {
+          "rank": 2,
+          "name": "情報・通信業",
+          "change": "+1.34%",
+          "note": "大型通信・ネット株に買い。継続性は中程度。"
+        },
+        {
+          "rank": 3,
+          "name": "輸送用機器",
+          "change": "+1.05%",
+          "note": "円安が支援。ドル円の反転に注意。"
+        },
+        {
+          "rank": 4,
+          "name": "化学",
+          "change": "+0.78%",
+          "note": "半導体材料の見直し買い。利確圧力も残る。"
+        },
+        {
+          "rank": 5,
+          "name": "銀行業",
+          "change": "+0.42%",
+          "note": "金利見通しが支え。日銀イベントを確認。"
+        }
+      ]
     }
   },
   "contributions": {
     "us": {
       "title": "米国市場（S&P500寄与度 推計・bp）",
       "flag": "US",
-      "status": "verified-estimate",
-      "freshness": "fresh",
-      "dataDate": "2026-09-22",
-      "asOf": "2026-09-22T16:00:00-04:00",
-      "updatedAt": "2026-09-23T09:22:39+09:00",
-      "source": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-      "error": null,
+      "status": "unavailable",
+      "freshness": "unavailable",
+      "dataDate": null,
+      "asOf": null,
+      "updatedAt": "2026-09-24T09:36:24+09:00",
+      "source": {
+        "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+        "url": "https://www.slickcharts.com/sp500",
+        "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
+      },
+      "error": "Slickcharts is not on the verified U.S. session: source=2026-09-23, expected=2026-09-22",
       "unit": "bp",
       "official": false,
       "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
-      "validation": {
-        "estimatedWeightedReturnPct": 0.0172,
-        "verifiedSP500ReturnPct": -0.0,
-        "differencePt": 0.0172,
-        "tolerancePt": 0.2,
-        "status": "passed"
-      },
-      "top": [
-        {
-          "rank": 1,
-          "symbol": "MU",
-          "name": "Micron Technology, Inc.（MU）",
-          "close": "1,096.16",
-          "change": "+5.00%",
-          "weight": "1.75%",
-          "contribution": "+8.75bp",
-          "contributionBps": 8.75,
-          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-        },
-        {
-          "rank": 2,
-          "symbol": "NVDA",
-          "name": "Nvidia Corp（NVDA）",
-          "close": "228.87",
-          "change": "+0.66%",
-          "weight": "7.81%",
-          "contribution": "+5.15bp",
-          "contributionBps": 5.1546,
-          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-        },
-        {
-          "rank": 3,
-          "symbol": "WMT",
-          "name": "Walmart Inc. Common Stock（WMT）",
-          "close": "110.12",
-          "change": "+2.49%",
-          "weight": "1.24%",
-          "contribution": "+3.09bp",
-          "contributionBps": 3.0876,
-          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-        },
-        {
-          "rank": 4,
-          "symbol": "SNDK",
-          "name": "Sandisk Corporation Common Stock（SNDK）",
-          "close": "1,887.04",
-          "change": "+6.82%",
-          "weight": "0.39%",
-          "contribution": "+2.66bp",
-          "contributionBps": 2.6598,
-          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-        },
-        {
-          "rank": 5,
-          "symbol": "TSLA",
-          "name": "Tesla, Inc. Common Stock（TSLA）",
-          "close": "378.9",
-          "change": "+0.96%",
-          "weight": "2.12%",
-          "contribution": "+2.04bp",
-          "contributionBps": 2.0352,
-          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-        }
-      ],
-      "bottom": [
-        {
-          "rank": 1,
-          "symbol": "AMZN",
-          "name": "Amazon.Com Inc（AMZN）",
-          "close": "254.98",
-          "change": "-1.34%",
-          "weight": "3.89%",
-          "contribution": "-5.21bp",
-          "contributionBps": -5.2126,
-          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-        },
-        {
-          "rank": 2,
-          "symbol": "JPM",
-          "name": "JPMorgan Chase & Co.（JPM）",
-          "close": "340",
-          "change": "-3.42%",
-          "weight": "1.28%",
-          "contribution": "-4.38bp",
-          "contributionBps": -4.3776,
-          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-        },
-        {
-          "rank": 3,
-          "symbol": "MSFT",
-          "name": "Microsoft Corp（MSFT）",
-          "close": "498",
-          "change": "-0.72%",
-          "weight": "5.23%",
-          "contribution": "-3.77bp",
-          "contributionBps": -3.7656,
-          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-        },
-        {
-          "rank": 4,
-          "symbol": "GOOGL",
-          "name": "Alphabet Inc. Class A Common Stock（GOOGL）",
-          "close": "351.16",
-          "change": "-1.07%",
-          "weight": "3.13%",
-          "contribution": "-3.35bp",
-          "contributionBps": -3.3491,
-          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-        },
-        {
-          "rank": 5,
-          "symbol": "GOOG",
-          "name": "Alphabet Inc. Class C Capital Stock（GOOG）",
-          "close": "347.41",
-          "change": "-0.99%",
-          "weight": "2.91%",
-          "contribution": "-2.88bp",
-          "contributionBps": -2.8809,
-          "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-        }
-      ],
-      "lastGood": {
-        "title": "米国市場（S&P500寄与度 推計・bp）",
-        "flag": "US",
-        "status": "verified-estimate",
-        "freshness": "stale",
-        "dataDate": "2026-09-22",
-        "asOf": "2026-09-22T16:00:00-04:00",
-        "updatedAt": "2026-09-23T08:52:41+09:00",
-        "source": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-        "error": null,
-        "unit": "bp",
-        "official": false,
-        "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
-        "validation": {
-          "estimatedWeightedReturnPct": 0.1286,
-          "verifiedSP500ReturnPct": -0.0,
-          "differencePt": 0.1286,
-          "tolerancePt": 0.2,
-          "status": "passed"
-        },
-        "top": [
-          {
-            "rank": 1,
-            "symbol": "MU",
-            "name": "Micron Technology, Inc.（MU）",
-            "close": "1,097.55",
-            "change": "+5.13%",
-            "weight": "1.75%",
-            "contribution": "+8.98bp",
-            "contributionBps": 8.9775,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-          },
-          {
-            "rank": 2,
-            "symbol": "NVDA",
-            "name": "Nvidia Corp（NVDA）",
-            "close": "228.56",
-            "change": "+0.52%",
-            "weight": "7.80%",
-            "contribution": "+4.06bp",
-            "contributionBps": 4.056,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-          },
-          {
-            "rank": 3,
-            "symbol": "WMT",
-            "name": "Walmart Inc. Common Stock（WMT）",
-            "close": "110.03",
-            "change": "+2.41%",
-            "weight": "1.23%",
-            "contribution": "+2.96bp",
-            "contributionBps": 2.9643,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-          },
-          {
-            "rank": 4,
-            "symbol": "SNDK",
-            "name": "Sandisk Corporation Common Stock（SNDK）",
-            "close": "1,894.51",
-            "change": "+7.24%",
-            "weight": "0.39%",
-            "contribution": "+2.82bp",
-            "contributionBps": 2.8236,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-          },
-          {
-            "rank": 5,
-            "symbol": "AVGO",
-            "name": "Broadcom Inc. Common Stock（AVGO）",
-            "close": "366.04",
-            "change": "+0.93%",
-            "weight": "2.47%",
-            "contribution": "+2.30bp",
-            "contributionBps": 2.2971,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-          }
-        ],
-        "bottom": [
-          {
-            "rank": 1,
-            "symbol": "AMZN",
-            "name": "Amazon.Com Inc（AMZN）",
-            "close": "255.44",
-            "change": "-1.17%",
-            "weight": "3.89%",
-            "contribution": "-4.55bp",
-            "contributionBps": -4.5513,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-          },
-          {
-            "rank": 2,
-            "symbol": "JPM",
-            "name": "JPMorgan Chase & Co.（JPM）",
-            "close": "340.9",
-            "change": "-3.16%",
-            "weight": "1.28%",
-            "contribution": "-4.04bp",
-            "contributionBps": -4.0448,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-          },
-          {
-            "rank": 3,
-            "symbol": "CSCO",
-            "name": "Cisco Systems, Inc. Common Stock (DE)（CSCO）",
-            "close": "106.34",
-            "change": "-4.59%",
-            "weight": "0.59%",
-            "contribution": "-2.71bp",
-            "contributionBps": -2.7081,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-          },
-          {
-            "rank": 4,
-            "symbol": "GOOGL",
-            "name": "Alphabet Inc. Class A Common Stock（GOOGL）",
-            "close": "352.07",
-            "change": "-0.82%",
-            "weight": "3.13%",
-            "contribution": "-2.57bp",
-            "contributionBps": -2.5666,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-          },
-          {
-            "rank": 5,
-            "symbol": "MSFT",
-            "name": "Microsoft Corp（MSFT）",
-            "close": "499.43",
-            "change": "-0.44%",
-            "weight": "5.24%",
-            "contribution": "-2.31bp",
-            "contributionBps": -2.3056,
-            "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-09-22。公式S&P寄与度ではない。"
-          }
-        ],
-        "lastGood": null
-      }
+      "validation": {},
+      "top": [],
+      "bottom": [],
+      "lastGood": null
     },
     "japan": {
       "title": "日本市場（日経225寄与度 上位・下位）",
@@ -5578,45 +5149,53 @@
   },
   "marketDates": {
     "us": "2026-09-22",
-    "japan": "2026-09-18"
+    "japan": "2026-09-24"
   },
   "marketUpdatedAt": {
-    "japan": "2026-09-19T02:40:26+09:00",
+    "japan": "2026-09-24T21:40:49+09:00",
     "us": "2026-09-23T08:52:17+09:00"
   },
-  "nikkeiMetricsAsOf": "2026-09-18",
+  "nikkeiMetricsAsOf": "2026-09-24",
   "sessionAnalysis": {
     "tokyoOpen": {
       "title": "東京市場 朝の寄り付き分析",
       "flag": "JP",
       "status": "東京寄り付きデータ取得済み",
-      "dataDate": "2026-09-23",
-      "updatedAt": "2026-09-23T13:37:46+09:00",
+      "dataDate": "2026-09-24",
+      "updatedAt": "2026-09-24T13:37:34+09:00",
       "source": "Yahoo Finance chart API（日経225・FX・CME参考先物） / Google Finance（TOPIX）",
       "metrics": [
         {
+          "label": "日経225",
+          "value": "65,660.92",
+          "change": "+0.99%",
+          "note": "寄り値 65,476.44 / ギャップ +0.70% / 寄り後 +0.28%"
+        },
+        {
           "label": "TOPIX",
-          "value": "4,091.14",
-          "change": "-0.07%",
-          "note": "寄り値 4,107.48 / ギャップ +0.33% / 寄り後 -0.40%"
+          "value": "4,087.19",
+          "change": "-0.10%",
+          "note": "寄り値 4,097.06 / ギャップ +0.14% / 寄り後 -0.24%"
         },
         {
           "label": "USD/JPY",
-          "value": "157.553",
-          "change": "+0.05%",
-          "note": "08:55以降の変化 / 08:55近辺 157.467"
+          "value": "157.880",
+          "change": "-0.23%",
+          "note": "08:55以降の変化 / 08:55近辺 158.245"
         },
         {
           "label": "日経225先物（CME参考）",
-          "value": "66,675.00",
-          "change": "-0.44%",
+          "value": "65,520.00",
+          "change": "-0.61%",
           "note": "CME参考値。大阪取引所先物とは別銘柄として表示"
         }
       ],
       "insights": [
-        "USD/JPYは08:55以降 +0.05%。日本株の外需・先物方向との整合性を確認します。"
+        "日経225はギャップアップ後も買いが継続。寄り付きの強さが維持されています。",
+        "日経225とTOPIXが逆方向。指数寄与度の偏りやセクターローテーションに注意します。",
+        "USD/JPYは08:55以降 -0.23%。日本株の外需・先物方向との整合性を確認します。"
       ],
-      "judgement": "寄り後15分の方向と日経225/TOPIXの一致を優先。高寄り・安寄りだけでは方向判定しません。",
+      "judgement": "寄り後も買い優勢。先物・USD/JPY・TOPIXが追随する限り、東京時間は上方向を優先します。",
       "errors": []
     },
     "usPremarket": {
@@ -5739,7 +5318,7 @@
       "steps": [
         {
           "label": "東京市場",
-          "text": "2026-09-23 / 日経225先物（CME参考） 66,675.00 -0.44% / TOPIX 4,091.14 -0.07%"
+          "text": "2026-09-24 / 日経225 65,660.92 +0.99% / TOPIX 4,087.19 -0.10%"
         },
         {
           "label": "米国プレマーケット",
@@ -5750,17 +5329,17 @@
           "text": "S&P500 -0.06（-0.00%） / Nasdaq +122.19（+0.45%）"
         }
       ],
-      "conclusion": "東京寄り付きと米国プレマーケットの方向が同じかを確認し、NY通常取引へ引き継がれるかを判定します。"
+      "conclusion": "東京市場と米国株先物の方向が逆転。欧州時間の金利・為替・ニュースで市場テーマが変化した可能性を優先して確認します。"
     }
   },
-  "sessionDataUpdatedAt": "2026-09-24T00:31:13+09:00",
+  "sessionDataUpdatedAt": "2026-09-24T13:37:35+09:00",
   "pageStatus": "ok",
   "preopen": {
     "status": "unavailable",
     "freshness": "unavailable",
     "dataDate": null,
     "asOf": null,
-    "updatedAt": "2026-09-23T12:41:52+09:00",
+    "updatedAt": "2026-09-24T12:33:15+09:00",
     "source": {
       "tradersWeb": {
         "name": "トレーダーズ・ウェブ Market Flash",
@@ -5771,7 +5350,7 @@
         "url": "https://s.kabutan.jp/news/"
       }
     },
-    "error": "当日の寄り前データを取得できませんでした: 当日の記事が見つかりません: index=https://www.traders.co.jp/market_jp/wadai, expected=2026-09-23",
+    "error": "当日の寄り前データを取得できませんでした: 当日の記事が見つかりません: index=https://www.traders.co.jp/market_jp/wadai, expected=2026-09-24",
     "summary": {},
     "tradersWebHighlights": [],
     "gainers": [],
@@ -12591,7 +12170,7 @@
   "judgementUpdatedAt": "2026-08-22T08:04:00+09:00",
   "judgementSource": "data/stocks.json（指数・市場内部・セクター・上昇下落銘柄・セッション分析）",
   "snapshotDate": "2026-09-24",
-  "savedAt": "2026-09-24T03:30:44+09:00",
+  "savedAt": "2026-09-24T21:40:57+09:00",
   "snapshotPolicy": {
     "type": "independent-market-session-dates",
     "description": "米国市場と東京市場は、それぞれの取引終了後に独立更新。未更新側は直前の確定データを保持する。"
