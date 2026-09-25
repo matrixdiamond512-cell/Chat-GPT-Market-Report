@@ -16,6 +16,7 @@ const MARKET_REPORT_AUTO_CONFIG = {
     { name: 'autoPublishMarketReport1730Retry', hour: 17 },
     { name: 'autoPublishMarketReport2230Retry', hour: 22 }
   ],
+  watchdogHandler: 'autoPublishMarketReportsWatchdog',
   legacyHandlers: [
     { name: 'autoPublishMarketReport0700', hour: 7 },
     { name: 'autoPublishMarketReport0830Retry', hour: 8 },
@@ -48,11 +49,16 @@ function installMarketReportAutoPublishTriggers() {
       .create();
   });
 
+  ScriptApp.newTrigger(MARKET_REPORT_AUTO_CONFIG.watchdogHandler)
+    .timeBased()
+    .everyMinutes(5)
+    .create();
+
   SpreadsheetApp.getUi().alert(
     'Market report auto publish triggers were installed.\n' +
     'Main: 08:30 / 12:30 / 16:30 / 21:30\n' +
     'Retry once: 09:30 / 13:30 / 17:30 / 22:30\n\n' +
-    'This is not a 5-minute monitor. It only checks once more when a report is late.'
+    'A 5-minute watchdog checks only due source documents. Incomplete reports and missing time-matched images are not published.'
   );
 }
 
@@ -64,6 +70,7 @@ function uninstallMarketReportAutoPublishTriggers() {
 function showMarketReportAutoPublishStatus() {
   const activeHandlers = MARKET_REPORT_AUTO_CONFIG.scheduleHandlers
     .concat(MARKET_REPORT_AUTO_CONFIG.retryHandlers)
+    .concat([{ name: MARKET_REPORT_AUTO_CONFIG.watchdogHandler }])
     .map(item => item.name);
   const allHandlers = getMarketReportAutoPublishHandlerNames_();
   const installedTriggers = ScriptApp.getProjectTriggers()
@@ -120,6 +127,7 @@ function autoPublishMarketReport0930Retry() { return autoPublishDueMarketReports
 function autoPublishMarketReport1330Retry() { return autoPublishDueMarketReports_('retry-1330'); }
 function autoPublishMarketReport1730Retry() { return autoPublishDueMarketReports_('retry-1730'); }
 function autoPublishMarketReport2230Retry() { return autoPublishDueMarketReports_('retry-2230'); }
+function autoPublishMarketReportsWatchdog() { return autoPublishDueMarketReports_('watchdog-5-minute'); }
 
 // Legacy trigger compatibility. These handlers no longer publish a 07:00 report.
 function autoPublishMarketReport0700() { return autoPublishScheduledMarketReport_(7); }
@@ -454,7 +462,8 @@ function getMarketReportAutoPublishHandlerNames_() {
   return MARKET_REPORT_AUTO_CONFIG.scheduleHandlers
     .concat(MARKET_REPORT_AUTO_CONFIG.retryHandlers)
     .concat(MARKET_REPORT_AUTO_CONFIG.legacyHandlers)
-    .map(item => item.name);
+    .map(item => item.name)
+    .concat([MARKET_REPORT_AUTO_CONFIG.watchdogHandler]);
 }
 
 function formatMarketReportAutoSlot_(date, hour) {

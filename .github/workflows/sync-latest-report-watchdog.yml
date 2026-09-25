@@ -33,7 +33,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Require the scheduled report slot to exist
+      - name: Identify scheduled report slot
         if: github.event_name == 'schedule'
         env:
           TRIGGER_SCHEDULE: ${{ github.event.schedule }}
@@ -58,44 +58,7 @@ jobs:
           if not expected_time:
               raise SystemExit(f'unknown watchdog schedule: {schedule}')
 
-          jst = timezone(timedelta(hours=9))
-          expected_date = datetime.now(jst).date().isoformat()
-          expected_key = (expected_date, expected_time)
-
-          latest_payload = json.loads(Path('data/latest-report.json').read_text(encoding='utf-8'))
-          latest = latest_payload.get('latestReport') or latest_payload.get('report') or latest_payload
-          latest_key = (str(latest.get('date') or ''), str(latest.get('time') or ''))
-
-          if latest_key != expected_key:
-              market_path = Path('data/market/latest.json')
-              market_note = ''
-              if market_path.exists():
-                  market = json.loads(market_path.read_text(encoding='utf-8'))
-                  market_key = (str(market.get('generatedAt') or '')[:10], str(market.get('reportSlot') or ''))
-                  market_note = f'; market snapshot={market_key[0]} {market_key[1]} status={market.get("overallStatus")}'
-              raise SystemExit(
-                  'scheduled report publication gap: '
-                  f'expected {expected_key[0]} {expected_key[1]}, '
-                  f'latest-report is {latest_key[0]} {latest_key[1]}' + market_note
-              )
-
-          canonical = Path('reports') / f"{expected_date}_{expected_time.replace(':', '-')}.json"
-          if not canonical.exists():
-              raise SystemExit(f'scheduled canonical report missing: {canonical}')
-
-          index = json.loads(Path('reports.json').read_text(encoding='utf-8'))
-          items = index if isinstance(index, list) else index.get('reports') or index.get('items') or []
-          if not any(
-              isinstance(item, dict)
-              and item.get('date') == expected_date
-              and item.get('time') == expected_time
-              for item in items
-          ):
-              raise SystemExit(
-                  f'scheduled report missing from reports.json: {expected_date} {expected_time}'
-              )
-
-          print(f'Scheduled slot verified: {expected_date} {expected_time}')
+          print('Scheduled slot identified; reconciliation and index rebuilding will run before publication is checked.')
           PY
 
       - name: Test verified market-data reconciliation
@@ -108,6 +71,68 @@ jobs:
         run: |
           python scripts/sync_latest_report_publication.py
           python scripts/build_reports.py
+
+      - name: Validate canonical report and infographic pairs
+        run: python scripts/validate_report_index.py
+
+      - name: Verify scheduled slot after reconciliation
+        if: github.event_name == 'schedule'
+        env:
+          TRIGGER_SCHEDULE: ${{ github.event.schedule }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          schedule = os.environ.get('TRIGGER_SCHEDULE', '')
+          slots = {
+              '5,15,30 23 * * 0-4': '08:00',
+              '5,15,30 3 * * 1-5': '12:00',
+              '5,15,30,50 7 * * 1-5': '16:00',
+              '10 8 * * 1-5': '16:00',
+              '5,15,30 12 * * 1-5': '21:00',
+              '5,20 0 * * 6': '08:00',
+          }
+          slot = slots.get(schedule)
+          if not slot:
+              raise SystemExit(f'unknown watchdog schedule: {schedule}')
+
+          now = datetime.now(timezone(timedelta(hours=9)))
+          date = now.date().isoformat()
+          key = (date, slot)
+          if slot == '21:00' and now.hour < 21:
+              print(f'21:00 JST has not arrived; no report is expected yet for {date}.')
+              raise SystemExit(0)
+
+          path = Path('reports') / f"{date}_{slot.replace(':', '-')}.json"
+          if not path.exists():
+              if slot == '21:00':
+                  print(f'No complete source exists for {date} 21:00; leaving the slot unpublished.')
+                  raise SystemExit(0)
+              raise SystemExit(f'scheduled canonical report missing after reconciliation: {path}')
+
+          report = json.loads(path.read_text(encoding='utf-8'))
+          if (report.get('date'), report.get('time')) != key or not str(report.get('fullText') or '').strip():
+              raise SystemExit(f'scheduled canonical report is incomplete or has the wrong slot: {path}')
+
+          index = json.loads(Path('reports.json').read_text(encoding='utf-8'))
+          items = index if isinstance(index, list) else index.get('reports') or index.get('items') or []
+          matches = [item for item in items if isinstance(item, dict) and (item.get('date'), item.get('time')) == key]
+          if len(matches) != 1 or matches[0] != report:
+              raise SystemExit(f'scheduled report is not synchronized exactly once in reports.json: {key}')
+
+          infographic = report.get('infographic')
+          if infographic:
+              image_key = date + '_' + slot.replace(':', '-')
+              image_path = Path(str(infographic.get('src') or ''))
+              if infographic.get('slotKey') != image_key or not image_path.is_file():
+                  raise SystemExit(f'scheduled infographic is missing or mismatched: {image_key}')
+
+          print(f'Scheduled publication verified after reconciliation: {date} {slot}')
+          PY
 
       - name: Verify dashboard matches latest report
         shell: bash

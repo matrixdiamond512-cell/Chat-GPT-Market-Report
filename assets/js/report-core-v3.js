@@ -34,9 +34,10 @@ function syncSelectedReportUrl(report) {
   history.replaceState(null, "", url);
 }
 function selectReport(dateText, timeText) {
-  const d = resolveAvailableDate(dateText);
+  const d = dateText;
   const same = reportsForDate(d);
-  selectedReport = same.find(r => r.time === timeText) || same.at(-1) || reports[0];
+  selectedReport = same.find(r => r.time === timeText);
+  if (!selectedReport) { renderMissingReport(dateText, timeText); return; }
   render();
   syncSelectedReportUrl(selectedReport);
 }
@@ -59,6 +60,22 @@ function renderControls(report) {
 }
 
 function fullTextOf(report) { return clean(report?.fullText || report?.rawText || report?.body || "").replace(/^\uFEFF/, ""); }
+function renderMissingReport(date, time) {
+  selectedReport = null;
+  renderControls({date, time});
+  $("lastUpdated").textContent = `対象：${dateToJp(date)} ${time || ""}`;
+  $("reportStatus").textContent = "対象データなし";
+  $("app").className = "empty";
+  $("app").textContent = "対象データなし：この日時のレポート本文は登録されていません。";
+  window.MarketReportLastRendered = null;
+}
+function renderInfographic(report) {
+  const image = report.infographic;
+  if (!image) return "";
+  const key = `${report.date}_${report.time.replace(":", "-")}`;
+  if (image.slotKey !== key || !new RegExp(`^images/reports/${key}\\.(png|jpg|jpeg|webp)$`).test(image.src || "")) return "";
+  return `<figure class="report-infographic" data-report-key="${esc(key)}"><img src="${esc(image.src)}" alt="${esc(report.title)} 図解" style="display:block;width:100%;height:auto" loading="eager"><figcaption>${esc(report.title)} 図解</figcaption></figure>`;
+}
 function headingInfo(line) {
   const raw = clean(line);
   let m = raw.match(/^【\s*(.+?)\s*】$/); if (m) return {number:"", title:m[1].trim()};
@@ -202,7 +219,7 @@ function renderDocument(report) {
   $("lastUpdated").textContent = `表示中：${dateToJp(report.date)} ${report.time || ""}`;
   $("reportStatus").textContent = `本文全文を表示中｜reports.json正本｜統合レンダラー v3`;
   $("app").className = "report sop-report-applied";
-  $("app").innerHTML = `<header class="report-head"><h1 class="report-title">${esc(parsed.title || fallback)}</h1><div class="source-badge">reports.json正本</div></header><article class="report-body">${renderPreface(parsed.preface)}${sections.map(s => { const market = isMarketSection(s.title); const title = market ? marketSectionTitle(report, s.title) : s.title; return `<section class="section sop-section" data-sop-title="${esc(title)}"><h2>${s.number ? `${esc(s.number)}．` : ""}${esc(title)}</h2>${market ? renderMarketTable(report, s.lines, s.title) : renderRichText(s.lines)}</section>`; }).join("")}</article>`;
+  $("app").innerHTML = `<header class="report-head"><h1 class="report-title">${esc(parsed.title || fallback)}</h1><div class="source-badge">reports.json正本</div></header>${renderInfographic(report)}<article class="report-body">${renderPreface(parsed.preface)}${sections.map(s => { const market = isMarketSection(s.title); const title = market ? marketSectionTitle(report, s.title) : s.title; return `<section class="section sop-section" data-sop-title="${esc(title)}"><h2>${s.number ? `${esc(s.number)}．` : ""}${esc(title)}</h2>${market ? renderMarketTable(report, s.lines, s.title) : renderRichText(s.lines)}</section>`; }).join("")}</article>`;
 }
 function render() { if (!selectedReport) return; renderControls(selectedReport); renderDocument(selectedReport); window.MarketReportLastRendered = selectedReport; window.dispatchEvent(new CustomEvent("market-report-rendered", { detail: { report: selectedReport } })); }
 
@@ -215,7 +232,8 @@ async function init() {
     if (!reports.length) throw new Error("reports.jsonに表示できる本文データがありません");
     const params = new URLSearchParams(location.search);
     const date = params.get("date"), time = params.get("time");
-    selectedReport = reports.find(r => r.date === date && r.time === time) || reports[0];
+    selectedReport = reports.find(r => r.date === date && r.time === time) || ((!date && !time) ? reports[0] : null);
+    if (!selectedReport) { renderMissingReport(date || "", time || ""); return; }
     render();
     // The enrichment script needs the resolved default slot as well as explicit selections.
     // Keep the canonical slot in the URL so the bare report.html route gets full details.
@@ -227,6 +245,6 @@ async function init() {
     $("app").innerHTML = `マーケットレポート本文を表示できません。理由：${esc(error.message)}`;
   }
 }
-window.MarketReportRendererVersion = "20260820-2148-morning-close-table";
+window.MarketReportRendererVersion = "20260925-exact-slot-infographic";
 init();
 

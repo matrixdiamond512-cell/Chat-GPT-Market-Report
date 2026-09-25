@@ -237,10 +237,54 @@ function publishWebReportObject_(report) {
   lock.waitLock(30000);
 
   try {
+    const imageFile = findExactMarketInfographic_(report);
+    const imageBytes = imageFile.getBlob().getBytes();
+    const key = report.date + '_' + report.time.replace(':', '-');
+    const imagePath = 'images/reports/' + key + '.png';
+    const imageHash = marketReportSha256_(imageBytes);
+    report.bodyHash = marketReportSha256_(Utilities.newBlob(report.fullText, 'text/plain').getBytes());
+    report.infographic = {
+      slotKey: key,
+      src: imagePath,
+      sourceName: imageFile.getName(),
+      sha256: imageHash,
+      origin: '既存Google Drive画像'
+    };
+
+    const imageSha = getGitHubContentSha_(imagePath);
+    const imageResult = putGitHubBinaryFile_(
+      imagePath,
+      imageBytes,
+      imageSha,
+      'Publish matching market report infographic ' + report.date + ' ' + report.time
+    );
+
+    const canonicalPath = 'reports/' + key + '.json';
+    const currentCanonical = getGitHubJsonFile_(canonicalPath);
+    const oldReport = currentCanonical.data && !Array.isArray(currentCanonical.data)
+      ? (currentCanonical.data.latestReport || currentCanonical.data.report || currentCanonical.data)
+      : null;
+    if (currentCanonical.sha && oldReport && (oldReport.date || oldReport.time)) {
+      const oldRevision = Number(oldReport.revision || 0);
+      const newRevision = Number(report.revision || 0);
+      if (oldReport.bodyHash === report.bodyHash &&
+          oldReport.infographic && oldReport.infographic.sha256 === imageHash &&
+          oldReport.title === report.title) {
+        // The same source version is already canonical; still refresh the index below.
+      } else if (!newRevision || newRevision <= oldRevision) {
+        throw new Error('既存の正本より新しい原文版であることを確認できないため、上書きを中止しました: ' + canonicalPath);
+      }
+    }
+    const canonicalResult = putGitHubJsonFile_(
+      canonicalPath,
+      JSON.stringify(report, null, 2) + '\n',
+      currentCanonical.sha,
+      'Archive complete market report ' + report.date + ' ' + report.time
+    );
+
     const current = getGitHubJsonFile_(WEB_REPORT_CONFIG.targetPath);
     const reports = normalizeWebReportList_(current.data);
     const next = upsertWebReportList_(reports, report);
-    const key = report.date + ' ' + report.time;
 
     const result = putGitHubJsonFile_(
       WEB_REPORT_CONFIG.targetPath,
@@ -252,6 +296,7 @@ function publishWebReportObject_(report) {
     const dashboardResult = typeof syncDashboardJsonToGitHubFromReports_ === 'function'
       ? syncDashboardJsonToGitHubFromReports_(next)
       : null;
+    const live = verifyPublicMarketReport_(report);
 
     return {
       ok: true,
@@ -259,12 +304,66 @@ function publishWebReportObject_(report) {
       date: report.date,
       time: report.time,
       commitSha: result.commit.sha,
+      infographicCommitSha: imageResult.commit.sha,
+      canonicalCommitSha: canonicalResult.commit.sha,
       dashboardCommitSha: dashboardResult ? dashboardResult.commitSha : '',
-      pagesUrl: WEB_REPORT_CONFIG.pagesUrl
+      pagesUrl: live.url,
+      publicVerifiedAt: live.verifiedAt
     };
   } finally {
     lock.releaseLock();
   }
+}
+
+function findExactMarketInfographic_(report) {
+  const name = 'マーケットレポート_' + report.date + '_' + report.time.replace(':', '-') + '.png';
+  const files = DriveApp.getFilesByName(name);
+  let best = null;
+  while (files.hasNext()) {
+    const file = files.next();
+    if (file.isTrashed() || file.getName() !== name || file.getMimeType() !== 'image/png') continue;
+    if (!best || file.getLastUpdated().getTime() > best.getLastUpdated().getTime()) best = file;
+  }
+  if (!best) throw new Error('同じ日付・時間帯の既存図解がないため公開を中止しました: ' + name);
+  return best;
+}
+
+function marketReportSha256_(bytes) {
+  const digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, bytes);
+  return digest.map(value => ('0' + (value & 255).toString(16)).slice(-2)).join('');
+}
+
+function verifyPublicMarketReport_(report) {
+  const base = String(WEB_REPORT_CONFIG.pagesUrl || '').replace(/\/$/, '') + '/';
+  const indexUrl = base + 'reports.json?verify=' + encodeURIComponent(String(Date.now()));
+  const reportUrl = base + 'report.html?date=' + encodeURIComponent(report.date) + '&time=' + encodeURIComponent(report.time);
+  let lastError = '公開indexに対象スロットが見つかりません。';
+  for (let attempt = 0; attempt < 36; attempt++) {
+    try {
+      const response = UrlFetchApp.fetch(indexUrl + '-' + attempt, {
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' },
+        muteHttpExceptions: true
+      });
+      if (response.getResponseCode() !== 200) throw new Error('reports.json HTTP ' + response.getResponseCode());
+      const payload = JSON.parse(response.getContentText());
+      const published = normalizeWebReportList_(payload).find(item => item.date === report.date && item.time === report.time);
+      if (!published || published.bodyHash !== report.bodyHash || !published.infographic || published.infographic.sha256 !== report.infographic.sha256) {
+        throw new Error('公開reports.jsonの本文ハッシュまたは同時刻図解が一致しません。');
+      }
+      const imageResponse = UrlFetchApp.fetch(base + report.infographic.src + '?verify=' + attempt, {
+        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' },
+        muteHttpExceptions: true
+      });
+      if (imageResponse.getResponseCode() !== 200 || marketReportSha256_(imageResponse.getBlob().getBytes()) !== report.infographic.sha256) {
+        throw new Error('公開図解が取得できないか、元画像と一致しません。');
+      }
+      return { ok: true, url: reportUrl, verifiedAt: new Date().toISOString() };
+    } catch (error) {
+      lastError = String(error && error.message || error);
+      if (attempt < 35) Utilities.sleep(5000);
+    }
+  }
+  throw new Error('公開サイトでのレポート確認に失敗しました。Drive保存やGitHub commitだけでは公開済みにしません。最後の結果: ' + lastError);
 }
 
 function normalizeWebReportList_(data) {
@@ -977,6 +1076,38 @@ function putGitHubJsonFile_(path, content, sha, message) {
     throw new Error('GitHub更新失敗: HTTP ' + code + ' ' + response.getContentText());
   }
 
+  return JSON.parse(response.getContentText());
+}
+
+function getGitHubContentSha_(path) {
+  const response = UrlFetchApp.fetch(
+    githubContentsUrl_(path) + '?ref=' + encodeURIComponent(WEB_REPORT_CONFIG.branch),
+    { method: 'get', headers: githubHeaders_(getGitHubToken_()), muteHttpExceptions: true }
+  );
+  const code = response.getResponseCode();
+  if (code === 404) return null;
+  if (code !== 200) throw new Error('GitHub画像情報の取得失敗: HTTP ' + code + ' ' + response.getContentText());
+  return JSON.parse(response.getContentText()).sha;
+}
+
+function putGitHubBinaryFile_(path, bytes, sha, message) {
+  const payload = {
+    message: message,
+    content: Utilities.base64Encode(bytes),
+    branch: WEB_REPORT_CONFIG.branch
+  };
+  if (sha) payload.sha = sha;
+  const response = UrlFetchApp.fetch(githubContentsUrl_(path), {
+    method: 'put',
+    contentType: 'application/json',
+    headers: githubHeaders_(getGitHubToken_()),
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  });
+  const code = response.getResponseCode();
+  if (code !== 200 && code !== 201) {
+    throw new Error('GitHub画像更新失敗: HTTP ' + code + ' ' + response.getContentText());
+  }
   return JSON.parse(response.getContentText());
 }
 

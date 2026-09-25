@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - 'apps-script/MarketReportAutoPublish.gs'
+      - 'apps-script/MarketReportWebSync.gs'
       - 'apps-script/MarketReportMasterScheduler.gs'
       - 'apps-script/MarketReportPrePublishValidation.gs'
       - '.github/workflows/apps-script-prepublish-validation.yml'
@@ -13,6 +14,7 @@ on:
       - main
     paths:
       - 'apps-script/MarketReportAutoPublish.gs'
+      - 'apps-script/MarketReportWebSync.gs'
       - 'apps-script/MarketReportMasterScheduler.gs'
       - 'apps-script/MarketReportPrePublishValidation.gs'
       - '.github/workflows/apps-script-prepublish-validation.yml'
@@ -35,11 +37,33 @@ jobs:
       - name: Syntax-check Apps Script files
         run: |
           cp apps-script/MarketReportAutoPublish.gs /tmp/MarketReportAutoPublish.js
+          cp apps-script/MarketReportWebSync.gs /tmp/MarketReportWebSync.js
           cp apps-script/MarketReportMasterScheduler.gs /tmp/MarketReportMasterScheduler.js
           cp apps-script/MarketReportPrePublishValidation.gs /tmp/MarketReportPrePublishValidation.js
           node --check /tmp/MarketReportAutoPublish.js
+          node --check /tmp/MarketReportWebSync.js
           node --check /tmp/MarketReportMasterScheduler.js
           node --check /tmp/MarketReportPrePublishValidation.js
+
+      - name: Confirm atomic canonical and exact-image publication stages
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const web = fs.readFileSync('apps-script/MarketReportWebSync.gs', 'utf8');
+          const validation = fs.readFileSync('apps-script/MarketReportPrePublishValidation.gs', 'utf8');
+          for (const [label, pattern] of [
+            ['slot-exact Drive image lookup', /findExactMarketInfographic_/],
+            ['binary image commit', /putGitHubBinaryFile_/],
+            ['canonical report commit', /canonicalPath[\s\S]*putGitHubJsonFile_/],
+            ['public report verification', /verifyPublicMarketReport_/],
+            ['JST weekday validation', /getUTCDay\(\)/],
+            ['incomplete body rejection', /source\.length < 1200/]
+          ]) {
+            if (!pattern.test(label.includes('JST') || label.includes('body') ? validation : web)) {
+              throw new Error('Missing publication safeguard: ' + label);
+            }
+          }
+          NODE
 
       - name: Confirm 08:00 scheduler migration
         run: |

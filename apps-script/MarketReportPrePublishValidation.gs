@@ -133,15 +133,17 @@ function validateMarketReportBeforePublish_(report, expectedHour) {
     }
   }
 
-  var titleMatch = String(report.title || '').match(/^マーケットレポート｜(\d{4})\/(\d{2})\/(\d{2})（.）(\d{2}):(\d{2})$/);
+  var titleMatch = String(report.title || '').match(/^マーケットレポート｜(\d{4})\/(\d{2})\/(\d{2})（([月火水木金土日])）(\d{2}):(\d{2})$/);
   if (!titleMatch) {
     errors.push('タイトル形式不正: ' + String(report.title || ''));
   } else {
     var titleDate = titleMatch[1] + '-' + titleMatch[2] + '-' + titleMatch[3];
-    var titleTime = titleMatch[4] + ':' + titleMatch[5];
+    var titleTime = titleMatch[5] + ':' + titleMatch[6];
     if (titleDate !== String(report.date || '') || titleTime !== String(report.time || '')) {
       errors.push('タイトルとdate/timeが不一致です。');
     }
+    var weekday = ['日', '月', '火', '水', '木', '金', '土'][new Date(titleDate + 'T00:00:00Z').getUTCDay()];
+    if (titleMatch[4] !== weekday) errors.push('タイトルの曜日と日本時間の日付が一致しません。');
   }
 
   var byName = {};
@@ -237,6 +239,13 @@ function validateMarketReportManualContract_(report, byName, errors) {
   if (!source) {
     errors.push(timeText + ' SOPでは公開本文 fullText/rawText/body が必須です。');
     return;
+  }
+  if (dateText >= MARKET_REPORT_PREPUBLISH_CONFIG.manualEnforceFrom && source.length < 1200) {
+    errors.push(timeText + ' SOP公開本文は1,200文字以上の原文全文が必要です。');
+  }
+  var firstLine = source.split('\n').map(function(line) { return line.trim(); }).filter(Boolean)[0] || '';
+  if (firstLine !== String(report.title || '')) {
+    errors.push(timeText + ' 本文先頭のタイトルとdate/timeタイトルが一致しません。');
   }
 
   MARKET_REPORT_PREPUBLISH_CONFIG.forbiddenPublicPatterns.forEach(function(rule) {

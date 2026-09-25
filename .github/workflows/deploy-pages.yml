@@ -63,6 +63,9 @@ jobs:
           print('Canonical index and both requested report texts verified.')
           PY
 
+      - name: Verify report body and infographic slot integrity
+        run: python scripts/validate_report_index.py
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
@@ -112,3 +115,8 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify the public report index and exact infographic bytes
+        env:
+          PUBLIC_URL: ${{ steps.deployment.outputs.page_url }}
+        run: python scripts/verify_public_report_deployment.py --base-url "$PUBLIC_URL"
