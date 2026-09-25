@@ -34,6 +34,23 @@ class ReportContractTests(unittest.TestCase):
             elif name == "シナリオが崩れる条件":
                 self.assertRegex(source, pattern)
 
+    def test_full_text_original_is_valid_without_invented_market_objects(self):
+        report = {
+            "date": "2026-09-25",
+            "time": "16:00",
+            "title": "マーケットレポート｜2026/09/25（金）16:00",
+            "fullText": "既存レポート本文。" * 150,
+        }
+        errors, warnings = [], []
+        validate_market_reports.validate_report_content(report, "report", True, errors, warnings)
+        self.assertEqual(errors, [])
+        self.assertTrue(any("原文全文形式" in warning for warning in warnings))
+
+        report["time"] = "21:00"
+        errors, warnings = [], []
+        validate_market_reports.validate_report_content(report, "report", True, errors, warnings)
+        self.assertTrue(any("markets は配列" in error for error in errors))
+
     def test_stale_latest_cannot_overwrite_canonical(self):
         current = {"date": "2026-09-22", "time": "21:00", "title": "t", "revision": 3}
         incoming = {"date": "2026-09-22", "time": "21:00", "title": "old", "revision": 2}

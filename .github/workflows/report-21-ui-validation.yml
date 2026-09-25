@@ -5,8 +5,8 @@ on:
   pull_request:
     paths:
       - 'report.html'
-      - 'assets/js/report-sop-renderer.js'
-      - 'assets/js/latest-report-bootstrap.js'
+      - 'assets/js/report-core-v3.js'
+      - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
       - '.github/workflows/report-21-ui-validation.yml'
   push:
@@ -14,8 +14,8 @@ on:
       - main
     paths:
       - 'report.html'
-      - 'assets/js/report-sop-renderer.js'
-      - 'assets/js/latest-report-bootstrap.js'
+      - 'assets/js/report-core-v3.js'
+      - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
       - '.github/workflows/report-21-ui-validation.yml'
 
@@ -36,16 +36,15 @@ jobs:
 
       - name: Syntax-check active report scripts
         run: |
-          node --check assets/js/report-fulltext.js
-          node --check assets/js/report-sop-renderer.js
-          node --check assets/js/latest-report-bootstrap.js
+          node --check assets/js/report-core-v3.js
+          node --check assets/js/report-markdown-fulltext-fix.js
+          node --check assets/js/report-structured-enrichment.js
           node --check assets/js/morning-report-qa-gate.js
 
-      - name: Confirm portal loads unified SOP renderer
+      - name: Confirm portal loads active report renderer
         run: |
-          grep -q 'report-sop-renderer.js' report.html
-          grep -q '08:00・12:00・16:00・21:00' report.html
-          grep -q '主要市場データを5列表で表示' report.html
+          grep -q 'report-core-v3.js' report.html
+          grep -q 'report-markdown-fulltext-fix.js' report.html
 
       - name: Forbid legacy renderers that overwrite the SOP table
         run: |
@@ -55,20 +54,31 @@ jobs:
           ! grep -q 'report-08-final-table-source.js' report.html
           ! grep -q 'report-fulltext-fix.js' report.html
 
-      - name: Confirm all-slot five-column renderer contract
+      - name: Confirm exact-slot body and infographic rendering contract
         run: |
-          grep -q '"08:00"' assets/js/report-sop-renderer.js
-          grep -q '"12:00"' assets/js/report-sop-renderer.js
-          grep -q '"16:00"' assets/js/report-sop-renderer.js
-          grep -q '"21:00"' assets/js/report-sop-renderer.js
-          grep -q '確定終値・現在値' assets/js/report-sop-renderer.js
-          grep -q '前日比' assets/js/report-sop-renderer.js
-          grep -q '騰落率' assets/js/report-sop-renderer.js
-          grep -q '状態' assets/js/report-sop-renderer.js
-          grep -q 'marketDataTable' assets/js/report-sop-renderer.js
-          grep -q '【' assets/js/report-sop-renderer.js
+          node <<'NODE'
+          const fs = require('fs');
+          const core = fs.readFileSync('assets/js/report-core-v3.js', 'utf8');
+          const required = [
+            ['08/12/16/21 slots', 'const REPORT_TIMES = ["08:00", "12:00", "16:00", "21:00"]'],
+            ['exact date/time selection', 'reports.find(r => r.date === date && r.time === time)'],
+            ['missing-slot state', 'renderMissingReport(date || "", time || "")'],
+            ['exact image key guard', 'image.slotKey !== key'],
+            ['canonical five-column renderer', 'const CURRENT_MARKET_HEADERS'],
+            ['previous-close five-column renderer', 'const PREVIOUS_CLOSE_HEADERS'],
+            ['canonical reports.json body source', 'function fullTextOf(report)']
+          ];
+          for (const [label, value] of required) {
+            if (!core.includes(value)) throw new Error('Missing report renderer contract: ' + label);
+          }
+          NODE
 
-      - name: Confirm short latest bodies cannot replace richer history bodies
+      - name: Confirm latest-selection never substitutes an explicit slot
         run: |
-          grep -q 'fullTextScore' assets/js/latest-report-bootstrap.js
-          grep -q 'chooseFullText' assets/js/latest-report-bootstrap.js
+          node <<'NODE'
+          const fs = require('fs');
+          const core = fs.readFileSync('assets/js/report-core-v3.js', 'utf8');
+          if (!/selectedReport = reports\.find\(r => r\.date === date && r\.time === time\) \|\| \(\(!date && !time\) \? reports\[0\] : null\)/.test(core)) {
+            throw new Error('Explicit date/time selection may fall back to another report');
+          }
+          NODE

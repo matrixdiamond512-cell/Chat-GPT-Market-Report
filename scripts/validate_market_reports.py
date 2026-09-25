@@ -165,11 +165,22 @@ def validate_21_manual_contract(report: dict, prefix: str, target: list[str]) ->
 
 def validate_report_content(report: dict, prefix: str, strict: bool, errors: list[str], warnings: list[str]) -> None:
     target = errors if strict else warnings
+    source = public_full_text(report)
+    time_text = str(report.get("time", ""))
+    markets = report.get("markets")
+
+    # ChatGPT-origin reports are stored as their complete original text. They are
+    # intentionally not expanded into guessed structured market values. For the
+    # 08:00/12:00/16:00 portal slots, a full-length body is a valid canonical
+    # representation; the separate index validator checks its exact slot and image.
+    if source and len(source) >= 1200 and not isinstance(markets, list) and time_text != "21:00":
+        warnings.append(f"{prefix}: 原文全文形式（{len(source)}文字）；未記載の構造化市場値は補完しません")
+        return
+
     missing = sorted(REQUIRED_REPORT_FIELDS - report.keys())
     if missing:
         target.append(f"{prefix}: 必須項目不足: {', '.join(missing)}")
 
-    markets = report.get("markets")
     if not isinstance(markets, list):
         target.append(f"{prefix}: markets は配列である必要があります")
         return
@@ -206,7 +217,6 @@ def validate_report_content(report: dict, prefix: str, strict: bool, errors: lis
             warnings.append(f"{mp}: 推奨項目が空欄: {', '.join(sorted(empty_recommended))}")
 
     date_text = str(report.get("date", ""))
-    time_text = str(report.get("time", ""))
     if time_text == "21:00" and date_text >= MANUAL_21_ENFORCE_FROM:
         validate_21_manual_contract(report, prefix, target)
     elif time_text == "21:00":

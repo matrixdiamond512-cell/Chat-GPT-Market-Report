@@ -173,7 +173,10 @@ jobs:
               '', 'リスク管理', 'イベント前後はサイズを抑える。',
               '', '結論', '材料、資金フロー、需給を統合して判断する。'
             );
-            return lines.join('\n');
+            // This is isolated test fixture text, not report content. Keep it
+            // above the production minimum so these checks reach the later
+            // slot-specific assertions instead of failing on fixture length.
+            return lines.join('\n') + '\n' + 'テスト用の本文長確認。'.repeat(100);
           }
 
           function buildReport(time) {
