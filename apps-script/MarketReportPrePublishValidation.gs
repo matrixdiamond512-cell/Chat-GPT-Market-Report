@@ -22,7 +22,7 @@ var MARKET_REPORT_PREPUBLISH_CONFIG = {
     'changes', 'consistency', 'news', 'crossAssetFlow', 'positioning', 'events', 'handover'
   ],
   commonSectionRules: [
-    { label: '主要市場データ', pattern: /^(?:主要市場データ|主要市場の確認値|主要市場まとめ|主要価格)$/ },
+    { label: '主要市場データ', pattern: /^(?:主要市場データ|主要市場の確認値|主要市場まとめ|主要価格|6市場の(?:個別)?見通し|個別市場見通し)$/ },
     { label: '今日の相場テーマ', pattern: /^(?:今日の相場テーマ|今日のテーマ)$/ },
     { label: '材料と値動きの整合性', pattern: /^材料.*値動き.*整合性$|^材料と値動きの整合性$/ },
     { label: '主導市場', pattern: /^(?:今日の)?主導市場$/ },
@@ -30,12 +30,12 @@ var MARKET_REPORT_PREPUBLISH_CONFIG = {
     { label: '金利', pattern: /^(?:金利|金利分析|金利・為替|金利・為替の連動|重要ニュース・金利)$/ },
     { label: 'クロスアセット資金フロー', pattern: /^(?:クロスアセット|クロスアセット資金フロー|資金フロー)$/ },
     { label: '需給・ポジション', pattern: /^(?:需給・ポジション|需給・ポジショニング|ポジションの偏り)$/ },
-    { label: '重要イベント', pattern: /^(?:今後の)?重要イベント$|^今後の予定$/ },
+    { label: '重要イベント', pattern: /^(?:(?:今後の|その日の)?重要イベント|今後の予定)$/ },
     { label: '個別市場見通し', pattern: /^(?:6市場の(?:個別)?見通し|個別市場見通し|個別見通し)$/ },
     { label: 'メインシナリオ', pattern: /^(?:メインシナリオ|基本シナリオ|メイン[：:].*)$/ },
     { label: '代替シナリオ', pattern: /^(?:代替シナリオ|別シナリオ|代替[：:].*)$/ },
     { label: 'シナリオが崩れる条件', pattern: /^(?:シナリオが)?崩れる条件(?:[：:].*)?$/ },
-    { label: 'リスク管理', pattern: /^(?:リスク管理|主なリスク|リスク要因)$/ },
+    { label: 'リスク管理', pattern: /^(?:リスク管理|主なリスク|リスク要因|シナリオが崩れる条件|崩れる条件)$/ },
     { label: '結論', pattern: /^(?:結論|まとめ|最終判断)$/ }
   ],
   slotRules: {
@@ -312,6 +312,7 @@ function marketReportPrePublishHeadingLines_(source) {
 function marketReportPrePublishNormalizeHeading_(line) {
   return String(line || '')
     .trim()
+    .replace(/[（(][^）)]*[）)]?\s*$/, '')
     .replace(/^【|】$/g, '')
     .replace(/^[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳]\s*/, '')
     .replace(/^\s*(?:第?\d{1,2}|[一二三四五六七八九十]+)\s*[．.、)）]\s*/, '')

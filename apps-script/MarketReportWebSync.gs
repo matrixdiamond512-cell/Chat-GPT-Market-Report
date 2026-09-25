@@ -589,6 +589,7 @@ function parseMarkets_(text) {
 function parseMarketsLenient_(text) {
   const definitions = marketDefinitions_();
   const outlooks = marketOutlookMap_(text, definitions);
+  const outlookDetails = marketOutlookDetailMap_(text, definitions);
   const metrics = marketMetricMap_(text, definitions);
   const positionings = marketLineMapFromSection_(
     text,
@@ -600,6 +601,8 @@ function parseMarketsLenient_(text) {
     const block = cleanMarketBlock_(smartMarketBlock_(text, definition.aliases), definition, definitions);
     const outlook = outlooks[definition.name] || '';
     const metric = metrics[definition.name] || '';
+    const narrativeBlock = outlookDetails[definition.name] || '';
+    const narrativePrice = extractNarrativeMarketPrice_(narrativeBlock, definition.name);
     const fallback = marketSpecificSentence_(text, definition, definitions);
     const material = cleanMarketField_(
       fieldValueFlexible_(block, ['材料', '主な材料', '背景', '判断']),
@@ -625,7 +628,7 @@ function parseMarketsLenient_(text) {
       outlook: outlook,
       direction: cleanMarketField_(fieldValueFlexible_(block, ['方向', '方向性', '短期見通し', '見通し']), definition, definitions, 80) ||
         inferDirection_(outlook || material || block || metric, definition.name),
-      price: cleanMarketField_(fieldValueFlexible_(block, ['現状', '価格', '現在値', '確認値', '終値']), definition, definitions, 180) || metric,
+      price: cleanMarketField_(fieldValueFlexible_(block, ['現状', '価格', '現在値', '確認値', '終値']), definition, definitions, 180) || metric || narrativePrice,
       change: cleanMarketField_(fieldValueFlexible_(block, ['前日比', '変化', '騰落率']), definition, definitions, 80),
       material: material,
       positioning: positioning,
@@ -657,6 +660,58 @@ function marketOutlookMap_(text, definitions) {
     if (parsed && parsed.body) map[parsed.definition.name] = parsed.body;
   });
   return map;
+}
+
+// Keep each labeled market's own outlook prose together. Some valid reports
+// state prices in the paragraph below a directional line instead of a table;
+// this lets the parser extract only values belonging to that market section.
+function marketOutlookDetailMap_(text, definitions) {
+  const block = smartSectionBlock_(text, ['6市場の見通し', '個別市場の見通し', '個別市場見通し', '個別見通し']);
+  const result = {};
+  let current = '';
+
+  String(block || '').split('\n').forEach(line => {
+    const parsed = parseMarketLabeledLine_(line, definitions);
+    if (parsed && parsed.body) {
+      current = parsed.definition.name;
+      if (!result[current]) result[current] = [];
+      result[current].push(parsed.body);
+      return;
+    }
+
+    if (!String(line || '').trim()) return;
+    if (looksLikeHeading_(line)) {
+      current = '';
+      return;
+    }
+    if (current) result[current].push(String(line).trim());
+  });
+
+  Object.keys(result).forEach(name => {
+    result[name] = result[name].join(' ').replace(/\s+/g, ' ').trim();
+  });
+  return result;
+}
+
+function extractNarrativeMarketPrice_(text, marketName) {
+  const source = String(text || '').replace(/\s+/g, ' ').trim();
+  if (!source) return '';
+
+  const patterns = {
+    '金': /(?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+(?:\.[0-9]+)?)\s*(?:ドル(?:台|近辺|前後|付近|程度)?|USD\/oz)/g,
+    '原油': /(?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+(?:\.[0-9]+)?)\s*(?:ドル(?:台|近辺|前後|付近|程度)?|USD\/bbl)/g,
+    '日経225先物': /(?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+(?:\.[0-9]+)?)\s*円/g,
+    'USD/JPY': /(?:1[0-9]{2}\.[0-9]{2,4}|[0-9]{2,3}\.[0-9]{2,4})\s*円/g,
+    'EUR/USD': /(?<![0-9])[0-9]\.[0-9]{4,5}(?![0-9])/g,
+    'BTCUSD': /(?:[0-9]{1,3}(?:,[0-9]{3})+|[0-9]+(?:\.[0-9]+)?)\s*ドル(?:台|近辺|前後|付近|程度)?/g
+  };
+  const pattern = patterns[marketName];
+  if (!pattern) return '';
+
+  const matches = source.match(pattern) || [];
+  const unique = matches.map(value => value.replace(/\s+/g, '')).filter((value, index, values) => values.indexOf(value) === index);
+  if (!unique.length) return '';
+  return marketName === 'USD/JPY' ? unique.slice(0, 2).join('／') : unique[0];
 }
 
 function marketMetricMap_(text, definitions) {
@@ -724,7 +779,9 @@ function extractMetricLineForMarket_(source, definition, definitions) {
   const match = String(source || '').replace(/\r/g, '').match(pattern);
   if (!match) return '';
   const line = trimMarketMetricTail_(match[1].replace(/\s+/g, ' ').trim());
-  if (!/[0-9]|取得不能|未確認/.test(line)) return '';
+  const value = line.replace(/^[^：:]+[：:]\s*/, '').trim();
+  // Do not mistake digits embedded in labels such as 日経225先物 for a quote.
+  if (!/[0-9]|取得不能|未確認/.test(value)) return '';
   return line.length > 180 ? line.slice(0, 177) + '...' : line;
 }
 
@@ -939,8 +996,22 @@ function looksLikeHeading_(line) {
   if (!text) return false;
   if (/^[【\[].+[】\]]$/.test(text)) return true;
   if (/^(?:■|●|◆|◇|▶|▷|#{1,4})\s*\S+/.test(text)) return true;
-  if (/^\d+[.)．、]\s*\S+/.test(text) && text.length < 45) return true;
-  return /^(今日の相場テーマ|前回からの変化|16:00から21:00のマーケットの動き|昨夜のNY市場|主要市場(?:の確認値|データ)?|材料と値動き|今日の主導市場|重要ニュース|クロスアセット|需給|ポジション|今後のイベント|個別見通し|シナリオ分析|メインシナリオ|代替シナリオ|リスク管理|明日への引き継ぎ|まとめ)/.test(text) && text.length < 50;
+  // Japanese full-width numbered headings commonly omit the following space.
+  // Require a space after ASCII periods so decimal quotes like 157.95 and 1.1390
+  // remain report content instead of prematurely ending a section.
+  if (/^\d{1,2}[．、）)]\s*\S+/.test(text) && text.length < 45) return true;
+  if (/^\d{1,2}[.)]\s+\S+/.test(text) && text.length < 45) return true;
+  const heading = normalizeHeading_(text.replace(/[（(][^）)]*[）)]?\s*$/, ''));
+  const knownHeadings = [
+    '今日の相場テーマ', '今日のテーマ', '前回からの変化', '16:00から21:00のマーケットの動き', '昨夜のNY市場',
+    '主要市場データ', '主要市場の確認値', '主要市場まとめ', '主要価格', '材料と値動きの整合性',
+    '今日の主導市場', '主導市場', '重要ニュース', '金利', '金利分析', '金利・為替',
+    'クロスアセット資金フロー', 'クロスアセット', '資金フロー', '需給・ポジション', '需給・ポジショニング',
+    'ポジションの偏り', '今後のイベント', '重要イベント', 'その日の重要イベント', '個別見通し',
+    '6市場の見通し', '個別市場見通し', 'シナリオ分析', 'メインシナリオ', '代替シナリオ',
+    'シナリオが崩れる条件', '崩れる条件', 'リスク管理', '明日への引き継ぎ', '翌東京時間への引き継ぎ', 'まとめ', '結論'
+  ];
+  return knownHeadings.some(name => heading === normalizeHeading_(name));
 }
 
 function inferTheme_(text) {
