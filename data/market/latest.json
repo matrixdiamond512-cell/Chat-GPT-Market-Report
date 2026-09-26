@@ -1,7 +1,7 @@
 {
   "schemaVersion": "1.1.0",
   "pageId": "market-data",
-  "generatedAt": "2026-09-26T09:24:38+09:00",
+  "generatedAt": "2026-09-26T09:37:49+09:00",
   "reportSlot": "08:00",
   "overallStatus": "verified",
   "missingRequired": [],
@@ -21,7 +21,7 @@
       "marketType": "continuous_futures",
       "session": "global",
       "asOf": "2026-09-26T05:59:59+09:00",
-      "fetchedAt": "2026-09-26T08:58:29+09:00",
+      "fetchedAt": "2026-09-26T09:37:49+09:00",
       "sourceId": "yahoo_gc_f",
       "sourceName": "Yahoo Finance Gold Futures",
       "sourceUrl": "https://finance.yahoo.com/quote/GC=F/",
@@ -30,13 +30,13 @@
       "verificationStatus": "verified",
       "freshnessStatus": "fresh",
       "fallbackUsed": false,
-      "lastVerifiedAt": "2026-09-26T09:00:31+09:00",
+      "lastVerifiedAt": "2026-09-26T09:37:52+09:00",
       "error": null,
-      "note": "同じ発行枠で取得済みの検証済み値を保持し、再取得を継続します。",
-      "attemptCount": 2,
-      "lastAttemptAt": "2026-09-26T09:24:38+09:00",
+      "note": "",
+      "attemptCount": 3,
+      "lastAttemptAt": "2026-09-26T09:37:49+09:00",
       "lastError": "stooq_xauusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-      "retryPreserved": true
+      "retryPreserved": false
     },
     "wti": {
       "id": "wti",
@@ -52,7 +52,7 @@
       "marketType": "continuous_futures",
       "session": "global",
       "asOf": "2026-09-26T05:59:58+09:00",
-      "fetchedAt": "2026-09-26T09:00:31+09:00",
+      "fetchedAt": "2026-09-26T09:37:52+09:00",
       "sourceId": "yahoo_cl_f",
       "sourceName": "Yahoo Finance WTI Crude Oil Futures",
       "sourceUrl": "https://finance.yahoo.com/quote/CL=F/",
@@ -61,13 +61,13 @@
       "verificationStatus": "verified",
       "freshnessStatus": "fresh",
       "fallbackUsed": false,
-      "lastVerifiedAt": "2026-09-26T09:02:34+09:00",
+      "lastVerifiedAt": "2026-09-26T09:37:56+09:00",
       "error": null,
-      "note": "同じ発行枠で取得済みの検証済み値を保持し、再取得を継続します。",
-      "attemptCount": 2,
-      "lastAttemptAt": "2026-09-26T09:24:38+09:00",
+      "note": "",
+      "attemptCount": 3,
+      "lastAttemptAt": "2026-09-26T09:37:49+09:00",
       "lastError": "stooq_cl_f: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
-      "retryPreserved": true
+      "retryPreserved": false
     },
     "nikkei225_futures_ose": {
       "id": "nikkei225_futures_ose",
@@ -83,7 +83,7 @@
       "marketType": "futures_ose",
       "session": "day_through",
       "asOf": "2026-09-26T06:00:00+09:00",
-      "fetchedAt": "2026-09-26T09:24:49+09:00",
+      "fetchedAt": "2026-09-26T09:37:57+09:00",
       "sourceId": "jpx_ose_futures_quote",
       "sourceName": "JPX/OSE Futures Quotes",
       "sourceUrl": "https://port.jpx.co.jp/jpxhp/main/index.aspx?disptype=day_through&f=e_future",
@@ -92,11 +92,11 @@
       "verificationStatus": "verified",
       "freshnessStatus": "fresh",
       "fallbackUsed": false,
-      "lastVerifiedAt": "2026-09-26T09:24:49+09:00",
+      "lastVerifiedAt": "2026-09-26T09:37:57+09:00",
       "error": null,
       "note": "",
-      "attemptCount": 2,
-      "lastAttemptAt": "2026-09-26T09:24:38+09:00",
+      "attemptCount": 3,
+      "lastAttemptAt": "2026-09-26T09:37:49+09:00",
       "lastError": "nikkei_nk225f_profile: REFERENCE_ONLY: reference source is not allowed for dashboard publication",
       "retryPreserved": false
     },
@@ -114,7 +114,7 @@
       "marketType": "spot",
       "session": "continuous",
       "asOf": "2026-09-26T06:01:20+09:00",
-      "fetchedAt": "2026-09-26T09:02:35+09:00",
+      "fetchedAt": "2026-09-26T09:37:57+09:00",
       "sourceId": "yahoo_jpy_x",
       "sourceName": "Yahoo Finance USD/JPY",
       "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
@@ -123,13 +123,13 @@
       "verificationStatus": "verified",
       "freshnessStatus": "fresh",
       "fallbackUsed": false,
-      "lastVerifiedAt": "2026-09-26T09:04:37+09:00",
+      "lastVerifiedAt": "2026-09-26T09:38:00+09:00",
       "error": null,
-      "note": "同じ発行枠で取得済みの検証済み値を保持し、再取得を継続します。",
-      "attemptCount": 2,
-      "lastAttemptAt": "2026-09-26T09:24:38+09:00",
+      "note": "",
+      "attemptCount": 3,
+      "lastAttemptAt": "2026-09-26T09:37:49+09:00",
       "lastError": "stooq_usdjpy: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
-      "retryPreserved": true
+      "retryPreserved": false
     },
     "eurusd": {
       "id": "eurusd",
@@ -145,7 +145,7 @@
       "marketType": "spot",
       "session": "continuous",
       "asOf": "2026-09-26T06:29:08+09:00",
-      "fetchedAt": "2026-09-26T09:04:37+09:00",
+      "fetchedAt": "2026-09-26T09:38:01+09:00",
       "sourceId": "yahoo_eurusd_x",
       "sourceName": "Yahoo Finance EUR/USD",
       "sourceUrl": "https://finance.yahoo.com/quote/EURUSD=X/",
@@ -154,29 +154,29 @@
       "verificationStatus": "verified",
       "freshnessStatus": "fresh",
       "fallbackUsed": false,
-      "lastVerifiedAt": "2026-09-26T09:06:39+09:00",
+      "lastVerifiedAt": "2026-09-26T09:38:04+09:00",
       "error": null,
-      "note": "同じ発行枠で取得済みの検証済み値を保持し、再取得を継続します。",
-      "attemptCount": 2,
-      "lastAttemptAt": "2026-09-26T09:24:38+09:00",
+      "note": "",
+      "attemptCount": 3,
+      "lastAttemptAt": "2026-09-26T09:37:49+09:00",
       "lastError": "stooq_eurusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-      "retryPreserved": true
+      "retryPreserved": false
     },
     "btcusd": {
       "id": "btcusd",
       "displayName": "BTCUSD",
       "dashboardKey": "btc",
-      "value": 84052.81,
-      "displayValue": "84,053",
+      "value": 83793.6,
+      "displayValue": "83,794",
       "previousClose": 84379.0625,
-      "change": -326.2525000000023,
-      "changePercent": -0.38665101309937056,
-      "changeText": "-326 / -0.39%",
+      "change": -585.4624999999942,
+      "changePercent": -0.6938480739816177,
+      "changeText": "-585 / -0.69%",
       "unit": "USD",
       "marketType": "spot_crypto",
       "session": "continuous",
-      "asOf": "2026-09-26T09:06:38+09:00",
-      "fetchedAt": "2026-09-26T09:06:40+09:00",
+      "asOf": "2026-09-26T09:38:00+09:00",
+      "fetchedAt": "2026-09-26T09:38:04+09:00",
       "sourceId": "yahoo_btc_usd",
       "sourceName": "Yahoo Finance Bitcoin USD",
       "sourceUrl": "https://finance.yahoo.com/quote/BTC-USD/",
@@ -185,13 +185,13 @@
       "verificationStatus": "verified",
       "freshnessStatus": "fresh",
       "fallbackUsed": false,
-      "lastVerifiedAt": "2026-09-26T09:08:42+09:00",
+      "lastVerifiedAt": "2026-09-26T09:38:07+09:00",
       "error": null,
-      "note": "同じ発行枠で取得済みの検証済み値を保持し、再取得を継続します。",
-      "attemptCount": 2,
-      "lastAttemptAt": "2026-09-26T09:24:38+09:00",
+      "note": "",
+      "attemptCount": 3,
+      "lastAttemptAt": "2026-09-26T09:37:49+09:00",
       "lastError": "stooq_btcusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
-      "retryPreserved": true
+      "retryPreserved": false
     },
     "vix": {
       "id": "vix",
@@ -321,27 +321,6 @@
   "errors": [
     {
       "symbol": "gold",
-      "sourceId": "yahoo_gc_f",
-      "code": "HTTP_429",
-      "message": "HTTP 429 https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?range=5d&interval=1d",
-      "attempt": 1
-    },
-    {
-      "symbol": "gold",
-      "sourceId": "yahoo_gc_f",
-      "code": "HTTP_429",
-      "message": "HTTP 429 https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?range=5d&interval=1d",
-      "attempt": 2
-    },
-    {
-      "symbol": "gold",
-      "sourceId": "yahoo_gc_f",
-      "code": "HTTP_429",
-      "message": "HTTP 429 https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?range=5d&interval=1d",
-      "attempt": 3
-    },
-    {
-      "symbol": "gold",
       "sourceId": "stooq_xauusd",
       "code": "HTTP_404",
       "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
@@ -359,27 +338,6 @@
       "sourceId": "stooq_xauusd",
       "code": "HTTP_404",
       "message": "HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 3
-    },
-    {
-      "symbol": "wti",
-      "sourceId": "yahoo_cl_f",
-      "code": "HTTP_429",
-      "message": "HTTP 429 https://query1.finance.yahoo.com/v8/finance/chart/CL%3DF?range=5d&interval=1d",
-      "attempt": 1
-    },
-    {
-      "symbol": "wti",
-      "sourceId": "yahoo_cl_f",
-      "code": "HTTP_429",
-      "message": "HTTP 429 https://query1.finance.yahoo.com/v8/finance/chart/CL%3DF?range=5d&interval=1d",
-      "attempt": 2
-    },
-    {
-      "symbol": "wti",
-      "sourceId": "yahoo_cl_f",
-      "code": "HTTP_429",
-      "message": "HTTP 429 https://query1.finance.yahoo.com/v8/finance/chart/CL%3DF?range=5d&interval=1d",
       "attempt": 3
     },
     {
@@ -411,27 +369,6 @@
     },
     {
       "symbol": "usdjpy",
-      "sourceId": "yahoo_jpy_x",
-      "code": "HTTP_429",
-      "message": "HTTP 429 https://query1.finance.yahoo.com/v8/finance/chart/JPY%3DX?range=5d&interval=1d",
-      "attempt": 1
-    },
-    {
-      "symbol": "usdjpy",
-      "sourceId": "yahoo_jpy_x",
-      "code": "HTTP_429",
-      "message": "HTTP 429 https://query1.finance.yahoo.com/v8/finance/chart/JPY%3DX?range=5d&interval=1d",
-      "attempt": 2
-    },
-    {
-      "symbol": "usdjpy",
-      "sourceId": "yahoo_jpy_x",
-      "code": "HTTP_429",
-      "message": "HTTP 429 https://query1.finance.yahoo.com/v8/finance/chart/JPY%3DX?range=5d&interval=1d",
-      "attempt": 3
-    },
-    {
-      "symbol": "usdjpy",
       "sourceId": "stooq_usdjpy",
       "code": "HTTP_404",
       "message": "HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
@@ -453,27 +390,6 @@
     },
     {
       "symbol": "eurusd",
-      "sourceId": "yahoo_eurusd_x",
-      "code": "HTTP_429",
-      "message": "HTTP 429 https://query1.finance.yahoo.com/v8/finance/chart/EURUSD%3DX?range=5d&interval=1d",
-      "attempt": 1
-    },
-    {
-      "symbol": "eurusd",
-      "sourceId": "yahoo_eurusd_x",
-      "code": "HTTP_429",
-      "message": "HTTP 429 https://query1.finance.yahoo.com/v8/finance/chart/EURUSD%3DX?range=5d&interval=1d",
-      "attempt": 2
-    },
-    {
-      "symbol": "eurusd",
-      "sourceId": "yahoo_eurusd_x",
-      "code": "HTTP_429",
-      "message": "HTTP 429 https://query1.finance.yahoo.com/v8/finance/chart/EURUSD%3DX?range=5d&interval=1d",
-      "attempt": 3
-    },
-    {
-      "symbol": "eurusd",
       "sourceId": "stooq_eurusd",
       "code": "HTTP_404",
       "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
@@ -491,27 +407,6 @@
       "sourceId": "stooq_eurusd",
       "code": "HTTP_404",
       "message": "HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
-      "attempt": 3
-    },
-    {
-      "symbol": "btcusd",
-      "sourceId": "yahoo_btc_usd",
-      "code": "HTTP_429",
-      "message": "HTTP 429 https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=5d&interval=1d",
-      "attempt": 1
-    },
-    {
-      "symbol": "btcusd",
-      "sourceId": "yahoo_btc_usd",
-      "code": "HTTP_429",
-      "message": "HTTP 429 https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=5d&interval=1d",
-      "attempt": 2
-    },
-    {
-      "symbol": "btcusd",
-      "sourceId": "yahoo_btc_usd",
-      "code": "HTTP_429",
-      "message": "HTTP 429 https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=5d&interval=1d",
       "attempt": 3
     },
     {
@@ -539,8 +434,8 @@
   "acquisition": {
     "strategy": "staged_retry",
     "windowStartedAt": "2026-09-26T08:58:29+09:00",
-    "lastAttemptAt": "2026-09-26T09:24:38+09:00",
-    "runCount": 2,
+    "lastAttemptAt": "2026-09-26T09:37:49+09:00",
+    "runCount": 3,
     "mode": "incremental",
     "targetedSymbols": [
       "gold",
@@ -551,13 +446,7 @@
       "btcusd"
     ],
     "recoveredSymbols": [],
-    "preservedVerifiedSymbols": [
-      "gold",
-      "wti",
-      "usdjpy",
-      "eurusd",
-      "btcusd"
-    ],
+    "preservedVerifiedSymbols": [],
     "remainingFallback": [],
     "remainingUnavailable": []
   },
