@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-09-05T02:38:30+09:00",
-  "publishedAt": "2026-09-05T02:38:30+09:00",
-  "dataAsOf": "2026-09-05T02:38:30+09:00",
+  "generatedAt": "2026-09-27T16:10:47+09:00",
+  "publishedAt": "2026-09-27T16:10:47+09:00",
+  "dataAsOf": "2026-09-27T16:10:47+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -20,7 +20,7 @@
       "name": "TradingView Economic Calendar",
       "url": "https://www.tradingview.com/economic-calendar/",
       "status": "ok",
-      "note": "実績値を19件照合。生データは公開保存しません。"
+      "note": "実績値を0件照合。生データは公開保存しません。"
     },
     {
       "id": "official_source_map",
@@ -47,25 +47,25 @@
     }
   ],
   "errors": [],
-  "date": "2026-09-05",
+  "date": "2026-10-04",
   "events": [
     {
-      "id": "event-c0c183156ef39f",
-      "sourceKey": "2026-09-05|07:00|USD|fomc member goolsbee speaks",
-      "date": "2026-09-05",
-      "time": "07:00",
-      "datetimeJst": "2026-09-05T07:00:00+09:00",
-      "scheduledAtSource": "2026-09-04T18:00:00-04:00",
-      "scheduledAtUtc": "2026-09-04T22:00:00Z",
-      "country": "米国",
-      "currency": "USD",
-      "title": "FOMCメンバー Goolsbee 発言",
-      "eventNameOriginal": "FOMC Member Goolsbee Speaks",
-      "category": "speech",
-      "impactOriginal": "Low",
-      "ffImportance": 1,
-      "importance": 2,
-      "importanceLabel": "中",
+      "id": "event-a56e808f237b19",
+      "sourceKey": "2026-10-04|01:00|AUD|daylight saving time shift",
+      "date": "2026-10-04",
+      "time": "01:00",
+      "datetimeJst": "2026-10-04T01:00:00+09:00",
+      "scheduledAtSource": "2026-10-03T12:00:00-04:00",
+      "scheduledAtUtc": "2026-10-03T16:00:00Z",
+      "country": "豪州",
+      "currency": "AUD",
+      "title": "Daylight Saving Time Shift",
+      "eventNameOriginal": "Daylight Saving Time Shift",
+      "category": "other",
+      "impactOriginal": "Holiday",
+      "ffImportance": 0,
+      "importance": 0,
+      "importanceLabel": "休場",
       "forecast": "",
       "previous": "",
       "actual": "",
@@ -74,7 +74,7 @@
       "resultExplanation": "発表後に実績値と市場反応を更新します。",
       "status": "scheduled",
       "isTimed": true,
-      "isImportantEvent": true,
+      "isImportantEvent": false,
       "affectedMarkets": [
         "米2年債",
         "米10年債",
@@ -286,18 +286,15 @@
         ]
       },
       "officialSource": {
-        "id": "federal_reserve",
-        "name": "Federal Reserve FOMC calendar",
-        "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+        "id": "forex_factory",
+        "name": "Forex Factory Economic Calendar",
+        "url": "https://www.forexfactory.com/calendar"
       },
       "sourceType": "forex_factory_weekly",
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
-      "createdAt": "2026-09-04T23:13:51+09:00",
-      "updatedAt": "2026-09-05T02:38:30+09:00",
-      "resultExpected": false,
-      "resultType": "qualitative"
+      "createdAt": "2026-09-27T16:10:47+09:00",
+      "updatedAt": "2026-09-27T16:10:47+09:00"
     }
-  ],
-  "legacyCleanupAt": "2026-09-27T16:10:47+09:00"
+  ]
 }
