@@ -2,27 +2,27 @@
   "schemaVersion": "1.0.0",
   "pageId": "usdjpy-supply-demand-archive",
   "reportDate": "2026-09-29",
-  "generatedAt": "2026-09-29T21:57:06+09:00",
+  "generatedAt": "2026-09-29T23:45:42+09:00",
   "market": {
     "schemaVersion": "1.1.0",
-    "generatedAt": "2026-09-29T21:46:13+09:00",
+    "generatedAt": "2026-09-29T22:12:33+09:00",
     "status": null,
     "markets": {
       "usdjpy": {
         "id": "usdjpy",
         "displayName": "USD/JPY",
         "dashboardKey": "usdjpy",
-        "value": 157.287,
-        "displayValue": "157.29",
+        "value": 157.31,
+        "displayValue": "157.31",
         "previousClose": 157.46299743652344,
-        "change": -0.17599743652343136,
-        "changePercent": -0.11177066319620899,
-        "changeText": "-0.18 / -0.11%",
+        "change": -0.15299743652343523,
+        "changePercent": -0.09716405696208463,
+        "changeText": "-0.15 / -0.10%",
         "unit": "円",
         "marketType": "spot",
         "session": "continuous",
-        "asOf": "2026-09-29T21:46:20+09:00",
-        "fetchedAt": "2026-09-29T21:46:21+09:00",
+        "asOf": "2026-09-29T22:12:39+09:00",
+        "fetchedAt": "2026-09-29T22:12:41+09:00",
         "sourceId": "yahoo_jpy_x",
         "sourceName": "Yahoo Finance USD/JPY",
         "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
@@ -31,11 +31,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-09-29T21:46:24+09:00",
+        "lastVerifiedAt": "2026-09-29T22:12:44+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-09-29T21:46:13+09:00",
+        "lastAttemptAt": "2026-09-29T22:12:33+09:00",
         "lastError": "stooq_usdjpy: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -53,7 +53,7 @@
         "marketType": "index",
         "session": "daily",
         "asOf": "2026-09-28T09:00:00+09:00",
-        "fetchedAt": "2026-09-29T21:46:31+09:00",
+        "fetchedAt": "2026-09-29T22:12:50+09:00",
         "sourceId": "cboe_vix_history",
         "sourceName": "Cboe VIX Historical Data",
         "sourceUrl": "https://www.cboe.com/tradable_products/vix/vix_historical_data/",
@@ -62,11 +62,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-09-29T21:46:31+09:00",
+        "lastVerifiedAt": "2026-09-29T22:12:50+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-09-29T21:46:13+09:00",
+        "lastAttemptAt": "2026-09-29T22:12:33+09:00",
         "lastError": "",
         "retryPreserved": false
       }
@@ -75,12 +75,12 @@
   "rates": {
     "schemaVersion": "2.0.0",
     "pageId": "rates-bonds",
-    "generatedAt": "2026-09-29T18:07:07+09:00",
+    "generatedAt": "2026-09-29T22:23:32+09:00",
     "meta": {
       "page": "rates-bonds",
       "asOfDate": "2026-09-29",
       "asOfTime": "各市場の公表時点",
-      "updatedAt": "2026-09-29T18:07:07+09:00",
+      "updatedAt": "2026-09-29T22:23:32+09:00",
       "status": "confirmed",
       "sourceStatus": "自動取得",
       "isStale": false,
@@ -118,10 +118,10 @@
       },
       {
         "name": "日本10年国債利回り",
-        "value": 3.081,
+        "value": 3.077,
         "unit": "%",
-        "changeBp": -0.1,
-        "weekChangeBp": 10.0,
+        "changeBp": -0.5,
+        "weekChangeBp": 9.6,
         "direction": "低下",
         "asOf": "2026-09-29",
         "status": "confirmed",
@@ -1850,8 +1850,8 @@
   },
   "events": {
     "schemaVersion": "2.0.0",
-    "generatedAt": "2026-09-29T16:30:35+09:00",
-    "dataAsOf": "2026-09-29T16:30:35+09:00",
+    "generatedAt": "2026-09-29T23:18:13+09:00",
+    "dataAsOf": "2026-09-29T23:18:13+09:00",
     "status": "ok",
     "events": [
       {
@@ -1873,11 +1873,11 @@
         "importanceLabel": "中",
         "forecast": "7.23M",
         "previous": "7.27M",
-        "actual": "",
+        "actual": "7.079M",
         "revised": "",
-        "resultComparison": "",
-        "resultExplanation": "発表後に実績値と市場反応を更新します。",
-        "status": "scheduled",
+        "resultComparison": "市場予想を下回る",
+        "resultExplanation": "実績 7.079M は予想 7.23M に対して市場予想を下回る。発表後の市場反応は検証済み価格データで確認します。",
+        "status": "released",
         "isTimed": true,
         "isImportantEvent": true,
         "affectedMarkets": [
@@ -2080,8 +2080,8 @@
           ]
         ],
         "conclusion": {
-          "narrative": "発表前",
-          "reaction": "結果待ち",
+          "narrative": "結果確認済み",
+          "reaction": "市場予想を下回る",
           "watch": [
             "米2年債の初動",
             "米10年債への波及",
@@ -2099,7 +2099,13 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-09-27T16:10:47+09:00",
-        "updatedAt": "2026-09-29T16:30:35+09:00"
+        "updatedAt": "2026-09-29T23:18:13+09:00",
+        "resultSource": {
+          "id": "tradingview_economic_calendar",
+          "name": "Bureau of Labour Statistics",
+          "url": "http://www.bls.gov"
+        },
+        "resultSavedAt": "2026-09-29T23:18:13+09:00"
       },
       {
         "id": "event-0f9b13582cf393",
@@ -2120,11 +2126,11 @@
         "importanceLabel": "中",
         "forecast": "89.2",
         "previous": "89.4",
-        "actual": "",
+        "actual": "81.9",
         "revised": "",
-        "resultComparison": "",
-        "resultExplanation": "発表後に実績値と市場反応を更新します。",
-        "status": "scheduled",
+        "resultComparison": "市場予想を下回る",
+        "resultExplanation": "実績 81.9 は予想 89.2 に対して市場予想を下回る。発表後の市場反応は検証済み価格データで確認します。",
+        "status": "released",
         "isTimed": true,
         "isImportantEvent": true,
         "affectedMarkets": [
@@ -2327,8 +2333,8 @@
           ]
         ],
         "conclusion": {
-          "narrative": "発表前",
-          "reaction": "結果待ち",
+          "narrative": "結果確認済み",
+          "reaction": "市場予想を下回る",
           "watch": [
             "米2年債の初動",
             "米10年債への波及",
@@ -2346,7 +2352,13 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-09-27T16:10:47+09:00",
-        "updatedAt": "2026-09-29T16:30:35+09:00"
+        "updatedAt": "2026-09-29T23:18:13+09:00",
+        "resultSource": {
+          "id": "tradingview_economic_calendar",
+          "name": "TradingView Economic Calendar",
+          "url": "https://www.tradingview.com/economic-calendar/"
+        },
+        "resultSavedAt": "2026-09-29T23:18:13+09:00"
       },
       {
         "id": "event-7c0c45b773df62",
@@ -2367,11 +2379,11 @@
         "importanceLabel": "高",
         "forecast": "0.0%",
         "previous": "0.3%",
-        "actual": "",
+        "actual": "0%",
         "revised": "",
-        "resultComparison": "",
-        "resultExplanation": "発表後に実績値と市場反応を更新します。",
-        "status": "scheduled",
+        "resultComparison": "市場予想と一致",
+        "resultExplanation": "実績 0% は予想 0.0% に対して市場予想と一致。発表後の市場反応は検証済み価格データで確認します。",
+        "status": "released",
         "isTimed": true,
         "isImportantEvent": true,
         "affectedMarkets": [
@@ -2574,8 +2586,8 @@
           ]
         ],
         "conclusion": {
-          "narrative": "発表前",
-          "reaction": "結果待ち",
+          "narrative": "結果確認済み",
+          "reaction": "市場予想と一致",
           "watch": [
             "米2年債の初動",
             "米10年債への波及",
@@ -2593,262 +2605,22 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-09-27T16:10:47+09:00",
-        "updatedAt": "2026-09-29T16:30:35+09:00"
+        "updatedAt": "2026-09-29T23:18:13+09:00",
+        "resultSource": {
+          "id": "tradingview_economic_calendar",
+          "name": "Statistics Canada",
+          "url": "https://www.statcan.gc.ca"
+        },
+        "resultSavedAt": "2026-09-29T23:18:13+09:00"
       },
       {
-        "id": "event-ac7877c8a024b8",
-        "sourceKey": "2026-09-29|18:33|GBP|10-y bond auction",
+        "id": "event-63cdbc603060bc",
+        "sourceKey": "2026-09-29|18:04|EUR|italian 10-y bond auction",
         "date": "2026-09-29",
-        "time": "18:33",
-        "datetimeJst": "2026-09-29T18:33:00+09:00",
-        "scheduledAtSource": "2026-09-29T05:33:00-04:00",
-        "scheduledAtUtc": "2026-09-29T09:33:00Z",
-        "country": "英国",
-        "currency": "GBP",
-        "title": "英国 10-y 国債入札",
-        "eventNameOriginal": "10-y Bond Auction",
-        "category": "bond_auction",
-        "impactOriginal": "Low",
-        "ffImportance": 1,
-        "importance": 2,
-        "importanceLabel": "中",
-        "forecast": "",
-        "previous": "5.16|3.6",
-        "actual": "",
-        "revised": "",
-        "resultComparison": "",
-        "resultExplanation": "発表後に実績値と市場反応を更新します。",
-        "status": "scheduled",
-        "isTimed": true,
-        "isImportantEvent": true,
-        "affectedMarkets": [
-          "米2年債",
-          "米10年債",
-          "USD/JPY",
-          "ダウ先物",
-          "ナスダック先物",
-          "金"
-        ],
-        "focusMarkets": [
-          "米2年債",
-          "米10年債",
-          "USD/JPY",
-          "ダウ先物",
-          "ナスダック先物"
-        ],
-        "pricedIn": [
-          "市場予想：予想なし",
-          "前回値：5.16|3.6",
-          "発表直後は米2年債、米10年債、株価指数先物、為替の順に確認"
-        ],
-        "scenarios": [
-          [
-            "米2年債",
-            "上昇しやすい",
-            "小動き",
-            "低下しやすい"
-          ],
-          [
-            "米10年債",
-            "上昇しやすい",
-            "小動き",
-            "低下しやすい"
-          ],
-          [
-            "ダウ先物",
-            "金利上昇なら重い",
-            "小動き",
-            "金利低下なら支え"
-          ],
-          [
-            "ナスダック先物",
-            "高金利なら重い",
-            "小動き",
-            "金利低下なら支え"
-          ],
-          [
-            "日経225先物",
-            "米株安・円高なら重い",
-            "小動き",
-            "米株高・円安なら支え"
-          ],
-          [
-            "USD/JPY",
-            "ドル高で上昇しやすい",
-            "小動き",
-            "ドル安で下落しやすい"
-          ],
-          [
-            "EUR/USD",
-            "ドル高で下落しやすい",
-            "小動き",
-            "ドル安で上昇しやすい"
-          ],
-          [
-            "金",
-            "実質金利上昇なら重い",
-            "小動き",
-            "実質金利低下なら支え"
-          ],
-          [
-            "原油",
-            "景気上振れなら支え",
-            "小動き",
-            "景気減速なら重い"
-          ]
-        ],
-        "outlook": [
-          [
-            "米2年債",
-            "政策金利見通しに反応",
-            "初動と翌営業日の持続性を確認",
-            "利下げ期待後退",
-            "利下げ期待拡大"
-          ],
-          [
-            "米10年債",
-            "成長・インフレ・国債需給に反応",
-            "2年債との方向差を確認",
-            "インフレ再燃・需給悪化",
-            "成長鈍化・利下げ期待"
-          ],
-          [
-            "ダウ先物",
-            "景気敏感株の反応を確認",
-            "金利と業績期待の綱引きを確認",
-            "景気悪化・金利上昇",
-            "景気底堅さ・金利低下"
-          ],
-          [
-            "ナスダック先物",
-            "高PER株の金利感応度を確認",
-            "実質金利への耐性を見る",
-            "実質金利上昇",
-            "金利低下・買い戻し"
-          ],
-          [
-            "日経225先物",
-            "米株と円相場に反応",
-            "USD/JPYとの組み合わせを見る",
-            "米株安・円高",
-            "米株高・円安"
-          ],
-          [
-            "USD/JPY",
-            "米金利差とドルに反応",
-            "米2年・10年債との連動を確認",
-            "米金利上昇・ドル高",
-            "米金利低下・ドル安"
-          ],
-          [
-            "EUR/USD",
-            "ドルと欧州固有材料に反応",
-            "ドル全面高かを確認",
-            "米金利上昇・ドル高",
-            "米金利低下・ドル安"
-          ],
-          [
-            "金",
-            "実質金利とドルに反応",
-            "安全資産需要との整合性を確認",
-            "実質金利上昇・ドル高",
-            "実質金利低下・ドル安"
-          ],
-          [
-            "原油",
-            "需要見通しと供給材料に反応",
-            "景気と在庫のどちらが主導か確認",
-            "需要上振れ・供給不安",
-            "需要鈍化・供給懸念後退"
-          ]
-        ],
-        "postReleaseReactions": [],
-        "comparison": [
-          [
-            "米2年債",
-            "データ次第",
-            "未計測",
-            "確認中"
-          ],
-          [
-            "米10年債",
-            "データ次第",
-            "未計測",
-            "確認中"
-          ],
-          [
-            "ダウ先物",
-            "データ次第",
-            "未計測",
-            "確認中"
-          ],
-          [
-            "ナスダック先物",
-            "データ次第",
-            "未計測",
-            "確認中"
-          ],
-          [
-            "日経225先物",
-            "データ次第",
-            "未計測",
-            "確認中"
-          ],
-          [
-            "USD/JPY",
-            "データ次第",
-            "未計測",
-            "確認中"
-          ],
-          [
-            "EUR/USD",
-            "データ次第",
-            "未計測",
-            "確認中"
-          ],
-          [
-            "金",
-            "データ次第",
-            "未計測",
-            "確認中"
-          ],
-          [
-            "原油",
-            "データ次第",
-            "未計測",
-            "確認中"
-          ]
-        ],
-        "conclusion": {
-          "narrative": "発表前",
-          "reaction": "結果待ち",
-          "watch": [
-            "米2年債の初動",
-            "米10年債への波及",
-            "ダウ・ナスダック先物",
-            "USD/JPYとEUR/USD",
-            "日経225先物・金・原油"
-          ]
-        },
-        "officialSource": {
-          "id": "forex_factory",
-          "name": "Forex Factory Economic Calendar",
-          "url": "https://www.forexfactory.com/calendar"
-        },
-        "sourceType": "forex_factory_weekly",
-        "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
-        "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
-        "createdAt": "2026-09-27T16:10:47+09:00",
-        "updatedAt": "2026-09-29T16:30:35+09:00"
-      },
-      {
-        "id": "event-0410f274ac975e",
-        "sourceKey": "2026-09-29|18:33|EUR|italian 10-y bond auction",
-        "date": "2026-09-29",
-        "time": "18:33",
-        "datetimeJst": "2026-09-29T18:33:00+09:00",
-        "scheduledAtSource": "2026-09-29T05:33:00-04:00",
-        "scheduledAtUtc": "2026-09-29T09:33:00Z",
+        "time": "18:04",
+        "datetimeJst": "2026-09-29T18:04:00+09:00",
+        "scheduledAtSource": "2026-09-29T05:04:00-04:00",
+        "scheduledAtUtc": "2026-09-29T09:04:00Z",
         "country": "欧州",
         "currency": "EUR",
         "title": "欧州 Italian 10-y 国債入札",
@@ -2860,11 +2632,11 @@
         "importanceLabel": "中",
         "forecast": "",
         "previous": "4.10|1.6",
-        "actual": "",
+        "actual": "4.58%",
         "revised": "",
         "resultComparison": "",
-        "resultExplanation": "発表後に実績値と市場反応を更新します。",
-        "status": "scheduled",
+        "resultExplanation": "実績 4.58% は予想 なし に対して比較保留。名称差・国コード差を補正してTradingView実績データから照合しました。",
+        "status": "released",
         "isTimed": true,
         "isImportantEvent": true,
         "affectedMarkets": [
@@ -3066,8 +2838,8 @@
           ]
         ],
         "conclusion": {
-          "narrative": "発表前",
-          "reaction": "結果待ち",
+          "narrative": "結果確認済み",
+          "reaction": "市場反応を確認",
           "watch": [
             "米2年債の初動",
             "米10年債への波及",
@@ -3084,8 +2856,270 @@
         "sourceType": "forex_factory_weekly",
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
-        "createdAt": "2026-09-27T16:10:47+09:00",
-        "updatedAt": "2026-09-29T16:30:35+09:00"
+        "createdAt": "2026-09-29T23:18:13+09:00",
+        "updatedAt": "2026-09-29T23:18:15+09:00",
+        "resultExpected": true,
+        "resultType": "numeric",
+        "resultSource": {
+          "id": "tradingview_repair",
+          "name": "Dipartimento del Tesoro",
+          "url": "http://www.dt.tesoro.it"
+        },
+        "resultSavedAt": "2026-09-29T23:18:15+09:00"
+      },
+      {
+        "id": "event-18a480bcfdc4c2",
+        "sourceKey": "2026-09-29|18:02|GBP|10-y bond auction",
+        "date": "2026-09-29",
+        "time": "18:02",
+        "datetimeJst": "2026-09-29T18:02:00+09:00",
+        "scheduledAtSource": "2026-09-29T05:02:00-04:00",
+        "scheduledAtUtc": "2026-09-29T09:02:00Z",
+        "country": "英国",
+        "currency": "GBP",
+        "title": "英国 10-y 国債入札",
+        "eventNameOriginal": "10-y Bond Auction",
+        "category": "bond_auction",
+        "impactOriginal": "Low",
+        "ffImportance": 1,
+        "importance": 2,
+        "importanceLabel": "中",
+        "forecast": "",
+        "previous": "5.16|3.6",
+        "actual": "5.383%",
+        "revised": "",
+        "resultComparison": "",
+        "resultExplanation": "実績 5.383% は予想 なし に対して比較保留。名称差・国コード差を補正してTradingView実績データから照合しました。",
+        "status": "released",
+        "isTimed": true,
+        "isImportantEvent": true,
+        "affectedMarkets": [
+          "米2年債",
+          "米10年債",
+          "USD/JPY",
+          "ダウ先物",
+          "ナスダック先物",
+          "金"
+        ],
+        "focusMarkets": [
+          "米2年債",
+          "米10年債",
+          "USD/JPY",
+          "ダウ先物",
+          "ナスダック先物"
+        ],
+        "pricedIn": [
+          "市場予想：予想なし",
+          "前回値：5.16|3.6",
+          "発表直後は米2年債、米10年債、株価指数先物、為替の順に確認"
+        ],
+        "scenarios": [
+          [
+            "米2年債",
+            "上昇しやすい",
+            "小動き",
+            "低下しやすい"
+          ],
+          [
+            "米10年債",
+            "上昇しやすい",
+            "小動き",
+            "低下しやすい"
+          ],
+          [
+            "ダウ先物",
+            "金利上昇なら重い",
+            "小動き",
+            "金利低下なら支え"
+          ],
+          [
+            "ナスダック先物",
+            "高金利なら重い",
+            "小動き",
+            "金利低下なら支え"
+          ],
+          [
+            "日経225先物",
+            "米株安・円高なら重い",
+            "小動き",
+            "米株高・円安なら支え"
+          ],
+          [
+            "USD/JPY",
+            "ドル高で上昇しやすい",
+            "小動き",
+            "ドル安で下落しやすい"
+          ],
+          [
+            "EUR/USD",
+            "ドル高で下落しやすい",
+            "小動き",
+            "ドル安で上昇しやすい"
+          ],
+          [
+            "金",
+            "実質金利上昇なら重い",
+            "小動き",
+            "実質金利低下なら支え"
+          ],
+          [
+            "原油",
+            "景気上振れなら支え",
+            "小動き",
+            "景気減速なら重い"
+          ]
+        ],
+        "outlook": [
+          [
+            "米2年債",
+            "政策金利見通しに反応",
+            "初動と翌営業日の持続性を確認",
+            "利下げ期待後退",
+            "利下げ期待拡大"
+          ],
+          [
+            "米10年債",
+            "成長・インフレ・国債需給に反応",
+            "2年債との方向差を確認",
+            "インフレ再燃・需給悪化",
+            "成長鈍化・利下げ期待"
+          ],
+          [
+            "ダウ先物",
+            "景気敏感株の反応を確認",
+            "金利と業績期待の綱引きを確認",
+            "景気悪化・金利上昇",
+            "景気底堅さ・金利低下"
+          ],
+          [
+            "ナスダック先物",
+            "高PER株の金利感応度を確認",
+            "実質金利への耐性を見る",
+            "実質金利上昇",
+            "金利低下・買い戻し"
+          ],
+          [
+            "日経225先物",
+            "米株と円相場に反応",
+            "USD/JPYとの組み合わせを見る",
+            "米株安・円高",
+            "米株高・円安"
+          ],
+          [
+            "USD/JPY",
+            "米金利差とドルに反応",
+            "米2年・10年債との連動を確認",
+            "米金利上昇・ドル高",
+            "米金利低下・ドル安"
+          ],
+          [
+            "EUR/USD",
+            "ドルと欧州固有材料に反応",
+            "ドル全面高かを確認",
+            "米金利上昇・ドル高",
+            "米金利低下・ドル安"
+          ],
+          [
+            "金",
+            "実質金利とドルに反応",
+            "安全資産需要との整合性を確認",
+            "実質金利上昇・ドル高",
+            "実質金利低下・ドル安"
+          ],
+          [
+            "原油",
+            "需要見通しと供給材料に反応",
+            "景気と在庫のどちらが主導か確認",
+            "需要上振れ・供給不安",
+            "需要鈍化・供給懸念後退"
+          ]
+        ],
+        "postReleaseReactions": [],
+        "comparison": [
+          [
+            "米2年債",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "米10年債",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "ダウ先物",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "ナスダック先物",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "日経225先物",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "USD/JPY",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "EUR/USD",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "金",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ],
+          [
+            "原油",
+            "データ次第",
+            "未計測",
+            "確認中"
+          ]
+        ],
+        "conclusion": {
+          "narrative": "結果確認済み",
+          "reaction": "市場反応を確認",
+          "watch": [
+            "米2年債の初動",
+            "米10年債への波及",
+            "ダウ・ナスダック先物",
+            "USD/JPYとEUR/USD",
+            "日経225先物・金・原油"
+          ]
+        },
+        "officialSource": {
+          "id": "forex_factory",
+          "name": "Forex Factory Economic Calendar",
+          "url": "https://www.forexfactory.com/calendar"
+        },
+        "sourceType": "forex_factory_weekly",
+        "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+        "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
+        "createdAt": "2026-09-29T23:18:13+09:00",
+        "updatedAt": "2026-09-29T23:18:15+09:00",
+        "resultExpected": true,
+        "resultType": "numeric",
+        "resultSource": {
+          "id": "tradingview_repair",
+          "name": "Department of Treasury",
+          "url": "https://www.dmo.gov.uk/"
+        },
+        "resultSavedAt": "2026-09-29T23:18:15+09:00"
       },
       {
         "id": "event-b24d5ca62c8305",
@@ -3332,15 +3366,15 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-09-27T16:10:47+09:00",
-        "updatedAt": "2026-09-29T16:30:37+09:00",
-        "resultExpected": false,
-        "resultType": "qualitative",
+        "updatedAt": "2026-09-29T23:18:14+09:00",
         "resultSource": {
           "id": "forex_factory",
           "name": "Forex Factory Economic Calendar",
           "url": "https://www.forexfactory.com/calendar"
         },
-        "resultSavedAt": "2026-09-29T16:30:37+09:00"
+        "resultSavedAt": "2026-09-29T16:30:37+09:00",
+        "resultExpected": false,
+        "resultType": "qualitative"
       },
       {
         "id": "event-67fdce3b6d547f",
@@ -3587,13 +3621,13 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-09-27T16:10:47+09:00",
-        "updatedAt": "2026-09-29T16:30:35+09:00",
+        "updatedAt": "2026-09-29T23:18:13+09:00",
         "resultSource": {
           "id": "tradingview_economic_calendar",
           "name": "Reserve Bank",
           "url": "http://www.rba.gov.au/"
         },
-        "resultSavedAt": "2026-09-29T16:30:35+09:00"
+        "resultSavedAt": "2026-09-29T23:18:13+09:00"
       },
       {
         "id": "event-1c71b0160f4b7b",
@@ -3840,7 +3874,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-09-27T16:10:47+09:00",
-        "updatedAt": "2026-09-29T16:30:35+09:00"
+        "updatedAt": "2026-09-29T23:18:13+09:00"
       },
       {
         "id": "event-f1cc3287b76573",
@@ -4087,7 +4121,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-09-27T16:10:47+09:00",
-        "updatedAt": "2026-09-29T16:30:37+09:00",
+        "updatedAt": "2026-09-29T23:18:14+09:00",
         "resultSource": {
           "id": "federal_reserve",
           "name": "Federal Reserve FOMC calendar",
@@ -4342,7 +4376,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-09-27T16:10:47+09:00",
-        "updatedAt": "2026-09-29T16:30:37+09:00",
+        "updatedAt": "2026-09-29T23:18:14+09:00",
         "resultSource": {
           "id": "federal_reserve",
           "name": "Federal Reserve FOMC calendar",
@@ -4357,7 +4391,7 @@
   "config": {
     "schemaVersion": "3.2.0",
     "pageId": "usdjpy-supply-demand",
-    "generatedAt": "2026-09-29T21:57:06+09:00",
+    "generatedAt": "2026-09-29T23:45:42+09:00",
     "mode": "integrated-realistic",
     "sourceStatus": {
       "tradersWebFx": "confirmed",
@@ -4368,7 +4402,7 @@
       "name": "トレーダーズ・ウェブFX 無料ページ",
       "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
       "sourceUpdatedAt": "2026-09-29T06:22:00+09:00",
-      "checkedAt": "2026-09-29T21:57:08+09:00",
+      "checkedAt": "2026-09-29T23:45:43+09:00",
       "status": "confirmed",
       "pageConfirmed": true,
       "publicScope": "一般公開はUSD/JPYの直近情報",
@@ -4377,7 +4411,7 @@
       "sourceDate": "2026-09-29",
       "sourceTime": "06:22",
       "freshness": "today",
-      "ageHours": 15.6,
+      "ageHours": 17.4,
       "keyLevels": {
         "referenceSpot": "157.40",
         "referenceSpotDescription": "9/29 06:00現在（9/28 高値157.86円 - 安値156.51円）",
@@ -4880,7 +4914,7 @@
       "judgement": "円買い越し縮小",
       "judgementSub": "円買い圧力が弱まる方向",
       "priceStatus": "available",
-      "checkedAt": "2026-09-29T21:57:06+09:00",
+      "checkedAt": "2026-09-29T23:45:42+09:00",
       "comment": "円買い越し縮小。円先物のNetは+71,982枚、前週比-48,377枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
       "verifiedPoints": 52,
       "priceVerifiedPoints": 52,
@@ -4888,12 +4922,12 @@
     },
     "coreSnapshot": {
       "market": {
-        "generatedAt": "2026-09-29T21:46:13+09:00",
-        "asOf": "2026-09-29T21:46:20+09:00",
+        "generatedAt": "2026-09-29T22:12:33+09:00",
+        "asOf": "2026-09-29T22:12:39+09:00",
         "verificationStatus": "verified"
       },
       "ratesBonds": {
-        "generatedAt": "2026-09-29T18:07:07+09:00",
+        "generatedAt": "2026-09-29T22:23:32+09:00",
         "asOfDate": "2026-09-29",
         "status": "confirmed"
       },
@@ -4920,7 +4954,7 @@
   "flow": {
     "schemaVersion": "1.0.0",
     "pageId": "usdjpy-flow-summary",
-    "generatedAt": "2026-09-29T21:57:08+09:00",
+    "generatedAt": "2026-09-29T23:45:44+09:00",
     "status": "ok",
     "realDemand": {
       "score": null,
@@ -4967,7 +5001,7 @@
           "score": 0.0,
           "status": "verified",
           "asOf": "2026-09-29",
-          "updatedAt": "2026-09-29T21:57:08+09:00",
+          "updatedAt": "2026-09-29T23:45:44+09:00",
           "valueText": "非該当",
           "sourceName": "",
           "sourceUrl": "",
@@ -4981,7 +5015,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-09-29T21:57:08+09:00",
+          "updatedAt": "2026-09-29T23:45:44+09:00",
           "valueText": "対外－対内ネット +7,528億円。企業の当日実額ではなく週次資本フロー代理（為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -4995,7 +5029,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-06",
-          "updatedAt": "2026-09-29T21:57:08+09:00",
+          "updatedAt": "2026-09-29T23:45:44+09:00",
           "valueText": "輸出 10.93兆円／輸入 11.34兆円／収支 -4099億円（構造要因）",
           "sourceName": "財務省 貿易統計",
           "sourceUrl": "https://www.customs.go.jp/toukei/shinbun/trade-st/2026/2026065.pdf",
@@ -5009,7 +5043,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-09-29T21:57:08+09:00",
+          "updatedAt": "2026-09-29T23:45:44+09:00",
           "valueText": "合計 +6,262億円（取得超は外貨需要候補、為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -5023,7 +5057,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-09-29T21:57:08+09:00",
+          "updatedAt": "2026-09-29T23:45:44+09:00",
           "valueText": "合計 -1,266億円（取得超は円需要候補、為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -5037,7 +5071,7 @@
           "score": 0.0,
           "status": "verified",
           "asOf": "2026-09-29",
-          "updatedAt": "2026-09-29T21:57:08+09:00",
+          "updatedAt": "2026-09-29T23:45:44+09:00",
           "valueText": "月末非該当",
           "sourceName": "",
           "sourceUrl": "",
@@ -5060,7 +5094,7 @@
           "score": 1.0,
           "status": "verified",
           "asOf": "2026-09-22",
-          "updatedAt": "2026-09-29T21:57:06+09:00",
+          "updatedAt": "2026-09-29T23:45:42+09:00",
           "valueText": "円Net前週比 -48,377枚（USD/JPY方向へ符号反転）／基準日から7日",
           "sourceName": "CFTC Commitments of Traders - Japanese Yen",
           "sourceUrl": "https://www.cftc.gov/dea/newcot/deafut.txt",
@@ -5115,9 +5149,9 @@
           "direction": "usd_sell",
           "score": -1.0,
           "status": "calculated",
-          "asOf": "2026-09-29T21:46:20+09:00",
-          "updatedAt": "2026-09-29T21:46:21+09:00",
-          "valueText": "USD/JPY -0.11%／米日2年金利変化差 -3.6bp（同時反応の代理、因果断定なし）",
+          "asOf": "2026-09-29T22:12:39+09:00",
+          "updatedAt": "2026-09-29T22:12:41+09:00",
+          "valueText": "USD/JPY -0.10%／米日2年金利変化差 -3.6bp（同時反応の代理、因果断定なし）",
           "sourceName": "市場価格・金利データ統合",
           "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
           "frequency": "daily proxy"
@@ -5134,9 +5168,9 @@
     },
     "previous": {
       "realDemand": null,
-      "speculative": 1.0,
+      "speculative": 0.0,
       "combined": null,
-      "generatedAt": "2026-09-29T10:13:22+09:00"
+      "generatedAt": "2026-09-29T21:57:08+09:00"
     },
     "officialFlows": {
       "trade": {
