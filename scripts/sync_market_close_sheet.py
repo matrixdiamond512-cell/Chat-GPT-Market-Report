@@ -186,7 +186,7 @@ def close_value_for_market(market: dict[str, Any], target: dt.date) -> tuple[flo
     if observed.date() == target + dt.timedelta(days=1) and previous is not None:
         # At 06:30 JST a continuous/overnight quote may already have rolled to
         # the next market date. In that case previousClose is the target date.
-        return previous, observed.date().isoformat(), "previousClose used for target session"
+        return previous, observed.date().isoformat(), ""
     return None, observed.date().isoformat(), f"asOf date {observed.date().isoformat()} does not match {target.isoformat()}"
 
 
@@ -308,7 +308,7 @@ def close_row_sync(
         "status": "FAILED", "generatedAt": payload.get("generatedAt"), "targetDate": None,
         "row": None, "inserted": False, "failedStage": "FETCH",
         "stages": {"FETCH": "PENDING", "VALIDATE": "PENDING", "GITHUB_SAVE": "SUCCESS", "SHEETS_IMPORT": "PENDING", "CHATGPT_INPUT": "PENDING", "CLOSE_DATA_WRITE": "PENDING", "READBACK_VERIFY": "PENDING", "LOG": "PENDING"},
-        "missingRequiredFields": [], "updatedFields": [], "sources": [], "errors": [],
+        "missingRequiredFields": [], "updatedFields": [], "sources": [], "marketData": [], "errors": [],
     }
     try:
         generated = parse_datetime(payload.get("generatedAt"))
@@ -388,6 +388,18 @@ def close_row_sync(
                 field_warnings.append(f"{symbol}: {warning}")
             source_ids.append(str(market.get("sourceId") or symbol))
             writes[close_header] = close_value
+            observed = parse_datetime(market.get("asOf"))
+            summary["marketData"].append({
+                "symbol": symbol,
+                "sourceId": market.get("sourceId"),
+                "sourceName": market.get("sourceName"),
+                "asOf": market.get("asOf"),
+                "fetchedAt": market.get("fetchedAt"),
+                "verifiedAt": market.get("verifiedAt") or market.get("verifiedAtUtc") or "",
+                "verificationStatus": market.get("verificationStatus"),
+                "valueSource": "value" if observed and observed.date() == target else "previousClose",
+                "closeValue": close_value,
+            })
             if change_header:
                 change_value: float | None = None
                 percent_value: float | None = None
@@ -464,7 +476,8 @@ def close_row_sync(
                 continue
             index = header_indices[header]
             value = actual_row[index] if index < len(actual_row) else ""
-            if normalized_value(value) in (None, ""):
+            normalized = normalized_value(value)
+            if normalized in (None, "") or (isinstance(normalized, str) and normalized.startswith("取得不能")):
                 readback_missing.append(header)
         summary["missingRequiredFields"] = readback_missing
 
@@ -561,6 +574,7 @@ def append_update_log(client: SheetsClient, summary: dict[str, Any], now: dt.dat
         "failedStage": summary.get("failedStage") or "",
         "stages": summary.get("stages") or {},
         "missingRequiredFields": summary.get("missingRequiredFields") or [],
+        "marketData": summary.get("marketData") or [],
         "errors": summary.get("errors") or [],
     }, ensure_ascii=False, separators=(",", ":"))
     row = [timestamp, "終値一覧", action, target, 1 if summary.get("stages", {}).get("READBACK_VERIFY") == "SUCCESS" else 0, status_label, source, note]
@@ -600,7 +614,7 @@ def main() -> int:
             "status": "FAILED", "generatedAt": "", "targetDate": None, "row": None,
             "inserted": False, "failedStage": getattr(exc, "stage", "FETCH"),
             "stages": {"FETCH": "FAILED", "VALIDATE": "PENDING", "GITHUB_SAVE": "SUCCESS", "SHEETS_IMPORT": "PENDING", "CHATGPT_INPUT": "PENDING", "CLOSE_DATA_WRITE": "PENDING", "READBACK_VERIFY": "PENDING", "LOG": "PENDING"},
-            "missingRequiredFields": list(REQUIRED_CLOSE_HEADERS), "updatedFields": [], "sources": [], "errors": [str(exc)],
+            "missingRequiredFields": list(REQUIRED_CLOSE_HEADERS), "updatedFields": [], "sources": [], "marketData": [], "errors": [str(exc)],
         }
     write_status_file(Path(args.status_output), summary)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
