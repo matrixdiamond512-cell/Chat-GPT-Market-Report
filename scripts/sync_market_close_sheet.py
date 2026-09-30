@@ -53,11 +53,9 @@ PRICE_FIELDS: dict[str, tuple[str, str, str]] = {
     "nikkei_vi": ("日経VI終値", "日経VI前日比", "日経VI騰落率"),
     "fear_greed": ("FearGreed終値", "FearGreed前日比", ""),
 }
-REQUIRED_CLOSE_HEADERS = (
-    "Dow終値", "Nasdaq終値", "S&P500終値", "Russell 2000終値", "日経225終値",
-    "日経225先物大阪終値", "USDJPY終値", "EURUSD終値", "ゴールド終値",
-    "WTI原油終値", "BTCUSD終値", "VIX終値", "日経VI終値", "FearGreed終値",
-    "米10年債利回り", "日本10年債利回り", "日経225予想EPS", "日経225予想PER",
+REQUIRED_CLOSE_HEADERS = tuple(
+    [header for fields in PRICE_FIELDS.values() for header in fields if header]
+    + ["日経225終値", "米10年債利回り", "日本10年債利回り", "日経225予想EPS", "日経225予想PER"]
 )
 INPUT_HEADERS = (
     "スナップショットID", "更新日時", "対象レポート時刻", "全体状態", "銘柄ID", "データ名", "利用判定", "現在値",
