@@ -16,11 +16,13 @@ from pathlib import Path
 from typing import Any
 from urllib.request import Request, urlopen
 
-from stock_freshness import current_block, envelope, last_good_from, normal_date
+from stock_freshness import current_block, current_of, envelope, last_good_from, normal_date
+from restore_us_market_internals_table import fetch_daily_quote
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "market" / "us-stock-breadth.json"
 HISTORY = ROOT / "data" / "market" / "us-stock-breadth-history.json"
+TEST_LOG = ROOT / "data" / "market" / "tradingview-10day-test.json"
 STOCKS = ROOT / "data" / "stocks.json"
 JST = timezone(timedelta(hours=9))
 SCANNER_URL = "https://scanner.tradingview.com/america/scan"
@@ -123,6 +125,113 @@ def load_history() -> list[dict[str, Any]]:
         return value if isinstance(value, list) else []
     except Exception:
         return []
+
+
+def load_existing_payload() -> dict[str, Any]:
+    if not OUT.exists():
+        return {}
+    try:
+        value = json.loads(OUT.read_text(encoding="utf-8"))
+        return value if isinstance(value, dict) else {}
+    except Exception:
+        return {}
+
+
+def record_tradingview_test_attempt(
+    *,
+    attempted_at: str,
+    status: str,
+    market_date: str | None,
+    market_date_reference: dict[str, Any] | None,
+    error: str | None = None,
+    exchanges: dict[str, dict[str, Any]] | None = None,
+) -> None:
+    try:
+        log = json.loads(TEST_LOG.read_text(encoding="utf-8"))
+        if not isinstance(log, dict):
+            log = {}
+    except Exception:
+        log = {}
+
+    attempts = list(log.get("attempts") or [])
+    reference_date = (
+        normal_date(market_date_reference.get("marketDate"))
+        if isinstance(market_date_reference, dict)
+        else None
+    )
+    attempts.append({
+        "attemptedAt": attempted_at,
+        "status": status,
+        "marketDate": normal_date(market_date),
+        "referenceMarketDate": reference_date,
+        "source": SOURCE_NAME,
+        "error": error,
+    })
+
+    sessions = [
+        session for session in (log.get("sessions") or [])
+        if isinstance(session, dict) and normal_date(session.get("marketDate"))
+    ]
+    if status == "verified" and normal_date(market_date):
+        exchange_counts = {
+            name: {
+                key: row.get(key)
+                for key in ("advancers", "decliners", "unchanged", "total")
+            }
+            for name, row in (exchanges or {}).items()
+        }
+        record = {
+            "marketDate": normal_date(market_date),
+            "fetchedAt": attempted_at,
+            "status": "verified",
+            "source": SOURCE_NAME,
+            "dateReference": market_date_reference,
+            "exchanges": exchange_counts,
+        }
+        existing_index = next(
+            (i for i, session in enumerate(sessions)
+             if normal_date(session.get("marketDate")) == record["marketDate"]),
+            None,
+        )
+        if existing_index is None:
+            sessions.append(record)
+        else:
+            sessions[existing_index] = record
+
+    sessions.sort(key=lambda session: str(session.get("marketDate") or ""))
+    sessions = sessions[-30:]
+    attempts = attempts[-50:]
+    successful_count = len({
+        normal_date(session.get("marketDate"))
+        for session in sessions
+        if session.get("status") == "verified"
+    })
+    started_at = log.get("startedAt")
+    if successful_count and not started_at:
+        started_at = next(
+            session["fetchedAt"]
+            for session in sessions
+            if session.get("status") == "verified"
+        )
+    TEST_LOG.parent.mkdir(parents=True, exist_ok=True)
+    TEST_LOG.write_text(
+        json.dumps({
+            "schemaVersion": "1.0.0",
+            "testName": "TradingView America Stock Screener",
+            "requiredSuccessfulSessions": 10,
+            "status": "complete" if successful_count >= 10 else (
+                "in_progress" if successful_count else "waiting_for_first_success"
+            ),
+            "startedAt": started_at,
+            "successfulSessionCount": successful_count,
+            "remainingSuccessfulSessions": max(0, 10 - successful_count),
+            "updatedAt": attempted_at,
+            "sessions": sessions,
+            "attempts": attempts,
+            "lastAttempt": attempts[-1],
+        }, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
 
 def enrich(exchange: dict[str, Any], previous: dict[str, Any] | None, prior20: list[dict[str, Any]]) -> None:
@@ -240,25 +349,38 @@ def sync_sheets(payload: dict[str, Any]) -> None:
         client.update(CLOSE_SHEET, f"{col}{target_row}", [[value]])
 
 
-def resolve_market_date(explicit: str, stocks: dict[str, Any], history: list[dict[str, Any]]) -> str:
-    """Resolve a real U.S. session date without using calendar-yesterday."""
-    candidates = []
+def resolve_market_date(explicit: str, stocks: dict[str, Any]) -> tuple[str, dict[str, str]]:
+    """Use a live Yahoo daily close as the session-date reference.
+
+    Older breadth history and stale aggregate dates must never relabel a current
+    TradingView scan. The upstream U.S. close refresh must have published the
+    same session before this collector is allowed to save the scan.
+    """
+    quote = fetch_daily_quote("^DJI")
+    reference_date = normal_date(quote.get("marketDate"))
+    if not reference_date or datetime.fromisoformat(reference_date).weekday() >= 5:
+        raise RuntimeError(f"Yahoo Finance returned an invalid U.S. session date: {quote.get('marketDate')!r}")
+
+    stock_date = normal_date((stocks.get("marketDates") or {}).get("us"))
+    if stock_date != reference_date:
+        raise RuntimeError(
+            f"U.S. close refresh is not current: stocks.marketDates.us={stock_date!r}, "
+            f"Yahoo Finance ^DJI={reference_date!r}"
+        )
+
     if explicit:
-        candidates.append(explicit[:10])
-    candidates.extend([
-        str((stocks.get("marketDates") or {}).get("us") or "")[:10],
-        str(((stocks.get("marketInternals") or {}).get("us") or {}).get("dataDate") or "")[:10],
-        str((stocks.get("usBreadth") or {}).get("marketDate") or "")[:10],
-        str((history[-1] if history else {}).get("marketDate") or "")[:10],
-    ])
-    for candidate in candidates:
-        parsed = normal_date(candidate)
-        if parsed and datetime.fromisoformat(parsed).weekday() < 5:
-            return parsed
-    raise RuntimeError(
-        "verified U.S. market session date is unavailable; pass US_BREADTH_MARKET_DATE "
-        "only when it has been independently verified"
-    )
+        explicit_date = normal_date(explicit)
+        if explicit_date != reference_date:
+            raise RuntimeError(
+                f"requested market date {explicit!r} does not match the latest verified U.S. session {reference_date}"
+            )
+
+    reference = {
+        "name": "Yahoo Finance daily chart",
+        "symbol": "^DJI",
+        "marketDate": reference_date,
+    }
+    return reference_date, reference
 
 
 def main() -> int:
@@ -266,8 +388,13 @@ def main() -> int:
     stocks = json.loads(STOCKS.read_text(encoding="utf-8")) if STOCKS.exists() else {}
     history = load_history()
     previous = history[-1] if history else None
+    previous_output = current_of(load_existing_payload())
+    market_date = None
+    market_date_reference = None
     try:
-        market_date = resolve_market_date(os.getenv("US_BREADTH_MARKET_DATE", "").strip(), stocks, history)
+        market_date, market_date_reference = resolve_market_date(
+            os.getenv("US_BREADTH_MARKET_DATE", "").strip(), stocks
+        )
         nyse = fetch_exchange("NYSE")
         nasdaq = fetch_exchange("NASDAQ")
     except Exception as error:  # noqa: BLE001
@@ -279,6 +406,7 @@ def main() -> int:
             updated_at=fetched_at,
             source={"name": SOURCE_NAME, "url": SOURCE_URL, "method": "exchange-filtered America scanner"},
             marketDate=None,
+            marketDateReference=market_date_reference,
             fetchedAt=fetched_at,
             exchanges={},
             error=f"当日の米国Breadthを取得できませんでした: {error}",
@@ -289,6 +417,13 @@ def main() -> int:
         old_component = (stocks.get("usBreadth") or {})
         stocks["usBreadth"] = {**current, "lastGood": last_good_from(old_component)}
         STOCKS.write_text(json.dumps(stocks, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        record_tradingview_test_attempt(
+            attempted_at=fetched_at,
+            status="failed",
+            market_date=market_date,
+            market_date_reference=market_date_reference,
+            error=current["error"],
+        )
         print(json.dumps({"status": "unavailable", "error": current["error"]}, ensure_ascii=False))
         return 0
     enrich(nyse, (previous or {}).get("exchanges", {}).get("NYSE"), [x.get("exchanges", {}).get("NYSE", {}) for x in history])
@@ -297,6 +432,17 @@ def main() -> int:
     total_dec = nyse["decliners"] + nasdaq["decliners"]
     combined = total_adv / (total_adv + total_dec) if total_adv + total_dec else 0
     fetched_at = now.isoformat(timespec="seconds")
+    preserved_indices = (
+        previous_output.get("indices")
+        if previous_output.get("marketDate") == market_date
+        and isinstance(previous_output.get("indices"), dict)
+        else {}
+    )
+    preserved_index_source = (
+        previous_output.get("source")
+        if preserved_indices and isinstance(previous_output.get("source"), dict)
+        else None
+    )
     current = current_block(
         status="verified",
         data_date=market_date,
@@ -304,6 +450,9 @@ def main() -> int:
         updated_at=fetched_at,
         source={"name": SOURCE_NAME, "url": SOURCE_URL, "method": "exchange-filtered America scanner"},
         marketDate=market_date,
+        marketDateReference=market_date_reference,
+        indexSource=preserved_index_source,
+        indices=preserved_indices,
         fetchedAt=fetched_at,
         exchanges={"NYSE": nyse, "NASDAQ": nasdaq},
         combinedAdvanceRate=round(combined, 6),
@@ -317,6 +466,13 @@ def main() -> int:
     HISTORY.write_text(json.dumps(new_history[-400:], ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     update_stocks_json(payload)
     sync_sheets(payload)
+    record_tradingview_test_attempt(
+        attempted_at=fetched_at,
+        status="verified",
+        market_date=market_date,
+        market_date_reference=market_date_reference,
+        exchanges={"NYSE": nyse, "NASDAQ": nasdaq},
+    )
     print(json.dumps({"marketDate": market_date, "NYSE": nyse, "NASDAQ": nasdaq, "combinedAdvanceRate": payload["combinedAdvanceRate"]}, ensure_ascii=False))
     return 0
 
