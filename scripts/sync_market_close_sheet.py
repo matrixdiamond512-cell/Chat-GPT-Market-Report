@@ -28,6 +28,7 @@ from write_market_data_to_sheets import (  # noqa: E402
     SheetsSyncError,
     create_authorized_session,
     load_service_account_info,
+    use_policy,
 )
 
 ROOT = SCRIPT_DIR.parent
@@ -58,7 +59,10 @@ REQUIRED_CLOSE_HEADERS = (
     "WTI原油終値", "BTCUSD終値", "VIX終値", "日経VI終値", "FearGreed終値",
     "米10年債利回り", "日本10年債利回り", "日経225予想EPS", "日経225予想PER",
 )
-INPUT_HEADERS = ("スナップショットID", "更新日時", "対象レポート時刻", "全体状態", "銘柄ID", "データ名", "利用判定", "現在値")
+INPUT_HEADERS = (
+    "スナップショットID", "更新日時", "対象レポート時刻", "全体状態", "銘柄ID", "データ名", "利用判定", "現在値",
+    "対象時刻", "取得時刻", "検証状態", "取得元",
+)
 LOG_HEADERS = ("updated_at", "sheet_name", "action", "data_as_of", "records", "status", "source", "note")
 
 
@@ -337,7 +341,7 @@ def close_row_sync(
                     if delay:
                         sleep(delay)
                     try:
-                        rows = read_values(client, sheet_name, "A1:H100", "UNFORMATTED_VALUE")
+                        rows = read_values(client, sheet_name, "A1:AA100", "UNFORMATTED_VALUE")
                         ok, last_error = verify_input_rows(rows, payload)
                     except Exception as exc:
                         last_error = str(exc)
@@ -547,6 +551,18 @@ def verify_input_rows(rows: list[list[Any]], payload: dict[str, Any]) -> tuple[b
         updated = str(row[indices["更新日時"]] or "")
         if snapshot != f"{expected_at}|{symbol}" or updated != expected_at:
             return False, f"stale snapshot for {symbol}"
+        if str(row[indices["全体状態"]] or "") != str(payload.get("overallStatus") or ""):
+            return False, f"overallStatus mismatch for {symbol}"
+        if str(row[indices["利用判定"]] or "") != use_policy(market):
+            return False, f"use policy mismatch for {symbol}"
+        if str(row[indices["対象時刻"]] or "") != str(market.get("asOf") or ""):
+            return False, f"asOf mismatch for {symbol}"
+        if str(row[indices["取得時刻"]] or "") != str(market.get("fetchedAt") or ""):
+            return False, f"fetchedAt mismatch for {symbol}"
+        if str(row[indices["検証状態"]] or "") != str(market.get("verificationStatus") or ""):
+            return False, f"verification status mismatch for {symbol}"
+        if str(row[indices["取得元"]] or "") != str(market.get("sourceName") or ""):
+            return False, f"source mismatch for {symbol}"
         wanted = number(market.get("value"))
         actual = number(row[indices["現在値"]])
         if wanted is None:
