@@ -378,13 +378,22 @@ def close_row_sync(
         statuses = []
         markets = payload.get("markets") or {}
         for symbol, (close_header, change_header, percent_header) in PRICE_FIELDS.items():
-            market = markets.get(symbol)
-            if not isinstance(market, dict):
-                continue
+            market_value = markets.get(symbol)
+            market = market_value if isinstance(market_value, dict) else {}
             close_value, source_date, warning = close_value_for_market(market, target)
             if close_value is None:
-                if warning:
-                    field_warnings.append(f"{symbol}: {warning}")
+                reason = warning or "missing from snapshot"
+                field_warnings.append(f"{symbol}: {reason}")
+                for unavailable_header in (close_header, change_header, percent_header):
+                    if not unavailable_header or unavailable_header not in header_indices:
+                        continue
+                    existing_value = ""
+                    if not inserting:
+                        existing_column = column_values.get(unavailable_header, [])
+                        if target_row - 1 < len(existing_column):
+                            existing_value = existing_column[target_row - 1]
+                    if not str(existing_value or "").strip():
+                        writes[unavailable_header] = f"取得不能（{reason}）"
                 continue
             if warning:
                 field_warnings.append(f"{symbol}: {warning}")
@@ -418,10 +427,39 @@ def close_row_sync(
                     field_warnings.append(f"{symbol}: {warning}")
                 if change_value is not None:
                     writes[change_header] = change_value
+                elif change_header and change_header in header_indices:
+                    existing_value = ""
+                    if not inserting:
+                        existing_column = column_values.get(change_header, [])
+                        if target_row - 1 < len(existing_column):
+                            existing_value = existing_column[target_row - 1]
+                    if not str(existing_value or "").strip():
+                        writes[change_header] = f"取得不能（{warning or '前営業日終値を検証できません'}）"
                 if percent_header and percent_value is not None:
                     writes[percent_header] = percent_value
+                elif percent_header and percent_header in header_indices:
+                    existing_value = ""
+                    if not inserting:
+                        existing_column = column_values.get(percent_header, [])
+                        if target_row - 1 < len(existing_column):
+                            existing_value = existing_column[target_row - 1]
+                    if not str(existing_value or "").strip():
+                        writes[percent_header] = f"取得不能（{warning or '騰落率を検証できません'}）"
             if symbol == "fear_greed" and source_date == target.isoformat() and str(market.get("classification") or "").strip():
                 writes["FearGreed判定"] = str(market.get("classification")).strip()
+
+        # Make every required-but-unavailable field explicit. Preserve any
+        # existing same-date value when this snapshot lacks a replacement.
+        for required_header in REQUIRED_CLOSE_HEADERS:
+            if required_header not in header_indices or required_header in writes:
+                continue
+            existing_value = ""
+            if not inserting:
+                existing_column = column_values.get(required_header, [])
+                if target_row - 1 < len(existing_column):
+                    existing_value = existing_column[target_row - 1]
+            if not str(existing_value or "").strip():
+                writes[required_header] = "取得不能（検証済み取得値がありません）"
 
         # Existing rows from another trusted updater are retained. Missing
         # new data never overwrites a same-date verified value with a guess.
