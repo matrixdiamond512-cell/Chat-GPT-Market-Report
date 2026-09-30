@@ -8,8 +8,8 @@ on:
       - "scripts/archive_stocks_snapshot.py"
       - ".github/workflows/restore-us-market-internals.yml"
   schedule:
-    # 06:50 JST Monday-Friday. This captures the completed U.S. session.
-    - cron: "50 21 * * 0-4"
+    # 06:30 JST Monday-Saturday, including Friday's completed U.S. session.
+    - cron: "30 21 * * 0-5"
 
 permissions:
   contents: write
