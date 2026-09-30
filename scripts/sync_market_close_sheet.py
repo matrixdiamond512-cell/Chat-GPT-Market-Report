@@ -480,7 +480,15 @@ def close_row_sync(
             and not field_warnings
         )
         summary["status"] = "SUCCESS" if complete else "PARTIAL"
-        summary["failedStage"] = "" if complete else ("SHEETS_IMPORT" if import_errors else "DATA_INCOMPLETE" if summary["missingRequiredFields"] else "")
+        validation_partial = bool(
+            payload.get("overallStatus") != "verified"
+            or payload.get("missingRequired")
+            or summary["missingRequiredFields"]
+            or field_warnings
+        )
+        if validation_partial:
+            summary["stages"]["VALIDATE"] = "PARTIAL"
+        summary["failedStage"] = "" if complete else ("SHEETS_IMPORT" if import_errors else "VALIDATE" if validation_partial else "")
     except Exception as exc:
         stage = exc.stage if isinstance(exc, CloseSyncError) else "CLOSE_DATA_WRITE"
         summary["failedStage"] = stage
