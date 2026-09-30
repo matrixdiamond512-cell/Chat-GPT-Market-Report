@@ -215,7 +215,7 @@ class CloseSyncTests(unittest.TestCase):
         client = FakeSheetsClient(self.target, self.prior)
         result = self.run_sync(client, snapshot(self.target, self.next_day, missing="gold"))
         self.assertEqual(result["status"], "PARTIAL")
-        self.assertTrue(client.data[1][25] in ("", None))
+        self.assertTrue(str(client.data[1][25]).startswith("取得不能（"))
         self.assertEqual(client.data[1][28], 100.0)
 
     def test_4_write_failure_is_failed(self):
