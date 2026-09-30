@@ -4,20 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       market_date:
-        description: "US market date YYYY-MM-DD; blank uses previous JST date"
+        description: "Latest verified U.S. session YYYY-MM-DD; must match Yahoo Finance"
         required: false
         default: ""
-  push:
+  workflow_run:
+    workflows:
+      - "Update US stock table and daily archive"
+    types:
+      - completed
     branches:
       - main
-    paths:
-      - ".github/workflows/update-us-stock-breadth.yml"
-      - "scripts/fetch_us_stock_breadth.py"
-      - "scripts/fix_us_stock_breadth_52w.py"
-      - "scripts/recalculate_us_stock_breadth_history.py"
-      - "scripts/build_us_stock_breadth_csv.py"
-  schedule:
-    - cron: "30 21 * * 1-5" # 06:30 JST Tue-Sat during U.S. DST
 
 permissions:
   contents: write
@@ -28,6 +24,7 @@ concurrency:
 
 jobs:
   update:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -71,10 +68,16 @@ jobs:
         run: |
           python -m json.tool data/market/us-stock-breadth.json > /dev/null
           python -m json.tool data/market/us-stock-breadth-history.json > /dev/null
+          python -m json.tool data/market/tradingview-10day-test.json > /dev/null
           python -m json.tool data/stocks.json > /dev/null
           test -s data/market/us-stock-breadth-history.csv
-          python scripts/validate_stock_data_freshness.py
+          python scripts/validate_stock_data_freshness.py --component us-breadth
       - name: Commit generated breadth data
         shell: bash
-        run: bash scripts/publish_stock_update.sh "Update US stock breadth" data/market/us-stock-breadth.json data/market/us-stock-breadth-history.json data/market/us-stock-breadth-history.csv data/stocks.json
+        run: bash scripts/publish_stock_update.sh "Update US stock breadth" data/market/us-stock-breadth.json data/market/us-stock-breadth-history.json data/market/us-stock-breadth-history.csv data/market/tradingview-10day-test.json data/stocks.json
+      - name: Require TradingView data for a successful test day
+        if: steps.breadth_state.outputs.available != 'true'
+        run: |
+          echo "TradingView data is unavailable; this run does not count as a successful test day."
+          exit 1
 
