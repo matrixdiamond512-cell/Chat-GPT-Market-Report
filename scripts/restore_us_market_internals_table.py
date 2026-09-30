@@ -228,7 +228,7 @@ def update_files(
     quotes: dict[str, dict[str, Any]],
     nyse: dict[str, Any],
     nasdaq: dict[str, Any],
-    equal_weight_difference: float,
+    equal_weight_difference: float | None,
 ) -> None:
     now = datetime.now(JST).replace(microsecond=0)
     dates = {quote_data["marketDate"] for quote_data in quotes.values()}
@@ -304,9 +304,13 @@ def update_files(
         ],
         [
             "Equal-Weight比較",
-            f'{equal_weight_difference:+.2f}pt',
+            f'{equal_weight_difference:+.2f}pt' if equal_weight_difference is not None else "取得不能",
             "-",
-            f"RSP騰落率－SPY騰落率。プラスは均等加重優位。基準日 {market_date}",
+            (
+                f"RSP騰落率－SPY騰落率。プラスは均等加重優位。基準日 {market_date}"
+                if equal_weight_difference is not None
+                else "RSP/SPYの基準日が一致しないため未取得。米国指数と市場内部データは取得済み。"
+            ),
         ],
     ])
 
@@ -328,18 +332,41 @@ def update_files(
 
 def main() -> int:
     quotes = {symbol: fetch_daily_quote(symbol) for _, symbol, _ in INDEX_SPECS}
-    rsp = fetch_daily_quote("RSP")
-    spy = fetch_daily_quote("SPY")
+    index_dates = {quote_data["marketDate"] for quote_data in quotes.values()}
+    if len(index_dates) != 1:
+        raise RuntimeError(f"U.S. index dates are inconsistent: {sorted(index_dates)}")
     target_date = quotes["^DJI"]["marketDate"]
-    if rsp["marketDate"] != target_date or spy["marketDate"] != target_date:
-        raise RuntimeError("Equal-weight comparison date does not match U.S. index date")
+
+    # The equal-weight comparison is supplemental.  An ETF quote that updates
+    # on a different schedule must not block verified index and breadth data.
+    equal_weight_difference: float | None = None
+    try:
+        rsp = fetch_daily_quote("RSP")
+        spy = fetch_daily_quote("SPY")
+        if rsp["marketDate"] == target_date and spy["marketDate"] == target_date:
+            equal_weight_difference = rsp["changePercent"] - spy["changePercent"]
+        else:
+            print(json.dumps({
+                "warning": "Equal-weight comparison omitted because quote dates do not match",
+                "marketDate": target_date,
+                "RSPMarketDate": rsp["marketDate"],
+                "SPYMarketDate": spy["marketDate"],
+            }, ensure_ascii=False))
+    except Exception as error:  # noqa: BLE001
+        print(json.dumps({
+            "warning": "Equal-weight comparison omitted because ETF quotes were unavailable",
+            "marketDate": target_date,
+            "error": str(error),
+        }, ensure_ascii=False))
+
     nyse = fetch_exchange("NYSE")
     nasdaq = fetch_exchange("NASDAQ")
-    update_files(quotes, nyse, nasdaq, rsp["changePercent"] - spy["changePercent"])
+    update_files(quotes, nyse, nasdaq, equal_weight_difference)
     print(json.dumps({
         "marketDate": target_date,
         "NYSE": nyse,
         "NASDAQ": nasdaq,
+        "equalWeightDifference": equal_weight_difference,
     }, ensure_ascii=False))
     return 0
 
