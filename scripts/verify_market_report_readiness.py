@@ -189,6 +189,20 @@ def main() -> int:
 
     morning_reference = validate_morning_reference(now, args.slot, blocking, warnings)
 
+    close_sync = load_json(ROOT / "data" / "market" / "close_data_sync_status.json", {}) if args.slot == "08:00" else {}
+    close_sync_generated = parse_time(close_sync.get("generatedAt"))
+    close_sync_current = bool(close_sync_generated and close_sync_generated.date() == now.date())
+    if args.slot == "08:00":
+        if not close_sync_current:
+            warnings.append("終値一覧の当朝同期結果がありません。空欄はChatGPT_Market_Input、GitHub検証済みデータ、Web再取得で補い、未更新を成功扱いしない。")
+        elif close_sync.get("status") != "SUCCESS":
+            warnings.append(
+                "終値一覧同期は完全確認されていません "
+                f"(status={close_sync.get('status') or 'unknown'}, "
+                f"failedStage={close_sync.get('failedStage') or 'none'}); "
+                "同期済みの値のみ前営業日終値として利用し、不足項目は代替取得する。"
+            )
+
     ready = not blocking
     result = {
         "checkedAt": now.isoformat(),
@@ -203,8 +217,17 @@ def main() -> int:
         "morningReferenceDate": morning_reference.get("referenceDate") if morning_reference else None,
         "blockingReasons": blocking,
         "warnings": warnings,
+        "closeDataSync": {
+            "status": close_sync.get("status") if close_sync_current else "MISSING_OR_STALE",
+            "targetDate": close_sync.get("targetDate"),
+            "row": close_sync.get("row"),
+            "failedStage": close_sync.get("failedStage"),
+            "stages": close_sync.get("stages") or {},
+            "missingRequiredFields": close_sync.get("missingRequiredFields") or [],
+        },
         "reportSourcePriority": [
-            "ChatGPT_Market_Input when the expected report slot is present and current",
+            "終値一覧 for date-matched previous-session close fields, only when closeDataSync status is SUCCESS",
+            "ChatGPT_Market_Input for current report-slot market values",
             "data/market/latest.json when Google Sheets is missing, stale, or not synchronized",
             "data/market/chatgpt_input.csv as the equivalent tabular GitHub fallback",
             "data/market/morning-reference.json for 08:00 CME/OSE reference values",

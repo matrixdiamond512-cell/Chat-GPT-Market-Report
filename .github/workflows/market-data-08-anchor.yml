@@ -56,6 +56,9 @@ jobs:
           python -m py_compile scripts/run_market_data_acquisition.py
           python -m py_compile scripts/run_market_data_window.py
           python -m py_compile scripts/verify_market_report_readiness.py
+          python -m py_compile scripts/sync_market_close_sheet.py
+          python -m py_compile tests/test_sync_market_close_sheet.py
+          python -m unittest discover -s tests -p 'test_sync_market_close_sheet.py' -v
 
       - name: Resolve intended Japan-time attempt
         id: intended
@@ -87,6 +90,29 @@ jobs:
             --max-catchup-minutes 180 \
             --mode auto \
             --recover-expired
+
+      - name: Persist and verify prior-session close row
+        id: close-sync
+        shell: bash
+        env:
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          set +e
+          python scripts/sync_market_close_sheet.py \
+            --latest data/market/latest.json \
+            --scheduled-time "${{ steps.intended.outputs.time }}" \
+            --run-key "${{ github.run_id }}:${{ github.run_attempt }}"
+          CODE=$?
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/market/close_data_sync_status.json || exit $?
+          if ! git diff --cached --quiet; then
+            git commit -m "Record prior-close Google Sheets sync status" || exit $?
+            git pull --rebase || exit $?
+            git push || exit $?
+          fi
+          exit "$CODE"
 
       - name: Explain 08:00 data semantics
         run: |
