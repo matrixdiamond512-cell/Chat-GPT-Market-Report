@@ -10,8 +10,12 @@ on:
       - "Sync latest market report publication"
       - "Update Tokyo USDJPY spot volume"
       - "Repair Tokyo USDJPY spot volume price gaps"
+      - "Update US stock table and daily archive"
+      - "Update US stock breadth"
     types:
       - completed
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -24,7 +28,7 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' || github.event.workflow_run.name == 'Update US stock breadth'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
