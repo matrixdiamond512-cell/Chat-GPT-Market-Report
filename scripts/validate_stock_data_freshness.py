@@ -74,6 +74,11 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--report-only", action="store_true")
+    parser.add_argument(
+        "--component",
+        choices=("us-breadth",),
+        help="Validate only this component and its own verified session date.",
+    )
     parser.add_argument("--today", default=datetime.now(JST).date().isoformat())
     args = parser.parse_args()
     reference_date = date_text(args.today)
@@ -105,6 +110,41 @@ def main() -> int:
         "sp500-contributions": root / "data" / "market" / "sp500-contributions.json",
         "nikkei-contributions": root / "data" / "nikkei-contributions.json",
     }
+    if args.component == "us-breadth":
+        try:
+            breadth_payload = load(paths["us-breadth"])
+        except ValueError as error:
+            errors.append(str(error))
+        else:
+            check_component(
+                "us-breadth",
+                breadth_payload,
+                us_date,
+                errors,
+                reference_date=reference_date,
+            )
+            current = current_of(breadth_payload)
+            if current.get("status") != "unavailable":
+                source_name = str((current.get("source") or {}).get("name") or "")
+                if "TradingView" not in source_name:
+                    errors.append(f"us-breadth: unexpected source {source_name!r}")
+                reference = current.get("marketDateReference")
+                current_date = date_text(current.get("dataDate") or current.get("marketDate"))
+                reference_date_value = date_text(reference.get("marketDate")) if isinstance(reference, dict) else None
+                if not reference_date_value or reference_date_value != current_date:
+                    errors.append(
+                        f"us-breadth: Yahoo reference date {reference_date_value!r} "
+                        f"does not match current date {current_date!r}"
+                    )
+        result = {
+            "status": "error" if errors else "ok",
+            "errors": errors,
+            "warnings": warnings,
+            "marketDates": {"us": us_date},
+        }
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if args.report_only or not errors else 1
+
     payloads: dict[str, dict[str, Any]] = {}
     for name, path in paths.items():
         if not path.exists():
