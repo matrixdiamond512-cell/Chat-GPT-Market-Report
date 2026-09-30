@@ -180,7 +180,11 @@ def populate_import_tabs(client: FakeSheetsClient, payload: dict) -> None:
     client.import_rows = [headers]
     generated = payload["generatedAt"]
     for symbol, market in payload["markets"].items():
-        client.import_rows.append([f"{generated}|{symbol}", generated, "08:00", "verified", symbol, symbol, "使用可", market.get("value")])
+        client.import_rows.append([
+            f"{generated}|{symbol}", generated, "08:00", payload.get("overallStatus"), symbol, symbol,
+            close_sync.use_policy(market), market.get("value"), market.get("asOf", ""), market.get("fetchedAt", ""),
+            market.get("verificationStatus", ""), market.get("sourceName", ""),
+        ])
 
 
 class CloseSyncTests(unittest.TestCase):
