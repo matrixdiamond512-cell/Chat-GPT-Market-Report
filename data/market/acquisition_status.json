@@ -1,17 +1,30 @@
 {
-  "generatedAt": "2026-10-01T10:35:10+09:00",
-  "reportSlot": "08:00",
-  "overallStatus": "verified",
+  "generatedAt": "2026-10-01T17:47:35+09:00",
+  "reportSlot": "16:00",
+  "overallStatus": "degraded",
   "missingRequired": [],
-  "fallbackCount": 0,
+  "fallbackCount": 1,
   "strategy": "staged_retry",
-  "windowStartedAt": "2026-10-01T09:32:47+09:00",
-  "lastAttemptAt": "2026-10-01T10:35:10+09:00",
-  "runCount": 6,
-  "mode": "incremental",
-  "targetedSymbols": [],
+  "windowStartedAt": "2026-10-01T17:47:35+09:00",
+  "lastAttemptAt": "2026-10-01T17:47:35+09:00",
+  "runCount": 1,
+  "mode": "full",
+  "targetedSymbols": [
+    "gold",
+    "wti",
+    "nikkei225_futures_ose",
+    "usdjpy",
+    "eurusd",
+    "btcusd",
+    "vix",
+    "nikkei_vi",
+    "fear_greed",
+    "crypto_fear_greed"
+  ],
   "recoveredSymbols": [],
   "preservedVerifiedSymbols": [],
-  "remainingFallback": [],
+  "remainingFallback": [
+    "crypto_fear_greed"
+  ],
   "remainingUnavailable": []
 }
