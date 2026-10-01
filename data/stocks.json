@@ -58,21 +58,21 @@
         ],
         [
           "VIX（恐怖指数）",
-          "16.37",
-          "+0.33（+2.06%）",
+          "16.34",
+          "+0.30（+1.87%）",
           "前日比上昇。警戒感は上昇。 基準日 2026-09-30"
         ],
         [
           "NYSE 値上がり / 値下がり",
           "645 / 1,431",
           "-",
-          "基準日 2026-09-30"
+          "下落優勢。A/D比 0.45倍。 基準日 2026-09-30"
         ],
         [
           "NASDAQ 値上がり / 値下がり",
           "1,298 / 1,896",
           "-",
-          "基準日 2026-09-30"
+          "下落優勢。A/D比 0.68倍。 基準日 2026-09-30"
         ],
         [
           "NYSE 200日線上 / 下",
@@ -94,25 +94,13 @@
         ],
         [
           "Equal-Weight比較",
-          "-0.48pt",
+          "取得不能",
           "-",
-          "RSP騰落率－SPY騰落率。プラスは均等加重優位。基準日 2026-09-30"
-        ],
-        [
-          "NYSE 52週高値 / 安値",
-          "0 / 0",
-          "-",
-          "基準日 2026-09-30"
-        ],
-        [
-          "NASDAQ 52週高値 / 安値",
-          "0 / 0",
-          "-",
-          "基準日 2026-09-30"
+          "RSP/SPYの基準日が一致しないため未取得。米国指数と市場内部データは取得済み。"
         ]
       ],
       "dataDate": "2026-09-30",
-      "updatedAt": "2026-10-01T05:29:27+09:00"
+      "updatedAt": "2026-10-01T09:43:23+09:00"
     },
     "japan": {
       "title": "主要指数と市場内部（日本）",
@@ -6350,176 +6338,11 @@
   ],
   "note": "データ欠損がある場合は推測で補完せず、該当セルに「取得不能」と理由を表示します。本ページは株式市場分析用の表示構成です。",
   "usBreadth": {
-    "schemaVersion": "1.0.0",
-    "status": "verified",
-    "freshness": "fresh",
-    "dataDate": "2026-09-30",
-    "asOf": "2026-09-30T16:00:00-04:00",
-    "updatedAt": "2026-10-01T05:29:51+09:00",
-    "source": {
-      "name": "TradingView America Stock Screener",
-      "url": "https://www.tradingview.com/markets/stocks-usa/market-movers-all-stocks/",
-      "method": "exchange-filtered America scanner"
-    },
-    "error": null,
-    "current": {
-      "status": "verified",
-      "freshness": "fresh",
-      "dataDate": "2026-09-30",
-      "asOf": "2026-09-30T16:00:00-04:00",
-      "updatedAt": "2026-10-01T05:29:51+09:00",
-      "source": {
-        "name": "TradingView America Stock Screener",
-        "url": "https://www.tradingview.com/markets/stocks-usa/market-movers-all-stocks/",
-        "method": "exchange-filtered America scanner"
-      },
-      "error": null,
-      "marketDate": "2026-09-30",
-      "marketDateReference": {
-        "name": "Yahoo Finance daily chart",
-        "symbol": "^DJI",
-        "marketDate": "2026-09-30"
-      },
-      "indexSource": {
-        "name": "Yahoo Finance daily chart + TradingView America Stock Screener",
-        "method": "completed daily closes and exchange-filtered breadth including SMA200"
-      },
-      "indices": {
-        "^DJI": {
-          "symbol": "^DJI",
-          "marketDate": "2026-09-30",
-          "timestamp": 1790775000,
-          "close": 50906.05078125,
-          "previousClose": 51349.921875,
-          "change": -443.87109375,
-          "changePercent": -0.8644046135659287
-        },
-        "^GSPC": {
-          "symbol": "^GSPC",
-          "marketDate": "2026-09-30",
-          "timestamp": 1790775000,
-          "close": 7651.5400390625,
-          "previousClose": 7670.83984375,
-          "change": -19.2998046875,
-          "changePercent": -0.2515996302963485
-        },
-        "^IXIC": {
-          "symbol": "^IXIC",
-          "marketDate": "2026-09-30",
-          "timestamp": 1790775000,
-          "close": 26861.064453125,
-          "previousClose": 26797.5390625,
-          "change": 63.525390625,
-          "changePercent": 0.2370568076301316
-        },
-        "^SOX": {
-          "symbol": "^SOX",
-          "marketDate": "2026-09-30",
-          "timestamp": 1790775000,
-          "close": 12628.6240234375,
-          "previousClose": 12629.16015625,
-          "change": -0.5361328125,
-          "changePercent": -0.004245197668466301
-        },
-        "^RUT": {
-          "symbol": "^RUT",
-          "marketDate": "2026-09-30",
-          "timestamp": 1790775000,
-          "close": 2796.864501953125,
-          "previousClose": 2807.919921875,
-          "change": -11.055419921875,
-          "changePercent": -0.3937227638063374
-        },
-        "^VIX": {
-          "symbol": "^VIX",
-          "marketDate": "2026-09-30",
-          "timestamp": 1790751600,
-          "close": 16.3700008392334,
-          "previousClose": 16.040000915527344,
-          "change": 0.3299999237060547,
-          "changePercent": 2.0573560154014827
-        }
-      },
-      "fetchedAt": "2026-10-01T05:29:51+09:00",
-      "exchanges": {
-        "NYSE": {
-          "advancers": 645,
-          "decliners": 1431,
-          "unchanged": 50,
-          "total": 2126,
-          "newHigh52Week": 0,
-          "newLow52Week": 0,
-          "advanceDeclineRatio": 0.450734,
-          "previousDayChange": 0.031621,
-          "average20Day": 1.146715,
-          "versus20DayAveragePercent": -60.6935
-        },
-        "NASDAQ": {
-          "advancers": 1298,
-          "decliners": 1896,
-          "unchanged": 144,
-          "total": 3338,
-          "newHigh52Week": 0,
-          "newLow52Week": 0,
-          "advanceDeclineRatio": 0.684599,
-          "previousDayChange": 0.110635,
-          "average20Day": 1.111135,
-          "versus20DayAveragePercent": -38.3874
-        }
-      },
-      "combinedAdvanceRate": 0.368691,
-      "judgement": "下落優勢",
-      "note": "値上がり・値下がりは前日比change、52週高値・安値は当日高安と52週高安の一致で集計。"
-    },
-    "lastGood": {
-      "schemaVersion": "1.0.0",
-      "marketDate": "2026-08-17",
-      "fetchedAt": "2026-08-18T06:50:50+09:00",
-      "status": "verified",
-      "source": {
-        "name": "TradingView America Stock Screener",
-        "url": "https://www.tradingview.com/markets/stocks-usa/market-movers-all-stocks/",
-        "method": "exchange-filtered America scanner"
-      },
-      "exchanges": {
-        "NYSE": {
-          "advancers": 614,
-          "decliners": 1465,
-          "unchanged": 42,
-          "total": 2121,
-          "newHigh52Week": 0,
-          "newLow52Week": 0,
-          "advanceDeclineRatio": 0.419113,
-          "previousDayChange": -0.738179,
-          "average20Day": 1.22756,
-          "versus20DayAveragePercent": -65.858
-        },
-        "NASDAQ": {
-          "advancers": 1164,
-          "decliners": 2028,
-          "unchanged": 129,
-          "total": 3321,
-          "newHigh52Week": 0,
-          "newLow52Week": 0,
-          "advanceDeclineRatio": 0.573964,
-          "previousDayChange": -0.494143,
-          "average20Day": 1.170821,
-          "versus20DayAveragePercent": -50.9776
-        }
-      },
-      "combinedAdvanceRate": 0.337317,
-      "judgement": "下落優勢（強い）",
-      "note": "値上がり・値下がりは前日比change、52週高値・安値は当日高安と52週高安の一致で集計。",
-      "dataDate": "2026-08-17",
-      "freshness": "stale"
-    },
+    "schemaVersion": "2.0.0",
     "marketDate": "2026-09-30",
-    "marketDateReference": {
-      "name": "Yahoo Finance daily chart",
-      "symbol": "^DJI",
-      "marketDate": "2026-09-30"
-    },
-    "indexSource": {
+    "fetchedAt": "2026-10-01T09:43:23+09:00",
+    "status": "verified",
+    "source": {
       "name": "Yahoo Finance daily chart + TradingView America Stock Screener",
       "method": "completed daily closes and exchange-filtered breadth including SMA200"
     },
@@ -6564,22 +6387,21 @@
         "symbol": "^RUT",
         "marketDate": "2026-09-30",
         "timestamp": 1790775000,
-        "close": 2796.864501953125,
+        "close": 2796.864013671875,
         "previousClose": 2807.919921875,
-        "change": -11.055419921875,
-        "changePercent": -0.3937227638063374
+        "change": -11.055908203125,
+        "changePercent": -0.39374015323565115
       },
       "^VIX": {
         "symbol": "^VIX",
         "marketDate": "2026-09-30",
         "timestamp": 1790751600,
-        "close": 16.3700008392334,
+        "close": 16.34000015258789,
         "previousClose": 16.040000915527344,
-        "change": 0.3299999237060547,
-        "changePercent": 2.0573560154014827
+        "change": 0.2999992370605469,
+        "changePercent": 1.8703193262921574
       }
     },
-    "fetchedAt": "2026-10-01T05:29:51+09:00",
     "exchanges": {
       "NYSE": {
         "advancers": 645,
@@ -6588,10 +6410,12 @@
         "total": 2126,
         "newHigh52Week": 0,
         "newLow52Week": 0,
-        "advanceDeclineRatio": 0.450734,
-        "previousDayChange": 0.031621,
-        "average20Day": 1.146715,
-        "versus20DayAveragePercent": -60.6935
+        "aboveSMA200": 662,
+        "belowSMA200": 1374,
+        "equalSMA200": 0,
+        "sma200Valid": 2036,
+        "sma200Column": "SMA200",
+        "advanceDeclineRatio": 0.450734
       },
       "NASDAQ": {
         "advancers": 1298,
@@ -6600,15 +6424,17 @@
         "total": 3338,
         "newHigh52Week": 0,
         "newLow52Week": 0,
-        "advanceDeclineRatio": 0.684599,
-        "previousDayChange": 0.110635,
-        "average20Day": 1.111135,
-        "versus20DayAveragePercent": -38.3874
+        "aboveSMA200": 1203,
+        "belowSMA200": 1858,
+        "equalSMA200": 0,
+        "sma200Valid": 3061,
+        "sma200Column": "SMA200",
+        "advanceDeclineRatio": 0.684599
       }
     },
     "combinedAdvanceRate": 0.368691,
     "judgement": "下落優勢",
-    "note": "値上がり・値下がりは前日比change、52週高値・安値は当日高安と52週高安の一致で集計。"
+    "note": "米国主要指数、NYSE/NASDAQ騰落、52週高安、200日線上下を同一取引日で保存。"
   },
   "marketDates": {
     "japan": "2026-09-30",
@@ -6616,7 +6442,7 @@
   },
   "marketUpdatedAt": {
     "japan": "2026-10-01T00:52:35+09:00",
-    "us": "2026-10-01T05:29:27+09:00"
+    "us": "2026-10-01T09:43:23+09:00"
   },
   "nikkeiMetricsAsOf": "2026-09-30",
   "sessionAnalysis": {
