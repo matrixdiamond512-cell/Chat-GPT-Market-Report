@@ -118,6 +118,21 @@ function marketRows(report) {
   }).filter(r => r.label);
   return [];
 }
+function legacyMarketRowsFromFullText(report) {
+  const source = fullTextOf(report);
+  const specs = [
+    ["金", /(?:現物金|金(?:\\s*\\(XAU\\/USD\\))?)[^\\n]*?(?:約|[:：]\\s*)?([0-9][0-9,]*(?:\\.[0-9]+)?\\s*(?:ドル|USD\\/oz)?)/],
+    ["WTI原油", /WTI[^\\n]*?(?:約|[:：]\\s*)?([0-9][0-9,]*(?:\\.[0-9]+)?\\s*ドル)/],
+    ["日経225先物", /(?:大阪[^\\n]*?先物|日経225先物)[^\\n]*?(?:約|[:：]\\s*)?([0-9][0-9,]*\\s*円)/],
+    ["USD/JPY", /USD\\/JPY[^\\n]*?(?:約|[:：]\\s*)?([0-9]+(?:\\.[0-9]+)?\\s*円?)/],
+    ["EUR/USD", /EUR\\/USD[^\\n]*?(?:約|[:：]\\s*)?([0-9]+(?:\\.[0-9]+)?)/],
+    ["BTCUSD", /(?:BTCUSD|Bitcoin)[^\\n]*?(?:約|[:：]\\s*)?([0-9][0-9,]*(?:\\.[0-9]+)?\\s*(?:ドル|USD)?)/]
+  ];
+  return specs.map(([label,re]) => {
+    const m = source.match(re);
+    return m ? {label, value:compact(m[1]) || "—", change:"—", rate:"—", direction:"—"} : null;
+  }).filter(Boolean);
+}
 const EXTRA = [
   ["米2年債",/米2年債(?:利回り)?[：:]?\s*([0-9.]+%)/],
   ["米10年債",/米10年債(?:利回り)?[：:]?\s*([0-9.]+%)/],
@@ -168,7 +183,7 @@ function marketSectionTitle(report, title) {
 function renderMarketTable(report, lines, sectionTitle = "") {
   const previousClose = isPreviousCloseTable(report, sectionTitle);
   const hasStructuredRows = Array.isArray(report?.marketDataTable?.rows) && report.marketDataTable.rows.length > 0;
-  let rows = marketRows(report);
+  let rows = marketRows(report);\n  if (!rows.length) rows = legacyMarketRowsFromFullText(report);
   // A structured 08:00 table is the canonical 28-row contract. Do not append
   // guesses extracted from prose, which can reintroduce current-value rows.
   if (!(previousClose && hasStructuredRows)) rows = dedupe(rows.concat(extraRows(lines || [], rows)));
@@ -180,7 +195,7 @@ function renderMarketTable(report, lines, sectionTitle = "") {
 function ensureMarketSection(report, parsed) {
   const sections = parsed.sections.slice();
   if (sections.some(s => isMarketSection(s.title))) return sections;
-  if (!marketRows(report).length) return sections;
+  if (!marketRows(report).length && !legacyMarketRowsFromFullText(report).length) return sections;
   let insertAt = sections.findIndex(s => /今日の相場テーマ/.test(s.title));
   if (insertAt < 0) insertAt = sections.findIndex(s => /結論/.test(s.title));
   insertAt = insertAt >= 0 ? insertAt + 1 : 0;
