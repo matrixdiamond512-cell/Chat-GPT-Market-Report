@@ -81,6 +81,48 @@ function headingInfo(line) {
   let m = raw.match(/^【\s*(.+?)\s*】$/); if (m) return {number:"", title:m[1].trim()};
   m = raw.match(/^\s*(\d{1,2})[．.]\s*(.+?)\s*$/); if (m) return {number:m[1], title:m[2].trim()};
   m = raw.match(/^#{1,3}\s+(.+?)\s*$/); if (m) return {number:"", title:m[1].trim()};
+
+  // Google Docs由来の本文では、主要セクション見出しがMarkdownや【】なしの
+  // プレーンテキストになることがある。既知のSOP見出しだけを認識する。
+  const plainHeadings = [
+    "総合判断",
+    "今日の相場テーマ",
+    "前回からの変化",
+    "08:00からの変化",
+    "12:00からの変化",
+    "16:00からの変化",
+    "東京市場の確定結果",
+    "主要市場データ",
+    "主要市場まとめ",
+    "材料と値動きの整合性",
+    "今日の主導市場",
+    "主導市場",
+    "重要ニュース",
+    "金利",
+    "原油",
+    "金",
+    "為替",
+    "BTCUSD",
+    "クロスアセット資金フロー",
+    "需給・ポジション",
+    "重要イベント",
+    "今後の重要イベント",
+    "個別市場見通し",
+    "主要6市場の短期見通し",
+    "シナリオ分析",
+    "メインシナリオ",
+    "代替シナリオ",
+    "シナリオが崩れる条件",
+    "リスク管理",
+    "東京時間への引き継ぎ",
+    "欧州時間への引き継ぎ",
+    "NY時間への引き継ぎ",
+    "翌東京時間への引き継ぎ",
+    "次の時間帯への引き継ぎ",
+    "結論",
+    "クロスチェック結果"
+  ];
+  if (plainHeadings.includes(raw)) return {number:"", title:raw};
   return null;
 }
 function parseDocument(source, fallbackTitle) {
