@@ -183,7 +183,8 @@ function marketSectionTitle(report, title) {
 function renderMarketTable(report, lines, sectionTitle = "") {
   const previousClose = isPreviousCloseTable(report, sectionTitle);
   const hasStructuredRows = Array.isArray(report?.marketDataTable?.rows) && report.marketDataTable.rows.length > 0;
-  let rows = marketRows(report);\n  if (!rows.length) rows = legacyMarketRowsFromFullText(report);
+  let rows = marketRows(report);
+  if (!rows.length) rows = legacyMarketRowsFromFullText(report);
   // A structured 08:00 table is the canonical 28-row contract. Do not append
   // guesses extracted from prose, which can reintroduce current-value rows.
   if (!(previousClose && hasStructuredRows)) rows = dedupe(rows.concat(extraRows(lines || [], rows)));
