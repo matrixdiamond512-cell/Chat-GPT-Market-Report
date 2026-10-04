@@ -21,7 +21,7 @@ class ResolveMarketReportSlotTests(unittest.TestCase):
             "21:00",
         )
 
-    def test_delayed_schedule_uses_actual_japan_time(self):
+    def test_delayed_schedule_uses_declared_slot(self):
         now = dt.datetime(2026, 8, 5, 22, 13, tzinfo=JST)
         self.assertEqual(
             resolve_slot(
@@ -31,7 +31,7 @@ class ResolveMarketReportSlotTests(unittest.TestCase):
                 Path("missing"),
                 now,
             ),
-            "21:00",
+            "16:00",
         )
 
     def test_push_uses_latest_report(self):
@@ -41,14 +41,13 @@ class ResolveMarketReportSlotTests(unittest.TestCase):
                 {"date": "2026-08-05", "time": "16:00"},
                 {"date": "2026-08-05", "time": "21:00"},
             ]}), encoding="utf-8")
-            self.assertEqual(resolve_slot("push", "", "auto", path), "21:00")
+            with self.assertRaises(ValueError):
+                resolve_slot("push", "", "auto", path)
 
     def test_manual_dispatch_never_writes_manual(self):
         now = dt.datetime(2026, 8, 5, 21, 5, tzinfo=JST)
-        self.assertEqual(
-            resolve_slot("workflow_dispatch", "", "auto", Path("missing"), now),
-            "21:00",
-        )
+        with self.assertRaises(ValueError):
+            resolve_slot("workflow_dispatch", "", "auto", Path("missing"), now)
 
 
 if __name__ == "__main__":

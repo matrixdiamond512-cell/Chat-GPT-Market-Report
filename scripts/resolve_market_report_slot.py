@@ -54,6 +54,14 @@ SCHEDULE_TO_SLOT = {
     "30,35,40,45,50,55 11 * * 1-5": "21:00",
 }
 
+# Exact declared schedules, including independent health/recovery jobs.
+for hour, slot in ((2, '12:00'), (6, '16:00'), (11, '21:00')):
+    for minute in (12, 28, 30, 35, 40, 42, 45, 50, 52, 55):
+        SCHEDULE_TO_SLOT[f'{minute} {hour} * * 1-5'] = slot
+for hour, slot in ((3, '12:00'), (7, '16:00'), (12, '21:00')):
+    SCHEDULE_TO_SLOT[f'5 {hour} * * 1-5'] = slot
+SCHEDULE_TO_SLOT['12 21 * * 0-4'] = '08:00'
+
 
 def reports_from_payload(payload: Any) -> list[dict[str, Any]]:
     if isinstance(payload, list):
@@ -122,14 +130,14 @@ def resolve_slot(
         scheduled_slot = SCHEDULE_TO_SLOT.get(event_schedule.strip())
         if scheduled_slot:
             return scheduled_slot
-        return slot_for_time(now or dt.datetime.now(JST))
+        raise ValueError(f'unknown cron mapping: {event_schedule!r}')
     if event_name == "push":
         # Never infer a new data tag from the latest published report. That was
         # the cause of same-day 08:00 data being retagged as 21:00 after code
         # changes. Push-triggered callers, if any remain, use the current JST
         # acquisition window instead.
-        return slot_for_time(now or dt.datetime.now(JST))
-    return slot_for_time(now or dt.datetime.now(JST))
+        raise ValueError('push cannot infer a report slot; explicit context required')
+    raise ValueError('explicit report slot required; auto cannot infer target identity')
 
 
 def main() -> int:
@@ -138,13 +146,26 @@ def main() -> int:
     parser.add_argument("--event-schedule", default="")
     parser.add_argument("--requested-slot", default="auto")
     parser.add_argument("--reports-file", type=Path, default=Path("reports.json"))
+    parser.add_argument('--report-date')
+    parser.add_argument('--data-cutoff')
+    parser.add_argument('--context-mode', choices=('new', 'historical', 'recovery'), default='new')
+    parser.add_argument('--revision', type=int, default=1)
+    parser.add_argument('--emit-context', action='store_true')
     args = parser.parse_args()
-    print(resolve_slot(
+    slot = resolve_slot(
         args.event_name,
         args.event_schedule,
         args.requested_slot,
         args.reports_file,
-    ))
+    )
+    if args.emit_context:
+        from reporting.context import ReportContext
+        if not args.report_date or not args.data_cutoff:
+            parser.error('--emit-context requires explicit --report-date and --data-cutoff')
+        context = ReportContext.create(args.report_date, slot, args.data_cutoff, mode=args.context_mode, revision=args.revision)
+        print(json.dumps(context.to_dict(), ensure_ascii=False))
+    else:
+        print(slot)  # acquisition-only compatibility, never a report date
     return 0
 
 

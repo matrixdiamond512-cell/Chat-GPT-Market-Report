@@ -8,9 +8,11 @@ on:
   workflow_dispatch:
     inputs:
       report_slot:
-        description: "Report slot label, or auto"
-        required: false
-        default: "auto"
+        description: "Explicit acquisition slot label (not a report publication)"
+        required: true
+        default: "08:00"
+        type: choice
+        options: ["08:00", "12:00", "16:00", "21:00"]
       acquisition_mode:
         description: "auto keeps verified values and retries gaps; full refreshes all symbols"
         required: false
