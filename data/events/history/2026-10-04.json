@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-10-04T10:09:56+09:00",
-  "publishedAt": "2026-10-04T10:09:56+09:00",
-  "dataAsOf": "2026-10-04T10:09:56+09:00",
+  "generatedAt": "2026-10-04T15:50:02+09:00",
+  "publishedAt": "2026-10-04T15:50:02+09:00",
+  "dataAsOf": "2026-10-04T15:50:02+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -20,7 +20,7 @@
       "name": "TradingView Economic Calendar",
       "url": "https://www.tradingview.com/economic-calendar/",
       "status": "ok",
-      "note": "実績値を19件照合。生データは公開保存しません。"
+      "note": "実績値を0件照合。生データは公開保存しません。"
     },
     {
       "id": "official_source_map",
@@ -37,7 +37,7 @@
       "id": "event_result_repair",
       "name": "重要イベント実績値の補完取得",
       "status": "ok",
-      "note": "代替カレンダー照合 0件、公式PDF補完 0件、取得不能理由明記 1件。"
+      "note": "代替カレンダー照合 0件、公式PDF補完 0件、取得不能理由明記 0件。"
     },
     {
       "id": "weekly_claims_validation",
@@ -50,46 +50,44 @@
   "date": "2026-10-04",
   "events": [
     {
-      "id": "event-a56e808f237b19",
-      "sourceKey": "2026-10-04|01:00|AUD|daylight saving time shift",
+      "id": "event-bf66bd08ef3cb8",
+      "sourceKey": "2026-10-04|18:15|All|opec-jmmc meetings",
       "date": "2026-10-04",
-      "time": "01:00",
-      "datetimeJst": "2026-10-04T01:00:00+09:00",
-      "scheduledAtSource": "2026-10-03T12:00:00-04:00",
-      "scheduledAtUtc": "2026-10-03T16:00:00Z",
-      "country": "豪州",
-      "currency": "AUD",
-      "title": "Daylight Saving Time Shift",
-      "eventNameOriginal": "Daylight Saving Time Shift",
-      "category": "other",
-      "impactOriginal": "Holiday",
-      "ffImportance": 0,
-      "importance": 0,
-      "importanceLabel": "休場",
+      "time": "18:15",
+      "datetimeJst": "2026-10-04T18:15:00+09:00",
+      "scheduledAtSource": "2026-10-04T05:15:00-04:00",
+      "scheduledAtUtc": "2026-10-04T09:15:00Z",
+      "country": "複数",
+      "currency": "All",
+      "title": "OPEC関連会合",
+      "eventNameOriginal": "OPEC-JMMC Meetings",
+      "category": "energy",
+      "impactOriginal": "Medium",
+      "ffImportance": 2,
+      "importance": 2,
+      "importanceLabel": "中",
       "forecast": "",
       "previous": "",
       "actual": "",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
-      "status": "result_pending",
+      "resultExplanation": "発表後に実績値と市場反応を更新します。",
+      "status": "scheduled",
       "isTimed": true,
-      "isImportantEvent": false,
+      "isImportantEvent": true,
       "affectedMarkets": [
-        "米2年債",
+        "原油",
         "米10年債",
-        "USD/JPY",
         "ダウ先物",
-        "ナスダック先物",
-        "日経225先物",
+        "USD/JPY",
         "金"
       ],
       "focusMarkets": [
-        "米2年債",
+        "原油",
         "米10年債",
-        "USD/JPY",
         "ダウ先物",
-        "ナスダック先物"
+        "USD/JPY",
+        "金"
       ],
       "pricedIn": [
         "市場予想：予想なし",
@@ -99,9 +97,9 @@
       "scenarios": [
         [
           "米2年債",
-          "上昇しやすい",
+          "反応は限定的",
           "小動き",
-          "低下しやすい"
+          "反応は限定的"
         ],
         [
           "米10年債",
@@ -147,9 +145,9 @@
         ],
         [
           "原油",
-          "景気上振れなら支え",
-          "小動き",
-          "景気減速なら重い"
+          "在庫減・供給不安なら上昇",
+          "予想通りなら限定的",
+          "在庫増・供給懸念後退なら下落"
         ]
       ],
       "outlook": [
@@ -275,7 +273,7 @@
         ]
       ],
       "conclusion": {
-        "narrative": "結果確認中",
+        "narrative": "発表前",
         "reaction": "結果待ち",
         "watch": [
           "米2年債の初動",
@@ -286,15 +284,15 @@
         ]
       },
       "officialSource": {
-        "id": "forex_factory",
-        "name": "Forex Factory Economic Calendar",
-        "url": "https://www.forexfactory.com/calendar"
+        "id": "opec",
+        "name": "OPEC",
+        "url": "https://www.opec.org/"
       },
       "sourceType": "forex_factory_weekly",
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
-      "createdAt": "2026-09-27T16:10:47+09:00",
-      "updatedAt": "2026-10-04T10:09:56+09:00"
+      "createdAt": "2026-10-04T15:50:02+09:00",
+      "updatedAt": "2026-10-04T15:50:02+09:00"
     }
   ]
 }
