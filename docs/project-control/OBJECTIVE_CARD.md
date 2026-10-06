@@ -14,4 +14,4 @@ FORBIDDEN SUBSTITUTE: Unit checks or new gate API do not prove that the existing
 
 OPEN OUTCOMES: None within the authorized A/B/D/C foundation task. Deferred: live Publisher/Projection/Portal/Scheduler enforcement, unresolved 2026-10-02_21-00 identity, existing unsafe canonical writer, historical structure/PNG gaps. These are not silently withdrawn.
 
-NEXT ACTION: Stop after accepted af61a0a and final report. Start Phase E only on the user's next instruction; preserve all deferred outcomes and explicit production restrictions.
+NEXT ACTION: Stop after accepted 0e14412 PNG contract correction and complete 20-item final reporting. Start Phase E only on the user's next instruction; preserve all deferred outcomes and explicit production restrictions.

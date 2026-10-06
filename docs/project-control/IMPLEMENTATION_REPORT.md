@@ -1,5 +1,7 @@
 # A → B → D → C 実装報告
 
+最終報告再確認（2026-10-06）: 以前の93件結果の後、G4 PNG命名と正式v1.8の不一致を発見し修正した。現在の最終コード候補は0e14412、Python78＋script16＝94テストPASS。PNG名は `マーケットレポート_<report_id>.png`。別枠名/未定義revision suffixは拒否する。以下のaf61a0a/93件の記述は前回受入時点の履歴であり、この追記と最新acceptance.jsonを現行結果とする。最終Git SHA・diff/stat/statusは外部evidence/final-report-verification.jsonを参照。
+
 2026-10-06 JST。対象依頼はSOURCE_SPEC.md。今回の基盤実装・回帰確認を終了し、E〜Hへは進んでいない。
 
 作業ブランチ: `codex/report-foundation-a-b-d-c`。開始時点: `600a533`。最終コード候補: `af61a0a`。push・deploy・PR作成は行っていない。

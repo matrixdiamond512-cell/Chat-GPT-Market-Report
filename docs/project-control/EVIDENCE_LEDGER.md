@@ -17,3 +17,5 @@ Implementation and acceptance evidence will be appended with PASS/FAIL/NOT_RUN a
 2026-10-06 — production proof PASS: baseline918 mismatches0, before/after964 identical, Git base artifact diff empty. Unsafe writer code unchanged; TempDirectory test reproduced revision downgrade (risk demonstrated, not fixed).
 
 2026-10-06 — Known legacy structure validator FAIL, unchanged production content. NOT_RUN: live report Docs/PNG/push/Actions/Pages/Receipt, full real publication G0–G8, E–H. Highest external evidence E5 applies only to formal specification docs.
+
+2026-10-06 final reporting recheck — Previous completion overlooked a G4 filename conflict. Corrected against formal v1.8 in 0e14412 and added a matching/different-slot/invented-suffix regression. Reran entire acceptance: Python78 + script16 = 94 PASS; CLI/syntax/index/publication/formal readbacks PASS; known production structure FAIL retained; baseline918 mismatch0 and before/after964 unchanged. No live report artifact operation or E–H integration performed. Reporting recheck evidence includes target file SHA-256, normalized Git blob equality (Windows checkout CRLF vs Git LF), final SHA/stat/status.
