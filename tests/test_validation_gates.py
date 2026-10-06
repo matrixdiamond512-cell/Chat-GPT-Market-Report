@@ -114,7 +114,8 @@ class GateTests(unittest.TestCase):
     def test_read_only_entry_point_connects_existing_snapshot(self):
         import base64
         c, s, r = objects(); tx = self.begin(); p = png(tx); p['png_base64'] = base64.b64encode(p.pop('png_bytes')).decode()
-        payload = {'context': c.to_dict(), 'snapshot': s.to_dict(), 'report': r.to_dict(), 'evidence': {'docs': docs(r), 'png': p, 'manifest_created_at': '2026-10-01T21:03:00+09:00'}}
+        payload = {'execution_context': {'attempt_id': 'fixture-retry-2', 'execution_started_at': '2026-10-01T21:00:00+09:00'},
+                   'context': c.to_dict(), 'snapshot': s.to_dict(), 'report': r.to_dict(), 'evidence': {'docs': docs(r), 'png': p, 'manifest_created_at': '2026-10-01T21:03:00+09:00'}}
         result = validate(json.loads(json.dumps(payload)))
         self.assertTrue(result['can_register_git']); self.assertFalse(result['can_deploy_pages'])
         self.assertIsNone(result['receipt'])

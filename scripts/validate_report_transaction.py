@@ -7,13 +7,14 @@ import argparse
 import base64
 import json
 from pathlib import Path
-from reporting.context import ReportContext
+from reporting.context import ReportContext, ExecutionContext
 from reporting.snapshot import MarketDataSnapshot, plain
 from reporting.report import ReportObject
 from reporting.gates import GateFailure, Transaction
 
 
 def validate(payload):
+    execution = ExecutionContext(**payload['execution_context'])
     tx = Transaction.begin(ReportContext(**payload['context']), MarketDataSnapshot.restore(payload['snapshot']), ReportObject.restore(payload['report']))
     evidence = payload.get('evidence', {})
     if 'docs' in evidence:
@@ -32,7 +33,7 @@ def validate(payload):
         tx = tx.verify_pages(**evidence['pages'])
     if evidence.get('create_receipt'):
         tx = tx.create_receipt()
-    return {'passed': tx.passed, 'can_register_git': tx.can_register_git, 'can_deploy_pages': tx.can_deploy_pages,
+    return {'execution_context': plain(execution), 'passed': tx.passed, 'can_register_git': tx.can_register_git, 'can_deploy_pages': tx.can_deploy_pages,
             'manifest': plain(tx.manifest), 'receipt': plain(tx.receipt), 'evidence': plain(tx.evidence)}
 
 
