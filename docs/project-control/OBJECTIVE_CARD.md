@@ -14,4 +14,22 @@ FORBIDDEN SUBSTITUTE: Unit checks or new gate API do not prove that the existing
 
 OPEN OUTCOMES: None within the authorized A/B/D/C foundation task. Deferred: live Publisher/Projection/Portal/Scheduler enforcement, unresolved 2026-10-02_21-00 identity, existing unsafe canonical writer, historical structure/PNG gaps. These are not silently withdrawn.
 
-NEXT ACTION: Stop after accepted 0e14412 PNG contract correction and complete 20-item final reporting. Start Phase E only on the user's next instruction; preserve all deferred outcomes and explicit production restrictions.
+NEXT ACTION: Foundation accepted at 0e14412. Phase E dry-run authorized below; prior deferred production outcomes remain open.
+
+## Phase E — 2026-10-06 (ADD)
+
+PRIMARY OBJECTIVE: In an offline fixture, safely bind Docs, PNG, immutable Manifest, Git registration and post-verification Receipt to one transaction, resume durable checkpoints without duplicate effects, and reject identity drift.
+
+ACTIVE PROFILE: data-tool + generic-app. Start commit c6d1236.
+
+ACCEPTANCE: Required identity fields, same-fileId full-text readback and approved normalization, actual fixture PNG bytes, immutable prepublication Manifest, lost-Git-response reconciliation, all five crash fixtures, same-identity duplicate prevention, stale/changed identity rejection, protected-slot read-only proof, unchanged production evidence.
+
+CONSTRAINTS: Offline design and fixture implementation only. No production connection, Drive writes (including formal docs), push, deployment, production JSON/PNG/Receipt changes. No Phase F–H implementation. Never certify either OLD/NEW ID for 2026-10-02_21-00.
+
+OPEN OUTCOMES: E-01 durable identity/state; E-02 Docs/PNG/Manifest/Git/Receipt connections; E-03 crash/retry/error/duplicate fixtures; E-04 fixed-candidate sweep, regression and safety proof; E-05 architecture/schema/report. Prior protected identity, unsafe writer and live enforcement risks remain deferred.
+
+OUT OF SCOPE: Real Drive/GitHub/Pages adapters, production publication, projection migration, body reformatting, scheduler/portal changes.
+
+FORBIDDEN SUBSTITUTE: Simulated Git SHA/Pages/DOM evidence must never be presented as a real commit, deployment or verified production publication.
+
+NEXT NECESSARY ACTION: Build the offline publisher, sweep a fixed candidate, accept all specified failure/recovery scenarios, report and stop before Phase F.
