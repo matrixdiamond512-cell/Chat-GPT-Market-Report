@@ -36,7 +36,7 @@ stateDiagram-v2
 
 Normal states: WAITING, DOC_SAVED, DOC_VERIFIED, PNG_SAVED, PNG_VERIFIED, MANIFEST_READY, GIT_REGISTERED, PUBLISHED, VERIFIED. Exceptional states FAILED / UNKNOWN / NEEDS_REVIEW retain the last successful checkpoint and pending action. UNKNOWN can occur at any effect; lookup must be decisive before retry. In the fixture, matching persisted content proves PRESENT and the exclusive SQLite table proves absence. An inconclusive lookup keeps UNKNOWN without another write. FAILED and NEEDS_REVIEW have no automatic destructive reset; corrected publication requires reviewed recovery or a new revision. Input drift is rejected without corrupting the already accepted transaction.
 
-By default the offline CLI stops at GIT_REGISTERED with Receipt absent. Explicit simulated publication evidence can exercise PUBLISHED/VERIFIED in tests. PUBLISHED here means the fixture G7 evidence passed; production PUBLISHED is NOT_RUN. Same identity after VERIFIED returns the same records. A later revision is separately claimed; any attempt to run a lower revision after a higher claim is rejected. This conservative rule also blocks old revision retry until review, even if the newer revision has not published.
+By default the first offline CLI run stops at GIT_REGISTERED with Receipt absent. Explicit simulated publication evidence can exercise PUBLISHED/VERIFIED in tests. PUBLISHED here means the fixture G7 evidence passed; production PUBLISHED is NOT_RUN. Passed observations are persisted at PUBLISHED, so a restart before Receipt can use them without requesting a new publication observation. Changed observations after PUBLISHED require review. Same identity after VERIFIED returns the same records. A later revision is separately claimed; any attempt to run a lower revision after a higher claim is rejected. This conservative rule also blocks old revision retry until review, even if the newer revision has not published.
 
 ## Schemas and hash rules
 
@@ -141,12 +141,14 @@ created_at,
 pending_action: nullable stable action ID,
 error: nullable reason,
 events: ordered state/at observations,
+failure_evidence: nullable normalization/comparison failure details,
+publication_evidence: nullable immutable passed Actions/Pages/DOM fixture,
 manifest, manifest_hash: nullable until G5,
 git_commit_sha: nullable until G6,
 receipt: nullable until G8
 ```
 
-SQLite tables: transactions PRIMARY KEY(report_id,revision)/UNIQUE(transaction_id); effects PRIMARY KEY(action_id),kind,payload. A separate runner-lock.sqlite transaction serializes orchestration. Fixture events use the explicit injected fixture timestamp; they are not live execution telemetry. Storage must be retained for idempotency: deleting the fixture database destroys its memory. Retention/backups and distributed locks for real deployment require separate approval/design.
+SQLite tables: transactions PRIMARY KEY(report_id,revision)/UNIQUE(transaction_id); effects PRIMARY KEY(action_id),kind,payload. A separate runner-lock.sqlite transaction serializes orchestration. Fixture events use the explicit injected fixture timestamp; they are not live execution telemetry. A checkpoint claiming a missing effect/Manifest/SHA/Receipt/observation fails at NEEDS_REVIEW without recreating artifacts. Successfully reconciled UNKNOWN restores the prior successful state even when no new checkpoint is needed. Storage must be retained for idempotency: deleting the fixture database destroys its memory. Retention/backups and distributed locks for real deployment require separate approval/design.
 
 ## Future real adapter contract (design only, NOT_RUN)
 

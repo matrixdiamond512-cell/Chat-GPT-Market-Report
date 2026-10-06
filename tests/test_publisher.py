@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from reporting.context import ReportContext
 from reporting.snapshot import MarketDataSnapshot, plain
 from reporting.report import ReportObject, adapt_legacy
@@ -61,6 +62,7 @@ class PublisherTests(unittest.TestCase):
         with self.assertRaises(GateFailure):
             self.run_fixture(faults={'doc_readback': {'full_text': self.report.full_text+'。'}})
         self.assertEqual(self.store.journal(self.key)['state'], 'FAILED')
+        self.assertIn('comparison_diff', self.store.journal(self.key)['failure_evidence'])
         self.assertEqual(self.store.counts(), {'doc': 1})
 
     def test_normalization_allowed(self):
@@ -317,6 +319,109 @@ class PublisherTests(unittest.TestCase):
         self.assertEqual(result['state'], 'GIT_REGISTERED')
         self.assertEqual(result['effect_counts']['git'], 1)
         self.assertIsNone(result['receipt'])
+
+    def test_unknown_after_registered_restores_checkpoint(self):
+        original = self.run_fixture()
+        with self.assertRaises(PublisherError):
+            self.run_fixture(faults={'lookup_unknown': 'git'})
+        self.assertEqual(self.store.journal(self.key)['checkpoint'], 'GIT_REGISTERED')
+        self.reopen()
+        recovered = self.run_fixture()
+        self.assertEqual(recovered['state'], 'GIT_REGISTERED')
+        self.assertEqual(recovered['git_commit_sha'], original['git_commit_sha'])
+        self.assertEqual(self.store.counts()['git'], 1)
+
+    def test_unknown_after_verified_restores_checkpoint(self):
+        original = self.complete()
+        with self.assertRaises(PublisherError):
+            self.run_fixture(publication=publication(original, self.report), faults={'lookup_unknown': 'receipt'})
+        recovered = self.complete()
+        self.assertEqual(recovered['state'], 'VERIFIED')
+        self.assertEqual(recovered['receipt'], original['receipt'])
+        self.assertEqual(self.store.counts()['receipt'], 1)
+
+    def test_missing_saved_effect_cannot_be_recreated(self):
+        self.run_fixture()
+        self.store.db.execute('DELETE FROM effects WHERE action_id=?', (self.key+':doc',))
+        with self.assertRaisesRegex(PublisherError, 'missing doc effect'):
+            self.run_fixture()
+        self.assertNotIn('doc', self.store.counts())
+        self.assertEqual(self.store.journal(self.key)['state'], 'NEEDS_REVIEW')
+
+    def test_missing_manifest_journal_stops_git(self):
+        with self.assertRaises(FixtureStop):
+            self.run_fixture(stop_after='MANIFEST_READY')
+        self.store.update(self.key, manifest=None, manifest_hash=None)
+        with self.assertRaisesRegex(PublisherError, 'Manifest journal missing'):
+            self.run_fixture()
+        self.assertNotIn('git', self.store.counts())
+
+    def test_changed_png_bytes_reject_same_identity(self):
+        self.run_fixture()
+        self.image += b'extra'
+        with self.assertRaisesRegex(PublisherError, 'frozen input/PNG'):
+            self.run_fixture()
+        self.assertEqual(self.store.counts()['png'], 1)
+
+    def test_new_revision_and_lower_retry(self):
+        self.run_fixture()
+        c = dataclasses.replace(self.context, revision=3)
+        s = MarketDataSnapshot.capture(c, self.snapshot.markets, self.snapshot.captured_at)
+        r = ReportObject.build(c, s, self.report.title, self.report.full_text)
+        result = self.publisher.run(c, s, r, self.image, now=NOW)
+        self.assertEqual(result['state'], 'GIT_REGISTERED')
+        self.assertEqual(self.store.counts()['doc'], 2)
+        with self.assertRaisesRegex(PublisherError, 'stale'):
+            self.run_fixture()
+
+    def test_retry_timestamp_does_not_change_manifest(self):
+        original = self.run_fixture()
+        result = self.publisher.run(self.context, self.snapshot, self.report, self.image,
+                                    now='2026-10-06T12:00:00+09:00')
+        self.assertEqual(result['manifest'], original['manifest'])
+        self.assertEqual(result['git_commit_sha'], original['git_commit_sha'])
+
+    def test_complete_state_sequence_and_no_external_calls(self):
+        with patch('socket.socket', side_effect=AssertionError('network forbidden')), patch('subprocess.Popen', side_effect=AssertionError('Git executable forbidden')):
+            result = self.complete()
+        self.assertEqual([e['state'] for e in result['events']],
+                         ['WAITING', 'DOC_SAVED', 'DOC_VERIFIED', 'PNG_SAVED', 'PNG_VERIFIED',
+                          'MANIFEST_READY', 'GIT_REGISTERED', 'PUBLISHED', 'VERIFIED'])
+        self.assertEqual(result['manifest']['status'], 'READY_FOR_PUBLICATION')
+        self.assertEqual(result['receipt']['manifest_hash'], result['manifest_hash'])
+
+    def test_invalid_publication_evidence_cannot_issue_receipt(self):
+        result = self.run_fixture()
+        observed = publication(result, self.report)
+        observed['simulation'] = False
+        with self.assertRaisesRegex(PublisherError, 'explicitly simulated'):
+            self.run_fixture(publication=observed)
+        self.assertNotIn('receipt', self.store.counts())
+
+    def test_receipt_restart_uses_persisted_observations(self):
+        registered = self.run_fixture()
+        with self.assertRaises(FixtureStop):
+            self.run_fixture(publication=publication(registered, self.report), stop_after='BEFORE_RECEIPT')
+        self.reopen()
+        result = self.run_fixture()
+        self.assertEqual(result['state'], 'VERIFIED')
+        self.assertEqual(self.store.counts()['receipt'], 1)
+
+    def test_changed_verified_observations_require_review(self):
+        result = self.complete()
+        observed = publication(result, self.report)
+        observed['pages']['verified_at'] = '2026-10-01T21:06:00+09:00'
+        with self.assertRaisesRegex(PublisherError, 'publication evidence changed'):
+            self.run_fixture(publication=observed)
+        self.assertEqual(self.store.counts()['receipt'], 1)
+
+    def test_receipt_journal_tampering_without_new_observations_rejected(self):
+        result = self.complete()
+        altered = dict(plain(result['receipt']), portal_url='https://wrong.test')
+        self.store.update(self.key, receipt=altered)
+        with self.assertRaisesRegex(PublisherError, 'Receipt journal mismatch'):
+            self.run_fixture()
+        self.assertEqual(self.store.counts()['receipt'], 1)
 
 
 if __name__ == '__main__':

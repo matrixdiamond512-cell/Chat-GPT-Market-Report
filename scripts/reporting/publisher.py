@@ -80,10 +80,14 @@ class FixtureStore:
                 envelope TEXT, envelope_hash TEXT, state TEXT, checkpoint TEXT,
                 created_at TEXT, pending_action TEXT, error TEXT, events TEXT,
                 manifest TEXT, manifest_hash TEXT, receipt TEXT, git_commit_sha TEXT,
+                failure_evidence TEXT, publication_evidence TEXT,
                 PRIMARY KEY(report_id, revision));
             CREATE TABLE IF NOT EXISTS effects (
                 action_id TEXT PRIMARY KEY, kind TEXT, payload TEXT);
         ''')
+        for field in ('failure_evidence', 'publication_evidence'):
+            if field not in {column[1] for column in self.db.execute('PRAGMA table_info(transactions)')}:
+                self.db.execute('ALTER TABLE transactions ADD COLUMN '+field+' TEXT')
         self.db.row_factory = sqlite3.Row
         self.lock_db = sqlite3.connect(self.root/'runner-lock.sqlite', timeout=0, isolation_level=None)
         self.lock_db.execute('CREATE TABLE IF NOT EXISTS lock_marker (value TEXT)')
@@ -108,16 +112,16 @@ class FixtureStore:
         if row is None:
             return None
         value = dict(row)
-        for field in ('envelope', 'events', 'manifest', 'receipt'):
+        for field in ('envelope', 'events', 'manifest', 'receipt', 'failure_evidence', 'publication_evidence'):
             value[field] = json.loads(value[field]) if value[field] is not None else None
         return value
 
     def update(self, transaction_id, **values):
         columns = {'state', 'checkpoint', 'pending_action', 'error', 'events',
-                   'manifest', 'manifest_hash', 'receipt', 'git_commit_sha'}
+                   'manifest', 'manifest_hash', 'receipt', 'git_commit_sha', 'failure_evidence', 'publication_evidence'}
         if not set(values) <= columns:
             raise ValueError('unsupported journal field')
-        encoded = {k: canonical(v) if k in ('events', 'manifest', 'receipt') and v is not None else v for k, v in values.items()}
+        encoded = {k: canonical(v) if k in ('events', 'manifest', 'receipt', 'failure_evidence', 'publication_evidence') and v is not None else v for k, v in values.items()}
         self.db.execute('UPDATE transactions SET '+','.join(k+'=?' for k in encoded)+' WHERE transaction_id=?',
                         (*encoded.values(), transaction_id))
 
@@ -218,14 +222,19 @@ class DryRunPublisher:
             except (PublisherError, GateFailure, ValueError, KeyError, TypeError) as exc:
                 state = getattr(exc, 'state', 'FAILED')
                 self._transition(key, state)
-                self.store.update(key, error=str(exc))
+                self.store.update(key, error=str(exc), failure_evidence=getattr(exc, 'evidence', None))
                 raise
 
     def _run(self, key, row, tx, png_bytes, publication, stop_after, faults):
+        self._validate_checkpoint(key, row)
         if row['state'] in ('FAILED', 'NEEDS_REVIEW'):
             raise PublisherError('NEEDS_REVIEW', 'terminal failure requires explicit reviewed recovery/new revision')
         completed = row['checkpoint']
         created_at = row['created_at']
+        if row['publication_evidence'] is not None:
+            if publication is not None and publication != row['publication_evidence']:
+                raise PublisherError('NEEDS_REVIEW', 'verified publication evidence changed; no duplicate Receipt')
+            publication = row['publication_evidence']
         doc_id = 'fixture-doc-'+digest({'transaction': key})[:24]
         doc = {'file_id': doc_id, 'report_id': tx.report.report_id, 'revision': tx.report.revision,
                'snapshot_id': tx.snapshot.snapshot_id, 'body_hash': body_hash(tx.report.full_text),
@@ -291,6 +300,11 @@ class DryRunPublisher:
         if STATES.index(completed) < STATES.index('GIT_REGISTERED'):
             self._transition(key, 'GIT_REGISTERED', git_commit_sha=registration['git_commit_sha'])
         if publication is None:
+            # All saved artifacts were reconciled above. If a read/reconciliation
+            # failed after an already-complete checkpoint, restore that state;
+            # never leave a recovered transaction labelled UNKNOWN.
+            if self.store.journal(key)['state'] == 'UNKNOWN':
+                self._transition(key, completed)
             return self.result(key, tx)
         # These are supplied fixture observations, never a deploy operation.
         if publication.get('simulation') is not True:
@@ -298,7 +312,7 @@ class DryRunPublisher:
         tx = tx.verify_actions(**publication['actions'])
         tx = tx.verify_pages(**publication['pages'])
         if STATES.index(completed) < STATES.index('PUBLISHED'):
-            self._transition(key, 'PUBLISHED')
+            self._transition(key, 'PUBLISHED', publication_evidence=publication)
         if stop_after == 'BEFORE_RECEIPT' and completed != 'VERIFIED':
             raise FixtureStop('stopped before Receipt')
         tx = tx.create_receipt()
@@ -306,9 +320,33 @@ class DryRunPublisher:
         receipt = self._effect(key, 'receipt', receipt, faults)
         if row['receipt'] is not None and row['receipt'] != receipt:
             raise PublisherError('NEEDS_REVIEW', 'immutable Receipt journal mismatch')
-        if completed != 'VERIFIED':
+        if completed != 'VERIFIED' or self.store.journal(key)['state'] == 'UNKNOWN':
             self._transition(key, 'VERIFIED', receipt=receipt)
         return self.result(key, tx)
+
+    def _validate_checkpoint(self, key, row):
+        checkpoint = row['checkpoint']
+        if checkpoint not in STATES[:9] or row['state'] not in STATES:
+            raise PublisherError('NEEDS_REVIEW', 'invalid journal state/checkpoint')
+        if row['state'] not in ('UNKNOWN', 'FAILED', 'NEEDS_REVIEW') and row['state'] != checkpoint:
+            raise PublisherError('NEEDS_REVIEW', 'journal state/checkpoint inconsistent')
+        level = STATES.index(checkpoint)
+        for kind, state in (('doc', 'DOC_SAVED'), ('png', 'PNG_SAVED'), ('manifest', 'MANIFEST_READY'),
+                            ('git', 'GIT_REGISTERED'), ('receipt', 'VERIFIED')):
+            if level >= STATES.index(state) and self.store.find(key+':'+kind) is None:
+                raise PublisherError('NEEDS_REVIEW', 'checkpoint claims missing '+kind+' effect; no recreation')
+        if level >= STATES.index('MANIFEST_READY') and (row['manifest'] is None or row['manifest_hash'] != digest(row['manifest'])):
+            raise PublisherError('NEEDS_REVIEW', 'immutable Manifest journal missing/hash mismatch')
+        if level >= STATES.index('GIT_REGISTERED') and not row['git_commit_sha']:
+            raise PublisherError('NEEDS_REVIEW', 'Git checkpoint missing SHA')
+        if level >= STATES.index('PUBLISHED') and row['publication_evidence'] is None:
+            raise PublisherError('NEEDS_REVIEW', 'published checkpoint missing observation evidence')
+        if level >= STATES.index('VERIFIED') and row['receipt'] is None:
+            raise PublisherError('NEEDS_REVIEW', 'verified checkpoint missing Receipt')
+        if level >= STATES.index('VERIFIED') and self.store.find(key+':receipt')['payload'] != row['receipt']:
+            raise PublisherError('NEEDS_REVIEW', 'immutable Receipt journal mismatch')
+        if row['pending_action'] is not None and row['pending_action'] not in {key+':'+kind for kind in ('doc', 'png', 'manifest', 'git', 'receipt')}:
+            raise PublisherError('NEEDS_REVIEW', 'pending action identity mismatch')
 
     def result(self, key, tx=None):
         row = self.store.journal(key)
@@ -320,4 +358,5 @@ class DryRunPublisher:
                 'manifest_hash': row['manifest_hash'], 'git_commit_sha': row['git_commit_sha'],
                 'receipt': freeze(row['receipt']) if row['receipt'] else None, 'effect_counts': self.store.counts(),
                 'passed': tx.passed if tx else (), 'error': row['error'], 'events': row['events'],
+                'failure_evidence': row['failure_evidence'],
                 'production_connected': False, 'push_allowed': False, 'deploy_allowed': False}
