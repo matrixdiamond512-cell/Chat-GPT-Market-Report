@@ -108,7 +108,10 @@ def completed_times(path: Path, slot: str) -> set[str]:
 
 def snapshot_is_current(payload: dict[str, Any], slot: str, day: dt.date) -> bool:
     """Return whether GitHub already exposes a usable snapshot for this slot/day."""
-    from reporting.context import aware
+    if __package__:
+        from .reporting.context import aware
+    else:
+        from reporting.context import aware
     try:
         generated_day = aware(str(payload.get('generatedAt') or '')).astimezone(JST).date()
     except ValueError:
@@ -276,7 +279,10 @@ def acquisition_day(context_path: Path | None, slot: str, execution_time: dt.dat
     """Acquisition-only default; an explicit report context cannot retag history."""
     if context_path is None:
         return execution_time.astimezone(JST).date()
-    from reporting.context import ReportContext
+    if __package__:
+        from .reporting.context import ReportContext
+    else:
+        from reporting.context import ReportContext
     context = ReportContext(**load_json(context_path, {}))
     if context.report_time != slot:
         raise ValueError('window slot differs from immutable report context')

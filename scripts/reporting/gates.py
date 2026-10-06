@@ -6,6 +6,7 @@ from dataclasses import dataclass, replace
 import difflib
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
 import struct
@@ -133,6 +134,10 @@ class Transaction:
                     require('G1', policy.get('min', float('-inf')) <= market.priceValue <= policy.get('max', float('inf')), f'{market.instrument}: price outside policy')
                 if market.changePct is not None:
                     require('G1', abs(market.changePct) <= policy.get('maxChangePercent', float('inf')), f'{market.instrument}: changePct outside policy')
+                if market.status == 'VALID':
+                    displayed = [float(value.replace(',', '')) for value in re.findall(r'(?<![\d.])[+-]?\d[\d,]*(?:\.\d+)?', market.displayText)]
+                    tolerance = 0.5*10**(-policy.get('decimalPlaces', 8))
+                    require('G1', any(math.isclose(value, market.priceValue, rel_tol=0, abs_tol=tolerance) for value in displayed), f'{market.instrument}: displayText does not represent numeric price')
                 require('G1', all(isinstance(source, FrozenMap) and source.get('id') and re.match(r'^https://', source.get('url', '')) for source in market.source), f'{market.instrument}: invalid source')
                 allowed_sources = {s['id'] for s in series.get('sources', [])}
                 require('G1', all(source['id'] in allowed_sources for source in market.source), f'{market.instrument}: source outside registry')
@@ -146,7 +151,10 @@ class Transaction:
         require('G2', report.sections == parse_sections(report.full_text), 'sections differ from original full_text')
         headings = {s['heading'] for s in report.sections}
         require('G2', set(REGISTRY['required']) <= headings, 'required sections missing')
+        require('G2', all(any(s['heading'] == heading and any(line.strip() for line in s['lines']) for s in report.sections) for heading in REGISTRY['required']), 'required section content missing')
         require('G2', normalize(report.full_text).split('\n')[0] == report.title, 'title/body mismatch')
+        require('G2', (context.report_date in report.title or context.report_date.replace('-', '/') in report.title)
+                and context.report_time in report.title, 'title/context date or time mismatch')
         expected_table = freeze({'rows': [market_row(m) for m in snapshot.markets]})
         require('G2', report.market_data_table == expected_table, 'market table differs from snapshot')
         body_rows = '\n'.join(line for s in report.sections if s['heading'] == '主要市場データ' for line in s['lines'])
@@ -195,7 +203,14 @@ class Transaction:
 
     @property
     def can_deploy_pages(self):
-        return self.can_register_git and 'G6' in self.passed
+        return self.can_register_git and 'G6' in self.passed and self.evidence.get('ACTIONS', {}).get('status') == 'success'
+
+    def verify_actions(self, *, commit_sha, run_id, status):
+        require('ACTIONS', 'G6' in self.passed and 'G7' not in self.passed, 'Actions evidence must follow Git and precede Pages')
+        require('ACTIONS', commit_sha == self.evidence['G6']['git_commit_sha'] and bool(run_id) and status == 'success', 'same-commit Actions success required')
+        evidence = plain(self.evidence)
+        evidence['ACTIONS'] = {'commit_sha': commit_sha, 'run_id': run_id, 'status': status}
+        return replace(self, evidence=freeze(evidence))
 
     def verify_git(self, *, canonical, index, latest, dashboard, existing_revision, commit_sha, existing_report=None):
         require('G6', self.can_register_git, 'Git forbidden: validated Manifest required')

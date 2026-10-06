@@ -39,3 +39,12 @@ class ObjectTests(unittest.TestCase):
         obj = ReportObject.build(context(), snapshot, 't', text)
         self.assertEqual(obj.full_text, text)
         self.assertEqual(obj, ReportObject.restore(obj.to_dict()))
+
+    def test_real_preserved_21_fixture_remains_unresolved(self):
+        import json
+        path = Path(__file__).parent/'fixtures/2026-10-02_21-00.json'
+        raw = json.loads(path.read_text(encoding='utf-8'))
+        adapted = adapt_legacy(raw)
+        self.assertEqual(adapted.report.full_text, raw['fullText'])
+        self.assertEqual(adapted.canonicalIdentity, 'UNRESOLVED')
+        self.assertEqual(adapted.reviewStatus, 'NEEDS_REVIEW')

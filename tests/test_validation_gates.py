@@ -21,6 +21,10 @@ class GateTests(unittest.TestCase):
             operation()
         self.assertEqual(caught.exception.gate, gate)
 
+    def ready_pages(self):
+        tx = manifest_tx()
+        return tx.verify_git(**git(tx)).verify_actions(commit_sha='a'*40, run_id='fixture-run', status='success')
+
     def test_drive_id_consistency(self):
         tx = self.begin()
         e = docs(tx.report); e['read_file_id'] = 'different-doc'
@@ -74,13 +78,13 @@ class GateTests(unittest.TestCase):
             dataclasses.replace(s.markets[0], changeValue=-1, changePct=-1, direction='UP')
 
     def test_timezone_mismatch(self):
-        tx = manifest_tx().verify_git(**git(manifest_tx()))
+        tx = self.ready_pages()
         e = pages(tx); e['verified_at'] = '2026-10-01T21:05:00'
         with self.assertRaises(ValueError):
             tx.verify_pages(**e)
 
     def test_dom_gold_btc_08_reject(self):
-        tx = manifest_tx(); tx = tx.verify_git(**git(tx))
+        tx = self.ready_pages()
         for instrument in ('gold', 'btcusd'):
             e = pages(tx)
             row = next(r for r in e['rows'] if r['instrument'] == instrument)
@@ -88,12 +92,12 @@ class GateTests(unittest.TestCase):
             self.assert_gate('G7', lambda: tx.verify_pages(**e))
 
     def test_loading_timeout_evidence_required(self):
-        tx = manifest_tx(); tx = tx.verify_git(**git(tx))
+        tx = self.ready_pages()
         e = pages(tx); e['loading_timeout']['error_visible'] = False
         self.assert_gate('G7', lambda: tx.verify_pages(**e))
 
     def test_mobile_table_evidence_required(self):
-        tx = manifest_tx(); tx = tx.verify_git(**git(tx))
+        tx = self.ready_pages()
         e = pages(tx); e['mobile']['body_overflow'] = True
         self.assert_gate('G7', lambda: tx.verify_pages(**e))
 
@@ -102,7 +106,7 @@ class GateTests(unittest.TestCase):
         self.assertNotIn('receipt', tx.manifest)
         self.assertIsNone(tx.receipt)
         self.assert_gate('G8', tx.create_receipt)
-        tx = tx.verify_git(**git(tx)); tx = tx.verify_pages(**pages(tx)); tx = tx.create_receipt()
+        tx = self.ready_pages(); tx = tx.verify_pages(**pages(tx)); tx = tx.create_receipt()
         self.assertEqual(tx.passed, tuple('G'+str(i) for i in range(9)))
         self.assertEqual(tx.receipt['final_status'], 'VERIFIED')
         self.assertEqual(tx.receipt['manifest_id'], tx.manifest['manifest_id'])
@@ -139,3 +143,27 @@ class GateTests(unittest.TestCase):
             changed = MarketDataSnapshot.capture(c, (m,)+s.markets[1:], s.captured_at)
             obj = ReportObject.build(c, changed, r.title, r.full_text)
             self.assert_gate('G1', lambda: Transaction.begin(c, changed, obj))
+
+    def test_failed_or_different_commit_actions_cannot_authorize_pages(self):
+        tx = manifest_tx(); tx = tx.verify_git(**git(tx))
+        self.assertFalse(tx.can_deploy_pages)
+        for sha, status in (('b'*40, 'success'), ('a'*40, 'failure')):
+            self.assert_gate('ACTIONS', lambda: tx.verify_actions(commit_sha=sha, run_id='fixture', status=status))
+
+    def test_same_revision_retry_requires_identical_existing_object(self):
+        tx = manifest_tx(); e = git(tx); e['existing_revision'] = 2; e['existing_report'] = tx.report.to_dict()
+        self.assertIn('G6', tx.verify_git(**e).passed)
+
+    def test_display_08_cannot_hide_valid_numeric_price(self):
+        c, s, r = objects()
+        m = dataclasses.replace(s.markets[0], displayText='08')
+        changed = MarketDataSnapshot.capture(c, (m,)+s.markets[1:], s.captured_at)
+        obj = ReportObject.build(c, changed, r.title, r.full_text)
+        self.assert_gate('G1', lambda: Transaction.begin(c, changed, obj))
+
+    def test_failed_drive_compare_keeps_normalization_diffs(self):
+        tx = self.begin(); e = docs(tx.report); e['read_text'] = tx.report.full_text+'。'
+        with self.assertRaises(GateFailure) as failed:
+            tx.verify_docs(**e)
+        self.assertIn('comparison_diff', failed.exception.evidence)
+        self.assertEqual(failed.exception.evidence['chat']['raw'], tx.report.full_text)

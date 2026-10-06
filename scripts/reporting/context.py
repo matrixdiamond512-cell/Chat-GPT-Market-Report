@@ -8,6 +8,8 @@ SLOTS = ('08:00', '12:00', '16:00', '21:00')
 
 
 def aware(value: str, *, date_boundary: bool = False) -> datetime:
+    if not isinstance(value, str) or not value:
+        raise ValueError('timestamp must be nonempty ISO8601 text with timezone')
     if date_boundary and re.fullmatch(r'\d{4}-\d{2}-\d{2}', value):
         return datetime.combine(date.fromisoformat(value), datetime.min.time(), JST)
     try:

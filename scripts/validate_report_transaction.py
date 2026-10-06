@@ -26,6 +26,8 @@ def validate(payload):
         tx = tx.create_manifest(evidence['manifest_created_at'])
     if 'git' in evidence:
         tx = tx.verify_git(**evidence['git'])
+    if 'actions' in evidence:
+        tx = tx.verify_actions(**evidence['actions'])
     if 'pages' in evidence:
         tx = tx.verify_pages(**evidence['pages'])
     if evidence.get('create_receipt'):

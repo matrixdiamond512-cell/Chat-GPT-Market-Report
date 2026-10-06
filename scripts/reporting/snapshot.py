@@ -124,6 +124,8 @@ class MarketDataSnapshot:
 
     def __post_init__(self):
         object.__setattr__(self, 'markets', tuple(self.markets))
+        if self.schema_version != 1 or type(self.schema_version) is not int:
+            raise ValueError('unsupported snapshot schema_version')
         aware(self.captured_at)
         aware(self.data_cutoff)
         if not self.markets or any(not isinstance(m, Market) for m in self.markets):
