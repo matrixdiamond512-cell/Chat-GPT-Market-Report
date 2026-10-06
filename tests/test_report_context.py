@@ -6,6 +6,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'scripts'))
 from reporting.context import ReportContext, ExecutionContext, aware
 from resolve_market_report_slot import resolve_slot
+from run_market_data_window import acquisition_day
+from datetime import datetime
 
 
 class ContextTests(unittest.TestCase):
@@ -48,3 +50,12 @@ class ContextTests(unittest.TestCase):
         self.assertEqual(c.report_id, '2026-10-03_08-00')
         with self.assertRaises(ValueError):
             dataclasses.replace(c, report_id='bad')
+
+    def test_acquisition_path_does_not_retag_historical_report(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory)/'context.json'
+            path.write_text(json.dumps(self.context(mode='recovery').to_dict()), encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'historical'):
+                acquisition_day(path, '21:00', datetime.fromisoformat('2026-10-04T12:00:00+09:00'))
+            self.assertEqual(acquisition_day(path, '21:00', datetime.fromisoformat('2026-10-02T20:00:00+09:00')).isoformat(), '2026-10-02')

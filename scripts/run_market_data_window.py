@@ -108,10 +108,14 @@ def completed_times(path: Path, slot: str) -> set[str]:
 
 def snapshot_is_current(payload: dict[str, Any], slot: str, day: dt.date) -> bool:
     """Return whether GitHub already exposes a usable snapshot for this slot/day."""
-    generated = str(payload.get("generatedAt") or "")
+    from reporting.context import aware
+    try:
+        generated_day = aware(str(payload.get('generatedAt') or '')).astimezone(JST).date()
+    except ValueError:
+        return False
     return bool(
         payload.get("reportSlot") == slot
-        and generated[:10] == day.isoformat()
+        and generated_day == day
         and payload.get("overallStatus") in {"verified", "degraded"}
     )
 
@@ -268,6 +272,20 @@ def record_expired(
     git_commit_push(f"Record expired {slot} market data attempt {scheduled_time}")
 
 
+def acquisition_day(context_path: Path | None, slot: str, execution_time: dt.datetime) -> dt.date:
+    """Acquisition-only default; an explicit report context cannot retag history."""
+    if context_path is None:
+        return execution_time.astimezone(JST).date()
+    from reporting.context import ReportContext
+    context = ReportContext(**load_json(context_path, {}))
+    if context.report_time != slot:
+        raise ValueError('window slot differs from immutable report context')
+    target = dt.date.fromisoformat(context.report_date)
+    if target != execution_time.astimezone(JST).date():
+        raise ValueError('live acquisition cannot repair a historical snapshot; reuse its immutable snapshot')
+    return target
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--slot", required=True, choices=("08:00", "12:00", "16:00", "21:00"))
@@ -275,6 +293,7 @@ def main() -> int:
     parser.add_argument("--trigger-source", default=os.environ.get("ACQUISITION_TRIGGER_SOURCE", "window"))
     parser.add_argument("--max-catchup-minutes", type=int, default=30)
     parser.add_argument("--mode", choices=("auto", "full"), default="auto")
+    parser.add_argument('--report-context', type=Path, help='Persisted explicit ReportContext, optional for independent acquisition')
     parser.add_argument(
         "--recover-expired",
         action="store_true",
@@ -284,11 +303,11 @@ def main() -> int:
         ),
     )
     args = parser.parse_args()
+    day = acquisition_day(args.report_context, args.slot, now_jst())
 
     run(["git", "config", "user.name", "github-actions[bot]"])
     run(["git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"])
 
-    day = now_jst().date()
     audit = audit_path(day, args.slot)
     failures: list[str] = []
 

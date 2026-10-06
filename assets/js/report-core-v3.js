@@ -94,6 +94,10 @@ function headingInfo(line) {
     "東京市場の確定結果",
     "主要市場データ",
     "主要市場まとめ",
+    "市場データ",
+    "前営業日終値",
+    "終値一覧",
+    "主要価格",
     "材料と値動きの整合性",
     "今日の主導市場",
     "主導市場",
@@ -106,14 +110,20 @@ function headingInfo(line) {
     "クロスアセット資金フロー",
     "需給・ポジション",
     "重要イベント",
+    "その日の重要イベント",
     "今後の重要イベント",
     "個別市場見通し",
     "主要6市場の短期見通し",
+    "主要6市場の見通し",
+    "6市場の見通し",
+    "シナリオ",
     "シナリオ分析",
     "メインシナリオ",
     "代替シナリオ",
     "シナリオが崩れる条件",
     "リスク管理",
+    "リスク要因",
+    "注意点",
     "東京時間への引き継ぎ",
     "欧州時間への引き継ぎ",
     "NY時間への引き継ぎ",
@@ -161,18 +171,24 @@ function marketRows(report) {
   return [];
 }
 function legacyMarketRowsFromFullText(report) {
-  const source = fullTextOf(report);
+  // Only designated market sections. Preface, clocks, news and cross-checks
+  // cannot supply a price. Label anchors keep 金利 from matching 金.
+  const sections = parseDocument(fullTextOf(report), report?.title || "").sections
+    .filter(s => isMarketSection(s.title) || /^(?:個別市場見通し|主要6市場の(?:短期)?見通し|6市場の見通し)$/.test(s.title));
   const specs = [
-    ["金", /(?:現物金|金(?:\s*\(XAU\/USD\))?)[^\n]*?(?:約|[:：]\s*)?([0-9][0-9,]*(?:\.[0-9]+)?\s*(?:ドル|USD\/oz)?)/],
-    ["WTI原油", /WTI[^\n]*?(?:約|[:：]\s*)?([0-9][0-9,]*(?:\.[0-9]+)?\s*ドル)/],
-    ["日経225先物", /(?:大阪[^\n]*?先物|日経225先物)[^\n]*?(?:約|[:：]\s*)?([0-9][0-9,]*\s*円)/],
-    ["USD/JPY", /USD\/JPY[^\n]*?(?:約|[:：]\s*)?([0-9]+(?:\.[0-9]+)?\s*円?)/],
-    ["EUR/USD", /EUR\/USD[^\n]*?(?:約|[:：]\s*)?([0-9]+(?:\.[0-9]+)?)/],
-    ["BTCUSD", /(?:BTCUSD|Bitcoin)[^\n]*?(?:約|[:：]\s*)?([0-9][0-9,]*(?:\.[0-9]+)?\s*(?:ドル|USD)?)/]
+    ["金", /^(?:現物金|金(?:\s*\(XAU\/USD\))?|Gold)\s*[:：|]/i, /([0-9][0-9,]*(?:\.[0-9]+)?\s*(?:ドル|USD\/oz))/],
+    ["WTI原油", /^(?:WTI(?:原油)?|原油)\s*[:：|]/, /([0-9][0-9,]*(?:\.[0-9]+)?\s*(?:ドル|USD\/bbl))/],
+    ["日経225先物", /^(?:日経225先物(?:（大阪取引所）)?|大阪先物)\s*[:：|]/, /([0-9][0-9,]*\s*円)/],
+    ["USD/JPY", /^USD\/JPY\s*[:：|]/, /([0-9]+(?:\.[0-9]+)?\s*円)/],
+    ["EUR/USD", /^EUR\/USD\s*[:：|]/, /\b([0-9]+\.[0-9]{3,})\b/],
+    ["BTCUSD", /^(?:BTCUSD|Bitcoin|BTC\/USD)\s*[:：|]/i, /([0-9][0-9,]*(?:\.[0-9]+)?\s*(?:ドル|USD))/]
   ];
-  return specs.map(([label,re]) => {
-    const m = source.match(re);
-    return m ? {label, value:compact(m[1]) || "—", change:"—", rate:"—", direction:"—"} : null;
+  return specs.map(([label, labelPattern, pricePattern]) => {
+    const line = sections.flatMap(s => s.lines).map(clean).find(l => labelPattern.test(l));
+    if (!line) return null;
+    const unavailable = /取得不能|取得できない|数値を補完しません|UNAVAILABLE/i.test(line);
+    const value = unavailable ? line.replace(labelPattern, "").trim() : line.match(pricePattern)?.[1];
+    return {label, value:compact(value) || "取得不能（当該市場sectionに明示価格なし）", change:"—", rate:"—", direction:unavailable || !value ? "UNAVAILABLE" : "—"};
   }).filter(Boolean);
 }
 const EXTRA = [
@@ -190,7 +206,7 @@ function extraRows(lines, rows) {
   return out;
 }
 function dedupe(rows) { const seen = new Set(); return rows.filter(r => r.label && !seen.has(r.label) && seen.add(r.label)); }
-function isMarketSection(title) { return /主要市場データ|市場データ|前営業日終値|終値一覧|主要価格/.test(title || ""); }
+function isMarketSection(title) { return /主要市場データ|主要市場まとめ|市場データ|前営業日終値|終値一覧|主要価格/.test(title || ""); }
 const CURRENT_MARKET_HEADERS = ["市場・指標", "現在値・確認値", "前日比", "騰落率", "方向・状態"];
 const PREVIOUS_CLOSE_HEADERS = ["項目", "終値・値", "前日比", "騰落率", "方向感"];
 function previousCloseDataDate(report) {
@@ -281,11 +297,25 @@ function renderDocument(report) {
 }
 function render() { if (!selectedReport) return; renderControls(selectedReport); renderDocument(selectedReport); window.MarketReportLastRendered = selectedReport; window.dispatchEvent(new CustomEvent("market-report-rendered", { detail: { report: selectedReport } })); }
 
+async function loadReportsWithTimeout(url, timeoutMs = 15000) {
+  const controller = new AbortController();
+  let timer;
+  try {
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => { controller.abort(); reject(new Error("読込タイムアウト")); }, timeoutMs);
+    });
+    const load = (async () => {
+      const response = await fetch(url, {cache:"no-store", signal:controller.signal});
+      if (!response.ok) throw new Error(`reports.json HTTP ${response.status}`);
+      return await response.json();
+    })();
+    return await Promise.race([load, timeout]);
+  } finally { clearTimeout(timer); }
+}
+
 async function init() {
   try {
-    const response = await fetch(`reports.json?ts=${Date.now()}`, {cache:"no-store"});
-    if (!response.ok) throw new Error(`reports.json HTTP ${response.status}`);
-    const payload = await response.json();
+    const payload = await loadReportsWithTimeout(`reports.json?ts=${Date.now()}`);
     reports = sortReports(Array.isArray(payload) ? payload : (Array.isArray(payload?.reports) ? payload.reports : []));
     if (!reports.length) throw new Error("reports.jsonに表示できる本文データがありません");
     const params = new URLSearchParams(location.search);

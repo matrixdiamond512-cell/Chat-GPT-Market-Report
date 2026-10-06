@@ -481,12 +481,16 @@ function findLatestMarketReportDoc_() {
   return latest;
 }
 
-function marketReportDocInfoFromName_(fileName) {
+function marketReportDocInfoFromName_(fileName, reportContext) {
   const match = String(fileName || '').match(/^マーケットレポート_(\d{4})-(\d{1,2})-(\d{1,2})_(\d{1,2})-(\d{2})$/);
   if (!match) return null;
 
   const date = match[1] + '-' + pad2_(match[2]) + '-' + pad2_(match[3]);
   const time = pad2_(match[4]) + ':' + match[5];
+  if (reportContext) {
+    const context = validateImmutableReportContext_(reportContext);
+    if (date !== context.report_date || time !== context.report_time) throw new Error('Doc/context identity mismatch');
+  }
   return {
     date: date,
     time: time,
@@ -1003,13 +1007,13 @@ function looksLikeHeading_(line) {
   if (/^\d{1,2}[.)]\s+\S+/.test(text) && text.length < 45) return true;
   const heading = normalizeHeading_(text.replace(/[（(][^）)]*[）)]?\s*$/, ''));
   const knownHeadings = [
-    '今日の相場テーマ', '今日のテーマ', '前回からの変化', '16:00から21:00のマーケットの動き', '昨夜のNY市場',
-    '主要市場データ', '主要市場の確認値', '主要市場まとめ', '主要価格', '材料と値動きの整合性',
+    '今日の相場テーマ', '今日のテーマ', '前回からの変化', '08:00からの変化', '12:00からの変化', '16:00からの変化', '16:00から21:00のマーケットの動き', '昨夜のNY市場',
+    '主要市場データ', '主要市場の確認値', '主要市場まとめ', '市場データ', '前営業日終値', '終値一覧', '主要価格', '材料と値動きの整合性',
     '今日の主導市場', '主導市場', '重要ニュース', '金利', '金利分析', '金利・為替',
     'クロスアセット資金フロー', 'クロスアセット', '資金フロー', '需給・ポジション', '需給・ポジショニング',
-    'ポジションの偏り', '今後のイベント', '重要イベント', 'その日の重要イベント', '個別見通し',
-    '6市場の見通し', '個別市場見通し', 'シナリオ分析', 'メインシナリオ', '代替シナリオ',
-    'シナリオが崩れる条件', '崩れる条件', 'リスク管理', '明日への引き継ぎ', '翌東京時間への引き継ぎ', 'まとめ', '結論'
+    'ポジションの偏り', '今後のイベント', '重要イベント', 'その日の重要イベント', '今後の重要イベント', '個別見通し',
+    '6市場の見通し', '個別市場見通し', '主要6市場の短期見通し', 'シナリオ', 'シナリオ分析', 'メインシナリオ', '代替シナリオ',
+    'シナリオが崩れる条件', '崩れる条件', 'リスク管理', 'リスク要因', '注意点', '明日への引き継ぎ', '翌東京時間への引き継ぎ', 'まとめ', '結論'
   ];
   return knownHeadings.some(name => heading === normalizeHeading_(name));
 }
