@@ -12,6 +12,6 @@ OUT OF SCOPE: E–H Publisher/Projection/Portal/Scheduler reorganization; produc
 
 FORBIDDEN SUBSTITUTE: Unit checks or new gate API do not prove that the existing live publishing pipelines enforce these gates. Report remaining deployment bypass separately.
 
-OPEN OUTCOMES: A/B/D/C implementation, fixed-candidate sweep, regression acceptance, external specification readback.
+OPEN OUTCOMES: None within the authorized A/B/D/C foundation task. Deferred: live Publisher/Projection/Portal/Scheduler enforcement, unresolved 2026-10-02_21-00 identity, existing unsafe canonical writer, historical structure/PNG gaps. These are not silently withdrawn.
 
-NEXT ACTION: Complete formal readbacks, implement A, B, D, C in small commits, sweep and repair, accept against SOURCE_SPEC.md.
+NEXT ACTION: Stop after accepted af61a0a and final report. Start Phase E only on the user's next instruction; preserve all deferred outcomes and explicit production restrictions.
