@@ -2,30 +2,30 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-supply-demand",
   "reportDate": "2026-10-06",
-  "generatedAt": "2026-10-06T10:58:56+09:00",
+  "generatedAt": "2026-10-06T18:29:26+09:00",
   "nikkei": {
     "schemaVersion": "2.1.0",
     "pageId": "nikkei225-supply-demand",
     "pageTitle": "日経225需給分析",
-    "generatedAt": "2026-10-06T10:58:56+09:00",
+    "generatedAt": "2026-10-06T18:29:26+09:00",
     "spot": {
       "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
-      "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261005tp.csv",
+      "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261006tp.csv",
       "comment": "NK225E理論価格ファイルの原資産終値。先物とは同一取引日でも時刻が異なるため、表示差は理論ベーシスではなく単純な現物終値対比。",
-      "value": 69946.86,
-      "asOfDate": "2026-10-05",
+      "value": 70683.98,
+      "asOfDate": "2026-10-06",
       "status": "verified",
-      "fetchedAt": "2026-10-06T10:58:56+09:00"
+      "fetchedAt": "2026-10-06T18:29:26+09:00"
     },
     "futures": {
       "sourceName": "JPX / 大阪取引所 日経225先物",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
-      "price": 70370.0,
-      "priceChange": 280.0,
-      "priceChangePercent": 0.3994863746611399,
+      "price": 71120.0,
+      "priceChange": 220.0,
+      "priceChangePercent": 0.3102961918194591,
       "asOfDate": "2026-10-05",
-      "priceAsOf": "2026-10-06T10:32:00+09:00",
+      "priceAsOf": "2026-10-06T17:52:00+09:00",
       "volume": 46813,
       "openInterest": 163582,
       "miniVolume": 660106,
@@ -35,7 +35,7 @@
       "volumeChangePercent": null,
       "miniVolumeChangePercent": null,
       "status": "verified",
-      "fetchedAt": "2026-10-06T10:57:24+09:00",
+      "fetchedAt": "2026-10-06T18:27:40+09:00",
       "previousOpenInterest": 163600,
       "miniPreviousOpenInterest": 284831,
       "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261005open_interest.xlsx"
@@ -55,24 +55,24 @@
       "asOfDate": "2026-09-30",
       "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260930_derivatives_market_data_night.xlsx",
       "status": "stale",
-      "fetchedAt": "2026-10-06T10:58:47+09:00",
+      "fetchedAt": "2026-10-06T18:29:17+09:00",
       "error": "JPXセッション別出来高取得失敗: ValueError: night-session workbook link not found"
     },
     "arbitrage": {
       "sourceName": "JPX 裁定取引の状況",
       "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/",
       "comment": "裁定買い・売りポジションはJPXの全取引参加者報告合計。前々営業日データとして鮮度を分離表示。",
-      "asOfDate": "2026-10-01",
-      "sellBalance": 7985,
-      "buyBalance": 849191,
-      "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt0000026jyd-att/261001.pdf",
-      "sellChange": 4681,
-      "buyChange": -46810,
+      "asOfDate": "2026-10-02",
+      "sellBalance": 7171,
+      "buyBalance": 770219,
+      "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt00000273ex-att/261002.pdf",
+      "sellChange": -814,
+      "buyChange": -78972,
       "status": "verified",
       "frequency": "daily",
-      "lastAttemptAt": "2026-10-06T10:57:22+09:00",
-      "lastSuccessAt": "2026-10-06T10:57:22+09:00",
-      "fetchedAt": "2026-10-06T10:57:22+09:00",
+      "lastAttemptAt": "2026-10-06T18:27:38+09:00",
+      "lastSuccessAt": "2026-10-06T18:27:38+09:00",
+      "fetchedAt": "2026-10-06T18:27:38+09:00",
       "error": null
     },
     "options": {
@@ -82,88 +82,88 @@
       "nextSqDate": "2026-10-09",
       "businessDaysToSq": 3,
       "putCallRatio": null,
-      "iv": 26.63,
+      "iv": 26.13,
       "ivChange": null,
       "asOfDate": "2026-10-06",
       "status": "calculated",
       "error": "Put/Call・IVはJPX列構造を確認できるまで推測せず空欄",
-      "fetchedAt": "2026-10-06T10:58:56+09:00",
+      "fetchedAt": "2026-10-06T18:29:26+09:00",
       "putVolume": null,
       "callVolume": null,
       "putCallStatus": "unavailable",
       "putCallReason": "取得不能（ValueError: JPX当日取引総括CSVが見つかりません）",
       "ivStatus": "verified",
       "ivDefinition": "JPX基準ボラティリティ（NK225E・期近限月）",
-      "baseVolatility": 26.63,
-      "referenceStrikePrice": 70000.0,
-      "referencePutSettlementVolatility": 28.828599999999998,
-      "referenceCallSettlementVolatility": 28.138999999999996,
+      "baseVolatility": 26.13,
+      "referenceStrikePrice": 70625.0,
+      "referencePutSettlementVolatility": 24.7367,
+      "referenceCallSettlementVolatility": 26.6853,
       "ivContractMonth": "202610",
-      "ivUnderlyingClose": 69946.86,
-      "ivSourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261005tp.csv",
-      "ivAsOfDate": "2026-10-05"
+      "ivUnderlyingClose": 70683.98,
+      "ivSourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261006tp.csv",
+      "ivAsOfDate": "2026-10-06"
     },
     "participantFlow": {
       "sourceName": "JPX 取引参加者別取引高（手口上位一覧）",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/participant-volume/",
       "comment": "日次ファイルは売買方向別ではなく取引高上位です。取引高上位を売り・買いと読み替えません。",
-      "asOfDate": "2026-10-05",
+      "asOfDate": "2026-10-06",
       "contract": "NIKKEI 225 FUT 2612",
       "leaders": [
         {
           "name": "ＡＢＮクリアリン証券",
-          "volume": 11705,
+          "volume": 9437,
           "rank": 1
         },
         {
           "name": "ソシエテＧ証券",
-          "volume": 10368,
+          "volume": 9310,
           "rank": 2
         },
         {
           "name": "バークレイズ証券",
-          "volume": 5179,
+          "volume": 4403,
           "rank": 3
         },
         {
-          "name": "ゴールドマン証券",
-          "volume": 2467,
+          "name": "サスケハナ・ホンコン",
+          "volume": 1770,
           "rank": 4
         },
         {
-          "name": "サスケハナ・ホンコン",
-          "volume": 2180,
+          "name": "野村証券",
+          "volume": 1546,
           "rank": 5
         },
         {
-          "name": "モルガンＭＵＦＧ証券",
-          "volume": 1962,
+          "name": "ドイツ証券",
+          "volume": 1374,
           "rank": 6
         },
         {
-          "name": "ＪＰモルガン証券",
-          "volume": 1633,
+          "name": "ゴールドマン証券",
+          "volume": 1273,
           "rank": 7
         },
         {
-          "name": "ドイツ証券",
-          "volume": 1540,
+          "name": "ＪＰモルガン証券",
+          "volume": 1101,
           "rank": 8
         },
         {
-          "name": "野村証券",
-          "volume": 1121,
+          "name": "三菱ＵＦＪ証券",
+          "volume": 940,
           "rank": 9
         },
         {
-          "name": "三菱ＵＦＪ証券",
-          "volume": 892,
+          "name": "みずほ証券",
+          "volume": 921,
           "rank": 10
         }
       ],
-      "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202610/20261005_volume_by_participant_whole_day.xlsx",
+      "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202610/20261006_volume_by_participant_whole_day.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-10-06T10:58:49+09:00"
+      "fetchedAt": "2026-10-06T18:29:19+09:00"
     },
     "foreignInvestors": {
       "sourceName": "JPX 投資部門別売買状況",
@@ -776,7 +776,7 @@
         ]
       },
       "status": "verified",
-      "fetchedAt": "2026-10-06T10:58:46+09:00"
+      "fetchedAt": "2026-10-06T18:29:16+09:00"
     },
     "participantOpenInterest": {
       "sourceName": "JPX 取引参加者別建玉残高",
@@ -890,18 +890,18 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20261002_indexfut_oi_by_tp.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-10-06T10:58:50+09:00"
+      "fetchedAt": "2026-10-06T18:29:20+09:00"
     },
     "shortSelling": {
       "sourceName": "JPX 空売り集計",
       "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/",
       "comment": "空売り比率は価格規制あり・なしの合計。5日・20日平均と比較し、単独で弱気判定しません。",
-      "asOfDate": "2026-10-05",
-      "ratio": 38.8,
-      "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt0000026jpq-att/261005-m.pdf",
+      "asOfDate": "2026-10-06",
+      "ratio": 38.0,
+      "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002753i-att/261006-m.pdf",
       "avg5": null,
       "avg20": null,
-      "sampleCount": 3,
+      "sampleCount": 4,
       "series": [
         {
           "asOfDate": "2026-10-01",
@@ -917,10 +917,15 @@
           "asOfDate": "2026-10-05",
           "ratio": 38.8,
           "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt0000026jpq-att/261005-m.pdf"
+        },
+        {
+          "asOfDate": "2026-10-06",
+          "ratio": 38.0,
+          "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002753i-att/261006-m.pdf"
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-10-06T10:57:23+09:00"
+      "fetchedAt": "2026-10-06T18:27:39+09:00"
     },
     "margin": {
       "sourceName": "JPX 信用取引現在高",
@@ -981,7 +986,7 @@
         }
       ],
       "status": "stale",
-      "fetchedAt": "2026-10-06T10:57:24+09:00",
+      "fetchedAt": "2026-10-06T18:27:40+09:00",
       "error": "JPX信用需給取得失敗: ValueError: weekly margin total monetary row not found"
     },
     "assessment": {
@@ -1277,19 +1282,19 @@
       "market": null,
       "status": "partial",
       "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202610.xlsx",
-      "fetchedAt": "2026-10-06T10:58:53+09:00",
+      "fetchedAt": "2026-10-06T18:29:24+09:00",
       "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
     },
     "nikkeiFuturesDailyHistory": [
       {
         "asOfDate": "2026-10-05",
-        "price": 70370.0,
+        "price": 71120.0,
         "openInterest": 163582,
         "volume": 46813,
         "sourceName": "JPX / 大阪取引所 日経225先物",
         "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
         "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261005open_interest.xlsx",
-        "capturedAt": "2026-10-06T10:58:53+09:00",
+        "capturedAt": "2026-10-06T18:29:23+09:00",
         "status": "verified"
       }
     ],
@@ -1306,7 +1311,7 @@
       "status": "verified",
       "releaseFrequency": "weekly",
       "lookbackWeeks": 52,
-      "fetchedAt": "2026-10-06T10:58:57+09:00",
+      "fetchedAt": "2026-10-06T18:29:27+09:00",
       "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
       "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
       "priceStatus": "available",
@@ -1745,8 +1750,8 @@
   "market": {
     "schemaVersion": "1.1.0",
     "pageId": "market-data",
-    "generatedAt": "2026-10-06T10:47:31+09:00",
-    "reportSlot": "08:00",
+    "generatedAt": "2026-10-06T18:08:27+09:00",
+    "reportSlot": "12:00",
     "overallStatus": "degraded",
     "missingRequired": [],
     "fallbackCount": 1,
@@ -1755,17 +1760,17 @@
         "id": "gold",
         "displayName": "金",
         "dashboardKey": "gold",
-        "value": 4163.2,
-        "displayValue": "4,163.20",
-        "previousClose": 4162.2998046875,
-        "change": 0.9001953124998181,
-        "changePercent": 0.021627353980746555,
-        "changeText": "+0.90 / +0.02%",
+        "value": 4181.2,
+        "displayValue": "4,181.20",
+        "previousClose": 4156.7998046875,
+        "change": 24.400195312499818,
+        "changePercent": 0.5869947185088042,
+        "changeText": "+24.40 / +0.59%",
         "unit": "USD/oz",
         "marketType": "continuous_futures",
         "session": "global",
-        "asOf": "2026-10-06T10:37:28+09:00",
-        "fetchedAt": "2026-10-06T10:47:32+09:00",
+        "asOf": "2026-10-06T17:58:22+09:00",
+        "fetchedAt": "2026-10-06T18:08:27+09:00",
         "sourceId": "yahoo_gc_f",
         "sourceName": "Yahoo Finance Gold Futures",
         "sourceUrl": "https://finance.yahoo.com/quote/GC=F/",
@@ -1774,11 +1779,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-10-06T10:47:35+09:00",
+        "lastVerifiedAt": "2026-10-06T18:08:32+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-10-06T10:47:31+09:00",
+        "lastAttemptAt": "2026-10-06T18:08:27+09:00",
         "lastError": "stooq_xauusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=xauusd&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1786,17 +1791,17 @@
         "id": "wti",
         "displayName": "WTI原油",
         "dashboardKey": "oil",
-        "value": 89.46,
-        "displayValue": "89.46",
-        "previousClose": 91.11000061035156,
-        "change": -1.6500006103515688,
-        "changePercent": -1.8109983528680873,
-        "changeText": "-1.65 / -1.81%",
+        "value": 87.93,
+        "displayValue": "87.93",
+        "previousClose": 89.43000030517578,
+        "change": -1.5000003051757744,
+        "changePercent": -1.677289835689466,
+        "changeText": "-1.50 / -1.68%",
         "unit": "USD/bbl",
         "marketType": "continuous_futures",
         "session": "global",
-        "asOf": "2026-10-06T10:37:33+09:00",
-        "fetchedAt": "2026-10-06T10:47:35+09:00",
+        "asOf": "2026-10-06T17:58:28+09:00",
+        "fetchedAt": "2026-10-06T18:08:32+09:00",
         "sourceId": "yahoo_cl_f",
         "sourceName": "Yahoo Finance WTI Crude Oil Futures",
         "sourceUrl": "https://finance.yahoo.com/quote/CL=F/",
@@ -1805,11 +1810,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-10-06T10:47:39+09:00",
+        "lastVerifiedAt": "2026-10-06T18:08:36+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-10-06T10:47:31+09:00",
+        "lastAttemptAt": "2026-10-06T18:08:27+09:00",
         "lastError": "stooq_cl_f: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=cl.f&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1817,17 +1822,17 @@
         "id": "nikkei225_futures_ose",
         "displayName": "日経225先物（大阪取引所）",
         "dashboardKey": "nikkei",
-        "value": 70370.0,
-        "displayValue": "70,370",
-        "previousClose": 70090.0,
-        "change": 280.0,
-        "changePercent": 0.3994863746611399,
-        "changeText": "+280 / +0.40%",
+        "value": 71120.0,
+        "displayValue": "71,120",
+        "previousClose": 70900.0,
+        "change": 220.0,
+        "changePercent": 0.3102961918194591,
+        "changeText": "+220 / +0.31%",
         "unit": "円",
         "marketType": "futures_ose",
         "session": "day_through",
-        "asOf": "2026-10-06T10:32:00+09:00",
-        "fetchedAt": "2026-10-06T10:47:40+09:00",
+        "asOf": "2026-10-06T17:52:00+09:00",
+        "fetchedAt": "2026-10-06T18:08:38+09:00",
         "sourceId": "jpx_ose_futures_quote",
         "sourceName": "JPX/OSE Futures Quotes",
         "sourceUrl": "https://port.jpx.co.jp/jpxhp/main/index.aspx?disptype=day_through&f=e_future",
@@ -1836,11 +1841,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-10-06T10:47:40+09:00",
+        "lastVerifiedAt": "2026-10-06T18:08:38+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-10-06T10:47:31+09:00",
+        "lastAttemptAt": "2026-10-06T18:08:27+09:00",
         "lastError": "nikkei_nk225f_profile: REFERENCE_ONLY: reference source is not allowed for dashboard publication",
         "retryPreserved": false
       },
@@ -1848,17 +1853,17 @@
         "id": "usdjpy",
         "displayName": "USD/JPY",
         "dashboardKey": "usdjpy",
-        "value": 157.86,
-        "displayValue": "157.86",
+        "value": 158.195,
+        "displayValue": "158.19",
         "previousClose": 157.73399353027344,
-        "change": 0.12600646972657614,
-        "changePercent": 0.07988542412855626,
-        "changeText": "+0.13 / +0.08%",
+        "change": 0.4610064697265557,
+        "changePercent": 0.2922683052705821,
+        "changeText": "+0.46 / +0.29%",
         "unit": "円",
         "marketType": "spot",
         "session": "continuous",
-        "asOf": "2026-10-06T10:47:39+09:00",
-        "fetchedAt": "2026-10-06T10:47:40+09:00",
+        "asOf": "2026-10-06T18:08:38+09:00",
+        "fetchedAt": "2026-10-06T18:08:39+09:00",
         "sourceId": "yahoo_jpy_x",
         "sourceName": "Yahoo Finance USD/JPY",
         "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
@@ -1867,11 +1872,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-10-06T10:47:43+09:00",
+        "lastVerifiedAt": "2026-10-06T18:08:43+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-10-06T10:47:31+09:00",
+        "lastAttemptAt": "2026-10-06T18:08:27+09:00",
         "lastError": "stooq_usdjpy: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1879,17 +1884,17 @@
         "id": "eurusd",
         "displayName": "EUR/USD",
         "dashboardKey": "eurusd",
-        "value": 1.1228,
-        "displayValue": "1.12280",
+        "value": 1.1244,
+        "displayValue": "1.12440",
         "previousClose": 1.1254544258117676,
-        "change": -0.002654425811767558,
-        "changePercent": -0.23585369170795456,
-        "changeText": "-0.00265 / -0.24%",
+        "change": -0.001054425811767512,
+        "changePercent": -0.09368889468864827,
+        "changeText": "-0.00105 / -0.09%",
         "unit": "USD",
         "marketType": "spot",
         "session": "continuous",
-        "asOf": "2026-10-06T10:46:49+09:00",
-        "fetchedAt": "2026-10-06T10:47:43+09:00",
+        "asOf": "2026-10-06T18:07:48+09:00",
+        "fetchedAt": "2026-10-06T18:08:43+09:00",
         "sourceId": "yahoo_eurusd_x",
         "sourceName": "Yahoo Finance EUR/USD",
         "sourceUrl": "https://finance.yahoo.com/quote/EURUSD=X/",
@@ -1898,11 +1903,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-10-06T10:47:46+09:00",
+        "lastVerifiedAt": "2026-10-06T18:08:47+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-10-06T10:47:31+09:00",
+        "lastAttemptAt": "2026-10-06T18:08:27+09:00",
         "lastError": "stooq_eurusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=eurusd&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1910,17 +1915,17 @@
         "id": "btcusd",
         "displayName": "BTCUSD",
         "dashboardKey": "btc",
-        "value": 85706.31,
-        "displayValue": "85,706",
-        "previousClose": 86480.3046875,
-        "change": -773.9946875000023,
-        "changePercent": -0.8949953290484647,
-        "changeText": "-774 / -0.89%",
+        "value": 85986.35,
+        "displayValue": "85,986",
+        "previousClose": 85786.59375,
+        "change": 199.75625000000582,
+        "changePercent": 0.23285252539824164,
+        "changeText": "+200 / +0.23%",
         "unit": "USD",
         "marketType": "spot_crypto",
         "session": "continuous",
-        "asOf": "2026-10-06T10:47:45+09:00",
-        "fetchedAt": "2026-10-06T10:47:47+09:00",
+        "asOf": "2026-10-06T18:08:44+09:00",
+        "fetchedAt": "2026-10-06T18:08:47+09:00",
         "sourceId": "yahoo_btc_usd",
         "sourceName": "Yahoo Finance Bitcoin USD",
         "sourceUrl": "https://finance.yahoo.com/quote/BTC-USD/",
@@ -1929,11 +1934,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-10-06T10:47:50+09:00",
+        "lastVerifiedAt": "2026-10-06T18:08:51+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-10-06T10:47:31+09:00",
+        "lastAttemptAt": "2026-10-06T18:08:27+09:00",
         "lastError": "stooq_btcusd: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=btcusd&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -1951,7 +1956,7 @@
         "marketType": "index",
         "session": "daily",
         "asOf": "2026-10-05T09:00:00+09:00",
-        "fetchedAt": "2026-10-06T10:47:50+09:00",
+        "fetchedAt": "2026-10-06T18:08:51+09:00",
         "sourceId": "cboe_vix_history",
         "sourceName": "Cboe VIX Historical Data",
         "sourceUrl": "https://www.cboe.com/tradable_products/vix/vix_historical_data/",
@@ -1960,11 +1965,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-10-06T10:47:50+09:00",
+        "lastVerifiedAt": "2026-10-06T18:08:52+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-10-06T10:47:31+09:00",
+        "lastAttemptAt": "2026-10-06T18:08:27+09:00",
         "lastError": "",
         "retryPreserved": false
       },
@@ -1972,17 +1977,17 @@
         "id": "nikkei_vi",
         "displayName": "日経VI",
         "dashboardKey": "nikkei_vi",
-        "value": 28.89,
-        "displayValue": "28.89",
-        "previousClose": 22.87,
-        "change": 6.02,
-        "changePercent": 26.32,
-        "changeText": "+6.02 / +26.32%",
+        "value": 29.2,
+        "displayValue": "29.20",
+        "previousClose": 22.869999999999997,
+        "change": 6.33,
+        "changePercent": 27.68,
+        "changeText": "+6.33 / +27.68%",
         "unit": "pt",
         "marketType": "index",
         "session": "daily",
-        "asOf": "2026-10-06T10:47:00+09:00",
-        "fetchedAt": "2026-10-06T10:47:51+09:00",
+        "asOf": "2026-10-06T15:50:00+09:00",
+        "fetchedAt": "2026-10-06T18:08:53+09:00",
         "sourceId": "nikkei_nk225vi_profile",
         "sourceName": "Nikkei 225 VI official profile",
         "sourceUrl": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
@@ -1991,11 +1996,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-10-06T10:47:51+09:00",
+        "lastVerifiedAt": "2026-10-06T18:08:53+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-10-06T10:47:31+09:00",
+        "lastAttemptAt": "2026-10-06T18:08:27+09:00",
         "lastError": "",
         "retryPreserved": false
       },
@@ -2003,17 +2008,17 @@
         "id": "fear_greed",
         "displayName": "Fear & Greed Index",
         "dashboardKey": "fear_greed",
-        "value": 43.1428571428571,
+        "value": 43.1142857142857,
         "displayValue": "43",
-        "previousClose": 31.1714285714286,
-        "change": 11.971428571428504,
-        "changePercent": 38.40513290559095,
-        "changeText": "+12 / +38.41%",
+        "previousClose": 43.0285714285714,
+        "change": 0.08571428571430317,
+        "changePercent": 0.19920318725104025,
+        "changeText": "+0 / +0.20%",
         "unit": "score",
         "marketType": "sentiment",
         "session": "daily",
-        "asOf": "2026-10-06T08:59:42+09:00",
-        "fetchedAt": "2026-10-06T10:47:51+09:00",
+        "asOf": "2026-10-06T17:43:31+09:00",
+        "fetchedAt": "2026-10-06T18:08:55+09:00",
         "sourceId": "cnn_fear_greed_graphdata",
         "sourceName": "CNN Fear & Greed graphdata",
         "sourceUrl": "https://edition-prod-cf.sitemirror.cnn.com/markets/fear-and-greed",
@@ -2022,11 +2027,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-10-06T10:47:51+09:00",
+        "lastVerifiedAt": "2026-10-06T18:08:55+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-10-06T10:47:31+09:00",
+        "lastAttemptAt": "2026-10-06T18:08:27+09:00",
         "lastError": "",
         "retryPreserved": false
       },
@@ -2034,17 +2039,17 @@
         "id": "crypto_fear_greed",
         "displayName": "Crypto Fear & Greed",
         "dashboardKey": "crypto_fear_greed",
-        "value": 70.0,
-        "displayValue": "70",
-        "previousClose": 67.0,
-        "change": 3.0,
-        "changePercent": 4.477611940298498,
-        "changeText": "+3 / +4.48%",
+        "value": 67.0,
+        "displayValue": "67",
+        "previousClose": 70.0,
+        "change": -3.0,
+        "changePercent": -4.285714285714281,
+        "changeText": "-3 / -4.29%",
         "unit": "score",
         "marketType": "crypto_sentiment",
         "session": "daily",
-        "asOf": "2026-10-04T09:00:00+09:00",
-        "fetchedAt": "2026-10-05T23:29:28+09:00",
+        "asOf": "2026-10-05T09:00:00+09:00",
+        "fetchedAt": "2026-10-06T17:54:04+09:00",
         "sourceId": "coinmarketcap_crypto_fear_greed",
         "sourceName": "CoinMarketCap Crypto Fear and Greed Index",
         "sourceUrl": "https://coinmarketcap.com/ja/charts/fear-and-greed-index/",
@@ -2053,11 +2058,11 @@
         "verificationStatus": "fallback",
         "freshnessStatus": "last_verified",
         "fallbackUsed": true,
-        "lastVerifiedAt": "2026-10-05T23:29:28+09:00",
+        "lastVerifiedAt": "2026-10-06T17:54:04+09:00",
         "error": "coinmarketcap_crypto_fear_greed: HTTP_429; coinmarketcap_crypto_fear_greed: HTTP_429; coinmarketcap_crypto_fear_greed: HTTP_429",
         "note": "今回の新規取得に失敗したため、前回確認値を保持しています。",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-10-06T10:47:31+09:00",
+        "lastAttemptAt": "2026-10-06T18:08:27+09:00",
         "lastError": "coinmarketcap_crypto_fear_greed: HTTP_429: HTTP 429 https://pro-api.coinmarketcap.com/public-api/v3/fear-and-greed/historical?start=1&limit=2",
         "retryPreserved": false
       }
@@ -2198,8 +2203,8 @@
     ],
     "acquisition": {
       "strategy": "staged_retry",
-      "windowStartedAt": "2026-10-06T10:47:31+09:00",
-      "lastAttemptAt": "2026-10-06T10:47:31+09:00",
+      "windowStartedAt": "2026-10-06T18:08:27+09:00",
+      "lastAttemptAt": "2026-10-06T18:08:27+09:00",
       "runCount": 1,
       "mode": "full",
       "targetedSymbols": [
@@ -10066,39 +10071,39 @@
         "title": "東京市場 朝の寄り付き分析",
         "flag": "JP",
         "status": "東京寄り付きデータ取得済み",
-        "dataDate": "2026-10-05",
-        "updatedAt": "2026-10-05T14:27:02+09:00",
+        "dataDate": "2026-10-06",
+        "updatedAt": "2026-10-06T15:11:31+09:00",
         "source": "Yahoo Finance chart API（日経225・FX・CME参考先物） / Google Finance（TOPIX）",
         "metrics": [
           {
             "label": "日経225",
-            "value": "69,754.43",
-            "change": "+2.12%",
-            "note": "寄り値 69,113.74 / ギャップ +1.18% / 寄り後 +0.93%"
+            "value": "70,751.33",
+            "change": "+1.15%",
+            "note": "寄り値 69,954.61 / ギャップ +0.01% / 寄り後 +1.14%"
           },
           {
             "label": "TOPIX",
-            "value": "4,134.09",
-            "change": "+1.05%",
-            "note": "寄り値 4,121.15 / ギャップ +0.73% / 寄り後 +0.31%"
+            "value": "4,188.45",
+            "change": "+1.04%",
+            "note": "寄り値 4,162.26 / ギャップ +0.41% / 寄り後 +0.63%"
           },
           {
             "label": "USD/JPY",
-            "value": "157.959",
-            "change": "+0.13%",
-            "note": "08:55以降の変化 / 08:55近辺 157.748"
+            "value": "158.067",
+            "change": "+0.09%",
+            "note": "08:55以降の変化 / 08:55近辺 157.918"
           },
           {
             "label": "日経225先物（CME参考）",
-            "value": "69,895.00",
-            "change": "-0.02%",
+            "value": "70,925.00",
+            "change": "+1.13%",
             "note": "CME参考値。大阪取引所先物とは別銘柄として表示"
           }
         ],
         "insights": [
           "日経225はギャップアップ後も買いが継続。寄り付きの強さが維持されています。",
           "日経225とTOPIXが同方向で、市場全体の方向は比較的整合的です。",
-          "USD/JPYは08:55以降 +0.13%。日本株の外需・先物方向との整合性を確認します。"
+          "USD/JPYは08:55以降 +0.09%。日本株の外需・先物方向との整合性を確認します。"
         ],
         "judgement": "寄り後も買い優勢。先物・USD/JPY・TOPIXが追随する限り、東京時間は上方向を優先します。",
         "errors": []
@@ -10223,7 +10228,7 @@
         "steps": [
           {
             "label": "東京市場",
-            "text": "2026-10-05 / 日経225 69,754.43 +2.12% / TOPIX 4,134.09 +1.05%"
+            "text": "2026-10-06 / 日経225 70,751.33 +1.15% / TOPIX 4,188.45 +1.04%"
           },
           {
             "label": "米国プレマーケット",
@@ -10231,20 +10236,20 @@
           },
           {
             "label": "米国通常市場（直近終値）",
-            "text": "S&P500 +56.27（+0.73%） / Nasdaq +319.26（+1.19%）"
+            "text": "S&P500 +51.23（+0.66%） / Nasdaq +286.45（+1.05%）"
           }
         ],
         "conclusion": "東京市場と米国株先物の方向が一致。日米で同じリスク選好が引き継がれている可能性が高まっています。"
       }
     },
-    "sessionDataUpdatedAt": "2026-10-06T04:46:38+09:00",
+    "sessionDataUpdatedAt": "2026-10-06T15:11:32+09:00",
     "pageStatus": "ok",
     "preopen": {
       "status": "unavailable",
       "freshness": "unavailable",
       "dataDate": null,
       "asOf": null,
-      "updatedAt": "2026-10-05T13:30:34+09:00",
+      "updatedAt": "2026-10-06T14:16:37+09:00",
       "source": {
         "tradersWeb": {
           "name": "トレーダーズ・ウェブ Market Flash",
@@ -10255,7 +10260,7 @@
           "url": "https://s.kabutan.jp/news/"
         }
       },
-      "error": "当日の寄り前データを取得できませんでした: 当日の記事が見つかりません: index=https://www.traders.co.jp/market_jp/wadai, expected=2026-10-05",
+      "error": "当日の寄り前データを取得できませんでした: 当日の記事が見つかりません: index=https://www.traders.co.jp/market_jp/wadai, expected=2026-10-06",
       "summary": {},
       "tradersWebHighlights": [],
       "gainers": [],
@@ -21619,127 +21624,197 @@
     "sourceName": "JPX公表データ集計（公開サイト経由）",
     "sourceUrl": "https://matsutoushi.github.io/nk225-option-site/",
     "officialSourceUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/daily/index.html",
-    "asOfDate": "2026-10-02",
-    "fetchedAt": "2026-10-05T16:07:43+09:00",
+    "asOfDate": "2026-10-05",
+    "fetchedAt": "2026-10-06T16:36:50+09:00",
     "optionContractMonth": "202610",
     "strikeOiCoverage": "10月限・前営業日終値の上下3,000円範囲",
     "strikeOpenInterest": [
       {
-        "strike": 71250,
-        "callOi": 147,
+        "strike": 72750,
+        "callOi": 55,
         "putOi": 0,
         "callOiChange": 26,
         "putOiChange": 26
       },
       {
-        "strike": 71125,
-        "callOi": 3,
-        "putOi": 0,
-        "callOiChange": 71250,
+        "strike": 72500,
+        "callOi": 435,
+        "putOi": 1,
+        "callOiChange": 72750,
         "putOiChange": null
       },
       {
-        "strike": 71000,
-        "callOi": 1905,
+        "strike": 72250,
+        "callOi": 172,
+        "putOi": 0,
+        "callOiChange": 72500,
+        "putOiChange": 50
+      },
+      {
+        "strike": 72125,
+        "callOi": 5,
+        "putOi": 0,
+        "callOiChange": 72250,
+        "putOiChange": 0
+      },
+      {
+        "strike": 72000,
+        "callOi": 3248,
         "putOi": 1,
+        "callOiChange": 72125,
+        "putOiChange": null
+      },
+      {
+        "strike": 71875,
+        "callOi": 3,
+        "putOi": 0,
+        "callOiChange": 72000,
+        "putOiChange": 30
+      },
+      {
+        "strike": 71750,
+        "callOi": 121,
+        "putOi": 90,
+        "callOiChange": 71875,
+        "putOiChange": 10
+      },
+      {
+        "strike": 71625,
+        "callOi": 4,
+        "putOi": 0,
+        "callOiChange": 71750,
+        "putOiChange": 0
+      },
+      {
+        "strike": 71500,
+        "callOi": 814,
+        "putOi": 0,
+        "callOiChange": 71625,
+        "putOiChange": null
+      },
+      {
+        "strike": 71375,
+        "callOi": 0,
+        "putOi": 0,
+        "callOiChange": 71500,
+        "putOiChange": 0
+      },
+      {
+        "strike": 71250,
+        "callOi": 138,
+        "putOi": 0,
+        "callOiChange": 71375,
+        "putOiChange": null
+      },
+      {
+        "strike": 71125,
+        "callOi": 12,
+        "putOi": 0,
+        "callOiChange": 71250,
+        "putOiChange": 20
+      },
+      {
+        "strike": 71000,
+        "callOi": 1394,
+        "putOi": 8,
         "callOiChange": 71125,
         "putOiChange": null
       },
       {
         "strike": 70875,
-        "callOi": 2,
+        "callOi": 4,
         "putOi": 0,
         "callOiChange": 71000,
-        "putOiChange": -50
+        "putOiChange": 28
       },
       {
         "strike": 70750,
-        "callOi": 292,
-        "putOi": 0,
+        "callOi": 229,
+        "putOi": 1,
         "callOiChange": 70875,
         "putOiChange": null
       },
       {
         "strike": 70625,
-        "callOi": 24,
+        "callOi": 21,
         "putOi": 0,
         "callOiChange": 70750,
         "putOiChange": null
       },
       {
         "strike": 70500,
-        "callOi": 440,
-        "putOi": 0,
+        "callOi": 426,
+        "putOi": 2,
         "callOiChange": 70625,
         "putOiChange": null
       },
       {
         "strike": 70375,
-        "callOi": 128,
+        "callOi": 13,
         "putOi": 0,
         "callOiChange": 70500,
-        "putOiChange": 0
+        "putOiChange": -1
       },
       {
         "strike": 70250,
-        "callOi": 53,
-        "putOi": 4,
+        "callOi": 75,
+        "putOi": 6,
         "callOiChange": 70375,
         "putOiChange": null
       },
       {
         "strike": 70125,
-        "callOi": 5,
+        "callOi": 7,
         "putOi": 0,
         "callOiChange": 70250,
         "putOiChange": null
       },
       {
         "strike": 70000,
-        "callOi": 2716,
-        "putOi": 114,
+        "callOi": 1946,
+        "putOi": 231,
         "callOiChange": 70125,
         "putOiChange": null
       },
       {
         "strike": 69875,
-        "callOi": 118,
-        "putOi": 0,
+        "callOi": 120,
+        "putOi": 51,
         "callOiChange": 70000,
-        "putOiChange": -75
+        "putOiChange": -50
       },
       {
         "strike": 69750,
-        "callOi": 154,
-        "putOi": 1,
+        "callOi": 129,
+        "putOi": 49,
         "callOiChange": 69875,
         "putOiChange": null
       },
       {
         "strike": 69625,
         "callOi": 99,
-        "putOi": 0,
+        "putOi": 42,
         "callOiChange": 69750,
-        "putOiChange": null
+        "putOiChange": 454
       },
       {
         "strike": 69500,
-        "callOi": 499,
-        "putOi": 1,
+        "callOi": 440,
+        "putOi": 208,
         "callOiChange": 69625,
         "putOiChange": null
       },
       {
         "strike": 69375,
-        "callOi": 3,
+        "callOi": 12,
         "putOi": 0,
         "callOiChange": 69500,
-        "putOiChange": null
+        "putOiChange": 1
       },
       {
         "strike": 69250,
-        "callOi": 36,
-        "putOi": 2,
+        "callOi": 35,
+        "putOi": 34,
         "callOiChange": 69375,
         "putOiChange": null
       },
@@ -21752,22 +21827,22 @@
       },
       {
         "strike": 69000,
-        "callOi": 2647,
-        "putOi": 256,
+        "callOi": 2610,
+        "putOi": 489,
         "callOiChange": 69125,
         "putOiChange": null
       },
       {
         "strike": 68875,
-        "callOi": 159,
-        "putOi": 0,
+        "callOi": 158,
+        "putOi": 1,
         "callOiChange": 69000,
         "putOiChange": 0
       },
       {
         "strike": 68750,
-        "callOi": 375,
-        "putOi": 17,
+        "callOi": 190,
+        "putOi": 28,
         "callOiChange": 68875,
         "putOiChange": null
       },
@@ -21780,50 +21855,50 @@
       },
       {
         "strike": 68500,
-        "callOi": 1472,
-        "putOi": 154,
+        "callOi": 1464,
+        "putOi": 171,
         "callOiChange": 68625,
         "putOiChange": null
       },
       {
         "strike": 68375,
         "callOi": 14,
-        "putOi": 61,
+        "putOi": 63,
         "callOiChange": 68500,
         "putOiChange": 0
       },
       {
         "strike": 68250,
-        "callOi": 123,
-        "putOi": 207,
+        "callOi": 122,
+        "putOi": 245,
         "callOiChange": 68375,
         "putOiChange": null
       },
       {
         "strike": 68125,
         "callOi": 68,
-        "putOi": 1,
+        "putOi": 2,
         "callOiChange": 68250,
         "putOiChange": null
       },
       {
         "strike": 68000,
-        "callOi": 2290,
-        "putOi": 732,
+        "callOi": 2162,
+        "putOi": 1009,
         "callOiChange": 68125,
         "putOiChange": null
       },
       {
         "strike": 67875,
         "callOi": 21,
-        "putOi": 0,
+        "putOi": 1,
         "callOiChange": 68000,
         "putOiChange": 0
       },
       {
         "strike": 67750,
-        "callOi": 1050,
-        "putOi": 130,
+        "callOi": 194,
+        "putOi": 70,
         "callOiChange": 67875,
         "putOiChange": null
       },
@@ -21836,8 +21911,8 @@
       },
       {
         "strike": 67500,
-        "callOi": 887,
-        "putOi": 289,
+        "callOi": 883,
+        "putOi": 353,
         "callOiChange": 67625,
         "putOiChange": null
       },
@@ -21851,7 +21926,7 @@
       {
         "strike": 67250,
         "callOi": 64,
-        "putOi": 26,
+        "putOi": 32,
         "callOiChange": 67375,
         "putOiChange": null
       },
@@ -21864,114 +21939,23 @@
       },
       {
         "strike": 67000,
-        "callOi": 1546,
-        "putOi": 1492,
+        "callOi": 1535,
+        "putOi": 1344,
         "callOiChange": 67125,
         "putOiChange": null
-      },
-      {
-        "strike": 66875,
-        "callOi": 35,
-        "putOi": 5,
-        "callOiChange": 67000,
-        "putOiChange": 0
-      },
-      {
-        "strike": 66750,
-        "callOi": 151,
-        "putOi": 35,
-        "callOiChange": 66875,
-        "putOiChange": null
-      },
-      {
-        "strike": 66625,
-        "callOi": 66,
-        "putOi": 0,
-        "callOiChange": 66750,
-        "putOiChange": null
-      },
-      {
-        "strike": 66500,
-        "callOi": 293,
-        "putOi": 558,
-        "callOiChange": 66625,
-        "putOiChange": null
-      },
-      {
-        "strike": 66375,
-        "callOi": 95,
-        "putOi": 2,
-        "callOiChange": 66500,
-        "putOiChange": 0
-      },
-      {
-        "strike": 66250,
-        "callOi": 86,
-        "putOi": 163,
-        "callOiChange": 66375,
-        "putOiChange": null
-      },
-      {
-        "strike": 66125,
-        "callOi": 35,
-        "putOi": 86,
-        "callOiChange": 66250,
-        "putOiChange": 3
-      },
-      {
-        "strike": 66000,
-        "callOi": 2993,
-        "putOi": 1694,
-        "callOiChange": 66125,
-        "putOiChange": null
-      },
-      {
-        "strike": 65875,
-        "callOi": 84,
-        "putOi": 19,
-        "callOiChange": 66000,
-        "putOiChange": 0
-      },
-      {
-        "strike": 65750,
-        "callOi": 135,
-        "putOi": 173,
-        "callOiChange": 65875,
-        "putOiChange": null
-      },
-      {
-        "strike": 65625,
-        "callOi": 31,
-        "putOi": 5,
-        "callOiChange": 65750,
-        "putOiChange": 0
-      },
-      {
-        "strike": 65500,
-        "callOi": 258,
-        "putOi": 592,
-        "callOiChange": 65625,
-        "putOiChange": null
-      },
-      {
-        "strike": 65375,
-        "callOi": 7,
-        "putOi": 247,
-        "callOiChange": 65500,
-        "putOiChange": 0
       }
     ],
-    "putCallRatio": 0.3265745148297327,
+    "putCallRatio": 0.2337279609775926,
     "putCallDefinition": "表示範囲の建玉残高ベース（Put OI / Call OI）",
-    "putVolume": 40387,
-    "callVolume": 14862,
-    "publishedPutCallVolumeRatio": 2.717,
-    "publishedPutCallVolumeRatioPrevious": 1.43,
+    "putVolume": 36635,
+    "callVolume": 23876,
+    "publishedPutCallVolumeRatio": 1.534,
+    "publishedPutCallVolumeRatioPrevious": 2.717,
     "publishedPutCallDefinition": "出来高ベース（Put出来高 / Call出来高）",
     "upperCallConcentrationStrike": null,
     "lowerPutConcentrationStrike": null,
     "nextSqDate": "2026-10-09",
-    "businessDaysToSq": 5,
+    "businessDaysToSq": 3,
     "comment": "JPX公表データを基礎にした公開集計をフォールバック利用。権利行使価格別建玉・前日比・出来高PCRを取得し、方向予想ではなくヘッジ圧力が変わりやすい価格帯の確認に使用する。"
   }
 }
