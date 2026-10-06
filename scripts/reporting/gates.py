@@ -90,7 +90,7 @@ def validate_png(data):
 class Transaction:
     context: ReportContext
     snapshot: MarketDataSnapshot
-    report: ReportObject
+    report: ReportObject | None = None
     passed: tuple[str, ...] = ()
     evidence: FrozenMap = FrozenMap(())
     manifest: FrozenMap | None = None
@@ -104,7 +104,7 @@ class Transaction:
         return replace(self, passed=self.passed+(gate,), evidence=freeze(records))
 
     @classmethod
-    def begin(cls, context, snapshot, report):
+    def begin(cls, context, snapshot, report=None):
         tx = cls(context, snapshot, report)
         try:
             ReportContext(**context.to_dict())
@@ -142,6 +142,22 @@ class Transaction:
                 allowed_sources = {s['id'] for s in series.get('sources', [])}
                 require('G1', all(source['id'] in allowed_sources for source in market.source), f'{market.instrument}: source outside registry')
         tx = tx.record('G1', snapshot.to_dict())
+        return tx if report is None else tx.attach_report(report)
+
+    @property
+    def can_generate_body(self):
+        return self.passed == ('G0', 'G1') and self.report is None
+
+    def generate_report(self, title, body_factory):
+        require('G2', self.can_generate_body, 'G0/G1 must pass before body generation')
+        # The producer sees only this context and frozen snapshot, never latest.
+        full_text = body_factory(self.context, self.snapshot)
+        return self.attach_report(ReportObject.build(self.context, self.snapshot, title, full_text))
+
+    def attach_report(self, report):
+        require('G2', self.passed == ('G0', 'G1'), 'G2 requires G0/G1')
+        context, snapshot = self.context, self.snapshot
+        tx = replace(self, report=report)
         expected = (context.report_id, context.report_date, context.report_time, context.revision, snapshot.snapshot_id, context.previous_report_id)
         actual = (report.report_id, report.report_date, report.report_time, report.revision, report.snapshot_id, report.previous_report_id)
         require('G2', actual == expected, 'ReportObject/context/snapshot identity mismatch')
@@ -162,6 +178,7 @@ class Transaction:
         return tx.record('G2', {'report_id': report.report_id, 'revision': report.revision, 'body_hash': body_hash(report.full_text)})
 
     def verify_docs(self, *, chat_text, saved_file_id, read_file_id, drive_url, read_text, read_at, read_success):
+        require('G3', self.passed == ('G0', 'G1', 'G2'), 'G3 requires a validated ReportObject')
         require('G3', bool(saved_file_id) and saved_file_id == read_file_id, 'Drive saved/read fileId mismatch')
         require('G3', re.fullmatch(r'https://docs.google.com/document/d/'+re.escape(saved_file_id)+r'(?:/.*)?', drive_url) is not None, 'Drive URL/fileId mismatch')
         require('G3', read_success is True, 'Drive readback unsuccessful')
@@ -176,6 +193,7 @@ class Transaction:
         return self.record('G3', evidence)
 
     def verify_png(self, *, png_bytes, file_id, read_file_id, filename, exists, read_at, report_id, revision, snapshot_id, body_hash_value):
+        require('G4', self.passed == ('G0', 'G1', 'G2', 'G3'), 'PNG gate requires Docs full-text verification')
         require('G4', exists is True and bool(file_id) and file_id == read_file_id, 'Drive PNG missing/fileId mismatch')
         aware(read_at)
         expected = (self.context.report_id, self.context.revision, self.snapshot.snapshot_id, body_hash(self.report.full_text))

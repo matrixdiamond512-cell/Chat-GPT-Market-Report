@@ -13,9 +13,13 @@ from reporting.report import ReportObject
 from reporting.gates import GateFailure, Transaction
 
 
-def validate(payload):
+def validate(payload, *, prepare_only=False):
     execution = ExecutionContext(**payload['execution_context'])
-    tx = Transaction.begin(ReportContext(**payload['context']), MarketDataSnapshot.restore(payload['snapshot']), ReportObject.restore(payload['report']))
+    tx = Transaction.begin(ReportContext(**payload['context']), MarketDataSnapshot.restore(payload['snapshot']))
+    if prepare_only:
+        return {'execution_context': plain(execution), 'passed': tx.passed, 'can_generate_body': tx.can_generate_body,
+                'context': tx.context.to_dict(), 'snapshot': tx.snapshot.to_dict(), 'can_register_git': False, 'can_deploy_pages': False}
+    tx = tx.attach_report(ReportObject.restore(payload['report']))
     evidence = payload.get('evidence', {})
     if 'docs' in evidence:
         tx = tx.verify_docs(**evidence['docs'])
@@ -40,9 +44,10 @@ def validate(payload):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('input', type=Path)
+    parser.add_argument('--prepare', action='store_true', help='G0/G1 before body generation; no ReportObject required')
     args = parser.parse_args()
     try:
-        result = validate(json.loads(args.input.read_text(encoding='utf-8')))
+        result = validate(json.loads(args.input.read_text(encoding='utf-8')), prepare_only=args.prepare)
     except (ValueError, KeyError, TypeError) as exc:
         print(json.dumps({'status': 'FAIL', 'gate': getattr(exc, 'gate', 'INPUT'), 'reason': str(exc),
                           'evidence': getattr(exc, 'evidence', None), 'can_register_git': False, 'can_deploy_pages': False}, ensure_ascii=False))

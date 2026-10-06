@@ -168,3 +168,18 @@ class GateTests(unittest.TestCase):
             tx.verify_docs(**e)
         self.assertIn('comparison_diff', failed.exception.evidence)
         self.assertEqual(failed.exception.evidence['chat']['raw'], tx.report.full_text)
+
+    def test_g1_runs_before_body_factory(self):
+        c, s, r = objects(); calls = []
+        def produce(ctx, snapshot):
+            calls.append((ctx.report_id, snapshot.snapshot_id))
+            return r.full_text
+        prepared = Transaction.begin(c, s)
+        self.assertTrue(prepared.can_generate_body)
+        complete = prepared.generate_report(r.title, produce)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(complete.report.full_text, r.full_text)
+        bad = dataclasses.replace(s.markets[0], asOf='2026-09-01T00:00:00+09:00')
+        stale = MarketDataSnapshot.capture(c, (bad,)+s.markets[1:], s.captured_at)
+        self.assert_gate('G1', lambda: Transaction.begin(c, stale).generate_report(r.title, produce))
+        self.assertEqual(len(calls), 1)

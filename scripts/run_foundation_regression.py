@@ -74,6 +74,7 @@ def main():
                             'git': git(tx), 'actions': {'commit_sha': 'a'*40, 'run_id': 'fixture-run', 'status': 'success'},
                             'pages': pages(tx), 'create_receipt': True}}
     fixture = evidence/'synthetic-transaction.json'; fixture.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
+    run('prepare-before-generation-cli', [sys.executable, '-B', 'scripts/validate_report_transaction.py', '--prepare', str(fixture)], level='E3')
     run('connected-cli', [sys.executable, '-B', 'scripts/validate_report_transaction.py', str(fixture)], level='E3')
     del payload['evidence']['png']; invalid = evidence/'synthetic-missing-png.json'; invalid.write_text(json.dumps(payload, ensure_ascii=False), encoding='utf-8')
     run('connected-cli-missing-png', [sys.executable, '-B', 'scripts/validate_report_transaction.py', str(invalid)], expected=1, level='E3')
