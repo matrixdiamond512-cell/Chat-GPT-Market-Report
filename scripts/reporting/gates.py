@@ -198,7 +198,7 @@ class Transaction:
         aware(read_at)
         expected = (self.context.report_id, self.context.revision, self.snapshot.snapshot_id, body_hash(self.report.full_text))
         require('G4', (report_id, revision, snapshot_id, body_hash_value) == expected, 'PNG report/revision/body/snapshot mismatch')
-        require('G4', filename == f'{self.context.report_id}_r{self.context.revision}.png', 'PNG filename mismatch')
+        require('G4', filename == f'マーケットレポート_{self.context.report_id}.png', 'PNG filename mismatch')
         validate_png(png_bytes)
         return self.record('G4', {'png_file_id': file_id, 'png_filename': filename, 'read_at': read_at,
                                 'report_id': report_id, 'revision': revision, 'snapshot_id': snapshot_id,

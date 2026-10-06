@@ -169,6 +169,15 @@ class GateTests(unittest.TestCase):
         self.assertIn('comparison_diff', failed.exception.evidence)
         self.assertEqual(failed.exception.evidence['chat']['raw'], tx.report.full_text)
 
+    def test_png_filename_matches_formal_v18(self):
+        tx = self.begin(); tx = tx.verify_docs(**docs(tx.report))
+        e = png(tx)
+        self.assertEqual(e['filename'], 'マーケットレポート_2026-10-01_21-00.png')
+        self.assertIn('G4', tx.verify_png(**e).passed)
+        for wrong in ('2026-10-01_21-00_r2.png', 'マーケットレポート_2026-10-01_16-00.png'):
+            changed = dict(e, filename=wrong)
+            self.assert_gate('G4', lambda: tx.verify_png(**changed))
+
     def test_g1_runs_before_body_factory(self):
         c, s, r = objects(); calls = []
         def produce(ctx, snapshot):

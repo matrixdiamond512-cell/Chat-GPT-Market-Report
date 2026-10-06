@@ -42,7 +42,7 @@ def docs(report):
 
 
 def png(tx):
-    return dict(png_bytes=png_bytes(), file_id='fixture-png', read_file_id='fixture-png', filename=tx.context.report_id+'_r2.png', exists=True,
+    return dict(png_bytes=png_bytes(), file_id='fixture-png', read_file_id='fixture-png', filename='マーケットレポート_'+tx.context.report_id+'.png', exists=True,
                 read_at='2026-10-01T21:02:00+09:00', report_id=tx.context.report_id, revision=2, snapshot_id=tx.snapshot.snapshot_id, body_hash_value=body_hash(tx.report.full_text))
 
 

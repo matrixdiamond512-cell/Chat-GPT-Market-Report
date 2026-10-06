@@ -7,3 +7,5 @@
 
 - Sweep repairs: fixed direct/module window imports, required same-SHA Actions before Pages authorization, title/date and numeric display consistency, supported schema version, retained failed full-text normalization diffs, same-revision identical retry proof, and moved G0/G1 before producer invocation. Final code candidate af61a0a passed acceptance.
 - Diagnostic preparation helper REMOVE after baseline/diffs; regression runner KEEP. Temporary browser overrides/tabs/server cleaned up. Existing legacy structure and 08 QA FAIL retained as unresolved outcomes.
+
+- 2026-10-06 final reporting recheck: G4 filename was inconsistent with formal v1.8. Corrected to マーケットレポート_<report_id>.png; revision remains explicit metadata rather than an invented filename suffix. Added exact-name and different-slot/invented-name rejection tests. Earlier completion statement overlooked this mismatch; final acceptance is rerun after the correction.
