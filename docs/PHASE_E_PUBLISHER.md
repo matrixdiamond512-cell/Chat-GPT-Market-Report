@@ -171,3 +171,7 @@ Publication: collect same-commit Actions success, deployment ID/SHA and actual p
 7. Specify nonproduction acceptance first, then separately authorize any Drive/GitHub/Pages writes. Collect real same-fileId, byte, SHA, deployment and DOM proof before claiming E5 publication.
 
 Phase F–H code and live publication are deliberately absent in this Phase E deliverable.
+
+## Reproducible acceptance
+
+`run_phase_e_acceptance.py --node <Node executable> --evidence-dir <external evidence directory>` requires the read-only pre-work `production-baseline.json`; it never overwrites that baseline. Every run uses a fresh timestamped fixture namespace under evidence/runs, retaining old SQLite recovery records, so acceptance can be repeated without erasing a previous successful transaction. Latest logs/acceptance/scenario/proof files summarize the most recent run. Test temporary files use the writable external evidence/temp path.

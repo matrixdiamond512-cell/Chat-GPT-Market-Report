@@ -27,6 +27,9 @@ def main():
     if evidence.is_relative_to(ROOT):
         raise ValueError('evidence directory must be outside repository')
     baseline = json.loads((evidence/'production-baseline.json').read_text(encoding='utf-8'))
+    run_id = 'phase-e-'+datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
+    scenario_root = evidence/'runs'/run_id
+    scenario_root.mkdir(parents=True)
     before = protected_files()
     temp = evidence/'temp'; temp.mkdir(exist_ok=True)
     env = dict(os.environ, PYTHONUTF8='1', PYTHONDONTWRITEBYTECODE='1',
@@ -82,14 +85,14 @@ def main():
     for checkpoint in ('DOC_SAVED', 'PNG_SAVED', 'MANIFEST_READY'):
         label = checkpoint.lower()
         command = [sys.executable, '-B', 'scripts/publish_report_dry_run.py', str(fixture), '--dry-run',
-                   '--fixture-dir', str(evidence/('publisher-fixture-'+label))]
+                   '--fixture-dir', str(scenario_root/('publisher-fixture-'+label))]
         run(label+'-stop', command+['--stop-after', checkpoint], expected=2, state='STOPPED', level='E3')
         result = run(label+'-resume', command, state='GIT_REGISTERED', level='E3')
         again = run(label+'-repeat', command, state='GIT_REGISTERED', level='E3')
         scenarios[label] = {'counts': again['effect_counts'], 'same_manifest': result['manifest'] == again['manifest'],
                             'same_sha': result['git_commit_sha'] == again['git_commit_sha']}
     command = [sys.executable, '-B', 'scripts/publish_report_dry_run.py', str(fixture), '--dry-run',
-               '--fixture-dir', str(evidence/'publisher-fixture-lost-git')]
+               '--fixture-dir', str(scenario_root/'publisher-fixture-lost-git')]
     lost = run('git-response-lost', command+['--lose-response', 'git'], expected=1, state='UNKNOWN', level='E3')
     recovered = run('git-response-recovered', command, state='GIT_REGISTERED', level='E3')
     scenarios['lost_git'] = {'checkpoint_before': lost['journals'][0]['checkpoint'],
@@ -98,11 +101,18 @@ def main():
     publication_fixture = evidence/'publisher-publication-input.json'
     publication_fixture.write_text(json.dumps(observed, ensure_ascii=False, indent=2), encoding='utf-8')
     publication_command = [sys.executable, '-B', 'scripts/publish_report_dry_run.py', str(publication_fixture), '--dry-run',
-                           '--fixture-dir', str(evidence/'publisher-fixture-lost-git')]
+                           '--fixture-dir', str(scenario_root/'publisher-fixture-lost-git')]
     run('before-receipt-stop', publication_command+['--stop-after', 'BEFORE_RECEIPT'], expected=2, state='STOPPED', level='E3')
     verified = run('receipt-resume-persisted-observations', command, state='VERIFIED', level='E3')
     repeated = run('receipt-repeat', command, state='VERIFIED', level='E3')
     scenarios['receipt'] = {'counts': repeated['effect_counts'], 'same_receipt': verified['receipt'] == repeated['receipt']}
+    counts_before_receipt = dict(doc=1, png=1, manifest=1, git=1)
+    scenario_ok = all(scenarios[k]['counts'] == counts_before_receipt and scenarios[k]['same_manifest']
+                      and scenarios[k]['same_sha'] for k in ('doc_saved', 'png_saved', 'manifest_ready'))
+    scenario_ok = scenario_ok and scenarios['lost_git']['counts_after'] == counts_before_receipt
+    scenario_ok = scenario_ok and scenarios['receipt']['counts'] == dict(counts_before_receipt, receipt=1) and scenarios['receipt']['same_receipt']
+    results.append({'name': 'scenario-idempotency-counts', 'status': 'PASS' if scenario_ok else 'FAIL',
+                    'matches_expected': scenario_ok, 'evidence_level': 'E3'})
     (evidence/'scenario-results.json').write_text(json.dumps(scenarios, ensure_ascii=False, indent=2), encoding='utf-8')
 
     after = protected_files()
@@ -123,7 +133,7 @@ def main():
              'external_limit': 'No network/Drive/GitHub/Pages operation performed. Remote global state was not queried and cannot be certified unchanged by other actors.'}
     (evidence/'production-proof.json').write_text(json.dumps(proof, ensure_ascii=False, indent=2), encoding='utf-8')
     tests_added = sorted(node.name for node in ast.walk(ast.parse((ROOT/'tests/test_publisher.py').read_text(encoding='utf-8'))) if isinstance(node, ast.FunctionDef) and node.name.startswith('test_'))
-    summary = {'run_id': 'phase-e-20261006-acceptance', 'at': datetime.now(timezone.utc).isoformat(),
+    summary = {'run_id': run_id, 'scenario_root': str(scenario_root), 'at': datetime.now(timezone.utc).isoformat(),
                'commit': proof['head'], 'python': sys.version, 'phase_e_tests': tests_added, 'results': results,
                'scenarios': scenarios, 'production': proof,
                'NOT_RUN': ['real Drive Docs save/readback', 'real PNG render/save/readback', 'actual publication Git commit/push',
