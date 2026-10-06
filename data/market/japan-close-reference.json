@@ -1,73 +1,50 @@
 {
   "schemaVersion": "1.2.0",
-  "generatedAt": "2026-10-03T18:05:19+09:00",
-  "dataDate": "2026-10-02",
+  "generatedAt": "2026-10-06T23:08:45+09:00",
+  "dataDate": "2026-10-06",
   "complete": false,
   "items": {
     "日経225現物": {
-      "value": "68,309.46",
-      "change": "-647.26",
-      "rate": "-0.94%",
-      "direction": "下落",
-      "date": "2026-10-02",
-      "sourceName": "投資の森 日経平均PER・PBR（同日終値・前日差）",
-      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/",
-      "status": "exact_date_close_anchor"
+      "value": "70,683.98",
+      "date": "2026-10-06",
+      "sourceName": "Yahoo Finance Nikkei 225 daily history",
+      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/"
     },
     "日経225 25日移動平均乖離率": {
-      "value": "+4.24%",
-      "date": "2026-10-02",
-      "sourceName": "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）",
-      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
-      "status": "calculated_with_exact_date_close_anchor"
+      "value": "+7.32%",
+      "date": "2026-10-06",
+      "sourceName": "Yahoo Finance Nikkei 225 daily history",
+      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/"
     },
     "日経225 200日移動平均乖離率": {
-      "value": "+13.26%",
-      "date": "2026-10-02",
-      "sourceName": "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）",
-      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
-      "status": "calculated_with_exact_date_close_anchor"
-    },
-    "日経225予想PER": {
-      "value": "17.37倍",
-      "date": "2026-10-02",
-      "sourceName": "投資の森 日経平均PER・PBR",
-      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
-    },
-    "日経225 PBR": {
-      "value": "1.90倍",
-      "date": "2026-10-02",
-      "sourceName": "投資の森 日経平均PER・PBR",
-      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
-    },
-    "日経225予想EPS": {
-      "value": "3,932.61円",
-      "date": "2026-10-02",
-      "sourceName": "投資の森 日経平均PER・PBR",
-      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
+      "value": "+16.82%",
+      "date": "2026-10-06",
+      "sourceName": "Yahoo Finance Nikkei 225 daily history",
+      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/"
     },
     "東証プライム値上がり銘柄数": {
-      "value": "215",
-      "date": "2026-10-02",
+      "value": "1153",
+      "date": "2026-10-06",
       "sourceName": "投資の森 値上がり・値下がり銘柄数",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
     },
     "東証プライム値下がり銘柄数": {
-      "value": "1306",
-      "date": "2026-10-02",
+      "value": "349",
+      "date": "2026-10-06",
       "sourceName": "投資の森 値上がり・値下がり銘柄数",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
     },
     "東証プライム25日騰落レシオ": {
-      "value": "93.53%",
-      "date": "2026-10-02",
+      "value": "96.72%",
+      "date": "2026-10-06",
       "sourceName": "投資の森 東証プライム騰落銘柄数の保存履歴から25営業日で算出",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/",
       "method": "25 exact-date Prime breadth sessions"
     }
   },
   "unavailable": {
-    "東証プライム売買高": "2026-10-02の大引けブロックがトレーダーズ・ウェブに取得時点で見つからず"
+    "日経225予想PER/PBR/EPS": "2026-10-06行がソースに未反映",
+    "東証プライム売買高": "2026-10-06の大引けブロックがトレーダーズ・ウェブに取得時点で見つからず"
   },
   "breadthHistory": [
     {
@@ -510,20 +487,21 @@
       "primeDecliners": 1306,
       "sourceName": "投資の森 値上がり・値下がり銘柄数",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
+    },
+    {
+      "date": "2026-10-05",
+      "primeAdvancers": 863,
+      "primeDecliners": 633,
+      "sourceName": "投資の森 値上がり・値下がり銘柄数",
+      "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
+    },
+    {
+      "date": "2026-10-06",
+      "primeAdvancers": 1153,
+      "primeDecliners": 349,
+      "sourceName": "投資の森 値上がり・値下がり銘柄数",
+      "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
     }
   ],
-  "rule": "accept exact target-date records only; never carry stale records forward",
-  "qualityChecks": {
-    "nikkeiCloseCrossCheck": {
-      "checkedAt": "2026-10-03T18:05:19+09:00",
-      "targetDate": "2026-10-02",
-      "authoritativeClose": 68309.46,
-      "authoritativeChange": -647.26,
-      "previousCloseDerived": 68956.72,
-      "oldReferenceClose": 68309.46,
-      "yahooTargetDayRawClose": 68309.4609375,
-      "differenceVsYahoo": -0.0009374999935971573,
-      "rule": "Exact-date valuation-page close anchors the session; Yahoo is used only for the historical moving-average window after target-close replacement."
-    }
-  }
+  "rule": "accept exact target-date records only; never carry stale records forward"
 }
