@@ -84,4 +84,6 @@ CONSTRAINTS: Keep PR #75 Draft and unmerged. No Apps Script production deploymen
 
 IMPLEMENTATION STATUS: Fixture/production trust separation implemented. Local tests 106/106; signer 31/31; Apps Script fixture rejection, explicit test verifier, and non-fixture HMAC regression PASS. Apps Script Pre-Publish and All-Slot UI hosted checks PASS on PR #75.
 
+SECRET HYGIENE: Contract fixture contains no HMAC secret/signature; tests generate ephemeral keys and signatures in process memory. No `test_secret` fixture field remains.
+
 NEXT NECESSARY ACTION: Await review on PR #75. Keep it Draft and unmerged; real provider provenance and external nonproduction acceptance remain separate open outcomes.
