@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import re
 from datetime import datetime
@@ -302,20 +303,41 @@ def verify_latest_is_published() -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--canonical-only",
+        action="store_true",
+        help=(
+            "Rebuild reports.json strictly from canonical report files without "
+            "re-importing data/latest-report.json. Intended for the post-persistence "
+            "verification pass after reports.json has already been structured and "
+            "persisted to canonical files."
+        ),
+    )
+    args = parser.parse_args()
+
     # Index construction must not change the saved report's content/revision.
     previous_index = load_existing_index()
     previous_keys = {slot_key(report) for report in previous_index}
 
-    latest_path = sync_latest_to_canonical()
-    backfilled = backfill_missing_canonical_files(previous_index)
+    if args.canonical_only:
+        latest_path = None
+        backfilled: list[Path] = []
+    else:
+        latest_path = sync_latest_to_canonical()
+        backfilled = backfill_missing_canonical_files(previous_index)
+
     reports = load_canonical_reports()
     write_index(reports)
     verify_no_history_loss(previous_keys)
-    verify_latest_is_published()
+
+    if not args.canonical_only:
+        verify_latest_is_published()
 
     print(
         f"Built {OUTPUT_FILE} from {len(reports)} canonical report files; "
-        f"latest={'synced' if latest_path else 'absent'}; "
+        f"mode={'canonical-only' if args.canonical_only else 'latest-sync'}; "
+        f"latest={'skipped' if args.canonical_only else ('synced' if latest_path else 'absent')}; "
         f"backfilled {len(backfilled)} legacy slot(s); no report history lost."
     )
 

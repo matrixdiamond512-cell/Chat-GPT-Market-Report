@@ -80,7 +80,7 @@ jobs:
 
       - name: Rebuild and verify canonical index
         run: |
-          python scripts/build_reports.py
+          python scripts/build_reports.py --canonical-only
           python -m json.tool reports.json > /dev/null
           python scripts/validate_market_reports.py --file reports.json
 

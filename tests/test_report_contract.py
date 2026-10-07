@@ -105,5 +105,53 @@ class ReportContractTests(unittest.TestCase):
                 sys.argv = old_argv
 
 
+    def test_current_21_aliases_are_recognized_without_weakening_contract(self):
+        source = """主要6市場
+金：4,119ドル
+WTI原油：89.90ドル
+日経225先物（大阪取引所）：71,190円
+USD/JPY：158.37円
+EUR/USD：1.119
+BTCUSD：84,000ドル
+今後のイベント
+6市場の短期見通し
+メインシナリオが崩れる条件
+"""
+        self.assertRegex(source, validate_market_reports.REQUIRED_21_SECTIONS["主要市場データ"])
+        self.assertRegex(source, validate_market_reports.REQUIRED_21_SECTIONS["重要イベント"])
+        self.assertRegex(source, validate_market_reports.REQUIRED_21_SECTIONS["6市場の見通し"])
+        self.assertRegex(source, validate_market_reports.REQUIRED_21_SECTIONS["シナリオが崩れる条件"])
+
+        report = {
+            "date": "2026-10-07",
+            "time": "21:00",
+            "title": "マーケットレポート｜2026/10/07（水）21:00",
+            "theme": "test",
+            "leadingMarket": "test",
+            "mainScenario": "test",
+            "alternativeScenario": "test",
+            "breakConditions": "test",
+            "riskManagement": ["test"],
+            "changes": ["test"],
+            "consistency": ["test"],
+            "news": ["test"],
+            "crossAssetFlow": ["test"],
+            "positioning": ["test"],
+            "events": ["test"],
+            "handover": ["test"],
+            "fullText": source,
+            "markets": [
+                {"name": "金", "direction": "中立"},
+                {"name": "WTI原油", "direction": "中立"},
+                {"name": "日経225先物（大阪取引所）", "direction": "中立"},
+                {"name": "USD/JPY", "direction": "中立"},
+                {"name": "EUR/USD", "direction": "中立"},
+                {"name": "BTCUSD", "direction": "中立"},
+            ],
+        }
+        errors, warnings = [], []
+        validate_market_reports.validate_report_content(report, "report", True, errors, warnings)
+        self.assertFalse(any("必須市場不足" in error for error in errors))
+
 if __name__ == "__main__":
     unittest.main()

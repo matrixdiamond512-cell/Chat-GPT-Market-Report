@@ -23,6 +23,12 @@ JST = ZoneInfo("Asia/Tokyo")
 ROOT = Path(__file__).resolve().parents[1]
 SCHEDULE_FILE = ROOT / "config" / "report_schedule.json"
 REQUIRED_MARKETS = {"金", "原油", "日経225先物", "USD/JPY", "EUR/USD", "BTCUSD"}
+MARKET_NAME_ALIASES = {
+    "WTI原油": "原油",
+    "日経225先物（大阪取引所）": "日経225先物",
+    "日経225先物(大阪取引所)": "日経225先物",
+    "日経225先物・大阪取引所": "日経225先物",
+}
 REQUIRED_REPORT_FIELDS = {
     "date", "time", "title", "theme", "leadingMarket", "markets",
     "mainScenario", "alternativeScenario", "breakConditions", "riskManagement"
@@ -46,7 +52,7 @@ REQUIRED_21_FIELDS = {
     "changes", "consistency", "news", "crossAssetFlow", "positioning", "events", "handover"
 }
 REQUIRED_21_SECTIONS: dict[str, re.Pattern[str]] = {
-    "主要市場データ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?主要市場(?:の確認値|データ)(?:（.*）)?\s*$"),
+    "主要市場データ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:主要市場(?:の確認値|データ)(?:（.*）)?|主要6市場)\s*$"),
     "今日の相場テーマ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?今日の相場テーマ\s*$"),
     "16:00からの変化": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:(?:16:00|16時|前回)からの(?:主な)?変化|16:00から21:00のマーケットの動き|昨夜のNY市場)\s*$"),
     "材料と値動きの整合性": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?材料と値動きの整合性\s*$"),
@@ -54,11 +60,11 @@ REQUIRED_21_SECTIONS: dict[str, re.Pattern[str]] = {
     "重要ニュース": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?重要ニュース(?:・金利)?\s*$"),
     "クロスアセット資金フロー": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?クロスアセット(?:資金フロー)?\s*$"),
     "需給・ポジション": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?需給・ポジション\s*$"),
-    "重要イベント": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:今後の)?重要イベント\s*$"),
-    "6市場の見通し": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?6市場の(?:個別)?見通し\s*$"),
+    "重要イベント": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:(?:今後の)?重要イベント|今後のイベント)\s*$"),
+    "6市場の見通し": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?6市場の(?:(?:個別|短期))?見通し\s*$"),
     "メインシナリオ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:メインシナリオ|メイン\s*[：:])"),
     "代替シナリオ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:代替シナリオ|代替\s*[：:])"),
-    "シナリオが崩れる条件": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:シナリオが)?崩れる条件(?:\s*[：:])?\s*"),
+    "シナリオが崩れる条件": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:(?:メイン)?シナリオが)?崩れる条件(?:\s*[：:])?\s*"),
     "引き継ぎ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:NY時間|次の時間帯|翌東京時間|明日|12:00)への引き継ぎ\s*$"),
 }
 REQUIRED_21_MARKET_PATTERNS: dict[str, re.Pattern[str]] = {
@@ -185,7 +191,7 @@ def validate_report_content(report: dict, prefix: str, strict: bool, errors: lis
         target.append(f"{prefix}: markets は配列である必要があります")
         return
 
-    names = {str(m.get("name", "")) for m in markets if isinstance(m, dict)}
+    names = {MARKET_NAME_ALIASES.get(str(m.get("name", "")), str(m.get("name", ""))) for m in markets if isinstance(m, dict)}
     missing_markets = sorted(REQUIRED_MARKETS - names)
     if missing_markets:
         target.append(f"{prefix}: 必須市場不足: {', '.join(missing_markets)}")
