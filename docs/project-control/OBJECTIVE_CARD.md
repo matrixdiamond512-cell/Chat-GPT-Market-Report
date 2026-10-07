@@ -72,4 +72,4 @@ OPEN OUTCOMES: Real approved provider adapter/provenance; nonproduction secret a
 
 IMPLEMENTATION STATUS: Local implementation complete. Full Python suite 102/102, Infographic tests 23/23, signer tests 27/27, Apps Script checks, GAS syntax 27 files, AST 148 files, dynamic Python/Apps Script HMAC and identity checks, and diff check PASS. Fixture provider only; no real Vision evidence.
 
-NEXT NECESSARY ACTION: Commit and push the authorized feature branch, create a Draft PR, dispatch All-Slot UI validation, and record hosted CI results. Do not merge.
+NEXT NECESSARY ACTION: Await code review on Draft PR #75. Keep the PR unmerged until provider provenance and external nonproduction acceptance are separately completed. Do not merge as part of this task.
