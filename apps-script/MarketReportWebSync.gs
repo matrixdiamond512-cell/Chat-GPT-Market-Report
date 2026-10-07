@@ -351,8 +351,9 @@ function verifyMarketReportSourceDocReadback_(report) {
   if (source.name && file.getName() !== source.name) {
     throw new Error('GOOGLE_DOC_READBACK_FAILED: source document name changed after parsing.');
   }
-  const actual = normalizeReportText_(DocumentApp.openById(fileId).getBody().getText());
-  const expected = normalizeReportText_(report.fullText);
+  const rawText = DocumentApp.openById(fileId).getBody().getText();
+  const actual = normalizeReportCanonicalText_(rawText, report.title);
+  const expected = normalizeReportCanonicalText_(report.fullText, report.title);
   if (actual !== expected || marketReportSha256_(Utilities.newBlob(actual, 'text/plain').getBytes()) !== report.bodyHash) {
     throw new Error('GOOGLE_DOC_READBACK_FAILED: source text/hash changed after parsing.');
   }
@@ -657,8 +658,9 @@ function scenarioFields_(text) {
 }
 
 function buildWebReportFromGoogleDoc_(file) {
-  const text = normalizeReportText_(DocumentApp.openById(file.getId()).getBody().getText());
-  const meta = parseReportMetadata_(text, file.getName());
+  const rawText = normalizeReportText_(DocumentApp.openById(file.getId()).getBody().getText());
+  const meta = parseReportMetadata_(rawText, file.getName());
+  const text = normalizeReportCanonicalText_(rawText, meta.title);
 
   const report = {
     date: meta.date,
@@ -1220,6 +1222,18 @@ function normalizeReportText_(text) {
     .replace(/[ \t]+\n/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
+}
+
+function normalizeReportCanonicalText_(text, title) {
+  const normalized = normalizeReportText_(text);
+  const canonicalTitle = normalizeReportText_(title);
+  if (!canonicalTitle || normalized === canonicalTitle || normalized.indexOf(canonicalTitle + '\n') === 0) {
+    return normalized;
+  }
+  if (normalized.indexOf(canonicalTitle) === 0) {
+    return normalizeReportText_(canonicalTitle + '\n' + normalized.substring(canonicalTitle.length));
+  }
+  return normalized;
 }
 
 function firstMeaningfulLine_(text) {

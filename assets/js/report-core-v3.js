@@ -125,11 +125,18 @@ function headingInfo(line) {
   if (plainHeadings.includes(raw)) return {number:"", title:raw};
   return null;
 }
+function splitCanonicalTitleFromSource_(source, fallbackTitle) {
+  const text = String(source || "").replace(/\r\n?/g, "\n");
+  const title = String(fallbackTitle || "");
+  if (!title || !text.startsWith(title)) return {title, bodySource:text};
+  if (text === title) return {title, bodySource:""};
+  if (text.startsWith(title + "\n")) return {title, bodySource:text.slice(title.length + 1)};
+  return {title, bodySource:text.slice(title.length)};
+}
 function parseDocument(source, fallbackTitle) {
-  const lines = String(source || "").split("\n");
-  let cursor = 0, title = fallbackTitle;
-  while (cursor < lines.length && !lines[cursor].trim()) cursor++;
-  if (cursor < lines.length && /^マーケットレポート[｜|]/.test(lines[cursor].trim())) title = lines[cursor++].trim();
+  const split = splitCanonicalTitleFromSource_(source, fallbackTitle);
+  const lines = split.bodySource.split("\n");
+  let cursor = 0, title = split.title || fallbackTitle;
   const preface = [], sections = []; let current = null;
   for (; cursor < lines.length; cursor++) {
     const h = headingInfo(lines[cursor]);
