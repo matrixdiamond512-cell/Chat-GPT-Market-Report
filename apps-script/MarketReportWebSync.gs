@@ -233,16 +233,25 @@ function publishMarketReportFromDocUrlPrompt() {
 
 function publishWebReportObject_(report) {
   report = validateWebReportObject_(report);
+  if (typeof validateMarketReportBeforePublish_ !== 'function') {
+    throw new Error('公開前検証が読み込まれていないため、公開を中止しました。');
+  }
+  const expectedHour = Number(String(report.time).slice(0, 2));
+  validateMarketReportBeforePublish_(report, expectedHour);
+  const trustConfig = marketReportVisionTrustConfig_();
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
 
   try {
+    report.bodyHash = marketReportSha256_(Utilities.newBlob(report.fullText, 'text/plain').getBytes());
+    verifyMarketReportSourceDocReadback_(report);
     const imageFile = findExactMarketInfographic_(report);
     const imageBytes = imageFile.getBlob().getBytes();
     const key = report.date + '_' + report.time.replace(':', '-');
     const imagePath = 'images/reports/' + key + '.png';
     const imageHash = marketReportSha256_(imageBytes);
-    report.bodyHash = marketReportSha256_(Utilities.newBlob(report.fullText, 'text/plain').getBytes());
+    const visionReview = findExactMarketVisionReview_(report);
+    validateMarketReportVisionReview_(report, imageFile, imageHash, visionReview, trustConfig);
     report.infographic = {
       slotKey: key,
       src: imagePath,
@@ -313,6 +322,123 @@ function publishWebReportObject_(report) {
   } finally {
     lock.releaseLock();
   }
+}
+
+function marketReportVisionTrustConfig_() {
+  const props = PropertiesService.getScriptProperties();
+  const secret = String(props.getProperty('MARKET_REPORT_VISION_HMAC_KEY') || '');
+  const provider = String(props.getProperty('MARKET_REPORT_TRUSTED_VISION_PROVIDER') || '');
+  if (!secret || !provider) {
+    throw new Error('VISION_PROVIDER_NOT_CONFIGURED: trusted Vision HMAC key/provider is missing; publication stopped.');
+  }
+  if (Utilities.newBlob(secret, 'text/plain').getBytes().length < 32) {
+    throw new Error('VISION_ATTESTATION_KEY_INVALID: HMAC key must contain at least 32 UTF-8 bytes.');
+  }
+  return { secret: secret, provider: provider };
+}
+
+function verifyMarketReportSourceDocReadback_(report) {
+  const source = report && report.sourceDocument;
+  const fileId = String(source && source.id || '');
+  if (!fileId || !report.fullText) throw new Error('GOOGLE_DOC_READBACK_FAILED: pinned source document identity is missing.');
+  const file = DriveApp.getFileById(fileId);
+  if (file.isTrashed() || file.getMimeType() !== MimeType.GOOGLE_DOCS) {
+    throw new Error('GOOGLE_DOC_READBACK_FAILED: pinned source is unavailable or is not a Google Doc.');
+  }
+  if (source.name && file.getName() !== source.name) {
+    throw new Error('GOOGLE_DOC_READBACK_FAILED: source document name changed after parsing.');
+  }
+  const actual = normalizeReportText_(DocumentApp.openById(fileId).getBody().getText());
+  const expected = normalizeReportText_(report.fullText);
+  if (actual !== expected || marketReportSha256_(Utilities.newBlob(actual, 'text/plain').getBytes()) !== report.bodyHash) {
+    throw new Error('GOOGLE_DOC_READBACK_FAILED: source text/hash changed after parsing.');
+  }
+}
+
+function findExactMarketVisionReview_(report) {
+  const name = 'マーケットレポート_' + report.date + '_' + report.time.replace(':', '-') + '.vision-review.json';
+  const files = DriveApp.getFilesByName(name);
+  let match = null;
+  while (files.hasNext()) {
+    const file = files.next();
+    const mimeType = file.getMimeType();
+    if (file.isTrashed() || file.getName() !== name || (mimeType !== MimeType.PLAIN_TEXT && mimeType !== 'application/json')) continue;
+    if (match) throw new Error('VISION_ATTESTATION_INVALID: multiple exact review files exist: ' + name);
+    match = file;
+  }
+  if (!match) throw new Error('VISION_REVIEW_NOT_PROVIDED: exact-slot signed review file is missing: ' + name);
+  try {
+    return JSON.parse(match.getBlob().getDataAsString('UTF-8'));
+  } catch (error) {
+    throw new Error('VISION_ATTESTATION_INVALID: review file is not valid JSON. ' + error.message);
+  }
+}
+
+function validateMarketReportVisionReview_(report, imageFile, imageHash, review, trustConfig) {
+  const requiredChecks = [
+    'decorative_charts', 'gauges', 'invented_charts', 'people', 'title_correct', 'date_correct', 'time_correct',
+    'required_sections_present', 'timeline_correct', 'numbers_match', 'text_overflow', 'headings_match', 'major_typos'
+  ];
+  const sourceId = String(report.sourceDocument && report.sourceDocument.id || '');
+  const expected = {
+    schema: 'market-report-vision-review/v1',
+    status: 'VERIFIED',
+    provider: trustConfig.provider,
+    report_id: report.date + '_' + report.time.replace(':', '-'),
+    title: report.title,
+    source_sha256: report.bodyHash,
+    image_sha256: imageHash,
+    source_document_id: sourceId,
+    drive_image_file_id: imageFile.getId()
+  };
+  Object.keys(expected).forEach(function(key) {
+    if (!review || review[key] !== expected[key]) {
+      throw new Error('VISION_REVIEW_IDENTITY_MISMATCH: ' + key + ' does not match the current report/image.');
+    }
+  });
+  if (!review.review_id || !review.reviewed_at || !review.checks || typeof review.checks !== 'object') {
+    throw new Error('VISION_ATTESTATION_INVALID: signed review identity/checks are incomplete.');
+  }
+  requiredChecks.forEach(function(name) {
+    if (typeof review.checks[name] !== 'boolean') throw new Error('VISION_REVIEW_INCOMPLETE: ' + name);
+  });
+  ['decorative_charts', 'gauges', 'invented_charts', 'people', 'text_overflow', 'major_typos'].forEach(function(name) {
+    if (review.checks[name] !== false) throw new Error('VISION_REVIEW_FAILED: ' + name);
+  });
+  ['title_correct', 'date_correct', 'time_correct', 'required_sections_present', 'timeline_correct', 'numbers_match', 'headings_match'].forEach(function(name) {
+    if (review.checks[name] !== true) throw new Error('VISION_REVIEW_FAILED: ' + name);
+  });
+
+  const payload = marketReportVisionAttestationPayload_(review);
+  const actualSignature = String(review.signature || '').toLowerCase();
+  const expectedSignature = marketReportHmacSha256_(payload, trustConfig.secret);
+  if (!/^[0-9a-f]{64}$/.test(actualSignature) || !marketReportConstantTimeEqual_(actualSignature, expectedSignature)) {
+    throw new Error('VISION_ATTESTATION_INVALID: HMAC signature mismatch.');
+  }
+}
+
+function marketReportVisionAttestationPayload_(review) {
+  const fields = [
+    'schema', 'status', 'provider', 'review_id', 'report_id', 'title', 'source_sha256', 'image_sha256',
+    'source_document_id', 'drive_image_file_id', 'reviewed_at', 'checks'
+  ];
+  const checks = {};
+  Object.keys(review.checks || {}).sort().forEach(function(key) { checks[key] = review.checks[key]; });
+  return fields.map(function(field) {
+    return field + '=' + JSON.stringify(field === 'checks' ? checks : review[field]);
+  }).join('\n');
+}
+
+function marketReportHmacSha256_(text, secret) {
+  const digest = Utilities.computeHmacSha256Signature(text, secret);
+  return digest.map(value => ('0' + (value & 255).toString(16)).slice(-2)).join('');
+}
+
+function marketReportConstantTimeEqual_(left, right) {
+  if (left.length !== right.length) return false;
+  let mismatch = 0;
+  for (let index = 0; index < left.length; index++) mismatch |= left.charCodeAt(index) ^ right.charCodeAt(index);
+  return mismatch === 0;
 }
 
 function findExactMarketInfographic_(report) {
