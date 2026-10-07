@@ -1332,3 +1332,9 @@ Publish
 人間が毎日同じ修正指示を出さなくても、
 同じ品質基準を再現できることを
 このシステムの最終目的とする。
+
+## Trusted Vision Signer v1.0 ADD
+
+The signer accepts provider output only when it has exactly the thirteen required checks and each verdict is `PASS`, `FAIL`, or `UNCERTAIN`. Only all-PASS output is mapped to the existing boolean attestation and signed. FAIL and UNCERTAIN never receive a VERIFIED signature. The provider remains an interface; the fixture implementation does not inspect pixels and has the fixed `fixture-test-only` identity. The source body hash is exact raw UTF-8 SHA-256. The existing Python/Apps Script canonical HMAC fields and ordering remain unchanged.
+
+The CLI requires `--dry-run`, creates only a new local review artifact, rejects production output paths and overwrite attempts, and has no publication action. External provider execution, production key configuration, Apps Script deployment, remote readback and publication acceptance remain outside this implementation and NOT_RUN. See `docs/TRUSTED_VISION_SIGNER.md` for the operator contract.

@@ -12,7 +12,12 @@ on:
       - 'scripts/test_apps_script_narrative_report.js'
       - 'scripts/test_apps_script_infographic_gate.js'
       - 'scripts/reporting/infographic.py'
+      - 'scripts/reporting/vision_provider.py'
+      - 'scripts/reporting/vision_signer.py'
+      - 'scripts/sign_market_report_vision_review.py'
+      - 'scripts/test_apps_script_signed_review.js'
       - 'tests/test_infographic_validation.py'
+      - 'tests/test_vision_signer.py'
       - 'tests/fixtures/vision_attestation_contract.json'
       - '.github/workflows/apps-script-prepublish-validation.yml'
   push:
@@ -27,7 +32,12 @@ on:
       - 'scripts/test_apps_script_narrative_report.js'
       - 'scripts/test_apps_script_infographic_gate.js'
       - 'scripts/reporting/infographic.py'
+      - 'scripts/reporting/vision_provider.py'
+      - 'scripts/reporting/vision_signer.py'
+      - 'scripts/sign_market_report_vision_review.py'
+      - 'scripts/test_apps_script_signed_review.js'
       - 'tests/test_infographic_validation.py'
+      - 'tests/test_vision_signer.py'
       - 'tests/fixtures/vision_attestation_contract.json'
       - '.github/workflows/apps-script-prepublish-validation.yml'
 
@@ -53,6 +63,9 @@ jobs:
 
       - name: Run infographic validator regression suite
         run: python -m unittest discover -s tests -p 'test_infographic_validation.py' -q
+
+      - name: Run trusted Vision signer regression suite
+        run: python -m unittest discover -s tests -p 'test_vision_signer.py' -q
 
       - name: Syntax-check Apps Script files
         run: |
