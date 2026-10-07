@@ -124,3 +124,131 @@ jobs:
         env:
           PUBLIC_URL: ${{ steps.deployment.outputs.page_url }}
         run: python scripts/verify_public_report_deployment.py --base-url "$PUBLIC_URL"
+
+      - name: Set up Node.js for live Portal DOM validation
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Chromium validator
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Verify live market-report DOM after deployment
+        env:
+          PUBLIC_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          node <<'NODE'
+          const { chromium } = require('playwright');
+
+          const base = String(process.env.PUBLIC_URL || '').replace(/\/$/, '') + '/';
+          if (!/^https:\/\//.test(base)) throw new Error('PUBLIC_URL is missing or invalid');
+
+          const indexResponse = await fetch(base + 'reports.json?domverify=' + Date.now(), {
+            headers: { 'cache-control': 'no-cache', pragma: 'no-cache' }
+          });
+          if (!indexResponse.ok) throw new Error('reports.json HTTP ' + indexResponse.status);
+          const payload = await indexResponse.json();
+          const reports = Array.isArray(payload)
+            ? payload
+            : (Array.isArray(payload?.reports) ? payload.reports : []);
+          if (!reports.length) throw new Error('No market reports available for DOM validation');
+
+          const valid = reports
+            .filter(r => r && /^\d{4}-\d{2}-\d{2}$/.test(String(r.date || '')) && /^\d{2}:\d{2}$/.test(String(r.time || '')))
+            .sort((a, b) => (b.date + ' ' + b.time).localeCompare(a.date + ' ' + a.time));
+          if (!valid.length) throw new Error('No valid report slots found');
+
+          const latestDate = valid[0].date;
+          const slots = valid.filter(r => r.date === latestDate);
+          const browser = await chromium.launch({ headless: true });
+
+          try {
+            for (const report of slots) {
+              const page = await browser.newPage();
+              const consoleErrors = [];
+              const pageErrors = [];
+              page.on('console', msg => {
+                if (msg.type() === 'error') consoleErrors.push(msg.text());
+              });
+              page.on('pageerror', err => pageErrors.push(String(err && err.message || err)));
+
+              const url = base + 'report.html?date=' + encodeURIComponent(report.date) +
+                '&time=' + encodeURIComponent(report.time) +
+                '&domverify=' + Date.now();
+
+              await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+              await page.waitForFunction(() => {
+                const app = document.getElementById('app');
+                const status = document.getElementById('reportStatus');
+                if (!app || !status) return false;
+                const appText = (app.textContent || '').trim();
+                const statusText = (status.textContent || '').trim();
+                return appText &&
+                  !/本文データを読み込んでいます|マーケットレポートを読み込んでいます/.test(appText + ' ' + statusText) &&
+                  !/読み込めません|読込エラー/.test(appText + ' ' + statusText);
+              }, { timeout: 60000 });
+
+              const result = await page.evaluate(({ expectedDate, expectedTime, expectedTitle }) => {
+                const app = document.getElementById('app');
+                const picker = document.getElementById('datePicker');
+                const activeTab = document.querySelector('.time-tab.is-active');
+                const title = document.querySelector('.report-title');
+                const sections = [...document.querySelectorAll('.sop-section')];
+                const marketSection = sections.find(section => {
+                  const heading = section.querySelector('h2')?.textContent || section.dataset.sopTitle || '';
+                  return /主要市場データ|主要市場まとめ|市場データ|前営業日終値|終値一覧|主要価格/.test(heading);
+                });
+                const table = marketSection?.querySelector('table.market-table');
+                const rows = table ? [...table.querySelectorAll('tbody tr')] : [];
+                return {
+                  appClass: app?.className || '',
+                  date: picker?.value || '',
+                  activeTime: activeTab?.textContent?.trim() || '',
+                  title: title?.textContent?.trim() || '',
+                  marketSectionFound: Boolean(marketSection),
+                  marketTableFound: Boolean(table),
+                  marketRowCount: rows.length,
+                  loadingTextPresent: /本文データを読み込んでいます|マーケットレポートを読み込んでいます/.test(
+                    (app?.textContent || '') + ' ' + (document.getElementById('reportStatus')?.textContent || '')
+                  ),
+                  expectedDate,
+                  expectedTime,
+                  expectedTitle
+                };
+              }, {
+                expectedDate: report.date,
+                expectedTime: report.time,
+                expectedTitle: report.title || ''
+              });
+
+              const failures = [];
+              if (result.date !== report.date) failures.push('datePicker mismatch: ' + result.date);
+              if (result.activeTime !== report.time) failures.push('active time mismatch: ' + result.activeTime);
+              if (report.title && result.title !== report.title) failures.push('title mismatch: ' + result.title);
+              if (!result.marketSectionFound) failures.push('major market section missing');
+              if (!result.marketTableFound) failures.push('major market data is not rendered as a table');
+              if (result.marketRowCount < 6) failures.push('market table has fewer than 6 rows: ' + result.marketRowCount);
+              if (result.loadingTextPresent) failures.push('loading text remains visible');
+              if (pageErrors.length) failures.push('page errors: ' + pageErrors.join(' | '));
+              if (consoleErrors.length) failures.push('console errors: ' + consoleErrors.join(' | '));
+
+              console.log(JSON.stringify({
+                slot: report.date + ' ' + report.time,
+                marketRowCount: result.marketRowCount,
+                pageErrors,
+                consoleErrors
+              }, null, 2));
+
+              await page.close();
+              if (failures.length) {
+                throw new Error(report.date + ' ' + report.time + ' live DOM validation failed: ' + failures.join('; '));
+              }
+            }
+          } finally {
+            await browser.close();
+          }
+
+          console.log('Live market-report DOM validation passed for ' + slots.length + ' slot(s) on ' + latestDate);
+          NODE
