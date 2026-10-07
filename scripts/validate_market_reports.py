@@ -29,6 +29,12 @@ MARKET_NAME_ALIASES = {
     "日経225先物(大阪取引所)": "日経225先物",
     "日経225先物・大阪取引所": "日経225先物",
 }
+MARKET_NAME_ALIASES = {
+    "WTI原油": "原油",
+    "日経225先物（大阪取引所）": "日経225先物",
+    "日経225先物(大阪取引所)": "日経225先物",
+    "日経225先物・大阪取引所": "日経225先物",
+}
 REQUIRED_REPORT_FIELDS = {
     "date", "time", "title", "theme", "leadingMarket", "markets",
     "mainScenario", "alternativeScenario", "breakConditions", "riskManagement"
