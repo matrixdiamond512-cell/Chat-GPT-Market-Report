@@ -366,17 +366,17 @@
         },
         {
           "label": "USD/JPY",
-          "value": "158.17",
+          "value": "取得不能（当時08:00レポート本文に前営業日終値の検証済み値が保存されていないため）",
           "change": "—",
           "rate": "—",
-          "direction": "08:00確認値"
+          "direction": "取得不能"
         },
         {
           "label": "EUR/USD",
-          "value": "1.1258",
+          "value": "取得不能（当時08:00レポート本文に前営業日終値の検証済み値が保存されていないため）",
           "change": "—",
           "rate": "—",
-          "direction": "08:00確認値"
+          "direction": "取得不能"
         },
         {
           "label": "COMEX金先物",
@@ -504,7 +504,8 @@
           "rate": "—",
           "direction": "取得不能"
         }
-      ]
+      ],
+      "semantics": "previous_close"
     }
   },
   {
@@ -10301,10 +10302,10 @@
           "fallbackUsed": false
         },
         "nikkei225_futures_ose": {
-          "value": 66360.0,
+          "value": 66360,
           "displayValue": "66,360",
-          "previousClose": 65480.0,
-          "change": 880.0,
+          "previousClose": 65480,
+          "change": 880,
           "changePercent": 1.3439218081856996,
           "changeText": "+880 / +1.34%",
           "unit": "円",
@@ -11942,7 +11943,7 @@
       },
       "btc24hComparisonRepair": {
         "rule": "BTCUSD 08:00 comparison uses report-time price versus nearest Yahoo BTC-USD hourly close exactly 24h earlier",
-        "reportPrice": 64582.0,
+        "reportPrice": 64582,
         "referencePrice": 64477.25,
         "reportTimeJST": "2026-08-19T08:00:00+09:00",
         "referenceTimeJST": "2026-08-18T08:00:00+09:00",
@@ -12915,7 +12916,7 @@
       },
       "btc24hComparisonRepair": {
         "rule": "BTCUSD 08:00 comparison uses report-time price versus nearest Yahoo BTC-USD hourly close exactly 24h earlier",
-        "reportPrice": 64235.0,
+        "reportPrice": 64235,
         "referencePrice": 62836.66015625,
         "reportTimeJST": "2026-08-18T08:00:00+09:00",
         "referenceTimeJST": "2026-08-17T08:00:00+09:00",
@@ -13663,7 +13664,7 @@
       },
       "btc24hComparisonRepair": {
         "rule": "BTCUSD 08:00 comparison uses report-time price versus nearest Yahoo BTC-USD hourly close exactly 24h earlier",
-        "reportPrice": 62877.0,
+        "reportPrice": 62877,
         "referencePrice": 63018.76171875,
         "reportTimeJST": "2026-08-17T08:00:00+09:00",
         "referenceTimeJST": "2026-08-16T08:00:00+09:00",
