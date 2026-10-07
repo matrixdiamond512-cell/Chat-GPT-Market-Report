@@ -4,7 +4,6 @@ const fs = require('fs');
 
 const workflow = fs.readFileSync('.github/workflows/deploy-pages.yml', 'utf8').replace(/\r\n?/g, '\n');
 const regressionWorkflow = fs.readFileSync('.github/workflows/report-21-ui-validation.yml', 'utf8').replace(/\r\n?/g, '\n');
-const strictWorkflow = fs.readFileSync('.github/workflows/current-report-strict-dom-validation.yml', 'utf8').replace(/\r\n?/g, '\n');
 const localValidator = fs.readFileSync('scripts/validate_market_report_dom.js', 'utf8');
 const core = fs.readFileSync('assets/js/report-core-v3.js', 'utf8');
 
@@ -56,22 +55,20 @@ for (const name of [
   }
 }
 
-if (!regressionWorkflow.startsWith('name: Market Report UI Renderer Regression Validation\n')) {
-  throw new Error('Fixture-only browser regression workflow must not claim All-Slot validation');
+if (!regressionWorkflow.startsWith('name: Market Report UI Validation\n')) {
+  throw new Error('Portal UI validation workflow name is missing');
 }
-if (!regressionWorkflow.includes('Browser renderer regression: malformed title fixture')
+if (!regressionWorkflow.includes('  validate:\n')
+  || !regressionWorkflow.includes('Browser renderer regression for malformed title fixture')
   || !regressionWorkflow.includes('PORTAL_REPORT_FIXTURE: tests/fixtures/report_title_boundary_malformed.json')
   || /PORTAL_URL: http:\/\/127\.0\.0\.1:8765\n\s+run: node scripts\/validate_market_report_dom\.js/.test(regressionWorkflow)) {
   throw new Error('Renderer regression workflow must explicitly scope browser validation to the malformed-title fixture');
 }
-if (!strictWorkflow.startsWith('name: Current Report Strict DOM Validation\n')
-  || !strictWorkflow.includes('pull_request:')
-  || !strictWorkflow.includes('renderer-regression:')
-  || !strictWorkflow.includes('Browser renderer regression: malformed title fixture')
-  || !strictWorkflow.includes('Validate every latest-date current report slot (strict)')
-  || !strictWorkflow.includes('PORTAL_URL: http://127.0.0.1:8765\n          NODE_PATH:')
-  || !strictWorkflow.includes('run: node scripts/validate_market_report_dom.js')) {
-  throw new Error('Strict current-report workflow must run the validator without a fixture on the PR artifact');
+if (!regressionWorkflow.includes('  strict-current-report:\n')
+  || !regressionWorkflow.includes('Validate every latest-date current report slot strictly')
+  || !regressionWorkflow.includes('PORTAL_URL: http://127.0.0.1:8765\n          NODE_PATH:')
+  || !regressionWorkflow.includes('run: node scripts/validate_market_report_dom.js')) {
+  throw new Error('Strict current-report job must run the validator without a fixture on the PR artifact');
 }
 
 const stageNames = [
