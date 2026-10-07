@@ -7,6 +7,14 @@ on:
         description: "YYYY-MM-DD; blank = current/latest 08:00 report"
         required: false
         default: ""
+  pull_request:
+    paths:
+      - "reports.json"
+      - "reports/**"
+      - "data/market/morning-reference.json"
+      - "scripts/verify_morning_report_qa.py"
+      - "assets/js/morning-report-qa-gate.js"
+      - ".github/workflows/qa-morning-report.yml"
   push:
     paths:
       # data/latest-report.json is intentionally excluded. The sync workflow
@@ -36,6 +44,7 @@ jobs:
           fetch-depth: 0
 
       - name: Sync latest main before QA
+        if: github.event_name != 'pull_request'
         shell: bash
         run: git pull --rebase origin main
 
@@ -52,6 +61,7 @@ jobs:
         shell: bash
         run: |
           REQUESTED="${{ inputs.report_date }}"
+          EVENT_NAME="${{ github.event_name }}"
           TODAY="$(TZ=Asia/Tokyo date +%F)"
           if [ -n "$REQUESTED" ]; then
             DATE="$REQUESTED"
@@ -83,7 +93,11 @@ jobs:
           print(date)
           PY
           )"
-            HISTORICAL="false"
+            if [ "$EVENT_NAME" = "pull_request" ]; then
+              HISTORICAL="true"
+            else
+              HISTORICAL="false"
+            fi
           fi
           if [ -z "$DATE" ]; then
             echo "No 08:00 report found"
@@ -115,7 +129,7 @@ jobs:
           echo "code=$CODE" >> "$GITHUB_OUTPUT"
 
       - name: Commit machine-readable QA result
-        if: always()
+        if: ${{ always() && github.event_name != 'pull_request' }}
         shell: bash
         run: |
           if [ ! -f data/market/morning_report_qa.json ]; then
