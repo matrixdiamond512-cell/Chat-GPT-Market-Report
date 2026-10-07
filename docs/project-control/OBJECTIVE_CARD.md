@@ -87,3 +87,27 @@ IMPLEMENTATION STATUS: Fixture/production trust separation implemented. Local te
 SECRET HYGIENE: Contract fixture contains no HMAC secret/signature; tests generate ephemeral keys and signatures in process memory. No `test_secret` fixture field remains.
 
 NEXT NECESSARY ACTION: Await review on PR #75. Keep it Draft and unmerged; real provider provenance and external nonproduction acceptance remain separate open outcomes.
+
+## Trusted Vision Signer merge status — 2026-10-07 (CORRECT)
+
+PR #75 was merged into main at `e1727ce9a4b9eae98505e1b5a4f6967c4fd8c16a`. Its merge-triggered GitHub Pages workflow executed the Deploy step, then the live DOM validation failed on the 2026-10-07 12:00 title mismatch (run `37623824126`). This observed deployment failure is the input to the Portal title-boundary and deploy-safety objective below. Apps Script production deployment, Script Properties, and Vision secrets were not configured.
+
+## Portal deploy safety / title-body integrity — 2026-10-07 (ADD)
+
+PRIMARY OBJECTIVE: Preserve exact canonical report titles and visible report bodies when legacy JSON has a malformed title/body boundary, prevent unrelated main pushes from publishing Pages, and stop invalid normalized artifacts before deploy.
+
+ACTIVE PROFILE: dashboard + data-tool + generic-app.
+
+ACCEPTANCE: Shared Apps Script title-boundary normalization for Docs conversion/hash/readback; renderer uses report.title and recovers malformed leading body text; malformed legacy fixture and embedded-title cases pass; Pages main-push paths are scoped while existing workflow_run sources remain; same strict local DOM gate runs after artifact normalization and before upload/deploy, with live post-deploy validation retained; all requested regressions pass.
+
+CONSTRAINTS: No historical report JSON/index, market values, images, receipts, Drive documents, Script Properties, production secrets, Apps Script deploy, or Portal production deploy changes. Do not weaken title validation or infer/repair report content.
+
+OUT OF SCOPE: Historical report data migration, atomic Pages rollback, production publication, Apps Script production configuration, real Vision provider and HMAC secret setup.
+
+FORBIDDEN SUBSTITUTE: Passing unit tests or a completed Pages deploy is not proof of live Portal correctness; exact live title/DOM validation must pass after an authorized deployment.
+
+IMPLEMENTATION STATUS: Implementation and local regressions pass on `codex/portal-deploy-safety-title-boundary`, based on main `e1727ce9a4b9eae98505e1b5a4f6967c4fd8c16a`. Python 106, Infographic 23, signer 31, Apps Script narrative/trust/readback, title-boundary parser, workflow path/order, AST 148, GAS syntax 27, renderer syntax, and diff checks PASS. Production report SHA-256 baseline and final for `reports/2026-10-07_12-00.json`: `03011e77b25c500e3df82effdcf1ea2c3c67fc5b605811a2a50ef94d637d377`. `reports.json` baseline and final: `f7058615cc5ffd8b150dcbbc31aa9fdb145b014477cac08987da0082c8275320f`. Windows local Chromium could not access the local HTTP server (`ERR_NETWORK_ACCESS_DENIED`); hosted local DOM validation is pending.
+
+OPEN OUTCOMES: PR #76 remains OPEN/DRAFT at head 652118b6a315ba664caa573105c1553d89b56d58, based on main 3cb6171531ed19a6421a6bced3c3d1a1a20aeeec (ahead 9, behind 0). Rebase had no conflicts, latest main data retained, and production data paths are absent from PR diff. Apps Script Pre-Publish on final code head PASS. Hosted strict report check at 3ef4832 records 08:00 FAIL from MorningReportQA and 12:00 PASS; report/index contents are unchanged through final head. Hosted malformed fixture previously PASS on a70261e. A new final-head hosted renderer job has not appeared; keep its latest-head evidence outcome open. Preserve data and QA, keep Draft, do not merge/deploy.
+
+NEXT NECESSARY ACTION: Finish implementation, run all requested local/hosted checks, verify protected production files unchanged, then stop with a Draft PR. Do not merge or deploy.
