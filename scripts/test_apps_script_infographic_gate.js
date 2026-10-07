@@ -40,6 +40,14 @@ let shortKeyRejected = false;
 try { context.marketReportVisionTrustConfig_(); } catch (_) { shortKeyRejected = true; }
 if (!shortKeyRejected) throw new Error('Short HMAC key was accepted');
 properties.MARKET_REPORT_VISION_HMAC_KEY = fixture.test_secret;
+properties.MARKET_REPORT_TRUSTED_VISION_PROVIDER = 'fixture-test-only';
+// TEST 32: even a sufficiently long key cannot make fixture identity a production trust root.
+let fixtureTrustConfigRejected = false;
+try { context.marketReportVisionTrustConfig_(); }
+catch (error) { fixtureTrustConfigRejected = /VISION_FIXTURE_PROVIDER_FORBIDDEN/.test(String(error.message)); }
+if (!fixtureTrustConfigRejected) throw new Error('Production trust config accepted fixture-test-only');
+
+properties.MARKET_REPORT_TRUSTED_VISION_PROVIDER = fixture.review.provider;
 if (context.marketReportVisionTrustConfig_().provider !== fixture.review.provider) {
   throw new Error('Configured Vision provider identity was not read');
 }
@@ -49,11 +57,29 @@ if (payload !== fixture.payload) throw new Error('Apps Script and Python attesta
 if (context.marketReportHmacSha256_(payload, fixture.test_secret) !== fixture.review.signature) {
   throw new Error('Apps Script and Python HMAC calculation differs');
 }
+// TEST 33: the test harness may verify the canonical fixture signature directly.
+context.verifyMarketReportVisionReviewSignature_(fixture.review,
+  { secret: fixture.test_secret, provider: fixture.review.provider });
 
 const boundReport = {
   date: '2026-10-06', time: '12:00', title: fixture.review.title,
   bodyHash: fixture.review.source_sha256, sourceDocument: { id: fixture.review.source_document_id }
 };
+let productionVerifierRejectedFixture = false;
+// TEST 34: production validation rejects the fixture identity even when passed directly.
+try {
+  const fixtureReview = Object.assign({}, fixture.review, { provider: 'fixture-test-only' });
+  context.validateMarketReportVisionReview_(boundReport,
+    { getId: () => fixtureReview.drive_image_file_id }, fixtureReview.image_sha256, fixtureReview,
+    { secret: fixture.test_secret, provider: 'test-configured-provider' });
+} catch (error) {
+  productionVerifierRejectedFixture = /VISION_FIXTURE_PROVIDER_FORBIDDEN/.test(String(error.message));
+}
+if (!productionVerifierRejectedFixture) throw new Error('Production verifier accepted fixture identity');
+
+// Existing contract fixture uses a non-production-looking test identity. The production gate
+// must continue accepting a correctly signed non-fixture identity without weakening checks.
+// TEST 35: existing non-fixture HMAC validation remains unchanged.
 context.validateMarketReportVisionReview_(boundReport,
   { getId: () => fixture.review.drive_image_file_id }, fixture.review.image_sha256, fixture.review,
   { secret: fixture.test_secret, provider: fixture.review.provider });
@@ -78,4 +104,4 @@ let changedDocRejected = false;
 try { context.verifyMarketReportSourceDocReadback_(readbackReport); } catch (_) { changedDocRejected = true; }
 if (!changedDocRejected) throw new Error('Changed Google Docs body passed the readback gate');
 
-console.log('Apps Script infographic gate tests passed.');
+console.log('Apps Script infographic gate tests passed (fixture production rejection and test-only HMAC cases included).');

@@ -38,12 +38,27 @@ const report = { date: match[1], time: match[2] + ':' + match[3], title: review.
   bodyHash: review.source_sha256, sourceDocument: { id: review.source_document_id } };
 const trust = { secret: process.env.MARKET_REPORT_VISION_HMAC_KEY,
   provider: process.env.MARKET_REPORT_TRUSTED_VISION_PROVIDER };
-context.validateMarketReportVisionReview_(report, { getId: () => review.drive_image_file_id },
-  review.image_sha256, review, trust);
+context.verifyMarketReportVisionReviewSignature_(review, trust);
+let fixtureProductionRejected = false;
+try {
+  context.validateMarketReportVisionReview_(report, { getId: () => review.drive_image_file_id },
+    review.image_sha256, review, { secret: trust.secret, provider: 'test-configured-provider' });
+} catch (error) {
+  fixtureProductionRejected = /VISION_FIXTURE_PROVIDER_FORBIDDEN/.test(String(error.message));
+}
+if (!fixtureProductionRejected) throw new Error('production verifier accepted fixture-test-only');
+
+const nonFixtureReview = Object.assign({}, review, { provider: 'cross-runtime-test-provider' });
+nonFixtureReview.signature = context.marketReportHmacSha256_(
+  context.marketReportVisionAttestationPayload_(nonFixtureReview), trust.secret);
+const nonFixtureTrust = { secret: trust.secret, provider: nonFixtureReview.provider };
+context.validateMarketReportVisionReview_(report,
+  { getId: () => nonFixtureReview.drive_image_file_id }, nonFixtureReview.image_sha256,
+  nonFixtureReview, nonFixtureTrust);
 let tamperRejected = false;
 try {
   context.validateMarketReportVisionReview_(report, { getId: () => 'different-drive-image' },
-    review.image_sha256, review, trust);
+    nonFixtureReview.image_sha256, nonFixtureReview, nonFixtureTrust);
 } catch (_) { tamperRejected = true; }
 if (!tamperRejected) throw new Error('altered Drive image identity was accepted');
-console.log('Dynamic Apps Script signed review verification passed.');
+console.log('Dynamic Apps Script test-only HMAC and production trust separation passed.');

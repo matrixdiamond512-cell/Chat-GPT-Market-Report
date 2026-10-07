@@ -331,6 +331,9 @@ function marketReportVisionTrustConfig_() {
   if (!secret || !provider) {
     throw new Error('VISION_PROVIDER_NOT_CONFIGURED: trusted Vision HMAC key/provider is missing; publication stopped.');
   }
+  if (provider === 'fixture-test-only') {
+    throw new Error('VISION_FIXTURE_PROVIDER_FORBIDDEN: fixture-test-only cannot be configured as a production trusted Vision provider.');
+  }
   if (Utilities.newBlob(secret, 'text/plain').getBytes().length < 32) {
     throw new Error('VISION_ATTESTATION_KEY_INVALID: HMAC key must contain at least 32 UTF-8 bytes.');
   }
@@ -375,6 +378,9 @@ function findExactMarketVisionReview_(report) {
 }
 
 function validateMarketReportVisionReview_(report, imageFile, imageHash, review, trustConfig) {
+  if (!trustConfig || trustConfig.provider === 'fixture-test-only' || (review && review.provider === 'fixture-test-only')) {
+    throw new Error('VISION_FIXTURE_PROVIDER_FORBIDDEN: fixture-test-only is not accepted by the production Vision verifier.');
+  }
   const requiredChecks = [
     'decorative_charts', 'gauges', 'invented_charts', 'people', 'title_correct', 'date_correct', 'time_correct',
     'required_sections_present', 'timeline_correct', 'numbers_match', 'text_overflow', 'headings_match', 'major_typos'
@@ -409,6 +415,16 @@ function validateMarketReportVisionReview_(report, imageFile, imageHash, review,
     if (review.checks[name] !== true) throw new Error('VISION_REVIEW_FAILED: ' + name);
   });
 
+  verifyMarketReportVisionReviewSignature_(review, trustConfig);
+}
+
+function verifyMarketReportVisionReviewSignature_(review, trustConfig) {
+  if (!trustConfig || !trustConfig.secret || !trustConfig.provider) {
+    throw new Error('VISION_PROVIDER_NOT_CONFIGURED: HMAC secret/provider is missing.');
+  }
+  if (!review || review.provider !== trustConfig.provider) {
+    throw new Error('VISION_REVIEW_IDENTITY_MISMATCH: provider does not match trust configuration.');
+  }
   const payload = marketReportVisionAttestationPayload_(review);
   const actualSignature = String(review.signature || '').toLowerCase();
   const expectedSignature = marketReportHmacSha256_(payload, trustConfig.secret);

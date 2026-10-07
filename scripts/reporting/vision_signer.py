@@ -54,8 +54,9 @@ def _image_digest(path: Path) -> tuple[bytes, str]:
 
 
 def sign_review(report: dict, spec: dict, image_path: str | Path, source_document_id: str,
-                drive_image_file_id: str, provider: VisionProvider) -> dict:
-    """Review and sign a local artifact. Any non-PASS verdict is non-signable."""
+                drive_image_file_id: str, provider: VisionProvider,
+                allow_fixture_test_provider: bool = False) -> dict:
+    """Review and sign a local artifact; fixture trust requires explicit test-only opt-in."""
     secret = os.environ.get('MARKET_REPORT_VISION_HMAC_KEY', '')
     trusted_provider = os.environ.get('MARKET_REPORT_TRUSTED_VISION_PROVIDER', '')
     if not secret or not trusted_provider:
@@ -63,7 +64,11 @@ def sign_review(report: dict, spec: dict, image_path: str | Path, source_documen
     secret_bytes = secret.encode('utf-8')
     if len(secret_bytes) < 32:
         raise VisionSignerFailure('VISION_ATTESTATION_KEY_INVALID')
-    if provider.provider_id == FIXTURE_PROVIDER_ID and trusted_provider != FIXTURE_PROVIDER_ID:
+    fixture_identity_in_use = provider.provider_id == FIXTURE_PROVIDER_ID or trusted_provider == FIXTURE_PROVIDER_ID
+    if fixture_identity_in_use and (not allow_fixture_test_provider
+            or provider.provider_id != FIXTURE_PROVIDER_ID or trusted_provider != FIXTURE_PROVIDER_ID):
+        raise VisionSignerFailure('VISION_FIXTURE_PROVIDER_FORBIDDEN')
+    if allow_fixture_test_provider and (provider.provider_id != FIXTURE_PROVIDER_ID or trusted_provider != FIXTURE_PROVIDER_ID):
         raise VisionSignerFailure('VISION_FIXTURE_PROVIDER_FORBIDDEN')
     if provider.provider_id != trusted_provider:
         raise VisionSignerFailure('VISION_PROVIDER_IDENTITY_MISMATCH')

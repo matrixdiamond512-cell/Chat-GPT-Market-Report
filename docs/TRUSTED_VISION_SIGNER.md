@@ -8,7 +8,7 @@ The signer creates a local `market-report-vision-review/v1` JSON artifact for on
 
 `scripts/reporting/vision_provider.py` defines a provider interface and a strict response contract. The response must contain exactly the thirteen required check names, each with `PASS`, `FAIL`, or `UNCERTAIN`. Unknown, missing, extra, or malformed values fail closed. `build_vision_prompt` supplies the source text, report identity, validated panels, and timeline as read-only evidence. Providers must not guess unreadable text or numbers; uncertainty is not a pass.
 
-The fixture provider is deterministic and does not inspect the image. Its identity is fixed to `fixture-test-only`; it exists for contract and cross-runtime tests. Never configure that identity or its key in a production Apps Script project. `ExternalVisionProvider` is an integration seam and deliberately returns `VISION_PROVIDER_NOT_CONFIGURED` until an approved provider adapter is implemented.
+The fixture provider is deterministic and does not inspect the image. Its identity is fixed to `fixture-test-only`; it exists for contract and cross-runtime tests. Python signing rejects this identity by default, and the Apps Script production trust configuration and verifier reject it unconditionally. Never configure that identity or its key in a production Apps Script project. `ExternalVisionProvider` is an integration seam and deliberately returns `VISION_PROVIDER_NOT_CONFIGURED` until an approved provider adapter is implemented.
 
 ## Signing rules
 
@@ -28,13 +28,13 @@ python scripts/sign_market_report_vision_review.py \
   --source-document-id <source-doc-id> \
   --drive-image-file-id <drive-image-id> \
   --output validation/<report_id>/マーケットレポート_<report_id>.vision-review.json \
-  --provider fixture --dry-run
+  --provider fixture --test-only --dry-run
 ```
 
-`--dry-run` is required. It means the signer may create only a local review file; it does not call publication code. The fixture provider can sign only when the configured trusted provider is `fixture-test-only`, so its output will be rejected by any real provider identity. The external provider option currently returns `NOT_RUN`/`VISION_PROVIDER_NOT_CONFIGURED`.
+`--dry-run` is required. It means the signer may create only a local review file; it does not call publication code. Fixture mode also requires the explicit `--test-only` flag; without it, signing fails with `VISION_FIXTURE_PROVIDER_FORBIDDEN`. The flag only authorizes the fixed fixture identity for test/contract work and adds `test_only: true` to the CLI summary. It does not add fields to the signed review schema. The external provider option rejects a fixture trusted identity and otherwise currently returns `NOT_RUN`/`VISION_PROVIDER_NOT_CONFIGURED`.
 
 Output creation is exclusive: an existing path is never overwritten. The filename must be `マーケットレポート_<report_id>.vision-review.json`. The command emits a compact summary with hashes and `production_write: false`; secrets are excluded.
 
 ## Status and limits
 
-Fixture signing and Apps Script verification prove schema, canonical payload, HMAC, and identity binding at local E1/E2/E3 test scope. They do not prove that a Vision model inspected the image. A real external provider, its provenance controls, nonproduction secret provisioning, Google Docs/Drive readbacks, Apps Script deployment, and end-to-end publication remain `NOT_RUN`. No production configuration or data was changed for this implementation.
+Fixture signing and test-only canonical HMAC verification prove schema and payload compatibility at local E1/E2/E3 test scope. The Apps Script production trust path rejects the fixture identity. These tests do not prove that a Vision model inspected the image. A real external provider, its provenance controls, nonproduction secret provisioning, Google Docs/Drive readbacks, Apps Script deployment, and end-to-end publication remain `NOT_RUN`. No production configuration or data was changed for this implementation.

@@ -23,6 +23,8 @@ The currently available publication path remains offline-only. `market_report.py
 
 The local Trusted Vision Signer contract and its dry-run CLI are documented in [TRUSTED_VISION_SIGNER.md](TRUSTED_VISION_SIGNER.md). A fixture review is not a real Vision observation and cannot be trusted by a production provider identity.
 
+The fixed `fixture-test-only` identity is rejected by Apps Script production trust configuration and the Python signer default path. Local fixture signing requires the explicit `--test-only` flag; that mode does not alter the signed review schema.
+
 The existing Apps Script `publishWebReportObject_` now requires strict body validation, same-file Google Docs text/hash readback, an exact-slot PNG, and a signed review file named `マーケットレポート_<date>_<HH-MM>.vision-review.json` before any GitHub write. The signed review must contain the fields represented by `tests/fixtures/vision_attestation_contract.json` (without `test_secret`, `payload`, or fixture values) and an HMAC-SHA256 `signature` over the canonical payload. Configure `MARKET_REPORT_VISION_HMAC_KEY` and `MARKET_REPORT_TRUSTED_VISION_PROVIDER` as Apps Script Script Properties; the review signer must use the same key and provider identity. The key must contain at least 32 UTF-8 bytes. The Python CLI reads those two values from environment variables. Missing configuration, image/document identity mismatch, incomplete checks or a bad signature blocks publication. No production secret values are stored in this repository, and no trusted provider is configured in this workspace.
 
 ## CLI

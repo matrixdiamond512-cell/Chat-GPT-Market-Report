@@ -54,7 +54,25 @@ class TrustedVisionSignerTests(unittest.TestCase):
     def make_review(self, report=None, candidate=None, image=None, provider=None):
         return sign_review(report or self.report, candidate or self.candidate,
             image or self.image, 'doc-fixture-1', 'drive-image-fixture-1',
-            provider or FixtureVisionProvider())
+            provider or FixtureVisionProvider(), allow_fixture_test_provider=True)
+
+    def run_cli(self, provider='fixture', test_only=False):
+        report_path = self.directory / 'report.json'
+        spec_path = self.directory / 'spec.json'
+        output = self.directory / 'マーケットレポート_2026-10-06_12-00.vision-review.json'
+        report_path.write_text(json.dumps(self.report, ensure_ascii=False), encoding='utf-8')
+        spec_path.write_text(json.dumps(self.candidate, ensure_ascii=False), encoding='utf-8')
+        cli_env = os.environ.copy()
+        cli_env['PYTHONIOENCODING'] = 'utf-8'
+        command = [sys.executable, 'scripts/sign_market_report_vision_review.py',
+            '--report', str(report_path), '--spec', str(spec_path), '--image', str(self.image),
+            '--source-document-id', 'doc-fixture-1', '--drive-image-file-id', 'drive-image-fixture-1',
+            '--output', str(output), '--provider', provider, '--dry-run']
+        if test_only:
+            command.append('--test-only')
+        result = subprocess.run(command, cwd=ROOT, env=cli_env, capture_output=True,
+                                text=True, encoding='utf-8', check=False)
+        return result, output
 
     def test_01_fixture_signs_complete_review(self):
         self.assertEqual(self.make_review()['status'], 'VERIFIED')
@@ -185,18 +203,7 @@ class TrustedVisionSignerTests(unittest.TestCase):
             'image_sha256', 'source_document_id', 'drive_image_file_id', 'reviewed_at', 'checks'])
 
     def test_25_cli_never_emits_or_serializes_secret(self):
-        report_path = self.directory / 'report.json'
-        spec_path = self.directory / 'spec.json'
-        output = self.directory / 'マーケットレポート_2026-10-06_12-00.vision-review.json'
-        report_path.write_text(json.dumps(self.report, ensure_ascii=False), encoding='utf-8')
-        spec_path.write_text(json.dumps(self.candidate, ensure_ascii=False), encoding='utf-8')
-        cli_env = os.environ.copy()
-        cli_env['PYTHONIOENCODING'] = 'utf-8'
-        result = subprocess.run([sys.executable, 'scripts/sign_market_report_vision_review.py',
-            '--report', str(report_path), '--spec', str(spec_path), '--image', str(self.image),
-            '--source-document-id', 'doc-fixture-1', '--drive-image-file-id', 'drive-image-fixture-1',
-            '--output', str(output), '--provider', 'fixture', '--dry-run'], cwd=ROOT,
-            env=cli_env, capture_output=True, text=True, encoding='utf-8', check=False)
+        result, output = self.run_cli(test_only=True)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         serialized = output.read_text(encoding='utf-8')
         self.assertNotIn(self.secret, serialized + result.stdout + result.stderr)
@@ -214,6 +221,32 @@ class TrustedVisionSignerTests(unittest.TestCase):
     def test_27_protected_report_path_is_rejected(self):
         with self.assertRaisesRegex(VisionSignerFailure, 'PROTECTED_OUTPUT_PATH'):
             write_review({}, ROOT / 'reports.json')
+
+    def test_28_default_signer_rejects_fixture_trusted_provider(self):
+        with self.assertRaisesRegex(VisionSignerFailure, 'VISION_FIXTURE_PROVIDER_FORBIDDEN'):
+            sign_review(self.report, self.candidate, self.image, 'doc-fixture-1',
+                        'drive-image-fixture-1', FixtureVisionProvider())
+
+    def test_29_cli_fixture_without_test_only_is_rejected(self):
+        result, output = self.run_cli(test_only=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(json.loads(result.stdout)['reason'], 'VISION_FIXTURE_PROVIDER_FORBIDDEN')
+        self.assertFalse(output.exists())
+
+    def test_30_cli_fixture_test_only_is_explicit_and_local(self):
+        result, output = self.run_cli(test_only=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        summary = json.loads(result.stdout)
+        self.assertIs(summary['test_only'], True)
+        self.assertIs(summary['production_write'], False)
+        self.assertNotIn('test_only', json.loads(output.read_text(encoding='utf-8')))
+
+    def test_31_cli_external_rejects_fixture_trusted_identity(self):
+        with patch.dict(os.environ, {'MARKET_REPORT_TRUSTED_VISION_PROVIDER': FIXTURE_PROVIDER_ID}):
+            result, output = self.run_cli(provider='external')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(json.loads(result.stdout)['reason'], 'VISION_FIXTURE_PROVIDER_FORBIDDEN')
+        self.assertFalse(output.exists())
 
 
 if __name__ == '__main__':
