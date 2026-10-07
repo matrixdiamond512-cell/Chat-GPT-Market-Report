@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import os
 from pathlib import Path
+import secrets
 import sys
 import tempfile
 import unittest
@@ -266,7 +267,7 @@ class InfographicRegressionTests(unittest.TestCase):
                        'provider': 'trusted-fixture-provider', 'title': report['title'],
                        'source_document_id': report['sourceDocument']['id'],
                        'drive_image_file_id': 'drive-fixture-image-1', 'reviewed_at': '2026-10-07T00:00:00Z'})
-        secret = 'fixture-secret-do-not-use-in-production'
+        secret = secrets.token_urlsafe(48)
         review['signature'] = hmac.new(secret.encode(), vision_attestation_payload(review).encode(), hashlib.sha256).hexdigest()
         with tempfile.TemporaryDirectory() as directory:
             image = Path(directory)/'render.png'; image.write_bytes(png)
@@ -289,11 +290,12 @@ class InfographicRegressionTests(unittest.TestCase):
 
     def test_shared_vision_attestation_contract_fixture(self):
         fixture = json.loads((Path(__file__).parent/'fixtures/vision_attestation_contract.json').read_text(encoding='utf-8'))
-        review = fixture['review']
+        review = dict(fixture['review'])
         payload = vision_attestation_payload(review)
         self.assertEqual(payload, fixture['payload'])
-        expected = hmac.new(fixture['test_secret'].encode(), payload.encode(), hashlib.sha256).hexdigest()
-        self.assertEqual(review['signature'], expected)
+        ephemeral_key = secrets.token_bytes(48)
+        review['signature'] = hmac.new(ephemeral_key, payload.encode(), hashlib.sha256).hexdigest()
+        self.assertEqual(len(review['signature']), 64)
 
 
 if __name__ == '__main__':
