@@ -1,0 +1,50 @@
+{
+  "report_id": "2026-10-02_08-00",
+  "dry_run": true,
+  "stages": {
+    "market_data": "FAIL",
+    "report_body": "FAIL",
+    "infographic": "NOT_RUN",
+    "google_docs": "NOT_RUN",
+    "drive_image": "NOT_RUN",
+    "github": "NOT_RUN",
+    "receipt": "NOT_RUN",
+    "portal": "NOT_RUN"
+  },
+  "overall": "INCOMPLETE",
+  "failure_reasons": [
+    "MISSING_REQUIRED_REPORT_SECTION",
+    "MARKET_DATA_SNAPSHOT_NOT_FOUND",
+    "INFOGRAPHIC_SPEC_NOT_FOUND"
+  ],
+  "body_validation": {
+    "status": "FAIL",
+    "failure_reason": "MISSING_REQUIRED_REPORT_SECTION",
+    "details": [
+      "今日の相場テーマ",
+      "前回からの変化",
+      "材料と値動きの整合性",
+      "重要ニュース",
+      "金利",
+      "需給・ポジション",
+      "シナリオが崩れる条件"
+    ]
+  },
+  "market_data_validation": {
+    "status": "FAIL",
+    "failure_reason": "MARKET_DATA_SNAPSHOT_NOT_FOUND",
+    "details": null
+  },
+  "infographic_validation": {
+    "pre_generation": {
+      "status": "NOT_RUN",
+      "result": null
+    },
+    "post_generation": {
+      "status": "NOT_RUN",
+      "result": null
+    }
+  },
+  "image_validation": null,
+  "side_effects_performed": false
+}
