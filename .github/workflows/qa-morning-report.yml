@@ -7,7 +7,16 @@ on:
         description: "YYYY-MM-DD; blank = current/latest 08:00 report"
         required: false
         default: ""
+  pull_request:
+    paths:
+      - "reports.json"
+      - "reports/*.json"
+      - "scripts/verify_morning_report_qa.py"
+      - "assets/js/morning-report-qa-gate.js"
+      - ".github/workflows/qa-morning-report.yml"
   push:
+    branches:
+      - main
     paths:
       # data/latest-report.json is intentionally excluded. The sync workflow
       # normalizes the raw report to the canonical 28-row contract first and
@@ -22,7 +31,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: morning-report-publication-qa
+  group: morning-report-publication-qa-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -36,6 +45,7 @@ jobs:
           fetch-depth: 0
 
       - name: Sync latest main before QA
+        if: github.event_name != 'pull_request'
         shell: bash
         run: git pull --rebase origin main
 
@@ -47,13 +57,45 @@ jobs:
       - name: Validate QA program
         run: python -m py_compile scripts/verify_morning_report_qa.py
 
+      - name: Detect whether this run changes report data
+        id: changes
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "report_changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" > /tmp/morning-qa-changed-files.txt
+          cat /tmp/morning-qa-changed-files.txt
+          if grep -Eq '^(reports\.json|reports/.*_08-00\.json)$' /tmp/morning-qa-changed-files.txt; then
+            echo "report_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "report_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Resolve 08:00 report date
+        if: steps.changes.outputs.report_changed == 'true'
         id: report
         shell: bash
         run: |
           REQUESTED="${{ inputs.report_date }}"
           TODAY="$(TZ=Asia/Tokyo date +%F)"
-          if [ -n "$REQUESTED" ]; then
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            DATE="$(python - <<'PY'
+          import json
+          from pathlib import Path
+
+          reports = json.loads(Path('reports.json').read_text(encoding='utf-8'))
+          dates = sorted([
+              str(r.get('date'))
+              for r in reports
+              if isinstance(r, dict) and r.get('time') == '08:00' and r.get('date')
+          ])
+          print(dates[-1] if dates else '')
+          PY
+          )"
+            HISTORICAL="true"
+          elif [ -n "$REQUESTED" ]; then
             DATE="$REQUESTED"
             HISTORICAL="true"
           else
@@ -98,6 +140,7 @@ jobs:
           echo "QA target: $DATE 08:00 / historical=$HISTORICAL"
 
       - name: Run 28-item publication QA
+        if: steps.changes.outputs.report_changed == 'true'
         id: qa
         shell: bash
         run: |
@@ -115,7 +158,7 @@ jobs:
           echo "code=$CODE" >> "$GITHUB_OUTPUT"
 
       - name: Commit machine-readable QA result
-        if: always()
+        if: always() && github.event_name != 'pull_request' && steps.changes.outputs.report_changed == 'true'
         shell: bash
         run: |
           if [ ! -f data/market/morning_report_qa.json ]; then
@@ -134,7 +177,7 @@ jobs:
           fi
 
       - name: Block invalid 08:00 publication
-        if: always()
+        if: always() && steps.changes.outputs.report_changed == 'true'
         shell: bash
         run: |
           CODE="${{ steps.qa.outputs.code }}"
@@ -144,3 +187,7 @@ jobs:
             exit 1
           fi
           echo "08:00 report passed publication QA."
+
+      - name: Report QA not required for non-report PR
+        if: github.event_name == 'pull_request' && steps.changes.outputs.report_changed != 'true'
+        run: echo "No reports.json or 08:00 canonical report change in this PR; historical publication QA is not required."
