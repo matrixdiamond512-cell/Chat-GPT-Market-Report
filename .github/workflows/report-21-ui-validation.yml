@@ -1,4 +1,4 @@
-name: All-Slot Report UI Validation
+name: Market Report UI Validation
 
 on:
   workflow_dispatch:
@@ -8,6 +8,10 @@ on:
       - 'assets/js/report-core-v3.js'
       - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
+      - 'scripts/validate_market_report_dom.js'
+      - 'scripts/test_market_report_title_boundary.js'
+      - 'scripts/test_portal_deploy_safety.js'
+      - 'tests/fixtures/report_title_boundary_malformed.json'
       - '.github/workflows/report-21-ui-validation.yml'
   push:
     branches:
@@ -17,6 +21,10 @@ on:
       - 'assets/js/report-core-v3.js'
       - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
+      - 'scripts/validate_market_report_dom.js'
+      - 'scripts/test_market_report_title_boundary.js'
+      - 'scripts/test_portal_deploy_safety.js'
+      - 'tests/fixtures/report_title_boundary_malformed.json'
       - '.github/workflows/report-21-ui-validation.yml'
 
 permissions:
@@ -25,7 +33,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -82,3 +90,64 @@ jobs:
             throw new Error('Explicit date/time selection may fall back to another report');
           }
           NODE
+
+      - name: Test title-boundary parser and deploy workflow safety
+        run: |
+          node scripts/test_market_report_title_boundary.js
+          node scripts/test_portal_deploy_safety.js
+
+      - name: Install Chromium for renderer regression
+        run: |
+          npm install --prefix "$RUNNER_TEMP/renderer-regression" --no-save playwright
+          "$RUNNER_TEMP/renderer-regression/node_modules/.bin/playwright" install --with-deps chromium
+
+      - name: Start local site for renderer regression fixture
+        run: |
+          python3 -m http.server 8766 --bind 127.0.0.1 > /tmp/renderer-regression-http.log 2>&1 &
+          echo $! > /tmp/renderer-regression-http.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8766/reports.json -o /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/renderer-regression-http.log
+          exit 1
+
+      - name: Browser renderer regression for malformed title fixture
+        env:
+          PORTAL_URL: http://127.0.0.1:8766
+          PORTAL_REPORT_FIXTURE: tests/fixtures/report_title_boundary_malformed.json
+          NODE_PATH: ${{ runner.temp }}/renderer-regression/node_modules
+        run: node scripts/validate_market_report_dom.js
+
+  strict-current-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Chromium for strict current-report validation
+        run: |
+          npm install --prefix "$RUNNER_TEMP/current-report-validation" --no-save playwright
+          "$RUNNER_TEMP/current-report-validation/node_modules/.bin/playwright" install --with-deps chromium
+
+      - name: Start local site for current report artifact
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/current-report-strict-http.log 2>&1 &
+          echo $! > /tmp/current-report-strict-http.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8765/reports.json -o /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/current-report-strict-http.log
+          exit 1
+
+      - name: Validate every latest-date current report slot strictly
+        env:
+          PORTAL_URL: http://127.0.0.1:8765
+          NODE_PATH: ${{ runner.temp }}/current-report-validation/node_modules
+        run: node scripts/validate_market_report_dom.js
