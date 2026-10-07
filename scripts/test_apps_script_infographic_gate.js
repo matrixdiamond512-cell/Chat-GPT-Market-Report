@@ -106,4 +106,55 @@ let changedDocRejected = false;
 try { context.verifyMarketReportSourceDocReadback_(readbackReport); } catch (_) { changedDocRejected = true; }
 if (!changedDocRejected) throw new Error('Changed Google Docs body passed the readback gate');
 
+// TEST 36-38: one canonical title/body boundary is used for Docs conversion and readback.
+const boundaryTitle = 'マーケットレポート｜2026/10/07（水）12:00';
+const boundaryBody = '情報基準：2026/10/07 12:00 JST。本文中の例：' + boundaryTitle;
+const malformedDocText = boundaryTitle + boundaryBody;
+const canonicalDocText = boundaryTitle + '\n' + boundaryBody;
+if (context.normalizeReportCanonicalText_(malformedDocText, boundaryTitle) !== canonicalDocText) {
+  throw new Error('Missing title/body boundary was not canonicalized');
+}
+if (context.normalizeReportCanonicalText_(canonicalDocText, boundaryTitle) !== canonicalDocText) {
+  throw new Error('Existing title/body newline was changed');
+}
+if (context.normalizeReportCanonicalText_('別の本文', boundaryTitle) !== '別の本文') {
+  throw new Error('Text not beginning with canonical title was rewritten');
+}
+
+// Stub unrelated report enrichment while exercising the real Docs-to-report builder.
+context.smartSectionText_ = () => '';
+context.smartSectionLines_ = () => [];
+context.inferTheme_ = () => 'fixture theme';
+context.inferLeadingMarket_ = () => 'fixture market';
+context.scenarioFields_ = () => ({ mainScenario: '', alternativeScenario: '', breakConditions: '' });
+context.parseMarketsLenient_ = () => ['金', '原油', '日経225先物', 'USD/JPY', 'EUR/USD', 'BTCUSD'].map(name => ({name}));
+context.enrichSparseReport_ = () => {};
+context.validateWebReportObject_ = report => report;
+context.DocumentApp.openById = () => ({ getBody: () => ({ getText: () => malformedDocText }) });
+const sourceFile = {
+  getId: () => 'doc-boundary-fixture',
+  getName: () => 'マーケットレポート_2026-10-07_12-00',
+  getUrl: () => 'https://example.invalid/doc-boundary-fixture',
+  getLastUpdated: () => new Date('2026-10-07T03:00:00.000Z')
+};
+const builtBoundaryReport = context.buildWebReportFromGoogleDoc_(sourceFile);
+if (builtBoundaryReport.title !== boundaryTitle || builtBoundaryReport.fullText !== canonicalDocText) {
+  throw new Error('Google Docs builder did not use the canonical title/body text');
+}
+const boundaryHash = context.marketReportSha256_(context.Utilities.newBlob(builtBoundaryReport.fullText, 'text/plain').getBytes());
+const canonicalReadbackReport = {
+  title: boundaryTitle,
+  fullText: builtBoundaryReport.fullText,
+  bodyHash: boundaryHash,
+  sourceDocument: { id: 'doc-boundary-fixture' }
+};
+context.verifyMarketReportSourceDocReadback_(canonicalReadbackReport);
+context.DocumentApp.openById = () => ({ getBody: () => ({ getText: () => canonicalDocText }) });
+context.verifyMarketReportSourceDocReadback_(canonicalReadbackReport);
+context.DocumentApp.openById = () => ({ getBody: () => ({ getText: () => canonicalDocText + ' changed' }) });
+let canonicalReadbackChangeRejected = false;
+try { context.verifyMarketReportSourceDocReadback_(canonicalReadbackReport); }
+catch (_) { canonicalReadbackChangeRejected = true; }
+if (!canonicalReadbackChangeRejected) throw new Error('Changed canonical Docs text passed readback/hash verification');
+
 console.log('Apps Script infographic gate tests passed (fixture production rejection and test-only HMAC cases included).');
