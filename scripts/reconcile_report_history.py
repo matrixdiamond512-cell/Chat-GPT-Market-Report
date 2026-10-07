@@ -57,6 +57,7 @@ def _revision_number(report: dict) -> int | None:
 
 
 def _updated_at(report: dict) -> datetime | None:
+    from reporting.context import aware
     values = [
         report.get("updatedAt"),
         report.get("savedAt"),
@@ -69,9 +70,9 @@ def _updated_at(report: dict) -> datetime | None:
         if not isinstance(value, str) or not value.strip():
             continue
         try:
-            return datetime.fromisoformat(value.replace("Z", "+00:00"))
-        except ValueError:
-            continue
+            return aware(value)
+        except ValueError as exc:
+            raise ValueError(f'invalid report timestamp {value!r}: {exc}') from exc
     return None
 
 

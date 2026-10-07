@@ -39,7 +39,11 @@ def main() -> None:
 
     report = load_latest(Path(args.latest))
     slot = parse_slot(str(report["date"]), str(report["time"]))
-    enforce_from = datetime.fromisoformat(args.enforce_from)
+    from reporting.context import aware
+    try:
+        enforce_from = aware(args.enforce_from, date_boundary=True)
+    except ValueError as exc:
+        parser.error(f'--enforce-from: {exc}')
     if slot < enforce_from:
         print(f"Drive receipt guard not enforced for legacy slot {report['date']} {report['time']}")
         return

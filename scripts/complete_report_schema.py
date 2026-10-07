@@ -97,6 +97,14 @@ def complete_report(report: dict[str, Any]) -> bool:
     return changed
 
 
+def complete_reports(data) -> bool:
+    changed = False
+    for report in data:
+        if isinstance(report, dict):
+            changed = complete_report(report) or changed
+    return changed
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("path", nargs="?", default="reports.json")
@@ -108,7 +116,7 @@ def main() -> int:
     if not isinstance(data, list):
         raise SystemExit("reports.json must contain an array")
 
-    changed = any(complete_report(report) for report in data if isinstance(report, dict))
+    changed = complete_reports(data)
     if args.check:
         return 1 if changed else 0
 

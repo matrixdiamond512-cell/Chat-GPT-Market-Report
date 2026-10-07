@@ -60,21 +60,9 @@ def attach_market_data(dashboard: dict[str, Any], market_data: dict[str, Any]) -
         )
     result["errors"] = errors
 
-    latest_report = result.get("latestReport")
-    if isinstance(latest_report, dict):
-        latest_report = deepcopy(latest_report)
-        latest_report["marketData"] = market_data
-        result["latestReport"] = latest_report
-
-    reports = result.get("reports")
-    if isinstance(reports, list) and reports:
-        reports = deepcopy(reports)
-        current_key = result.get("currentReportKey") or ""
-        for index, report in enumerate(reports):
-            if index == 0 or f"{report.get('date', '')} {report.get('time', '')}" == current_key:
-                report["marketData"] = market_data
-                break
-        result["reports"] = reports
+    # This is an independent live data projection, not a report snapshot.
+    # Preserve every report's original marketData even for a matching slot/day.
+    # New report transactions bind a frozen MarketDataSnapshot before body creation.
     return result
 
 

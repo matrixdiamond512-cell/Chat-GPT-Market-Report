@@ -15,8 +15,8 @@ import verify_publication_consistency
 
 
 class ReportContractTests(unittest.TestCase):
-    def test_schedule_has_one_authoritative_saturday_slot(self):
-        self.assertEqual(validate_market_reports.publication_slots("2026-09-19"), {"08:00"})
+    def test_schedule_preserves_saturday_history_without_new_publication(self):
+        self.assertEqual(validate_market_reports.publication_slots("2026-09-19"), set())
         self.assertEqual(validate_market_reports.publication_slots("2026-09-20"), set())
         self.assertEqual(validate_market_reports.expected_slots("2026-09-19"), {"07:00", "08:00", "09:00"})
 

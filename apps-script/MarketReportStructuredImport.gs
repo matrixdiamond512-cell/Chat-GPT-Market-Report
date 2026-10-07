@@ -158,11 +158,15 @@ function mrBuildReportFromDoc_(file) {
   return report;
 }
 
-function mrExtractIdentity_(fileName, fullText) {
+function mrExtractIdentity_(fileName, fullText, reportContext) {
   var match = fileName.match(/(\d{4}-\d{2}-\d{2})_(\d{2})-(\d{2})$/);
   if (!match) throw new Error('ファイル名から日時を取得できません。');
   var date = match[1];
   var time = match[2] + ':' + match[3];
+  if (reportContext) {
+    var context = validateImmutableReportContext_(reportContext);
+    if (date !== context.report_date || time !== context.report_time) throw new Error('structured import/context identity mismatch');
+  }
   var titleLine = fullText.split('\n').filter(function(line) { return /^マーケットレポート｜/.test(line.trim()); })[0];
   return {date: date, time: time, title: titleLine ? titleLine.trim() : 'マーケットレポート｜' + date.replace(/-/g,'/') + ' ' + time};
 }

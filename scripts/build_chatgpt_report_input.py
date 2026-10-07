@@ -222,6 +222,14 @@ def main() -> int:
         dump_json(RAW_MARKET, payload)
     else:
         raw = load_json(RAW_MARKET, {})
+        generated = str(raw.get('generatedAt') or '')
+        from reporting.context import aware
+        try:
+            source_date = aware(generated).astimezone(JST).date().isoformat()
+        except ValueError as exc:
+            raise SystemExit(f'ChatGPT input blocked: invalid acquisition timestamp: {exc}')
+        if source_date != report.get('date') or raw.get('reportDate') not in (None, report.get('date')):
+            raise SystemExit('ChatGPT input blocked: cross-day acquisition/report mismatch')
         if str(raw.get("reportSlot") or "") != slot:
             print(f"ChatGPT report input unchanged: raw market slot {raw.get('reportSlot')} != report slot {slot}")
             return 0
