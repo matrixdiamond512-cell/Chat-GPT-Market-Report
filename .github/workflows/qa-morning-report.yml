@@ -7,6 +7,13 @@ on:
         description: "YYYY-MM-DD; blank = current/latest 08:00 report"
         required: false
         default: ""
+  pull_request:
+    paths:
+      - "reports.json"
+      - "reports/*.json"
+      - "scripts/verify_morning_report_qa.py"
+      - "assets/js/morning-report-qa-gate.js"
+      - ".github/workflows/qa-morning-report.yml"
   push:
     paths:
       # data/latest-report.json is intentionally excluded. The sync workflow
@@ -22,7 +29,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: morning-report-publication-qa
+  group: morning-report-publication-qa-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -36,6 +43,7 @@ jobs:
           fetch-depth: 0
 
       - name: Sync latest main before QA
+        if: github.event_name != 'pull_request'
         shell: bash
         run: git pull --rebase origin main
 
@@ -53,7 +61,22 @@ jobs:
         run: |
           REQUESTED="${{ inputs.report_date }}"
           TODAY="$(TZ=Asia/Tokyo date +%F)"
-          if [ -n "$REQUESTED" ]; then
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            DATE="$(python - <<'PY'
+          import json
+          from pathlib import Path
+
+          reports = json.loads(Path('reports.json').read_text(encoding='utf-8'))
+          dates = sorted([
+              str(r.get('date'))
+              for r in reports
+              if isinstance(r, dict) and r.get('time') == '08:00' and r.get('date')
+          ])
+          print(dates[-1] if dates else '')
+          PY
+          )"
+            HISTORICAL="true"
+          elif [ -n "$REQUESTED" ]; then
             DATE="$REQUESTED"
             HISTORICAL="true"
           else
@@ -115,7 +138,7 @@ jobs:
           echo "code=$CODE" >> "$GITHUB_OUTPUT"
 
       - name: Commit machine-readable QA result
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         shell: bash
         run: |
           if [ ! -f data/market/morning_report_qa.json ]; then
