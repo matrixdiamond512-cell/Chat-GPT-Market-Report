@@ -65,123 +65,7 @@ jobs:
           fi
           git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}" > /tmp/morning-qa-changed-files.txt
           cat /tmp/morning-qa-changed-files.txt
-          if grep -Eq '^(reports\.json|reports/.*_08-00\.json)        id: report
-        shell: bash
-        run: |
-          REQUESTED="${{ inputs.report_date }}"
-          TODAY="$(TZ=Asia/Tokyo date +%F)"
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            DATE="$(python - <<'PY'
-          import json
-          from pathlib import Path
-
-          reports = json.loads(Path('reports.json').read_text(encoding='utf-8'))
-          dates = sorted([
-              str(r.get('date'))
-              for r in reports
-              if isinstance(r, dict) and r.get('time') == '08:00' and r.get('date')
-          ])
-          print(dates[-1] if dates else '')
-          PY
-          )"
-            HISTORICAL="true"
-          elif [ -n "$REQUESTED" ]; then
-            DATE="$REQUESTED"
-            HISTORICAL="true"
-          else
-            DATE="$(python - <<'PY'
-          import json
-          from pathlib import Path
-
-          latest_path = Path('data/latest-report.json')
-          date = ''
-          if latest_path.is_file():
-              try:
-                  payload = json.loads(latest_path.read_text(encoding='utf-8'))
-                  report = payload.get('latestReport') or {}
-                  if report.get('time') == '08:00' and report.get('date'):
-                      date = str(report.get('date'))
-              except Exception:
-                  pass
-
-          if not date:
-              reports = json.loads(Path('reports.json').read_text(encoding='utf-8'))
-              dates = sorted([
-                  str(r.get('date'))
-                  for r in reports
-                  if isinstance(r, dict) and r.get('time') == '08:00' and r.get('date')
-              ])
-              date = dates[-1] if dates else ''
-          print(date)
-          PY
-          )"
-            HISTORICAL="false"
-          fi
-          if [ -z "$DATE" ]; then
-            echo "No 08:00 report found"
-            exit 1
-          fi
-          if [ "$HISTORICAL" != "true" ] && [ "$DATE" != "$TODAY" ]; then
-            echo "Latest 08:00 report is stale: resolved=$DATE today=$TODAY"
-            exit 1
-          fi
-          echo "date=$DATE" >> "$GITHUB_OUTPUT"
-          echo "historical=$HISTORICAL" >> "$GITHUB_OUTPUT"
-          echo "QA target: $DATE 08:00 / historical=$HISTORICAL"
-
-      - name: Run 28-item publication QA
-        if: steps.changes.outputs.report_changed == 'true'
-        id: qa
-        shell: bash
-        run: |
-          set +e
-          EXTRA_ARGS=()
-          if [ "${{ steps.report.outputs.historical }}" = "true" ]; then
-            EXTRA_ARGS+=(--allow-historical)
-          fi
-          python scripts/verify_morning_report_qa.py \
-            --date "${{ steps.report.outputs.date }}" \
-            --slot "08:00" \
-            "${EXTRA_ARGS[@]}"
-          CODE=$?
-          set -e
-          echo "code=$CODE" >> "$GITHUB_OUTPUT"
-
-      - name: Commit machine-readable QA result
-        if: always() && github.event_name != 'pull_request'
-        shell: bash
-        run: |
-          if [ ! -f data/market/morning_report_qa.json ]; then
-            echo "QA result file was not created"
-            exit 1
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/market/morning_report_qa.json
-          if git diff --cached --quiet; then
-            echo "QA result unchanged"
-          else
-            git commit -m "Record 08:00 report publication QA"
-            git pull --rebase origin main
-            git push origin HEAD:main
-          fi
-
-      - name: Block invalid 08:00 publication
-        if: always() && steps.changes.outputs.report_changed == 'true'
-        shell: bash
-        run: |
-          CODE="${{ steps.qa.outputs.code }}"
-          if [ "${CODE:-1}" -ne 0 ]; then
-            echo "08:00 report failed publication QA. WEB latest-selection gate must reject this report."
-            cat data/market/morning_report_qa.json || true
-            exit 1
-          fi
-          echo "08:00 report passed publication QA."
-
-      - name: Report QA not required for non-report PR
-        if: github.event_name == 'pull_request' && steps.changes.outputs.report_changed != 'true'
-        run: echo "No reports.json or 08:00 canonical report change in this PR; historical publication QA is not required."
- /tmp/morning-qa-changed-files.txt; then
+          if grep -Eq '^(reports\.json|reports/.*_08-00\.json)$' /tmp/morning-qa-changed-files.txt; then
             echo "report_changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "report_changed=false" >> "$GITHUB_OUTPUT"
@@ -254,6 +138,7 @@ jobs:
           echo "QA target: $DATE 08:00 / historical=$HISTORICAL"
 
       - name: Run 28-item publication QA
+        if: steps.changes.outputs.report_changed == 'true'
         id: qa
         shell: bash
         run: |
@@ -271,7 +156,7 @@ jobs:
           echo "code=$CODE" >> "$GITHUB_OUTPUT"
 
       - name: Commit machine-readable QA result
-        if: always() && github.event_name != 'pull_request'
+        if: always() && github.event_name != 'pull_request' && steps.changes.outputs.report_changed == 'true'
         shell: bash
         run: |
           if [ ! -f data/market/morning_report_qa.json ]; then
@@ -290,7 +175,7 @@ jobs:
           fi
 
       - name: Block invalid 08:00 publication
-        if: always()
+        if: always() && steps.changes.outputs.report_changed == 'true'
         shell: bash
         run: |
           CODE="${{ steps.qa.outputs.code }}"
@@ -300,3 +185,7 @@ jobs:
             exit 1
           fi
           echo "08:00 report passed publication QA."
+
+      - name: Report QA not required for non-report PR
+        if: github.event_name == 'pull_request' && steps.changes.outputs.report_changed != 'true'
+        run: echo "No reports.json or 08:00 canonical report change in this PR; historical publication QA is not required."
