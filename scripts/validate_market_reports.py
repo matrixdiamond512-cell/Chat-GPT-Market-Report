@@ -23,6 +23,12 @@ JST = ZoneInfo("Asia/Tokyo")
 ROOT = Path(__file__).resolve().parents[1]
 SCHEDULE_FILE = ROOT / "config" / "report_schedule.json"
 REQUIRED_MARKETS = {"金", "原油", "日経225先物", "USD/JPY", "EUR/USD", "BTCUSD"}
+MARKET_NAME_ALIASES = {
+    "WTI原油": "原油",
+    "日経225先物（大阪取引所）": "日経225先物",
+    "日経225先物(大阪取引所)": "日経225先物",
+    "日経225先物・大阪取引所": "日経225先物",
+}
 REQUIRED_REPORT_FIELDS = {
     "date", "time", "title", "theme", "leadingMarket", "markets",
     "mainScenario", "alternativeScenario", "breakConditions", "riskManagement"
@@ -185,7 +191,7 @@ def validate_report_content(report: dict, prefix: str, strict: bool, errors: lis
         target.append(f"{prefix}: markets は配列である必要があります")
         return
 
-    names = {str(m.get("name", "")) for m in markets if isinstance(m, dict)}
+    names = {MARKET_NAME_ALIASES.get(str(m.get("name", "")), str(m.get("name", ""))) for m in markets if isinstance(m, dict)}
     missing_markets = sorted(REQUIRED_MARKETS - names)
     if missing_markets:
         target.append(f"{prefix}: 必須市場不足: {', '.join(missing_markets)}")
