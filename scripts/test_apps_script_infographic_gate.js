@@ -3,6 +3,7 @@ const vm = require('vm');
 const crypto = require('crypto');
 
 const web = fs.readFileSync('apps-script/MarketReportWebSync.gs', 'utf8');
+const reportContextCode = fs.readFileSync('apps-script/MarketReportContext.gs', 'utf8');
 const fixture = JSON.parse(fs.readFileSync('tests/fixtures/vision_attestation_contract.json', 'utf8'));
 const signedByteArray = buffer => Array.from(buffer, value => value > 127 ? value - 256 : value);
 const context = {
@@ -25,7 +26,15 @@ const properties = { MARKET_REPORT_VISION_HMAC_KEY: 'short', MARKET_REPORT_TRUST
 context.PropertiesService = { getScriptProperties: () => ({ getProperty: key => properties[key] || '' }) };
 
 vm.createContext(context);
+vm.runInContext(reportContextCode, context);
 vm.runInContext(web, context);
+
+const validReportContext = { report_date: '2026-10-06', report_time: '12:00', report_id: '2026-10-06_12-00', data_cutoff: '2026-10-06T11:55:00+09:00', previous_report_id: '2026-10-06_08-00', previous_business_day: '2026-10-05', revision: 1, mode: 'historical' };
+const parsedDoc = context.marketReportDocInfoFromName_('マーケットレポート_2026-10-06_12-00', validReportContext);
+if (!parsedDoc || parsedDoc.key !== '2026-10-06 12:00') throw new Error('Matching immutable context was rejected');
+let contextMismatchRejected = false;
+try { context.marketReportDocInfoFromName_('マーケットレポート_2026-10-06_16-00', validReportContext); } catch (_) { contextMismatchRejected = true; }
+if (!contextMismatchRejected) throw new Error('Document/context slot mismatch was accepted');
 
 let shortKeyRejected = false;
 try { context.marketReportVisionTrustConfig_(); } catch (_) { shortKeyRejected = true; }
