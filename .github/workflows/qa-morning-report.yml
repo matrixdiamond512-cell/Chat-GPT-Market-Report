@@ -10,7 +10,8 @@ on:
   pull_request:
     paths:
       - "reports.json"
-      - "reports/*.json"
+      - "reports/**"
+      - "data/market/morning-reference.json"
       - "scripts/verify_morning_report_qa.py"
       - "assets/js/morning-report-qa-gate.js"
       - ".github/workflows/qa-morning-report.yml"
@@ -79,6 +80,7 @@ jobs:
         shell: bash
         run: |
           REQUESTED="${{ inputs.report_date }}"
+          EVENT_NAME="${{ github.event_name }}"
           TODAY="$(TZ=Asia/Tokyo date +%F)"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             DATE="$(python - <<'PY'
@@ -125,7 +127,11 @@ jobs:
           print(date)
           PY
           )"
-            HISTORICAL="false"
+            if [ "$EVENT_NAME" = "pull_request" ]; then
+              HISTORICAL="true"
+            else
+              HISTORICAL="false"
+            fi
           fi
           if [ -z "$DATE" ]; then
             echo "No 08:00 report found"
