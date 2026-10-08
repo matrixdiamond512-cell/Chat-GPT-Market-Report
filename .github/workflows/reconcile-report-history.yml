@@ -1,4 +1,4 @@
-name: Reconcile market report history
+name: Reconcile market report history (read-only)
 
 on:
   push:
@@ -11,12 +11,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pages: write
+  contents: read
 
 concurrency:
   group: reconcile-market-report-history
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   reconcile:
@@ -25,65 +24,72 @@ jobs:
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Reconcile direct publications with canonical history
-        run: |
-          python scripts/reconcile_report_history.py
-          python -m json.tool reports.json > /dev/null
-
-      - name: Verify every canonical report is indexed
+      - name: Verify canonical history is already consistent
+        shell: bash
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
-          from scripts.reconcile_report_history import validate
 
-          index = json.loads(Path('reports.json').read_text(encoding='utf-8'))
-          index_keys = {(r['date'], r['time']) for r in index}
+          index_path = Path('reports.json')
+          index = json.loads(index_path.read_text(encoding='utf-8'))
+          if not isinstance(index, list):
+              raise SystemExit('reports.json must be a list')
+
+          index_keys = []
+          by_key = {}
+          for item in index:
+              if not isinstance(item, dict):
+                  raise SystemExit('reports.json contains a non-object item')
+              key = (item.get('date'), item.get('time'))
+              if not all(key):
+                  raise SystemExit(f'invalid index item identity: {item!r}')
+              if key in by_key:
+                  raise SystemExit(f'duplicate report slot in index: {key}')
+              index_keys.append(key)
+              by_key[key] = item
+
           file_keys = set()
           for path in Path('reports').glob('*.json'):
               if path.name.startswith('_'):
                   continue
-              report = validate(json.loads(path.read_text(encoding='utf-8')), str(path))
-              file_keys.add((report['date'], report['time']))
+              report = json.loads(path.read_text(encoding='utf-8'))
+              if not isinstance(report, dict):
+                  raise SystemExit(f'{path}: canonical report must be an object')
+              if not all(report.get(k) for k in ('date', 'time', 'title')):
+                  report = report.get('latestReport', report)
+              key = (report.get('date'), report.get('time'))
+              if not all(key):
+                  raise SystemExit(f'{path}: missing date/time')
+              if key in file_keys:
+                  raise SystemExit(f'duplicate canonical slot: {key}')
+              file_keys.add(key)
+              indexed = by_key.get(key)
+              if indexed is None:
+                  raise SystemExit(f'canonical report missing from index: {path}')
+              if indexed != report:
+                  raise SystemExit(f'index/canonical mismatch: {path}')
 
-          if index_keys != file_keys:
-              raise SystemExit(f'history mismatch: index_only={sorted(index_keys-file_keys)}, file_only={sorted(file_keys-index_keys)}')
-          print(f'History verified: {len(index_keys)} slots')
+          if set(index_keys) != file_keys:
+              raise SystemExit(
+                  f'history mismatch: index_only={sorted(set(index_keys)-file_keys)}, '
+                  f'file_only={sorted(file_keys-set(index_keys))}'
+              )
+
+          print(f'Read-only history verification PASS: {len(file_keys)} slots')
           PY
 
-      - name: Commit repaired history when needed
-        id: commit
-        shell: bash
+      - name: Confirm workflow produced no report mutations
         run: |
-          if git diff --quiet -- reports reports.json; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "Report history already consistent."
-            exit 0
+          if ! git diff --quiet -- reports reports.json; then
+            echo "ERROR: read-only history verification changed publication files"
+            git status --short -- reports reports.json
+            exit 1
           fi
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add reports reports.json
-          git commit -m "Reconcile market report history"
-          git pull --rebase origin main
-          git push origin main
-          echo "changed=true" >> "$GITHUB_OUTPUT"
-
-      - name: Rebuild GitHub Pages after repair
-        if: steps.commit.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          gh api --method POST \
-            -H 'Accept: application/vnd.github+json' \
-            -H 'X-GitHub-Api-Version: 2026-03-10' \
-            "repos/${GITHUB_REPOSITORY}/pages/builds"
+          echo "No report files changed."
