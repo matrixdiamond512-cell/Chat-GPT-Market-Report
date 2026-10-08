@@ -169,9 +169,15 @@ def sync_dashboard(report: dict) -> None:
         snapshot = dashboard.get("marketData") or previous_report.get("marketData")
         if snapshot:
             dashboard["marketData"] = snapshot
-    now = dt.datetime.now(JST).replace(microsecond=0).isoformat()
     key = f"{report['date']} {report['time']}"
     data_as_of = f"{report['date']}T{report['time']}:00+09:00"
+
+    # Scheduled recovery runs must be idempotent. If the exact same report is
+    # already projected, do not create a timestamp-only dashboard commit.
+    if previous_report == report and dashboard.get("currentReportKey") == key:
+        return
+
+    now = dt.datetime.now(JST).replace(microsecond=0).isoformat()
 
     dashboard.setdefault("schemaVersion", "1.1.0")
     dashboard.setdefault("pageId", "dashboard")
