@@ -1,15 +1,14 @@
-name: Build report index
+name: Validate report publication
 
-# Rebuild marker: 2026-09-11 portal-sync-resilience
 on:
   push:
     branches:
       - main
     paths:
-      - "data/latest-report.json"
       - "publication-receipts/*.json"
       - "reports/*.json"
       - "reports.json"
+      - "data/dashboard.json"
       - "scripts/build_reports.py"
       - "scripts/verify_publication_consistency.py"
       - "scripts/validate_drive_publication_receipt.py"
@@ -18,74 +17,100 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: build-report-index
+  group: validate-report-publication
   cancel-in-progress: true
 
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Require Google Drive save receipt before portal sync
-        run: |
-          python scripts/validate_drive_publication_receipt.py \
-            --latest data/latest-report.json \
-            --receipts publication-receipts \
-            --enforce-from "2026-08-19T21:00:00+09:00" \
-            --require-publisher chatgpt
-
-      - name: Sync latest report, preserve history and build reports.json
-        run: python scripts/build_reports.py
-
-      - name: Validate generated JSON and portal publication
+      - name: Validate JSON syntax
         run: |
           python -m json.tool data/latest-report.json > /dev/null
           python -m json.tool reports.json > /dev/null
+          python -m json.tool data/dashboard.json > /dev/null
+
+      - name: Verify canonical/index/latest/dashboard consistency
+        run: |
           python - <<'PY'
           import json
           from pathlib import Path
 
-          payload = json.loads(Path('data/latest-report.json').read_text(encoding='utf-8'))
-          latest = payload.get('latestReport', payload)
-          path = Path('reports') / f"{latest['date']}_{latest['time'].replace(':', '-')}.json"
-          if not path.exists():
-              raise SystemExit(f'canonical history file missing: {path}')
-          archived = json.loads(path.read_text(encoding='utf-8'))
-          if archived != latest:
-              raise SystemExit(f'canonical history does not match latest report: {path}')
+          latest_payload = json.loads(Path('data/latest-report.json').read_text(encoding='utf-8'))
+          latest = latest_payload.get('latestReport', latest_payload)
           index = json.loads(Path('reports.json').read_text(encoding='utf-8'))
-          matches = [r for r in index if r.get('date') == latest['date'] and r.get('time') == latest['time']]
+          dashboard = json.loads(Path('data/dashboard.json').read_text(encoding='utf-8'))
+
+          key = (latest.get('date'), latest.get('time'))
+          if not all(key):
+              raise SystemExit('latest report missing date/time')
+
+          canonical_path = Path('reports') / f"{key[0]}_{key[1].replace(':', '-')}.json"
+          if not canonical_path.exists():
+              raise SystemExit(f'canonical history file missing: {canonical_path}')
+
+          canonical = json.loads(canonical_path.read_text(encoding='utf-8'))
+          if canonical != latest:
+              raise SystemExit(f'canonical history does not match latest report: {canonical_path}')
+
+          matches = [r for r in index if (r.get('date'), r.get('time')) == key]
           if len(matches) != 1 or matches[0] != latest:
               raise SystemExit('reports.json does not contain exactly one matching latest report')
-          print(f"Portal publication verified: {latest['date']} {latest['time']} -> {path} -> reports.json")
+
+          dashboard_latest = dashboard.get('latestReport')
+          if dashboard_latest != latest:
+              raise SystemExit('dashboard.latestReport does not match latest report')
+
+          expected_key = f"{key[0]} {key[1]}"
+          if dashboard.get('currentReportKey') != expected_key:
+              raise SystemExit(
+                  f"dashboard currentReportKey mismatch: "
+                  f"{dashboard.get('currentReportKey')!r} != {expected_key!r}"
+              )
+
+          print(f'Publication consistency PASS: {expected_key}')
           PY
 
-      - name: Verify latest report, canonical history and dashboard are one version
-        run: python scripts/verify_publication_consistency.py
-
-      - name: Commit canonical history and generated index
+      - name: Verify builder would not rewrite publication history
         run: |
-          if git diff --quiet -- reports reports.json; then
-            echo "Canonical report history and reports.json are already consistent."
-            exit 0
+          cp reports.json /tmp/reports.before.json
+          cp data/latest-report.json /tmp/latest.before.json
+          python scripts/build_reports.py
+          if ! cmp -s reports.json /tmp/reports.before.json; then
+            echo "ERROR: build_reports.py would rewrite reports.json; publication is not stable."
+            git diff -- reports.json || true
+            exit 1
+          fi
+          if ! cmp -s data/latest-report.json /tmp/latest.before.json; then
+            echo "ERROR: build_reports.py rewrote data/latest-report.json."
+            git diff -- data/latest-report.json || true
+            exit 1
+          fi
+          if ! git diff --quiet -- reports; then
+            echo "ERROR: build_reports.py would rewrite canonical report files."
+            git status --short -- reports
+            exit 1
           fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add reports reports.json
-          git commit -m "Auto-sync latest report into canonical history"
-          git pull --rebase origin main
-          git push
+      - name: Verify publication consistency script
+        run: python scripts/verify_publication_consistency.py
+
+      - name: Confirm validator made no publication changes
+        run: |
+          if ! git diff --quiet -- reports reports.json data/latest-report.json data/dashboard.json; then
+            echo "ERROR: validation changed publication files."
+            git status --short -- reports reports.json data/latest-report.json data/dashboard.json
+            exit 1
+          fi
+          echo "Read-only publication validation PASS."
