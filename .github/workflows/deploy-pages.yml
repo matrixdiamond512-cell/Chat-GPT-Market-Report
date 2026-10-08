@@ -43,7 +43,7 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' || github.event.workflow_run.name == 'Update US stock breadth'
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -84,6 +84,9 @@ jobs:
 
       - name: Verify report body and infographic slot integrity
         run: python scripts/validate_report_index.py
+
+      - name: Verify latest/canonical/index/dashboard consistency
+        run: python scripts/verify_publication_consistency.py
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
