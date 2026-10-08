@@ -16,6 +16,12 @@ on:
       - 'scripts/reporting/vision_signer.py'
       - 'scripts/sign_market_report_vision_review.py'
       - 'scripts/test_apps_script_signed_review.js'
+      - 'scripts/test_independent_publication.js'
+      - 'scripts/test_portal_deploy_safety.js'
+      - 'scripts/reporting/publication_status.py'
+      - 'tests/test_independent_publication_status.py'
+      - 'schemas/independent-report-infographic-publication.schema.json'
+      - 'assets/js/report-core-v3.js'
       - 'tests/test_infographic_validation.py'
       - 'tests/test_vision_signer.py'
       - 'tests/fixtures/vision_attestation_contract.json'
@@ -36,6 +42,12 @@ on:
       - 'scripts/reporting/vision_signer.py'
       - 'scripts/sign_market_report_vision_review.py'
       - 'scripts/test_apps_script_signed_review.js'
+      - 'scripts/test_independent_publication.js'
+      - 'scripts/test_portal_deploy_safety.js'
+      - 'scripts/reporting/publication_status.py'
+      - 'tests/test_independent_publication_status.py'
+      - 'schemas/independent-report-infographic-publication.schema.json'
+      - 'assets/js/report-core-v3.js'
       - 'tests/test_infographic_validation.py'
       - 'tests/test_vision_signer.py'
       - 'tests/fixtures/vision_attestation_contract.json'
@@ -83,32 +95,41 @@ jobs:
       - name: Test narrative 21:00 report parsing and validation
         run: node scripts/test_apps_script_narrative_report.js
 
-      - name: Confirm atomic canonical and exact-image publication stages
+      - name: Confirm independent body publication and manifest-bound infographic gate
         run: |
           node <<'NODE'
           const fs = require('fs');
           const web = fs.readFileSync('apps-script/MarketReportWebSync.gs', 'utf8');
           const validation = fs.readFileSync('apps-script/MarketReportPrePublishValidation.gs', 'utf8');
+          const portal = fs.readFileSync('assets/js/report-core-v3.js', 'utf8');
           for (const [label, pattern] of [
-            ['slot-exact Drive image lookup', /findExactMarketInfographic_/],
-            ['mandatory strict body validator before image lookup', /function publishWebReportObject_\(report\)\s*\{[\s\S]*?validateWebReportObject_\(report\)[\s\S]*?typeof validateMarketReportBeforePublish_ !== 'function'[\s\S]*?validateMarketReportBeforePublish_\(report, expectedHour\)[\s\S]*?findExactMarketInfographic_\(report\)/],
-            ['same-file Google Docs text readback before image lookup', /function publishWebReportObject_\(report\)[\s\S]*?verifyMarketReportSourceDocReadback_\(report\)[\s\S]*?findExactMarketInfographic_\(report\)/],
-            ['signed Vision review bound before GitHub image write', /function publishWebReportObject_\(report\)[\s\S]*?validateMarketReportVisionReview_\(report, imageFile, imageHash, visionReview, trustConfig\)[\s\S]*?putGitHubBinaryFile_/],
-            ['HMAC verification with configured provider identity', /function verifyMarketReportVisionReviewSignature_[\s\S]*?marketReportVisionAttestationPayload_\(review\)[\s\S]*?marketReportHmacSha256_\(payload, trustConfig\.secret\)/],
-            ['fixture identity rejected by production trust configuration', /function marketReportVisionTrustConfig_[\s\S]*?provider === 'fixture-test-only'[\s\S]*?VISION_FIXTURE_PROVIDER_FORBIDDEN/],
-            ['fixture identity rejected by production review verifier', /function validateMarketReportVisionReview_[\s\S]*?review\.provider === 'fixture-test-only'[\s\S]*?VISION_FIXTURE_PROVIDER_FORBIDDEN/],
-            ['binary image commit', /putGitHubBinaryFile_/],
-            ['canonical report commit', /canonicalPath[\s\S]*putGitHubJsonFile_/],
-            ['public report verification', /verifyPublicMarketReport_/],
+            ['body validation occurs before publication writes', /function publishWebReportObject_\(report\)[\s\S]*?validateWebReportObject_\(report\)[\s\S]*?validateMarketReportBeforePublish_\(report, expectedHour\)[\s\S]*?verifyMarketReportSourceDocReadback_\(report\)[\s\S]*?putGitHubJsonFile_/],
+            ['body is marked published with independent infographic status', /report\.report_status = 'PUBLISHED'[\s\S]*?report\.infographic_status = 'NOT_READY'/],
+            ['body Portal verification precedes optional infographic work', /const live = verifyPublicMarketReport_\(report\)[\s\S]*?publishInfographicAfterBody_\(report, canonicalPath\)/],
+            ['infographic identity binds report/revision/snapshot/body', /function evaluateInfographicReadiness_[\s\S]*?report_id:[\s\S]*?revision:[\s\S]*?snapshot_id:[\s\S]*?body_hash:/],
+            ['exact manifest Drive ID and PNG hash gate', /function publishInfographicAfterBody_[\s\S]*?getFileById\(String\(manifest\.drive_file_id\)\)[\s\S]*?marketReportSha256_\(bytes\)/],
+            ['atomic manifest-bound Git tree commit with non-force ref update', /function publishInfographicGitTransaction_[\s\S]*?\/git\/trees[\s\S]*?\/git\/commits[\s\S]*?force: false/],
+            ['Vision is optional metadata', /vision_status: manifest\.vision_status \|\| 'NOT_RUN'/],
+            ['Portal only renders READY formal infographic', /function renderInfographic\(report\)[\s\S]*?report\.infographic_status !== "READY"[\s\S]*?image\.artifact_type !== "FORMAL_INFOGRAPHIC"/],
+            ['body verification does not require infographic', /function verifyPublicMarketReport_\(report\)[\s\S]*?published\.bodyHash !== report\.bodyHash[\s\S]*?if \(report\.infographic_status === 'READY'\)/],
             ['JST weekday validation', /getUTCDay\(\)/],
             ['incomplete body rejection', /source\.length < 1200/]
           ]) {
-            const target = label === 'JST weekday validation' || label === 'incomplete body rejection' ? validation : web;
+            const target = label === 'JST weekday validation' || label === 'incomplete body rejection' ? validation : (label.startsWith('Portal') ? portal : web);
             if (!pattern.test(target)) {
-              throw new Error('Missing publication safeguard: ' + label);
+              throw new Error('Missing publication separation safeguard: ' + label);
             }
           }
           NODE
+
+      - name: Test independent report and infographic publication lanes
+        run: node scripts/test_independent_publication.js
+
+      - name: Test Portal deploy safety contract
+        run: node scripts/test_portal_deploy_safety.js
+
+      - name: Test publication status contract
+        run: python -m unittest discover -s tests -p 'test_independent_publication_status.py' -v
 
       - name: Test identity-bound Docs readback and signed Vision gate
         run: node scripts/test_apps_script_infographic_gate.js

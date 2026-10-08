@@ -233,41 +233,29 @@ function publishMarketReportFromDocUrlPrompt() {
 
 function publishWebReportObject_(report) {
   report = validateWebReportObject_(report);
+  report.report_status = 'BLOCKED';
+  report.infographic_status = 'NOT_READY';
   if (typeof validateMarketReportBeforePublish_ !== 'function') {
     throw new Error('公開前検証が読み込まれていないため、公開を中止しました。');
   }
   const expectedHour = Number(String(report.time).slice(0, 2));
-  validateMarketReportBeforePublish_(report, expectedHour);
-  const trustConfig = marketReportVisionTrustConfig_();
+  try {
+    validateMarketReportBeforePublish_(report, expectedHour);
+  } catch (error) {
+    error.reportStatus = 'BLOCKED';
+    error.infographicStatus = 'NOT_READY';
+    throw error;
+  }
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
 
   try {
     report.bodyHash = marketReportSha256_(Utilities.newBlob(report.fullText, 'text/plain').getBytes());
     verifyMarketReportSourceDocReadback_(report);
-    const imageFile = findExactMarketInfographic_(report);
-    const imageBytes = imageFile.getBlob().getBytes();
     const key = report.date + '_' + report.time.replace(':', '-');
-    const imagePath = 'images/reports/' + key + '.png';
-    const imageHash = marketReportSha256_(imageBytes);
-    const visionReview = findExactMarketVisionReview_(report);
-    validateMarketReportVisionReview_(report, imageFile, imageHash, visionReview, trustConfig);
-    report.infographic = {
-      slotKey: key,
-      src: imagePath,
-      sourceName: imageFile.getName(),
-      sha256: imageHash,
-      origin: '既存Google Drive画像'
-    };
-
-    const imageSha = getGitHubContentSha_(imagePath);
-    const imageResult = putGitHubBinaryFile_(
-      imagePath,
-      imageBytes,
-      imageSha,
-      'Publish matching market report infographic ' + report.date + ' ' + report.time
-    );
-
+    report.report_status = 'PUBLISHED';
+    report.infographic_status = 'NOT_READY';
+    delete report.infographic;
     const canonicalPath = 'reports/' + key + '.json';
     const currentCanonical = getGitHubJsonFile_(canonicalPath);
     const oldReport = currentCanonical.data && !Array.isArray(currentCanonical.data)
@@ -276,11 +264,8 @@ function publishWebReportObject_(report) {
     if (currentCanonical.sha && oldReport && (oldReport.date || oldReport.time)) {
       const oldRevision = Number(oldReport.revision || 0);
       const newRevision = Number(report.revision || 0);
-      if (oldReport.bodyHash === report.bodyHash &&
-          oldReport.infographic && oldReport.infographic.sha256 === imageHash &&
-          oldReport.title === report.title) {
-        // The same source version is already canonical; still refresh the index below.
-      } else if (!newRevision || newRevision <= oldRevision) {
+      const sameSourceVersion = oldRevision === newRevision && oldReport.bodyHash === report.bodyHash && oldReport.title === report.title;
+      if (!sameSourceVersion && (!newRevision || newRevision <= oldRevision)) {
         throw new Error('既存の正本より新しい原文版であることを確認できないため、上書きを中止しました: ' + canonicalPath);
       }
     }
@@ -307,13 +292,20 @@ function publishWebReportObject_(report) {
       : null;
     const live = verifyPublicMarketReport_(report);
 
+    // Infographic handling is deliberately downstream of body publication and
+    // cannot roll back or fail the already-published report body.
+    const infographicResult = publishInfographicAfterBody_(report, canonicalPath);
+
     return {
       ok: true,
       title: report.title,
       date: report.date,
       time: report.time,
       commitSha: result.commit.sha,
-      infographicCommitSha: imageResult.commit.sha,
+      reportStatus: 'PUBLISHED',
+      infographicStatus: infographicResult.status,
+      infographicReason: infographicResult.reason,
+      infographicCommitSha: infographicResult.commitSha || '',
       canonicalCommitSha: canonicalResult.commit.sha,
       dashboardCommitSha: dashboardResult ? dashboardResult.commitSha : '',
       pagesUrl: live.url,
@@ -321,6 +313,188 @@ function publishWebReportObject_(report) {
     };
   } finally {
     lock.releaseLock();
+  }
+}
+
+function evaluateInfographicReadiness_(report, manifest) {
+  if (!manifest) return { status: 'NOT_READY', reason: 'INFOGRAPHIC_MANIFEST_MISSING' };
+  if (manifest.artifact_type === 'DEBUG_PREVIEW' || manifest.debug_preview === true) {
+    return { status: 'NOT_READY', reason: 'DEBUG_PREVIEW_NOT_PUBLISHABLE' };
+  }
+  const expectedId = report.date + '_' + report.time.replace(':', '-');
+  const identity = {
+    report_id: expectedId,
+    revision: Number(report.revision || 0),
+    snapshot_id: String(report.snapshot_id || report.snapshotId || ''),
+    body_hash: String(report.bodyHash || '')
+  };
+  for (const key in identity) {
+    if (!identity[key] || manifest[key] !== identity[key]) {
+      return { status: 'FAILED_VALIDATION', reason: 'INFOGRAPHIC_IDENTITY_MISMATCH:' + key };
+    }
+  }
+  if (!manifest.manifest_id || !manifest.drive_file_id || !manifest.png_filename || !manifest.png_sha256 ||
+      !/^[0-9a-f]{64}$/i.test(String(manifest.png_sha256)) ||
+      !/^[0-9a-f]{64}$/i.test(String(manifest.manifest_hash || '')) ||
+      manifest.status !== 'READY_FOR_PUBLICATION' ||
+      marketReportCanonicalManifestHash_(manifest) !== String(manifest.manifest_hash).toLowerCase()) {
+    return { status: 'NOT_READY', reason: 'INFOGRAPHIC_MANIFEST_INCOMPLETE' };
+  }
+  const required = Array.isArray(manifest.required_fact_ids) ? manifest.required_fact_ids : [];
+  const rendered = Array.isArray(manifest.rendered_fact_ids) ? manifest.rendered_fact_ids : [];
+  const missing = Array.isArray(manifest.missing_fact_ids) ? manifest.missing_fact_ids : [];
+  if (!required.length || missing.length || required.some(id => rendered.indexOf(id) < 0)) {
+    return { status: 'NOT_READY', reason: 'INFOGRAPHIC_FACT_COVERAGE_INCOMPLETE' };
+  }
+  if (manifest.renderer_status === 'FAIL') return { status: 'FAILED_VALIDATION', reason: 'INFOGRAPHIC_RENDERER_FAILED' };
+  if (manifest.numeric_validation !== 'PASS' || manifest.renderer_status !== 'PASS') {
+    return { status: 'NOT_READY', reason: 'INFOGRAPHIC_STRUCTURED_VALIDATION_INCOMPLETE' };
+  }
+  return { status: 'READY', reason: 'STRUCTURED_FACTS_AND_RENDERER_VERIFIED' };
+}
+
+function marketReportCanonicalManifestHash_(manifest) {
+  const copy = JSON.parse(JSON.stringify(manifest));
+  delete copy.manifest_hash;
+  function sort(value) {
+    if (Array.isArray(value)) return value.map(sort);
+    if (value && typeof value === 'object') {
+      const result = {};
+      Object.keys(value).sort().forEach(key => { result[key] = sort(value[key]); });
+      return result;
+    }
+    return value;
+  }
+  return marketReportSha256_(Utilities.newBlob(JSON.stringify(sort(copy)), 'text/plain').getBytes());
+}
+
+function publishInfographicAfterBody_(report, canonicalPath) {
+  const manifest = report && report.infographicManifest;
+  const gate = evaluateInfographicReadiness_(report, manifest);
+  if (gate.status !== 'READY') return gate;
+
+  try {
+    const file = DriveApp.getFileById(String(manifest.drive_file_id));
+    if (file.isTrashed() || file.getMimeType() !== 'image/png' || file.getName() !== manifest.png_filename) {
+      return { status: 'FAILED_VALIDATION', reason: 'INFOGRAPHIC_DRIVE_FILE_INVALID' };
+    }
+    const bytes = file.getBlob().getBytes();
+    if (bytes.length < 8 || (bytes[0] & 255) !== 137 || (bytes[1] & 255) !== 80 ||
+        (bytes[2] & 255) !== 78 || (bytes[3] & 255) !== 71 ||
+        marketReportSha256_(bytes) !== String(manifest.png_sha256).toLowerCase()) {
+      return { status: 'FAILED_VALIDATION', reason: 'INFOGRAPHIC_PNG_HASH_OR_FORMAT_MISMATCH' };
+    }
+    const key = report.date + '_' + report.time.replace(':', '-');
+    const imagePath = 'images/reports/' + key + '.png';
+    const oldSha = getGitHubContentSha_(imagePath);
+    if (oldSha) {
+      const old = UrlFetchApp.fetch(githubContentsUrl_(imagePath) + '?ref=' + encodeURIComponent(WEB_REPORT_CONFIG.branch), {
+        method: 'get', headers: githubHeaders_(getGitHubToken_()), muteHttpExceptions: true
+      });
+      if (old.getResponseCode() !== 200) throw new Error('INFOGRAPHIC_EXISTING_ARTIFACT_READBACK_FAILED');
+      const oldPayload = JSON.parse(old.getContentText());
+      const oldBytes = Utilities.base64Decode(String(oldPayload.content || '').replace(/\n/g, ''));
+      if (marketReportSha256_(oldBytes) !== String(manifest.png_sha256).toLowerCase()) {
+        return { status: 'FAILED_VALIDATION', reason: 'INFOGRAPHIC_EXISTING_ARTIFACT_CONFLICT' };
+      }
+    }
+
+    const ready = JSON.parse(JSON.stringify(report));
+    ready.infographic_status = 'READY';
+    ready.infographic = {
+      artifact_type: 'FORMAL_INFOGRAPHIC',
+      slotKey: key,
+      src: imagePath,
+      sha256: String(manifest.png_sha256).toLowerCase(),
+      manifest_id: manifest.manifest_id,
+      manifest_hash: manifest.manifest_hash,
+      report_id: manifest.report_id,
+      revision: manifest.revision,
+      snapshot_id: manifest.snapshot_id,
+      body_hash: manifest.body_hash,
+      drive_file_id: manifest.drive_file_id,
+      numeric_validation: manifest.numeric_validation,
+      renderer_status: manifest.renderer_status,
+      vision_status: manifest.vision_status || 'NOT_RUN'
+    };
+    const currentCanonical = getGitHubJsonFile_(canonicalPath);
+    const current = getGitHubJsonFile_(WEB_REPORT_CONFIG.targetPath);
+    const reports = normalizeWebReportList_(current.data);
+    const next = upsertWebReportList_(reports, ready);
+    if (typeof buildDashboardJsonFromReports_ !== 'function') {
+      return { status: 'NOT_READY', reason: 'DASHBOARD_PROJECTION_BUILDER_NOT_AVAILABLE' };
+    }
+    const dashboardPath = typeof DASHBOARD_JSON_CONFIG !== 'undefined' && DASHBOARD_JSON_CONFIG.targetPath
+      ? DASHBOARD_JSON_CONFIG.targetPath : 'data/dashboard.json';
+    const transaction = publishInfographicGitTransaction_(
+      key,
+      imagePath,
+      bytes,
+      canonicalPath,
+      JSON.stringify(ready, null, 2) + '\n',
+      WEB_REPORT_CONFIG.targetPath,
+      JSON.stringify(next, null, 2) + '\n',
+      dashboardPath,
+      buildDashboardJsonFromReports_(next)
+    );
+    return { status: 'READY', reason: gate.reason, commitSha: transaction.commitSha };
+  } catch (error) {
+    return { status: 'FAILED_VALIDATION', reason: String(error && error.message || error) };
+  }
+}
+
+function publishInfographicGitTransaction_(key, imagePath, imageBytes, canonicalPath, canonicalText,
+    reportsPath, reportsText, dashboardPath, dashboardText) {
+  const token = getGitHubToken_();
+  const api = 'https://api.github.com/repos/' + WEB_REPORT_CONFIG.owner + '/' + WEB_REPORT_CONFIG.repo;
+  const headers = githubHeaders_(token);
+  function request(method, path, payload) {
+    const response = UrlFetchApp.fetch(api + path, {
+      method: method,
+      contentType: 'application/json',
+      headers: headers,
+      payload: payload ? JSON.stringify(payload) : undefined,
+      muteHttpExceptions: true
+    });
+    const code = response.getResponseCode();
+    if (code < 200 || code >= 300) throw new Error('INFOGRAPHIC_GIT_TRANSACTION_FAILED: ' + method + ' ' + path + ' HTTP ' + code);
+    return response.getContentText() ? JSON.parse(response.getContentText()) : {};
+  }
+  const ref = request('get', '/git/ref/heads/' + encodeURIComponent(WEB_REPORT_CONFIG.branch));
+  const parentSha = String(ref.object && ref.object.sha || '');
+  if (!parentSha) throw new Error('INFOGRAPHIC_GIT_TRANSACTION_FAILED: branch head missing');
+  const parent = request('get', '/git/commits/' + parentSha);
+  const entries = [
+    { path: imagePath, content: Utilities.base64Encode(imageBytes), encoding: 'base64' },
+    { path: canonicalPath, content: canonicalText, encoding: 'utf-8' },
+    { path: reportsPath, content: reportsText, encoding: 'utf-8' },
+    { path: dashboardPath, content: dashboardText, encoding: 'utf-8' }
+  ].map(entry => {
+    const blob = request('post', '/git/blobs', { content: entry.content, encoding: entry.encoding });
+    return { path: entry.path, mode: '100644', type: 'blob', sha: blob.sha };
+  });
+  const tree = request('post', '/git/trees', { base_tree: parent.tree.sha, tree: entries });
+  const commit = request('post', '/git/commits', {
+    message: 'Publish manifest-bound infographic transaction ' + key,
+    tree: tree.sha,
+    parents: [parentSha]
+  });
+  try {
+    request('patch', '/git/refs/heads/' + encodeURIComponent(WEB_REPORT_CONFIG.branch), { sha: commit.sha, force: false });
+    return { commitSha: commit.sha, reconciled: false };
+  } catch (error) {
+    // A lost response must be reconciled before any retry. Never create a second commit here.
+    const latest = request('get', '/git/ref/heads/' + encodeURIComponent(WEB_REPORT_CONFIG.branch));
+    const latestSha = String(latest.object && latest.object.sha || '');
+    if (latestSha === commit.sha) return { commitSha: commit.sha, reconciled: true };
+    const wanted = new Map(entries.map(entry => [entry.path, entry.sha]));
+    const latestCommit = latestSha ? request('get', '/git/commits/' + latestSha) : null;
+    const latestTree = latestCommit ? request('get', '/git/trees/' + latestCommit.tree.sha + '?recursive=1') : null;
+    const actual = new Map((latestTree && latestTree.tree || []).map(entry => [entry.path, entry.sha]));
+    if (Array.from(wanted.keys()).every(path => actual.get(path) === wanted.get(path))) {
+      return { commitSha: latestSha, reconciled: true };
+    }
+    throw new Error('INFOGRAPHIC_GIT_RESPONSE_UNKNOWN: branch ref did not reconcile; blind retry prohibited. ' + String(error.message || error));
   }
 }
 
@@ -459,16 +633,12 @@ function marketReportConstantTimeEqual_(left, right) {
 }
 
 function findExactMarketInfographic_(report) {
-  const name = 'マーケットレポート_' + report.date + '_' + report.time.replace(':', '-') + '.png';
-  const files = DriveApp.getFilesByName(name);
-  let best = null;
-  while (files.hasNext()) {
-    const file = files.next();
-    if (file.isTrashed() || file.getName() !== name || file.getMimeType() !== 'image/png') continue;
-    if (!best || file.getLastUpdated().getTime() > best.getLastUpdated().getTime()) best = file;
-  }
-  if (!best) throw new Error('同じ日付・時間帯の既存図解がないため公開を中止しました: ' + name);
-  return best;
+  const manifest = report && report.infographicManifest;
+  const gate = evaluateInfographicReadiness_(report, manifest);
+  if (gate.status !== 'READY') throw new Error(gate.reason);
+  const file = DriveApp.getFileById(String(manifest.drive_file_id));
+  if (file.isTrashed() || file.getMimeType() !== 'image/png' || file.getName() !== manifest.png_filename) throw new Error('INFOGRAPHIC_DRIVE_FILE_INVALID');
+  return file;
 }
 
 function marketReportSha256_(bytes) {
@@ -490,15 +660,21 @@ function verifyPublicMarketReport_(report) {
       if (response.getResponseCode() !== 200) throw new Error('reports.json HTTP ' + response.getResponseCode());
       const payload = JSON.parse(response.getContentText());
       const published = normalizeWebReportList_(payload).find(item => item.date === report.date && item.time === report.time);
-      if (!published || published.bodyHash !== report.bodyHash || !published.infographic || published.infographic.sha256 !== report.infographic.sha256) {
-        throw new Error('公開reports.jsonの本文ハッシュまたは同時刻図解が一致しません。');
+      if (!published || published.bodyHash !== report.bodyHash || published.report_status === 'BLOCKED') {
+        throw new Error('公開reports.jsonの本文ハッシュが一致しません。');
       }
-      const imageResponse = UrlFetchApp.fetch(base + report.infographic.src + '?verify=' + attempt, {
-        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' },
-        muteHttpExceptions: true
-      });
-      if (imageResponse.getResponseCode() !== 200 || marketReportSha256_(imageResponse.getBlob().getBytes()) !== report.infographic.sha256) {
-        throw new Error('公開図解が取得できないか、元画像と一致しません。');
+      if (report.infographic_status === 'READY') {
+        if (published.infographic_status !== 'READY' || !published.infographic ||
+            published.infographic.sha256 !== report.infographic.sha256 ||
+            published.infographic.manifest_id !== report.infographic.manifest_id) {
+          throw new Error('公開reports.jsonの図解manifest/hashが一致しません。');
+        }
+        const imageResponse = UrlFetchApp.fetch(base + report.infographic.src + '?verify=' + attempt, {
+          headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }, muteHttpExceptions: true
+        });
+        if (imageResponse.getResponseCode() !== 200 || marketReportSha256_(imageResponse.getBlob().getBytes()) !== report.infographic.sha256) {
+          throw new Error('公開図解が取得できないか、元画像と一致しません。');
+        }
       }
       return { ok: true, url: reportUrl, verifiedAt: new Date().toISOString() };
     } catch (error) {

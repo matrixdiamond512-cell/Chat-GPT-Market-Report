@@ -41,17 +41,15 @@ for (const file of [
   if (isIncluded(file)) throw new Error('Non-Portal path unexpectedly triggers deployment: ' + file);
 }
 
-const workflowRun = workflow.match(/^  workflow_run:\n([\s\S]*?)(?=^permissions:)/m);
-if (!workflowRun) throw new Error('Existing workflow_run trigger was removed');
-for (const name of [
-  'Sync latest market report publication',
-  'Update Tokyo USDJPY spot volume',
-  'Repair Tokyo USDJPY spot volume price gaps',
-  'Update US stock table and daily archive',
-  'Update US stock breadth'
+const breadthWorkflow = fs.readFileSync('.github/workflows/update-us-stock-breadth.yml', 'utf8').replace(/\r\n?/g, '\n');
+const moversWorkflow = fs.readFileSync('.github/workflows/update-us-stock-movers-contributions.yml', 'utf8').replace(/\r\n?/g, '\n');
+for (const [name, source] of [
+  ['Update US stock table and daily archive', breadthWorkflow],
+  ['Update US stock table and daily archive', moversWorkflow]
 ]) {
-  if (!workflowRun[1].includes('- "' + name + '"')) {
-    throw new Error('Existing workflow_run trigger missing: ' + name);
+  const trigger = source.match(/^  workflow_run:\n([\s\S]*?)(?=^permissions:|^concurrency:|^jobs:)/m);
+  if (!trigger || !trigger[1].includes(name)) {
+    throw new Error('Existing workflow_run dependency missing from its consumer workflow: ' + name);
   }
 }
 
@@ -109,4 +107,4 @@ if (!core.includes('splitCanonicalTitleFromSource_') || !core.includes('bodySour
   throw new Error('Canonical title split and malformed-body recovery are missing');
 }
 
-console.log('Portal deploy paths, retained workflow_run sources, fail-closed stage order, and strict DOM contract passed.');
+console.log('Portal deploy paths, workflow_run consumers, fail-closed stage order, and strict DOM contract passed.');

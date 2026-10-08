@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Independent report and infographic publication status",
+  "type": "object",
+  "required": ["report_status", "infographic_status"],
+  "properties": {
+    "report_status": {"enum": ["PUBLISHED", "BLOCKED"]},
+    "infographic_status": {"enum": ["READY", "NOT_READY", "FAILED_VALIDATION"]},
+    "infographic": {
+      "type": ["object", "null"],
+      "properties": {
+        "artifact_type": {"const": "FORMAL_INFOGRAPHIC"},
+        "manifest_id": {"type": "string", "minLength": 1},
+        "manifest_hash": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"},
+        "report_id": {"type": "string", "minLength": 1},
+        "revision": {"type": "integer", "minimum": 1},
+        "snapshot_id": {"type": "string", "minLength": 1},
+        "body_hash": {"type": "string", "minLength": 1},
+        "drive_file_id": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-fA-F]{64}$"},
+        "numeric_validation": {"const": "PASS"},
+        "renderer_status": {"const": "PASS"},
+        "vision_status": {"enum": ["PASS", "NOT_RUN", "OPTIONAL_QA"]}
+      },
+      "required": ["artifact_type", "manifest_id", "manifest_hash", "report_id", "revision", "snapshot_id", "body_hash", "drive_file_id", "sha256", "numeric_validation", "renderer_status"]
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"infographic_status": {"const": "READY"}}},
+      "then": {"required": ["infographic"]}
+    }
+  ],
+  "additionalProperties": true
+}

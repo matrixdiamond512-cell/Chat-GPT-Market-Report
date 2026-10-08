@@ -71,10 +71,41 @@ function renderMissingReport(date, time) {
 }
 function renderInfographic(report) {
   const image = report.infographic;
-  if (!image) return "";
+  if (!image || report.infographic_status !== "READY") return "";
+  if (image.artifact_type !== "FORMAL_INFOGRAPHIC" || image.debug_preview === true) return "";
   const key = `${report.date}_${report.time.replace(":", "-")}`;
-  if (image.slotKey !== key || !new RegExp(`^images/reports/${key}\\.(png|jpg|jpeg|webp)$`).test(image.src || "")) return "";
-  return `<figure class="report-infographic" data-report-key="${esc(key)}"><img src="${esc(image.src)}" alt="${esc(report.title)} 図解" style="display:block;width:100%;height:auto" loading="eager"><figcaption>${esc(report.title)} 図解</figcaption></figure>`;
+  const reportId = `${key}`;
+  const reportSnapshot = report.snapshot_id || report.snapshotId || "";
+  const hex = /^[0-9a-f]{64}$/i;
+  if (image.slotKey !== key || image.report_id !== reportId ||
+      Number(image.revision) !== Number(report.revision) ||
+      !reportSnapshot || image.snapshot_id !== reportSnapshot ||
+      !report.bodyHash || image.body_hash !== report.bodyHash ||
+      !image.manifest_id || !hex.test(image.manifest_hash || "") ||
+      !hex.test(image.sha256 || "") ||
+      image.numeric_validation !== "PASS" || image.renderer_status !== "PASS" ||
+      !new RegExp(`^images/reports/${key}\\.png$`).test(image.src || "")) return "";
+  return `<figure class="report-infographic" data-report-key="${esc(key)}" hidden><img data-infographic-src="${esc(image.src)}" data-infographic-sha256="${esc(image.sha256)}" alt="${esc(report.title)} 図解" style="display:none;width:100%;height:auto" loading="eager"><figcaption>${esc(report.title)} 図解</figcaption></figure>`;
+}
+async function verifyAndLoadInfographicHash_(container) {
+  const figure = container.querySelector("figure.report-infographic");
+  const image = figure && figure.querySelector("img[data-infographic-src]");
+  if (!image || !window.crypto || !window.crypto.subtle) return;
+  const src = image.dataset.infographicSrc;
+  if (!/^images\/reports\/\d{4}-\d{2}-\d{2}_\d{2}-\d{2}\.png$/.test(src)) return;
+  try {
+    const response = await fetch(src, { cache: "no-store", credentials: "same-origin" });
+    if (!response.ok) return;
+    const bytes = await response.arrayBuffer();
+    const digest = await window.crypto.subtle.digest("SHA-256", bytes);
+    const actual = Array.from(new Uint8Array(digest), value => value.toString(16).padStart(2, "0")).join("");
+    if (actual !== image.dataset.infographicSha256.toLowerCase()) return;
+    image.src = URL.createObjectURL(new Blob([bytes], { type: "image/png" }));
+    image.style.display = "block";
+    figure.hidden = false;
+  } catch (_) {
+    // Image verification is fail-closed for the infographic lane only.
+  }
 }
 function headingInfo(line) {
   const raw = clean(line);
@@ -284,7 +315,9 @@ function renderDocument(report) {
   $("lastUpdated").textContent = `表示中：${dateToJp(report.date)} ${report.time || ""}`;
   $("reportStatus").textContent = `本文全文を表示中｜reports.json正本｜統合レンダラー v3`;
   $("app").className = "report sop-report-applied";
-  $("app").innerHTML = `<header class="report-head"><h1 class="report-title">${esc(parsed.title || fallback)}</h1><div class="source-badge">reports.json正本</div></header>${renderInfographic(report)}<article class="report-body">${renderPreface(parsed.preface)}${sections.map(s => { const market = isMarketSection(s.title); const title = market ? marketSectionTitle(report, s.title) : s.title; return `<section class="section sop-section" data-sop-title="${esc(title)}"><h2>${s.number ? `${esc(s.number)}．` : ""}${esc(title)}</h2>${market ? renderMarketTable(report, s.lines, s.title) : renderRichText(s.lines)}</section>`; }).join("")}</article>`;
+  const app = $("app");
+  app.innerHTML = `<header class="report-head"><h1 class="report-title">${esc(parsed.title || fallback)}</h1><div class="source-badge">reports.json正本</div></header>${renderInfographic(report)}<article class="report-body">${renderPreface(parsed.preface)}${sections.map(s => { const market = isMarketSection(s.title); const title = market ? marketSectionTitle(report, s.title) : s.title; return `<section class="section sop-section" data-sop-title="${esc(title)}"><h2>${s.number ? `${esc(s.number)}．` : ""}${esc(title)}</h2>${market ? renderMarketTable(report, s.lines, s.title) : renderRichText(s.lines)}</section>`; }).join("")}</article>`;
+  void verifyAndLoadInfographicHash_(app);
 }
 function render() { if (!selectedReport) return; renderControls(selectedReport); renderDocument(selectedReport); window.MarketReportLastRendered = selectedReport; window.dispatchEvent(new CustomEvent("market-report-rendered", { detail: { report: selectedReport } })); }
 
