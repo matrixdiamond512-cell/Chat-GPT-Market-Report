@@ -1,25 +1,13 @@
-name: Rebuild WEB Market Report GitHub Pages
+name: Check GitHub Pages source consistency (legacy)
 
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - "data/github-pages-status.json"
-      - "data/github-pages-build-latest.json"
-      - ".github/pages-inspect-trigger.txt"
-      - ".github/workflows/inspect-github-pages.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-
-concurrency:
-  group: github-pages-rebuild
-  cancel-in-progress: true
 
 jobs:
-  rebuild:
+  check:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -31,23 +19,24 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Check report publication integrity
-        id: report_integrity
+      - name: Check report publication integrity without rebuilding Pages
         shell: bash
         run: |
+          cp reports.json /tmp/reports.before.json
           python scripts/build_reports.py
-          if git diff --quiet -- reports reports.json; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-            echo "Canonical report history and reports.json are consistent."
-          else
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "Report publication is not canonical yet; this Pages rebuild is deferred."
-            git status --short -- reports reports.json
+
+          if ! cmp -s reports.json /tmp/reports.before.json; then
+            echo "ERROR: publication history is not stable; legacy Pages rebuild remains fenced."
+            git diff -- reports.json || true
+            exit 1
           fi
 
-      - name: Validate current main publication files
-        shell: bash
-        run: |
+          if ! git diff --quiet -- reports; then
+            echo "ERROR: canonical report history would be rewritten; legacy Pages rebuild remains fenced."
+            git status --short -- reports
+            exit 1
+          fi
+
           test -f index.html
           test -f nikkei225-supply-demand.html
           test -f data/nikkei225-supply-demand.json
@@ -55,13 +44,4 @@ jobs:
           grep -q '先物・裁定・オプション・投資主体' nikkei225-supply-demand.html
           grep -q 'nikkei225-basis-options-display.js' nikkei225-supply-demand.html
 
-      - name: Request GitHub Pages rebuild using configured source
-        if: steps.report_integrity.outputs.ready == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          gh api --method POST \
-            -H 'Accept: application/vnd.github+json' \
-            -H 'X-GitHub-Api-Version: 2026-03-10' \
-            "repos/${GITHUB_REPOSITORY}/pages/builds"
+          echo "Legacy Pages rebuild path is fenced. Use deploy-pages.yml for production deployment."
