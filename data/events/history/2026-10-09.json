@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-10-09T15:06:42+09:00",
-  "publishedAt": "2026-10-09T15:06:42+09:00",
-  "dataAsOf": "2026-10-09T15:06:42+09:00",
+  "generatedAt": "2026-10-09T22:11:50+09:00",
+  "publishedAt": "2026-10-09T22:11:50+09:00",
+  "dataAsOf": "2026-10-09T22:11:50+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -20,7 +20,7 @@
       "name": "TradingView Economic Calendar",
       "url": "https://www.tradingview.com/economic-calendar/",
       "status": "ok",
-      "note": "実績値を7件照合。生データは公開保存しません。"
+      "note": "実績値を9件照合。生データは公開保存しません。"
     },
     {
       "id": "official_source_map",
@@ -293,8 +293,8 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-04T15:50:02+09:00",
-      "updatedAt": "2026-10-09T15:06:42+09:00",
-      "resultSavedAt": "2026-10-09T15:06:42+09:00",
+      "updatedAt": "2026-10-09T22:11:50+09:00",
+      "resultSavedAt": "2026-10-09T22:11:50+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Federal Reserve",
@@ -546,7 +546,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-04T15:50:02+09:00",
-      "updatedAt": "2026-10-09T15:06:44+09:00",
+      "updatedAt": "2026-10-09T22:11:51+09:00",
       "resultSavedAt": "2026-10-09T04:53:17+09:00",
       "resultSource": {
         "id": "federal_reserve",
@@ -575,11 +575,11 @@
       "importanceLabel": "高",
       "forecast": "6.1K",
       "previous": "-41.7K",
-      "actual": "",
+      "actual": "-68.3K",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultComparison": "市場予想を下回る",
+      "resultExplanation": "実績 -68.3K は予想 6.1K に対して市場予想を下回る。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -782,8 +782,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を下回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -801,7 +801,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-04T15:50:02+09:00",
-      "updatedAt": "2026-10-09T15:06:42+09:00"
+      "updatedAt": "2026-10-09T22:11:50+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "Statistics Canada",
+        "url": "https://www.statcan.gc.ca"
+      },
+      "resultSavedAt": "2026-10-09T22:11:50+09:00"
     },
     {
       "id": "event-c8883635e9c06b",
@@ -822,11 +828,11 @@
       "importanceLabel": "高",
       "forecast": "6.5%",
       "previous": "6.4%",
-      "actual": "",
+      "actual": "6.5%",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultComparison": "市場予想と一致",
+      "resultExplanation": "実績 6.5% は予想 6.5% に対して市場予想と一致。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1029,8 +1035,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想と一致",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1048,7 +1054,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-04T15:50:02+09:00",
-      "updatedAt": "2026-10-09T15:06:42+09:00"
+      "updatedAt": "2026-10-09T22:11:50+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "Statistics Canada",
+        "url": "http://www.statcan.gc.ca"
+      },
+      "resultSavedAt": "2026-10-09T22:11:50+09:00"
     },
     {
       "id": "event-ea72221b038259",
@@ -1295,7 +1307,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-04T15:50:02+09:00",
-      "updatedAt": "2026-10-09T15:06:42+09:00"
+      "updatedAt": "2026-10-09T22:11:50+09:00"
     },
     {
       "id": "event-889aebaf5a33b7",
@@ -1542,7 +1554,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-04T15:50:02+09:00",
-      "updatedAt": "2026-10-09T15:06:42+09:00"
+      "updatedAt": "2026-10-09T22:11:50+09:00"
     }
   ]
 }
