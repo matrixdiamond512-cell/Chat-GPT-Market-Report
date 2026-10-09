@@ -129,6 +129,23 @@ jobs:
           )"
             if [ "$EVENT_NAME" = "pull_request" ]; then
               HISTORICAL="true"
+            elif [ "$EVENT_NAME" = "push" ]; then
+              LATEST_SLOT="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          try:
+              payload=json.loads(Path('data/latest-report.json').read_text(encoding='utf-8'))
+              report=payload.get('latestReport') or {}
+              print(f"{report.get('date','')} {report.get('time','')}")
+          except Exception:
+              print('')
+          PY
+          )"
+              if [ "$LATEST_SLOT" = "$DATE 08:00" ]; then
+                HISTORICAL="false"
+              else
+                HISTORICAL="true"
+              fi
             else
               HISTORICAL="false"
             fi
