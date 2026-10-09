@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Market report structured infographic source",
+  "type": "object",
+  "required": [
+    "report_id", "report_date", "report_time", "title", "body_hash", "full_text", "snapshot_id",
+    "headline", "overall_judgement", "market_theme", "market_summary", "session_timeline",
+    "drivers", "supportive_factors", "risk_factors", "rates", "fx", "sentiment", "cross_asset_flow",
+    "positioning", "valuation", "events", "market_outlooks", "main_scenario", "upside_scenario",
+    "downside_scenario", "break_conditions", "handover", "key_conditions", "conclusion",
+    "facts", "sections", "numeric_registry", "synthetic_fixture"
+  ],
+  "properties": {
+    "report_id": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}_(08|12|16|21)-00$"},
+    "report_date": {"type": "string", "format": "date"},
+    "report_time": {"enum": ["08:00", "12:00", "16:00", "21:00"]},
+    "title": {"type": "string", "minLength": 1},
+    "body_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "full_text": {"type": "string", "minLength": 1},
+    "snapshot_id": {"type": "string", "minLength": 1},
+    "synthetic_fixture": {"type": "boolean"},
+    "facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["fact_id", "section", "text", "source_excerpt", "importance"],
+        "properties": {
+          "fact_id": {"type": "string", "minLength": 1},
+          "section": {"type": "string", "minLength": 1},
+          "text": {"type": "string", "minLength": 1},
+          "source_excerpt": {"type": "string", "minLength": 1},
+          "importance": {"enum": ["CRITICAL", "HIGH", "NORMAL"]},
+          "value": {"type": ["string", "number", "null"]},
+          "unit": {"type": ["string", "null"]},
+          "as_of": {"type": ["string", "null"]},
+          "instrument": {"type": "string"},
+          "label": {"type": "string"},
+          "direction": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "numeric_registry": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["fact_id", "instrument", "value", "unit", "as_of", "source_excerpt"],
+        "properties": {
+          "fact_id": {"type": "string"},
+          "instrument": {"type": "string"},
+          "value": {"type": "string"},
+          "unit": {"type": "string"},
+          "as_of": {"type": "string"},
+          "source_excerpt": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "sections": {"type": "array", "minItems": 16, "maxItems": 16},
+    "market_outlooks": {"type": "array", "minItems": 6, "maxItems": 6}
+  },
+  "additionalProperties": true
+}

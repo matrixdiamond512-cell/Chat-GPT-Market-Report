@@ -155,6 +155,9 @@ function mrBuildReportFromDoc_(file) {
   report.markets = MR_MARKETS_.map(function(market) {
     return mrExtractMarket_(market.name, market.re, sections, fullText);
   });
+  if (report.time === '08:00' && typeof marketReport0800QaFromFile_ === 'function') {
+    report.infographicGenerationQa = marketReport0800QaFromFile_(file);
+  }
   return report;
 }
 
@@ -238,6 +241,7 @@ function mrFillFallbacks_(report, fullText) {
 
 function mrValidateReports_(reports) {
   reports.forEach(function(report) {
+    if (report && report.time === '08:00') requireMarketReport0800GenerationQa_(report);
     if (!report.fullText || report.fullText.length < 200) throw new Error(report.title + ': fullTextが不足しています。');
     if (!report.theme) throw new Error(report.title + ': 相場テーマがありません。');
     if (!report.markets || report.markets.length !== 6) throw new Error(report.title + ': 6市場が揃っていません。');

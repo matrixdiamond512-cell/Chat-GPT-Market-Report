@@ -159,6 +159,12 @@ def sync_latest_to_canonical() -> Path | None:
         if decision == "keep":
             print(f"Latest report already archived: {path}")
             return path
+        if report.get("time") == "08:00":
+            from reporting.infographic_0800_publication_gate import assert_changed_0800_reports
+            assert_changed_0800_reports([current], [report], operation="build_reports.py latest-to-canonical")
+    elif report.get("time") == "08:00":
+        from reporting.infographic_0800_publication_gate import assert_changed_0800_reports
+        assert_changed_0800_reports([], [report], operation="build_reports.py latest-to-canonical")
 
     path.write_text(rendered, encoding="utf-8")
     print(f"Synchronized latest report into canonical history: {path}")
@@ -198,6 +204,10 @@ def backfill_missing_canonical_files(index_reports: list[dict]) -> list[Path]:
         path = canonical_path(report)
         if path.exists():
             continue
+
+        if report.get("time") == "08:00":
+            from reporting.infographic_0800_publication_gate import assert_changed_0800_reports
+            assert_changed_0800_reports([], [report], operation="build_reports.py canonical backfill")
 
         path.write_text(
             json.dumps(report, ensure_ascii=False, indent=2) + "\n",
@@ -328,6 +338,8 @@ def main() -> None:
         backfilled = backfill_missing_canonical_files(previous_index)
 
     reports = load_canonical_reports()
+    from reporting.infographic_0800_publication_gate import assert_changed_0800_reports
+    assert_changed_0800_reports(previous_index, reports, operation="build_reports.py index rebuild")
     write_index(reports)
     verify_no_history_loss(previous_keys)
 

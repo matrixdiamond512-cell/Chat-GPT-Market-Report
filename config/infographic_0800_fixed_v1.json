@@ -1,0 +1,609 @@
+{
+  "template_id": "market-open-approved-single-sheet-v1",
+  "report_time": "08:00",
+  "reference_asset": "assets/infographic-references/08-00-approved-reference.png",
+  "canvas": {
+    "width": 1536,
+    "height": 1024,
+    "target_display_width": 768,
+    "orientation": "landscape",
+    "background": "#F3F8FC",
+    "header_height": 100,
+    "minimum_body_font_px": 12,
+    "minimum_body_font_at_768_px": 6,
+    "panel_heading_font_px": 22,
+    "grid_gap_px": 3,
+    "maximum_height_px": 1024
+  },
+  "sections": [
+    {
+      "id": "title_datetime",
+      "title": "タイトル・作成日時",
+      "kind": "header",
+      "required": true
+    },
+    {
+      "id": "overall_judgement",
+      "title": "総合判断",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "id": "attention_points",
+      "title": "本日の注目ポイント",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "id": "market_theme",
+      "title": "今日の相場テーマ",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "id": "material_market_relation",
+      "title": "材料と市場の関係",
+      "kind": "relation",
+      "required": true
+    },
+    {
+      "id": "ny_timeline",
+      "title": "昨夜のNY市場の時系列",
+      "kind": "timeline",
+      "required": true,
+      "stages": [
+        "開始前",
+        "開場",
+        "中盤",
+        "終盤",
+        "東京時間／次時間帯への引継ぎ"
+      ]
+    },
+    {
+      "id": "ny_indices",
+      "title": "NY主要指数",
+      "kind": "indices_table",
+      "required": true
+    },
+    {
+      "id": "major_market_data",
+      "title": "主要市場データ",
+      "kind": "market_data_table",
+      "required": true
+    },
+    {
+      "id": "ny_market_points",
+      "title": "NY市場のポイント",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "id": "cross_asset_flow",
+      "title": "クロスアセット資金フロー",
+      "kind": "flow",
+      "required": true
+    },
+    {
+      "id": "positioning",
+      "title": "需給・ポジション",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "id": "six_market_outlook",
+      "title": "主要6市場の短期見通し",
+      "kind": "six_market_table",
+      "required": true,
+      "markets": [
+        "金",
+        "WTI原油",
+        "日経225先物（大阪取引所）",
+        "USD/JPY",
+        "EUR/USD",
+        "BTCUSD"
+      ],
+      "columns": [
+        "市場",
+        "現在値",
+        "判断",
+        "強気条件",
+        "弱気条件"
+      ]
+    },
+    {
+      "id": "news_materials",
+      "title": "最新ニュース・材料",
+      "kind": "news",
+      "required": true,
+      "columns": [
+        "見出し",
+        "時刻",
+        "影響市場",
+        "価格反応"
+      ]
+    },
+    {
+      "id": "scenario_analysis",
+      "title": "シナリオ分析",
+      "kind": "scenarios",
+      "required": true,
+      "scenarios": [
+        "上振れ",
+        "メイン",
+        "代替",
+        "崩れる条件"
+      ]
+    },
+    {
+      "id": "handover",
+      "title": "次時間帯への引継ぎ",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "id": "top_three_conditions",
+      "title": "本日の最重要3条件",
+      "kind": "three_conditions",
+      "required": true,
+      "count": 3
+    },
+    {
+      "id": "final_summary",
+      "title": "最終まとめ",
+      "kind": "text",
+      "required": true
+    }
+  ],
+  "required_ny_index_labels": [
+    "NYダウ",
+    "NASDAQ総合",
+    "S&P500",
+    "Russell 2000"
+  ],
+  "required_market_data_labels": [
+    "日経225現物",
+    "TOPIX",
+    "日経225先物（大阪取引所）",
+    "USD/JPY",
+    "EUR/USD",
+    "COMEX金先物",
+    "WTI原油",
+    "VIX",
+    "日経VI",
+    "Fear & Greed Index",
+    "米10年債利回り",
+    "日本10年国債利回り",
+    "日経225予想PER",
+    "日経225予想EPS"
+  ],
+  "market_data_groups": [
+    {
+      "title": "日本株",
+      "labels": [
+        "日経225現物",
+        "TOPIX",
+        "日経225先物（大阪取引所）"
+      ]
+    },
+    {
+      "title": "為替・商品",
+      "labels": [
+        "USD/JPY",
+        "EUR/USD",
+        "WTI原油",
+        "COMEX金先物"
+      ]
+    },
+    {
+      "title": "金利・センチメント・バリュエーション",
+      "labels": [
+        "VIX",
+        "日経VI",
+        "Fear & Greed Index",
+        "米10年債利回り",
+        "日本10年国債利回り",
+        "日経225予想PER",
+        "日経225予想EPS"
+      ]
+    }
+  ],
+  "fixed_layout": {
+    "single_png_required": true,
+    "rows": [
+      {
+        "id": "top",
+        "y": 102,
+        "height": 295,
+        "section_ids": [
+          "overall_judgement",
+          "attention_points",
+          "market_theme",
+          "material_market_relation",
+          "ny_timeline"
+        ]
+      },
+      {
+        "id": "middle_upper",
+        "y": 400,
+        "height": 294,
+        "section_ids": [
+          "ny_indices",
+          "major_market_data",
+          "ny_market_points"
+        ]
+      },
+      {
+        "id": "middle_lower",
+        "y": 697,
+        "height": 215,
+        "section_ids": [
+          "cross_asset_flow",
+          "positioning",
+          "six_market_outlook",
+          "news_materials"
+        ]
+      },
+      {
+        "id": "bottom",
+        "y": 913,
+        "height": 108,
+        "section_ids": [
+          "scenario_analysis",
+          "handover",
+          "top_three_conditions",
+          "final_summary"
+        ]
+      }
+    ],
+    "zones": [
+      {
+        "section_id": "overall_judgement",
+        "number": 1,
+        "x": 2,
+        "y": 102,
+        "width": 325,
+        "height": 295,
+        "heading_height": 34,
+        "body_padding": 10,
+        "font_size": 18,
+        "minimum_font_size": 16,
+        "maximum_line_count": 14,
+        "row_group": "top",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "judgement_card",
+        "contract_section_id": "overall_judgment"
+      },
+      {
+        "section_id": "attention_points",
+        "number": 2,
+        "x": 329,
+        "y": 102,
+        "width": 322,
+        "height": 295,
+        "heading_height": 34,
+        "body_padding": 10,
+        "font_size": 18,
+        "minimum_font_size": 16,
+        "maximum_line_count": 14,
+        "row_group": "top",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "numbered_list_5"
+      },
+      {
+        "section_id": "market_theme",
+        "number": 3,
+        "x": 653,
+        "y": 102,
+        "width": 324,
+        "height": 295,
+        "heading_height": 34,
+        "body_padding": 10,
+        "font_size": 17,
+        "minimum_font_size": 15,
+        "maximum_line_count": 14,
+        "row_group": "top",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "theme_emphasis"
+      },
+      {
+        "section_id": "material_market_relation",
+        "number": 4,
+        "x": 979,
+        "y": 102,
+        "width": 298,
+        "height": 295,
+        "heading_height": 34,
+        "body_padding": 8,
+        "font_size": 16,
+        "minimum_font_size": 14,
+        "maximum_line_count": 15,
+        "row_group": "top",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "cause_effect",
+        "contract_section_id": "material_market_relationship"
+      },
+      {
+        "section_id": "ny_timeline",
+        "number": 5,
+        "x": 1279,
+        "y": 102,
+        "width": 255,
+        "height": 295,
+        "heading_height": 52,
+        "body_padding": 5,
+        "font_size": 12,
+        "minimum_font_size": 12,
+        "maximum_line_count": 18,
+        "row_group": "top",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "ny_timeline"
+      },
+      {
+        "section_id": "ny_indices",
+        "number": 6,
+        "x": 2,
+        "y": 400,
+        "width": 328,
+        "height": 294,
+        "heading_height": 34,
+        "body_padding": 5,
+        "font_size": 14,
+        "minimum_font_size": 12,
+        "maximum_line_count": 15,
+        "row_group": "middle_upper",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "index_table"
+      },
+      {
+        "section_id": "major_market_data",
+        "number": 7,
+        "x": 332,
+        "y": 400,
+        "width": 903,
+        "height": 294,
+        "heading_height": 34,
+        "body_padding": 5,
+        "font_size": 13,
+        "minimum_font_size": 12,
+        "maximum_line_count": 17,
+        "row_group": "middle_upper",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "categorized_table"
+      },
+      {
+        "section_id": "ny_market_points",
+        "number": 8,
+        "x": 1237,
+        "y": 400,
+        "width": 297,
+        "height": 294,
+        "heading_height": 34,
+        "body_padding": 7,
+        "font_size": 16,
+        "minimum_font_size": 14,
+        "maximum_line_count": 15,
+        "row_group": "middle_upper",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "watch_list"
+      },
+      {
+        "section_id": "cross_asset_flow",
+        "number": 9,
+        "x": 2,
+        "y": 697,
+        "width": 408,
+        "height": 215,
+        "heading_height": 32,
+        "body_padding": 7,
+        "font_size": 14,
+        "minimum_font_size": 12,
+        "maximum_line_count": 11,
+        "row_group": "middle_lower",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "causal_flow"
+      },
+      {
+        "section_id": "positioning",
+        "number": 10,
+        "x": 412,
+        "y": 697,
+        "width": 247,
+        "height": 215,
+        "heading_height": 32,
+        "body_padding": 6,
+        "font_size": 13,
+        "minimum_font_size": 12,
+        "maximum_line_count": 12,
+        "row_group": "middle_lower",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "position_groups"
+      },
+      {
+        "section_id": "six_market_outlook",
+        "number": 11,
+        "x": 661,
+        "y": 697,
+        "width": 592,
+        "height": 215,
+        "heading_height": 32,
+        "body_padding": 4,
+        "font_size": 12,
+        "minimum_font_size": 12,
+        "maximum_line_count": 13,
+        "row_group": "middle_lower",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "six_market_table"
+      },
+      {
+        "section_id": "news_materials",
+        "number": 12,
+        "x": 1255,
+        "y": 697,
+        "width": 279,
+        "height": 215,
+        "heading_height": 32,
+        "body_padding": 5,
+        "font_size": 12,
+        "minimum_font_size": 12,
+        "maximum_line_count": 13,
+        "row_group": "middle_lower",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "numbered_news",
+        "contract_section_id": "latest_news"
+      },
+      {
+        "section_id": "scenario_analysis",
+        "number": 13,
+        "x": 2,
+        "y": 913,
+        "width": 470,
+        "height": 108,
+        "heading_height": 18,
+        "body_padding": 3,
+        "font_size": 12,
+        "minimum_font_size": 12,
+        "maximum_line_count": 8,
+        "row_group": "bottom",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "scenario_color_rows",
+        "body_top_padding": 0,
+        "body_bottom_padding": 0
+      },
+      {
+        "section_id": "handover",
+        "number": 14,
+        "x": 474,
+        "y": 913,
+        "width": 414,
+        "height": 108,
+        "heading_height": 25,
+        "body_padding": 3,
+        "font_size": 12,
+        "minimum_font_size": 12,
+        "maximum_line_count": 6,
+        "row_group": "bottom",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "watch_list",
+        "contract_section_id": "handoff"
+      },
+      {
+        "section_id": "top_three_conditions",
+        "number": 15,
+        "x": 890,
+        "y": 913,
+        "width": 235,
+        "height": 108,
+        "heading_height": 25,
+        "body_padding": 3,
+        "font_size": 12,
+        "minimum_font_size": 12,
+        "maximum_line_count": 6,
+        "row_group": "bottom",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "top_three"
+      },
+      {
+        "section_id": "final_summary",
+        "number": 16,
+        "x": 1127,
+        "y": 913,
+        "width": 407,
+        "height": 108,
+        "heading_height": 25,
+        "body_padding": 3,
+        "font_size": 12,
+        "minimum_font_size": 12,
+        "maximum_line_count": 6,
+        "row_group": "bottom",
+        "fixed_zone": true,
+        "page": 1,
+        "render_mode": "summary_card"
+      }
+    ],
+    "template_mode": "08:00_FIXED_SINGLE_SHEET",
+    "pagination_enabled": false
+  },
+  "visual_reference_contract": {
+    "panel_order": [
+      "overall_judgement",
+      "attention_points",
+      "market_theme",
+      "material_market_relation",
+      "ny_timeline",
+      "ny_indices",
+      "major_market_data",
+      "ny_market_points",
+      "cross_asset_flow",
+      "positioning",
+      "six_market_outlook",
+      "news_materials",
+      "scenario_analysis",
+      "handover",
+      "top_three_conditions",
+      "final_summary"
+    ],
+    "row_section_ids": [
+      [
+        "overall_judgement",
+        "attention_points",
+        "market_theme",
+        "material_market_relation",
+        "ny_timeline"
+      ],
+      [
+        "ny_indices",
+        "major_market_data",
+        "ny_market_points"
+      ],
+      [
+        "cross_asset_flow",
+        "positioning",
+        "six_market_outlook",
+        "news_materials"
+      ],
+      [
+        "scenario_analysis",
+        "handover",
+        "top_three_conditions",
+        "final_summary"
+      ]
+    ],
+    "header_height": 100,
+    "canvas_dimensions_px": [
+      1536,
+      1024
+    ],
+    "single_sheet": true,
+    "comparison_claim": "fixed-zone geometry; no pixel-level image-content equivalence",
+    "comparison_dimensions": [
+      "single_sheet",
+      "panel_order_and_relative_position",
+      "four_row_grouping",
+      "information_hierarchy",
+      "numbered_markers",
+      "table_structure",
+      "cause_effect_arrows",
+      "scenario_color_coding",
+      "title_bar_proportion",
+      "panel_spacing",
+      "negative_space",
+      "source_gap_visibility"
+    ],
+    "visual_similarity_pass_requires": "Geometry and dedicated component shape/style checks all pass; geometry alone is insufficient."
+  }
+}

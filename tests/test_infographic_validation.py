@@ -14,7 +14,8 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'scripts'))
 from reporting.infographic import (  # noqa: E402
     SourceLock, TIMELINES, ValidationFailure, build_spec, completion_gate,
-    validate_image, validate_market_data, validate_publication_evidence, validate_report, validate_spec,
+    validate_0800_source_generation_contract, validate_image, validate_market_data,
+    validate_publication_evidence, validate_report, validate_spec,
     vision_attestation_payload,
 )
 from reporting.context import ReportContext  # noqa: E402
@@ -152,6 +153,18 @@ class InfographicRegressionTests(unittest.TestCase):
         titles = [panel['title'] for panel in build_spec(sample())['panels']]
         self.assertIn('メインシナリオ', titles)
         self.assertIn('代替シナリオ', titles)
+
+    def test_0800_spec_carries_fixed_sixteen_zone_source_generation_contract(self):
+        report = sample('08:00')
+        candidate = build_spec(report)
+        contract = candidate['required_source_fact_contract']
+        self.assertEqual('market-report-0800-infographic-facts-v1', contract['contract_id'])
+        self.assertEqual(16, len(contract['zones']))
+        validate_0800_source_generation_contract(report, candidate)
+        candidate.pop('required_source_fact_contract')
+        with self.assertRaises(ValidationFailure) as caught:
+            validate_0800_source_generation_contract(report, candidate)
+        self.assertEqual('08_SOURCE_GENERATION_CONTRACT_MISSING_OR_CHANGED', caught.exception.reason)
 
     def test_06_empty_docs_readback_fails_existing_gate(self):
         from tests.test_validation_gates import docs, objects

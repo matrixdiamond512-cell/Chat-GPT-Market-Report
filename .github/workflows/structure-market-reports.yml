@@ -44,6 +44,9 @@ jobs:
       - name: Complete required schema transparently
         run: python scripts/complete_report_schema.py reports.json
 
+      - name: Enforce 08:00 generation QA before canonical persistence
+        run: python scripts/check_0800_publication_gate.py --base HEAD
+
       - name: Validate structured JSON
         run: python -m json.tool reports.json > /dev/null
 
