@@ -111,3 +111,24 @@ IMPLEMENTATION STATUS: Implementation and local regressions pass on `codex/porta
 OPEN OUTCOMES: PR #76 remains OPEN/DRAFT at head 652118b6a315ba664caa573105c1553d89b56d58, based on main 3cb6171531ed19a6421a6bced3c3d1a1a20aeeec (ahead 9, behind 0). Rebase had no conflicts, latest main data retained, and production data paths are absent from PR diff. Apps Script Pre-Publish on final code head PASS. Hosted strict report check at 3ef4832 records 08:00 FAIL from MorningReportQA and 12:00 PASS; report/index contents are unchanged through final head. Hosted malformed fixture previously PASS on a70261e. A new final-head hosted renderer job has not appeared; keep its latest-head evidence outcome open. Preserve data and QA, keep Draft, do not merge/deploy.
 
 NEXT NECESSARY ACTION: Finish implementation, run all requested local/hosted checks, verify protected production files unchanged, then stop with a Draft PR. Do not merge or deploy.
+
+
+# Market data completeness recovery — 2026-10-11
+
+PRIMARY OBJECTIVE: Make every market data item required by the report explicitly acquired, validated, date-aligned, and persisted, or automatically reported as missing, while preserving existing behavior and Google Sheets structure.
+
+ACTIVE PROFILE: data-tool. Run ID: market-data-completeness-20261011.
+
+ACCEPTANCE: Remove the fixed Nikkei futures contract month; expand acquisition to the report contract; detect an incomplete or stale report input; repair close-row persistence and safe fill-only history recovery; handle delayed Actions and bounded timeouts; compare source coverage, acquisition completeness, and save/readback evidence against diagnosis run market-data-diagnosis-20261011.
+
+CONSTRAINTS: Preserve existing sheet tabs/headers/cell values and successful flows. Never present stale, different-session, or unverified data as current. Do not expose credentials. External save/readback requires the configured Google service account secret.
+
+OUT OF SCOPE: Merge/deploy, credential creation, GitHub Actions platform internals, and asserting full report completeness from common-market-only success.
+
+IMPLEMENTED: Dynamic quarterly futures contract selection, five major equity indices, stale-aware final refresh, timeout/retry bounds, 28-item readiness validation, differentiated acquisition/authentication status, confirmed date-matched JP10Y reuse, and fill-only close history repair.
+
+EVIDENCE: 30 Python tests PASS; 8 scripts compile. Existing source configuration maps 15/28 report items after the change (14/28 before). The retained JP10Y record 3.001% for 2026-10-09 passes the new adapter and validation. Existing observed common snapshot remains 10/10 verified. Google Sheets save/readback and new-source scheduled acquisition have not been executed.
+
+OPEN OUTCOMES: O1 full 28-item source coverage and runtime completeness remain open (13 items have no common acquisition path). O2 confirm the five new index sources in a scheduled run remains open. O3 Google Sheets write/readback/history fill remain open until GOOGLE_SERVICE_ACCOUNT_JSON is configured. O4 exact close-row historical repairs beyond retained same-date confirmed sources remain open.
+
+NEXT ACTION: Configure the authorized service-account secret, run the scheduled acquisition and close sync, confirm readback and fill-only results, then add and validate source paths for the remaining 13 contract items without relaxing date/session checks.
