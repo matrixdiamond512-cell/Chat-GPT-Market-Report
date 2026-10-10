@@ -8,6 +8,7 @@ from scripts import fetch_market_data as fetch
 from scripts import verify_market_report_readiness as readiness
 from scripts import write_market_data_to_sheets as sheet_contract
 from scripts import fetch_market_data
+from scripts import build_chatgpt_report_input as report_input
 
 
 class RecoveryTests(unittest.TestCase):
@@ -235,6 +236,41 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual(close_sync.PRICE_FIELDS["us10y"], ("米10年債利回り", "", ""))
         self.assertIn("us10y", sheet_contract.MARKET_ORDER)
 
+
+
+    def test_deviation_routes_are_registered_and_sheet_columns_remain_connected(self):
+        import json
+        config = json.loads((fetch.ROOT / "config" / "market_data_sources.json").read_text(encoding="utf-8"))
+        for symbol_id, window in (("nikkei225_dev25", 25), ("nikkei225_dev200", 200)):
+            symbol = config["symbols"][symbol_id]
+            self.assertTrue(symbol["required"])
+            self.assertEqual(symbol["marketType"], "technical")
+            self.assertEqual(symbol["sources"][0]["kind"], "yahoo_sma_deviation")
+            self.assertEqual(symbol["sources"][0]["window"], window)
+
+    def test_report_builder_accepts_only_verified_same_date_deviation(self):
+        labels = [item[0] for item in report_input.ITEMS]
+        report = {
+            "date": "2026-10-12",
+            "time": "08:00",
+            "marketDataTable": {"rows": [{"label": label, "value": f"table-{index}"} for index, label in enumerate(labels)]},
+        }
+        markets = {
+            "nikkei225_dev25": {
+                "value": 4.2317, "asOf": "2026-10-09T15:00:00+09:00",
+                "sourceId": "yahoo_dev25", "sourceName": "Yahoo Finance", "sourceUrl": "https://finance.yahoo.com",
+                "verificationStatus": "verified", "rawReference": "SMA25",
+            },
+            "nikkei225_dev200": {
+                "value": 13.5548, "asOf": "2026-10-08T15:00:00+09:00",
+                "sourceId": "yahoo_dev200", "verificationStatus": "verified",
+            },
+        }
+        result = report_input.build_morning(report, {"markets": markets})
+        self.assertEqual(result["markets"]["nikkei225_dev25"]["value"], 4.2317)
+        self.assertEqual(result["markets"]["nikkei225_dev25"]["sourceId"], "yahoo_dev25")
+        self.assertEqual(result["markets"]["nikkei225_dev25"]["asOf"], "2026-10-09T15:00:00+09:00")
+        self.assertEqual(result["markets"]["nikkei225_dev200"]["displayValue"], "table-22")
 
 if __name__ == "__main__":
     unittest.main()
