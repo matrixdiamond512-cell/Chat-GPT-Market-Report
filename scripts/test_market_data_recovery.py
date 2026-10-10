@@ -241,12 +241,14 @@ class RecoveryTests(unittest.TestCase):
     def test_deviation_routes_are_registered_and_sheet_columns_remain_connected(self):
         import json
         config = json.loads((fetch.ROOT / "config" / "market_data_sources.json").read_text(encoding="utf-8"))
+        validation = json.loads((fetch.ROOT / "config" / "market_data_validation.json").read_text(encoding="utf-8"))
         for symbol_id, window in (("nikkei225_dev25", 25), ("nikkei225_dev200", 200)):
             symbol = config["symbols"][symbol_id]
             self.assertTrue(symbol["required"])
             self.assertEqual(symbol["marketType"], "technical")
             self.assertEqual(symbol["sources"][0]["kind"], "yahoo_sma_deviation")
             self.assertEqual(symbol["sources"][0]["window"], window)
+            self.assertEqual(validation["symbols"][symbol_id]["staleHours"], 120)
 
     def test_report_builder_accepts_only_verified_same_date_deviation(self):
         labels = [item[0] for item in report_input.ITEMS]
