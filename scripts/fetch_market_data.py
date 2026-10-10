@@ -66,7 +66,7 @@ def append_jsonl(path: Path, data: Any) -> None:
         fh.write("\n")
 
 
-def http_get(url: str, timeout: int = 20, headers: dict[str, str] | None = None) -> tuple[bytes, str]:
+def http_get(url: str, timeout: int = 8, headers: dict[str, str] | None = None) -> tuple[bytes, str]:
     request_headers = {"User-Agent": USER_AGENT}
     request_headers.update(headers or {})
     request = urllib.request.Request(url, headers=request_headers)
@@ -695,7 +695,8 @@ def fetch_symbol(
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     errors: list[dict[str, Any]] = []
     valid_candidates: list[dict[str, Any]] = []
-    for source in sorted(symbol_config.get("sources", []), key=lambda item: item.get("priority", 99)):
+    ordered_sources = sorted(symbol_config.get("sources", []), key=lambda item: item.get("priority", 99))
+    for source_index, source in enumerate(ordered_sources):
         if source.get("referenceOnly") and not validation.get("allowReferenceOnly", False):
             errors.append(
                 {
@@ -718,7 +719,10 @@ def fetch_symbol(
             )
             continue
 
-        for attempt in range(retries):
+        source_retry_limit = min(max(retries, 1), int(source.get("maxRetries", 2)))
+        if valid_candidates:
+            source_retry_limit = 1
+        for attempt in range(source_retry_limit):
             try:
                 raw = fetcher(source)
                 raw["referenceOnly"] = source.get("referenceOnly", False)
@@ -757,7 +761,7 @@ def fetch_symbol(
                         "attempt": attempt + 1,
                     }
                 )
-                if attempt + 1 < retries:
+                if attempt + 1 < source_retry_limit:
                     time.sleep(0.6 * (2**attempt))
             except Exception as exc:  # Keep one symbol from breaking every other symbol.
                 errors.append(
@@ -769,6 +773,21 @@ def fetch_symbol(
                         "attempt": attempt + 1,
                     }
                 )
+                break
+
+        if valid_candidates:
+            primary_candidate = valid_candidates[0]
+            comparison_required = bool(
+                validation.get("requireSourceCrossCheck", False)
+                or validation.get("maxSourceDivergencePercent") is not None
+            )
+            next_comparable = any(
+                item.get("marketType", symbol_config.get("marketType")) == primary_candidate.get("marketType")
+                and item.get("session", symbol_config.get("session")) == primary_candidate.get("session")
+                for item in ordered_sources[source_index + 1:]
+                if not item.get("referenceOnly")
+            )
+            if not comparison_required or not next_comparable:
                 break
 
     if not valid_candidates:

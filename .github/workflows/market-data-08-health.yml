@@ -53,7 +53,8 @@ jobs:
             --times "07:55" \
             --trigger-source "final_readiness" \
             --max-catchup-minutes 120 \
-            --mode full
+            --mode full \
+            --recover-expired
 
       - name: Recover CME/OSE morning reference
         shell: bash

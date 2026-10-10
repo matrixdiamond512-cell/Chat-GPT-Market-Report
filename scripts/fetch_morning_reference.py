@@ -46,20 +46,35 @@ def pct_from_change(value:float,change:float)->str:
 
 def fmt_integer(value:float)->str:return f"{value:,.0f}"
 
-def parse_cme(text:str,currency:str)->dict[str,str]|None:
-    marker="CME￥" if currency=="yen" else "CME＄"
-    pattern=re.compile(re.escape(marker)+r"\s+26年09月限\s+([0-9,]+)\s+([+\-][0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+(\d{2}:\d{2}|\d{2}/\d{2})")
-    match=pattern.search(text)
-    if not match:return None
-    value=number(match.group(1));change=number(match.group(2));stamp=match.group(6)
-    return {"value":fmt_integer(value),"change":f"{change:+,.0f}","rate":pct_from_change(value,change),"direction":"上昇" if change>0 else "下落" if change<0 else "横ばい","stamp":stamp,"stampType":"time" if ":" in stamp else "date"}
+def front_quarter_contract(report_date:dt.date,expiry_friday:int)->tuple[int,int]:
+    """Return the nearest quarterly contract whose expiry is still ahead."""
+    for year in range(report_date.year,report_date.year+3):
+        for month in (3,6,9,12):
+            first_day=dt.date(year,month,1)
+            first_friday=1+((4-first_day.weekday())%7)
+            expiry=first_friday+7*(expiry_friday-1)
+            if report_date<dt.date(year,month,expiry):
+                return year%100,month
+    raise ValueError("No front quarterly contract found")
 
-def parse_ose(text:str)->dict[str,str]|None:
-    pattern=re.compile(r"大証ラージ\s+26年9月限\s+([0-9,]+)\s+([+\-][0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+(\d{2}:\d{2})")
-    match=pattern.search(text)
+def parse_cme(text:str,currency:str,report_date:dt.date|None=None)->dict[str,str]|None:
+    report_date=report_date or now_jst().date()
+    marker="CME￥" if currency=="yen" else "CME＄"
+    pattern=re.compile(re.escape(marker)+r"\s+(\d{2})年(\d{2})月限\s+([0-9,]+)\s+([+\-][0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+(\d{2}:\d{2}|\d{2}/\d{2})")
+    yy,mm=front_quarter_contract(report_date,3)
+    match=next((item for item in pattern.finditer(text) if int(item.group(1))==yy and int(item.group(2))==mm),None)
     if not match:return None
-    value=number(match.group(1));change=number(match.group(2))
-    return {"value":f"{fmt_integer(value)}円","change":f"{change:+,.0f}","rate":pct_from_change(value,change),"direction":"上昇" if change>0 else "下落" if change<0 else "横ばい","time":match.group(7)}
+    value=number(match.group(3));change=number(match.group(4));stamp=match.group(8)
+    return {"value":fmt_integer(value),"change":f"{change:+,.0f}","rate":pct_from_change(value,change),"direction":"上昇" if change>0 else "下落" if change<0 else "横ばい","stamp":stamp,"stampType":"time" if ":" in stamp else "date","contractMonth":f"20{match.group(1)}-{match.group(2)}"}
+
+def parse_ose(text:str,report_date:dt.date|None=None)->dict[str,str]|None:
+    report_date=report_date or now_jst().date()
+    pattern=re.compile(r"大証ラージ\s+(\d{2})年(\d{1,2})月限\s+([0-9,]+)\s+([+\-][0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+(\d{2}:\d{2})")
+    yy,mm=front_quarter_contract(report_date,2)
+    match=next((item for item in pattern.finditer(text) if int(item.group(1))==yy and int(item.group(2))==mm),None)
+    if not match:return None
+    value=number(match.group(3));change=number(match.group(4))
+    return {"value":f"{fmt_integer(value)}円","change":f"{change:+,.0f}","rate":pct_from_change(value,change),"direction":"上昇" if change>0 else "下落" if change<0 else "横ばい","time":match.group(9),"contractMonth":f"20{match.group(1)}-{int(match.group(2)):02d}"}
 
 def cme_as_of(report_date:dt.date,parsed:dict[str,str])->str:
     if parsed.get("stampType")=="time":return f"{report_date.isoformat()}T{parsed['stamp']}:00+09:00"
@@ -114,11 +129,11 @@ def main()->int:
         if not parsed:continue
         as_of=cme_as_of(report_date,parsed)
         if parsed.get("stampType")=="date":reference_dates.append(as_of[:10])
-        status=reference_status(as_of,report_date,args.slot);base="26年09月限のページ上最終表示値。CME公式清算値ではないため、その区別を維持する。"
-        attempted[label]={"value":parsed["value"],"change":parsed["change"],"rate":parsed["rate"],"direction":parsed["direction"],"asOf":as_of,"sourceName":f"nikkei225jp.com {product}","sourceUrl":SOURCE_URL,"status":status,"note":note_for_status(base,status,args.slot)}
+        status=reference_status(as_of,report_date,args.slot);base=parsed["contractMonth"]+"限のページ上最終表示値。CME公式清算値ではないため、その区別を維持する。"
+        attempted[label]={"value":parsed["value"],"change":parsed["change"],"rate":parsed["rate"],"direction":parsed["direction"],"asOf":as_of,"sourceName":f"nikkei225jp.com {product}","sourceUrl":SOURCE_URL,"contractMonth":parsed["contractMonth"],"status":status,"note":note_for_status(base,status,args.slot)}
     if ose:
-        as_of=f"{report_date.isoformat()}T{ose['time']}:00+09:00";status=reference_status(as_of,report_date,args.slot);base="大証ラージ26年9月限。JPX/OSEの値とクロスチェックして使用する。"
-        attempted["日経225先物（大阪取引所）"]={"value":ose["value"],"change":ose["change"],"rate":ose["rate"],"direction":ose["direction"],"asOf":as_of,"sourceName":"JPX/OSE mirrored quote on nikkei225jp.com","sourceUrl":SOURCE_URL,"status":status,"note":note_for_status(base,status,args.slot)}
+        as_of=f"{report_date.isoformat()}T{ose['time']}:00+09:00";status=reference_status(as_of,report_date,args.slot);base="大証ラージ"+ose["contractMonth"]+"限。JPX/OSEの値とクロスチェックして使用する。"
+        attempted["日経225先物（大阪取引所）"]={"value":ose["value"],"change":ose["change"],"rate":ose["rate"],"direction":ose["direction"],"asOf":as_of,"sourceName":"JPX/OSE mirrored quote on nikkei225jp.com","sourceUrl":SOURCE_URL,"contractMonth":ose["contractMonth"],"status":status,"note":note_for_status(base,status,args.slot)}
     if not attempted:raise SystemExit("No morning reference values parsed")
 
     existing=load_existing(report_date,args.slot);old_items=existing.get("items") or {};items=dict(old_items)

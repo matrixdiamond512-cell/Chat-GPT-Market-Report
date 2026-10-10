@@ -98,6 +98,43 @@ def validate_morning_reference(now: dt.datetime, slot: str, blocking: list[str],
     return reference
 
 
+def validate_report_input(now: dt.datetime, slot: str, blocking: list[str], warnings: list[str]) -> dict[str, Any]:
+    """Validate the published 28-row close contract separately from live quotes."""
+    if slot != "08:00":
+        return {}
+    path = ROOT / "data" / "market" / "chatgpt-input.json"
+    report_input = load_json(path, {})
+    if not report_input or "expectedCount" not in report_input:
+        warnings.append("08:00 report-level 28-item input is not generated yet; report completeness is not asserted by this snapshot check.")
+        return {}
+    if report_input.get("reportSlot") != "08:00":
+        blocking.append(f"08:00 report input slot mismatch: got {report_input.get('reportSlot') or 'empty'}")
+    expected_count = report_input.get("expectedCount")
+    markets = report_input.get("markets") or {}
+    expected_ids = {
+        "dow", "nasdaq", "sp500", "russell2000", "nikkei225_cash",
+        "nikkei225_futures_cme_yen", "nikkei225_futures_cme_usd", "nikkei225_futures_ose",
+        "usdjpy", "eurusd", "gold", "wti", "btcusd", "vix", "nikkei_vi", "fear_greed",
+        "us10y", "jp10y", "nikkei225_per", "nikkei225_pbr", "nikkei225_eps",
+        "nikkei225_dev25", "nikkei225_dev200", "tse_prime_turnover", "tse_prime_volume",
+        "tse_prime_advancers", "tse_prime_decliners", "tse_prime_ad_ratio25",
+    }
+    if expected_count != 28 or len(markets) != 28 or set(markets) != expected_ids:
+        missing = sorted(expected_ids - set(markets))
+        blocking.append(f"08:00 report input is incomplete: expected 28 named items, found {len(markets)}; missing={missing}")
+    if report_input.get("dataComplete") is not True:
+        unavailable = report_input.get("unavailableLabels") or []
+        detail = ", ".join(map(str, unavailable[:10])) or "dataComplete is not true"
+        blocking.append("08:00 report input has missing/unverified items: " + detail)
+    for symbol_id, market in markets.items():
+        if not isinstance(market, dict) or not is_number(market.get("value")) or market.get("verificationStatus") != "verified":
+            blocking.append(f"08:00 report input item is missing a verified numeric value: {symbol_id}")
+    previous_close_date = str(report_input.get("previousCloseDate") or "")
+    if previous_close_date and previous_close_date >= now.date().isoformat():
+        blocking.append(f"08:00 report input is not a prior-session close: {previous_close_date}")
+    return report_input
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--slot", required=True, choices=("08:00", "12:00", "16:00", "21:00"))
@@ -188,6 +225,7 @@ def main() -> int:
         blocking.append("payload missingRequired is not empty: " + ", ".join(map(str, missing_from_payload)))
 
     morning_reference = validate_morning_reference(now, args.slot, blocking, warnings)
+    report_input = validate_report_input(now, args.slot, blocking, warnings)
 
     close_sync = load_json(ROOT / "data" / "market" / "close_data_sync_status.json", {}) if args.slot == "08:00" else {}
     close_sync_generated = parse_time(close_sync.get("generatedAt"))
@@ -215,6 +253,7 @@ def main() -> int:
         "requiredMarkets": required_ids,
         "morningReferenceRequired": list(MORNING_REFERENCE_REQUIRED) if args.slot == "08:00" else [],
         "morningReferenceDate": morning_reference.get("referenceDate") if morning_reference else None,
+        "reportInputCompleteness": {"status": "CHECKED" if report_input else "NOT_YET_GENERATED", "availableCount": len(report_input.get("markets") or {}) if report_input else None, "expectedCount": report_input.get("expectedCount") if report_input else 28, "dataComplete": report_input.get("dataComplete") if report_input else None, "previousCloseDate": report_input.get("previousCloseDate") if report_input else None},
         "blockingReasons": blocking,
         "warnings": warnings,
         "closeDataSync": {

@@ -106,12 +106,22 @@ def completed_times(path: Path, slot: str) -> set[str]:
     }
 
 
-def snapshot_is_current(payload: dict[str, Any], slot: str, day: dt.date) -> bool:
+def snapshot_is_current(payload: dict[str, Any], slot: str, day: dt.date, max_age_minutes: int = 15, now: dt.datetime | None = None) -> bool:
     """Return whether GitHub already exposes a usable snapshot for this slot/day."""
     generated = str(payload.get("generatedAt") or "")
+    try:
+        timestamp = dt.datetime.fromisoformat(generated.replace("Z", "+00:00"))
+        if timestamp.tzinfo is None:
+            timestamp = timestamp.replace(tzinfo=JST)
+        timestamp = timestamp.astimezone(JST)
+    except ValueError:
+        return False
+    current = (now or now_jst()).astimezone(JST)
+    age = (current - timestamp).total_seconds() / 60.0
     return bool(
         payload.get("reportSlot") == slot
-        and generated[:10] == day.isoformat()
+        and timestamp.date() == day
+        and -1.0 <= age <= max_age_minutes
         and payload.get("overallStatus") in {"verified", "degraded"}
     )
 
@@ -220,6 +230,7 @@ def perform_attempt(
         "workflowRunAttempt": os.environ.get("GITHUB_RUN_ATTEMPT", ""),
         "startedAt": iso(started),
         "completedAt": iso(completed),
+        "durationSeconds": round((completed - started).total_seconds(), 1),
         "lateMinutes": round(max(0.0, late_minutes), 1),
         "recoveryAfterExpiry": recovery_after_expiry,
         "outcome": status,
@@ -332,7 +343,7 @@ def main() -> int:
 
     recovery_record: dict[str, Any] | None = None
     current_payload = load_json(ROOT / "data" / "market" / "latest.json", {})
-    if args.recover_expired and not snapshot_is_current(current_payload, args.slot, day):
+    if args.recover_expired and not snapshot_is_current(current_payload, args.slot, day, now=now_jst()):
         recovery_time = args.times[-1]
         recovery_lateness = max(
             0.0,
@@ -361,7 +372,7 @@ def main() -> int:
     final_done = completed_times(audit, args.slot)
     missing = [item for item in args.times if item not in final_done]
     final_payload = load_json(ROOT / "data" / "market" / "latest.json", {})
-    current_snapshot_ready = snapshot_is_current(final_payload, args.slot, day)
+    current_snapshot_ready = snapshot_is_current(final_payload, args.slot, day, now=now_jst())
     summary = {
         "date": day.isoformat(),
         "reportSlot": args.slot,
