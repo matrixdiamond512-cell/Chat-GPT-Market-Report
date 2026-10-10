@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "width": 1600,
+  "target_display_width": 768,
+  "templates": {
+    "08:00": {
+      "template_id": "market-open-v1",
+      "layout_rows": [[0], [1], [2, 3], [4, 5], [6], [7], [8, 9], [10, 11], [12, 13], [14, 15]],
+      "sections": [
+        ["prior_market_close", "主要市場の前営業日終値", "HIGH", "table"],
+        ["ny_timeline", "昨夜のNY市場の動き / 時系列", "CRITICAL", "timeline"],
+        ["theme", "今日の相場テーマ", "CRITICAL", "text"],
+        ["drivers", "材料と市場の関係", "HIGH", "flow"],
+        ["leading_market", "今日の主導市場", "HIGH", "text"],
+        ["rates_fx_sentiment", "金利・為替・センチメント", "HIGH", "table"],
+        ["valuation", "日経225バリュエーション", "NORMAL", "text"],
+        ["market_outlooks", "主要6市場の短期見通し", "CRITICAL", "market_table"],
+        ["events", "注目の経済指標・イベント", "HIGH", "events"],
+        ["cross_asset_flow", "クロスアセット資金フロー", "CRITICAL", "flow"],
+        ["handover", "12:00への引き継ぎ", "NORMAL", "text"],
+        ["key_conditions", "本日の注目ポイント / 最重要条件", "CRITICAL", "text"],
+        ["main_scenario", "メインシナリオ", "CRITICAL", "scenario_main"],
+        ["upside_scenario", "上振れシナリオ", "HIGH", "scenario_up"],
+        ["downside_scenario", "下振れシナリオ / 崩れる条件", "CRITICAL", "scenario_down"],
+        ["conclusion", "結論", "CRITICAL", "conclusion"]
+      ]
+    },
+    "12:00": {
+      "template_id": "tokyo-morning-v1",
+      "layout_rows": [[0], [1], [2, 3], [4, 5], [6, 7], [8, 9], [10], [11, 12], [13, 14], [15]],
+      "sections": [
+        ["change_since_0800", "08:00からの変化", "CRITICAL", "text"],
+        ["tokyo_timeline", "東京前場の時系列", "CRITICAL", "timeline"],
+        ["indices_breadth", "日経225 / TOPIX・市場内部", "CRITICAL", "table"],
+        ["semis_ai", "半導体 / AI株", "HIGH", "text"],
+        ["usdjpy_fix", "USD/JPY・仲値前後", "HIGH", "table"],
+        ["rates", "金利", "HIGH", "text"],
+        ["oil_gold", "原油・金", "HIGH", "table"],
+        ["price_alignment", "材料と値動きの整合性", "HIGH", "flow"],
+        ["cross_asset_flow", "クロスアセット資金フロー", "HIGH", "flow"],
+        ["positioning", "需給・ポジション", "HIGH", "text"],
+        ["market_outlooks", "主要6市場の短期見通し", "CRITICAL", "market_table"],
+        ["afternoon_focus", "後場の注目点", "HIGH", "text"],
+        ["europe_handover", "欧州時間への引き継ぎ", "NORMAL", "text"],
+        ["main_scenario", "メインシナリオ", "CRITICAL", "scenario_main"],
+        ["alternate_scenarios", "上振れ / 下振れシナリオ", "HIGH", "scenario_pair"],
+        ["conclusion", "結論", "CRITICAL", "conclusion"]
+      ]
+    },
+    "16:00": {
+      "template_id": "tokyo-close-v1",
+      "layout_rows": [[0], [1], [2, 3], [4, 5], [6, 7], [8, 9], [10], [11, 12], [13, 14], [15]],
+      "sections": [
+        ["tokyo_summary", "東京市場サマリー", "CRITICAL", "text"],
+        ["tokyo_timeline", "東京市場の時系列", "CRITICAL", "timeline"],
+        ["change_since_1200", "12:00からの変化", "HIGH", "text"],
+        ["indices_breadth", "日経225 / TOPIX / breadth", "CRITICAL", "table"],
+        ["fx", "為替", "HIGH", "table"],
+        ["rates", "金利", "HIGH", "text"],
+        ["commodities_crypto", "原油・金・BTC", "HIGH", "table"],
+        ["drivers_alignment", "東京市場の材料と値動き", "HIGH", "flow"],
+        ["cross_asset_flow", "クロスアセット資金フロー", "HIGH", "flow"],
+        ["positioning", "需給・ポジション", "HIGH", "text"],
+        ["market_outlooks", "主要6市場の短期見通し", "CRITICAL", "market_table"],
+        ["europe_open", "欧州初動", "HIGH", "text"],
+        ["ny_handover", "NY時間への引き継ぎ", "HIGH", "text"],
+        ["main_scenario", "メインシナリオ", "CRITICAL", "scenario_main"],
+        ["break_conditions", "崩れる条件", "CRITICAL", "scenario_down"],
+        ["conclusion", "結論", "CRITICAL", "conclusion"]
+      ]
+    },
+    "21:00": {
+      "template_id": "ny-preopen-v1",
+      "layout_rows": [[0], [1], [2, 3], [4, 5], [6, 7], [8, 9], [10, 11], [12], [13, 14], [15]],
+      "sections": [
+        ["current_summary", "現在の市場サマリー", "CRITICAL", "text"],
+        ["europe_timeline", "欧州時間の時系列", "CRITICAL", "timeline"],
+        ["change_since_1600", "16:00からの変化", "HIGH", "text"],
+        ["us_futures", "米株先物", "HIGH", "table"],
+        ["us_rates", "米金利", "HIGH", "table"],
+        ["fx", "USD/JPY / EUR/USD", "HIGH", "table"],
+        ["gold_oil", "金 / 原油", "HIGH", "table"],
+        ["btc", "BTC", "HIGH", "text"],
+        ["drivers_alignment", "材料と値動きの整合性", "HIGH", "flow"],
+        ["cross_asset_flow", "クロスアセット", "HIGH", "flow"],
+        ["positioning", "需給・ポジション", "HIGH", "text"],
+        ["events", "今夜のイベント", "HIGH", "events"],
+        ["market_outlooks", "主要6市場の短期見通し", "CRITICAL", "market_table"],
+        ["ny_scenario", "NY開始後メインシナリオ", "CRITICAL", "scenario_main"],
+        ["break_conditions", "崩れる条件", "CRITICAL", "scenario_down"],
+        ["tokyo_handover_conclusion", "翌東京時間への引き継ぎ / 結論", "CRITICAL", "conclusion"]
+      ]
+    }
+  }
+}

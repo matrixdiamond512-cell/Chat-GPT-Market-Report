@@ -107,12 +107,17 @@ def main() -> int:
     data = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(data, list):
         raise SystemExit("reports.json must contain an array")
+    before = json.loads(json.dumps(data))
 
     changed = any(complete_report(report) for report in data if isinstance(report, dict))
     if args.check:
         return 1 if changed else 0
 
     if changed:
+        import sys
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from reporting.infographic_0800_publication_gate import assert_changed_0800_reports
+        assert_changed_0800_reports(before, data, operation="complete_report_schema.py")
         path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print("Completed empty schema fields without inventing market data.")
     else:

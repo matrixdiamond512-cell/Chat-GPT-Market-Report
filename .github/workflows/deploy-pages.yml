@@ -43,11 +43,23 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Require 08:00 QA before any Pages deployment
+        env:
+          PUSH_BEFORE: ${{ github.event.before }}
+        shell: bash
+        run: |
+          BASE_REF="$PUSH_BEFORE"
+          if [ -z "$BASE_REF" ] || [ "$BASE_REF" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BASE_REF^{commit}" 2>/dev/null; then
+            BASE_REF=HEAD
+          fi
+          python scripts/check_0800_publication_gate.py --base "$BASE_REF" --require-latest-0800
 
       - name: Verify canonical history and index without rewriting latest report
         run: |

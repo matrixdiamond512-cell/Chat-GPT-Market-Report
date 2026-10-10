@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Immutable market data snapshot with explicit provenance",
+  "type": "object",
+  "required": [
+    "snapshot_id",
+    "snapshot_provenance",
+    "report_id",
+    "report_as_of",
+    "source_document_id",
+    "source_document_revision",
+    "source_document_created_at",
+    "source_document_updated_at",
+    "source_body_sha256",
+    "facts",
+    "numeric_registry",
+    "source_numeric_registry_sha256",
+    "numeric_registry_prevalidation",
+    "snapshot_sha256"
+  ],
+  "properties": {
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "snapshot_provenance": {
+      "enum": [
+        "LIVE_CAPTURED",
+        "SOURCE_RECONSTRUCTED",
+        "SYNTHETIC_FIXTURE"
+      ]
+    },
+    "report_id": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}_08-00$"
+    },
+    "report_as_of": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_document_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_document_revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_document_created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_document_updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_body_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "fact_id",
+          "section_id",
+          "text",
+          "source_excerpt"
+        ],
+        "properties": {
+          "fact_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "section_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_excerpt": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "numeric_registry": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "numeric_id",
+          "source_numeric_id",
+          "fact_id",
+          "value",
+          "unit",
+          "as_of",
+          "source_excerpt",
+          "as_of_source_excerpt"
+        ],
+        "properties": {
+          "numeric_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_numeric_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fact_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "type": [
+              "string",
+              "number"
+            ]
+          },
+          "unit": {
+            "type": "string"
+          },
+          "as_of": {
+            "type": "string"
+          },
+          "source_excerpt": {
+            "type": "string"
+          },
+          "as_of_source_excerpt": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "source_numeric_registry_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "numeric_registry_prevalidation": {
+      "type": "object",
+      "required": [
+        "status",
+        "body_hash",
+        "source_numeric_registry_sha256",
+        "source_registry_count"
+      ],
+      "properties": {
+        "status": {
+          "const": "PASS"
+        },
+        "body_hash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "source_numeric_registry_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "source_registry_count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "snapshot_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  },
+  "additionalProperties": false
+}

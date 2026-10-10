@@ -8,6 +8,7 @@ import hmac
 import json
 import os
 import re
+from pathlib import Path
 from typing import Any
 
 from .report import canonical_heading
@@ -27,6 +28,10 @@ TIMELINES = {
     '16:00': ('12:00', '12:30後場寄り', '13:00〜14:00', '15:00前後', '大引け', '16:00判断'),
     '21:00': ('欧州市場', 'EUR/USD', '欧州債券', 'US Treasury', 'US equity futures', 'OSE Nikkei night session', 'USD/JPY', 'Gold', 'WTI', 'BTCUSD'),
 }
+_INFOGRAPHIC_0800_CONTENT_CONTRACT = json.loads(
+    (Path(__file__).resolve().parents[2] / 'config' / 'infographic_0800_content_contract_v1.json')
+    .read_text(encoding='utf-8')
+)
 _NUMBER = re.compile(r'(?<![\w])[-+]?\d[\d,]*(?:\.\d+)?%?')
 _BANNED = {
     'line_chart': 'DECORATIVE_CHART_DETECTED', 'bar_chart': 'DECORATIVE_CHART_DETECTED',
@@ -231,6 +236,11 @@ def _instrument_aliases(instrument):
     return aliases.get(str(instrument), (str(instrument).lower(),))
 
 
+def validate_0800_source_generation_contract(report: dict, spec: dict) -> None:
+    if (report.get('time') or report.get('report_time')) == '08:00' and spec.get('required_source_fact_contract') != _INFOGRAPHIC_0800_CONTENT_CONTRACT:
+        raise ValidationFailure('08_SOURCE_GENERATION_CONTRACT_MISSING_OR_CHANGED')
+
+
 def validate_spec(report: dict, spec: dict, source_lock: dict | None = None) -> dict:
     market_data_result = validate_market_data(report)
     if market_data_result['status'] != 'PASS':
@@ -249,6 +259,7 @@ def validate_spec(report: dict, spec: dict, source_lock: dict | None = None) -> 
         raise ValidationFailure('SOURCE_LOCK_MISMATCH')
     if spec.get('source_locked') is not True:
         raise ValidationFailure('SOURCE_NOT_LOCKED')
+    validate_0800_source_generation_contract(report, spec)
     slot = rid[-5:].replace('-', ':')
     if spec.get('time') and spec['time'] != slot:
         raise ValidationFailure('REPORT_TIME_MISMATCH')
@@ -386,20 +397,26 @@ def build_spec(report: dict) -> dict:
             panels.append({'title': market.instrument, 'type': 'numeric_card', 'text': market.displayText,
                            'numbers': [{'instrument': market.instrument, 'value': str(value), 'unit': market.priceUnit,
                                         'timestamp': market.asOf, 'source_section': matching['heading']} for value in observations]})
-    return {'report_id': lock.report_id, 'title': report.get('title'), 'date': report.get('date') or report.get('report_date'),
+    result = {'report_id': lock.report_id, 'title': report.get('title'), 'date': report.get('date') or report.get('report_date'),
             'time': slot, 'source_sha256': lock.sha256, 'snapshot_id': market_data_result['snapshot_id'], 'source_locked': True, 'layout': 'high_information_grid',
             'allow_charts': False, 'allow_gauges': False, 'allow_people': False,
             'timeline': list(TIMELINES[slot]), 'source_sections': sorted(existing), 'panels': panels,
             'generation_prompt': ('NO decorative charts. NO line charts. NO gauges. NO invented price graphs. NO people. '
                                   'Use tables, text panels, arrows, icons and color-coded information blocks.'),
             'status': 'DRAFT', 'market_data_validation': market_data_result, 'report_validation': validated}
+    if slot == '08:00':
+        result['required_source_fact_contract'] = _INFOGRAPHIC_0800_CONTENT_CONTRACT
+    return result
 
 
 def build_generation_prompt(report: dict, spec: dict) -> str:
     """Only validated structured specs can be turned into an image prompt."""
     validate_spec(report, spec)
-    payload = json.dumps({'report_id': spec['report_id'], 'title': spec.get('title'), 'layout': spec.get('layout'),
-                          'timeline': spec.get('timeline'), 'panels': spec.get('panels')}, ensure_ascii=False, separators=(',', ':'))
+    prompt_payload = {'report_id': spec['report_id'], 'title': spec.get('title'), 'layout': spec.get('layout'),
+                      'timeline': spec.get('timeline'), 'panels': spec.get('panels')}
+    if spec.get('time') == '08:00':
+        prompt_payload['required_source_fact_contract'] = spec['required_source_fact_contract']
+    payload = json.dumps(prompt_payload, ensure_ascii=False, separators=(',', ':'))
     return ('NO decorative charts. NO line charts. NO bar charts. NO pie charts. NO gauges. '
             'NO invented price graphs. NO candlesticks. NO people. Use tables, text panels, arrows, icons and color-coded information blocks. '
             'Use only the exact source-bound values in this validated JSON; do not round, infer, or add data.\n' + payload)

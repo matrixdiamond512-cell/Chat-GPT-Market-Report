@@ -178,6 +178,9 @@ jobs:
           }, ensure_ascii=False))
           PY
 
+      - name: Enforce 08:00 QA before committing repaired publication
+        run: python scripts/check_0800_publication_gate.py --base HEAD
+
       - name: Commit repaired publication files
         shell: bash
         run: |
