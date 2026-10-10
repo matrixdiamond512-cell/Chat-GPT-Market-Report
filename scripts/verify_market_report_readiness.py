@@ -98,6 +98,17 @@ def validate_morning_reference(now: dt.datetime, slot: str, blocking: list[str],
     return reference
 
 
+def report_input_status(report_input: dict[str, Any]) -> str:
+    if not report_input or "expectedCount" not in report_input:
+        return "NOT_YET_GENERATED"
+    markets = report_input.get("markets") or {}
+    if report_input.get("expectedCount") != 28 or len(markets) != 28 or report_input.get("dataComplete") is not True:
+        return "PARTIAL"
+    if any(not isinstance(item, dict) or not is_number(item.get("value")) or item.get("verificationStatus") != "verified" for item in markets.values()):
+        return "PARTIAL"
+    return "COMPLETE"
+
+
 def validate_report_input(now: dt.datetime, slot: str, blocking: list[str], warnings: list[str]) -> dict[str, Any]:
     """Validate the published 28-row close contract separately from live quotes."""
     if slot != "08:00":
@@ -253,7 +264,7 @@ def main() -> int:
         "requiredMarkets": required_ids,
         "morningReferenceRequired": list(MORNING_REFERENCE_REQUIRED) if args.slot == "08:00" else [],
         "morningReferenceDate": morning_reference.get("referenceDate") if morning_reference else None,
-        "reportInputCompleteness": {"status": "CHECKED" if report_input else "NOT_YET_GENERATED", "availableCount": len(report_input.get("markets") or {}) if report_input else None, "expectedCount": report_input.get("expectedCount") if report_input else 28, "dataComplete": report_input.get("dataComplete") if report_input else None, "previousCloseDate": report_input.get("previousCloseDate") if report_input else None},
+        "reportInputCompleteness": {"status": report_input_status(report_input), "availableCount": len(report_input.get("markets") or {}) if report_input else None, "expectedCount": report_input.get("expectedCount") if report_input else 28, "dataComplete": report_input.get("dataComplete") if report_input else None, "previousCloseDate": report_input.get("previousCloseDate") if report_input else None},
         "blockingReasons": blocking,
         "warnings": warnings,
         "closeDataSync": {

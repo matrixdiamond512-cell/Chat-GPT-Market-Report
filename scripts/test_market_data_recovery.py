@@ -60,6 +60,8 @@ class RecoveryTests(unittest.TestCase):
                 blocking = []
                 readiness.validate_report_input(now, "08:00", blocking, [])
         self.assertTrue(any("日本10年国債利回り" in reason for reason in blocking))
+        self.assertEqual(readiness.report_input_status(payload), "PARTIAL")
+        self.assertEqual(readiness.report_input_status({}), "NOT_YET_GENERATED")
 
 
 if __name__ == "__main__":
