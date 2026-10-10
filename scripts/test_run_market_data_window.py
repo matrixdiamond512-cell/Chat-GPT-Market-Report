@@ -14,7 +14,8 @@ class SnapshotCurrentTests(unittest.TestCase):
             "reportSlot": "16:00",
             "overallStatus": "verified",
         }
-        self.assertTrue(snapshot_is_current(payload, "16:00", dt.date(2026, 8, 10)))
+        now = dt.datetime(2026, 8, 10, 19, 50, tzinfo=dt.timezone(dt.timedelta(hours=9)))
+        self.assertTrue(snapshot_is_current(payload, "16:00", dt.date(2026, 8, 10), now=now))
 
     def test_rejects_stale_or_wrong_slot_snapshot(self):
         payload = {
@@ -23,6 +24,16 @@ class SnapshotCurrentTests(unittest.TestCase):
             "overallStatus": "verified",
         }
         self.assertFalse(snapshot_is_current(payload, "16:00", dt.date(2026, 8, 10)))
+
+    def test_rejects_snapshot_older_than_freshness_limit(self):
+        payload = {"generatedAt": "2026-08-10T19:30:00+09:00", "reportSlot": "16:00", "overallStatus": "verified"}
+        now = dt.datetime(2026, 8, 10, 19, 49, tzinfo=dt.timezone(dt.timedelta(hours=9)))
+        self.assertFalse(snapshot_is_current(payload, "16:00", dt.date(2026, 8, 10), now=now))
+
+    def test_accepts_fresh_snapshot_with_explicit_clock(self):
+        payload = {"generatedAt": "2026-08-10T19:40:00+09:00", "reportSlot": "16:00", "overallStatus": "verified"}
+        now = dt.datetime(2026, 8, 10, 19, 49, tzinfo=dt.timezone(dt.timedelta(hours=9)))
+        self.assertTrue(snapshot_is_current(payload, "16:00", dt.date(2026, 8, 10), now=now))
 
     def test_rejects_blocked_snapshot(self):
         payload = {

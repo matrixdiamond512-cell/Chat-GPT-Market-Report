@@ -52,10 +52,17 @@ PRICE_FIELDS: dict[str, tuple[str, str, str]] = {
     "vix": ("VIX終値", "VIX前日比", "VIX騰落率"),
     "nikkei_vi": ("日経VI終値", "日経VI前日比", "日経VI騰落率"),
     "fear_greed": ("FearGreed終値", "FearGreed前日比", ""),
+    "jp10y": ("日本10年債利回り", "", ""),
+    "us10y": ("米10年債利回り", "", ""),
+}
+TECHNICAL_FIELDS = {
+    "nikkei225_dev25": "日経225_25日乖離率",
+    "nikkei225_dev200": "日経225_200日乖離率",
 }
 REQUIRED_CLOSE_HEADERS = tuple(
     [header for fields in PRICE_FIELDS.values() for header in fields if header]
     + ["日経225終値", "米10年債利回り", "日本10年債利回り", "日経225予想EPS", "日経225予想PER"]
+    + list(TECHNICAL_FIELDS.values())
 )
 INPUT_HEADERS = (
     "スナップショットID", "更新日時", "対象レポート時刻", "全体状態", "銘柄ID", "データ名", "利用判定", "現在値",
@@ -184,6 +191,8 @@ def close_value_for_market(market: dict[str, Any], target: dt.date) -> tuple[flo
     if value is None:
         return None, observed.date().isoformat(), "value is not numeric"
     if observed.date() == target:
+        if str(market.get("id") or "") == "nikkei_vi" and observed.time() < dt.time(15, 30):
+            return None, observed.date().isoformat(), "Nikkei VI timestamp is before the Japan cash-session close"
         return value, observed.date().isoformat(), "fallback" if status == "fallback" else ""
     if observed.date() == target + dt.timedelta(days=1) and previous is not None:
         # At 06:30 JST a continuous/overnight quote may already have rolled to
@@ -296,6 +305,59 @@ def normalized_value(value: Any) -> float | str | None:
     return parsed if parsed is not None else (str(value).strip() if value is not None else None)
 
 
+
+def attach_local_confirmed_jp10y(payload: dict[str, Any], target: dt.date) -> bool:
+    """Attach the retained Japanese 10Y yield only when its date matches the row."""
+    path = ROOT / "data" / "rates-bonds.json"
+    try:
+        rate_data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+
+    meta = rate_data.get("meta") or {}
+    if meta.get("status") != "confirmed" or meta.get("isStale") is not False:
+        return False
+    if str(meta.get("asOfDate") or "") != target.isoformat():
+        return False
+    record = next(
+        (
+            item for item in rate_data.get("rates") or []
+            if item.get("name") == "日本10年国債利回り" and item.get("status") == "confirmed"
+        ),
+        None,
+    )
+    if not record or str(record.get("asOf") or "")[:10] != target.isoformat():
+        return False
+    value = number(record.get("value"))
+    if value is None:
+        return False
+
+    change_bp = number(record.get("changeBp"))
+    change = change_bp / 100 if change_bp is not None else None
+    markets = payload.setdefault("markets", {})
+    existing_market = markets.get("jp10y")
+    if isinstance(existing_market, dict) and existing_market.get("verificationStatus") in {"verified", "fallback"}:
+        return False
+    markets["jp10y"] = {
+        "id": "jp10y",
+        "value": value,
+        "previousClose": value - change if change is not None else None,
+        "change": change,
+        "changePercent": None,
+        "asOf": record.get("asOf"),
+        "fetchedAt": meta.get("updatedAt") or rate_data.get("generatedAt"),
+        "verifiedAt": meta.get("updatedAt") or rate_data.get("generatedAt"),
+        "sourceId": "rates_bonds_jp10y",
+        "sourceName": record.get("source") or "rates-bonds.json",
+        "sourceUrl": "data/rates-bonds.json",
+        "marketType": "yield",
+        "session": "daily",
+        "verificationStatus": "verified",
+        "classification": "",
+    }
+    return True
+
+
 def close_row_sync(
     client: SheetsClient,
     payload: dict[str, Any],
@@ -305,6 +367,8 @@ def close_row_sync(
     run_key: str = "manual",
     sleep: Callable[[float], None] = time.sleep,
     verify_import_tabs: bool = True,
+    allow_historical: bool = False,
+    preserve_existing: bool = False,
 ) -> dict[str, Any]:
     summary: dict[str, Any] = {
         "status": "FAILED", "generatedAt": payload.get("generatedAt"), "targetDate": None,
@@ -317,7 +381,9 @@ def close_row_sync(
         now_jst = now.astimezone(JST)
         if payload.get("reportSlot") != "08:00":
             raise CloseSyncError("VALIDATE", "Only the 08:00 morning acquisition can update the prior-close table.")
-        if not generated or generated.date() != now_jst.date() or (now_jst - generated).total_seconds() > 3 * 60 * 60:
+        if not generated or generated > now_jst or (
+            not allow_historical and (generated.date() != now_jst.date() or (now_jst - generated).total_seconds() > 3 * 60 * 60)
+        ):
             raise CloseSyncError("VALIDATE", "Market snapshot is missing, from another JST date, or older than three hours.")
         target = resolve_target_date(payload, now_jst)
         summary["generatedAt"] = generated.isoformat()
@@ -359,13 +425,15 @@ def close_row_sync(
         if not headers or "日付" not in headers:
             raise CloseSyncError("VALIDATE", "終値一覧 header row or 日付 header is missing.")
         header_indices = {name: i for i, name in enumerate(headers) if name}
-        column_values = read_many_columns(client, sheet_name, list({h for trio in PRICE_FIELDS.values() for h in trio if h} | {"日付"}), header_indices)
+        column_values = read_many_columns(client, sheet_name, list({h for trio in PRICE_FIELDS.values() for h in trio if h} | set(REQUIRED_CLOSE_HEADERS) | {"登録日時", "FearGreed判定", "USDJPY価格取得元", "USDJPY価格取得日時", "日付"}), header_indices)
         date_values = column_values.get("日付", [])
         target_row, insert_row = find_target_row(date_values, target)
         duplicate_count = sum(1 for value in date_values[1:] if parse_sheet_date(value) == target)
         if duplicate_count > 1:
             raise CloseSyncError("VALIDATE", f"Duplicate date rows already exist for {target.isoformat()}.")
         inserting = target_row is None
+        if preserve_existing and inserting:
+            raise CloseSyncError("HISTORY_SKIP", f"No existing row for {target.isoformat()}; historical repair only fills existing rows.")
         if inserting:
             target_row = insert_row
 
@@ -379,6 +447,8 @@ def close_row_sync(
         markets = payload.get("markets") or {}
         for symbol, (close_header, change_header, percent_header) in PRICE_FIELDS.items():
             market_value = markets.get(symbol)
+            if symbol == "nikkei225" and not isinstance(market_value, dict):
+                market_value = markets.get("nikkei225_cash")
             market = market_value if isinstance(market_value, dict) else {}
             close_value, source_date, warning = close_value_for_market(market, target)
             if close_value is None:
@@ -448,6 +518,33 @@ def close_row_sync(
             if symbol == "fear_greed" and source_date == target.isoformat() and str(market.get("classification") or "").strip():
                 writes["FearGreed判定"] = str(market.get("classification")).strip()
 
+        # Fill existing moving-average deviation columns only from same-date,
+        # verified technical snapshots. Values in the market layer are percent points;
+        # the legacy cells store fractions with percent number formatting.
+        for symbol, header in TECHNICAL_FIELDS.items():
+            market = markets.get(symbol) or {}
+            value, source_date, warning = close_value_for_market(market, target)
+            existing_values = column_values.get(header, [])
+            existing_value = existing_values[target_row - 1] if not inserting and target_row - 1 < len(existing_values) else ""
+            if value is None:
+                if not str(existing_value or "").strip():
+                    field_warnings.append(f"{symbol}: {warning or 'missing from snapshot'}")
+                continue
+            if source_date != target.isoformat():
+                field_warnings.append(f"{symbol}: technical observation date does not match target")
+                continue
+            # Protect non-empty legacy values: this path repairs gaps, never replaces data.
+            if str(existing_value or "").strip():
+                continue
+            writes[header] = value / 100
+            source_ids.append(str(market.get("sourceId") or symbol))
+            summary["marketData"].append({
+                "symbol": symbol, "sourceId": market.get("sourceId"), "sourceName": market.get("sourceName"),
+                "asOf": market.get("asOf"), "fetchedAt": market.get("fetchedAt"),
+                "verificationStatus": market.get("verificationStatus"), "valueSource": "value",
+                "closeValue": value, "sheetValue": value / 100,
+            })
+
         # Make every required-but-unavailable field explicit. Preserve any
         # existing same-date value when this snapshot lacks a replacement.
         for required_header in REQUIRED_CLOSE_HEADERS:
@@ -461,6 +558,18 @@ def close_row_sync(
             if not str(existing_value or "").strip():
                 writes[required_header] = "取得不能（検証済み取得値がありません）"
 
+        # Historical repair is fill-only: retain every non-empty existing value
+        # unless it is an earlier explicit "取得不能" marker.
+        if preserve_existing and not inserting:
+            for header in list(writes):
+                existing_column = column_values.get(header, [])
+                existing_value = existing_column[target_row - 1] if target_row - 1 < len(existing_column) else ""
+                normalized = normalized_value(existing_value)
+                if preserve_existing and isinstance(writes.get(header), str) and writes[header].startswith("取得不能"):
+                    writes.pop(header)
+                    continue
+                if normalized not in (None, "") and not (isinstance(normalized, str) and normalized.startswith("取得不能")):
+                    writes.pop(header)
         # Existing rows from another trusted updater are retained. Missing
         # new data never overwrites a same-date verified value with a guess.
         registration = now_jst.strftime("%Y/%m/%d %H:%M JST") + f" ({scheduled_time} scheduled)"
@@ -645,32 +754,76 @@ def main() -> int:
     parser.add_argument("--scheduled-time", default=os.environ.get("ACQUISITION_SCHEDULED_TIME", "06:30"))
     parser.add_argument("--run-key", default=os.environ.get("GITHUB_RUN_ID", "manual") + ":" + os.environ.get("GITHUB_RUN_ATTEMPT", "1"))
     parser.add_argument("--skip-import-check", action="store_true", help="Only for local unit/integration tests.")
+    parser.add_argument("--repair-history", action="store_true", help="Fill blank historical close cells from retained verified snapshots, preserving existing values.")
     args = parser.parse_args()
 
     now = dt.datetime.now(JST).replace(microsecond=0)
     summary: dict[str, Any]
     client: SheetsClient | None = None
+    payload: dict[str, Any] = {}
     try:
         payload = json.loads(Path(args.latest).read_text(encoding="utf-8"))
-        spreadsheet_id = os.environ.get("MARKET_DATA_SPREADSHEET_ID", DEFAULT_SPREADSHEET_ID).strip()
+        spreadsheet_id = os.environ.get("MARKET_DATA_SPREADSHEET_ID", "").strip() or DEFAULT_SPREADSHEET_ID
         service_account_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
         if not service_account_json:
-            raise CloseSyncError("VALIDATE", "GOOGLE_SERVICE_ACCOUNT_JSON is required for close-row persistence.")
+            raise CloseSyncError("AUTHENTICATION", "GOOGLE_SERVICE_ACCOUNT_JSON is required for close-row persistence; source acquisition may have succeeded independently.")
         client = SheetsClient(create_authorized_session(load_service_account_info(service_account_json)), spreadsheet_id)
-        summary = close_row_sync(
-            client, payload, now, scheduled_time=args.scheduled_time,
-            run_key=args.run_key, verify_import_tabs=not args.skip_import_check,
-        )
+        if args.repair_history:
+            history_dir = ROOT / "data" / "market" / "history"
+            snapshots = []
+            for history_path in sorted(history_dir.glob("*_08-00.json")):
+                try:
+                    history_payload = json.loads(history_path.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError):
+                    continue
+                generated_at = parse_datetime(history_payload.get("generatedAt"))
+                if generated_at and 0 <= (now - generated_at).days <= MAX_STALE_DAYS:
+                    snapshots.append((history_path.name, history_payload))
+            results = []
+            for history_name, history_payload in snapshots:
+                try:
+                    history_target = resolve_target_date(history_payload, now)
+                    attach_local_confirmed_jp10y(history_payload, history_target)
+                except CloseSyncError:
+                    pass
+                result = close_row_sync(
+                    client, history_payload, now, scheduled_time="08:00",
+                    run_key=f"{args.run_key}:history:{history_name}",
+                    verify_import_tabs=False, allow_historical=True, preserve_existing=True,
+                )
+                result["historyFile"] = history_name
+                results.append(result)
+            attempted = [item for item in results if item.get("failedStage") != "HISTORY_SKIP"]
+            skipped = len(results) - len(attempted)
+            statuses = [item.get("status") for item in attempted]
+            summary = {
+                "status": "SUCCESS" if not attempted or all(value == "SUCCESS" for value in statuses) else "PARTIAL" if all(value in {"SUCCESS", "PARTIAL"} for value in statuses) else "FAILED",
+                "mode": "verified_history_fill_only",
+                "generatedAt": now.isoformat(),
+                "processedSnapshots": len(attempted),
+                "skippedSnapshots": skipped,
+                "results": results,
+                "errors": [error for item in results if item.get("failedStage") != "HISTORY_SKIP" for error in item.get("errors", [])],
+            }
+        else:
+            summary = close_row_sync(
+                client, payload, now, scheduled_time=args.scheduled_time,
+                run_key=args.run_key, verify_import_tabs=not args.skip_import_check,
+            )
     except Exception as exc:
+        stage = getattr(exc, "stage", "CLOSE_DATA_WRITE")
+        upstream = payload if isinstance(payload, dict) else {}
         summary = {
-            "status": "FAILED", "generatedAt": "", "targetDate": None, "row": None,
-            "inserted": False, "failedStage": getattr(exc, "stage", "FETCH"),
-            "stages": {"FETCH": "FAILED", "VALIDATE": "PENDING", "GITHUB_SAVE": "SUCCESS", "SHEETS_IMPORT": "PENDING", "CHATGPT_INPUT": "PENDING", "CLOSE_DATA_WRITE": "PENDING", "READBACK_VERIFY": "PENDING", "LOG": "PENDING"},
-            "missingRequiredFields": list(REQUIRED_CLOSE_HEADERS), "updatedFields": [], "sources": [], "marketData": [], "errors": [str(exc)],
+            "status": "FAILED", "generatedAt": upstream.get("generatedAt", ""), "targetDate": None, "row": None,
+            "inserted": False, "failedStage": stage,
+            "upstreamAcquisitionStatus": upstream.get("overallStatus", "UNKNOWN"),
+            "upstreamMissingRequired": upstream.get("missingRequired", []),
+            "stages": {"FETCH": "SUCCESS" if upstream else "FAILED", "VALIDATE": "NOT_RUN", "GITHUB_SAVE": "SUCCESS", "SHEETS_IMPORT": "NOT_RUN", "CHATGPT_INPUT": "NOT_RUN", "AUTHENTICATION": "FAILED" if stage == "AUTHENTICATION" else "NOT_APPLICABLE", "CLOSE_DATA_WRITE": "BLOCKED", "READBACK_VERIFY": "BLOCKED", "LOG": "PENDING"},
+            "missingRequiredFields": [], "updatedFields": [], "sources": [], "marketData": [], "errors": [str(exc)],
         }
     write_status_file(Path(args.status_output), summary)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
-    return 0 if summary.get("status") == "SUCCESS" else 1
+    return 0 if summary.get("status") in {"SUCCESS", "PARTIAL"} else 1
 
 
 if __name__ == "__main__":

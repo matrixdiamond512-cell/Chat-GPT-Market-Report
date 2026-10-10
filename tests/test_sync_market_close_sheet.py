@@ -166,9 +166,10 @@ def snapshot(target: dt.date, now: dt.datetime, *, missing: str | None = None) -
         if symbol == missing:
             markets[symbol] = {"verificationStatus": "unavailable", "asOf": now.isoformat(), "value": None, "sourceId": symbol}
             continue
+        close_time = dt.time(15, 50) if symbol == "nikkei_vi" else dt.time(15, 0)
         markets[symbol] = {
-            "value": 100.0, "previousClose": 99.0, "change": 1.0,
-            "changePercent": 1.0 / 99 * 100, "asOf": dt.datetime.combine(target, dt.time(15, 0), JST).isoformat(),
+            "id": symbol, "value": 100.0, "previousClose": 99.0, "change": 1.0,
+            "changePercent": 1.0 / 99 * 100, "asOf": dt.datetime.combine(target, close_time, JST).isoformat(),
             "fetchedAt": now.isoformat(), "sourceId": symbol + "_source", "sourceName": symbol + " source",
             "verificationStatus": "verified", "classification": "Neutral",
         }
@@ -260,6 +261,41 @@ class CloseSyncTests(unittest.TestCase):
         self.run_sync(client, payload)
         self.run_sync(client, payload)
         self.assertEqual(sum(close_sync.parse_sheet_date(row[0]) == self.target for row in client.data[1:]), 1)
+
+    def test_10_historical_repair_fills_blanks_and_preserves_existing_values(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        client.data[1][col_number("B")] = 88.0
+        old_generated = dt.datetime(2026, 9, 30, 6, 30, tzinfo=JST)
+        payload = snapshot(self.target, old_generated)
+        with patch.object(close_sync, "REQUIRED_CLOSE_HEADERS", tuple(
+            field for trio in close_sync.PRICE_FIELDS.values() for field in trio if field
+        )):
+            result = close_sync.close_row_sync(
+                client, payload, self.next_day, verify_import_tabs=False,
+                allow_historical=True, preserve_existing=True, sleep=lambda _: None,
+            )
+        self.assertEqual(client.data[1][col_number("B")], 88.0)
+        self.assertEqual(client.data[1][col_number("AC")], 100.0)
+        self.assertEqual(result["row"], 2)
+
+    def test_11_historical_repair_does_not_insert_missing_rows(self):
+        client = FakeSheetsClient(None)
+        payload = snapshot(self.target, dt.datetime(2026, 9, 30, 6, 30, tzinfo=JST))
+        result = close_sync.close_row_sync(
+            client, payload, self.next_day, verify_import_tabs=False,
+            allow_historical=True, preserve_existing=True, sleep=lambda _: None,
+        )
+        self.assertEqual(result["failedStage"], "HISTORY_SKIP")
+        self.assertEqual(len(client.data), 1)
+
+    def test_12_nikkei_vi_before_close_is_not_saved_as_close(self):
+        market = {
+            "id": "nikkei_vi", "verificationStatus": "verified", "value": 28.67,
+            "asOf": "2026-10-09T10:13:00+09:00",
+        }
+        close_value, _, reason = close_sync.close_value_for_market(market, dt.date(2026, 10, 9))
+        self.assertIsNone(close_value)
+        self.assertIn("before the Japan cash-session close", reason)
 
 
 if __name__ == "__main__":

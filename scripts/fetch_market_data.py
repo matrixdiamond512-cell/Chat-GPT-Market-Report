@@ -66,7 +66,7 @@ def append_jsonl(path: Path, data: Any) -> None:
         fh.write("\n")
 
 
-def http_get(url: str, timeout: int = 20, headers: dict[str, str] | None = None) -> tuple[bytes, str]:
+def http_get(url: str, timeout: int = 8, headers: dict[str, str] | None = None) -> tuple[bytes, str]:
     request_headers = {"User-Agent": USER_AGENT}
     request_headers.update(headers or {})
     request = urllib.request.Request(url, headers=request_headers)
@@ -243,7 +243,7 @@ def candidate(
 
 def fetch_yahoo_chart(source: dict[str, Any]) -> dict[str, Any]:
     symbol = source["symbol"]
-    params = urllib.parse.urlencode({"range": "5d", "interval": "1d"})
+    params = urllib.parse.urlencode({"range": source.get("range", "5d"), "interval": source.get("interval", "1d")})
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(symbol, safe='')}?{params}"
     text = http_text(url)
     try:
@@ -278,6 +278,40 @@ def fetch_yahoo_chart(source: dict[str, Any]) -> dict[str, Any]:
         elif len(valid) >= 2:
             previous = valid[-2][1]
     return candidate(source, value, previous_close=previous, as_of=as_of, raw_reference=symbol)
+
+
+def fetch_yahoo_sma_deviation(source: dict[str, Any]) -> dict[str, Any]:
+    """Calculate close-to-SMA deviation from date-stamped Nikkei daily bars."""
+    symbol = source["symbol"]
+    params = urllib.parse.urlencode({"range": source.get("range", "1y"), "interval": "1d"})
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(symbol, safe='')}?{params}"
+    text = http_text(url)
+    try:
+        result = json.loads(text)["chart"]["result"][0]
+        timestamps = result.get("timestamp") or []
+        closes = (((result.get("indicators") or {}).get("quote") or [{}])[0]).get("close") or []
+        bars = [(int(t), safe_float(c)) for t, c in zip(timestamps, closes)]
+        bars = [(t, c) for t, c in bars if c is not None]
+    except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
+        raise FetchError("PARSE_ERROR", f"Yahoo SMA history parse failed for {symbol}") from exc
+    window = int(source.get("window", 0))
+    if window < 2 or len(bars) < window:
+        raise FetchError("INSUFFICIENT_HISTORY", f"{symbol} needs {window} complete daily closes; got {len(bars)}")
+    # Use the latest bar not later than the target date, preventing future-session leakage.
+    target_date = dt.date.fromisoformat(str(source.get("targetDate") or now_jst().date().isoformat()))
+    bars = [(t, c) for t, c in bars if dt.datetime.fromtimestamp(t, UTC).astimezone(JST).date() <= target_date]
+    if len(bars) < window:
+        raise FetchError("INSUFFICIENT_HISTORY", f"{symbol} has fewer than {window} bars on or before {target_date}")
+    tail = bars[-window:]
+    latest_ts, latest_close = tail[-1]
+    mean = sum(c for _, c in tail) / window
+    if mean == 0:
+        raise FetchError("INVALID_VALUE", "moving average is zero")
+    deviation_percent = (latest_close / mean - 1) * 100
+    as_of = parse_epoch(latest_ts)
+    result = candidate(source, deviation_percent, as_of=as_of, raw_reference=f"{symbol} close / SMA{window}")
+    result.update({"movingAverage": mean, "window": window, "close": latest_close})
+    return result
 
 
 def fetch_stooq_quote(source: dict[str, Any]) -> dict[str, Any]:
@@ -509,14 +543,79 @@ def fetch_jpx_html(source: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+
+def fetch_fred_csv(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch a daily FRED series CSV and keep its observation date."""
+    text = http_text(source["url"])
+    reader = csv.DictReader(io.StringIO(text.lstrip("\\ufeff")))
+    date_field = str(source.get("dateField") or "observation_date")
+    value_field = str(source.get("valueField") or source.get("seriesId") or "")
+    observations: list[tuple[str, float]] = []
+    for row in reader:
+        date_value = str(row.get(date_field) or "").strip()
+        value = safe_float(row.get(value_field))
+        if date_value and value is not None and parse_iso(date_value):
+            observations.append((date_value, value))
+    if not observations:
+        raise FetchError("PARSE_ERROR", f"FRED series {value_field} had no numeric observations")
+    observations.sort(key=lambda item: item[0])
+    latest_date, latest_value = observations[-1]
+    previous_value = observations[-2][1] if len(observations) > 1 else None
+    return candidate(
+        source,
+        latest_value,
+        previous_close=previous_value,
+        as_of=latest_date,
+        raw_reference=value_field,
+    )
+
+
+def fetch_local_rates_json(source: dict[str, Any]) -> dict[str, Any]:
+    """Reuse a same-date, confirmed rate from the rates page's generated data."""
+    payload = load_json(ROOT / str(source["path"]), {})
+    meta = payload.get("meta") or {}
+    if meta.get("status") != "confirmed" or meta.get("isStale") is not False:
+        raise FetchError("UNVERIFIED_LOCAL_SOURCE", "rates-bonds JSON is not confirmed and fresh")
+
+    record_name = str(source.get("recordName") or "")
+    record = next(
+        (item for item in payload.get("rates") or [] if item.get("name") == record_name),
+        None,
+    )
+    if not record or record.get("status") != "confirmed":
+        raise FetchError("UNVERIFIED_LOCAL_SOURCE", f"confirmed rate {record_name!r} is unavailable")
+
+    as_of = str(record.get("asOf") or "")
+    if not as_of or as_of[:10] != str(meta.get("asOfDate") or ""):
+        raise FetchError("SOURCE_DATE_MISMATCH", f"{record_name} date does not match rates-bonds asOfDate")
+    value = safe_float(record.get("value"))
+    if value is None:
+        raise FetchError("PARSE_ERROR", f"{record_name} value is not numeric")
+
+    change_bp = safe_float(record.get("changeBp"))
+    change = change_bp / 100 if change_bp is not None else None
+    previous = value - change if change is not None else None
+    return candidate(
+        source,
+        value,
+        previous_close=previous,
+        change=change,
+        as_of=as_of,
+        raw_reference=record_name,
+    )
+
+
 FETCHERS = {
     "yahoo_chart": fetch_yahoo_chart,
+    "yahoo_sma_deviation": fetch_yahoo_sma_deviation,
     "stooq_quote": fetch_stooq_quote,
     "cboe_history_csv": fetch_cboe_history_csv,
     "cnn_fear_greed": fetch_cnn_fear_greed,
     "coinmarketcap_fear_greed": fetch_coinmarketcap_fear_greed,
     "nikkei_profile": fetch_nikkei_profile,
     "jpx_html": fetch_jpx_html,
+    "local_rates_json": fetch_local_rates_json,
+    "fred_csv": fetch_fred_csv,
 }
 
 
@@ -695,7 +794,8 @@ def fetch_symbol(
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     errors: list[dict[str, Any]] = []
     valid_candidates: list[dict[str, Any]] = []
-    for source in sorted(symbol_config.get("sources", []), key=lambda item: item.get("priority", 99)):
+    ordered_sources = sorted(symbol_config.get("sources", []), key=lambda item: item.get("priority", 99))
+    for source_index, source in enumerate(ordered_sources):
         if source.get("referenceOnly") and not validation.get("allowReferenceOnly", False):
             errors.append(
                 {
@@ -718,7 +818,10 @@ def fetch_symbol(
             )
             continue
 
-        for attempt in range(retries):
+        source_retry_limit = min(max(retries, 1), int(source.get("maxRetries", 2)))
+        if valid_candidates:
+            source_retry_limit = 1
+        for attempt in range(source_retry_limit):
             try:
                 raw = fetcher(source)
                 raw["referenceOnly"] = source.get("referenceOnly", False)
@@ -757,7 +860,7 @@ def fetch_symbol(
                         "attempt": attempt + 1,
                     }
                 )
-                if attempt + 1 < retries:
+                if attempt + 1 < source_retry_limit:
                     time.sleep(0.6 * (2**attempt))
             except Exception as exc:  # Keep one symbol from breaking every other symbol.
                 errors.append(
@@ -769,6 +872,21 @@ def fetch_symbol(
                         "attempt": attempt + 1,
                     }
                 )
+                break
+
+        if valid_candidates:
+            primary_candidate = valid_candidates[0]
+            comparison_required = bool(
+                validation.get("requireSourceCrossCheck", False)
+                or validation.get("maxSourceDivergencePercent") is not None
+            )
+            next_comparable = any(
+                item.get("marketType", symbol_config.get("marketType")) == primary_candidate.get("marketType")
+                and item.get("session", symbol_config.get("session")) == primary_candidate.get("session")
+                for item in ordered_sources[source_index + 1:]
+                if not item.get("referenceOnly")
+            )
+            if not comparison_required or not next_comparable:
                 break
 
     if not valid_candidates:

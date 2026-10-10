@@ -22,6 +22,11 @@ DEFAULT_INPUT_SHEET = "ChatGPT_Market_Input"
 DEFAULT_HISTORY_SHEET = "Market_Data_Verified"
 DEFAULT_RULES_SHEET = "ChatGPT_Market_Rules"
 MARKET_ORDER = [
+    "dow",
+    "nasdaq",
+    "sp500",
+    "russell2000",
+    "nikkei225_cash",
     "gold",
     "wti",
     "nikkei225_futures_ose",
@@ -32,6 +37,8 @@ MARKET_ORDER = [
     "nikkei_vi",
     "fear_greed",
     "crypto_fear_greed",
+    "jp10y",
+    "us10y",
 ]
 
 SHEET_HEADERS = [

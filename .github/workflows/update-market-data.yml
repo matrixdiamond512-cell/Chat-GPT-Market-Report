@@ -19,6 +19,12 @@ on:
         options:
           - auto
           - full
+          - validate-only
+      source_automation_rights_confirmed:
+        description: "Confirm that automated collection is permitted for every provider this run will contact"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -58,10 +64,15 @@ jobs:
         shell: bash
         run: |
           MODE="auto"
-          if [ "${{ inputs.acquisition_mode }}" = "full" ]; then
+          if [ "${{ inputs.acquisition_mode }}" = "full" ] || [ "${{ inputs.acquisition_mode }}" = "validate-only" ]; then
             MODE="full"
           fi
           echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          if [ "${{ inputs.acquisition_mode }}" = "validate-only" ]; then
+            echo "summary_flag=" >> "$GITHUB_OUTPUT"
+          else
+            echo "summary_flag=--print-summary" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Check acquisition scripts
         run: |
@@ -71,12 +82,21 @@ jobs:
           python -m py_compile scripts/resolve_market_report_slot.py
           python -m py_compile scripts/verify_market_report_readiness.py
 
+      - name: Require source-rights confirmation before collect-only network requests
+        if: inputs.acquisition_mode == 'validate-only'
+        shell: bash
+        run: |
+          if [ "${{ inputs.source_automation_rights_confirmed }}" != "true" ]; then
+            echo "::error::Collection not attempted. Confirm automated access rights for every configured provider before rerunning validate-only."
+            exit 78
+          fi
+
       - name: Fetch, retry, and preserve best verified market data
         run: |
           python scripts/run_market_data_acquisition.py \
             --slot "${{ steps.slot.outputs.slot }}" \
             --mode "${{ steps.acquisition.outputs.mode }}" \
-            --print-summary
+            ${{ steps.acquisition.outputs.summary_flag }}
 
       - name: Validate generated acquisition JSON
         run: |
@@ -84,13 +104,41 @@ jobs:
           python -m json.tool data/market/last_verified.json > /dev/null
           python -m json.tool data/market/acquisition_status.json > /dev/null
 
+      - name: Report collect-only acquisition results (no values or artifacts)
+        if: inputs.acquisition_mode == 'validate-only'
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          config = json.loads(Path('config/market_data_sources.json').read_text(encoding='utf-8'))
+          payload = json.loads(Path('data/market/latest.json').read_text(encoding='utf-8'))
+          markets = payload.get('markets') or {}
+          rows = []
+          for symbol_id, definition in config.get('symbols', {}).items():
+              if not definition.get('required', True):
+                  continue
+              item = markets.get(symbol_id) or {}
+              rows.append({
+                  'id': symbol_id,
+                  'route': bool(definition.get('sources')),
+                  'status': item.get('verificationStatus', 'missing'),
+                  'asOf': item.get('asOf'),
+                  'source': item.get('sourceId') or item.get('sourceName'),
+                  'errorCode': item.get('errorCode') or item.get('lastErrorCode'),
+              })
+          print(json.dumps({'overallStatus': payload.get('overallStatus'), 'items': rows}, ensure_ascii=False))
+          PY
+
       - name: Build ChatGPT and Google Sheets CSV exports
+        if: inputs.acquisition_mode != 'validate-only'
         run: python scripts/build_market_sheet_exports.py
 
       - name: Merge market data into dashboard JSON
+        if: inputs.acquisition_mode != 'validate-only'
         run: python scripts/build_market_json.py --market-data data/market/latest.json --dashboard data/dashboard.json
 
       - name: Validate output files
+        if: inputs.acquisition_mode != 'validate-only'
         run: |
           python -m json.tool data/market/latest.json > /dev/null
           python -m json.tool data/market/last_verified.json > /dev/null
@@ -100,6 +148,7 @@ jobs:
           test -s data/market/verified_history.csv
 
       - name: Read acquisition status
+        if: inputs.acquisition_mode != 'validate-only'
         id: market_status
         shell: bash
         run: |
@@ -107,6 +156,7 @@ jobs:
           echo "overall_status=$STATUS" >> "$GITHUB_OUTPUT"
 
       - name: Commit staged market data
+        if: inputs.acquisition_mode != 'validate-only'
         shell: bash
         run: |
           if git diff --quiet -- data/market data/dashboard.json; then
@@ -122,8 +172,8 @@ jobs:
           git push
 
       - name: Sync staged data to Google Sheets and record result
+        if: always() && inputs.acquisition_mode != 'validate-only'
         id: sheets_sync
-        if: always()
         continue-on-error: true
         env:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
@@ -174,7 +224,7 @@ jobs:
           exit "$CODE"
 
       - name: Commit Google Sheets sync status
-        if: always()
+        if: always() && inputs.acquisition_mode != 'validate-only'
         shell: bash
         run: |
           if [ ! -f data/market/sheets_sync_status.json ]; then
@@ -194,7 +244,7 @@ jobs:
           git push
 
       - name: Fail when configured Google Sheets sync failed
-        if: always()
+        if: always() && inputs.acquisition_mode != 'validate-only'
         run: |
           python - <<'PYCODE'
           import json
