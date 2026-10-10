@@ -61,6 +61,45 @@ class RecoveryTests(unittest.TestCase):
         ose = "大証ラージ 26年9月限 45,000 +100 44,900 45,100 44,800 1,000 15:30 大証ラージ 26年12月限 46,000 +200 45,800 46,200 45,700 1,000 16:00"
         self.assertEqual(morning.parse_ose(ose, dt.date(2026, 10, 11))["contractMonth"], "2026-12")
 
+    def test_yahoo_sma_deviation_requires_window_and_normalizes_percent_points(self):
+        import json
+        stamps = [int(dt.datetime(2026, 10, 7, tzinfo=dt.timezone.utc).timestamp()) + i * 86400 for i in range(3)]
+        payload = {"chart": {"result": [{
+            "timestamp": stamps,
+            "indicators": {"quote": [{"close": [100, 110, 120]}]},
+        }]}}
+        with patch.object(fetch, "http_text", return_value=json.dumps(payload)):
+            result = fetch.fetch_yahoo_sma_deviation({
+                "id": "test-sma", "name": "test", "symbol": "^N225", "window": 2,
+                "marketType": "technical", "session": "daily",
+            })
+        self.assertAlmostEqual(result["value"], (120 / 115 - 1) * 100)
+        self.assertEqual(result["window"], 2)
+        self.assertAlmostEqual(result["movingAverage"], 115)
+
+    def test_morning_recovery_only_uses_verified_same_date_market(self):
+        import json
+        import tempfile
+        from scripts import build_chatgpt_report_input as report_input
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "latest.json"
+            path.write_text(json.dumps({"markets": {"nikkei225_dev25": {
+                "verificationStatus": "verified", "asOf": "2026-10-09T15:00:00+09:00",
+                "value": 4.23, "sourceId": "sma25", "sourceName": "test source",
+            }}}), encoding="utf-8")
+            with patch.object(report_input, "RAW_MARKET", path):
+                recovered = report_input.recovered_row("nikkei225_dev25", "25-day deviation", "2026-10-09")
+                rejected = report_input.recovered_row("nikkei225_dev25", "25-day deviation", "2026-10-08")
+        self.assertEqual(recovered["value"], "+4.23%")
+        self.assertEqual(recovered["dataDate"], "2026-10-09")
+        self.assertIsNone(rejected)
+
+    def test_deviation_sheet_routes_use_existing_columns(self):
+        from scripts import sync_market_close_sheet as close_sync
+        self.assertEqual(close_sync.TECHNICAL_FIELDS["nikkei225_dev25"], "日経225_25日乖離率")
+        self.assertEqual(close_sync.TECHNICAL_FIELDS["nikkei225_dev200"], "日経225_200日乖離率")
+        self.assertIn("日経225_25日乖離率", close_sync.REQUIRED_CLOSE_HEADERS)
+
     def test_validated_primary_does_not_wait_for_fallback(self):
         calls = []
         config = {"sources": [{"id": "primary", "kind": "test", "priority": 1},
