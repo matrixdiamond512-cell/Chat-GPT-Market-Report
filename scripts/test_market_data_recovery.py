@@ -21,14 +21,44 @@ class RecoveryTests(unittest.TestCase):
         self.assertTrue(expected.issubset(set(sheet_contract.MARKET_ORDER)))
 
 
-    def test_front_contract_follows_quarterly_roll(self):
-        self.assertEqual(morning.front_quarter_contract(dt.date(2026, 9, 10), 3), (26, 9))
-        self.assertEqual(morning.front_quarter_contract(dt.date(2026, 10, 11), 3), (26, 12))
-        cme = "CME￥ 26年09月限 45,000 +100 44,900 45,100 44,800 15:30 CME￥ 26年12月限 46,000 +200 45,800 46,200 45,700 16:00"
+    def test_cme_lead_month_comes_from_live_vendor_listing(self):
+        stamp = int(dt.datetime(2026, 10, 9, 17, tzinfo=dt.timezone.utc).timestamp())
+        payload = {
+            "chart": {"result": [{
+                "meta": {"longName": "Nikkei/Yen Futures, Dec-2026"},
+                "timestamp": [stamp - 86400, stamp],
+                "indicators": {"quote": [{"close": [69000, 69085]}]},
+            }]}
+        }
+        yen = morning.parse_cme(payload, "yen", dt.date(2026, 10, 11))
+        self.assertEqual(yen["contractMonth"], "2026-12")
+        self.assertEqual(yen["vendorSymbol"], "NIY=F")
+        self.assertEqual(yen["value"], "69,085")
+        dollar_payload = {
+            "chart": {"result": [{
+                "meta": {"shortName": "Nikkei/USD Futures, Dec-2026"},
+                "timestamp": [stamp - 86400, stamp],
+                "indicators": {"quote": [{"close": [68900, 69120]}]},
+            }]}
+        }
+        dollar = morning.parse_cme(dollar_payload, "dollar", dt.date(2026, 10, 11))
+        self.assertEqual(dollar["contractMonth"], "2026-12")
+        self.assertEqual(dollar["vendorSymbol"], "NKD=F")
+
+    def test_cme_does_not_infer_expiry_or_accept_future_dated_bar(self):
+        stamp = int(dt.datetime(2026, 10, 12, 17, tzinfo=dt.timezone.utc).timestamp())
+        payload = {"chart": {"result": [{
+            "meta": {"longName": "Nikkei/Yen Futures"},
+            "timestamp": [stamp],
+            "indicators": {"quote": [{"close": [69085]}]},
+        }]}}
+        self.assertIsNone(morning.parse_cme(payload, "yen", dt.date(2026, 10, 11)))
+        payload["chart"]["result"][0]["meta"]["longName"] = "Nikkei/Yen Futures, Dec-2026"
+        self.assertIsNone(morning.parse_cme(payload, "yen", dt.date(2026, 10, 11)))
+
+    def test_ose_quarter_selection_keeps_second_friday_rule(self):
+        self.assertEqual(morning.front_quarter_contract(dt.date(2026, 10, 11), 2), (26, 12))
         ose = "大証ラージ 26年9月限 45,000 +100 44,900 45,100 44,800 1,000 15:30 大証ラージ 26年12月限 46,000 +200 45,800 46,200 45,700 1,000 16:00"
-        self.assertEqual(morning.parse_cme(cme, "yen", dt.date(2026, 10, 11))["contractMonth"], "2026-12")
-        self.assertEqual(morning.parse_cme(cme, "yen", dt.date(2026, 9, 10))["contractMonth"], "2026-09")
-        self.assertEqual(morning.parse_cme(cme, "yen", dt.date(2026, 10, 11))["contractMonth"], "2026-12")
         self.assertEqual(morning.parse_ose(ose, dt.date(2026, 10, 11))["contractMonth"], "2026-12")
 
     def test_validated_primary_does_not_wait_for_fallback(self):
