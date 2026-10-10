@@ -20,6 +20,11 @@ on:
           - auto
           - full
           - validate-only
+      source_automation_rights_confirmed:
+        description: "Confirm that automated collection is permitted for every provider this run will contact"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -76,6 +81,15 @@ jobs:
           python -m py_compile scripts/run_market_data_window.py
           python -m py_compile scripts/resolve_market_report_slot.py
           python -m py_compile scripts/verify_market_report_readiness.py
+
+      - name: Require source-rights confirmation before collect-only network requests
+        if: inputs.acquisition_mode == 'validate-only'
+        shell: bash
+        run: |
+          if [ "${{ inputs.source_automation_rights_confirmed }}" != "true" ]; then
+            echo "::error::Collection not attempted. Confirm automated access rights for every configured provider before rerunning validate-only."
+            exit 78
+          fi
 
       - name: Fetch, retry, and preserve best verified market data
         run: |
