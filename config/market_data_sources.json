@@ -448,6 +448,52 @@
           "maxRetries": 2
         }
       ]
+    },
+    "nikkei225_dev25": {
+      "displayName": "日経225 25日移動平均乖離率",
+      "dashboardKey": "nikkei225_dev25",
+      "unit": "%",
+      "marketType": "technical",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_nikkei225_dev25",
+          "name": "Yahoo Finance Nikkei 225 SMA25 deviation",
+          "kind": "yahoo_sma_deviation",
+          "symbol": "^N225",
+          "range": "1y",
+          "window": 25,
+          "priority": 1,
+          "marketType": "technical",
+          "session": "daily",
+          "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
+          "note": "Derived from official close bars on or before the latest completed JST session; route is a technical calculation, not an index level."
+        }
+      ]
+    },
+    "nikkei225_dev200": {
+      "displayName": "日経225 200日移動平均乖離率",
+      "dashboardKey": "nikkei225_dev200",
+      "unit": "%",
+      "marketType": "technical",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_nikkei225_dev200",
+          "name": "Yahoo Finance Nikkei 225 SMA200 deviation",
+          "kind": "yahoo_sma_deviation",
+          "symbol": "^N225",
+          "range": "1y",
+          "window": 200,
+          "priority": 1,
+          "marketType": "technical",
+          "session": "daily",
+          "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
+          "note": "Derived from official close bars on or before the latest completed JST session; route is a technical calculation, not an index level."
+        }
+      ]
     }
   }
 }
