@@ -158,9 +158,8 @@ jobs:
           git push
 
       - name: Sync staged data to Google Sheets and record result
-        if: inputs.acquisition_mode != 'validate-only'
+        if: always() && inputs.acquisition_mode != 'validate-only'
         id: sheets_sync
-        if: always()
         continue-on-error: true
         env:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
@@ -211,8 +210,7 @@ jobs:
           exit "$CODE"
 
       - name: Commit Google Sheets sync status
-        if: inputs.acquisition_mode != 'validate-only'
-        if: always()
+        if: always() && inputs.acquisition_mode != 'validate-only'
         shell: bash
         run: |
           if [ ! -f data/market/sheets_sync_status.json ]; then
@@ -232,8 +230,7 @@ jobs:
           git push
 
       - name: Fail when configured Google Sheets sync failed
-        if: inputs.acquisition_mode != 'validate-only'
-        if: always()
+        if: always() && inputs.acquisition_mode != 'validate-only'
         run: |
           python - <<'PYCODE'
           import json
