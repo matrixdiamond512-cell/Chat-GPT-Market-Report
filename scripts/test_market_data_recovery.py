@@ -6,9 +6,21 @@ from unittest.mock import patch
 from scripts import fetch_morning_reference as morning
 from scripts import fetch_market_data as fetch
 from scripts import verify_market_report_readiness as readiness
+from scripts import write_market_data_to_sheets as sheet_contract
+from scripts import fetch_market_data
 
 
 class RecoveryTests(unittest.TestCase):
+    def test_major_report_indices_are_required_and_exported(self):
+        import json
+        config = json.loads((fetch_market_data.ROOT / "config" / "market_data_sources.json").read_text(encoding="utf-8"))
+        expected = {"dow", "nasdaq", "sp500", "russell2000", "nikkei225_cash"}
+        symbols = config["symbols"]
+        self.assertTrue(expected.issubset(symbols))
+        self.assertTrue(all(symbols[key]["required"] for key in expected))
+        self.assertTrue(expected.issubset(set(sheet_contract.MARKET_ORDER)))
+
+
     def test_front_contract_follows_quarterly_roll(self):
         self.assertEqual(morning.front_quarter_contract(dt.date(2026, 9, 10), 3), (26, 9))
         self.assertEqual(morning.front_quarter_contract(dt.date(2026, 10, 11), 3), (26, 12))

@@ -7,6 +7,111 @@
     "Free sources are used first. Each value must keep source id, source url, market type, session, unit, and verification status."
   ],
   "symbols": {
+    "dow": {
+      "displayName": "NYダウ",
+      "dashboardKey": "dow",
+      "unit": "pt",
+      "marketType": "index",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_dow",
+          "name": "Yahoo Finance Dow Jones Industrial Average",
+          "kind": "yahoo_chart",
+          "symbol": "^DJI",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EDJI",
+          "sourceUrl": "https://finance.yahoo.com/quote/%5EDJI/",
+          "priority": 1,
+          "marketType": "index",
+          "session": "daily"
+        }
+      ]
+    },
+    "nasdaq": {
+      "displayName": "NASDAQ総合",
+      "dashboardKey": "nasdaq",
+      "unit": "pt",
+      "marketType": "index",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_nasdaq_comp",
+          "name": "Yahoo Finance NASDAQ Composite",
+          "kind": "yahoo_chart",
+          "symbol": "^IXIC",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EIXIC",
+          "sourceUrl": "https://finance.yahoo.com/quote/%5EIXIC/",
+          "priority": 1,
+          "marketType": "index",
+          "session": "daily"
+        }
+      ]
+    },
+    "sp500": {
+      "displayName": "S&P500",
+      "dashboardKey": "sp500",
+      "unit": "pt",
+      "marketType": "index",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_sp500",
+          "name": "Yahoo Finance S&P 500",
+          "kind": "yahoo_chart",
+          "symbol": "^GSPC",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC",
+          "sourceUrl": "https://finance.yahoo.com/quote/%5EGSPC/",
+          "priority": 1,
+          "marketType": "index",
+          "session": "daily"
+        }
+      ]
+    },
+    "russell2000": {
+      "displayName": "Russell 2000",
+      "dashboardKey": "russell2000",
+      "unit": "pt",
+      "marketType": "index",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_russell2000",
+          "name": "Yahoo Finance Russell 2000",
+          "kind": "yahoo_chart",
+          "symbol": "^RUT",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5ERUT",
+          "sourceUrl": "https://finance.yahoo.com/quote/%5ERUT/",
+          "priority": 1,
+          "marketType": "index",
+          "session": "daily"
+        }
+      ]
+    },
+    "nikkei225_cash": {
+      "displayName": "日経225現物",
+      "dashboardKey": "nikkei_cash",
+      "unit": "円",
+      "marketType": "index",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_nikkei225_cash",
+          "name": "Yahoo Finance Nikkei 225",
+          "kind": "yahoo_chart",
+          "symbol": "^N225",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EN225",
+          "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/",
+          "priority": 1,
+          "marketType": "index",
+          "session": "daily"
+        }
+      ]
+    },
     "gold": {
       "displayName": "金",
       "dashboardKey": "gold",

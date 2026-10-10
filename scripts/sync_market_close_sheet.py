@@ -387,6 +387,8 @@ def close_row_sync(
         markets = payload.get("markets") or {}
         for symbol, (close_header, change_header, percent_header) in PRICE_FIELDS.items():
             market_value = markets.get(symbol)
+            if symbol == "nikkei225" and not isinstance(market_value, dict):
+                market_value = markets.get("nikkei225_cash")
             market = market_value if isinstance(market_value, dict) else {}
             close_value, source_date, warning = close_value_for_market(market, target)
             if close_value is None:
