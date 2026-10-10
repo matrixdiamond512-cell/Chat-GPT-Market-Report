@@ -55,9 +55,14 @@ PRICE_FIELDS: dict[str, tuple[str, str, str]] = {
     "jp10y": ("日本10年債利回り", "", ""),
     "us10y": ("米10年債利回り", "", ""),
 }
+TECHNICAL_FIELDS = {
+    "nikkei225_dev25": "日経225_25日乖離率",
+    "nikkei225_dev200": "日経225_200日乖離率",
+}
 REQUIRED_CLOSE_HEADERS = tuple(
     [header for fields in PRICE_FIELDS.values() for header in fields if header]
     + ["日経225終値", "米10年債利回り", "日本10年債利回り", "日経225予想EPS", "日経225予想PER"]
+    + list(TECHNICAL_FIELDS.values())
 )
 INPUT_HEADERS = (
     "スナップショットID", "更新日時", "対象レポート時刻", "全体状態", "銘柄ID", "データ名", "利用判定", "現在値",
@@ -512,6 +517,33 @@ def close_row_sync(
                         writes[percent_header] = f"取得不能（{warning or '騰落率を検証できません'}）"
             if symbol == "fear_greed" and source_date == target.isoformat() and str(market.get("classification") or "").strip():
                 writes["FearGreed判定"] = str(market.get("classification")).strip()
+
+        # Fill existing moving-average deviation columns only from same-date,
+        # verified technical snapshots. Values in the market layer are percent points;
+        # the legacy cells store fractions with percent number formatting.
+        for symbol, header in TECHNICAL_FIELDS.items():
+            market = markets.get(symbol) or {}
+            value, source_date, warning = close_value_for_market(market, target)
+            existing_values = column_values.get(header, [])
+            existing_value = existing_values[target_row - 1] if not inserting and target_row - 1 < len(existing_values) else ""
+            if value is None:
+                if not str(existing_value or "").strip():
+                    field_warnings.append(f"{symbol}: {warning or 'missing from snapshot'}")
+                continue
+            if source_date != target.isoformat():
+                field_warnings.append(f"{symbol}: technical observation date does not match target")
+                continue
+            # Protect non-empty legacy values: this path repairs gaps, never replaces data.
+            if str(existing_value or "").strip():
+                continue
+            writes[header] = value / 100
+            source_ids.append(str(market.get("sourceId") or symbol))
+            summary["marketData"].append({
+                "symbol": symbol, "sourceId": market.get("sourceId"), "sourceName": market.get("sourceName"),
+                "asOf": market.get("asOf"), "fetchedAt": market.get("fetchedAt"),
+                "verificationStatus": market.get("verificationStatus"), "valueSource": "value",
+                "closeValue": value, "sheetValue": value / 100,
+            })
 
         # Make every required-but-unavailable field explicit. Preserve any
         # existing same-date value when this snapshot lacks a replacement.
