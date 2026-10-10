@@ -151,5 +151,38 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual(payload["markets"]["jp10y"]["asOf"], "2026-10-09")
 
 
+    def test_fred_csv_parses_latest_daily_yield_and_previous_close(self):
+        csv_text = "observation_date,DGS10\n2026-10-08,5.27\n2026-10-09,5.26\n"
+        source = {
+            "id": "fred_dgs10", "name": "FRED DGS10",
+            "url": "https://example.test/DGS10.csv", "sourceUrl": "https://fred.stlouisfed.org/series/DGS10",
+            "seriesId": "DGS10", "dateField": "observation_date", "valueField": "DGS10",
+            "marketType": "yield", "session": "daily",
+        }
+        with patch.object(fetch, "http_text", return_value=csv_text):
+            result = fetch.fetch_fred_csv(source)
+        self.assertEqual(result["value"], 5.26)
+        self.assertEqual(result["previousClose"], 5.27)
+        self.assertEqual(result["asOf"], "2026-10-09")
+
+    def test_fred_csv_ignores_missing_observations_and_rejects_empty_series(self):
+        source = {
+            "id": "fred_dgs10", "name": "FRED DGS10",
+            "url": "https://example.test/DGS10.csv", "seriesId": "DGS10",
+            "marketType": "yield", "session": "daily",
+        }
+        with patch.object(fetch, "http_text", return_value="observation_date,DGS10\n2026-10-09,.\n"):
+            with self.assertRaises(fetch.FetchError):
+                fetch.fetch_fred_csv(source)
+
+    def test_us10y_maps_to_existing_close_header(self):
+        import json
+        from scripts import sync_market_close_sheet as close_sync
+        config = json.loads((fetch.ROOT / "config" / "market_data_sources.json").read_text(encoding="utf-8"))
+        self.assertEqual(config["symbols"]["us10y"]["sources"][0]["seriesId"], "DGS10")
+        self.assertEqual(close_sync.PRICE_FIELDS["us10y"], ("米10年債利回り", "", ""))
+        self.assertIn("us10y", sheet_contract.MARKET_ORDER)
+
+
 if __name__ == "__main__":
     unittest.main()

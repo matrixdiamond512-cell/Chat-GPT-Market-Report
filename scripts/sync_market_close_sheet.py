@@ -53,6 +53,7 @@ PRICE_FIELDS: dict[str, tuple[str, str, str]] = {
     "nikkei_vi": ("日経VI終値", "日経VI前日比", "日経VI騰落率"),
     "fear_greed": ("FearGreed終値", "FearGreed前日比", ""),
     "jp10y": ("日本10年債利回り", "", ""),
+    "us10y": ("米10年債利回り", "", ""),
 }
 REQUIRED_CLOSE_HEADERS = tuple(
     [header for fields in PRICE_FIELDS.values() for header in fields if header]

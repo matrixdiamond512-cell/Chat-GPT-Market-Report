@@ -509,6 +509,33 @@ def fetch_jpx_html(source: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+
+def fetch_fred_csv(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch a daily FRED series CSV and keep its observation date."""
+    text = http_text(source["url"])
+    reader = csv.DictReader(io.StringIO(text.lstrip("\\ufeff")))
+    date_field = str(source.get("dateField") or "observation_date")
+    value_field = str(source.get("valueField") or source.get("seriesId") or "")
+    observations: list[tuple[str, float]] = []
+    for row in reader:
+        date_value = str(row.get(date_field) or "").strip()
+        value = safe_float(row.get(value_field))
+        if date_value and value is not None and parse_iso(date_value):
+            observations.append((date_value, value))
+    if not observations:
+        raise FetchError("PARSE_ERROR", f"FRED series {value_field} had no numeric observations")
+    observations.sort(key=lambda item: item[0])
+    latest_date, latest_value = observations[-1]
+    previous_value = observations[-2][1] if len(observations) > 1 else None
+    return candidate(
+        source,
+        latest_value,
+        previous_close=previous_value,
+        as_of=latest_date,
+        raw_reference=value_field,
+    )
+
+
 def fetch_local_rates_json(source: dict[str, Any]) -> dict[str, Any]:
     """Reuse a same-date, confirmed rate from the rates page's generated data."""
     payload = load_json(ROOT / str(source["path"]), {})
@@ -553,6 +580,7 @@ FETCHERS = {
     "nikkei_profile": fetch_nikkei_profile,
     "jpx_html": fetch_jpx_html,
     "local_rates_json": fetch_local_rates_json,
+    "fred_csv": fetch_fred_csv,
 }
 
 

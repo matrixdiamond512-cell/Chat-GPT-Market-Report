@@ -34,3 +34,5 @@
 
 
 - 2026-10-11 market-data completeness ADD: Read the existing confirmed, non-stale rates-bonds artifact for JP10Y only when its record asOf and document asOfDate both match the target close date. Do not reuse the US10Y record for the 2026-10-09 close because its item date is 2026-10-07 despite the parent artifact date being 2026-10-09. Historical repair is fill-only and only injects this same-date confirmed record; never replace a populated sheet value. Sheets readback remains required after credentials become available.
+
+- 2026-10-11: Add Federal Reserve H.15 / FRED DGS10 as a daily CSV yield source. Preserve the observation date and map it to the existing 米10年債利回り field only on exact close-date match. The parser is fixture-tested; a live CSV request is not part of the evidence because the available web reader does not accept CSV MIME and workflow credentials/network execution are unavailable in this task environment.

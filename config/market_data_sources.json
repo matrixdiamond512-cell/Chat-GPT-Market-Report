@@ -424,6 +424,30 @@
           "maxRetries": 1
         }
       ]
+    },
+    "us10y": {
+      "displayName": "米10年債利回り",
+      "dashboardKey": "us10y",
+      "unit": "%",
+      "marketType": "yield",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "fred_dgs10",
+          "name": "Federal Reserve H.15 / FRED DGS10",
+          "kind": "fred_csv",
+          "seriesId": "DGS10",
+          "dateField": "observation_date",
+          "valueField": "DGS10",
+          "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS10",
+          "sourceUrl": "https://fred.stlouisfed.org/series/DGS10",
+          "marketType": "yield",
+          "session": "daily",
+          "priority": 1,
+          "maxRetries": 2
+        }
+      ]
     }
   }
 }
