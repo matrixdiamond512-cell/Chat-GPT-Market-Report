@@ -14,7 +14,8 @@ class SnapshotCurrentTests(unittest.TestCase):
             "reportSlot": "16:00",
             "overallStatus": "verified",
         }
-        self.assertTrue(snapshot_is_current(payload, "16:00", dt.date(2026, 8, 10)))
+        now = dt.datetime(2026, 8, 10, 19, 50, tzinfo=dt.timezone(dt.timedelta(hours=9)))
+        self.assertTrue(snapshot_is_current(payload, "16:00", dt.date(2026, 8, 10), now=now))
 
     def test_rejects_stale_or_wrong_slot_snapshot(self):
         payload = {

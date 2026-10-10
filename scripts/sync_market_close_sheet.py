@@ -671,6 +671,7 @@ def main() -> int:
     now = dt.datetime.now(JST).replace(microsecond=0)
     summary: dict[str, Any]
     client: SheetsClient | None = None
+    payload: dict[str, Any] = {}
     try:
         payload = json.loads(Path(args.latest).read_text(encoding="utf-8"))
         spreadsheet_id = os.environ.get("MARKET_DATA_SPREADSHEET_ID", DEFAULT_SPREADSHEET_ID).strip()
@@ -702,7 +703,7 @@ def main() -> int:
             skipped = len(results) - len(attempted)
             statuses = [item.get("status") for item in attempted]
             summary = {
-                "status": "SUCCESS" if attempted and all(value == "SUCCESS" for value in statuses) else "PARTIAL" if attempted and all(value in {"SUCCESS", "PARTIAL"} for value in statuses) else "FAILED",
+                "status": "SUCCESS" if not attempted or all(value == "SUCCESS" for value in statuses) else "PARTIAL" if all(value in {"SUCCESS", "PARTIAL"} for value in statuses) else "FAILED",
                 "mode": "verified_history_fill_only",
                 "generatedAt": now.isoformat(),
                 "processedSnapshots": len(attempted),
@@ -717,10 +718,13 @@ def main() -> int:
             )
     except Exception as exc:
         stage = getattr(exc, "stage", "CLOSE_DATA_WRITE")
+        upstream = payload if isinstance(payload, dict) else {}
         summary = {
-            "status": "FAILED", "generatedAt": "", "targetDate": None, "row": None,
+            "status": "FAILED", "generatedAt": upstream.get("generatedAt", ""), "targetDate": None, "row": None,
             "inserted": False, "failedStage": stage,
-            "stages": {"FETCH": "UNKNOWN", "VALIDATE": "UNKNOWN", "GITHUB_SAVE": "SUCCESS", "SHEETS_IMPORT": "UNKNOWN", "CHATGPT_INPUT": "UNKNOWN", "AUTHENTICATION": "FAILED" if stage == "AUTHENTICATION" else "NOT_APPLICABLE", "CLOSE_DATA_WRITE": "BLOCKED", "READBACK_VERIFY": "BLOCKED", "LOG": "PENDING"},
+            "upstreamAcquisitionStatus": upstream.get("overallStatus", "UNKNOWN"),
+            "upstreamMissingRequired": upstream.get("missingRequired", []),
+            "stages": {"FETCH": "SUCCESS" if upstream else "FAILED", "VALIDATE": "NOT_RUN", "GITHUB_SAVE": "SUCCESS", "SHEETS_IMPORT": "NOT_RUN", "CHATGPT_INPUT": "NOT_RUN", "AUTHENTICATION": "FAILED" if stage == "AUTHENTICATION" else "NOT_APPLICABLE", "CLOSE_DATA_WRITE": "BLOCKED", "READBACK_VERIFY": "BLOCKED", "LOG": "PENDING"},
             "missingRequiredFields": [], "updatedFields": [], "sources": [], "marketData": [], "errors": [str(exc)],
         }
     write_status_file(Path(args.status_output), summary)
