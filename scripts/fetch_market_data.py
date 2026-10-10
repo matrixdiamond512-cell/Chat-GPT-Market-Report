@@ -243,7 +243,7 @@ def candidate(
 
 def fetch_yahoo_chart(source: dict[str, Any]) -> dict[str, Any]:
     symbol = source["symbol"]
-    params = urllib.parse.urlencode({"range": "5d", "interval": "1d"})
+    params = urllib.parse.urlencode({"range": source.get("range", "5d"), "interval": source.get("interval", "1d")})
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(symbol, safe='')}?{params}"
     text = http_text(url)
     try:
@@ -278,6 +278,40 @@ def fetch_yahoo_chart(source: dict[str, Any]) -> dict[str, Any]:
         elif len(valid) >= 2:
             previous = valid[-2][1]
     return candidate(source, value, previous_close=previous, as_of=as_of, raw_reference=symbol)
+
+
+def fetch_yahoo_sma_deviation(source: dict[str, Any]) -> dict[str, Any]:
+    """Calculate close-to-SMA deviation from date-stamped Nikkei daily bars."""
+    symbol = source["symbol"]
+    params = urllib.parse.urlencode({"range": source.get("range", "1y"), "interval": "1d"})
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(symbol, safe='')}?{params}"
+    text = http_text(url)
+    try:
+        result = json.loads(text)["chart"]["result"][0]
+        timestamps = result.get("timestamp") or []
+        closes = (((result.get("indicators") or {}).get("quote") or [{}])[0]).get("close") or []
+        bars = [(int(t), safe_float(c)) for t, c in zip(timestamps, closes)]
+        bars = [(t, c) for t, c in bars if c is not None]
+    except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
+        raise FetchError("PARSE_ERROR", f"Yahoo SMA history parse failed for {symbol}") from exc
+    window = int(source.get("window", 0))
+    if window < 2 or len(bars) < window:
+        raise FetchError("INSUFFICIENT_HISTORY", f"{symbol} needs {window} complete daily closes; got {len(bars)}")
+    # Use the latest bar not later than the target date, preventing future-session leakage.
+    target_date = dt.date.fromisoformat(str(source.get("targetDate") or now_jst().date().isoformat()))
+    bars = [(t, c) for t, c in bars if dt.datetime.fromtimestamp(t, UTC).astimezone(JST).date() <= target_date]
+    if len(bars) < window:
+        raise FetchError("INSUFFICIENT_HISTORY", f"{symbol} has fewer than {window} bars on or before {target_date}")
+    tail = bars[-window:]
+    latest_ts, latest_close = tail[-1]
+    mean = sum(c for _, c in tail) / window
+    if mean == 0:
+        raise FetchError("INVALID_VALUE", "moving average is zero")
+    deviation_percent = (latest_close / mean - 1) * 100
+    as_of = parse_epoch(latest_ts)
+    result = candidate(source, deviation_percent, as_of=as_of, raw_reference=f"{symbol} close / SMA{window}")
+    result.update({"movingAverage": mean, "window": window, "close": latest_close})
+    return result
 
 
 def fetch_stooq_quote(source: dict[str, Any]) -> dict[str, Any]:
@@ -573,6 +607,7 @@ def fetch_local_rates_json(source: dict[str, Any]) -> dict[str, Any]:
 
 FETCHERS = {
     "yahoo_chart": fetch_yahoo_chart,
+    "yahoo_sma_deviation": fetch_yahoo_sma_deviation,
     "stooq_quote": fetch_stooq_quote,
     "cboe_history_csv": fetch_cboe_history_csv,
     "cnn_fear_greed": fetch_cnn_fear_greed,
