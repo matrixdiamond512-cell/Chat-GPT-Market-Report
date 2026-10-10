@@ -163,7 +163,66 @@ def row_market(
     }
 
 
-def build_morning(report: dict[str, Any]) -> dict[str, Any]:
+def date_part(value: Any) -> str:
+    """Return the JST calendar date for ISO timestamps or YYYY-MM-DD values."""
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    try:
+        parsed = dt.datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError:
+        try:
+            return dt.date.fromisoformat(text[:10]).isoformat()
+        except ValueError:
+            return ""
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=JST)
+    return parsed.astimezone(JST).date().isoformat()
+
+
+def apply_verified_deviation(
+    market: dict[str, Any],
+    market_snapshot: dict[str, Any],
+    *,
+    symbol_id: str,
+    target_date: str,
+) -> dict[str, Any]:
+    """Use a verified same-session technical value from the market snapshot."""
+    source = (market_snapshot.get("markets") or {}).get(symbol_id)
+    if not isinstance(source, dict) or source.get("verificationStatus") != "verified":
+        return market
+    if date_part(source.get("asOf")) != target_date:
+        return market
+    value = numeric(source.get("value"))
+    if value is None:
+        return market
+    result = dict(market)
+    result.update({
+        "value": value,
+        "displayValue": f"{value:+.2f}%",
+        "previousClose": None,
+        "change": None,
+        "changePercent": None,
+        "changeText": "—",
+        "asOf": str(source.get("asOf") or ""),
+        "sourceId": source.get("sourceId") or "",
+        "sourceName": source.get("sourceName") or "",
+        "sourceUrl": source.get("sourceUrl") or "",
+        "rawReference": source.get("rawReference") or "",
+        "verificationStatus": "verified",
+        "freshnessStatus": "previous_close",
+        "fallbackUsed": False,
+        "lastVerifiedAt": source.get("lastVerifiedAt") or source.get("fetchedAt") or "",
+        "error": None,
+        "note": f"同日一致の終値から算出した乖離率 ({target_date})",
+    })
+    return result
+
+
+def build_morning(
+    report: dict[str, Any],
+    market_snapshot: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     table = report.get("marketDataTable") or {}
     rows = table.get("rows") if isinstance(table, dict) else None
     if not isinstance(rows, list) or len(rows) != 28:
@@ -177,8 +236,12 @@ def build_morning(report: dict[str, Any]) -> dict[str, Any]:
 
     markets: dict[str, Any] = {}
     unavailable: list[str] = []
+    market_snapshot = market_snapshot or {}
+    target_date = previous_close_date(report)
     for label, symbol_id, unit, market_type, session in ITEMS:
         market = row_market(report, by_label[label], symbol_id=symbol_id, label=label, unit=unit, market_type=market_type, session=session)
+        if symbol_id in {"nikkei225_dev25", "nikkei225_dev200"}:
+            market = apply_verified_deviation(market, market_snapshot, symbol_id=symbol_id, target_date=target_date)
         markets[symbol_id] = market
         if market["verificationStatus"] != "verified":
             unavailable.append(label)
@@ -218,7 +281,9 @@ def main() -> int:
         raise SystemExit("data/latest-report.json has no report")
     slot = str(report.get("time") or "")
     if slot == "08:00":
-        payload = build_morning(report)
+        # Capture the acquisition snapshot before the report contract replaces latest.json.
+        market_snapshot = load_json(RAW_MARKET, {})
+        payload = build_morning(report, market_snapshot)
         dump_json(RAW_MARKET, payload)
     else:
         raw = load_json(RAW_MARKET, {})
