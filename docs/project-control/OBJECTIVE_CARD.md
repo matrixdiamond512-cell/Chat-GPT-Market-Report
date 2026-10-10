@@ -132,3 +132,11 @@ EVIDENCE: 30 Python tests PASS; 8 scripts compile. Existing source configuration
 OPEN OUTCOMES: O1 full 28-item source coverage and runtime completeness remain open (12 items have no common acquisition path). O2 confirm the five new index sources and FRED DGS10 in a scheduled run remains open. O3 Google Sheets write/readback/history fill remain open until GOOGLE_SERVICE_ACCOUNT_JSON is configured. O4 exact close-row historical repairs beyond retained same-date confirmed sources remain open.
 
 NEXT ACTION: Configure the authorized service-account secret, run the scheduled acquisition and close sync, confirm readback and fill-only results, then add and validate source paths for the remaining 13 contract items without relaxing date/session checks.
+
+
+## 2026-10-11 continuation status
+Implemented CME vendor-expiry normalization and SMA deviation adapter/sheet mapping code; these changes do not complete the report routes because the deviation source catalog/report wiring was not applied. Direct market observation and five-cell Sheet history repair evidence is recorded in EVIDENCE_LEDGER.md. PR #94 remains OPEN/DRAFT.
+
+OPEN OUTCOMES: 16/28 report acquisition routes connected (57.1%); 4/28 live values observed in this run (14.3%), with no all-28 run; whole-contract Sheets save/readback NOT_RUN (0/28), while five historical 200-day deviation writes/readbacks succeeded; historical fill 5/13 cells (38.5%) with eight Prime turnover/volume cells remaining. JPX/Nikkei automated acquisition is blocked pending confirmation of authorized provider and publication scope. GitHub Actions workflow runtime and Yahoo chart adapter runtime are not verified.
+
+NEXT NECESSARY ACTION: Obtain the licensed JPX/Nikkei source/API and its permitted use scope. Then preserve the complete required symbol catalog while registering all remaining adapters, connect them to report input and existing columns, run the all-28 live batch, complete the Sheets save/readback and historical fill, and keep this PR Draft until every acceptance check passes.
