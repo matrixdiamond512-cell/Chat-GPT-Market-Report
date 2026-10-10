@@ -402,6 +402,28 @@
           "note": "CoinMarketCapのキーレス公式API。株式Fear & Greedとは別IDで管理する。"
         }
       ]
+    },
+    "jp10y": {
+      "displayName": "日本10年債利回り",
+      "dashboardKey": "jp10y",
+      "unit": "%",
+      "marketType": "yield",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "rates_bonds_jp10y",
+          "name": "確認済み金利JSON（TradingView JGB market snapshot (LSEG)）",
+          "kind": "local_rates_json",
+          "path": "data/rates-bonds.json",
+          "recordName": "日本10年国債利回り",
+          "sourceUrl": "data/rates-bonds.json",
+          "marketType": "yield",
+          "session": "daily",
+          "priority": 1,
+          "maxRetries": 1
+        }
+      ]
     }
   }
 }

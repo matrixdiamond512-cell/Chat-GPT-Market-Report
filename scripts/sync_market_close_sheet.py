@@ -52,6 +52,7 @@ PRICE_FIELDS: dict[str, tuple[str, str, str]] = {
     "vix": ("VIX終値", "VIX前日比", "VIX騰落率"),
     "nikkei_vi": ("日経VI終値", "日経VI前日比", "日経VI騰落率"),
     "fear_greed": ("FearGreed終値", "FearGreed前日比", ""),
+    "jp10y": ("日本10年債利回り", "", ""),
 }
 REQUIRED_CLOSE_HEADERS = tuple(
     [header for fields in PRICE_FIELDS.values() for header in fields if header]
@@ -296,6 +297,59 @@ def find_target_row(date_values: list[Any], target: dt.date) -> tuple[int | None
 def normalized_value(value: Any) -> float | str | None:
     parsed = number(value)
     return parsed if parsed is not None else (str(value).strip() if value is not None else None)
+
+
+
+def attach_local_confirmed_jp10y(payload: dict[str, Any], target: dt.date) -> bool:
+    """Attach the retained Japanese 10Y yield only when its date matches the row."""
+    path = ROOT / "data" / "rates-bonds.json"
+    try:
+        rate_data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+
+    meta = rate_data.get("meta") or {}
+    if meta.get("status") != "confirmed" or meta.get("isStale") is not False:
+        return False
+    if str(meta.get("asOfDate") or "") != target.isoformat():
+        return False
+    record = next(
+        (
+            item for item in rate_data.get("rates") or []
+            if item.get("name") == "日本10年国債利回り" and item.get("status") == "confirmed"
+        ),
+        None,
+    )
+    if not record or str(record.get("asOf") or "")[:10] != target.isoformat():
+        return False
+    value = number(record.get("value"))
+    if value is None:
+        return False
+
+    change_bp = number(record.get("changeBp"))
+    change = change_bp / 100 if change_bp is not None else None
+    markets = payload.setdefault("markets", {})
+    existing_market = markets.get("jp10y")
+    if isinstance(existing_market, dict) and existing_market.get("verificationStatus") in {"verified", "fallback"}:
+        return False
+    markets["jp10y"] = {
+        "id": "jp10y",
+        "value": value,
+        "previousClose": value - change if change is not None else None,
+        "change": change,
+        "changePercent": None,
+        "asOf": record.get("asOf"),
+        "fetchedAt": meta.get("updatedAt") or rate_data.get("generatedAt"),
+        "verifiedAt": meta.get("updatedAt") or rate_data.get("generatedAt"),
+        "sourceId": "rates_bonds_jp10y",
+        "sourceName": record.get("source") or "rates-bonds.json",
+        "sourceUrl": "data/rates-bonds.json",
+        "marketType": "yield",
+        "session": "daily",
+        "verificationStatus": "verified",
+        "classification": "",
+    }
+    return True
 
 
 def close_row_sync(
@@ -694,6 +748,11 @@ def main() -> int:
                     snapshots.append((history_path.name, history_payload))
             results = []
             for history_name, history_payload in snapshots:
+                try:
+                    history_target = resolve_target_date(history_payload, now)
+                    attach_local_confirmed_jp10y(history_payload, history_target)
+                except CloseSyncError:
+                    pass
                 result = close_row_sync(
                     client, history_payload, now, scheduled_time="08:00",
                     run_key=f"{args.run_key}:history:{history_name}",

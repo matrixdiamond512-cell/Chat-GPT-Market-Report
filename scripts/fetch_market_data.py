@@ -509,6 +509,41 @@ def fetch_jpx_html(source: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+def fetch_local_rates_json(source: dict[str, Any]) -> dict[str, Any]:
+    """Reuse a same-date, confirmed rate from the rates page's generated data."""
+    payload = load_json(ROOT / str(source["path"]), {})
+    meta = payload.get("meta") or {}
+    if meta.get("status") != "confirmed" or meta.get("isStale") is not False:
+        raise FetchError("UNVERIFIED_LOCAL_SOURCE", "rates-bonds JSON is not confirmed and fresh")
+
+    record_name = str(source.get("recordName") or "")
+    record = next(
+        (item for item in payload.get("rates") or [] if item.get("name") == record_name),
+        None,
+    )
+    if not record or record.get("status") != "confirmed":
+        raise FetchError("UNVERIFIED_LOCAL_SOURCE", f"confirmed rate {record_name!r} is unavailable")
+
+    as_of = str(record.get("asOf") or "")
+    if not as_of or as_of[:10] != str(meta.get("asOfDate") or ""):
+        raise FetchError("SOURCE_DATE_MISMATCH", f"{record_name} date does not match rates-bonds asOfDate")
+    value = safe_float(record.get("value"))
+    if value is None:
+        raise FetchError("PARSE_ERROR", f"{record_name} value is not numeric")
+
+    change_bp = safe_float(record.get("changeBp"))
+    change = change_bp / 100 if change_bp is not None else None
+    previous = value - change if change is not None else None
+    return candidate(
+        source,
+        value,
+        previous_close=previous,
+        change=change,
+        as_of=as_of,
+        raw_reference=record_name,
+    )
+
+
 FETCHERS = {
     "yahoo_chart": fetch_yahoo_chart,
     "stooq_quote": fetch_stooq_quote,
@@ -517,6 +552,7 @@ FETCHERS = {
     "coinmarketcap_fear_greed": fetch_coinmarketcap_fear_greed,
     "nikkei_profile": fetch_nikkei_profile,
     "jpx_html": fetch_jpx_html,
+    "local_rates_json": fetch_local_rates_json,
 }
 
 

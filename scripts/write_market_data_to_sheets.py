@@ -37,6 +37,7 @@ MARKET_ORDER = [
     "nikkei_vi",
     "fear_greed",
     "crypto_fear_greed",
+    "jp10y",
 ]
 
 SHEET_HEADERS = [
