@@ -63,3 +63,10 @@ Yahoo's current terms prohibit automated collection without express prior permis
 - Current connected-route count remains 18/28 (64.3%). The missing ten are the two CME futures fields, Nikkei PER/PBR/EPS, and five Prime aggregate fields (turnover, volume, advances, declines, and 25-day ratio).
 - No Sheets writes or historical backfills were performed by this review. Existing date rows and cells were not edited.
 - Next step: provision/confirm entitlements and endpoint/account scope, then implement the private Sheets adapter for Nikkei/J-Quants if allowed and a CME authorized feed adapter. Keep public storage/display disabled until redistribution approval is established.
+
+
+## Workflow guard added after entitlement response
+
+The account-holder response to the access-rights question was “未契約・未確認” for CME, JPX and J-Quants. Therefore a network run against the current mixed-provider configuration is not yet authorized by confirmed source terms. The validate-only dispatch now has a source_automation_rights_confirmed checkbox defaulting to false; the workflow stops before its first market-data request unless the operator confirms permission for every provider the configured run can contact. This is an explicit operator attestation, not proof of rights. It does not expose quote values, and the existing output/commit/Sheets/artifact gates still apply. No GitHub Actions data run has been dispatched.
+
+The check intentionally blocks the current run rather than silently treating public visibility as permission for automated collection. The 18 existing routes include providers with automated-collection restrictions or unconfirmed terms, and the ten missing routes still lack an authorized provider. A provider-specific allowlist and live Action run can follow once usage scope is established.
