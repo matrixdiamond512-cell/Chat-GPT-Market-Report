@@ -676,7 +676,7 @@ def main() -> int:
     payload: dict[str, Any] = {}
     try:
         payload = json.loads(Path(args.latest).read_text(encoding="utf-8"))
-        spreadsheet_id = os.environ.get("MARKET_DATA_SPREADSHEET_ID", DEFAULT_SPREADSHEET_ID).strip()
+        spreadsheet_id = os.environ.get("MARKET_DATA_SPREADSHEET_ID", "").strip() or DEFAULT_SPREADSHEET_ID
         service_account_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
         if not service_account_json:
             raise CloseSyncError("AUTHENTICATION", "GOOGLE_SERVICE_ACCOUNT_JSON is required for close-row persistence; source acquisition may have succeeded independently.")
