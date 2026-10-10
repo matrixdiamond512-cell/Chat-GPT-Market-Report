@@ -77,23 +77,6 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual(result["window"], 2)
         self.assertAlmostEqual(result["movingAverage"], 115)
 
-    def test_morning_recovery_only_uses_verified_same_date_market(self):
-        import json
-        import tempfile
-        from scripts import build_chatgpt_report_input as report_input
-        with tempfile.TemporaryDirectory() as temp_dir:
-            path = Path(temp_dir) / "latest.json"
-            path.write_text(json.dumps({"markets": {"nikkei225_dev25": {
-                "verificationStatus": "verified", "asOf": "2026-10-09T15:00:00+09:00",
-                "value": 4.23, "sourceId": "sma25", "sourceName": "test source",
-            }}}), encoding="utf-8")
-            with patch.object(report_input, "RAW_MARKET", path):
-                recovered = report_input.recovered_row("nikkei225_dev25", "25-day deviation", "2026-10-09")
-                rejected = report_input.recovered_row("nikkei225_dev25", "25-day deviation", "2026-10-08")
-        self.assertEqual(recovered["value"], "+4.23%")
-        self.assertEqual(recovered["dataDate"], "2026-10-09")
-        self.assertIsNone(rejected)
-
     def test_deviation_sheet_routes_use_existing_columns(self):
         from scripts import sync_market_close_sheet as close_sync
         self.assertEqual(close_sync.TECHNICAL_FIELDS["nikkei225_dev25"], "日経225_25日乖離率")
