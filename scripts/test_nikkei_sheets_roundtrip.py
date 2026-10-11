@@ -90,6 +90,7 @@ def run() -> dict[str, Any]:
     if test_id == production_id:
         raise SheetsSyncError("TEST_SHEET_MUST_BE_SEPARATE_FROM_PRODUCTION")
 
+    config = market_data.load_json(ROOT / "config" / "market_data_sources.json", {})
     acquired, verified = acquire_official_nikkei()
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     generated_at = max(str(item["raw"]["asOf"]) for item in acquired.values())
@@ -97,13 +98,14 @@ def run() -> dict[str, Any]:
     for symbol_id, item in acquired.items():
         raw, source = item["raw"], item["source"]
         value = float(raw["value"])
-        places = int(source.get("displayDecimalPlaces", 2))
+        symbol_config = (config.get("symbols") or {}).get(symbol_id) or {}
+        places = int(symbol_config.get("displayDecimalPlaces", 2))
         name = str(source.get("name") or symbol_id)
         markets[symbol_id] = {
-            "displayName": str((market_data.load_json(ROOT / "config" / "market_data_sources.json", {}).get("symbols", {}).get(symbol_id) or {}).get("displayName") or symbol_id),
+            "displayName": str(symbol_config.get("displayName") or symbol_id),
             "value": value,
             "displayValue": f"{value:,.{places}f}",
-            "unit": str(source.get("unit") or ""),
+            "unit": str(symbol_config.get("unit") or ""),
             "asOf": str(raw["asOf"]),
             "fetchedAt": now,
             "verifiedAt": now,
