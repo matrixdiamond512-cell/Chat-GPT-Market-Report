@@ -182,12 +182,12 @@ class OfficialMarketDataAdapterTests(unittest.TestCase):
         payload=("\n".join(rows)+"\n").encode("utf-8")
         with patch.object(market_data,"http_get",return_value=(payload,"utf-8")):
             value=market_data.fetch_nikkei_sma_deviation(source)
-        self.assertAlmostEqual(value["value"],(25/13-1)*100)
-        self.assertEqual(value["asOf"],f"{dates[24].isoformat()}T15:30:00+09:00")
+        self.assertAlmostEqual(value["value"],(26/14-1)*100)
+        self.assertEqual(value["asOf"],f"{dates[25].isoformat()}T15:30:00+09:00")
         self.assertEqual(value["window"],25)
 
     def test_nikkei_csv_fails_closed_if_close_column_is_not_identifiable(self):
-        source={"id":"nikkei","url":"https://example.test","targetDate":"2026-10-09"}
+        source={"id":"nikkei","name":"Nikkei","url":"https://example.test","targetDate":"2026-10-09"}
         payload=b"Date,Open,High,Low,Volume\n2026.10.09,1,2,0,10\n"
         with patch.object(market_data,"http_get",return_value=(payload,"utf-8")):
             with self.assertRaises(market_data.FetchError) as raised:
