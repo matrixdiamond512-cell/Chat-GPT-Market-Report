@@ -504,7 +504,7 @@
           "sourceUrl": "data/rates-bonds.json",
           "marketType": "yield",
           "session": "daily",
-          "priority": 1,
+          "priority": 2,
           "maxRetries": 1
         },
         {
@@ -515,12 +515,11 @@
           "sourceUrl": "https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/index.htm",
           "sourceSeriesId": "MOF:JGB:10Y:CONSTANT_MATURITY",
           "encoding": "cp932",
-          "priority": 99,
+          "priority": 1,
           "marketType": "yield",
           "session": "daily_1500_jst_published_next_business_day",
-          "referenceOnly": true,
           "validationStaleHours": 120,
-          "note": "Official semiannual-compound constant-maturity yield based on prevailing JGB market prices at 15:00 JST, published from 09:30 on the next business day; reference-only until the report's existing JP10Y definition is confirmed."
+          "note": "MOF official semiannual-compound constant-maturity 10-year yield based on JSDA OTC reference prices at 15:00 JST, released 09:30 next business day. This is the report's selected Japanese 10-year series; do not compare it as an intraday quote."
         }
       ]
     },
