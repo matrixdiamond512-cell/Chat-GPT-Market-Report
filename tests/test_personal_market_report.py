@@ -5,6 +5,7 @@ import unittest
 from scripts.build_chatgpt_report_input import ITEMS, apply_acquired_snapshot_market
 from scripts.build_personal_market_report import (
     PersonalReportError,
+    _comparable_change,
     render_report,
     report_sheet_row,
     validate_sheet_target_ids,
@@ -50,7 +51,7 @@ class PersonalMarketReportTests(unittest.TestCase):
         self.assertEqual(row[4:7], [22, 5, 1])
         self.assertEqual(row[7], body)
 
-    def test_historical_report_marks_age_and_preserves_detailed_sections(self):
+    def test_historical_report_marks_age_and_builds_sections_from_the_same_snapshot(self):
         markets = {}
         for label, symbol, unit, market_type, session in ITEMS:
             markets[symbol] = {
@@ -58,30 +59,53 @@ class PersonalMarketReportTests(unittest.TestCase):
                 "asOf": "", "sourceName": "", "verificationStatus": "unavailable",
                 "marketType": market_type, "session": session,
             }
-        markets["dow"].update({"value": 51654.95, "displayValue": "51654.95", "asOf": "2026-10-09", "fetchedAt": "2026-10-12T02:48:43Z", "sourceName": "TradingView official MCP", "verificationStatus": "verified", "verificationBasis": "二次資料の終値照合"})
+        markets["dow"].update({"value": 51654.95, "displayValue": "51654.95", "asOf": "2026-10-09", "fetchedAt": "2026-10-12T02:48:43Z", "sourceName": "TradingView official MCP", "verificationStatus": "verified", "verificationBasis": "二次資料の終値照合", "changePercent": 0.8})
         markets["nikkei225_futures_cme_yen"].update({"value": 69085, "displayValue": "69085", "unit": "円", "asOf": "2026-10-09", "fetchedAt": "2026-10-12T02:48:43Z", "sourceName": "TradingView official MCP", "verificationStatus": "reference_only", "referenceOnly": True, "marketType": "futures_cme", "priceType": "continuous_bar_close", "note": "限月別清算値は未確認"})
         body = render_report({
             "generatedAt": "2026-10-12T04:53:47+09:00", "reportDate": "2026-10-09〜2026-10-10",
             "reportSlot": "履歴再構成", "overallStatus": "historical_only", "historicalSnapshot": True,
             "markets": markets,
             "detailedReport": {
-                "theme": "保存済みテーマ", "news": ["保存済みニュース"],
-                "crossAssetFlow": ["資金フロー情報"], "positioning": ["ポジション情報"],
-                "markets": [{"name": "市場1", "price": "1", "direction": "中立"} for _ in range(6)],
-                "mainScenario": "保存済みメイン", "alternativeScenario": "保存済み代替",
-                "breakConditions": "保存済み崩れ条件", "riskManagement": ["保存済みリスク"],
+                "date": "2026-10-08", "theme": "古い文章は使用しない",
             },
         })
         self.assertIn("履歴データからの再構成です", body)
-        self.assertIn("原文のレポート日時", body)
+        self.assertIn("同一スナップショットに基づく詳細分析", body)
+        self.assertIn("同じスナップショットから生成", body)
         self.assertIn("ニュース", body)
         self.assertIn("クロスアセット資金フロー", body)
         self.assertIn("需給・ポジション", body)
         self.assertIn("主要6市場の見通し", body)
         self.assertIn("金利・金融環境（今回のスナップショット）", body)
-        self.assertIn("保存済みメイン", body)
+        self.assertIn("上昇 1・下落 0", body)
+        self.assertNotIn("古い文章は使用しない", body)
+        self.assertIn("時刻と出典を検証できるニュース記事は含まれていません", body)
         self.assertIn("参考値: 69085", body)
         self.assertIn("参考値（清算値未確認）", body)
+
+    def test_report_analysis_changes_only_when_snapshot_evidence_changes(self):
+        markets = {symbol: {
+            "displayName": label, "value": 100, "displayValue": "100", "unit": unit,
+            "asOf": "2026-10-12", "fetchedAt": "2026-10-12T06:00:00Z",
+            "sourceName": "official-test", "verificationStatus": "verified", "marketType": mtype,
+            "changePercent": -0.4,
+        } for label, symbol, unit, mtype, _ in ITEMS}
+        first = render_report({"reportDate": "2026-10-12", "generatedAt": "2026-10-12T06:01:00Z", "markets": markets})
+        markets["sp500"]["changePercent"] = 0.7
+        second = render_report({"reportDate": "2026-10-12", "generatedAt": "2026-10-12T06:02:00Z", "markets": markets})
+        self.assertIn("上昇 0・下落 5", first)
+        self.assertIn("上昇 1・下落 4", second)
+        self.assertNotEqual(first, second)
+        self.assertIn("建玉", second)
+
+    def test_computed_change_requires_prior_date_and_same_source(self):
+        market = {"verificationStatus": "verified", "asOf": "2026-10-12", "sourceId": "series-a",
+                  "value": 110, "previousClose": 100}
+        self.assertIsNone(_comparable_change(market))
+        market["previousCloseAsOf"] = "2026-10-09"
+        self.assertEqual(_comparable_change(market), 10)
+        market["previousCloseSourceId"] = "series-b"
+        self.assertIsNone(_comparable_change(market))
 
     def test_snapshot_overlay_uses_market_specific_dates_and_keeps_source_provenance(self):
         base = {"value": 100, "asOf": "2026-10-09", "verificationStatus": "unavailable"}

@@ -35,12 +35,11 @@ class PersonalSnapshotTests(unittest.TestCase):
             references.append([f"reference-{index}", field, value, unit, symbol, "CONTINUOUS_BAR_CLOSE",
                                session, market_date, anchor, "TradingView official MCP", "REFERENCE_ONLY",
                                "NOT_CONFIRMED; continuous bar is not settlement", "2026-10-11T17:48:43Z"])
-        detailed = {"date": "2026-10-09", "time": "21:00", "fullText": "retained", "markets": [{} for _ in range(6)]}
-        return {"reportReadyValues": ready, "referenceValues": references}, detailed
+        return {"reportReadyValues": ready, "referenceValues": references}
 
     def test_normalizes_nine_verified_and_five_reference_rows_with_lineage(self):
-        source, detailed = self._source()
-        payload = build_snapshot(source, "2026-10-12T04:53:47+09:00", detailed)
+        source = self._source()
+        payload = build_snapshot(source, "2026-10-12T04:53:47+09:00")
         self.assertEqual(report_counts(payload), (9, 5, 14))
         self.assertEqual(payload["dataDateRange"], "2026-10-09〜2026-10-10")
         self.assertEqual(payload["markets"]["usdjpy"]["asOf"], "2026-10-09")
@@ -49,17 +48,19 @@ class PersonalSnapshotTests(unittest.TestCase):
         self.assertEqual(payload["markets"]["nikkei225_futures_ose"]["verificationStatus"], "reference_only")
         self.assertEqual(payload["markets"]["nikkei225_futures_ose"]["priceType"], "continuous_bar_close")
         self.assertEqual(payload["markets"]["dow"]["fetchedAt"], "2026-10-11T17:48:43Z")
-        self.assertEqual(payload["detailedReport"], detailed)
+        self.assertNotIn("detailedReport", payload)
 
-    def test_rejects_future_dated_observation_and_mismatched_narrative_date(self):
-        source, detailed = self._source()
+    def test_rejects_future_dated_observation(self):
+        source = self._source()
         source["reportReadyValues"][1][6] = "2026-10-13"
         with self.assertRaises(SnapshotError):
-            build_snapshot(source, "2026-10-12T04:53:47+09:00", detailed)
-        source, detailed = self._source()
-        detailed["date"] = "2026-10-08"
-        with self.assertRaises(SnapshotError):
-            build_snapshot(source, "2026-10-12T04:53:47+09:00", detailed)
+            build_snapshot(source, "2026-10-12T04:53:47+09:00")
+
+    def test_old_report_text_is_not_an_input_to_the_common_snapshot(self):
+        source = self._source()
+        source["detailedReport"] = {"date": "2026-10-08", "fullText": "stale narrative"}
+        payload = build_snapshot(source, "2026-10-12T04:53:47+09:00")
+        self.assertNotIn("detailedReport", payload)
 
 
 if __name__ == "__main__":

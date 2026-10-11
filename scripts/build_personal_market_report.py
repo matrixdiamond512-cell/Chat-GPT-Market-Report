@@ -108,58 +108,132 @@ def report_counts(payload: dict[str, Any]) -> tuple[int, int, int]:
     return verified, reference, len(ITEMS) - verified - reference
 
 
-def _as_lines(value: Any) -> list[str]:
-    if value in (None, ""):
-        return []
-    if isinstance(value, list):
-        return [str(item).strip() for item in value if str(item).strip()]
-    return [str(value).strip()]
+def _numeric(value: Any) -> float | None:
+    try:
+        number = float(str(value).replace(",", "").replace("%", "").strip())
+    except (TypeError, ValueError):
+        return None
+    return number if number == number and abs(number) != float("inf") else None
 
 
-def render_detailed_analysis(report: dict[str, Any]) -> list[str]:
-    """Render retained narrative analysis fields without replacing them with quotes."""
-    if not isinstance(report, dict):
-        return []
-    sections: list[tuple[str, str]] = [
-        ("全体テーマ", "theme"), ("主な変化", "changes"),
-        ("市場間の整合性", "consistency"), ("主導市場", "leadingMarket"),
-        ("ニュース", "news"), ("クロスアセット資金フロー", "crossAssetFlow"),
-        ("需給・ポジション", "positioning"), ("セクター", "sectors"),
-        ("注目イベント", "events"), ("メインシナリオ", "mainScenario"),
-        ("代替シナリオ", "alternativeScenario"),
-        ("シナリオの崩れ条件", "breakConditions"),
-        ("リスク管理", "riskManagement"), ("次の市場への引き継ぎ", "handover"),
-    ]
-    original_date = f"{report.get('date') or '日付不明'} {report.get('time') or ''}".strip()
-    lines = [
-        "## 従来の詳細分析（保存済みレポート本文を保持）", "",
-        f"> 原文のレポート日時: {original_date}。以下の分析文は当時の内容を保持し、今回の取得値から再計算していません。数値の採用判断は後段の項目別スナップショットを参照してください。",
-        "",
-    ]
-    for heading, key in sections:
-        values = _as_lines(report.get(key))
-        if not values:
+def _comparable_change(market: dict[str, Any]) -> float | None:
+    """Accept only the change metric attached to this verified source observation."""
+    if market.get("verificationStatus") != "verified" or status_label(market) != "検証済み" or not market.get("asOf"):
+        return None
+    explicit = _numeric(market.get("changePercent"))
+    if explicit is not None:
+        return explicit
+    value = _numeric(market.get("value"))
+    previous = _numeric(market.get("previousClose"))
+    current_date = str(market.get("asOf") or "")[:10]
+    previous_date = str(market.get("previousCloseAsOf") or "")[:10]
+    current_source = str(market.get("sourceId") or "")
+    previous_source = str(market.get("previousCloseSourceId") or current_source)
+    if value is None or previous in (None, 0) or not previous_date or previous_date >= current_date:
+        return None
+    if current_source and previous_source != current_source:
+        return None
+    # Calculated changes require an explicitly dated prior observation from the
+    # same source; a naked previousClose is insufficient evidence.
+    return (value - previous) / abs(previous) * 100
+
+
+def _observed_line(label: str, market: dict[str, Any]) -> str:
+    date = market.get("asOf") or "基準日不明"
+    value = report_value(market)
+    unit = market.get("unit") or ""
+    status = status_label(market)
+    change = _comparable_change(market)
+    movement = f"、前日比 {change:+.2f}%" if change is not None else "、方向比較データなし"
+    return f"{label}: {value} {unit}（{date}{movement}、{status}）"
+
+
+def render_snapshot_analysis(payload: dict[str, Any]) -> list[str]:
+    """Build every analytical section only from this snapshot and its evidence."""
+    markets = payload.get("markets") or {}
+    if not isinstance(markets, dict):
+        markets = {}
+    usable = {key: value for key, value in markets.items() if isinstance(value, dict)}
+    changes = {
+        key: change for key, market in usable.items()
+        if (change := _comparable_change(market)) is not None
+    }
+    equity_keys = ("dow", "nasdaq", "sp500", "russell2000", "nikkei225_cash")
+    cohorts: dict[tuple[str, str], list[str]] = {}
+    for key in equity_keys:
+        market = usable.get(key) or {}
+        if key in changes:
+            cohorts.setdefault((str(market.get("asOf") or ""), str(market.get("session") or "")), []).append(key)
+    cohort_key, cohort_symbols = max(cohorts.items(), key=lambda item: len(item[1]), default=(None, []))
+    equity_moves = [changes[key] for key in cohort_symbols]
+    up = sum(value > 0 for value in equity_moves)
+    down = sum(value < 0 for value in equity_moves)
+    cohort_date = cohort_key[0] if cohort_key else ""
+    vix_change = changes.get("vix") if (usable.get("vix") or {}).get("asOf") == cohort_date else None
+    leading = max(cohort_symbols, key=lambda key: abs(changes[key]), default=None)
+    names = {symbol: label for label, symbol, *_ in ITEMS}
+
+    if equity_moves:
+        theme = f"同じ市場日・セッション（{cohort_date} / {cohort_key[1] or 'session不明'}）で比較できる株価指数は上昇 {up}・下落 {down}。対象は {len(equity_moves)} 件です。"
+    else:
+        theme = "比較可能な前日比を同じ取得記録から確認できないため、相場の方向をテーマとして断定しません。以下は基準日時点の観測値に限った整理です。"
+    movement_lines = [f"- {_observed_line(names.get(key, key), usable[key])}" for key in sorted(usable) if usable[key].get("value") not in (None, "")]
+    if not movement_lines:
+        movement_lines = ["- 数値を確認できる市場データはありません。"]
+    consistency = (
+        (f"{cohort_date} / {cohort_key[1] or 'session不明'} の株価指数前日比は上昇 {up}・下落 {down}。"
+         if equity_moves else "同一市場日・セッションにそろう比較可能な株価指数の前日比はありません。")
+        + (f" VIXの前日比は {vix_change:+.2f}%です。" if vix_change is not None else " VIXの比較可能な前日比はありません。")
+        + "市場ごとの基準日は項目別一覧を参照してください。"
+    )
+    if leading:
+        leader_text = f"{cohort_date} / {cohort_key[1] or 'session不明'} の株価指数群で絶対変化率が最大なのは {names.get(leading, leading)}（{changes[leading]:+.2f}%）。"
+    else:
+        leader_text = "同じスナップショットに比較可能な前日比がないため、主導市場は判定保留です。"
+
+    lines = ["## 同一スナップショットに基づく詳細分析", "",
+             "> 各文は下記の市場データと同じスナップショットから生成しています。取得記録にないニュース・資金流・建玉は推測していません。", "",
+             "### 全体テーマ", "", theme, "",
+             "### 主な変化", "", *movement_lines, "",
+             "### 市場間の整合性", "", consistency, "",
+             "### 主導市場", "", leader_text, "",
+             "### ニュース", "", "同一スナップショットに、時刻と出典を検証できるニュース記事は含まれていません。ニュース材料は未取得です。", "",
+             "### クロスアセット資金フロー", "", "価格の同時変化は上表の範囲で比較できますが、資金流そのものを示すフロー統計は未取得です。値動きだけから資金移動を断定しません。", "",
+             "### 需給・ポジション", "", "出来高・建玉・投資家ポジションの検証済み系列がないため、ポジションの偏りや清算規模は判定しません。", "",
+             "### セクター", "", "同一時点のセクター別データがないため、強弱順位は未取得です。", "",
+             "### 注目イベント", "", "イベントカレンダーがこのスナップショットに含まれていないため、日程は未取得です。", ""]
+
+    if equity_moves:
+        base_scenario = f"{cohort_date} / {cohort_key[1] or 'session不明'} の検証済み指数で観測した上昇・下落数（{up} 対 {down}）と同方向の広がりが、次の同市場セッションでも続く場合に限り、株式地合いの維持を確認します。"
+        alternative = "次回の同一系列比較で下落数が上昇数を上回る場合は、地合い悪化の代替シナリオへ切り替えます。"
+        invalidation = "次回の対象市場日で検証済み指数の上昇・下落優勢が逆転した時点で、現在の条件付きシナリオを無効とします。"
+    else:
+        base_scenario = "比較可能な方向データが不足しているため、価格目標を置くシナリオは作成しません。検証済み同一系列の次回終値取得後に更新します。"
+        alternative = "次回値が取得できた場合に限り、上昇・下落の観測方向を別シナリオとして提示します。現時点で反対方向を予測しません。"
+        invalidation = "現在は方向を伴うベースシナリオがないため、無効化水準も設定しません。"
+    lines.extend(["### メインシナリオ", "", base_scenario, "",
+                  "### 代替シナリオ", "", alternative, "",
+                  "### シナリオの崩れ条件", "", invalidation, "",
+                  "### リスク管理", "", "検証済みの現物・公式系列と参考値を分けて判断し、連続先物足は清算値として扱いません。基準日の異なる市場を同じ日付の同時観測とみなしません。", "",
+                  "### 次の市場への引き継ぎ", "", "次回は各市場の営業日・締め時刻に沿った同一系列の新しい観測を取得し、前日比・金利・市場 breadth を更新します。", "",
+                  "### 主要6市場の見通し", ""])
+    six = (("金", "gold"), ("WTI原油", "wti"), ("日経225先物（大阪取引所）", "nikkei225_futures_ose"),
+           ("USD/JPY", "usdjpy"), ("EUR/USD", "eurusd"), ("BTC/USD", "btcusd"))
+    for label, key in six:
+        market = usable.get(key)
+        if not market or market.get("value") in (None, ""):
+            lines.append(f"- **{label}** — 未取得。方向・見通しは提示しません。")
             continue
-        lines.extend([f"### {heading}", ""])
-        lines.extend([f"- {item}" for item in values] if isinstance(report.get(key), list) else values)
-        lines.append("")
-    markets = report.get("markets")
-    if isinstance(markets, list) and markets:
-        lines.extend(["### 主要6市場の見通し", ""])
-        for market in markets:
-            if not isinstance(market, dict):
-                continue
-            name = str(market.get("name") or "市場")
-            fields = [
-                ("価格", "price"), ("方向", "direction"), ("材料", "material"),
-                ("需給", "positioning"), ("水準", "levels"),
-                ("メイン", "mainScenario"), ("代替", "alternativeScenario"),
-                ("崩れ条件", "breakCondition"), ("リスク", "risk"),
-            ]
-            details = [f"{label}: {market[key]}" for label, key in fields if market.get(key) not in (None, "")]
-            lines.append(f"- **{name}** — " + "；".join(details))
-        lines.append("")
-    return lines if len(lines) > 2 else []
+        line = _observed_line(label, market)
+        if status_label(market).startswith("参考値"):
+            line += "。参考終値のため、正式清算値に基づく見通しではありません。"
+        elif _comparable_change(market) is None:
+            line += "。比較可能な前日比がないため方向判断は保留です。"
+        else:
+            line += "。記載した前日比の観測継続を次回確認条件とします。"
+        lines.append(f"- **{label}** — {line}")
+    lines.append("")
+    return lines
 
 
 def render_report(payload: dict[str, Any]) -> str:
@@ -187,7 +261,7 @@ def render_report(payload: dict[str, Any]) -> str:
         "各市場の営業日と日次締めは項目ごとに記録しています。参考値は清算値などの確定値と混同しません。",
         "",
     ])
-    lines.extend(render_detailed_analysis(payload.get("detailedReport") or {}))
+    lines.extend(render_snapshot_analysis(payload))
     yield_rows = []
     for key, label in (("us10y", "米10年債"), ("jp10y", "日本10年国債")):
         market = markets.get(key)
@@ -270,20 +344,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
-    parser.add_argument("--detailed-report", type=Path, help="optional structured report JSON whose narrative sections are retained")
     parser.add_argument("--write-test-sheet", action="store_true")
     args = parser.parse_args()
     try:
         payload = load_payload(args.input)
-        if args.detailed_report:
-            try:
-                detailed_source = json.loads(args.detailed_report.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError) as exc:
-                raise PersonalReportError("detailed report input could not be read") from exc
-            detailed = detailed_source.get("latestReport") or detailed_source.get("report") or detailed_source
-            if not isinstance(detailed, dict):
-                raise PersonalReportError("detailed report input has an invalid structure")
-            payload["detailedReport"] = detailed
         body = render_report(payload)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(body, encoding="utf-8")

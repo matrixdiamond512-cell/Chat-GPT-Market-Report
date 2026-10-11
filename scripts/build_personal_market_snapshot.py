@@ -76,12 +76,11 @@ def _indexed_rows(matrix: Any, expected: list[str]) -> list[dict[str, Any]]:
     return [dict(zip(headers, row)) for row in matrix[1:] if isinstance(row, list) and any(v not in (None, "") for v in row)]
 
 
-def build_snapshot(source: dict[str, Any], generated_at: str, detailed: dict[str, Any] | None = None) -> dict[str, Any]:
+def build_snapshot(source: dict[str, Any], generated_at: str) -> dict[str, Any]:
     ready = _indexed_rows(source.get("reportReadyValues"), READY_COLUMNS)
     references = _indexed_rows(source.get("referenceValues"), REFERENCE_COLUMNS)
-    detailed = detailed if detailed is not None else source.get("detailedReport")
-    if not isinstance(detailed, dict) or not detailed.get("date") or not detailed.get("fullText"):
-        raise SnapshotError("matching historical detailed report is required")
+    # Analysis prose is generated later from this exact snapshot. Do not require or
+    # attach a prior report body: its timestamp may differ from the quote records.
     if not ready or not references:
         raise SnapshotError("both acquired verified rows and futures references are required")
 
@@ -175,31 +174,25 @@ def build_snapshot(source: dict[str, Any], generated_at: str, detailed: dict[str
     generated = _parse_timestamp(generated_at)
     snapshot_basis = "\n".join(sorted(f"{key}|{value.get('snapshotId')}|{value.get('asOf')}|{value.get('value')}" for key, value in markets.items() if value.get("value") is not None))
     snapshot_id = hashlib.sha256(snapshot_basis.encode("utf-8")).hexdigest()[:24]
-    detailed_report = dict(detailed)
-    if detailed_report.get("date") != min_date:
-        raise SnapshotError("historical narrative date does not match the acquired snapshot window")
     return {
         "schemaVersion": "1.0.0", "snapshotId": snapshot_id,
         "generatedAt": generated, "sourceSnapshotRetrievedAt": max_retrieved.isoformat().replace("+00:00", "Z"),
         "reportDate": f"{min_date}〜{max_date}", "dataDateRange": f"{min_date}〜{max_date}",
         "reportSlot": "履歴再構成", "overallStatus": "historical_only", "historicalSnapshot": True,
         "sourceSheet": {"reportReadyTab": "Personal_Report_Ready", "referenceTab": "Personal_Reference_Values"},
-        "detailedReport": detailed_report, "markets": markets,
+        "markets": markets,
     }
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", required=True, type=Path)
-    parser.add_argument("--detailed-report", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--generated-at", required=True)
     args = parser.parse_args()
     try:
         source = json.loads(args.input.read_text(encoding="utf-8"))
-        detailed_payload = json.loads(args.detailed_report.read_text(encoding="utf-8"))
-        detailed = detailed_payload.get("latestReport") or detailed_payload.get("report") or detailed_payload
-        payload = build_snapshot(source, args.generated_at, detailed)
+        payload = build_snapshot(source, args.generated_at)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         counts = {
