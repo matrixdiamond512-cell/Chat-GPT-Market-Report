@@ -43,6 +43,7 @@ on:
         options:
           - treasury-us10y
           - fred-us10y
+          - nikkei-official-indexes
           - cmc-crypto-fear-greed-eval
           - all-configured
       source_automation_rights_confirmed:
@@ -160,7 +161,7 @@ jobs:
           python -m unittest scripts.test_import_tradingview_mcp_candidates scripts.test_verify_tradingview_close
 
       - name: Require source-rights confirmation before contacting configured providers
-        if: github.event_name == 'workflow_dispatch' && (inputs.acquisition_mode != 'validate-only' || inputs.validation_target == 'all-configured' || inputs.validation_target == 'fred-us10y')
+        if: github.event_name == 'workflow_dispatch' && (inputs.acquisition_mode != 'validate-only' || inputs.validation_target == 'all-configured' || inputs.validation_target == 'fred-us10y' || inputs.validation_target == 'nikkei-official-indexes')
         shell: bash
         run: |
           if [ "${{ inputs.source_automation_rights_confirmed }}" != "true" ]; then
@@ -187,6 +188,18 @@ jobs:
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python scripts/validate_market_data_source.py --symbol us10y --source-id fred_dgs10
+
+      # Manual, read-only check of the official Nikkei daily close and derived report fields.
+      # This emits metadata only and never updates snapshots, Sheets, Git, or dashboard outputs.
+      - name: Validate official Nikkei close, VI, and SMA deviation routes only
+        if: inputs.acquisition_mode == 'validate-only' && inputs.validation_target == 'nikkei-official-indexes'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_market_data_source.py --symbol nikkei225_cash --source-id nikkei_nk225_official_daily_csv
+          python scripts/validate_market_data_source.py --symbol nikkei_vi --source-id nikkei_nk225vi_official_daily_csv
+          python scripts/validate_market_data_source.py --symbol nikkei225_dev25 --source-id nikkei_nk225_official_sma25
+          python scripts/validate_market_data_source.py --symbol nikkei225_dev200 --source-id nikkei_nk225_official_sma200
 
       # One-off metadata-only evaluation of the documented keyless public endpoint.
       # This validates source/date/numeric/direction without storing or publishing values.
