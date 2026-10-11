@@ -111,7 +111,9 @@
           "session": "japan_cash",
           "closeTimeJst": "15:30",
           "timeoutSeconds": 20,
-          "note": "Official Nikkei daily CSV; use source market date and published close, not a continuous or intraday proxy."
+          "note": "Official Nikkei daily CSV; use source market date and published close, not a continuous or intraday proxy.",
+          "dateColumnIndex": 0,
+          "valueColumnIndex": 1
         },
         {
           "id": "yahoo_nikkei225_cash",
@@ -430,7 +432,9 @@
           "session": "japan_cash",
           "closeTimeJst": "15:30",
           "timeoutSeconds": 20,
-          "note": "Official Nikkei daily CSV; use source market date and published close, not a continuous or intraday proxy."
+          "note": "Official Nikkei daily CSV; use source market date and published close, not a continuous or intraday proxy.",
+          "dateColumnIndex": 0,
+          "valueColumnIndex": 1
         },
         {
           "id": "nikkei_nk225vi_profile",
@@ -590,7 +594,9 @@
           "window": 25,
           "closeTimeJst": "15:30",
           "timeoutSeconds": 20,
-          "note": "Calculated from 25 most recent official Nikkei daily closes on or before the report market date."
+          "note": "Calculated from 25 most recent official Nikkei daily closes on or before the report market date.",
+          "dateColumnIndex": 0,
+          "valueColumnIndex": 1
         },
         {
           "id": "yahoo_nikkei225_dev25",
@@ -628,7 +634,9 @@
           "window": 200,
           "closeTimeJst": "15:30",
           "timeoutSeconds": 20,
-          "note": "Calculated from 200 most recent official Nikkei daily closes on or before the report market date."
+          "note": "Calculated from 200 most recent official Nikkei daily closes on or before the report market date.",
+          "dateColumnIndex": 0,
+          "valueColumnIndex": 1
         },
         {
           "id": "yahoo_nikkei225_dev200",
