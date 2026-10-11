@@ -20,7 +20,10 @@ def main() -> None:
     rows = data.get("records") or []
     if not rows:
         raise SystemExit("BOJ spot volume records missing; cannot align dates")
-    missing_dates = {r["targetDate"] for r in rows if any(r.get(k) is None for k in core.FIELDS)}
+    missing_dates = {r["targetDate"] for r in rows[:20] if any(r.get(k) is None for k in (*core.FIELDS, "priceChangePct"))}
+    if not missing_dates:
+        print("USDJPY OHLC coverage: latest 20 BOJ trading sessions complete; no fetch needed.")
+        return
     # Ask for one earlier reference close to compute first backfilled date's
     # day-over-day change using the SAME Yahoo JP series, not Investing.com.
     if missing_dates:
@@ -33,7 +36,7 @@ def main() -> None:
     try:
         try:
             candles = fetch_history(missing_dates)
-            if not any(d in candles for d in missing_dates):
+            if not any(d in candles for d in missing_dates if d in {r["targetDate"] for r in rows[:20]}):
                 raise RuntimeError("Yahoo Japan pages contained no matching BOJ dates")
         except Exception as first_error:
             print(f"::warning::Yahoo Japan history unavailable: {first_error}; trying global chart API")
@@ -52,7 +55,7 @@ def main() -> None:
             "Investing.com（2026/08/26以前の既存分）／"
             + ("Yahoo!ファイナンス日本版 USDJPY=X（日足OHLC補完分）" if provider == "YAHOO_JP_USDJPY" else "Yahoo Finance JPY=X（日足OHLC補完分）")
         )
-        data["priceAcquisition"].update({
+        data.setdefault("priceAcquisition", {}).update({
             "provider": provider, "source": url,
             "note": "日足OHLCと日銀東京スポット出来高は取引時間帯が異なる。価格ソースの異なる日付がある。",
         })
@@ -67,6 +70,7 @@ def main() -> None:
                 source["note"] = "既存の2026年8月26日以前の日足OHLC。以降は別ソースで補完。"
         if missing:
             print("::warning::OHLC incomplete after backfill:", ", ".join(missing))
+            data.setdefault("priceAcquisition", {})["missingLast20Dates"] = missing
         print(json.dumps({"provider": provider, "filledDates": filled,
                           "missingRecentDates": missing,
                           "latestPriceDate": data["priceRange"]["endDate"]}, ensure_ascii=False))
