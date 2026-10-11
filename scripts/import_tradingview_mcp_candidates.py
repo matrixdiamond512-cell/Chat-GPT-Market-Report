@@ -206,11 +206,11 @@ def write_test_sheet(payload: dict[str, Any]) -> dict[str, Any]:
     client = SheetsClient(create_authorized_session(info), test_id)
     sheet_id = client.ensure_sheets([TEST_SHEET])[TEST_SHEET]
     prior = client.get_values(TEST_SHEET, "A1:M1000")
-    if prior and prior[0] and prior[0][:len(HEADERS)] != HEADERS:
-        raise CandidateImportError("candidate test tab has an unexpected header; refusing to alter it")
-    if not prior:
+    if not prior or not prior[0] or not prior[0][0]:
         client.update(TEST_SHEET, "A1", [HEADERS])
         prior = [HEADERS]
+    elif prior[0][:len(HEADERS)] != HEADERS:
+        raise CandidateImportError("candidate test tab has an unexpected header; refusing to alter it")
     existing_ids = {str(row[0]) for row in prior[1:] if row and row[0]}
     pending = new_sheet_rows(sheet_rows(payload), existing_ids)
     if pending:
