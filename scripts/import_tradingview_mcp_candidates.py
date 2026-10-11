@@ -17,6 +17,7 @@ import os
 from pathlib import Path
 import sys
 from typing import Any
+from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parents[1]
 TEST_SHEET = "TradingView_MCP_Candidates"
@@ -39,23 +40,23 @@ HEADERS = [
 # The explicit symbol/unit/session contract prevents a plausible-looking but
 # different instrument from being silently relabelled as a report field.
 FIELD_CONTRACT: dict[str, dict[str, str]] = {
-    "dow": {"symbol": "TVC:DJI", "unit": "pt", "marketType": "index", "session": "us_cash"},
-    "nasdaq": {"symbol": "NASDAQ:IXIC", "unit": "pt", "marketType": "index", "session": "us_cash"},
-    "sp500": {"symbol": "SP:SPX", "unit": "pt", "marketType": "index", "session": "us_cash"},
-    "russell2000": {"symbol": "CBOEFTSE:RUT", "unit": "pt", "marketType": "index", "session": "us_cash"},
-    "nikkei225_cash": {"symbol": "TVC:NI225", "unit": "円", "marketType": "index", "session": "japan_cash"},
-    "gold": {"symbol": "COMEX:GC1!", "unit": "USD/oz", "marketType": "continuous_futures", "session": "comex"},
-    "wti": {"symbol": "NYMEX:CL1!", "unit": "USD/bbl", "marketType": "continuous_futures", "session": "nymex"},
-    "nikkei225_futures_ose": {"symbol": "OSE:NK2251!", "unit": "円", "marketType": "futures_ose", "session": "ose"},
-    "cme_nikkei225_jpy": {"symbol": "CME:NIY1!", "unit": "円", "marketType": "futures_cme", "session": "cme"},
-    "cme_nikkei225_usd": {"symbol": "CME:NKD1!", "unit": "USD", "marketType": "futures_cme", "session": "cme"},
-    "usdjpy": {"symbol": "FX:USDJPY", "unit": "JPY per USD", "marketType": "spot", "session": "forex_daily"},
-    "eurusd": {"symbol": "FX:EURUSD", "unit": "USD per EUR", "marketType": "spot", "session": "forex_daily"},
-    "btcusd": {"symbol": "BITSTAMP:BTCUSD", "unit": "USD", "marketType": "spot", "session": "utc_daily"},
-    "vix": {"symbol": "CBOE:VIX", "unit": "pt", "marketType": "index", "session": "us_volatility"},
-    "nikkei_vi": {"symbol": "TOCOM:NVI", "unit": "pt", "marketType": "index", "session": "japan_cash"},
-    "jp10y": {"symbol": "TVC:JP10Y", "unit": "%", "marketType": "bond_yield", "session": "japan_yield"},
-    "us10y": {"symbol": "TVC:US10Y", "unit": "%", "marketType": "bond_yield", "session": "us_yield"},
+    "dow": {"symbol": "TVC:DJI", "unit": "pt", "marketType": "index", "session": "us_cash", "marketTimezone": "America/New_York"},
+    "nasdaq": {"symbol": "NASDAQ:IXIC", "unit": "pt", "marketType": "index", "session": "us_cash", "marketTimezone": "America/New_York"},
+    "sp500": {"symbol": "SP:SPX", "unit": "pt", "marketType": "index", "session": "us_cash", "marketTimezone": "America/New_York"},
+    "russell2000": {"symbol": "CBOEFTSE:RUT", "unit": "pt", "marketType": "index", "session": "us_cash", "marketTimezone": "America/New_York"},
+    "nikkei225_cash": {"symbol": "TVC:NI225", "unit": "円", "marketType": "index", "session": "japan_cash", "marketTimezone": "Asia/Tokyo"},
+    "gold": {"symbol": "COMEX:GC1!", "unit": "USD/oz", "marketType": "continuous_futures", "session": "comex", "marketTimezone": "America/Chicago"},
+    "wti": {"symbol": "NYMEX:CL1!", "unit": "USD/bbl", "marketType": "continuous_futures", "session": "nymex", "marketTimezone": "America/Chicago"},
+    "nikkei225_futures_ose": {"symbol": "OSE:NK2251!", "unit": "円", "marketType": "futures_ose", "session": "ose", "marketTimezone": "Asia/Tokyo"},
+    "cme_nikkei225_jpy": {"symbol": "CME:NIY1!", "unit": "円", "marketType": "futures_cme", "session": "cme", "marketTimezone": "America/Chicago"},
+    "cme_nikkei225_usd": {"symbol": "CME:NKD1!", "unit": "USD", "marketType": "futures_cme", "session": "cme", "marketTimezone": "America/Chicago"},
+    "usdjpy": {"symbol": "FX:USDJPY", "unit": "JPY per USD", "marketType": "spot", "session": "forex_daily", "marketTimezone": "America/New_York"},
+    "eurusd": {"symbol": "FX:EURUSD", "unit": "USD per EUR", "marketType": "spot", "session": "forex_daily", "marketTimezone": "America/New_York"},
+    "btcusd": {"symbol": "BITSTAMP:BTCUSD", "unit": "USD", "marketType": "spot", "session": "utc_daily", "marketTimezone": "UTC"},
+    "vix": {"symbol": "CBOE:VIX", "unit": "pt", "marketType": "index", "session": "us_volatility", "marketTimezone": "America/New_York"},
+    "nikkei_vi": {"symbol": "TOCOM:NVI", "unit": "pt", "marketType": "index", "session": "japan_cash", "marketTimezone": "Asia/Tokyo"},
+    "jp10y": {"symbol": "TVC:JP10Y", "unit": "%", "marketType": "bond_yield", "session": "japan_yield", "marketTimezone": "Asia/Tokyo"},
+    "us10y": {"symbol": "TVC:US10Y", "unit": "%", "marketType": "bond_yield", "session": "us_yield", "marketTimezone": "America/New_York"},
 }
 
 
@@ -139,8 +140,9 @@ def normalize_snapshot(snapshot: dict[str, Any], now: dt.datetime | None = None)
             market_date = dt.date.fromisoformat(market_date_text)
         except ValueError as exc:
             raise CandidateImportError(f"{item_id}.marketDate must be YYYY-MM-DD") from exc
-        if market_date > retrieved.date():
-            raise CandidateImportError(f"{item_id} market date is later than retrieval date")
+        market_today = retrieved.astimezone(ZoneInfo(contract["marketTimezone"])).date()
+        if market_date > market_today:
+            raise CandidateImportError(f"{item_id} market date is later than retrieval date in its market timezone")
         value = finite_number(item.get("value"), f"{item_id}.value")
         candidates.append({
             "id": item_id,
@@ -149,6 +151,7 @@ def normalize_snapshot(snapshot: dict[str, Any], now: dt.datetime | None = None)
             "unit": contract["unit"],
             "marketType": contract["marketType"],
             "session": contract["session"],
+            "marketTimezone": contract["marketTimezone"],
             "interval": "1D",
             "barAnchorUtc": anchor.isoformat().replace("+00:00", "Z"),
             "marketDate": market_date.isoformat(),
