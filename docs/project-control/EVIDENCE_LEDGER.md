@@ -274,3 +274,13 @@ Timestamp: 2026-10-12 02:29 JST.
 - MOF 10-year series and publication timing: https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/qa.htm
 - MOF general data reuse notice: https://www.mof.go.jp/about_mof/notice/index.html
 - CME settlement-page reference disclaimer and historical access details: https://www.cmegroup.com/market-data/daily-settlements.html
+
+
+## 2026-10-12 read-only Nikkei validation path
+
+- Added a manual `validate-only` target `nikkei-official-indexes` for the configured official Nikkei 225 close, official Nikkei VI close, and the 25/200-session deviations derived from Nikkei official closes. It requests only those four configured routes and prints metadata (market date, source ID, status and validation code), never quote values. It cannot update snapshots, exports, dashboard JSON, public Git data, or Sheets.
+- Existing automated-source-rights attestation remains required for this target; no broad or scheduled Nikkei collection was enabled. The official source-use page permits limited personal use/citation but describes licensing for other uses. A read-only check is not treated as retention/public-display permission.
+- E4/E5 limit: GitHub Actions run #195 (`38166584975`) on commit `3101af5595200d4ed5789b0228ac89b6d33748bc` passed candidate/import-verifier tests, official adapter tests, and the existing live MOF/BOJ/ECB/Kraken reference validations. The new Nikkei target was not invoked, so its runtime acquisition remains NOT_RUN. This is deliberate: run #195 was a PR check, not a manually selected provider run.
+- Counts remain TradingView candidate VERIFIED 8 / CONFLICT 2 / PENDING 7, with evidence classes listed above. Live official report-field validation remains 2/28 (US10Y Treasury, JP10Y MOF); dedicated real-data Sheets save/readback remains 1/28 (US10Y from run #80). The official Nikkei close/VI/deviation routes are connected in configuration but do not count as runtime-verified. No test-sheet or production-sheet write occurred in run #195; production “終値一覧” is unchanged.
+- Next validation command is a manual Actions dispatch selecting `acquisition_mode=validate-only`, `validation_target=nikkei-official-indexes`, and `source_automation_rights_confirmed=true`. It is limited to source/date/numeric validation; it does not persist values.
+- PR #94 remains OPEN/DRAFT/unmerged; no main merge or production write occurred.
