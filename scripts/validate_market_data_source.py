@@ -38,15 +38,31 @@ def validate(symbol_id: str, source_id: str) -> dict[str, Any]:
     now = market_data.now_jst()
     not_future_dated = bool(timestamp and timestamp <= now)
     valid = ok and not_future_dated
+    current_value = market_data.safe_float(raw.get("value"))
+    previous_close = market_data.safe_float(raw.get("previousClose"))
+    observed_change = market_data.safe_float(raw.get("change"))
+    if current_value is None or previous_close is None:
+        direction = "UNKNOWN"
+        direction_check = "NOT_AVAILABLE"
+    else:
+        delta = current_value - previous_close
+        direction = "UP" if delta > 0 else "DOWN" if delta < 0 else "FLAT"
+        if observed_change is None:
+            direction_check = "NOT_AVAILABLE"
+        else:
+            observed_direction = "UP" if observed_change > 0 else "DOWN" if observed_change < 0 else "FLAT"
+            direction_check = "CONSISTENT" if direction == observed_direction else "MISMATCH"
     return {
         "symbol": symbol_id,
         "sourceId": source_id,
         "status": "verified" if valid else "rejected",
         "asOf": raw.get("asOf"),
         "marketDate": timestamp.date().isoformat() if timestamp else None,
-        "valuePresent": raw.get("value") is not None,
+        "valuePresent": current_value is not None,
         "sourceMatches": raw.get("sourceId") == source_id,
         "notFutureDated": not_future_dated,
+        "direction": direction,
+        "directionCheck": direction_check,
         "validationCode": "OK" if valid else "FUTURE_DATE" if ok else code,
     }
 
