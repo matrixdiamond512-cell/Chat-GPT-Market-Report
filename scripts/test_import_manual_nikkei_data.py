@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import unittest
 
-from scripts.import_manual_nikkei_data import ManualImportError, normalize_manual_data
+from scripts.import_manual_nikkei_data import ManualImportError, manual_report_ready_rows, normalize_manual_data
 
 
 def make_payload() -> dict:
@@ -61,6 +61,13 @@ class ManualNikkeiImportTests(unittest.TestCase):
         payload["marketDate"] = "2026-10-13"
         with self.assertRaisesRegex(ManualImportError, "future"):
             normalize_manual_data(payload, now=dt.datetime.fromisoformat("2026-10-12T12:00:00+09:00"))
+
+    def test_manual_values_reach_report_ready_only_after_explicit_source_review(self) -> None:
+        result = normalize_manual_data(make_payload(), now=dt.datetime.fromisoformat("2026-10-12T12:00:00+09:00"))
+        self.assertEqual(manual_report_ready_rows(result, False), [])
+        ready = manual_report_ready_rows(result, True)
+        self.assertEqual(len(ready), 4)
+        self.assertTrue(all(row[10] == "VERIFIED_MANUAL" for row in ready))
 
 
 if __name__ == "__main__":
