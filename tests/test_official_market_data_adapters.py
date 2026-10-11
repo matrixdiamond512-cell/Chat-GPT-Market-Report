@@ -144,5 +144,57 @@ class OfficialMarketDataAdapterTests(unittest.TestCase):
 
 
 
+    def test_official_nikkei_vi_profile_parses_japanese_title_and_jst_timestamp(self):
+        source={"id":"nikkei_vi","name":"Nikkei VI official profile","url":"https://indexes.nikkei.co.jp/nkave/index/profile?cid=7&idx=nk225vi",
+                "marketType":"index","session":"daily"}
+        html_text="<h1>日経平均ボラティリティー・インデックス</h1><span>30.14</span><span>+1.86% +0.55 2026.10.09(15:50)</span>"
+        with patch.object(market_data,"http_text",return_value=html_text):
+            value=market_data.fetch_nikkei_profile(source)
+        self.assertEqual(value["value"],30.14)
+        self.assertEqual(value["asOf"],"2026-10-09T15:50:00+09:00")
+        self.assertEqual(value["reportedDecimalPlaces"],2)
+
+    def test_nikkei_official_daily_csv_selects_latest_close_not_future_row(self):
+        source={"id":"nikkei_official_daily","name":"Nikkei official daily CSV","url":"https://example.test/nikkei.csv",
+                "marketType":"index","session":"japan_cash","targetDate":"2026-10-09"}
+        payload=("日付,終値,始値,高値,安値\\n"
+                 "2026.10.08,69042.11,69840.64,69918.20,69042.11\\n"
+                 "2026.10.09,69030.92,68648.50,69143.45,68150.02\\n"
+                 "2026.10.13,70000.00,69000.00,70100.00,68900.00\\n").encode("utf-8")
+        with patch.object(market_data,"http_get",return_value=(payload,"utf-8")):
+            value=market_data.fetch_nikkei_daily_csv(source)
+        self.assertEqual(value["value"],69030.92)
+        self.assertEqual(value["previousClose"],69042.11)
+        self.assertEqual(value["asOf"],"2026-10-09T15:30:00+09:00")
+        self.assertEqual(value["reportedDecimalPlaces"],2)
+
+    def test_nikkei_official_sma_uses_exact_window_on_or_before_target(self):
+        source={"id":"nikkei_dev25","name":"Nikkei official SMA25","url":"https://example.test/nikkei.csv",
+                "marketType":"index","session":"japan_cash","targetDate":"2026-10-09","window":25}
+        dates=[]
+        day=market_data.dt.date(2026,9,1)
+        while len(dates)<26:
+            if day.weekday()<5:
+                dates.append(day)
+            day += market_data.dt.timedelta(days=1)
+        rows=["Date,Close"]
+        rows += [f"{d:%Y.%m.%d},{i}" for i,d in enumerate(dates,1)]
+        payload=("\\n".join(rows)+"\\n").encode("utf-8")
+        with patch.object(market_data,"http_get",return_value=(payload,"utf-8")):
+            value=market_data.fetch_nikkei_sma_deviation(source)
+        self.assertAlmostEqual(value["value"],(25/13-1)*100)
+        self.assertEqual(value["asOf"],f"{dates[24].isoformat()}T15:30:00+09:00")
+        self.assertEqual(value["window"],25)
+
+    def test_nikkei_csv_fails_closed_if_close_column_is_not_identifiable(self):
+        source={"id":"nikkei","url":"https://example.test","targetDate":"2026-10-09"}
+        payload=b"Date,Open,High,Low,Volume\\n2026.10.09,1,2,0,10\\n"
+        with patch.object(market_data,"http_get",return_value=(payload,"utf-8")):
+            with self.assertRaises(market_data.FetchError) as raised:
+                market_data.fetch_nikkei_daily_csv(source)
+        self.assertEqual(raised.exception.code,"PARSE_ERROR")
+
+
+
 if __name__ == "__main__":
     unittest.main()
