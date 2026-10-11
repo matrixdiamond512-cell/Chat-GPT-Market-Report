@@ -21,6 +21,9 @@ def main() -> None:
     if not rows:
         raise SystemExit("BOJ spot volume records missing; cannot align dates")
     missing_dates = {r["targetDate"] for r in rows[:20] if any(r.get(k) is None for k in (*core.FIELDS, "priceChangePct"))}
+    if not missing_dates:
+        print("USDJPY OHLC coverage: latest 20 BOJ trading sessions complete; no fetch needed.")
+        return
     # Ask for one earlier reference close to compute first backfilled date's
     # day-over-day change using the SAME Yahoo JP series, not Investing.com.
     if missing_dates:
