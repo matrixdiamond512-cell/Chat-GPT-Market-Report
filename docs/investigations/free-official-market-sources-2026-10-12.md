@@ -155,3 +155,28 @@ JPX's official “Settlement Prices for Futures and Options” page confirms a c
 TradingView's Japan market page exposes advancing/declining breadth. Its published definition says country-level breadth counts all listed stocks in the country: positive change is advancing; zero or negative change is declining. This differs from an exchange-segment-only Prime metric. The user's screenshot's 2.46K/1.41K labels are rounded display figures, not exact counts. [TradingView Japan market page](https://jp.tradingview.com/markets/japan/) · [Market-breadth methodology](https://www.tradingview.com/support/solutions/43000794825-market-breadth-advancing-and-declining/)
 
 A read-only official TradingView MCP screener call returned exact totalCount values for Japan stocks (2,471 advancing; 1,432 declining) at approximately 2026-10-12 04:11 JST. The result did not include the underlying market-date, so it is not verified as a daily close. A screener attempt to restrict to “Tokyo Stock Exchange Prime Market Index” was rejected: that index is not supported in the MCP's index filter. Accordingly, these figures are supplemental Japan-wide breadth only. They do not fill the TSE Prime advancing/declining count fields, and no automation, report mapping, or sheet write was enabled.
+
+
+## Official-source implementation follow-up — 2026-10-12
+
+### Nikkei official index series
+
+The 3-year daily CSV route remains technically connected for Nikkei 225 and Nikkei VI, with 25/200 deviations derived from the official Nikkei 225 close series. Nikkei's current license page clarifies that automatic machine processing for internal use requires contacting Nikkei and receiving permission under a license agreement. Thus the official series is a verified source definition but is not currently an authorized Actions automation path. The implementation now exposes a guarded, one-off private test-Sheets roundtrip; it requires source-automation and private-sheet confirmations, uses its own three test tabs, performs numeric/date readback and duplicate prevention, and cannot target the production close list. No Nikkei runtime values were acquired in run #206.
+
+### TSE Daily Report
+
+The official Daily Report guide says the report is posted on the first business day after a trading day. Estimated/Settled contains market-section statistics: Estimated is the current trading day, while Settled is for four business days earlier. The page lists daily report, stock quotation and bond quotation files. The browser-visible version uses a dynamic date selector and did not expose a stable direct file URL or enough metadata to establish CSV/Excel/PDF format for the specific report file. Prime market value/volume may be present in this official report family, but no parser, row-level Prime evidence, or automated-retention permission is established here. Daily report figures must be labeled Estimated or Settled; they are not silently interchangeable.
+
+### Named futures settlement access
+
+CME's official settlement overview defines daily settlements as values from the product's settlement period/close. It directs users to CME DataMine for access to daily/final settlement data and does not expose a documented free public bulk API on the overview. The existing continuous or named TradingView OHLC bars therefore remain references, not CME official settlements. An automated contract-specific settlement adapter is not claimed until a permitted machine-readable distribution is identified.
+
+### CNN Fear & Greed
+
+The commonly used CNN graphdata endpoint is an undocumented site endpoint found in independent client code and is subject to bot responses; it is not documented as a public API by CNN. It remains disabled for automated use. This is the CNN equity Fear & Greed series and cannot be replaced with the distinct CoinMarketCap Crypto Fear & Greed metric.
+
+Primary source references: [Nikkei internal-use machine processing terms](https://indexes.nikkei.co.jp/nkave/license/non-display_usage.en.html), [JPX Daily Report](https://www.jpx.co.jp/markets/statistics-equities/daily/index.html), [JPX Daily Report guide](https://www.jpx.co.jp/english/markets/statistics-equities/daily/01.html), and [CME Daily Settlements](https://www.cmegroup.com/market-data/daily-settlements.html). The third-party CNN client is discovery evidence only: https://github.com/whit3rabbit/fear-greed-data/blob/main/scripts/fetch_cnn.py.
+
+### Runtime boundary
+
+Actions run #206 (38167365312) passed code guards and existing provider checks at PR commit 25cf3d94d8e9cc4a71fae88e5968fbe36ef34371; it did not invoke the Nikkei-only job or Sheets write jobs. PR remains OPEN/Draft/unmerged. No production sheet or public dashboard value was changed.
