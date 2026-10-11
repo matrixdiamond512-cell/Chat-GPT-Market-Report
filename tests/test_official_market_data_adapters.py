@@ -76,5 +76,41 @@ class OfficialMarketDataAdapterTests(unittest.TestCase):
         self.assertEqual(raised.exception.code,"SOURCE_ERROR")
 
 
+    def test_ecb_daily_csv_selects_usd_per_eur_and_preserves_reference_date(self):
+        source={"id":"ecb_eurusd_daily_reference","name":"ECB EUR/USD reference",
+                "url":"https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A",
+                "seriesKey":"D.USD.EUR.SP00.A","marketType":"spot",
+                "session":"euro_reference_daily_1600_cet","currency":"USD",
+                "currencyDenominator":"EUR","lookbackDays":20}
+        payload=("KEY,FREQ,CURRENCY,CURRENCY_DENOM,EXR_TYPE,EXR_SUFFIX,TIME_PERIOD,OBS_VALUE\\n"
+                 "D.USD.EUR.SP00.A,D,USD,EUR,SP00,A,2026-10-08,1.1201\\n"
+                 "D.USD.EUR.SP00.A,D,USD,EUR,SP00,A,2026-10-09,1.1206\\n").encode()
+        seen={}
+        def fake_http_get(url,timeout=20,headers=None):
+            seen.update(url=url,timeout=timeout,headers=headers)
+            return payload,"utf-8"
+        fixed_now=market_data.dt.datetime(2026,10,12,10,tzinfo=market_data.JST)
+        with patch.object(market_data,"http_get",side_effect=fake_http_get), patch.object(
+            market_data,"now_jst",return_value=fixed_now
+        ):
+            value=market_data.fetch_ecb_reference_rate(source)
+        self.assertEqual(value["value"],1.1206)
+        self.assertEqual(value["previousClose"],1.1201)
+        self.assertEqual(value["asOf"],"2026-10-09")
+        self.assertEqual(value["rawReference"],"D.USD.EUR.SP00.A")
+        self.assertIn("startPeriod=2026-09-22",seen["url"])
+        self.assertIn("format=csvdata",seen["url"])
+
+    def test_ecb_parser_rejects_rows_for_a_different_currency_pair(self):
+        source={"id":"ecb","name":"ECB","url":"https://example.test","seriesKey":"D.USD.EUR.SP00.A",
+                "currency":"USD","currencyDenominator":"EUR"}
+        payload=("CURRENCY,CURRENCY_DENOM,TIME_PERIOD,OBS_VALUE\\n"
+                 "JPY,EUR,2026-10-09,177.34\\n").encode()
+        with patch.object(market_data,"http_get",return_value=(payload,"utf-8")):
+            with self.assertRaises(market_data.FetchError) as raised:
+                market_data.fetch_ecb_reference_rate(source)
+        self.assertEqual(raised.exception.code,"PARSE_ERROR")
+
+
 if __name__ == "__main__":
     unittest.main()
