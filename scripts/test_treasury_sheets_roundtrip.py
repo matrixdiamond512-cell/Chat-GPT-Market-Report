@@ -125,7 +125,7 @@ def run() -> dict[str, Any]:
     row = input_rows[1] + [""] * max(0, len(SHEET_HEADERS) - len(input_rows[1]))
     if header[:len(SHEET_HEADERS)] != SHEET_HEADERS:
         raise SheetsSyncError("TREASURY_INPUT_HEADER_MISMATCH")
-    if row[4] != "us10y" or row[20] != verified["sourceId"]:
+    if row[4] != "us10y" or row[20] != "U.S. Treasury Daily Treasury Par Yield Curve Rates" or row[21] != "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml":
         raise SheetsSyncError("TREASURY_INPUT_IDENTITY_MISMATCH")
     if not isinstance(row[7], (int, float)) or not math.isclose(float(row[7]), value, rel_tol=0, abs_tol=1e-9):
         raise SheetsSyncError("TREASURY_INPUT_NUMERIC_READBACK_MISMATCH")
