@@ -135,3 +135,13 @@ LIMITS / OPEN OUTCOMES: This report is a retrospective validation artifact. It i
 NEXT NECESSARY ACTION: Run the updated PR checks, confirm Draft/unmerged state, and then acquire a fresh source-specific snapshot before producing a current report. Continue filling unavailable fields without substituting estimates.
 
 Timestamp: 2026-10-12 JST.
+
+### Final report-row readback correction — 2026-10-12
+- The final existing report row in private test spreadsheet `Market Data API Test`, tab `Personal_Market_Report`, range `A1:I2`, was read back after the report-body refresh. The stored body SHA-256 is `fd6ad13a98a5c6aa8e8357dcc39469aacb3a23deb9d96cc44abac88f24131f9a`; its length is 6,188 characters. This supersedes the earlier 5,973-character measurement above, which referred to the prior body revision.
+- Readback confirmed report ID `personal-report-b8df1dfd812c1b7a3609a943`, historical data range 2026-10-09 through 2026-10-10, and counts 9 verified / 5 reference-only / 14 unavailable across 28 fields. The exact body, headers, counts, and hash matched. The stable exact-retry decision is `SKIP_EXACT_DUPLICATE`; no second report row was appended.
+- The report contains the preserved detailed narrative sections and all 28 item rows. Its narrative timestamp remains 2026-10-09 21:00 JST and is labeled as unchanged historical prose, not recomputed from the quote snapshot. It is explicitly marked `historical_only`, not current market guidance.
+- GitHub Actions run [#236](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/38170631339) on code HEAD `43db72d4d732b503e156798f523dec8f5d929362` completed successfully for candidate/report tests and compile plus the official-reference validation job. The update and all Sheets jobs were skipped; this run did not acquire a fresh full-market snapshot and is not evidence of an Actions-based Sheet write.
+- The private test spreadsheet was written/read through the connected Google Sheets account. Production `終値一覧` was not accessed or modified. The remaining 14 fields are unavailable in this historical report; a fresh acquisition is still required before current use.
+- PR #94 remains OPEN / Draft / unmerged; main was not changed.
+
+Timestamp: 2026-10-12 JST.
