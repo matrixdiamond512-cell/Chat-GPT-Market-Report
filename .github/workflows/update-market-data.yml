@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/update-market-data.yml
       - scripts/validate_market_data_source.py
+      - scripts/test_treasury_sheets_roundtrip.py
       - scripts/fetch_market_data.py
       - config/market_data_sources.json
       - config/market_data_validation.json
@@ -63,6 +64,11 @@ on:
         required: false
         default: false
         type: boolean
+      run_treasury_sheets_test:
+        description: "Fetch only verified U.S. Treasury 10-year data and save/read it only in the dedicated test spreadsheet"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -73,7 +79,7 @@ concurrency:
 
 jobs:
   update:
-    if: github.event_name == 'workflow_dispatch' && inputs.run_sheets_test_roundtrip != true
+    if: github.event_name == 'workflow_dispatch' && inputs.run_sheets_test_roundtrip != true && inputs.run_treasury_sheets_test != true
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -313,6 +319,41 @@ jobs:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: python -m scripts.test_market_data_sheets_roundtrip
+
+  treasury-sheets-test:
+    if: inputs.run_treasury_sheets_test == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Require explicit source and private-sheet authorization
+        shell: bash
+        run: |
+          if [ "${{ inputs.source_automation_rights_confirmed }}" != "true" ] || [ "${{ inputs.private_sheets_storage_confirmed }}" != "true" ]; then
+            echo "::error::Treasury test not started. Confirm official-source automated access and private test-sheet storage."
+            exit 78
+          fi
+
+      - name: Checkout selected PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Sheets API dependencies
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
+
+      - name: Save, read back, and retry official Treasury data in test sheet only
+        env:
+          MARKET_DATA_TEST_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_TEST_SPREADSHEET_ID }}
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python -m scripts.test_treasury_sheets_roundtrip
 
   treasury-validation:
     if: github.event_name == 'pull_request'
