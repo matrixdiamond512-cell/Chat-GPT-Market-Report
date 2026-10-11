@@ -82,9 +82,9 @@ class OfficialMarketDataAdapterTests(unittest.TestCase):
                 "seriesKey":"D.USD.EUR.SP00.A","marketType":"spot",
                 "session":"euro_reference_daily_1600_cet","currency":"USD",
                 "currencyDenominator":"EUR","lookbackDays":20}
-        payload=("KEY,FREQ,CURRENCY,CURRENCY_DENOM,EXR_TYPE,EXR_SUFFIX,TIME_PERIOD,OBS_VALUE\\n"
-                 "D.USD.EUR.SP00.A,D,USD,EUR,SP00,A,2026-10-08,1.1201\\n"
-                 "D.USD.EUR.SP00.A,D,USD,EUR,SP00,A,2026-10-09,1.1206\\n").encode()
+        payload=("KEY,FREQ,CURRENCY,CURRENCY_DENOM,EXR_TYPE,EXR_SUFFIX,TIME_PERIOD,OBS_VALUE\n"
+                 "D.USD.EUR.SP00.A,D,USD,EUR,SP00,A,2026-10-08,1.1201\n"
+                 "D.USD.EUR.SP00.A,D,USD,EUR,SP00,A,2026-10-09,1.1206\n").encode()
         seen={}
         def fake_http_get(url,timeout=20,headers=None):
             seen.update(url=url,timeout=timeout,headers=headers)
@@ -104,8 +104,8 @@ class OfficialMarketDataAdapterTests(unittest.TestCase):
     def test_ecb_parser_rejects_rows_for_a_different_currency_pair(self):
         source={"id":"ecb","name":"ECB","url":"https://example.test","seriesKey":"D.USD.EUR.SP00.A",
                 "currency":"USD","currencyDenominator":"EUR"}
-        payload=("CURRENCY,CURRENCY_DENOM,TIME_PERIOD,OBS_VALUE\\n"
-                 "JPY,EUR,2026-10-09,177.34\\n").encode()
+        payload=("CURRENCY,CURRENCY_DENOM,TIME_PERIOD,OBS_VALUE\n"
+                 "JPY,EUR,2026-10-09,177.34\n").encode()
         with patch.object(market_data,"http_get",return_value=(payload,"utf-8")):
             with self.assertRaises(market_data.FetchError) as raised:
                 market_data.fetch_ecb_reference_rate(source)
