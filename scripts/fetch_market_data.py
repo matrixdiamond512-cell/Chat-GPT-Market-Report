@@ -880,7 +880,7 @@ def fetch_ecb_reference_rate(source: dict[str, Any]) -> dict[str, Any]:
     for row in rows:
         period = str(row.get("TIME_PERIOD") or row.get("time_period") or "").strip()
         value = safe_float(row.get("OBS_VALUE") or row.get("obs_value"))
-        if not re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}", period) or value is None:
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", period) or value is None:
             continue
         currency = str(row.get("CURRENCY") or row.get("currency") or expected_currency).upper()
         denominator = str(row.get("CURRENCY_DENOM") or row.get("currency_denom") or expected_denominator).upper()
