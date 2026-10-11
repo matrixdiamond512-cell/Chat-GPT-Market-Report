@@ -396,3 +396,7 @@ jobs:
         if: always() && github.event_name == 'pull_request'
         run: python scripts/validate_market_data_source.py --symbol usdjpy --source-id boj_usdjpy_17_reference
 
+      - name: Validate official ECB EUR/USD daily reference series
+        if: always() && github.event_name == 'pull_request'
+        run: python scripts/validate_market_data_source.py --symbol eurusd --source-id ecb_eurusd_daily_reference
+
