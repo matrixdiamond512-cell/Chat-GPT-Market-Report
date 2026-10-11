@@ -14,6 +14,8 @@ on:
       - tests/test_official_market_data_adapters.py
       - scripts/import_tradingview_mcp_candidates.py
       - scripts/test_import_tradingview_mcp_candidates.py
+      - scripts/verify_tradingview_close.py
+      - scripts/test_verify_tradingview_close.py
   # Manual utility only. Scheduled acquisitions are handled by the dedicated
   # report-window workflows. Code/config pushes must never refresh or retag the
   # live market snapshot because the latest published report may belong to a
@@ -97,10 +99,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Compile manual candidate importer
-        run: python -m py_compile scripts/import_tradingview_mcp_candidates.py
-      - name: Test candidate validation and duplicate guards
-        run: python -m unittest scripts.test_import_tradingview_mcp_candidates
+      - name: Compile manual candidate importer and close verifier
+        run: python -m py_compile scripts/import_tradingview_mcp_candidates.py scripts/verify_tradingview_close.py
+      - name: Test candidate validation, duplicate guards, and close evidence
+        run: python -m unittest scripts.test_import_tradingview_mcp_candidates scripts.test_verify_tradingview_close
 
   update:
     if: github.event_name == 'workflow_dispatch' && inputs.run_sheets_test_roundtrip != true && inputs.run_treasury_sheets_test != true
@@ -150,8 +152,8 @@ jobs:
           python -m py_compile scripts/verify_market_report_readiness.py
           python -m py_compile scripts/validate_market_data_source.py
           python -m py_compile scripts/summarize_market_data_diagnostics.py
-          python -m py_compile scripts/import_tradingview_mcp_candidates.py
-          python -m unittest scripts.test_import_tradingview_mcp_candidates
+          python -m py_compile scripts/import_tradingview_mcp_candidates.py scripts/verify_tradingview_close.py
+          python -m unittest scripts.test_import_tradingview_mcp_candidates scripts.test_verify_tradingview_close
 
       - name: Require source-rights confirmation before contacting configured providers
         if: github.event_name == 'workflow_dispatch' && (inputs.acquisition_mode != 'validate-only' || inputs.validation_target == 'all-configured' || inputs.validation_target == 'fred-us10y')
