@@ -44,6 +44,50 @@ class TradingViewCloseEvidenceTests(unittest.TestCase):
         }
         self.assertNotEqual(verify_close_evidence(candidate, evidence)["status"], "VERIFIED")
 
+
+    def test_dow_provider_symbol_matches_trusted_daily_close_at_published_precision(self) -> None:
+        candidate = {
+            "id": "dow", "symbol": "DJ:DJI", "marketType": "index",
+            "marketDate": "2026-10-09", "barAnchorUtc": "2026-10-09T13:30:00Z", "value": "51654.95",
+        }
+        evidence = {
+            "type": "independent_daily_index_close", "sourceId": "ap_us_equity_close_summary",
+            "marketDate": "2026-10-09", "timezone": "America/New_York",
+            "closeTime": "16:00", "publishedDecimals": 2, "value": "51654.95",
+        }
+        self.assertEqual(verify_close_evidence(candidate, evidence)["status"], "VERIFIED")
+        evidence["marketDate"] = "2026-10-08"
+        self.assertEqual(verify_close_evidence(candidate, evidence)["status"], "CONFLICT")
+
+    def test_russell_independent_daily_close_matches_at_two_decimals(self) -> None:
+        candidate = {
+            "id": "russell2000", "symbol": "CBOEFTSE:RUT", "marketType": "index",
+            "marketDate": "2026-10-09", "barAnchorUtc": "2026-10-09T13:30:00Z", "value": "2806.9814",
+        }
+        evidence = {
+            "type": "independent_daily_index_close", "sourceId": "ap_us_equity_close_summary",
+            "marketDate": "2026-10-09", "timezone": "America/New_York",
+            "closeTime": "16:00", "publishedDecimals": 2, "value": "2806.98",
+        }
+        self.assertEqual(verify_close_evidence(candidate, evidence)["status"], "VERIFIED")
+
+    def test_vix_requires_two_matching_daily_history_sources(self) -> None:
+        candidate = {
+            "id": "vix", "symbol": "CBOE:VIX", "marketType": "index",
+            "marketDate": "2026-10-09", "barAnchorUtc": "2026-10-09T07:15:00Z", "value": "14.84",
+        }
+        evidence = {
+            "type": "independent_volatility_index_close", "marketDate": "2026-10-09",
+            "timezone": "America/New_York", "publishedDecimals": 2,
+            "references": [
+                {"sourceId": "yahoo_finance_vix_daily_history", "value": "14.84"},
+                {"sourceId": "chartexchange_vix_daily_history", "value": "14.84"},
+            ],
+        }
+        self.assertEqual(verify_close_evidence(candidate, evidence)["status"], "VERIFIED")
+        evidence["references"][1]["value"] = "14.83"
+        self.assertEqual(verify_close_evidence(candidate, evidence)["status"], "CONFLICT")
+
     def test_forex_daily_close_requires_matching_ny_17_boundary_and_market_date(self) -> None:
         candidate = {
             "id": "usdjpy", "symbol": "FX:USDJPY", "marketType": "spot",
