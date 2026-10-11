@@ -104,7 +104,30 @@ class PersonalSnapshotTests(unittest.TestCase):
             self.assertEqual(payload["markets"][field]["sourceId"], "manual_official_nikkei")
         self.assertEqual(report_counts(payload), (16, 5, 7))
 
+    def test_secondary_history_metric_stays_reference_and_news_is_time_bound(self):
+        source = self._source()
+        source["reportReadyValues"].append([
+            "manual-nikkei-dev25-20261009", "nikkei225_dev25", 4.231703, "%", "technical",
+            "japan_cash", "2026-10-09", "", "TradingView MCP TVC:NI225",
+            "History close differs from official cash close by 0.22 yen", "REFERENCE_ONLY",
+            "2026-10-11T20:33:27Z",
+        ])
+        source["news"] = [{
+            "title": "銀行決算と米CPIに注目",
+            "provider": "Reuters via TradingView MCP",
+            "url": "https://www.tradingview.com/news/reuters.test/",
+            "publishedAt": "2026-10-11T13:00:46Z",
+            "permission": "headline",
+        }]
+        payload = build_snapshot(source, "2026-10-12T05:33:27+09:00")
+        self.assertEqual(payload["markets"]["nikkei225_dev25"]["verificationStatus"], "reference_only")
+        self.assertEqual(payload["markets"]["nikkei225_dev25"]["value"], 4.231703)
+        self.assertEqual(payload["news"][0]["publishedAt"], "2026-10-11T13:00:46Z")
+        self.assertEqual(report_counts(payload), (9, 6, 13))
+        source["news"][0]["publishedAt"] = "2026-10-12T07:00:00Z"
+        with self.assertRaises(SnapshotError):
+            build_snapshot(source, "2026-10-12T05:33:27+09:00")
+
 
 if __name__ == "__main__":
     unittest.main()
-
