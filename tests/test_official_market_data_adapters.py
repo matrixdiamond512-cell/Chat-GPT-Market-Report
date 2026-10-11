@@ -112,5 +112,36 @@ class OfficialMarketDataAdapterTests(unittest.TestCase):
         self.assertEqual(raised.exception.code,"PARSE_ERROR")
 
 
+    def test_kraken_adapter_uses_last_completed_utc_btcusd_candle(self):
+        source={"id":"kraken_btcusd_daily_close","name":"Kraken BTC/USD daily close",
+                "url":"https://api.kraken.com/0/public/OHLC","pair":"XBTUSD",
+                "resultKey":"XXBTZUSD","intervalMinutes":1440,"marketType":"spot_crypto",
+                "session":"kraken_utc_daily_close"}
+        dates=[market_data.dt.datetime(2026,10,8,tzinfo=market_data.UTC),
+               market_data.dt.datetime(2026,10,9,tzinfo=market_data.UTC),
+               market_data.dt.datetime(2026,10,10,tzinfo=market_data.UTC)]
+        rows=[[int(d.timestamp()),"1","2","0.5",str(close),"1","1",1]
+              for d,close in zip(dates,[62000,62500,63000])]
+        seen={}
+        def fake_http_text(url,timeout=20,headers=None):
+            seen.update(url=url,timeout=timeout,headers=headers)
+            return json.dumps({"error":[],"result":{"XXBTZUSD":rows,"last":123}})
+        with patch.object(market_data,"http_text",side_effect=fake_http_text):
+            value=market_data.fetch_kraken_ohlc(source)
+        self.assertEqual(value["value"],62500.0)
+        self.assertEqual(value["previousClose"],62000.0)
+        self.assertEqual(value["asOf"],"2026-10-09T23:59:59+00:00")
+        self.assertIn("pair=XBTUSD",seen["url"])
+        self.assertIn("interval=1440",seen["url"])
+
+    def test_kraken_adapter_fails_on_api_error(self):
+        source={"id":"kraken","url":"https://api.kraken.com/0/public/OHLC",
+                "pair":"XBTUSD","resultKey":"XXBTZUSD","intervalMinutes":1440}
+        with patch.object(market_data,"http_text",return_value='{"error":["EGeneral:Invalid arguments"],"result":{}}'):
+            with self.assertRaises(market_data.FetchError) as raised:
+                market_data.fetch_kraken_ohlc(source)
+        self.assertEqual(raised.exception.code,"SOURCE_ERROR")
+
+
 if __name__ == "__main__":
     unittest.main()
