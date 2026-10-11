@@ -132,6 +132,40 @@ JPX's individual-investor J-Quants API free plan is an explicit programmatic-acc
 - J-Quants plan and delay: https://jpx-jquants.com/dashboard/menu/
 - J-Quants API overview: https://jpx-jquants.com/?lang=ja%2F
 
+
+## Existing connected report routes: source-specific use scope
+
+This matrix covers the 18 required report-item routes currently connected in `config/market_data_sources.json`. A code path is not an access license. “Private Sheets” is a personal-analysis store; “GitHub” includes committing data or leaving quote values in public Actions logs; “public display” includes the dashboard and public report. Permission in one column does not grant the other two.
+
+| Provider / configured fields | Automated request | Private Google Sheets | Public GitHub storage / Actions logs | Public dashboard / report |
+| --- | --- | --- | --- | --- |
+| Yahoo Finance (`dow`, `nasdaq`, `sp500`, `russell2000`, `nikkei225_cash`, `gold`, `wti`, `usdjpy`, `eurusd`, `btcusd`, `vix`, `nikkei225_dev25`, `nikkei225_dev200`) | Yahoo Terms expressly require prior permission for automated collection. No permission is configured. | Not established by public visibility; permission needed before recurring collection. | Not authorized by the access terms; do not commit or log quote values. | No display/redistribution right established. |
+| Stooq (`gold` spot fallback, `wti`, `usdjpy`, `eurusd`, `btcusd`) | No machine-readable license/terms establishing this collector's recurring automated access was located in the reviewed official pages. Status is UNKNOWN, not permission. | UNKNOWN pending provider terms. | UNKNOWN; do not persist publicly. | UNKNOWN; do not display. |
+| JPX/OSE quote page (`nikkei225_futures_ose`) | Public delayed quote page is not an authorized API; applicable secondary-use terms and permissions remain unconfirmed. | UNKNOWN pending an approved feed/permission. | Not authorized by the current evidence. | Not authorized by the current evidence. |
+| Nikkei Indexes (`nikkei225_futures_ose` reference-only, `nikkei_vi`) | Nikkei retains index rights and describes separate display/non-display licensing. No automated-access permission is configured. | Personal viewing is distinct from recurring retrieval and retention; automation scope remains UNKNOWN. | Not authorized by the current evidence. | Requires the appropriate index display approval/license. |
+| Cboe (`vix` EOD source) | Cboe data policies govern access and storage; no Cboe feed entitlement is configured for this project. | Internal/personal use is not established by merely viewing the page or CSV. | No redistribution permission established. | No public redistribution permission established. |
+| CNN (`fear_greed`) | Existing adapter uses a site-internal graph-data endpoint; no documented public API or automated-access grant was found. | UNKNOWN; do not infer permission from the page's public display. | No public persistence permission established. | No public display permission established. |
+| U.S. Treasury (`us10y` primary) | The official XML feed documents programmatic GET retrieval. This is the only source-specific route in the current config that has an official machine-readable endpoint documented for this collector. | Candidate for the private sheet route, with date/source attribution retained. | Public retention/output rights were not independently established in this review; current collect-only mode does not persist it. | Confirm applicable Treasury terms and attribution before enabling output. |
+| FRED / Board of Governors (`us10y` fallback) | The current adapter reads a graph CSV URL, not the documented FRED API. The DGS10 series is marked copyrighted and sourced from the Board of Governors; FRED API has additional terms. Do not contact this fallback until use of the official API and the source-series scope are resolved. | Personal non-commercial use may be available under FRED terms, but the source copyright and API-specific terms still apply. | Not cleared for this project's public commit/log use. | Not cleared for public report display by this review. |
+| Local `rates-bonds.json` (`jp10y`) | No provider request occurs in this adapter; it reuses a same-date confirmed local record. The record's underlying LSEG terms are not represented in its schema. | UNKNOWN until the upstream LSEG entitlement and scope are recorded. | The public repository copy is a separate storage/distribution use and is not cleared by this adapter. | Not cleared until LSEG source rights and report display scope are verified. |
+| CoinMarketCap (`crypto_fear_greed`, optional / not required) | Existing code path is not an established licensed production API route. The personal API terms limit storage to caching and restrict third-party availability. | Long-term sheet history is not established as permitted; this optional metric is not part of the 18 required items. | Not authorized by the reviewed personal terms. | Not authorized by the reviewed personal terms. |
+
+Primary terms reviewed for the new matrix:
+- Yahoo Terms of Service (automated collection requires express prior permission): https://legal.yahoo.com/us/en/yahoo/terms/otos/index.html
+- CME Market Data Terms (applies to the two open CME futures routes): https://www.cmegroup.com/trading/market-data-explanation-disclaimer.html
+- Cboe Market Data Services document library and policies: https://www.cboe.com/data/market-data-services/document-library
+- FRED legal notices / service and API terms: https://fred.stlouisfed.org/legal/
+- FRED DGS10 series page (source attribution and copyright notice): https://fred.stlouisfed.org/series/DGS10
+- CoinMarketCap personal API terms: https://pro.coinmarketcap.com/user-agreement-personal/
+- Nikkei Indexes profile and license / index-data sections: https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=3&idx=nk225vi
+- U.S. Treasury XML feed documentation: https://home.treasury.gov/treasury-daily-interest-rate-xml-feed
+
+### Run #46: incomplete diagnostic payload
+
+The preserved evidence identifies `nikkei225_cash` as unavailable with a stale-data validation result and reports two fallback items. After the run's job-log endpoint began returning 404, neither the fallback item IDs nor their per-source error codes could be re-read from GitHub. No artifacts were listed for run #46. They remain UNKNOWN; do not assign a provider failure cause to either item. The acquisition code shows fallback is used when no current candidate passes validation or same-market source comparison detects excessive divergence, but that code path alone does not prove which condition occurred for those two symbols.
+
+The collect-only workflow summary is being expanded to emit each item's fallback flag and source/error-code pairs while omitting quote values. This will make the next rights-authorized validation diagnostic without publishing numeric data. The PR's repository/dashboard writer continues to require separate downstream-use approval; automated-collection confirmation alone is not that approval.
+
 ### Method for the ten open fields
 
 1. CME Yen Nikkei futures: individual NIY=F deferred contract quote; automated use blocked by Yahoo terms. Realistic automated alternative: authorized CME/vendor feed; otherwise manual observation.
@@ -179,3 +213,4 @@ Sources:
 - Treasury XML feed format change notice (field schema): https://home.treasury.gov/developer-notice-xml-changes
 
 The route is connected in code but has not yet been executed on GitHub Actions. It does not raise the report-item route count above 18/28. Private Google Sheets storage and public GitHub/dashboard retention are separate downstream-use scopes; neither is exercised by this collect-only validator.
+
