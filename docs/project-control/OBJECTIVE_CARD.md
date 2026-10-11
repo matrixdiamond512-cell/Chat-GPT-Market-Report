@@ -155,3 +155,24 @@ OPEN OUTCOMES: E4 market-data collection for the other 17 connected routes; run 
 
 NEXT NECESSARY ACTION: Add the dedicated nonproduction sheet ID, distinct production sheet ID, and service-account JSON as repository or selected-organization Actions secrets, then run the PR branch's `sheets-test` workflow and verify readback/idempotency. The repository settings showed only `FMP_API_KEY`, no environment secrets, and no Google Sheets secret names; secret values were not opened. The workflow dispatch UI was not submitted because Windows Computer Use stopped when it could not safely establish Edge's current URL. Extend hosted validation to other individual sources only after automated access scope is confirmed. Keep PR #94 OPEN/DRAFT and unmerged.
 
+
+
+## Market data source permissions and live evidence — 2026-10-12 (ADD)
+
+PRIMARY OBJECTIVE: Improve the 28 required report fields using sources whose machine retrieval, retention, and display scopes are confirmed, while preserving existing routes and keeping PR #94 Draft.
+
+ACCEPTANCE UPDATE: Investigate alternatives before repeating prior terms checks; distinguish private personal Sheets, public GitHub retention, and public dashboard display; validate source identity, market definition, date, finite numeric presence, and direction in GitHub Actions; do not count reference/alternative-series observations as exact report inputs.
+
+IMPLEMENTED: Added and retained official reference adapters for MOF Japan 10-year CMT, BOJ USD/JPY Tokyo 17:00, ECB daily EUR/USD reference, and a separate Kraken single-venue BTC/USD UTC daily candle. Each is reference-only. Added a 28-field alternatives matrix. FMP candidate code/config/tests were removed after its current terms were reviewed; no FMP API request was made.
+
+EVIDENCE: Current head before evidence-document commits `bf7f25143214bce30682613c90d8cf023908bc51`, Actions run #119 (`38159134573`) PASS: four reference-only live probes, dated source/date/value-presence/direction checks PASS, and adapter tests 8/8. No output value, Sheets write, data commit, artifact, or dashboard update. Previous test-sheet run #80 proves one Treasury item save/readback with duplicate prevention.
+
+CURRENT COUNTS: 18/28 configured source paths (64.3%); 10 fields unconnected. Exact report-compatible live acquisition proven: 1/28 (US10Y, prior run #80). Dedicated test-sheet save/readback proven: 1/28 (US10Y, run #80). Current run production/public saves: 0. Four supplemental reference probes are excluded from the report-compatible count. Historic JPX gap fill remains 5/13; eight turnover/volume cells remain open.
+
+SOURCE DECISIONS: EIA RWTC is official WTI Cushing spot, not the existing CL continuous future. FMP Basic is $0/250 calls per day with EOD history, but its Terms prohibit copy/download without prior written approval and public data display requires a separate agreement. A proposed PR Actions step passing the FMP secret to its endpoint was rejected by auto-review while authorization/plan remained unconfirmed; no request was made. J-Quants Free is 12-week-delayed stock OHLC, does not include the required index data or JPX market aggregate. Do not substitute CNN Fear & Greed with CMC Crypto Fear & Greed.
+
+OPEN OUTCOMES: Rights/plan and exact data definition are not resolved for 17 other connected fields; 10 fields remain unconnected; no 28-item live batch; only one real-data test-sheet save is proven; no production sheet write; eight JPX Prime turnover/volume gaps remain. The unconnected 10 are two CME futures, Nikkei225 PER/PBR/EPS, and five TSE Prime aggregates/breadth fields.
+
+CONSTRAINTS: Preserve existing routes, report and sheet schemas; no unauthorized scraping, no data commit/public display without corresponding rights; no production Sheets write; no main merge.
+
+NEXT NECESSARY ACTION: Obtain written permission from FMP before any API-keyed hosted acquisition/retention test, or continue with other explicitly reusable exact-series endpoints. Keep reference routes isolated until attribution, session/freshness, and output-scope checks pass; retain PR #94 OPEN/DRAFT/unmerged.
