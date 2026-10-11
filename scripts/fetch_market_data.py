@@ -573,6 +573,7 @@ def fetch_fred_csv(source: dict[str, Any]) -> dict[str, Any]:
         previous_close=previous_value,
         as_of=latest_date,
         raw_reference=value_field,
+        reported_decimal_places=latest_precision,
     )
 
 
