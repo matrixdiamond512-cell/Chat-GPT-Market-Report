@@ -195,3 +195,7 @@ IMPLEMENTED: Added a manual 17-field MCP JSON normalizer and append-only private
 EVIDENCE: E4 retrieval 17/17 one-time 1D OHLCV observations. E5 test-sheet write/readback 17/17 candidate rows. Accepted report close/session validations 0/17, since source bar time/close definitions require per-market checks and the connector warns the latest bar may still be forming. The completed UTC daily BTC bar was used. Exact report-compatible route proofs stay 1/28; configured PR routes stay 18/28. New focused tests/actions have not run yet.
 
 NEXT NECESSARY ACTION: Verify PR Actions tests for the manual bridge; then align candidate dates/close definitions per market and connect only proven rows to a private-use report view. Keep schedule automation and public dashboard publication separately disabled until their specific scope is decided. PR #94 remains OPEN/DRAFT and unmerged.
+
+## 2026-10-12 MCP candidate import test result
+
+Local bundled Python: importer bytecode compilation PASS, focused tests 10/10 PASS. GitHub Actions run #143 on the current PR head: dedicated MCP candidate compile/test job PASS; separate official reference-validation job PASS; public snapshot update and both Sheets jobs SKIPPED. Date validation now uses the candidate market's timezone, with a regression for Asia/Tokyo date ahead of the current UTC calendar date. Candidate exact close/session acceptance remains 0/17. Private test tab holds 17/17 numeric candidate rows with readback; second live append/idempotency execution was not performed. PR #94 remains OPEN/DRAFT/unmerged.
