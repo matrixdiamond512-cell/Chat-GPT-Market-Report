@@ -199,3 +199,9 @@ NEXT NECESSARY ACTION: Verify PR Actions tests for the manual bridge; then align
 ## 2026-10-12 MCP candidate import test result
 
 Local bundled Python: importer bytecode compilation PASS, focused tests 10/10 PASS. GitHub Actions run #143 on the current PR head: dedicated MCP candidate compile/test job PASS; separate official reference-validation job PASS; public snapshot update and both Sheets jobs SKIPPED. Date validation now uses the candidate market's timezone, with a regression for Asia/Tokyo date ahead of the current UTC calendar date. Candidate exact close/session acceptance remains 0/17. Private test tab holds 17/17 numeric candidate rows with readback; second live append/idempotency execution was not performed. PR #94 remains OPEN/DRAFT/unmerged.
+
+## 2026-10-12 source-date and current Actions update
+
+The private candidate tab labels its date as Source Market Date and preserves each exact UTC bar anchor separately. The Japan 10-year yield date label is 2026-10-09 in Asia/Tokyo; the U.S. 10-year date label is 2026-10-08 in America/New_York. Only the new test tab header and Japan-yield date cell were corrected; existing values and tabs remain preserved.
+
+GitHub Actions run #148 on PR head f75273a74a833cf5984bb59ad57bebe31d54835e passed importer compile and its 10 focused tests; the separate official reference-validation job passed. Update and Sheets jobs were skipped. Candidate close/session validations remain 0/17; private candidate save/readback remains 17/17.
