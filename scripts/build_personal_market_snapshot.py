@@ -44,6 +44,12 @@ REFERENCE_MAP = {
     "cme_nikkei225_jpy": "nikkei225_futures_cme_yen",
     "cme_nikkei225_usd": "nikkei225_futures_cme_usd",
 }
+SUPPLEMENT_MAP = {
+    "jp10y": "jp10y", "fear_greed": "fear_greed",
+    "tse_prime_advancers": "tse_prime_advancers",
+    "tse_prime_decliners": "tse_prime_decliners",
+    "tse_prime_ad_ratio25": "tse_prime_ad_ratio25",
+}
 
 
 class SnapshotError(ValueError):
@@ -184,6 +190,45 @@ def build_snapshot(source: dict[str, Any], generated_at: str) -> dict[str, Any]:
             "note": "連続足の終値。限月別の公式清算値は未確認。",
         })
 
+    for row in source.get("supplementalValues") or []:
+        if not isinstance(row, dict):
+            raise SnapshotError("supplemental observation must be an object")
+        symbol = SUPPLEMENT_MAP.get(str(row.get("id") or ""))
+        if not symbol:
+            continue
+        if symbol in seen_ids:
+            raise SnapshotError("duplicate observation for one report field")
+        status = str(row.get("verificationStatus") or "")
+        if status not in {"verified", "reference_only"}:
+            continue
+        _, expected_unit, market_type, session = items_by_id[symbol]
+        if str(row.get("unit") or "") != expected_unit:
+            raise SnapshotError("supplemental source unit does not match its report field")
+        try:
+            value = float(row["value"])
+        except (ValueError, TypeError, KeyError) as exc:
+            raise SnapshotError("supplemental source value is not numeric") from exc
+        market_date = _parse_date(row.get("asOf"))
+        retrieved = _parse_timestamp(row.get("fetchedAt"))
+        retrieved_dt = dt.datetime.fromisoformat(retrieved.replace("Z", "+00:00"))
+        if market_date > retrieved_dt.astimezone(JST).date().isoformat():
+            raise SnapshotError("supplemental observation is future-dated relative to retrieval")
+        max_retrieved = max(max_retrieved, retrieved_dt) if max_retrieved else retrieved_dt
+        date_values.append(market_date)
+        is_reference = status == "reference_only"
+        markets[symbol].update({
+            "value": value, "displayValue": f"{value:.2f}" if symbol == "tse_prime_ad_ratio25" else str(row["value"]),
+            "unit": str(row["unit"]), "marketType": str(row.get("marketType") or market_type),
+            "session": str(row.get("session") or session), "asOf": market_date,
+            "fetchedAt": retrieved, "sourceId": str(row.get("sourceId") or ""),
+            "sourceName": str(row.get("sourceName") or ""), "sourceUrl": str(row.get("sourceUrl") or ""),
+            "verificationStatus": status, "referenceOnly": is_reference,
+            "verificationBasis": str(row.get("verificationBasis") or ""),
+            "marketSegment": str(row.get("marketSegment") or ""), "calculation": str(row.get("calculation") or ""),
+            "snapshotId": str(row.get("snapshotId") or "local-supplement"),
+            "note": "同じレポート用スナップショットの補完観測。",
+        })
+
     if len([m for m in markets.values() if m.get("verificationStatus") == "verified"]) < 9:
         raise SnapshotError("at least the nine previously verified report-ready observations are required")
     if len([m for m in markets.values() if m.get("referenceOnly")]) < 5:
@@ -235,9 +280,13 @@ def main() -> int:
     parser.add_argument("--input", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--generated-at", required=True)
+    parser.add_argument("--supplements", type=Path, help="Supplement JSON from already acquired dated data")
     args = parser.parse_args()
     try:
         source = json.loads(args.input.read_text(encoding="utf-8"))
+        if args.supplements:
+            supplement_payload = json.loads(args.supplements.read_text(encoding="utf-8"))
+            source["supplementalValues"] = supplement_payload.get("supplementalValues") or []
         payload = build_snapshot(source, args.generated_at)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

@@ -21,6 +21,7 @@ on:
       - scripts/build_chatgpt_report_input.py
       - scripts/build_personal_market_report.py
       - scripts/build_personal_market_snapshot.py
+      - scripts/build_personal_market_supplements.py
       - tests/test_personal_market_report.py
       - tests/test_personal_market_snapshot.py
       - scripts/verify_tradingview_close.py
@@ -120,13 +121,13 @@ jobs:
         with:
           python-version: "3.12"
       - name: Compile market snapshot, report and manual import paths
-        run: python -m py_compile scripts/import_tradingview_mcp_candidates.py scripts/import_manual_nikkei_data.py scripts/verify_tradingview_close.py scripts/build_chatgpt_report_input.py scripts/build_personal_market_snapshot.py scripts/build_personal_market_report.py
+        run: python -m py_compile scripts/import_tradingview_mcp_candidates.py scripts/import_manual_nikkei_data.py scripts/verify_tradingview_close.py scripts/build_chatgpt_report_input.py scripts/build_personal_market_snapshot.py scripts/build_personal_market_supplements.py scripts/build_personal_market_report.py
       - name: Test candidate validation, duplicate guards, and close evidence
         run: python -m unittest scripts.test_import_tradingview_mcp_candidates scripts.test_verify_tradingview_close scripts.test_import_manual_nikkei_data
       - name: Test one market snapshot feeds Sheets contract and private report draft
         run: python -m unittest tests.test_personal_market_report tests.test_personal_market_snapshot -v
       - name: Compile market data adapters and private Nikkei roundtrip
-        run: python -m py_compile scripts/fetch_market_data.py scripts/test_nikkei_sheets_roundtrip.py scripts/build_chatgpt_report_input.py scripts/build_personal_market_snapshot.py scripts/build_personal_market_report.py
+        run: python -m py_compile scripts/fetch_market_data.py scripts/test_nikkei_sheets_roundtrip.py scripts/build_chatgpt_report_input.py scripts/build_personal_market_snapshot.py scripts/build_personal_market_supplements.py scripts/build_personal_market_report.py
       - name: Test official source parsers and date alignment
         run: python -m unittest discover -s tests -p test_official_market_data_adapters.py -v
       - name: Test Nikkei test-sheet acquisition date and source guards
