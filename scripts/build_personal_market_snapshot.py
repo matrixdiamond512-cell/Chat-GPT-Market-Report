@@ -104,7 +104,7 @@ def build_snapshot(source: dict[str, Any], generated_at: str) -> dict[str, Any]:
         source_id = str(row.get("Report Field") or "")
         symbol = READY_MAP.get(source_id)
         evidence_status = str(row.get("Status") or "")
-        if not symbol or evidence_status not in {"VERIFIED", "VERIFIED_MANUAL"}:
+        if not symbol or evidence_status not in {"VERIFIED", "VERIFIED_MANUAL", "REFERENCE_ONLY"}:
             continue
         if symbol in seen_ids:
             raise SnapshotError("duplicate observation for one report field")
@@ -123,22 +123,32 @@ def build_snapshot(source: dict[str, Any], generated_at: str) -> dict[str, Any]:
             raise SnapshotError("market observation is future-dated relative to retrieval")
         max_retrieved = max(max_retrieved, retrieved_dt) if max_retrieved else retrieved_dt
         date_values.append(market_date)
+        is_reference = evidence_status == "REFERENCE_ONLY"
+        display_value = (
+            f"{value:.2f}" if source_id == "nikkei225_eps" and evidence_status == "VERIFIED_MANUAL"
+            else f"{value:.2f}" if source_id in {"nikkei225_dev25", "nikkei225_dev200"}
+            else str(row["Observed Value"])
+        )
         markets[symbol].update({
-            "value": value, "displayValue": str(row["Observed Value"]),
+            "value": value, "displayValue": display_value,
             "unit": str(row["Unit"]), "marketType": str(row.get("Market Type") or market_type),
             "session": str(row.get("Market Session") or session), "asOf": market_date,
             "fetchedAt": retrieved, "sourceId": (
+                "tradingview_nikkei_daily_history" if is_reference else
                 "us_treasury_yield_curve" if source_id == "us10y" else
                 "manual_official_nikkei" if evidence_status == "VERIFIED_MANUAL" else
                 "tradingview_official_mcp"
             ),
-            "sourceName": str(row.get("Source") or ""), "verificationStatus": "verified",
+            "sourceName": str(row.get("Source") or ""),
+            "verificationStatus": "reference_only" if is_reference else "verified",
+            "referenceOnly": is_reference,
             "verificationBasis": (
                 ("Operator reviewed the manual source date and value. " if evidence_status == "VERIFIED_MANUAL" else "")
                 + str(row.get("Verification Basis") or "")
             ),
             "barAnchorUTC": str(row.get("Bar Anchor (UTC)") or ""),
-            "snapshotId": str(row.get("Snapshot ID") or ""), "note": "",
+            "snapshotId": str(row.get("Snapshot ID") or ""),
+            "note": "別ソースの日足履歴で計算。終値は公式日経値と一致せず、参考値として保持。" if is_reference else "",
         })
 
     for row in references:
@@ -183,15 +193,40 @@ def build_snapshot(source: dict[str, Any], generated_at: str) -> dict[str, Any]:
 
     min_date, max_date = min(date_values), max(date_values)
     generated = _parse_timestamp(generated_at)
+    news = source.get("news") or []
+    if not isinstance(news, list):
+        raise SnapshotError("news evidence must be an array")
+    normalized_news = []
+    generated_dt = dt.datetime.fromisoformat(generated.replace("Z", "+00:00"))
+    for article in news:
+        if not isinstance(article, dict):
+            raise SnapshotError("news evidence rows must be objects")
+        title = str(article.get("title") or "").strip()
+        provider = str(article.get("provider") or "").strip()
+        url = str(article.get("url") or "").strip()
+        published_at = _parse_timestamp(article.get("publishedAt"))
+        if not title or not provider or not url.startswith("https://"):
+            raise SnapshotError("news evidence requires title, provider and HTTPS source")
+        if dt.datetime.fromisoformat(published_at.replace("Z", "+00:00")) > generated_dt:
+            raise SnapshotError("news evidence is future-dated relative to report generation")
+        normalized_news.append({"title": title, "provider": provider, "url": url,
+                                "publishedAt": published_at,
+                                "permission": str(article.get("permission") or "headline")})
+    validation_notes = source.get("validationNotes") or []
+    if not isinstance(validation_notes, list) or any(not isinstance(note, str) or not note.strip() for note in validation_notes):
+        raise SnapshotError("validation notes must be nonempty text rows")
     snapshot_basis = "\n".join(sorted(f"{key}|{value.get('snapshotId')}|{value.get('asOf')}|{value.get('value')}" for key, value in markets.items() if value.get("value") is not None))
     snapshot_id = hashlib.sha256(snapshot_basis.encode("utf-8")).hexdigest()[:24]
     return {
         "schemaVersion": "1.0.0", "snapshotId": snapshot_id,
         "generatedAt": generated, "sourceSnapshotRetrievedAt": max_retrieved.isoformat().replace("+00:00", "Z"),
         "reportDate": f"{min_date}〜{max_date}", "dataDateRange": f"{min_date}〜{max_date}",
-        "reportSlot": "履歴再構成", "overallStatus": "historical_only", "historicalSnapshot": True,
+        "reportSlot": str(source.get("reportSlot") or "履歴再構成"),
+        "overallStatus": str(source.get("overallStatus") or "historical_only"),
+        "historicalSnapshot": bool(source.get("historicalSnapshot", True)),
+        "snapshotFreshness": str(source.get("snapshotFreshness") or "historical_reconstruction"),
         "sourceSheet": {"reportReadyTab": "Personal_Report_Ready", "referenceTab": "Personal_Reference_Values"},
-        "markets": markets,
+        "markets": markets, "news": normalized_news, "validationNotes": validation_notes,
     }
 
 
@@ -221,4 +256,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
