@@ -32,7 +32,7 @@ HEADERS = [
     "Market Session",
     "Interval",
     "Bar Anchor (UTC)",
-    "Market Date",
+    "Source Market Date",
     "Source",
     "Review Status",
 ]
