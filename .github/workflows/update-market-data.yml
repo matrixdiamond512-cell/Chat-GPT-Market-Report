@@ -38,6 +38,7 @@ on:
         options:
           - treasury-us10y
           - fred-us10y
+          - cmc-crypto-fear-greed-eval
           - all-configured
       source_automation_rights_confirmed:
         description: "Confirm that automated collection is permitted for every provider this run will contact"
@@ -155,6 +156,12 @@ jobs:
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python scripts/validate_market_data_source.py --symbol us10y --source-id fred_dgs10
+
+      # One-off metadata-only evaluation of the documented keyless public endpoint.
+      # This validates source/date/numeric/direction without storing or publishing values.
+      - name: Evaluate CoinMarketCap Crypto Fear and Greed source only
+        if: inputs.acquisition_mode == 'validate-only' && inputs.validation_target == 'cmc-crypto-fear-greed-eval'
+        run: python scripts/validate_market_data_source.py --symbol crypto_fear_greed --source-id coinmarketcap_crypto_fear_greed
 
       - name: Validate generated acquisition JSON
         if: inputs.acquisition_mode != 'validate-only' || inputs.validation_target == 'all-configured'
