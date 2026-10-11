@@ -100,13 +100,27 @@
       "required": true,
       "sources": [
         {
+          "id": "nikkei_nk225_official_daily_csv",
+          "name": "Nikkei 225 official daily close CSV",
+          "kind": "nikkei_daily_csv",
+          "url": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_daily_jp.csv",
+          "sourceUrl": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_daily_jp.csv",
+          "sourceSeriesId": "nikkei_nk225_official_daily_csv",
+          "priority": 1,
+          "marketType": "index",
+          "session": "japan_cash",
+          "closeTimeJst": "15:30",
+          "timeoutSeconds": 20,
+          "note": "Official Nikkei daily CSV; use source market date and published close, not a continuous or intraday proxy."
+        },
+        {
           "id": "yahoo_nikkei225_cash",
           "name": "Yahoo Finance Nikkei 225",
           "kind": "yahoo_chart",
           "symbol": "^N225",
           "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EN225",
           "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/",
-          "priority": 1,
+          "priority": 2,
           "marketType": "index",
           "session": "daily"
         }
@@ -405,12 +419,26 @@
       "required": true,
       "sources": [
         {
+          "id": "nikkei_nk225vi_official_daily_csv",
+          "name": "Nikkei VI official daily close CSV",
+          "kind": "nikkei_daily_csv",
+          "url": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_vi_daily_jp.csv",
+          "sourceUrl": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_vi_daily_jp.csv",
+          "sourceSeriesId": "nikkei_nk225vi_official_daily_csv",
+          "priority": 1,
+          "marketType": "index",
+          "session": "japan_cash",
+          "closeTimeJst": "15:30",
+          "timeoutSeconds": 20,
+          "note": "Official Nikkei daily CSV; use source market date and published close, not a continuous or intraday proxy."
+        },
+        {
           "id": "nikkei_nk225vi_profile",
           "name": "Nikkei 225 VI official profile",
           "kind": "nikkei_profile",
-          "url": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
-          "sourceUrl": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
-          "priority": 1,
+          "url": "https://indexes.nikkei.co.jp/nkave/index/profile?cid=7&idx=nk225vi",
+          "sourceUrl": "https://indexes.nikkei.co.jp/nkave/index/profile?cid=7&idx=nk225vi",
+          "priority": 2,
           "marketType": "index",
           "session": "daily",
           "note": "Nikkei official index page. Realtime calculation is every 5 seconds, but fetched value is treated as delayed/page value."
@@ -551,13 +579,28 @@
       "required": true,
       "sources": [
         {
+          "id": "nikkei_nk225_official_sma25",
+          "name": "Nikkei official daily close SMA25 deviation",
+          "kind": "nikkei_sma_deviation",
+          "url": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_daily_jp.csv",
+          "sourceUrl": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_daily_jp.csv",
+          "sourceSeriesId": "Nikkei225 official daily close",
+          "priority": 1,
+          "marketType": "index",
+          "session": "japan_cash",
+          "window": 25,
+          "closeTimeJst": "15:30",
+          "timeoutSeconds": 20,
+          "note": "Calculated from 25 most recent official Nikkei daily closes on or before the report market date."
+        },
+        {
           "id": "yahoo_nikkei225_dev25",
           "name": "Yahoo Finance Nikkei 225 SMA25 deviation",
           "kind": "yahoo_sma_deviation",
           "symbol": "^N225",
           "range": "1y",
           "window": 25,
-          "priority": 1,
+          "priority": 2,
           "marketType": "technical",
           "session": "daily",
           "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
@@ -574,13 +617,28 @@
       "required": true,
       "sources": [
         {
+          "id": "nikkei_nk225_official_sma200",
+          "name": "Nikkei official daily close SMA200 deviation",
+          "kind": "nikkei_sma_deviation",
+          "url": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_daily_jp.csv",
+          "sourceUrl": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_daily_jp.csv",
+          "sourceSeriesId": "Nikkei225 official daily close",
+          "priority": 1,
+          "marketType": "index",
+          "session": "japan_cash",
+          "window": 200,
+          "closeTimeJst": "15:30",
+          "timeoutSeconds": 20,
+          "note": "Calculated from 200 most recent official Nikkei daily closes on or before the report market date."
+        },
+        {
           "id": "yahoo_nikkei225_dev200",
           "name": "Yahoo Finance Nikkei 225 SMA200 deviation",
           "kind": "yahoo_sma_deviation",
           "symbol": "^N225",
           "range": "1y",
           "window": 200,
-          "priority": 1,
+          "priority": 2,
           "marketType": "technical",
           "session": "daily",
           "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
