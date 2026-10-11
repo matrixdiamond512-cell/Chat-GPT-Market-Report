@@ -246,3 +246,10 @@ Timestamp: 2026-10-12 02:29 JST.
 - Private test-sheet E5 readback: 17 candidate rows and unique snapshot IDs retained. Statuses normalized to VERIFIED 8, CONFLICT 2, PENDING 7. VERIFIED: Dow (AP secondary), Nasdaq (official), S&P 500 (official), Russell 2000 (AP secondary), USD/JPY (same-provider boundary), EUR/USD (same-provider boundary), BTC/USD (same-provider boundary), VIX (two secondary sources). No production-sheet write occurred.
 - Actions run #175 (38164890595) on PR code passed candidate compile/tests and official reference validation jobs. It did not run TradingView acquisition, market snapshot update, or either Sheets job; no Actions TradingView live acquisition or new Sheets write is claimed. Treasury job's source-validation step was skipped in this workflow, while MOF/BOJ/ECB/Kraken reference validations completed successfully.
 - PR #94 remains OPEN/DRAFT/unmerged. The 17-candidate report-close count is now 8/17, with the evidence classes above kept explicit. The eleven other report fields and past-data recovery remain open.
+
+
+## 2026-10-12 final-head revalidation
+
+- PR head 64b143b74edccbdf2e2c1a8eb6b08ddacfa8b706. GitHub Actions run #178 (38165210233) on this head completed successfully: candidate importer/verifier compile and regression job PASS; MOF, BOJ, ECB and Kraken reference-source validation steps PASS; Treasury validation, snapshot update, and both Sheets jobs SKIPPED. This confirms code/test workflow status only, not a TradingView live acquisition or a new sheet save.
+- Private candidate-sheet readback: 17 rows, 17 unique IDs, VERIFIED 8 / CONFLICT 2 / PENDING 7. Production sheet was not modified.
+- PR #94 status checked after revalidation: OPEN, Draft, unmerged. No main merge or production write was performed.
