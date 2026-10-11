@@ -853,6 +853,54 @@ def fetch_boj_time_series(source: dict[str, Any]) -> dict[str, Any]:
                      reported_decimal_places=int(source.get("publishedDecimalPlaces", 2)))
 
 
+def fetch_ecb_reference_rate(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch an ECB daily euro FX reference-rate series from the official SDMX CSV API."""
+    now = now_jst()
+    start = now.date() - dt.timedelta(days=int(source.get("lookbackDays", 20)))
+    series_key = str(source.get("seriesKey") or "D.USD.EUR.SP00.A")
+    params = urllib.parse.urlencode({
+        "startPeriod": start.isoformat(),
+        "endPeriod": now.date().isoformat(),
+        "format": "csvdata",
+    })
+    url = f"{str(source['url']).rstrip('?')}?{params}"
+    body, encoding = http_get(
+        url,
+        timeout=int(source.get("timeoutSeconds", 20)),
+        headers={"Accept": "text/csv"},
+    )
+    try:
+        text = body.decode(encoding or "utf-8-sig", errors="replace").lstrip("\ufeff")
+    except LookupError:
+        text = body.decode("utf-8-sig", errors="replace").lstrip("\ufeff")
+    rows = list(csv.DictReader(io.StringIO(text)))
+    observations: list[tuple[str, float]] = []
+    expected_currency = str(source.get("currency") or "USD").upper()
+    expected_denominator = str(source.get("currencyDenominator") or "EUR").upper()
+    for row in rows:
+        period = str(row.get("TIME_PERIOD") or row.get("time_period") or "").strip()
+        value = safe_float(row.get("OBS_VALUE") or row.get("obs_value"))
+        if not re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}", period) or value is None:
+            continue
+        currency = str(row.get("CURRENCY") or row.get("currency") or expected_currency).upper()
+        denominator = str(row.get("CURRENCY_DENOM") or row.get("currency_denom") or expected_denominator).upper()
+        if currency != expected_currency or denominator != expected_denominator:
+            continue
+        observations.append((period, value))
+    if not observations:
+        raise FetchError("PARSE_ERROR", "ECB SDMX CSV had no matching dated exchange-rate observations")
+    observations.sort(key=lambda item: item[0])
+    latest_date, latest_value = observations[-1]
+    previous_value = observations[-2][1] if len(observations) > 1 else None
+    return candidate(
+        source,
+        latest_value,
+        previous_close=previous_value,
+        as_of=latest_date,
+        raw_reference=series_key,
+    )
+
+
 FETCHERS = {
     "yahoo_chart": fetch_yahoo_chart,
     "yahoo_sma_deviation": fetch_yahoo_sma_deviation,
@@ -868,6 +916,7 @@ FETCHERS = {
     "treasury_yield_xml": fetch_treasury_yield_xml,
     "mof_jgb_yield_csv": fetch_mof_jgb_yield_csv,
     "boj_time_series": fetch_boj_time_series,
+    "ecb_exchange_rate": fetch_ecb_reference_rate,
 }
 
 
