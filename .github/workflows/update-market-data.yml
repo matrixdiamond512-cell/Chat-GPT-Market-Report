@@ -12,9 +12,9 @@ on:
         required: false
         default: "auto"
       acquisition_mode:
-        description: "auto keeps verified values and retries gaps; full refreshes all symbols"
+        description: "Manual dispatch defaults to Treasury-only validation; choose auto/full only for an authorized data run"
         required: false
-        default: "auto"
+        default: "validate-only"
         type: choice
         options:
           - auto
