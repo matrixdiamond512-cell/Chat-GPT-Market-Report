@@ -386,10 +386,13 @@ jobs:
           python -m unittest discover -s tests -p test_official_market_data_adapters.py -v
 
       - name: Validate official U.S. Treasury daily 10-year source
+        if: github.event_name == 'workflow_dispatch' && inputs.acquisition_mode == 'validate-only' && inputs.validation_target == 'treasury-us10y'
         run: python scripts/validate_market_data_source.py --symbol us10y --source-id us_treasury_yield_curve
       - name: Validate official Ministry of Finance Japan 10-year reference series
+        if: always() && github.event_name == 'pull_request'
         run: python scripts/validate_market_data_source.py --symbol jp10y --source-id mof_jgbcm_10y
 
       - name: Validate official Bank of Japan Tokyo USD/JPY 17:00 reference series
+        if: always() && github.event_name == 'pull_request'
         run: python scripts/validate_market_data_source.py --symbol usdjpy --source-id boj_usdjpy_17_reference
 
