@@ -91,6 +91,18 @@ class TradingViewMcpCandidateImportTests(unittest.TestCase):
         with self.assertRaisesRegex(CandidateImportError, "finite number"):
             normalize_snapshot(snapshot)
 
+    def test_market_date_validation_uses_item_market_timezone(self) -> None:
+        snapshot = make_snapshot()
+        nikkei = next(item for item in snapshot["items"] if item["id"] == "nikkei225_cash")
+        nikkei["marketDate"] = "2026-10-12"
+        normalized = normalize_snapshot(
+            snapshot,
+            now=dt.datetime.fromisoformat("2026-10-11T18:00:00+00:00"),
+        )
+        candidate = next(item for item in normalized["candidates"] if item["id"] == "nikkei225_cash")
+        self.assertEqual(candidate["marketDate"], "2026-10-12")
+        self.assertEqual(candidate["marketTimezone"], "Asia/Tokyo")
+
     def test_rejects_future_market_date(self) -> None:
         snapshot = make_snapshot()
         snapshot["items"][0]["marketDate"] = "2026-10-12"
