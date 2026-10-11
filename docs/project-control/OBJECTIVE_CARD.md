@@ -215,3 +215,8 @@ Primary objective remains to complete report-compatible market data while preser
 ## S&P 500 close qualification update
 
 S&P DJI's official page was located for the 2026-10-09 close. The private TradingView SP:SPX bar matches at two-decimal precision; total report-close-qualified candidates are now 5/17 (Nasdaq, S&P 500, USD/JPY, EUR/USD, BITSTAMP BTC/USD). Twelve remain unverified or conflicting. The verifier and its new S&P case are in PR Actions run #162, currently pending. Production sheet unchanged; PR remains OPEN/DRAFT/unmerged.
+
+
+## Exact-boundary validation update
+
+Added explicit 09:30 ET index, 17:00 ET FX, and 00:00 UTC BTC bar-boundary checks. GitHub Actions run #169 passed the compile/test and official-reference jobs; data update and Sheets jobs were skipped. Private candidate-tab readback remains 5/17 VERIFIED (17 unique rows). Production sheet unchanged; PR remains OPEN/DRAFT/unmerged.
