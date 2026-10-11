@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 import json
 import math
 import os
@@ -31,6 +32,9 @@ FIELDS = {
     "nikkei_vi": ("pt", "manual_official_index_close"),
     "nikkei225_dev25": ("%", "manual_daily_close_sma_deviation"),
     "nikkei225_dev200": ("%", "manual_daily_close_sma_deviation"),
+    "nikkei225_per": ("倍", "manual_official_nikkei225_index_forecast_per"),
+    "nikkei225_pbr": ("倍", "manual_official_nikkei225_index_pbr"),
+    "nikkei225_eps": ("円", "manual_nikkei225_index_forecast_eps_derived"),
 }
 
 
@@ -114,6 +118,37 @@ def normalize_manual_data(payload: dict[str, Any], now: dt.datetime | None = Non
         "nikkei225_cash": (cash, "official value supplied manually"),
         "nikkei_vi": (vi, "official value supplied manually"),
     }
+    valuation_keys = ("nikkei225ForecastPER", "nikkei225IndexPBR", "nikkei225ReportedForecastEPS")
+    valuation_present = [payload.get(key) not in (None, "") for key in valuation_keys]
+    if any(valuation_present) and not all(valuation_present):
+        raise ManualImportError("PER, PBR, and source-reported forecast EPS must be supplied together")
+    basis = str(payload.get("nikkei225ValuationBasis") or "")
+    if all(valuation_present):
+        if basis != "index_based":
+            raise ManualImportError("nikkei225ValuationBasis must be index_based; weighted-average metrics are not interchangeable")
+        per = _number(payload[valuation_keys[0]], valuation_keys[0])
+        pbr = _number(payload[valuation_keys[1]], valuation_keys[1])
+        if per <= 0 or pbr <= 0:
+            raise ManualImportError("index-based PER and PBR must be positive")
+        try:
+            close_decimal = Decimal(str(payload["nikkei225Close"]).replace(",", ""))
+            per_decimal = Decimal(str(payload[valuation_keys[0]]).replace(",", ""))
+            reported_eps_decimal = Decimal(str(payload[valuation_keys[2]]).replace(",", ""))
+        except (InvalidOperation, ValueError) as exc:
+            raise ManualImportError("valuation inputs must be decimal numbers") from exc
+        if not reported_eps_decimal.is_finite() or reported_eps_decimal <= 0:
+            raise ManualImportError("source-reported forecast EPS must be finite and positive")
+        implied_eps = close_decimal / per_decimal
+        decimal_places = max(0, -reported_eps_decimal.as_tuple().exponent)
+        quantum = Decimal(1).scaleb(-decimal_places)
+        if implied_eps.quantize(quantum, rounding=ROUND_HALF_UP) != reported_eps_decimal.quantize(quantum, rounding=ROUND_HALF_UP):
+            raise ManualImportError("close / index-based PER does not match source-reported forecast EPS at its published precision")
+        values["nikkei225_per"] = (per, "index-based forecast PER supplied manually")
+        values["nikkei225_pbr"] = (pbr, "index-based PBR supplied manually")
+        values["nikkei225_eps"] = (
+            float(implied_eps),
+            f"derived from same-date Nikkei 225 close / index-based forecast PER; agrees with source-reported EPS rounded to {decimal_places} decimal places",
+        )
     for window, symbol in ((25, "nikkei225_dev25"), (200, "nikkei225_dev200")):
         closes = [close for _, close in history[-window:]]
         sma = sum(closes) / window
@@ -225,7 +260,7 @@ def main() -> int:
         normalized = normalize_manual_data(data)
         if args.output:
             args.output.write_text(json.dumps(normalized, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        result = {"status": "PASS", "marketDate": normalized["marketDate"], "items": 4, "evidenceStatus": "MANUAL_REVIEW", "sheets": None}
+        result = {"status": "PASS", "marketDate": normalized["marketDate"], "items": len(normalized["items"]), "evidenceStatus": "MANUAL_REVIEW", "sheets": None}
         if args.write_test_sheet:
             result["sheets"] = write_private_test_sheet(normalized, args.attest_source_reviewed)
         print(json.dumps(result, ensure_ascii=False))
@@ -237,3 +272,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
