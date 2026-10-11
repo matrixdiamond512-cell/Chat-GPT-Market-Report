@@ -11,6 +11,7 @@ from scripts.import_tradingview_mcp_candidates import (
     new_sheet_rows,
     append_idempotent_sheet_rows,
     report_ready_rows,
+    reference_futures_rows,
     sheet_rows,
     verified_report_candidates,
 )
@@ -147,6 +148,19 @@ class TradingViewMcpCandidateImportTests(unittest.TestCase):
             make_snapshot(), now=dt.datetime.fromisoformat("2026-10-11T18:00:00+00:00")
         )
         self.assertEqual(report_ready_rows(payload), [])
+
+    def test_five_futures_stay_separate_reference_values_without_settlement_claim(self) -> None:
+        payload = normalize_snapshot(
+            make_snapshot(), now=dt.datetime.fromisoformat("2026-10-11T18:00:00+00:00")
+        )
+        rows = reference_futures_rows(payload)
+        self.assertEqual(len(rows), 5)
+        self.assertEqual({row[1] for row in rows}, {
+            "gold", "wti", "nikkei225_futures_ose", "cme_nikkei225_jpy", "cme_nikkei225_usd",
+        })
+        self.assertTrue(all(row[10] == "REFERENCE_ONLY" for row in rows))
+        self.assertTrue(all("NOT_CONFIRMED" in row[11] for row in rows))
+        self.assertFalse(any(item["id"] in {row[1] for row in rows} for item in verified_report_candidates(payload)))
 
     def test_report_tab_appends_once_and_checks_existing_identity_conflict(self) -> None:
         class FakeClient:
