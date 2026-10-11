@@ -106,7 +106,7 @@ jobs:
       - name: Compile market data adapters
         run: python -m py_compile scripts/fetch_market_data.py
       - name: Test official source parsers and date alignment
-        run: python -m unittest tests.test_official_market_data_adapters
+        run: python -m unittest discover -s tests -p test_official_market_data_adapters.py -v
 
   update:
     if: github.event_name == 'workflow_dispatch' && inputs.run_sheets_test_roundtrip != true && inputs.run_treasury_sheets_test != true
