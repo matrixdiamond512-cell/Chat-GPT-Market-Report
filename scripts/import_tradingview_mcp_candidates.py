@@ -26,6 +26,7 @@ except ModuleNotFoundError:
 
 ROOT = Path(__file__).resolve().parents[1]
 TEST_SHEET = "TradingView_MCP_Candidates"
+REPORT_READY_SHEET = "Personal_Report_Ready"
 HEADERS = [
     "Snapshot ID",
     "Retrieved At (UTC)",
@@ -40,6 +41,20 @@ HEADERS = [
     "Source Market Date",
     "Source",
     "Review Status",
+]
+REPORT_READY_HEADERS = [
+    "Snapshot ID",
+    "Report Field",
+    "Observed Value",
+    "Unit",
+    "Market Type",
+    "Market Session",
+    "Source Market Date",
+    "Bar Anchor (UTC)",
+    "Source",
+    "Review Basis",
+    "Status",
+    "Retrieved At (UTC)",
 ]
 
 # The explicit symbol/unit/session contract prevents a plausible-looking but
@@ -195,6 +210,66 @@ def new_sheet_rows(rows: list[list[Any]], existing_ids: set[str]) -> list[list[A
     return [row for row in rows if str(row[0]) not in existing_ids]
 
 
+def verified_report_candidates(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    """Select only evidence-reviewed closes; other candidates never block these rows."""
+    return [item for item in payload.get("candidates", []) if item.get("reviewStatus") == "VERIFIED"]
+
+
+def report_ready_rows(payload: dict[str, Any]) -> list[list[Any]]:
+    """Build a separate personal-report feed while retaining source and session lineage."""
+    return [
+        [
+            item["snapshotId"], item["id"], item["value"], item["unit"],
+            item["marketType"], item["session"], item["marketDate"],
+            item["barAnchorUtc"], item["source"], item["reviewBasis"],
+            "VERIFIED", payload["retrievedAt"],
+        ]
+        for item in verified_report_candidates(payload)
+    ]
+
+
+def append_idempotent_sheet_rows(
+    client: Any, sheet_name: str, headers: list[str], rows: list[list[Any]], width: str
+) -> dict[str, Any]:
+    """Append immutable snapshot rows to a dedicated tab and verify exact readback."""
+    if not rows:
+        return {"rowsRequested": 0, "rowsAppended": 0, "readback": "not_needed"}
+    client.ensure_sheets([sheet_name])
+    prior = client.get_values(sheet_name, f"A1:{width}1000")
+    if not prior or not prior[0] or not prior[0][0]:
+        client.update(sheet_name, "A1", [headers])
+        prior = [headers]
+    elif prior[0][:len(headers)] != headers:
+        raise CandidateImportError(f"{sheet_name} tab has an unexpected header; refusing to alter it")
+
+    existing_by_id = {str(row[0]): row for row in prior[1:] if row and row[0]}
+    for expected in rows:
+        key = str(expected[0])
+        if key in existing_by_id:
+            existing = list(existing_by_id[key][:len(headers)]) + [""] * max(0, len(headers) - len(existing_by_id[key]))
+            if existing != expected:
+                raise CandidateImportError(f"{sheet_name} snapshot identity already exists with different data")
+    pending = new_sheet_rows(rows, set(existing_by_id))
+    if pending:
+        client.append(sheet_name, f"A:{width}", pending)
+
+    readback = client.get_values(sheet_name, f"A1:{width}1000")
+    actual_rows = [row for row in readback[1:] if row and row[0]] if readback else []
+    counts: dict[str, int] = {}
+    actual_by_id: dict[str, list[Any]] = {}
+    for row in actual_rows:
+        key = str(row[0])
+        counts[key] = counts.get(key, 0) + 1
+        actual_by_id[key] = row
+    for expected in rows:
+        key = str(expected[0])
+        actual = actual_by_id.get(key, [])
+        normalized = list(actual[:len(headers)]) + [""] * max(0, len(headers) - len(actual))
+        if counts.get(key) != 1 or normalized != expected:
+            raise CandidateImportError(f"{sheet_name} readback identity/value/duplicate check failed")
+    return {"rowsRequested": len(rows), "rowsAppended": len(pending), "readback": "verified"}
+
+
 def write_test_sheet(payload: dict[str, Any]) -> dict[str, Any]:
     test_id = os.environ.get("MARKET_DATA_TEST_SPREADSHEET_ID", "").strip()
     production_id = os.environ.get("MARKET_DATA_SPREADSHEET_ID", "").strip()
@@ -215,34 +290,23 @@ def write_test_sheet(payload: dict[str, Any]) -> dict[str, Any]:
 
     info = load_service_account_info(account_json)
     client = SheetsClient(create_authorized_session(info), test_id)
-    sheet_id = client.ensure_sheets([TEST_SHEET])[TEST_SHEET]
-    prior = client.get_values(TEST_SHEET, "A1:M1000")
-    if not prior or not prior[0] or not prior[0][0]:
-        client.update(TEST_SHEET, "A1", [HEADERS])
-        prior = [HEADERS]
-    elif prior[0][:len(HEADERS)] != HEADERS:
-        raise CandidateImportError("candidate test tab has an unexpected header; refusing to alter it")
-    existing_ids = {str(row[0]) for row in prior[1:] if row and row[0]}
-    pending = new_sheet_rows(sheet_rows(payload), existing_ids)
-    if pending:
-        client.append(TEST_SHEET, "A:M", pending)
-    readback = client.get_values(TEST_SHEET, "A1:M1000")
-    ids = [str(row[0]) for row in readback[1:] if row and row[0]]
-    requested_ids = [row[0] for row in sheet_rows(payload)]
-    if any(ids.count(key) != 1 for key in requested_ids):
-        raise CandidateImportError("test-sheet readback failed snapshot identity/duplicate check")
-    actual_by_id = {str(row[0]): row for row in readback[1:] if row and row[0]}
-    expected_by_id = {str(row[0]): row for row in sheet_rows(payload)}
-    for key, expected in expected_by_id.items():
-        actual = actual_by_id.get(key, [])
-        normalized = list(actual[:len(HEADERS)]) + [""] * max(0, len(HEADERS) - len(actual))
-        if normalized != expected:
-            raise CandidateImportError("test-sheet readback mismatch")
+    candidate_result = append_idempotent_sheet_rows(
+        client, TEST_SHEET, HEADERS, sheet_rows(payload), "M"
+    )
+    verified_rows = report_ready_rows(payload)
+    report_result = append_idempotent_sheet_rows(
+        client, REPORT_READY_SHEET, REPORT_READY_HEADERS, verified_rows, "L"
+    )
     return {
         "sheet": TEST_SHEET,
-        "candidateRows": len(requested_ids),
-        "rowsAppended": len(pending),
-        "readback": "verified",
+        "candidateRows": candidate_result["rowsRequested"],
+        "candidateRowsAppended": candidate_result["rowsAppended"],
+        "candidateReadback": candidate_result["readback"],
+        "reportReadySheet": REPORT_READY_SHEET,
+        "reportUsableRows": report_result["rowsRequested"],
+        "reportRowsAppended": report_result["rowsAppended"],
+        "reportReadback": report_result["readback"],
+        "reportUsableFieldCount": len(verified_rows),
         "duplicatePrevention": "verified",
         "productionSpreadsheetWritten": False,
     }
@@ -252,6 +316,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", required=True, type=Path, help="JSON exported from the manual TradingView MCP read")
     parser.add_argument("--output", type=Path, help="normalized candidate JSON output")
+    parser.add_argument("--report-output", type=Path, help="write only VERIFIED rows as a private report-ready JSON feed")
     parser.add_argument("--write-test-sheet", action="store_true", help="append to a dedicated private test tab; never writes production")
     args = parser.parse_args()
     try:
@@ -259,8 +324,21 @@ def main() -> int:
         normalized = normalize_snapshot(snapshot)
         if args.output:
             args.output.write_text(json.dumps(normalized, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        if args.report_output:
+            ready = verified_report_candidates(normalized)
+            feed = {
+                "schemaVersion": "personal-market-report-input-v1",
+                "generatedAt": normalized["retrievedAt"],
+                "status": "PARTIAL_VERIFIED" if ready else "NO_VERIFIED_FIELDS",
+                "verifiedFieldCount": len(ready),
+                "items": ready,
+                "automationEnabled": False,
+                "publicPublicationEnabled": False,
+            }
+            args.report_output.write_text(json.dumps(feed, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         result: dict[str, Any] = {
             "candidateCount": normalized["candidateCount"],
+            "verifiedReportFieldCount": len(verified_report_candidates(normalized)),
             "validation": "candidate_only",
             "automationEnabled": False,
             "publicPublicationEnabled": False,
