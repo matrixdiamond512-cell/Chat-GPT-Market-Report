@@ -179,6 +179,11 @@ def sheet_rows(payload: dict[str, Any]) -> list[list[Any]]:
     ]
 
 
+def new_sheet_rows(rows: list[list[Any]], existing_ids: set[str]) -> list[list[Any]]:
+    """Return only rows whose stable snapshot identity is not already stored."""
+    return [row for row in rows if str(row[0]) not in existing_ids]
+
+
 def write_test_sheet(payload: dict[str, Any]) -> dict[str, Any]:
     test_id = os.environ.get("MARKET_DATA_TEST_SPREADSHEET_ID", "").strip()
     production_id = os.environ.get("MARKET_DATA_SPREADSHEET_ID", "").strip()
@@ -207,7 +212,7 @@ def write_test_sheet(payload: dict[str, Any]) -> dict[str, Any]:
         client.update(TEST_SHEET, "A1", [HEADERS])
         prior = [HEADERS]
     existing_ids = {str(row[0]) for row in prior[1:] if row and row[0]}
-    pending = [row for row in sheet_rows(payload) if row[0] not in existing_ids]
+    pending = new_sheet_rows(sheet_rows(payload), existing_ids)
     if pending:
         client.append(TEST_SHEET, "A:M", pending)
     readback = client.get_values(TEST_SHEET, "A1:M1000")
