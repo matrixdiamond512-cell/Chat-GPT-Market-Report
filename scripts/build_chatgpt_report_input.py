@@ -219,6 +219,55 @@ def apply_verified_deviation(
     return result
 
 
+def apply_acquired_snapshot_market(market: dict[str, Any], snapshot: dict[str, Any], symbol_id: str) -> dict[str, Any]:
+    """Prefer the already validated acquisition snapshot for the same personal workflow.
+
+    Market calendars do not share one calendar date (for example, UTC crypto and
+    Tokyo cash sessions). The acquisition layer owns source-specific date/session
+    validation; this boundary requires a dated, numeric, non-future observation and
+    preserves that observation's own market date and provenance.
+    """
+    source = (snapshot.get("markets") or {}).get(symbol_id)
+    if not isinstance(source, dict) or source.get("verificationStatus") not in {"verified", "fallback"}:
+        return market
+    value = numeric(source.get("value"))
+    observed_date = date_part(source.get("asOf"))
+    fetched_at = source.get("fetchedAt") or snapshot.get("generatedAt")
+    fetched_date = date_part(fetched_at)
+    if value is None or not observed_date or not fetched_date or observed_date > fetched_date:
+        return market
+
+    result = dict(market)
+    status = str(source.get("verificationStatus"))
+    display_value = str(source.get("displayValue") or "").strip()
+    if not display_value:
+        display_value = f"{value:,.6f}".rstrip("0").rstrip(".")
+    result.update({
+        "value": value,
+        "displayValue": display_value,
+        "previousClose": numeric(source.get("previousClose")),
+        "change": numeric(source.get("change")),
+        "changePercent": numeric(source.get("changePercent")),
+        "changeText": str(source.get("changeText") or "—"),
+        "asOf": str(source.get("asOf")),
+        "fetchedAt": str(fetched_at),
+        "sourceId": str(source.get("sourceId") or ""),
+        "sourceName": str(source.get("sourceName") or ""),
+        "sourceUrl": str(source.get("sourceUrl") or ""),
+        "rawReference": str(source.get("rawReference") or ""),
+        "marketType": str(source.get("marketType") or result.get("marketType") or ""),
+        "session": str(source.get("session") or result.get("session") or ""),
+        "verificationStatus": status,
+        "freshnessStatus": str(source.get("freshnessStatus") or "previous_close"),
+        "fallbackUsed": status == "fallback" or bool(source.get("fallbackUsed")),
+        "lastVerifiedAt": str(source.get("verifiedAt") or source.get("lastVerifiedAt") or fetched_at),
+        "classification": str(source.get("classification") or result.get("classification") or ""),
+        "error": None,
+        "note": str(source.get("note") or "Acquisition snapshot reused for Sheets and personal report."),
+    })
+    return result
+
+
 def build_morning(
     report: dict[str, Any],
     market_snapshot: dict[str, Any] | None = None,
@@ -240,6 +289,7 @@ def build_morning(
     target_date = previous_close_date(report)
     for label, symbol_id, unit, market_type, session in ITEMS:
         market = row_market(report, by_label[label], symbol_id=symbol_id, label=label, unit=unit, market_type=market_type, session=session)
+        market = apply_acquired_snapshot_market(market, market_snapshot, symbol_id)
         if symbol_id in {"nikkei225_dev25", "nikkei225_dev200"}:
             market = apply_verified_deviation(market, market_snapshot, symbol_id=symbol_id, target_date=target_date)
         markets[symbol_id] = market
@@ -307,3 +357,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
