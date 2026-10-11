@@ -85,9 +85,10 @@ def run() -> dict[str, Any]:
 
     raw, verified = acquire_treasury()
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    generated_at = str(raw["asOf"])
     value = float(raw["value"])
     payload = {
-        "generatedAt": now,
+        "generatedAt": generated_at,
         "reportSlot": "treasury-private-test",
         "overallStatus": "verified",
         "markets": {
@@ -134,7 +135,7 @@ def run() -> dict[str, Any]:
 
     second = sync_payload(client, payload, INPUT_SHEET, HISTORY_SHEET, RULES_SHEET)
     history_rows = client.get_values(HISTORY_SHEET, "A:AA")
-    snapshot_id = f"{now}|us10y"
+    snapshot_id = f"{generated_at}|us10y"
     occurrences = sum(1 for item in history_rows[1:] if item and item[0] == snapshot_id)
     if occurrences != 1 or second.get("historyRowsAdded") != 0:
         raise SheetsSyncError("TREASURY_DUPLICATE_PREVENTION_FAILED")
