@@ -32,6 +32,9 @@ REFERENCE_COLUMNS = [
 READY_MAP = {
     "dow": "dow", "nasdaq": "nasdaq", "sp500": "sp500", "russell2000": "russell2000",
     "usdjpy": "usdjpy", "eurusd": "eurusd", "btcusd": "btcusd", "vix": "vix", "us10y": "us10y",
+    "nikkei225_cash": "nikkei225_cash", "nikkei_vi": "nikkei_vi",
+    "nikkei225_dev25": "nikkei225_dev25", "nikkei225_dev200": "nikkei225_dev200",
+    "nikkei225_per": "nikkei225_per", "nikkei225_pbr": "nikkei225_pbr", "nikkei225_eps": "nikkei225_eps",
 }
 ACCEPTED_SOURCE_UNITS = {
     "usdjpy": {"JPY per USD"}, "eurusd": {"USD per EUR"},
@@ -100,7 +103,8 @@ def build_snapshot(source: dict[str, Any], generated_at: str) -> dict[str, Any]:
     for row in ready:
         source_id = str(row.get("Report Field") or "")
         symbol = READY_MAP.get(source_id)
-        if not symbol or row.get("Status") != "VERIFIED":
+        evidence_status = str(row.get("Status") or "")
+        if not symbol or evidence_status not in {"VERIFIED", "VERIFIED_MANUAL"}:
             continue
         if symbol in seen_ids:
             raise SnapshotError("duplicate observation for one report field")
@@ -123,9 +127,16 @@ def build_snapshot(source: dict[str, Any], generated_at: str) -> dict[str, Any]:
             "value": value, "displayValue": str(row["Observed Value"]),
             "unit": str(row["Unit"]), "marketType": str(row.get("Market Type") or market_type),
             "session": str(row.get("Market Session") or session), "asOf": market_date,
-            "fetchedAt": retrieved, "sourceId": "tradingview_official_mcp" if source_id != "us10y" else "us_treasury_yield_curve",
+            "fetchedAt": retrieved, "sourceId": (
+                "us_treasury_yield_curve" if source_id == "us10y" else
+                "manual_official_nikkei" if evidence_status == "VERIFIED_MANUAL" else
+                "tradingview_official_mcp"
+            ),
             "sourceName": str(row.get("Source") or ""), "verificationStatus": "verified",
-            "verificationBasis": str(row.get("Verification Basis") or ""),
+            "verificationBasis": (
+                ("Operator reviewed the manual source date and value. " if evidence_status == "VERIFIED_MANUAL" else "")
+                + str(row.get("Verification Basis") or "")
+            ),
             "barAnchorUTC": str(row.get("Bar Anchor (UTC)") or ""),
             "snapshotId": str(row.get("Snapshot ID") or ""), "note": "",
         })
@@ -163,10 +174,10 @@ def build_snapshot(source: dict[str, Any], generated_at: str) -> dict[str, Any]:
             "note": "連続足の終値。限月別の公式清算値は未確認。",
         })
 
-    if len([m for m in markets.values() if m.get("verificationStatus") == "verified"]) != 9:
-        raise SnapshotError("expected exactly the nine previously verified report-ready observations")
-    if len([m for m in markets.values() if m.get("referenceOnly")]) != 5:
-        raise SnapshotError("expected exactly five futures reference observations")
+    if len([m for m in markets.values() if m.get("verificationStatus") == "verified"]) < 9:
+        raise SnapshotError("at least the nine previously verified report-ready observations are required")
+    if len([m for m in markets.values() if m.get("referenceOnly")]) < 5:
+        raise SnapshotError("at least the five separately labeled futures references are required")
     if max_retrieved is None:
         raise SnapshotError("no dated observations were loaded")
 
@@ -210,3 +221,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
