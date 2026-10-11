@@ -27,6 +27,7 @@ except ModuleNotFoundError:
 ROOT = Path(__file__).resolve().parents[1]
 TEST_SHEET = "TradingView_MCP_Candidates"
 REPORT_READY_SHEET = "Personal_Report_Ready"
+REFERENCE_SHEET = "Personal_Reference_Values"
 HEADERS = [
     "Snapshot ID",
     "Retrieved At (UTC)",
@@ -56,6 +57,14 @@ REPORT_READY_HEADERS = [
     "Status",
     "Retrieved At (UTC)",
 ]
+REFERENCE_HEADERS = [
+    "Snapshot ID", "Report Field", "Observed Value", "Unit", "TradingView Symbol",
+    "Reference Type", "Market Session", "Source Market Date", "Bar Anchor (UTC)",
+    "Source", "Use Status", "Settlement Evidence", "Retrieved At (UTC)",
+]
+FUTURES_REFERENCE_FIELDS = {
+    "gold", "wti", "nikkei225_futures_ose", "cme_nikkei225_jpy", "cme_nikkei225_usd"
+}
 
 # The explicit symbol/unit/session contract prevents a plausible-looking but
 # different instrument from being silently relabelled as a report field.
@@ -228,6 +237,28 @@ def report_ready_rows(payload: dict[str, Any]) -> list[list[Any]]:
     ]
 
 
+def reference_futures_rows(payload: dict[str, Any]) -> list[list[Any]]:
+    """Expose continuous futures bars separately; never label them settlement prices."""
+    rows = []
+    for item in payload.get("candidates", []):
+        if item.get("id") not in FUTURES_REFERENCE_FIELDS:
+            continue
+        market_type = item.get("marketType")
+        if market_type == "continuous_futures":
+            reference_type = "CONTINUOUS_FUTURES_BAR_CLOSE"
+        elif market_type in {"futures_ose", "futures_cme"}:
+            reference_type = "CONTINUOUS_FRONT_MONTH_BAR_CLOSE"
+        else:
+            continue
+        rows.append([
+            item["snapshotId"], item["id"], item["value"], item["unit"],
+            item["symbol"], reference_type, item["session"], item["marketDate"],
+            item["barAnchorUtc"], item["source"], "REFERENCE_ONLY",
+            "NOT_CONFIRMED; daily bar close is not an exchange settlement", payload["retrievedAt"],
+        ])
+    return rows
+
+
 def append_idempotent_sheet_rows(
     client: Any, sheet_name: str, headers: list[str], rows: list[list[Any]], width: str
 ) -> dict[str, Any]:
@@ -297,6 +328,10 @@ def write_test_sheet(payload: dict[str, Any]) -> dict[str, Any]:
     report_result = append_idempotent_sheet_rows(
         client, REPORT_READY_SHEET, REPORT_READY_HEADERS, verified_rows, "L"
     )
+    reference_rows = reference_futures_rows(payload)
+    reference_result = append_idempotent_sheet_rows(
+        client, REFERENCE_SHEET, REFERENCE_HEADERS, reference_rows, "M"
+    )
     return {
         "sheet": TEST_SHEET,
         "candidateRows": candidate_result["rowsRequested"],
@@ -307,6 +342,10 @@ def write_test_sheet(payload: dict[str, Any]) -> dict[str, Any]:
         "reportRowsAppended": report_result["rowsAppended"],
         "reportReadback": report_result["readback"],
         "reportUsableFieldCount": len(verified_rows),
+        "referenceValuesSheet": REFERENCE_SHEET,
+        "referenceFuturesCount": len(reference_rows),
+        "referenceRowsAppended": reference_result["rowsAppended"],
+        "referenceReadback": reference_result["readback"],
         "duplicatePrevention": "verified",
         "productionSpreadsheetWritten": False,
     }
