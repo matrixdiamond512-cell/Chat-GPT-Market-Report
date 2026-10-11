@@ -70,7 +70,7 @@ def report_value(market: dict[str, Any]) -> str:
     }
     if status == "verified" and (not derivative or settlement_confirmed):
         return str(raw)
-    if status == "fallback" or market.get("fallbackUsed") or derivative:
+    if status == "fallback" or market.get("fallbackUsed") or derivative or status == "reference_only" or market.get("referenceOnly"):
         return f"参考値: {raw}"
     return "—"
 
@@ -191,13 +191,31 @@ def render_snapshot_analysis(payload: dict[str, Any]) -> list[str]:
     else:
         leader_text = "同じスナップショットに比較可能な前日比がないため、主導市場は判定保留です。"
 
+    news_items = payload.get("news") or []
+    news_lines = []
+    for article in news_items:
+        if not isinstance(article, dict):
+            continue
+        title = str(article.get("title") or "").replace("|", "\\|").replace("\n", " ").strip()
+        provider = str(article.get("provider") or "出典不明").replace("|", "\\|").strip()
+        published = str(article.get("publishedAt") or "時刻不明")
+        url = str(article.get("url") or "")
+        source = f"[{provider}]({url})" if url.startswith("https://") else provider
+        if title:
+            news_lines.append(f"- {published} {source}: {title}")
+    news_text = (
+        "このスナップショット生成時に取得した見出しです。記事本文の閲覧権限は含まず、見出しから先の事実は推定していません。\n\n"
+        + "\n".join(news_lines)
+        if news_lines else "同一スナップショットに、時刻と出典を検証できるニュース記事は含まれていません。ニュース材料は未取得です。"
+    )
+
     lines = ["## 同一スナップショットに基づく詳細分析", "",
              "> 各文は下記の市場データと同じスナップショットから生成しています。取得記録にないニュース・資金流・建玉は推測していません。", "",
              "### 全体テーマ", "", theme, "",
              "### 主な変化", "", *movement_lines, "",
              "### 市場間の整合性", "", consistency, "",
              "### 主導市場", "", leader_text, "",
-             "### ニュース", "", "同一スナップショットに、時刻と出典を検証できるニュース記事は含まれていません。ニュース材料は未取得です。", "",
+             "### ニュース", "", news_text, "",
              "### クロスアセット資金フロー", "", "価格の同時変化は上表の範囲で比較できますが、資金流そのものを示すフロー統計は未取得です。値動きだけから資金移動を断定しません。", "",
              "### 需給・ポジション", "", "出来高・建玉・投資家ポジションの検証済み系列がないため、ポジションの偏りや清算規模は判定しません。", "",
              "### セクター", "", "同一時点のセクター別データがないため、強弱順位は未取得です。", "",
@@ -261,7 +279,15 @@ def render_report(payload: dict[str, Any]) -> str:
         "各市場の営業日と日次締めは項目ごとに記録しています。参考値は清算値などの確定値と混同しません。",
         "",
     ])
+    if payload.get("snapshotFreshness") == "latest_available_confirmed_per_market":
+        lines.extend([
+            "各項目はレポート生成時点で確認できた最新の市場別データです。休場日や検証未完了の新しい候補がある場合、基準日は市場ごとに異なります。",
+            "",
+        ])
     lines.extend(render_snapshot_analysis(payload))
+    validation_notes = [str(note).strip().replace("\n", " ") for note in payload.get("validationNotes") or [] if str(note).strip()]
+    if validation_notes:
+        lines.extend(["### 取得・検証上の留意点", "", *[f"- {note}" for note in validation_notes], ""])
     yield_rows = []
     for key, label in (("us10y", "米10年債"), ("jp10y", "日本10年国債")):
         market = markets.get(key)
