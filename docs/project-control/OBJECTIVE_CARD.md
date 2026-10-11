@@ -220,3 +220,14 @@ S&P DJI's official page was located for the 2026-10-09 close. The private Tradin
 ## Exact-boundary validation update
 
 Added explicit 09:30 ET index, 17:00 ET FX, and 00:00 UTC BTC bar-boundary checks. GitHub Actions run #169 passed the compile/test and official-reference jobs; data update and Sheets jobs were skipped. Private candidate-tab readback remains 5/17 VERIFIED (17 unique rows). Production sheet unchanged; PR remains OPEN/DRAFT/unmerged.
+
+
+## 2026-10-12 close-verification continuation
+
+PRIMARY OBJECTIVE: Increase the count of the 17 TradingView MCP candidates that qualify as report close inputs, while keeping disputed/unverified items explicit and preserving production spreadsheet data.
+
+CURRENT ACCEPTED CANDIDATES: 8/17 VERIFIED; 2/17 CONFLICT; 7/17 PENDING. VERIFIED comprises Nasdaq and S&P 500 (official-source close match), Dow and Russell 2000 (AP secondary close match), VIX (Yahoo Finance + ChartExchange secondary match; no direct Cboe CSV readback), USD/JPY and EUR/USD (TradingView 17:00 New York daily/hourly boundary only), and BITSTAMP BTC/USD (same-provider 00:00 UTC boundary only). CONFLICT: Nikkei 225 cash and Nikkei VI series identity/value. PENDING: five futures pending official settlement, JP10Y pending same-date MOF value, US10Y pending same-series/time comparison.
+
+EVIDENCE: Manual TradingView OHLC and instrument metadata, official/secondary public close references, private test-sheet readback of 17 unique rows. GitHub Actions run #175 passed importer/verifier tests and MOF/BOJ/ECB/Kraken reference validations. It did not fetch TradingView candidates or run Sheets writes. Independent BOJ/ECB/Kraken route checks did not numerically cross-compare candidate values. No production “終値一覧” write or public value publication occurred. PR remains OPEN/DRAFT/unmerged.
+
+NEXT NECESSARY ACTION: Obtain/read official daily named-contract settlement rows for GC, CL, OSE NK225, CME NIY, CME NKD; retrieve the official Nikkei VI candidate series rather than TOCOM:NVI; complete official same-date yield comparisons; separately perform numeric independent checks for FX/BTC if those are required by the final report close policy. Keep the five futures PENDING until settlement, rather than OHLC, is proven.
