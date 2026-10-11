@@ -114,3 +114,9 @@ The 17 manually captured TradingView MCP daily candidates were reviewed using ma
 - GitHub Actions run #155 (38163586492) passed the verifier compile/tests and the existing official reference validation. Run #157 is pending after the BTC boundary rule update; no automatic market collection or Sheets writes are included. PR #94 remains OPEN/DRAFT/unmerged.
 
 Primary references: [Nasdaq Global Index Watch](https://indexes.nasdaqomx.com/Index/Overview/comp), [Nikkei 225 daily summary](https://indexes.nikkei.co.jp/nkave/archives/summary?dt=20261009&idx=nk225), [Nikkei VI profile](https://indexes.nikkei.co.jp/nkave/index/profile?idx=nk225vi), [CME roll dates](https://www.cmegroup.com/trading/equity-index/rolldates.html), [CME Nikkei yen contract settlements/specifications](https://www.cmegroup.com/ja/markets/equities/international-indices/nikkei-225-yen.settlements.html), [Bitstamp public OHLC API](https://www.bitstamp.net/api/), and [Cboe VIX historical data](https://www.cboe.com/tradable_products/vix/vix_historical_data).
+
+
+### Official S&P 500 close added
+
+Follow-up official-source review found the S&P 500 level and timestamp on S&P Dow Jones Indices' page, showing the 2026-10-09 cash close at its published precision. The TradingView candidate matches at two decimals and is now VERIFIED. The current candidate qualification is therefore 5/17: Nasdaq Composite, S&P 500, USD/JPY at 17:00 New York, EUR/USD at 17:00 New York, and BITSTAMP BTC/USD at the UTC daily boundary. The other 12 remain unresolved: two official Nikkei conflicts, one Dow secondary-reference mismatch, two secondary-only index matches, five continuous futures without named settlements, VIX without parsed official history, and two yields without matching official series proof.
+
