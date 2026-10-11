@@ -33,7 +33,7 @@ def validate(symbol_id: str, source_id: str) -> dict[str, Any]:
     raw = fetcher(source)
     checks = dict((validation_config.get("defaults") or {}))
     checks.update((validation_config.get("symbols") or {}).get(symbol_id, {}))
-    ok, code, reason = market_data.validate_candidate(symbol_id, symbol, checks, raw, None)
+    ok, code, _reason = market_data.validate_candidate(symbol_id, symbol, checks, raw, None)
     timestamp = market_data.parse_iso(raw.get("asOf"))
     now = market_data.now_jst()
     not_future_dated = bool(timestamp and timestamp <= now)
@@ -48,7 +48,6 @@ def validate(symbol_id: str, source_id: str) -> dict[str, Any]:
         "sourceMatches": raw.get("sourceId") == source_id,
         "notFutureDated": not_future_dated,
         "validationCode": "OK" if valid else "FUTURE_DATE" if ok else code,
-        "reason": reason or ("observation date is in the future" if not_future_dated is False else None),
     }
 
 
@@ -69,3 +68,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

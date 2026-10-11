@@ -57,6 +57,22 @@ class TreasurySourceTests(unittest.TestCase):
         self.assertTrue(result["sourceMatches"])
         self.assertTrue(result["notFutureDated"])
         self.assertNotIn("value", result)
+        self.assertNotIn("reason", result)
+
+    def test_rejected_validation_does_not_expose_quote_in_diagnostic_metadata(self):
+        raw = {"value": 9876.54, "asOf": "2026-10-09", "sourceId": "us_treasury_yield_curve"}
+        with patch.object(market_data, "FETCHERS", {"treasury_yield_xml": lambda _source: raw}), patch.object(
+            market_data,
+            "validate_candidate",
+            return_value=(False, "OUT_OF_RANGE", "9876.54 is outside the configured range"),
+        ):
+            result = source_validation.validate("us10y", "us_treasury_yield_curve")
+
+        self.assertEqual(result["status"], "rejected")
+        self.assertEqual(result["validationCode"], "OUT_OF_RANGE")
+        self.assertNotIn("value", result)
+        self.assertNotIn("reason", result)
+        self.assertNotIn("9876.54", str(result))
 
     def test_empty_or_malformed_feed_fails_closed(self):
         source = {
@@ -74,3 +90,4 @@ class TreasurySourceTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

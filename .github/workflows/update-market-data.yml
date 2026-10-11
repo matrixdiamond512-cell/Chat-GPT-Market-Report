@@ -1,6 +1,15 @@
 name: Update independent market data
 
 on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/update-market-data.yml
+      - scripts/validate_market_data_source.py
+      - scripts/fetch_market_data.py
+      - config/market_data_sources.json
+      - config/market_data_validation.json
   # Manual utility only. Scheduled acquisitions are handled by the dedicated
   # report-window workflows. Code/config pushes must never refresh or retag the
   # live market snapshot because the latest published report may belong to a
@@ -55,7 +64,7 @@ on:
         type: boolean
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: update-independent-market-data
@@ -63,9 +72,11 @@ concurrency:
 
 jobs:
   update:
-    if: inputs.run_sheets_test_roundtrip != true
+    if: github.event_name == 'workflow_dispatch' && inputs.run_sheets_test_roundtrip != true
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -293,4 +304,28 @@ jobs:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: python -m scripts.test_market_data_sheets_roundtrip
+
+  treasury-validation:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout PR revision
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Compile validation path
+        run: |
+          python -m py_compile scripts/fetch_market_data.py scripts/validate_market_data_source.py
+
+      - name: Validate official U.S. Treasury daily 10-year source
+        run: python scripts/validate_market_data_source.py --symbol us10y --source-id us_treasury_yield_curve
 
