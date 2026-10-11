@@ -37,7 +37,12 @@ class PersonalMarketReportTests(unittest.TestCase):
             "reportDate": "2026-10-12",
             "reportSlot": "08:00",
             "overallStatus": "degraded",
+            "snapshotFreshness": "latest_available_confirmed_per_market",
+            "validationNotes": ["市場別に最新確認済み日が異なります。"],
             "markets": markets,
+            "news": [{"title": "銀行決算と米CPIに注目", "provider": "Reuters",
+                      "url": "https://www.tradingview.com/news/reuters.test/",
+                      "publishedAt": "2026-10-11T13:00:46Z", "permission": "headline"}],
         }
 
         body = render_report(payload)
@@ -47,6 +52,8 @@ class PersonalMarketReportTests(unittest.TestCase):
         self.assertIn("参考値: 12", body)
         self.assertIn("未取得", body)
         self.assertIn("検証済み", body)
+        self.assertIn("市場別に最新確認済み日が異なります。", body)
+        self.assertIn("各項目はレポート生成時点で確認できた最新の市場別データです。", body)
         row = report_sheet_row(payload, body)
         self.assertEqual(row[4:7], [22, 5, 1])
         self.assertEqual(row[7], body)
@@ -65,6 +72,9 @@ class PersonalMarketReportTests(unittest.TestCase):
             "generatedAt": "2026-10-12T04:53:47+09:00", "reportDate": "2026-10-09〜2026-10-10",
             "reportSlot": "履歴再構成", "overallStatus": "historical_only", "historicalSnapshot": True,
             "markets": markets,
+            "news": [{"title": "銀行決算と米CPIに注目", "provider": "Reuters",
+                      "url": "https://www.tradingview.com/news/reuters.test/",
+                      "publishedAt": "2026-10-11T13:00:46Z", "permission": "headline"}],
             "detailedReport": {
                 "date": "2026-10-08", "theme": "古い文章は使用しない",
             },
@@ -79,7 +89,8 @@ class PersonalMarketReportTests(unittest.TestCase):
         self.assertIn("金利・金融環境（今回のスナップショット）", body)
         self.assertIn("上昇 1・下落 0", body)
         self.assertNotIn("古い文章は使用しない", body)
-        self.assertIn("時刻と出典を検証できるニュース記事は含まれていません", body)
+        self.assertIn("銀行決算と米CPIに注目", body)
+        self.assertIn("2026-10-11T13:00:46Z", body)
         self.assertIn("参考値: 69085", body)
         self.assertIn("参考値（清算値未確認）", body)
 
