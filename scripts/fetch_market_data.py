@@ -901,6 +901,58 @@ def fetch_ecb_reference_rate(source: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+def fetch_kraken_ohlc(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch the last completed UTC daily candle for one Kraken spot market."""
+    pair = str(source.get("pair") or "XBTUSD").upper()
+    interval = int(source.get("intervalMinutes", 1440))
+    if interval != 1440:
+        raise FetchError("CONFIGURATION_ERROR", "Kraken reference adapter requires daily candles")
+    params = urllib.parse.urlencode({"pair": pair, "interval": interval})
+    url = f"{str(source.get('url') or 'https://api.kraken.com/0/public/OHLC').rstrip('?')}?{params}"
+    text = http_text(url, timeout=int(source.get("timeoutSeconds", 20)),
+                     headers={"Accept": "application/json"})
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise FetchError("PARSE_ERROR", "Kraken OHLC response was not valid JSON") from exc
+    if not isinstance(payload, dict):
+        raise FetchError("PARSE_ERROR", "Kraken OHLC response was malformed")
+    errors = payload.get("error") or []
+    if errors:
+        raise FetchError("SOURCE_ERROR", "Kraken OHLC endpoint returned an error")
+    result = payload.get("result") or {}
+    result_key = str(source.get("resultKey") or "")
+    rows = result.get(result_key)
+    if not isinstance(rows, list) or len(rows) < 3:
+        raise FetchError("PARSE_ERROR", "Kraken OHLC response lacked completed daily candles")
+    completed = rows[:-1]  # Kraken always returns the current, not-yet-committed candle last.
+    parsed: list[tuple[dt.date, float]] = []
+    for row in completed:
+        if not isinstance(row, list) or len(row) < 5:
+            continue
+        epoch = safe_float(row[0])
+        close = safe_float(row[4])
+        if epoch is None or close is None:
+            continue
+        day = dt.datetime.fromtimestamp(epoch, UTC).date()
+        parsed.append((day, close))
+    if len(parsed) < 2:
+        raise FetchError("PARSE_ERROR", "Kraken OHLC response lacked two valid completed candles")
+    parsed.sort(key=lambda item: item[0])
+    latest_date, latest_close = parsed[-1]
+    previous_close = parsed[-2][1]
+    close_at = dt.datetime.combine(
+        latest_date + dt.timedelta(days=1), dt.time(0, 0), tzinfo=UTC
+    ) - dt.timedelta(seconds=1)
+    return candidate(
+        source,
+        latest_close,
+        previous_close=previous_close,
+        as_of=close_at.isoformat(),
+        raw_reference=f"Kraken {pair} UTC 1d OHLC",
+    )
+
+
 FETCHERS = {
     "yahoo_chart": fetch_yahoo_chart,
     "yahoo_sma_deviation": fetch_yahoo_sma_deviation,
@@ -917,6 +969,7 @@ FETCHERS = {
     "mof_jgb_yield_csv": fetch_mof_jgb_yield_csv,
     "boj_time_series": fetch_boj_time_series,
     "ecb_exchange_rate": fetch_ecb_reference_rate,
+    "kraken_ohlc": fetch_kraken_ohlc,
 }
 
 
