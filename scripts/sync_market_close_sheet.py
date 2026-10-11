@@ -568,6 +568,7 @@ def close_row_sync(
             if warning:
                 field_warnings.append(f"{symbol}: {warning}")
             source_ids.append(str(market.get("sourceId") or symbol))
+            observed = parse_datetime(market.get("asOf"))
             write_close_value = True
             existing_value: Any = ""
             previous_lineage: dict[str, Any] | None = None
@@ -602,7 +603,6 @@ def close_row_sync(
                     write_close_value = not bool(decision.get("preserveExisting"))
             if write_close_value:
                 writes[close_header] = close_value
-            observed = parse_datetime(market.get("asOf"))
             source_series = market.get("sourceSeriesId") or market.get("seriesId") or ""
             unit = market.get("unit") or ("%" if symbol == "us10y" else "")
             reported_places = market.get("reportedDecimalPlaces")
