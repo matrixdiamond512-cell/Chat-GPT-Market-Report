@@ -400,3 +400,7 @@ jobs:
         if: always() && github.event_name == 'pull_request'
         run: python scripts/validate_market_data_source.py --symbol eurusd --source-id ecb_eurusd_daily_reference
 
+      - name: Validate Kraken BTC/USD completed daily reference candle
+        if: always() && github.event_name == 'pull_request'
+        run: python scripts/validate_market_data_source.py --symbol btcusd --source-id kraken_btcusd_daily_close
+
