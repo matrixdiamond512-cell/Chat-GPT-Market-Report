@@ -440,7 +440,7 @@ def fetch_coinmarketcap_fear_greed(source: dict[str, Any]) -> dict[str, Any]:
 
 def parse_nikkei_csv_date(value: Any) -> str | None:
     text = str(value or "").strip().replace("/", ".").replace("-", ".")
-    match = re.fullmatch(r"(\\d{4})\\.(\\d{1,2})\\.(\\d{1,2})", text)
+    match = re.fullmatch(r"(\d{4})\.(\d{1,2})\.(\d{1,2})", text)
     if not match:
         return None
     try:
@@ -455,9 +455,9 @@ def read_nikkei_daily_csv(source: dict[str, Any]) -> list[tuple[str, float, int]
                        headers={"Accept": "text/csv,text/plain,*/*"})
     encoding = str(source.get("encoding") or "utf-8-sig")
     try:
-        text = body.decode(encoding, errors="replace").lstrip("\\ufeff")
+        text = body.decode(encoding, errors="replace").lstrip("\ufeff")
     except LookupError:
-        text = body.decode("utf-8-sig", errors="replace").lstrip("\\ufeff")
+        text = body.decode("utf-8-sig", errors="replace").lstrip("\ufeff")
     rows = list(csv.reader(io.StringIO(text)))
     date_aliases = {"date", "basedate", "marketdate", "日付", "年月日"}
     value_aliases = {"close", "closing", "closingprice", "index", "value", "終値", "指数値"}
@@ -545,10 +545,10 @@ def fetch_nikkei_profile(source: dict[str, Any]) -> dict[str, Any]:
     scoped = text[text.index(title) : text.index(title) + 600]
     pattern = (
         re.escape(title)
-        + r"\\s+(?P<value>\\d{1,3}(?:,\\d{3})*(?:\\.\\d+)?)"
-        + r"\\s+(?P<change_percent>[+-]?\\d+(?:\\.\\d+)?)%"
-        + r"\\s+(?P<change>[+-]?\\d+(?:\\.\\d+)?)"
-        + r"\\s+(?P<timestamp>(?:[A-Za-z]{3}/\\d{1,2}/\\d{4}|\\d{4}[./-]\\d{1,2}[./-]\\d{1,2})\\([^)]*\\)|\\d{4}[./-]\\d{1,2}[./-]\\d{1,2})"
+        + r"\s+(?P<value>\d{1,3}(?:,\d{3})*(?:\.\d+)?)"
+        + r"\s+(?P<change_percent>[+-]?\d+(?:\.\d+)?)%"
+        + r"\s+(?P<change>[+-]?\d+(?:\.\d+)?)"
+        + r"\s+(?P<timestamp>(?:[A-Za-z]{3}/\d{1,2}/\d{4}|\d{4}[./-]\d{1,2}[./-]\d{1,2})\([^)]*\)|\d{4}[./-]\d{1,2}[./-]\d{1,2})"
     )
     match = re.search(pattern, scoped)
     if not match:
