@@ -343,6 +343,24 @@
           "priority": 2,
           "marketType": "spot_crypto",
           "session": "continuous"
+        },
+        {
+          "id": "kraken_btcusd_daily_close",
+          "name": "Kraken BTC/USD spot exchange daily UTC close",
+          "kind": "kraken_ohlc",
+          "url": "https://api.kraken.com/0/public/OHLC",
+          "pair": "XBTUSD",
+          "resultKey": "XXBTZUSD",
+          "intervalMinutes": 1440,
+          "sourceUrl": "https://docs.kraken.com/api/docs/rest-api/get-ohlc-data",
+          "sourceSeriesId": "Kraken:XXBTZUSD:1D:UTC",
+          "priority": 99,
+          "marketType": "spot_crypto",
+          "session": "kraken_utc_daily_close",
+          "referenceOnly": true,
+          "validationStaleHours": 72,
+          "timeoutSeconds": 20,
+          "note": "Public Kraken spot BTC/USD venue candle; last completed UTC 1-day close, excluding the current uncommitted candle. Single-exchange close, not a global composite; reference-only because Kraken content is licensed for own benefit and public redistribution/display requires prior approval."
         }
       ]
     },
