@@ -232,7 +232,9 @@ class RecoveryTests(unittest.TestCase):
         import json
         from scripts import sync_market_close_sheet as close_sync
         config = json.loads((fetch.ROOT / "config" / "market_data_sources.json").read_text(encoding="utf-8"))
-        self.assertEqual(config["symbols"]["us10y"]["sources"][0]["seriesId"], "DGS10")
+        sources = config["symbols"]["us10y"]["sources"]
+        self.assertEqual(sources[0]["kind"], "treasury_yield_xml")
+        self.assertEqual(sources[1]["seriesId"], "DGS10")
         self.assertEqual(close_sync.PRICE_FIELDS["us10y"], ("米10年債利回り", "", ""))
         self.assertIn("us10y", sheet_contract.MARKET_ORDER)
 
@@ -274,5 +276,35 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual(result["markets"]["nikkei225_dev25"]["asOf"], "2026-10-09T15:00:00+09:00")
         self.assertEqual(result["markets"]["nikkei225_dev200"]["displayValue"], "table-22")
 
+    def test_nikkei_cash_close_remains_fresh_through_weekend_but_not_beyond_limit(self):
+        import json
+        validation_config = json.loads(
+            (fetch.ROOT / "config" / "market_data_validation.json").read_text(encoding="utf-8")
+        )
+        validation = dict(validation_config["defaults"])
+        validation.update(validation_config["symbols"]["nikkei225_cash"])
+        as_of = dt.datetime(2026, 10, 9, 15, 30, tzinfo=morning.JST)
+        candidate = {
+            "value": 69030.92,
+            "asOf": as_of.isoformat(),
+            "marketType": "index",
+            "session": "daily",
+        }
+
+        with patch.object(fetch, "now_jst", return_value=dt.datetime(2026, 10, 11, 10, 59, tzinfo=morning.JST)):
+            accepted, code, _ = fetch.validate_candidate(
+                "nikkei225_cash", {"marketType": "index"}, validation, candidate, None
+            )
+        self.assertTrue(accepted)
+        self.assertEqual(code, "OK")
+
+        with patch.object(fetch, "now_jst", return_value=dt.datetime(2026, 10, 13, 16, 0, tzinfo=morning.JST)):
+            accepted, code, _ = fetch.validate_candidate(
+                "nikkei225_cash", {"marketType": "index"}, validation, candidate, None
+            )
+        self.assertFalse(accepted)
+        self.assertEqual(code, "STALE_DATA")
+
 if __name__ == "__main__":
     unittest.main()
+
