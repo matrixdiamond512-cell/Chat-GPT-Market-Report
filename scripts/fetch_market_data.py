@@ -176,22 +176,25 @@ def parse_jst_month_day_time(month_day: str, time_text: str | None = None) -> st
 
 def parse_nikkei_profile_timestamp(value: str) -> str:
     text = str(value or "").strip()
-    match = re.search(r"([A-Za-z]{3})/(\d{1,2})/(\d{4})\((\d{1,2}):(\d{2})\)", text)
-    if not match:
-        return iso()
-    try:
-        month = dt.datetime.strptime(match.group(1), "%b").month
-        parsed = dt.datetime(
-            int(match.group(3)),
-            month,
-            int(match.group(2)),
-            int(match.group(4)),
-            int(match.group(5)),
-            tzinfo=JST,
-        )
-        return parsed.replace(microsecond=0).isoformat()
-    except ValueError:
-        return iso()
+    match = re.search(r"([A-Za-z]{3})/(\\d{1,2})/(\\d{4})\\((\\d{1,2}):(\\d{2})\\)", text)
+    if match:
+        try:
+            month = dt.datetime.strptime(match.group(1), "%b").month
+            parsed = dt.datetime(int(match.group(3)), month, int(match.group(2)),
+                                 int(match.group(4)), int(match.group(5)), tzinfo=JST)
+            return parsed.replace(microsecond=0).isoformat()
+        except ValueError:
+            return iso()
+    match = re.search(r"(\\d{4})[./-](\\d{1,2})[./-](\\d{1,2})\\((\\d{1,2}):(\\d{2})\\)", text)
+    if match:
+        try:
+            parsed = dt.datetime(int(match.group(1)), int(match.group(2)), int(match.group(3)),
+                                 int(match.group(4)), int(match.group(5)), tzinfo=JST)
+            return parsed.replace(microsecond=0).isoformat()
+        except ValueError:
+            return iso()
+    return iso()
+
 
 
 def format_value(value: float | None, places: int) -> str:
@@ -435,61 +438,138 @@ def fetch_coinmarketcap_fear_greed(source: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+def parse_nikkei_csv_date(value: Any) -> str | None:
+    text = str(value or "").strip().replace("/", ".").replace("-", ".")
+    match = re.fullmatch(r"(\\d{4})\\.(\\d{1,2})\\.(\\d{1,2})", text)
+    if not match:
+        return None
+    try:
+        return dt.date(int(match.group(1)), int(match.group(2)), int(match.group(3))).isoformat()
+    except ValueError:
+        return None
+
+
+def read_nikkei_daily_csv(source: dict[str, Any]) -> list[tuple[str, float, int]]:
+    """Read dated Nikkei official daily CSV rows without guessing column meanings."""
+    body, _ = http_get(str(source["url"]), timeout=int(source.get("timeoutSeconds", 20)),
+                       headers={"Accept": "text/csv,text/plain,*/*"})
+    encoding = str(source.get("encoding") or "utf-8-sig")
+    try:
+        text = body.decode(encoding, errors="replace").lstrip("\\ufeff")
+    except LookupError:
+        text = body.decode("utf-8-sig", errors="replace").lstrip("\\ufeff")
+    rows = list(csv.reader(io.StringIO(text)))
+    date_aliases = {"date", "basedate", "marketdate", "日付", "年月日"}
+    value_aliases = {"close", "closing", "closingprice", "index", "value", "終値", "指数値"}
+    date_index = int(source.get("dateColumnIndex", 0))
+    value_index = int(source.get("valueColumnIndex", 1))
+    data_start = 0
+    for row_index, row in enumerate(rows[:20]):
+        normalized = [re.sub(r"[^a-z0-9一-龯ぁ-んァ-ン]", "", str(cell).strip().lower()) for cell in row]
+        dates = [i for i, cell in enumerate(normalized) if cell in date_aliases]
+        values = [i for i, cell in enumerate(normalized) if cell in value_aliases]
+        if dates and values:
+            date_index, value_index, data_start = dates[0], values[0], row_index + 1
+            break
+    observations: list[tuple[str, float, int]] = []
+    for row in rows[data_start:]:
+        if len(row) <= max(date_index, value_index):
+            continue
+        market_date = parse_nikkei_csv_date(row[date_index])
+        lexical = str(row[value_index] or "").strip().replace(",", "")
+        number = safe_float(lexical)
+        if not market_date or number is None:
+            continue
+        try:
+            decimals = max(0, -Decimal(lexical).as_tuple().exponent)
+        except InvalidOperation:
+            decimals = 0
+        observations.append((market_date, number, decimals))
+    if not observations:
+        raise FetchError("PARSE_ERROR", "Nikkei official daily CSV had no dated numeric close rows")
+    observations.sort(key=lambda item: item[0])
+    return observations
+
+
+def fetch_nikkei_daily_csv(source: dict[str, Any]) -> dict[str, Any]:
+    observations = read_nikkei_daily_csv(source)
+    target = str(source.get("targetDate") or now_jst().date().isoformat())
+    eligible = [item for item in observations if item[0] <= target]
+    if not eligible:
+        raise FetchError("NO_ELIGIBLE_DATE", "Nikkei official CSV has no row on or before target date")
+    latest_date, latest_value, precision = eligible[-1]
+    previous_value = eligible[-2][1] if len(eligible) > 1 else None
+    close_time = str(source.get("closeTimeJst") or "15:30")
+    return candidate(
+        source, latest_value, previous_close=previous_value,
+        as_of=f"{latest_date}T{close_time}:00+09:00",
+        raw_reference="Nikkei official daily index CSV close",
+        reported_decimal_places=precision,
+    )
+
+
+def fetch_nikkei_sma_deviation(source: dict[str, Any]) -> dict[str, Any]:
+    observations = read_nikkei_daily_csv(source)
+    target = str(source.get("targetDate") or now_jst().date().isoformat())
+    observations = [item for item in observations if item[0] <= target]
+    window = int(source.get("window", 0))
+    if window < 2 or len(observations) < window:
+        raise FetchError("INSUFFICIENT_HISTORY", f"Nikkei official CSV needs {window} daily closes")
+    tail = observations[-window:]
+    date_text, close, _ = tail[-1]
+    mean = sum(item[1] for item in tail) / window
+    if mean == 0:
+        raise FetchError("INVALID_VALUE", "Nikkei official SMA is zero")
+    deviation = (close / mean - 1) * 100
+    result = candidate(
+        source, deviation, as_of=f"{date_text}T15:30:00+09:00",
+        raw_reference=f"Nikkei official daily close / SMA{window}",
+        reported_decimal_places=2,
+    )
+    result.update({"window": window, "calculationClose": close, "movingAverage": mean})
+    return result
+
+
 def fetch_nikkei_profile(source: dict[str, Any]) -> dict[str, Any]:
     html_text = http_text(source["url"])
     text = strip_tags(html_text)
+    is_vi = "nk225vi" in source.get("url", "")
+    titles = (
+        ["日経平均ボラティリティー・インデックス", "Nikkei Stock Average Volatility Index"]
+        if is_vi
+        else ["日経平均株価", "Nikkei Stock Average"]
+    )
+    title = next((value for value in titles if value in text), None)
+    if title is None:
+        raise FetchError("PARSE_ERROR", "Nikkei official profile title was not found")
+    scoped = text[text.index(title) : text.index(title) + 600]
+    pattern = (
+        re.escape(title)
+        + r"\\s+(?P<value>\\d{1,3}(?:,\\d{3})*(?:\\.\\d+)?)"
+        + r"\\s+(?P<change_percent>[+-]?\\d+(?:\\.\\d+)?)%"
+        + r"\\s+(?P<change>[+-]?\\d+(?:\\.\\d+)?)"
+        + r"\\s+(?P<timestamp>(?:[A-Za-z]{3}/\\d{1,2}/\\d{4}|\\d{4}[./-]\\d{1,2}[./-]\\d{1,2})\\([^)]*\\)|\\d{4}[./-]\\d{1,2}[./-]\\d{1,2})"
+    )
+    match = re.search(pattern, scoped)
+    if not match:
+        raise FetchError("PARSE_ERROR", "Nikkei official profile did not contain its value and dated timestamp")
+    value = safe_float(match.group("value"))
+    change = safe_float(match.group("change"))
+    if value is None:
+        raise FetchError("PARSE_ERROR", "Nikkei official profile value was not numeric")
+    previous = value - change if change is not None else None
+    timestamp = match.group("timestamp")
+    return candidate(
+        source,
+        value,
+        previous_close=previous,
+        change=change,
+        change_percent=safe_float(match.group("change_percent")),
+        as_of=parse_nikkei_profile_timestamp(timestamp),
+        raw_reference=title,
+        reported_decimal_places=max(0, -Decimal(match.group("value").replace(",", "")).as_tuple().exponent),
+    )
 
-    titles = ["Nikkei 225 Futures Index"]
-    if "nk225vi" in source.get("url", ""):
-        titles = ["Nikkei Stock Average Volatility Index"]
-
-    for title in titles:
-        pattern = (
-            re.escape(title)
-            + r"\s+(?P<value>\d{1,3}(?:,\d{3})*(?:\.\d+)?)"
-            + r"\s+(?P<change_percent>[+-]?\d+(?:\.\d+)?)%"
-            + r"\s+(?P<change>[+-]?\d+(?:\.\d+)?)"
-            + r"\s+(?P<timestamp>[A-Za-z]{3}/\d{1,2}/\d{4}\(\d{1,2}:\d{2}\))"
-        )
-        match = re.search(pattern, text)
-        if match:
-            value = safe_float(match.group("value"))
-            change = safe_float(match.group("change"))
-            if value is None:
-                break
-            previous = value - change if change is not None else None
-            return candidate(
-                source,
-                value,
-                previous_close=previous,
-                change=change,
-                change_percent=safe_float(match.group("change_percent")),
-                as_of=parse_nikkei_profile_timestamp(match.group("timestamp")),
-                raw_reference=title,
-            )
-
-    lower_bound = min((idx for title in titles if (idx := text.find(title)) >= 0), default=-1)
-    if lower_bound < 0:
-        raise FetchError("PARSE_ERROR", "Nikkei profile title was not found")
-    scoped = text[lower_bound : lower_bound + 500]
-    numbers = []
-    for match in re.finditer(r"\b\d{1,3}(?:,\d{3})*(?:\.\d+)?\b", scoped):
-        value = safe_float(match.group(0))
-        if value is not None:
-            numbers.append(value)
-    if not numbers:
-        raise FetchError("PARSE_ERROR", "Nikkei profile had no numeric values")
-
-    if "nk225vi" in source.get("url", ""):
-        plausible = [value for value in numbers if 0 < value < 100]
-    else:
-        plausible = [value for value in numbers if value > 10000]
-    if not plausible:
-        raise FetchError("PARSE_ERROR", "Nikkei profile had no plausible value")
-    value = plausible[0]
-    date_match = re.search(r"(\d{4})[/-](\d{1,2})[/-](\d{1,2})", scoped)
-    as_of = parse_date_time(date_match.group(0)) if date_match else iso()
-    return candidate(source, value, as_of=as_of, raw_reference=source.get("url", "nikkei_profile"))
 
 
 def fetch_jpx_html(source: dict[str, Any]) -> dict[str, Any]:
@@ -961,7 +1041,7 @@ FETCHERS = {
     "cboe_history_csv": fetch_cboe_history_csv,
     "cnn_fear_greed": fetch_cnn_fear_greed,
     "coinmarketcap_fear_greed": fetch_coinmarketcap_fear_greed,
-    "nikkei_profile": fetch_nikkei_profile,
+    "nikkei_profile": fetch_nikkei_profile,\n    "nikkei_daily_csv": fetch_nikkei_daily_csv,\n    "nikkei_sma_deviation": fetch_nikkei_sma_deviation,
     "jpx_html": fetch_jpx_html,
     "local_rates_json": fetch_local_rates_json,
     "fred_csv": fetch_fred_csv,
