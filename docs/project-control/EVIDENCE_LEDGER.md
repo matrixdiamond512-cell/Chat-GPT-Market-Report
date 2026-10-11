@@ -335,3 +335,13 @@ Result: PASS — personal report renderer tests 2/2; TradingView candidate/manua
 Limit: No fresh market acquisition, actual report-draft Sheets write/readback, production close-list write, public publication, or new Actions run was performed. Current local market snapshot contains 10 rows (9 marked verified) and is an existing sample, not a new live observation. Production `終値一覧` was not accessed or changed.
 Run ID: `personal-workflow-20261012-local-01`.
 Timestamp: 2026-10-12 JST.
+
+
+### Hosted check for personal-snapshot report path — 2026-10-12
+Claim: the PR branch can compile and test the shared-snapshot personal report path in GitHub Actions, while the workflow avoids live persistence unless explicitly selected.
+Evidence: Actions run [#231](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/38169348631) on HEAD `44aac2fb725dc53b6e018f1abe24d683a46764b1`. `tradingview-mcp-candidate-tests` PASS including the shared 28-item report test; `treasury-validation` PASS, with MOF/BOJ/ECB/Kraken metadata/date validation steps successful. Treasury-specific step was skipped because this was a pull-request event. `update`, `sheets-test`, `treasury-sheets-test`, and `nikkei-sheets-test` were skipped.
+Evidence Level: E4 hosted compile/test and scoped official/reference-source checks; no private external write.
+Result: PASS for the scheduled check scope. No market values were emitted by the validation job. This run does not prove a current 28-field acquisition or Sheets/report readback.
+Limit: Private test-sheet report write/readback, fresh 28-field acquisition, production close-list mapping, public publication, and verified live market-close acceptance remain NOT_RUN. PR #94 remains OPEN / Draft / unmerged.
+Run ID: `38169348631`.
+Timestamp: 2026-10-12 JST.
