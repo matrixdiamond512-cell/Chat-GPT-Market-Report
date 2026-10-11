@@ -3,7 +3,12 @@ from __future__ import annotations
 import unittest
 
 from scripts.build_chatgpt_report_input import ITEMS, apply_acquired_snapshot_market
-from scripts.build_personal_market_report import render_report, report_sheet_row
+from scripts.build_personal_market_report import (
+    PersonalReportError,
+    render_report,
+    report_sheet_row,
+    validate_sheet_target_ids,
+)
 
 
 class PersonalMarketReportTests(unittest.TestCase):
@@ -86,6 +91,13 @@ class PersonalMarketReportTests(unittest.TestCase):
         self.assertEqual(btc["value"], 102.5)
         self.assertEqual(btc["asOf"], "2026-10-10T00:00:00Z")
         self.assertEqual(future, base)
+
+    def test_test_sheet_write_requires_a_distinct_known_production_target(self):
+        validate_sheet_target_ids("private-test-id", "production-id")
+        with self.assertRaises(PersonalReportError):
+            validate_sheet_target_ids("private-test-id", "")
+        with self.assertRaises(PersonalReportError):
+            validate_sheet_target_ids("same-id", "same-id")
 
 
 if __name__ == "__main__":
