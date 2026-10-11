@@ -47,8 +47,41 @@ class PersonalMarketReportTests(unittest.TestCase):
         self.assertIn("未取得", body)
         self.assertIn("検証済み", body)
         row = report_sheet_row(payload, body)
-        self.assertEqual(row[5], 28)
-        self.assertEqual(row[6], body)
+        self.assertEqual(row[4:7], [22, 5, 1])
+        self.assertEqual(row[7], body)
+
+    def test_historical_report_marks_age_and_preserves_detailed_sections(self):
+        markets = {}
+        for label, symbol, unit, market_type, session in ITEMS:
+            markets[symbol] = {
+                "displayName": label, "value": None, "displayValue": "—", "unit": unit,
+                "asOf": "", "sourceName": "", "verificationStatus": "unavailable",
+                "marketType": market_type, "session": session,
+            }
+        markets["dow"].update({"value": 51654.95, "displayValue": "51654.95", "asOf": "2026-10-09", "fetchedAt": "2026-10-12T02:48:43Z", "sourceName": "TradingView official MCP", "verificationStatus": "verified", "verificationBasis": "二次資料の終値照合"})
+        markets["nikkei225_futures_cme_yen"].update({"value": 69085, "displayValue": "69085", "unit": "円", "asOf": "2026-10-09", "fetchedAt": "2026-10-12T02:48:43Z", "sourceName": "TradingView official MCP", "verificationStatus": "reference_only", "referenceOnly": True, "marketType": "futures_cme", "priceType": "continuous_bar_close", "note": "限月別清算値は未確認"})
+        body = render_report({
+            "generatedAt": "2026-10-12T04:53:47+09:00", "reportDate": "2026-10-09〜2026-10-10",
+            "reportSlot": "履歴再構成", "overallStatus": "historical_only", "historicalSnapshot": True,
+            "markets": markets,
+            "detailedReport": {
+                "theme": "保存済みテーマ", "news": ["保存済みニュース"],
+                "crossAssetFlow": ["資金フロー情報"], "positioning": ["ポジション情報"],
+                "markets": [{"name": "市場1", "price": "1", "direction": "中立"} for _ in range(6)],
+                "mainScenario": "保存済みメイン", "alternativeScenario": "保存済み代替",
+                "breakConditions": "保存済み崩れ条件", "riskManagement": ["保存済みリスク"],
+            },
+        })
+        self.assertIn("履歴データからの再構成です", body)
+        self.assertIn("原文のレポート日時", body)
+        self.assertIn("ニュース", body)
+        self.assertIn("クロスアセット資金フロー", body)
+        self.assertIn("需給・ポジション", body)
+        self.assertIn("主要6市場の見通し", body)
+        self.assertIn("金利・金融環境（今回のスナップショット）", body)
+        self.assertIn("保存済みメイン", body)
+        self.assertIn("参考値: 69085", body)
+        self.assertIn("参考値（清算値未確認）", body)
 
     def test_snapshot_overlay_uses_market_specific_dates_and_keeps_source_provenance(self):
         base = {"value": 100, "asOf": "2026-10-09", "verificationStatus": "unavailable"}
@@ -99,7 +132,18 @@ class PersonalMarketReportTests(unittest.TestCase):
         with self.assertRaises(PersonalReportError):
             validate_sheet_target_ids("same-id", "same-id")
 
+    def test_report_row_identity_is_stable_for_an_exact_snapshot_and_body(self):
+        payload = {
+            "generatedAt": "2026-10-12T01:00:00Z", "dataDateRange": "2026-10-09",
+            "markets": {"dow": {"value": 100, "asOf": "2026-10-09", "sourceId": "source-a", "sourceName": "A", "unit": "pt", "verificationStatus": "verified", "fetchedAt": "2026-10-12T00:00:00Z"}},
+        }
+        body = "same immutable report"
+        first = report_sheet_row(payload, body)
+        retry = report_sheet_row({**payload, "generatedAt": "2026-10-12T02:00:00Z"}, body)
+        revised = report_sheet_row(payload, body + " revised")
+        self.assertEqual(first[0], retry[0])
+        self.assertNotEqual(first[0], revised[0])
+
 
 if __name__ == "__main__":
     unittest.main()
-
