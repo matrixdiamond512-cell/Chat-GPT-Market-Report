@@ -46,6 +46,7 @@ class FakeSheetsClient:
         for index, header in enumerate(BASE_HEADERS):
             self.headers[index] = header
         self.headers[185] = "日経225寄与度取得元"
+        self.headers.extend(["日経225_25日乖離率", "日経225_200日乖離率"])
         self.data = [self.headers]
         if target is not None:
             self.data.append(self._row(target))
@@ -56,7 +57,7 @@ class FakeSheetsClient:
         self.log = [LOG_HEADERS]
 
     def _row(self, date: dt.date) -> list[object]:
-        row: list[object] = [""] * 186
+        row: list[object] = [""] * len(self.headers)
         row[0] = date.strftime("%Y/%m/%d")
         return row
 
@@ -173,6 +174,13 @@ def snapshot(target: dt.date, now: dt.datetime, *, missing: str | None = None) -
             "fetchedAt": now.isoformat(), "sourceId": symbol + "_source", "sourceName": symbol + " source",
             "verificationStatus": "verified", "classification": "Neutral",
         }
+    for symbol in close_sync.TECHNICAL_FIELDS:
+        markets[symbol] = {
+            "id": symbol, "value": 1.25,
+            "asOf": dt.datetime.combine(target, dt.time(15, 0), JST).isoformat(),
+            "fetchedAt": now.isoformat(), "sourceId": symbol + "_source", "sourceName": symbol + " source",
+            "verificationStatus": "verified",
+        }
     return {"generatedAt": now.isoformat(), "reportSlot": "08:00", "overallStatus": "verified", "missingRequired": [], "markets": markets}
 
 
@@ -234,6 +242,7 @@ class CloseSyncTests(unittest.TestCase):
         client = FakeSheetsClient(self.target, self.prior)
         payload = snapshot(self.target, self.next_day)
         fields = {field for item in close_sync.PRICE_FIELDS.values() for field in item if field}
+        fields.update(close_sync.TECHNICAL_FIELDS.values())
         with patch.object(close_sync, "REQUIRED_CLOSE_HEADERS", tuple(fields)):
             result = self.run_sync(client, payload)
         self.assertEqual(result["status"], "SUCCESS")
@@ -300,4 +309,5 @@ class CloseSyncTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
 
