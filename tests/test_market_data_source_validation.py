@@ -49,6 +49,7 @@ class TreasurySourceTests(unittest.TestCase):
         self.assertEqual(result["sourceSeriesId"], "daily_treasury_yield_curve:BC_10YEAR")
         self.assertEqual(result["unit"], "%")
         self.assertEqual(result["reportedDecimalPlaces"], 2)
+        self.assertEqual(result["sourceSeriesId"], "daily_treasury_yield_curve:BC_10YEAR")
         self.assertEqual(result["previousClose"], 4.12)
         self.assertIn("field_tdr_date_value_month=202610", seen["url"])
         self.assertEqual(seen["timeout"], 45)
