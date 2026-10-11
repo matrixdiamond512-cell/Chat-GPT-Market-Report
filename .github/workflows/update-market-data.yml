@@ -8,6 +8,7 @@ on:
       - .github/workflows/update-market-data.yml
       - scripts/validate_market_data_source.py
       - scripts/test_treasury_sheets_roundtrip.py
+      - scripts/test_nikkei_sheets_roundtrip.py
       - scripts/fetch_market_data.py
       - config/market_data_sources.json
       - config/market_data_validation.json
@@ -76,6 +77,11 @@ on:
         required: false
         default: false
         type: boolean
+      run_nikkei_sheets_test:
+        description: "Fetch the official Nikkei 225, VI, 25/200-day values and save/read only in dedicated private test tabs"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -104,13 +110,13 @@ jobs:
         run: python -m py_compile scripts/import_tradingview_mcp_candidates.py scripts/verify_tradingview_close.py
       - name: Test candidate validation, duplicate guards, and close evidence
         run: python -m unittest scripts.test_import_tradingview_mcp_candidates scripts.test_verify_tradingview_close
-      - name: Compile market data adapters
-        run: python -m py_compile scripts/fetch_market_data.py
+      - name: Compile market data adapters and private Nikkei roundtrip
+        run: python -m py_compile scripts/fetch_market_data.py scripts/test_nikkei_sheets_roundtrip.py
       - name: Test official source parsers and date alignment
         run: python -m unittest discover -s tests -p test_official_market_data_adapters.py -v
 
   update:
-    if: github.event_name == 'workflow_dispatch' && inputs.run_sheets_test_roundtrip != true && inputs.run_treasury_sheets_test != true
+    if: github.event_name == 'workflow_dispatch' && inputs.run_sheets_test_roundtrip != true && inputs.run_treasury_sheets_test != true && inputs.run_nikkei_sheets_test != true
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -405,6 +411,41 @@ jobs:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: python -m scripts.test_treasury_sheets_roundtrip
+
+  nikkei-sheets-test:
+    if: inputs.run_nikkei_sheets_test == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Require source and private test-sheet authorization
+        shell: bash
+        run: |
+          if [ "${{ inputs.source_automation_rights_confirmed }}" != "true" ] || [ "${{ inputs.private_sheets_storage_confirmed }}" != "true" ]; then
+            echo "::error::Nikkei test not started. Confirm automated source access and private test-sheet storage."
+            exit 78
+          fi
+
+      - name: Checkout selected PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Sheets API dependencies
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
+
+      - name: Save and read back official Nikkei data in dedicated test tabs only
+        env:
+          MARKET_DATA_TEST_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_TEST_SPREADSHEET_ID }}
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python -m scripts.test_nikkei_sheets_roundtrip
 
   treasury-validation:
     if: github.event_name == 'pull_request'
