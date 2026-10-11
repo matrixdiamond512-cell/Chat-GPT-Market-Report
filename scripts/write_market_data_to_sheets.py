@@ -287,7 +287,13 @@ class SheetsClient:
         return sheets
 
     def get_values(self, sheet_name: str, cells: str) -> list[list[Any]]:
-        data = self._request("GET", self.base_url + "/values/" + self._range(sheet_name, cells))
+        data = self._request(
+            "GET",
+            self.base_url
+            + "/values/"
+            + self._range(sheet_name, cells)
+            + "?valueRenderOption=UNFORMATTED_VALUE",
+        )
         return data.get("values") or []
 
     def clear(self, sheet_name: str, cells: str = "A:AZ") -> None:
