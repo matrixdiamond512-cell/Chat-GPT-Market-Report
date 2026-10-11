@@ -170,3 +170,20 @@ E1/E2 local checks: 21/21 focused importer/snapshot/report tests PASS; the three
 Evidence Level: E5 for private test-sheet write/readback of the actual saved snapshot; E1/E2 for the report/importer code paths and hosted checks. Limits: the upstream observations were previously acquired or manually reviewed in this task; this report is latest-per-market confirmed data through 2026-10-10, not a newly fetched 2026-10-12 close. No current-session market update or main-branch change was performed.
 
 Timestamp: 2026-10-12 05:33 JST.
+
+
+## 2026-10-12 supplement workflow report #24727584
+
+Claim: the existing real saved market observations, including the new supplement adapter output, produced one shared 28-item report draft and were persisted to the dedicated private test-sheet report tab with exact readback. This is a historical snapshot; it is not a fresh 2026-10-12 market-data acquisition.
+
+Snapshot ID: `20e9a8bbbb669318c85fdf65`. Report ID: `personal-report-24727584e0faf6cfbbdf3756`. Snapshot/report timestamp: `2026-10-11T21:07:01Z` (2026-10-12 06:07 JST). Market data date range: 2026-10-09 to 2026-10-10. Analysis prose was freshly generated from that same snapshot and states unavailable headlines/flow/positioning evidence without reusing old narrative prose. The report marks itself `historical_only` and warns against current investment use.
+
+Actual 28-item input status: **15 VERIFIED / 11 REFERENCE_ONLY / 2 UNAVAILABLE**. Verified additions include CNN Fear & Greed 45 (CNN graphdata, observation 2026-10-10; accepted within the adapter freshness window). Japan 10-year yield remains reference-only at 3.001% from the existing TradingView/LSEG observation (2026-10-09); the Actions MOF official-reference validation did not provide a numeric value into this snapshot. TSE Prime advancers 1,194 and decliners 331 (2026-10-09) and the 25-session same-market ratio 91.18% are reference-only; the ratio uses stored TSE Prime counts for the 25 sessions and is not promoted to verified. TSE Prime trading turnover and volume remain unavailable; no estimate was inserted. The other reference-only records are continuous-futures bar closes, not confirmed contract settlements.
+
+E5 private Sheets write/readback: appended only `Personal_Market_Report!A7:I7` in test spreadsheet `1vqraQzVpIHWLFSxP5X5NWoTYquT6B27l-A7UuyYauNY`. Before write, rows A1:G6 showed the prior records and A7:I7 was empty. The write set only `userEnteredValue` in nine cells; earlier report rows, the intentional blank row 4, production `終値一覧`, and all production formats were untouched. Readback matched report ID, timestamp, date range, historical status, counts 15/11/2, body length 9,095, and body SHA-256 `34a0e08ce9408e06f10e70851be633a778ab8e04861ea2ba0485eae21ad71145`. The report ID appears exactly once in A2:A7. This verifies the connected-account test-sheet path; the Actions service-account report-write job was not run. Exact writer retry was not issued, so runtime retry-skip is not newly claimed.
+
+Hosted checks: Actions run [#254](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/38174895028) at PR HEAD `b99c7616ee6d3458fb76c2310dfbdadb9df939e0`: candidate/snapshot/report/parser and compile job succeeded; official MOF/BOJ/ECB/Kraken reference validations succeeded. Treasury validation, update, and all Sheets jobs were skipped. This does not establish a new market acquisition or Actions Sheets write. Local focused snapshot supplement tests were 11/11 PASS and changed script compilation passed in the preceding local validation; these are E1/E2 contract evidence.
+
+Evidence: E1/E2 for supplement and shared-snapshot processing; E5 for the connected-account private test-sheet append/readback. No production sheet was accessed for writing, no main merge occurred, and PR #94 remains OPEN / Draft / unmerged. Outstanding: official numeric JP10Y in the same snapshot; TSE Prime volume and turnover; formal verified status for Prime breadth/ratio; confirmed settlement prices for the five futures; current-session refresh; and Actions-authenticated Sheets readback.
+
+Timestamp: 2026-10-12 JST.
