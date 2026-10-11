@@ -20,6 +20,18 @@ class TradingViewCloseEvidenceTests(unittest.TestCase):
         evidence["value"] = "123.47"
         self.assertEqual(verify_close_evidence(candidate, evidence)["status"], "CONFLICT")
 
+    def test_sp500_accepts_official_sp_dji_dashboard_value(self) -> None:
+        candidate = {
+            "id": "sp500", "symbol": "SP:SPX", "marketType": "index",
+            "marketDate": "2026-10-09", "value": "123.456",
+        }
+        evidence = {
+            "type": "official_index_close", "sourceId": "sp_dji_index_dashboard",
+            "marketDate": "2026-10-09", "timezone": "America/New_York",
+            "closeTime": "16:00", "publishedDecimals": 2, "value": "123.46",
+        }
+        self.assertEqual(verify_close_evidence(candidate, evidence)["status"], "VERIFIED")
+
     def test_wrong_official_index_source_does_not_promote(self) -> None:
         candidate = {
             "id": "nasdaq", "symbol": "NASDAQ:IXIC", "marketType": "index",
