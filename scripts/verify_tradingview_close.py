@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 
 OFFICIAL_INDEX_REFERENCE_SOURCES = {
     "nasdaq": "nasdaq_global_index_watch",
+    "sp500": "sp_dji_index_dashboard",
 }
 
 
