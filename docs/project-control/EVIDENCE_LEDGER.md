@@ -345,3 +345,13 @@ Result: PASS for the scheduled check scope. No market values were emitted by the
 Limit: Private test-sheet report write/readback, fresh 28-field acquisition, production close-list mapping, public publication, and verified live market-close acceptance remain NOT_RUN. PR #94 remains OPEN / Draft / unmerged.
 Run ID: `38169348631`.
 Timestamp: 2026-10-12 JST.
+
+
+### Fail-closed test-sheet identity guard and latest hosted check — 2026-10-12
+Claim: the report-draft writer cannot write unless both the private test-sheet and production spreadsheet IDs are configured and distinct.
+Evidence: `validate_sheet_target_ids` rejects either missing ID and rejects equal IDs. The dedicated test covers valid distinct IDs, missing production ID, and identical IDs. Local report tests 3/3 PASS. Actions run [#234](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/38169463257) on code HEAD `55c30b469c2aea78b8819eccb2358b5175d4848f`: candidate/report tests and official/reference date checks PASS; `update` and all Sheets jobs SKIPPED.
+Evidence Level: E1 local tests; E4 hosted PR checks.
+Result: PASS for fail-closed destination guard and hosted code checks.
+Limit: No real report-tab write/readback, fresh 28-field market acquisition, or production-sheet operation occurred. The latest PR head may advance with this ledger-only commit; tested code HEAD remains `55c30b4`.
+Run ID: `38169463257`.
+Timestamp: 2026-10-12 JST.
