@@ -19,6 +19,27 @@ TREASURY_XML = b'''<?xml version="1.0" encoding="utf-8"?>
 
 
 class TreasurySourceTests(unittest.TestCase):
+    def test_fetches_keyless_coinmarketcap_fear_and_greed_history(self):
+        source = {
+            "id": "coinmarketcap_crypto_fear_greed",
+            "name": "CoinMarketCap Crypto Fear and Greed Index",
+            "kind": "coinmarketcap_fear_greed",
+            "url": "https://pro-api.coinmarketcap.com/public-api/v3/fear-and-greed/historical?start=1&limit=2",
+        }
+        payload = (
+            '{"status":{"error_code":0},"data":['
+            '{"timestamp":"1791676800","value":47,"value_classification":"Neutral"},'
+            '{"timestamp":"1791590400","value":45,"value_classification":"Neutral"}]}'
+        )
+        with patch.object(market_data, "http_text", return_value=payload):
+            result = market_data.fetch_coinmarketcap_fear_greed(source)
+
+        self.assertEqual(result["value"], 47)
+        self.assertEqual(result["previousClose"], 45)
+        self.assertEqual(result["change"], 2)
+        self.assertEqual(result["sourceId"], "coinmarketcap_crypto_fear_greed")
+        self.assertEqual(market_data.parse_iso(result["asOf"]).date().isoformat(), "2026-10-11")
+
     def test_fetches_latest_dated_value_from_documented_month_feed(self):
         source = {
             "id": "us_treasury_yield_curve",
