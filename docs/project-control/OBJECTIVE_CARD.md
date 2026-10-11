@@ -231,3 +231,18 @@ CURRENT ACCEPTED CANDIDATES: 8/17 VERIFIED; 2/17 CONFLICT; 7/17 PENDING. VERIFIE
 EVIDENCE: Manual TradingView OHLC and instrument metadata, official/secondary public close references, private test-sheet readback of 17 unique rows. GitHub Actions run #175 passed importer/verifier tests and MOF/BOJ/ECB/Kraken reference validations. It did not fetch TradingView candidates or run Sheets writes. Independent BOJ/ECB/Kraken route checks did not numerically cross-compare candidate values. No production “終値一覧” write or public value publication occurred. PR remains OPEN/DRAFT/unmerged.
 
 NEXT NECESSARY ACTION: Obtain/read official daily named-contract settlement rows for GC, CL, OSE NK225, CME NIY, CME NKD; retrieve the official Nikkei VI candidate series rather than TOCOM:NVI; complete official same-date yield comparisons; separately perform numeric independent checks for FX/BTC if those are required by the final report close policy. Keep the five futures PENDING until settlement, rather than OHLC, is proven.
+
+
+## Market-data recovery continuation — 2026-10-12
+
+PRIMARY OBJECTIVE: Increase the number of the existing 28 report fields that have a correctly defined, market-date-validated source and can safely be used in the report, while preserving all existing production Sheets values/columns/formatting and keeping PR #94 Draft and unmerged.
+
+ACCEPTANCE: Maintain the 17 TradingView candidate statuses with evidence separated as official, secondary-reference, or same-provider time-boundary; route Nikkei cash/VI through official closes and calculate 25/200-session deviation only from dated official Nikkei closes; prefer official MOF/Treasury yield definitions; do not label continuous futures as exchange settlement; record all live/save outcomes at their observed evidence level.
+
+CONSTRAINTS: Keep TradingView observations in the personal test spreadsheet; no production “終値一覧” writes; no unverified data or rights scope marked as successful; do not merge PR #94.
+
+CURRENT STATUS: Candidate rows remain VERIFIED 8 / CONFLICT 2 / PENDING 7. Actions has source/date/numeric validation for Treasury US10Y and MOF JP10Y (2/28 unique report fields); the dedicated test-sheet real-data write/readback evidence remains US10Y only (1/28). The official Nikkei route is connected, and a manual read-only Actions validation target is available, but was not run. Current code workflow run #195 passed; the evidence-ledger-only commit follows that tested code commit.
+
+OPEN OUTCOMES: E4 Actions validation for official Nikkei CSV routes; independent official/secondary close evidence for unresolved candidates; five named futures settlement rows; approved automatic path for Nikkei PER/PBR/EPS and JPX Prime aggregates; CNN Fear & Greed; full 28-item live/saved coverage; historical eight Prime turnover/volume cells. All remain OPEN or NOT_RUN; existing known values/statuses are preserved.
+
+NEXT NECESSARY ACTION: Run the nikkei-official-indexes validate-only target with source collection attestation after reviewing its permitted scope. Then use only the returned source/date/status evidence to promote eligible official routes; write to private test Sheets only in a separate authorized step. Keep PR #94 Draft and do not merge.
