@@ -33,6 +33,21 @@ on:
         required: false
         default: false
         type: boolean
+      public_github_storage_confirmed:
+        description: "Confirm that collected market values may be committed to this public GitHub repository"
+        required: false
+        default: false
+        type: boolean
+      public_dashboard_display_confirmed:
+        description: "Confirm that collected market values may be displayed in the public dashboard/report"
+        required: false
+        default: false
+        type: boolean
+      private_sheets_storage_confirmed:
+        description: "Confirm that this run may store its collected values in the configured private Google Sheet"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: write
@@ -76,11 +91,7 @@ jobs:
             MODE="full"
           fi
           echo "mode=$MODE" >> "$GITHUB_OUTPUT"
-          if [ "${{ inputs.acquisition_mode }}" = "validate-only" ]; then
-            echo "summary_flag=" >> "$GITHUB_OUTPUT"
-          else
-            echo "summary_flag=--print-summary" >> "$GITHUB_OUTPUT"
-          fi
+          echo "summary_flag=" >> "$GITHUB_OUTPUT"
 
       - name: Check acquisition scripts
         run: |
@@ -91,12 +102,12 @@ jobs:
           python -m py_compile scripts/verify_market_report_readiness.py
           python -m py_compile scripts/validate_market_data_source.py
 
-      - name: Require source-rights confirmation before full configured-source validation
-        if: inputs.acquisition_mode == 'validate-only' && inputs.validation_target == 'all-configured'
+      - name: Require source-rights confirmation before contacting configured providers
+        if: github.event_name == 'workflow_dispatch' && (inputs.acquisition_mode != 'validate-only' || inputs.validation_target == 'all-configured')
         shell: bash
         run: |
           if [ "${{ inputs.source_automation_rights_confirmed }}" != "true" ]; then
-            echo "::error::Collection not attempted. Confirm automated access rights for every configured provider before rerunning validate-only."
+            echo "::error::Collection not attempted. Confirm automated access rights for every provider contacted by this run."
             exit 78
           fi
 
@@ -119,8 +130,8 @@ jobs:
           python -m json.tool data/market/last_verified.json > /dev/null
           python -m json.tool data/market/acquisition_status.json > /dev/null
 
-      - name: Report collect-only acquisition results (no values or artifacts)
-        if: inputs.acquisition_mode == 'validate-only' && inputs.validation_target == 'all-configured'
+      - name: Report acquisition status and source errors (no quote values)
+        if: inputs.acquisition_mode != 'validate-only' || inputs.validation_target == 'all-configured'
         run: |
           python - <<'PY'
           import json
@@ -140,20 +151,26 @@ jobs:
                   'asOf': item.get('asOf'),
                   'source': item.get('sourceId') or item.get('sourceName'),
                   'errorCode': item.get('errorCode') or item.get('lastErrorCode'),
+                  'fallbackUsed': bool(item.get('fallbackUsed')),
+                  'sourceErrors': [
+                    {'source': error.get('sourceId'), 'code': error.get('code')}
+                    for error in payload.get('errors', [])
+                    if error.get('symbol') == symbol_id
+                  ],
               })
           print(json.dumps({'overallStatus': payload.get('overallStatus'), 'items': rows}, ensure_ascii=False))
           PY
 
       - name: Build ChatGPT and Google Sheets CSV exports
-        if: inputs.acquisition_mode != 'validate-only'
+        if: inputs.acquisition_mode != 'validate-only' && inputs.public_github_storage_confirmed && inputs.public_dashboard_display_confirmed
         run: python scripts/build_market_sheet_exports.py
 
       - name: Merge market data into dashboard JSON
-        if: inputs.acquisition_mode != 'validate-only'
+        if: inputs.acquisition_mode != 'validate-only' && inputs.public_github_storage_confirmed && inputs.public_dashboard_display_confirmed
         run: python scripts/build_market_json.py --market-data data/market/latest.json --dashboard data/dashboard.json
 
       - name: Validate output files
-        if: inputs.acquisition_mode != 'validate-only'
+        if: inputs.acquisition_mode != 'validate-only' && inputs.public_github_storage_confirmed && inputs.public_dashboard_display_confirmed
         run: |
           python -m json.tool data/market/latest.json > /dev/null
           python -m json.tool data/market/last_verified.json > /dev/null
@@ -171,7 +188,7 @@ jobs:
           echo "overall_status=$STATUS" >> "$GITHUB_OUTPUT"
 
       - name: Commit staged market data
-        if: inputs.acquisition_mode != 'validate-only'
+        if: inputs.acquisition_mode != 'validate-only' && inputs.public_github_storage_confirmed && inputs.public_dashboard_display_confirmed
         shell: bash
         run: |
           if git diff --quiet -- data/market data/dashboard.json; then
@@ -187,7 +204,7 @@ jobs:
           git push
 
       - name: Sync staged data to Google Sheets and record result
-        if: always() && inputs.acquisition_mode != 'validate-only'
+        if: always() && inputs.acquisition_mode != 'validate-only' && inputs.private_sheets_storage_confirmed
         id: sheets_sync
         continue-on-error: true
         env:
@@ -239,7 +256,7 @@ jobs:
           exit "$CODE"
 
       - name: Commit Google Sheets sync status
-        if: always() && inputs.acquisition_mode != 'validate-only'
+        if: always() && inputs.acquisition_mode != 'validate-only' && inputs.public_github_storage_confirmed
         shell: bash
         run: |
           if [ ! -f data/market/sheets_sync_status.json ]; then
@@ -259,7 +276,7 @@ jobs:
           git push
 
       - name: Fail when configured Google Sheets sync failed
-        if: always() && inputs.acquisition_mode != 'validate-only'
+        if: always() && inputs.acquisition_mode != 'validate-only' && inputs.private_sheets_storage_confirmed
         run: |
           python - <<'PYCODE'
           import json
@@ -269,3 +286,4 @@ jobs:
               raise SystemExit("Google Sheets sync failed: " + str(payload.get("message") or ""))
           print("Google Sheets sync outcome:", payload.get("outcome"))
           PYCODE
+
