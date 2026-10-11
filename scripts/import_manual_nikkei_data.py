@@ -137,7 +137,22 @@ def normalize_manual_data(payload: dict[str, Any], now: dt.datetime | None = Non
     return {"schemaVersion": "manual-nikkei-report-input-v1", "marketDate": market_date.isoformat(), "items": rows}
 
 
-def write_private_test_sheet(normalized: dict[str, Any]) -> dict[str, Any]:
+def manual_report_ready_rows(normalized: dict[str, Any], source_review_attested: bool) -> list[list[Any]]:
+    if not source_review_attested:
+        return []
+    rows = []
+    for item in normalized["items"]:
+        rows.append([
+            item["snapshotId"], item["id"], item["value"], item["unit"],
+            "index" if item["id"] in {"nikkei225_cash", "nikkei_vi"} else "technical",
+            "japan_cash", item["marketDate"], "", item["sourceName"],
+            "Operator attested source date/value review; calculation validation passed",
+            "VERIFIED_MANUAL", item["sourceCapturedAt"],
+        ])
+    return rows
+
+
+def write_private_test_sheet(normalized: dict[str, Any], source_review_attested: bool = False) -> dict[str, Any]:
     test_id = os.environ.get("MARKET_DATA_TEST_SPREADSHEET_ID", "").strip()
     production_id = os.environ.get("MARKET_DATA_SPREADSHEET_ID", "").strip()
     credentials = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
@@ -146,8 +161,10 @@ def write_private_test_sheet(normalized: dict[str, Any]) -> dict[str, Any]:
     if test_id == production_id:
         raise ManualImportError("refusing production spreadsheet")
     try:
+        from scripts.import_tradingview_mcp_candidates import REPORT_READY_HEADERS, append_idempotent_sheet_rows
         from scripts.write_market_data_to_sheets import SheetsClient, create_authorized_session, load_service_account_info
     except ModuleNotFoundError:
+        from import_tradingview_mcp_candidates import REPORT_READY_HEADERS, append_idempotent_sheet_rows
         from write_market_data_to_sheets import SheetsClient, create_authorized_session, load_service_account_info
     client = SheetsClient(create_authorized_session(load_service_account_info(credentials)), test_id)
     tab = "Manual_Nikkei_Review"
@@ -182,7 +199,16 @@ def write_private_test_sheet(normalized: dict[str, Any]) -> dict[str, Any]:
         matches = [row for row in rows if str(row[0]) == str(expected[0])]
         if len(matches) != 1 or list(matches[0][:len(HEADERS)]) + [""] * max(0, len(HEADERS)-len(matches[0])) != expected:
             raise ManualImportError("manual Nikkei readback or duplicate check failed")
-    return {"status": "PASS", "sheet": tab, "items": len(values), "rowsAppended": len(pending), "readback": "verified", "evidenceStatus": "MANUAL_REVIEW", "productionWritten": False}
+    report_rows = manual_report_ready_rows(normalized, source_review_attested)
+    report_result = append_idempotent_sheet_rows(
+        client, "Personal_Report_Ready", REPORT_READY_HEADERS, report_rows, "L"
+    )
+    return {
+        "status": "PASS", "sheet": tab, "items": len(values), "rowsAppended": len(pending),
+        "readback": "verified", "evidenceStatus": "MANUAL_REVIEW",
+        "manuallyVerifiedRows": report_result["rowsRequested"],
+        "reportReadback": report_result["readback"], "productionWritten": False,
+    }
 
 
 def main() -> int:
@@ -190,15 +216,18 @@ def main() -> int:
     parser.add_argument("--input", required=True, type=Path, help="manually prepared JSON including official source and daily closes")
     parser.add_argument("--output", type=Path, help="normalized personal-report feed JSON")
     parser.add_argument("--write-test-sheet", action="store_true", help="append to Manual_Nikkei_Review in the private test spreadsheet")
+    parser.add_argument("--attest-source-reviewed", action="store_true", help="after personally checking the source date and value, also append rows as VERIFIED_MANUAL to Personal_Report_Ready; requires --write-test-sheet")
     args = parser.parse_args()
     try:
+        if args.attest_source_reviewed and not args.write_test_sheet:
+            raise ManualImportError("--attest-source-reviewed requires --write-test-sheet")
         data = json.loads(args.input.read_text(encoding="utf-8"))
         normalized = normalize_manual_data(data)
         if args.output:
             args.output.write_text(json.dumps(normalized, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         result = {"status": "PASS", "marketDate": normalized["marketDate"], "items": 4, "evidenceStatus": "MANUAL_REVIEW", "sheets": None}
         if args.write_test_sheet:
-            result["sheets"] = write_private_test_sheet(normalized)
+            result["sheets"] = write_private_test_sheet(normalized, args.attest_source_reviewed)
         print(json.dumps(result, ensure_ascii=False))
         return 0
     except (OSError, json.JSONDecodeError, ManualImportError, ValueError) as exc:
