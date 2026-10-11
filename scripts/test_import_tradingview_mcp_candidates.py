@@ -46,6 +46,10 @@ class TradingViewMcpCandidateImportTests(unittest.TestCase):
         dates = {item["marketDate"] for item in normalized["candidates"]}
         self.assertEqual(dates, {"2026-10-09", "2026-10-10"})
         self.assertEqual(len(sheet_rows(normalized)), 17)
+        self.assertEqual(
+            normalized["candidates"][0]["snapshotId"],
+            "tv-mcp-dow-20261011000000",
+        )
 
     def test_rejects_an_incomplete_batch(self) -> None:
         snapshot = make_snapshot()
