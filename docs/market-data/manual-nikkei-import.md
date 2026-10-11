@@ -30,4 +30,6 @@ python scripts/import_manual_nikkei_data.py --input nikkei-manual.json --output 
 
 To also append the four rows to the dedicated private test tab `Manual_Nikkei_Review`, provide `MARKET_DATA_TEST_SPREADSHEET_ID` and `GOOGLE_SERVICE_ACCOUNT_JSON` in the local process environment and add `--write-test-sheet`. If `MARKET_DATA_SPREADSHEET_ID` is set, the importer refuses to use it as the test destination. Snapshot IDs make repeated imports idempotent; a changed value under an existing snapshot ID stops rather than overwrites.
 
+After checking the official source's displayed date and values yourself, add `--attest-source-reviewed` alongside `--write-test-sheet`. This appends the four same-date rows to `Personal_Report_Ready` with the distinct status `VERIFIED_MANUAL`. The normal JSON output and `Manual_Nikkei_Review` remain labelled `MANUAL_REVIEW`; without this explicit option the values are never promoted.
+
 Rows are labelled `MANUAL_REVIEW`; manual entry and arithmetic checks do not independently verify the displayed source value. Check the source date/value and the four imported rows before treating them as verified. No public dashboard output is generated.
