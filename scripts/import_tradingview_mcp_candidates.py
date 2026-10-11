@@ -19,6 +19,11 @@ import sys
 from typing import Any
 from zoneinfo import ZoneInfo
 
+try:
+    from scripts.verify_tradingview_close import verify_close_evidence
+except ModuleNotFoundError:
+    from verify_tradingview_close import verify_close_evidence
+
 ROOT = Path(__file__).resolve().parents[1]
 TEST_SHEET = "TradingView_MCP_Candidates"
 HEADERS = [
@@ -144,7 +149,7 @@ def normalize_snapshot(snapshot: dict[str, Any], now: dt.datetime | None = None)
         if market_date > market_today:
             raise CandidateImportError(f"{item_id} market date is later than retrieval date in its market timezone")
         value = finite_number(item.get("value"), f"{item_id}.value")
-        candidates.append({
+        candidate = {
             "id": item_id,
             "symbol": contract["symbol"],
             "value": value,
@@ -157,8 +162,11 @@ def normalize_snapshot(snapshot: dict[str, Any], now: dt.datetime | None = None)
             "marketDate": market_date.isoformat(),
             "snapshotId": snapshot_id(item_id, contract["symbol"], anchor.isoformat()),
             "source": "TradingView official MCP",
-            "reviewStatus": "CANDIDATE_CLOSE_AND_SESSION_REVIEW_REQUIRED",
-        })
+        }
+        review = verify_close_evidence(candidate, item.get("closeValidation"))
+        candidate["reviewStatus"] = review["status"]
+        candidate["reviewBasis"] = review["basis"]
+        candidates.append(candidate)
 
     return {
         "schemaVersion": "tradingview-mcp-candidate-v1",
