@@ -76,11 +76,14 @@ class TradingViewCloseEvidenceTests(unittest.TestCase):
     def test_btc_needs_same_exchange_and_utc_market_date(self) -> None:
         candidate = {
             "id": "btcusd", "symbol": "BITSTAMP:BTCUSD", "marketType": "spot",
-            "marketDate": "2026-10-10", "value": 123,
+            "marketDate": "2026-10-10", "barAnchorUtc": "2026-10-10T00:00:00Z", "value": 123,
         }
         evidence = {
             "type": "same_exchange_utc_daily_close", "exchange": "BITSTAMP",
-            "timezone": "UTC", "marketDate": "2026-10-10", "value": 123,
+            "timezone": "UTC", "marketDate": "2026-10-10",
+            "closeBoundaryUtc": "2026-10-11T00:00:00Z",
+            "intradayBarStartUtc": "2026-10-10T23:00:00Z",
+            "intradayClose": 123,
         }
         self.assertEqual(verify_close_evidence(candidate, evidence)["status"], "VERIFIED")
         evidence["exchange"] = "KRAKEN"
