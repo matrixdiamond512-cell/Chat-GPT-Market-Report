@@ -9,7 +9,7 @@ class TradingViewCloseEvidenceTests(unittest.TestCase):
     def test_official_nasdaq_close_accepts_only_at_published_precision(self) -> None:
         candidate = {
             "id": "nasdaq", "symbol": "NASDAQ:IXIC", "marketType": "index",
-            "marketDate": "2026-10-09", "value": "123.4567",
+            "marketDate": "2026-10-09", "barAnchorUtc": "2026-10-09T13:30:00Z", "value": "123.4567",
         }
         evidence = {
             "type": "official_index_close", "sourceId": "nasdaq_global_index_watch",
@@ -23,7 +23,7 @@ class TradingViewCloseEvidenceTests(unittest.TestCase):
     def test_sp500_accepts_official_sp_dji_dashboard_value(self) -> None:
         candidate = {
             "id": "sp500", "symbol": "SP:SPX", "marketType": "index",
-            "marketDate": "2026-10-09", "value": "123.456",
+            "marketDate": "2026-10-09", "barAnchorUtc": "2026-10-09T13:30:00Z", "value": "123.456",
         }
         evidence = {
             "type": "official_index_close", "sourceId": "sp_dji_index_dashboard",
@@ -35,7 +35,7 @@ class TradingViewCloseEvidenceTests(unittest.TestCase):
     def test_wrong_official_index_source_does_not_promote(self) -> None:
         candidate = {
             "id": "nasdaq", "symbol": "NASDAQ:IXIC", "marketType": "index",
-            "marketDate": "2026-10-09", "value": 123.46,
+            "marketDate": "2026-10-09", "barAnchorUtc": "2026-10-09T13:30:00Z", "value": 123.46,
         }
         evidence = {
             "type": "official_index_close", "sourceId": "unofficial",
@@ -71,6 +71,31 @@ class TradingViewCloseEvidenceTests(unittest.TestCase):
             "closeTime": "17:00", "closeBoundaryUtc": "2026-10-09T21:00:00Z",
             "intradayBarStartUtc": "2026-10-09T20:00:00Z",
             "marketDate": "2026-10-09", "intradayClose": "1.2345",
+        }
+        self.assertEqual(verify_close_evidence(candidate, evidence)["status"], "CONFLICT")
+
+    def test_official_index_rejects_wrong_cash_session_anchor(self) -> None:
+        candidate = {
+            "id": "nasdaq", "symbol": "NASDAQ:IXIC", "marketType": "index",
+            "marketDate": "2026-10-09", "barAnchorUtc": "2026-10-09T14:30:00Z", "value": 123.46,
+        }
+        evidence = {
+            "type": "official_index_close", "sourceId": "nasdaq_global_index_watch",
+            "marketDate": "2026-10-09", "timezone": "America/New_York",
+            "closeTime": "16:00", "publishedDecimals": 2, "value": 123.46,
+        }
+        self.assertEqual(verify_close_evidence(candidate, evidence)["status"], "CONFLICT")
+
+    def test_forex_rejects_timestamp_claimed_as_17_but_not_17_local(self) -> None:
+        candidate = {
+            "id": "usdjpy", "symbol": "FX:USDJPY", "marketType": "spot",
+            "marketDate": "2026-10-09", "barAnchorUtc": "2026-10-08T20:00:00Z", "value": "123.45",
+        }
+        evidence = {
+            "type": "forex_daily_close", "timezone": "America/New_York",
+            "closeTime": "17:00", "closeBoundaryUtc": "2026-10-09T20:00:00Z",
+            "intradayBarStartUtc": "2026-10-09T19:00:00Z",
+            "marketDate": "2026-10-09", "intradayClose": "123.45",
         }
         self.assertEqual(verify_close_evidence(candidate, evidence)["status"], "CONFLICT")
 
