@@ -120,3 +120,8 @@ Primary references: [Nasdaq Global Index Watch](https://indexes.nasdaqomx.com/In
 
 Follow-up official-source review found the S&P 500 level and timestamp on S&P Dow Jones Indices' page, showing the 2026-10-09 cash close at its published precision. The TradingView candidate matches at two decimals and is now VERIFIED. The current candidate qualification is therefore 5/17: Nasdaq Composite, S&P 500, USD/JPY at 17:00 New York, EUR/USD at 17:00 New York, and BITSTAMP BTC/USD at the UTC daily boundary. The other 12 remain unresolved: two official Nikkei conflicts, one Dow secondary-reference mismatch, one secondary-only Russell 2000 match, five continuous futures without named settlements, VIX without parsed official history, and two yields without matching official series proof.
 
+
+
+### Timestamp-boundary verifier regression sweep
+
+The close verifier now rejects an index bar unless its bar timestamp is 09:30 America/New_York, an FX daily bar unless the start and end are exactly 17:00 America/New_York, and a Bitcoin daily bar unless the candle starts and ends at 00:00 UTC. Its regression suite also rejects an official-source mismatch, wrong FX timezone boundary, and continuous futures presented without named-contract settlement evidence. GitHub Actions run #169 (38164034694) passed compilation, candidate/close-verifier suites, and existing official reference validation. Snapshot update and both Sheets jobs were skipped. Candidate count remains 5/17 VERIFIED; production sheet and public snapshot were not changed.
