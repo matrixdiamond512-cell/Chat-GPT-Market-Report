@@ -11,7 +11,6 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 from decimal import Decimal, InvalidOperation
-import hashlib
 import json
 import math
 import os
@@ -95,8 +94,8 @@ def finite_number(value: Any, field: str) -> float:
 
 
 def snapshot_id(item_id: str, symbol: str, anchor: str) -> str:
-    identity = f"{item_id}|{symbol}|{anchor}".encode("utf-8")
-    return "tv-mcp-" + hashlib.sha256(identity).hexdigest()[:24]
+    parsed_anchor = parse_aware_datetime(anchor, "barAnchorUtc")
+    return f"tv-mcp-{item_id}-{parsed_anchor.strftime('%Y%m%d%H%M%S')}"
 
 
 def normalize_snapshot(snapshot: dict[str, Any], now: dt.datetime | None = None) -> dict[str, Any]:
