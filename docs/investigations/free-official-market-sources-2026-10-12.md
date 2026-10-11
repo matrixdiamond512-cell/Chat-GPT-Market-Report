@@ -88,3 +88,9 @@ Scope: the 28 required report fields (18 existing fields plus 10 fields without 
 - Current counts stay distinct: existing PR report paths 18/28; one-time MCP candidate bars 17/28; exact report-compatible live acquisition still 1/28 (Treasury); private candidate rows saved/read back 17/17; accepted close/session validations for these 17 candidates 0/17. No production writes and no public dashboard update.
 - Market-date normalization is intentionally not inferred from a shared calendar date. Every row preserves the provider's UTC bar anchor and a field-specific date label; FX, futures, BTC, and yields still need close/session confirmation before report use. The BTC candidate used the prior completed UTC daily bar because the latest returned bar was still forming.
 - PR #94 remains OPEN/DRAFT/unmerged. This manual bridge is the next practical candidate path; scheduled Actions and public display remain separate future outcomes.
+
+## PR test result update (2026-10-12)
+
+- Local bundled Python checks passed: 10/10 importer unit tests and bytecode compilation. GitHub Actions run #143 on the current PR head passed the dedicated candidate importer test/compile job. Its separate official MOF/BOJ/ECB/Kraken reference probes also passed, but they remain reference-only and are not counted as report-compatible TradingView fields.
+- The date guard uses each field's market timezone, not one common UTC calendar date; one regression explicitly covers Tokyo local date while UTC is still on the prior date. Exact market close/settlement validation is still 0/17 for the candidates.
+- The run skipped the market snapshot update and both Sheets jobs. The previously confirmed private candidate-tab write/readback remains 17/17; no second live write was attempted. Existing report route count and exact PR live count do not change.
