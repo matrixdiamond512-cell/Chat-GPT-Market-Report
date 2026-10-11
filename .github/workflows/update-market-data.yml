@@ -82,6 +82,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  tradingview-mcp-candidate-tests:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout PR revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile manual candidate importer
+        run: python -m py_compile scripts/import_tradingview_mcp_candidates.py
+      - name: Test candidate validation and duplicate guards
+        run: python -m unittest scripts.test_import_tradingview_mcp_candidates
+
   update:
     if: github.event_name == 'workflow_dispatch' && inputs.run_sheets_test_roundtrip != true && inputs.run_treasury_sheets_test != true
     runs-on: ubuntu-latest
