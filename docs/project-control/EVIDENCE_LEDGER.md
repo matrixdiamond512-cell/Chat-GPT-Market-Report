@@ -154,3 +154,15 @@ Repository Actions settings were rechecked: only `FMP_API_KEY` is listed; no ser
 - Added an adapter regression assertion for Treasury series and precision. Local PR-head scoped tests: 4 Treasury/source-validation tests PASS and 17 close-sheet/reconciliation tests PASS (21 total); these are E1 component evidence.
 - GitHub Actions run #92 (`38155297800`) on commit `8fb98fcfd960ad7f89f64c940236689a68555b38` passed the Treasury-only validation job. The full `update`, `sheets-test`, and `treasury-sheets-test` jobs were skipped; this is not production persistence evidence and no production write occurred.
 - PR #94 remains OPEN/DRAFT/unmerged. Existing test-sheet Treasury save/readback evidence from run #80 remains separate. The other 17 connected routes were not live-verified in this run; ten report items remain without an authorized automated route; eight Prime historical blanks remain unfilled. Continue those workstreams under the existing source-rights constraints.
+
+
+## 既存17経路の権利確認と対象限定のActions検証準備（2026-10-12）
+
+- ユーザー指示によりAR26の出所調査は優先対象から外した。AR26の5.242は維持し、元系列を確認できないため既存の競合停止ルールを保持。
+- 既存18項目から米10年債を除く17経路の利用条件を確認。Yahoo Finance規約は自動収集に明示的な事前許可を要求するため該当経路を未接続のままとした。JPXは無許諾の収集・二次利用を許しておらず、Cboe遅延見積ページは自動抽出を明示禁止。Stooqのこの用途への許諾、CNNのgraphdata endpoint利用条件、既存日本10年債JSONの上流系譜も確認できず、自動リクエストは実施していない。FREDはAPI keyが必要で、今回の17項目の本番・公開利用権は未確認。
+- CoinMarketCapのCrypto Fear & Greedには公式のkeyless履歴APIがあり、日次UTC 00:00の履歴を返す。CMCはkeyless利用をscript/prototype/evaluation向けと案内し、production利用にはBasic以上の認証キーを推奨している。このため、専用の`cmc-crypto-fear-greed-eval` workflow_dispatch targetを追加した。これは単一APIへの値非表示の取得・日付・数値範囲・前日比方向検証専用で、GitHub/Sheets/dashboard/artifactへの保存を行わない。公開再配布や定期本番利用の許可を示すものではない。
+- `validate_market_data_source.py`の出力に、取得値を含めず`direction`と`directionCheck`を追加。数値の存在と既存の範囲検証、基準日、ソース一致も従来どおり診断する。テストにはCMC履歴応答の正規化と値非出力の方向検証を追加。
+- PR HEADのローカル相当テスト: source-validation 5件 + close-sheet reconciliation 17件 = 22/22 PASS。PR #94 Actions run #97 (`38155984420`) はTreasury限定のPRチェック成功、`update`/`sheets-test`/`treasury-sheets-test`はSKIPPED。これはCMCや他の16項目のライブ取得を証明しない。
+- CMC専用workflow_dispatchは未実行。Windows Computer UseはURLを安全確度で識別できず、一覧を更新して1回再試行した後も停止した（エラー: “could not determine the current browser URL on Windows with enough confidence to enforce policy”）。Actionsの手動実行は送信されていない。GitHub CLIもこの環境では未認証。実ネットワークでのCMC取得結果はNOT_RUN。
+- 取得実績は本タスクで増えていない。既存のTreasury 1項目のE4/E5証拠（run #80/#92等）を維持。米10年債を除く17項目はこの更新で0件追加ライブ検証。PR #94はOPEN/DRAFT・未マージ。既存市場データ、本番「終値一覧」、Sheets、書式は変更していない。
+- 17項目のソースごとの自動収集条件と未確認範囲は`docs/investigations/market-data-source-rights-2026-10-11.md`の2026-10-12追記を参照。
