@@ -205,3 +205,8 @@ Local bundled Python: importer bytecode compilation PASS, focused tests 10/10 PA
 The private candidate tab labels its date as Source Market Date and preserves each exact UTC bar anchor separately. The Japan 10-year yield date label is 2026-10-09 in Asia/Tokyo; the U.S. 10-year date label is 2026-10-08 in America/New_York. Only the new test tab header and Japan-yield date cell were corrected; existing values and tabs remain preserved.
 
 GitHub Actions run #148 on PR head f75273a74a833cf5984bb59ad57bebe31d54835e passed importer compile and its 10 focused tests; the separate official reference-validation job passed. Update and Sheets jobs were skipped. Candidate close/session validations remain 0/17; private candidate save/readback remains 17/17.
+
+
+## 2026-10-12 close-validation progress
+
+Primary objective remains to complete report-compatible market data while preserving existing report and sheet behavior. TradingView manual candidates remain in the private test spreadsheet only; production close list and public dashboard are unchanged. Four of 17 candidates now meet a documented report-close rule: Nasdaq Composite, USD/JPY NY 17:00 close, EUR/USD NY 17:00 close, and BITSTAMP BTC/USD UTC daily close. Two candidates conflict with official Nikkei references; Dow has a mismatch against a secondary close recap. Ten other candidates lack qualifying close evidence. Continuous futures still require named-contract settlement checks. The close review verifier is connected to the manual importer; Actions run #155 passed the first version, and run #157 on the strengthened BTC boundary rule is pending. PR #94 stays OPEN/DRAFT/unmerged.
