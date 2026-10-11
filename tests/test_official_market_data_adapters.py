@@ -157,10 +157,10 @@ class OfficialMarketDataAdapterTests(unittest.TestCase):
     def test_nikkei_official_daily_csv_selects_latest_close_not_future_row(self):
         source={"id":"nikkei_official_daily","name":"Nikkei official daily CSV","url":"https://example.test/nikkei.csv",
                 "marketType":"index","session":"japan_cash","targetDate":"2026-10-09"}
-        payload=("日付,終値,始値,高値,安値\\n"
-                 "2026.10.08,69042.11,69840.64,69918.20,69042.11\\n"
-                 "2026.10.09,69030.92,68648.50,69143.45,68150.02\\n"
-                 "2026.10.13,70000.00,69000.00,70100.00,68900.00\\n").encode("utf-8")
+        payload=("日付,終値,始値,高値,安値\n"
+                 "2026.10.08,69042.11,69840.64,69918.20,69042.11\n"
+                 "2026.10.09,69030.92,68648.50,69143.45,68150.02\n"
+                 "2026.10.13,70000.00,69000.00,70100.00,68900.00\n").encode("utf-8")
         with patch.object(market_data,"http_get",return_value=(payload,"utf-8")):
             value=market_data.fetch_nikkei_daily_csv(source)
         self.assertEqual(value["value"],69030.92)
@@ -179,7 +179,7 @@ class OfficialMarketDataAdapterTests(unittest.TestCase):
             day += market_data.dt.timedelta(days=1)
         rows=["Date,Close"]
         rows += [f"{d:%Y.%m.%d},{i}" for i,d in enumerate(dates,1)]
-        payload=("\\n".join(rows)+"\\n").encode("utf-8")
+        payload=("\n".join(rows)+"\n").encode("utf-8")
         with patch.object(market_data,"http_get",return_value=(payload,"utf-8")):
             value=market_data.fetch_nikkei_sma_deviation(source)
         self.assertAlmostEqual(value["value"],(25/13-1)*100)
@@ -188,7 +188,7 @@ class OfficialMarketDataAdapterTests(unittest.TestCase):
 
     def test_nikkei_csv_fails_closed_if_close_column_is_not_identifiable(self):
         source={"id":"nikkei","url":"https://example.test","targetDate":"2026-10-09"}
-        payload=b"Date,Open,High,Low,Volume\\n2026.10.09,1,2,0,10\\n"
+        payload=b"Date,Open,High,Low,Volume\n2026.10.09,1,2,0,10\n"
         with patch.object(market_data,"http_get",return_value=(payload,"utf-8")):
             with self.assertRaises(market_data.FetchError) as raised:
                 market_data.fetch_nikkei_daily_csv(source)
