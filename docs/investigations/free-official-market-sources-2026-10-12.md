@@ -94,3 +94,9 @@ Scope: the 28 required report fields (18 existing fields plus 10 fields without 
 - Local bundled Python checks passed: 10/10 importer unit tests and bytecode compilation. GitHub Actions run #143 on the current PR head passed the dedicated candidate importer test/compile job. Its separate official MOF/BOJ/ECB/Kraken reference probes also passed, but they remain reference-only and are not counted as report-compatible TradingView fields.
 - The date guard uses each field's market timezone, not one common UTC calendar date; one regression explicitly covers Tokyo local date while UTC is still on the prior date. Exact market close/settlement validation is still 0/17 for the candidates.
 - The run skipped the market snapshot update and both Sheets jobs. The previously confirmed private candidate-tab write/readback remains 17/17; no second live write was attempted. Existing report route count and exact PR live count do not change.
+
+## Source-date label correction and latest Actions result
+
+- The private candidate tab labels its per-market field as Source Market Date, not as a report-verified close date. Japan 10-year yield source date is 2026-10-09 when its UTC bar anchor is converted to Asia/Tokyo; U.S. 10-year source date is 2026-10-08 in America/New_York. The UTC anchor is retained separately.
+- Only the test tab's header K1 and Japan-yield date cell K17 changed; the 17 numeric values and all pre-existing test tabs were preserved.
+- GitHub Actions run #148 (38161816314) passed importer compile and its focused 10-test suite, plus the separate official-reference validation job. The snapshot update and Sheets jobs were skipped. Close/session acceptance remains 0/17.
