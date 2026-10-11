@@ -63,6 +63,8 @@ class TreasurySourceTests(unittest.TestCase):
         self.assertTrue(result["valuePresent"])
         self.assertTrue(result["sourceMatches"])
         self.assertTrue(result["notFutureDated"])
+        self.assertEqual(result["direction"], "UP")
+        self.assertEqual(result["directionCheck"], "CONSISTENT")
         self.assertNotIn("value", result)
         self.assertNotIn("reason", result)
 
