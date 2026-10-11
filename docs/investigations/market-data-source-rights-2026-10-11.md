@@ -227,3 +227,26 @@ Sources:
 - FRED API terms (registered key and source-owner rights): https://fred.stlouisfed.org/docs/api/terms_of_use.html
 - DGS10 metadata, source and rights labels: https://fred.stlouisfed.org/series/DGS10
 
+
+
+## Existing 17 routes: source conditions and isolated evaluation scope (2026-10-12)
+
+This review excludes the already validated U.S. Treasury route and the ten not-yet-connected report fields. It distinguishes a source's ability to return data from permission to automate collection and permission to store or republish it.
+
+- **Yahoo Finance (index, futures, FX, crypto, commodities, and moving-average routes):** Yahoo's current Terms of Service require express prior permission before automated collection. No permission was confirmed, so the Yahoo routes were not contacted.
+- **Stooq fallbacks (gold, WTI, USD/JPY, EUR/USD, BTC/USD):** no authoritative Stooq grant for this project's automated requests or intended downstream uses was confirmed. These remain disabled as fallback routes pending source terms confirmation.
+- **JPX / OSE and Nikkei Profile (OSE futures, Nikkei VI):** JPX's site terms prohibit unlicensed secondary use/re-distribution and require permission for relevant market data; Nikkei Profile use beyond its stated personal-use scope is also not cleared. Neither source was contacted.
+- **Cboe VIX:** the delayed-quotes page expressly prohibits automated extraction. Cboe also offers downloadable historical data, but the reviewed public page did not establish a blanket right for this project's recurring automated collection and public dashboard use. No Cboe route was contacted.
+- **CNN Fear & Greed:** the configured graph-data URL is not documented as a public API, and no automation permission was found. It remains uncontacted.
+- **FRED DGS10 fallback:** this is a documented API but requires a registered key and preserves series-owner rights. No live request was made; public GitHub/dashboard downstream rights are not cleared. Treasury remains the proven primary US10Y route.
+- **Japan 10-year yield:** the configured adapter reads the repository's existing `data/rates-bonds.json`; its external lineage and current automated-use permission were not established in this review. It was not separately probed.
+- **CoinMarketCap Crypto Fear & Greed:** the official `/v3/fear-and-greed/historical` endpoint is available through the keyless public API and returns dated daily values at 00:00 UTC. CMC documents the keyless service for scripts/prototypes/evaluation, while its pricing guidance says production use should use an authenticated Basic-or-higher key. This supports only a one-off metadata-only evaluation in this task. It does not authorize GitHub value commits, ongoing production collection, or public display/re-distribution. The dedicated Actions target does not write a sheet, artifact, or repository data, and its validator emits no numeric values. No live Actions request has yet been submitted.
+- The separate product/data-use permissions remain distinct: a free API or public page does not itself clear public GitHub retention or public dashboard display. No public data output is enabled by the isolated target.
+
+Primary terms/docs reviewed:
+- Yahoo Terms: https://legal.yahoo.com/us/en/yahoo/terms/otos/index.html
+- JPX Terms: https://www.jpx.co.jp/term-of-use/index.html
+- Cboe VIX delayed quote notice: https://ww2.cboe.com/delayed_quotes/vix/
+- CMC Crypto Fear & Greed historical API: https://coinmarketcap.com/api/documentation/pro-api-reference/global-metrics
+- CMC keyless API scope: https://coinmarketcap.com/api/documentation/pro-api-reference/keyless-public-api
+- CMC pricing and production guidance: https://coinmarketcap.com/api/pricing/
