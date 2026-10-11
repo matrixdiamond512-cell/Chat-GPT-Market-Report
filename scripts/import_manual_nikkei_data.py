@@ -87,45 +87,65 @@ def normalize_manual_data(payload: dict[str, Any], now: dt.datetime | None = Non
     if captured_at.tzinfo is None or captured_at.astimezone(dt.timezone.utc) > (now or dt.datetime.now(dt.timezone.utc)).astimezone(dt.timezone.utc) + dt.timedelta(minutes=5):
         raise ManualImportError("sourceCapturedAt must be an aware, nonfuture timestamp")
 
-    cash = _number(payload.get("nikkei225Close"), "nikkei225Close")
-    vi = _number(payload.get("nikkeiViClose"), "nikkeiViClose")
-    if cash <= 0 or not 0 <= vi <= 100:
-        raise ManualImportError("manual index values are outside plausible validation bounds")
-    raw_history = payload.get("dailyCloseHistory")
-    if not isinstance(raw_history, list):
-        raise ManualImportError("dailyCloseHistory must be an array")
-    history: list[tuple[dt.date, float]] = []
-    for index, entry in enumerate(raw_history):
-        if not isinstance(entry, dict):
-            raise ManualImportError(f"dailyCloseHistory[{index}] must be an object")
-        date = _date(entry.get("date"), f"dailyCloseHistory[{index}].date")
-        close = _number(entry.get("close"), f"dailyCloseHistory[{index}].close")
-        if close <= 0:
-            raise ManualImportError("daily closes must be positive")
-        history.append((date, close))
-    if len({date for date, _ in history}) != len(history):
-        raise ManualImportError("dailyCloseHistory contains duplicate dates")
-    history.sort(key=lambda item: item[0])
-    if not history or history[-1][0] != market_date:
-        raise ManualImportError("dailyCloseHistory must end on marketDate")
-    if history[-1][1] != cash:
-        raise ManualImportError("dailyCloseHistory final close must exactly match nikkei225Close")
-    if len(history) < 200:
-        raise ManualImportError("at least 200 dated closes are required to calculate both deviations")
-
     rows: list[dict[str, Any]] = []
-    values = {
-        "nikkei225_cash": (cash, "official value supplied manually"),
-        "nikkei_vi": (vi, "official value supplied manually"),
-    }
-    valuation_keys = ("nikkei225ForecastPER", "nikkei225IndexPBR", "nikkei225ReportedForecastEPS")
+    values: dict[str, tuple[float, str]] = {}
+    cash: float | None = None
+    if payload.get("nikkei225Close") not in (None, ""):
+        cash = _number(payload["nikkei225Close"], "nikkei225Close")
+        if cash <= 0:
+            raise ManualImportError("nikkei225Close must be positive")
+        values["nikkei225_cash"] = (cash, "official Nikkei 225 cash close supplied manually")
+    if payload.get("nikkeiViClose") not in (None, ""):
+        vi = _number(payload["nikkeiViClose"], "nikkeiViClose")
+        if not 0 <= vi <= 100:
+            raise ManualImportError("nikkeiViClose is outside plausible validation bounds")
+        values["nikkei_vi"] = (vi, "official Nikkei VI close supplied manually")
+
+    history_present = payload.get("dailyCloseHistory") not in (None, "")
+    if history_present:
+        raw_history = payload["dailyCloseHistory"]
+        if not isinstance(raw_history, list):
+            raise ManualImportError("dailyCloseHistory must be an array")
+        history_source_name = str(payload.get("dailyCloseHistorySourceName") or source_name).strip()
+        history_source_url = _source_url(payload.get("dailyCloseHistorySourceUrl") or source_url, "dailyCloseHistorySourceUrl")
+        if not history_source_name:
+            raise ManualImportError("dailyCloseHistorySourceName is required when dailyCloseHistory is supplied")
+        history: list[tuple[dt.date, float]] = []
+        for index, entry in enumerate(raw_history):
+            if not isinstance(entry, dict):
+                raise ManualImportError(f"dailyCloseHistory[{index}] must be an object")
+            date = _date(entry.get("date"), f"dailyCloseHistory[{index}].date")
+            close = _number(entry.get("close"), f"dailyCloseHistory[{index}].close")
+            if close <= 0:
+                raise ManualImportError("daily closes must be positive")
+            history.append((date, close))
+        if len({date for date, _ in history}) != len(history):
+            raise ManualImportError("dailyCloseHistory contains duplicate dates")
+        history.sort(key=lambda item: item[0])
+        if not history or history[-1][0] != market_date:
+            raise ManualImportError("dailyCloseHistory must end on marketDate")
+        if len(history) < 200:
+            raise ManualImportError("at least 200 dated closes are required to calculate both deviations")
+        # The technical indicators belong to their own homogeneous daily-close
+        # series. A different, higher precision official cash close may coexist
+        # on the same date; it must not be silently substituted into this series.
+        history_verified_with_cash = cash is not None and history[-1][1] == cash
+        for window, symbol in ((25, "nikkei225_dev25"), (200, "nikkei225_dev200")):
+            closes = [close for _, close in history[-window:]]
+            sma = sum(closes) / window
+            values[symbol] = ((history[-1][1] / sma - 1.0) * 100.0,
+                              f"history close / SMA{window} - 1; {window} latest dated sessions including marketDate; history source={history_source_name}; final close cross-check={'matches' if history_verified_with_cash else 'differs from official close or is not supplied'}")
+
+    valuation_keys = ("nikkei225ForecastPER", "nikkei225IndexPBR")
     valuation_present = [payload.get(key) not in (None, "") for key in valuation_keys]
     if any(valuation_present) and not all(valuation_present):
-        raise ManualImportError("PER, PBR, and source-reported forecast EPS must be supplied together")
+        raise ManualImportError("index-based PER and PBR must be supplied together")
     basis = str(payload.get("nikkei225ValuationBasis") or "")
     if all(valuation_present):
         if basis != "index_based":
             raise ManualImportError("nikkei225ValuationBasis must be index_based; weighted-average metrics are not interchangeable")
+        if cash is None:
+            raise ManualImportError("nikkei225Close is required to derive index-based forecast EPS")
         per = _number(payload[valuation_keys[0]], valuation_keys[0])
         pbr = _number(payload[valuation_keys[1]], valuation_keys[1])
         if per <= 0 or pbr <= 0:
@@ -133,40 +153,58 @@ def normalize_manual_data(payload: dict[str, Any], now: dt.datetime | None = Non
         try:
             close_decimal = Decimal(str(payload["nikkei225Close"]).replace(",", ""))
             per_decimal = Decimal(str(payload[valuation_keys[0]]).replace(",", ""))
-            reported_eps_decimal = Decimal(str(payload[valuation_keys[2]]).replace(",", ""))
+            reported_eps_raw = payload.get("nikkei225ReportedForecastEPS")
+            reported_eps_decimal = (
+                Decimal(str(reported_eps_raw).replace(",", ""))
+                if reported_eps_raw not in (None, "") else None
+            )
         except (InvalidOperation, ValueError) as exc:
             raise ManualImportError("valuation inputs must be decimal numbers") from exc
-        if not reported_eps_decimal.is_finite() or reported_eps_decimal <= 0:
+        if reported_eps_decimal is not None and (not reported_eps_decimal.is_finite() or reported_eps_decimal <= 0):
             raise ManualImportError("source-reported forecast EPS must be finite and positive")
         implied_eps = close_decimal / per_decimal
-        decimal_places = max(0, -reported_eps_decimal.as_tuple().exponent)
-        quantum = Decimal(1).scaleb(-decimal_places)
-        if implied_eps.quantize(quantum, rounding=ROUND_HALF_UP) != reported_eps_decimal.quantize(quantum, rounding=ROUND_HALF_UP):
-            raise ManualImportError("close / index-based PER does not match source-reported forecast EPS at its published precision")
+        if reported_eps_decimal is not None:
+            decimal_places = max(0, -reported_eps_decimal.as_tuple().exponent)
+            quantum = Decimal(1).scaleb(-decimal_places)
+            if implied_eps.quantize(quantum, rounding=ROUND_HALF_UP) != reported_eps_decimal.quantize(quantum, rounding=ROUND_HALF_UP):
+                raise ManualImportError("close / index-based PER does not match source-reported forecast EPS at its published precision")
+            eps_definition = f"derived from same-date official index close / index-based forecast PER; matches source-reported EPS at {decimal_places} decimal places"
+        else:
+            eps_definition = "derived from same-date official index close / index-based forecast PER; source does not separately publish comparable EPS"
         values["nikkei225_per"] = (per, "index-based forecast PER supplied manually")
         values["nikkei225_pbr"] = (pbr, "index-based PBR supplied manually")
-        values["nikkei225_eps"] = (
-            float(implied_eps),
-            f"derived from same-date Nikkei 225 close / index-based forecast PER; agrees with source-reported EPS rounded to {decimal_places} decimal places",
-        )
-    for window, symbol in ((25, "nikkei225_dev25"), (200, "nikkei225_dev200")):
-        closes = [close for _, close in history[-window:]]
-        sma = sum(closes) / window
-        values[symbol] = ((cash / sma - 1.0) * 100.0, f"close / SMA{window} - 1; {window} latest dated sessions including marketDate")
+        values["nikkei225_eps"] = (float(implied_eps), eps_definition)
+
+    if not values:
+        raise ManualImportError("at least one official Nikkei value or a complete daily history is required")
 
     for symbol, (value, definition) in values.items():
         unit, evidence = FIELDS[symbol]
+        is_history_metric = symbol in {"nikkei225_dev25", "nikkei225_dev200"}
+        if is_history_metric:
+            item_source_name = str(payload.get("dailyCloseHistorySourceName") or source_name).strip()
+            item_source_url = _source_url(payload.get("dailyCloseHistorySourceUrl") or source_url, "dailyCloseHistorySourceUrl")
+        elif symbol == "nikkei_vi":
+            item_source_name = str(payload.get("nikkeiViSourceName") or source_name).strip()
+            item_source_url = _source_url(payload.get("nikkeiViSourceUrl") or source_url, "nikkeiViSourceUrl")
+        else:
+            item_source_name, item_source_url = source_name, source_url
+        history_source_matches_official = (
+            str(payload.get("dailyCloseHistorySourceName") or source_name).strip() == source_name
+            and str(payload.get("dailyCloseHistorySourceUrl") or source_url).strip() == source_url
+        )
         rows.append({
             "id": symbol,
             "value": value,
             "unit": unit,
             "marketDate": market_date.isoformat(),
-            "sourceName": source_name,
-            "sourceUrl": source_url,
+            "sourceName": item_source_name,
+            "sourceUrl": item_source_url,
             "sourceCapturedAt": captured_at.isoformat(),
             "evidenceStatus": "MANUAL_REVIEW",
             "evidenceType": evidence,
             "seriesDefinition": definition,
+            "verificationEligibility": "manual_verified" if not is_history_metric or history_source_matches_official else "reference_only",
             "snapshotId": f"manual-nikkei-{symbol}-{market_date.isoformat()}",
         })
     return {"schemaVersion": "manual-nikkei-report-input-v1", "marketDate": market_date.isoformat(), "items": rows}
@@ -177,12 +215,15 @@ def manual_report_ready_rows(normalized: dict[str, Any], source_review_attested:
         return []
     rows = []
     for item in normalized["items"]:
+        status = "VERIFIED_MANUAL" if item.get("verificationEligibility") == "manual_verified" else "REFERENCE_ONLY"
         rows.append([
             item["snapshotId"], item["id"], item["value"], item["unit"],
-            "index" if item["id"] in {"nikkei225_cash", "nikkei_vi"} else "technical",
+            "index" if item["id"] in {"nikkei225_cash", "nikkei_vi"} else
+            "valuation" if item["id"] in {"nikkei225_per", "nikkei225_pbr", "nikkei225_eps"} else "technical",
             "japan_cash", item["marketDate"], "", item["sourceName"],
-            "Operator attested source date/value review; calculation validation passed",
-            "VERIFIED_MANUAL", item["sourceCapturedAt"],
+            "Operator attested source date/value review; calculation validation passed"
+            if status == "VERIFIED_MANUAL" else "Calculated from separate dated history source; independent full-history confirmation pending",
+            status, item["sourceCapturedAt"],
         ])
     return rows
 
@@ -272,4 +313,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
