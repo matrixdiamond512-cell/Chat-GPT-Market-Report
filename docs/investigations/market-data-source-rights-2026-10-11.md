@@ -98,7 +98,7 @@ The official Nikkei Profile historical PER and PBR pages exist as separate daily
 
 The official series are not interchangeable: the 2026-10-09 page exposes PER 17.37 (weighted-average) and 22.87 (index basis), and PBR 1.90 (weighted-average) and 2.83 (index basis). Existing output semantics must determine which pair maps to the existing report fields. The archive rounds PER to two decimals and does not provide an exact EPS field in that series; the implementation must not publish close divided by the rounded PER as an exact official EPS.
 
-For comparison only, Invest Forest publicly displays 2026-10-09 close 69,030.92, PER 17.37, PBR 1.90 and EPS 3,974.15. The same close divided by that displayed EPS gives PER 17.3575 (17.36 rounded), while close divided by displayed PER 17.37 gives EPS 3,971.29, about 2.86 below the displayed EPS. This fails a direct same-date/definition consistency check at the displayed precision. The provider's public premium terms expressly prohibit program-based automatic extraction. Do not use its page as an Actions API; the displayed EPS may be shown as an unresolved cross-check only, not silently treated as validated official output.
+For comparison only, the public Invest Forest PER chart displays a dated table with 2026-10-09 close 69,030.92, PER 17.37, PBR 1.90, and EPS 3,974.15. Recalculation corrects the earlier arithmetic: close / displayed EPS = 17.3699835, which rounds to 17.37, and close / displayed PER = 3,974.1462, which rounds to EPS 3,974.15. The displayed figures are consistent at their shown precision; the earlier note claiming a mismatch (17.3575 and EPS 3,971.29) was erroneous and is withdrawn. The located programmatic-extraction restriction is in a premium-service terms page; it does not by itself establish the terms applicable to this free PER page. No separate free-page automated-access license or public data API was identified. Keep Actions collection disabled pending the operator's written clarification for one daily automated request and private personal Google Sheets retention. This clarification would not cover GitHub storage or public dashboard/report redistribution, which require separate permissions.
 
 - Nikkei PER archive: https://indexes.nikkei.co.jp/nkave/archives/data?list=per
 - Nikkei PBR archive: https://indexes.nikkei.co.jp/nkave/archives/data?list=pbr
@@ -138,7 +138,7 @@ JPX's individual-investor J-Quants API free plan is an explicit programmatic-acc
 2. CME USD Nikkei futures: individual NKD=F deferred contract quote; same block and alternative as above.
 3. Nikkei PER: official Nikkei daily PER archive, preserve weighted-average vs index-basis series; automated retrieval awaits Nikkei written scope confirmation.
 4. Nikkei PBR: official Nikkei daily PBR archive, preserve weighted-average vs index-basis series; same gate.
-5. Nikkei expected EPS: derive only from same-session Nikkei close and unrounded PER of the same official basis, then compare with provider EPS; current third-party displayed figures fail displayed-precision parity and automated collection is prohibited/uncleared. No exact free official EPS series was established.
+5. Nikkei expected EPS: no exact free official EPS series was established. If Invest Forest provides written permission for the free page, its dated EPS field is a candidate; the displayed 2026-10-09 close/PER/EPS values are consistent at shown precision, but a production adapter must independently enforce same-session and definition checks.
 6. Prime trading value: JPX Daily Report market-segment “概算” total is the closest public source, next-business-day PDF; automated reuse blocked by JPX terms. Equities Market Summary has the current aggregate but the same downstream-processing restriction.
 7. Prime trading volume: same route and restriction as #6.
 8. Prime advancers: JPX Equities Market Summary Prime row provides the visible daily aggregate; automated storage/processing blocked. Historical raw series requires JPX permission or a validated licensed/API source.
@@ -148,3 +148,23 @@ JPX's individual-investor J-Quants API free plan is an explicit programmatic-acc
 ### Implementation and run status after this review
 
 No acquisition adapter or source definition was added for these ten fields: every examined current quote/data page either expressly restricts automated collection/processing, requires an unconfirmed account/entitlement, or only exposes delayed/derived values. Adding a scraper under a “free” label would violate the source-rights constraint. The existing rights-confirmation checkbox remains false by default. GitHub Actions live collection and date validation were not run because the existing mixed-source workflow would contact sources whose automated rights are unconfirmed, and this GitHub connector has no workflow_dispatch operation. The user explicitly asked to keep the PR Draft; it remains OPEN/DRAFT. Google Sheets write/readback and historical backfill are unchanged and NOT_RUN.
+
+
+## Clarification follow-up: free Invest Forest page vs premium terms (2026-10-11)
+
+The user clarified that the cited automatic-extraction restriction is from a premium-member agreement and may not determine the terms for the free public PER chart. The free page was directly inspected at https://nikkeiyosoku.com/nikkeiper/ and displays a dated daily table, including 2026-10-09 close 69,030.92, PER 17.37, PBR 1.90 and EPS 3,974.15; its displayed history covers roughly two months. The free page is therefore a useful data candidate for all three Nikkei valuation fields, subject to permission and methodology validation.
+
+The previous calculation in this document was wrong. Using the displayed figures: 69,030.92 / 3,974.15 = 17.3699835 (rounds to 17.37); 69,030.92 / 17.37 = 3,974.1462 (rounds to 3,974.15). The page's displayed PER and EPS are consistent to their displayed precision. This corrects and withdraws the prior claim that the values failed that check. It does not prove the provider's underlying definitions or source inputs.
+
+The accessible premium terms expressly cover their paid service and prohibit programmatic extraction, accumulation/use of data, and publication of obtained data. That text alone does not settle what terms govern the free public chart. No separate free-page license permitting unattended daily requests was found. Therefore the current status is RIGHTS_SCOPE_UNCONFIRMED, not “free-page automation prohibited.” Do not dispatch an automated request against the page until the operator clarifies permission.
+
+The permission request should be limited and explicit: (a) one automated request per Japan trading day from GitHub Actions for personal market analysis, (b) storage in a private Google Sheet, and (c) no values committed to GitHub and no public display/redistribution. Ask whether the free page's own terms and any upstream data-owner terms allow this collection, retention, and intended internal use. An affirmative answer for (a)-(b) would not grant (c).
+
+Nikkei Profile independently publishes daily historical PER and PBR with weighted-average and index-based series; its official data page says uses beyond personal use/quotation require permission and its contact page specifically routes index data processing/non-display uses to licensing. This remains a separate permission candidate. Its public archive rounds PER/PBR and does not provide exact EPS in the same series, so Invest Forest's EPS cannot be replaced with an exact calculation from rounded Nikkei PER.
+
+Sources:
+- Free Invest Forest dated PER/PBR/EPS table: https://nikkeiyosoku.com/nikkeiper/
+- Invest Forest premium terms (scope is the premium service): https://nikkeiyosoku.com/order_kiyaku/
+- Invest Forest inquiry form: https://nikkeiyosoku.com/inquiry/
+- Nikkei public data-use scope: https://indexes.nikkei.co.jp/nkave/data/
+- Nikkei non-display/data-processing inquiry: https://indexes.nikkei.co.jp/nkave/contact/
