@@ -224,3 +224,10 @@ Timestamp: 2026-10-12 02:29 JST.
 - E5: located the 2026-10-09 S&P 500 value and timestamp on S&P Dow Jones Indices' official page. It matches the private TradingView SP:SPX candidate at the page's two-decimal precision; the candidate is now VERIFIED. The evidence is [S&P DJI index-family page](https://www.spglobal.com/spdji/en//index-family/equity/developed-equity/).
 - Close qualification increases from 4/17 to 5/17. The remaining 12: Nikkei 225 and Nikkei VI are official-source conflicts; Dow has only a secondary-reference mismatch; The remaining exact candidate fields are one secondary-only Russell 2000 match, five unverified continuous futures, VIX, and two yields. No values were changed in the candidate tab; only S&P review status/source metadata changed.
 - The close verifier now allowlists S&P DJI official dashboard evidence and its Actions test covers the source. Commit 47bace0d2bc1dab6e2dae2a4ab30c37087fec23e has PR workflow run #162 (38163874968) pending at this entry. Existing production sheets/dashboard remain untouched; PR stays Draft.
+
+
+## 2026-10-12 exact-boundary regression sweep
+
+- `verify_tradingview_close.py` now requires U.S. index daily bars to start at 09:30 America/New_York, FX daily bars to start/end at 17:00 America/New_York, and BTC daily bars to start/end at 00:00 UTC. It rejects mislabeled timestamp claims and keeps continuous futures unpromoted absent a named settlement. Candidate values/statuses are unchanged by this code-only update.
+- Actions run #169 (`38164034694`) at code head `9f21e9575420ba4bc1ea8a05602ce52b80aedf60`: manual candidate/close verifier compile and tests PASS; official MOF/BOJ/ECB/Kraken reference validation PASS; snapshot update, synthetic Sheets and Treasury Sheets jobs SKIPPED. No new market values or Sheet writes were made.
+- Readback of the private candidate tab after S&P DJI promotion: 17 rows, 17 unique snapshot IDs, VERIFIED 5, CONFLICT 2, secondary-reference mismatch 1, review required 8. VERIFIED fields are Nasdaq Composite, S&P 500, USD/JPY, EUR/USD and BITSTAMP BTC/USD. Production close sheet/dashboard remain untouched; PR #94 remains OPEN/DRAFT/unmerged.
