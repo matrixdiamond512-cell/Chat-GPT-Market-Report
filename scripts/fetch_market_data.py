@@ -715,6 +715,144 @@ def fetch_local_rates_json(source: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+
+def _parse_mof_jgb_date(value: Any) -> str | None:
+    text = str(value or "").strip().lstrip("\ufeff")
+    if not text:
+        return None
+    for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%Y%m%d", "%m/%d/%Y"):
+        try:
+            return dt.datetime.strptime(text, fmt).date().isoformat()
+        except ValueError:
+            pass
+    match = re.fullmatch(r"([SHR])(\d{1,2})[./-](\d{1,2})[./-](\d{1,2})", text, re.IGNORECASE)
+    if match:
+        era, year, month, day = match.groups()
+        offset = {"S": 1925, "H": 1988, "R": 2018}[era.upper()]
+        try:
+            return dt.date(offset + int(year), int(month), int(day)).isoformat()
+        except ValueError:
+            return None
+    return None
+
+
+def fetch_mof_jgb_yield_csv(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch MOF's PDL-licensed daily constant-maturity JGB yield CSV."""
+    body, _ = http_get(str(source["url"]), timeout=int(source.get("timeoutSeconds", 20)),
+                       headers={"Accept": "text/csv,text/plain,*/*"})
+    try:
+        text = body.decode(str(source.get("encoding") or "cp932"), errors="replace")
+    except LookupError:
+        text = body.decode("utf-8-sig", errors="replace")
+    rows = list(csv.reader(io.StringIO(text.lstrip("\ufeff"))))
+    if not rows:
+        raise FetchError("PARSE_ERROR", "MOF JGB CSV had no rows")
+
+    def normalized(value: Any) -> str:
+        return re.sub(r"[^a-z0-9一-龯ぁ-んァ-ン]", "", str(value or "").strip().lower())
+
+    header_index = None
+    date_index = 0
+    yield_index = 10
+    date_names = {"date", "basedate", "observationdate", "基準日", "年月日"}
+    yield_names = {"10", "10y", "10yr", "10year", "10years", "10年", "10年金利"}
+    for row_index, row in enumerate(rows[:20]):
+        names = [normalized(cell) for cell in row]
+        date_candidates = [i for i, name in enumerate(names) if name in date_names]
+        yield_candidates = [i for i, name in enumerate(names) if name in yield_names]
+        if date_candidates and yield_candidates:
+            header_index = row_index
+            date_index = date_candidates[0]
+            yield_index = yield_candidates[0]
+            break
+
+    data_rows = rows[header_index + 1:] if header_index is not None else rows
+    observations: list[tuple[str, float, int]] = []
+    for row in data_rows:
+        if len(row) <= max(date_index, yield_index):
+            continue
+        date_text = _parse_mof_jgb_date(row[date_index])
+        value_text = str(row[yield_index] or "").strip()
+        value = safe_float(value_text)
+        if not date_text or value is None:
+            continue
+        try:
+            precision = max(0, -Decimal(value_text.replace(",", "")).as_tuple().exponent)
+        except InvalidOperation:
+            precision = 0
+        observations.append((date_text, value, precision))
+    if not observations:
+        raise FetchError("PARSE_ERROR", "MOF JGB CSV had no dated 10-year observations")
+    observations.sort(key=lambda item: item[0])
+    latest_date, latest_value, precision = observations[-1]
+    previous_value = observations[-2][1] if len(observations) > 1 else None
+    return candidate(source, latest_value, previous_close=previous_value, as_of=latest_date,
+                     raw_reference="MOF JGB constant-maturity 10-year yield",
+                     reported_decimal_places=precision)
+
+
+def fetch_boj_time_series(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch one daily BOJ Time-Series Data Search observation by series code."""
+    now = now_jst()
+    start = now.date() - dt.timedelta(days=int(source.get("lookbackDays", 90)))
+    params = urllib.parse.urlencode({
+        "format": "json", "lang": "en",
+        "db": str(source.get("database") or "FM08"),
+        "code": str(source.get("seriesCode") or "FXERD04"),
+        "startDate": start.strftime("%Y%m"), "endDate": now.strftime("%Y%m"),
+    })
+    url = f"{str(source['url']).rstrip('?')}?{params}"
+    text = http_text(url, timeout=int(source.get("timeoutSeconds", 20)),
+                     headers={"Accept": "application/json"})
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise FetchError("PARSE_ERROR", "BOJ time-series API response was not valid JSON") from exc
+    if not isinstance(payload, dict) or str(payload.get("STATUS", payload.get("status", ""))) != "200":
+        raise FetchError("SOURCE_ERROR", "BOJ time-series API reported an unsuccessful status")
+
+    resultset = payload.get("RESULTSET") or payload.get("resultset") or []
+    if not isinstance(resultset, list):
+        raise FetchError("PARSE_ERROR", "BOJ time-series result set was malformed")
+    code = str(source.get("seriesCode") or "FXERD04").upper()
+    series = next((item for item in resultset if isinstance(item, dict)
+                   and str(item.get("SERIES_CODE") or item.get("series_code") or "").upper() == code), None)
+    if not series:
+        raise FetchError("PARSE_ERROR", "BOJ response did not contain the configured series")
+    values_block = series.get("VALUES") or series.get("values") or {}
+    if isinstance(values_block, dict):
+        dates = values_block.get("SURVEY_DATES") or values_block.get("survey_dates") or []
+        values = values_block.get("VALUES") or values_block.get("values") or []
+    else:
+        dates = series.get("SURVEY_DATES") or series.get("survey_dates") or []
+        values = values_block
+    if not isinstance(dates, list) or not isinstance(values, list):
+        raise FetchError("PARSE_ERROR", "BOJ date/value arrays were malformed")
+
+    observations: list[tuple[str, float]] = []
+    for date_value, raw_value in zip(dates, values):
+        date_text = re.sub(r"\D", "", str(date_value or ""))
+        if len(date_text) != 8:
+            continue
+        try:
+            observation_date = dt.datetime.strptime(date_text, "%Y%m%d").date()
+        except ValueError:
+            continue
+        value = safe_float(raw_value)
+        if value is not None:
+            observations.append((observation_date.isoformat(), value))
+    if not observations:
+        raise FetchError("PARSE_ERROR", "BOJ series had no dated numeric observations")
+    observations.sort(key=lambda item: item[0])
+    latest_date, latest_value = observations[-1]
+    previous_value = observations[-2][1] if len(observations) > 1 else None
+    observed_at = dt.datetime.combine(dt.date.fromisoformat(latest_date),
+                                      dt.time(hour=int(source.get("observationHourJst", 17))), tzinfo=JST)
+    return candidate(source, latest_value, previous_close=previous_value, as_of=observed_at.isoformat(),
+                     raw_reference=f"{source.get('database', 'FM08')}:{code}",
+                     reported_decimal_places=int(source.get("publishedDecimalPlaces", 2)))
+
+
 FETCHERS = {
     "yahoo_chart": fetch_yahoo_chart,
     "yahoo_sma_deviation": fetch_yahoo_sma_deviation,
@@ -728,6 +866,8 @@ FETCHERS = {
     "fred_csv": fetch_fred_csv,
     "fred_api": fetch_fred_api,
     "treasury_yield_xml": fetch_treasury_yield_xml,
+    "mof_jgb_yield_csv": fetch_mof_jgb_yield_csv,
+    "boj_time_series": fetch_boj_time_series,
 }
 
 

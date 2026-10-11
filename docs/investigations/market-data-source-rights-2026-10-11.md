@@ -250,3 +250,13 @@ Primary terms/docs reviewed:
 - CMC Crypto Fear & Greed historical API: https://coinmarketcap.com/api/documentation/pro-api-reference/global-metrics
 - CMC keyless API scope: https://coinmarketcap.com/api/documentation/pro-api-reference/keyless-public-api
 - CMC pricing and production guidance: https://coinmarketcap.com/api/pricing/
+
+
+## 2026-10-12 — 公式代替API/CSVの追加調査と限定ライブ検証
+
+- 財務省「国債金利情報」は現行CSVと1974年以降の履歴CSVを提供。10年値は個別債の終値ではなく、15:00 JST時点の流通市場価格に基づく10年コンスタント・マチュリティの半年複利金利で、翌営業日09:30以降に更新。財務省サイトはPDL 1.0を適用し、出典表示を条件に再利用・公衆送信・改変を認める。個人Sheets、公開GitHub保存、公開表示はいずれも出典表示等に従う。データ定義の差を避けるため、現行JP10Yルートへの自動切替はせず reference-only とする。
+- 日本銀行時系列統計APIは誰でもJSON/CSVで取得可能。USD/JPYのFM08 / FXERD04「東京市場ドル・円スポット17時時点」は日次公表系列。データは概ね毎営業日08:50頃に利用可能。API利用サービスの公開時は日銀への事前通知とクレジット表示を求めている。今回は公開値・シートを作らない単一ソース診断であり、東京17時値を連続スポット価格や終値としては扱わず reference-only にする。
+- 新しい公式経路は本番collectorでの優先・fallback対象外。Actions検証は値を出力せず、source ID、取得日、検証コードだけを記録する。テスト用/本番シート・GitHub市場データ保存・dashboard更新は行わない。
+- 別指標や権利条件上採用しなかった候補: ECB daily reference ratesはEUR/USD・JPY/EURから計算可能だが、16:00 CETのinformation-only reference rateで、連続FX closeではない; FRED DJIA/NASDAQCOM/SP500は日次終値だが第三者指数著作権が明記され、公開用途は権利者確認が別途必要; EIA daily WTIはCushing spot priceで、WTI futuresの代替とは数えない; Coinbase market-data termsは再配布を禁じ、個人/研究用途に限定し、AI用途制限も含むためこのエージェント経由での取得対象にしない; Cboe website termsはコンテンツ1部の個人非商用閲覧/ダウンロードを認める一方で電子検索システムへの保存・公開等を制限し、定期Actions自動取得の許諾は確認できなかったため未接続のままとする。
+- 残る米指数・CME先物・金・原油先物・BTC・VIX・Nikkei cash/VI/deviations・CNN F&G・JPX Prime aggregatesは既存外部条件または指標定義の壁が残る。代替系列が現物/先物、daily close/reference、指数/ETF、異なるFear & Greedのいずれかに変わる場合は同じ列に混ぜない。
+

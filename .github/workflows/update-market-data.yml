@@ -11,6 +11,7 @@ on:
       - scripts/fetch_market_data.py
       - config/market_data_sources.json
       - config/market_data_validation.json
+      - tests/test_official_market_data_adapters.py
   # Manual utility only. Scheduled acquisitions are handled by the dedicated
   # report-window workflows. Code/config pushes must never refresh or retag the
   # live market snapshot because the latest published report may belong to a
@@ -385,4 +386,9 @@ jobs:
 
       - name: Validate official U.S. Treasury daily 10-year source
         run: python scripts/validate_market_data_source.py --symbol us10y --source-id us_treasury_yield_curve
+      - name: Validate official Ministry of Finance Japan 10-year reference series
+        run: python scripts/validate_market_data_source.py --symbol jp10y --source-id mof_jgbcm_10y
+
+      - name: Validate official Bank of Japan Tokyo USD/JPY 17:00 reference series
+        run: python scripts/validate_market_data_source.py --symbol usdjpy --source-id boj_usdjpy_17_reference
 

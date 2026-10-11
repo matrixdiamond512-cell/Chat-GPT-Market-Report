@@ -33,6 +33,8 @@ def validate(symbol_id: str, source_id: str) -> dict[str, Any]:
     raw = fetcher(source)
     checks = dict((validation_config.get("defaults") or {}))
     checks.update((validation_config.get("symbols") or {}).get(symbol_id, {}))
+    if source.get("validationStaleHours") is not None:
+        checks["staleHours"] = source["validationStaleHours"]
     ok, code, _reason = market_data.validate_candidate(symbol_id, symbol, checks, raw, None)
     timestamp = market_data.parse_iso(raw.get("asOf"))
     now = market_data.now_jst()
@@ -64,6 +66,9 @@ def validate(symbol_id: str, source_id: str) -> dict[str, Any]:
         "direction": direction,
         "directionCheck": direction_check,
         "validationCode": "OK" if valid else "FUTURE_DATE" if ok else code,
+        "marketType": source.get("marketType"),
+        "session": source.get("session"),
+        "referenceOnly": bool(source.get("referenceOnly", False)),
     }
 
 

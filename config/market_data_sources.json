@@ -241,6 +241,25 @@
           "priority": 2,
           "marketType": "spot",
           "session": "continuous"
+        },
+        {
+          "id": "boj_usdjpy_17_reference",
+          "name": "Bank of Japan Tokyo USD/JPY spot reference (17:00 JST)",
+          "kind": "boj_time_series",
+          "url": "https://www.stat-search.boj.or.jp/api/v1/getDataCode",
+          "database": "FM08",
+          "seriesCode": "FXERD04",
+          "sourceSeriesId": "FM08:FXERD04",
+          "sourceUrl": "https://www.stat-search.boj.or.jp/ssi/mtshtml/fxerd04_en.html",
+          "priority": 99,
+          "marketType": "spot",
+          "session": "tokyo_17_daily_reference",
+          "referenceOnly": true,
+          "lookbackDays": 90,
+          "observationHourJst": 17,
+          "publishedDecimalPlaces": 2,
+          "validationStaleHours": 120,
+          "note": "Official BOJ daily Tokyo USD/JPY spot at 17:00 JST. Reference-only evaluation route; not continuous FX close and excluded from automatic report acquisition."
         }
       ]
     },
@@ -422,6 +441,21 @@
           "session": "daily",
           "priority": 1,
           "maxRetries": 1
+        },
+        {
+          "id": "mof_jgbcm_10y",
+          "name": "Ministry of Finance Japan 10-year constant-maturity JGB yield (daily 15:00 reference)",
+          "kind": "mof_jgb_yield_csv",
+          "url": "https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/historical/jgbcme_all.csv",
+          "sourceUrl": "https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/index.htm",
+          "sourceSeriesId": "MOF:JGB:10Y:CONSTANT_MATURITY",
+          "encoding": "cp932",
+          "priority": 99,
+          "marketType": "yield",
+          "session": "daily_1500_jst_published_next_business_day",
+          "referenceOnly": true,
+          "validationStaleHours": 120,
+          "note": "Official semiannual-compound constant-maturity yield based on prevailing JGB market prices at 15:00 JST, published from 09:30 on the next business day; reference-only until the report's existing JP10Y definition is confirmed."
         }
       ]
     },
@@ -519,4 +553,3 @@
     }
   }
 }
-
