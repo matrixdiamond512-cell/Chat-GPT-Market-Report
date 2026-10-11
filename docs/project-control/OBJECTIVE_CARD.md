@@ -140,3 +140,18 @@ Connected the 25-day and 200-day Nikkei deviation routes in the existing market 
 OPEN OUTCOMES: 18/28 report-item source/config routes are connected (64.3%). CME yen/USD, Nikkei valuation (PER/PBR/EPS), and five Prime indicators remain open. The isolated adapter run returned 0/18 verified because this execution environment could not resolve source hostnames (DNS name-resolution failure); this is an environment/network limitation, not evidence of a source outage. An independent TradingView cross-check returned 16 current quote/bar responses for a separate market sample, of which the OSE daily bar was dated 2026-10-08 while the shared close target was 2026-10-09; these observations do not count as adapter-runtime passes. Whole-contract Sheets save/readback remains NOT_RUN (0/28). Historical fill remains 5/13 (38.5%); eight Prime turnover/volume gaps remain. GitHub Actions runtime and service-account save/readback remain unverified. Nikkei/JPX source authorization and publication scope are unconfirmed.
 
 NEXT NECESSARY ACTION: Use an authorized source for the ten remaining report items; verify contractual rights for Nikkei index derived values and JPX Prime metrics before enabling publication. Then run the configured source adapters and Sheets save/readback through GitHub Actions, repair only blank historic cells, and keep PR #94 OPEN/DRAFT until all acceptance checks pass.
+
+## 2026-10-11 staged verification continuation
+
+ACTIVE PROFILE: data-tool.
+
+PRESERVED: Existing 18/28 connected acquisition routes and the 72-hour Japanese cash-session freshness regression. No existing sheet tab, legacy close-column, or live user data was edited.
+
+IMPLEMENTED: Added a quote-value-free per-item diagnostic summarizer; the output distinguishes current acquisition success, validation result, fallback/unavailable diagnosis, and collector persistence state. The Sheets writer now reads back input/history writes and verifies each current snapshot ID occurs exactly once. Added synthetic roundtrip/idempotency tests and an isolated Actions job that can exercise only a dedicated test spreadsheet, rejects the production spreadsheet ID, and uses read-only GitHub contents permission.
+
+EVIDENCE: Local targeted tests 42/42 PASS; nine scripts compile. Sheets roundtrip evidence is mocked E2 only. No real Actions collection on this candidate and no real Sheets write/readback. Required configured routes remain 18/18 connected (18/28 report items); remaining ten fields are not connected.
+
+OPEN OUTCOMES: E4 market-data collection by individually authorized source; run #46 fallback item identities remain unknown from missing logs; real dedicated test-sheet execution pending verified test spreadsheet ID and service-account secret configuration; real-data Sheets save/readback pending rights and safe test-sheet acceptance; research for ten missing routes continues without enabling restricted scraping; historical fill remains open.
+
+NEXT NECESSARY ACTION: Configure a dedicated nonproduction spreadsheet in `MARKET_DATA_TEST_SPREADSHEET_ID` and the service-account secret, run the PR branch's `sheets-test` dispatch, then verify the readback/idempotency summary. Run only source-specific Actions collection targets after their automated access scope is confirmed. Keep PR #94 OPEN/DRAFT and unmerged.
+

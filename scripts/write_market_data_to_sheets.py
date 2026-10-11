@@ -333,6 +333,12 @@ def sync_payload(client: SheetsClient, payload: dict[str, Any], input_sheet: str
 
     client.clear(input_sheet)
     client.update(input_sheet, "A1", [SHEET_HEADERS] + rows)
+    input_readback = client.get_values(input_sheet, f"A1:AA{len(rows) + 1}")
+    expected_input = [SHEET_HEADERS] + rows
+    for index, expected in enumerate(expected_input):
+        actual = input_readback[index] if index < len(input_readback) else []
+        if [safe_cell(value) for value in actual[: len(SHEET_HEADERS)]] + [""] * max(0, len(SHEET_HEADERS) - len(actual)) != expected:
+            raise SheetsSyncError(f"input sheet readback mismatch at row {index + 1}")
 
     history_values = client.get_values(history_sheet, "A:A")
     existing_ids = {str(row[0]) for row in history_values[1:] if row}
@@ -340,6 +346,11 @@ def sync_payload(client: SheetsClient, payload: dict[str, Any], input_sheet: str
         client.update(history_sheet, "A1", [SHEET_HEADERS])
     new_history_rows = [row for row in rows if str(row[0]) not in existing_ids]
     client.append(history_sheet, "A:AA", new_history_rows)
+    history_readback = client.get_values(history_sheet, "A:AA")
+    history_ids = [str(row[0]) for row in history_readback[1:] if row]
+    expected_ids = [str(row[0]) for row in rows]
+    if any(history_ids.count(snapshot_id) != 1 for snapshot_id in expected_ids):
+        raise SheetsSyncError("history sheet readback failed snapshot identity/duplicate check")
 
     client.clear(rules_sheet)
     client.update(rules_sheet, "A1", RULES_ROWS)
@@ -355,6 +366,17 @@ def sync_payload(client: SheetsClient, payload: dict[str, Any], input_sheet: str
     return {
         "inputRows": len(rows),
         "historyRowsAdded": len(new_history_rows),
+        "inputReadback": "verified",
+        "historyReadback": "verified",
+        "itemResults": [
+            {
+                "id": row[4],
+                "acquisitionResult": "SUCCESS" if row[16] == "verified" and not row[18] else "FAILED",
+                "validationResult": "PASS" if row[16] == "verified" and not row[18] else "NOT_CURRENTLY_VERIFIED",
+                "persistenceResult": "SAVED_READBACK_CONFIRMED",
+            }
+            for row in rows
+        ],
         "overallStatus": payload.get("overallStatus"),
         "generatedAt": payload.get("generatedAt"),
     }
@@ -387,3 +409,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
