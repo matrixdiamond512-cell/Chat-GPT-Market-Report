@@ -459,18 +459,26 @@ def read_nikkei_daily_csv(source: dict[str, Any]) -> list[tuple[str, float, int]
     except LookupError:
         text = body.decode("utf-8-sig", errors="replace").lstrip("\ufeff")
     rows = list(csv.reader(io.StringIO(text)))
-    date_aliases = {"date", "basedate", "marketdate", "日付", "年月日"}
+    date_aliases = {"date", "basedate", "marketdate", "日付", "年月日", "基準日"}
     value_aliases = {"close", "closing", "closingprice", "index", "value", "終値", "指数値"}
     date_index = int(source.get("dateColumnIndex", 0))
-    value_index = int(source.get("valueColumnIndex", 1))
+    value_index = int(source["valueColumnIndex"]) if source.get("valueColumnIndex") is not None else None
     data_start = 0
+    header_found = False
     for row_index, row in enumerate(rows[:20]):
         normalized = [re.sub(r"[^a-z0-9一-龯ぁ-んァ-ン]", "", str(cell).strip().lower()) for cell in row]
         dates = [i for i, cell in enumerate(normalized) if cell in date_aliases]
         values = [i for i, cell in enumerate(normalized) if cell in value_aliases]
-        if dates and values:
+        if dates:
+            header_found = True
+            if not values:
+                raise FetchError("PARSE_ERROR", "Nikkei official CSV header has no identifiable close column")
             date_index, value_index, data_start = dates[0], values[0], row_index + 1
             break
+    if not header_found and value_index is None:
+        raise FetchError("PARSE_ERROR", "Nikkei official CSV has no recognizable header or configured value column")
+    if value_index is None:
+        raise FetchError("PARSE_ERROR", "Nikkei official CSV close column is not configured")
     observations: list[tuple[str, float, int]] = []
     for row in rows[data_start:]:
         if len(row) <= max(date_index, value_index):
