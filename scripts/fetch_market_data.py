@@ -953,68 +953,6 @@ def fetch_kraken_ohlc(source: dict[str, Any]) -> dict[str, Any]:
     )
 
 
-def fetch_fmp_index_eod(source: dict[str, Any]) -> dict[str, Any]:
-    """Fetch a short, dated EOD index history for private-use validation.
-
-    FMP individual plans permit personal research subject to plan terms. This
-    adapter is only enabled on explicit source validation and its config entries
-    are reference-only, so it cannot feed public dashboard/GitHub data paths.
-    """
-    api_key = os.environ.get(str(source.get("apiKeyEnv") or "FMP_API_KEY"), "").strip()
-    if not api_key:
-        raise FetchError("MISSING_CREDENTIAL", "FMP API key is not configured")
-    symbol = str(source.get("symbol") or "").strip()
-    if not symbol:
-        raise FetchError("INVALID_SOURCE_CONFIG", "FMP index symbol is missing")
-
-    today = now_jst().date()
-    start = today - dt.timedelta(days=int(source.get("lookbackDays", 14)))
-    endpoint = str(source.get("url") or "https://financialmodelingprep.com/stable/historical-price-eod/light")
-    params = urllib.parse.urlencode({
-        "symbol": symbol,
-        "from": start.isoformat(),
-        "to": today.isoformat(),
-        "apikey": api_key,
-    })
-    try:
-        body, _ = http_get(f"{endpoint}?{params}", timeout=int(source.get("timeoutSeconds", 20)))
-    except FetchError as exc:
-        # The API key is in the URL; never include the request URL in a public diagnostic.
-        raise FetchError(exc.code, "FMP index history request failed") from None
-    try:
-        payload = json.loads(body.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise FetchError("PARSE_ERROR", "FMP index history response was not valid JSON") from exc
-    if not isinstance(payload, list):
-        raise FetchError("SOURCE_ERROR", "FMP index history response had an unexpected shape")
-
-    observations: list[tuple[dt.date, float]] = []
-    for row in payload:
-        if not isinstance(row, dict):
-            continue
-        if row.get("symbol") and str(row["symbol"]).upper() != symbol.upper():
-            continue
-        try:
-            observed_date = dt.date.fromisoformat(str(row.get("date") or "")[:10])
-        except ValueError:
-            continue
-        price = safe_float(row.get("price"))
-        if price is not None and observed_date <= today:
-            observations.append((observed_date, price))
-    observations.sort(key=lambda pair: pair[0])
-    if not observations:
-        raise FetchError("EMPTY_VALUE", "FMP index history contained no dated price observations")
-
-    latest_date, latest_value = observations[-1]
-    previous_value = observations[-2][1] if len(observations) > 1 else None
-    return candidate(
-        source,
-        latest_value,
-        previous_close=previous_value,
-        as_of=latest_date.isoformat(),
-        raw_reference=f"FMP index EOD {symbol}",
-    )
-
 
 FETCHERS = {
     "yahoo_chart": fetch_yahoo_chart,
@@ -1033,7 +971,6 @@ FETCHERS = {
     "boj_time_series": fetch_boj_time_series,
     "ecb_exchange_rate": fetch_ecb_reference_rate,
     "kraken_ohlc": fetch_kraken_ohlc,
-    "fmp_index_eod": fetch_fmp_index_eod,
 }
 
 
