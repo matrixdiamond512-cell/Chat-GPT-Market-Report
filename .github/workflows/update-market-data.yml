@@ -16,6 +16,8 @@ on:
       - tests/test_official_market_data_adapters.py
       - scripts/import_tradingview_mcp_candidates.py
       - scripts/test_import_tradingview_mcp_candidates.py
+      - scripts/import_manual_nikkei_data.py
+      - scripts/test_import_manual_nikkei_data.py
       - scripts/verify_tradingview_close.py
       - scripts/test_verify_tradingview_close.py
   # Manual utility only. Scheduled acquisitions are handled by the dedicated
@@ -108,9 +110,9 @@ jobs:
         with:
           python-version: "3.12"
       - name: Compile manual candidate importer and close verifier
-        run: python -m py_compile scripts/import_tradingview_mcp_candidates.py scripts/verify_tradingview_close.py
+        run: python -m py_compile scripts/import_tradingview_mcp_candidates.py scripts/import_manual_nikkei_data.py scripts/verify_tradingview_close.py
       - name: Test candidate validation, duplicate guards, and close evidence
-        run: python -m unittest scripts.test_import_tradingview_mcp_candidates scripts.test_verify_tradingview_close
+        run: python -m unittest scripts.test_import_tradingview_mcp_candidates scripts.test_verify_tradingview_close scripts.test_import_manual_nikkei_data
       - name: Compile market data adapters and private Nikkei roundtrip
         run: python -m py_compile scripts/fetch_market_data.py scripts/test_nikkei_sheets_roundtrip.py
       - name: Test official source parsers and date alignment
@@ -166,8 +168,8 @@ jobs:
           python -m py_compile scripts/verify_market_report_readiness.py
           python -m py_compile scripts/validate_market_data_source.py
           python -m py_compile scripts/summarize_market_data_diagnostics.py
-          python -m py_compile scripts/import_tradingview_mcp_candidates.py scripts/verify_tradingview_close.py
-          python -m unittest scripts.test_import_tradingview_mcp_candidates scripts.test_verify_tradingview_close
+          python -m py_compile scripts/import_tradingview_mcp_candidates.py scripts/import_manual_nikkei_data.py scripts/verify_tradingview_close.py
+          python -m unittest scripts.test_import_tradingview_mcp_candidates scripts.test_verify_tradingview_close scripts.test_import_manual_nikkei_data
 
       - name: Require source-rights confirmation before contacting configured providers
         if: github.event_name == 'workflow_dispatch' && (inputs.acquisition_mode != 'validate-only' || inputs.validation_target == 'all-configured' || inputs.validation_target == 'fred-us10y' || inputs.validation_target == 'nikkei-official-indexes')
