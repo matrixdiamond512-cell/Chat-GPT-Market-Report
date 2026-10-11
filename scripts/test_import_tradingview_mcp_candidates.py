@@ -7,6 +7,7 @@ from scripts.import_tradingview_mcp_candidates import (
     CandidateImportError,
     FIELD_CONTRACT,
     normalize_snapshot,
+    new_sheet_rows,
     sheet_rows,
 )
 
@@ -50,6 +51,15 @@ class TradingViewMcpCandidateImportTests(unittest.TestCase):
             normalized["candidates"][0]["snapshotId"],
             "tv-mcp-dow-20261011000000",
         )
+
+    def test_repeat_import_adds_no_duplicate_rows(self) -> None:
+        normalized = normalize_snapshot(
+            make_snapshot(),
+            now=dt.datetime.fromisoformat("2026-10-11T18:00:00+00:00"),
+        )
+        rows = sheet_rows(normalized)
+        existing_ids = {str(row[0]) for row in rows}
+        self.assertEqual(new_sheet_rows(rows, existing_ids), [])
 
     def test_rejects_an_incomplete_batch(self) -> None:
         snapshot = make_snapshot()
