@@ -52,6 +52,9 @@ def verify_close_evidence(candidate: dict, evidence: dict | None) -> dict:
             return {"status": "CONFLICT", "basis": "official reference market date differs"}
         if evidence.get("timezone") != "America/New_York" or evidence.get("closeTime") != "16:00":
             return base
+        anchor = _aware(candidate.get("barAnchorUtc"))
+        if anchor.astimezone(ZoneInfo("America/New_York")).strftime("%H:%M") != "09:30":
+            return {"status": "CONFLICT", "basis": "daily index bar does not start at the US cash open"}
         precision = evidence.get("publishedDecimals")
         if isinstance(precision, bool) or not isinstance(precision, int) or not 0 <= precision <= 8:
             raise ValueError("publishedDecimals must be an integer from 0 to 8")
@@ -73,6 +76,10 @@ def verify_close_evidence(candidate: dict, evidence: dict | None) -> dict:
         anchor = _aware(candidate.get("barAnchorUtc"))
         boundary = _aware(evidence.get("closeBoundaryUtc"))
         intraday_start = _aware(evidence.get("intradayBarStartUtc"))
+        if anchor.astimezone(ZoneInfo("America/New_York")).strftime("%H:%M") != "17:00":
+            return {"status": "CONFLICT", "basis": "daily FX bar does not start at the declared NY-close boundary"}
+        if boundary.astimezone(ZoneInfo("America/New_York")).strftime("%H:%M") != "17:00":
+            return {"status": "CONFLICT", "basis": "daily FX bar does not end at the declared NY-close boundary"}
         if boundary != anchor + dt.timedelta(days=1):
             return {"status": "CONFLICT", "basis": "daily bar does not end at the declared NY-close boundary"}
         if boundary != intraday_start + dt.timedelta(hours=1):
@@ -113,6 +120,10 @@ def verify_close_evidence(candidate: dict, evidence: dict | None) -> dict:
         anchor = _aware(candidate.get("barAnchorUtc"))
         boundary = _aware(evidence.get("closeBoundaryUtc"))
         intraday_start = _aware(evidence.get("intradayBarStartUtc"))
+        if anchor.hour != 0 or anchor.minute != 0 or anchor.second != 0:
+            return {"status": "CONFLICT", "basis": "daily BTC candle does not start at 00:00 UTC"}
+        if boundary.hour != 0 or boundary.minute != 0 or boundary.second != 0:
+            return {"status": "CONFLICT", "basis": "daily BTC candle does not end at 00:00 UTC"}
         if boundary != anchor + dt.timedelta(days=1):
             return {"status": "CONFLICT", "basis": "daily candle does not end at the UTC day boundary"}
         if intraday_start != anchor + dt.timedelta(hours=23):
