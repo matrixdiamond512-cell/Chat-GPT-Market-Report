@@ -571,6 +571,62 @@ def fetch_fred_csv(source: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+def fetch_fred_api(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch dated FRED observations through its documented, keyed API."""
+    api_key_env = str(source.get("apiKeyEnv") or "FRED_API_KEY")
+    api_key = os.environ.get(api_key_env, "").strip()
+    if not api_key:
+        raise FetchError("MISSING_CREDENTIAL", "FRED API key is not configured")
+
+    endpoint = str(source.get("url") or "https://api.stlouisfed.org/fred/series/observations")
+    series_id = str(source.get("seriesId") or "").strip()
+    if not series_id:
+        raise FetchError("INVALID_SOURCE_CONFIG", "FRED series ID is missing")
+    query = urllib.parse.urlencode({
+        "series_id": series_id,
+        "api_key": api_key,
+        "file_type": "json",
+        "sort_order": "desc",
+        "limit": int(source.get("observationLimit", 10)),
+    })
+    try:
+        body, _ = http_get(f"{endpoint}?{query}", timeout=int(source.get("timeoutSeconds", 15)))
+    except FetchError as exc:
+        # http_get includes the request URL in its internal error message; the
+        # API key is a query parameter, so do not let that message escape.
+        raise FetchError(exc.code, "FRED observations request failed") from None
+    try:
+        payload = json.loads(body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise FetchError("PARSE_ERROR", "FRED observations response was not valid JSON") from exc
+
+    rows = payload.get("observations") if isinstance(payload, dict) else None
+    if not isinstance(rows, list):
+        raise FetchError("PARSE_ERROR", "FRED observations response had no observation list")
+    date_field = str(source.get("dateField") or "date")
+    value_field = str(source.get("valueField") or "value")
+    observations: list[tuple[str, float]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        date_value = str(row.get(date_field) or "").strip()
+        value = safe_float(row.get(value_field))
+        if date_value and value is not None and parse_iso(date_value):
+            observations.append((date_value, value))
+    if not observations:
+        raise FetchError("PARSE_ERROR", f"FRED series {series_id} had no numeric observations")
+    observations.sort(key=lambda item: item[0])
+    latest_date, latest_value = observations[-1]
+    previous_value = observations[-2][1] if len(observations) > 1 else None
+    return candidate(
+        source,
+        latest_value,
+        previous_close=previous_value,
+        as_of=latest_date,
+        raw_reference=series_id,
+    )
+
+
 def fetch_treasury_yield_xml(source: dict[str, Any]) -> dict[str, Any]:
     """Fetch the US Treasury's documented daily yield XML feed (current month)."""
     current = now_jst()
@@ -655,6 +711,7 @@ FETCHERS = {
     "jpx_html": fetch_jpx_html,
     "local_rates_json": fetch_local_rates_json,
     "fred_csv": fetch_fred_csv,
+    "fred_api": fetch_fred_api,
     "treasury_yield_xml": fetch_treasury_yield_xml,
 }
 
@@ -1099,3 +1156,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
