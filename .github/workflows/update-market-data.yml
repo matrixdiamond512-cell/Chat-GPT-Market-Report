@@ -18,6 +18,9 @@ on:
       - scripts/test_import_tradingview_mcp_candidates.py
       - scripts/import_manual_nikkei_data.py
       - scripts/test_import_manual_nikkei_data.py
+      - scripts/build_chatgpt_report_input.py
+      - scripts/build_personal_market_report.py
+      - tests/test_personal_market_report.py
       - scripts/verify_tradingview_close.py
       - scripts/test_verify_tradingview_close.py
   # Manual utility only. Scheduled acquisitions are handled by the dedicated
@@ -85,6 +88,11 @@ on:
         required: false
         default: false
         type: boolean
+      save_personal_report_to_test_sheet:
+        description: "Build the personal report from the acquired snapshot and append it to the private test sheet"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -109,16 +117,20 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Compile manual candidate importer and close verifier
-        run: python -m py_compile scripts/import_tradingview_mcp_candidates.py scripts/import_manual_nikkei_data.py scripts/verify_tradingview_close.py
+      - name: Compile market snapshot, report and manual import paths
+        run: python -m py_compile scripts/import_tradingview_mcp_candidates.py scripts/import_manual_nikkei_data.py scripts/verify_tradingview_close.py scripts/build_chatgpt_report_input.py scripts/build_personal_market_report.py
       - name: Test candidate validation, duplicate guards, and close evidence
         run: python -m unittest scripts.test_import_tradingview_mcp_candidates scripts.test_verify_tradingview_close scripts.test_import_manual_nikkei_data
+      - name: Test one market snapshot feeds Sheets contract and private report draft
+        run: python -m unittest tests.test_personal_market_report -v
       - name: Compile market data adapters and private Nikkei roundtrip
-        run: python -m py_compile scripts/fetch_market_data.py scripts/test_nikkei_sheets_roundtrip.py
+        run: python -m py_compile scripts/fetch_market_data.py scripts/test_nikkei_sheets_roundtrip.py scripts/build_chatgpt_report_input.py scripts/build_personal_market_report.py
       - name: Test official source parsers and date alignment
         run: python -m unittest discover -s tests -p test_official_market_data_adapters.py -v
       - name: Test Nikkei test-sheet acquisition date and source guards
         run: python -m unittest tests.test_nikkei_sheets_roundtrip -v
+      - name: Test personal report uses the shared 28-item snapshot
+        run: python -m unittest tests.test_personal_market_report -v
 
   update:
     if: github.event_name == 'workflow_dispatch' && inputs.run_sheets_test_roundtrip != true && inputs.run_treasury_sheets_test != true && inputs.run_nikkei_sheets_test != true
@@ -228,6 +240,23 @@ jobs:
       - name: Report acquisition status and source errors (no quote values)
         if: inputs.acquisition_mode != 'validate-only' || inputs.validation_target == 'all-configured'
         run: python scripts/summarize_market_data_diagnostics.py
+
+      - name: Build report draft from the acquired snapshot
+        if: inputs.acquisition_mode != 'validate-only'
+        env:
+          MARKET_REPORT_OUTPUT: ${{ runner.temp }}/personal-market-report.md
+        run: python scripts/build_personal_market_report.py --input data/market/latest.json --output "$MARKET_REPORT_OUTPUT"
+
+      - name: Save report draft from the same snapshot to the private test sheet
+        if: inputs.acquisition_mode != 'validate-only' && inputs.save_personal_report_to_test_sheet == true
+        env:
+          MARKET_DATA_TEST_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_TEST_SPREADSHEET_ID }}
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          MARKET_REPORT_OUTPUT: ${{ runner.temp }}/personal-market-report.md
+        run: |
+          python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
+          python scripts/build_personal_market_report.py --input data/market/latest.json --output "$MARKET_REPORT_OUTPUT" --write-test-sheet
 
       - name: Build ChatGPT and Google Sheets CSV exports
         if: inputs.acquisition_mode != 'validate-only' && inputs.public_github_storage_confirmed && inputs.public_dashboard_display_confirmed
@@ -492,4 +521,5 @@ jobs:
       - name: Validate Kraken BTC/USD completed daily reference candle
         if: always() && github.event_name == 'pull_request'
         run: python scripts/validate_market_data_source.py --symbol btcusd --source-id kraken_btcusd_daily_close
+
 
