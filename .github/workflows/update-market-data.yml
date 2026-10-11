@@ -20,6 +20,14 @@ on:
           - auto
           - full
           - validate-only
+      validation_target:
+        description: "validate-only scope; Treasury is a documented official XML feed, all-configured contacts the entire provider list"
+        required: false
+        default: treasury-us10y
+        type: choice
+        options:
+          - treasury-us10y
+          - all-configured
       source_automation_rights_confirmed:
         description: "Confirm that automated collection is permitted for every provider this run will contact"
         required: false
@@ -81,9 +89,10 @@ jobs:
           python -m py_compile scripts/run_market_data_window.py
           python -m py_compile scripts/resolve_market_report_slot.py
           python -m py_compile scripts/verify_market_report_readiness.py
+          python -m py_compile scripts/validate_market_data_source.py
 
-      - name: Require source-rights confirmation before collect-only network requests
-        if: inputs.acquisition_mode == 'validate-only'
+      - name: Require source-rights confirmation before full configured-source validation
+        if: inputs.acquisition_mode == 'validate-only' && inputs.validation_target == 'all-configured'
         shell: bash
         run: |
           if [ "${{ inputs.source_automation_rights_confirmed }}" != "true" ]; then
@@ -92,20 +101,26 @@ jobs:
           fi
 
       - name: Fetch, retry, and preserve best verified market data
+        if: inputs.acquisition_mode != 'validate-only' || inputs.validation_target == 'all-configured'
         run: |
           python scripts/run_market_data_acquisition.py \
             --slot "${{ steps.slot.outputs.slot }}" \
             --mode "${{ steps.acquisition.outputs.mode }}" \
             ${{ steps.acquisition.outputs.summary_flag }}
 
+      - name: Validate the U.S. Treasury daily 10-year source only
+        if: inputs.acquisition_mode == 'validate-only' && inputs.validation_target == 'treasury-us10y'
+        run: python scripts/validate_market_data_source.py --symbol us10y --source-id us_treasury_yield_curve
+
       - name: Validate generated acquisition JSON
+        if: inputs.acquisition_mode != 'validate-only' || inputs.validation_target == 'all-configured'
         run: |
           python -m json.tool data/market/latest.json > /dev/null
           python -m json.tool data/market/last_verified.json > /dev/null
           python -m json.tool data/market/acquisition_status.json > /dev/null
 
       - name: Report collect-only acquisition results (no values or artifacts)
-        if: inputs.acquisition_mode == 'validate-only'
+        if: inputs.acquisition_mode == 'validate-only' && inputs.validation_target == 'all-configured'
         run: |
           python - <<'PY'
           import json

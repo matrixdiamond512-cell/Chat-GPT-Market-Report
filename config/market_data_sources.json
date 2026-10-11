@@ -434,6 +434,21 @@
       "required": true,
       "sources": [
         {
+          "id": "us_treasury_yield_curve",
+          "name": "U.S. Treasury Daily Par Yield Curve Rates",
+          "kind": "treasury_yield_xml",
+          "url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml",
+          "data": "daily_treasury_yield_curve",
+          "dateField": "NEW_DATE",
+          "valueField": "BC_10YEAR",
+          "sourceUrl": "https://home.treasury.gov/treasury-daily-interest-rate-xml-feed",
+          "marketType": "yield",
+          "session": "daily",
+          "priority": 1,
+          "timeoutSeconds": 15,
+          "note": "Official documented XML feed; par yield curve 10-year point, not the FRED DGS10 series."
+        },
+        {
           "id": "fred_dgs10",
           "name": "Federal Reserve H.15 / FRED DGS10",
           "kind": "fred_csv",
@@ -444,7 +459,7 @@
           "sourceUrl": "https://fred.stlouisfed.org/series/DGS10",
           "marketType": "yield",
           "session": "daily",
-          "priority": 1,
+          "priority": 2,
           "maxRetries": 2
         }
       ]

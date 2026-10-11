@@ -14,6 +14,7 @@ import os
 import re
 import sys
 import time
+import xml.etree.ElementTree as ET
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -570,6 +571,44 @@ def fetch_fred_csv(source: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+def fetch_treasury_yield_xml(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch the US Treasury's documented daily yield XML feed (current month)."""
+    current = now_jst()
+    params = urllib.parse.urlencode({
+        "data": source.get("data", "daily_treasury_yield_curve"),
+        "field_tdr_date_value_month": current.strftime("%Y%m"),
+    })
+    url = f"{source['url']}?{params}"
+    body, _ = http_get(url, timeout=int(source.get("timeoutSeconds", 15)), headers={"Accept": "application/atom+xml,application/xml,text/xml"})
+    try:
+        root = ET.fromstring(body)
+    except ET.ParseError as exc:
+        raise FetchError("PARSE_ERROR", "US Treasury yield feed was not valid XML") from exc
+
+    def local_name(tag: str) -> str:
+        return tag.rsplit("}", 1)[-1].upper()
+
+    observations: list[tuple[str, float]] = []
+    for entry in (node for node in root.iter() if local_name(node.tag) == "ENTRY"):
+        values = {local_name(node.tag): (node.text or "").strip() for node in entry.iter()}
+        date_text = values.get(str(source.get("dateField", "NEW_DATE")).upper(), "")[:10]
+        value = safe_float(values.get(str(source.get("valueField", "BC_10YEAR")).upper()))
+        if date_text and parse_iso(date_text) and value is not None:
+            observations.append((date_text, value))
+    if not observations:
+        raise FetchError("PARSE_ERROR", "US Treasury yield feed had no dated 10-year observations")
+    observations.sort(key=lambda item: item[0])
+    latest_date, latest_value = observations[-1]
+    previous_value = observations[-2][1] if len(observations) > 1 else None
+    return candidate(
+        source,
+        latest_value,
+        previous_close=previous_value,
+        as_of=latest_date,
+        raw_reference=f"{source.get('data', 'daily_treasury_yield_curve')} {source.get('valueField', 'BC_10YEAR')}",
+    )
+
+
 def fetch_local_rates_json(source: dict[str, Any]) -> dict[str, Any]:
     """Reuse a same-date, confirmed rate from the rates page's generated data."""
     payload = load_json(ROOT / str(source["path"]), {})
@@ -616,6 +655,7 @@ FETCHERS = {
     "jpx_html": fetch_jpx_html,
     "local_rates_json": fetch_local_rates_json,
     "fred_csv": fetch_fred_csv,
+    "treasury_yield_xml": fetch_treasury_yield_xml,
 }
 
 

@@ -168,3 +168,14 @@ Sources:
 - Invest Forest inquiry form: https://nikkeiyosoku.com/inquiry/
 - Nikkei public data-use scope: https://indexes.nikkei.co.jp/nkave/data/
 - Nikkei non-display/data-processing inquiry: https://indexes.nikkei.co.jp/nkave/contact/
+
+## Existing-route verification follow-up: official U.S. Treasury source (2026-10-11)
+
+For an existing connected field that is outside the ten still-missing items, the U.S. Treasury documents a daily interest-rate XML feed intended for GET retrieval, including the daily par yield curve and a monthly query parameter. The 10-year value is the `BC_10YEAR` element and the observation date is `NEW_DATE`. This is a distinct series/method from FRED DGS10 and is recorded as a source-specific alternate for the existing US10Y report field, not as a replacement claim that the series are identical. The isolated Actions validator contacts only this documented Treasury feed, checks numeric presence, configured range/freshness and non-future date, and prints metadata without a quote value. It does not write repository data, create an artifact, update Sheets, or contact FRED/Yahoo/JPX/Nikkei. The remaining configured providers are still behind the rights gate.
+
+Sources:
+- Treasury Daily Interest Rate XML Feed (endpoint, query format, publication data): https://home.treasury.gov/treasury-daily-interest-rate-xml-feed
+- Treasury Daily Rates and CSV/XML formats: https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?type=daily_treasury_yield_curve
+- Treasury XML feed format change notice (field schema): https://home.treasury.gov/developer-notice-xml-changes
+
+The route is connected in code but has not yet been executed on GitHub Actions. It does not raise the report-item route count above 18/28. Private Google Sheets storage and public GitHub/dashboard retention are separate downstream-use scopes; neither is exercised by this collect-only validator.
