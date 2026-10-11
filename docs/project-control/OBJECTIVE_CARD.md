@@ -246,3 +246,18 @@ CURRENT STATUS: Candidate rows remain VERIFIED 8 / CONFLICT 2 / PENDING 7. Actio
 OPEN OUTCOMES: E4 Actions validation for official Nikkei CSV routes; independent official/secondary close evidence for unresolved candidates; five named futures settlement rows; approved automatic path for Nikkei PER/PBR/EPS and JPX Prime aggregates; CNN Fear & Greed; full 28-item live/saved coverage; historical eight Prime turnover/volume cells. All remain OPEN or NOT_RUN; existing known values/statuses are preserved.
 
 NEXT NECESSARY ACTION: Run the nikkei-official-indexes validate-only target with source collection attestation after reviewing its permitted scope. Then use only the returned source/date/status evidence to promote eligible official routes; write to private test Sheets only in a separate authorized step. Keep PR #94 Draft and do not merge.
+
+
+## Personal workflow direction — 2026-10-12 (CLARIFY)
+
+PRIMARY OBJECTIVE: Complete a private, noncommercial 28-item market-analysis workflow in which one validated market snapshot feeds personal Google Sheets and the user's market-report text/visualization.
+
+ACTIVE PROFILE: data-tool + dashboard.
+
+ACCEPTANCE: Reuse one normalized snapshot for Sheets and report generation; validate dates and close definitions per market; preserve the 28-field report contract; label verified, fallback/reference, and unavailable values; retain existing sheet columns, formatting, and valid cells; refuse conflicting overwrites; report actual acquisition, validation, and readback results separately.
+
+CONSTRAINTS: Private personal use is the purpose for both Sheets and report creation. Do not conflate that workflow with public dashboard or commercial redistribution. Keep source-specific access controls; a restriction on one route does not stop other routes. Keep PR #94 OPEN / Draft / unmerged.
+
+OPEN OUTCOMES: Expand the working set beyond the existing dated nine report-ready rows and five futures reference rows; connect all remaining report items; execute live acquisition and private Sheets readback for the broader snapshot; preserve the production `終値一覧` structure and existing values.
+
+NEXT NECESSARY ACTION: Build and verify a single-snapshot report path; then use a live acquired snapshot to verify report rendering and private test-sheet readback without touching production data.
