@@ -9,6 +9,7 @@ on:
       - scripts/validate_market_data_source.py
       - scripts/test_treasury_sheets_roundtrip.py
       - scripts/test_nikkei_sheets_roundtrip.py
+      - tests/test_nikkei_sheets_roundtrip.py
       - scripts/fetch_market_data.py
       - config/market_data_sources.json
       - config/market_data_validation.json
@@ -114,6 +115,8 @@ jobs:
         run: python -m py_compile scripts/fetch_market_data.py scripts/test_nikkei_sheets_roundtrip.py
       - name: Test official source parsers and date alignment
         run: python -m unittest discover -s tests -p test_official_market_data_adapters.py -v
+      - name: Test Nikkei test-sheet acquisition date and source guards
+        run: python -m unittest tests.test_nikkei_sheets_roundtrip -v
 
   update:
     if: github.event_name == 'workflow_dispatch' && inputs.run_sheets_test_roundtrip != true && inputs.run_treasury_sheets_test != true && inputs.run_nikkei_sheets_test != true
