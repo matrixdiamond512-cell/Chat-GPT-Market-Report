@@ -12,6 +12,7 @@ import argparse
 import datetime as dt
 import json
 import math
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 import os
 import sys
 import time
@@ -305,6 +306,104 @@ def normalized_value(value: Any) -> float | str | None:
     return parsed if parsed is not None else (str(value).strip() if value is not None else None)
 
 
+def decimal_value(value: Any) -> Decimal | None:
+    if value is None or isinstance(value, bool):
+        return None
+    text = str(value).strip().replace(",", "").replace("%", "")
+    if not text:
+        return None
+    try:
+        parsed = Decimal(text)
+    except InvalidOperation:
+        return None
+    return parsed if parsed.is_finite() else None
+
+
+def decimal_places(value: Any) -> int | None:
+    parsed = decimal_value(value)
+    return max(0, -parsed.as_tuple().exponent) if parsed is not None else None
+
+
+def existing_market_provenance(client: SheetsClient, target: dt.date) -> dict[str, Any] | None:
+    """Find the newest logged US10Y lineage for this close-list market date."""
+    rows = read_values(client, "WEB_Data_Update_Log", "A1:H2000", "FORMATTED_VALUE")
+    if not rows or tuple(str(value or "").strip() for value in rows[0]) != LOG_HEADERS:
+        return None
+    for row in reversed(rows[1:]):
+        if len(row) < 8 or str(row[1] or "").strip() != "終値一覧":
+            continue
+        if parse_sheet_date(row[3]) != target:
+            continue
+        try:
+            note = json.loads(str(row[7] or "{}"))
+        except (TypeError, json.JSONDecodeError):
+            continue
+        for item in reversed(note.get("marketData") or []):
+            if (
+                isinstance(item, dict)
+                and item.get("symbol") == "us10y"
+                and item.get("lineageStatus") == "CONFIRMED"
+            ):
+                return item
+    return None
+
+
+def reconcile_existing_us10y(
+    existing_value: Any,
+    target: dt.date,
+    incoming: dict[str, Any],
+    previous: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Classify a same-day US10Y cell without overwriting existing precision."""
+    existing = decimal_value(existing_value)
+    incoming_value = decimal_value(incoming.get("value"))
+    if existing is None:
+        return {"status": "WRITE", "reason": "EMPTY_OR_NONNUMERIC"}
+    observed = parse_datetime(incoming.get("asOf"))
+    if incoming_value is None or not observed or observed.date() != target:
+        return {"status": "CONFLICT", "reason": "INCOMING_DATE_OR_VALUE_MISMATCH"}
+    if existing == incoming_value:
+        return {
+            "status": "EXACT_MATCH",
+            "reason": "EXACT_VALUE_ALREADY_STORED",
+            "preserveExisting": True,
+            "lineageStatus": "CONFIRMED" if previous and previous.get("lineageStatus") == "CONFIRMED" else "UNKNOWN",
+        }
+    if not previous:
+        return {"status": "CONFLICT", "reason": "EXISTING_PROVENANCE_UNAVAILABLE"}
+    prior_value = decimal_value(previous.get("storedValue", previous.get("closeValue")))
+    prior_precision = previous.get("reportedDecimalPlaces")
+    incoming_precision = incoming.get("reportedDecimalPlaces")
+    expected_metadata = (
+        str(previous.get("sourceId") or "") == str(incoming.get("sourceId") or "")
+        and str(previous.get("sourceSeriesId") or "") == str(incoming.get("sourceSeriesId") or "")
+        and str(previous.get("unit") or "") == str(incoming.get("unit") or "")
+        and str(previous.get("asOf") or "")[:10] == target.isoformat()
+        and prior_value == existing
+        and previous.get("lineageStatus") == "CONFIRMED"
+    )
+    if not expected_metadata:
+        return {"status": "CONFLICT", "reason": "SOURCE_SERIES_DATE_OR_STORED_VALUE_MISMATCH"}
+    try:
+        prior_precision = int(prior_precision)
+        incoming_precision = int(incoming_precision)
+    except (TypeError, ValueError):
+        return {"status": "CONFLICT", "reason": "PUBLISHED_PRECISION_UNAVAILABLE"}
+    if prior_precision < 0 or incoming_precision < 0:
+        return {"status": "CONFLICT", "reason": "PUBLISHED_PRECISION_INVALID"}
+    shared_precision = min(prior_precision, incoming_precision)
+    quantum = Decimal(1).scaleb(-shared_precision)
+    if existing.quantize(quantum, rounding=ROUND_HALF_UP) == incoming_value.quantize(quantum, rounding=ROUND_HALF_UP):
+        return {
+            "status": "PRECISION_MATCH",
+            "reason": "SAME_SERIES_DATE_AND_UNIT_ROUNDED_TO_PUBLISHED_PRECISION",
+            "preserveExisting": True,
+            "lineageStatus": "CONFIRMED",
+            "sharedDecimalPlaces": shared_precision,
+        }
+    return {"status": "CONFLICT", "reason": "VALUE_DIFFERENCE_EXCEEDS_PUBLISHED_PRECISION"}
+
+
 
 def attach_local_confirmed_jp10y(payload: dict[str, Any], target: dt.date) -> bool:
     """Attach the retained Japanese 10Y yield only when its date matches the row."""
@@ -374,7 +473,7 @@ def close_row_sync(
         "status": "FAILED", "generatedAt": payload.get("generatedAt"), "targetDate": None,
         "row": None, "inserted": False, "failedStage": "FETCH",
         "stages": {"FETCH": "PENDING", "VALIDATE": "PENDING", "GITHUB_SAVE": "SUCCESS", "SHEETS_IMPORT": "PENDING", "CHATGPT_INPUT": "PENDING", "CLOSE_DATA_WRITE": "PENDING", "READBACK_VERIFY": "PENDING", "LOG": "PENDING"},
-        "missingRequiredFields": [], "updatedFields": [], "sources": [], "marketData": [], "errors": [],
+        "missingRequiredFields": [], "updatedFields": [], "sources": [], "marketData": [], "reconciliations": [], "errors": [],
     }
     try:
         generated = parse_datetime(payload.get("generatedAt"))
@@ -468,12 +567,57 @@ def close_row_sync(
             if warning:
                 field_warnings.append(f"{symbol}: {warning}")
             source_ids.append(str(market.get("sourceId") or symbol))
-            writes[close_header] = close_value
+            write_close_value = True
+            existing_value: Any = ""
+            previous_lineage: dict[str, Any] | None = None
+            reconciliation_status = "WRITE"
+            reconciliation_reason = "TARGET_CELL_EMPTY"
+            if symbol == "us10y" and not inserting:
+                existing_column = column_values.get(close_header, [])
+                if target_row - 1 < len(existing_column):
+                    existing_value = existing_column[target_row - 1]
+                if str(existing_value or "").strip().startswith("取得不能"):
+                    reconciliation_status = "WRITE"
+                    reconciliation_reason = "REPLACE_UNAVAILABLE_MARKER"
+                elif str(existing_value or "").strip():
+                    previous_lineage = existing_market_provenance(client, target)
+                    decision = reconcile_existing_us10y(existing_value, target, market, previous_lineage)
+                    reconciliation_status = decision["status"]
+                    reconciliation_reason = decision["reason"]
+                    summary["reconciliations"].append({
+                        "symbol": "us10y",
+                        "targetDate": target.isoformat(),
+                        "status": reconciliation_status,
+                        "reason": reconciliation_reason,
+                    })
+                    if reconciliation_status == "CONFLICT":
+                        raise CloseSyncError("VALIDATE", "Existing US10Y value conflicts with the verified source metadata; the close-list write was stopped.")
+                    write_close_value = not bool(decision.get("preserveExisting"))
+            if write_close_value:
+                writes[close_header] = close_value
             observed = parse_datetime(market.get("asOf"))
+            source_series = market.get("sourceSeriesId") or market.get("seriesId") or ""
+            unit = market.get("unit") or ("%" if symbol == "us10y" else "")
+            reported_places = market.get("reportedDecimalPlaces")
+            item_lineage = "CONFIRMED" if (
+                source_series and unit and reported_places is not None and reconciliation_status != "EXACT_MATCH"
+            ) else "UNKNOWN"
+            stored_value = existing_value if not write_close_value else close_value
+            stored_places = decimal_places(stored_value)
+            if reconciliation_status == "PRECISION_MATCH" and previous_lineage:
+                item_lineage = "CONFIRMED"
             summary["marketData"].append({
                 "symbol": symbol,
                 "sourceId": market.get("sourceId"),
                 "sourceName": market.get("sourceName"),
+                "sourceSeriesId": source_series,
+                "unit": unit,
+                "reportedDecimalPlaces": reported_places,
+                "storedValue": stored_value,
+                "storedDecimalPlaces": stored_places,
+                "lineageStatus": item_lineage,
+                "reconciliationStatus": reconciliation_status,
+                "sourceAsOf": market.get("asOf"),
                 "asOf": market.get("asOf"),
                 "fetchedAt": market.get("fetchedAt"),
                 "verifiedAt": market.get("verifiedAt") or market.get("verifiedAtUtc") or "",
