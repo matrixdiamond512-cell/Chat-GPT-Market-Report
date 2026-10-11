@@ -45,7 +45,7 @@ HEADERS = [
 # The explicit symbol/unit/session contract prevents a plausible-looking but
 # different instrument from being silently relabelled as a report field.
 FIELD_CONTRACT: dict[str, dict[str, str]] = {
-    "dow": {"symbol": "TVC:DJI", "unit": "pt", "marketType": "index", "session": "us_cash", "marketTimezone": "America/New_York"},
+    "dow": {"symbol": "DJ:DJI", "unit": "pt", "marketType": "index", "session": "us_cash", "marketTimezone": "America/New_York"},
     "nasdaq": {"symbol": "NASDAQ:IXIC", "unit": "pt", "marketType": "index", "session": "us_cash", "marketTimezone": "America/New_York"},
     "sp500": {"symbol": "SP:SPX", "unit": "pt", "marketType": "index", "session": "us_cash", "marketTimezone": "America/New_York"},
     "russell2000": {"symbol": "CBOEFTSE:RUT", "unit": "pt", "marketType": "index", "session": "us_cash", "marketTimezone": "America/New_York"},
