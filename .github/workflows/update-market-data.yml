@@ -383,6 +383,7 @@ jobs:
       - name: Compile validation path
         run: |
           python -m py_compile scripts/fetch_market_data.py scripts/validate_market_data_source.py
+          python -m unittest discover -s tests -p test_official_market_data_adapters.py -v
 
       - name: Validate official U.S. Treasury daily 10-year source
         run: python scripts/validate_market_data_source.py --symbol us10y --source-id us_treasury_yield_curve
