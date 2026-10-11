@@ -153,3 +153,20 @@ Result and limits: code now supports a properly reviewed manual import of all se
 
 Timestamp: 2026-10-12 JST.
 
+## 2026-10-12 fresh observed-market snapshot, report, and private Sheets readback
+
+Claim: one report draft was generated from a common snapshot of previously acquired actual market observations, including manually reviewed Nikkei official observations, and saved/read back exactly in the private test spreadsheet. This is the latest confirmed observation available for each market at the run time, not a common-date or same-session claim.
+
+Run ID: `pr94-personal-live-report-20261012-01`. Snapshot ID: `40fe40241088d99b531c13ec`. Report ID: `personal-report-9619f7a25577dc202be009e5`. Local generation timestamp: 2026-10-12 05:33 JST. The data date range is 2026-10-09 to 2026-10-10; U.S. and Japanese cash-market/official rate observations are dated 2026-10-09, and the last internally validated BTC/USD daily observation is dated 2026-10-10. A newer BTC candidate failed the same-source final-hour boundary comparison and was not promoted. The Japanese market was closed on 2026-10-12, so no 2026-10-12 cash close is claimed.
+
+Actual report inputs and status: 14/28 verified, 7/28 reference-only, and 7/28 unavailable. The verified set comprises the 9 previously saved report-ready market records, official Nikkei cash close 69,030.92, official Nikkei VI 30.14 (2026-10-09 15:50 JST), official index-based forecast PER 22.87, PBR 2.83, EPS 3,018.40 derived as same-date cash close / forecast PER, and official U.S. Treasury 10-year 5.24% (2026-10-09). The two Nikkei moving-average deviations (+4.23% / +13.55%) remain `REFERENCE_ONLY` because their 220-session history came from TradingView TVC:NI225 and its latest close (69,030.70) differed from the Nikkei official close by 0.22. The other five reference values are continuous futures bar closes, explicitly not exchange settlement values. Seven unavailable fields are Japan 10-year yield, CNN Fear & Greed, and the five TSE Prime breadth/volume/value indicators.
+
+The report analysis was regenerated from that exact snapshot and its timestamp-bounded news headlines; it does not reuse older narrative prose. It explicitly avoids unsupported directional, flow, positioning, sector, and event-calendar claims. The two included headline records are Reuters (2026-10-11T13:00:46Z) and FISCO (2026-10-10T08:05:00Z), each retained with source/time/link.
+
+E5 private Sheets result: appended only `Personal_Market_Report!A5:I5` in test spreadsheet `1vqraQzVpIHWLFSxP5X5NWoTYquT6B27l-A7UuyYauNY`; no existing report row was overwritten. Readback exactly matched all nine cells including the 8,904-character body and SHA-256 `967f466c155fafaca6a903195ef6834956d479d0afe0334e6ecce2c5f50cdc35`. The stable report ID occurs exactly once, so duplicate prevention passed. No production spreadsheet was written.
+
+E1/E2 local checks: 21/21 focused importer/snapshot/report tests PASS; the three changed report/importer Python files compile. These checks support the contract behavior only; the report counts and Sheets readback above are the external-data evidence. Actual acquisition of a new Oct 12 session, settlement verification for futures, the seven missing values, and a new hosted Actions run remain NOT_RUN. PR #94 was observed OPEN / Draft / unmerged at remote head `2db3bfb5e23a71477e370ece825610e66c15f7e0`; production `終値一覧` was not touched.
+
+Evidence Level: E5 for private test-sheet write/readback of the actual saved snapshot; E1/E2 for the report/importer code paths. Limits: the upstream observations were previously acquired or manually reviewed in this task; this report is latest-per-market confirmed data through 2026-10-10, not a newly fetched 2026-10-12 close. Hosted PR persistence of the current local delta has not yet been verified.
+
+Timestamp: 2026-10-12 05:33 JST.
