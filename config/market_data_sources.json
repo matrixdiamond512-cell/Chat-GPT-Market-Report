@@ -451,16 +451,20 @@
         {
           "id": "fred_dgs10",
           "name": "Federal Reserve H.15 / FRED DGS10",
-          "kind": "fred_csv",
+          "kind": "fred_api",
           "seriesId": "DGS10",
-          "dateField": "observation_date",
-          "valueField": "DGS10",
-          "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS10",
+          "dateField": "date",
+          "valueField": "value",
+          "url": "https://api.stlouisfed.org/fred/series/observations",
+          "apiKeyEnv": "FRED_API_KEY",
+          "observationLimit": 10,
+          "timeoutSeconds": 15,
           "sourceUrl": "https://fred.stlouisfed.org/series/DGS10",
           "marketType": "yield",
           "session": "daily",
           "priority": 2,
-          "maxRetries": 2
+          "maxRetries": 2,
+          "note": "Documented FRED observations API; requires FRED_API_KEY. Series page shows Board of Governors source and citation request; public storage/display scope is not inferred."
         }
       ]
     },
@@ -512,3 +516,4 @@
     }
   }
 }
+
