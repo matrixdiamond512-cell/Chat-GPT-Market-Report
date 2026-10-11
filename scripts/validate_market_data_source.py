@@ -5,13 +5,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
-from scripts import fetch_market_data as market_data
-
-
 ROOT = Path(__file__).resolve().parents[1]
+if __package__:
+    from scripts import fetch_market_data as market_data
+else:
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import fetch_market_data as market_data  # noqa: E402
 
 
 def validate(symbol_id: str, source_id: str) -> dict[str, Any]:
