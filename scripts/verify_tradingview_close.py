@@ -109,10 +109,19 @@ def verify_close_evidence(candidate: dict, evidence: dict | None) -> dict:
             return base
         if evidence.get("timezone") != "UTC" or evidence.get("exchange") != "BITSTAMP":
             return base
-        if evidence.get("marketDate") != candidate.get("marketDate"):
-            return {"status": "CONFLICT", "basis": "exchange candle date differs"}
-        if _decimal(candidate.get("value")) != _decimal(evidence.get("value")):
-            return {"status": "CONFLICT", "basis": "exchange UTC daily close differs"}
-        return {"status": "VERIFIED", "basis": "same-exchange UTC daily close matched"}
+        anchor = _aware(candidate.get("barAnchorUtc"))
+        boundary = _aware(evidence.get("closeBoundaryUtc"))
+        intraday_start = _aware(evidence.get("intradayBarStartUtc"))
+        if boundary != anchor + dt.timedelta(days=1):
+            return {"status": "CONFLICT", "basis": "daily candle does not end at the UTC day boundary"}
+        if intraday_start != anchor + dt.timedelta(hours=23):
+            return {"status": "CONFLICT", "basis": "hourly reference is not the final UTC-day hour"}
+        if boundary != intraday_start + dt.timedelta(hours=1):
+            return {"status": "CONFLICT", "basis": "hourly reference does not end at the UTC day boundary"}
+        if evidence.get("marketDate") != anchor.date().isoformat() or evidence.get("marketDate") != candidate.get("marketDate"):
+            return {"status": "CONFLICT", "basis": "BTC date differs from its UTC daily candle"}
+        if _decimal(candidate.get("value")) != _decimal(evidence.get("intradayClose")):
+            return {"status": "CONFLICT", "basis": "daily candle differs from the final hourly close"}
+        return {"status": "VERIFIED", "basis": "same-exchange BITSTAMP candle matches the final hour at 00:00 UTC"}
 
     return base
