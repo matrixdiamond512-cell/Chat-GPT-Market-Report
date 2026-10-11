@@ -30,6 +30,7 @@ class TreasurySourceTests(unittest.TestCase):
             "valueField": "BC_10YEAR",
             "marketType": "yield",
             "session": "daily",
+            "timeoutSeconds": 45,
         }
         seen = {}
 
@@ -44,7 +45,7 @@ class TreasurySourceTests(unittest.TestCase):
         self.assertEqual(result["asOf"], "2026-10-09")
         self.assertEqual(result["previousClose"], 4.12)
         self.assertIn("field_tdr_date_value_month=202610", seen["url"])
-        self.assertEqual(seen["timeout"], 15)
+        self.assertEqual(seen["timeout"], 45)
 
     def test_collect_only_validation_reports_metadata_without_quote_value(self):
         with patch.object(market_data, "http_get", return_value=(TREASURY_XML, "utf-8")):
