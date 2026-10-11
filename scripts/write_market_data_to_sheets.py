@@ -210,11 +210,56 @@ class SheetsClient:
         escaped = sheet_name.replace("'", "''")
         return quote(f"'{escaped}'!{cells}", safe="!'")
 
+    @staticmethod
+    def _safe_api_error_tag(response: Any) -> str:
+        """Return only a whitelisted API category and HTTP status; never log response text."""
+        status_code = getattr(response, "status_code", None)
+        safe_status = str(status_code) if isinstance(status_code, int) and 100 <= status_code <= 599 else "UNKNOWN"
+        allowed_reasons = {
+            "ACCESS_TOKEN_SCOPE_INSUFFICIENT",
+            "FAILED_PRECONDITION",
+            "FORBIDDEN",
+            "INTERNAL",
+            "INVALID_ARGUMENT",
+            "NOT_FOUND",
+            "PERMISSION_DENIED",
+            "RATE_LIMIT_EXCEEDED",
+            "RESOURCE_EXHAUSTED",
+            "SERVICE_DISABLED",
+            "UNAUTHENTICATED",
+            "UNAVAILABLE",
+            "USER_RATE_LIMIT_EXCEEDED",
+        }
+        reason = "OTHER"
+        try:
+            error = (response.json() or {}).get("error", {})
+            details = error.get("details", []) if isinstance(error, dict) else []
+            candidates = [
+                detail.get("reason")
+                for detail in details
+                if isinstance(detail, dict)
+            ]
+            candidates.extend(
+                detail.get("reason")
+                for detail in (error.get("errors", []) if isinstance(error, dict) else [])
+                if isinstance(detail, dict)
+            )
+            if isinstance(error, dict):
+                candidates.append(error.get("status"))
+            reason = next(
+                (candidate for candidate in candidates if candidate in allowed_reasons),
+                "OTHER",
+            )
+        except Exception:
+            pass
+        return f"HTTP_{safe_status}_{reason}"
+
     def _request(self, method: str, url: str, **kwargs: Any) -> dict[str, Any]:
         response = self.session.request(method, url, timeout=30, **kwargs)
         if not getattr(response, "ok", False):
-            detail = getattr(response, "text", "")[:500]
-            raise SheetsSyncError(f"Google Sheets API {method} failed: {response.status_code} {detail}")
+            raise SheetsSyncError(
+                f"Google Sheets API {method} failed {self._safe_api_error_tag(response)}"
+            )
         if not getattr(response, "content", b""):
             return {}
         return response.json()
