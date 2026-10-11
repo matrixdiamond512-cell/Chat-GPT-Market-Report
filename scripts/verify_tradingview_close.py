@@ -8,6 +8,14 @@ OFFICIAL_INDEX_REFERENCE_SOURCES = {
     "nasdaq": "nasdaq_global_index_watch",
     "sp500": "sp_dji_index_dashboard",
 }
+INDEPENDENT_INDEX_REFERENCE_SOURCES = {
+    "dow": "ap_us_equity_close_summary",
+    "russell2000": "ap_us_equity_close_summary",
+}
+INDEPENDENT_VIX_REFERENCE_SOURCES = {
+    "yahoo_finance_vix_daily_history",
+    "chartexchange_vix_daily_history",
+}
 
 
 def _decimal(value: object) -> Decimal:
@@ -42,6 +50,47 @@ def verify_close_evidence(candidate: dict, evidence: dict | None) -> dict:
 
     field_id = candidate.get("id")
     market_type = candidate.get("marketType")
+    if market_type == "index" and evidence.get("type") == "independent_daily_index_close":
+        expected_source = INDEPENDENT_INDEX_REFERENCE_SOURCES.get(str(field_id))
+        if not expected_source or evidence.get("sourceId") != expected_source:
+            return base
+        if evidence.get("marketDate") != candidate.get("marketDate"):
+            return {"status": "CONFLICT", "basis": "independent daily reference market date differs"}
+        if evidence.get("timezone") != "America/New_York" or evidence.get("closeTime") != "16:00":
+            return base
+        anchor = _aware(candidate.get("barAnchorUtc"))
+        if anchor.astimezone(ZoneInfo("America/New_York")).strftime("%H:%M") != "09:30":
+            return {"status": "CONFLICT", "basis": "daily index bar does not start at the US cash open"}
+        precision = evidence.get("publishedDecimals")
+        if isinstance(precision, bool) or not isinstance(precision, int) or precision != 2:
+            raise ValueError("publishedDecimals must be two for the accepted AP close reference")
+        quantizer = Decimal("0.01")
+        if _decimal(candidate.get("value")).quantize(quantizer, rounding=ROUND_HALF_UP) != _decimal(evidence.get("value")).quantize(quantizer, rounding=ROUND_HALF_UP):
+            return {"status": "CONFLICT", "basis": "trusted independent daily close differs at published precision"}
+        return {"status": "VERIFIED", "basis": "Associated Press daily close matches at published two-decimal precision; secondary reference"}
+    if field_id == "vix" and evidence.get("type") == "independent_volatility_index_close":
+        sources = evidence.get("references")
+        if not isinstance(sources, list) or len(sources) != 2:
+            return base
+        reference_ids = {source.get("sourceId") for source in sources if isinstance(source, dict)}
+        if reference_ids != INDEPENDENT_VIX_REFERENCE_SOURCES:
+            return base
+        if evidence.get("marketDate") != candidate.get("marketDate") or evidence.get("timezone") != "America/New_York":
+            return {"status": "CONFLICT", "basis": "VIX secondary reference date or timezone differs"}
+        anchor = _aware(candidate.get("barAnchorUtc"))
+        if anchor.astimezone(ZoneInfo("America/New_York")).date().isoformat() != candidate.get("marketDate"):
+            return {"status": "CONFLICT", "basis": "VIX daily bar anchor date differs"}
+        precision = evidence.get("publishedDecimals")
+        if isinstance(precision, bool) or precision != 2:
+            raise ValueError("publishedDecimals must be two for VIX history references")
+        quantizer = Decimal("0.01")
+        observed = _decimal(candidate.get("value")).quantize(quantizer, rounding=ROUND_HALF_UP)
+        reference_values = [_decimal(source.get("value")).quantize(quantizer, rounding=ROUND_HALF_UP) for source in sources]
+        if reference_values[0] != reference_values[1]:
+            return {"status": "CONFLICT", "basis": "VIX daily history references disagree"}
+        if observed != reference_values[0]:
+            return {"status": "CONFLICT", "basis": "VIX close differs from two published daily history references"}
+        return {"status": "VERIFIED", "basis": "matches Yahoo Finance and ChartExchange daily closes at two decimals; secondary sources, not direct Cboe CSV readback"}
     if market_type == "index":
         expected_source = OFFICIAL_INDEX_REFERENCE_SOURCES.get(str(field_id))
         if not expected_source or evidence.get("type") != "official_index_close":
