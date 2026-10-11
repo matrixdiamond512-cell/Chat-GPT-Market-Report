@@ -62,6 +62,49 @@ class PersonalSnapshotTests(unittest.TestCase):
         payload = build_snapshot(source, "2026-10-12T04:53:47+09:00")
         self.assertNotIn("detailedReport", payload)
 
+    def test_operator_attested_manual_official_value_joins_snapshot_without_becoming_tradingview(self):
+        source = self._source()
+        source["reportReadyValues"].append([
+            "manual-nikkei-cash-20261012", "nikkei225_cash", 70000, "円", "index", "japan_cash",
+            "2026-10-12", "", "日経平均プロフィル（手動確認）", "Operator reviewed the manual source date and value.",
+            "VERIFIED_MANUAL", "2026-10-12T00:10:00Z",
+        ])
+        payload = build_snapshot(source, "2026-10-12T00:30:00Z")
+        self.assertEqual(payload["markets"]["nikkei225_cash"]["verificationStatus"], "verified")
+        self.assertEqual(payload["markets"]["nikkei225_cash"]["sourceId"], "manual_official_nikkei")
+        self.assertIn("Operator reviewed", payload["markets"]["nikkei225_cash"]["verificationBasis"])
+        self.assertEqual(report_counts(payload), (10, 5, 13))
+
+    def test_all_manual_nikkei_metrics_join_the_same_report_snapshot(self):
+        source = self._source()
+        for index, (field, value, unit, market_type) in enumerate([
+            ("nikkei225_cash", 70000, "円", "index"),
+            ("nikkei_vi", 24.5, "pt", "index"),
+            ("nikkei225_dev25", 1.25, "%", "technical"),
+            ("nikkei225_dev200", 8.5, "%", "technical"),
+            ("nikkei225_per", 17.0, "倍", "technical"),
+            ("nikkei225_pbr", 1.8, "倍", "technical"),
+            ("nikkei225_eps", 4117.647058823529, "円", "technical"),
+        ]):
+            source["reportReadyValues"].append([
+                f"manual-{field}-20261012", field, value, unit, market_type, "japan_cash",
+                "2026-10-12", "", "日経平均プロフィル（手動確認）",
+                "Operator reviewed the official index-based source and same-date consistency.",
+                "VERIFIED_MANUAL", "2026-10-12T00:10:00Z",
+            ])
+
+        payload = build_snapshot(source, "2026-10-12T00:30:00Z")
+        for field, _, _, _ in [
+            ("nikkei225_cash", 0, "", ""), ("nikkei_vi", 0, "", ""),
+            ("nikkei225_dev25", 0, "", ""), ("nikkei225_dev200", 0, "", ""),
+            ("nikkei225_per", 0, "", ""), ("nikkei225_pbr", 0, "", ""),
+            ("nikkei225_eps", 0, "", ""),
+        ]:
+            self.assertEqual(payload["markets"][field]["verificationStatus"], "verified")
+            self.assertEqual(payload["markets"][field]["sourceId"], "manual_official_nikkei")
+        self.assertEqual(report_counts(payload), (16, 5, 7))
+
 
 if __name__ == "__main__":
     unittest.main()
+
