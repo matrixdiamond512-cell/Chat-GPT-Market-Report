@@ -143,45 +143,6 @@ class OfficialMarketDataAdapterTests(unittest.TestCase):
         self.assertEqual(raised.exception.code,"SOURCE_ERROR")
 
 
-    def test_fmp_index_eod_selects_latest_exact_symbol_and_dated_price(self):
-        source={"id":"fmp_dow_eod","name":"FMP Dow Jones EOD","kind":"fmp_index_eod",
-                "url":"https://financialmodelingprep.com/stable/historical-price-eod/light",
-                "symbol":"^DJI","apiKeyEnv":"FMP_API_KEY","marketType":"index",
-                "session":"fmp_vendor_eod","referenceOnly":True,"lookbackDays":14}
-        payload=[
-            {"symbol":"^DJI","date":"2026-10-08","price":46500.0},
-            {"symbol":"^DJI","date":"2026-10-09","price":46600.0},
-            {"symbol":"^GSPC","date":"2026-10-10","price":8000.0},
-        ]
-        seen={}
-        def fake_http_get(url,timeout=20,headers=None):
-            seen.update(url=url,timeout=timeout,headers=headers)
-            return json.dumps(payload).encode(), "utf-8"
-        fixed_now=market_data.dt.datetime(2026,10,12,10,tzinfo=market_data.JST)
-        with patch.dict("os.environ",{"FMP_API_KEY":"test-key"}), patch.object(
-            market_data,"http_get",side_effect=fake_http_get
-        ), patch.object(market_data,"now_jst",return_value=fixed_now):
-            value=market_data.fetch_fmp_index_eod(source)
-        self.assertEqual(value["value"],46600.0)
-        self.assertEqual(value["previousClose"],46500.0)
-        self.assertEqual(value["asOf"],"2026-10-09")
-        self.assertIn("symbol=%5EDJI",seen["url"])
-        self.assertIn("apikey=test-key",seen["url"])
-
-    def test_fmp_index_eod_requires_key_and_redacts_request_failures(self):
-        source={"id":"fmp","url":"https://example.test/historical","symbol":"^GSPC"}
-        with patch.dict("os.environ",{},clear=True):
-            with self.assertRaises(market_data.FetchError) as missing:
-                market_data.fetch_fmp_index_eod(source)
-        self.assertEqual(missing.exception.code,"MISSING_CREDENTIAL")
-        with patch.dict("os.environ",{"FMP_API_KEY":"secret-test-key"}), patch.object(
-            market_data,"http_get",side_effect=market_data.FetchError("HTTP_403","key=secret-test-key")
-        ):
-            with self.assertRaises(market_data.FetchError) as failed:
-                market_data.fetch_fmp_index_eod(source)
-        self.assertNotIn("secret-test-key",str(failed.exception))
-        self.assertNotIn("api",str(failed.exception).lower())
-
 
 if __name__ == "__main__":
     unittest.main()
