@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+from decimal import Decimal, InvalidOperation
 import html
 import io
 import json
@@ -656,7 +657,10 @@ def fetch_treasury_yield_xml(source: dict[str, Any]) -> dict[str, Any]:
         value_text = values.get(value_field, "")
         value = safe_float(value_text)
         if date_text and parse_iso(date_text) and value is not None:
-            lexical_precision = max(0, -__import__("decimal").Decimal(value_text).as_tuple().exponent)
+            try:
+                lexical_precision = max(0, -Decimal(value_text).as_tuple().exponent)
+            except InvalidOperation:
+                lexical_precision = 0
             published_precision = source.get("publishedDecimalPlaces")
             precision = int(published_precision) if published_precision is not None else lexical_precision
             observations.append((date_text, value, precision))
