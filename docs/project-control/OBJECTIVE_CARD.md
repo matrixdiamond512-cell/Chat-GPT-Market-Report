@@ -176,3 +176,12 @@ OPEN OUTCOMES: Rights/plan and exact data definition are not resolved for 17 oth
 CONSTRAINTS: Preserve existing routes, report and sheet schemas; no unauthorized scraping, no data commit/public display without corresponding rights; no production Sheets write; no main merge.
 
 NEXT NECESSARY ACTION: Obtain written permission from FMP before any API-keyed hosted acquisition/retention test, or continue with other explicitly reusable exact-series endpoints. Keep reference routes isolated until attribution, session/freshness, and output-scope checks pass; retain PR #94 OPEN/DRAFT/unmerged.
+
+
+## 2026-10-12 TradingView official MCP assessment
+
+No code or existing acquisition route was changed. A one-time read-only MCP inspection returned numerical daily bars for 17/28 fields, but those responses are manual display observations, not connected or accepted report routes; bar-anchor times and market-session closes require field-specific verification. Eleven fields had no direct report-compatible value: CNN Fear & Greed, Nikkei 225 aggregate PER/PBR/EPS, 25/200-day deviation rates, and five Prime-market aggregates. Index fundamentals returned null; constituent-level values were not substituted.
+
+TradingView's official terms inspected during this run restrict platform market data to display-only personal/internal use, prohibit non-display machine processing, and restrict redistribution. Permission for historical Google Sheets retention, scheduled GitHub Actions retrieval, and public dashboard output is therefore not established. No such storage, automation, or display was enabled. Source-route connectivity remains 18/28; exact PR acquisition proof remains 1/28; dedicated test-sheet save/readback remains 1/28; no production sheet write. PR #94 remains OPEN/DRAFT/unmerged.
+
+NEXT NECESSARY ACTION: Continue with other sources whose written terms permit the exact data and intended storage/display scope. Do not connect TradingView MCP data to the report pipeline unless TradingView and the relevant data providers grant explicit written permission for machine retrieval, retention, and applicable redistribution.
