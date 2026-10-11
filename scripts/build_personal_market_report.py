@@ -39,6 +39,13 @@ except ModuleNotFoundError:
     from build_chatgpt_report_input import ITEMS
 
 
+def validate_sheet_target_ids(test_id: str, production_id: str) -> None:
+    if not test_id or not production_id:
+        raise PersonalReportError("both private test-sheet and production spreadsheet IDs are required")
+    if test_id == production_id:
+        raise PersonalReportError("test spreadsheet matches production spreadsheet")
+
+
 def load_payload(path: Path) -> dict[str, Any]:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
@@ -135,8 +142,7 @@ def write_test_sheet(row: list[Any]) -> dict[str, Any]:
     account_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
     if not test_id or not account_json:
         raise PersonalReportError("private test-sheet ID or service-account credential is missing")
-    if production_id and test_id == production_id:
-        raise PersonalReportError("test spreadsheet matches production spreadsheet")
+    validate_sheet_target_ids(test_id, production_id)
     try:
         from scripts.import_tradingview_mcp_candidates import append_idempotent_sheet_rows
         from scripts.write_market_data_to_sheets import SheetsClient, create_authorized_session, load_service_account_info
