@@ -5,6 +5,7 @@ import unittest
 
 from scripts.import_tradingview_mcp_candidates import (
     CandidateImportError,
+    HEADERS,
     FIELD_CONTRACT,
     normalize_snapshot,
     new_sheet_rows,
@@ -47,6 +48,7 @@ class TradingViewMcpCandidateImportTests(unittest.TestCase):
         dates = {item["marketDate"] for item in normalized["candidates"]}
         self.assertEqual(dates, {"2026-10-09", "2026-10-10"})
         self.assertEqual(len(sheet_rows(normalized)), 17)
+        self.assertEqual(HEADERS[10], "Source Market Date")
         self.assertEqual(
             normalized["candidates"][0]["snapshotId"],
             "tv-mcp-dow-20261011000000",
