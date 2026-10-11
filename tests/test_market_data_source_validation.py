@@ -28,6 +28,9 @@ class TreasurySourceTests(unittest.TestCase):
             "data": "daily_treasury_yield_curve",
             "dateField": "NEW_DATE",
             "valueField": "BC_10YEAR",
+            "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "unit": "%",
+            "publishedDecimalPlaces": 2,
             "marketType": "yield",
             "session": "daily",
             "timeoutSeconds": 45,
@@ -43,6 +46,9 @@ class TreasurySourceTests(unittest.TestCase):
 
         self.assertEqual(result["value"], 4.15)
         self.assertEqual(result["asOf"], "2026-10-09")
+        self.assertEqual(result["sourceSeriesId"], "daily_treasury_yield_curve:BC_10YEAR")
+        self.assertEqual(result["unit"], "%")
+        self.assertEqual(result["reportedDecimalPlaces"], 2)
         self.assertEqual(result["previousClose"], 4.12)
         self.assertIn("field_tdr_date_value_month=202610", seen["url"])
         self.assertEqual(seen["timeout"], 45)
