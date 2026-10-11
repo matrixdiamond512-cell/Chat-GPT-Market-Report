@@ -360,7 +360,8 @@ def reconcile_existing_us10y(
     if existing is None:
         return {"status": "WRITE", "reason": "EMPTY_OR_NONNUMERIC"}
     observed = parse_datetime(incoming.get("asOf"))
-    if incoming_value is None or not observed or observed.date() != target:
+    value_date = parse_sheet_date(incoming.get("valueDate")) or (observed.date() if observed else None)
+    if incoming_value is None or not observed or value_date != target:
         return {"status": "CONFLICT", "reason": "INCOMING_DATE_OR_VALUE_MISMATCH"}
     if existing == incoming_value:
         return {
@@ -378,7 +379,7 @@ def reconcile_existing_us10y(
         str(previous.get("sourceId") or "") == str(incoming.get("sourceId") or "")
         and str(previous.get("sourceSeriesId") or "") == str(incoming.get("sourceSeriesId") or "")
         and str(previous.get("unit") or "") == str(incoming.get("unit") or "")
-        and str(previous.get("asOf") or "")[:10] == target.isoformat()
+        and parse_sheet_date(previous.get("valueDate") or previous.get("asOf")) == target
         and prior_value == existing
         and previous.get("lineageStatus") == "CONFIRMED"
     )
@@ -581,7 +582,13 @@ def close_row_sync(
                     reconciliation_reason = "REPLACE_UNAVAILABLE_MARKER"
                 elif str(existing_value or "").strip():
                     previous_lineage = existing_market_provenance(client, target)
-                    decision = reconcile_existing_us10y(existing_value, target, market, previous_lineage)
+                    incoming_for_reconciliation = dict(market)
+                    incoming_for_reconciliation.update({
+                        "value": close_value,
+                        "valueDate": target.isoformat(),
+                        "valueSource": "value" if observed and observed.date() == target else "previousClose",
+                    })
+                    decision = reconcile_existing_us10y(existing_value, target, incoming_for_reconciliation, previous_lineage)
                     reconciliation_status = decision["status"]
                     reconciliation_reason = decision["reason"]
                     summary["reconciliations"].append({
@@ -618,6 +625,7 @@ def close_row_sync(
                 "lineageStatus": item_lineage,
                 "reconciliationStatus": reconciliation_status,
                 "sourceAsOf": market.get("asOf"),
+                "valueDate": target.isoformat(),
                 "asOf": market.get("asOf"),
                 "fetchedAt": market.get("fetchedAt"),
                 "verifiedAt": market.get("verifiedAt") or market.get("verifiedAtUtc") or "",
