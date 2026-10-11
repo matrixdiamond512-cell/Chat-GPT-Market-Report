@@ -292,6 +292,25 @@
           "priority": 2,
           "marketType": "spot",
           "session": "continuous"
+        },
+        {
+          "id": "ecb_eurusd_daily_reference",
+          "name": "ECB daily EUR/USD reference rate",
+          "kind": "ecb_exchange_rate",
+          "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A",
+          "seriesKey": "D.USD.EUR.SP00.A",
+          "sourceSeriesId": "EXR.D.USD.EUR.SP00.A",
+          "sourceUrl": "https://data.ecb.europa.eu/key-figures/ecb-interest-rates-and-exchange-rates/exchange-rates",
+          "priority": 99,
+          "marketType": "spot",
+          "session": "euro_reference_daily_1600_cet",
+          "referenceOnly": true,
+          "validationStaleHours": 168,
+          "lookbackDays": 20,
+          "currency": "USD",
+          "currencyDenominator": "EUR",
+          "publishedDecimalPlaces": 4,
+          "note": "ECB's daily USD per EUR spot reference rate, normally published around 16:00 CET on TARGET business days. Informational daily reference, not an intraday or market-close execution quote; reference-only until the report field accepts this timing."
         }
       ]
     },
