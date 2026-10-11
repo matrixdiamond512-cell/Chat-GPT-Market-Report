@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import json
 import unittest
 from unittest.mock import patch
 from urllib.parse import parse_qs, unquote, urlparse
@@ -305,6 +306,125 @@ class CloseSyncTests(unittest.TestCase):
         close_value, _, reason = close_sync.close_value_for_market(market, dt.date(2026, 10, 9))
         self.assertIsNone(close_value)
         self.assertIn("before the Japan cash-session close", reason)
+
+
+    def test_us10y_exact_value_is_already_saved_without_rewrite(self):
+        market = {
+            "value": 5.24,
+            "sourceId": "us_treasury_yield_curve",
+            "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "unit": "%",
+            "reportedDecimalPlaces": 2,
+            "asOf": self.target.isoformat(),
+        }
+        decision = close_sync.reconcile_existing_us10y(5.24, self.target, market, None)
+        self.assertEqual(decision["status"], "EXACT_MATCH")
+        self.assertTrue(decision["preserveExisting"])
+
+    def test_us10y_rounding_match_requires_identical_lineage_and_preserves_precision(self):
+        incoming = {
+            "value": 5.24,
+            "sourceId": "us_treasury_yield_curve",
+            "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "unit": "%",
+            "reportedDecimalPlaces": 2,
+            "asOf": self.target.isoformat(),
+        }
+        previous = {
+            "sourceId": "us_treasury_yield_curve",
+            "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "unit": "%",
+            "reportedDecimalPlaces": 3,
+            "storedValue": 5.242,
+            "storedDecimalPlaces": 3,
+            "lineageStatus": "CONFIRMED",
+            "asOf": self.target.isoformat(),
+        }
+        decision = close_sync.reconcile_existing_us10y(5.242, self.target, incoming, previous)
+        self.assertEqual(decision["status"], "PRECISION_MATCH")
+        self.assertTrue(decision["preserveExisting"])
+        self.assertEqual(decision["sharedDecimalPlaces"], 2)
+
+    def test_us10y_different_source_series_date_or_large_difference_conflicts(self):
+        incoming = {
+            "value": 5.24,
+            "sourceId": "us_treasury_yield_curve",
+            "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "unit": "%",
+            "reportedDecimalPlaces": 2,
+            "asOf": self.target.isoformat(),
+        }
+        previous = {
+            "sourceId": "us_treasury_yield_curve",
+            "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "unit": "%",
+            "reportedDecimalPlaces": 3,
+            "storedValue": 5.242,
+            "storedDecimalPlaces": 3,
+            "lineageStatus": "CONFIRMED",
+            "asOf": self.target.isoformat(),
+        }
+        wrong_series = {**previous, "sourceSeriesId": "fred:DGS10"}
+        self.assertEqual(close_sync.reconcile_existing_us10y(5.242, self.target, incoming, wrong_series)["status"], "CONFLICT")
+        wrong_date = {**previous, "asOf": "2026-09-29"}
+        self.assertEqual(close_sync.reconcile_existing_us10y(5.242, self.target, incoming, wrong_date)["status"], "CONFLICT")
+        far_value = {**incoming, "value": 5.25}
+        self.assertEqual(close_sync.reconcile_existing_us10y(5.242, self.target, far_value, previous)["status"], "CONFLICT")
+        self.assertEqual(close_sync.reconcile_existing_us10y(5.242, self.target, incoming, None)["status"], "CONFLICT")
+
+    def test_us10y_empty_cell_is_written_and_existing_unknown_value_stops_row_write(self):
+        incoming = {
+            "value": 5.24,
+            "sourceId": "us_treasury_yield_curve",
+            "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "unit": "%",
+            "reportedDecimalPlaces": 2,
+            "asOf": self.target.isoformat(),
+        }
+        self.assertEqual(close_sync.reconcile_existing_us10y("", self.target, incoming, None)["status"], "WRITE")
+
+        client = FakeSheetsClient(self.target, self.prior)
+        client.data[1][col_number("AR")] = 5.242
+        payload = snapshot(self.target, self.next_day)
+        payload["markets"]["us10y"].update(incoming)
+        result = self.run_sync(client, payload)
+        self.assertEqual(result["failedStage"], "VALIDATE")
+        self.assertEqual(client.data[1][col_number("AR")], 5.242)
+        self.assertEqual(client.data[1][col_number("B")], "")
+        self.assertEqual(result["reconciliations"][0]["status"], "CONFLICT")
+
+    def test_us10y_rounding_match_logs_precision_status_and_keeps_stored_value(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        client.data[1][col_number("AR")] = 5.242
+        prior_record = {
+            "symbol": "us10y",
+            "sourceId": "us_treasury_yield_curve",
+            "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "unit": "%",
+            "reportedDecimalPlaces": 3,
+            "storedValue": 5.242,
+            "storedDecimalPlaces": 3,
+            "lineageStatus": "CONFIRMED",
+            "asOf": self.target.isoformat(),
+        }
+        note = json.dumps({"marketData": [prior_record]}, ensure_ascii=False)
+        client.log.append(["2026/10/01", "終値一覧", "saved", self.target.isoformat(), "1", "完了", "Treasury", note])
+        payload = snapshot(self.target, self.next_day)
+        payload["markets"]["us10y"].update({
+            "value": 5.24,
+            "sourceId": "us_treasury_yield_curve",
+            "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "unit": "%",
+            "reportedDecimalPlaces": 2,
+            "asOf": dt.datetime.combine(self.target, dt.time(15, 30), JST).isoformat(),
+        })
+        result = self.run_sync(client, payload)
+        self.assertEqual(result["reconciliations"][0]["status"], "PRECISION_MATCH")
+        self.assertEqual(client.data[1][col_number("AR")], 5.242)
+        saved = json.loads(client.log[-1][7])["marketData"]
+        us10y = next(item for item in saved if item["symbol"] == "us10y")
+        self.assertEqual(us10y["storedValue"], 5.242)
+        self.assertEqual(us10y["reconciliationStatus"], "PRECISION_MATCH")
 
 
 if __name__ == "__main__":
