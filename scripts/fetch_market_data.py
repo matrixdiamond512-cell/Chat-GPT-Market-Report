@@ -176,7 +176,7 @@ def parse_jst_month_day_time(month_day: str, time_text: str | None = None) -> st
 
 def parse_nikkei_profile_timestamp(value: str) -> str:
     text = str(value or "").strip()
-    match = re.search(r"([A-Za-z]{3})/(\\d{1,2})/(\\d{4})\\((\\d{1,2}):(\\d{2})\\)", text)
+    match = re.search(r"([A-Za-z]{3})/(\d{1,2})/(\d{4})\((\d{1,2}):(\d{2})\)", text)
     if match:
         try:
             month = dt.datetime.strptime(match.group(1), "%b").month
@@ -185,7 +185,7 @@ def parse_nikkei_profile_timestamp(value: str) -> str:
             return parsed.replace(microsecond=0).isoformat()
         except ValueError:
             return iso()
-    match = re.search(r"(\\d{4})[./-](\\d{1,2})[./-](\\d{1,2})\\((\\d{1,2}):(\\d{2})\\)", text)
+    match = re.search(r"(\d{4})[./-](\d{1,2})[./-](\d{1,2})\((\d{1,2}):(\d{2})\)", text)
     if match:
         try:
             parsed = dt.datetime(int(match.group(1)), int(match.group(2)), int(match.group(3)),
