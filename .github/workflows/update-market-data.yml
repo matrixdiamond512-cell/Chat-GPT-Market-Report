@@ -131,6 +131,8 @@ jobs:
 
       - name: Fetch, retry, and preserve best verified market data
         if: inputs.acquisition_mode != 'validate-only' || inputs.validation_target == 'all-configured'
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: |
           python scripts/run_market_data_acquisition.py \
             --slot "${{ steps.slot.outputs.slot }}" \
