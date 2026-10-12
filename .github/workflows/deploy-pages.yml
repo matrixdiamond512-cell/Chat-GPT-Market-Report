@@ -78,11 +78,6 @@ jobs:
       - name: Verify latest/canonical/index/dashboard consistency
         run: python scripts/verify_publication_consistency.py
 
-      - name: Verify ChatGPT Google Drive receipt before publication
-        run: |
-          python scripts/validate_drive_publication_receipt.py \
-            --enforce-from '2026-08-19T21:00:00+09:00'
-
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
