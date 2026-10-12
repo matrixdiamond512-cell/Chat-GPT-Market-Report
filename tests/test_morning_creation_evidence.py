@@ -4,7 +4,8 @@ import unittest
 from morning_fixture import fixture
 from scripts.capture_morning_creation_evidence import capture
 from reporting.report import market_row, table_line, REGISTRY
-from reporting.snapshot import Market
+from reporting.snapshot import Market, MarketDataSnapshot
+from reporting.context import ReportContext
 from scripts.preflight_morning_infographic import check as preflight_check
 
 class MorningCaptureTests(unittest.TestCase):
@@ -34,6 +35,33 @@ class MorningCaptureTests(unittest.TestCase):
         view["body_hash"] = envelope["bodyHash"]
         result = preflight_check(envelope, view)
         self.assertEqual(result["status"], "READY_FOR_CANONICAL_VALIDATION")
+
+    def test_same_run_acquisition_to_snapshot(self):
+        markets = {}
+        for item in self.snapshot["markets"]:
+            source = item["source"][0]
+            markets[item["instrument"]] = {
+                "id": item["instrument"], "marketType": item["marketType"],
+                "venue": item["venue"], "contractMonth": item["contractMonth"],
+                "value": item["priceValue"], "unit": item["priceUnit"],
+                "change": item["changeValue"], "changePercent": item["changePct"],
+                "comparisonBasis": item["comparisonBasis"],
+                "asOf": item["asOf"], "sourceId": source["id"], "sourceUrl": source["url"],
+                "displayValue": item["displayText"], "verificationStatus": "verified",
+                "freshnessStatus": "fresh",
+            }
+        acquisition = {"generatedAt": self.snapshot["captured_at"],
+                       "reportSlot": "08:00", "reportDate": self.context["report_date"],
+                       "markets": markets}
+        snapshot = MarketDataSnapshot.from_acquisition(ReportContext(**self.context), acquisition)
+        self.assertEqual(snapshot.snapshot_id, self.snapshot["snapshot_id"])
+        self.assertEqual(snapshot.to_dict(), self.snapshot)
+
+    def test_reject_other_slot_acquisition(self):
+        with self.assertRaises(ValueError):
+            MarketDataSnapshot.from_acquisition(ReportContext(**self.context),
+                {"generatedAt": self.snapshot["captured_at"], "reportSlot": "12:00",
+                 "markets": {}})
 
     def test_bad_slot_fails(self):
         self.context["report_time"] = "12:00"
