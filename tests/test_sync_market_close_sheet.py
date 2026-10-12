@@ -184,6 +184,8 @@ def snapshot(target: dt.date, now: dt.datetime, *, missing: str | None = None) -
                 "observationDefinition": "Synthetic daily spot bar close",
                 "sessionCloseAt": dt.datetime.combine(target, close_time, JST).isoformat(),
                 "marketType": "spot", "session": "daily_close",
+                "unit": "JPY per USD" if symbol == "usdjpy" else "USD per EUR",
+                "reportedDecimalPlaces": 2 if symbol == "usdjpy" else 5,
             })
         elif symbol == "us10y":
             markets[symbol].update({
@@ -544,6 +546,37 @@ class CloseSyncTests(unittest.TestCase):
         self.assertEqual(row[client.headers.index("日経225予想PBR")], 2.83)
         self.assertTrue(str(row[client.headers.index("日経225予想EPS")]).startswith("取得不能（"))
         self.assertNotIn("nikkei225_eps", {item["symbol"] for item in result["marketData"] if item.get("valueSource") == "value"})
+
+    def test_fx_existing_value_requires_same_confirmed_series_and_cutoff(self):
+        incoming = {
+            "value": 158.34,
+            "sourceId": "boJ_reference",
+            "sourceSeriesId": "boj:17h_mid",
+            "observationDefinition": "Tokyo 17:00 bid/ask midpoint",
+            "sessionCloseAt": "17:00 Asia/Tokyo",
+            "unit": "JPY per USD",
+            "reportedDecimalPlaces": 2,
+            "asOf": self.target.isoformat(),
+        }
+        previous = {
+            **incoming,
+            "storedValue": 158.34,
+            "valueDate": self.target.isoformat(),
+            "lineageStatus": "CONFIRMED",
+        }
+        self.assertEqual(
+            close_sync.reconcile_existing_fx(158.34, self.target, incoming, previous)["status"],
+            "EXACT_MATCH",
+        )
+        other_cutoff = {**incoming, "sessionCloseAt": "17:00 America/New_York"}
+        self.assertEqual(
+            close_sync.reconcile_existing_fx(158.34, self.target, other_cutoff, previous)["status"],
+            "CONFLICT",
+        )
+        self.assertEqual(
+            close_sync.reconcile_existing_fx(158.34, self.target, incoming, None)["reason"],
+            "EXISTING_PROVENANCE_UNAVAILABLE",
+        )
 
     def test_fx_missing_cutoff_lineage_is_not_written_and_is_audited(self):
         client = FakeSheetsClient(self.target, self.prior)
