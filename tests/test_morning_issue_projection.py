@@ -28,6 +28,15 @@ class IssuanceProjectionTests(unittest.TestCase):
             validate_issuance_projection(report, view, spec)
         self.assertEqual(e.exception.reason, "ISSUANCE_PREFLIGHT_BLOCKED")
 
+    def test_forged_g2_marker_cannot_bypass_transaction_recheck(self):
+        report, view, spec = formal_contract_fixture()
+        report["evidence_stage"] = "G2_DRAFT_NOT_SAVED"
+        report["validated_gates"] = ["G0", "G1", "G2"]
+        # This mock fixture has not actually passed canonical G2 report-section checks.
+        with self.assertRaises(ValidationFailure) as error:
+            validate_issuance_projection(report, view, spec)
+        self.assertEqual(error.exception.reason, "G2_EVIDENCE_RECHECK_FAILED")
+
     def test_g2_label_does_not_bypass_canonical_spec(self):
         report, view, spec = formal_contract_fixture()
         report["evidence_stage"] = "G2_DRAFT_NOT_SAVED"
