@@ -229,3 +229,18 @@ Production safety: read-only metadata confirmed the production `終値一覧` st
 Evidence limits / next action: JPX and MOF same-date publications for 2026-10-09 were not yet available at the check time, and actual derivatives CSV rows and a complete 25-session Prime history were not read back. Retrieve and reconcile those exact rows after official publication; until then retain the 17/11/0 classifications and keep PR #94 OPEN / Draft / unmerged.
 
 Timestamp: 2026-10-12 20:47 JST.
+
+## 2026-10-12 本番終値一覧・同日dry-runと履歴レポート再読込
+
+目的: 本番「終値一覧」の既存列に、同日・VERIFIED値だけを安全に接続できるか本番書き込み前に照合する。
+
+- 本番シートを読み取り専用で確認。「終値一覧」は186列・937行枠・条件付き書式23件。記録済み日付93行のうち2026-10-09は27行目に一度だけ存在。既存行・セル・書式はこの実行中に変更していない。
+- 同日VERIFIED候補15項目を既存セルと比較。7項目は数値完全一致（Dow、S&P500、日経225現物、VIX、日経VI、プライム上昇数・下落数）。NASDAQとRussell 2000の2項目はソース公表桁に丸めると既存値に一致し、保存済み精度を維持するため書き込みなし。
+- 6項目は値が不一致のため停止：USD/JPY 158.34対158.27（現行セルの来歴はYahoo Finance日足fallback、2026-10-09 07:28 JST。TradingViewの17:00 New York日次境界との違いを特定できず）、EUR/USD 1.1202対1.11973（現行セルの系列・取得日時なし）、米10年債5.242対Treasury 5.24（現行値の出所・公表精度なし）、EPS 3,974.15対3,018.4049、PER 17.37対22.87、PBR 1.90対2.83（現行セル側の取得元・定義が記録されていない）。いずれも上書きしない。
+- BTC/USDとFear & Greedは基準日2026-10-10のため10/9行へ書かない。参考値11項目は自動保存対象外。同日VERIFIEDかつ空欄のセルは0件。よって本番への実書き込みは0件（安全ゲートどおり）で、日付重複も追加していない。
+- 公式公開状況: JPX日報ガイドは翌営業日掲載と説明。10/12は東証現物休場日で、確認時点の財務省新着一覧は10/8利回りCSVが最新、10/9のJPX公式日報・MOF値はまだ確認できず、概算値・LSEG参考値を確定扱いしない。JPX清算値ページは10/9更新表示を確認したが、5商品の限月別行の読み出しは未完了。日経25/200日乖離率とプライム25日騰落レシオは入力系列不足のため参考値を維持。
+- 同一の既保存履歴スナップショット（17 VERIFIED / 11 REFERENCE / 0 UNAVAILABLE、対象日10/9–10）から作成した本番dry-run注記付き詳細レポートを、個人用テストシート Personal_Market_Report!A11:I11 に別行保存。レポートID personal-report-prod-dryrun-20261012T130500Z、本文11,878文字、SHA-256読み戻し一致、17/11/0、ID重複なし。前レポート行10を維持。これは履歴記録で、新規ライブ取得ではない。
+- 検証レベル: E5—本番シート読み取り、テストシートの別履歴行保存・readback。Production write/readbackはNOT_RUN（書込対象0件）。今回コード変更・ローカルテスト・Actions runはNOT_RUN。本番シート確認時の構造・値・conditional formatは変更なし。
+- 未解決: 6不一致の系列/定義/来歴の特定、JPX/MOF同日公表後の再照合、5先物の個別限月清算値、日経同一公式日足、25日分のPrime-only入力履歴。PR #94はOPEN / Draft / 未マージのまま。
+
+Timestamp: 2026-10-12 22:05 JST.
