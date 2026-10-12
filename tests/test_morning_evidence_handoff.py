@@ -12,7 +12,7 @@ class EvidenceHandoffTests(unittest.TestCase):
         self.snapshot = complete["snapshot"]
         self.report = {key: value for key, value in complete.items()
                        if key not in ("context", "snapshot", "report_id", "revision",
-                                      "snapshot_id", "bodyHash")}
+                                      "snapshot_id")}
         # Synthetic inputs test the identity contract, not formal acceptance.
         self.report.pop("synthetic_fixture", None)
 
@@ -21,6 +21,12 @@ class EvidenceHandoffTests(unittest.TestCase):
         self.assertEqual(result["fullText"], self.report["fullText"])
         self.assertEqual(result["snapshot_id"], self.snapshot["snapshot_id"])
         self.assertEqual(result["revision"], self.context["revision"])
+
+    def test_missing_original_hash_is_blocked(self):
+        self.report.pop("bodyHash")
+        with self.assertRaises(ValidationFailure) as error:
+            assemble(self.report, self.context, self.snapshot)
+        self.assertEqual(error.exception.reason, "ORIGINAL_BODY_HASH_REQUIRED")
 
     def test_reconstructed_report_is_blocked(self):
         self.report["source_note"] = "CHAT_TRANSCRIPT_RECONSTRUCTED_NOT_VERBATIM"
@@ -37,7 +43,7 @@ class EvidenceHandoffTests(unittest.TestCase):
         self.report["bodyHash"] = "unrelated"
         with self.assertRaises(ValidationFailure) as result:
             assemble(self.report, self.context, self.snapshot)
-        self.assertEqual(result.exception.reason, "EXISTING_IDENTITY_MISMATCH")
+        self.assertEqual(result.exception.reason, "ORIGINAL_BODY_HASH_MISMATCH")
 
     def test_changed_snapshot_is_blocked(self):
         self.snapshot["snapshot_id"] = "snapshot-forged"
