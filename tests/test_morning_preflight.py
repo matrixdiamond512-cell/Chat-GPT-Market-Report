@@ -6,8 +6,8 @@ class PreflightTests(unittest.TestCase):
     def complete(self):
         report = {"report_id":"2026-10-13_08-00","revision":1,"bodyHash":"sha",
                   "fullText":"Verified original", "snapshot_id":"snap",
-                  "snapshot":{"snapshot_id":"snap","report_id":"2026-10-13_08-00"},
-                  "context":{"report_id":"2026-10-13_08-00","revision":1}}
+                  "snapshot":{"snapshot_id":"snap","report_id":"2026-10-13_08-00","revision":1,"data_cutoff":"2026-10-13T07:55:00+09:00"},
+                  "context":{"report_id":"2026-10-13_08-00","revision":1,"data_cutoff":"2026-10-13T07:55:00+09:00"}}
         view = {"report_id":"2026-10-13_08-00","revision":1,"body_hash":"sha",
                 "snapshot_id":"snap","facts":[{"id":"f1"}],
                 "cards":[{"number":1}],"header":{"subtitle":"x"}}
@@ -34,6 +34,11 @@ class PreflightTests(unittest.TestCase):
         report, view = self.complete()
         report["context"]["revision"] = 2
         self.assertIn("identity_mismatch.context_revision", check(report, view)["missing_or_unverified"])
+
+    def test_data_cutoff_mismatch_blocks(self):
+        report, view = self.complete()
+        report["snapshot"]["data_cutoff"] = "2026-10-13T07:50:00+09:00"
+        self.assertIn("identity_mismatch.data_cutoff", check(report, view)["missing_or_unverified"])
 
     def test_snapshot_mismatch_blocks(self):
         report, view = self.complete()
