@@ -27,6 +27,21 @@ class PreflightTests(unittest.TestCase):
         self.assertIn("report.original_source_verification", result["missing_or_unverified"])
         self.assertIn("report.snapshot", result["missing_or_unverified"])
 
+    def test_oct09_published_report_still_lacks_canonical_snapshot(self):
+        source = Path(__file__).resolve().parents[1] / "reports" / "2026-10-09_08-00.json"
+        report = json.loads(source.read_text(encoding="utf-8"))
+        result = check(report)
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertIn("report.snapshot", result["missing_or_unverified"])
+        self.assertIn("report.context", result["missing_or_unverified"])
+
+    def test_oct12_reconstructed_report_stays_blocked(self):
+        source = Path(__file__).resolve().parents[1] / "reports" / "2026-10-12_08-00.json"
+        report = json.loads(source.read_text(encoding="utf-8"))
+        result = check(report)
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertIn("report.original_source_verification", result["missing_or_unverified"])
+
     def test_legacy_report_blocked(self):
         self.assertIn("report.snapshot", check({"fullText":"text"})["missing_or_unverified"])
 
