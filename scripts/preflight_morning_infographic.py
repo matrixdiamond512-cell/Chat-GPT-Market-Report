@@ -35,6 +35,14 @@ def check(report, view=None):
             missing.append("identity_mismatch.context_report")
         if isinstance(context, dict) and report.get("revision") and context.get("revision") != report["revision"]:
             missing.append("identity_mismatch.context_revision")
+    snapshot = report.get("snapshot") or report.get("marketDataSnapshot") or report.get("market_data_snapshot")
+    context = report.get("context") or report.get("report_context")
+    if isinstance(snapshot, dict) and isinstance(context, dict):
+        for key in ("report_id", "revision"):
+            if snapshot.get(key) != context.get(key):
+                missing.append("identity_mismatch.snapshot_context_" + key)
+        if snapshot.get("data_cutoff") != context.get("data_cutoff"):
+            missing.append("identity_mismatch.data_cutoff")
     if report.get("source_note") or report.get("report_status") in ("RECONSTRUCTED_UNVERIFIED", "UNVERIFIED"):
         missing.append("report.original_source_verification")
     return {"status": "BLOCKED" if missing else "READY_FOR_CANONICAL_VALIDATION",
