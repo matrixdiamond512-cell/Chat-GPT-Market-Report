@@ -178,6 +178,21 @@ def snapshot(target: dt.date, now: dt.datetime, *, missing: str | None = None) -
             "fetchedAt": now.isoformat(), "sourceId": symbol + "_source", "sourceName": symbol + " source",
             "verificationStatus": "verified", "classification": "Neutral",
         }
+        if symbol in {"usdjpy", "eurusd"}:
+            markets[symbol].update({
+                "sourceSeriesId": symbol + "_daily_close",
+                "observationDefinition": "Synthetic daily spot bar close",
+                "sessionCloseAt": dt.datetime.combine(target, close_time, JST).isoformat(),
+                "marketType": "spot", "session": "daily_close",
+            })
+        elif symbol == "us10y":
+            markets[symbol].update({
+                "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+                "observationDefinition": "Treasury 10-year constant-maturity par yield",
+                "sessionCloseAt": "15:30 America/New_York",
+                "unit": "%", "reportedDecimalPlaces": 2, "marketType": "yield",
+                "session": "daily_publication",
+            })
     for symbol in close_sync.TECHNICAL_FIELDS:
         markets[symbol] = {
             "id": symbol, "value": 1.25,
@@ -202,6 +217,12 @@ def snapshot(target: dt.date, now: dt.datetime, *, missing: str | None = None) -
             "fetchedAt": now.isoformat(), "sourceId": symbol + "_source", "sourceName": symbol + " source",
             "verificationStatus": "verified",
         }
+        if symbol in {"nikkei225_eps", "nikkei225_per", "nikkei225_pbr"}:
+            markets[symbol].update({
+                "sourceSeriesId": symbol + "_index_based",
+                "valuationBasis": "index_based",
+                "observationDefinition": "Nikkei 225 index-based valuation",
+            })
     return {"generatedAt": now.isoformat(), "reportSlot": "08:00", "overallStatus": "verified", "missingRequired": [], "markets": markets}
 
 
@@ -328,17 +349,47 @@ class CloseSyncTests(unittest.TestCase):
         self.assertIn("before the Japan cash-session close", reason)
 
 
-    def test_us10y_exact_value_is_already_saved_without_rewrite(self):
+    def test_us10y_exact_number_without_confirmed_lineage_is_still_conflict(self):
         market = {
             "value": 5.24,
             "sourceId": "us_treasury_yield_curve",
             "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "observationDefinition": "Treasury 10-year constant-maturity par yield",
+            "sessionCloseAt": "15:30 America/New_York",
             "unit": "%",
             "reportedDecimalPlaces": 2,
             "asOf": self.target.isoformat(),
         }
         decision = close_sync.reconcile_existing_us10y(5.24, self.target, market, None)
+        self.assertEqual(decision["status"], "CONFLICT")
+        self.assertEqual(decision["reason"], "EXISTING_PROVENANCE_UNAVAILABLE")
+
+    def test_us10y_exact_value_requires_same_confirmed_series_and_cutoff(self):
+        market = {
+            "value": 5.24,
+            "sourceId": "us_treasury_yield_curve",
+            "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "observationDefinition": "Treasury 10-year constant-maturity par yield",
+            "sessionCloseAt": "15:30 America/New_York",
+            "unit": "%",
+            "reportedDecimalPlaces": 2,
+            "asOf": self.target.isoformat(),
+        }
+        previous = {
+            "sourceId": market["sourceId"],
+            "sourceSeriesId": market["sourceSeriesId"],
+            "observationDefinition": market["observationDefinition"],
+            "sessionCloseAt": market["sessionCloseAt"],
+            "unit": market["unit"],
+            "reportedDecimalPlaces": 2,
+            "storedValue": 5.24,
+            "storedDecimalPlaces": 2,
+            "lineageStatus": "CONFIRMED",
+            "asOf": self.target.isoformat(),
+        }
+        decision = close_sync.reconcile_existing_us10y(5.24, self.target, market, previous)
         self.assertEqual(decision["status"], "EXACT_MATCH")
+        self.assertEqual(decision["lineageStatus"], "CONFIRMED")
         self.assertTrue(decision["preserveExisting"])
 
     def test_us10y_rounding_match_requires_identical_lineage_and_preserves_precision(self):
@@ -346,6 +397,8 @@ class CloseSyncTests(unittest.TestCase):
             "value": 5.24,
             "sourceId": "us_treasury_yield_curve",
             "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "observationDefinition": "Treasury 10-year constant-maturity par yield",
+            "sessionCloseAt": "15:30 America/New_York",
             "unit": "%",
             "reportedDecimalPlaces": 2,
             "asOf": self.target.isoformat(),
@@ -353,6 +406,8 @@ class CloseSyncTests(unittest.TestCase):
         previous = {
             "sourceId": "us_treasury_yield_curve",
             "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "observationDefinition": "Treasury 10-year constant-maturity par yield",
+            "sessionCloseAt": "15:30 America/New_York",
             "unit": "%",
             "reportedDecimalPlaces": 3,
             "storedValue": 5.242,
@@ -370,6 +425,8 @@ class CloseSyncTests(unittest.TestCase):
             "value": 5.24,
             "sourceId": "us_treasury_yield_curve",
             "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "observationDefinition": "Treasury 10-year constant-maturity par yield",
+            "sessionCloseAt": "15:30 America/New_York",
             "unit": "%",
             "reportedDecimalPlaces": 2,
             "asOf": self.target.isoformat(),
@@ -377,6 +434,8 @@ class CloseSyncTests(unittest.TestCase):
         previous = {
             "sourceId": "us_treasury_yield_curve",
             "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "observationDefinition": "Treasury 10-year constant-maturity par yield",
+            "sessionCloseAt": "15:30 America/New_York",
             "unit": "%",
             "reportedDecimalPlaces": 3,
             "storedValue": 5.242,
@@ -397,6 +456,8 @@ class CloseSyncTests(unittest.TestCase):
             "value": 5.24,
             "sourceId": "us_treasury_yield_curve",
             "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "observationDefinition": "Treasury 10-year constant-maturity par yield",
+            "sessionCloseAt": "15:30 America/New_York",
             "unit": "%",
             "reportedDecimalPlaces": 2,
             "asOf": self.target.isoformat(),
@@ -420,6 +481,8 @@ class CloseSyncTests(unittest.TestCase):
             "symbol": "us10y",
             "sourceId": "us_treasury_yield_curve",
             "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "observationDefinition": "Treasury 10-year constant-maturity par yield",
+            "sessionCloseAt": "15:30 America/New_York",
             "unit": "%",
             "reportedDecimalPlaces": 3,
             "storedValue": 5.242,
@@ -434,6 +497,8 @@ class CloseSyncTests(unittest.TestCase):
             "value": 5.24,
             "sourceId": "us_treasury_yield_curve",
             "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+            "observationDefinition": "Treasury 10-year constant-maturity par yield",
+            "sessionCloseAt": "15:30 America/New_York",
             "unit": "%",
             "reportedDecimalPlaces": 2,
             "asOf": dt.datetime.combine(self.target, dt.time(15, 30), JST).isoformat(),
@@ -447,22 +512,54 @@ class CloseSyncTests(unittest.TestCase):
         self.assertEqual(us10y["reconciliationStatus"], "PRECISION_MATCH")
 
 
-    def test_verified_supplemental_snapshot_fills_existing_valuation_and_prime_columns_only(self):
+    def test_index_based_valuation_is_not_mixed_into_weighted_average_close_columns(self):
         client = FakeSheetsClient(self.target, self.prior)
         payload = snapshot(self.target, self.next_day)
         payload["markets"]["tse_prime_turnover"]["verificationStatus"] = "reference_only"
         result = self.run_sync(client, payload)
         row = client.data[result["row"] - 1]
-        self.assertEqual(row[client.headers.index("日経225予想EPS")], 3018.4)
-        self.assertEqual(row[client.headers.index("日経225予想PER")], 22.87)
-        self.assertEqual(row[client.headers.index("日経225予想PBR")], 2.83)
+        for header in ("日経225予想EPS", "日経225予想PER", "日経225予想PBR"):
+            self.assertTrue(str(row[client.headers.index(header)]).startswith("取得不能（"))
         self.assertEqual(row[client.headers.index("東証プライム値上がり銘柄数")], 1194)
         self.assertEqual(row[client.headers.index("東証プライム値下がり銘柄数")], 331)
         self.assertTrue(str(row[client.headers.index("東証プライム売買代金")]).startswith("取得不能（"))
         self.assertEqual(row[client.headers.index("東証プライム売買高")], 2295.19)
+        valuation = {item["symbol"]: item for item in result["marketData"] if item["symbol"].startswith("nikkei225_")}
+        self.assertEqual(set(valuation), {"nikkei225_eps", "nikkei225_per", "nikkei225_pbr"})
+        self.assertEqual(valuation["nikkei225_per"]["reconciliationStatus"], "DEFINITION_MISMATCH")
+        self.assertEqual(valuation["nikkei225_pbr"]["reconciliationStatus"], "DEFINITION_MISMATCH")
+        self.assertEqual(valuation["nikkei225_eps"]["reconciliationStatus"], "DEFINITION_PENDING")
         saved_symbols = {item["symbol"] for item in result["marketData"]}
         self.assertIn("tse_prime_advancers", saved_symbols)
         self.assertNotIn("tse_prime_turnover", saved_symbols)
+
+    def test_weighted_average_per_pbr_are_eligible_but_eps_stays_blocked(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        payload = snapshot(self.target, self.next_day)
+        for symbol in ("nikkei225_per", "nikkei225_pbr"):
+            payload["markets"][symbol]["valuationBasis"] = "weighted_average"
+        result = self.run_sync(client, payload)
+        row = client.data[result["row"] - 1]
+        self.assertEqual(row[client.headers.index("日経225予想PER")], 22.87)
+        self.assertEqual(row[client.headers.index("日経225予想PBR")], 2.83)
+        self.assertTrue(str(row[client.headers.index("日経225予想EPS")]).startswith("取得不能（"))
+        self.assertNotIn("nikkei225_eps", {item["symbol"] for item in result["marketData"] if item.get("valueSource") == "value"})
+
+    def test_fx_missing_cutoff_lineage_is_not_written_and_is_audited(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        payload = snapshot(self.target, self.next_day)
+        payload["markets"]["usdjpy"].pop("sessionCloseAt")
+        result = self.run_sync(client, payload)
+        row = client.data[result["row"] - 1]
+        self.assertTrue(str(row[client.headers.index("USDJPY終値")]).startswith("取得不能（"))
+        item = next(entry for entry in result["marketData"] if entry["symbol"] == "usdjpy")
+        self.assertEqual(item["reconciliationStatus"], "DEFINITION_PENDING")
+        self.assertIn("sourceSeriesId", item)
+        self.assertEqual(item["observationDefinition"], "Synthetic daily spot bar close")
+        self.assertEqual(
+            next(entry for entry in result["reconciliations"] if entry["symbol"] == "usdjpy")["status"],
+            "DEFINITION_PENDING",
+        )
 
     def test_verified_supplemental_conflict_stops_before_any_row_write(self):
         client = FakeSheetsClient(self.target, self.prior)
