@@ -518,7 +518,21 @@ jobs:
         run: python scripts/validate_market_data_source.py --symbol us10y --source-id us_treasury_yield_curve
       - name: Validate official Ministry of Finance Japan 10-year reference series
         if: always() && github.event_name == 'pull_request'
-        run: python scripts/validate_market_data_source.py --symbol jp10y --source-id mof_jgbcm_10y
+        shell: bash
+        run: |
+          # Retry transient official-feed errors; do not convert a persistent
+          # source or validation failure into a passing result.
+          for attempt in 1 2 3; do
+            if python scripts/validate_market_data_source.py --symbol jp10y --source-id mof_jgbcm_10y; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              echo "MOF 10Y validation failed (attempt $attempt/3); retrying"
+              sleep 10
+            fi
+          done
+          echo "MOF 10Y validation failed after three attempts" >&2
+          exit 1
 
       - name: Validate official Bank of Japan Tokyo USD/JPY 17:00 reference series
         if: always() && github.event_name == 'pull_request'
