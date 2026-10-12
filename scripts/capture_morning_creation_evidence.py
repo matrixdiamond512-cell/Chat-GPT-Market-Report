@@ -12,6 +12,26 @@ from reporting.snapshot import MarketDataSnapshot
 from reporting.report import ReportObject
 from reporting.gates import Transaction, GateFailure
 
+def snapshot_from_same_run_acquisition(context_payload, acquisition):
+    """Require each required series to be verified and fresh before freezing G2 evidence."""
+    from reporting.gates import SOURCES
+    if not isinstance(acquisition, dict) or not isinstance(acquisition.get("markets"), dict):
+        raise ValueError("ACQUISITION_MARKETS_INVALID")
+    required = {name for name, config in SOURCES.items() if config.get("required")}
+    rows = acquisition["markets"]
+    if not required.issubset(rows):
+        raise ValueError("ACQUISITION_REQUIRED_MARKETS_MISSING")
+    for key in required:
+        row = rows[key]
+        if not isinstance(row, dict) or row.get("id") != key:
+            raise ValueError("ACQUISITION_INSTRUMENT_MISMATCH")
+        if row.get("verificationStatus") != "verified" or row.get("freshnessStatus") != "fresh":
+            raise ValueError("ACQUISITION_UNVERIFIED_OR_STALE")
+        if not row.get("sourceId") or not row.get("sourceUrl") or not row.get("asOf"):
+            raise ValueError("ACQUISITION_PROVENANCE_MISSING")
+    return MarketDataSnapshot.from_acquisition(ReportContext(**context_payload), acquisition)
+
+
 def capture(context_payload, snapshot_payload, *, title, full_text):
     context = ReportContext(**context_payload)
     snapshot = MarketDataSnapshot.restore(snapshot_payload)
@@ -58,8 +78,7 @@ def main():
             return json.loads(path.read_text(encoding="utf-8-sig"))
         context_payload = load(a.context)
         if a.acquisition:
-            context = ReportContext(**context_payload)
-            frozen_snapshot = MarketDataSnapshot.from_acquisition(context, load(a.acquisition))
+            frozen_snapshot = snapshot_from_same_run_acquisition(context_payload, load(a.acquisition))
             snapshot_payload = frozen_snapshot.to_dict()
         else:
             snapshot_payload = load(a.snapshot)
