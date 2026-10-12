@@ -203,9 +203,9 @@ function runMarketReportMasterScheduler_(slotHour, mode, isRetry) {
   var result = { ok: true, skipped: false, mode: mode, slotHour: slotHour, retry: !!isRetry, modules: [] };
   try {
     var day = Number(Utilities.formatDate(new Date(), MARKET_REPORT_MASTER_SCHEDULER_CONFIG.timezone, 'u'));
-    if (day === 7 || (day === 6 && slotHour !== 8)) {
+    if (day === 6 || day === 7) {
       result.skipped = true;
-      result.reason = day === 7 ? '日曜のため本文・ダッシュボード自動更新をスキップしました。' : '土曜は08:00朝レポート以外を発行しません。';
+      result.reason = '土日休止の発行スケジュールに従い、本文・ダッシュボード自動更新をスキップしました。';
       return saveMarketReportMasterResult_(result);
     }
     runMarketReportMasterModule_(result, 'market_report', 'マーケットレポート本文・ダッシュボード公開', function() {
