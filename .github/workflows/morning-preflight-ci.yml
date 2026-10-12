@@ -8,6 +8,8 @@ on:
       - scripts/preflight_morning_infographic.py
       - tests/test_morning_preflight.py
       - scripts/bind_morning_report_evidence.py
+      - scripts/capture_morning_creation_evidence.py
+      - tests/test_morning_creation_evidence.py
       - scripts/render_morning_infographic.py
       - tests/test_morning_evidence_handoff.py
       - .github/workflows/morning-preflight-ci.yml
@@ -26,10 +28,11 @@ jobs:
         with:
           python-version: '3.12'
       - name: Compile preflight files
-        run: python -m py_compile scripts/preflight_morning_infographic.py tests/test_morning_preflight.py scripts/bind_morning_report_evidence.py tests/test_morning_evidence_handoff.py
+        run: python -m py_compile scripts/preflight_morning_infographic.py tests/test_morning_preflight.py scripts/bind_morning_report_evidence.py tests/test_morning_evidence_handoff.py scripts/capture_morning_creation_evidence.py tests/test_morning_creation_evidence.py
       - name: Run evidence and preflight regressions
         env:
           PYTHONPATH: scripts:tests
         run: |
           python -m unittest discover -s tests -p test_morning_preflight.py -v
           python -m unittest discover -s tests -p test_morning_evidence_handoff.py -v
+          python -m unittest discover -s tests -p test_morning_creation_evidence.py -v
