@@ -71,6 +71,32 @@ SUPPLEMENTAL_FIELDS = {
     "tse_prime_turnover": "東証プライム売買代金",
     "tse_prime_volume": "東証プライム売買高",
 }
+# Existing valuation columns are weighted-average series. Index-based values are
+# separate instruments and must never be mixed into these legacy columns.
+VALUATION_CLOSE_LIST_POLICY = {
+    "nikkei225_eps": {
+        "write_enabled": False,
+        "basis": None,
+        "reason": "EPS_LEGACY_BASIS_UNRESOLVED",
+    },
+    "nikkei225_per": {
+        "write_enabled": True,
+        "basis": "weighted_average",
+        "reason": "PER_BASIS_MISMATCH",
+    },
+    "nikkei225_pbr": {
+        "write_enabled": True,
+        "basis": "weighted_average",
+        "reason": "PBR_BASIS_MISMATCH",
+    },
+}
+# Daily FX/yield values are comparable only when their series and observation
+# cutoff are explicit. Missing lineage blocks an automated close-list write.
+CLOSE_LINEAGE_REQUIREMENTS = {
+    "usdjpy": ("sourceSeriesId", "observationDefinition", "sessionCloseAt"),
+    "eurusd": ("sourceSeriesId", "observationDefinition", "sessionCloseAt"),
+    "us10y": ("sourceSeriesId", "observationDefinition", "sessionCloseAt", "unit", "reportedDecimalPlaces"),
+}
 REQUIRED_CLOSE_HEADERS = tuple(
     [header for fields in PRICE_FIELDS.values() for header in fields if header]
     + ["日経225終値", "米10年債利回り", "日本10年債利回り", "日経225予想EPS", "日経225予想PER"]
@@ -88,6 +114,20 @@ class CloseSyncError(RuntimeError):
     def __init__(self, stage: str, message: str):
         super().__init__(message)
         self.stage = stage
+
+
+def market_lineage_metadata(market: dict[str, Any]) -> dict[str, Any]:
+    """Return the source and close definition without inferring missing metadata."""
+    keys = (
+        "sourceSeriesId", "observationDefinition", "sessionCloseAt",
+        "marketType", "session", "unit", "reportedDecimalPlaces",
+    )
+    return {key: market.get(key) for key in keys if market.get(key) not in (None, "")}
+
+
+def missing_close_lineage(symbol: str, market: dict[str, Any]) -> tuple[str, ...]:
+    required = CLOSE_LINEAGE_REQUIREMENTS.get(symbol, ())
+    return tuple(key for key in required if market.get(key) in (None, ""))
 
 
 def number(value: Any) -> float | None:
@@ -375,13 +415,6 @@ def reconcile_existing_us10y(
     value_date = parse_sheet_date(incoming.get("valueDate")) or (observed.date() if observed else None)
     if incoming_value is None or not observed or value_date != target:
         return {"status": "CONFLICT", "reason": "INCOMING_DATE_OR_VALUE_MISMATCH"}
-    if existing == incoming_value:
-        return {
-            "status": "EXACT_MATCH",
-            "reason": "EXACT_VALUE_ALREADY_STORED",
-            "preserveExisting": True,
-            "lineageStatus": "CONFIRMED" if previous and previous.get("lineageStatus") == "CONFIRMED" else "UNKNOWN",
-        }
     if not previous:
         return {"status": "CONFLICT", "reason": "EXISTING_PROVENANCE_UNAVAILABLE"}
     prior_value = decimal_value(previous.get("storedValue", previous.get("closeValue")))
@@ -391,12 +424,21 @@ def reconcile_existing_us10y(
         str(previous.get("sourceId") or "") == str(incoming.get("sourceId") or "")
         and str(previous.get("sourceSeriesId") or "") == str(incoming.get("sourceSeriesId") or "")
         and str(previous.get("unit") or "") == str(incoming.get("unit") or "")
+        and str(previous.get("observationDefinition") or "") == str(incoming.get("observationDefinition") or "")
+        and str(previous.get("sessionCloseAt") or "") == str(incoming.get("sessionCloseAt") or "")
         and parse_sheet_date(previous.get("valueDate") or previous.get("asOf")) == target
         and prior_value == existing
         and previous.get("lineageStatus") == "CONFIRMED"
     )
     if not expected_metadata:
         return {"status": "CONFLICT", "reason": "SOURCE_SERIES_DATE_OR_STORED_VALUE_MISMATCH"}
+    if existing == incoming_value:
+        return {
+            "status": "EXACT_MATCH",
+            "reason": "EXACT_VALUE_AND_CONFIRMED_LINEAGE_ALREADY_STORED",
+            "preserveExisting": True,
+            "lineageStatus": "CONFIRMED",
+        }
     try:
         prior_precision = int(prior_precision)
         incoming_precision = int(incoming_precision)
@@ -579,6 +621,31 @@ def close_row_sync(
                 continue
             if warning:
                 field_warnings.append(f"{symbol}: {warning}")
+            lineage_missing = missing_close_lineage(symbol, market)
+            if lineage_missing:
+                missing_text = ", ".join(lineage_missing)
+                reason_code = "CLOSE_LINEAGE_MISSING:" + missing_text
+                field_warnings.append(f"{symbol}: close-series lineage is incomplete")
+                summary["reconciliations"].append({
+                    "symbol": symbol, "targetDate": target.isoformat(),
+                    "status": "DEFINITION_PENDING", "reason": reason_code,
+                })
+                summary["marketData"].append({
+                    "symbol": symbol, "sourceId": market.get("sourceId"),
+                    "sourceName": market.get("sourceName"),
+                    **market_lineage_metadata(market),
+                    "asOf": market.get("asOf"), "fetchedAt": market.get("fetchedAt"),
+                    "verificationStatus": market.get("verificationStatus"),
+                    "reconciliationStatus": "DEFINITION_PENDING",
+                })
+                for unavailable_header in (close_header, change_header, percent_header):
+                    if not unavailable_header or unavailable_header not in header_indices:
+                        continue
+                    existing_column = column_values.get(unavailable_header, [])
+                    existing_value = existing_column[target_row - 1] if not inserting and target_row - 1 < len(existing_column) else ""
+                    if not str(existing_value or "").strip():
+                        writes[unavailable_header] = "取得不能（系列・締め時刻の定義未確認）"
+                continue
             source_ids.append(str(market.get("sourceId") or symbol))
             observed = parse_datetime(market.get("asOf"))
             write_close_value = True
@@ -630,6 +697,7 @@ def close_row_sync(
                 "sourceId": market.get("sourceId"),
                 "sourceName": market.get("sourceName"),
                 "sourceSeriesId": source_series,
+                **market_lineage_metadata(market),
                 "unit": unit,
                 "reportedDecimalPlaces": reported_places,
                 "storedValue": stored_value,
@@ -717,6 +785,38 @@ def close_row_sync(
             market = markets.get(symbol)
             if not isinstance(market, dict):
                 continue
+            valuation_policy = VALUATION_CLOSE_LIST_POLICY.get(symbol)
+            if valuation_policy is not None:
+                basis = str(market.get("valuationBasis") or "").strip()
+                if not valuation_policy["write_enabled"]:
+                    status = "DEFINITION_PENDING"
+                    reason = valuation_policy["reason"]
+                elif basis != valuation_policy["basis"]:
+                    status = "DEFINITION_MISMATCH" if basis else "DEFINITION_PENDING"
+                    reason = valuation_policy["reason"]
+                elif not market.get("sourceSeriesId"):
+                    status = "DEFINITION_PENDING"
+                    reason = "VALUATION_SERIES_ID_MISSING"
+                else:
+                    status = ""
+                    reason = ""
+                if status:
+                    field_warnings.append(f"{symbol}: valuation column definition is not eligible")
+                    summary["reconciliations"].append({
+                        "symbol": symbol, "targetDate": target.isoformat(),
+                        "status": status, "reason": reason,
+                        "candidateBasis": basis or None,
+                    })
+                    summary["marketData"].append({
+                        "symbol": symbol, "sourceId": market.get("sourceId"),
+                        "sourceName": market.get("sourceName"),
+                        **market_lineage_metadata(market),
+                        "valuationBasis": basis or None,
+                        "asOf": market.get("asOf"), "fetchedAt": market.get("fetchedAt"),
+                        "verificationStatus": market.get("verificationStatus"),
+                        "reconciliationStatus": status,
+                    })
+                    continue
             if market.get("verificationStatus") != "verified" or market.get("fallbackUsed"):
                 continue
             value, source_date, warning = close_value_for_market(market, target)
@@ -739,6 +839,8 @@ def close_row_sync(
                     )
                 summary["marketData"].append({
                     "symbol": symbol, "sourceId": market.get("sourceId"), "sourceName": market.get("sourceName"),
+                    **market_lineage_metadata(market),
+                    "valuationBasis": market.get("valuationBasis"),
                     "asOf": market.get("asOf"), "fetchedAt": market.get("fetchedAt"),
                     "verificationStatus": "verified", "valueSource": "value",
                     "reconciliationStatus": "EXACT_MATCH", "closeValue": numeric_value,
@@ -748,6 +850,8 @@ def close_row_sync(
             source_ids.append(str(market.get("sourceId") or symbol))
             summary["marketData"].append({
                 "symbol": symbol, "sourceId": market.get("sourceId"), "sourceName": market.get("sourceName"),
+                **market_lineage_metadata(market),
+                "valuationBasis": market.get("valuationBasis"),
                 "asOf": market.get("asOf"), "fetchedAt": market.get("fetchedAt"),
                 "verificationStatus": "verified", "valueSource": "value", "closeValue": numeric_value,
             })
