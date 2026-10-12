@@ -47,43 +47,32 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install Japanese market holiday calendar
+        run: python -m pip install jpholiday
+
+      - name: Test Tokyo market holiday resolution
+        run: python -m unittest discover -s tests -p 'test_tokyo_close_calendar.py' -v
+
       - name: Resolve latest completed Tokyo session
         id: target
         shell: bash
+        env:
+          REQUESTED_TARGET_DATE: ${{ inputs.target_date }}
         run: |
-          TARGET="${{ inputs.target_date }}"
-          if [ -z "$TARGET" ]; then
-            TARGET="$(python - <<'PY'
-          import datetime as dt
-          from zoneinfo import ZoneInfo
-
-          now = dt.datetime.now(ZoneInfo('Asia/Tokyo'))
-          day = now.date()
-
-          def previous_weekday(value: dt.date) -> dt.date:
-              value -= dt.timedelta(days=1)
-              while value.weekday() >= 5:
-                  value -= dt.timedelta(days=1)
-              return value
-
-          if day.weekday() < 5 and now.time() >= dt.time(16, 0):
-              target = day
-          else:
-              target = previous_weekday(day)
-          print(target.isoformat())
-          PY
-          )"
-          fi
-          echo "date=$TARGET" >> "$GITHUB_OUTPUT"
-          echo "Resolved Tokyo session: $TARGET"
+          python scripts/resolve_tokyo_close_target.py \
+            --target-date "$REQUESTED_TARGET_DATE" \
+            --github-output "$GITHUB_OUTPUT"
 
       - name: Capture exact-date Japanese close data
+        if: steps.target.outputs.skip != 'true'
         run: python scripts/capture_japan_close_reference.py --date "${{ steps.target.outputs.date }}"
 
       - name: Cross-check Nikkei close and recalculate deviations
+        if: steps.target.outputs.skip != 'true'
         run: python scripts/correct_japan_close_reference.py --date "${{ steps.target.outputs.date }}"
 
       - name: Validate reference shape and exact target date
+        if: steps.target.outputs.skip != 'true'
         run: |
           python - <<'PY'
           import json
@@ -108,6 +97,7 @@ jobs:
           PY
 
       - name: Commit capture result without stale-rebase conflicts
+        if: steps.target.outputs.skip != 'true'
         shell: bash
         run: |
           set -euo pipefail
