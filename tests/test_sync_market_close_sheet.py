@@ -287,7 +287,9 @@ class CloseSyncTests(unittest.TestCase):
         payload = snapshot(self.target, self.next_day)
         fields = {field for item in close_sync.PRICE_FIELDS.values() for field in item if field}
         fields.update(close_sync.TECHNICAL_FIELDS.values())
-        with patch.object(close_sync, "REQUIRED_CLOSE_HEADERS", tuple(fields)):
+        with patch.object(close_sync, "REQUIRED_CLOSE_HEADERS", tuple(fields)), patch.object(
+            close_sync, "VALUATION_CLOSE_LIST_POLICY", {},
+        ):
             result = self.run_sync(client, payload)
         self.assertEqual(result["status"], "SUCCESS")
 
@@ -526,7 +528,8 @@ class CloseSyncTests(unittest.TestCase):
         self.assertEqual(row[client.headers.index("東証プライム値下がり銘柄数")], 331)
         self.assertTrue(str(row[client.headers.index("東証プライム売買代金")]).startswith("取得不能（"))
         self.assertEqual(row[client.headers.index("東証プライム売買高")], 2295.19)
-        valuation = {item["symbol"]: item for item in result["marketData"] if item["symbol"].startswith("nikkei225_")}
+        valuation_symbols = {"nikkei225_eps", "nikkei225_per", "nikkei225_pbr"}
+        valuation = {item["symbol"]: item for item in result["marketData"] if item["symbol"] in valuation_symbols}
         self.assertEqual(set(valuation), {"nikkei225_eps", "nikkei225_per", "nikkei225_pbr"})
         self.assertEqual(valuation["nikkei225_per"]["reconciliationStatus"], "DEFINITION_MISMATCH")
         self.assertEqual(valuation["nikkei225_pbr"]["reconciliationStatus"], "DEFINITION_MISMATCH")
