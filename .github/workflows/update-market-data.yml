@@ -523,15 +523,26 @@ jobs:
           # Retry transient official-feed errors; do not convert a persistent
           # source or validation failure into a passing result.
           for attempt in 1 2 3; do
-            if python scripts/validate_market_data_source.py --symbol jp10y --source-id mof_jgbcm_10y; then
+            result="$(python scripts/validate_market_data_source.py --symbol jp10y --source-id mof_jgbcm_10y 2>&1)" && status=0 || status=$?
+            echo "MOF 10Y attempt $attempt/3: $result"
+            if [ "$status" -eq 0 ]; then
+              echo "MOF 10Y verification succeeded (attempt $attempt)" >> "$GITHUB_STEP_SUMMARY"
               exit 0
             fi
             if [ "$attempt" -lt 3 ]; then
-              echo "MOF 10Y validation failed (attempt $attempt/3); retrying"
               sleep 10
             fi
           done
-          echo "MOF 10Y validation failed after three attempts" >&2
+          # The source validator emits a non-sensitive structured error code.
+          # Put it in Actions annotations and job summary to distinguish
+          # FETCH_ERROR/PARSE_ERROR/STALE_DATA without guessing.
+          echo "::error title=MOF 10Y source validation failed::$result"
+          {
+            echo "### MOF 10Y source validation failed"
+            echo '~~~json'
+            echo "$result"
+            echo '~~~'
+          } >> "$GITHUB_STEP_SUMMARY"
           exit 1
 
       - name: Validate official Bank of Japan Tokyo USD/JPY 17:00 reference series
