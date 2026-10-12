@@ -50,6 +50,20 @@ class EvidenceHandoffTests(unittest.TestCase):
         with self.assertRaises(ValidationFailure):
             assemble(self.report, self.context, self.snapshot)
 
+    def test_snapshot_price_tampering_is_blocked(self):
+        # Keep the original snapshot_id but alter a price.
+        # Restore must reject the content-addressed identity.
+        self.snapshot["markets"][0]["priceValue"] = 999999
+        with self.assertRaises(ValidationFailure) as error:
+            assemble(self.report, self.context, self.snapshot)
+        self.assertEqual(error.exception.reason, "SNAPSHOT_CONTEXT_INVALID")
+
+    def test_snapshot_cutoff_tampering_is_blocked(self):
+        self.snapshot["data_cutoff"] = "2026-10-06T07:50:00+09:00"
+        with self.assertRaises(ValidationFailure) as error:
+            assemble(self.report, self.context, self.snapshot)
+        self.assertEqual(error.exception.reason, "SNAPSHOT_CONTEXT_INVALID")
+
     def test_existing_binding_cannot_be_overwritten(self):
         self.report["context"] = {"report_id":"unexpected"}
         with self.assertRaises(ValidationFailure) as result:
