@@ -140,3 +140,5 @@ manifestには必要fact ID、描画fact ID、欠損、元のidentity、PNG hash
 ## 未解決事項・次の必要行動
 
 実装案のユーザー承認、正規の10/09・10/12入力入手、17概念/16表示カードとtyped数値契約の互換性検証、非本番Drive接続、稼働生成元/配備版の確認が残る。承認前に新しい生成経路の実装や運用切替を行わない。
+
+調査文書4ファイルはローカル専用ブランチに保存した。GitHubブランチ送信は実行前のauto-reviewで拒否され、Draft PRは未作成。調査資料・原仕様書を`matrixdiamond512-cell/Chat-GPT-Market-Report`へ送信する開示承認を待つ。コード・本番・mainは変更していない。
