@@ -1,0 +1,13 @@
+const fs=require('fs');const vm=require('vm');const assert=require('assert');
+const source=fs.readFileSync('apps-script/MarketReportAutoPublish.gs','utf8');
+const start=source.indexOf('function runMarketReportAutoValidation_(');
+const end=source.indexOf('\nfunction findLatestMarketReportDocForAutoPublish_',start);
+assert(start>=0 && end>start);
+const fn=source.slice(start,end);
+let ctx={};vm.createContext(ctx);vm.runInContext(fn,ctx);
+assert.throws(()=>ctx.runMarketReportAutoValidation_({date:'2026-10-13',time:'08:00'},8),/unavailable.*blocked/);
+ctx.validateMarketReportBeforePublish_=()=>{throw Error('Rejected by source validator')};
+assert.throws(()=>ctx.runMarketReportAutoValidation_({},8),/Rejected by source validator/);
+ctx.validateMarketReportBeforePublish_=()=>({ok:true,warnings:[]});
+assert.equal(ctx.runMarketReportAutoValidation_({},8).ok,true);
+console.log('GAS fail-closed validation test PASS');
