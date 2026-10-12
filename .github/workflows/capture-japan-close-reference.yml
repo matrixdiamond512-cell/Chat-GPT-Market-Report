@@ -50,6 +50,9 @@ jobs:
       - name: Install Japanese market holiday calendar
         run: python -m pip install jpholiday
 
+      - name: Test Tokyo market holiday resolution
+        run: python -m unittest discover -s tests -p 'test_tokyo_close_calendar.py' -v
+
       - name: Resolve latest completed Tokyo session
         id: target
         shell: bash
