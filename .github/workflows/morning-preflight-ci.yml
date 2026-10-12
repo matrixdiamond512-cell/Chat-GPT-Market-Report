@@ -1,5 +1,8 @@
 name: Morning infographic preflight tests
 on:
+  push:
+    branches:
+      - codex/0800-infographic-design
   pull_request:
     paths:
       - scripts/preflight_morning_infographic.py
