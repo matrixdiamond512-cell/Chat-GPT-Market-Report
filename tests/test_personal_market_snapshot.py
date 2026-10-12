@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 4575)
-Total output lines: 289
-
 from __future__ import annotations
 
 import unittest
@@ -144,7 +141,14 @@ class PersonalSnapshotTests(unittest.TestCase):
         rates = {
             "generatedAt": "2026-10-10T02:34:06+09:00",
             "meta": {"asOfDate": "2026-10-09", "status": "confirmed", "isStale": False},
-            "rates": [{"name": "日本10年国債利回り…75 tokens truncated…         "東証プライム値上がり銘柄数": {"value": "1194", "date": "2026-10-09"},
+            "rates": [{"name": "日本10年国債利回り", "value": 3.001, "unit": "%",
+                       "asOf": "2026-10-09", "status": "confirmed",
+                       "source": "LSEG reference series"}],
+        }
+        close = {
+            "generatedAt": "2026-10-10T18:45:54+09:00", "dataDate": "2026-10-09",
+            "items": {
+                "東証プライム値上がり銘柄数": {"value": "1194", "date": "2026-10-09"},
                 "東証プライム値下がり銘柄数": {"value": "331", "date": "2026-10-09"},
             },
             "breadthHistory": history,
@@ -282,4 +286,3 @@ class PersonalSnapshotTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 4328)
-Total output lines: 311
-
 #!/usr/bin/env python3
 """Normalize previously acquired private Sheets rows for one historical report.
 
@@ -128,7 +125,97 @@ def build_snapshot(source: dict[str, Any], generated_at: str) -> dict[str, Any]:
         retrieved = _parse_timestamp(row.get("Retrieved At (UTC)"))
         retrieved_dt = dt.datetime.fromisoformat(retrieved.replace("Z", "+00:00"))
         if market_date > retrieved_dt.astimezone(JST).date().isoformat():
-            raise SnapshotError("market observation is future…1328 tokens truncated…     reference = status == "reference_only"
+            raise SnapshotError("market observation is future-dated relative to retrieval")
+        max_retrieved = max(max_retrieved, retrieved_dt) if max_retrieved else retrieved_dt
+        date_values.append(market_date)
+        is_reference = evidence_status == "REFERENCE_ONLY"
+        display_value = (
+            f"{value:.2f}" if source_id == "nikkei225_eps" and evidence_status == "VERIFIED_MANUAL"
+            else f"{value:.2f}" if source_id in {"nikkei225_dev25", "nikkei225_dev200"}
+            else str(row["Observed Value"])
+        )
+        markets[symbol].update({
+            "value": value, "displayValue": display_value,
+            "unit": str(row["Unit"]), "marketType": str(row.get("Market Type") or market_type),
+            "session": str(row.get("Market Session") or session), "asOf": market_date,
+            "fetchedAt": retrieved, "sourceId": (
+                "tradingview_nikkei_daily_history" if is_reference else
+                "us_treasury_yield_curve" if source_id == "us10y" else
+                "manual_official_nikkei" if evidence_status == "VERIFIED_MANUAL" else
+                "tradingview_official_mcp"
+            ),
+            "sourceName": str(row.get("Source") or ""),
+            "verificationStatus": "reference_only" if is_reference else "verified",
+            "referenceOnly": is_reference,
+            "verificationBasis": (
+                ("Operator reviewed the manual source date and value. " if evidence_status == "VERIFIED_MANUAL" else "")
+                + str(row.get("Verification Basis") or "")
+            ),
+            "barAnchorUTC": str(row.get("Bar Anchor (UTC)") or ""),
+            "snapshotId": str(row.get("Snapshot ID") or ""),
+            "note": "別ソースの日足履歴で計算。終値は公式日経値と一致せず、参考値として保持。" if is_reference else "",
+        })
+
+    for row in references:
+        source_id = str(row.get("Report Field") or "")
+        symbol = REFERENCE_MAP.get(source_id)
+        if not symbol or str(row.get("Use Status") or "") != "REFERENCE_ONLY":
+            continue
+        if symbol in seen_ids:
+            raise SnapshotError("duplicate observation for one report field")
+        seen_ids.add(symbol)
+        _, _, market_type, _ = items_by_id[symbol]
+        try:
+            value = float(row["Observed Value"])
+        except (ValueError, TypeError, KeyError) as exc:
+            raise SnapshotError("reference value is not numeric") from exc
+        market_date = _parse_date(row.get("Source Market Date"))
+        retrieved = _parse_timestamp(row.get("Retrieved At (UTC)"))
+        retrieved_dt = dt.datetime.fromisoformat(retrieved.replace("Z", "+00:00"))
+        if market_date > retrieved_dt.astimezone(JST).date().isoformat():
+            raise SnapshotError("market observation is future-dated relative to retrieval")
+        max_retrieved = max(max_retrieved, retrieved_dt) if max_retrieved else retrieved_dt
+        date_values.append(market_date)
+        settlement = str(row.get("Settlement Evidence") or "")
+        markets[symbol].update({
+            "value": value, "displayValue": str(row["Observed Value"]), "unit": str(row["Unit"]),
+            "marketType": market_type, "session": str(row.get("Market Session") or ""),
+            "asOf": market_date, "fetchedAt": retrieved,
+            "sourceId": "tradingview_official_mcp", "sourceName": str(row.get("Source") or ""),
+            "verificationStatus": "reference_only", "referenceOnly": True,
+            "priceType": "continuous_bar_close", "referenceType": str(row.get("Reference Type") or ""),
+            "verificationBasis": settlement, "barAnchorUTC": str(row.get("Bar Anchor (UTC)") or ""),
+            "snapshotId": str(row.get("Snapshot ID") or ""), "symbol": str(row.get("TradingView Symbol") or ""),
+            "note": "連続足の終値。限月別の公式清算値は未確認。",
+        })
+
+    for row in source.get("supplementalValues") or []:
+        if not isinstance(row, dict):
+            raise SnapshotError("supplemental observation must be an object")
+        symbol = SUPPLEMENT_MAP.get(str(row.get("id") or ""))
+        if not symbol:
+            continue
+        if symbol in seen_ids:
+            raise SnapshotError("duplicate observation for one report field")
+        status = str(row.get("verificationStatus") or "")
+        if status not in {"verified", "reference_only"}:
+            continue
+        seen_ids.add(symbol)
+        _, expected_unit, _, _ = items_by_id[symbol]
+        if str(row.get("unit") or "") != expected_unit:
+            raise SnapshotError("supplemental source unit does not match its report field")
+        try:
+            value = float(row["value"])
+        except (ValueError, TypeError, KeyError) as exc:
+            raise SnapshotError("supplemental source value is not numeric") from exc
+        market_date = _parse_date(row.get("asOf"))
+        retrieved = _parse_timestamp(row.get("fetchedAt"))
+        retrieved_dt = dt.datetime.fromisoformat(retrieved.replace("Z", "+00:00"))
+        if market_date > retrieved_dt.astimezone(JST).date().isoformat():
+            raise SnapshotError("supplemental observation is future-dated relative to retrieval")
+        max_retrieved = max(max_retrieved, retrieved_dt) if max_retrieved else retrieved_dt
+        date_values.append(market_date)
+        reference = status == "reference_only"
         markets[symbol].update({
             "value": value,
             "displayValue": f"{value:.2f}" if symbol == "tse_prime_ad_ratio25" else str(row["value"]),
@@ -221,4 +308,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
