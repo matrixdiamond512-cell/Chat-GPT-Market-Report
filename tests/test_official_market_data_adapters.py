@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import patch
 
 from scripts import fetch_market_data as market_data
+from scripts import validate_market_data_source as source_validator
 
 
 MOF_CSV = """Date,1yr,2yr,3yr,4yr,5yr,6yr,7yr,8yr,9yr,10yr,15yr,20yr,25yr,30yr,40yr
@@ -24,6 +25,15 @@ BOJ_JSON = {
 
 
 class OfficialMarketDataAdapterTests(unittest.TestCase):
+    def test_stale_reference_is_reported_but_does_not_fail_independent_validation_job(self):
+        stale = {"status":"rejected","referenceOnly":True,"validationCode":"STALE_DATA"}
+        self.assertEqual(source_validator.validation_exit_code(stale),0)
+        primary_stale = {**stale,"referenceOnly":False}
+        self.assertEqual(source_validator.validation_exit_code(primary_stale),1)
+        other_reference_error = {**stale,"validationCode":"SOURCE_TIMEOUT"}
+        self.assertEqual(source_validator.validation_exit_code(other_reference_error),1)
+
+
     def test_mof_daily_csv_selects_ten_year_column_and_preserves_date(self):
         source = {"id":"mof_jgbcm_10y","name":"MOF JGB CMT 10Y","kind":"mof_jgb_yield_csv",
                   "url":"https://www.mof.go.jp/example.csv","marketType":"yield",
@@ -45,6 +55,44 @@ class OfficialMarketDataAdapterTests(unittest.TestCase):
             value=market_data.fetch_mof_jgb_yield_csv(source)
         self.assertEqual(value["asOf"],"2026-10-09")
         self.assertEqual(value["value"],3.125)
+
+    def test_boj_daily_pdf_selects_latest_two_official_publications(self):
+        source={"id":"boj_usdjpy_17_reference","name":"BOJ USD/JPY 17:00",
+                "listingUrl":"https://www.boj.or.jp/statistics/market/forex/fxdaily/index.htm",
+                "sourceUrl":"https://www.boj.or.jp/statistics/market/forex/fxdaily/index.htm",
+                "sourceSeriesId":"boj:USDJPY:spot:17:00:JST:bid_offer_midpoint",
+                "marketType":"spot","session":"tokyo_17_daily_reference",
+                "observationHourJst":17,"publishedDecimalPlaces":2}
+        listing='''<a href="/statistics/market/forex/fxdaily/fxlist/fx261009.pdf">Oct 9</a>
+                   <a href="/statistics/market/forex/fxdaily/fxlist/fx261008.pdf">Oct 8</a>
+                   <a href="/statistics/market/forex/fxdaily/fxlist/fx261007.pdf">Oct 7</a>'''
+        texts=[
+            "At 9:00 JST 158.04-05 1.1212-13 177.20-24\\nAt 17:00 JST 158.33-34 1.1231-33 177.83-87",
+            "At 9:00 JST 158.10-11 1.1201-02 177.20-24\\nAt 17:00 JST 158.10-11 1.1202-03 177.20-24",
+        ]
+        fixed_now=market_data.dt.datetime(2026,10,12,22,tzinfo=market_data.JST)
+        with patch.object(market_data,"http_text",return_value=listing), patch.object(
+            market_data,"http_get",side_effect=[(b"latest pdf","application/pdf"),(b"prior pdf","application/pdf")],
+        ), patch.object(market_data,"extract_boj_pdf_text",side_effect=texts), patch.object(
+            market_data,"now_jst",return_value=fixed_now,
+        ):
+            value=market_data.fetch_boj_daily_fx_pdf(source)
+        self.assertEqual(value["value"],158.34)
+        self.assertEqual(value["previousClose"],158.11)
+        self.assertEqual(value["asOf"],"2026-10-09T17:00:00+09:00")
+        self.assertEqual(value["sourceSeriesId"],source["sourceSeriesId"])
+        self.assertEqual(value["reportedDecimalPlaces"],2)
+        self.assertEqual(value["rawReference"],"BOJ daily FX PDF 2026-10-09")
+
+    def test_boj_pdf_midpoint_parses_shorthand_bid_offer(self):
+        self.assertEqual(market_data.parse_boj_shorthand_range("158.33-34"),market_data.Decimal("158.335"))
+        self.assertEqual(market_data.parse_boj_shorthand_range("1.1231-33"),market_data.Decimal("1.1232"))
+
+    def test_boj_daily_pdf_rejects_missing_17h_quote(self):
+        source={"id":"boj","name":"BOJ","sourceSeriesId":"boj:test","marketType":"spot","session":"tokyo"}
+        with self.assertRaises(market_data.FetchError) as raised:
+            market_data.parse_boj_usdjpy_17_pdf_text("Foreign Exchange Rates\\nAt 9:00 JST 158.04-05",source,market_data.dt.date(2026,10,9))
+        self.assertEqual(raised.exception.code,"PARSE_ERROR")
 
     def test_boj_daily_api_selects_series_and_assigns_tokyo_17_time(self):
         source={"id":"boj_usdjpy_17_reference","name":"BOJ USD/JPY 17:00",

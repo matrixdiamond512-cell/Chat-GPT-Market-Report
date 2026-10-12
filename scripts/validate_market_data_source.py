@@ -72,6 +72,22 @@ def validate(symbol_id: str, source_id: str) -> dict[str, Any]:
     }
 
 
+def validation_exit_code(result: dict[str, Any]) -> int:
+    """Keep stale reference-only diagnostics visible without failing unrelated validations."""
+    if (
+        result.get("referenceOnly") is True
+        and result.get("validationCode") == "STALE_DATA"
+        and result.get("status") == "rejected"
+    ):
+        return 0
+    return 0 if (
+        result.get("status") == "verified"
+        and result.get("notFutureDated")
+        and result.get("valuePresent")
+        and result.get("sourceMatches")
+    ) else 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--symbol", required=True)
@@ -84,7 +100,7 @@ def main() -> int:
         print(json.dumps({"symbol": args.symbol, "sourceId": args.source_id, "status": "failed", "errorCode": code}, ensure_ascii=False))
         return 1
     print(json.dumps(result, ensure_ascii=False))
-    return 0 if result["status"] == "verified" and result["notFutureDated"] and result["valuePresent"] and result["sourceMatches"] else 1
+    return validation_exit_code(result)
 
 
 if __name__ == "__main__":

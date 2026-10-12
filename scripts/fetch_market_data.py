@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 import html
 import io
 import json
@@ -941,6 +941,118 @@ def fetch_boj_time_series(source: dict[str, Any]) -> dict[str, Any]:
                      reported_decimal_places=int(source.get("publishedDecimalPlaces", 2)))
 
 
+def parse_boj_shorthand_range(text: str) -> Decimal:
+    """Parse BOJ shorthand ranges such as 158.33-34 and return their midpoint."""
+    match = re.fullmatch(r"\s*(\d+\.\d+)\s*-\s*(\d{1,4})\s*", text)
+    if not match:
+        raise FetchError("PARSE_ERROR", "BOJ PDF did not contain the expected USD/JPY 17:00 quote range")
+    lower_text, upper_suffix = match.groups()
+    lower = Decimal(lower_text)
+    whole, fraction = lower_text.split(".", 1)
+    if len(upper_suffix) > len(fraction):
+        raise FetchError("PARSE_ERROR", "BOJ shorthand quote precision was inconsistent")
+    upper_text = whole + "." + fraction[:len(fraction) - len(upper_suffix)] + upper_suffix
+    upper = Decimal(upper_text)
+    if upper < lower:
+        # Shorthand ranges can cross the next whole-yen boundary.
+        upper += Decimal(1)
+    return (lower + upper) / Decimal(2)
+
+
+def parse_boj_usdjpy_17_pdf_text(text: str, source: dict[str, Any], market_date: dt.date) -> dict[str, Any]:
+    """Extract the official Tokyo 17:00 USD/JPY bid/offer midpoint from a BOJ daily PDF."""
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    marker = re.search(r"(?:At\s+)?17:00\s+JST", text, re.IGNORECASE)
+    if not marker:
+        raise FetchError("PARSE_ERROR", "BOJ PDF had no 17:00 JST quote line")
+    quote_line = text[marker.end():].splitlines()[0]
+    ranges = re.findall(r"(?<![\d.])(\d{2,3}\.\d{2}\s*-\s*\d{1,2})(?![\d.])", quote_line)
+    if not ranges:
+        raise FetchError("PARSE_ERROR", "BOJ PDF had no USD/JPY bid-offer range")
+    midpoint = parse_boj_shorthand_range(ranges[0])
+    places = int(source.get("publishedDecimalPlaces", 2))
+    quantum = Decimal(1).scaleb(-places)
+    value = float(midpoint.quantize(quantum, rounding=ROUND_HALF_UP))
+    as_of = dt.datetime.combine(
+        market_date, dt.time(hour=int(source.get("observationHourJst", 17))), tzinfo=JST,
+    ).isoformat()
+    return candidate(
+        source, value, as_of=as_of, raw_reference=f"BOJ daily FX PDF {market_date.isoformat()}",
+        reported_decimal_places=places,
+    )
+
+
+def extract_boj_pdf_text(data: bytes) -> str:
+    try:
+        from pypdf import PdfReader
+    except ImportError as exc:
+        raise FetchError("MISSING_DEPENDENCY", "pypdf is required to read BOJ daily FX PDFs") from exc
+    try:
+        reader = PdfReader(io.BytesIO(data))
+        return "\n".join(page.extract_text() or "" for page in reader.pages)
+    except Exception as exc:
+        raise FetchError("PARSE_ERROR", "BOJ daily FX PDF text extraction failed") from exc
+
+
+def fetch_boj_daily_fx_pdf(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch the latest two dated BOJ daily PDFs and use the 17:00 USD/JPY midpoint."""
+    now = now_jst()
+    listing_url = str(source.get("listingUrl") or source.get("url") or "")
+    page = http_text(
+        listing_url, timeout=int(source.get("timeoutSeconds", 20)),
+        headers={"Cache-Control": "no-cache"},
+    )
+    matches = re.findall(
+        r"""href\s*=\s*["']([^"']*fx(?:list/)?fx(\d{6})\.pdf(?:\?[^"']*)?)["']""",
+        page, flags=re.IGNORECASE,
+    )
+    if not matches:
+        # Some BOJ page renderers use a root-relative target whose path includes
+        # a directory before the standard fxlist/ segment.
+        matches = re.findall(
+            r"""href\s*=\s*["']([^"']*/fxlist/fx(\d{6})\.pdf(?:\?[^"']*)?)["']""",
+            page, flags=re.IGNORECASE,
+        )
+    dated_links: list[tuple[dt.date, str]] = []
+    for href, date_code in matches:
+        try:
+            report_date = dt.datetime.strptime(date_code, "%y%m%d").date()
+        except ValueError:
+            continue
+        if report_date <= now.date():
+            dated_links.append((report_date, urllib.parse.urljoin(listing_url, href)))
+    dated_links.sort(key=lambda item: item[0], reverse=True)
+    # De-duplicate alternate links to the same date and fail if the listing is stale.
+    newest: list[tuple[dt.date, str]] = []
+    seen_dates: set[dt.date] = set()
+    for item in dated_links:
+        if item[0] not in seen_dates:
+            newest.append(item)
+            seen_dates.add(item[0])
+        if len(newest) == 2:
+            break
+    if not newest:
+        raise FetchError("PARSE_ERROR", "BOJ daily FX listing had no dated PDF")
+    records: list[dict[str, Any]] = []
+    for report_date, pdf_url in newest:
+        body, _encoding = http_get(
+            pdf_url, timeout=int(source.get("timeoutSeconds", 20)),
+            headers={"Accept": "application/pdf", "Cache-Control": "no-cache"},
+        )
+        records.append(parse_boj_usdjpy_17_pdf_text(extract_boj_pdf_text(body), source, report_date))
+    current = records[0]
+    current["previousClose"] = records[1]["value"] if len(records) > 1 else None
+    current["change"] = (
+        current["value"] - current["previousClose"]
+        if current.get("previousClose") is not None else None
+    )
+    current["changePercent"] = (
+        current["change"] / current["previousClose"] * 100
+        if current.get("change") is not None and current["previousClose"] else None
+    )
+    return current
+
+
 def fetch_ecb_reference_rate(source: dict[str, Any]) -> dict[str, Any]:
     """Fetch an ECB daily euro FX reference-rate series from the official SDMX CSV API."""
     now = now_jst()
@@ -1059,6 +1171,7 @@ FETCHERS = {
     "treasury_yield_xml": fetch_treasury_yield_xml,
     "mof_jgb_yield_csv": fetch_mof_jgb_yield_csv,
     "boj_time_series": fetch_boj_time_series,
+    "boj_daily_fx_pdf": fetch_boj_daily_fx_pdf,
     "ecb_exchange_rate": fetch_ecb_reference_rate,
     "kraken_ohlc": fetch_kraken_ohlc,
 }
