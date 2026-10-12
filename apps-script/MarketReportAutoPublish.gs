@@ -280,28 +280,8 @@ function runMarketReportAutoValidation_(report, expectedHour) {
     return validateMarketReportBeforePublish_(report, expectedHour);
   }
 
-  const warnings = ['validateMarketReportBeforePublish_ was not found. Basic validation was used.'];
-
-  if (!report || typeof report !== 'object') {
-    throw new Error('Market report object was not created.');
-  }
-
-  if (!report.date) warnings.push('Report date is missing.');
-  if (!report.time) warnings.push('Report time is missing.');
-  if (!report.title) warnings.push('Report title is missing.');
-
-  if (expectedHour !== undefined && report.time) {
-    const expectedTime = ('0' + expectedHour).slice(-2) + ':00';
-    if (String(report.time) !== expectedTime) {
-      warnings.push('Report time is ' + report.time + ', expected ' + expectedTime + '.');
-    }
-  }
-
-  return {
-    ok: true,
-    fallback: true,
-    warnings: warnings
-  };
+  // Fail closed: publication cannot proceed without the full source validator.
+  throw new Error('validateMarketReportBeforePublish_ is unavailable; publication blocked.');
 }
 
 function findLatestMarketReportDocForAutoPublish_() {
