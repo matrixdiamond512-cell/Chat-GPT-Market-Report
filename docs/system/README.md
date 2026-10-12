@@ -8,6 +8,11 @@
 ## 2026-10-13 実検証で確定した事実
 - 実ChatGPTタスクは平日4枠のみ有効。土曜日旧タスクは無効。Apps Script実トリガーは接続元から照会不可。
 - PR #95/#96はマージ済み。PR #94/#97/#98はDraft・未マージ。
-- PR #94 最新該当Actionsの日本10年債MOF検証がFAIL、Sheets/更新jobはSKIPPED。PR #97はデザインテストPASS、本番公開未確認。
+- PR #94のMOF検証はSTALE_DATA閾値の限定修正後、Actions run 38298392598でSUCCESS。ただしSheets/本番updateはSKIPPED。PR #97はデザインテストPASS、本番公開未確認。
 - 2026-10-12 21:00 のDocはGoogle Driveに実在。旧Receiptにはstrict validator必須のtitle/status/publisher/driveFileId/driveUrl/savedAtが欠ける。保存主体や日時を推測補完しない。
 - PR #98の公開workflowへの直接Receipt検査追加は撤回。新旧スキーマ移行と実テストまでは本番導入禁止。
+
+## 2026-10-13 最終照合
+- PR #99はmainにマージ済み。現行スケジュールは平日08/12/16/21のみ、土日なし。
+- PR #94の修正後Actions run 38298392598はSUCCESS。Draft・未マージであり、本番データ書込を検証したものではない。
+- この文書に記載するPR #98のReceipt強制ゲートは撤回済み。Docs保存証跡の旧スキーマ移行が未完了のため、公開ゲートの新設を完了とはしない。
