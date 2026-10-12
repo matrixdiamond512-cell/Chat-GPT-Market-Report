@@ -80,6 +80,8 @@ function processHistoricalMarketReportBatch_() {
           usedFallback = true;
         }
 
+        if (report && report.time === '08:00') requireMarketReport0800GenerationQa_(report);
+
         reportMap.set(report.date + ' ' + report.time, report);
         state.imported += 1;
         if (usedFallback) state.fallback += 1;

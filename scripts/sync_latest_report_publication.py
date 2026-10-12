@@ -134,6 +134,11 @@ def validate_report(report: dict) -> None:
     for key in ("date", "time", "title"):
         if not report.get(key):
             raise SystemExit(f"latest report missing required field: {key}")
+    if report.get("time") == "08:00":
+        from reporting.infographic_0800_publication_gate import validate_0800_publication_report
+        qa = validate_0800_publication_report(report)
+        if qa["status"] != "PASS":
+            raise SystemExit("08:00 QA blocked latest publication: " + "; ".join(qa["errors"]))
     if report.get("sourceDocUrl") or report.get("sourceDocument"):
         # Native Docs use plain headings and may contain the market table only
         # in their original body. Validate the saved content without rewriting it.

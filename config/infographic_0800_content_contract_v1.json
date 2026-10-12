@@ -1,0 +1,189 @@
+{
+  "contract_id": "market-report-0800-infographic-facts-v1",
+  "purpose": "Every new 08:00 report body and structured source must explicitly carry the source facts required by the fixed 16-zone infographic. The infographic renderer may classify and arrange source facts but must not invent missing content.",
+  "output_policy": {
+    "write_facts_into_google_docs_body": true,
+    "structured_source_must_bind_each_fact_id": true,
+    "source_excerpt_must_be_exact_body_substring": true,
+    "missing_fact_policy": "Write an explicit source-gap statement only when the underlying fact is unavailable; do not fabricate or infer it.",
+    "numeric_policy": "Each displayed numeric value must bind to numeric_registry with value, unit, as_of, and exact body excerpt."
+  },
+  "generation_qa": {
+    "required_before": ["GOOGLE_DOCS_SAVE", "INFOGRAPHIC_RENDER"],
+    "fail_closed": true,
+    "structured_fact_policy": "Every required item below is emitted as an individually addressable fact with a stable fact_id and exact source_excerpt substring of body_text.",
+    "numeric_fact_policy": "Every numeric value used by an index/data/outlook row has a numeric_registry entry bound to its owning fact_id, exact excerpt, unit, and as_of. No numeric value may be inferred from another field.",
+    "minimum_counts": {
+      "ny_market_points": 2,
+      "news_materials": 1,
+      "handover": 1,
+      "positioning": 1
+    },
+    "required_structured_fields": {
+      "overall_judgement": ["role"],
+      "attention_points": ["order"],
+      "market_theme": ["role"],
+      "ny_timeline": ["stage"],
+      "material_market_relation": ["material", "affected_market", "direction"],
+      "cross_asset_flow": ["origin_asset", "destination_asset", "direction", "causal_link"],
+      "positioning": ["category"],
+      "six_market_outlook": ["market", "current_value", "current_value_as_of", "judgement", "bullish_condition", "bearish_condition"],
+      "news_materials": ["headline", "time", "affected_market", "price_reaction"],
+      "scenario_analysis": ["scenario"],
+      "handover": ["order"],
+      "top_three_conditions": ["order"]
+    },
+    "unavailable_value_policy": "A genuinely unavailable value must be an explicit source-bound 取得不能（理由） fact. It must not be guessed, copied from a prior slot, or silently omitted."
+  },
+  "zones": [
+    {
+      "number": 1,
+      "id": "overall_judgement",
+      "title": "総合判断",
+      "required_facts": [
+        "one concise judgement label",
+        "one or more explicit source-bound reasons"
+      ]
+    },
+    {
+      "number": 2,
+      "id": "attention_points",
+      "title": "本日の注目ポイント",
+      "required_facts": [
+        "exactly five ordered, individually identifiable points"
+      ]
+    },
+    {
+      "number": 3,
+      "id": "market_theme",
+      "title": "今日の相場テーマ",
+      "required_facts": [
+        "central theme",
+        "supporting source-bound details"
+      ]
+    },
+    {
+      "number": 4,
+      "id": "material_market_relation",
+      "title": "材料と市場の関係",
+      "required_facts": [
+        "source-bound material",
+        "affected market",
+        "explicitly stated direction or causal link"
+      ]
+    },
+    {
+      "number": 5,
+      "id": "ny_timeline",
+      "title": "昨夜のNY市場の時系列",
+      "required_facts": [
+        "開始前",
+        "開場",
+        "中盤",
+        "終盤",
+        "東京時間／次時間帯への引継ぎ"
+      ]
+    },
+    {
+      "number": 6,
+      "id": "ny_indices",
+      "title": "NY主要指数",
+      "required_facts": [
+        "NYダウ",
+        "S&P500",
+        "NASDAQ総合",
+        "Russell 2000; close, change and percent change when stated"
+      ]
+    },
+    {
+      "number": 7,
+      "id": "major_market_data",
+      "title": "主要市場データ",
+      "required_facts": [
+        "Japanese equities",
+        "FX and commodities",
+        "rates, sentiment and valuation; each numeric value with unit/as_of/source fact"
+      ]
+    },
+    {
+      "number": 8,
+      "id": "ny_market_points",
+      "title": "NY市場のポイント",
+      "required_facts": [
+        "source-bound bullet observations and stated drivers"
+      ]
+    },
+    {
+      "number": 9,
+      "id": "cross_asset_flow",
+      "title": "クロスアセット資金フロー",
+      "required_facts": [
+        "origin asset",
+        "destination asset",
+        "explicit direction",
+        "causal link when source states one",
+        "structured fields origin_asset, destination_asset, direction, causal_link"
+      ]
+    },
+    {
+      "number": 10,
+      "id": "positioning",
+      "title": "需給・ポジション",
+      "required_facts": [
+        "separately identifiable supply, positioning, investor-flow or event facts"
+      ]
+    },
+    {
+      "number": 11,
+      "id": "six_market_outlook",
+      "title": "主要6市場の短期見通し",
+      "required_facts": [
+        "each of 金, WTI原油, 日経225先物（大阪取引所）, USD/JPY, EUR/USD, BTCUSD with current value/as_of, judgement, bullish condition, bearish condition"
+      ]
+    },
+    {
+      "number": 12,
+      "id": "news_materials",
+      "title": "最新ニュース・材料",
+      "required_facts": [
+        "at least one item; each item has headline, source-stated time, affected market, price reaction"
+      ]
+    },
+    {
+      "number": 13,
+      "id": "scenario_analysis",
+      "title": "シナリオ分析",
+      "required_facts": [
+        "上振れ",
+        "メイン",
+        "代替",
+        "崩れる条件"
+      ]
+    },
+    {
+      "number": 14,
+      "id": "handover",
+      "title": "次時間帯への引継ぎ",
+      "required_facts": [
+        "ordered source-bound monitoring points for the next slot"
+      ]
+    },
+    {
+      "number": 15,
+      "id": "top_three_conditions",
+      "title": "本日の最重要3条件",
+      "required_facts": [
+        "exactly three ordered, explicit conditions"
+      ]
+    },
+    {
+      "number": 16,
+      "id": "final_summary",
+      "title": "最終まとめ",
+      "required_facts": [
+        "concise conclusion consistent with the source facts"
+      ]
+    }
+  ],
+  "rendering_rule": "Preserve zone order and fixed geometry. Missing source facts remain visible SOURCE GAP entries in DRAFT and fail content completeness; layout checks continue independently."
+}

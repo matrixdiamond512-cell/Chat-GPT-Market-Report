@@ -48,6 +48,7 @@ function createMarketReportWebMenu_() {
   ui.createMenu('WEB版マーケットレポート')
     .addItem('最新Google Docsをプレビュー', 'previewLatestMarketReportFromDrive')
     .addItem('最新Google DocsをWEB公開', 'publishLatestMarketReportFromDrive')
+    .addItem('08:00レポートをQA後に新規保存', 'create0800ReportFromQaJsonPrompt')
     .addSeparator()
     .addItem('本文・ダッシュボードを今すぐ更新', 'runMarketReportMasterNow')
     .addItem('本文・ダッシュボード自動更新を設定・修復', 'installMarketReportMasterSchedulerTriggers')

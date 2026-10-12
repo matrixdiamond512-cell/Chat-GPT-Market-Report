@@ -154,14 +154,46 @@ jobs:
           node <<'NODE'
           const fs = require('fs');
           const vm = require('vm');
+          const crypto = require('crypto');
+          const generationGate = fs.readFileSync('apps-script/MarketReport0800GenerationGate.gs', 'utf8');
           const code = fs.readFileSync('apps-script/MarketReportPrePublishValidation.gs', 'utf8');
           const context = {
             console,
-            Utilities: { formatDate: () => '2026-08-13 05:10:00' },
+            marketReportSha256_: bytes => crypto.createHash('sha256')
+              .update(Buffer.from(bytes.map(value => value & 255))).digest('hex'),
+            Utilities: {
+              DigestAlgorithm: { SHA_256: 'SHA-256' },
+              newBlob: text => ({ getBytes: () => Array.from(Buffer.from(text, 'utf8')) }),
+              computeDigest: (_, bytes) => Array.from(crypto.createHash('sha256')
+                .update(Buffer.from(bytes.map(value => value & 255))).digest(), value => value > 127 ? value - 256 : value),
+              formatDate: () => '2026-08-13 05:10:00'
+            },
             SpreadsheetApp: { getUi: () => ({ alert: () => {} }) },
           };
           vm.createContext(context);
+          vm.runInContext(generationGate, context);
           vm.runInContext(code, context);
+
+          function bindGenerationQa(report) {
+            const receipt = {
+              contract_id: 'market-report-0800-infographic-facts-v1',
+              gate: 'PRE_SAVE_AND_PRE_RENDER_08_00_GENERATION_QA',
+              status: 'PASS',
+              report_id: `${report.date}_08-00`,
+              body_sha256: crypto.createHash('sha256').update(report.fullText, 'utf8').digest('hex'),
+              snapshot_provenance: 'LIVE_CAPTURED',
+              structured_source_sha256: 'a'.repeat(64),
+              numeric_registry_sha256: 'b'.repeat(64),
+              snapshot_sha256: 'c'.repeat(64),
+              fact_count: 1,
+              numeric_count: 1,
+              validation_gates: { SOURCE_INTEGRITY: 'PASS' },
+              qa_result_sha256: ''
+            };
+            receipt.qa_result_sha256 = context.marketReport0800Sha256_(context.marketReport0800ReceiptHashView_(receipt));
+            report.infographicGenerationQa = receipt;
+            return report;
+          }
 
           const market = name => ({
             name,
@@ -249,7 +281,7 @@ jobs:
           }
 
           function buildReport(time) {
-            return {
+            const report = {
               date: '2026-08-13',
               time,
               title: `マーケットレポート｜2026/08/13（木）${time}`,
@@ -269,6 +301,7 @@ jobs:
               fullText: buildFullText(time),
               markets: ['金','原油','日経225先物','USD/JPY','EUR/USD','BTCUSD'].map(market),
             };
+            return time === '08:00' ? bindGenerationQa(report) : report;
           }
 
           for (const time of ['08:00','12:00','16:00','21:00']) {
@@ -279,6 +312,7 @@ jobs:
 
             const missing = JSON.parse(JSON.stringify(report));
             missing.fullText = missing.fullText.replace('\n金利\n', '\n');
+            if (time === '08:00') bindGenerationQa(missing);
             let failed = false;
             try { context.validateMarketReportBeforePublish_(missing, hour); }
             catch (error) { failed = /公開前検証に失敗/.test(String(error.message)); }
@@ -286,6 +320,7 @@ jobs:
 
             const internal = JSON.parse(JSON.stringify(report));
             internal.fullText += '\n内部メモ: verified';
+            if (time === '08:00') bindGenerationQa(internal);
             failed = false;
             try { context.validateMarketReportBeforePublish_(internal, hour); }
             catch (error) { failed = /公開前検証に失敗/.test(String(error.message)); }
@@ -294,6 +329,7 @@ jobs:
 
           const broken08 = buildReport('08:00');
           broken08.fullText = broken08.fullText.replace('\n日経VI\n', '\n');
+          bindGenerationQa(broken08);
           let failed = false;
           try { context.validateMarketReportBeforePublish_(broken08, 8); }
           catch (error) { failed = /公開前検証に失敗/.test(String(error.message)); }

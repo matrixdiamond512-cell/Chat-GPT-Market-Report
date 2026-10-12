@@ -242,6 +242,9 @@ jobs:
           PY
           fi
 
+      - name: Enforce 08:00 QA before committing publication files
+        run: python scripts/check_0800_publication_gate.py --base HEAD
+
       - name: Commit synchronized publication files
         shell: bash
         run: |

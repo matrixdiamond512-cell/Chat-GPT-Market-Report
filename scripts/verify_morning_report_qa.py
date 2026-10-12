@@ -31,6 +31,8 @@ ITEMS = [
     "東証プライム値上がり銘柄数", "東証プライム値下がり銘柄数", "東証プライム25日騰落レシオ",
 ]
 NUMBER_PREFIX = re.compile(r"^[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘]\s*")
+ARABIC_ROW_PREFIX = re.compile(r"^(?P<number>\d{1,2})[.．、]\s+(?P<label>.+?)\s*$")
+CIRCLED_ROW_PREFIX = re.compile(r"^(?P<number>[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳㉑㉒㉓㉔㉕㉖㉗㉘])\s*(?P<label>.+?)\s*$")
 REQUIRED_SIX = {"COMEX金先物", "WTI原油", "日経225先物（大阪取引所）", "USD/JPY", "EUR/USD", "BTCUSD"}
 BAD_MARKERS = ("主要市場データ入力に該当行なし", "最終修正版本文に該当行なし", "undefined", "null")
 INTRADAY_COLUMN_RE = re.compile(r"08:00|現在値|確認値|スナップショット")
@@ -46,6 +48,9 @@ def load_json(path: Path, default: Any) -> Any:
 
 def normalize_label(value: str) -> str:
     label = NUMBER_PREFIX.sub("", str(value or "").strip())
+    arabic = ARABIC_ROW_PREFIX.match(label)
+    if arabic:
+        label = arabic.group("label").strip()
     return {
         "Dow Jones": "NYダウ",
         "Dow": "NYダウ",
@@ -69,22 +74,51 @@ def normalize_label(value: str) -> str:
 
 
 def parse_rows(text: str) -> list[dict[str, str]]:
+    r"""Parse the 28 previous-close entries without confusing item numbers with sections.
+
+    The stored Google Doc uses Arabic list markers (``1. NYダウ``), while older
+    source bodies used circled numerals. A generic ``^3\.`` section terminator
+    truncates this table at the third item, and a whitespace-optional marker can
+    mistake decimal values such as ``5.23%`` for list entries. Match the known
+    instrument labels and require whitespace after Arabic list punctuation.
+    """
     lines = [x.strip() for x in str(text or "").replace("\r", "").split("\n") if x.strip()]
     start = next((i for i, x in enumerate(lines) if "主要市場データ" in x or "前営業日終値" in x), -1)
     if start < 0:
         return []
-    end = next((i for i in range(start + 1, len(lines)) if re.match(r"^3[.．]\s*", lines[i])), len(lines))
-    block, rows, i = lines[start + 1:end], [], 0
-    while i < len(block):
-        if NUMBER_PREFIX.match(block[i]) and i + 4 < len(block):
+    expected = set(ITEMS)
+    rows: list[dict[str, str]] = []
+    i = start + 1
+    while i < len(lines):
+        arabic = ARABIC_ROW_PREFIX.match(lines[i])
+        circled = CIRCLED_ROW_PREFIX.match(lines[i])
+        marker = arabic or circled
+        if not marker:
+            i += 1
+            continue
+        label = normalize_label(marker.group("label"))
+        if label not in expected:
+            i += 1
+            continue
+        cells: list[str] = []
+        j = i + 1
+        while j < len(lines) and len(cells) < 4:
+            next_arabic = ARABIC_ROW_PREFIX.match(lines[j])
+            next_circled = CIRCLED_ROW_PREFIX.match(lines[j])
+            next_marker = next_arabic or next_circled
+            if next_marker and normalize_label(next_marker.group("label")) in expected:
+                break
+            cells.append(lines[j])
+            j += 1
+        if len(cells) == 4:
             rows.append({
-                "label": normalize_label(block[i]),
-                "value": block[i + 1],
-                "change": block[i + 2],
-                "rate": block[i + 3],
-                "direction": block[i + 4],
+                "label": label,
+                "value": cells[0],
+                "change": cells[1],
+                "rate": cells[2],
+                "direction": cells[3],
             })
-            i += 5
+            i = j
         else:
             i += 1
     return rows

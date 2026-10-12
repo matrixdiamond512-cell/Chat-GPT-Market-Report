@@ -233,6 +233,10 @@ def main() -> int:
     if args.check:
         return 1 if changed else 0
     if changed:
+        import sys
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from reporting.infographic_0800_publication_gate import assert_changed_0800_reports
+        assert_changed_0800_reports(data, structured, operation="structure_reports.py")
         path.write_text(output, encoding="utf-8")
         print(f"Structured {len(structured)} reports: {path}")
     else:

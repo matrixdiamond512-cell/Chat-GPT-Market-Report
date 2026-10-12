@@ -232,6 +232,7 @@ function publishMarketReportFromDocUrlPrompt() {
 }
 
 function publishWebReportObject_(report) {
+  if (report && report.time === '08:00') requireMarketReport0800GenerationQa_(report);
   report = validateWebReportObject_(report);
   report.report_status = 'BLOCKED';
   report.infographic_status = 'NOT_READY';
@@ -870,6 +871,10 @@ function buildWebReportFromGoogleDoc_(file) {
     structureVersion: 7,
     revision: String(file.getLastUpdated().getTime())
   };
+
+  if (report.time === '08:00' && typeof marketReport0800QaFromFile_ === 'function') {
+    report.infographicGenerationQa = marketReport0800QaFromFile_(file);
+  }
 
   if ((!report.riskManagement || !report.riskManagement.length) && report.breakConditions) {
     report.riskManagement = [report.breakConditions];

@@ -52,6 +52,9 @@ jobs:
           Path('reports.json').write_text(json.dumps(rows, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
           print(f'Validated {len(rows)} canonical reports, including 2026-09-22 12:00 and 16:00.')
           PY
+      - name: Enforce 08:00 QA before committing rebuilt index
+        run: python scripts/check_0800_publication_gate.py --base HEAD
+
       - name: Commit rebuilt index
         run: |
           if git diff --quiet -- reports.json; then

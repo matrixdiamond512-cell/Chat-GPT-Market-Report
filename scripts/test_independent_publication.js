@@ -3,17 +3,24 @@ const vm = require('vm');
 const crypto = require('crypto');
 
 const webSource = fs.readFileSync('apps-script/MarketReportWebSync.gs', 'utf8');
+const generationGateSource = fs.readFileSync('apps-script/MarketReport0800GenerationGate.gs', 'utf8');
 const rendererSource = fs.readFileSync('assets/js/report-core-v3.js', 'utf8');
 const validationSource = fs.readFileSync('apps-script/MarketReportPrePublishValidation.gs', 'utf8');
 const workflowSource = fs.readFileSync('.github/workflows/apps-script-prepublish-validation.yml', 'utf8');
 const context = {
-  Utilities: { newBlob: text => ({ getBytes: () => Array.from(Buffer.from(text, 'utf8')) }) },
+  Utilities: {
+    DigestAlgorithm: { SHA_256: 'SHA-256' },
+    newBlob: text => ({ getBytes: () => Array.from(Buffer.from(text, 'utf8')) }),
+    computeDigest: (_, bytes) => Array.from(crypto.createHash('sha256')
+      .update(Buffer.from(bytes.map(value => value & 255))).digest(), value => value > 127 ? value - 256 : value)
+  },
   LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
   Date,
   JSON,
   console
 };
 vm.createContext(context);
+vm.runInContext(generationGateSource, context);
 vm.runInContext(webSource, context);
 
 const bodyHash = value => crypto.createHash('sha256').update(value).digest('hex');
@@ -48,12 +55,45 @@ context.normalizeWebReportList_ = data => Array.isArray(data) ? data : [];
 context.upsertWebReportList_ = (items, report) => [...items.filter(item => item.date !== report.date || item.time !== report.time), report];
 context.syncDashboardJsonToGitHubFromReports_ = () => ({ commitSha: 'dashboard-fixture' });
 
+function testQaReceiptForReport(value) {
+  const receipt = {
+    contract_id: 'market-report-0800-infographic-facts-v1',
+    gate: 'PRE_SAVE_AND_PRE_RENDER_08_00_GENERATION_QA',
+    status: 'PASS',
+    report_id: `${value.date}_08-00`,
+    body_sha256: bodyHash(value.fullText),
+    snapshot_provenance: 'LIVE_CAPTURED',
+    structured_source_sha256: 'a'.repeat(64),
+    numeric_registry_sha256: 'b'.repeat(64),
+    snapshot_sha256: 'c'.repeat(64),
+    fact_count: 1,
+    numeric_count: 1,
+    validation_gates: { SOURCE_INTEGRITY: 'PASS' },
+    qa_result_sha256: ''
+  };
+  receipt.qa_result_sha256 = context.marketReport0800Sha256_(context.marketReport0800ReceiptHashView_(receipt));
+  return receipt;
+}
 function report(extra = {}) {
-  return Object.assign({ date: '2026-10-09', time: '08:00', title: 'fixture report', fullText: 'fixture body', revision: 1, snapshot_id: 'snap-1' }, extra);
+  const value = Object.assign({ date: '2026-10-09', time: '08:00', title: 'fixture report', fullText: 'fixture body', revision: 1, snapshot_id: 'snap-1' }, extra);
+  if (!Object.prototype.hasOwnProperty.call(extra, 'infographicGenerationQa')) {
+    value.infographicGenerationQa = testQaReceiptForReport(value);
+  }
+  return value;
 }
 function runBodyPublish(input) {
   writes.length = 0;
   return context.publishWebReportObject_(input);
+}
+// An 08:00 report without its report-bound pre-save QA receipt cannot write any lane.
+let missingGenerationQaBlocked = false;
+try {
+  runBodyPublish(report({ infographicGenerationQa: null }));
+} catch (error) {
+  missingGenerationQaBlocked = /08:00 pre-save QA receipt/.test(String(error.message));
+}
+if (!missingGenerationQaBlocked || writes.length !== 0 || files.size !== 0) {
+  throw new Error('08:00 publication without the bound generation QA receipt had side effects');
 }
 const readyManifest = { status: 'READY_FOR_PUBLICATION', manifest_id: 'm-1', report_id: '2026-10-09_08-00', revision: 1,
   snapshot_id: 'snap-1', body_hash: fixtureBodyHash, drive_file_id: 'drive-1', png_filename: 'fixture.png', png_sha256: 'b'.repeat(64),

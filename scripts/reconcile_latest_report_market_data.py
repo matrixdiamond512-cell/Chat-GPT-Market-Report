@@ -247,6 +247,9 @@ def update_latest_report(snapshot: dict[str, Any]) -> list[str]:
     if not changed:
         return []
 
+    if report.get("time") == "08:00":
+        raise SystemExit("08:00 report mutation would invalidate the pre-save generation QA; regenerate and revalidate before writing.")
+
     if isinstance(payload.get("latestReport"), dict):
         payload["latestReport"] = report
     elif isinstance(payload.get("report"), dict):

@@ -108,6 +108,8 @@ function validateMarketReportBeforePublish_(report, expectedHour) {
     throw new Error('公開前検証エラー: レポートオブジェクトが不正です。');
   }
 
+  if (String(report.time || '') === '08:00') requireMarketReport0800GenerationQa_(report);
+
   MARKET_REPORT_PREPUBLISH_CONFIG.requiredReportFields.forEach(function(field) {
     if (!Object.prototype.hasOwnProperty.call(report, field)) {
       errors.push('レポート必須項目不足: ' + field);

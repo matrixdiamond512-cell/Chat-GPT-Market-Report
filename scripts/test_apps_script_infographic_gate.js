@@ -3,6 +3,7 @@ const vm = require('vm');
 const crypto = require('crypto');
 
 const web = fs.readFileSync('apps-script/MarketReportWebSync.gs', 'utf8');
+const generationGate = fs.readFileSync('apps-script/MarketReport0800GenerationGate.gs', 'utf8');
 const reportContextCode = fs.readFileSync('apps-script/MarketReportContext.gs', 'utf8');
 const fixture = JSON.parse(fs.readFileSync('tests/fixtures/vision_attestation_contract.json', 'utf8'));
 const testSecret = crypto.randomBytes(48).toString('hex');
@@ -29,7 +30,58 @@ context.PropertiesService = { getScriptProperties: () => ({ getProperty: key => 
 
 vm.createContext(context);
 vm.runInContext(reportContextCode, context);
+vm.runInContext(generationGate, context);
 vm.runInContext(web, context);
+
+// Phase 3: a new 08:00 Docs save and every central publish call fail before writes without QA.
+let created0800Docs = 0;
+context.DocumentApp.create = () => { created0800Docs += 1; throw new Error('unexpected document creation'); };
+let preSaveQaBlocked = false;
+try { context.saveNew0800GoogleDocAfterQa_({report_id:'2099-01-01_08-00',report_datetime:'2099-01-01T08:00:00+09:00',body_text:'unqualified'}); }
+catch (error) { preSaveQaBlocked = /pre-save QA failed/.test(String(error.message)); }
+if (!preSaveQaBlocked || created0800Docs !== 0) throw new Error('Docs save was not stopped before QA PASS');
+
+let manualPublishBlocked = false;
+try { context.publishWebReportObject_({date:'2099-01-01',time:'08:00',fullText:'unqualified'}); }
+catch (error) { manualPublishBlocked = /08:00 pre-save QA receipt/.test(String(error.message)); }
+if (!manualPublishBlocked) throw new Error('Manual Apps Script publication bypassed the 08:00 QA receipt');
+
+// Cross-runtime contract fixture: synthetic identity is rejected for Docs creation,
+// while a test-only LIVE_CAPTURED identity must recompute every pre-save contract check.
+const completeSynthetic = JSON.parse(fs.readFileSync('tests/fixtures/0800_complete_generation_payload.synthetic.json', 'utf8'));
+const expectedPythonLiveReceipt = completeSynthetic._test_expected_live_attestation;
+delete completeSynthetic._test_expected_live_attestation;
+let syntheticSaveBlocked = false;
+try { context.saveNew0800GoogleDocAfterQa_(completeSynthetic); }
+catch (error) { syntheticSaveBlocked = /pre-save QA failed/.test(String(error.message)); }
+if (!syntheticSaveBlocked || created0800Docs !== 0) throw new Error('Synthetic fixture was accepted by the Docs save entry');
+const simulatedLivePayload = JSON.parse(JSON.stringify(completeSynthetic));
+simulatedLivePayload.source_type = 'GOOGLE_DOCS';
+simulatedLivePayload.synthetic_fixture = false;
+simulatedLivePayload.market_data_snapshot.snapshot_provenance = 'LIVE_CAPTURED';
+const snapshotForTestHash = Object.assign({}, simulatedLivePayload.market_data_snapshot);
+delete snapshotForTestHash.snapshot_sha256;
+simulatedLivePayload.market_data_snapshot.snapshot_sha256 = context.marketReport0800Sha256_(snapshotForTestHash);
+const simulatedLiveQa = context.marketReport0800GenerationQa_(simulatedLivePayload);
+if (simulatedLiveQa.status !== 'PASS') throw new Error('Apps Script and Python generation QA contracts diverged: ' + simulatedLiveQa.errors.join(', '));
+let savedDescription = '';
+context.DocumentApp.create = title => { created0800Docs += 1; return ({
+  getId: () => 'new-doc-test-id', getBody: () => ({setText: text => { if (text !== simulatedLivePayload.body_text) throw new Error('body changed'); }}),
+  saveAndClose: () => {}
+}); };
+context.DriveApp.getFileById = () => ({setDescription: value => { savedDescription = value; }});
+const saved0800 = context.saveNew0800GoogleDocAfterQa_(simulatedLivePayload);
+if (saved0800.qa.status !== 'PASS' || created0800Docs !== 1) throw new Error('Passing QA did not reach the managed Docs save');
+const savedReceiptHashView = context.marketReport0800ReceiptHashView_(saved0800.qa);
+savedReceiptHashView.qa_result_sha256 = saved0800.qa.qa_result_sha256;
+if (context.marketReport0800Canonical_(savedReceiptHashView) !== context.marketReport0800Canonical_(expectedPythonLiveReceipt)) {
+  throw new Error('Python and Apps Script 08:00 receipt hashes or fields differ');
+}
+if (!savedDescription.startsWith('MARKET_REPORT_0800_QA_V1:')) throw new Error('Saved Docs file did not retain its bound QA receipt');
+context.DriveApp.getFileById = id => ({
+  isTrashed: () => false, getMimeType: () => 'application/vnd.google-apps.document',
+  getName: () => 'マーケットレポート_2026-10-06_12-00', getId: () => id
+});
 
 const validReportContext = { report_date: '2026-10-06', report_time: '12:00', report_id: '2026-10-06_12-00', data_cutoff: '2026-10-06T11:55:00+09:00', previous_report_id: '2026-10-06_08-00', previous_business_day: '2026-10-05', revision: 1, mode: 'historical' };
 const parsedDoc = context.marketReportDocInfoFromName_('マーケットレポート_2026-10-06_12-00', validReportContext);

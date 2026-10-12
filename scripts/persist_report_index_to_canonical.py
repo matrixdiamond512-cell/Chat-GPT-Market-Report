@@ -69,8 +69,32 @@ def canonical_keys() -> set[tuple[str, str]]:
     return keys
 
 
+def require_0800_gate_for_changed_rows(reports: list[dict]) -> None:
+    """Legacy rows remain read-only; changed/new 08:00 rows need a current QA receipt."""
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from reporting.infographic_0800_publication_gate import validate_0800_publication_report
+
+    errors: list[str] = []
+    for report in reports:
+        if report.get("time") != "08:00":
+            continue
+        path = canonical_path(report)
+        try:
+            old = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            old = None
+        if old == report:
+            continue
+        result = validate_0800_publication_report(report)
+        errors.extend(f"{report.get('date')}_08-00: {error}" for error in result["errors"])
+    if errors:
+        raise SystemExit("08:00 QA blocked canonical persistence: " + "; ".join(errors))
+
+
 def main() -> None:
     reports = load_index()
+    require_0800_gate_for_changed_rows(reports)
     index_keys = {slot_key(report) for report in reports}
     file_keys = canonical_keys()
 
