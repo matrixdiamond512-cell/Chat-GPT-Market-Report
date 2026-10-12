@@ -1,0 +1,22 @@
+name: Validate publication receipt schema
+on:
+  pull_request:
+    paths:
+      - 'scripts/validate_drive_publication_receipt.py'
+      - 'tests/test_drive_publication_receipt.py'
+      - '.github/workflows/validate-publication-receipts.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  receipt-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile receipt validator
+        run: python -m py_compile scripts/validate_drive_publication_receipt.py
+      - name: Test legacy and strict receipt contracts
+        run: python -m unittest discover -s tests -p test_drive_publication_receipt.py -v
