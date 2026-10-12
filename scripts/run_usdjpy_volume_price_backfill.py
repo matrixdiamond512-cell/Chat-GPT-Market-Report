@@ -20,6 +20,29 @@ def main() -> None:
     rows = data.get("records") or []
     if not rows:
         raise SystemExit("BOJ spot volume records missing; cannot align dates")
+    # Repair a second updater that may have overwritten the published JSON.
+    # Recover only the seven historically verified sessions, never future prices.
+    recovery_path = core.PATH.with_name("usdjpy-volume-price-recovery.json")
+    if recovery_path.exists():
+        snapshot = json.loads(recovery_path.read_text(encoding="utf-8"))
+        recovered = {r["targetDate"]: r for r in snapshot.get("records", [])}
+        by_date = {r.get("targetDate"): r for r in rows}
+        price_records = {r["date"]: r for r in data.get("priceRecords", []) if r.get("date")}
+        for day, candle in recovered.items():
+            row = by_date.get(day)
+            if row is None:
+                continue
+            if any(row.get(field) is None for field in (*core.FIELDS, "priceChangePct")):
+                for field in (*core.FIELDS, "priceChangePct", "priceSourceId"):
+                    if row.get(field) is None and candle.get(field) is not None:
+                        row[field] = candle[field]
+                price_records[day] = {"date": day, **{field: row.get(field) for field in (*core.FIELDS, "priceChangePct", "priceSourceId")}}
+        data["priceRecords"] = sorted(price_records.values(), key=lambda r: r["date"], reverse=True)
+        good = sorted(r["targetDate"] for r in rows if r.get("close") is not None)
+        data["priceRange"] = {"startDate": good[0] if good else None, "endDate": good[-1] if good else None, "count": len(good)}
+        if all(all(r.get(k) is not None for k in (*core.FIELDS, "priceChangePct")) for r in rows[:20]):
+            payload.setdefault("components", {})["usdjpyOhlc"] = {"status": "ok", "sourceId": "YAHOO_GLOBAL_USDJPY", "latestDate": good[-1], "missingLast20Dates": []}
+        core.PATH.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     missing_dates = {r["targetDate"] for r in rows[:20] if any(r.get(k) is None for k in (*core.FIELDS, "priceChangePct"))}
     if not missing_dates:
         print("USDJPY OHLC coverage: latest 20 BOJ trading sessions complete; no fetch needed.")
