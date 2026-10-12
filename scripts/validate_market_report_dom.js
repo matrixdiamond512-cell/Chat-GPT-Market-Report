@@ -83,6 +83,9 @@ async function main() {
           title: title?.textContent?.trim() || '',
           titleLength: (title?.textContent || '').trim().length,
           bodyText: body?.textContent || '',
+          bodyHidden: Boolean(body && (body.hidden || getComputedStyle(body).display === 'none')),
+          quarantineWarning: document.getElementById('unverifiedReportWarning')?.textContent?.trim() || '',
+          morningQaState: document.documentElement.dataset.morningReportQa || '',
           date: picker?.value || '',
           activeTime: activeTab?.textContent?.trim() || '',
           marketSectionFound: Boolean(market),
@@ -98,10 +101,19 @@ async function main() {
       if (result.activeTime !== report.time) failures.push('active time mismatch: ' + result.activeTime);
       if (result.title !== report.title) failures.push('title mismatch: ' + result.title);
       if (result.titleLength > 160) failures.push('rendered title is abnormally long: ' + result.titleLength);
-      if (!result.bodyText.trim()) failures.push('report body is empty');
-      if (!result.marketSectionFound) failures.push('major market section missing');
-      if (!result.marketTableFound) failures.push('major market data is not rendered as a table');
-      if (result.marketRowCount < 6) failures.push('market table has fewer than 6 rows: ' + result.marketRowCount);
+      const knownUnverified = String(report.report_status || '').toUpperCase() === 'RECONSTRUCTED_UNVERIFIED';
+      if (knownUnverified && report.time === '08:00') {
+        // This is a visible, intentionally blocked historical report, not a QA pass.
+        // Deployment may carry the warning but must never show the partial numbers.
+        if (result.morningQaState !== 'quarantined') failures.push('unverified morning source is not quarantined');
+        if (!result.bodyHidden) failures.push('unverified morning body is publicly visible');
+        if (!result.quarantineWarning.includes('原本の読み戻し検証に失敗')) failures.push('missing quarantine warning');
+      } else {
+        if (!result.bodyText.trim()) failures.push('report body is empty');
+        if (!result.marketSectionFound) failures.push('major market section missing');
+        if (!result.marketTableFound) failures.push('major market data is not rendered as a table');
+        if (result.marketRowCount < 6) failures.push('market table has fewer than 6 rows: ' + result.marketRowCount);
+      }
       if (result.loadingTextPresent) failures.push('loading text remains visible');
       if (fixture && !result.bodyText.includes(fixture.expectedBodyText || '')) {
         failures.push('canonical title remainder is missing from report body');
