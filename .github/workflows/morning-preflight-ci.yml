@@ -4,6 +4,8 @@ on:
     paths:
       - scripts/preflight_morning_infographic.py
       - tests/test_morning_preflight.py
+      - scripts/bind_morning_report_evidence.py
+      - tests/test_morning_evidence_handoff.py
       - .github/workflows/morning-preflight-ci.yml
   workflow_dispatch:
 
@@ -20,6 +22,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Compile preflight files
-        run: python -m py_compile scripts/preflight_morning_infographic.py tests/test_morning_preflight.py
-      - name: Run seven regression tests
-        run: python -m unittest discover -s tests -p test_morning_preflight.py -v
+        run: python -m py_compile scripts/preflight_morning_infographic.py tests/test_morning_preflight.py scripts/bind_morning_report_evidence.py tests/test_morning_evidence_handoff.py
+      - name: Run evidence and preflight regressions
+        env:
+          PYTHONPATH: scripts:tests
+        run: |
+          python -m unittest discover -s tests -p test_morning_preflight.py -v
+          python -m unittest discover -s tests -p test_morning_evidence_handoff.py -v
