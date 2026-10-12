@@ -30,6 +30,11 @@ def assemble(report, context_raw, snapshot_raw):
         raise ValidationFailure("REPORT_TITLE_SOURCE_MISMATCH")
     # Never overwrite conflicting existing identity or body hash.
     body_hash = hashlib.sha256(report["fullText"].encode("utf-8")).hexdigest()
+    # A digest created at handoff time is not evidence of the original published body.
+    if not isinstance(report.get("bodyHash"), str) or not report["bodyHash"]:
+        raise ValidationFailure("ORIGINAL_BODY_HASH_REQUIRED")
+    if report["bodyHash"] != body_hash:
+        raise ValidationFailure("ORIGINAL_BODY_HASH_MISMATCH")
     expected = {"report_id": context.report_id, "revision": context.revision,
                 "snapshot_id": snapshot.snapshot_id, "bodyHash": body_hash}
     for key, value in expected.items():
