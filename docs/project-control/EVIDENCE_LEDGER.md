@@ -281,3 +281,25 @@ Sources:
 - JPX 2026 calendar / holiday trading: https://www.jpx.co.jp/english/corporate/about-jpx/calendar/index.html and https://www.jpx.co.jp/english/news/2040/20261009-01.html
 
 Timestamp: 2026-10-12 22:20 JST.
+
+
+## 2026-10-12 終値一覧の系列定義・競合ガード
+
+Claim: existing close-list valuation and yield/FX cells are no longer treated as interchangeable merely because candidate numbers match or are close. Formal policy is recorded in `docs/market-data/close-list-series-contract.md` and `docs/project-control/DECISIONS.md`.
+
+Implementation on PR #94 HEAD `a01bd6e469161bd2d921e34dbab369b46110ff92`:
+- Existing Nikkei 225 PER/PBR columns are contractually `weighted_average`; index-based inputs are classified `DEFINITION_MISMATCH` and cannot populate those columns. The writer requires explicit `valuationBasis=weighted_average` and `sourceSeriesId`.
+- EPS auto-write is disabled until the legacy production formula/source definition is confirmed. Existing EPS cells remain unchanged; an index-based EPS calculation does not establish equivalence.
+- USD/JPY and EUR/USD require explicit `sourceSeriesId`, `observationDefinition`, `sessionCloseAt`, unit and published precision. Missing lineage is `DEFINITION_PENDING`; for an existing non-empty FX cell, a confirmed same-date identical source/cutoff audit is required. Numeric closeness or exact numerical equality without that provenance cannot resolve the conflict.
+- Treasury US10Y comparisons now require matching source, series, observation definition, cutoff, unit, target date and confirmed prior stored value. Precision matching uses each source's reported decimal places only after lineage equality; missing legacy provenance remains `CONFLICT`.
+- Existing columns and the sheet writer's format behavior were not changed. No Google Sheets request, production write, dry-run, report update, or live acquisition was performed in this turn. No new confirmed market-date snapshot was available for the requested future dry-run.
+
+Verification:
+- Isolated local run using the exact PR source/tests: `tests.test_sync_market_close_sheet` **23/23 PASS** (E1; test doubles).
+- GitHub Actions run [#272](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/38257984468), PR workflow job `tradingview-mcp-candidate-tests`: compile and all configured tests including `tests.test_sync_market_close_sheet` **PASS** (E2). This run did not acquire new prices or write Sheets.
+- The separate `treasury-validation` job made its existing reference checks and failed at the Bank of Japan USD/JPY 17:00 reference step because its retained observation date was 2026-10-07 and the validator returned `STALE_DATA`; MOF JP10Y, ECB EUR/USD, and Kraken BTC/USD reference checks passed. Treasury live validation was skipped on the PR event. This unrelated stale-reference job does not change the close-list test result.
+- Existing production-sheet protection remains the controlling constraint; this turn made no production mutation. Production dimensions/formatting were not re-read in this turn.
+
+Result: PR #94 remains OPEN / Draft / unmerged at the stated HEAD. Open outcome: when a new same-definition confirmed snapshot exists, run the production close-list dry-run and report the exact candidate cells before any write. Keep the 2026-10-09 legacy conflicts intact until source lineage is proven.
+
+Timestamp: 2026-10-12 JST.
