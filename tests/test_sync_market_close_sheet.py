@@ -47,6 +47,9 @@ class FakeSheetsClient:
         for index, header in enumerate(BASE_HEADERS):
             self.headers[index] = header
         self.headers[185] = "日経225寄与度取得元"
+        extra_headers = [header for header in close_sync.SUPPLEMENTAL_FIELDS.values() if header not in BASE_HEADERS]
+        for index, header in enumerate(extra_headers, start=len(BASE_HEADERS)):
+            self.headers[index] = header
         self.headers.extend(["日経225_25日乖離率", "日経225_200日乖離率"])
         self.data = [self.headers]
         if target is not None:
@@ -178,6 +181,23 @@ def snapshot(target: dt.date, now: dt.datetime, *, missing: str | None = None) -
     for symbol in close_sync.TECHNICAL_FIELDS:
         markets[symbol] = {
             "id": symbol, "value": 1.25,
+            "asOf": dt.datetime.combine(target, dt.time(15, 0), JST).isoformat(),
+            "fetchedAt": now.isoformat(), "sourceId": symbol + "_source", "sourceName": symbol + " source",
+            "verificationStatus": "verified",
+        }
+    supplemental_values = {
+        "nikkei225_eps": 3018.4,
+        "nikkei225_per": 22.87,
+        "nikkei225_pbr": 2.83,
+        "tse_prime_advancers": 1194,
+        "tse_prime_decliners": 331,
+        "tse_prime_ad_ratio25": 91.18,
+        "tse_prime_turnover": 7.8454,
+        "tse_prime_volume": 2295.19,
+    }
+    for symbol, value in supplemental_values.items():
+        markets[symbol] = {
+            "id": symbol, "value": value,
             "asOf": dt.datetime.combine(target, dt.time(15, 0), JST).isoformat(),
             "fetchedAt": now.isoformat(), "sourceId": symbol + "_source", "sourceName": symbol + " source",
             "verificationStatus": "verified",
@@ -425,6 +445,35 @@ class CloseSyncTests(unittest.TestCase):
         us10y = next(item for item in saved if item["symbol"] == "us10y")
         self.assertEqual(us10y["storedValue"], 5.242)
         self.assertEqual(us10y["reconciliationStatus"], "PRECISION_MATCH")
+
+
+    def test_verified_supplemental_snapshot_fills_existing_valuation_and_prime_columns_only(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        payload = snapshot(self.target, self.next_day)
+        payload["markets"]["tse_prime_turnover"]["verificationStatus"] = "reference_only"
+        result = self.run_sync(client, payload)
+        row = client.data[result["row"] - 1]
+        self.assertEqual(row[client.headers.index("日経225予想EPS")], 3018.4)
+        self.assertEqual(row[client.headers.index("日経225予想PER")], 22.87)
+        self.assertEqual(row[client.headers.index("日経225予想PBR")], 2.83)
+        self.assertEqual(row[client.headers.index("東証プライム値上がり銘柄数")], 1194)
+        self.assertEqual(row[client.headers.index("東証プライム値下がり銘柄数")], 331)
+        self.assertTrue(str(row[client.headers.index("東証プライム売買代金")]).startswith("取得不能（"))
+        self.assertEqual(row[client.headers.index("東証プライム売買高")], 2295.19)
+        saved_symbols = {item["symbol"] for item in result["marketData"]}
+        self.assertIn("tse_prime_advancers", saved_symbols)
+        self.assertNotIn("tse_prime_turnover", saved_symbols)
+
+    def test_verified_supplemental_conflict_stops_before_any_row_write(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        volume_column = client.headers.index(close_sync.SUPPLEMENTAL_FIELDS["tse_prime_volume"])
+        client.data[1][volume_column] = 2000.0
+        payload = snapshot(self.target, self.next_day)
+        result = self.run_sync(client, payload)
+        self.assertEqual(result["status"], "FAILED")
+        self.assertEqual(result["failedStage"], "VALIDATE")
+        self.assertEqual(client.data[1][volume_column], 2000.0)
+        self.assertEqual(client.data[1][client.headers.index("Dow終値")], "")
 
 
 if __name__ == "__main__":
