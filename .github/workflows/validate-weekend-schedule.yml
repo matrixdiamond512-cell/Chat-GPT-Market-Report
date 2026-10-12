@@ -1,0 +1,21 @@
+name: Validate market report weekend schedule
+on:
+  push:
+    branches: [fix/master-scheduler-weekdays-only-20261013]
+  pull_request:
+    paths:
+      - apps-script/MarketReportMasterScheduler.gs
+      - apps-script/MarketReportAutoPublish.gs
+      - config/report_schedule.json
+      - scripts/test_market_report_weekend_schedule.js
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/test_market_report_weekend_schedule.js
