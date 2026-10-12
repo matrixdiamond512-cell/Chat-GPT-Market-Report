@@ -244,3 +244,38 @@ Timestamp: 2026-10-12 20:47 JST.
 - 未解決: 6不一致の系列/定義/来歴の特定、JPX/MOF同日公表後の再照合、5先物の個別限月清算値、日経同一公式日足、25日分のPrime-only入力履歴。PR #94はOPEN / Draft / 未マージのまま。
 
 Timestamp: 2026-10-12 22:05 JST.
+
+
+## 2026-10-12 競合6件の系列・時刻比較と新規日dry-run判定
+
+Run ID: `pr94-production-conflict-review-20261012T2220JST`. PR HEAD確認値: `a8219acf5e2c83646b5263e5d5a887a288a95a1e`.
+
+本番「終値一覧」を読み取り専用で再確認した。2026-10-09はA27に1行だけあり、対象値はT27 USDJPY 158.34、W27 EURUSD 1.1202、AR27 米10年債 5.242、BA27 EPS 3974.15、BB27 PER 17.37、BL27 PBR 1.90。テストシートの既存レポート候補はそれぞれ158.27、1.11973、5.24、3018.4049、22.87、2.83。取得候補のmarket dateは2026-10-09だが、同じカレンダー日だけでは同じ系列・締め時刻を意味しない。
+
+差異確認:
+- USD/JPY: 既存セルの台帳上の取得元はYahoo Finance日足fallback、取得時刻2026-10-09 07:28 JST。TradingView候補は17:00 New York日次境界（bar anchor 2026-10-08 21:00 UTC）で158.27。日銀の同日公式資料は17:00 JSTに158.33–158.34を公表し、bid/ask midpoint 158.335は2桁表示で158.34となる。したがって保存値は東京17時レートと表示精度上整合するが、7:28 JSTのYahoo取得値の由来が日銀値だったとは確認できず、TradingView値とも別cutoffである。既存値を保持。今後のClose List採用方針は「東京17:00 JST」を明示するなら日銀17時midを2桁へ丸める。TradingView NY closeは別系列として扱う。セル自体のprovenanceは未解決。
+- EUR/USD: TradingView候補は17:00 New York境界1.11973。ECB公式referenceは2026-10-09に1 EUR=1.1206 USD（通常14:10–14:15 CETのconcertation、16時頃公表）。日銀の17:00 JST bid/askは1.1231–1.1233（midpoint 1.1232）。既存1.1202はこれらと一致せず、取得元・時刻が記録されていない。数値差は日次fixing/締め時間・vendor系列の違いで説明可能だが、保存値の正体と同一系列かは未確定。既存値保持、既存行はCONFLICT継続。将来行では選択した締め時刻を固定して保存する。
+- 米10年債: Treasury公式Daily Treasury Par Yield Curveの10年constant-maturity par yieldは10/9に5.24%（2桁公表）。既存5.242%は同日Mortgage News Dailyの10-year market-yield close 5.243%に近く、同じPar yield系列ではない。表示桁の差だけで同一扱いせず、既存値保持、既存行はCONFLICT。新しい空欄行に公式CMTを保存する場合は5.24%の精度を維持する。
+- 日経PER: 日経公式ヒストリカル表（更新日10/9）は同日「加重平均17.37」「指数ベース22.87」を別々に掲載。公式ユーザーズ・ガイドもPERの加重平均を時価総額合計/予想利益合計、指数ベースを日経平均/EPSと定義する。既存17.37は加重平均、取得候補22.87は指数ベースで、別定義による差と確定。既存シート列は無修正。列見出しと既存値の連続性に合わせ、従来Close List値は加重平均系列として保持し、レポート本文では必ずbasisを明記する。
+- 日経PBR: 同じ公式表は同日「加重平均1.90」「指数ベース2.83」。ガイドは加重平均と指数ベースの式を別定義としている。既存1.90は加重平均、候補2.83は指数ベースと特定。既存値を維持し、従来列は加重平均として扱う。指数ベース値を同じ列へ上書きしない。
+- 日経EPS: 候補3018.4049は公式同日指数終値69030.92 ÷ 指数ベースPER22.87で得る指数ベースEPS。既存3974.15は公開二次表の同日値だが、既存保存記録に算出系列・元未丸めPER・EPS出所がなく、公式ガイドが定義する指数ベースEPSとは別になる可能性を排除できない。PER/PBRとの組合せからweighted-average側の指標と推測できる範囲を超えて断定しない。既存値保持、EPSはCONFLICT継続。将来の指数ベースEPSは指数ベースPERと同一スナップショットで定義・計算する。
+
+競合判断: 6件中5件は差異の原因区分（FX日次cutoff/vendor、Treasury par yield対market close、PER/PBR weighting basis）が確認できた。USD/JPYとEUR/USDの保存値provenance、およびEPS旧値の厳密なbasisは未確認なので、これらの行は自動的に「保存済み一致」へ変更しない。PER/PBRの差は競合ではなく公式に定義された別系列と判明したが、既存値を保持する。6件のうち安全に実値上書き可能と判定したセルは0、訂正のための本番セル書き込みも0。これは保護動作であり、保存成功とは数えない。
+
+新しい日付のdry-run可用性: 現時刻は2026-10-12 22:20 JST（13:20 UTC）。JPX公式カレンダー上、10/12は現物市場休場日だがOSE/TOCOMの祝日取引日は設けられている。NY株式市場は同日の通常取引を9:30 EDTに開始するため、現在は開場前。テストシートの最新候補も10/10（BTC）までで、10/12の確定日足/清算値は存在しない。よって新しい営業日として使える共通snapshotは未生成で、対象セルdry-run候補0件、実書き込み0件、readback NOT_RUN。10/12の先物祝日取引中の値を日次清算値に昇格させない。次に市場の各基準日で確定値が出た後、同じ列マッピングで読み取りdry-runする。
+
+安全確認: 本番シートを読取のみで検査し、186列・937行枠・条件付き書式23件、日付行93件、2026-10-09はA27の1行のみを再確認。セル、行、書式、数式は変更していない。保存済みの履歴スナップショット実績17 VERIFIED / 11 REFERENCE_ONLY / 0 UNAVAILABLEは旧日付のままで、新規実データ件数には加算しない。PR #94は取得時点でOPEN / Draft / unmerged。
+
+Evidence: E5（本番・テストSheetsのread-only確認と公開一次資料の照合）。Production write/readback NOT_RUN（書込対象なし）。コード・テスト・Actions runは今回NOT_RUN。限界: EUR/USDの旧値取得元、USD/JPYの旧値と取得時刻整合、EPS旧値の元定義は一次記録から復元できない。次の必要作業は各市場の次の確定観測取得後、同一snapshotによるrow-dry-runと、新たな空欄セルがある場合に限る限定保存/readback。
+
+Sources:
+- BOJ 2026-10-09 daily FX PDF: https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx261009.pdf
+- ECB FX reference methods/current rate page: https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html
+- Nikkei PER history: https://indexes.nikkei.co.jp/nkave/archives/data?list=per
+- Nikkei PBR history: https://indexes.nikkei.co.jp/nkave/archives/data?list=pbr
+- Nikkei index valuation guide: https://indexes.nikkei.co.jp/nkave/archives/file/users_guide_jp.pdf
+- U.S. Treasury Daily Treasury Par Yield Curve Rates: https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml
+- Secondary 10Y market-yield history: https://www.mortgagenewsdaily.com/treasury/10yr
+- JPX 2026 calendar / holiday trading: https://www.jpx.co.jp/english/corporate/about-jpx/calendar/index.html and https://www.jpx.co.jp/english/news/2040/20261009-01.html
+
+Timestamp: 2026-10-12 22:20 JST.
