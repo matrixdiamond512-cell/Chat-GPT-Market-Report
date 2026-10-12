@@ -1,0 +1,31 @@
+name: Report dashboard publication health regression
+on:
+  pull_request:
+    paths:
+      - scripts/sync_latest_report_publication.py
+      - tests/test_dashboard_publication_health.py
+      - .github/workflows/report-dashboard-health-ci.yml
+  push:
+    branches:
+      - fix/report-dashboard-verification-state-20261013
+    paths:
+      - scripts/sync_latest_report_publication.py
+      - tests/test_dashboard_publication_health.py
+      - .github/workflows/report-dashboard-health-ci.yml
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify source and regression
+        run: |
+          python -m py_compile scripts/sync_latest_report_publication.py tests/test_dashboard_publication_health.py
+          python -m unittest discover -s tests -p test_dashboard_publication_health.py -v
