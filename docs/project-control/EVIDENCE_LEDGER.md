@@ -361,3 +361,9 @@ A one-time post-close thread follow-up was presented as an automation suggestion
 Evidence level: E5 for PR metadata and source/tool responses; no new external data save. No production mutation.
 
 Timestamp: 2026-10-13 00:44 JST.
+
+
+### Follow-up — post-close runs registered
+The earlier one-time follow-up suggestion is superseded by two registered ACTIVE heartbeat runs (local schedule in Asia/Tokyo): `pr-94-us-post-close-refresh` at 2026-10-13 05:15 JST, then `pr-94-tokyo-post-close-refresh` at 2026-10-13 16:00 JST. Registration was confirmed in the app and in both local automation records. The first run handles only completed U.S. closes and any finalized FX cutoffs; the second handles Tokyo data and UTC BTC only after their boundaries. Both prohibit production-sheet writes and require the private test-sheet roundtrip. These are scheduled follow-ups; no market-data refresh has yet run.
+
+Timestamp: 2026-10-13 00:51 JST.
