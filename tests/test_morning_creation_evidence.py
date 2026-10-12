@@ -5,6 +5,7 @@ from morning_fixture import fixture
 from scripts.capture_morning_creation_evidence import capture
 from reporting.report import market_row, table_line, REGISTRY
 from reporting.snapshot import Market
+from scripts.preflight_morning_infographic import check as preflight_check
 
 class MorningCaptureTests(unittest.TestCase):
     def setUp(self):
@@ -28,6 +29,11 @@ class MorningCaptureTests(unittest.TestCase):
         self.assertEqual(envelope["validated_gates"], ["G0", "G1", "G2"])
         self.assertEqual(envelope["bodyHash"], hashlib.sha256(text.encode("utf-8")).hexdigest())
         self.assertEqual(envelope["fullText"], text)
+        # Handoff is only preflight-ready; original fact offsets and final spec are still needed.
+        view = dict(self.report and fixture()[1])
+        view["body_hash"] = envelope["bodyHash"]
+        result = preflight_check(envelope, view)
+        self.assertEqual(result["status"], "READY_FOR_CANONICAL_VALIDATION")
 
     def test_bad_slot_fails(self):
         self.context["report_time"] = "12:00"
