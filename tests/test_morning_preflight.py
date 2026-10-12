@@ -1,5 +1,7 @@
 """Regression tests for the read-only 08:00 evidence preflight."""
 import unittest
+import subprocess
+import sys
 import json
 from pathlib import Path
 from scripts.preflight_morning_infographic import check
@@ -31,6 +33,17 @@ class PreflightTests(unittest.TestCase):
     def test_complete_is_not_formally_approved(self):
         report, view = self.complete()
         self.assertEqual(check(report, view)["status"], "READY_FOR_CANONICAL_VALIDATION")
+
+    def test_cli_oct12_blocked_without_view(self):
+        root = Path(__file__).resolve().parents[1]
+        outcome = subprocess.run(
+            [sys.executable, str(root / "scripts" / "preflight_morning_infographic.py"),
+             "--report", str(root / "reports" / "2026-10-12_08-00.json")],
+            capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(outcome.returncode, 1)
+        result = json.loads(outcome.stdout)
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertIn("report.snapshot", result["missing_or_unverified"])
 
     def test_actual_oct12_report_blocks_publication(self):
         source = Path(__file__).resolve().parents[1] / "reports" / "2026-10-12_08-00.json"
