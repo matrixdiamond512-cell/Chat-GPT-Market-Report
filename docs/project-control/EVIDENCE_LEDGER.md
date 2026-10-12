@@ -271,6 +271,8 @@ Evidence: E5（本番・テストSheetsのread-only確認と公開一次資料�
 Sources:
 - BOJ 2026-10-09 daily FX PDF: https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx261009.pdf
 - ECB FX reference methods/current rate page: https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html
+- ECB 2026-10-09 reference value (USD 1.1206 per EUR): https://www.lb.lt/en/daily-euro-foreign-exchange-reference-rates-published-by-the-european-central-bank
+- Legacy Nikkei valuation table containing 2026-10-09 EPS/PER/PBR: https://nikkeiyosoku.com/nikkeiper/
 - Nikkei PER history: https://indexes.nikkei.co.jp/nkave/archives/data?list=per
 - Nikkei PBR history: https://indexes.nikkei.co.jp/nkave/archives/data?list=pbr
 - Nikkei index valuation guide: https://indexes.nikkei.co.jp/nkave/archives/file/users_guide_jp.pdf
