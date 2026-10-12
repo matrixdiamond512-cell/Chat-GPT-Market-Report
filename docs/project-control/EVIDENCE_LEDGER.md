@@ -346,3 +346,18 @@ Claim: a new timestamped personal snapshot and report were built from actual Tra
 - No Actions dispatch was performed. This run used the connected TradingView MCP and personal Sheets route; it does not prove unattended Actions execution. No completed U.S. close was available at the capture time. PR #94 remains OPEN / Draft / unmerged.
 
 Timestamp: 2026-10-13 00:08 JST.
+
+
+## 2026-10-13 post-close refresh readiness check — PR #94
+
+Run ID: `pr94-post-close-readiness-20261013T0044JST`. PR #94 was read as OPEN / Draft / unmerged. No code, production sheet, or market-value row was changed in this check.
+
+At 2026-10-13 00:44 JST (2026-10-12 15:44 UTC), the requested Oct 12 U.S. cash close and Oct 13 Tokyo cash close were not yet available. NYSE's 2026 calendar marks Oct 12 as an open session; TradingView's 1D responses for Dow, Nasdaq Composite, S&P 500, Russell 2000 and VIX explicitly stated the last bar was still forming (bar anchor 13:30 UTC for the U.S. indexes, 07:15 UTC for VIX). BITSTAMP BTC/USD's Oct 12 UTC bar was also still forming. JPX states TSE cash trading is 09:00–11:30 and 12:30–15:30 JST; Tokyo had not opened yet. Sources: NYSE 2026 calendar https://www.nyse.com/publicdocs/nyse/ICE_NYSE_2026_Yearly_Trading_Calendar.pdf, JPX trading hours https://www.jpx.co.jp/english/equities/trading/domestic/01.html.
+
+The daily-history request was issued for 13 symbols. It yielded no finalized Oct 12 daily close for the requested U.S. session; FX and continuous-futures requests returned no bar for the exact date window, so no status or price was inferred from those errors. This was a timing/readiness check, not a new acquisition run. Newly acquired confirmed values: 0; final-close validations: 0; intraday references newly saved: 0; stale/unrefreshed fields remain as prior snapshot state. Test Sheets write/readback: NOT_RUN. Production dry-run/write: NOT_RUN. Prior 15 values remain reference-only and were not re-fetched or promoted.
+
+A one-time post-close thread follow-up was presented as an automation suggestion for 2026-10-13 16:00 JST; it is not an active schedule unless accepted in the app. Next required action: after that time, retrieve completed U.S./Tokyo-session data, verify source dates/series, build one fresh snapshot and report, save/read back only to the personal test Sheet, and perform a read-only production dry-run. Keep PR #94 OPEN / Draft / unmerged.
+
+Evidence level: E5 for PR metadata and source/tool responses; no new external data save. No production mutation.
+
+Timestamp: 2026-10-13 00:44 JST.
