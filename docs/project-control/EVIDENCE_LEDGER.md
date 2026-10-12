@@ -316,3 +316,19 @@ Evidence: local official-adapter suite **16/16 PASS** (E1). GitHub Actions [run 
 Limit: Actions performed source validation, not a full snapshot refresh, production close-list dry-run, detailed report generation, or Sheets write/readback. No production cell, existing EPS/FX/Treasury conflict, sheet structure or formatting was changed in this run. PR remains OPEN / Draft / unmerged.
 
 Timestamp: 2026-10-12 23:10 JST.
+
+
+## 2026-10-12 partial fresh-close refresh (BTC/USD)
+
+Run ID: `pr94-personal-snapshot-partial-refresh-20261012T144752Z`. PR branch: `codex/market-data-completeness-recovery`.
+
+- TradingView official MCP was called manually for `BITSTAMP:BTCUSD`. The completed UTC daily candle dated 2026-10-11 closed at 83,679.01 USD. It matched the same-exchange hourly candle starting 2026-10-11T23:00:00Z (close 83,679.01, completed at 2026-10-12T00:00:00Z). Prior close 2026-10-10 was 82,922.78; change +756.23 / +0.91%. The 2026-10-12 daily candle was still forming and excluded. Retrieved at 2026-10-12T14:47:52Z.
+- Appended the BTC observation to test spreadsheet `Personal_Report_Ready` row 18, preserving the prior BTC observation. Generated a new report from that updated snapshot and the previously saved market observations; the new report has no copied prior analysis prose. It explicitly labels itself historical/partial, retains each observation's source date, and records that the other 27 field observations were retained from the previous 2026-10-09–10 snapshot rather than fetched anew. Counts remain 17 VERIFIED / 11 REFERENCE / 0 UNAVAILABLE; these are report classifications, not 28 newly acquired fields.
+- Saved report `personal-report-c8072d0012c0540ab863ff23` to test spreadsheet `Personal_Market_Report` row 12. E5 readback matched all 9 cells; body contains the new BTC value and its verification basis; body SHA-256 matched. No test-sheet prior report row was overwritten.
+- Production `終値一覧` was read only. Its header has 186 columns; grid metadata shows 937 rows and 23 conditional-format rules. Latest stored date is 2026-08-03 and the 2026-10-11 target date row is absent. BTC maps to AF; its latest existing row value is 63,463.4 and the registration note identifies Google Finance daily-history evidence. The candidate is a BITSTAMP UTC daily close with no demonstrated match to that legacy series. Candidate eligible for production write: 0; production writes: 0. Pre/post readback confirmed the 186-column shape, 23 rules, latest rows, and existing cells unchanged. The production sync script has no `--dry-run` option and requires an 08:00 snapshot, so it was not invoked.
+- PR Actions inputs were inspected. A `full` acquisition requires `source_automation_rights_confirmed=true` for every configured provider. That broad per-provider attestation is not established, so no such attestation was made and no full Actions acquisition was dispatched. Public GitHub storage, public dashboard, and production-Sheets flags remain false for the safe run procedure. Actions workflow-dispatch is not exposed in the connected GitHub toolset.
+- Official calendar evidence: JPX cash-market holiday and OSE derivative holiday trading on 2026-10-12; the U.S. cash-equity session was open but not complete at report generation. Sources: https://www.jpx.co.jp/english/corporate/about-jpx/calendar/index.html, https://www.jpx.co.jp/english/news/2040/20261009-01.html, https://www.nyse.com/publicdocs/nyse/ICE_NYSE_2026_Yearly_Trading_Calendar.pdf.
+
+Evidence: test-sheet write/readback E5 PASS; production read-only dry-run E5 PASS with 0 write candidates; full Actions snapshot/run NOT_RUN. PR #94 remains OPEN / Draft / unmerged. Existing run #274 official-source validation was not repeated.
+
+Timestamp: 2026-10-12 23:47 JST.
