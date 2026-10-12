@@ -60,10 +60,22 @@ TECHNICAL_FIELDS = {
     "nikkei225_dev25": "日経225_25日乖離率",
     "nikkei225_dev200": "日経225_200日乖離率",
 }
+SUPPLEMENTAL_FIELDS = {
+    # Existing close-list columns; reference/fallback data stays report-only.
+    "nikkei225_eps": "日経225予想EPS",
+    "nikkei225_per": "日経225予想PER",
+    "nikkei225_pbr": "日経225予想PBR",
+    "tse_prime_advancers": "東証プライム値上がり銘柄数",
+    "tse_prime_decliners": "東証プライム値下がり銘柄数",
+    "tse_prime_ad_ratio25": "東証プライム騰落レシオ",
+    "tse_prime_turnover": "東証プライム売買代金",
+    "tse_prime_volume": "東証プライム売買高",
+}
 REQUIRED_CLOSE_HEADERS = tuple(
     [header for fields in PRICE_FIELDS.values() for header in fields if header]
     + ["日経225終値", "米10年債利回り", "日本10年債利回り", "日経225予想EPS", "日経225予想PER"]
     + list(TECHNICAL_FIELDS.values())
+    + list(SUPPLEMENTAL_FIELDS.values())
 )
 INPUT_HEADERS = (
     "スナップショットID", "更新日時", "対象レポート時刻", "全体状態", "銘柄ID", "データ名", "利用判定", "現在値",
@@ -525,7 +537,7 @@ def close_row_sync(
         if not headers or "日付" not in headers:
             raise CloseSyncError("VALIDATE", "終値一覧 header row or 日付 header is missing.")
         header_indices = {name: i for i, name in enumerate(headers) if name}
-        column_values = read_many_columns(client, sheet_name, list({h for trio in PRICE_FIELDS.values() for h in trio if h} | set(REQUIRED_CLOSE_HEADERS) | {"登録日時", "FearGreed判定", "USDJPY価格取得元", "USDJPY価格取得日時", "日付"}), header_indices)
+        column_values = read_many_columns(client, sheet_name, list({h for trio in PRICE_FIELDS.values() for h in trio if h} | set(REQUIRED_CLOSE_HEADERS) | set(SUPPLEMENTAL_FIELDS.values()) | {"登録日時", "FearGreed判定", "USDJPY価格取得元", "USDJPY価格取得日時", "日付"}), header_indices)
         date_values = column_values.get("日付", [])
         target_row, insert_row = find_target_row(date_values, target)
         duplicate_count = sum(1 for value in date_values[1:] if parse_sheet_date(value) == target)
@@ -695,6 +707,49 @@ def close_row_sync(
                 "asOf": market.get("asOf"), "fetchedAt": market.get("fetchedAt"),
                 "verificationStatus": market.get("verificationStatus"), "valueSource": "value",
                 "closeValue": value, "sheetValue": value / 100,
+            })
+
+        # Connect existing valuation and TSE Prime columns to this same
+        # market snapshot. Only verified, same-date values are eligible.
+        # Existing numeric values are preserved when equal; a different value
+        # stops the row before any cell is written for manual reconciliation.
+        for symbol, header in SUPPLEMENTAL_FIELDS.items():
+            market = markets.get(symbol)
+            if not isinstance(market, dict):
+                continue
+            if market.get("verificationStatus") != "verified" or market.get("fallbackUsed"):
+                continue
+            value, source_date, warning = close_value_for_market(market, target)
+            if value is None or source_date != target.isoformat():
+                if warning:
+                    field_warnings.append(f"{symbol}: {warning}")
+                continue
+            numeric_value = number(value)
+            if numeric_value is None:
+                field_warnings.append(f"{symbol}: verified supplemental value is not numeric")
+                continue
+            existing_values = column_values.get(header, [])
+            existing_value = existing_values[target_row - 1] if not inserting and target_row - 1 < len(existing_values) else ""
+            if str(existing_value or "").strip() and not str(existing_value).strip().startswith("取得不能"):
+                existing_number = number(existing_value)
+                if existing_number != numeric_value:
+                    raise CloseSyncError(
+                        "VALIDATE",
+                        f"Existing same-date value conflicts for {header}; preserving it and stopping before write.",
+                    )
+                summary["marketData"].append({
+                    "symbol": symbol, "sourceId": market.get("sourceId"), "sourceName": market.get("sourceName"),
+                    "asOf": market.get("asOf"), "fetchedAt": market.get("fetchedAt"),
+                    "verificationStatus": "verified", "valueSource": "value",
+                    "reconciliationStatus": "EXACT_MATCH", "closeValue": numeric_value,
+                })
+                continue
+            writes[header] = numeric_value
+            source_ids.append(str(market.get("sourceId") or symbol))
+            summary["marketData"].append({
+                "symbol": symbol, "sourceId": market.get("sourceId"), "sourceName": market.get("sourceName"),
+                "asOf": market.get("asOf"), "fetchedAt": market.get("fetchedAt"),
+                "verificationStatus": "verified", "valueSource": "value", "closeValue": numeric_value,
             })
 
         # Make every required-but-unavailable field explicit. Preserve any
