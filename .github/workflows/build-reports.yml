@@ -82,6 +82,11 @@ jobs:
           print(f'Publication consistency PASS: {expected_key}')
           PY
 
+      - name: Verify ChatGPT Drive receipt for publication candidate
+        run: |
+          python scripts/validate_drive_publication_receipt.py \
+            --enforce-from '2026-08-19T21:00:00+09:00'
+
       - name: Verify builder would not rewrite publication history
         run: |
           cp reports.json /tmp/reports.before.json
