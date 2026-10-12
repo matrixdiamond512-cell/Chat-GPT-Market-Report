@@ -303,3 +303,16 @@ Verification:
 Result: PR #94 remains OPEN / Draft / unmerged at the stated HEAD. Open outcome: when a new same-definition confirmed snapshot exists, run the production close-list dry-run and report the exact candidate cells before any write. Keep the 2026-10-09 legacy conflicts intact until source lineage is proven.
 
 Timestamp: 2026-10-12 JST.
+
+
+## 2026-10-12 run #272 USD/JPY freshness repair
+
+Claim: the stale 2026-10-07 USD/JPY value came from the BOJ long-series endpoint's publication lag: the page updated at 2026-10-12 15:00 JST but its 17:00 series coverage ended at 2026-10-07, while the BOJ daily page already listed the 2026-10-09 PDF. This supports endpoint lag, not a proven client-cache failure. The PDF states the Tokyo USD/JPY 17:00 bid/offer range as 158.33–158.34 on 2026-10-09; midpoint rounded at its published 2-decimal precision is 158.34. Sources: [BOJ daily FX releases](https://www.boj.or.jp/statistics/market/forex/fxdaily/index.htm), [2026-10-09 official PDF](https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx261009.pdf), [BOJ time-series coverage](https://www.stat-search.boj.or.jp/ssi/mtshtml/fm08_d_1.html).
+
+Implementation at PR HEAD `d7304907153d0d41a19d65bd09c844ccc22ac54a`: USD/JPY reference validation now reads the latest dated BOJ daily PDF, derives the bid/offer midpoint using source precision, and requests the listing/PDF without cache. The lagging time-series remains diagnostic-only. A stale result is non-blocking only for a `referenceOnly` source with error `STALE_DATA`; other source failures and stale primary data still fail validation. PER/PBR weighted-average mapping and all existing save guards were not changed.
+
+Evidence: local official-adapter suite **16/16 PASS** (E1). GitHub Actions [run #274](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/38260756441) passed its candidate/adapter job and treasury-validation job. The hosted USD/JPY check returned source match, non-future date, `OK`, `referenceOnly=true`, `asOf=2026-10-09T17:00:00+09:00`; MOF, ECB and Kraken checks also passed. Logs emitted metadata only, not quote values.
+
+Limit: Actions performed source validation, not a full snapshot refresh, production close-list dry-run, detailed report generation, or Sheets write/readback. No production cell, existing EPS/FX/Treasury conflict, sheet structure or formatting was changed in this run. PR remains OPEN / Draft / unmerged.
+
+Timestamp: 2026-10-12 23:10 JST.
