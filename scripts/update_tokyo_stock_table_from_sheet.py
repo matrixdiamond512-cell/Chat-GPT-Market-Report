@@ -48,25 +48,26 @@ def normalize_date(value: Any) -> str:
     return "-".join(match.groups()) if match else ""
 
 
-def previous_weekday(day: date) -> date:
-    day -= timedelta(days=1)
-    while day.weekday() >= 5:
-        day -= timedelta(days=1)
-    return day
-
-
 def expected_tokyo_date(now: datetime) -> str:
+    # Reuse the same JPX holiday-aware session rules as close capture. Do not
+    # relabel a prior close as if a holiday were an active trading session.
+    from resolve_tokyo_close_target import is_tokyo_session
+
     override = os.getenv("TOKYO_MARKET_DATE", "").strip()
     if override:
         normalized = normalize_date(override)
         if not normalized:
             raise RuntimeError("TOKYO_MARKET_DATE is invalid")
+        if not is_tokyo_session(date.fromisoformat(normalized)):
+            raise RuntimeError("TOKYO_MARKET_DATE is not a Tokyo trading day")
         return normalized
-    current = now.date()
-    if current.weekday() < 5 and now.time() >= time(16, 0):
-        return current.isoformat()
-    return previous_weekday(current).isoformat()
 
+    candidate = now.date()
+    if now.time() < time(16, 0):
+        candidate -= timedelta(days=1)
+    while not is_tokyo_session(candidate):
+        candidate -= timedelta(days=1)
+    return candidate.isoformat()
 
 def text(value: Any) -> str:
     return str(value or "").strip()
