@@ -18,6 +18,11 @@ from preflight_morning_infographic import check as preflight_check
 def validate_issuance_projection(report, view, spec):
     if report.get("evidence_stage") != "G2_DRAFT_NOT_SAVED" or report.get("validated_gates") != ["G0", "G1", "G2"]:
         raise ValidationFailure("G2_ISSUANCE_EVIDENCE_REQUIRED")
+    if report.get("synthetic_fixture") or view.get("synthetic_fixture"):
+        raise ValidationFailure("SYNTHETIC_PROJECTION_NOT_FORMAL")
+    result = preflight_check(report, view)
+    if result["status"] != "READY_FOR_CANONICAL_VALIDATION":
+        raise ValidationFailure("ISSUANCE_PREFLIGHT_BLOCKED", result["missing_or_unverified"])
     if report.get("source_note") or report.get("report_status") in ("RECONSTRUCTED_UNVERIFIED", "UNVERIFIED"):
         raise ValidationFailure("ORIGINAL_REPORT_NOT_VERIFIED")
     try:
@@ -40,11 +45,6 @@ def validate_issuance_projection(report, view, spec):
         raise
     except (GateFailure, ValueError, TypeError, KeyError) as exc:
         raise ValidationFailure("G2_EVIDENCE_RECHECK_FAILED", str(exc)) from exc
-    if report.get("synthetic_fixture") or view.get("synthetic_fixture"):
-        raise ValidationFailure("SYNTHETIC_PROJECTION_NOT_FORMAL")
-    result = preflight_check(report, view)
-    if result["status"] != "READY_FOR_CANONICAL_VALIDATION":
-        raise ValidationFailure("ISSUANCE_PREFLIGHT_BLOCKED", result["missing_or_unverified"])
     if not isinstance(spec, dict):
         raise ValidationFailure("CANONICAL_SPEC_REQUIRED")
     # Authoritative original-text offsets, market numbers, and spec are all checked here.
