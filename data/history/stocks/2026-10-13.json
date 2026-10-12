@@ -7600,7 +7600,7 @@
           "日経225",
           "69,030.92",
           "—",
-          "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-10-09。"
+          "投資の森 日経平均PER・PBR（同日終値・前日差）の確定値。基準日 2026-10-09。"
         ],
         [
           "TOPIX",
@@ -7616,9 +7616,9 @@
         ],
         [
           "日経VI",
-          "30.14",
-          "+0.55（+1.86%）",
-          "Nikkei 225 VI official profileの確認済み値。基準日 2026-10-09。"
+          "取得不能（対象日の確定値なし）",
+          "—",
+          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-10-09。"
         ],
         [
           "値上がり銘柄 / 値下がり銘柄",
@@ -7628,9 +7628,9 @@
         ],
         [
           "東証プライム売買代金",
-          "7.84 兆円",
+          "取得不能（対象日の確定値なし）",
           "—",
-          "トレーダーズ・ウェブ 後場概況の確定値。基準日 2026-10-09。"
+          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-10-09。"
         ],
         [
           "騰落レシオ（25日）",
@@ -7640,27 +7640,27 @@
         ],
         [
           "日経225予想PER",
-          "取得不能（対象日の確定値なし）",
+          "17.37倍",
           "—",
-          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-10-09。"
+          "投資の森 日経平均PER・PBRの確定値。基準日 2026-10-09。"
         ],
         [
           "日経225予想EPS",
-          "取得不能（対象日の確定値なし）",
+          "3,974.15円",
           "—",
-          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-10-09。"
+          "投資の森 日経平均PER・PBRの確定値。基準日 2026-10-09。"
         ],
         [
           "日経225 25日乖離率",
           "+4.23%",
           "—",
-          "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-10-09。"
+          "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）の確定値。基準日 2026-10-09。"
         ],
         [
           "日経225 200日乖離率",
           "+13.55%",
           "—",
-          "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-10-09。"
+          "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）の確定値。基準日 2026-10-09。"
         ],
         [
           "海外投資家動向（現物）",
@@ -7670,32 +7670,17 @@
         ]
       ],
       "dataDate": "2026-10-09",
-      "updatedAt": "2026-10-10T00:14:49+09:00",
+      "updatedAt": "2026-10-13T07:22:26+09:00",
       "source": {
-        "name": "東京市場確定値統合（複数ソース・項目別基準日）",
+        "name": "公開ソース（exact-date fallback）",
         "sheet": "",
         "reference": "data/market/japan-close-reference.json",
-        "sheetStatus": "GOOGLE_SERVICE_ACCOUNT_JSON is not configured",
-        "supportingData": [
-          "data/market/latest.json（日経VI）",
-          "株探 日次時系列（TOPIX・グロース250）",
-          "data/nikkei225-supply-demand.json（海外投資家・週次）",
-          "トレーダーズ・ウェブ マーケットの話題（東証プライム売買代金）"
-        ],
-        "repairDiagnostics": {
-          "東証プライム売買代金": "repaired from exact-date Traders Web post-close commentary",
-          "日経225予想PER": "exact-date reference unavailable",
-          "日経225予想EPS": "exact-date reference unavailable",
-          "日経VI": "repaired from verified generic market acquisition",
-          "TOPIX": "exact target-date row not found",
-          "グロース250": "exact target-date row not found",
-          "海外投資家動向（現物）": "repaired from verified JPX weekly flow 2026-09-11"
-        }
+        "sheetStatus": "Google Sheets read failed: Google Sheets API GET failed: 403 {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"The caller does not have permission\",\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n"
       }
     }
   },
   "marketUpdatedAt": {
-    "japan": "2026-10-10T00:14:49+09:00",
+    "japan": "2026-10-13T07:22:26+09:00",
     "us": "2026-10-12T09:41:29+09:00"
   },
   "movers": {
@@ -9241,24 +9226,74 @@
     "us": {
       "title": "米国市場のセクター・業種（上昇率TOP5）",
       "flag": "US",
-      "rows": [],
-      "status": "unavailable",
-      "freshness": "unavailable",
-      "dataDate": null,
-      "asOf": null
+      "rows": [
+        {
+          "rank": 1,
+          "name": "コミュニケーション・サービス",
+          "change": "+1.78%",
+          "note": "大型ネット関連が主導。決算期待、継続性は中程度。"
+        },
+        {
+          "rank": 2,
+          "name": "ヘルスケア",
+          "change": "+1.33%",
+          "note": "ディフェンシブ買い。金利低下時に支え。"
+        },
+        {
+          "rank": 3,
+          "name": "一般消費財・サービス",
+          "change": "+1.07%",
+          "note": "選別買い。消費関連は銘柄差が残る。"
+        },
+        {
+          "rank": 4,
+          "name": "金融",
+          "change": "+0.93%",
+          "note": "景気懸念後退で買い。金利動向を確認。"
+        },
+        {
+          "rank": 5,
+          "name": "エネルギー",
+          "change": "+0.46%",
+          "note": "原油高が支援。継続性は在庫・地政学次第。"
+        }
+      ]
     },
     "japan": {
-      "title": "東京市場のセクター・業種",
+      "title": "東京市場のセクター・業種（上昇率TOP5）",
       "flag": "JP",
-      "rows": [],
-      "gainers": [],
-      "losers": [],
-      "dataAsOf": "2026-10-09",
-      "sourceLabel": "東証33業種指数",
-      "status": "unavailable",
-      "freshness": "unavailable",
-      "dataDate": null,
-      "asOf": null
+      "rows": [
+        {
+          "rank": 1,
+          "name": "電気機器",
+          "change": "+1.72%",
+          "note": "半導体関連が主導。米SOXとの連動を確認。"
+        },
+        {
+          "rank": 2,
+          "name": "情報・通信業",
+          "change": "+1.34%",
+          "note": "大型通信・ネット株に買い。継続性は中程度。"
+        },
+        {
+          "rank": 3,
+          "name": "輸送用機器",
+          "change": "+1.05%",
+          "note": "円安が支援。ドル円の反転に注意。"
+        },
+        {
+          "rank": 4,
+          "name": "化学",
+          "change": "+0.78%",
+          "note": "半導体材料の見直し買い。利確圧力も残る。"
+        },
+        {
+          "rank": 5,
+          "name": "銀行業",
+          "change": "+0.42%",
+          "note": "金利見通しが支え。日銀イベントを確認。"
+        }
+      ]
     }
   },
   "sessionAnalysis": {
@@ -9430,7 +9465,7 @@
     }
   },
   "sessionDataUpdatedAt": "2026-10-13T05:23:27+09:00",
-  "sourceStatus": "Google Sheets＋日経225寄与度検証済みデータ",
+  "sourceStatus": "米国市場と東京市場を独立更新・市場別基準日を明示",
   "sources": [
     {
       "id": "INITIAL_STOCKS_HTML",
@@ -23721,7 +23756,7 @@
     }
   },
   "snapshotDate": "2026-10-13",
-  "savedAt": "2026-10-13T07:11:35+09:00",
+  "savedAt": "2026-10-13T07:22:27+09:00",
   "snapshotPolicy": {
     "type": "independent-market-session-dates",
     "description": "米国市場と東京市場は、それぞれの取引終了後に独立更新。未更新側は直前の確定データを保持する。"

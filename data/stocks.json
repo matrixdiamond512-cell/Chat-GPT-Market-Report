@@ -7600,7 +7600,7 @@
           "日経225",
           "69,030.92",
           "—",
-          "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-10-09。"
+          "投資の森 日経平均PER・PBR（同日終値・前日差）の確定値。基準日 2026-10-09。"
         ],
         [
           "TOPIX",
@@ -7640,27 +7640,27 @@
         ],
         [
           "日経225予想PER",
-          "取得不能（対象日の確定値なし）",
+          "17.37倍",
           "—",
-          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-10-09。"
+          "投資の森 日経平均PER・PBRの確定値。基準日 2026-10-09。"
         ],
         [
           "日経225予想EPS",
-          "取得不能（対象日の確定値なし）",
+          "3,974.15円",
           "—",
-          "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-10-09。"
+          "投資の森 日経平均PER・PBRの確定値。基準日 2026-10-09。"
         ],
         [
           "日経225 25日乖離率",
           "+4.23%",
           "—",
-          "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-10-09。"
+          "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）の確定値。基準日 2026-10-09。"
         ],
         [
           "日経225 200日乖離率",
           "+13.55%",
           "—",
-          "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-10-09。"
+          "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）の確定値。基準日 2026-10-09。"
         ],
         [
           "海外投資家動向（現物）",
@@ -7670,12 +7670,12 @@
         ]
       ],
       "dataDate": "2026-10-09",
-      "updatedAt": "2026-10-10T00:14:49+09:00",
+      "updatedAt": "2026-10-13T07:22:39+09:00",
       "source": {
         "name": "東京市場確定値統合（複数ソース・項目別基準日）",
         "sheet": "",
         "reference": "data/market/japan-close-reference.json",
-        "sheetStatus": "GOOGLE_SERVICE_ACCOUNT_JSON is not configured",
+        "sheetStatus": "Google Sheets read failed: Google Sheets API GET failed: 403 {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"The caller does not have permission\",\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n",
         "supportingData": [
           "data/market/latest.json（日経VI）",
           "株探 日次時系列（TOPIX・グロース250）",
@@ -7684,8 +7684,8 @@
         ],
         "repairDiagnostics": {
           "東証プライム売買代金": "repaired from exact-date Traders Web post-close commentary",
-          "日経225予想PER": "exact-date reference unavailable",
-          "日経225予想EPS": "exact-date reference unavailable",
+          "日経225予想PER": "repaired from exact-date reference",
+          "日経225予想EPS": "repaired from exact-date reference",
           "日経VI": "repaired from verified generic market acquisition",
           "TOPIX": "exact target-date row not found",
           "グロース250": "exact target-date row not found",
@@ -7695,7 +7695,7 @@
     }
   },
   "marketUpdatedAt": {
-    "japan": "2026-10-10T00:14:49+09:00",
+    "japan": "2026-10-13T07:22:39+09:00",
     "us": "2026-10-12T09:41:29+09:00"
   },
   "movers": {
@@ -9480,7 +9480,7 @@
     }
   },
   "sessionDataUpdatedAt": "2026-10-13T05:23:27+09:00",
-  "sourceStatus": "Google Sheets＋日経225寄与度検証済みデータ",
+  "sourceStatus": "米国市場と東京市場を独立更新・項目別基準日を明示・欠損は複数ソースで補完",
   "sources": [
     {
       "id": "INITIAL_STOCKS_HTML",
