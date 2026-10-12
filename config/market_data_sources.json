@@ -541,8 +541,8 @@
           "priority": 1,
           "marketType": "yield",
           "session": "daily_1500_jst_published_next_business_day",
-          "validationStaleHours": 120,
-          "note": "MOF official semiannual-compound constant-maturity 10-year yield based on JSDA OTC reference prices at 15:00 JST, released 09:30 next business day. This is the report's selected Japanese 10-year series; do not compare it as an intraday quote."
+          "validationStaleHours": 144,
+          "note": "MOF official semiannual-compound constant-maturity 10-year yield based on JSDA OTC reference prices at 15:00 JST, released 09:30 next business day. This is the report's selected Japanese 10-year series; do not compare it as an intraday quote. Source validation allows up to 144 hours to cover a three-day Japan market closure plus the next-business-day 09:30 publication lag; the asOf date remains visible and historical values are never relabeled as current."
         }
       ]
     },
