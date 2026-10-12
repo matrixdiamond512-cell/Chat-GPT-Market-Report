@@ -10,6 +10,7 @@ import sys
 
 from reporting.morning_layout import render_html, build_manifest
 from reporting.infographic import ValidationFailure
+from preflight_morning_infographic import check as preflight_check
 
 
 def read(path):
@@ -37,6 +38,13 @@ def main():
         sys.stdout.reconfigure(encoding='utf-8')
     try:
         report, view = read(args.report), read(args.view)
+        if not args.fixture:
+            assessment = preflight_check(report, view)
+            if assessment['status'] != 'READY_FOR_CANONICAL_VALIDATION':
+                print(json.dumps({'status': 'BLOCKED', 'stage': 'input_preflight',
+                                  'missing_or_unverified': assessment['missing_or_unverified']},
+                                 ensure_ascii=False))
+                return 1
         spec = read(args.spec) if args.spec else None
         if args.command == 'render':
             document, contract = render_html(report, view, fixture=args.fixture, spec=spec)
