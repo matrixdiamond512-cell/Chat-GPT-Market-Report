@@ -205,6 +205,18 @@ jobs:
         run: |
           CODE="${{ steps.qa.outputs.code }}"
           if [ "${CODE:-1}" -ne 0 ]; then
+            # A historical, explicitly reconstructed source is already blocked
+            # by the Portal quarantine. Keep QA ready=false, but do not label
+            # the workflow broken when its expected quarantine is enforced.
+            if [ "${{ steps.report.outputs.historical }}" = "true" ]; then
+              if python scripts/check_morning_quarantine.py \
+                   --date "${{ steps.report.outputs.date }}" \
+                   --qa data/market/morning_report_qa.json \
+                   --reports reports.json; then
+                echo "Historical unverified 08:00 report remains blocked by quarantine; QA ready=false."
+                exit 0
+              fi
+            fi
             echo "08:00 report failed publication QA. WEB latest-selection gate must reject this report."
             cat data/market/morning_report_qa.json || true
             exit 1
