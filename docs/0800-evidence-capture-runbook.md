@@ -20,6 +20,8 @@ PYTHONPATH=scripts python scripts/capture_morning_creation_evidence.py \
   --output report-g2.json
 ```
 
+同じ発行実行で得た検証済み取得データを使う場合は、`--snapshot snapshot.json` の代わりに `--acquisition acquisition.json` を指定する。両方の同時指定は禁止。取得データの `generatedAt`、`reportDate`、`reportSlot` を対象contextと照合してからsnapshotを固定する。取得結果が別日のものや検証できない値なら公開可能な証拠とは扱わない。
+
 G0/G1/G2全通過の場合だけ `report-g2.json` を排他的に作成する。戻り値 `G2_DRAFT_NOT_SAVED` は**保存成功でも公開成功でもない**。不一致、原本欠損、既存の出力先、規定外の市場データは停止し、出力を作成しない。
 
 `report-g2.json` には `fullText`、`bodyHash`、`context`、`snapshot`、`report_id`、`revision`、`snapshot_id` と `validated_gates` が揃う。図解の表示原稿 `view` は別途原文に結び付けて作成し、preflightと既存のcanonical spec検証を通す必要がある。
