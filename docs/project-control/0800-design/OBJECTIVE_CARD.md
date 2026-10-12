@@ -23,8 +23,8 @@ OPEN OUTCOMES:
 - O-004 10/09・10/12正式再生成: BLOCKED / 検証済みsnapshot等が不足。
 - O-005 実装後回帰・manifest消費側: Python135/135、既存JS公開回帰PASS。新producerの正式mockは既存consumerでREADY、合成実PNGのmanifestはNOT_READY。非本番Drive保存・外部readbackはNOT_RUN。
 - O-006 比較画像・更新テンプレート仕様・運用追記: 新仕様/運用追記、DRAFT画像/入力/receiptを追加。参考とのデザイン・構成比較を文書化。実10/12全文/数値比較はBLOCKED。運用適用は未実施。
-- O-007 Draft PRレビュー: 限定資料の送信をユーザー明示承認。ローカル検証済み変更をDraft PRとして提出する。
+- O-007 Draft PRレビュー: https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/97 をOPEN/DRAFT/未マージで提出。コードhead ea2071bの専用GitHub CIもPASS。レビュー待ち。
 
-NEXT NECESSARY ACTION: Draft PRに最終差分と合成画像・検証結果を提出する。正式再生成は正規snapshot/本文/specが揃った後に既存ゲートで検証する。本番接続は別承認後。
+NEXT NECESSARY ACTION: Draft PRのレビュー。正式再生成は正規snapshot/本文/specが揃った後に既存ゲートで検証する。本番接続は別承認後。
 
 既存の他作業のobjective記録は変更しない。この記録は今回の08:00変更専用。

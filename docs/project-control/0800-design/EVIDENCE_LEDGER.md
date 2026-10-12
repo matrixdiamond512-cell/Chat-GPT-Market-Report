@@ -43,3 +43,10 @@ Run ID: 0800-design-implementation-20261013-0247JST。ユーザーがHTML/SVG実
 標準PNG: 1536×6798、768px版: 768×3399、モバイル用: 768×11024。標準PNG SHA-256（二回一致）: f629c2555bb314c99c40caf639a7c0e4881db2d7b23761cbad7a14b79a615179。
 保護範囲: 既存infographic.py、market_report.py、gates.py、取得/公開/ポータル/他時刻コードに差分なし。新規08:00コードとfixture・文書・レビュー用CIのみ。機密/認証値/端末固有パスの対象ファイル検索で該当なし。
 Tests NOT_RUN: 正規実レポート、live Drive保存/再読取、live portal、稼働Apps Script配備確認、実スマートフォン、独立OCR/Vision。本番設定・本番画像・mainは変更していない。
+
+GitHub external result: ユーザーの限定送信承認後にブランチ送信成功、Draft PR #97作成・再読取でOPEN/DRAFT/未マージを確認。
+https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/97
+
+Hosted CI: コードhead ea2071b1438e3bc646a61040100357869670686b のrun 38286902389で、依存導入、既存/新projectionテスト、実DRAFT PNGとmanifest接続、artifact uploadがすべてsuccess。
+https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/38286902389
+Evidence: E4 Linux Chromiumでの合成描画・E2/E3モック契約試験。これによって実Drive/Portal/実レポートが合格になったわけではない。この後の変更はレビュー状態とCI結果の文書記録のみで、描画コード・fixture・PNGは同一。
