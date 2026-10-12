@@ -13,6 +13,8 @@ on:
       - "reports/**"
       - "data/market/morning-reference.json"
       - "scripts/verify_morning_report_qa.py"
+      - "scripts/check_morning_quarantine.py"
+      - "tests/test_morning_quarantine.py"
       - "assets/js/morning-report-qa-gate.js"
       - ".github/workflows/qa-morning-report.yml"
   push:
@@ -56,7 +58,9 @@ jobs:
           python-version: "3.12"
 
       - name: Validate QA program
-        run: python -m py_compile scripts/verify_morning_report_qa.py
+        run: |
+          python -m py_compile scripts/verify_morning_report_qa.py scripts/check_morning_quarantine.py
+          python -m unittest discover -s tests -p test_morning_quarantine.py -v
 
       - name: Detect whether this run requires report QA
         id: changes
