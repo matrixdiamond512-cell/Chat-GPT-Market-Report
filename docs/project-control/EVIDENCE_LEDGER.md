@@ -202,3 +202,14 @@ Related source facts: JPX daily-report guidance says the daily report includes P
 No existing test-sheet row, production sheet value, formatting, or main-branch state was changed. PR #94 remains OPEN / Draft / unmerged.
 
 Timestamp: 2026-10-12 JST.
+
+
+## 2026-10-12 Actions transfer repair and hosted checks
+
+Claim: the PR source/test files now match the complete local source, and the current hosted code check passes. The first update commit `da8645c` produced an Actions compile-step failure (run [38203570568](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/38203570568)). The initial GitHub blob payload had been assembled from a shell response subject to an output cap; I replaced both blobs from chunked, length-checked full source reads. The connector did not return decoded failure logs, so the exact compiler diagnostic remains unavailable.
+
+Hosted verification: Actions [run 38203786023](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/38203786023) at code head `34e34db59e19798ad7c6c39c592dfc1a4023656c` completed successfully. Snapshot/report candidate tests, compile steps, and the PR workflow checks passed. The live Treasury fetch, update, Nikkei Sheets, Treasury Sheets, and generic Sheets jobs were skipped; this run does not add live-fetch or persistence evidence.
+
+Local regression remains 13/13 focused snapshot tests PASS, plus compilation of the nine market/report scripts from the workflow command. Existing E5 readback remains the test-sheet report row 9 with the 17/11/0 status totals. No new market values were committed to GitHub, and no production sheet write occurred.
+
+Timestamp: 2026-10-12 JST.
