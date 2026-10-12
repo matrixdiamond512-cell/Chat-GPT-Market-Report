@@ -93,8 +93,8 @@ VALUATION_CLOSE_LIST_POLICY = {
 # Daily FX/yield values are comparable only when their series and observation
 # cutoff are explicit. Missing lineage blocks an automated close-list write.
 CLOSE_LINEAGE_REQUIREMENTS = {
-    "usdjpy": ("sourceSeriesId", "observationDefinition", "sessionCloseAt"),
-    "eurusd": ("sourceSeriesId", "observationDefinition", "sessionCloseAt"),
+    "usdjpy": ("sourceSeriesId", "observationDefinition", "sessionCloseAt", "unit", "reportedDecimalPlaces"),
+    "eurusd": ("sourceSeriesId", "observationDefinition", "sessionCloseAt", "unit", "reportedDecimalPlaces"),
     "us10y": ("sourceSeriesId", "observationDefinition", "sessionCloseAt", "unit", "reportedDecimalPlaces"),
 }
 REQUIRED_CLOSE_HEADERS = tuple(
@@ -376,8 +376,10 @@ def decimal_places(value: Any) -> int | None:
     return max(0, -parsed.as_tuple().exponent) if parsed is not None else None
 
 
-def existing_market_provenance(client: SheetsClient, target: dt.date) -> dict[str, Any] | None:
-    """Find the newest logged US10Y lineage for this close-list market date."""
+def existing_market_provenance(
+    client: SheetsClient, target: dt.date, symbol: str = "us10y",
+) -> dict[str, Any] | None:
+    """Find the newest confirmed audit lineage for one close-list symbol/date."""
     rows = read_values(client, "WEB_Data_Update_Log", "A1:H2000", "FORMATTED_VALUE")
     if not rows or tuple(str(value or "").strip() for value in rows[0]) != LOG_HEADERS:
         return None
@@ -393,11 +395,42 @@ def existing_market_provenance(client: SheetsClient, target: dt.date) -> dict[st
         for item in reversed(note.get("marketData") or []):
             if (
                 isinstance(item, dict)
-                and item.get("symbol") == "us10y"
+                and item.get("symbol") == symbol
                 and item.get("lineageStatus") == "CONFIRMED"
             ):
                 return item
     return None
+
+
+def reconcile_existing_fx(
+    existing_value: Any,
+    target: dt.date,
+    incoming: dict[str, Any],
+    previous: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Require identical FX series/cutoff lineage; never infer equivalence from price proximity."""
+    existing = decimal_value(existing_value)
+    candidate = decimal_value(incoming.get("value"))
+    observed = parse_datetime(incoming.get("asOf"))
+    if existing is None or candidate is None or not observed or observed.date() != target:
+        return {"status": "CONFLICT", "reason": "INCOMING_DATE_OR_VALUE_MISMATCH"}
+    if not previous or previous.get("lineageStatus") != "CONFIRMED":
+        return {"status": "CONFLICT", "reason": "EXISTING_PROVENANCE_UNAVAILABLE"}
+    same_definition = all(
+        str(previous.get(key) or "") == str(incoming.get(key) or "")
+        for key in ("sourceId", "sourceSeriesId", "observationDefinition", "sessionCloseAt")
+    ) and (
+        parse_sheet_date(previous.get("valueDate") or previous.get("asOf")) == target
+        and decimal_value(previous.get("storedValue", previous.get("closeValue"))) == existing
+    )
+    if not same_definition:
+        return {"status": "CONFLICT", "reason": "SOURCE_SERIES_CUTOFF_DATE_OR_STORED_VALUE_MISMATCH"}
+    if existing != candidate:
+        return {"status": "CONFLICT", "reason": "FX_VALUE_MISMATCH"}
+    return {
+        "status": "EXACT_MATCH", "reason": "EXACT_VALUE_AND_CONFIRMED_SERIES_CUTOFF",
+        "preserveExisting": True, "lineageStatus": "CONFIRMED",
+    }
 
 
 def reconcile_existing_us10y(
@@ -680,13 +713,37 @@ def close_row_sync(
                     if reconciliation_status == "CONFLICT":
                         raise CloseSyncError("VALIDATE", "Existing US10Y value conflicts with the verified source metadata; the close-list write was stopped.")
                     write_close_value = not bool(decision.get("preserveExisting"))
+            if symbol in {"usdjpy", "eurusd"} and not inserting:
+                existing_column = column_values.get(close_header, [])
+                if target_row - 1 < len(existing_column):
+                    existing_value = existing_column[target_row - 1]
+                if str(existing_value or "").strip().startswith("取得不能"):
+                    reconciliation_status = "WRITE"
+                    reconciliation_reason = "REPLACE_UNAVAILABLE_MARKER"
+                elif str(existing_value or "").strip():
+                    previous_lineage = existing_market_provenance(client, target, symbol)
+                    incoming_for_reconciliation = dict(market)
+                    incoming_for_reconciliation.update({"value": close_value, "valueDate": target.isoformat()})
+                    decision = reconcile_existing_fx(existing_value, target, incoming_for_reconciliation, previous_lineage)
+                    reconciliation_status = decision["status"]
+                    reconciliation_reason = decision["reason"]
+                    summary["reconciliations"].append({
+                        "symbol": symbol, "targetDate": target.isoformat(),
+                        "status": reconciliation_status, "reason": reconciliation_reason,
+                    })
+                    if reconciliation_status == "CONFLICT":
+                        raise CloseSyncError("VALIDATE", f"Existing {symbol} cell conflicts with or lacks matching confirmed series lineage; the close-list write was stopped.")
+                    write_close_value = not bool(decision.get("preserveExisting"))
             if write_close_value:
                 writes[close_header] = close_value
             source_series = market.get("sourceSeriesId") or market.get("seriesId") or ""
             unit = market.get("unit") or ("%" if symbol == "us10y" else "")
             reported_places = market.get("reportedDecimalPlaces")
+            required_lineage_missing = missing_close_lineage(symbol, market)
             item_lineage = "CONFIRMED" if (
-                source_series and unit and reported_places is not None and reconciliation_status != "EXACT_MATCH"
+                source_series and unit and reported_places is not None
+                and not required_lineage_missing
+                and reconciliation_status != "CONFLICT"
             ) else "UNKNOWN"
             stored_value = existing_value if not write_close_value else close_value
             stored_places = decimal_places(stored_value)
