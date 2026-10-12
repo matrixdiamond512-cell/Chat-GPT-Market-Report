@@ -187,3 +187,18 @@ Hosted checks: Actions run [#254](https://github.com/matrixdiamond512-cell/Chat-
 Evidence: E1/E2 for supplement and shared-snapshot processing; E5 for the connected-account private test-sheet append/readback. No production sheet was accessed for writing, no main merge occurred, and PR #94 remains OPEN / Draft / unmerged. Outstanding: official numeric JP10Y in the same snapshot; TSE Prime volume and turnover; formal verified status for Prime breadth/ratio; confirmed settlement prices for the five futures; current-session refresh; and Actions-authenticated Sheets readback.
 
 Timestamp: 2026-10-12 JST.
+
+
+## 2026-10-12 TSE Prime close observations and private report update
+
+Claim: the dated TSE Prime close observations were added to the existing common snapshot and the same rendered report was appended to the private test spreadsheet. The two turnover/volume figures are explicitly estimates from the 2026-10-09 16:13 JST Kabutan/MINKABU PRESS close report; they remain reference-only pending retrieval of the official JPX daily report. The Prime advancer/decliner counts match the existing Prime-specific source against the independent Kabutan/MINKABU PRESS report and are now verified as a secondary-source cross-check, not as an official JPX confirmation. The 25-session ratio remains reference-only because only one complete same-market historical series is available.
+
+E5 private Sheets outcome: appended the revised historical report to `Personal_Market_Report!A9:I9`; the previous version at row 8 was preserved. Readback matched all nine cells, including the body and SHA-256; the new report ID occurs exactly once. The report uses the 2026-10-09 to 2026-10-10 market-date range and is explicitly historical, not current. It now records **17 verified / 11 reference-only / 0 unavailable** fields. The observed market values are retained in the private test sheet; no raw market values were added to the public repository. Production `終値一覧` was not written.
+
+E1/E2: focused snapshot suite 13/13 PASS; snapshot builder and test module compile. The new test confirms TSE Prime turnover/volume estimates remain references and a cross-checked market count can be marked verified without claiming official JPX provenance. E4/E5 actions testing was NOT_RUN in this turn; no Actions live fetch or service-account write is claimed.
+
+Related source facts: JPX daily-report guidance says the daily report includes Prime market segment estimates, while the target 2026-10-09 official report was not retrieved in this turn. The MOF release index currently exposes the 2026-10-08 yield file, so no same-date official 2026-10-09 Japan 10-year yield was added. JPX settlement-price page states a planned daily posting around 16:45; no contract-specific settlement rows were extracted, so all five futures remain references. Nikkei 25/200-day deviations remain references because the available historical close series differs from the official Nikkei cash close; no recalculation was promoted.
+
+No existing test-sheet row, production sheet value, formatting, or main-branch state was changed. PR #94 remains OPEN / Draft / unmerged.
+
+Timestamp: 2026-10-12 JST.

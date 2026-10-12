@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 4575)
+Total output lines: 289
+
 from __future__ import annotations
 
 import unittest
@@ -5,7 +8,8 @@ import unittest
 from scripts.build_chatgpt_report_input import ITEMS
 from scripts.build_personal_market_snapshot import build_snapshot, SnapshotError, READY_COLUMNS, REFERENCE_COLUMNS
 from scripts.build_personal_market_report import report_counts
-from scripts.build_personal_market_supplements import build_supplements, expected_tse_sessions, prime_ratio25
+from scripts.build_personal_market_supplements import build_supplements, expected_tse_sessions
+from scripts.capture_japan_close_reference import compute_ratio25
 
 
 class PersonalSnapshotTests(unittest.TestCase):
@@ -129,63 +133,153 @@ class PersonalSnapshotTests(unittest.TestCase):
         with self.assertRaises(SnapshotError):
             build_snapshot(source, "2026-10-12T05:33:27+09:00")
 
-
-    def test_supplements_join_cnn_mof_and_exact_prime_breadth_to_snapshot(self):
-        import datetime as dt
+    def test_local_confirmed_japan_yield_and_prime_breadth_join_one_snapshot(self):
         source = self._source()
-        target = dt.date(2026, 10, 9)
-        sessions = expected_tse_sessions(target)
-        history = [{"date": day.isoformat(), "primeAdvancers": 100+i, "primeDecliners": 50+i}
-                   for i, day in enumerate(sessions)]
-        close = {"generatedAt": "2026-10-10T18:45:54+09:00", "dataDate": target.isoformat(),
-            "items": {"東証プライム値上がり銘柄数": {"value": "1194", "date": target.isoformat()},
-                      "東証プライム値下がり銘柄数": {"value": "331", "date": target.isoformat()}},
-            "breadthHistory": history}
-        rates = {"generatedAt": "2026-10-10T02:34:06+09:00",
-            "meta": {"asOfDate": target.isoformat(), "status": "confirmed", "isStale": False},
-            "rates": [{"name": "日本10年国債利回り", "value": 3.001, "unit": "%",
-                       "asOf": target.isoformat(), "status": "confirmed", "source": "LSEG"}]}
-        latest = {"markets": {
-            "fear_greed": {"value": 45, "asOf": "2026-10-10T08:59:54+09:00",
-                "fetchedAt": "2026-10-10T10:12:13+09:00", "sourceId": "cnn_fear_greed_graphdata",
-                "verificationStatus": "verified", "fallbackUsed": False},
-            "jp10y": {"value": 3.002, "asOf": target.isoformat(), "fetchedAt": "2026-10-10T03:00:00+09:00",
-                "sourceId": "mof_jgbcm_10y", "verificationStatus": "verified", "fallbackUsed": False}}}
-        source["supplementalValues"] = build_supplements(rates, close, latest,
-            generated_at="2026-10-12T05:00:00+09:00")
+        sessions = expected_tse_sessions(__import__("datetime").date(2026, 10, 9))
+        history = [
+            {"date": day.isoformat(), "primeAdvancers": 100 + index,
+             "primeDecliners": 50 + index, "sourceName": "prior prime series"}
+            for index, day in enumerate(sessions)
+        ]
+        rates = {
+            "generatedAt": "2026-10-10T02:34:06+09:00",
+            "meta": {"asOfDate": "2026-10-09", "status": "confirmed", "isStale": False},
+            "rates": [{"name": "日本10年国債利回り…75 tokens truncated…         "東証プライム値上がり銘柄数": {"value": "1194", "date": "2026-10-09"},
+                "東証プライム値下がり銘柄数": {"value": "331", "date": "2026-10-09"},
+            },
+            "breadthHistory": history,
+        }
+        source["supplementalValues"] = build_supplements(rates, close, generated_at="2026-10-12T05:00:00+09:00")
         payload = build_snapshot(source, "2026-10-12T05:00:00+09:00")
-        self.assertEqual(payload["markets"]["jp10y"]["sourceId"], "mof_jgbcm_10y")
-        self.assertEqual(payload["markets"]["jp10y"]["verificationStatus"], "verified")
-        self.assertEqual(payload["markets"]["fear_greed"]["verificationStatus"], "verified")
+        self.assertEqual(payload["markets"]["jp10y"]["value"], 3.001)
+        self.assertEqual(payload["markets"]["jp10y"]["verificationStatus"], "reference_only")
         self.assertEqual(payload["markets"]["tse_prime_advancers"]["verificationStatus"], "reference_only")
         self.assertEqual(payload["markets"]["tse_prime_advancers"]["marketSegment"], "TSE Prime")
-        ratio = sum(r["primeAdvancers"] for r in history) / sum(r["primeDecliners"] for r in history) * 100
-        self.assertEqual(payload["markets"]["tse_prime_ad_ratio25"]["value"], ratio)
-        self.assertEqual(report_counts(payload), (11, 8, 9))
+        self.assertEqual(payload["markets"]["tse_prime_ad_ratio25"]["value"],
+                         sum(r["primeAdvancers"] for r in history) /
+                         sum(r["primeDecliners"] for r in history) * 100)
+        self.assertEqual(report_counts(payload), (9, 9, 10))
 
-    def test_lseg_jp10y_stays_reference_and_cnn_fallback_is_not_promoted(self):
-        rates = {"generatedAt": "2026-10-10T02:34:06+09:00",
-            "meta": {"asOfDate": "2026-10-09", "status": "confirmed", "isStale": False},
-            "rates": [{"name": "日本10年国債利回り", "value": 3.001, "unit": "%",
-                       "asOf": "2026-10-09", "status": "confirmed", "source": "LSEG"}]}
+    def test_prime_turnover_and_volume_estimates_join_as_reference_values(self):
+        source = self._source()
+        source["supplementalValues"] = [
+            {
+                "id": "tse_prime_turnover", "value": 1.25, "unit": "兆円",
+                "asOf": "2026-10-09", "fetchedAt": "2026-10-12T00:30:00Z",
+                "sourceId": "kabutan_minkabu_press_prime_estimate",
+                "sourceName": "株探/MINKABU PRESS（概算）",
+                "sourceUrl": "https://s.kabutan.jp/news/n202610090889/",
+                "verificationStatus": "reference_only",
+                "verificationBasis": "Published 2026-10-09 close estimate; official JPX daily report not yet available.",
+                "marketType": "breadth", "session": "tse_prime_close", "marketSegment": "TSE Prime",
+            },
+            {
+                "id": "tse_prime_volume", "value": 100.5, "unit": "百万株",
+                "asOf": "2026-10-09", "fetchedAt": "2026-10-12T00:30:00Z",
+                "sourceId": "kabutan_minkabu_press_prime_estimate",
+                "sourceName": "株探/MINKABU PRESS（概算）",
+                "sourceUrl": "https://s.kabutan.jp/news/n202610090889/",
+                "verificationStatus": "reference_only",
+                "verificationBasis": "Published 2026-10-09 close estimate; official JPX daily report not yet available.",
+                "marketType": "breadth", "session": "tse_prime_close", "marketSegment": "TSE Prime",
+            },
+        ]
+        payload = build_snapshot(source, "2026-10-12T00:45:00Z")
+        self.assertEqual(payload["markets"]["tse_prime_turnover"]["value"], 1.25)
+        self.assertEqual(payload["markets"]["tse_prime_volume"]["value"], 100.5)
+        for field in ("tse_prime_turnover", "tse_prime_volume"):
+            self.assertEqual(payload["markets"][field]["asOf"], "2026-10-09")
+            self.assertEqual(payload["markets"][field]["sourceId"], "kabutan_minkabu_press_prime_estimate")
+            self.assertEqual(payload["markets"][field]["verificationStatus"], "reference_only")
+            self.assertEqual(payload["markets"][field]["marketSegment"], "TSE Prime")
+        self.assertEqual(report_counts(payload), (9, 7, 12))
+
+    def test_independent_prime_close_count_crosscheck_can_be_verified_without_claiming_official(self):
+        source = self._source()
+        source["supplementalValues"] = [{
+            "id": "tse_prime_advancers", "value": 100, "unit": "銘柄",
+            "asOf": "2026-10-09", "fetchedAt": "2026-10-12T00:30:00Z",
+            "sourceId": "prime_breadth_secondary_crosscheck",
+            "sourceName": "primary historical source + independent secondary market report",
+            "sourceUrl": "https://example.test/prime-close-report",
+            "verificationStatus": "verified",
+            "verificationBasis": "Same-date TSE Prime count independently cross-checked; no official JPX report attested.",
+            "marketType": "breadth", "session": "tse_prime_close", "marketSegment": "TSE Prime",
+        }]
+        payload = build_snapshot(source, "2026-10-12T00:45:00Z")
+        observation = payload["markets"]["tse_prime_advancers"]
+        self.assertEqual(observation["verificationStatus"], "verified")
+        self.assertIn("no official JPX report", observation["verificationBasis"])
+        self.assertEqual(report_counts(payload), (10, 5, 13))
+
+    def test_cnn_and_official_mof_observations_join_without_using_fallbacks(self):
+        source = self._source()
+        market_snapshot = {
+            "generatedAt": "2026-10-12T05:00:00+09:00",
+            "markets": {
+                "fear_greed": {
+                    "value": 45, "asOf": "2026-10-10T08:59:54+09:00",
+                    "fetchedAt": "2026-10-10T10:12:13+09:00", "sourceId": "cnn_fear_greed_graphdata",
+                    "sourceName": "CNN Fear & Greed graphdata", "sourceUrl": "https://edition.cnn.com/markets/fear-and-greed",
+                    "verificationStatus": "verified", "fallbackUsed": False,
+                },
+                "jp10y": {
+                    "value": 3.001, "asOf": "2026-10-09", "fetchedAt": "2026-10-10T00:30:00+09:00",
+                    "sourceId": "mof_jgbcm_10y", "sourceName": "Japan MOF 10Y CMT",
+                    "verificationStatus": "verified", "fallbackUsed": False,
+                },
+            },
+        }
+        rates = {"generatedAt": "2026-10-10T02:34:06+09:00", "meta": {"asOfDate": "2026-10-09", "status": "confirmed", "isStale": False},
+                 "rates": [{"name": "日本10年国債利回り", "value": 3.002, "unit": "%", "asOf": "2026-10-09", "status": "confirmed", "source": "LSEG"}]}
         close = {"generatedAt": "2026-10-10T18:45:54+09:00", "dataDate": "2026-10-09", "items": {}, "breadthHistory": []}
-        latest = {"markets": {"fear_greed": {"value": 45, "asOf": "2026-10-10T08:59:54+09:00",
-            "fetchedAt": "2026-10-10T10:12:13+09:00", "sourceId": "cnn_fear_greed_graphdata",
-            "verificationStatus": "verified", "fallbackUsed": True}}}
-        rows = build_supplements(rates, close, latest, generated_at="2026-10-12T05:00:00+09:00")
-        self.assertEqual(next(row for row in rows if row["id"] == "jp10y")["verificationStatus"], "reference_only")
-        self.assertFalse(any(row["id"] == "fear_greed" for row in rows))
+        source["supplementalValues"] = build_supplements(
+            rates, close, market_snapshot, generated_at="2026-10-12T05:00:00+09:00")
+        payload = build_snapshot(source, "2026-10-12T05:00:00+09:00")
+        self.assertEqual(payload["markets"]["fear_greed"]["value"], 45)
+        self.assertEqual(payload["markets"]["fear_greed"]["verificationStatus"], "verified")
+        self.assertEqual(payload["markets"]["jp10y"]["sourceId"], "mof_jgbcm_10y")
+        self.assertEqual(payload["markets"]["jp10y"]["verificationStatus"], "verified")
+        self.assertEqual(report_counts(payload), (11, 5, 12))
 
-    def test_prime_ratio_fails_closed_for_gap_duplicate_or_unreviewed_calendar(self):
+    def test_cnn_fallback_or_old_observation_is_not_promoted(self):
+        rates = {"generatedAt": "2026-10-10T02:34:06+09:00", "meta": {"asOfDate": "2026-10-09", "status": "confirmed", "isStale": False}, "rates": []}
+        close = {"generatedAt": "2026-10-10T18:45:54+09:00", "dataDate": "2026-10-09", "items": {}, "breadthHistory": []}
+        fallback = {"markets": {"fear_greed": {
+            "value": 45, "asOf": "2026-10-10T08:59:54+09:00", "fetchedAt": "2026-10-10T10:12:13+09:00",
+            "sourceId": "cnn_fear_greed_graphdata", "verificationStatus": "verified", "fallbackUsed": True,
+        }}}
+        old = {"markets": {"fear_greed": {
+            "value": 45, "asOf": "2026-10-07T08:59:54+09:00", "fetchedAt": "2026-10-07T10:12:13+09:00",
+            "sourceId": "cnn_fear_greed_graphdata", "verificationStatus": "verified", "fallbackUsed": False,
+        }}}
+        self.assertFalse(any(item["id"] == "fear_greed" for item in build_supplements(
+            rates, close, fallback, generated_at="2026-10-12T05:00:00+09:00")))
+        self.assertFalse(any(item["id"] == "fear_greed" for item in build_supplements(
+            rates, close, old, generated_at="2026-10-12T05:00:00+09:00")))
+
+    def test_prime_ratio_requires_all_25_expected_sessions_and_no_duplicates(self):
         import datetime as dt
-        target = dt.date(2026, 10, 9)
-        sessions = expected_tse_sessions(target)
-        complete = [{"date": day.isoformat(), "primeAdvancers": 2, "primeDecliners": 1} for day in sessions]
-        self.assertEqual(prime_ratio25(complete, target)[0], 200.0)
-        self.assertIsNone(prime_ratio25(complete[:-1], target)[0])
-        self.assertIsNone(prime_ratio25(complete + [complete[-1]], target)[0])
-        self.assertIsNone(prime_ratio25(complete, dt.date(2026, 10, 12))[0])
+
+        sessions = expected_tse_sessions(dt.date(2026, 10, 9))
+        complete = [{"date": d.isoformat(), "primeAdvancers": 1, "primeDecliners": 1} for d in sessions]
+        from scripts.build_personal_market_supplements import prime_ratio25
+        self.assertEqual(prime_ratio25(complete, dt.date(2026, 10, 9))[0], 100.0)
+        self.assertEqual(prime_ratio25(complete[:-1], dt.date(2026, 10, 9))[0], None)
+        self.assertEqual(prime_ratio25(complete + [complete[-1]], dt.date(2026, 10, 9))[0], None)
+        self.assertEqual(prime_ratio25(complete, dt.date(2025, 10, 9))[0], None)
+        self.assertEqual(prime_ratio25(complete, dt.date(2026, 10, 12))[0], None)
+
+    def test_existing_prime_close_collector_rejects_gapped_25_day_window(self):
+        import datetime as dt
+
+        sessions = expected_tse_sessions(dt.date(2026, 10, 9))
+        rows = [{"date": day.isoformat(), "primeAdvancers": 100,
+                 "primeDecliners": 50} for day in sessions]
+        self.assertEqual(compute_ratio25(rows, dt.date(2026, 10, 9)), 200.0)
+        self.assertIsNone(compute_ratio25(rows[1:], dt.date(2026, 10, 9)))
 
 
 if __name__ == "__main__":
     unittest.main()
+
