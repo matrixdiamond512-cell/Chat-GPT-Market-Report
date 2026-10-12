@@ -3,7 +3,7 @@ import copy
 import unittest
 from morning_fixture import fixture
 from scripts.bind_morning_report_evidence import assemble
-from scripts.reporting.infographic import ValidationFailure
+from reporting.infographic import ValidationFailure
 
 class EvidenceHandoffTests(unittest.TestCase):
     def setUp(self):
