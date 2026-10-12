@@ -1,0 +1,20 @@
+name: Verify GAS publisher validation fail-closed
+on:
+  push:
+    branches: [fix/report-publisher-fail-closed-20261013]
+  pull_request:
+    paths:
+      - apps-script/MarketReportAutoPublish.gs
+      - scripts/test_market_report_fail_closed.js
+      - .github/workflows/validate-report-publisher-fail-closed.yml
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/test_market_report_fail_closed.js
