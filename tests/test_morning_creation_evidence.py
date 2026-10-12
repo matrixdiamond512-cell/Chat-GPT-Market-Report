@@ -13,6 +13,22 @@ class MorningCaptureTests(unittest.TestCase):
         self.snapshot = self.report["snapshot"]
         self.title = self.report["title"]
 
+    def test_verified_g2_document_produces_bound_envelope(self):
+        sections = []
+        for heading in REGISTRY["required"]:
+            if heading == "主要市場データ":
+                lines = [table_line(market_row(Market(**item)))
+                         for item in self.snapshot["markets"]]
+            else:
+                lines = ["合成テスト用の検証行"]
+            sections.extend([heading, *lines])
+        text = self.title + "\\n" + "\\n".join(sections) + "\\n"
+        envelope = capture(self.context, self.snapshot, title=self.title, full_text=text)
+        self.assertEqual(envelope["evidence_stage"], "G2_DRAFT_NOT_SAVED")
+        self.assertEqual(envelope["validated_gates"], ["G0", "G1", "G2"])
+        self.assertEqual(envelope["bodyHash"], hashlib.sha256(text.encode("utf-8")).hexdigest())
+        self.assertEqual(envelope["fullText"], text)
+
     def test_bad_slot_fails(self):
         self.context["report_time"] = "12:00"
         with self.assertRaises(ValueError):
