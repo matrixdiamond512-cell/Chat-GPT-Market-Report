@@ -22,3 +22,24 @@ Diagnostic disposition: KEEP 調査文書と入力契約不足の記録。恒久
 Git checks: 調査・control文書の通常diff check PASS。原仕様書は元のMarkdown hard break（行末2空白）を含むため通常checkで指摘。原文を変えず、blank-at-eolだけ除外したcheckはPASS。原添付と保存コピーのSHA-256はともに27b33e88ce2dde7b177d7f1b448dab41d38d0b59508658aade2c1229bc630b3b。
 
 External operation: `git push -u origin codex/0800-infographic-design`はauto-reviewが実行前に拒否。理由: 調査資料と貼り付け仕様書の未確認リポジトリへの開示について、今回の調査/報告指示から具体的承認が確認できない。Push未実行、PR未作成。別手段で送信していない。必要なユーザー承認は、対象GitHubリポジトリと今回資料の外部送信。
+
+## 承認後の実装検証 — 2026-10-13 02:47 JST
+
+Run ID: 0800-design-implementation-20261013-0247JST。ユーザーがHTML/SVG実装・manifest接続と対象GitHubへの限定資料送信/Draft PR作成を明示承認。初回auto-review拒否は履歴として保持する。
+
+| Claim | Evidence | Level | Result | Limit |
+|---|---|---|---|---|
+| 16カード/6市場/142factsを元の文字・数値で描画 | 実headlessブラウザ、render-receipt.json、PNG目視 | E3/E4 | PASS | 合成fixtureのみ。OCR/実市場データ検証ではない |
+| はみ出し・カード重なり・正負色 | native/mobile DOM検査、色のRGB実測 | E4 | PASS（各0件） | 任意の将来入力を保証しない。長文fixtureを含む |
+| 768px表示 | 同じPNGを768pxで実描画した出力、上部等の切り出し目視 | E4 | PASS（最小文字14px） | 375pxへ標準PNGを縮小して合格としない |
+| モバイル用の再配置 | 別PNG幅768px/1列、6市場は2列、目視 | E4 | PASS（ローカル出力） | 実スマートフォン端末はNOT_RUN |
+| 再現性 | 同じ入力/環境で2回PNG生成 | E4 | PASS | 別OS/別ブラウザ/別フォント間のバイト一致は保証しない |
+| 回帰 | Python unittest discover -s tests -q | E1〜E3 | PASS 135/135（新規22件） | 実外部サービスではない |
+| 既存公開処理 | node scripts/test_independent_publication.js | E2/E3 | PASS | Drive/Git/portalはモック |
+| producer→既存manifest consumer | mock正式manifestをPythonで構築し既存evaluateInfographicReadiness_へ入力 | E2 | READYを確認、identity/hash改変を拒否 | mock receipt・小さなtest PNGによる構造/契約試験。正式実画像検証ではない |
+| 合成画像の公開防止 | 実PNGのDRAFT manifestを同consumerへ入力 | E2/E4 | PASS（NOT_READY） | 外部書込なし |
+| 実10/09・10/12 | unchanged CLI/新投影のsnapshot不足テスト | E1 | BLOCKEDを維持 | 正規入力/正式画像比較なし |
+
+標準PNG: 1536×6798、768px版: 768×3399、モバイル用: 768×11024。標準PNG SHA-256（二回一致）: f629c2555bb314c99c40caf639a7c0e4881db2d7b23761cbad7a14b79a615179。
+保護範囲: 既存infographic.py、market_report.py、gates.py、取得/公開/ポータル/他時刻コードに差分なし。新規08:00コードとfixture・文書・レビュー用CIのみ。機密/認証値/端末固有パスの対象ファイル検索で該当なし。
+Tests NOT_RUN: 正規実レポート、live Drive保存/再読取、live portal、稼働Apps Script配備確認、実スマートフォン、独立OCR/Vision。本番設定・本番画像・mainは変更していない。
