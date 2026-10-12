@@ -44,7 +44,9 @@ def capture(context_payload, snapshot_payload, *, title, full_text):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--context", type=Path, required=True)
-    p.add_argument("--snapshot", type=Path, required=True)
+    source = p.add_mutually_exclusive_group(required=True)
+    source.add_argument("--snapshot", type=Path, help="Previously frozen original snapshot")
+    source.add_argument("--acquisition", type=Path, help="Same-run verified acquisition JSON; never reconstructed from report")
     p.add_argument("--body", type=Path, required=True)
     p.add_argument("--title", required=True)
     p.add_argument("--output", type=Path, required=True)
@@ -54,7 +56,14 @@ def main():
             raise ValueError("OUTPUT_EXISTS")
         def load(path):
             return json.loads(path.read_text(encoding="utf-8-sig"))
-        result = capture(load(a.context), load(a.snapshot),
+        context_payload = load(a.context)
+        if a.acquisition:
+            context = ReportContext(**context_payload)
+            frozen_snapshot = MarketDataSnapshot.from_acquisition(context, load(a.acquisition))
+            snapshot_payload = frozen_snapshot.to_dict()
+        else:
+            snapshot_payload = load(a.snapshot)
+        result = capture(context_payload, snapshot_payload,
                          title=a.title, full_text=a.body.read_text(encoding="utf-8-sig"))
         with a.output.open("x", encoding="utf-8") as stream:
             json.dump(result, stream, ensure_ascii=False, indent=2)
