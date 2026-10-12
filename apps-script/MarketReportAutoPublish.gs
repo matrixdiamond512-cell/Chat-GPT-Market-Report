@@ -439,8 +439,7 @@ function marketReportAutoDocName_(dateText, hour) {
 }
 
 function isScheduledMarketReportSlot_(day, hour) {
-  if (day === 7) return false;
-  if (day === 6) return hour === 8;
+  if (day === 6 || day === 7) return false;
   return MARKET_REPORT_AUTO_CONFIG.reportHours.includes(hour);
 }
 
