@@ -22,7 +22,7 @@ class MorningCaptureTests(unittest.TestCase):
             else:
                 lines = ["合成テスト用の検証行"]
             sections.extend([heading, *lines])
-        text = self.title + "\\n" + "\\n".join(sections) + "\\n"
+        text = self.title + "\n" + "\n".join(sections) + "\n"
         envelope = capture(self.context, self.snapshot, title=self.title, full_text=text)
         self.assertEqual(envelope["evidence_stage"], "G2_DRAFT_NOT_SAVED")
         self.assertEqual(envelope["validated_gates"], ["G0", "G1", "G2"])
