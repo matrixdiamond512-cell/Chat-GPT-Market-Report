@@ -34,6 +34,23 @@ class PreflightTests(unittest.TestCase):
         report, view = self.complete()
         self.assertEqual(check(report, view)["status"], "READY_FOR_CANONICAL_VALIDATION")
 
+    def test_renderer_blocks_unverified_oct12_before_output(self):
+        import tempfile
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as directory:
+            view = Path(directory) / "view.json"
+            output = Path(directory) / "render"
+            view.write_text(json.dumps({"time":"08:00","report_id":"2026-10-12_08-00"}),
+                            encoding="utf-8")
+            outcome = subprocess.run(
+                [sys.executable, str(root / "scripts" / "render_morning_infographic.py"),
+                 "render", "--report", str(root / "reports" / "2026-10-12_08-00.json"),
+                 "--view", str(view), "--output", str(output)],
+                capture_output=True, text=True, encoding="utf-8")
+            self.assertEqual(outcome.returncode, 1)
+            self.assertEqual(json.loads(outcome.stdout)["stage"], "input_preflight")
+            self.assertFalse(output.exists())
+
     def test_cli_oct12_blocked_without_view(self):
         root = Path(__file__).resolve().parents[1]
         outcome = subprocess.run(
