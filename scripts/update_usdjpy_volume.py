@@ -156,6 +156,19 @@ def build(existing: dict, now: datetime) -> dict:
             row.setdefault(key, price.get(key))
         existing_rows[target] = row
 
+    # Restore verified historical OHLC when a volume-only updater has erased it.
+    # This recovery snapshot is not a live price feed; never fabricate new dates.
+    recovery_path = ROOT / "data" / "usdjpy-volume-price-recovery.json"
+    if recovery_path.exists():
+        snapshot = json.loads(recovery_path.read_text(encoding="utf-8"))
+        for recovered in snapshot.get("records", []):
+            target = recovered.get("targetDate")
+            row = existing_rows.get(target)
+            if not row:
+                continue
+            for field in ("open", "high", "low", "close", "priceChangePct", "priceSourceId"):
+                if row.get(field) is None and recovered.get(field) is not None:
+                    row[field] = recovered[field]
     records = sorted(existing_rows.values(), key=lambda row: row["targetDate"], reverse=True)
     update_derived(records)
     latest = records[0]
