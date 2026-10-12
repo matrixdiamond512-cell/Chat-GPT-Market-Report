@@ -20,6 +20,21 @@ def check(report, view=None):
         for key in ("report_id", "revision", "snapshot_id", "body_hash", "facts", "cards", "header"):
             if not view.get(key):
                 missing.append("view." + key)
+    if view is not None:
+        for left, right in (("report_id","report_id"), ("revision","revision"), ("bodyHash","body_hash")):
+            if report.get(left) is not None and view.get(right) is not None and report[left] != view[right]:
+                missing.append("identity_mismatch." + left)
+        sid = report.get("snapshot_id") or report.get("snapshotId")
+        if sid is not None and view.get("snapshot_id") is not None and sid != view["snapshot_id"]:
+            missing.append("identity_mismatch.snapshot_id")
+        snapshot = report.get("snapshot") or report.get("marketDataSnapshot") or report.get("market_data_snapshot")
+        context = report.get("context") or report.get("report_context")
+        if isinstance(snapshot, dict) and sid and snapshot.get("snapshot_id") != sid:
+            missing.append("identity_mismatch.snapshot")
+        if isinstance(context, dict) and report.get("report_id") and context.get("report_id") != report["report_id"]:
+            missing.append("identity_mismatch.context_report")
+        if isinstance(context, dict) and report.get("revision") and context.get("revision") != report["revision"]:
+            missing.append("identity_mismatch.context_revision")
     if report.get("source_note") or report.get("report_status") in ("RECONSTRUCTED_UNVERIFIED", "UNVERIFIED"):
         missing.append("report.original_source_verification")
     return {"status": "BLOCKED" if missing else "READY_FOR_CANONICAL_VALIDATION",
