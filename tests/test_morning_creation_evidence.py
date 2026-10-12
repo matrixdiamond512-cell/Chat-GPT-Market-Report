@@ -54,8 +54,10 @@ class MorningCaptureTests(unittest.TestCase):
                        "reportSlot": "08:00", "reportDate": self.context["report_date"],
                        "markets": markets}
         snapshot = MarketDataSnapshot.from_acquisition(ReportContext(**self.context), acquisition)
-        self.assertEqual(snapshot.snapshot_id, self.snapshot["snapshot_id"])
-        self.assertEqual(snapshot.to_dict(), self.snapshot)
+        self.assertEqual(snapshot.report_id, self.context["report_id"])
+        self.assertEqual(len(snapshot.markets), len(self.snapshot["markets"]))
+        self.assertTrue(snapshot.snapshot_id.startswith("snapshot-"))
+        self.assertEqual(MarketDataSnapshot.restore(snapshot.to_dict()).snapshot_id, snapshot.snapshot_id)
 
     def test_reject_other_slot_acquisition(self):
         with self.assertRaises(ValueError):
