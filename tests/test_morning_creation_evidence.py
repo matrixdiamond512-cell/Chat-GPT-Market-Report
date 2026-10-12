@@ -9,7 +9,7 @@ from scripts.preflight_morning_infographic import check as preflight_check
 
 class MorningCaptureTests(unittest.TestCase):
     def setUp(self):
-        self.report, _ = fixture()
+        self.report, self.view = fixture()
         self.context = self.report["context"]
         self.snapshot = self.report["snapshot"]
         self.title = self.report["title"]
@@ -30,7 +30,7 @@ class MorningCaptureTests(unittest.TestCase):
         self.assertEqual(envelope["bodyHash"], hashlib.sha256(text.encode("utf-8")).hexdigest())
         self.assertEqual(envelope["fullText"], text)
         # Handoff is only preflight-ready; original fact offsets and final spec are still needed.
-        view = dict(self.report and fixture()[1])
+        view = dict(self.view)
         view["body_hash"] = envelope["bodyHash"]
         result = preflight_check(envelope, view)
         self.assertEqual(result["status"], "READY_FOR_CANONICAL_VALIDATION")
