@@ -332,3 +332,17 @@ Run ID: `pr94-personal-snapshot-partial-refresh-20261012T144752Z`. PR branch: `c
 Evidence: test-sheet write/readback E5 PASS; production read-only dry-run E5 PASS with 0 write candidates; full Actions snapshot/run NOT_RUN. PR #94 remains OPEN / Draft / unmerged. Existing run #274 official-source validation was not repeated.
 
 Timestamp: 2026-10-12 23:47 JST.
+
+
+## 2026-10-13 JST early-session partial refresh — PR #94
+
+Claim: a new timestamped personal snapshot and report were built from actual TradingView MCP quote responses and saved to the private test spreadsheet. This was an intraday partial refresh, not a completed-close run.
+
+- Capture timestamp: 2026-10-12T15:08:30Z (2026-10-13 00:08:30 JST). TradingView `get_symbol_data_batch` returned 15 tracked fields: the Dow, Nasdaq Composite, S&P 500, Russell 2000, CBOE VIX, USD/JPY, EUR/USD, BITSTAMP BTC/USD, gold continuous future, WTI continuous future, OSE Nikkei continuous future, CME yen and dollar Nikkei continuous futures, and TradingView LSEG-based US/Japan 10-year yield quotes. Per-symbol `update_mode` was retained; delayed quotes remain identified as delayed.
+- Of the 27 fields other than BTC/USD, 14 produced a current quote in this capture. BTC/USD was also refreshed at the common capture time. All 15 are `REFERENCE_ONLY`: the U.S. cash session and daily FX/UTC boundaries were still open; yield quotes were not Treasury/MOF official daily series; and continuous futures are neither contract-specific nor settlement prices.
+- The 13 fields without a new observation retain their last-known metadata and historical quality labels but are hidden from this report as current values. The report explicitly marks them unrefreshed. No new market-date daily-close/official-series verification was achieved: **0**. Current report classification is **0 verified / 15 reference / 13 unrefreshed**; newly captured count is separately **15/28** (14/27 non-BTC fields plus BTC).
+- The common snapshot `tv-mcp-refresh-20261012150830z-15` generated report `personal-report-06f739f64ec215d2e071899c`, data-date span 2026-10-12 to 2026-10-13. Its 28-row detailed body was rendered from the same snapshot; old prose was not reused.
+- E5 personal test-Sheets result: appended 15 reference observations to `Personal_Reference_Values!A7:M21` and one report to `Personal_Market_Report!A13:I13`. Readback matched all 15 IDs/values and the report ID, body, status counts, and SHA-256; each new reference ID and the report ID occur exactly once. Production `終値一覧` and GitHub data were not written.
+- No Actions dispatch was performed. This run used the connected TradingView MCP and personal Sheets route; it does not prove unattended Actions execution. No completed U.S. close was available at the capture time. PR #94 remains OPEN / Draft / unmerged.
+
+Timestamp: 2026-10-13 00:08 JST.
