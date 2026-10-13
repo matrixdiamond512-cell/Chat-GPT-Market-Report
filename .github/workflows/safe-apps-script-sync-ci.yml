@@ -1,0 +1,21 @@
+name: Safe Apps Script sync source CI
+on:
+  push:
+    branches: [feat/safe-apps-script-deploy-20261013]
+  pull_request:
+    paths:
+      - scripts/deploy_market_report_apps_script.py
+      - tests/test_safe_apps_script_deploy.py
+      - .github/workflows/sync-market-report-apps-script.yml
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests -p 'test_safe_apps_script_deploy.py' -v
+      - run: python -m py_compile scripts/deploy_market_report_apps_script.py

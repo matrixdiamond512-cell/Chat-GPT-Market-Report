@@ -1,0 +1,46 @@
+name: Safely sync market report Apps Script sources
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: 'Apply source update (false = safe inspection only)'
+        type: boolean
+        required: true
+        default: false
+      expected_project_sha256:
+        description: 'Exact remote_project_sha256 from a previous dry-run; required for apply'
+        type: string
+        required: false
+permissions:
+  contents: read
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    environment: apps-script-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --disable-pip-version-check google-auth requests
+      - name: Test preservation and fail-closed deployment code
+        run: python -m unittest discover -s tests -p 'test_safe_apps_script_deploy.py' -v
+      - name: Verify target files exist
+        run: |
+          test -f apps-script/MarketReportAutoPublish.gs
+          test -f apps-script/MarketReportMasterScheduler.gs
+          test -f apps-script/MarketReportWebSync.gs
+          test -f apps-script/MarketReportPrePublishValidation.gs
+      - name: Sync existing Apps Script source (dry-run by default)
+        env:
+          APPS_SCRIPT_ID: ${{ secrets.APPS_SCRIPT_ID }}
+          APPS_SCRIPT_OAUTH_JSON: ${{ secrets.APPS_SCRIPT_OAUTH_JSON }}
+          APPLY: ${{ inputs.apply }}
+          EXPECTED: ${{ inputs.expected_project_sha256 }}
+        shell: bash
+        run: |
+          if [[ "$APPLY" == 'true' ]]; then
+            python scripts/deploy_market_report_apps_script.py --apply --expected-project-sha256 "$EXPECTED"
+          else
+            python scripts/deploy_market_report_apps_script.py
+          fi
