@@ -17,7 +17,7 @@ jobs:
       - run: pip install --disable-pip-version-check google-auth requests
       - name: Verify Apps Script authenticated read access and calculate drift
         env:
-          APPS_SCRIPT_ID: ${{ secrets.APPS_SCRIPT_ID }}
+          APPS_SCRIPT_ID: ${{ secrets.APPS_SCRIPT_ID || '1pIB-Z6Or61fH-0l1mDxJcBO16WQPMdcT0--ACPj5-ktr_cQDI-yjsuWN' }}
           APPS_SCRIPT_OAUTH_JSON: ${{ secrets.APPS_SCRIPT_OAUTH_JSON }}
         shell: bash
         run: |
