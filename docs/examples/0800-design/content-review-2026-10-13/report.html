@@ -1,0 +1,228 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><style>
+/* 08:00 infographic: compact 12-column editorial grid. */
+:root {
+  --morning-navy:#071b55; --morning-blue:#0757bc; --morning-cyan:#08b9f4;
+  --morning-up:#ec174c; --morning-down:#0875e1; --morning-flat:#667997;
+  --morning-orange:#f05a14; --morning-in:#00a66a; --morning-out:#df1838;
+  --morning-risk:#db1239; --morning-yellow:#ffd52a; --morning-ink:#09265f;
+  --morning-bg:#eaf4ff; --line:#9ccaf2;
+}
+* { box-sizing:border-box }
+body { margin:0; color:var(--morning-ink); background:var(--morning-bg); font-family:"Noto Sans CJK JP","Yu Gothic","Meiryo",sans-serif; font-size:17px; line-height:1.15 }
+#report { width:1536px; padding-bottom:4px }
+header { position:relative; overflow:hidden; min-height:104px; color:#fff; padding:8px 18px 7px; border-bottom:4px solid #12bafa; background:linear-gradient(180deg,#071742 0%,#102a68 62%,#27538e 100%) }
+header:before { content:""; position:absolute; inset:0 0 0 72%; opacity:.25; background:linear-gradient(180deg,transparent 12%,rgba(7,18,55,.08) 48%,#071844 100%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='720' height='180' viewBox='0 0 720 180'%3E%3Cdefs%3E%3ClinearGradient id='s' x2='0' y2='1'%3E%3Cstop stop-color='%2383c8ff' stop-opacity='.15'/%3E%3Cstop offset='1' stop-color='%23ff977c' stop-opacity='.85'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath fill='url(%23s)' d='M0 180 0 130 22 130 22 82 39 82 39 126 57 126 57 55 78 55 78 119 97 119 97 91 117 91 117 140 139 140 139 72 156 72 156 120 176 120 176 45 197 45 197 126 219 126 219 85 240 85 240 146 260 146 260 67 279 67 279 119 297 119 297 40 316 40 316 122 338 122 338 70 360 70 360 145 380 145 380 50 398 50 398 122 419 122 419 84 441 84 441 143 463 143 463 61 484 61 484 118 503 118 503 37 524 37 524 126 545 126 545 76 568 76 568 146 590 146 590 56 610 56 610 119 633 119 633 92 652 92 652 143 674 143 674 68 694 68 694 120 720 120 720 180Z'/%3E%3Cpath fill='%23091c53' d='M0 162 30 162 30 145 48 145 48 164 74 164 74 133 91 133 91 167 117 167 117 151 133 151 133 172 157 172 157 140 178 140 178 169 201 169 201 148 224 148 224 171 247 171 247 136 267 136 267 167 291 167 291 145 311 145 311 173 338 173 338 140 361 140 361 165 387 165 387 147 411 147 411 172 438 172 438 136 459 136 459 166 485 166 485 145 506 145 506 170 534 170 534 141 555 141 555 168 580 168 580 145 601 145 601 174 627 174 627 136 648 136 648 165 671 165 671 146 692 146 692 173 720 173 720 180 0 180Z'/%3E%3Cpath fill='%23fff2a1' d='M72 143h3v7h-3zm21 4h3v8h-3zm63 2h3v7h-3zm33-12h3v8h-3zm69 18h3v8h-3zm57-23h3v8h-3zm48 15h3v7h-3zm91 5h3v8h-3zm61-20h3v8h-3zm70 21h3v7h-3zm75-13h3v8h-3z'/%3E%3Cpath fill='%23fff' opacity='.9' d='m520 115 37-62 37 62h-18l-19-34-20 34zm15-1 22-16 22 16z'/%3E%3C/svg%3E") right bottom/auto 100% no-repeat }
+header>* { position:relative; z-index:1 }
+.brandline { display:flex; align-items:baseline; gap:18px; white-space:nowrap }
+.brand { font-size:43px; line-height:1; font-weight:950; letter-spacing:-1px }
+.report-title { border-left:3px solid #fff; padding-left:13px; font-size:34px; font-weight:850 }
+.subtitle { max-width:1140px; margin-top:3px; font-size:21px; line-height:1.1; color:#eaf5ff; font-weight:750 }
+.brand-aside { position:absolute; right:23px; top:13px; text-align:right; color:#fff; font-size:22px; line-height:1.12; font-weight:900; text-shadow:0 2px 3px #071742 }
+.basis { position:absolute; right:16px; bottom:5px; font-size:15px; text-align:right; color:#eef7ff }
+.draft { display:inline-block; margin-top:3px; padding:2px 9px; background:var(--morning-yellow); color:var(--morning-ink); font-size:16px; line-height:1.05; font-weight:950; border:2px solid #fff }
+.cards { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); grid-template-rows:auto auto auto auto auto; grid-auto-flow:row; align-items:stretch; gap:5px; padding:6px }
+.card { min-width:0; overflow:hidden; background:#fff; border:1.5px solid var(--line); border-radius:7px; box-shadow:0 1px 3px #12366718 }
+.card-01 { grid-column:1 / span 3; grid-row:1 }
+.card-02 { grid-column:4 / span 3; grid-row:1 }
+.card-03 { grid-column:7 / span 3; grid-row:1 }
+.card-04 { grid-column:10 / span 3; grid-row:1 }
+.card-05 { grid-column:1 / span 6; grid-row:2 }
+.card-06 { grid-column:7 / span 6; grid-row:2 }
+.card-07 { grid-column:1 / span 6; grid-row:3 }
+.card-08 { grid-column:7 / span 6; grid-row:3 }
+.card-09 { grid-column:1 / span 3; grid-row:4 }
+.card-10 { grid-column:4 / span 3; grid-row:4 }
+.card-11 { grid-column:7 / span 3; grid-row:4 }
+.card-12 { grid-column:10 / span 3; grid-row:4 }
+.card-13 { grid-column:1 / span 12; grid-row:5 }
+.card-14 { grid-column:1 / span 4; grid-row:6 }
+.card-15 { grid-column:5 / span 4; grid-row:6 }
+.card-16 { grid-column:9 / span 4; grid-row:6 }
+.card h2 { display:flex; align-items:center; gap:5px; margin:0; min-height:31px; padding:3px 7px; color:#fff; background:linear-gradient(105deg,#0757bc,#079be1); font-size:20px; line-height:1.05; font-weight:900 }
+.card h2>b { font-size:22px; letter-spacing:-.5px }
+.card h2 .icon { width:23px; height:23px; margin:0 }
+.card-body { padding:5px 7px; background:linear-gradient(180deg,#fff,#f8fbff) }
+.card-01 h2,.card-02 h2,.card-05 h2,.card-06 h2,.card-07 h2,.card-11 h2,.card-14 h2 { background:linear-gradient(105deg,#0757bc,#08a7ef) }
+.card-03 h2,.card-09 h2 { background:linear-gradient(105deg,#ed4c08,#ff8a18) }
+.card-04 h2,.card-10 h2,.card-12 h2,.card-15 h2 { background:linear-gradient(105deg,#d80c37,#fa4057) }
+.card-08 h2 { background:linear-gradient(105deg,#009b79,#07b99e) }
+.card-16 h2 { background:linear-gradient(105deg,#ffd329,#ffec69); color:#102b5d }
+.card-04 .card-body,.card-15 .card-body { background:#fff6f6 }
+.card-16 .card-body { display:grid; grid-template-columns:1fr 1fr; gap:4px; background:#fffbea }
+.fact { white-space:pre-wrap; overflow-wrap:anywhere }
+p { margin:3px 0 }
+h3 { margin:0 0 3px; font-size:17px; line-height:1.1 }
+.headline { display:flex; align-items:center; gap:6px; font-size:22px; line-height:1.12; font-weight:950 }
+.judgment-arrow { font-size:54px; line-height:.9 }
+.headline .icon { width:42px; height:42px }
+.numbered { display:grid; grid-template-columns:1fr 1fr; gap:4px 8px; list-style:none; padding:0; margin:0; counter-reset:focus }
+.numbered li { counter-increment:focus; display:flex; align-items:center; gap:5px; min-width:0; margin:0; font-size:16px; font-weight:850; line-height:1.08 }
+.numbered li:before { content:counter(focus); display:inline-grid; place-items:center; flex:0 0 28px; height:28px; border-radius:50%; background:linear-gradient(145deg,#058de9,#0757bc); color:#fff; font-size:19px; font-weight:900 }
+.card-04 .numbered { grid-template-columns:1fr }
+.card-04 .numbered li:before,.card-15 .numbered li:before { background:linear-gradient(145deg,#ff6743,#d80c37) }
+.timeline { display:grid; gap:3px }
+ .timeline>div { display:grid; grid-template-columns:76px 1fr; align-items:stretch; gap:5px; min-height:27px; border-bottom:1px solid #c6def3 }
+.timeline b { display:flex; align-items:center; padding:2px 5px; border-radius:3px; background:linear-gradient(90deg,#0757bc,#087bd8); color:#fff; font-size:16px }
+table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:15px; font-variant-numeric:tabular-nums; line-height:1.08 }
+th { padding:3px 2px; border:1px solid #b4d7f2; background:linear-gradient(#dff3ff,#cbeaff); font-size:14px; color:#073b8e }
+td { padding:2px 2px; border:1px solid #c4def2; vertical-align:middle }
+tr:nth-child(even) { background:#f0f8ff }
+td:first-child { font-weight:800 }
+td .icon { width:24px; height:18px; margin:0 5px 0 0; vertical-align:-3px }
+td .up { color:var(--morning-up); font-weight:900 }
+td .down { color:var(--morning-down); font-weight:900 }
+td .flat { color:var(--morning-flat); font-weight:800 }
+.flow { display:grid; grid-template-columns:1fr 48px 1fr; gap:4px; align-items:stretch }
+.inflow,.outflow { min-width:0; border:1.5px solid; border-radius:6px; padding:4px 5px; font-size:15px; line-height:1.1 }
+.inflow { border-color:#00a66a; background:#e6fbf2 }
+.outflow { border-color:#df1838; background:#fff0f2 }
+.inflow h3,.outflow h3 { padding:2px; border-radius:3px; color:#fff; text-align:center; font-size:15px }
+.inflow h3 { background:linear-gradient(90deg,#008d5b,#06bb7a) }
+.outflow h3 { background:linear-gradient(90deg,#d81235,#f8504d) }
+.flow p { display:flex; align-items:center; gap:5px; margin:2px 0; font-weight:750 }
+.flow-item-icon { width:22px; height:22px; flex:none; margin:0 }
+.transfer { align-self:center; text-align:center; color:#e3213a; font-size:46px; line-height:.8; font-weight:950 }
+.transfer b { display:block; padding:2px 0; color:var(--morning-ink); font-size:13px }
+.flow-arrows { display:grid; gap:2px; border-bottom:2px dashed #60718b }
+.transfer.measured .flow-arrows { border-bottom:0 }
+.flow-arrows i { font-style:normal; line-height:.74 }
+.flow-arrows i:last-child { color:var(--morning-in) }
+.evidence { margin-top:3px; padding-top:3px; border-top:1px solid #d9e5f1; font-size:15px; line-height:1.1; color:#455976 }
+.chain { display:flex; flex-wrap:nowrap; align-items:stretch; gap:2px; margin:3px 0 }
+.chain>div { display:flex; flex:1 1 0; min-width:0; align-items:center; justify-content:center; border:1px solid #a8c9ed; border-radius:4px; padding:3px; background:#eff7ff; text-align:center; font-size:14px; line-height:1.05; font-weight:780 }
+.causal-arrow { align-self:center; color:#e51b3c; font-size:24px; font-weight:950 }
+.chain.hypothesis>div { border-style:dashed; border-color:#7a8da9 }
+.chain.hypothesis .causal-arrow { color:#0757bc }
+.card-10 .chain>div.long { flex-basis:0 }
+.market-grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:3px }
+.market { min-width:0; border:1px solid #9ec8ef; border-radius:5px; padding:3px 4px; background:linear-gradient(180deg,#eff8ff,#fff) }
+.market:nth-child(3n+1) { border-top:5px solid #f26916 }
+.market:nth-child(3n+2) { border-top:5px solid #08a6de }
+.market:nth-child(3n) { border-top:5px solid #0757bc }
+.market h3 { display:flex; align-items:center; min-height:27px; gap:3px; margin:0; color:#073d94; font-size:16px; line-height:1.04; font-weight:900 }
+.market .icon { width:20px; height:20px; margin:0; flex:none }
+.price { margin:2px 0 0; font-size:17px; line-height:1.05; font-weight:950; font-variant-numeric:tabular-nums; color:#082e7b }
+.asof { margin:1px 0 2px; font-size:13px; line-height:1.05; color:#526781 }
+.direction { display:flex; align-items:center; gap:3px; min-height:29px; padding:2px 0; border-top:1px solid #d9e8f6; border-bottom:1px solid #d9e8f6; line-height:1.04; font-size:15px; font-weight:850 }
+.direction b { font-size:32px; line-height:.8 }
+.up { color:var(--morning-up); font-weight:850 }
+.down { color:var(--morning-down); font-weight:850 }
+.flat { color:var(--morning-flat); font-weight:800 }
+.condition { margin:2px 0 0; font-size:14px; line-height:1.05 }
+.condition strong { display:inline; margin-right:3px; color:#164b96; font-size:14px }
+.card-13 .evidence { text-align:right }
+.market-data { display:grid; gap:3px }
+.market-data-row { display:grid; grid-template-columns:1fr 1.45fr; gap:5px; align-items:center; min-height:40px; padding:3px 4px; border:1px solid #d0e4f5; border-radius:4px; background:#f8fcff }
+.market-data-row:nth-child(even) { background:#eef7ff }
+.market-data-name { display:flex; align-items:center; gap:4px; font-size:15px; font-weight:850; line-height:1.05 }
+.market-data-name .icon { width:24px; height:22px; flex:none; margin:0 }
+.market-data-values { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:1px 4px; align-items:center; font-size:14px; line-height:1.05 }
+.market-data-values .asof { grid-column:1/-1; margin:1px 0 0; font-size:13px; overflow-wrap:anywhere }
+.market-list-source { display:inline-block; margin:0 0 3px; padding:2px 7px; border-left:3px solid #08a7ef; background:#f0f8ff; color:#526781; font-size:15px; line-height:1.05 }
+.final-summary,.validation { min-width:0; border:1px solid #e7cf6b; border-radius:5px; padding:4px; font-size:14px; line-height:1.08 }
+.final-summary { background:#fff6cb }
+.validation { background:#f7fbff }
+.validation p { padding:2px 0; border-bottom:1px solid #e6dca8 }
+.card-15 { border-color:#f19aa7 }
+.card-15 .card-body { background:linear-gradient(180deg,#fff0f2,#fff) }
+.card-15 .card-body:before { content:"!"; float:left; display:grid; place-items:center; width:42px; height:42px; margin:0 8px 3px 0; border-radius:9px; background:#df1838; color:white; font-size:34px; font-weight:950 }
+.card-14 .card-body { background:#f4faff }
+.card-11 .card-body p { position:relative; padding-left:27px; margin:5px 0 }
+.card-11 .card-body p:before { content:"●"; position:absolute; left:3px; top:0; color:#0757bc; font-size:20px }
+footer { padding:5px 13px; color:#425c7b; font-size:18px; line-height:1.12 }
+.sprite { position:absolute; width:0; height:0; overflow:hidden }
+@media (max-width:1000px) {
+  #report { width:768px }
+  header { min-height:0; padding:10px 13px }
+  .brand { font-size:27px }
+  .report-title { font-size:23px }
+  .subtitle { font-size:17px }
+  .brand-aside { display:none }
+  .basis { position:static; font-size:14px; text-align:left }
+  .draft { font-size:16px }
+  .cards { grid-template-columns:repeat(6,minmax(0,1fr)); grid-template-rows:none; grid-auto-flow:row; gap:5px; padding:5px }
+  .card { grid-row:auto !important }
+  .card-01,.card-02,.card-03,.card-04,.card-05,.card-06,.card-09,.card-10,.card-11,.card-12,.card-14,.card-15 { grid-column:span 3 }
+  .card-07,.card-08,.card-13,.card-16 { grid-column:span 6 }
+  .card-13 .market-grid { grid-template-columns:repeat(3,minmax(0,1fr)) }
+  .card h2 { font-size:19px; min-height:33px }
+  .card h2>b { font-size:21px }
+  .card-body { padding:6px }
+  body { font-size:19px }
+  .headline { font-size:21px }
+  .numbered li { font-size:17px }
+  table { font-size:15px }
+  th { font-size:14px }
+  td { padding:3px 2px }
+  .market-grid { grid-template-columns:repeat(3,minmax(0,1fr)) }
+  .market h3 { font-size:17px }
+  .market-data-values .asof { font-size:14px }
+  .price { font-size:19px }
+  .condition,.condition strong { font-size:16px }
+  .asof { font-size:15px }
+  .direction { font-size:17px }
+  .flow { grid-template-columns:1fr 40px 1fr }
+  .inflow,.outflow,.chain>div,.evidence { font-size:15px }
+  .transfer { font-size:34px }
+  .transfer b { font-size:12px }
+  footer { font-size:13px }
+}
+@media (max-width:520px) {
+  #report { width:768px }
+  .market-grid { grid-template-columns:repeat(2,minmax(0,1fr)) }
+}
+
+.review-banner{margin:6px;padding:6px 10px;border:3px solid #9d122c;border-radius:6px;background:#fff2c7;color:#76132a;font-size:20px;font-weight:950;text-align:center}
+.review-banner small{display:block;font-size:15px;font-weight:800}
+.card-body{font-size:16px;line-height:1.18} .card-body p{margin:5px 0}
+.data-list{display:grid;gap:3px} .data-row{padding:4px;border:1px solid #b7d8f2;background:#f3faff;border-radius:4px}
+.timeline{display:grid;grid-template-rows:repeat(5,minmax(0,1fr));gap:4px;height:100%} .timeline-row{display:grid;grid-template-columns:75px 1fr;gap:5px;align-items:center;padding:4px;background:#f0f8ff;border-radius:4px}
+.timeline-row b{padding:5px;background:#0757bc;color:#fff;border-radius:3px;text-align:center}
+.flow-review{display:grid;grid-template-columns:1fr 65px;align-items:center;gap:5px} .flow-review .inflow{padding:6px;border-color:#087abd;background:#f0f8ff}
+.flow-review .transfer{font-size:35px} .flow-review .transfer b{font-size:11px}
+.warning-list p{display:flex;gap:6px;align-items:center;padding:5px;background:#fff0f2;border:1px solid #ed8697;border-radius:4px;font-weight:850}
+.warning-list p>b{display:grid;place-items:center;flex:0 0 28px;height:28px;border-radius:50%;background:#d80c37;color:#fff;font-size:22px}
+.judgment{display:grid;grid-template-columns:53px 1fr;gap:4px;align-items:center;font-size:19px;font-weight:900;line-height:1.14}
+.judgment>b{color:#ed174b;font-size:58px;line-height:.9;text-align:center;text-shadow:1px 2px #f9bfd0}
+.focus-list{display:grid;gap:4px;list-style:none;counter-reset:focus;padding:0;margin:0}
+.focus-list li{counter-increment:focus;display:grid;grid-template-columns:28px 1fr;gap:4px;align-items:start;padding:3px 0;font-weight:800}
+.focus-list li:before{content:counter(focus);display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:linear-gradient(145deg,#08b9f4,#0757bc);color:#fff;font-size:17px;font-weight:950}
+.index-table{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(2,minmax(0,1fr));gap:3px;height:100%}
+.index-row{display:grid;grid-template-columns:27px 1fr;align-items:center;min-height:42px;padding:3px;border:1px solid #9dcaf1;background:linear-gradient(90deg,#e6f7ff,#fff);border-radius:4px;font-weight:850;font-size:15px;line-height:1.08}
+.index-row>b{font-size:20px} .metric-table{display:grid;gap:3px}
+.metric-row{padding:4px 5px;border-left:4px solid #099d9c;background:#effbfa;font-weight:760;line-height:1.13}
+.card-07 .data-list{height:100%;grid-template-rows:repeat(5,minmax(0,1fr))}
+.card-14 .card-body:before{content:'◷';float:left;display:grid;place-items:center;width:50px;height:54px;margin:0 8px 3px 0;color:#0875cf;font-size:52px;font-weight:950;line-height:1}
+.card-15 .card-body:before{display:grid}
+.card-16 .card-body:before{content:'💡';float:left;display:grid;place-items:center;width:43px;height:46px;margin:0 7px 3px 0;font-size:35px}
+.card-12 .card-body p{padding:7px 5px;margin:4px 0;border-bottom:1px solid #e7aeb8;font-weight:780}
+.market-grid{grid-template-columns:repeat(6,minmax(0,1fr))} .market{min-height:100px} .market h3{font-size:16px}
+.market .direction{align-items:flex-start;font-size:16px;line-height:1.12} .market .direction b{font-size:38px;flex:none}
+.market .fact{overflow-wrap:anywhere} .card-13{grid-column:1 / span 9;grid-row:4}
+.card-14{grid-column:10 / span 3;grid-row:4} .card-15{grid-column:1 / span 6;grid-row:5} .card-16{grid-column:7 / span 6;grid-row:5}
+.card-15 .card-body:before{display:none}
+.card{display:flex;flex-direction:column} .card-body{flex:1}
+.card-05{grid-column:1 / span 4;grid-row:2} .card-06{grid-column:5 / span 4;grid-row:2} .card-07{grid-column:9 / span 4;grid-row:2}
+.card-08{grid-column:1 / span 3;grid-row:3} .card-09{grid-column:4 / span 3;grid-row:3} .card-10{grid-column:7 / span 3;grid-row:3} .card-11{grid-column:10 / span 3;grid-row:3}
+.card-12{grid-column:1 / span 3;grid-row:4} .card-13{grid-column:4 / span 9;grid-row:4}
+.card-14{grid-column:1 / span 4;grid-row:5} .card-15{grid-column:5 / span 4;grid-row:5} .card-16{grid-column:9 / span 4;grid-row:5}
+.causal-sentence{display:grid;grid-template-columns:27px 1fr;gap:4px;align-items:start;padding:6px 4px;margin:4px 0;border-bottom:1px solid #b9d9f2;font-weight:750;line-height:1.18}
+.causal-sentence>b{display:grid;place-items:center;border-radius:50%;background:#ed4c08;color:#fff;width:25px;height:25px;font-size:18px}
+.card-01{grid-column:1 / span 3;grid-row:1} .card-02{grid-column:4 / span 3;grid-row:1} .card-03{grid-column:7 / span 3;grid-row:1} .card-04{grid-column:10 / span 3;grid-row:1}
+.card-05{grid-column:1 / span 4;grid-row:2} .card-06{grid-column:5 / span 4;grid-row:2} .card-07{grid-column:9 / span 4;grid-row:2}
+.card-08{grid-column:1 / span 3;grid-row:3} .card-09{grid-column:4 / span 3;grid-row:3} .card-10{grid-column:7 / span 3;grid-row:3} .card-11{grid-column:10 / span 3;grid-row:3} .card-12{grid-column:1 / span 3;grid-row:4}
+header:before{opacity:.04} .brand-aside{display:none} .draft{background:#ffd52a}
+.cards{align-items:start}
+.card{display:block} .card-body{flex:initial}
+.card-05{grid-column:1 / span 6;grid-row:2} .card-06{grid-column:7 / span 6;grid-row:2}
+.card-07{grid-column:1 / span 6;grid-row:3} .card-08{grid-column:7 / span 6;grid-row:3}
+.card-09{grid-column:1 / span 3;grid-row:4} .card-10{grid-column:4 / span 3;grid-row:4} .card-11{grid-column:7 / span 3;grid-row:4} .card-12{grid-column:10 / span 3;grid-row:4}
+.card-13{grid-column:1 / span 12;grid-row:5}
+.card-14{grid-column:1 / span 4;grid-row:6} .card-15{grid-column:5 / span 4;grid-row:6} .card-16{grid-column:9 / span 4;grid-row:6}
+.card-14 .card-body:before{width:36px;height:34px;margin-right:5px;font-size:32px}
+.card-14 .card-body:before,.card-15 .card-body:before,.card-16 .card-body:before{display:none}
+.card-14 h2:after{content:'◷';margin-left:auto;color:#e5f4ff;font-size:22px}
+.card-15 h2:after{content:'⚠';margin-left:auto;color:#fff;font-size:20px}
+.card-16 h2:after{content:'💡';margin-left:auto;font-size:19px}
+.card-16 .card-body{display:block}
+</style><body><main id="report"><header><div class="brandline"><span class="brand">マーケットレポート</span><span class="report-title">2026/10/12（月）08:00</span></div><div class="subtitle">米国株反発 × 高金利・原油高｜日本はスポーツの日・OSE先物は祝日取引</div><div class="draft">未検証・公開不可｜保存済み10/12本文によるデザイン確認用</div><div class="basis">正式snapshot未照合</div></header><div class="review-banner">未検証の保存本文を使用したデザインレビュー用プレビュー<small>数値・記述は正式確認前です。公開・投資判断には使用できません。snapshot未取得のため正式生成ではありません。</small></div><div class="cards"><section class="card card-01" data-card="01"><h2><b>01</b> 総合判断</h2><div class="card-body"><div class="judgment"><b>↗</b><p><span class="fact " data-fact-id="u001">米国株は反発。ただし原油高と米長期金利の高止まりで全面リスクオンではない。</span></p></div></div></section><section class="card card-02" data-card="02"><h2><b>02</b> 今日の焦点</h2><div class="card-body"><ol class="focus-list"><li><span class="fact " data-fact-id="u002">米株反発が確定し、ダウ+0.83%、Nasdaq+0.64%。</span></li><li><span class="fact " data-fact-id="u003">VIXは14.84へ低下。</span></li><li><span class="fact " data-fact-id="u004">ただし大阪日経先物夜間終値は68970円で、69000円をわずかに下回る。</span></li></ol></div></section><section class="card card-03" data-card="03"><h2><b>03</b> 相場テーマ</h2><div class="card-body"><p><span class="fact " data-fact-id="u005">米国株の反発と高金利・原油高の綱引き。10月12日はスポーツの日。東証現物は休場、大阪取引所では祝日取引が行われる。</span></p></div></section><section class="card card-04" data-card="04"><h2><b>04</b> 重要3条件</h2><div class="card-body"><div class="warning-list"><p><b>!</b><span class="fact " data-fact-id="u006">WTI93ドル超、米金利5.3%超、Nasdaq下落の重複。</span></p></div></div></section><section class="card card-05" data-card="05"><h2><b>05</b> NY市場の時系列</h2><div class="card-body"><div class="timeline"><div class="timeline-row"><b>開始前</b><span class="fact " data-fact-id="u007">中東緊張緩和観測で原油が一時下落。</span></div><div class="timeline-row"><b>寄り付き</b><span class="fact " data-fact-id="u008">AI・半導体株に買い戻し。</span></div><div class="timeline-row"><b>中盤</b><span class="fact " data-fact-id="u009">通信など個別材料で選別。</span></div><div class="timeline-row"><b>終盤</b><span class="fact " data-fact-id="u010">供給不安でWTIは91.85ドルへ小幅上昇。</span></div><div class="timeline-row"><b>東京時間</b><span class="fact " data-fact-id="u011">祝日先物の出来高と板の厚さに注意。</span></div></div></div></section><section class="card card-06" data-card="06"><h2><b>06</b> NY主要指数・前営業日終値</h2><div class="card-body"><div class="index-table"><div class="index-row"><b>🇺🇸</b><span class="up"><span class="fact data-line" data-fact-id="u012">NYダウ51654.95（+423.31、+0.83%）</span></span></div><div class="index-row"><b>🇺🇸</b><span class="up"><span class="fact data-line" data-fact-id="u013">Nasdaq総合27366.17（+172.83、+0.64%）</span></span></div><div class="index-row"><b>🇺🇸</b><span class="up"><span class="fact data-line" data-fact-id="u014">S&amp;P500 7811.54（+46.18、+0.59%）</span></span></div><div class="index-row"><b>🇺🇸</b><span class="up"><span class="fact data-line" data-fact-id="u015">Russell2000 2806.98（+12.85、+0.46%）</span></span></div></div></div></section><section class="card card-07" data-card="07"><h2><b>07</b> 主要市場データ（時点を区別）</h2><div class="card-body"><div class="data-list"><div class="data-row"><span class="fact data-line" data-fact-id="u016">日経225現物69030.92円（-11.19、-0.02%）、CME日経225先物円建て69050円（+655、+0.96%）、ドル建て69075円（+650、+0.95%）、大阪日経225先物12月限68970円（-500、-0.72%）。</span></div><div class="data-row"><span class="fact data-line" data-fact-id="u017">USD/JPY158.32円、EUR/USD1.1192、金スポット4194.46ドル、WTI91.85ドル（+0.36、+0.39%）、BTCUSD83852.90ドル。</span></div><div class="data-row"><span class="fact data-line" data-fact-id="u018">VIX14.84（-0.57、-3.70%）、日経VI30.14（+0.55、+1.86%）、Fear &amp; Greed45（Fear）、米10年債5.24%（+0.01ポイント）、日本10年国債3.010%（-0.070ポイント）。</span></div><div class="data-row"><span class="fact data-line" data-fact-id="u019">日経225予想PER17.37倍、PBR1.90倍、予想EPS3974.15円、25日移動平均乖離率+4.23%、200日+13.55%。</span></div><div class="data-row"><span class="fact data-line" data-fact-id="u020">東証プライム売買代金7兆8454億円、売買高22億9519万株、値上がり1194銘柄、値下がり331銘柄、25日騰落レシオ91.40。</span></div></div></div></section><section class="card card-08" data-card="08"><h2><b>08</b> 金利・ボラティリティ・日本株評価</h2><div class="card-body"><div class="metric-table"><div class="metric-row"><span class="fact data-line" data-fact-id="u021">米10年債5.24%、</span></div><div class="metric-row"><span class="fact data-line" data-fact-id="u022">日本10年国債3.010%、</span></div><div class="metric-row"><span class="fact data-line" data-fact-id="u023">概算日米金利差2.23ポイント。ドル円158円台。米VIX低下に対し日経VI30.14で警戒感が残る。</span></div><div class="metric-row"><span class="fact data-line" data-fact-id="u024">日経平均は小幅安だが値上がり銘柄1194と優勢。PER17.37倍、</span></div><div class="metric-row"><span class="fact data-line" data-fact-id="u025">PBR1.90倍、</span></div><div class="metric-row"><span class="fact data-line" data-fact-id="u026">EPS3974.15円。25日乖離+4.23%、</span></div><div class="metric-row"><span class="fact data-line" data-fact-id="u027">200日+13.55%で指定の過熱警戒水準には未達。</span></div></div></div></section><section class="card card-09" data-card="09"><h2><b>09</b> クロスアセット資金フロー</h2><div class="card-body"><div class="flow-review"><div class="inflow"><h3>市場で観測された動き</h3><p><span class="fact " data-fact-id="u028">米株上昇、VIX低下、金上昇、BTC持ち直し、WTI小幅高。ETF確定フロー取得不能（最新照合不可）。</span></p></div><div class="transfer">⇄<b>資金フローの確定データなし</b></div></div></div></section><section class="card card-10" data-card="10"><h2><b>10</b> ニュース・材料と波及</h2><div class="card-body"><div class="causal-sentence"><b>→</b><span class="fact " data-fact-id="u029">原油一時下落→インフレ懸念緩和→米株買い戻し。ただし原油は最終的に上昇。原油・米10年債・AI株・日経先物・ドル円を監視。</span></div><div class="causal-sentence"><b>→</b><span class="fact " data-fact-id="u030">原油高・米金利高・AI設備投資の資金調達負担が焦点。米大手銀行決算、10月14日米CPI、15日米PPI・小売売上高に注目。</span></div></div></section><section class="card card-11" data-card="11"><h2><b>11</b> 需給・ポジション、SQ/MSQ</h2><div class="card-body"><p><span class="fact " data-fact-id="u031">10月9日SQ通過。日経平均安値68150.02円、SQ値68465.23円、終値69030.92円。SQ後の売り圧力一服の可能性。最新建玉は取得不能。</span></p></div></section><section class="card card-12" data-card="12"><h2><b>12</b> シナリオ</h2><div class="card-body"><p><span class="fact " data-fact-id="u032">WTI90〜92ドル、米10年債5.3%未満なら日経先物68500〜69500円の攻防。</span></p><p><span class="fact " data-fact-id="u033">原油低下・AI株反発なら上振れ。WTI93ドル超・米金利5.3%超・Nasdaq安なら下振れ。</span></p></div></section><section class="card card-13" data-card="13"><h2><b>13</b> 6市場の短期見通し</h2><div class="card-body"><div class="market-grid"><article class="market"><h3>金</h3><p class="direction up"><b>↑</b><span class="fact " data-fact-id="u034">金：中立〜やや強気（4200ドル回復／4130割れ）。</span></p></article><article class="market"><h3>WTI</h3><p class="direction up"><b>↑</b><span class="fact " data-fact-id="u035">WTI：中立〜やや強気（92ドル超／90ドル割れ）。</span></p></article><article class="market"><h3>大阪日経先物</h3><p class="direction flat"><b>↔</b><span class="fact " data-fact-id="u036">大阪日経先物：中立（69500超／68500割れ）。</span></p></article><article class="market"><h3>USD/JPY</h3><p class="direction up"><b>↑</b><span class="fact " data-fact-id="u037">USD/JPY：中立〜ややドル高（158.50超／157.80割れ）。</span></p></article><article class="market"><h3>EUR/USD</h3><p class="direction flat"><b>↔</b><span class="fact " data-fact-id="u038">EUR/USD：中立（1.1250回復／1.1150割れ）。</span></p></article><article class="market"><h3>BTCUSD</h3><p class="direction up"><b>↑</b><span class="fact " data-fact-id="u039">BTCUSD：中立〜やや強気（84000定着／82700割れ）。</span></p></article></div></div></section><section class="card card-14" data-card="14"><h2><b>14</b> 次の時間帯への引き継ぎ</h2><div class="card-body"><p><span class="fact " data-fact-id="u040">日経先物69000円の攻防と出来高、WTI91〜92ドル、金4200ドル、BTC84000ドル、ドル円158円台。</span></p></div></section><section class="card card-15" data-card="15"><h2><b>15</b> 結論・リスク管理</h2><div class="card-body"><p><span class="fact " data-fact-id="u041">米株反発でも原油高・高金利は残る。祝日先物の薄商いによる急変に注意。</span></p></div></section><section class="card card-16" data-card="16"><h2><b>16</b> データ取得・クロスチェック</h2><div class="card-body"><p><span class="fact " data-fact-id="u042">基準日：2026年10月9日（金）。先物は10月10日朝の夜間取引、為替は10月12日07:05、BTCは同日03:33頃を参照。COMEX金先物清算値は取得不能（照合未了）。</span></p><p><span class="fact " data-fact-id="u043">28項目中27項目取得。COMEX金先物清算値は照合未了。ETF確定フロー・最新建玉も取得不能。</span></p></div></section></div><footer>出典欄・照合状況：保存済み本文より描画｜本文再構成・照合未了｜正式レポートおよび公開manifestを生成しないレビュー資料</footer></main></body></html>

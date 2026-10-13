@@ -25,7 +25,8 @@ OPEN OUTCOMES:
 - O-006 比較画像・更新テンプレート仕様・運用追記: 新仕様/運用追記、DRAFT画像/入力/receiptを追加。参考とのデザイン・構成比較を文書化。実10/12全文/数値比較はBLOCKED。運用適用は未実施。
 - O-007 Draft PRレビュー: https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/97 はOPEN/DRAFT/未マージ。専用GitHub CIの今回head結果はPENDING。レビュー待ち。
 - O-008 10/09デザインへの再設計: 12カラム、番号/アイコン、表/時系列/フロー/因果、6市場一列、モバイル別レイアウトを実装。新たな指示「街並みより内容の見やすさ」を反映し、市場データ/市場カードの文字を拡大、ヘッダー装飾を縮小。合成PNGの描画・データ照合はPASS。ユーザー視覚レビューと受け入れはPENDING。
+- O-009 内容差異の再修正: 以前の合成本文は内容レビューに不適切との指摘を受け、利用者が選択した保存済み10/12 `fullText`から直接描画するレビュー専用経路を追加。入力は`RECONSTRUCTED_UNVERIFIED`、画面上に未検証/公開不可を明記、snapshot・公開manifestなし。12カラム構成を見直し、6市場をPC全幅一列、モバイルは密度の高いカードを全幅表示。実PNG検査PASS、デザイン受け入れはPENDING。
 
-NEXT NECESSARY ACTION: ユーザーに`readability-review-v2`のDRAFT合成PNGを確認してもらい、まだ読みにくい箇所の指摘を受ける。正式再生成は正規snapshot/本文/specが揃った後に既存ゲートで検証する。本番接続は別承認後。
+NEXT NECESSARY ACTION: ユーザーに`content-review-2026-10-13`の未検証レビューPNGを確認してもらい、見本との差や内容の並べ方について指示を受ける。正式再生成は正規snapshot/本文/specが揃った後に既存ゲートで検証する。本番接続は別承認後。
 
 既存の他作業のobjective記録は変更しない。この記録は今回の08:00変更専用。

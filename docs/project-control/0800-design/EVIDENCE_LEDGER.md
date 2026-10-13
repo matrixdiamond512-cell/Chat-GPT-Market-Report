@@ -85,3 +85,18 @@ Run ID: `0800-design-review-iteration-2-20261013`; direction: user clarified tha
 版2: PNG `1536×2629`; responsive mobile `768×3352`; SHA-256 `89ba60b2962771ad6f4945549e3fab5c34ca84f767fce7b64feb56c328e1cc19`; artifacts `docs/examples/0800-design/readability-review-v2/`。4/12幅はNo.05/06/07、6/12幅はNo.08/09/11/12、全幅はNo.10/13、最後はNo.14/15が3/12・No.16が6/12。市場条件18px、価格22px、判定19px、見出し20px、市場データ値18px/時点16px。
 
 BLOCKEDのまま: snapshot不足の10/09・10/12正式レポート生成。未実施: 実スマートフォン、Drive/Portal外部readback。デザイン受け入れは画像確認後に更新する。PRはDraftのまま維持し、main・本番・自動公開は変更しない。
+
+## 保存本文レビュー候補 v3 — 2026-10-13
+
+Run ID: `0800-source-content-review-20261013`; direction: 利用者は保存済み10/12本文を「未検証と明記」してデザイン確認に用いることを選択。以前の合成fixture画像では内容をレビューできないと訂正。
+
+| Claim | Evidence | Level | Result | Limit |
+|---|---|---|---|---|
+| 保存済み本文を未検証プレビューに描画 | `scripts/build_morning_unverified_review.py` + `docs/examples/0800-design/content-review-2026-10-13/report.html` | E1/E3 | PASS、43表示fact。全画面に未検証/公開不可を明記 | 入力`RECONSTRUCTED_UNVERIFIED`。個々の表示fact一致は検査したが市場真実性は未確認 |
+| 16カードの順序とPC複合グリッド | content-review `png/render-receipt.json` の実Edge DOM/位置 | E4 | PASS、01〜16、12列、No.13全幅で6市場一列 | 10/09との人手による正式合否は未確定 |
+| PNGの表示品質/768px | 同receipt、PC PNG `1536×1470`、mobile PNG `768×2297` | E4 | PASS、fact差分0、文字切れ/外側描画/重なり/色エラー0、モバイル最小文字15px | 画面上での作成者目視のみ。物理端末NOT_RUN |
+| 数値/文章の由来 | source `reports/2026-10-12_08-00.json`。参考画像の値は入力に使っていない | E2/E4 | PASS、表示factは保存本文から直接生成 | snapshot未照合。正式値とは扱わない |
+| 正式生成ゲート | `python scripts/market_report.py validate-report --report reports/2026-10-12_08-00.json` | E1 | BLOCKED/FAIL `MARKET_DATA_SNAPSHOT_NOT_FOUND` | 条件緩和なし。レビュー用ビルダーはsnapshot/manifestを生成しない |
+| regression | `python -m unittest discover -s tests -q` (`TEMP/TMP=.test-tmp-0800`); `node scripts/test_independent_publication.js`; `node --check scripts/render_morning_png.js`; `git diff --check` | E1〜E3 | PASS 176/176 + publication regression PASS + syntax/diff PASS | 外部Drive/Portal/hosted CIは未確認 |
+
+差異: 10/09参考の写真調夜景は使わず、ヘッダーは簡素な濃紺。参考の画像比率はより横長。パネル表現・アイコンの種類、余白と密度は引き続き異なる。今回の16項目構成を優先したため内容見出しも異なる。候補: `docs/examples/0800-design/content-review-2026-10-13/`; PNG SHA-256 `ff76043361881e404866ca020fe804ab5ac9796ba700507f582eaf167193139d`。デザイン受け入れPENDING。正式再生成はBLOCKEDを維持。PR #97はDraftのまま。次の必要行動はこの画像に対するユーザーのデザイン確認。

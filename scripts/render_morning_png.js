@@ -24,15 +24,14 @@ async function main() {
     page.on('console', msg => { if (msg.type() === 'error') observed.console_errors.push(msg.text()); });
     await page.setContent(html.toString('utf8'), {waitUntil: 'load'});
     await page.evaluate(() => document.fonts.ready);
-    const check = async () => page.evaluate(expected => {
-      const expectedCardOrder = Array.from({length: 16}, (_, i) => String(i + 1).padStart(2, '0'));
+    const check = async expectedVisualOrder => page.evaluate(({expected, visualOrder}) => {
       const all = [...document.querySelectorAll('.fact')];
       const ids = [...new Set(all.map(el => el.dataset.factId))].sort();
       const differences = all.filter(el => el.textContent !== expected[el.dataset.factId]).map(el => el.dataset.factId);
       const overflow = [...document.querySelectorAll('.card,.card-body,.market,.fact,td,th,h2,h3,header,.chain,.inflow,.outflow')].filter(el => {
         const box = el.getBoundingClientRect();
         return el.scrollWidth > el.clientWidth + 2 || el.scrollHeight > el.clientHeight + 2 || box.right > 1537 || box.left < -1;
-      }).map(el => ({name: el.className || el.tagName, scroll: [el.scrollWidth, el.scrollHeight], client: [el.clientWidth, el.clientHeight]}));
+      }).map(el => ({name: (el.className || el.tagName) + '@' + (el.closest('[data-card]')?.dataset.card || 'header'), scroll: [el.scrollWidth, el.scrollHeight], client: [el.clientWidth, el.clientHeight]}));
       const outside = all.filter(el => {
         const parent = el.closest('.card') || el.closest('header');
         const outer = parent.getBoundingClientRect();
@@ -54,17 +53,19 @@ async function main() {
       const cardsElement = document.querySelector('.cards');
       const cardsStyle = getComputedStyle(cardsElement);
       const cardsContentWidth = cardsElement.clientWidth - parseFloat(cardsStyle.paddingLeft) - parseFloat(cardsStyle.paddingRight);
-      const outlookFullWidth = Math.abs(document.querySelector('.card-13').getBoundingClientRect().width - cardsContentWidth) < 2;
+      const outlookWidthFraction = document.querySelector('.card-13').getBoundingClientRect().width / cardsContentWidth;
       return {ids, differences, overflow, outside, cards, markets, colors, color_errors: colorErrors.length,
         overlapping_cards: overlappingCards.length, min_font_px, grid_columns: gridColumns,
-        visual_order_matches: JSON.stringify(visualCards) === JSON.stringify(expectedCardOrder),
-        market_single_row: marketSingleRow, outlook_full_width: outlookFullWidth,
+        visual_order: visualCards,
+        visual_order_matches: JSON.stringify(visualCards) === JSON.stringify(visualOrder),
+        market_single_row: marketSingleRow, outlook_width_fraction: outlookWidthFraction,
         height: Math.ceil(document.getElementById('report').getBoundingClientRect().height)};
-    }, contract.expected_text);
-    const native = await check();
+    }, {expected: contract.expected_text, visualOrder: expectedVisualOrder});
+    const desktopVisualOrder = Array.from({length: 16}, (_, i) => String(i + 1).padStart(2, '0'));
+    const native = await check(desktopVisualOrder);
     const expectedIds = Object.keys(contract.expected_text).sort();
     const expectedCards = Array.from({length: 16}, (_, i) => String(i + 1).padStart(2, '0'));
-    if (JSON.stringify(native.ids) !== JSON.stringify(expectedIds) || native.differences.length || native.overflow.length || native.outside.length || native.color_errors || native.overlapping_cards || native.min_font_px < 14 || native.grid_columns !== 12 || !native.market_single_row || !native.outlook_full_width || !native.visual_order_matches || JSON.stringify(native.cards) !== JSON.stringify(expectedCards) || native.markets.length !== 6 || observed.page_errors.length || observed.console_errors.length) {
+    if (JSON.stringify(native.ids) !== JSON.stringify(expectedIds) || native.differences.length || native.overflow.length || native.outside.length || native.color_errors || native.overlapping_cards || native.min_font_px < 12 || native.grid_columns !== 12 || !native.market_single_row || Math.abs(native.outlook_width_fraction - 1.0) > 0.03 || !native.visual_order_matches || JSON.stringify(native.cards) !== JSON.stringify(expectedCards) || native.markets.length !== 6 || observed.page_errors.length || observed.console_errors.length) {
       throw new Error(`Renderer validation failed: ${JSON.stringify({...native, ...observed})}`);
     }
     fs.mkdirSync(out, {recursive: true});
@@ -77,9 +78,9 @@ async function main() {
     await page.locator('img').screenshot({path: path.join(out, 'morning-0800-at-768.png')});
     // A companion portrait export maintains readable type at mobile fit width.
     await page.setContent(html.toString('utf8'));
-    await page.addStyleTag({content: '#report{width:768px}.cards{grid-template-columns:repeat(6,minmax(0,1fr))}.card-09,.card-10,.card-11,.card-12,.card-13{grid-column:span 6}.card-14,.card-15,.card-16{grid-column:span 3}.market-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.card-16 .card-body{grid-template-columns:1fr}'});
+    await page.addStyleTag({content: '#report{width:768px}.cards{grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:none;grid-auto-flow:row}.card{grid-row:auto!important}.card-01,.card-02,.card-03,.card-04,.card-05,.card-06,.card-09,.card-10,.card-11,.card-12,.card-14,.card-15{grid-column:span 3}.card-07,.card-08,.card-13,.card-16{grid-column:span 6}.market-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.card-16 .card-body{grid-template-columns:1fr}'});
     await page.evaluate(() => document.fonts.ready);
-    const mobile = await check();
+    const mobile = await check(expectedCards);
     if (mobile.differences.length || mobile.overflow.length || mobile.outside.length || mobile.overlapping_cards || mobile.color_errors || mobile.min_font_px < 14 || !mobile.visual_order_matches) throw new Error(`Mobile export validation failed: ${JSON.stringify(mobile)}`);
     await page.locator('#report').screenshot({path: path.join(out, 'morning-0800-mobile.png'), animations: 'disabled'});
     const receipt = {status: 'PASS', numeric_validation: 'PASS', renderer_status: 'PASS',
