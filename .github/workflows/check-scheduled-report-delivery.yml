@@ -1,0 +1,48 @@
+name: Scheduled report actual-delivery health
+on:
+  workflow_dispatch:
+    inputs:
+      slot:
+        type: choice
+        required: true
+        options: ["08:00", "12:00", "16:00", "21:00"]
+      date:
+        type: string
+        required: false
+  schedule:
+    - cron: "45 23 * * 0-4" # 08:45 JST weekdays
+    - cron: "45 3 * * 1-5"  # 12:45 JST weekdays
+    - cron: "45 7 * * 1-5"  # 16:45 JST weekdays
+    - cron: "45 12 * * 1-5" # 21:45 JST weekdays
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify health-check regressions
+        run: python -m unittest discover -s tests -p 'test_scheduled_report_delivery.py' -v
+      - name: Verify scheduled canonical and portal readiness
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
+          SLOT: ${{ inputs.slot }}
+          DATE: ${{ inputs.date }}
+        shell: bash
+        run: |
+          case "$SCHEDULE" in
+            "45 23 * * 0-4") SLOT="08:00" ;;
+            "45 3 * * 1-5") SLOT="12:00" ;;
+            "45 7 * * 1-5") SLOT="16:00" ;;
+            "45 12 * * 1-5") SLOT="21:00" ;;
+          esac
+          test -n "$SLOT" || { echo "Missing scheduled slot"; exit 1; }
+          if [[ -n "$DATE" ]]; then
+            python scripts/verify_scheduled_report_delivery.py --slot "$SLOT" --date "$DATE"
+          else
+            python scripts/verify_scheduled_report_delivery.py --slot "$SLOT"
+          fi
