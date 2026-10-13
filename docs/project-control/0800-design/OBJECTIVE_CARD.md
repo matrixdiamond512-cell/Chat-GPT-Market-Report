@@ -19,11 +19,11 @@ INSTRUCTION UPDATE (CORRECT/CLARIFY): ユーザーは10/12改善見本がChatGPT
 OPEN OUTCOMES:
 - O-001 生成元・既存接続調査: コード調査済み。実稼働環境は未確認。
 - O-002 再現可能な08:00描画テンプレート: IMPLEMENTED。既存ゲート不変、専用CLI追加。
-- O-003 合成fixture・画像・768px検査: PASS。16項目・6市場・142facts、元文字列完全一致、最小14px、はみ出し/重なり/色エラーなし。同一環境2回のPNG hash一致。モバイル専用PNGは生成・目視確認済み。実スマートフォン端末はNOT_RUN。
+- O-003 合成fixture・画像・768px検査: v1.1 PASS。16項目・6市場・142facts、元文字列完全一致、モバイル最小14px、はみ出し/重なり/色エラーなし。PNG 1536×2639、mobile 768×3391。実スマートフォン端末はNOT_RUN。
 - O-004 10/09・10/12正式再生成: BLOCKED / 検証済みsnapshot等が不足。
-- O-005 実装後回帰・manifest消費側: Python135/135、既存JS公開回帰PASS。新producerの正式mockは既存consumerでREADY、合成実PNGのmanifestはNOT_READY。非本番Drive保存・外部readbackはNOT_RUN。
+- O-005 実装後回帰・manifest消費側: 最新コードでPython176/176、既存JS公開回帰PASS。新producer正式mockは既存consumerでREADY、合成実PNGのmanifestはNOT_READY。非本番Drive保存・外部readbackはNOT_RUN。
 - O-006 比較画像・更新テンプレート仕様・運用追記: 新仕様/運用追記、DRAFT画像/入力/receiptを追加。参考とのデザイン・構成比較を文書化。実10/12全文/数値比較はBLOCKED。運用適用は未実施。
-- O-007 Draft PRレビュー: https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/97 をOPEN/DRAFT/未マージで提出。コードhead ea2071bの専用GitHub CIもPASS。レビュー待ち。
+- O-007 Draft PRレビュー: https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/97 はOPEN/DRAFT/未マージ。専用GitHub CIの今回head結果はPENDING。レビュー待ち。
 - O-008 10/09デザインへの再設計: 12カラム、番号/アイコン、表/時系列/フロー/因果、6市場一列、モバイル別レイアウトを実装し合成PNGを生成。描画・データ照合はPASS。参考との差分レビューとユーザー受け入れはPENDING。
 
 NEXT NECESSARY ACTION: ユーザーにDRAFT合成PNGを確認してもらい、視覚的な差分/希望を受けて再調整する。正式再生成は正規snapshot/本文/specが揃った後に既存ゲートで検証する。本番接続は別承認後。

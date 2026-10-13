@@ -65,4 +65,6 @@ Run ID: `0800-design-review-iteration-1-20261013`. 追加指示を**CORRECT**と
 
 レビュー版PNG: `1536×2639`, mobile `768×3391`, SHA-256 `e6da4fb062a4636284f24a828cad57ce2dae7c31253966e8eb66844c268f2cb7`。生成出力と入力は`docs/examples/0800-design/redesign-review-v1/`。すべてDRAFT/DEBUG_PREVIEWの合成fixture。正式画像・snapshot不足判定は変更していない。
 
-回帰テスト、manifest consumer、Hosted CI: **この再設計変更についてはNOT_RUN**。視覚検査: **ユーザー受け入れ待ちで未完了**。次の必要行動は、ユーザーの画像レビューを受けてデザイン差分を修正し、必要な場合のみ再レビューすること。
+回帰テスト: 最新のPR head `28dfa96` でPython **176/176 PASS**、`node scripts/test_independent_publication.js` **PASS**、renderer JavaScript構文 **PASS**。これらは回帰と構造の証拠で、デザイン品質の合格を意味しない。Hosted CI: **NOT_RUN/PENDING**（push後に該当runを確認できず）。Drive/Portal readback: NOT_RUN。
+
+視覚検査: ユーザー受け入れ待ちで未完了。自己比較では全体の色/カード構造/図の種類は基準に近づいたが、画像は基準より縦長、街並みは模式SVG、No.05/06やNo.10/11の行高と余白が異なる。次の必要行動は、ユーザーの画像レビューを受けてデザイン差分を修正し、必要な場合のみ再レビューすること。
