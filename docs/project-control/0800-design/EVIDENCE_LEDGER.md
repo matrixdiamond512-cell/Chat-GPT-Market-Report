@@ -68,3 +68,20 @@ Run ID: `0800-design-review-iteration-1-20261013`. 追加指示を**CORRECT**と
 回帰テスト: コードhead `28dfa96`（最新PR head `eb15e3f`は記録文書のみ）でPython **176/176 PASS**、`node scripts/test_independent_publication.js` **PASS**、renderer JavaScript構文 **PASS**。最新head上でfixtureからPNGを再生成し、SHA-256も保存PNGと一致。これらは回帰と構造の証拠で、デザイン品質の合格を意味しない。Hosted CI: **NOT_RUN/PENDING**（push後に該当runを確認できず）。Drive/Portal readback: NOT_RUN。
 
 視覚検査: ユーザー受け入れ待ちで未完了。自己比較では全体の色/カード構造/図の種類は基準に近づいたが、画像は基準より縦長、街並みは模式SVG、No.05/06やNo.10/11の行高と余白が異なる。次の必要行動は、ユーザーの画像レビューを受けてデザイン差分を修正し、必要な場合のみ再レビューすること。
+
+## 判読性レビュー版2 — 2026-10-13
+
+Run ID: `0800-design-review-iteration-2-20261013`; direction: user clarified that the city illustration is unimportant and report content must be easier to read.
+
+| Claim | Evidence | Level | Result | Limit |
+|---|---|---|---|---|
+| fixtureの142 factsと数値を一字も削らず描画 | `docs/examples/0800-design/readability-review-v2/render-receipt.json` の実Edge描画検査 | E4 | PASS、差異0 | 合成fixtureのみ。市場データの事実性は検証しない |
+| 固定16項目、12列、No.13の6市場一列 | 同receiptのDOM/位置計測 | E4 | PASS、順序一致、横一列 | モバイルは専用再配置 |
+| 判読性向上のため本文領域・文字サイズを優先 | CSS差分と版1/版2の実PNG目視 | E4 | 作成者目視: 市場データの値/時点と6市場の価格/条件が大きく追いやすい。ヘッダー図を縮小 | ユーザーによる視覚合否はPENDING |
+| 描画異常と色分け | receipt | E4 | overflow 0、outside 0、重なり0、色エラー0 | 目視の好みや任意端末差を保証しない |
+| 768px表示 | desktop fitted image + 768px responsive PNG | E4 | PASS、専用モバイルの最小fact文字15px | 実端末はNOT_RUN。縮小確認画像の文字が小さいことは確認用出力の性質 |
+| regression | 最新コードで`python -m unittest discover -s tests -q`; `node scripts/test_independent_publication.js`; `node --check scripts/render_morning_png.js` | E1〜E3 | PASS 176/176 + publication regression PASS + syntax PASS | 外部Drive/Portalを検証しない |
+
+版2: PNG `1536×2629`; responsive mobile `768×3352`; SHA-256 `89ba60b2962771ad6f4945549e3fab5c34ca84f767fce7b64feb56c328e1cc19`; artifacts `docs/examples/0800-design/readability-review-v2/`。4/12幅はNo.05/06/07、6/12幅はNo.08/09/11/12、全幅はNo.10/13、最後はNo.14/15が3/12・No.16が6/12。市場条件18px、価格22px、判定19px、見出し20px、市場データ値18px/時点16px。
+
+BLOCKEDのまま: snapshot不足の10/09・10/12正式レポート生成。未実施: 実スマートフォン、Drive/Portal外部readback。デザイン受け入れは画像確認後に更新する。PRはDraftのまま維持し、main・本番・自動公開は変更しない。
