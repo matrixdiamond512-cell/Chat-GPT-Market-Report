@@ -288,12 +288,12 @@ function archiveMarketReportFromDriveWithoutLatestRollback_(file, expectedHour) 
     report.infographic_status = 'NOT_READY';
     delete report.infographic;
     // Commit canonical first; safe to retry if the index write fails.
-    putGitHubJsonFile_(path, JSON.stringify(report, null, 2) + '\\n',
+    putGitHubJsonFile_(path, JSON.stringify(report, null, 2) + '\n',
       existing.sha, 'Recover archived market report ' + key);
     const index = getGitHubJsonFile_('reports.json');
     const list = normalizeWebReportList_(index.data);
     const next = upsertWebReportList_(list, report);
-    putGitHubJsonFile_('reports.json', JSON.stringify(next, null, 2) + '\\n',
+    putGitHubJsonFile_('reports.json', JSON.stringify(next, null, 2) + '\n',
       index.sha, 'Recover report history index ' + key);
     if (!marketReportAutoVerifyPublishedSource_(file, expectedHour)) {
       throw new Error('Archival GitHub readback did not match Drive source: ' + key);
