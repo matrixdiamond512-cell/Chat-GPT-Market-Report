@@ -50,3 +50,19 @@ https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/97
 Hosted CI: コードhead ea2071b1438e3bc646a61040100357869670686b のrun 38286902389で、依存導入、既存/新projectionテスト、実DRAFT PNGとmanifest接続、artifact uploadがすべてsuccess。
 https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/38286902389
 Evidence: E4 Linux Chromiumでの合成描画・E2/E3モック契約試験。これによって実Drive/Portal/実レポートが合格になったわけではない。この後の変更はレビュー状態とCI結果の文書記録のみで、描画コード・fixture・PNGは同一。
+
+## 参考画像に寄せた再設計 — 2026-10-13
+
+Run ID: `0800-design-review-iteration-1-20261013`. 追加指示を**CORRECT**として反映。10/09図解を色だけでなく配置・密度・矢印・図解の基準にする。12:00/16:00/21:00、本番画像、snapshot/公開ゲートは対象外。
+
+| Claim | Evidence | Level | Result | Limit |
+|---|---|---|---|---|
+| 改訂テンプレートに全142 factsを直接表示 | 実Edge PNG + render receipt `docs/examples/0800-design/redesign-review-v1/render-receipt.json` | E4 | PASS、文字列差0 | 合成fixtureのみ |
+| 固定16カードと順序、PC 12列、No.13の6市場一列 | ブラウザDOM/座標検査 | E4 | PASS | 実データや全端末の視認性は未確認 |
+| 768pxモバイル専用レイアウト | ブラウザDOMと実PNG | E4 | PASS、最小fact文字14px | 物理端末の利用感はNOT_RUN |
+| 配色/カード重なり/テキストはみ出し | ブラウザ実測 | E4 | 色エラー0、重なり0、はみ出し0 | 見た目の好み/参考との近似度を機械判定していない |
+| 10/09画像とのデザイン比較 | 参考画像と生成PNGの目視比較、[`0800-design-comparison-2026-10-13.md`](../../proposals/0800-design-comparison-2026-10-13.md) | E4 | 差異を記録、受け入れPENDING | 写真調の街並み、縦横比、カード余白等が異なる。ユーザー確認待ち |
+
+レビュー版PNG: `1536×2639`, mobile `768×3391`, SHA-256 `e6da4fb062a4636284f24a828cad57ce2dae7c31253966e8eb66844c268f2cb7`。生成出力と入力は`docs/examples/0800-design/redesign-review-v1/`。すべてDRAFT/DEBUG_PREVIEWの合成fixture。正式画像・snapshot不足判定は変更していない。
+
+回帰テスト、manifest consumer、Hosted CI: **この再設計変更についてはNOT_RUN**。視覚検査: **ユーザー受け入れ待ちで未完了**。次の必要行動は、ユーザーの画像レビューを受けてデザイン差分を修正し、必要な場合のみ再レビューすること。

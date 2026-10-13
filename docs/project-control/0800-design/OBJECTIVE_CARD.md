@@ -1,12 +1,12 @@
 # 08:00図解デザイン改善の作業記録
 
-2026-10-13 JST / 状態: IMPLEMENTED; FIXTURE_RUNTIME_PASS; DRAFT_REVIEW_PENDING
+2026-10-13 JST / 状態: REDESIGN_ITERATION_1_READY; FIXTURE_RUNTIME_PASS; USER_VISUAL_REVIEW_PENDING
 
 PRIMARY OBJECTIVE: 既存の情報・データ検証・公開処理を保ち、08:00図解で相場の要点、因果関係、推定/実測の資金フロー、6市場の方向と警戒条件を正確かつ再現可能に読める状態にする。
 
 ACTIVE PROFILE: dashboard + data-tool。
 
-ACCEPTANCE CRITERIA: 元仕様書の全条件（16項目固定、6市場、情報保持、意味別配色、数値一致、時点区別、文字欠損なし、768pxとスマートフォン視認性、ゲート維持、回帰、Draft区別）。現在の調査成果の受入は生成元と検証/公開接続の事実を示し、未存在機能を捏造せず具体的実装案を提示すること。
+ACCEPTANCE CRITERIA: 元仕様書の全条件（16項目固定、6市場、情報保持、意味別配色、数値一致、時点区別、文字欠損なし、768pxとスマートフォン視認性、ゲート維持、回帰、Draft区別）。10/09参考画像と比較して、配置・密度・図記号・判読性を人が評価し、ユーザーがデザインを確認するまで受け入れ完了としない。
 
 CONSTRAINTS: 新ブランチとDraft PR。mainマージ・本番切替・公開画像上書きなし。取得、ニュース、numeric/source identity、公開ゲート、Drive保存、ポータル、他時刻は維持。旧作業フォルダーの既存差分を保護。
 
@@ -24,7 +24,8 @@ OPEN OUTCOMES:
 - O-005 実装後回帰・manifest消費側: Python135/135、既存JS公開回帰PASS。新producerの正式mockは既存consumerでREADY、合成実PNGのmanifestはNOT_READY。非本番Drive保存・外部readbackはNOT_RUN。
 - O-006 比較画像・更新テンプレート仕様・運用追記: 新仕様/運用追記、DRAFT画像/入力/receiptを追加。参考とのデザイン・構成比較を文書化。実10/12全文/数値比較はBLOCKED。運用適用は未実施。
 - O-007 Draft PRレビュー: https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/97 をOPEN/DRAFT/未マージで提出。コードhead ea2071bの専用GitHub CIもPASS。レビュー待ち。
+- O-008 10/09デザインへの再設計: 12カラム、番号/アイコン、表/時系列/フロー/因果、6市場一列、モバイル別レイアウトを実装し合成PNGを生成。描画・データ照合はPASS。参考との差分レビューとユーザー受け入れはPENDING。
 
-NEXT NECESSARY ACTION: Draft PRのレビュー。正式再生成は正規snapshot/本文/specが揃った後に既存ゲートで検証する。本番接続は別承認後。
+NEXT NECESSARY ACTION: ユーザーにDRAFT合成PNGを確認してもらい、視覚的な差分/希望を受けて再調整する。正式再生成は正規snapshot/本文/specが揃った後に既存ゲートで検証する。本番接続は別承認後。
 
 既存の他作業のobjective記録は変更しない。この記録は今回の08:00変更専用。

@@ -240,24 +240,54 @@ def render_html(report, view, *, fixture=False, spec=None):
         if card.get('items'):
             content += '<ol class="numbered">'+''.join('<li>'+display(item)+'</li>' for item in card['items'])+'</ol>'
         for ref in card.get('paragraphs', []):
-            content += '<p>'+display(ref)+'</p>'
+            if number == 13:
+                content += '<div class="market-list-source">'+display(ref)+'</div>'
+            else:
+                content += '<p>'+display(ref)+'</p>'
         if card.get('timeline'):
             content += '<div class="timeline">'+''.join('<div><b>'+row['phase']+'</b>'+display(row['text'])+'</div>' for row in card['timeline'])+'</div>'
         if card.get('table'):
             table = card['table']
-            content += '<table><thead><tr>'+''.join('<th>'+html.escape(col)+'</th>' for col in table['columns'])+'</tr></thead><tbody>'
-            for row in table['rows']:
-                content += '<tr>'+''.join('<td>'+display(ref, change_class(text(ref)) if i in table.get('change_columns', []) else '')+'</td>' for i, ref in enumerate(row))+'</tr>'
-            content += '</tbody></table>'
+            if number == 7:
+                content += '<div class="market-data">'
+                for row in table['rows']:
+                    label, price, change, asof = (text(ref) for ref in row)
+                    glyph = ('usa' if 'USA' in label else 'japan' if 'Nikkei' in label else
+                             'gold' if 'XAU' in label else 'oil' if 'WTI' in label else
+                             'europe' if 'EUR' in label else 'btc' if 'BTC' in label else '')
+                    marker = icon(glyph) if glyph else ''
+                    content += '<div class="market-data-row"><div class="market-data-name">'+marker+display(row[0])+'</div><div class="market-data-values"><strong>'+display(row[1])+'</strong><span class="'+change_class(change)+'">'+display(row[2])+'</span><small class="asof">基準時点：'+display(row[3])+'</small></div></div>'
+                content += '</div>'
+                table = None
+            if table:
+                content += '<table><thead><tr>'+''.join('<th>'+html.escape(col)+'</th>' for col in table['columns'])+'</tr></thead><tbody>'
+                for row in table['rows']:
+                    cells = []
+                    for i, ref in enumerate(row):
+                        marker = ''
+                        if i == 0 and number == 6:
+                            label = text(ref)
+                            glyph = ('usa' if any(name in label for name in ('NYダウ','S&P','Nasdaq','Russell','VIX')) else
+                                     'japan' if any(name in label for name in ('日経','TOPIX','OSE','CME')) else '')
+                            marker = icon(glyph) if glyph else ''
+                        cells.append('<td>'+marker+display(ref, change_class(text(ref)) if i in table.get('change_columns', []) else '')+'</td>')
+                    content += '<tr>'+''.join(cells)+'</tr>'
+                content += '</tbody></table>'
         if card.get('flow'):
             flow = card['flow']
-            content += '<div class="flow"><div class="inflow"><h3>資金流入が示唆される資産</h3>'+''.join('<p>'+display(r)+'</p>' for r in flow['inflow'])+'</div><div class="transfer '+flow['basis']+'"><b>資金移動</b><span>←</span></div><div class="outflow"><h3>資金流出が示唆される資産</h3>'+''.join('<p>'+display(r)+'</p>' for r in flow['outflow'])+'</div></div><p class="evidence">'+display(flow['evidence'])+'</p>'
+            def flow_item(ref):
+                label = text(ref)
+                glyph = ('gold' if '金' in label else 'oil' if '原油' in label else
+                         'bank' if '国債' in label else 'trend' if '株' in label else 'btc' if 'BTC' in label else 'trend')
+                return '<p>'+icon(glyph).replace('class="icon"','class="icon flow-item-icon"')+display(ref)+'</p>'
+            flow_label = '実測フロー' if flow['basis'] == 'measured' else '推定フロー'
+            content += '<div class="flow"><div class="inflow"><h3>資金流入が示唆される資産</h3>'+''.join(flow_item(r) for r in flow['inflow'])+'</div><div class="transfer '+flow['basis']+'"><b>'+flow_label+'</b><span class="flow-arrows"><i>→</i><i>←</i></span></div><div class="outflow"><h3>資金の重石・流出候補</h3>'+''.join(flow_item(r) for r in flow['outflow'])+'</div></div><p class="evidence">'+display(flow['evidence'])+'</p>'
         for chain in card.get('chains', []):
             if chain.get('scenario'):
                 content += '<h3>'+{'main':'メイン','upside':'上振れ','downside':'下振れ'}[chain['scenario']]+'</h3>'
             content += '<div class="chain '+chain['basis']+'">'+('<span class="causal-arrow">→</span>'.join('<div class="'+('long' if len(text(ref)) > 40 else '')+'">'+display(ref)+'</div>' for ref in chain['nodes']))+'</div><p class="evidence">'+display(chain['evidence'])+'</p>'
         if card.get('markets'):
-            content += '<div class="markets">'
+            content += '<div class="market-grid">'
             for market, glyph, label in zip(card['markets'], ICONS, DISPLAY_MARKETS):
                 style, arrow = direction_class(text(market['direction']))
                 content += '<article class="market"><h3>'+icon(glyph)+label+'</h3><p class="price">'+display(market['price'])+'</p><p class="asof">'+display(market['asof'])+'</p><div class="direction '+style+'"><b>'+arrow+'</b>'+display(market['direction'])+'</div>'
@@ -271,7 +301,8 @@ def render_html(report, view, *, fixture=False, spec=None):
         sections.append(f'<section class="card card-{number:02}" data-card="{number:02}"><h2><b>{number:02}</b> {heading_icon}{TITLES[number-1]}</h2><div class="card-body">{content}</div></section>')
     css = (ROOT/'templates/infographic/0800/theme.css').read_text(encoding='utf-8')
     svg = (ROOT/'templates/infographic/0800/icons.svg').read_text(encoding='utf-8')
-    header = '<header><div class="brand">マーケットレポート</div><div class="report-title">'+html.escape(report['title'])+'</div><div class="subtitle">'+display(view['header']['subtitle'])+'</div><div class="basis">作成基準：日本時間 08:00</div>'
+    report_date = report['title'].split('｜', 1)[-1]
+    header = '<header><div class="brandline"><div class="brand">マーケットレポート</div><div class="report-title">'+html.escape(report_date)+'</div></div><div class="brand-aside">世界の流れを読む<br>次の一手を考える</div><div class="subtitle">'+display(view['header']['subtitle'])+'</div><div class="basis">作成基準：日本時間 08:00</div>'
     if fixture:
         header += '<div class="draft">DRAFT / 合成データ・公開不可</div>'
     header += '</header>'
