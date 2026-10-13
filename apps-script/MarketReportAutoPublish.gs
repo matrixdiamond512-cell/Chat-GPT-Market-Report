@@ -219,7 +219,8 @@ function publishMarketReportSlot_(hour, mode, throwOnError) {
     const publishedVersionKey = MARKET_REPORT_AUTO_CONFIG.publishedPrefix + file.getId();
     const props = PropertiesService.getScriptProperties();
 
-    if (props.getProperty(publishedVersionKey) === fileVersion) {
+    if (props.getProperty(publishedVersionKey) === fileVersion &&
+        marketReportAutoVerifyPublishedSource_(file, hour)) {
       return saveMarketReportSlotResult_({
         ok: true,
         skipped: true,
@@ -265,6 +266,41 @@ function publishMarketReportSlot_(hour, mode, throwOnError) {
 
     if (throwOnError) throw error;
     return payload;
+  }
+}
+
+function marketReportAutoVerifyPublishedSource_(file, expectedHour) {
+  // A local success marker is not proof that GitHub retained the transaction.
+  // Check the source-linked canonical and indexed item before skipping a retry.
+  try {
+    if (typeof getGitHubJsonFile_ !== 'function' ||
+        typeof normalizeWebReportList_ !== 'function') return false;
+    const report = buildWebReportFromGoogleDoc_(file);
+    if (Number(String(report.time).slice(0, 2)) !== Number(expectedHour)) return false;
+    const key = report.date + '_' + report.time.replace(':', '-');
+    const canonicalResponse = getGitHubJsonFile_('reports/' + key + '.json');
+    const stored = canonicalResponse && canonicalResponse.data;
+    const canonical = stored && (stored.latestReport || stored.report || stored);
+    if (!canonical || !canonicalResponse.sha) return false;
+    if (canonical.date !== report.date || canonical.time !== report.time ||
+        canonical.title !== report.title) return false;
+    if (!canonical.sourceDocument || canonical.sourceDocument.id !== file.getId()) return false;
+    if (String(canonical.revision || '') !== String(report.revision || '')) return false;
+    // Validate that the original document text has not changed since publication.
+    if (typeof marketReportSha256_ !== 'function') return false;
+    const expectedHash = marketReportSha256_(
+      Utilities.newBlob(report.fullText, 'text/plain').getBytes());
+    if (canonical.bodyHash !== expectedHash) return false;
+    const indexResponse = getGitHubJsonFile_('reports.json');
+    const matches = normalizeWebReportList_(indexResponse.data).filter(function(item) {
+      return item.date === report.date && item.time === report.time &&
+        item.bodyHash === expectedHash && item.sourceDocument &&
+        item.sourceDocument.id === file.getId();
+    });
+    return matches.length === 1;
+  } catch (error) {
+    console.warn('Report remote readback unavailable; republishing is required: ' + error.message);
+    return false;
   }
 }
 
