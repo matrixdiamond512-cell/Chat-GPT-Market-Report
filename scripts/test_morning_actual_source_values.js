@@ -29,7 +29,7 @@ const real=[
 ].join('\n');
 const required=ctx.MARKET_REPORT_PREPUBLISH_CONFIG.morningRequiredLabels;
 const missing=required.filter(rule=>!ctx.marketReportMorningHasSourceValue_(real,rule));
-assert.deepStrictEqual(missing.map(x=>x.label),[], 'Actual source data should be recognized');
+assert.strictEqual(missing.length,0, 'Actual source data should be recognized: '+missing.map(x=>x.label).join(', '));
 const without=real.replace(/^VIX：.*\n/m,'');
 assert(!ctx.marketReportMorningHasSourceValue_(without,required.find(x=>x.label==='VIX')));
 const noValue=real.replace(/^NYダウ：.*\n/m,'NYダウ：\n');
