@@ -217,7 +217,7 @@ jobs:
             ];
             if (time === '08:00') {
               morningLabels.forEach((label, index) => {
-                lines.push(label, String(100 + index), '+1', '+0.10%', '上昇');
+                lines.push(label + '：' + String(100 + index));
               });
             } else {
               lines.push(...coreMarketLines);
@@ -293,7 +293,7 @@ jobs:
           }
 
           const broken08 = buildReport('08:00');
-          broken08.fullText = broken08.fullText.replace('\n日経VI\n', '\n');
+          broken08.fullText = broken08.fullText.replace('\n日経VI：' + (100 + morningLabels.indexOf('日経VI')) + '\n', '\n');
           let failed = false;
           try { context.validateMarketReportBeforePublish_(broken08, 8); }
           catch (error) { failed = /公開前検証に失敗/.test(String(error.message)); }
