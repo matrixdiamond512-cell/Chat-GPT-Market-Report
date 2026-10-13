@@ -1,0 +1,32 @@
+name: Diagnose live Apps Script connection read-only
+on:
+  push:
+    branches: [diagnose/gas-live-connection-20261013]
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    environment: apps-script-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install --disable-pip-version-check google-auth requests
+      - name: Verify Apps Script authenticated read access and calculate drift
+        env:
+          APPS_SCRIPT_ID: ${{ secrets.APPS_SCRIPT_ID }}
+          APPS_SCRIPT_OAUTH_JSON: ${{ secrets.APPS_SCRIPT_OAUTH_JSON }}
+        shell: bash
+        run: |
+          if [[ -z "$APPS_SCRIPT_ID" ]]; then
+            echo "::error::APPS_SCRIPT_ID secret unavailable in apps-script-production environment"
+            exit 1
+          fi
+          if [[ -z "$APPS_SCRIPT_OAUTH_JSON" ]]; then
+            echo "::error::APPS_SCRIPT_OAUTH_JSON secret unavailable in apps-script-production environment"
+            exit 1
+          fi
+          python scripts/deploy_market_report_apps_script.py
