@@ -2,15 +2,15 @@
   "schemaVersion": "1.1.0",
   "market": "japan",
   "snapshotDate": "2026-10-13",
-  "dataDate": "2026-10-09",
-  "fetchedAt": "2026-10-13T07:22:39+09:00",
+  "dataDate": "2026-10-13",
+  "fetchedAt": "2026-10-13T23:57:43+09:00",
   "status": "verified",
   "source": {
     "name": "東京市場確定値統合（複数ソース・項目別基準日）",
-    "sheet": "",
+    "sheet": "終値一覧",
     "reference": "data/market/japan-close-reference.json",
-    "sheetStatus": "Google Sheets read failed: Google Sheets API GET failed: 403 {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"The caller does not have permission\",\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n",
-    "rowDate": "2026/10/09"
+    "sheetStatus": "ok",
+    "rowDate": "2026/10/13"
   },
   "table": {
     "title": "主要指数と市場内部（日本）",
@@ -24,69 +24,69 @@
     "rows": [
       [
         "日経225",
-        "69,030.92",
+        "67,777.52",
         "—",
-        "投資の森 日経平均PER・PBR（同日終値・前日差）の確定値。基準日 2026-10-09。"
+        "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-10-13。"
       ],
       [
         "TOPIX",
-        "4,104.81",
-        "+13.35（+0.33%）",
-        "トレーダーズ・ウェブ 国内市場の当日終値確認。基準日 2026-10-09。"
+        "4,110.67",
+        "+5.86（+0.14%）",
+        "トレーダーズ・ウェブ 国内市場の当日終値確認。基準日 2026-10-13。"
       ],
       [
         "グロース250",
-        "806.62",
-        "+11.87（+1.49%）",
-        "トレーダーズ・ウェブ 国内市場の当日終値確認。基準日 2026-10-09。"
+        "797.04",
+        "-9.58（-1.19%）",
+        "トレーダーズ・ウェブ 国内市場の当日終値確認。基準日 2026-10-13。"
       ],
       [
         "日経VI",
-        "30.14",
-        "+0.55（+1.86%）",
-        "Nikkei 225 VI official profileの確認済み値。基準日 2026-10-09。"
+        "30.41",
+        "+0.27（+0.90%）",
+        "Nikkei 225 VI official profileの確認済み値。基準日 2026-10-13。"
       ],
       [
         "値上がり銘柄 / 値下がり銘柄",
-        "1194 / 331",
+        "1140 / 380",
         "—",
-        "投資の森 値上がり・値下がり銘柄数の確定値。基準日 2026-10-09。"
+        "投資の森 値上がり・値下がり銘柄数の確定値。基準日 2026-10-13。"
       ],
       [
         "東証プライム売買代金",
-        "7.84 兆円",
+        "7.96 兆円",
         "—",
-        "トレーダーズ・ウェブ 後場概況の確定値。基準日 2026-10-09。"
+        "トレーダーズ・ウェブ 後場概況の確定値。基準日 2026-10-13。"
       ],
       [
         "騰落レシオ（25日）",
-        "91.18%",
+        "101.91%",
         "—",
-        "投資の森 東証プライム騰落銘柄数の保存履歴から25営業日で算出の確定値。基準日 2026-10-09。"
+        "投資の森 東証プライム騰落銘柄数の保存履歴から25営業日で算出の確定値。基準日 2026-10-13。"
       ],
       [
         "日経225予想PER",
-        "17.37倍",
+        "取得不能（対象日の確定値なし）",
         "—",
-        "投資の森 日経平均PER・PBRの確定値。基準日 2026-10-09。"
+        "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-10-13。"
       ],
       [
         "日経225予想EPS",
-        "3,974.15円",
+        "取得不能（対象日の確定値なし）",
         "—",
-        "投資の森 日経平均PER・PBRの確定値。基準日 2026-10-09。"
+        "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-10-13。"
       ],
       [
         "日経225 25日乖離率",
-        "+4.23%",
+        "+2.13%",
         "—",
-        "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）の確定値。基準日 2026-10-09。"
+        "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-10-13。"
       ],
       [
         "日経225 200日乖離率",
-        "+13.55%",
+        "+11.34%",
         "—",
-        "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）の確定値。基準日 2026-10-09。"
+        "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-10-13。"
       ],
       [
         "海外投資家動向（現物）",
@@ -95,13 +95,13 @@
         "JPX 投資部門別売買状況の東証プライム現物・週次公表値。売り越し。基準週末 2026-09-11。日次値ではない。"
       ]
     ],
-    "dataDate": "2026-10-09",
-    "updatedAt": "2026-10-13T07:22:39+09:00",
+    "dataDate": "2026-10-13",
+    "updatedAt": "2026-10-13T23:57:43+09:00",
     "source": {
       "name": "東京市場確定値統合（複数ソース・項目別基準日）",
-      "sheet": "",
+      "sheet": "終値一覧",
       "reference": "data/market/japan-close-reference.json",
-      "sheetStatus": "Google Sheets read failed: Google Sheets API GET failed: 403 {\n  \"error\": {\n    \"code\": 403,\n    \"message\": \"The caller does not have permission\",\n    \"status\": \"PERMISSION_DENIED\"\n  }\n}\n",
+      "sheetStatus": "ok",
       "supportingData": [
         "data/market/latest.json（日経VI）",
         "株探 日次時系列（TOPIX・グロース250）",
@@ -110,11 +110,11 @@
       ],
       "repairDiagnostics": {
         "東証プライム売買代金": "repaired from exact-date Traders Web post-close commentary",
-        "日経225予想PER": "repaired from exact-date reference",
-        "日経225予想EPS": "repaired from exact-date reference",
+        "日経225予想PER": "exact-date reference unavailable",
+        "日経225予想EPS": "exact-date reference unavailable",
         "日経VI": "repaired from verified generic market acquisition",
-        "TOPIX": "exact target-date row not found",
-        "グロース250": "exact target-date row not found",
+        "TOPIX": "repaired from トレーダーズ・ウェブ 国内市場 current-session close",
+        "グロース250": "repaired from トレーダーズ・ウェブ 国内市場 dated current-session close",
         "海外投資家動向（現物）": "repaired from verified JPX weekly flow 2026-09-11"
       }
     }
