@@ -1,0 +1,21 @@
+name: Drive-GitHub recovery regression
+on:
+  push:
+    branches: [fix/drive-github-history-backfill-20261013]
+  pull_request:
+    paths:
+      - apps-script/MarketReportAutoPublish.gs
+      - scripts/test_drive_github_history_backfill.js
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check scripts/test_drive_github_history_backfill.js
+      - run: node scripts/test_drive_github_history_backfill.js
+      - run: node scripts/test_report_remote_readback.js

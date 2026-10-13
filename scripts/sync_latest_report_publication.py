@@ -160,6 +160,14 @@ def sync_report_file(report: dict) -> Path:
     return path
 
 
+def report_publication_health(report: dict) -> tuple[str, bool, str]:
+    """Never label a known reconstructed/unverified source as healthy."""
+    state = str(report.get("report_status") or "").upper()
+    if state == "RECONSTRUCTED_UNVERIFIED":
+        return ("degraded", True, "REPORT_SOURCE_RECONSTRUCTED_UNVERIFIED")
+    return ("ok", False, "")
+
+
 def sync_dashboard(report: dict) -> None:
     dashboard = load_json(DASHBOARD, {})
     previous_report = dashboard.get("latestReport") if isinstance(dashboard.get("latestReport"), dict) else {}
@@ -174,7 +182,11 @@ def sync_dashboard(report: dict) -> None:
 
     # Scheduled recovery runs must be idempotent. If the exact same report is
     # already projected, do not create a timestamp-only dashboard commit.
-    if previous_report == report and dashboard.get("currentReportKey") == key:
+    status, is_stale, stale_reason = report_publication_health(report)
+    if (previous_report == report and dashboard.get("currentReportKey") == key
+            and dashboard.get("status") == status
+            and dashboard.get("isStale") is is_stale
+            and dashboard.get("staleReason", "") == stale_reason):
         return
 
     now = dt.datetime.now(JST).replace(microsecond=0).isoformat()
@@ -184,9 +196,9 @@ def sync_dashboard(report: dict) -> None:
     dashboard["generatedAt"] = now
     dashboard["publishedAt"] = now
     dashboard["dataAsOf"] = data_as_of
-    dashboard["status"] = "ok"
-    dashboard["isStale"] = False
-    dashboard["staleReason"] = ""
+    dashboard["status"] = status
+    dashboard["isStale"] = is_stale
+    dashboard["staleReason"] = stale_reason
     dashboard["currentReportKey"] = key
     dashboard["latestReport"] = report
 

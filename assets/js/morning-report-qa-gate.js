@@ -159,8 +159,26 @@
     const result = validateRendered(report);
     window.MorningReportQA.lastRendered = result;
     document.documentElement.dataset.morningReportQa = result.ready ? "pass" : "fail";
-    if (result.ready) console.info("[MorningReportQA] DOM PASS", result);
-    else console.error("[MorningReportQA] DOM FAIL", result);
+    if (result.ready) {
+      console.info("[MorningReportQA] DOM PASS", result);
+    } else if (String(report?.report_status || "").toUpperCase() === "RECONSTRUCTED_UNVERIFIED") {
+      // Quarantine a known unverified historical source; never display its partial
+      // market table as an authoritative 28-item previous-close table.
+      document.documentElement.dataset.morningReportQa = "quarantined";
+      const body = document.querySelector(".report-body");
+      if (body) {
+        body.hidden = true;
+        body.style.display = "none";
+        const warning = document.createElement("p");
+        warning.id = "unverifiedReportWarning";
+        warning.setAttribute("role", "alert");
+        warning.textContent = "この08:00レポートは原本の読み戻し検証に失敗したため、本文・市場データの公開を停止しています。確定データとして利用できません。";
+        body.parentNode.insertBefore(warning, body);
+      }
+      console.warn("[MorningReportQA] quarantined unverified source", result);
+    } else {
+      console.error("[MorningReportQA] DOM FAIL", result);
+    }
     return result;
   }
   window.MorningReportQA = { loadReference, validate, validateRendered, runRenderedQA, rows, effectiveRows, expectedItems: ITEMS.slice() };
