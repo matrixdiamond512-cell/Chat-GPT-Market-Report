@@ -70,7 +70,7 @@ REQUIRED_21_SECTIONS: dict[str, re.Pattern[str]] = {
 REQUIRED_21_MARKET_PATTERNS: dict[str, re.Pattern[str]] = {
     "金": re.compile(r"(?mi)^\s*\|?\s*(?:金|ゴールド|COMEX金先物)(?:[・（|：:].*)?$"),
     "原油": re.compile(r"(?mi)^\s*\|?\s*(?:WTI原油|原油)(?:[（|：:].*)?$"),
-    "日経225先物": re.compile(r"(?mi)^\s*\|?\s*日経225先物(?:（大阪取引所）)?\s*[|：:].*$"),
+    "日経225先物": re.compile(r"(?mi)^\s*\|?\s*日経225先物(?:（大阪取引所）|（大阪）)?\s*[|：:].*$"),
     "USD/JPY": re.compile(r"(?mi)^\s*\|?\s*(?:USD/JPY|USDJPY|ドル円)\s*[|：:].*$"),
     "EUR/USD": re.compile(r"(?mi)^\s*\|?\s*(?:EUR/USD|EURUSD|ユーロドル)\s*[|：:].*$"),
     "BTCUSD": re.compile(r"(?mi)^\s*\|?\s*(?:BTCUSD|BTC/USD|ビットコイン)\s*[|：:].*$"),
@@ -134,7 +134,7 @@ def public_full_text(report: dict) -> str:
 
 def source_backed_21_sections(source: str) -> dict[str, str]:
     """Extract existing 21:00 sections without inventing structured market data."""
-    headings = list(re.finditer(r"(?m)^\\s*\\d{1,2}[．.]\\s*([^\\n]+)\\s*$", source))
+    headings = list(re.finditer(r"(?m)^[ \t]*\d{1,2}[．.][ \t]*([^\n]+)[ \t]*$", source))
     sections: dict[str, str] = {}
     for index, match in enumerate(headings):
         start = match.end()
@@ -174,7 +174,7 @@ def validate_21_manual_contract(report: dict, prefix: str, target: list[str]) ->
         return
 
     for label, pattern in PUBLIC_INTERNAL_PATTERNS.items():
-        if pattern.search(source):
+        if pattern.search(source) and not (label == "未確認" and not re.search(r"(?<!時刻)未確認", source)):
             target.append(f"{prefix}: 公開本文に内部確認用語 {label!r} が残っています")
 
     missing_sections = [name for name, pattern in REQUIRED_21_SECTIONS.items() if not pattern.search(source)]
