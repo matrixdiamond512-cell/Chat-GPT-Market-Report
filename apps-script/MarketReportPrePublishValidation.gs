@@ -55,7 +55,7 @@ var MARKET_REPORT_PREPUBLISH_CONFIG = {
       changeLabel: '12:00からの変化',
       changePattern: /^(?:12:00|12時|前回)からの(?:主な)?変化$/,
       handoverLabel: 'NY時間への引き継ぎ',
-      handoverPattern: /^(?:NY時間|NY市場|次の時間帯)への引き継ぎ$/
+      handoverPattern: /^(?:NY時間|NY市場|21:00|次の時間帯)への引き継ぎ$/
     },
     '21:00': {
       changeLabel: '16:00からの変化',
@@ -382,7 +382,7 @@ function marketReportPrePublishHeadingLines_(source) {
       [/^需給・ポジション(?:・SQ(?:・.*)?|、SQ／オプション)$/, ['需給・ポジション']],
       [/^(?:主要)?6市場の(?:短期)?見通し(?:（.*）)?$/, ['6市場の見通し']],
       [/^今後のイベント$/, ['今後の予定']],
-      [/^代替シナリオと崩れる条件$/, ['代替シナリオ', '崩れる条件']],
+      [/^代替シナリオ(?:と|・)崩れる条件$/, ['代替シナリオ', '崩れる条件', 'リスク管理']],
       [/^結論・リスク管理$/, ['結論', 'リスク管理']],
       [/^結論・クロスチェック$/, ['結論']],
       [/^前回21:00からの変化$/, ['21:00からの変化']],
@@ -451,3 +451,4 @@ function marketReportPrePublishIsUnavailable_(value) {
     return pattern.test(text);
   });
 }
+
