@@ -1459,8 +1459,27 @@ function getGitHubJsonFile_(path) {
   if (code !== 200) throw new Error('GitHubファイル取得失敗: HTTP ' + code + ' ' + response.getContentText());
 
   const payload = JSON.parse(response.getContentText());
+  let fileContent = payload.content || '';
+  // GitHub's contents API omits base64 content for large files such as reports.json.
+  // Read the same file through its download URL while keeping the Contents API SHA
+  // for the conditional update that follows.
+  if (!fileContent && Number(payload.size) > 0 && payload.download_url) {
+    const rawResponse = UrlFetchApp.fetch(payload.download_url, {
+      method: 'get',
+      headers: githubHeaders_(getGitHubToken_()),
+      muteHttpExceptions: true
+    });
+    const rawCode = rawResponse.getResponseCode();
+    if (rawCode !== 200) {
+      throw new Error('GitHub large-file read failed: HTTP ' + rawCode);
+    }
+    return {
+      data: JSON.parse(rawResponse.getContentText('UTF-8')),
+      sha: payload.sha
+    };
+  }
   return {
-    data: JSON.parse(Utilities.newBlob(Utilities.base64Decode(payload.content)).getDataAsString('UTF-8')),
+    data: JSON.parse(Utilities.newBlob(Utilities.base64Decode(fileContent)).getDataAsString('UTF-8')),
     sha: payload.sha
   };
 }
