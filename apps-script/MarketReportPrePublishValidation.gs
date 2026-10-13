@@ -304,9 +304,34 @@ function validateMarketReportManualContract_(report, byName, errors) {
 }
 
 function marketReportPrePublishHeadingLines_(source) {
-  return String(source || '').split('\n').map(function(line) {
-    return marketReportPrePublishNormalizeHeading_(line);
-  }).filter(Boolean);
+  const headings = [];
+  String(source || '').split('\n').forEach(function(raw) {
+    const line = String(raw || '').trim();
+    const normalized = marketReportPrePublishNormalizeHeading_(line);
+    if (normalized) headings.push(normalized);
+    // Only numbered/explicit heading lines are eligible for compound aliases.
+    // Never infer missing report sections from incidental prose mentions.
+    if (!/^(?:\\d{1,2}[．.、)）]|【|[■◆◇●▶])/.test(line)) return;
+    const aliases = [
+      [/^主要市場データ(?:（.*）)?$/, ['主要市場データ']],
+      [/^前営業日終値一覧と基準時刻$/, ['主要市場データ']],
+      [/^材料と値動きの整合性・(?:今日の)?主導市場$/, ['材料と値動きの整合性', '今日の主導市場']],
+      [/^重要ニュースと市場への影響$/, ['重要ニュース']],
+      [/^金利・為替・(?:市場心理|センチメント)$/, ['金利・為替']],
+      [/^需給・ポジション(?:・SQ(?:・.*)?|、SQ\\/オプション)$/, ['需給・ポジション']],
+      [/^(?:主要)?6市場の(?:短期)?見通し(?:（.*）)?$/, ['6市場の見通し']],
+      [/^今後のイベント$/, ['今後の予定']],
+      [/^代替シナリオと崩れる条件$/, ['代替シナリオ', '崩れる条件']],
+      [/^結論・リスク管理$/, ['結論', 'リスク管理']],
+      [/^結論・クロスチェック$/, ['結論']],
+      [/^前回21:00からの変化$/, ['21:00からの変化']],
+      [/^12:00への引き継ぎ・リスク管理$/, ['12:00への引き継ぎ', 'リスク管理']]
+    ];
+    aliases.forEach(function(entry) {
+      if (entry[0].test(normalized)) headings.push.apply(headings, entry[1]);
+    });
+  });
+  return headings;
 }
 
 function marketReportPrePublishNormalizeHeading_(line) {
