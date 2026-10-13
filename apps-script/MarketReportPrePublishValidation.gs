@@ -327,6 +327,18 @@ function marketReportMorningHasSourceValue_(source, rule) {
   };
   return section.split('\n').some(function(raw) {
     const line = raw.trim();
+    // Prime breadth is legitimately written as one numeric sentence without
+    // a colon in the original 2026-10-13 08:00 Google document.
+    if (/^東証プライム値上がり銘柄\\s*[\\d,]+/.test(line)) {
+      const primeEvidence = {
+        '値上がり銘柄数': /値上がり銘柄\\s*[\\d,]+/,
+        '値下がり銘柄数': /値下がり\\s*[\\d,]+/,
+        '騰落レシオ': /騰落レシオ\\s*[\\d.]+/,
+        '東証プライム売買代金': /売買代金\\s*[\\d,]+/,
+        '東証プライム売買高': /売買高\\s*[\\d,]+/
+      };
+      if (primeEvidence[rule.label]) return primeEvidence[rule.label].test(line);
+    }
     const colon = line.search(/[：:]/);
     if (colon < 1) return false;
     const label = line.slice(0, colon).trim();
