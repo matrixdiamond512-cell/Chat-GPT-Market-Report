@@ -221,8 +221,17 @@ function repairMissingMarketReportsFromDrive() {
       if (targetDate === today && hour >= currentHour) return;
       const slotKey = targetDate + ' ' + ('0' + hour).slice(-2) + ':00';
       if (publishedKey && slotKey < publishedKey) {
-        results.push({date: targetDate, hour: hour, status: 'OLDER_THAN_LATEST',
-          reason: 'Archival backfill must not roll back the latest-report pointer'});
+        const archivalFile = findMarketReportDocForAutoPublishSlot_(hour, targetDate);
+        if (!archivalFile) {
+          results.push({date: targetDate, hour: hour, status: 'WAITING_INPUT'});
+          return;
+        }
+        try {
+          const archived = archiveMarketReportFromDriveWithoutLatestRollback_(archivalFile, hour);
+          results.push({date: targetDate, hour: hour, status: archived.skipped ? 'ALREADY_VERIFIED' : 'ARCHIVED'});
+        } catch (error) {
+          results.push({date: targetDate, hour: hour, status: 'FAILED', error: String(error.message || error)});
+        }
         return;
       }
       // Never manufacture an absent source or change report titles.
@@ -239,6 +248,60 @@ function repairMissingMarketReportsFromDrive() {
   saveMarketReportAutoResult_(summary);
   if (failed.length) throw new Error('Drive→GitHub recovery had failures. See script property log.');
   return summary;
+}
+
+/**
+ * Archive older original documents without touching the latest-report pointer,
+ * dashboard, or active infographic. Only the canonical archive and sorted index
+ * are changed. Use the same strict validation and source readback as publishing.
+ */
+function archiveMarketReportFromDriveWithoutLatestRollback_(file, expectedHour) {
+  if (marketReportAutoVerifyPublishedSource_(file, expectedHour)) {
+    return {ok: true, skipped: true};
+  }
+  if (typeof getGitHubJsonFile_ !== 'function' ||
+      typeof putGitHubJsonFile_ !== 'function' ||
+      typeof verifyMarketReportSourceDocReadback_ !== 'function') {
+    throw new Error('GitHub archival publication dependencies missing');
+  }
+  const report = buildWebReportFromGoogleDoc_(file);
+  runMarketReportAutoValidation_(report, expectedHour);
+  report.bodyHash = marketReportSha256_(Utilities.newBlob(report.fullText, 'text/plain').getBytes());
+  verifyMarketReportSourceDocReadback_(report);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const key = report.date + '_' + report.time.replace(':', '-');
+    const path = 'reports/' + key + '.json';
+    const existing = getGitHubJsonFile_(path);
+    const old = existing.data && !Array.isArray(existing.data) &&
+      (existing.data.latestReport || existing.data.report || existing.data);
+    if (existing.sha && old && old.date && old.time) {
+      const oldRevision = Number(old.revision || 0);
+      const newRevision = Number(report.revision || 0);
+      if (oldRevision > newRevision ||
+          (oldRevision === newRevision && old.bodyHash !== report.bodyHash)) {
+        throw new Error('Existing archived revision conflicts: ' + path);
+      }
+    }
+    report.report_status = 'PUBLISHED';
+    report.infographic_status = 'NOT_READY';
+    delete report.infographic;
+    // Commit canonical first; safe to retry if the index write fails.
+    putGitHubJsonFile_(path, JSON.stringify(report, null, 2) + '\\n',
+      existing.sha, 'Recover archived market report ' + key);
+    const index = getGitHubJsonFile_('reports.json');
+    const list = normalizeWebReportList_(index.data);
+    const next = upsertWebReportList_(list, report);
+    putGitHubJsonFile_('reports.json', JSON.stringify(next, null, 2) + '\\n',
+      index.sha, 'Recover report history index ' + key);
+    if (!marketReportAutoVerifyPublishedSource_(file, expectedHour)) {
+      throw new Error('Archival GitHub readback did not match Drive source: ' + key);
+    }
+    return {ok: true, skipped: false};
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function publishMarketReportSlot_(hour, mode, throwOnError, targetDate) {
