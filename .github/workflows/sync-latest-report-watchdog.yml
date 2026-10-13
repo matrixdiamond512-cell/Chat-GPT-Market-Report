@@ -9,7 +9,6 @@ on:
     - cron: "5,15,30,50 7 * * 1-5" # 16:05/16:15/16:30/16:50 JST Mon-Fri
     - cron: "10 8 * * 1-5"         # 17:10 JST correction recovery
     - cron: "5,15,30 12 * * 1-5"  # 21:05/21:15/21:30 JST Mon-Fri
-    - cron: "5,20 0 * * 6"         # 08:05/08:20 JST Saturday
 
 permissions:
   contents: write
@@ -52,7 +51,6 @@ jobs:
               '5,15,30,50 7 * * 1-5': '16:00',
               '10 8 * * 1-5': '16:00',
               '5,15,30 12 * * 1-5': '21:00',
-              '5,20 0 * * 6': '08:00',
           }
           expected_time = expected_by_schedule.get(schedule)
           if not expected_time:
@@ -94,7 +92,6 @@ jobs:
               '5,15,30,50 7 * * 1-5': '16:00',
               '10 8 * * 1-5': '16:00',
               '5,15,30 12 * * 1-5': '21:00',
-              '5,20 0 * * 6': '08:00',
           }
           slot = slots.get(schedule)
           if not slot:
@@ -109,9 +106,6 @@ jobs:
 
           path = Path('reports') / f"{date}_{slot.replace(':', '-')}.json"
           if not path.exists():
-              if slot == '21:00':
-                  print(f'No complete source exists for {date} 21:00; leaving the slot unpublished.')
-                  raise SystemExit(0)
               raise SystemExit(f'scheduled canonical report missing after reconciliation: {path}')
 
           report = json.loads(path.read_text(encoding='utf-8'))

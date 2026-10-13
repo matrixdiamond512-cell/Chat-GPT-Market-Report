@@ -1,0 +1,19 @@
+name: Report watchdog fail-closed CI
+on:
+  push:
+    branches: [fix/report-watchdog-fail-closed-20261013]
+  pull_request:
+    paths:
+      - .github/workflows/sync-latest-report-watchdog.yml
+      - scripts/test_report_watchdog_fail_closed.js
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node scripts/test_report_watchdog_fail_closed.js
