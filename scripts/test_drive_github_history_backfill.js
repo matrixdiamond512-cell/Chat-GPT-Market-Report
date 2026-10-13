@@ -1,6 +1,8 @@
 const assert=require('assert');const fs=require('fs');const vm=require('vm');
 const s=fs.readFileSync('apps-script/MarketReportAutoPublish.gs','utf8');
 assert(s.includes('function repairMissingMarketReportsFromDrive()'));
+assert(s.includes("getGitHubJsonFile_('data/latest-report.json')"));
+assert(s.includes('if (publishedKey && slotKey < publishedKey)'));
 assert(s.includes("publishMarketReportSlot_(hour, 'drive-github-recovery', false, targetDate)"));
 assert(s.includes("findMarketReportDocForAutoPublishSlot_(hour, targetDate)"));
 assert(s.includes("marketReportAutoVerifyPublishedSource_(file, hour)"));
