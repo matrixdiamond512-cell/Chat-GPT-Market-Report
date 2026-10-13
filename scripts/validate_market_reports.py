@@ -132,9 +132,39 @@ def public_full_text(report: dict) -> str:
     return ""
 
 
+def source_backed_21_sections(source: str) -> dict[str, str]:
+    """Extract existing 21:00 sections without inventing structured market data."""
+    headings = list(re.finditer(r"(?m)^\\s*\\d{1,2}[．.]\\s*([^\\n]+)\\s*$", source))
+    sections: dict[str, str] = {}
+    for index, match in enumerate(headings):
+        start = match.end()
+        end = headings[index + 1].start() if index + 1 < len(headings) else len(source)
+        body = source[start:end].strip()
+        if body:
+            sections[match.group(1).strip()] = body
+    return sections
+
+
+def source_backed_21_value(sections: dict[str, str], field: str) -> str:
+    rules = {
+        "riskManagement": r"崩れる条件|リスク管理",
+        "consistency": r"材料と値動きの整合性",
+        "crossAssetFlow": r"クロスアセット資金フロー",
+        "handover": r"引き継ぎ",
+        "news": r"重要ニュース",
+        "positioning": r"需給・ポジション",
+    }
+    pattern = rules.get(field)
+    if not pattern:
+        return ""
+    return next((body for heading, body in sections.items() if re.search(pattern, heading)), "")
+
+
 def validate_21_manual_contract(report: dict, prefix: str, target: list[str]) -> None:
     """Strict public/readability checks for 21:00 reports after the enforcement date."""
-    missing_fields = sorted(field for field in REQUIRED_21_FIELDS if is_blank(report.get(field)))
+    source = public_full_text(report)
+    source_sections = source_backed_21_sections(source)
+    missing_fields = sorted(field for field in REQUIRED_21_FIELDS if is_blank(report.get(field)) and not source_backed_21_value(source_sections, field))
     if missing_fields:
         target.append(f"{prefix}: 21:00 SOP必須項目不足/空欄: {', '.join(missing_fields)}")
 
@@ -184,6 +214,9 @@ def validate_report_content(report: dict, prefix: str, strict: bool, errors: lis
         return
 
     missing = sorted(REQUIRED_REPORT_FIELDS - report.keys())
+    if time_text == "21:00" and "riskManagement" in missing:
+        if source_backed_21_value(source_backed_21_sections(source), "riskManagement"):
+            missing.remove("riskManagement")
     if missing:
         target.append(f"{prefix}: 必須項目不足: {', '.join(missing)}")
 
