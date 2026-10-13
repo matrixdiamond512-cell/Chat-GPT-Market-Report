@@ -367,3 +367,23 @@ Timestamp: 2026-10-13 00:44 JST.
 The earlier one-time follow-up suggestion is superseded by two registered ACTIVE heartbeat runs (local schedule in Asia/Tokyo): `pr-94-us-post-close-refresh` at 2026-10-13 05:15 JST, then `pr-94-tokyo-post-close-refresh` at 2026-10-13 16:00 JST. Registration was confirmed in the app and in both local automation records. The first run handles only completed U.S. closes and any finalized FX cutoffs; the second handles Tokyo data and UTC BTC only after their boundaries. Both prohibit production-sheet writes and require the private test-sheet roundtrip. These are scheduled follow-ups; no market-data refresh has yet run.
 
 Timestamp: 2026-10-13 00:51 JST.
+
+## pr94-market-session-20261013-postclose-01 — Tokyo and U.S. post-close live refresh
+
+**Claim:** A per-market snapshot and current report were built from observations queried after the relevant U.S. and Tokyo close windows. Report values from older observations were not reused as current. The production close list received a read-only dry-run only.
+
+**Run / timestamps:** heartbeat start 2026-10-13T07:00:19.222Z; shared snapshot `8a439e3bde86d3acf47a6098`; report generated 2026-10-13T07:14:45Z. PR state before this ledger commit: OPEN / Draft / unmerged; head `f1352e01fd2941466ee35e389aac00c6661b81ee`.
+
+**New acquisitions: 10/28.** Newly verified: **7/28** — Dow 51,850.55, Nasdaq Composite 27,245.9025 (display rounds to 27,245.90), S&P 500 7,807.24, Russell 2000 2,794.479818 (display rounds to 2,794.48), VIX 15.21 (2026-10-12 U.S. close); BITSTAMP BTC/USD 81,745.86 (2026-10-12 UTC daily candle); official Nikkei VI 30.41 at 2026-10-13 15:50 JST. The four U.S. equity-index closes match the post-close AP report; VIX matches TradingView plus independent secondary historical sources; BTC is a completed daily bar checked within TradingView’s BITSTAMP series; Nikkei VI is the official Nikkei profile observation. Evidence does not call AP/secondary corroboration an official index data feed.
+
+**Reference-only: 3/28.** Two forming FX_IDC bars: USD/JPY 158.154 and EUR/USD 1.11826, anchored 2026-10-12T22:00Z; the NY 17:00 EDT cutoff (2026-10-13T21:00Z) had not occurred. A secondary Nikkei 225 cash-close candidate of 67,704.50 from FT conflicts with TradingView TVC:NI225 67,777.30; the official dated Nikkei summary was not confirmed in this run. This cash candidate is conflict/reference only. **Not updated: 18/28.** These are not represented as new observations.
+
+**Private test Sheets E5:** In spreadsheet `Market Data API Test`, appended seven rows to `Personal_Report_Ready!A19:L25`, three rows to `Personal_Reference_Values!A22:M24`, and one report to `Personal_Market_Report!A14:I14`. Snapshot rows and report row all read back exactly. Report ID `personal-report-c2cb1a8f748b4215ad6bd75d` occurs once; body length 7,320 and SHA-256 `06861021485236077ba9393a62b4d758381df79bf8dc74e11bef85d846398bc4`. This write used the connected Google Drive/Sheets session, not a new Actions service-account run. The report preserves market-specific dates, source, evidence and status; it does not invent news, positioning or unavailable metrics.
+
+**Production dry-run only:** Read-only inspection of `終値一覧` found 186 columns, 938 allocated rows and 23 conditional-format rules. Date-matched blank cells for the seven VERIFIED items were B26/E26/H26/K26/AF26/AI26 on 2026-10-12 and AL25 on 2026-10-13. Existing values were blank; these are proposals only. **Production writes: 0.** No values, formulas, date rows, columns, or formatting were changed.
+
+**Sources:** [AP U.S. index close report](https://apnews.com/article/wall-street-stocks-dow-nasdaq-f07713e8b2e438ac5903b50f5ce97235); [VIX Yahoo history](https://finance.yahoo.com/quote/%5EVIX/history/) and [ChartExchange history](https://chartexchange.com/symbol/index-vix/historical/); [Nikkei VI official profile](https://indexes.nikkei.co.jp/nkave/index/profile?idx=nk225vi); [FT Nikkei 225 historical table](https://markets.ft.com/data/indices/tearsheet/historical?s=n225%3ANIK); [JPX daily-report guide](https://www.jpx.co.jp/markets/statistics-equities/daily/01.html).
+
+**Limit:** No new GitHub Actions workflow was dispatched by this heartbeat. No production write, public market-value artifact update, or main-branch merge occurred. The report’s verified/reference/unupdated classifications apply to this snapshot only.
+
+**Evidence Level:** E5 for live source observations and private Sheets append/readback; E5 read-only production metadata/value inspection; no Actions-run proof. **Tests:** NOT_RUN (this heartbeat executed live acquisition, report generation, and readback; no code changes were made).
