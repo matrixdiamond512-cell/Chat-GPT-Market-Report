@@ -1,0 +1,22 @@
+name: Actual report heading compatibility CI
+on:
+  push:
+    branches: [fix/oct13-source-heading-import-compat]
+  pull_request:
+    paths:
+      - apps-script/MarketReportPrePublishValidation.gs
+      - scripts/test_actual_report_heading_aliases.js
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: cp apps-script/MarketReportPrePublishValidation.gs /tmp/MarketReportPrePublishValidation.js
+      - run: node --check /tmp/MarketReportPrePublishValidation.js
+      - run: node scripts/test_actual_report_heading_aliases.js
+      - run: node scripts/test_apps_script_narrative_report.js
