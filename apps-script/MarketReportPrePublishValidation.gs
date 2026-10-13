@@ -311,7 +311,7 @@ function marketReportPrePublishHeadingLines_(source) {
     if (normalized) headings.push(normalized);
     // Only numbered/explicit heading lines are eligible for compound aliases.
     // Never infer missing report sections from incidental prose mentions.
-    if (!/^(?:\\d{1,2}[．.、)）]|【|[■◆◇●▶])/.test(line)) return;
+    if (!/^(?:\d{1,2}[．.、)）]|【|[■◆◇●▶])/.test(line)) return;
     const aliases = [
       [/^主要市場データ(?:（.*）)?$/, ['主要市場データ']],
       [/^前営業日終値一覧と基準時刻$/, ['主要市場データ']],
