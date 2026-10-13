@@ -1,0 +1,39 @@
+name: Diagnose market Google service account access
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    env:
+      GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install google-auth requests
+      - name: Inspect service identity and Sheets access without exposing keys
+        run: |
+          python - <<'PY'
+          import json,os,sys
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import AuthorizedSession
+          raw=os.getenv('GOOGLE_SERVICE_ACCOUNT_JSON') or ''
+          if not raw:
+              raise SystemExit('GOOGLE_SERVICE_ACCOUNT_JSON secret is missing')
+          info=json.loads(raw)
+          email=info.get('client_email') or ''
+          if not email.endswith('.gserviceaccount.com'):
+              raise SystemExit('Expected a Google service account email')
+          print('SERVICE_ACCOUNT_CLIENT_EMAIL='+email)
+          spreadsheet_id=os.getenv('MARKET_DATA_SPREADSHEET_ID') or '1n2ACInX4pmK0TdijC8xaur2RIiNZyVa6GFTZAyofcuE'
+          creds=service_account.Credentials.from_service_account_info(info,scopes=['https://www.googleapis.com/auth/spreadsheets.readonly'])
+          response=AuthorizedSession(creds).get('https://sheets.googleapis.com/v4/spreadsheets/'+spreadsheet_id,params={'fields':'spreadsheetId,properties.title'},timeout=30)
+          print('SHEETS_ACCESS_HTTP_STATUS='+str(response.status_code))
+          if response.status_code!=200:
+              raise SystemExit('SHEETS_ACCESS_DENIED_OR_UNAVAILABLE (please share the target sheet with SERVICE_ACCOUNT_CLIENT_EMAIL as reader)')
+          print('SHEETS_READBACK_TITLE='+str(response.json().get('properties',{}).get('title','')))
+          PY
