@@ -851,7 +851,7 @@ function buildWebReportFromGoogleDoc_(file) {
     news: smartSectionLines_(text, ['重要ニュースと影響', '重要ニュース・金利', '重要ニュース', '市場を動かすニュース', '相場に影響する重要ニュース', 'ニュース・材料']),
     crossAssetFlow: smartSectionLines_(text, ['クロスアセット資金フロー', '資金フロー', '何が買われ、何が売られたか']),
     sectors: smartSectionLines_(text, ['セクター・業種動向', '買われた業種・売られた業種', 'セクター動向']),
-    handover: smartSectionLines_(text, ['NY時間への引き継ぎ', '欧州時間への引き継ぎ', '東京時間への引き継ぎ', '12:00への引き継ぎ', '明日への引き継ぎ', '翌東京時間への引き継ぎ', '次の時間帯への引き継ぎ']),
+    handover: smartSectionLines_(text, ['NY時間への引き継ぎ', '欧州時間への引き継ぎ', '東京時間への引き継ぎ', '12:00への引き継ぎ', '21:00への引き継ぎ', '明日への引き継ぎ', '翌東京時間への引き継ぎ', '次の時間帯への引き継ぎ']),
     events: smartSectionLines_(text, ['今後のイベント', '重要イベント', '本日の重要イベント', '今後の予定']),
     mainScenario: scenarioFields_(text).mainScenario || smartSectionText_(text, ['メインシナリオ', '基本シナリオ']),
     alternativeScenario: scenarioFields_(text).alternativeScenario || smartSectionText_(text, ['代替シナリオ', 'サブシナリオ', '弱気シナリオ', '強気シナリオ']),
@@ -967,9 +967,9 @@ function parseMarketsLenient_(text) {
 
 function marketDefinitions_() {
   return [
-    { name: '金', aliases: ['金', 'ゴールド', 'XAU/USD', 'XAUUSD', '金（スポット）', '金スポット'] },
+    { name: '金', aliases: ['金', '金先物', 'COMEX金先物', 'ゴールド', 'XAU/USD', 'XAUUSD', '金（スポット）', '金スポット'] },
     { name: '原油', aliases: ['WTI原油', '原油', 'WTI', 'WTI原油（CL）', 'Brent', 'ブレント'] },
-    { name: '日経225先物', aliases: ['日経225先物（大阪取引所）', '日経225先物', '日経先物', '日経平均先物'] },
+    { name: '日経225先物', aliases: ['日経225先物（大阪取引所）', '大阪日経225先物', '大阪日経先物', '日経225先物', '日経先物', '日経平均先物'] },
     { name: 'USD/JPY', aliases: ['USD/JPY', 'ドル円', 'USDJPY'] },
     { name: 'EUR/USD', aliases: ['EUR/USD', 'ユーロドル', 'EURUSD'] },
     { name: 'BTCUSD', aliases: ['BTCUSD', 'BTC/USD', 'ビットコイン', 'BTC'] }
@@ -977,7 +977,7 @@ function marketDefinitions_() {
 }
 
 function marketOutlookMap_(text, definitions) {
-  const block = smartSectionBlock_(text, ['6市場の見通し', '個別市場の見通し', '個別市場見通し', '個別見通し']);
+  const block = smartSectionBlock_(text, ['6市場の見通し', '主要6市場の短期見通し', '主要6市場の見通し', '個別市場の見通し', '個別市場見通し', '個別見通し']);
   const map = {};
   splitMeaningfulLines_(block).forEach(line => {
     const parsed = parseMarketLabeledLine_(line, definitions);
@@ -990,7 +990,7 @@ function marketOutlookMap_(text, definitions) {
 // state prices in the paragraph below a directional line instead of a table;
 // this lets the parser extract only values belonging to that market section.
 function marketOutlookDetailMap_(text, definitions) {
-  const block = smartSectionBlock_(text, ['6市場の見通し', '個別市場の見通し', '個別市場見通し', '個別見通し']);
+  const block = smartSectionBlock_(text, ['6市場の見通し', '主要6市場の短期見通し', '主要6市場の見通し', '個別市場の見通し', '個別市場見通し', '個別見通し']);
   const result = {};
   let current = '';
 
@@ -1099,7 +1099,10 @@ function extractMetricLineForMarket_(source, definition, definitions) {
     .sort((a, b) => b.length - a.length)
     .map(escapeRegExp_)
     .join('|');
-  const pattern = new RegExp('((?:' + labels + ')\\s*[：:]\\s*[\\s\\S]*?)(?=\\s*(?:' + allLabels + ')\\s*[：:]|\\n|$)', 'i');
+  // Explicit futures contract labels can include a delivery month. Keep the
+  // complete observed quote and its timestamp; never substitute watch levels.
+  const deliveryMonth = '(?:\\d{1,2}月限)?';
+  const pattern = new RegExp('((?:' + labels + ')' + deliveryMonth + '\\s*[：:]\\s*[\\s\\S]*?)(?=\\s*(?:' + allLabels + ')' + deliveryMonth + '\\s*[：:]|\\n|$)', 'i');
   const match = String(source || '').replace(/\r/g, '').match(pattern);
   if (!match) return '';
   const line = trimMarketMetricTail_(match[1].replace(/\s+/g, ' ').trim());
@@ -1537,3 +1540,4 @@ function githubHeaders_(token) {
     'X-GitHub-Api-Version': '2022-11-28'
   };
 }
+

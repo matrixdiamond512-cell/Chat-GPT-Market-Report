@@ -10,6 +10,8 @@ on:
       - 'apps-script/MarketReportMasterScheduler.gs'
       - 'apps-script/MarketReportPrePublishValidation.gs'
       - 'scripts/test_apps_script_narrative_report.js'
+      - 'scripts/test_actual_1600_source_recovery.js'
+      - 'tests/fixtures/market_report_20261013_1600_original.txt'
       - 'scripts/test_apps_script_infographic_gate.js'
       - 'scripts/reporting/infographic.py'
       - 'scripts/reporting/vision_provider.py'
@@ -36,6 +38,8 @@ on:
       - 'apps-script/MarketReportMasterScheduler.gs'
       - 'apps-script/MarketReportPrePublishValidation.gs'
       - 'scripts/test_apps_script_narrative_report.js'
+      - 'scripts/test_actual_1600_source_recovery.js'
+      - 'tests/fixtures/market_report_20261013_1600_original.txt'
       - 'scripts/test_apps_script_infographic_gate.js'
       - 'scripts/reporting/infographic.py'
       - 'scripts/reporting/vision_provider.py'
@@ -94,6 +98,9 @@ jobs:
 
       - name: Test narrative 21:00 report parsing and validation
         run: node scripts/test_apps_script_narrative_report.js
+
+      - name: Test actual 16:00 original parsing and fail-closed controls
+        run: node scripts/test_actual_1600_source_recovery.js
 
       - name: Confirm independent body publication and manifest-bound infographic gate
         run: |
