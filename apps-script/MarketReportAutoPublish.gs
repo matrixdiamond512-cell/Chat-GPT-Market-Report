@@ -195,11 +195,45 @@ function autoPublishDueMarketReports_(reason) {
   return summary;
 }
 
-function publishMarketReportSlot_(hour, mode, throwOnError) {
+/**
+ * Repair Drive→GitHub gaps for the last 5 calendar days, including today.
+ * Safe to retry: the remote canonical+index readback short-circuits matching
+ * revisions; source-readback and publication validation still fail closed.
+ * This needs an Apps Script deployment and an installed time-based trigger.
+ */
+function repairMissingMarketReportsFromDrive() {
+  const now = new Date();
+  const today = Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd');
+  const results = [];
+  for (let offset = 4; offset >= 0; offset--) {
+    const timestamp = new Date(now.getTime() - offset * 86400000);
+    const targetDate = Utilities.formatDate(timestamp, MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd');
+    const weekday = Number(Utilities.formatDate(timestamp, MARKET_REPORT_AUTO_CONFIG.timezone, 'u'));
+    if (weekday >= 6) continue;
+    MARKET_REPORT_AUTO_CONFIG.reportHours.forEach(function(hour) {
+      const currentHour = Number(Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'H'));
+      if (targetDate === today && hour >= currentHour) return;
+      // Never manufacture an absent source or change report titles.
+      if (!findMarketReportDocForAutoPublishSlot_(hour, targetDate)) {
+        results.push({ date: targetDate, hour: hour, status: 'WAITING_INPUT' });
+        return;
+      }
+      const outcome = publishMarketReportSlot_(hour, 'drive-github-recovery', false, targetDate);
+      results.push({date: targetDate, hour: hour, status: outcome.ok ? (outcome.skipped ? 'ALREADY_VERIFIED' : 'PUBLISHED') : (outcome.status || 'FAILED'), error: outcome.error || ''});
+    });
+  }
+  const failed = results.filter(function(item) { return item.status === 'FAILED'; });
+  const summary = { ok: failed.length === 0, mode: 'drive-github-recovery', checkedCount: results.length, results: results };
+  saveMarketReportAutoResult_(summary);
+  if (failed.length) throw new Error('Drive→GitHub recovery had failures. See script property log.');
+  return summary;
+}
+
+function publishMarketReportSlot_(hour, mode, throwOnError, targetDate) {
   const now = new Date();
 
   try {
-    const file = findMarketReportDocForAutoPublishSlot_(hour);
+    const file = findMarketReportDocForAutoPublishSlot_(hour, targetDate);
 
     if (!file) {
       const missing = {
@@ -343,9 +377,9 @@ function findLatestMarketReportDocForAutoPublish_() {
   return latest;
 }
 
-function findMarketReportDocForAutoPublishSlot_(hour) {
+function findMarketReportDocForAutoPublishSlot_(hour, targetDate) {
   const now = new Date();
-  const dateText = Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd');
+  const dateText = targetDate || Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd');
   const name = marketReportAutoDocName_(dateText, hour);
   return findMarketReportAutoBestFileByName_(name) ||
     findMarketReportAutoBestFileByPattern_(dateText, hour);
