@@ -205,6 +205,12 @@ function repairMissingMarketReportsFromDrive() {
   const now = new Date();
   const today = Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd');
   const results = [];
+  // The standard publisher also updates the latest-report pointer. Never run it
+  // against an older key than the currently published newest report.
+  const latestResponse = getGitHubJsonFile_('data/latest-report.json');
+  const latestContainer = latestResponse && latestResponse.data;
+  const latest = latestContainer && (latestContainer.latestReport || latestContainer.report || latestContainer);
+  const publishedKey = latest && latest.date && latest.time ? latest.date + ' ' + latest.time : '';
   for (let offset = 4; offset >= 0; offset--) {
     const timestamp = new Date(now.getTime() - offset * 86400000);
     const targetDate = Utilities.formatDate(timestamp, MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd');
@@ -213,6 +219,12 @@ function repairMissingMarketReportsFromDrive() {
     MARKET_REPORT_AUTO_CONFIG.reportHours.forEach(function(hour) {
       const currentHour = Number(Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'H'));
       if (targetDate === today && hour >= currentHour) return;
+      const slotKey = targetDate + ' ' + ('0' + hour).slice(-2) + ':00';
+      if (publishedKey && slotKey < publishedKey) {
+        results.push({date: targetDate, hour: hour, status: 'OLDER_THAN_LATEST',
+          reason: 'Archival backfill must not roll back the latest-report pointer'});
+        return;
+      }
       // Never manufacture an absent source or change report titles.
       if (!findMarketReportDocForAutoPublishSlot_(hour, targetDate)) {
         results.push({ date: targetDate, hour: hour, status: 'WAITING_INPUT' });
