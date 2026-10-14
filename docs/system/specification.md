@@ -211,3 +211,12 @@ E4＝合成データ・クロス言語golden・関連CIが最新HEADで成功。
 **回帰**：`scripts/test_d2_offline_proof_handoff.js`に5件追加。①token計測値9000→9001を原文SHAと署名ごと再構成しても準備記録9000との差で拒否、②重複input_tokensをSHA/署名再構成しても拒否、③object種別を改変・再署名しても拒否、④preparationのcounted_input_tokensだけの改変を拒否、⑤JSON空白・キー順序のみ変化させた原文は再署名・SHA整合下でもオフライン結果のみ許容。本章はPythonの認証済み受信を証明するものではなく、`d2-offline-preparation/v2`や証拠署名schemaを改版しない。
 **非承認境界**：鍵2組・clock・準備・count・月額値は引き続き合成または呼出し元の未認証値。外部trust root、計測APIの真正な通信証拠、月額請求認証、原子的予約、費用承認、producer証明、real E2Eは未達。API送信・課金・本番writer・mainマージ・既存ChatGPTタスク変更なし。PR #130はOPEN/Draft、E5公開BLOCKED。
 **改訂履歴**：2026-10-15 v1.23（Draft）。正式技術仕様の唯一の正本は本書と同期対象の正式Google Docs仕様書。旧変更仕様書はアーカイブを維持。
+
+### R. D2月間予算・計測費用の独立意味照合（v1.24／2026-10-15、Draft）
+**検出した欠落**：v1.23までの署名引継ぎは月間入力原文のSHAと署名を確認するが、preparationに保存された`counted_model_cost_usd`、`monthly_total_with_reservation_usd`、`monthly_effective_cap_usd`の算術を引継ぎ側で再計算していなかった。合成環境で原文・SHA・署名を作り直した場合、計測費用や月間残高が原文と意味的に矛盾しても正しい署名として受理される余地があった。
+**修正**：`scripts/reporting/d2_offline_proof_handoff.js`の`reviewBudgetSemantics`が、月間原文と準備記録を独立に照合する。UTCとは別に`month_jst`とreport_idのYYYY-MMを一致させ、Project/Organization両hard-limit enabledを必須とする。すべてのUSD額は0〜小数8桁の10進文字列として構文・符号を厳格検査し、Node BigIntのUSD 10^-8固定単位で演算する。浮動小数点は使わない。
+**計算契約**：本オフライン固定モデル試験でのみ使う入力単価0.75 USD／100万tokens、出力単価4.50 USD／100万tokensから、`counted_input_tokens * input_rate + max_output_tokens * output_rate`を再計算し`counted_model_cost_usd`と比較する。さらに最大入力token上限によるworst-case費用が`max_model_cost_usd`以下か検査。月間使用済み額＋未決済予約＋**worst-caseモデル費用**を`monthly_total_with_reservation_usd`と比較し、利用者承認・Project・Organization上限の最小値を`monthly_effective_cap_usd`と比較する。予算合計が最小上限を超えた場合は拒否する。token数はsafe integerで上限は入力12000、出力4000。
+**検査順序**：count原文SHA・count意味照合→月額原文SHA→月額・費用算術→独立期待値・両用途Ed25519署名。計算値の不一致、期限・鍵・署名不一致はすべてfail closed。正しい算術であっても戻り値は`retry_allowed=false`、`api_send_allowed=false`、`publication_allowed=false`を維持する。
+**回帰**：`scripts/test_d2_offline_proof_handoff.js`に11ケース追加。計測費用の過少申告、月間合計・最小上限の改変、実績費用の差替えと署名再作成、hard-cap無効化、対象月ずれ、費用上限超過、実行予算超過、不正金額表記を拒否。変更後も算術が整合した月額原文・署名はオフライン照合だけ通す。CIが完成するまで実行合格は宣言しない。
+**境界**：これらの単価は検証コードに固定した参考前提であり、外部請求元認証・最新料金・実際のhard cap反映・原子的月額予約やAPI料金保証の証明ではない。鍵・trust root・Provider通信・請求台帳は未接続。`d2-offline-preparation/v2`、署名形式は変更せず、実API呼出し・課金・writer接続・main統合・ChatGPT定期タスク変更を禁止。PR #130 Draft／公開BLOCKED維持。
+**改訂履歴**：2026-10-15 v1.24（Draft）。技術仕様の唯一の正本は本書と同期対象の正式Google Docs仕様書。別の変更仕様書は作成しない。
