@@ -72,10 +72,10 @@ def review_monthly_budget(plan: InputCountPlan, values: MonthlySpendInputs
         raise BudgetReviewBlocked("COUNT_PLAN_NOT_VERIFIED")
     if type(values) is not MonthlySpendInputs:
         raise BudgetReviewBlocked("MONTHLY_SPEND_INPUT_INVALID")
-    if not re.fullmatch(r"\d{4}-\d{2}_\d{2}-\d{2}", values.report_id):
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}_(08|12|16|21)-00", values.report_id):
         raise BudgetReviewBlocked("REPORT_ID_FORMAT_INVALID")
     try:
-        day = date.fromisoformat(values.report_id[:10] + "-01")
+        day = date.fromisoformat(values.report_id[:10])
     except ValueError as exc:
         raise BudgetReviewBlocked("MONTH_INVALID") from exc
     if values.month_jst != day.strftime("%Y-%m"):
