@@ -84,6 +84,26 @@ class TestD2Responses(unittest.TestCase):
         self.assertEqual(r, build_request(self.ctx,self.snapshot,
                             instructions="JSONで記録済みの市場データのみ使う。"))
 
+    def test_exact_weekday_and_directions_are_anchored_for_historical_real_data(self):
+        from pathlib import Path
+        from scripts.reporting.context import ReportContext
+        from scripts.reporting.snapshot import MarketDataSnapshot
+        root = Path(__file__).resolve().parents[1]
+        source = json.loads((root / "data/market/history/2026-10-14_21-00.json").read_text(encoding="utf-8"))
+        ctx = ReportContext.create("2026-10-14", "21:00",
+                                   "2026-10-14T21:00:00+09:00", mode="historical")
+        snap = MarketDataSnapshot.from_acquisition(ctx, source)
+        req = build_request(ctx, snap, instructions="事実のみを使う。")
+        data = json.loads(req["input"])
+        self.assertEqual(data["expected_title"], "マーケットレポート｜2026/10/14（水）21:00")
+        self.assertIn(data["expected_title"], req["instructions"])
+        directions = {x["series"]: x["direction"] for x in data["observed_directions"]}
+        self.assertEqual(directions["gold"], "DOWN")
+        self.assertEqual(directions["wti"], "UP")
+        self.assertIn("矛盾する上昇・下落の断定を書かない", req["instructions"])
+        self.assertFalse(req["store"])
+        self.assertEqual(req["tools"], [])
+
     def test_capture_provider_raw_response_and_body_hash(self):
         r = capture_response(self.response, self.ctx, self.snapshot)
         self.assertEqual(r.response_id, "resp_test12345")
