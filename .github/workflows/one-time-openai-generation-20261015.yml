@@ -1,0 +1,159 @@
+name: One-time approved OpenAI market report generation test 2026-10-15
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/one-time-openai-generation-20261015.yml
+permissions:
+  contents: read
+jobs:
+  single-2026-10-14-21h:
+    if: github.event_name == 'push' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    concurrency:
+      group: approved-openai-model-20261015-once
+      cancel-in-progress: false
+    steps:
+      - name: Checkout immutable source contract, never upload or publish
+        uses: actions/checkout@v4
+        with:
+          ref: 15d89a16d186222959fecc50e6c4ebfb92de0cc7
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Make exactly one authorized paid model request; input count and worst-case USD 0.03 guard
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_PROJECT_ID: ${{ secrets.OPENAI_PROJECT_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, json, os, re, sys, urllib.error, urllib.request
+          from decimal import Decimal
+          from pathlib import Path
+          from scripts.reporting.context import ReportContext
+          from scripts.reporting.snapshot import MarketDataSnapshot
+          from scripts.reporting.shadow_worker import freeze_shadow_input, json_bytes
+          from scripts.reporting.d2_responses_contract import build_request, capture_response, estimate_usage_usd
+          from scripts.reporting.d2_token_count_contract import build_count_plan, review_count_fixture
+          from scripts.reporting.report import REGISTRY
+          MAX_USD=Decimal('0.03')
+          INPUT_RATE=Decimal('0.75')
+          OUTPUT_RATE=Decimal('4.50')
+          OUTPUT_LIMIT=4000
+          MAX_INPUT=12000
+          assert (INPUT_RATE*MAX_INPUT+OUTPUT_RATE*OUTPUT_LIMIT)/Decimal(1000000) <= MAX_USD
+          if os.environ.get('GITHUB_RUN_ATTEMPT') != '1':
+              raise SystemExit('ONE_ATTEMPT_ONLY')
+          key=os.environ.get('OPENAI_API_KEY','')
+          project=os.environ.get('OPENAI_PROJECT_ID','')
+          if not key.startswith('sk-') or not project.startswith('proj_'):
+              raise SystemExit('OPENAI_CREDENTIALS_NOT_CONFIGURED')
+          p=Path('data/market/history/2026-10-14_21-00.json')
+          data=json.loads(p.read_text(encoding='utf-8'))
+          ctx=ReportContext.create('2026-10-14','21:00','2026-10-14T21:00:00+09:00',mode='historical')
+          snapshot=MarketDataSnapshot.from_acquisition(ctx,data)
+          freeze_shadow_input(ctx,snapshot)
+          headings='、'.join(REGISTRY['required'])
+          instructions=(
+             'これは日本語の金融市場レポートを1件だけ作る非公開の品質試験です。'
+             '利用できる根拠は凍結済みの市場価格およびその取得時刻と情報源だけです。'
+             '経済ニュース、未収録の実需・投機ポジション、予想EPS、ファンドフロー、その他未収録の数値を創作してはいけません。'
+             '該当データがない場合は確認可能な情報の限界をはっきり書き、事実と仮説を区別してください。'
+             'full_text先頭は提供されたreport_idに対応する「マーケットレポート｜YYYY/MM/DD（曜）HH:MM」とし、'
+             '見出しは1行独立で以下の表記を全て含め、全体で1200文字以上としてください：'+headings+'。'
+             '各見通しで上昇条件・下落条件・崩れる条件を根拠に沿って定性的に記載してください。'
+             '価格、変化、パーセントなどの数値は凍結情報にある値だけを、元の厳密な十進表記で使用してください。'
+             '価格・時刻について推測値を作らず、別時点の値を代用しないでください。'
+             'full_textには凍結された全marketのpriceValueを各1回、'
+             '対応するinstrumentとpriceUnitと同じ行に全精度の数字として記載してください。'
+             '他には日付・見出し・instrument名以外の数値を作らないでください。'
+             'observations_usedには全marketのseries/value/unitを凍結データと完全一致で入れてください。'
+             'numeric_claimsにはfull_text中の日付とinstrument名を除く全数字について、'
+             '文字列上の0始まりの位置(start)、実際の数字(literal)、market series、'
+             'priceValueまたはchangeValue/changePct、source_id、as_ofを対応させてください。'
+             '根拠がない定量主張は禁止です。取得不能は取得不能としてください。'
+             '本文の各見出しは省略せず、読みやすい日本語で報告してください。'
+          )
+          req=build_request(ctx,snapshot,instructions=instructions,max_output_tokens=OUTPUT_LIMIT)
+          plan=build_count_plan(req,max_input_tokens=MAX_INPUT,max_run_usd='0.03')
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self,*args,**kwargs):
+                  raise RuntimeError('UNTRUSTED_REDIRECT_BLOCKED')
+          opener=urllib.request.build_opener(NoRedirect())
+          def post_once(endpoint,payload,limit=2500000):
+              request=urllib.request.Request(
+                  'https://api.openai.com'+endpoint,
+                  data=json_bytes(payload),method='POST',
+                  headers={'Authorization':'Bearer '+key,
+                           'OpenAI-Project':project,
+                           'Content-Type':'application/json',
+                           'Accept':'application/json'})
+              try:
+                  with opener.open(request,timeout=100) as resp:
+                      if resp.status != 200:
+                          raise RuntimeError('BAD_HTTP_STATUS')
+                      raw=resp.read(limit+1)
+              except urllib.error.HTTPError as exc:
+                  # Deliberately do not log provider body or account details.
+                  raise RuntimeError('OPENAI_HTTP_'+str(exc.code)+'_NO_RETRY') from None
+              except (urllib.error.URLError, TimeoutError, OSError) as exc:
+                  raise RuntimeError('OPENAI_CONNECTION_OR_TIMEOUT_NO_RETRY') from None
+              if not raw or len(raw)>limit:
+                  raise RuntimeError('RESPONSE_SIZE_INVALID_NO_RETRY')
+              return raw
+          raw_count=post_once(plan.count_endpoint,plan.payload,limit=4096)
+          review=review_count_fixture(plan,req,raw_count)
+          max_cost=(INPUT_RATE*Decimal(review.input_tokens)+OUTPUT_RATE*Decimal(OUTPUT_LIMIT))/Decimal(1000000)
+          if max_cost>MAX_USD:
+              raise RuntimeError('MAX_ALLOWED_USD_EXCEEDED_BEFORE_MODEL_CALL')
+          print('INPUT_SNAPSHOT_VERIFIED='+snapshot.snapshot_id,flush=True)
+          print('INPUT_TOKENS_REAL='+str(review.input_tokens),flush=True)
+          print('MAX_BOUNDED_MODEL_USD='+str(max_cost),flush=True)
+          print('USER_APPROVED_ONCE_MAX_USD=0.03',flush=True)
+          print('PAID_MODEL_REQUEST_START_ONLY_ONE_ATTEMPT',flush=True)
+          # One real /v1/responses POST only; no retry, tools, web, or publication.
+          raw_response=post_once('/v1/responses',req)
+          resp=json.loads(raw_response.decode('utf-8'))
+          usage=resp.get('usage') or {}
+          print('MODEL_RESPONSE_STATUS='+str(resp.get('status')),flush=True)
+          print('MODEL_RESPONSE_ID='+str(resp.get('id')),flush=True)
+          print('MODEL_USAGE_INPUT='+str(usage.get('input_tokens')),flush=True)
+          print('MODEL_USAGE_OUTPUT='+str(usage.get('output_tokens')),flush=True)
+          try:
+              actual_usd=estimate_usage_usd(usage)
+              print('MODEL_ESTIMATED_ACTUAL_USD='+str(actual_usd),flush=True)
+          except Exception as exc:
+              print('USAGE_VALIDATION_FAILED='+type(exc).__name__,flush=True)
+          body=''
+          try:
+              output=resp.get('output',[])
+              for item in output:
+                  if item.get('type')=='message':
+                      for part in item.get('content',[]):
+                          if part.get('type')=='output_text':
+                              structured=json.loads(part.get('text','{}'))
+                              body=structured.get('full_text','')
+              if isinstance(body,str) and body:
+                  print('EXPERIMENTAL_DRAFT_BEGIN_NOT_PUBLISHED')
+                  print(body)
+                  print('EXPERIMENTAL_DRAFT_END_NOT_PUBLISHED')
+                  print('BODY_CHARACTERS='+str(len(body)))
+                  print('BODY_SHA256='+hashlib.sha256(body.encode('utf-8')).hexdigest())
+              else:
+                  print('NO_COMPLETED_DRAFT_BODY')
+          except Exception as exc:
+              print('RESPONSE_TEXT_EXTRACTION_FAILED='+type(exc).__name__)
+          try:
+              result=capture_response(resp,ctx,snapshot,raw_response_bytes=raw_response)
+              print('STRICT_D2_OUTPUT_VALIDATION=PASS')
+              print('STRICT_D2_NUMERIC_CLAIMS='+str(result.numeric_claims_checked))
+          except Exception as exc:
+              print('STRICT_D2_OUTPUT_VALIDATION=BLOCKED')
+              print('STRICT_D2_REASON='+str(exc)[:200])
+          print('PUBLICATION_ATTEMPTED=false')
+          print('REPEAT_REQUESTS=0')
+          PY
