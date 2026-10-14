@@ -1,5 +1,6 @@
 """D2 Responses request/response contract -- in-memory payloads, zero network."""
 import copy
+import hashlib
 import json
 import unittest
 
@@ -70,9 +71,37 @@ class TestD2Responses(unittest.TestCase):
         self.assertEqual(r.response_status, "completed")
         self.assertEqual(r.usage["total_tokens"], 16000)
         self.assertEqual(len(r.body_sha256), 64)
-        self.assertEqual(len(r.raw_response_sha256), 64)
+        self.assertIsNone(r.raw_response_sha256)
+        self.assertEqual(len(r.normalized_response_sha256), 64)
         self.assertFalse(r.publishable)
         self.assertEqual(str(estimate_usage_usd(r.usage)), "0.027")
+
+    def test_exact_original_response_bytes_are_separately_verified(self):
+        first = json.dumps(self.response, ensure_ascii=False,
+                           separators=(",", ":")).encode("utf-8")
+        second = json.dumps(self.response, ensure_ascii=False,
+                            indent=2).encode("utf-8")
+        a = capture_response(self.response, self.ctx, self.snapshot,
+                             raw_response_bytes=first)
+        b = capture_response(self.response, self.ctx, self.snapshot,
+                             raw_response_bytes=second)
+        self.assertEqual(a.raw_response_sha256, hashlib.sha256(first).hexdigest())
+        self.assertEqual(b.raw_response_sha256, hashlib.sha256(second).hexdigest())
+        self.assertNotEqual(a.raw_response_sha256, b.raw_response_sha256)
+        self.assertEqual(a.normalized_response_sha256,
+                         b.normalized_response_sha256)
+        self.assertFalse(a.publishable)
+        for payload, reason in (
+            (b"\\xff", "RAW_RESPONSE_BYTES_INVALID"),
+            (b'{"id":"x","id":"y"}', "RAW_RESPONSE_BYTES_INVALID"),
+            (json.dumps(dict(self.response, id="resp_changed12345")).encode(),
+             "RAW_RESPONSE_OBJECT_MISMATCH"),
+            (first.decode("utf-8"), "RAW_RESPONSE_BYTES_NOT_BYTES"),
+        ):
+            with self.subTest(reason=reason), self.assertRaises(ResponsesContractError) as caught:
+                capture_response(self.response, self.ctx, self.snapshot,
+                                 raw_response_bytes=payload)
+            self.assertIn(reason, str(caught.exception))
 
     def test_provider_status_must_complete(self):
         for status in ("incomplete","queued","failed","in_progress","cancelled"):
