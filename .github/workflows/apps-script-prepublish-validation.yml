@@ -9,6 +9,13 @@ on:
       - 'apps-script/MarketReportContext.gs'
       - 'apps-script/MarketReportMasterScheduler.gs'
       - 'apps-script/MarketReportPrePublishValidation.gs'
+      - 'config/report_heading_registry.json'
+      - 'scripts/report_source_contract.py'
+      - 'scripts/reporting/report.py'
+      - 'scripts/sync_latest_report_publication.py'
+      - 'scripts/validate_market_reports.py'
+      - 'tests/test_report_heading_registry.py'
+      - 'tests/test_report_contract.py'
       - 'scripts/test_apps_script_narrative_report.js'
       - 'scripts/test_actual_1600_source_recovery.js'
       - 'scripts/test_github_large_report_index_read.js'
@@ -38,6 +45,13 @@ on:
       - 'apps-script/MarketReportContext.gs'
       - 'apps-script/MarketReportMasterScheduler.gs'
       - 'apps-script/MarketReportPrePublishValidation.gs'
+      - 'config/report_heading_registry.json'
+      - 'scripts/report_source_contract.py'
+      - 'scripts/reporting/report.py'
+      - 'scripts/sync_latest_report_publication.py'
+      - 'scripts/validate_market_reports.py'
+      - 'tests/test_report_heading_registry.py'
+      - 'tests/test_report_contract.py'
       - 'scripts/test_apps_script_narrative_report.js'
       - 'scripts/test_actual_1600_source_recovery.js'
       - 'tests/fixtures/market_report_20261013_1600_original.txt'
@@ -80,6 +94,9 @@ jobs:
 
       - name: Run infographic validator regression suite
         run: python -m unittest discover -s tests -p 'test_infographic_validation.py' -q
+
+      - name: Run actual report heading and body contract regressions
+        run: python -m unittest tests.test_report_heading_registry tests.test_report_contract -v
 
       - name: Run trusted Vision signer regression suite
         run: python -m unittest discover -s tests -p 'test_vision_signer.py' -q
@@ -239,16 +256,20 @@ jobs:
               '', '主導市場', '金利と為替が主導。',
               '', '重要ニュース', '重要材料を市場影響とともに整理。',
               '', '金利', '米日金利の変化を整理。',
-              '', 'クロスアセット資金フロー', '株・債券・商品・FX・暗号資産を整理。',
+              '', 'クロスアセット資金フロー', '株・債券・商品・FX・暗号資産の値動きを照合し、実測フローと価格からの推測を区別する。',
               '', '需給・ポジション', '偏りと巻き戻しリスクを確認。',
               '', '個別市場見通し',
-              '金：強含み。','WTI原油：高値圏。','日経225先物（大阪取引所）：米株と円を確認。',
-              'USD/JPY：レンジ。','EUR/USD：レンジ。','BTCUSD：金利感応度に注意。',
+              '金：金利とドルの変化を確認し、押し目買いが続く条件を整理する。',
+              'WTI原油：在庫と供給材料を確認し、上昇が続く条件と反落条件を比べる。',
+              '日経225先物（大阪取引所）：米株先物と円相場を照合し、寄り付き後の方向を判断する。',
+              'USD/JPY：日米金利差と当局発言を確認し、上値と下値の条件を整理する。',
+              'EUR/USD：米欧金利と経済指標の差を確認し、レンジ継続の条件を点検する。',
+              'BTCUSD：金利とリスク選好を確認し、反発継続と下落再開の条件を比べる。',
               '', '重要イベント', '次の重要指標を確認。',
               '', 'メインシナリオ', '基本シナリオを記載。',
               '', '代替シナリオ', '代替シナリオを記載。',
               '', 'シナリオが崩れる条件', '金利・原油・為替の急変。',
-              '', handoverHeading[time], '次の市場参加者が見る材料を整理。',
+              '', handoverHeading[time], '次の市場参加者は米国金利と株価の反応を確認し、翌東京市場への影響を判断する。',
               '', 'リスク管理', 'イベント前後はサイズを抑える。',
               '', '結論', '材料、資金フロー、需給を統合して判断する。'
             );

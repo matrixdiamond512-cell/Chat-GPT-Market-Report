@@ -21,3 +21,20 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - PR #99はmainにマージ済み。現行スケジュールは平日08/12/16/21のみ、土日なし。
 - PR #94の修正後Actions run 38298392598はSUCCESS。Draft・未マージであり、本番データ書込を検証したものではない。
 - この文書に記載するPR #98のReceipt強制ゲートは撤回済み。Docs保存証跡の旧スキーマ移行が未完了のため、公開ゲートの新設を完了とはしない。
+
+## 2026-10-14 継続追補（3文書共通版 v1.10）
+- PR #128では、実原文の見出し同義表現を、実際の見出し行に限ってPython/GAS双方で認識し、必須セクション本文の不足を引き続き拒否する。公開条件の緩和や原文変更は行わない。PRは未マージであり、本番反映済みとは扱わない。
+- 08:00 Google Docs 2件は5,933文字の本文が完全一致するが、別ID・別revisionである。1枠の重複登録はしない。12:00はDocs原文5,815文字。過去の「見出し欠落」という記録を訂正し、正しい見出し行が存在することと、スナップショット証拠が別途欠けることを分ける。
+- 08:00の確認済みmarket-historyは10:24 JST生成で、report ID/revision/snapshot ID/context/body hashがなく、08:00レポートのsnapshotとは認定しない。12:00用snapshot履歴は確認できない。いずれも過去の市場データから再構成しない。
+- GitHub作業ブランチ上の12:00レポートは `BLOCKED_SNAPSHOT_MISSING`、図解は `DRIVE_SAVED_QA_PENDING`。図解状態は本文公開状態と独立する。保存receiptの `saved` は公開receipt/Pages成功ではない。ChatGPT内部の正確な停止処理・エラー文は未取得でUNKNOWN。
+- 3文書共通の受入未完了事項：08/12/16/21の次回各定期実行について、原本・bound snapshot・GitHub正本・公開receipt・各JSON・Pages本文readbackを工程別に確認する。1枠成功だけで復旧完了にしない。
+
+## 2026-10-14 14:36 JST 継続追補 v1.10
+- PR #128のvalidator/test commit `4cb2dce385300c51447d7c4a8ed316bc4637ab8a` の関連Actions 8件はすべてSUCCESS。Apps Script suiteの最初の失敗は合成fixtureの市場本文量不足であり、公開ゲートを変更せずfixtureのみ説明的なテキストへ修正した。文書更新は後続commit `5420f316038dba58ea0e867fdceedfd0f1a2f26c` に含む。PRは未マージ。
+- 3つの既定Google Drive正式文書へ同一の追補をrevision guard付きで追記し、読み戻しを確認した。次回16:00の実行結果および08/12/16/21の反復本番E2Eは未確認で、全枠受入は未達。
+
+## 2026-10-14 ダッシュボードキー整合・本番停止追補 v1.11
+- 本番21:30の実トリガー `runMarketReportMaster2130` は公開前SOPの複合見出し判定で停止した。GitHub書込以前の失敗でありPNG生成は直接原因ではない。PR #128の見出しエイリアス修正と厳格な本文内容検査は維持し、原文は改変しない。
+- 同期回帰CI失敗の原因として、`apps-script/DashboardJsonSync.gs` が `currentReportKey` に日時表示形式 `YYYY-MM-DD HH:MM` を生成する一方、`scripts/report_identity.py` と `verify_publication_consistency.py` は正規キー `YYYY-MM-DD_HH-MM` を要求していた。PR #128でApps Script側を正規キーへ修正し、`sources[].asOf` の読みやすい表示時刻と `dataAsOf` のタイムゾーン付き時刻は従来どおり保持する。
+- 同一PRに `scripts/test_dashboard_report_key_contract.js` を追加し、`market-report-sync-recovery-ci.yml` の回帰検証に組み込んだ。コード修正コミット `fdf71abad8bf976627f0b9a828826f8e4213117f` の関連Actions 8系統はSUCCESS。再発防止はコード/CIの合格までであり、Apps Script本番環境への反映・本番再実行を意味しない。
+- 2026-10-14 08/12/16/21のレポートはsnapshot/contextと本文hashの受入証拠が不足するため公開保留を維持する。過去データを後付けせず、ChatGPT本文↔Google Docs↔GitHub本文の同一性とreceipt/Pages全文readbackを時刻ごとに検証する。PR #129は停止記録であり公開成功ではない。

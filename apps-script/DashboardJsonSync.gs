@@ -82,7 +82,10 @@ function dashboardBuildPayloadFromReports_(reports) {
   var priceSource = dashboardFetchPriceSheetSource_(latestSource.date);
   var latest = dashboardPrepareReportForDashboard_(latestSource, priceSource, true);
   var generatedAt = dashboardIsoJst_(new Date());
-  var latestKey = latest.date + ' ' + latest.time;
+  // Internal key must match Python report_identity.internal_report_key().
+  // Human-readable timestamps remain separate in sources[].asOf.
+  var latestKey = latest.date + '_' + latest.time.replace(':', '-');
+  var sourceAsOf = latest.date + ' ' + latest.time;
   return {
     schemaVersion: '1.1.0',
     pageId: 'dashboard',
@@ -93,7 +96,7 @@ function dashboardBuildPayloadFromReports_(reports) {
     isStale: dashboardIsStale_(latest.date),
     staleReason: dashboardIsStale_(latest.date) ? '最新レポートの日付が現在日から3日以上離れています。' : '',
     currentReportKey: latestKey,
-    sources: dashboardBuildDashboardSources_(latestKey, priceSource),
+    sources: dashboardBuildDashboardSources_(sourceAsOf, priceSource),
     errors: dashboardBuildDashboardErrors_(priceSource),
     latestReport: latest,
     reports: [latest]

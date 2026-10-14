@@ -2,19 +2,23 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 JST = timezone(timedelta(hours=9))
 NAME = re.compile(r"^マーケットレポート_(\d{4}-\d{2}-\d{2})_(08|12|16|21)-00(?:\.(png|jpg|jpeg|webp))?$")
+HEADING_REGISTRY = json.loads((Path(__file__).resolve().parents[1] / "config/report_heading_registry.json").read_text(encoding="utf-8"))
+HEADING_ALIASES = {alias: canonical for canonical, aliases in HEADING_REGISTRY["sections"].items() for alias in aliases}
 PLAIN_HEADING = re.compile(
     r"^(?:総括|結論|最終判断|今日の相場テーマ|主導市場|今日の主導市場|金利|"
     r"材料と値動きの整合性|重要ニュース(?:・金利)?|主要市場(?:データ|の確認値|まとめ)|"
-    r"クロスアセット資金フロー|需給・ポジション|6市場の(?:個別)?見通し|"
+    r"クロスアセット資金フロー|金利・為替・クロスアセット資金フロー|需給・ポジション|6市場の(?:個別)?見通し|"
     r"個別市場見通し|今後の(?:重要)?イベント|メインシナリオ|代替シナリオ|"
     r"(?:シナリオが)?崩れる条件|クロスチェック結果|"
     r"(?:前回|\d{2}:00)(?:から|→)(?:\d{2}:00)?の(?:主な)?変化|"
-    r"(?:\d{2}:00|次の時間帯|翌東京時間|東京時間|欧州時間|NY時間)への引き継ぎ)$"
+    r"(?:\d{2}:00|次の時間帯|翌東京時間|東京時間|欧州時間|NY時間)への引き継ぎ(?:・リスク管理)?)$"
 )
 
 
@@ -41,6 +45,60 @@ def heading(line: str) -> str:
     if explicit:
         return next(value.strip() for value in explicit.groups() if value)
     return line if PLAIN_HEADING.fullmatch(line) else ""
+
+
+def section_bodies(text: str) -> dict[str, str]:
+    """Return content under registry headings; incidental prose is never a heading."""
+    sections: dict[str, list[str]] = {}
+    current: str | None = None
+    for line in str(text or "").replace("\r", "").split("\n"):
+        label = heading(line)
+        canonical = HEADING_ALIASES.get(label)
+        if label:
+            current = canonical
+            if canonical:
+                sections.setdefault(canonical, [])
+        elif current:
+            sections[current].append(line)
+    return {name: "\n".join(lines).strip() for name, lines in sections.items()}
+
+
+def validate_key_section_bodies(text: str, slot: str = "") -> None:
+    """Keep causal-flow and outlook sections substantive after heading recognition."""
+    sections = section_bodies(text)
+    causal = sections.get("クロスアセット資金フロー", "")
+    if len(causal) < 20 or len(re.findall(r"[。！？]", causal)) < 1:
+        raise ValueError("incomplete saved report section: クロスアセット資金フロー body is missing or insubstantial")
+
+    if slot == "21:00":
+        handover = sections.get("引き継ぎ", "")
+        if len(handover) < 20 or len(re.findall(r"[。！？]", handover)) < 1:
+            raise ValueError("incomplete saved report section: 引き継ぎ body is missing or insubstantial")
+
+    outlook = sections.get("個別市場見通し", "")
+    market_patterns = (
+        r"^[ \t]*(?:金|ゴールド)(?:先物)?[ \t]*[：:]",
+        r"^[ \t]*(?:WTI原油|原油)[ \t]*[：:]",
+        r"^[ \t]*日経225先物[^\n：:]*[ \t]*[：:]",
+        r"^[ \t]*(?:USD/JPY|ドル円)[ \t]*[：:]",
+        r"^[ \t]*(?:EUR/USD|ユーロドル)[ \t]*[：:]",
+        r"^[ \t]*(?:BTCUSD|BTC/USD|ビットコイン)[ \t]*[：:]",
+    )
+    positions = []
+    missing_markets = 0
+    for pattern in market_patterns:
+        match = re.search(pattern, outlook, re.I | re.M)
+        if match is None:
+            missing_markets += 1
+        else:
+            positions.append(match.start())
+    positions.sort()
+    for index, start in enumerate(positions):
+        end = positions[index + 1] if index + 1 < len(positions) else len(outlook)
+        if len(outlook[start:end].strip()) < 20:
+            missing_markets += 1
+    if len(outlook) < 180 or missing_markets:
+        raise ValueError(f"incomplete saved report section: 個別市場見通し requires substantive outlooks for six markets (chars={len(outlook)}, missing={missing_markets})")
 
 
 def validate_saved_body(report: dict) -> None:

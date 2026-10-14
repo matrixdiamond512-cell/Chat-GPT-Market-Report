@@ -27,11 +27,11 @@ var MARKET_REPORT_PREPUBLISH_CONFIG = {
     { label: '材料と値動きの整合性', pattern: /^材料.*値動き.*整合性$|^材料と値動きの整合性$/ },
     { label: '主導市場', pattern: /^(?:今日の)?主導市場$/ },
     { label: '重要ニュース', pattern: /^(?:重要ニュース|重要ニュース・金利|重要材料)$/ },
-    { label: '金利', pattern: /^(?:金利|金利分析|金利・為替|金利・為替の連動|重要ニュース・金利)$/ },
-    { label: 'クロスアセット資金フロー', pattern: /^(?:クロスアセット|クロスアセット資金フロー|資金フロー)$/ },
+    { label: '金利', pattern: /^(?:金利|金利分析|金利・為替|金利・為替の連動|重要ニュース・金利|金利・為替・クロスアセット資金フロー)$/ },
+    { label: 'クロスアセット資金フロー', pattern: /^(?:クロスアセット|クロスアセット資金フロー|資金フロー|金利・為替・クロスアセットの因果関係|金利・為替・クロスアセット資金フロー)$/ },
     { label: '需給・ポジション', pattern: /^(?:需給・ポジション|需給・ポジショニング|ポジションの偏り)$/ },
     { label: '重要イベント', pattern: /^(?:(?:今後の|その日の)?重要イベント|今後の予定)$/ },
-    { label: '個別市場見通し', pattern: /^(?:6市場の(?:個別)?見通し|個別市場見通し|個別見通し)$/ },
+    { label: '個別市場見通し', pattern: /^(?:(?:主要)?6市場の(?:(?:個別|短期))?見通し(?:（.*）)?|個別市場見通し|個別見通し)$/ },
     { label: 'メインシナリオ', pattern: /^(?:メインシナリオ|基本シナリオ|メイン[：:].*)$/ },
     { label: '代替シナリオ', pattern: /^(?:代替シナリオ|別シナリオ|代替[：:].*)$/ },
     { label: 'シナリオが崩れる条件', pattern: /^(?:シナリオが)?崩れる条件(?:[：:].*)?$/ },
@@ -61,7 +61,7 @@ var MARKET_REPORT_PREPUBLISH_CONFIG = {
       changeLabel: '16:00からの変化',
       changePattern: /^(?:(?:16:00|16時|前回)からの(?:主な)?変化|16:00から21:00のマーケットの動き)$/,
       handoverLabel: 'NY時間・翌東京時間への引き継ぎ',
-      handoverPattern: /^(?:NY時間|NY市場|翌東京時間|明日|次の時間帯)への引き継ぎ$/
+      handoverPattern: /^(?:(?:NY時間|NY市場|翌東京時間|明日|次の時間帯)への引き継ぎ)(?:・リスク管理)?$/
     }
   },
   morningRequiredLabels: [
@@ -261,6 +261,28 @@ function validateMarketReportManualContract_(report, byName, errors) {
     }
   });
 
+  [
+    { label: 'クロスアセット資金フロー', pattern: /^(?:クロスアセット|クロスアセット資金フロー|資金フロー|金利・為替・クロスアセットの因果関係)$/,
+      minimum: 20, sentences: 1 },
+    { label: '個別市場見通し', pattern: /^(?:(?:主要)?6市場の(?:(?:個別|短期))?見通し(?:（.*）)?|個別市場見通し|個別見通し)$/,
+      minimum: 180, markets: [/^[ \t]*(?:金|ゴールド)(?:先物)?[ \t]*[：:]/m, /^[ \t]*(?:WTI原油|原油)[ \t]*[：:]/m,
+        /^[ \t]*日経225先物[^\n：:]*[ \t]*[：:]/m, /^[ \t]*(?:USD\/JPY|ドル円)[ \t]*[：:]/m,
+        /^[ \t]*(?:EUR\/USD|ユーロドル)[ \t]*[：:]/m, /^[ \t]*(?:BTCUSD|BTC\/USD|ビットコイン)[ \t]*[：:]/m] }
+  ].forEach(function(rule) {
+    var body = marketReportPrePublishSectionBody_(source, rule.pattern);
+    if (body.length < rule.minimum || (rule.sentences && (body.match(/[。！？]/g) || []).length < rule.sentences) ||
+        (rule.markets && !marketReportPrePublishHasSubstantiveMarketRows_(body, rule.markets))) {
+      errors.push(timeText + ' SOPセクション本文不足: ' + rule.label);
+    }
+  });
+
+  if (timeText === '21:00') {
+    var handoverBody = marketReportPrePublishSectionBody_(source, slotRule.handoverPattern);
+    if (handoverBody.length < 20 || (handoverBody.match(/[。！？]/g) || []).length < 1) {
+      errors.push(timeText + ' SOPセクション本文不足: ' + slotRule.handoverLabel);
+    }
+  }
+
   if (!marketReportPrePublishHasHeading_(headings, slotRule.changePattern)) {
     errors.push(timeText + ' SOP必須セクション不足: ' + slotRule.changeLabel);
   }
@@ -379,6 +401,7 @@ function marketReportPrePublishHeadingLines_(source) {
       [/^材料と値動きの整合性・(?:今日の)?主導市場$/, ['材料と値動きの整合性', '今日の主導市場']],
       [/^重要ニュースと市場への影響$/, ['重要ニュース']],
       [/^金利・為替・(?:市場心理|センチメント)$/, ['金利・為替']],
+      [/^金利・為替・クロスアセットの因果関係$/, ['クロスアセット資金フロー']],
       [/^需給・ポジション(?:・SQ(?:・.*)?|、SQ／オプション)$/, ['需給・ポジション']],
       [/^(?:主要)?6市場の(?:短期)?見通し(?:（.*）)?$/, ['6市場の見通し']],
       [/^今後のイベント$/, ['今後の予定']],
@@ -408,6 +431,52 @@ function marketReportPrePublishNormalizeHeading_(line) {
 
 function marketReportPrePublishHasHeading_(headings, pattern) {
   return headings.some(function(line) { return pattern.test(line); });
+}
+
+function marketReportPrePublishSectionBody_(source, pattern) {
+  var lines = String(source || '').replace(/\r/g, '').split('\n');
+  var active = false;
+  var body = [];
+  lines.forEach(function(raw) {
+    var line = String(raw || '').trim();
+    var normalized = marketReportPrePublishNormalizeHeading_(line);
+    var isNumberedHeading = /^(?:\d{1,2}[．.、)）]|【|[■◆◇●▶])/.test(line);
+    var isKnownHeading = marketReportPrePublishIsKnownSectionHeading_(normalized);
+    if (normalized && pattern.test(normalized) && (isNumberedHeading || isKnownHeading)) {
+      active = true;
+      return;
+    }
+    if (active && (isNumberedHeading || isKnownHeading)) {
+      active = false;
+      return;
+    }
+    if (active) body.push(line);
+  });
+  return body.join('\n').trim();
+}
+
+function marketReportPrePublishIsKnownSectionHeading_(line) {
+  if (!line) return false;
+  if (MARKET_REPORT_PREPUBLISH_CONFIG.commonSectionRules.some(function(rule) { return rule.pattern.test(line); })) return true;
+  return Object.keys(MARKET_REPORT_PREPUBLISH_CONFIG.slotRules).some(function(slot) {
+    var rule = MARKET_REPORT_PREPUBLISH_CONFIG.slotRules[slot];
+    return rule.changePattern.test(line) || rule.handoverPattern.test(line);
+  });
+}
+
+function marketReportPrePublishHasSubstantiveMarketRows_(body, patterns) {
+  var positions = [];
+  for (var i = 0; i < patterns.length; i++) {
+    var match = patterns[i].exec(body);
+    if (!match) return false;
+    positions.push(match.index);
+  }
+  positions.sort(function(a, b) { return a - b; });
+  for (var j = 0; j < positions.length; j++) {
+    var end = j + 1 < positions.length ? positions[j + 1] : body.length;
+    if (body.slice(positions[j], end).trim().length < 20) return false;
+  }
+  return true;
 }
 
 function testLatestMarketReportPrePublishValidation() {
