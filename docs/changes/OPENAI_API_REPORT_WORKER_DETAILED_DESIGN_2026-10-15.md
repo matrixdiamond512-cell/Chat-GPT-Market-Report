@@ -199,3 +199,14 @@ v2識別子：`report-canonical-json/v2`。JSON object keyはASCII識別子と�
 - 実データ：08:00など時刻別必須市場観測、source/asOfの確認、法的・利用規約上の利用権、ニュースと全数値の意味検証方法を事前検証。
 - 監視：SHADOW_NOT_ELIGIBLEを維持し、Docs/Sheets/GitHub/Pages/publisherの資格情報ゼロ、外部writerコールゼロ、API費用・status・usage・hashを記録。
 - 合格後であってもD2は手動・単一slotの**有料API実行を別承認**とし、公開／旧ChatGPTタスク停止／PR本番統合は別判断とする。
+
+
+## 12. Responses API実接続前のoffline境界（2026-10-15実装追補）
+
+2026-10-15、OpenAI公式の[GPT-5.4 Miniモデル情報](https://developers.openai.com/api/docs/models/gpt-5.4-mini)から**固定スナップショットID `gpt-5.4-mini-2026-03-17`**、標準テキストtoken単価（入力 $0.75 / 1M、出力 $4.50 / 1M）を確認した。これは候補モデルであり、利用者のAPI projectでの利用権限・課金設定確認は未実施。従前の `gpt-5.4-mini-2026-10-01` は実在を確認していない仮fixtureだったため、D2 fixtureでは確認済みsnapshot IDへ変更した。
+
+`scripts/reporting/d2_responses_contract.py`にネットワーク通信を持たないResponses request/response契約を実装。既存のimmutable context/snapshotと確認済みmarket sourceを読み取り、`tools=[]`、`tool_choice=none`、`store=false`、`text.format={type:json_schema, strict:true}`、`max_output_tokens<=4000`のリクエストを構築する。プロバイダー応答の `id`、`status=completed`、`model`、`usage`、`output[type=message].content[type=output_text]`から生JSON文字列と本文を抽出。複数message/tool call、refusal/incomplete、ID/model不一致、不正usage、重複JSONキー、非有限値、誤report_id、凍結データにない観測値をfail-closedに拒否。正式API response IDを自己生成するコードはない。
+
+`tests/test_d2_responses_contract.py`の8件はオフラインの合成provider応答のみで実行。公式APIの[Create a model response](https://developers.openai.com/api/reference/resources/responses/methods/create)および[Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs)に基づくshapeでテストする。出力の事実性を全数値について証明したわけではなく、プロバイダー応答の構造上の整合と既存D1検証に限る。
+
+新モジュールにはOpenAI SDK・HTTP client・実API key・クラウド保存・Scheduler・Docs／GitHub publisherは存在しない。実APIの送信を可能にする実行器は追加しておらず、D2`d2_preflight.py`の`api_send_allowed=false`を維持。API project/key、秘密のprivate store、データソース利用権、費用上限・実送信の明示承認が揃う前に有料APIを実行しない。
