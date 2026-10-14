@@ -84,6 +84,12 @@ class TestShadowWorkerD1(unittest.TestCase):
             **kw
         )
 
+    def test_direct_fixture_validation(self):
+        from scripts.reporting.shadow_worker import validate_mock_response
+        body = validate_mock_response(fixture_response(self.context, self.snapshot),
+                                      self.context, self.snapshot)
+        self.assertGreaterEqual(len(body), 1200)
+
     def test_pass_is_non_public_and_immutable(self):
         result = self.run_response(shadow_run_id="test-run", attempt_id="test-attempt")
         self.assertEqual(result.status, "SHADOW_VALIDATED")
