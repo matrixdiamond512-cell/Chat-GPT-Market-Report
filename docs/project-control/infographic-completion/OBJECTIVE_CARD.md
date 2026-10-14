@@ -37,4 +37,12 @@ CURRENT PHASE: ACCEPT（受入未完了）。最新main `a3c3ec65d4dfa59b33e76ef
 - O-C6 全時刻の正式snapshot、原文/正式spec、正式投影/manifest接続はBLOCKED。08/12/21真正原本復旧が追加の必須成果。
 - O-C7 過去10/09・10/12正式再生成、実端末、Drive/Portal外部readbackは未完了として保持。
 
-NEXT NECESSARY ACTION: 08:00、12:00、21:00の真正原本と4時刻すべての当時の型付きmarket snapshot/identity/specを、元の生成・取得記録から復旧する。復旧後に正式投影を再検証し、視覚差をレビューする。現状はデータ/外部記録不足でBLOCKED。既存成果を正式原本として作り直したり、mainへマージ/本番公開しない。システム完成とは報告しない。
+## 2026-10-14 継続記録
+
+- 4 PNGを承認画像と目視比較し、配色・パネル順・6市場カード・イベント表・フロー矢印は改善。一方で縦長化、空白、図記号の密度、パネル4の表現差が残り、視覚合格はNOT_ACCEPTED。
+- 過去4時刻の原本/snapshot監査を継続。10/13後に取得されたmarket historyは代用せず、撤回済み文書を復活させていない。
+- 10/14の新規レポートから取得payload・型付きsnapshot・identity/bodyHashまでは作成。spec検証はMISSING_REQUIRED_SECTION / NUMERIC_DRIFT / NUMBER_PROVENANCE_MISSINGでfail-closed。正式projection/manifestは未到達。
+- Python237件を再実行しPASS。4 PNG receiptはrenderer PASSだがnumeric_validation UNVERIFIED、DEBUG_PREVIEW。
+- 詳細受入資料: `docs/examples/approved-infographic/ACCEPTANCE-20261014.md`。
+
+NEXT NECESSARY ACTION: 生成器/検証器の数値フィールドprovenanceと見出し対応を既存ゲート内で整合し、回帰テスト追加後、新規レポートでvalidated spec→approved projection→PNG→local manifestを再試験する。視覚差を修正し全4時刻を再比較する。過去snapshot/identityは元の生成記録から復旧を続け、後日データで埋めない。PRはOPEN/Draftのまま、マージ/本番公開/Drive保存を行わない。

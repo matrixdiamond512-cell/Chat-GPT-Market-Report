@@ -416,7 +416,7 @@ def render_html(report, view, reference):
         elif no == 8:
             content = '<div class="metrics">' + ''.join('<div class="metric">' + ''.join(fact(fid) for fid in group) + '</div>' for group in groups(ids)) + '</div>'
         elif no == 9:
-            content = '<div class="flow-title"><span>資金流入の仮説</span><span>資金流出の仮説</span></div><div class="transfer">⇄</div>' + content + '<div class="flow-note">価格反応による推定。実測資金額ではない。</div>'
+            content = '<div class="flow-title"><span>資金流入の仮説</span><span>資金流出の仮説</span></div><div class="transfer" aria-hidden="true"><span class="arrow-in">←</span><span class="arrow-out">→</span></div>' + content + '<div class="flow-note">価格反応による推定。実測資金額ではない。</div>'
         elif no == 10:
             content = ''.join('<div class="causal-row">' + icon('oil' if any('原油' in by_id[fid]['text'] for fid in group) else 'japan') + '<div>' + ''.join(fact(fid) for fid in group) + '</div></div>' for group in groups(ids))
         elif no == 12:
