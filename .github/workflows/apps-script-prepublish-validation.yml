@@ -6,6 +6,8 @@ on:
     paths:
       - 'apps-script/MarketReportAutoPublish.gs'
       - 'apps-script/MarketReportWebSync.gs'
+      - 'apps-script/MarketReportProducerProof.gs'
+      - 'scripts/test_market_report_producer_proof.js'
       - 'apps-script/MarketReportContext.gs'
       - 'apps-script/MarketReportMasterScheduler.gs'
       - 'apps-script/MarketReportPrePublishValidation.gs'
@@ -35,6 +37,8 @@ on:
     paths:
       - 'apps-script/MarketReportAutoPublish.gs'
       - 'apps-script/MarketReportWebSync.gs'
+      - 'apps-script/MarketReportProducerProof.gs'
+      - 'scripts/test_market_report_producer_proof.js'
       - 'apps-script/MarketReportContext.gs'
       - 'apps-script/MarketReportMasterScheduler.gs'
       - 'apps-script/MarketReportPrePublishValidation.gs'
@@ -88,14 +92,19 @@ jobs:
         run: |
           cp apps-script/MarketReportAutoPublish.gs /tmp/MarketReportAutoPublish.js
           cp apps-script/MarketReportWebSync.gs /tmp/MarketReportWebSync.js
+          cp apps-script/MarketReportProducerProof.gs /tmp/MarketReportProducerProof.js
           cp apps-script/MarketReportContext.gs /tmp/MarketReportContext.js
           cp apps-script/MarketReportMasterScheduler.gs /tmp/MarketReportMasterScheduler.js
           cp apps-script/MarketReportPrePublishValidation.gs /tmp/MarketReportPrePublishValidation.js
           node --check /tmp/MarketReportAutoPublish.js
           node --check /tmp/MarketReportWebSync.js
+          node --check /tmp/MarketReportProducerProof.js
           node --check /tmp/MarketReportContext.js
           node --check /tmp/MarketReportMasterScheduler.js
           node --check /tmp/MarketReportPrePublishValidation.js
+
+      - name: Enforce producer-bound provenance on all report publication paths
+        run: node scripts/test_market_report_producer_proof.js
 
       - name: Test narrative 21:00 report parsing and validation
         run: node scripts/test_apps_script_narrative_report.js
