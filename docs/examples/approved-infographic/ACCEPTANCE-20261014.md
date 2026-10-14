@@ -40,6 +40,7 @@ The approved-layout DRAFT render also passed with a current Git source at commit
 
 - Python `unittest discover -s tests -q`: **PASS, 240 tests** before latest-main integration; after integrating main `931dd9b53a04b85a32ee59a8ca61bf4a3fb51188`, `unittest discover -s tests`: **PASS, 250 tests**. Publication consistency, all 164 indexed reports, canonical parity, and `build_reports.py` no-rewrite stability also **PASS** after isolating the TEST ONLY source from canonical history.
 - Independent publication-path, Apps Script infographic gate, and 16:00 source recovery fail-closed regression tests: **PASS**.
+- Hosted checks on PR head `ed781827f9915617146ba4548774f5390d617682`: **6/6 success** (`preflight` ×2, `test`, `approved-layout-review`, `publication-contract`, `validate`). Annotations were runner notices only: Node.js 20 action deprecation and the scheduled ubuntu-latest image migration; no code or gate failure was reported.
 - Four Edge render receipts: **PASS** for browser layout/render diagnostics; no rendered overflow or card overlaps in the stored receipts. The receipts label numeric validation `UNVERIFIED` and artifact type `DEBUG_PREVIEW`.
 - Source/snapshot audit for historical reports: **BLOCKED** by missing original snapshot/identity evidence as detailed above.
 - Fresh-report G0/G1/G2, report/body and market validation, spec validation, source lock, prompt generation, and approved-layout DRAFT renderer: **PASS**. Local panel manifest created; publication manifest **NOT_CREATED** by design.

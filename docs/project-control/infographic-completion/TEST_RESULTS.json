@@ -245,7 +245,20 @@
       "sha256": "8d044ab59c6a0406e57af391dce707fe92f0fdf3b71f68738bb87123eb3eaae3"
     },
     "visual_acceptance": "PENDING",
-    "hosted_ci": "PENDING_AFTER_PUSH",
+    "hosted_ci": {
+      "status": "PASS",
+      "head_sha": "ed781827f9915617146ba4548774f5390d617682",
+      "checks": [
+        "preflight",
+        "preflight",
+        "test",
+        "approved-layout-review",
+        "publication-contract",
+        "validate"
+      ],
+      "count": 6,
+      "annotations": "Node.js 20 deprecation and ubuntu-latest migration notices only"
+    },
     "external_publication": "NOT_RUN",
     "drive_write": "NOT_RUN"
   }
