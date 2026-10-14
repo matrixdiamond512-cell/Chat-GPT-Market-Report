@@ -37,7 +37,7 @@ assert(actualOctober14.includes('6市場の見通し'), '12:00 conditional six-m
 const actualEvening = context.marketReportPrePublishHeadingLines_([
   '7．金利・為替・クロスアセット資金フロー',
   '14．NY時間への引き継ぎ・リスク管理'
-].join('\\n'));
+].join('\n'));
 assert(actualEvening.includes('金利・為替・クロスアセット資金フロー'), '21:00 combined interest/flow heading alias');
 assert(actualEvening.includes('NY時間への引き継ぎ・リスク管理'), '21:00 combined handover heading alias');
 assert(context.marketReportPrePublishHasHeading_(actualEvening, /^(?:金利|金利分析|金利・為替|金利・為替の連動|重要ニュース・金利|金利・為替・クロスアセット資金フロー)$/));
@@ -64,7 +64,7 @@ const handoverSource = [
   '14．NY時間への引き継ぎ・リスク管理',
   '次の米国時間に向け、金利と為替の変化を確認し、急変時はポジションを縮小する。',
   '15．結論'
-].join('\\n');
+].join('\n');
 const handoverBody = context.marketReportPrePublishSectionBody_(handoverSource, /^(?:(?:NY時間|NY市場|翌東京時間|明日|次の時間帯)への引き継ぎ)(?:・リスク管理)?$/);
 assert(handoverBody.length >= 20 && /[。！？]/.test(handoverBody), 'handover section requires meaningful body');
 const outlookSource = [
