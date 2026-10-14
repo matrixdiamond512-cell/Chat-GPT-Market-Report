@@ -9,6 +9,7 @@ from scripts.reporting.d2_responses_contract import (
     estimate_usage_usd, response_format,
 )
 from test_shadow_worker_offline import fixture_context, fixture_snapshot, fixture_response
+from scripts.reporting.d2_numeric_claims import _non_claim_tokens
 
 
 def provider_fixture(context, snapshot):
@@ -16,6 +17,21 @@ def provider_fixture(context, snapshot):
     model_output = {name: generated[name] for name in (
         "report_id", "title", "full_text", "observations_used"
     )}
+    body = model_output["full_text"]
+    by_name = {m.instrument: m for m in snapshot.markets}
+    claim_spans = []
+    for hit in _non_claim_tokens(body, context, snapshot):
+        # Fixture format is intentionally unambiguous: series: value unit.
+        line = body[body.rfind("\n", 0, hit.start())+1:
+                    (body.find("\n", hit.start()) if "\n" in body[hit.start():] else len(body))]
+        series = line.split(":", 1)[0].strip()
+        market = by_name[series]
+        claim_spans.append({
+            "start": hit.start(), "literal": hit.group(0),
+            "series": series, "field": "priceValue",
+            "source_id": market.source[0]["id"], "as_of": market.asOf
+        })
+    model_output["numeric_claims"] = claim_spans
     return {
         "id": "resp_test12345", "status": "completed",
         "model": MODEL, "error": None, "incomplete_details": None,
@@ -55,12 +71,16 @@ class TestD2Responses(unittest.TestCase):
         schema = r["text"]["format"]["schema"]
         self.assertIs(schema["additionalProperties"], False)
         self.assertEqual(set(schema["properties"]), set(schema["required"]))
+        self.assertEqual(set(schema["properties"]["numeric_claims"]["items"]["properties"]),
+                         set(schema["properties"]["numeric_claims"]["items"]["required"]))
         nested = schema["properties"]["observations_used"]["items"]
         self.assertIs(nested["additionalProperties"], False)
         self.assertEqual(set(nested["properties"]), set(nested["required"]))
         input_data = json.loads(r["input"])
         self.assertEqual(input_data["report_id"], self.ctx.report_id)
         self.assertEqual(input_data["snapshot"]["snapshot_id"], self.snapshot.snapshot_id)
+        self.assertEqual(input_data["verified_numeric_source_bundle"]["snapshot_id"],
+                         self.snapshot.snapshot_id)
         self.assertEqual(r, build_request(self.ctx,self.snapshot,
                             instructions="JSONで記録済みの市場データのみ使う。"))
 
@@ -74,6 +94,8 @@ class TestD2Responses(unittest.TestCase):
         self.assertIsNone(r.raw_response_sha256)
         self.assertEqual(len(r.normalized_response_sha256), 64)
         self.assertFalse(r.publishable)
+        self.assertEqual(r.numeric_claims_checked, 6)
+        self.assertEqual(len(r.numeric_audit_bundle_sha256), 64)
         self.assertEqual(str(estimate_usage_usd(r.usage)), "0.027")
 
     def test_exact_original_response_bytes_are_separately_verified(self):
@@ -151,6 +173,58 @@ class TestD2Responses(unittest.TestCase):
             value=9999)), "SHADOW_VALIDATION_BLOCKED")
         self.block(lambda r:mutate_output(r,lambda x:x.pop("title")),
                    "OUTPUT_SCHEMA_VIOLATION")
+
+
+    def mutate_body_output(self, change):
+        raw = copy.deepcopy(self.response)
+        item = raw["output"][0]["content"][0]
+        body = json.loads(item["text"])
+        change(body)
+        item["text"] = json.dumps(body, ensure_ascii=False)
+        return raw
+
+    def test_unbound_prose_number_is_blocked(self):
+        def change(o):
+            o["full_text"] += "\\n値動きの予想は+987.65。"
+        with self.assertRaisesRegex(ResponsesContractError,
+                                    "NUMERIC_CLAIM_AUDIT_BLOCKED:NUMERIC_COVERAGE_INCOMPLETE"):
+            capture_response(self.mutate_body_output(change), self.ctx, self.snapshot)
+
+    def test_self_declared_false_claim_and_wrong_timestamp_blocked(self):
+        for field, value, reason in [
+            ("literal", "9999", "NUMERIC_SPAN_UNKNOWN_OR_DUPLICATED"),
+            ("series", "invented-market", "NUMERIC_SOURCE_FIELD_UNVERIFIED"),
+            ("field", "invented_price", "NUMERIC_SOURCE_FIELD_UNVERIFIED"),
+            ("source_id", "fake-source", "NUMERIC_SOURCE_TIME_OR_ID_MISMATCH"),
+            ("as_of", "2026-10-15T17:00:00+09:00", "NUMERIC_SOURCE_TIME_OR_ID_MISMATCH"),
+            ("start", 0, "NUMERIC_SPAN_UNKNOWN_OR_DUPLICATED"),
+        ]:
+            def change(o):
+                o["numeric_claims"][0][field] = value
+            with self.subTest(field=field), self.assertRaisesRegex(
+                    ResponsesContractError, reason):
+                capture_response(self.mutate_body_output(change), self.ctx, self.snapshot)
+
+    def test_duplicate_or_missing_claim_prevents_false_coverage(self):
+        for change in (lambda o: o["numeric_claims"].pop(),
+                       lambda o: o["numeric_claims"].append(
+                           copy.deepcopy(o["numeric_claims"][0]))):
+            with self.assertRaisesRegex(ResponsesContractError, "NUMERIC_CLAIM_AUDIT_BLOCKED"):
+                capture_response(self.mutate_body_output(change), self.ctx, self.snapshot)
+
+    def test_metadata_numbers_exempt_only_when_exact_title_or_instrument_label(self):
+        self.assertEqual(capture_response(self.response, self.ctx, self.snapshot).numeric_claims_checked, 6)
+        def inject(o):
+            o["full_text"] += "\\n重要材料は2026/10/15の225日移動平均を参照。"
+        with self.assertRaisesRegex(ResponsesContractError, "NUMERIC_COVERAGE_INCOMPLETE"):
+            capture_response(self.mutate_body_output(inject), self.ctx, self.snapshot)
+
+    def test_body_percent_unit_cannot_masquerade_as_price(self):
+        def add_pct(o):
+            old = o["full_text"]
+            o["full_text"] = old.replace("gold: 100.0", "gold: 100.0%", 1)
+        with self.assertRaisesRegex(ResponsesContractError, "NUMERIC_UNIT_CONFLICT"):
+            capture_response(self.mutate_body_output(add_pct), self.ctx, self.snapshot)
 
     def test_cost_safety(self):
         with self.assertRaises(ResponsesContractError):
