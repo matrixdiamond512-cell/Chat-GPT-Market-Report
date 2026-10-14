@@ -175,3 +175,13 @@ E4＝合成データ・クロス言語golden・関連CIが最新HEADで成功。
 **不変条件**：全結果で`retry_allowed=false`、`api_send_allowed=false`、`publication_allowed=false`、`externally_attested=false`。呼出し時の`monthly_inputs`自体は外部請求基盤と独立照合していない。局所ファイルのSHAが計算上一致しても、保存以降の完全な改ざん耐性と外部真正性は証明不能。複数ホスト間の競合・原子的月額予約・IAM/secret manager・本番計測transport・OpenAI API生成は未着手の独立課題。
 **テスト**：`tests/test_d2_prepared_reconciliation.py`に20件を追加し、成功fixtureの繰返し読込、countだけ・prepだけ・claim後のcrash・timeout、月額使用/上限変更、SHA改変、計測raw変更、モデル指示変更、下流BLOCKED、孤立・欠落・UTF-8/重複キー・symlink、重複起動、保存内容非変更と実行関数呼出し増分0を検証する。CI`shadow-worker-d1-offline-ci.yml`に組み込み、従来ゲートの弱体化なし。
 **改訂履歴**：2026-10-15 v1.19（Draft）。正式技術仕様の正本は本書のみ。旧変更仕様書は別正本にしない。
+
+### N. D2.3月間予算の全入力証拠コミットメント（v1.20／2026-10-15・Draft）
+**発見した欠落**：v1.19の連結復旧診断では、合成月額費用に関して`monthly_total_with_reservation_usd`（当月使用額＋予約額＋次回最大費用）と`monthly_effective_cap_usd`（三つの上限の最小額）だけを比較した。この2値が同じなら、当月使用額・予約額の内訳を相互に入れ替えた場合や、最小限度に影響しない利用者上限／組織上限の変更を見逃す。等しい合計額は同じ元データの証明にならない。
+**変更**：
+1. `scripts/reporting/d2_monthly_budget.py`の`monthly_inputs_sha256`は`MonthlySpendInputs`全フィールド（対象report_id、月、使用済み支出、未決済予約、利用者月額cap、Project hard cap、Organization hard cap、両hard capのenabled状態）を`dataclasses.asdict`→既存の決定的`json_bytes`→SHA-256で厳密にコミットする。文字列の小数表記や個々の上限の差異も計算上同額であっても区別する。
+2. `scripts/reporting/d2_offline_prepared_run.py`が保存するpreparation receiptのschemaを`d2-offline-preparation/v2`に更新し、`monthly_inputs_sha256`を追加。新しい正規形式のないv1 receiptは黙ってアップグレードしない。過去のevidenceは対応バージョンを明示した読取り専用の手動照合のみ。
+3. `scripts/reporting/d2_prepared_reconciliation.py`は、呼び出し元から再供給された`MonthlySpendInputs`で既存の実行前審査を再計算したうえ、**全入力ハッシュ一致**も必須とする。内訳変更・非最小上限の変更・ハッシュ改ざんは`INCONSISTENT_UNTRUSTED`、旧schemaも停止。いずれもretry/API送信/公開の許可はfalse。
+4. 新規負例を`tests/test_d2_prepared_reconciliation.py`と`tests/test_d2_offline_prepared_run.py`に追加。①0.80+0.20と0.79+0.21が同一合計でも異なると検知、②Project 1.50が最小のままOrganization上限3→4/ユーザー上限2→2.50を検知、③保存済み全入力ハッシュ改変、④v1証拠形式を自動承認しない、⑤v2保存時のハッシュreadbackと全内訳の再現。
+**安全境界**：このハッシュは同一の未認証合成データとの照合であり、OpenAI請求金額の真正性、第三者署名、外部会計・請求台帳の認証を提供しない。SHAは守秘化ではないため請求項目の暗号化・アクセス制御は別途必要。正本は本統合仕様のみ、PR #130はDraft・未マージ、実API送信・公開は引き続きBLOCKED。
+**改訂履歴**：2026-10-15 v1.20（Draft）。
