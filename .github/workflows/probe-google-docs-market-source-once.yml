@@ -20,7 +20,7 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: |
           python - <<'PY'
-          import json,os
+          import json,os,hashlib
           from google.oauth2 import service_account
           from google.auth.transport.requests import AuthorizedSession
           raw=os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON","")
@@ -29,6 +29,10 @@ jobs:
           info=json.loads(raw)
           if info.get("type")!="service_account":
               raise SystemExit("BLOCKED: NOT_SERVICE_ACCOUNT")
+          expected_sha="0a462906ac74c2847a4f74e4b3a04e906b34b9eed2b7c8eab408ef9cb5b17c2e"
+          if hashlib.sha256(info.get("client_email","").encode()).hexdigest()!=expected_sha:
+              raise SystemExit("BLOCKED: SERVICE_ACCOUNT_IDENTITY_DIFFERENT_FROM_EXISTING_SHEET_READER")
+          print("SERVICE_ACCOUNT_IDENTITY_MATCHES_EXISTING_SHEET_READER")
           creds=service_account.Credentials.from_service_account_info(info,scopes=[
               "https://www.googleapis.com/auth/drive.readonly",
               "https://www.googleapis.com/auth/documents.readonly"])
