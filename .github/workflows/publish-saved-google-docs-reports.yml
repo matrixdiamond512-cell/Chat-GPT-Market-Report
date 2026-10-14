@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - "scripts/sync_reports_from_drive.py"
+      - "scripts/sync_latest_report_publication.py"
+      - "scripts/report_source_contract.py"
       - ".github/workflows/publish-saved-google-docs-reports.yml"
   workflow_dispatch:
   schedule:
