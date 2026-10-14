@@ -185,16 +185,16 @@ rejected('monthly cap in prep must equal strictest cap',(()=>{
   const d={...prep,monthly_effective_cap_usd:'2.00'};
   return {preparationBytes:Buffer.from(canonical(d),'utf8')};
 })(),/HANDOFF_MONTHLY_EFFECTIVE_CAP_MISMATCH/);
-rejected('signatures and hashes cannot mask a new spending line with stale total',()=>
+rejected('signatures and hashes cannot mask a new spending line with stale total',
   withResignedMonthly({reported_month_spend_usd:'0.81'}),
   /HANDOFF_MONTHLY_TOTAL_MISMATCH/);
-rejected('signatures and hashes cannot mask a disabled project hard cap',()=>
+rejected('signatures and hashes cannot mask a disabled project hard cap',
   withResignedMonthly({project_hard_limit_enabled:false}),
   /HANDOFF_HARD_LIMITS_NOT_ENABLED/);
-rejected('signatures and hashes cannot mask a different billing month',()=>
+rejected('signatures and hashes cannot mask a different billing month',
   withResignedMonthly({month_jst:'2026-11'}),
   /HANDOFF_BILLING_MONTH_MISMATCH/);
-rejected('signed monthly spend above actual minimum cap blocked',()=>
+rejected('signed monthly spend above actual minimum cap blocked',
   withResignedMonthly({reported_month_spend_usd:'1.80'},
     {monthly_total_with_reservation_usd:'2.027'}),
   /HANDOFF_MONTHLY_BUDGET_EXCEEDED/);
