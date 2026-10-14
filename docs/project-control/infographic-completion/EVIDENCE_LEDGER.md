@@ -6,7 +6,7 @@ Run ID: `infographic-completion-resume-20261014`。Timestamp: `AUDIT.json`のUTC
 |---|---|---|---|---|
 | 保存済み成果を再利用 | PR初期head 8d98868、ローカル92c738eと4時刻キャッシュを発見 | E0/E5 | PASS | 切断前の未保存メモリは復元不能 |
 | 最新mainの安全な取り込み | a47ca3e、3ec46ff、a3c3ec6をmerge。43f97b3の撤回を保持。旧08:00 workflow削除に合わせ承認デザイン専用workflowを追加 | E0 | PASS | mainへのマージ/公開なし |
-| 共通CI競合の両側を保持 | 92c738eの両親との差分を確認。共通2ファイルはorigin/mainと同一。公開ゲート回帰、CI内Node3ブロックを実行 | E0/E1/E3 | PASS | hosted CIは別途確認 |
+| 共通CI競合の両側を保持 | 92c738eの両親との差分を確認。共通2ファイルはorigin/mainと同一。公開ゲート回帰、CI内Node3ブロック、PR#97の公開前検証を実行 | E0/E1/E3/E5 | PASS | 外部データ復旧・正式公開を証明しない |
 | 添付デザイン正本の同一性 | ZIPとPNGのSHA-256一致。AUDIT.json/layout.json | E0 | PASS | 正本内の誤値は採用しない |
 | 全本文・数値の転記 | 原文位置の全非見出し文字被覆、Decimal raw値/符号、DOM各fact/token完全一致 | E2/E4 | PASS / 数値トークン1076件 | 市場価格の真実性・独立クロスチェックではない。日時/条件値も含む |
 | 4時刻の描画 | source-lock/HTML/render-contract/PNG/render-receipt | E4 | PASS、16パネル・6市場、文字切れ/外側描画/カード重なり/色エラー各0 | 3時刻は撤回済み履歴。物理端末NOT_RUN |

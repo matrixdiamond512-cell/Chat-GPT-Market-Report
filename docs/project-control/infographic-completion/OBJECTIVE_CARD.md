@@ -19,7 +19,7 @@ OPEN OUTCOMES:
 - O-C2 承認画像の構造・編集可能テンプレート: BUILD。
 - O-C3 4時刻の原本/fact/event/全文接続: BUILD。原本の正式identity不足を監査する。
 - O-C4 4時刻PNG・自動/目視比較: DRAFT PNGと自動描画検査完了。視覚受入PENDING。
-- O-C5 回帰/負例/CI/文書/Draft PR更新: ローカル回帰PASS。Draft PR更新とhosted CI確認が残る。
+- O-C5 回帰/負例/CI/文書/Draft PR更新: PR head 394a7c7へ反映済み、Python237件とhosted CI3 workflow PASS。PRはOPEN/Draft。
 - O-C6 正式市場snapshot・価格基準/独立出典・正式manifest: BLOCKED。画像だけで補わない。
 - O-C7 過去10/09・10/12正式再生成、実端末/Drive/Portal: 既存未完了成果として継続。本タスクの公開実行はNOT_APPLICABLE。
 
@@ -33,8 +33,8 @@ CURRENT PHASE: ACCEPT（受入未完了）。最新main `a3c3ec65d4dfa59b33e76ef
 - O-C2 編集可能な承認16パネル配置・15番イベント表を実装。細部・縦横比・密度の視覚再現はPENDING。
 - O-C3 原本の全非見出し文字と数値1076トークンを接続、Git SHA/本文位置/観測hashで監査。型付き価格レジストリと独立出典の検証済み対応はBLOCKED。
 - O-C4 4時刻DRAFT PNGと768px専用PNGを実Edgeで生成、描画/転記検査PASS。3時刻は撤回済み履歴。現行4原本からの正式受入はBLOCKED。
-- O-C5 統合後Python237件、公開/署名/復旧/watchdog/共通CI3ブロック、実ブラウザ負例と旧renderer同一hash回帰PASS。Drive PNGのreadback fileId不一致も公開回帰で拒否。Draft PRへの反映とhosted CIは結果待ち。
+- O-C5 統合後Python237件、公開/署名/復旧/watchdog/共通CI3ブロック、実ブラウザ負例と旧renderer同一hash回帰、Drive PNGのreadback fileId不一致拒否、hosted CI3 workflowがPASS。PR head `394a7c7845bd5ab7764813c09a73ec0de2d3e1ef` はOPEN/Draft。
 - O-C6 全時刻の正式snapshot、原文/正式spec、正式投影/manifest接続はBLOCKED。08/12/21真正原本復旧が追加の必須成果。
 - O-C7 過去10/09・10/12正式再生成、実端末、Drive/Portal外部readbackは未完了として保持。
 
-NEXT NECESSARY ACTION: Draft PRへ候補と監査をpushしhosted CIを確認する。その後、真正原本・過去時点snapshotの復旧と残る視覚差をレビューする。既存成果を正式原本として作り直したり、mainへマージ/本番公開しない。システム完成とは報告しない。
+NEXT NECESSARY ACTION: 08:00、12:00、21:00の真正原本と4時刻すべての当時の型付きmarket snapshot/identity/specを、元の生成・取得記録から復旧する。復旧後に正式投影を再検証し、視覚差をレビューする。現状はデータ/外部記録不足でBLOCKED。既存成果を正式原本として作り直したり、mainへマージ/本番公開しない。システム完成とは報告しない。
