@@ -196,16 +196,26 @@ assert.strictEqual(historyState.writes, 0, 'unproved historical batch must not r
 assert.strictEqual(historyState.saves, 0, 'blocked batch must not save a success receipt');
 
 // Scheduled/manual/retry entry points must converge on the shared proof-gated writer.
-assert(/function autoPublishScheduledMarketReport_\\([\\s\\S]*?return publishMarketReportSlot_\\(/.test(autoSource),
+function extractOneFunction(source, signature) {
+  const start = source.indexOf(signature);
+  const end = source.indexOf('\\nfunction ', start + signature.length);
+  assert(start >= 0 && end > start, 'function exists: ' + signature);
+  return source.slice(start, end);
+}
+const scheduledEntry = extractOneFunction(autoSource,
+  'function autoPublishScheduledMarketReport_(hour)');
+const dueEntry = extractOneFunction(autoSource,
+  'function autoPublishDueMarketReports_(reason)');
+assert(scheduledEntry.includes('return publishMarketReportSlot_('),
   'ordinary scheduled publication must route through the shared slot publisher');
-assert(/function autoPublishDueMarketReports_\\([\\s\\S]*?results\\.push\\(publishMarketReportSlot_\\(/.test(autoSource),
+assert(dueEntry.includes('results.push(publishMarketReportSlot_('),
   'retry/watchdog publication must route through the shared slot publisher');
 for (const handler of [
   'autoPublishMarketReport0930Retry', 'autoPublishMarketReport1330Retry',
   'autoPublishMarketReport1730Retry', 'autoPublishMarketReport2230Retry',
   'autoPublishMarketReport0830Retry'
 ]) {
-  assert(new RegExp('function ' + handler + '\\(\\)\\s*\\{\\s*return autoPublishDueMarketReports_\\(').test(autoSource),
+  assert(autoSource.includes('function ' + handler + '() { return autoPublishDueMarketReports_('),
     handler + ' must route to the shared retry dispatcher');
 }
 const scheduledWriter = extract(autoSource, 'function publishMarketReportSlot_(hour, mode, throwOnError, targetDate)',
