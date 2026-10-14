@@ -51,7 +51,7 @@ BTCUSD：中立。株式との相関変化と流動性の変化を確認する�
         validate_key_section_bodies(source, "21:00")
 
     def test_prose_mentions_do_not_count_as_headings(self):
-        prose = "本文で金利・為替・クロスアセットの因果関係と主要6市場の短期見通し（条件付き）に触れる。"
+        prose = "本文で金利・為替・クロスアセットの因果関係と金利・為替・クロスアセット資金フロー、NY時間への引き継ぎ・リスク管理、主要6市場の短期見通し（条件付き）に触れる。"
         self.assertEqual(section_bodies(prose), {})
         with self.assertRaisesRegex(ValueError, "クロスアセット資金フロー"):
             validate_key_section_bodies(prose)
