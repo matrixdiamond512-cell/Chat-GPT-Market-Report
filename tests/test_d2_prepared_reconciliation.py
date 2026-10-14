@@ -171,6 +171,55 @@ class TestPreparedForensicReplay(unittest.TestCase):
         self.assertEqual(finding.status, "INCONSISTENT_UNTRUSTED")
         self.assertEqual(finding.reason, "PREPARATION_REPLAY_MISMATCH")
 
+    def test_equal_total_different_spent_and_pending_is_detected(self):
+        self.execute()
+        # Originally 0.80 spent + 0.20 pending. Still 1.00, yet different
+        # underlying billing evidence. Aggregates alone missed this.
+        changed = replace(self.monthly,
+                          reported_month_spend_usd="0.79",
+                          outstanding_reservations_usd="0.21")
+        finding = self.replay(monthly_inputs=changed)
+        self.assertEqual(finding.status, "INCONSISTENT_UNTRUSTED")
+        self.assertEqual(finding.reason, "PREPARATION_REPLAY_MISMATCH")
+        self.assertFalse(finding.retry_allowed)
+
+    def test_nonbinding_hard_cap_change_is_detected(self):
+        self.execute()
+        # The effective minimum remains project=$1.50, so old checks on
+        # effective cap / total would wrongly accept this changed evidence.
+        changed = replace(self.monthly, org_hard_limit_usd="4.00")
+        finding = self.replay(monthly_inputs=changed)
+        self.assertEqual(finding.status, "INCONSISTENT_UNTRUSTED")
+        self.assertEqual(finding.reason, "PREPARATION_REPLAY_MISMATCH")
+
+    def test_nonbinding_approved_month_cap_change_is_detected(self):
+        self.execute()
+        changed = replace(self.monthly, approved_month_cap_usd="2.50")
+        finding = self.replay(monthly_inputs=changed)
+        self.assertEqual(finding.status, "INCONSISTENT_UNTRUSTED")
+        self.assertEqual(finding.reason, "PREPARATION_REPLAY_MISMATCH")
+
+    def test_preparation_monthly_input_hash_tampering_is_detected(self):
+        self.execute()
+        p = self.location("preparation")
+        record = json.loads(p.read_text())
+        record["monthly_inputs_sha256"] = "0" * 64
+        p.write_text(json.dumps(record))
+        finding = self.replay()
+        self.assertEqual(finding.status, "INCONSISTENT_UNTRUSTED")
+        self.assertEqual(finding.reason, "PREPARATION_REPLAY_MISMATCH")
+
+    def test_obsolete_preparation_schema_rejected(self):
+        self.execute()
+        p = self.location("preparation")
+        record = json.loads(p.read_text())
+        record["schema"] = "d2-offline-preparation/v1"
+        record.pop("monthly_inputs_sha256")
+        p.write_text(json.dumps(record))
+        finding = self.replay()
+        self.assertEqual(finding.status, "INCONSISTENT_UNTRUSTED")
+        self.assertEqual(finding.reason, "PREPARATION_CONTENT_INVALID")
+
     def test_supplied_monthly_hard_cap_now_invalid(self):
         self.execute()
         altered = replace(self.monthly, project_hard_limit_enabled=False)
