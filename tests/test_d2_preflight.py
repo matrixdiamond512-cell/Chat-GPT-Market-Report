@@ -64,7 +64,7 @@ class TestD2Preflight(unittest.TestCase):
         result = evaluate_d2_manifest(self.plan)
         self.assertEqual(result.contract, "SPEC_CONTRACT_PASS")
         self.assertEqual(result.blockers, ("EXTERNAL_ATTESTATIONS_NOT_VERIFIED",))
-        self.assertEqual(result.worst_case_usd, "0.027000")
+        self.assertEqual(result.worst_case_usd, "0.027")
         self.assertFalse(result.api_send_allowed)
         self.assertFalse(result.publication_allowed)
 
@@ -99,6 +99,10 @@ class TestD2Preflight(unittest.TestCase):
         self.check_block(lambda p: p.update(schema_version="legacy"), "SCHEMA_VERSION_MISMATCH")
         self.check_block(lambda p: p.update(model_snapshot="gpt-5.4-mini-latest"),
                          "MODEL_SNAPSHOT_NOT_PINNED")
+        self.check_block(lambda p: p.update(model_snapshot="gpt-5.4-mini"),
+                         "MODEL_SNAPSHOT_NOT_PINNED")
+        self.check_block(lambda p: p.update(report_id="2026-99-99_16-00"),
+                         "REPORT_ID_OR_SLOT_INVALID")
         self.check_block(lambda p: p.update(report_id="2026-10-15_18-00"),
                          "REPORT_ID_OR_SLOT_INVALID")
         self.check_block(lambda p: p.update(data_contract="mutable-latest"),
