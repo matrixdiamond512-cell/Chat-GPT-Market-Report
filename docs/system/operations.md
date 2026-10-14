@@ -46,3 +46,8 @@ PR #130の`python -m unittest discover -s tests -p 'test_d2_preflight.py' -v`と
 - CIで`python -m unittest discover -s tests -p 'test_d2_responses_contract.py' -v`を実行し、raw response bytesとnormalized JSONのdigestが別物であること、原本不一致／重複キー／不正UTF-8時の停止を確認する。
 - 今後の有料D2試験では、実際に受信したレスポンスの原本bytesを非公開で保存し、保存オブジェクトの再読み戻しとのbyte-exact比較まで確認する。dictから再生成したJSON bytesを「API原本」として保存・署名しない。
 - 原本バイト列のhashだけでは真正性は立証できない。外部送信権限、実API課金承認、private store、ソース利用権・原文↔Docs照合・全数値意味検証が未達ならAPI送信・公開ともBLOCKED。
+
+## 2026-10-15 D2 immutable evidence stagingのoffline運用（Draft）
+- `python -m unittest discover -s tests -p 'test_d2_private_store.py' -v`を既存D1 CIで実行する。CIには試験用の一時ディレクトリと無害なfixture bytesのみ使用し、実市場データ・API secrets・レポート原本を保存しない。
+- 専用private rootはPOSIX環境で外部管理された暗号化済みvolume上に配置する設計。現実の暗号化・IAM・保持期間・監査・分散lockは未設定のため、試作コードのみでD2実API試験を許可しない。
+- ファイル上書き・読戻し不一致・危険なpath/owner/mode/linkは即時停止し、欠落証拠を再生成して成功と扱わない。
