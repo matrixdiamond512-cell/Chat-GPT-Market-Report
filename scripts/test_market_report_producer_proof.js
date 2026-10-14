@@ -198,7 +198,7 @@ assert.strictEqual(historyState.saves, 0, 'blocked batch must not save a success
 // Scheduled/manual/retry entry points must converge on the shared proof-gated writer.
 function extractOneFunction(source, signature) {
   const start = source.indexOf(signature);
-  const end = source.indexOf('\\nfunction ', start + signature.length);
+  const end = source.indexOf('\nfunction ', start + signature.length);
   assert(start >= 0 && end > start, 'function exists: ' + signature);
   return source.slice(start, end);
 }
@@ -219,7 +219,7 @@ for (const handler of [
     handler + ' must route to the shared retry dispatcher');
 }
 const scheduledWriter = extract(autoSource, 'function publishMarketReportSlot_(hour, mode, throwOnError, targetDate)',
-  '\\nfunction marketReportAutoVerifyPublishedSource_');
+  '\nfunction marketReportAutoVerifyPublishedSource_');
 assert(scheduledWriter.includes('publishWebReportObject_(report)'),
   'scheduled and retry slot writer must call the proof-gated canonical publisher');
 assert(!scheduledWriter.includes('putGitHubJsonFile_'),
