@@ -2,6 +2,7 @@
 /* Synthetic Ed25519 keys generated for this test run. No network or API. */
 const assert=require('node:assert/strict');
 const crypto=require('node:crypto');
+const cp=require('node:child_process');
 const {verifyOne,verifyPair,canonical,PREFIX,SCHEMA,D2EvidenceBlocked}=
   require('./reporting/d2_detached_evidence');
 let passed=0;
@@ -17,13 +18,16 @@ function key(id){
   return {privateKey,trust:{key_id:id,public_key_pem,fingerprint_sha256}};
 }
 const count=key('synthetic-count-key'),billing=key('synthetic-billing-key');
+const pythonFixture="import json,sys\nsys.path.insert(0,'tests')\nfrom test_shadow_worker_offline import fixture_context,fixture_snapshot\nfrom scripts.reporting.d2_responses_contract import build_request\nfrom scripts.reporting.d2_token_count_contract import build_count_plan\nfrom scripts.reporting.d2_monthly_budget import MonthlySpendInputs,monthly_inputs_sha256\nctx=fixture_context()\nsnapshot=fixture_snapshot(ctx)\nreq=build_request(ctx,snapshot,instructions='Only use the pre-verified frozen observation bundle.')\nplan=build_count_plan(req)\nmonthly=MonthlySpendInputs(report_id=ctx.report_id,month_jst=ctx.report_date[:7],reported_month_spend_usd='0.80',outstanding_reservations_usd='0.20',approved_month_cap_usd='2.00',project_hard_limit_usd='1.50',org_hard_limit_usd='3.00',project_hard_limit_enabled=True,org_hard_limit_enabled=True)\nprint(json.dumps({'report_id':ctx.report_id,'snapshot_id':snapshot.snapshot_id,'create_request_sha256':plan.create_request_sha256,'count_request_sha256':plan.count_request_sha256,'monthly_inputs_sha256':monthly_inputs_sha256(monthly)}))";
+const produced=JSON.parse(cp.execFileSync('python',['-c',pythonFixture],
+  {encoding:'utf8',timeout:15000,maxBuffer:1024*1024}));
 const base={
   attempt_id:'test-attempt',audience:'market-report-d2-shadow-offline',
-  create_request_sha256:'a'.repeat(64),
-  count_request_sha256:'1'.repeat(64),
-  monthly_inputs_sha256:'b'.repeat(64),
-  report_id:'2026-10-15_16-00',run_id:'test-run',
-  snapshot_id:'snapshot-'+'c'.repeat(64),
+  create_request_sha256:produced.create_request_sha256,
+  count_request_sha256:produced.count_request_sha256,
+  monthly_inputs_sha256:produced.monthly_inputs_sha256,
+  report_id:produced.report_id,run_id:'test-run',
+  snapshot_id:produced.snapshot_id,
 };
 function expected(scope,evidence_sha256){
   return {...base,scope,evidence_sha256};
@@ -49,6 +53,13 @@ function sign(testKey,exp,overrides={},envOverrides={}){
 const rawCount=sign(count,countExp),rawBilling=sign(billing,billExp);
 const roots={input_count:count.trust,monthly_billing:billing.trust};
 const exps={input_count:countExp,monthly_billing:billExp};
+test('Python actual frozen request and monthly digest are bound to signed JS evidence',()=>{
+  assert.match(base.create_request_sha256,/^[0-9a-f]{64}$/);
+  assert.match(base.count_request_sha256,/^[0-9a-f]{64}$/);
+  assert.match(base.monthly_inputs_sha256,/^[0-9a-f]{64}$/);
+  assert.match(base.snapshot_id,/^snapshot-[0-9a-f]{64}$/);
+  assert.equal(base.report_id,'2026-10-15_16-00');
+});
 test('one valid detached signature checks bytes but cannot authorize',()=>{
   const x=verifyOne(rawCount,count.trust,countExp,now);
   assert.equal(x.signature_mathematically_valid,true);
