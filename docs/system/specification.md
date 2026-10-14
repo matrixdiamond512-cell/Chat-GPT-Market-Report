@@ -203,3 +203,11 @@ E4＝合成データ・クロス言語golden・関連CIが最新HEADで成功。
 **preflight**：`d2_preflight.REQUIRED_EVIDENCE`に独立したcount/billing signer trust root、鍵ローテーション/失効、原文署名引継ぎ、凍結preparationの独立照合の外部証拠参照を追加。manifestの自己申告だけでは外部認証にならず、preflightの`api_send_allowed=false`は不変。
 **証拠力の限界**：preparation、raw count、月額入力、trust roots、期待値、現在時刻は現在すべて合成または呼出し元提供。これらが実際のOpenAI/会計システムから独立して取得されたこと、署名者の真正性、鍵管理の独立性、請求台帳・月間予約の原子性、利用者費用承認は未検証。暗号署名の一致だけを本番許可へ自動昇格させない。Node verifierとPython実行器には実API送信・公開・writer機能を接続しない。全返値`retry_allowed=false`、`api_send_allowed=false`、`publication_allowed=false`。PR #130 Draft・未マージ、正本は統合仕様書のみ。
 **改訂履歴**：2026-10-15 v1.22（Draft）。
+
+### Q. D2 input count原文の意味照合・署名再構成への耐性（v1.23／2026-10-15、Draft）
+**検出した欠落**：v1.22の`reviewPreparedHandoff`は、入力token計測の原文bytes・SHA-256とpreparationの`raw_count_sha256`、役割別署名の`evidence_sha256`を照合するが、計測レスポンス内の`input_tokens`とpreparationの`counted_input_tokens`を再比較していなかった。局所ハッシュ・署名・preparationを同時に作り直せる合成環境では、同じ原文を指していても計測値の意味が異なる状態を排除できない。
+**追加したfail-closed検証**：`scripts/reporting/d2_offline_proof_handoff.js`の`reviewCountSemantics`は、バイト列をfatal UTF-8で復号し、JSONのフラットな2項目`object=response.input_tokens`・`input_tokens`のみに限定して再パースする。JSONキーの重複を字句走査で拒否し、整数の安全性・非負・`max_input_tokens`上限（1〜12,000）・凍結preparationの`counted_input_tokens`との完全一致を要求する。count原文のホワイトスペースやキー順序は変わり得るため、原文bytes自体のcanonical化は必須とせず、厳密な原文SHAと意味照合の両方を必要とする。
+**検査順序**：count原本SHA一致を先に確認した後、countの意味を検査し、続いて月額全入力の原文SHA・準備ID/要求SHA・Ed25519役割別署名を照合する。差異・重複キー・異常値は`D2EvidenceBlocked`として拒否し、常に送信・再試行・公開はfalse。
+**回帰**：`scripts/test_d2_offline_proof_handoff.js`に5件追加。①token計測値9000→9001を原文SHAと署名ごと再構成しても準備記録9000との差で拒否、②重複input_tokensをSHA/署名再構成しても拒否、③object種別を改変・再署名しても拒否、④preparationのcounted_input_tokensだけの改変を拒否、⑤JSON空白・キー順序のみ変化させた原文は再署名・SHA整合下でもオフライン結果のみ許容。本章はPythonの認証済み受信を証明するものではなく、`d2-offline-preparation/v2`や証拠署名schemaを改版しない。
+**非承認境界**：鍵2組・clock・準備・count・月額値は引き続き合成または呼出し元の未認証値。外部trust root、計測APIの真正な通信証拠、月額請求認証、原子的予約、費用承認、producer証明、real E2Eは未達。API送信・課金・本番writer・mainマージ・既存ChatGPTタスク変更なし。PR #130はOPEN/Draft、E5公開BLOCKED。
+**改訂履歴**：2026-10-15 v1.23（Draft）。正式技術仕様の唯一の正本は本書と同期対象の正式Google Docs仕様書。旧変更仕様書はアーカイブを維持。
