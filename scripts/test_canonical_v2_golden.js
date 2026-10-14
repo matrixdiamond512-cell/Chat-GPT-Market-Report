@@ -43,6 +43,8 @@ rejects('untagged raw financial numeric',r=>r.snapshot.markets[0].priceValue=100
 rejects('untagged raw negative zero',r=>r.snapshot.markets[0].changeValue=-0);
 rejects('decimal tag invalid',r=>r.snapshot.markets[0].priceValue.decimal_v2='100foo');
 rejects('legacy snapshot ID missing',r=>delete r.snapshot.snapshot_id);
+rejects('legacy snapshot ID substituted',r=>r.snapshot.snapshot_id='snapshot-'+'f'.repeat(64));
+rejects('snapshot and context mismatch',r=>r.context.revision=2);
 assert.throws(()=>env.marketReportProofCanonicalV2_({value: 100.1}), /PRODUCER_PROOF_BLOCKED/);
 assert.throws(()=>env.marketReportProofCanonicalV2_({unsafe: Number.MAX_SAFE_INTEGER+1}), /PRODUCER_PROOF_BLOCKED/);
 assert.throws(()=>env.marketReportProofCanonicalV2_({bad:'\uD800'}), /PRODUCER_PROOF_BLOCKED/);
