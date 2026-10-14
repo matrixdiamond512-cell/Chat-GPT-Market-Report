@@ -111,14 +111,16 @@ class CapturedResponse:
     title: str
     report_id: str
     observations_used: tuple[dict, ...]
-    raw_response_sha256: str
+    raw_response_sha256: str | None
+    normalized_response_sha256: str
     body_sha256: str
     # Never equate model emission with verified market truth or ChatGPT task output.
     publishable: bool = False
 
 
 def capture_response(raw: dict, context: ReportContext, snapshot: MarketDataSnapshot,
-                     *, expected_model: str = MODEL) -> CapturedResponse:
+                     *, expected_model: str = MODEL,
+                     raw_response_bytes: bytes | None = None) -> CapturedResponse:
     """Parse actual Responses API shape received by an external authenticated caller.
 
     fail closed on tool calls, refusal, duplicates, incomplete, bogus IDs or usage.
@@ -188,8 +190,26 @@ def capture_response(raw: dict, context: ReportContext, snapshot: MarketDataSnap
         }, context, snapshot)
     except (ShadowBlocked, ValueError, KeyError, TypeError) as exc:
         raise ResponsesContractError("OUTPUT_SHADOW_VALIDATION_BLOCKED") from exc
-    # A finite strict JSON serialization: retained raw response hash is for
-    # offline testing, not provider authenticity proof.
+    # The parsed response-object hash is NOT a hash of the original HTTP bytes.
+    # Only record a raw-byte digest when exact original bytes are independently
+    # supplied and verified against the parsed object. A digest alone does not
+    # establish API/provider authenticity.
+    normalized_sha = sha256_bytes(json_bytes(raw))
+    raw_sha = None
+    if raw_response_bytes is not None:
+        if type(raw_response_bytes) is not bytes:
+            _fail("RAW_RESPONSE_BYTES_NOT_BYTES")
+        try:
+            original_object = json.loads(
+                raw_response_bytes.decode("utf-8"),
+                object_pairs_hook=_no_duplicate_keys, parse_constant=_bad_float
+            )
+            original_canonical = json_bytes(original_object)
+        except (UnicodeError, ValueError, TypeError) as exc:
+            raise ResponsesContractError("RAW_RESPONSE_BYTES_INVALID") from exc
+        if original_canonical != json_bytes(raw):
+            _fail("RAW_RESPONSE_OBJECT_MISMATCH")
+        raw_sha = sha256_bytes(raw_response_bytes)
     return CapturedResponse(
         response_id, status, expected_model,
         {"input_tokens": usage["input_tokens"],
@@ -197,7 +217,8 @@ def capture_response(raw: dict, context: ReportContext, snapshot: MarketDataSnap
          "total_tokens": usage["total_tokens"]},
         full_text, parsed["title"], parsed["report_id"],
         tuple(parsed["observations_used"]),
-        sha256_bytes(json_bytes(raw)),
+        raw_sha,
+        normalized_sha,
         sha256_bytes(full_text.encode("utf8"))
     )
 
