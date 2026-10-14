@@ -158,6 +158,7 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
               f"{len(source_files)} recent slots; monthly_folder_access={folder_access}")
         latest_slot = (old_latest["date"], old_latest["time"])
         to_write = {}
+        invalid_sources = {}
         for key, matches in sorted(source_files.items()):
             path = root / "reports" / f"{key[0]}_{key[1].replace(':','-')}.json"
             if path.exists():
@@ -181,8 +182,16 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                 # names cannot safely be assigned to a canonical source.
                 raise RuntimeError(f"ambiguous new report with multiple Google Docs: {key}")
             item = matches[0]
-            new_report = build_report(session, *key, item)
-            _verified_source_revision(new_report)
+            try:
+                new_report = build_report(session, *key, item)
+                _verified_source_revision(new_report)
+            except (ValueError, SystemExit) as exc:
+                # A historical source that does not satisfy the actual SOP
+                # must not block independent, valid new reports.
+                # The rejected document is never published or silently fixed.
+                invalid_sources[key] = str(exc)
+                print(f"SOURCE_VALIDATION_BLOCKED: {key[0]} {key[1]}: {exc}")
+                continue
             to_write[key] = new_report
         if enforce_slot:
             # After a scheduled report's 40-minute completion window, ensure
@@ -193,6 +202,8 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
             if due:
                 expected = (today, due[-1])
                 target = root / "reports" / f"{today}_{due[-1].replace(':','-')}.json"
+                if expected in invalid_sources:
+                    raise RuntimeError(f"REQUIRED_REPORT_SOURCE_INVALID: {expected}; {invalid_sources[expected]}")
                 if expected not in source_files and not target.exists():
                     raise RuntimeError(
                         f"REPORT_SOURCE_MISSING {today} {due[-1]}; "
