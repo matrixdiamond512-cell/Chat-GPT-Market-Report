@@ -14,7 +14,7 @@ const UTC=/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
 const ROLES=new Set(['input_count','monthly_billing']);
 const ENVELOPE_KEYS=['key_id','payload','schema','signature_b64url'];
 const PAYLOAD_KEYS=[
-  'attempt_id','audience','create_request_sha256','evidence_sha256',
+  'attempt_id','audience','count_request_sha256','create_request_sha256','evidence_sha256',
   'expires_at','issued_at','issuer','monthly_inputs_sha256','report_id',
   'run_id','scope','snapshot_id'
 ];
@@ -90,7 +90,7 @@ function verifyOne(rawEnvelope,trust,expected,nowMs){
   if(!trust||!keysExactly(trust,['key_id','public_key_pem','fingerprint_sha256']))
     fail('TRUST_ROOT_REQUIRED');
   if(!expected||!keysExactly(expected,[
-    'attempt_id','audience','create_request_sha256','evidence_sha256',
+    'attempt_id','audience','count_request_sha256','create_request_sha256','evidence_sha256',
     'monthly_inputs_sha256','report_id','run_id','scope','snapshot_id'
   ]))fail('INDEPENDENT_EXPECTATIONS_REQUIRED');
   if(!IDENT.test(env.key_id)||env.key_id!==trust.key_id||
@@ -101,7 +101,7 @@ function verifyOne(rawEnvelope,trust,expected,nowMs){
   for(const key of Object.keys(expected)){
     if(p[key]!==expected[key])fail('EVIDENCE_BINDING_MISMATCH_'+key);
   }
-  for(const key of ['create_request_sha256','evidence_sha256','monthly_inputs_sha256'])
+  for(const key of ['count_request_sha256','create_request_sha256','evidence_sha256','monthly_inputs_sha256'])
     requireHash(p[key],'EVIDENCE_DIGEST_INVALID_'+key);
   if(typeof p.snapshot_id!=='string'||!/^snapshot-[0-9a-f]{64}$/.test(p.snapshot_id))
     fail('SNAPSHOT_ID_INVALID');
@@ -148,7 +148,7 @@ function verifyPair(rawCount,rawBilling,trustRoots,expected,nowMs){
       expected.monthly_billing.scope!=='monthly_billing')
     fail('ROLE_EXPECTATIONS_INVALID');
   for(const field of ['report_id','run_id','attempt_id','snapshot_id',
-                       'create_request_sha256','monthly_inputs_sha256','audience']){
+                       'create_request_sha256','count_request_sha256','monthly_inputs_sha256','audience']){
     if(expected.input_count[field]!==expected.monthly_billing[field])
       fail('CROSS_ROLE_BINDING_MISMATCH_'+field);
   }
