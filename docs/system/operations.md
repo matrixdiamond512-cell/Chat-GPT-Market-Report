@@ -51,3 +51,8 @@ PR #130の`python -m unittest discover -s tests -p 'test_d2_preflight.py' -v`と
 - `python -m unittest discover -s tests -p 'test_d2_private_store.py' -v`を既存D1 CIで実行する。CIには試験用の一時ディレクトリと無害なfixture bytesのみ使用し、実市場データ・API secrets・レポート原本を保存しない。
 - 専用private rootはPOSIX環境で外部管理された暗号化済みvolume上に配置する設計。現実の暗号化・IAM・保持期間・監査・分散lockは未設定のため、試作コードのみでD2実API試験を許可しない。
 - ファイル上書き・読戻し不一致・危険なpath/owner/mode/linkは即時停止し、欠落証拠を再生成して成功と扱わない。
+
+## 2026-10-15 D2数字照合ゲート運用追補（Draft）
+- CI実行：`python -m unittest discover -s tests -p 'test_d2_numeric_claims.py' -v`、`python -m unittest discover -s tests -p 'test_d2_responses_contract.py' -v`、既存D1テストを実行。本文に根拠なしの数値、数字位置重複、不正な単位、別出典ID、cutoff以降の観測、誤ったsource URL等が含まれた場合は生成結果を隔離・停止する。
+- 模擬出力の数字を検査し合格しても実報告の数値監査完了やE5承認とは呼ばない。現在の適用範囲は凍結6市場の`priceValue/changeValue/changePct`と限定的な字句解析。ニュース統計・PER/EPS・金利・日時・他市場の数値は根拠バンドル未接続のため遮断する。必要項目を削除して合格に偽装してはならない。
+- source bundleはスナップショットに含まれる主張の再照合用であり、取得先の独立認証・法的データ使用権・自然言語の意味照合の代わりではない。実API課金、永続private store接続、署名、公開は実施しない。
