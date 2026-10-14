@@ -19,14 +19,15 @@ from .d2_token_count_contract import (
     InputCountBlocked, build_count_plan, review_count_fixture
 )
 from .d2_monthly_budget import (
-    MonthlySpendInputs, BudgetReviewBlocked, review_monthly_budget
+    MonthlySpendInputs, BudgetReviewBlocked, review_monthly_budget,
+    monthly_inputs_sha256,
 )
 from .d2_private_store import LocalPrivateEvidenceStore, EvidenceReceipt, PrivateEvidenceError
 from .d2_offline_pipeline import (
     exercise_d2_offline, OfflineD2Blocked, OfflineD2Result
 )
 
-SCHEMA = "d2-offline-preparation/v1"
+SCHEMA = "d2-offline-preparation/v2"
 _ID = re.compile(r"[A-Za-z0-9_-]{1,60}\Z")
 
 
@@ -118,6 +119,9 @@ def run_prepared_offline(
         "monthly_total_with_reservation_usd": (
             budget_review.total_with_proposed_reservation_usd),
         "monthly_effective_cap_usd": budget_review.strictest_cap_usd,
+        # Bind the entire untrusted spending fixture, including values that
+        # do not affect the selected minimum cap or aggregated total.
+        "monthly_inputs_sha256": monthly_inputs_sha256(monthly_inputs),
         "count_evidence_kind": "SYNTHETIC_FIXTURE_NOT_AUTHENTICATED",
         "billing_evidence_kind": "SYNTHETIC_VALUES_NOT_AUTHENTICATED",
         "api_send_allowed": False,
