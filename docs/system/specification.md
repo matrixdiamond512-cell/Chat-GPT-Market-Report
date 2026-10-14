@@ -35,3 +35,8 @@
 - `CapturedResponse.raw_response_sha256`は元の応答UTF-8バイト列が明示提供され、重複JSON key・不正UTF-8・非有限値を拒否したうえでパース済み`raw`と再正規化bytes一致を検査したときだけセットし、それ以外は`None`。
 - `CapturedResponse.normalized_response_sha256`はdictの確定的JSONシリアライズから求める別ハッシュ。本文の`body_sha256`も独立。型上・意味上の区別を残し、旧snapshot IDやv2 canonical証拠を変更しない。
 - `tests/test_d2_responses_contract.py`にbytesの空白・整形差、原本とパース値の食い違い、重複キー、不正UTF-8、非bytes拒否を追加。依然としてSDK・ネットワーク・本番書込はない。
+
+## 2026-10-15 D2 private evidence adapter仕様（Draft）
+- `scripts/reporting/d2_private_store.py`に`LocalPrivateEvidenceStore`を追加。明示したPOSIX絶対パス配下に`shadow/<run>/<attempt>.json`のみ保管し、Git worktree内は拒否。
+- ディレクトリ0700／証拠ファイル0600、所有者・ハードリンク・symlinkを検査。O_EXCLによる一度限りのファイル生成、fsync後、別descriptorで独立読み戻し、byte長・SHA-256照合を行う。receipt契約は`d2-local-private-evidence/v1`。
+- byte hashとローカルreceiptはOpenAI API受信の真正性、Cloud IAM、暗号化、遠隔readback、跨ホスト同時起動排他、publisher署名／E5を証明しない。production storeは別実装、監査・鍵・暗号化・権限の確認が必要。
