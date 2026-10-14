@@ -40,6 +40,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_scheduled_report_delivery.py' -v
           python -m unittest discover -s tests -p 'test_report_contract.py' -k publication_consistency -v
           python scripts/test_reconcile_latest_report_market_data.py
+          node scripts/test_dashboard_json_contract.js
       - name: Verify publication and history
         run: |
           python scripts/verify_publication_consistency.py

@@ -80,9 +80,12 @@ function dashboardBuildPayloadFromReports_(reports) {
   }
   var latestSource = publishableReports[0];
   var priceSource = dashboardFetchPriceSheetSource_(latestSource.date);
-  var latest = dashboardPrepareReportForDashboard_(latestSource, priceSource, true);
+  // dashboard.latestReport/reports must remain exact copies of the canonical
+  // report. Market data is carried in its own dashboard/feed envelope and is
+  // never reparsed into or merged over the report object here.
+  var latest = dashboardClonePlainObject_(latestSource);
   var generatedAt = dashboardIsoJst_(new Date());
-  var latestKey = latest.date + ' ' + latest.time;
+  var latestKey = latest.date + '_' + String(latest.time).replace(':', '-');
   return {
     schemaVersion: '1.1.0',
     pageId: 'dashboard',
