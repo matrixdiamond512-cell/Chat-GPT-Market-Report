@@ -27,8 +27,8 @@ var MARKET_REPORT_PREPUBLISH_CONFIG = {
     { label: '材料と値動きの整合性', pattern: /^材料.*値動き.*整合性$|^材料と値動きの整合性$/ },
     { label: '主導市場', pattern: /^(?:今日の)?主導市場$/ },
     { label: '重要ニュース', pattern: /^(?:重要ニュース|重要ニュース・金利|重要材料)$/ },
-    { label: '金利', pattern: /^(?:金利|金利分析|金利・為替|金利・為替の連動|重要ニュース・金利)$/ },
-    { label: 'クロスアセット資金フロー', pattern: /^(?:クロスアセット|クロスアセット資金フロー|資金フロー|金利・為替・クロスアセットの因果関係)$/ },
+    { label: '金利', pattern: /^(?:金利|金利分析|金利・為替|金利・為替の連動|重要ニュース・金利|金利・為替・クロスアセット資金フロー)$/ },
+    { label: 'クロスアセット資金フロー', pattern: /^(?:クロスアセット|クロスアセット資金フロー|資金フロー|金利・為替・クロスアセットの因果関係|金利・為替・クロスアセット資金フロー)$/ },
     { label: '需給・ポジション', pattern: /^(?:需給・ポジション|需給・ポジショニング|ポジションの偏り)$/ },
     { label: '重要イベント', pattern: /^(?:(?:今後の|その日の)?重要イベント|今後の予定)$/ },
     { label: '個別市場見通し', pattern: /^(?:(?:主要)?6市場の(?:(?:個別|短期))?見通し(?:（.*）)?|個別市場見通し|個別見通し)$/ },
@@ -61,7 +61,7 @@ var MARKET_REPORT_PREPUBLISH_CONFIG = {
       changeLabel: '16:00からの変化',
       changePattern: /^(?:(?:16:00|16時|前回)からの(?:主な)?変化|16:00から21:00のマーケットの動き)$/,
       handoverLabel: 'NY時間・翌東京時間への引き継ぎ',
-      handoverPattern: /^(?:NY時間|NY市場|翌東京時間|明日|次の時間帯)への引き継ぎ$/
+      handoverPattern: /^(?:(?:NY時間|NY市場|翌東京時間|明日|次の時間帯)への引き継ぎ)(?:・リスク管理)?$/
     }
   },
   morningRequiredLabels: [
@@ -275,6 +275,11 @@ function validateMarketReportManualContract_(report, byName, errors) {
       errors.push(timeText + ' SOPセクション本文不足: ' + rule.label);
     }
   });
+
+  var handoverBody = marketReportPrePublishSectionBody_(source, slotRule.handoverPattern);
+  if (handoverBody.length < 20 || (handoverBody.match(/[。！？]/g) || []).length < 1) {
+    errors.push(timeText + ' SOPセクション本文不足: ' + slotRule.handoverLabel);
+  }
 
   if (!marketReportPrePublishHasHeading_(headings, slotRule.changePattern)) {
     errors.push(timeText + ' SOP必須セクション不足: ' + slotRule.changeLabel);
