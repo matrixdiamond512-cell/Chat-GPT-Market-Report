@@ -75,7 +75,7 @@ function reviewCountSemantics(raw,prep){
 // Recalculate the frozen synthetic budget decisions independently in JS.
 // USD values have at most eight decimal places: 1 unit is USD 10^-8.
 // The model rates here are versioned OFFLINE TEST assumptions, not live prices.
-const MONEY=/^(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,8})?$/;
+const MONEY=/^(?:0|[1-9][0-9]*)(?:\.[0-9]{1,8})?$/;
 const USD_SCALE=100000000n;
 const OFFLINE_INPUT_USD_UNITS_PER_TOKEN=75n;  // USD 0.75 / million
 const OFFLINE_OUTPUT_USD_UNITS_PER_TOKEN=450n; // USD 4.50 / million
@@ -89,7 +89,7 @@ function usdUnits(value,field,positive=false){
 }
 function reviewBudgetSemantics(monthly,prep){
   if(monthly.month_jst!==prep.report_id.slice(0,7) ||
-      !/^\\d{4}-\\d{2}-\\d{2}_(08|12|16|21)-00$/.test(prep.report_id))
+      !/^\d{4}-\d{2}-\d{2}_(08|12|16|21)-00$/.test(prep.report_id))
     fail('HANDOFF_BILLING_MONTH_MISMATCH');
   if(monthly.project_hard_limit_enabled!==true||
       monthly.org_hard_limit_enabled!==true)
