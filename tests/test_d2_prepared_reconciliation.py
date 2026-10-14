@@ -44,7 +44,7 @@ class TestPreparedForensicReplay(unittest.TestCase):
         return json.dumps(provider_fixture(self.ctx, self.snapshot),
                           ensure_ascii=False, indent=2).encode("utf-8")
 
-    def run(self, response=None):
+    def execute(self, response=None):
         return run_prepared_offline(
             self.ctx, self.snapshot, self.store,
             response if response is not None else self.model,
@@ -77,7 +77,7 @@ class TestPreparedForensicReplay(unittest.TestCase):
         self.assertFalse(result.publication_allowed)
 
     def test_full_chain_matches_but_never_authenticates(self):
-        self.run()
+        self.execute()
         first = self.replay()
         self.assertEqual(first.status, "OFFLINE_CHAIN_CONSISTENT_UNATTESTED")
         self.assertTrue(all((first.count_present, first.preparation_present,
@@ -100,7 +100,7 @@ class TestPreparedForensicReplay(unittest.TestCase):
         self.assertFalse(result.retry_allowed)
 
     def test_prep_saved_before_claim_returns_manual_review(self):
-        self.run()
+        self.execute()
         for p in (self.claim(), self.location("raw"), self.location("result")):
             p.unlink()
         result = self.replay()
@@ -112,7 +112,7 @@ class TestPreparedForensicReplay(unittest.TestCase):
             self.calls += 1
             raise RuntimeError("fixture crashed after claim")
         with self.assertRaises(RuntimeError):
-            self.run(crash)
+            self.execute(crash)
         finding = self.replay()
         self.assertEqual(finding.status, "INTERRUPTED_NEEDS_MANUAL_REVIEW")
         self.assertEqual(finding.reason, "DOWNSTREAM_SLOT_CLAIM_PRESENT_WITHOUT_RESULT")
@@ -123,7 +123,7 @@ class TestPreparedForensicReplay(unittest.TestCase):
         def timeout(_):
             self.calls += 1
             raise TimeoutError("synthetic timeout")
-        out = self.run(timeout)
+        out = self.execute(timeout)
         self.assertEqual(out.execution.status, "UNKNOWN_FIXTURE_RESULT")
         finding = self.replay()
         self.assertEqual(finding.status, "INTERRUPTED_NEEDS_MANUAL_REVIEW")
@@ -131,13 +131,13 @@ class TestPreparedForensicReplay(unittest.TestCase):
         self.assertEqual(self.calls, 1)
 
     def test_downstream_blocked_is_never_promoted_to_success(self):
-        self.run(lambda _: b'{"status":"completed","output":[]}')
+        self.execute(lambda _: b'{"status":"completed","output":[]}')
         finding = self.replay()
         self.assertEqual(finding.status, "OFFLINE_BLOCKED_RECORDED")
         self.assertFalse(finding.publication_allowed)
 
     def test_count_bytes_tampering_detected(self):
-        self.run()
+        self.execute()
         self.location("inputcount").write_bytes(
             b'{"object":"response.input_tokens","input_tokens":3}')
         finding = self.replay()
@@ -145,7 +145,7 @@ class TestPreparedForensicReplay(unittest.TestCase):
         self.assertEqual(finding.reason, "PREPARATION_REPLAY_MISMATCH")
 
     def test_preparation_hash_tamper_detected(self):
-        self.run()
+        self.execute()
         p = self.location("preparation")
         d = json.loads(p.read_text())
         d["create_request_sha256"] = "0" * 64
@@ -155,7 +155,7 @@ class TestPreparedForensicReplay(unittest.TestCase):
         self.assertEqual(finding.reason, "PREPARATION_REPLAY_MISMATCH")
 
     def test_preparation_monthly_total_tamper_detected(self):
-        self.run()
+        self.execute()
         p = self.location("preparation")
         d = json.loads(p.read_text())
         d["monthly_total_with_reservation_usd"] = "0.0"
@@ -165,41 +165,41 @@ class TestPreparedForensicReplay(unittest.TestCase):
         self.assertEqual(finding.reason, "PREPARATION_REPLAY_MISMATCH")
 
     def test_supplied_monthly_usage_has_changed(self):
-        self.run()
+        self.execute()
         different = replace(self.monthly, reported_month_spend_usd="0.81")
         finding = self.replay(monthly_inputs=different)
         self.assertEqual(finding.status, "INCONSISTENT_UNTRUSTED")
         self.assertEqual(finding.reason, "PREPARATION_REPLAY_MISMATCH")
 
     def test_supplied_monthly_hard_cap_now_invalid(self):
-        self.run()
+        self.execute()
         altered = replace(self.monthly, project_hard_limit_enabled=False)
         finding = self.replay(monthly_inputs=altered)
         self.assertEqual(finding.status, "INCONSISTENT_UNTRUSTED")
         self.assertEqual(finding.reason, "LOCAL_PREPARATION_UNSAFE_OR_UNREPLAYABLE")
 
     def test_prompt_changes_cannot_reuse_saved_count(self):
-        self.run()
+        self.execute()
         finding = self.replay(instructions="This is a new instruction.")
         self.assertEqual(finding.status, "INCONSISTENT_UNTRUSTED")
         self.assertEqual(finding.reason, "PREPARATION_REPLAY_MISMATCH")
 
     def test_missing_raw_count_even_when_prep_exists(self):
-        self.run()
+        self.execute()
         self.location("inputcount").unlink()
         finding = self.replay()
         self.assertEqual(finding.status, "INCONSISTENT_UNTRUSTED")
         self.assertEqual(finding.reason, "PREPARATION_MISSING_COUNT_RAW")
 
     def test_missing_preparation_with_downstream_is_orphaned(self):
-        self.run()
+        self.execute()
         self.location("preparation").unlink()
         finding = self.replay()
         self.assertEqual(finding.status, "INCONSISTENT_UNTRUSTED")
         self.assertEqual(finding.reason, "DOWNSTREAM_WITHOUT_PREPARATION_RECEIPT")
 
     def test_claim_changed_from_original_request(self):
-        self.run()
+        self.execute()
         p = self.claim()
         d = json.loads(p.read_text())
         d["request_sha256"] = "0" * 64
@@ -227,7 +227,7 @@ class TestPreparedForensicReplay(unittest.TestCase):
                     self.assertFalse(x.retry_allowed)
 
     def test_symlinked_preparation_is_not_followed(self):
-        self.run()
+        self.execute()
         p = self.location("preparation")
         p.unlink()
         p.symlink_to(self.location("inputcount"))
@@ -236,13 +236,13 @@ class TestPreparedForensicReplay(unittest.TestCase):
         self.assertEqual(finding.reason, "LOCAL_PREPARATION_UNSAFE_OR_UNREPLAYABLE")
 
     def test_other_run_cannot_steal_existing_slot_or_claim(self):
-        self.run()
+        self.execute()
         finding = self.replay(run_id="other-run", attempt_id="other-attempt")
         self.assertEqual(finding.status, "INCONSISTENT_UNTRUSTED")
         self.assertEqual(finding.reason, "DOWNSTREAM_EVIDENCE_WITHOUT_PREPARATION")
 
     def test_fully_readonly_and_no_additional_model_invocation(self):
-        self.run()
+        self.execute()
         all_files = [self.claim()] + [self.location(x) for x in (
             "inputcount", "preparation", "raw", "result")]
         before = [(p.stat().st_mtime_ns, p.read_bytes()) for p in all_files]
