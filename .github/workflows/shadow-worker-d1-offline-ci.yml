@@ -96,6 +96,8 @@ jobs:
         run: |
           python -m unittest discover -s tests -p 'test_d3_latest_input_probe.py' -v
           python -m scripts.reporting.d3_latest_input_probe --market-json data/market/latest.json
+          echo "History snapshot eligible for its original slot (2026-10-14 21:00):"
+          python -m scripts.reporting.d3_latest_input_probe --market-json data/market/history/2026-10-14_21-00.json
       - name: Verify versioned v2 Python canonicalization
         run: python -m unittest discover -s tests -p 'test_canonical_v2.py' -v
       - name: Verify Python and Apps Script v2 canonical bytes digests and test HMAC
