@@ -76,12 +76,16 @@ const checked = verify();
 assert.strictEqual(checked.body_sha256, hash(report.fullText));
 assert.strictEqual(state.requests[0], 'producer-proof/' + key + '.json');
 
-function rejects(label, change) {
-  state.data = sign(record);
-  change(state.data);
+function rejects(label, change, breakSignature = false) {
+  const altered = structuredClone(record);
+  change(altered);
+  state.data = sign(altered);
+  if (breakSignature) state.data.signature = 'f'.repeat(64);
   assert.throws(verify, /PRODUCER_PROOF_BLOCKED/, label);
 }
-rejects('unsigned producer record', x => delete x.signature);
+rejects('unsigned producer record', x => {x.producer_run_id = '';});
+state.data = structuredClone(record);
+assert.throws(verify, /PRODUCER_PROOF_BLOCKED/, 'unsigned producer record must fail');
 rejects('wrong producer body hash', x => x.body_sha256 = '0'.repeat(64));
 rejects('wrong chat body hash', x => x.chat_body_sha256 = '0'.repeat(64));
 rejects('wrong context digest', x => x.context_id = 'context-' + '0'.repeat(64));
@@ -94,7 +98,7 @@ rejects('wrong slot', x => x.report_id = '2026-10-15_12-00');
 rejects('captured after report slot', x => x.snapshot.captured_at = '2026-10-15T16:30:00+09:00');
 rejects('market observation after cutoff', x => x.snapshot.markets[0].asOf = '2026-10-15T16:00:01+09:00');
 rejects('duplicate source series', x => x.snapshot.markets[1].instrument = x.snapshot.markets[0].instrument);
-rejects('invalid signed source record', x => x.signature = 'f'.repeat(64));
+rejects('invalid signed source record', x => {}, true);
 state.data = null;
 assert.throws(verify, /PRODUCER_PROOF_BLOCKED/, 'missing signed record must fail');
 
