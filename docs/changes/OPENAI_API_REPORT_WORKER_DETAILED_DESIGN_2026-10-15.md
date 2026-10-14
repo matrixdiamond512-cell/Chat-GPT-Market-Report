@@ -161,9 +161,19 @@ D1レビュー、費用上限、専用API project/key、private store/IAM/retent
 | Gate | 成果 | 現状態 |
 |---|---|---|
 | D0 | B案・並行運用・shadow境界の設計 | 設計記録あり |
-| D1 | local/offline契約テスト | 未実施 |
+| D1 | local/offline契約テスト | fixture-only 15件PASS・hash差分検査PASS（本番署名互換は未達） |
 | D2 | 手動1 slot API shadow | 未承認・未実施 |
 | D3 | 限定4枠観測 | 未実施 |
 | Publisher接続 | trusted producer proof・Docs全文readback・全writer E2E | 未実装・本番停止 |
 
 残る決定はworker実行環境、private storeと保持期間、公式市場データadapter/利用権、model snapshot、費用上限、D2対象slot。決定前にAPI利用・自動起動・外部保存へ進まない。PR #130はOPEN/Draft/unmergedを維持し、PR #128との統合は行わない。
+
+## 9. D1実装結果（2026-10-15追補）
+
+PR #130のDraftブランチに `scripts/reporting/shadow_worker.py`、`tests/test_shadow_worker_offline.py`、`scripts/reporting/shadow_hash_golden.py`、`scripts/test_shadow_hash_golden.js`、`.github/workflows/shadow-worker-d1-offline-ci.yml` を追加した。実APIクライアント、外部保存先、scheduler、Docs/Sheets/GitHub/Pagesのwriterや資格情報は含めない。
+
+検証：`D1 Offline Market Report Shadow Worker` run **38607844317** / job **116003214257** SUCCESS。15件のPython unit testsがPASS。凍結snapshot、source/asOf/cutoff、タイトル・SOP見出し、観測値参照、refusal/未完了/timeout、private readbackハッシュ、同一attempt、別runによる二重slot、同revision異本文の隔離、下流writeなしを確認した。関連既存Actionsも同headで8/8 SUCCESS。
+
+**互換性の停止条件を維持**：Python/GAS golden vectorsは2ケースが完全一致し、`100.0`、`-0.0`、`1e-7`に相当する3ケースでcanonicalization差分を検知した。テストのSUCCESSは「相違を検出し、署名の本番転用を防止できる」ことを意味し、ハッシュ互換が解消された証明ではない。既存snapshot_idとproducer proofの自動変換・再署名は行わない。
+
+D1の到達範囲は固定fixtureとin-memory storeの契約。外部の永続ストレージに対する原子的な重複防止、実市場adapterの網羅（特に08時追加必須データ）、全文中の**あらゆる**数値を結び付ける意味検証、正式なResponses API strict schema/usage制御、Python/GAS完全ハッシュ互換、実API実行は未達であり、D2の受入には使えない。ChatGPT定期タスクと本番公開を変更せずPR #130はDraft維持。
