@@ -34,3 +34,6 @@
 - 実行時はAPI key、Apps Script本番、Docs/Sheets/GitHub/Pages writerを使わない。v2 helperはまだ公開ゲートに接続しない。旧v1を自動移行せず、10月14日各レポートの公開保留を継続する。
 - D2の起動前に、OpenAI API projectと費用上限の個別承認、private store/IAM/retention/readback、source adapter/全数値検証、モデル版・request timeout/retry、producer専用署名鍵/検証鍵分離を確認する。未達項目は`BLOCKED`で記録し実API送信しない。
 - 既存ChatGPTタスクと時刻設定は変更しない。GitHub PR #130はDraft・未マージ、本番E5は未達。スケジュール／デプロイ／main統合は別途安全審査のうえ実施。
+
+## 2026-10-15 D2事前検証手順追補（Draft）
+PR #130の`python -m unittest discover -s tests -p 'test_d2_preflight.py' -v`と`python -m scripts.reporting.d2_preflight`をD1 CIで実行する。無設定時は`MISSING_MANIFEST`と`EXTERNAL_ATTESTATIONS_NOT_VERIFIED`でBLOCKED。合成manifestで形式上PASSでも実API送信と公開は許可されない。実API Projectと鍵、モデル実在/費用、private保存先・IAM/保持期間、source利用権、認証済み承認レコードを確認できるまでD2実行禁止。ログ/PR/Docsに秘密情報を貼らない。旧タスク・本番停止・Draft PRを維持する。
