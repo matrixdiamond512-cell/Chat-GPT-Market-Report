@@ -10,6 +10,8 @@ on:
       - 'scripts/reporting/canonical_v2_golden.py'
       - 'scripts/test_canonical_v2_golden.js'
       - 'tests/test_canonical_v2.py'
+      - 'scripts/reporting/d2_preflight.py'
+      - 'tests/test_d2_preflight.py'
       - 'scripts/reporting/shadow_hash_golden.py'
       - 'scripts/test_shadow_hash_golden.js'
       - 'apps-script/MarketReportProducerProof.gs'
@@ -39,6 +41,10 @@ jobs:
         run: python -m compileall -q scripts/reporting/shadow_worker.py tests/test_shadow_worker_offline.py
       - name: Test shadow report contract with fake data only
         run: python -m unittest discover -s tests -p 'test_shadow_worker_offline.py' -v
+      - name: Validate no-charge D2 review and cost authorization blockers
+        run: |
+          python -m unittest discover -s tests -p 'test_d2_preflight.py' -v
+          python -m scripts.reporting.d2_preflight
       - name: Verify versioned v2 Python canonicalization
         run: python -m unittest discover -s tests -p 'test_canonical_v2.py' -v
       - name: Verify Python and Apps Script v2 canonical bytes digests and test HMAC
