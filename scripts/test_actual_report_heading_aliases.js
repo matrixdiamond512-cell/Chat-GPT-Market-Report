@@ -34,12 +34,24 @@ const actualOctober14 = context.marketReportPrePublishHeadingLines_([
 ].join('\n'));
 assert(actualOctober14.includes('クロスアセット資金フロー'), '08:00 causal-flow heading alias');
 assert(actualOctober14.includes('6市場の見通し'), '12:00 conditional six-market heading alias');
+const actualEvening = context.marketReportPrePublishHeadingLines_([
+  '7．金利・為替・クロスアセット資金フロー',
+  '14．NY時間への引き継ぎ・リスク管理'
+].join('\\n'));
+assert(actualEvening.includes('金利・為替・クロスアセット資金フロー'), '21:00 combined interest/flow heading alias');
+assert(actualEvening.includes('NY時間への引き継ぎ・リスク管理'), '21:00 combined handover heading alias');
+assert(context.marketReportPrePublishHasHeading_(actualEvening, /^(?:金利|金利分析|金利・為替|金利・為替の連動|重要ニュース・金利|金利・為替・クロスアセット資金フロー)$/));
+assert(context.marketReportPrePublishHasHeading_(actualEvening, /^(?:クロスアセット|クロスアセット資金フロー|資金フロー|金利・為替・クロスアセットの因果関係|金利・為替・クロスアセット資金フロー)$/));
+assert(context.marketReportPrePublishHasHeading_(actualEvening, /^(?:(?:NY時間|NY市場|翌東京時間|明日|次の時間帯)への引き継ぎ)(?:・リスク管理)?$/));
 const proseOnly = context.marketReportPrePublishHeadingLines_([
   '本文では金利・為替・クロスアセットの因果関係を確認する。',
   '本文では主要6市場の短期見通し（条件付き）を説明する。'
 ].join('\n'));
 assert(!proseOnly.includes('クロスアセット資金フロー'));
 assert(!proseOnly.includes('6市場の見通し'));
+const eveningProse = context.marketReportPrePublishHeadingLines_('本文では金利・為替・クロスアセット資金フローとNY時間への引き継ぎ・リスク管理について説明する。');
+assert(!context.marketReportPrePublishHasHeading_(eveningProse, /^(?:クロスアセット|クロスアセット資金フロー|資金フロー|金利・為替・クロスアセットの因果関係|金利・為替・クロスアセット資金フロー)$/));
+assert(!context.marketReportPrePublishHasHeading_(eveningProse, /^(?:(?:NY時間|NY市場|翌東京時間|明日|次の時間帯)への引き継ぎ)(?:・リスク管理)?$/));
 assert.strictEqual(context.marketReportPrePublishSectionBody_('6．金利・為替・クロスアセットの因果関係', /^金利・為替・クロスアセットの因果関係$/), '');
 const causalSource = [
   '6．金利・為替・クロスアセットの因果関係',
@@ -48,6 +60,13 @@ const causalSource = [
 ].join('\n');
 const causalBody = context.marketReportPrePublishSectionBody_(causalSource, /^金利・為替・クロスアセットの因果関係$/);
 assert(causalBody.length >= 20 && /[。！？]/.test(causalBody), 'causal section requires meaningful body');
+const handoverSource = [
+  '14．NY時間への引き継ぎ・リスク管理',
+  '次の米国時間に向け、金利と為替の変化を確認し、急変時はポジションを縮小する。',
+  '15．結論'
+].join('\\n');
+const handoverBody = context.marketReportPrePublishSectionBody_(handoverSource, /^(?:(?:NY時間|NY市場|翌東京時間|明日|次の時間帯)への引き継ぎ)(?:・リスク管理)?$/);
+assert(handoverBody.length >= 20 && /[。！？]/.test(handoverBody), 'handover section requires meaningful body');
 const outlookSource = [
   '11．主要6市場の短期見通し（条件付き）',
   '金：中立。米金利とドルの動きを確認し、CPI上振れ時は下落リスクを見る。',
