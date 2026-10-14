@@ -32,6 +32,8 @@ on:
       - 'tests/test_d2_prepared_reconciliation.py'
       - 'scripts/reporting/shadow_hash_golden.py'
       - 'scripts/test_shadow_hash_golden.js'
+      - 'scripts/reporting/d2_detached_evidence.js'
+      - 'scripts/test_d2_detached_evidence.js'
       - 'apps-script/MarketReportProducerProof.gs'
       - 'scripts/reporting/context.py'
       - 'scripts/reporting/snapshot.py'
@@ -85,5 +87,7 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_canonical_v2.py' -v
       - name: Verify Python and Apps Script v2 canonical bytes digests and test HMAC
         run: node scripts/test_canonical_v2_golden.js
+      - name: Test role-distinct detached Ed25519 evidence shape and anti-replay offline
+        run: node scripts/test_d2_detached_evidence.js
       - name: Detect Python/GAS serialization parity and incompatible float cases
         run: node scripts/test_shadow_hash_golden.js
