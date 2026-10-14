@@ -94,3 +94,6 @@ GitHub ActionsのD1 offline worker CIで`python -m unittest discover -s tests -p
 
 ## 2026-10-15 D2署名付き証拠の安全運用SOP（v1.21）
 CIで`node scripts/test_d2_detached_evidence.js`を実行する。試験の秘密鍵は毎回Nodeがメモリ上で生成し、固定秘密鍵・署名権限・APIキーをリポジトリやCIログへ保存しない。Pythonの固定した生成要求/計測要求/月額入力のハッシュが署名ペイロードと一致すること、他用途/他対象、改ざん、期限切れ、非正規JSON、なりすまし公開鍵、単一鍵流用を拒否することを確認する。将来の本番利用では、署名発行者の法的・技術的認証、鍵fingerprintの独立承認、発行/失効時刻・鍵ローテーション・nonce/replay台帳、取得元ログ原本・請求原本・IAM/Cloud KMSを用意するまで実行許可を付与しない。現コードはオフラインの数学的検証専用で`api_send_allowed=false`、公開不可のまま。別の変更仕様書は作成しない。
+
+## 2026-10-15 D2準備記録と署名原文のクロスチェックSOP（v1.22）
+CIで`node scripts/test_d2_detached_evidence.js`および`node scripts/test_d2_offline_proof_handoff.js`を実行し、前者32件・後者18件の正常/異常試験を確認する。試験用鍵はメモリ内で一時生成し、実鍵・本番信頼rootをリポジトリへ保存しない。D2 preparation v2、count raw、月間予算の全入力JSONをそれぞれbyte-exactに照合し、2つの役割で別公開鍵fingerprintを要求する。異なるIDだが同じ鍵、原文変更、古いproof、ID・snapshot・request SHA変更、月間入力SHA変更、署名の取り違え、署名失効は停止。**ローカルの数学的検証は実課金・Provider発行者の認証・公開許可と切り離す**。実本番を許可するには、信頼rootの独立設定、署名主体認証、鍵失効と照合ログ、請求実績と費用上限の第三者確認が先決。旧変更仕様書は増やさない。
