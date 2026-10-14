@@ -30,7 +30,7 @@ All retrieved historic market-history records were acquired after their report s
 
 ## Fresh-report formal-generation trial
 
-A new October 14 16:00 DRAFT was generated from a new acquisition payload and added to this PR branch as [reports/2026-10-14_16-00.json](../../../reports/2026-10-14_16-00.json), clearly titled TEST ONLY and not published. All six required symbols were verified at acquisition; no required values were missing and no fallback was used. Sixteen secondary-symbol acquisition errors were recorded. The typed snapshot, revision-1 identity, and body hash were bound at report creation, and G0/G1/G2 passed.
+A new October 14 16:00 DRAFT was generated from a new acquisition payload. Its TEST ONLY source was copied into [isolated test evidence](review-20261014-design-final/new-report-test/source-report.json) and removed from the canonical `reports/` directory so publication-index rebuilds cannot ingest a test report. All six required symbols were verified at acquisition; no required values were missing and no fallback was used. Sixteen secondary-symbol acquisition errors were recorded. The typed snapshot, revision-1 identity, and body hash were bound at report creation, and G0/G1/G2 passed.
 
 The first `validate_spec` run exposed three generator/validator contract mismatches: number cards treated change and percent as current prices, narrative numbers lacked precise source-line provenance, and numbered panel headings did not match required-section aliases. These were fixed without relaxing the source lock or snapshot-value checks. Market price/change/change-percent fields now bind separately to the typed snapshot; other body numbers bind to exact source-section line hashes; numbered headings are normalized before the existing required-section comparison. Regression cases reject changed source-line hashes and check each market field. The same new report then passed `validate-infographic-spec` with 30 structured panels and 49 unique numeric values and generated a source-bound prompt.
 
@@ -38,7 +38,7 @@ The approved-layout DRAFT render also passed with a current Git source at commit
 
 ## Verification
 
-- Python `unittest discover -s tests -q`: **PASS, 240 tests** on 2026-10-14.
+- Python `unittest discover -s tests -q`: **PASS, 240 tests** before latest-main integration; after integrating main `931dd9b53a04b85a32ee59a8ca61bf4a3fb51188`, `unittest discover -s tests`: **PASS, 250 tests**. Publication consistency, all 164 indexed reports, canonical parity, and `build_reports.py` no-rewrite stability also **PASS** after isolating the TEST ONLY source from canonical history.
 - Independent publication-path, Apps Script infographic gate, and 16:00 source recovery fail-closed regression tests: **PASS**.
 - Four Edge render receipts: **PASS** for browser layout/render diagnostics; no rendered overflow or card overlaps in the stored receipts. The receipts label numeric validation `UNVERIFIED` and artifact type `DEBUG_PREVIEW`.
 - Source/snapshot audit for historical reports: **BLOCKED** by missing original snapshot/identity evidence as detailed above.
@@ -46,6 +46,8 @@ The approved-layout DRAFT render also passed with a current Git source at commit
 - Human visual comparison against approved reference: **NOT ACCEPTED**; differences remain.
 - Formal manifest integration, Drive/Portal readback, physical-device review: **NOT_RUN**.
 - Existing publication-stop and validation gates were not relaxed. PR remains Draft/Open; no merge, production publication, or Google Drive save was performed.
+- Latest main `931dd9b53a04b85a32ee59a8ca61bf4a3fb51188` is integrated into this PR branch at merge commit `b4422cac20987b2eb2dfc970995478afb01ff62a`. Conflict resolution keeps the strict complete-dashboard copy and all FR-15–FR-19 identity/history protections; the Saturday/Sunday no-new-publication rule remains enforced. PR-branch push does not run the main-only publication/deployment workflows.
+- The TEST ONLY source JSON is now isolated under the test-evidence directory. A post-move `build_reports.py` stability run discovered 164 canonical files and made no worktree changes; the report was not left in publishable canonical history.
 
 ## Next necessary work
 

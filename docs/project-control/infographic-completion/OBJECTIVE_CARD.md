@@ -48,3 +48,11 @@ CURRENT PHASE: ACCEPT（受入未完了）。最新main `a3c3ec65d4dfa59b33e76ef
 - 詳細受入資料: `docs/examples/approved-infographic/ACCEPTANCE-20261014.md`。新規report local render evidence: `docs/examples/approved-infographic/review-20261014-design-final/new-report-test/`。
 
 NEXT NECESSARY ACTION: イベント原本を含む新規reportでevent ingestionを試験し、4時刻PNGの高さ・表文字・panel4条件図像をさらに調整して視覚受入を行う。過去snapshot/identityは元の生成記録から復旧を続け、後日データで埋めない。PRはOPEN/Draftのまま、マージ/本番公開/Drive保存を行わない。
+
+## Latest-main integration — 2026-10-14
+
+`origin/main` at `931dd9b53a04b85a32ee59a8ca61bf4a3fb51188` is integrated into the PR branch by merge commit `b4422cac20987b2eb2dfc970995478afb01ff62a`. The publication controls from main (immutable source revision/hash, exact dashboard copy, shared identity rules, fixture isolation, and weekend publication stop) are retained alongside the 16-panel DRAFT additions. Two conflicts were resolved by preserving the strict main-side contract test and adding the DRAFT design record without removing the newer publication-loss audit.
+
+Post-integration evidence: Python 250/250 PASS; three Node publication/Apps Script/source-recovery tests PASS; publication consistency and 164-entry canonical index PASS; `build_reports.py` reports 164 canonical files and leaves the index/history unchanged after the TEST ONLY source was removed from canonical `reports/`. The fresh-report render remains `DEBUG_PREVIEW`, with `publish_allowed=false`, no publication manifest, and no Drive/Portal action. PR hosted checks for the final head are pending.
+
+Visual acceptance remains PENDING after direct comparison: the outputs are 1536×2001–3137 versus the approved 1536×1024 image, with large row gaps, dense small text, and panel 4 illustration differences. Historical originals/snapshots remain unavailable; no later market data was substituted and no withdrawn report was restored. Keep PR #97 OPEN/Draft. Do not merge to main, publish, or write to Drive.

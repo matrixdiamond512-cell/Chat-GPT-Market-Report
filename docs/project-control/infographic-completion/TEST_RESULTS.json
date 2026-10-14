@@ -211,5 +211,42 @@
       "draft": true,
       "merge": "NOT_RUN"
     }
+  },
+  "latest_main_integration_20261014": {
+    "timestamp": "2026-10-14T05:20:19Z",
+    "main_sha": "931dd9b53a04b85a32ee59a8ca61bf4a3fb51188",
+    "merge_commit": "b4422cac20987b2eb2dfc970995478afb01ff62a",
+    "python_unittest": {
+      "status": "PASS",
+      "count": 250,
+      "command": "python -m unittest discover -s tests"
+    },
+    "node_regressions": {
+      "status": "PASS",
+      "count": 3,
+      "commands": [
+        "node scripts/test_independent_publication.js",
+        "node scripts/test_apps_script_infographic_gate.js",
+        "node scripts/test_actual_1600_source_recovery.js"
+      ]
+    },
+    "publication_consistency": "PASS",
+    "canonical_index": {
+      "status": "PASS",
+      "indexed_reports": 164
+    },
+    "build_reports_stability": {
+      "status": "PASS",
+      "canonical_reports": 164,
+      "worktree_changes": 0
+    },
+    "test_source": {
+      "status": "ISOLATED_FROM_CANONICAL_HISTORY",
+      "sha256": "8d044ab59c6a0406e57af391dce707fe92f0fdf3b71f68738bb87123eb3eaae3"
+    },
+    "visual_acceptance": "PENDING",
+    "hosted_ci": "PENDING_AFTER_PUSH",
+    "external_publication": "NOT_RUN",
+    "drive_write": "NOT_RUN"
   }
 }

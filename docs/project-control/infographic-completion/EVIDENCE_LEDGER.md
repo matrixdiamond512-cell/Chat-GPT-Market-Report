@@ -40,3 +40,14 @@ Run ID: `infographic-acceptance-20261014`; environment: Windows, Python 3.12, Ed
 | GitHub/Driveの最終副作用 | current PR metadata and actions | E5 | no merge/publish/Drive save action taken | PR OPEN/Draft reconfirm after latest push; G3/G4 NOT_RUN |
 
 正式受入資料と4時刻PNG: `docs/examples/approved-infographic/ACCEPTANCE-20261014.md`; comparison: `docs/examples/approved-infographic/review-20261014-design-final/comparison-contact-sheet.png`。旧4時刻の原本/snapshot不足は前段の監査結果を維持し、後日snapshotで穴埋めしない。
+
+## Latest main + canonical test isolation — 2026-10-14 05:20 UTC
+
+| Claim | Evidence | Level | Result | Limit |
+|---|---|---|---|---|
+| 最新main統合と停止ゲート維持 | `origin/main` `931dd9b53a04b85a32ee59a8ca61bf4a3fb51188`; merge `b4422cac20987b2eb2dfc970995478afb01ff62a`; conflict diffs for requirements/test contract | E0/E1 | PASS | PR branch merge only; no main merge/deploy |
+| publication workflow safeguards | Main-only triggers checked in build-reports/deploy-pages/sync workflows; exact latest/canonical/index/dashboard verifier retained | E0/E2 | PASS | No externally triggered workflow executed |
+| canonical index stability | `verify_publication_consistency.py`, `validate_report_index.py`, then `build_reports.py` | E1/E2 | PASS; 164 indexed/canonical entries, zero builder worktree changes | Does not prove external publication |
+| TEST ONLY report isolation | source byte SHA `8d044ab59c6a0406e57af391dce707fe92f0fdf3b71f68738bb87123eb3eaae3`; moved from canonical `reports/` to `new-report-test/source-report.json` | E0/E1 | PASS | Existing render evidence points to the source commit where the test was generated |
+| post-integration regressions | Python unittest discovery; 3 Node publication, Apps Script gate, and 16:00 source-recovery regressions | E1–E3 | PASS 250/250 + Node 3/3 | Hosted CI on final head not yet checked |
+| PR scope/state | local merged head `b4422ca`; no merge/deploy/Drive save invoked | E0 | Draft/open intent retained | GitHub status must be reconfirmed after push |
