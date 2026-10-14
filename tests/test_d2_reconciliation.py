@@ -157,6 +157,39 @@ class TestD2ReadOnlyRecovery(unittest.TestCase):
         self.assertEqual(x.status, "INCONSISTENT_UNTRUSTED")
         self.assertEqual(x.reason, "RAW_OBJECT_MISSING")
 
+    def test_claim_budget_quote_tampering_is_rejected(self):
+        self.execute()
+        path = self.root / self.claim_key()
+        record = json.loads(path.read_text())
+        record["max_input_tokens"] = 8000
+        self.rewrite(self.claim_key(), json.dumps(record).encode())
+        finding = self.inspect()
+        self.assertEqual(finding.status, "INCONSISTENT_UNTRUSTED")
+        self.assertEqual(finding.reason, "SLOT_CLAIM_CONTENT_INVALID")
+        self.assertFalse(finding.retry_allowed)
+
+    def test_result_budget_cap_tampering_is_rejected(self):
+        self.execute()
+        path = self.root / self.result_key()
+        record = json.loads(path.read_text())
+        record["max_model_cost_usd"] = "9.99"
+        self.rewrite(self.result_key(), json.dumps(record).encode())
+        finding = self.inspect()
+        self.assertEqual(finding.status, "INCONSISTENT_UNTRUSTED")
+        self.assertEqual(finding.reason, "RUN_RESULT_CONTENT_INVALID")
+        self.assertFalse(finding.publication_allowed)
+
+    def test_producer_over_token_cap_is_blocked_even_when_hashes_match(self):
+        result = exercise_d2_offline(
+            self.context, self.snapshot, self.store, self.responder,
+            run_id=self.run, attempt_id=self.attempt, max_input_tokens=11999)
+        self.assertEqual(result.status, "OFFLINE_BLOCKED")
+        self.assertEqual(result.reason, "ACTUAL_TOKEN_CAP_EXCEEDED")
+        finding = self.inspect()
+        self.assertEqual(finding.status, "OFFLINE_BLOCKED_RECORDED")
+        self.assertFalse(finding.retry_allowed)
+        self.assertFalse(finding.publication_allowed)
+
     def test_evidence_result_hash_mismatch_detected(self):
         self.execute()
         path = self.root / self.result_key()
