@@ -23,3 +23,6 @@
 - 旧`snapshot_id`はPythonの既存`snapshot.digest`に基づくv1のまま保存。v2の`context_digest_v2`、`snapshot_digest_v2`を別名でSHA-256照合。v1のMarketReportProducerProof署名／公開検証経路はこの段階では切替禁止。
 - `canonical_v2_golden.py`から出す日本語・null・float（100.0/-0.0/1e-7）・offset日時・市場arrayの5ベクトルで、GAS v2 canonical bytes、hash、テスト専用HMACの一致を検証。snapshot原本v1 IDは保持し、変更不能。
 - E4/D1のCI PASSは新方式のオフライン互換性に限る。production issuer/HMAC鍵分離、実ChatGPT原文取得、永続private store、Docs/Pages E2Eを代替しない。
+
+## 2026-10-15 D2 preflightコード契約追補（Draft）
+`scripts/reporting/d2_preflight.py`は`market-report-d2-preflight/v1`構造を純粋関数で検査する。必須契約：lane=api-shadow、eligibility=SHADOW_NOT_ELIGIBLE、dry_run_only=true、allow_publication=false、external_tools=[]、web_search_calls=0、固定モデル版、営業日の08/12/16/21、immutable-context-snapshot/v1、strict-json-schema/v1、max_attempts=max_runs=1、Decimal入力・出力単価とtoken上限、USD run/month cap、private/immutable/readback/store-retention、timeout UNKNOWN停止、独立承認記録参照。参照文字列は独立認証ではないため、`api_send_allowed=false`と`publication_allowed=false`は常に維持する。worker外部APIやpublisherへの資格情報は追加しない。
