@@ -138,11 +138,78 @@
     "git_diff_check": "PASS",
     "shared_publication_workflow_files_equal_origin_main": "PASS",
     "hosted_workflows": [
-      {"name": "Approved infographic design review", "run_id": 38511779612, "status": "PASS"},
-      {"name": "Apps Script Pre-Publish Validation", "run_id": 38511779560, "status": "PASS"},
-      {"name": "Morning infographic preflight tests", "run_id": 38511779550, "status": "PASS"}
+      {
+        "name": "Approved infographic design review",
+        "run_id": 38511779612,
+        "status": "PASS"
+      },
+      {
+        "name": "Apps Script Pre-Publish Validation",
+        "run_id": 38511779560,
+        "status": "PASS"
+      },
+      {
+        "name": "Morning infographic preflight tests",
+        "run_id": 38511779550,
+        "status": "PASS"
+      }
     ],
-    "pr": {"number": 97, "state": "OPEN", "draft": true, "mergeable": true, "head": "394a7c7845bd5ab7764813c09a73ec0de2d3e1ef"}
+    "pr": {
+      "number": 97,
+      "state": "OPEN",
+      "draft": true,
+      "mergeable": true,
+      "head": "394a7c7845bd5ab7764813c09a73ec0de2d3e1ef"
+    }
   },
-  "external_publication": "NOT_RUN"
+  "external_publication": "NOT_RUN",
+  "continued_run_20261014": {
+    "run_id": "infographic-acceptance-20261014",
+    "python_unittest_discover": {
+      "status": "PASS",
+      "tests": 240,
+      "command": "python -m unittest discover -s tests -q"
+    },
+    "independent_publication_path": {
+      "status": "PASS",
+      "command": "node scripts/test_independent_publication.js"
+    },
+    "apps_script_infographic_gate": {
+      "status": "PASS",
+      "command": "node scripts/test_apps_script_infographic_gate.js"
+    },
+    "actual_1600_source_recovery_fail_closed": {
+      "status": "PASS",
+      "command": "node scripts/test_actual_1600_source_recovery.js"
+    },
+    "new_report": {
+      "report_id": "2026-10-14_16-00",
+      "identity_revision": 1,
+      "gates": [
+        "G0",
+        "G1",
+        "G2"
+      ],
+      "spec_validation": "PASS",
+      "approved_layout_preflight": "PASS",
+      "edge_renderer": "PASS",
+      "local_panel_manifest": "CREATED",
+      "artifact_type": "DEBUG_PREVIEW",
+      "numeric_validation": "UNVERIFIED",
+      "publication_manifest": "NOT_CREATED",
+      "publish_allowed": false
+    },
+    "four_slot_visual_receipts": {
+      "status": "PASS",
+      "numeric_validation": "UNVERIFIED",
+      "visual_acceptance": "PENDING"
+    },
+    "external_publication": "NOT_RUN",
+    "pr": {
+      "number": 97,
+      "state": "OPEN",
+      "draft": true,
+      "merge": "NOT_RUN"
+    }
+  }
 }

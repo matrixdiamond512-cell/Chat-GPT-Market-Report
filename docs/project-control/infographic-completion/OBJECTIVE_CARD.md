@@ -42,7 +42,9 @@ CURRENT PHASE: ACCEPT（受入未完了）。最新main `a3c3ec65d4dfa59b33e76ef
 - 4 PNGを承認画像と目視比較し、配色・パネル順・6市場カード・イベント表・フロー矢印は改善。一方で縦長化、空白、図記号の密度、パネル4の表現差が残り、視覚合格はNOT_ACCEPTED。
 - 過去4時刻の原本/snapshot監査を継続。10/13後に取得されたmarket historyは代用せず、撤回済み文書を復活させていない。
 - 10/14の新規レポートから取得payload・型付きsnapshot・identity/bodyHashまでは作成。spec検証はMISSING_REQUIRED_SECTION / NUMERIC_DRIFT / NUMBER_PROVENANCE_MISSINGでfail-closed。正式projection/manifestは未到達。
-- Python237件を再実行しPASS。4 PNG receiptはrenderer PASSだがnumeric_validation UNVERIFIED、DEBUG_PREVIEW。
-- 詳細受入資料: `docs/examples/approved-infographic/ACCEPTANCE-20261014.md`。
+- 失敗原因を契約整合で修復。本文数値はsource section行hash、価格/騰落/騰落率は別々のsnapshot fieldに照合し、番号付きpanel titleを正規化。4時刻source data panelを6主要市場とrisk/volatilityに分け、欠損panel6の不要な背を縮めた。
+- 新規10/14 TEST ONLY reportをG0-G2生成し、source-bound spec、prompt、approved-layout preflight、Edge DRAFT render、local panel manifestまでPASS。publication manifestは作らず、Drive/PortalはNOT_RUN。
+- Python240件、独立公開経路、Apps Script gate、16:00 recovery fail-closed回帰PASS。4 PNG receiptもrenderer PASSだがnumeric_validation UNVERIFIED、DEBUG_PREVIEW。視覚合格はPENDING。
+- 詳細受入資料: `docs/examples/approved-infographic/ACCEPTANCE-20261014.md`。新規report local render evidence: `docs/examples/approved-infographic/review-20261014-design-final/new-report-test/`。
 
-NEXT NECESSARY ACTION: 生成器/検証器の数値フィールドprovenanceと見出し対応を既存ゲート内で整合し、回帰テスト追加後、新規レポートでvalidated spec→approved projection→PNG→local manifestを再試験する。視覚差を修正し全4時刻を再比較する。過去snapshot/identityは元の生成記録から復旧を続け、後日データで埋めない。PRはOPEN/Draftのまま、マージ/本番公開/Drive保存を行わない。
+NEXT NECESSARY ACTION: イベント原本を含む新規reportでevent ingestionを試験し、4時刻PNGの高さ・表文字・panel4条件図像をさらに調整して視覚受入を行う。過去snapshot/identityは元の生成記録から復旧を続け、後日データで埋めない。PRはOPEN/Draftのまま、マージ/本番公開/Drive保存を行わない。

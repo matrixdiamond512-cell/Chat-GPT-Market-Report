@@ -34,8 +34,9 @@ Run ID: `infographic-acceptance-20261014`; environment: Windows, Python 3.12, Ed
 | 4時刻の設計比較 | 承認PNGと4 PNGの全体画像を目視比較、contact sheetを保存 | E4 | NOT_ACCEPTED | 縦長、空白、図像密度、パネル4の視覚差が残る |
 | 4枚の描画 | 各最終render-receipt.json | E4 | Renderer PASS / numeric UNVERIFIED / DEBUG_PREVIEW | 正式受入またはsource number検証を示さない |
 | 新しい市場snapshot取得 | 新規10/14 16:00 acquisition payloadとtyped snapshot | E1/E2 | required 6 instruments verified, no fallback/missing required | secondary 16 errors; external truth independently unverified; no canonical/Drive write |
-| 新規report/spec正式接続 | saved report.json + infographic-spec.json; `validate_spec` failure | E1/E2 | FAIL/CLOSED: MISSING_REQUIRED_SECTION, NUMERIC_DRIFT, NUMBER_PROVENANCE_MISSING | projection/manifest/G3/G4には未到達。検証を迂回せず |
-| 回帰テスト | `python -m unittest discover -s tests -q` on 2026-10-14 | E1–E3 | PASS 237/237 | 新規trialの正式生成不整合は未修正 |
-| GitHub/Driveの最終副作用 | PR search; no merge/publish/save action taken | E5 | PR #97 found OPEN search result; Draft indicator not returned in search payload | head/checks/Draft status needs final live metadata confirmation |
+| 新規report/spec正式接続 | `reports/2026-10-14_16-00.json`, G0/G1/G2, source-locked spec/prompt and strict preflight | E1/E2 | PASS; 30 structured panels, 49 numeric tokens; exact line-hash provenance for body facts; snapshot-field provenance for price/change/changePct | test-only body; no event ingestion; no real investment assessment |
+| 新規approved projection / local manifest | commit-pinned current Git source, `panel-manifest.json`, numeric registry, render contract and Edge receipt | E4 | Renderer PASS; 16 panels, 6 primary markets, no overflow/outside/overlap; local panel manifest created | `DEBUG_PREVIEW`, numeric validation `UNVERIFIED`, publication manifest NOT_CREATED; G3/G4 NOT_RUN |
+| 回帰テスト | `python -m unittest discover -s tests -q` and 3 Node regressions on 2026-10-14 | E1–E3 | PASS 240/240 + independent publication/Apps Script gate/source-recovery tests PASS | Hosted CI on latest code pending rerun |
+| GitHub/Driveの最終副作用 | current PR metadata and actions | E5 | no merge/publish/Drive save action taken | PR OPEN/Draft reconfirm after latest push; G3/G4 NOT_RUN |
 
 正式受入資料と4時刻PNG: `docs/examples/approved-infographic/ACCEPTANCE-20261014.md`; comparison: `docs/examples/approved-infographic/review-20261014-design-final/comparison-contact-sheet.png`。旧4時刻の原本/snapshot不足は前段の監査結果を維持し、後日snapshotで穴埋めしない。

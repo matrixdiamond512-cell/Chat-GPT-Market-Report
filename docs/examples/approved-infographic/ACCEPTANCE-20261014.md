@@ -1,19 +1,19 @@
 # PR #97 acceptance evidence — 2026-10-14
 
-**Disposition: NOT ACCEPTED for formal generation or visual design.** The 4 PNGs below are local `DEBUG_PREVIEW` artifacts for visual review only. They carry the data-provenance warning and must not be treated as restored reports, approved designs, or publication-ready material.
+**Disposition: historical 4-slot previews are not formally accepted; fresh-report pipeline passes locally; visual design remains pending.** The October 13 images are `DEBUG_PREVIEW` artifacts for visual review only. They carry source/snapshot warnings and do not restore withdrawn reports.
 
 ## Four generated PNGs
 
 | Slot | PNG | Dimensions | Receipt | Visual review |
 |---|---|---:|---|---|
-| 08:00 | [preview PNG](review-20261014-design-final/2026-10-13_08-00/png/preview-2026-10-13_08-00.png) | 1536 × 2333 | `PASS`; numeric validation `UNVERIFIED`; `DEBUG_PREVIEW` | Content remains comparatively sparse in several panels; much taller than reference |
-| 12:00 | [preview PNG](review-20261014-design-final/2026-10-13_12-00/png/preview-2026-10-13_12-00.png) | 1536 × 2015 | `PASS`; numeric validation `UNVERIFIED`; `DEBUG_PREVIEW` | Denser tables; large unused vertical space remains in panels 1, 2, 6, and 8 |
-| 16:00 | [preview PNG](review-20261014-design-final/2026-10-13_16-00/png/preview-2026-10-13_16-00.png) | 1536 × 2408 | `PASS`; numeric validation `UNVERIFIED`; `DEBUG_PREVIEW` | Balanced information across rows, but much taller than reference and warning panel uses a different treatment |
-| 21:00 | [preview PNG](review-20261014-design-final/2026-10-13_21-00/png/preview-2026-10-13_21-00.png) | 1536 × 3137 | `PASS`; numeric validation `UNVERIFIED`; `DEBUG_PREVIEW` | Highest density and height; some narrow market tables are difficult to scan at page scale |
+| 08:00 | [preview PNG](review-20261014-design-final/2026-10-13_08-00/png/preview-2026-10-13_08-00.png) | 1536 × 2539 | `PASS`; numeric validation `UNVERIFIED`; `DEBUG_PREVIEW` | Six primary market rows are kept together; panel 8 now carries risk/volatility series; still much taller than reference |
+| 12:00 | [preview PNG](review-20261014-design-final/2026-10-13_12-00/png/preview-2026-10-13_12-00.png) | 1536 × 2001 | `PASS`; numeric validation `UNVERIFIED`; `DEBUG_PREVIEW` | Missing panel 6 shrinks to its unavailable marker; several other large gaps remain |
+| 16:00 | [preview PNG](review-20261014-design-final/2026-10-13_16-00/png/preview-2026-10-13_16-00.png) | 1536 × 2408 | `PASS`; numeric validation `UNVERIFIED`; `DEBUG_PREVIEW` | Six primary markets and risk data are separated; still much taller than reference |
+| 21:00 | [preview PNG](review-20261014-design-final/2026-10-13_21-00/png/preview-2026-10-13_21-00.png) | 1536 × 3137 | `PASS`; numeric validation `UNVERIFIED`; `DEBUG_PREVIEW` | Highest density and height; some narrow market tables remain hard to scan at page scale |
 
 ![Reference and four-slot contact sheet](review-20261014-design-final/comparison-contact-sheet.png)
 
-The generated panels retain the approved 16-panel order, use the event schedule at panel 15, improve contrast with colored panel bands, use six compact market tiles, and distinguish the two cross-asset flow directions. The theme now reads more clearly as a structured report. Visual acceptance remains **PENDING**: versus the 1536 × 1024 approved reference, every output is substantially taller; the reference packs more information into compact illustrated cards, uses larger pictograms/arrows, and fills panel space more evenly. Several generated panels have conspicuous blank areas, panel 4 does not reproduce the reference's three illustrated risk conditions, and the compact text/table styling is less legible and less pictorial. Technical browser checks do not resolve these design differences.
+The generated panels retain the approved 16-panel order, place the event schedule in panel 15, use high-contrast colored bands, keep six primary market tiles together, group volatility/sentiment series in panel 8, and distinguish the two cross-asset flow directions. Missing panel 6 content now collapses to its unavailable marker. Visual acceptance remains **PENDING**: compared with the 1536 × 1024 approved reference, these outputs remain substantially taller; the reference uses larger pictograms and more evenly filled illustrated cards. Panel 4 does not reproduce the reference's three illustrated risk conditions, and small table text is less readable at a fitted-page scale. Browser PASS does not resolve these design differences.
 
 ## Historical source and snapshot investigation
 
@@ -30,23 +30,26 @@ All retrieved historic market-history records were acquired after their report s
 
 ## Fresh-report formal-generation trial
 
-A new local-only October 14 16:00 draft was constructed using a new acquisition payload. At acquisition, all six required market symbols were returned as verified, with no required fields missing and no fallback values; 16 secondary-symbol acquisition errors were recorded. A typed snapshot and internally consistent new report identity/body hash were created. No canonical report file, Google Doc, Drive file, or production state was written.
+A new October 14 16:00 DRAFT was generated from a new acquisition payload and added to this PR branch as [reports/2026-10-14_16-00.json](../../../reports/2026-10-14_16-00.json), clearly titled TEST ONLY and not published. All six required symbols were verified at acquisition; no required values were missing and no fallback was used. Sixteen secondary-symbol acquisition errors were recorded. The typed snapshot, revision-1 identity, and body hash were bound at report creation, and G0/G1/G2 passed.
 
-Formal generation then **failed closed** at `validate_spec` with `MISSING_REQUIRED_SECTION`, `NUMERIC_DRIFT`, and `NUMBER_PROVENANCE_MISSING`. Inspection identified generator/validator contract mismatches: numeric cards annotate change and percentage values as if they were the market's `priceValue`, while the validator requires each annotated value to equal `priceValue`; the 16-panel numbered heading/title forms also do not satisfy the validator's required-section title aliases. These findings were retained as failures; no validation gate was bypassed. Formal projection, render-to-manifest, and G3/G4 publication/readback therefore remain **BLOCKED / NOT_RUN**. Required repair is to align the generator's number-field provenance and approved-panel heading mapping with the existing validation contract, add regression cases, and repeat the entire fresh-report trial.
+The first `validate_spec` run exposed three generator/validator contract mismatches: number cards treated change and percent as current prices, narrative numbers lacked precise source-line provenance, and numbered panel headings did not match required-section aliases. These were fixed without relaxing the source lock or snapshot-value checks. Market price/change/change-percent fields now bind separately to the typed snapshot; other body numbers bind to exact source-section line hashes; numbered headings are normalized before the existing required-section comparison. Regression cases reject changed source-line hashes and check each market field. The same new report then passed `validate-infographic-spec` with 30 structured panels and 49 unique numeric values and generated a source-bound prompt.
+
+The approved-layout DRAFT render also passed with a current Git source at commit `a019887aac2c33a7d32fb7ba3ec013972d8863af`. Its local `panel-manifest.json`, `numeric-registry.json`, `source-lock.json`, `preflight.json`, render contract, and [test PNG](review-20261014-design-final/new-report-test/png/preview-2026-10-14_16-00.png) are included. The renderer reported no overflow, no out-of-panel content, and no card overlaps. It remains `DEBUG_PREVIEW`; numeric validation is `UNVERIFIED`, `publish_allowed=false`, and the publication manifest is `NOT_CREATED`. Event rows in this pipeline-only body deliberately contain no market-event data, so this proves report/spec/render connection but not real event ingestion. G3/G4, Drive/Portal readback, and external publication were not run.
 
 ## Verification
 
-- Python `unittest discover -s tests -q`: **PASS, 237 tests** on 2026-10-14.
+- Python `unittest discover -s tests -q`: **PASS, 240 tests** on 2026-10-14.
+- Independent publication-path, Apps Script infographic gate, and 16:00 source recovery fail-closed regression tests: **PASS**.
 - Four Edge render receipts: **PASS** for browser layout/render diagnostics; no rendered overflow or card overlaps in the stored receipts. The receipts label numeric validation `UNVERIFIED` and artifact type `DEBUG_PREVIEW`.
 - Source/snapshot audit for historical reports: **BLOCKED** by missing original snapshot/identity evidence as detailed above.
-- Fresh-report spec validation: **FAIL/CLOSED** with the three errors above.
+- Fresh-report G0/G1/G2, report/body and market validation, spec validation, source lock, prompt generation, and approved-layout DRAFT renderer: **PASS**. Local panel manifest created; publication manifest **NOT_CREATED** by design.
 - Human visual comparison against approved reference: **NOT ACCEPTED**; differences remain.
 - Formal manifest integration, Drive/Portal readback, physical-device review: **NOT_RUN**.
 - Existing publication-stop and validation gates were not relaxed. PR remains Draft/Open; no merge, production publication, or Google Drive save was performed.
 
 ## Next necessary work
 
-1. Repair and regression-test the fresh-report generator/validator contract without relaxing existing data, snapshot, or publication gates.
-2. Re-run a new-report test through validated spec, approved projection, image verification, and local manifest linkage.
-3. Reduce page height, remove empty panel space, strengthen pictograms/arrows, and make the event/risk treatments closer to the approved reference; review all four outputs again at display scale.
-4. Recover original pre-slot source snapshots and immutable report identity evidence from source archives if available. Keep unrecoverable slots explicitly blocked.
+1. Further reduce visual height, improve compact table readability, and make risk conditions closer to the approved three-item illustration; review the new four-slot PNGs at display scale.
+2. Exercise event ingestion in a fresh report with event data bound to verified primary sources; the current pipeline test intentionally has no real event entries.
+3. Recover original pre-slot source snapshots and immutable report identity evidence from source archives if available. Keep unrecoverable slots explicitly blocked.
+4. Treat Drive/Portal readback and publication manifest as separate external work after explicit authorization; do not publish this PR branch.

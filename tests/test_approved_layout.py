@@ -10,7 +10,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from reporting.approved_layout import (build_projection, event_time, render_html,
-                                       source_events, strict_preflight, validate_projection)
+                                       source_events, strict_preflight, validate_projection, panel_for)
 from reporting.infographic import ValidationFailure, validate_market_data
 
 REFERENCE = ROOT / 'docs/examples/approved-infographic/approved-reference.png'
@@ -31,6 +31,16 @@ class ApprovedLayoutTests(unittest.TestCase):
         mutate(view)
         with self.assertRaisesRegex(ValidationFailure, reason):
             validate_projection(self.report, view, REFERENCE)
+
+    def test_risk_indicators_are_placed_with_rates_while_primary_markets_stay_together(self):
+        for instrument in ('vix', 'nikkei_vi', 'fear_greed', 'crypto_fear_greed'):
+            with self.subTest(instrument=instrument):
+                line = {'source_line_text': f'{instrument} | 20 | pt', 'source_section': '主要市場データ'}
+                self.assertEqual(panel_for(line, '16:00'), 8)
+        for instrument in ('gold', 'wti', 'nikkei225_futures_ose', 'usdjpy', 'eurusd', 'btcusd'):
+            with self.subTest(instrument=instrument):
+                line = {'source_line_text': f'{instrument} | 100 | unit', 'source_section': '主要市場データ'}
+                self.assertEqual(panel_for(line, '16:00'), 7)
 
     def test_four_real_sources_keep_all_nonheading_characters_and_all_numeric_occurrences(self):
         for slot in ('08-00','12-00','16-00','21-00'):

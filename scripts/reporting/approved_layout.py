@@ -125,6 +125,12 @@ def panel_for(line, slot):
     if '金利' in section or 'バリュエーション' in section:
         return 8
     if '市場データ' in section or '終値一覧' in section or 'データ取得' in section:
+        # Keep volatility/sentiment indicators beside the approved rates/risk
+        # panel so the six primary markets remain scannable in panel 07.
+        risk_indicators = ('vix', 'nikkei_vi', 'fear_greed', 'crypto_fear_greed',
+                           '日経vi', 'fear & greed', 'crypto fear & greed')
+        if any(value in text.lower() for value in risk_indicators):
+            return 8
         if slot == '08:00' and re.match(r'^(NYダウ|S&P500|Nasdaq|Russell2000|日経225現物|CME日経)', text):
             return 6
         if slot == '08:00' and re.match(r'^(米10年|日本10年|日経225予想|日経225・25日|東証)', text):
