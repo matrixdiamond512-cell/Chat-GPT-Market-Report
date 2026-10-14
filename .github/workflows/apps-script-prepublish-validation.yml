@@ -99,16 +99,12 @@ jobs:
           cp apps-script/MarketReportProducerProof.gs /tmp/MarketReportProducerProof.js
           cp apps-script/MarketReportStructuredImport.gs /tmp/MarketReportStructuredImport.js
           cp apps-script/MarketReportHistoricalImport.gs /tmp/MarketReportHistoricalImport.js
-          cp apps-script/MarketReportStructuredImport.gs /tmp/MarketReportStructuredImport.js
-          cp apps-script/MarketReportHistoricalImport.gs /tmp/MarketReportHistoricalImport.js
           cp apps-script/MarketReportContext.gs /tmp/MarketReportContext.js
           cp apps-script/MarketReportMasterScheduler.gs /tmp/MarketReportMasterScheduler.js
           cp apps-script/MarketReportPrePublishValidation.gs /tmp/MarketReportPrePublishValidation.js
           node --check /tmp/MarketReportAutoPublish.js
           node --check /tmp/MarketReportWebSync.js
           node --check /tmp/MarketReportProducerProof.js
-          node --check /tmp/MarketReportStructuredImport.js
-          node --check /tmp/MarketReportHistoricalImport.js
           node --check /tmp/MarketReportStructuredImport.js
           node --check /tmp/MarketReportHistoricalImport.js
           node --check /tmp/MarketReportContext.js
