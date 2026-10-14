@@ -67,7 +67,7 @@ def exercise_d2_offline(
             not 1 <= max_output_tokens <= 4000):
         raise OfflineD2Blocked("TOKEN_CAP_INVALID")
     if (type(max_model_cost_usd) is not str or
-            not re.fullmatch(r"(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,8})?", max_model_cost_usd)):
+            not re.fullmatch(r"(?:0|[1-9][0-9]*)(?:\.[0-9]{1,8})?", max_model_cost_usd)):
         raise OfflineD2Blocked("COST_LIMIT_INVALID")
     limit = Decimal(max_model_cost_usd)
     if not limit.is_finite() or limit <= 0:
