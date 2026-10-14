@@ -14,6 +14,8 @@ on:
       - 'tests/test_d2_preflight.py'
       - 'scripts/reporting/d2_responses_contract.py'
       - 'tests/test_d2_responses_contract.py'
+      - 'scripts/reporting/d2_numeric_claims.py'
+      - 'tests/test_d2_numeric_claims.py'
       - 'scripts/reporting/d2_private_store.py'
       - 'tests/test_d2_private_store.py'
       - 'scripts/reporting/shadow_hash_golden.py'
@@ -51,6 +53,8 @@ jobs:
           python -m scripts.reporting.d2_preflight
       - name: Validate real-shaped Responses payload offline (no network)
         run: python -m unittest discover -s tests -p 'test_d2_responses_contract.py' -v
+      - name: Verify frozen-source numeric claim coverage gate (offline)
+        run: python -m unittest discover -s tests -p 'test_d2_numeric_claims.py' -v
       - name: Verify offline immutable POSIX staging evidence (no network)
         run: python -m unittest discover -s tests -p 'test_d2_private_store.py' -v
       - name: Verify versioned v2 Python canonicalization
