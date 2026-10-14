@@ -5,6 +5,11 @@ on:
     paths:
       - 'reports/*.json'
       - 'scripts/build_report_index.py'
+      - 'scripts/build_reports.py'
+      - 'scripts/report_identity.py'
+      - 'scripts/report_source_contract.py'
+      - 'scripts/sync_latest_report_publication.py'
+      - 'scripts/verify_publication_consistency.py'
   workflow_dispatch:
 permissions:
   contents: write

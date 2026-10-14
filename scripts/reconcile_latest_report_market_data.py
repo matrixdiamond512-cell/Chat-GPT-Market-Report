@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Reconcile verified intraday market data into an incomplete latest report.
+"""Keep independently verified intraday data separate from report revisions.
 
-The market-data workflows can finish a staged retry after the report body was
-created. When that happens, the verified snapshot is authoritative for rows
-that still say "取得不能", while existing report values are intentionally
-preserved to avoid rewriting a valid report with a later quote.
+The pure reconciliation helper remains available for diagnostics and fixtures.
+The scheduled entry point must not write derived market values into a saved
+report whose source document, revision, and body hash identify an immutable
+publication. Such values stay in ``data/market/latest.json``.
 """
 
 from __future__ import annotations
@@ -246,14 +246,8 @@ def update_latest_report(snapshot: dict[str, Any]) -> list[str]:
     changed = reconcile_report_market_data(report, snapshot)
     if not changed:
         return []
-
-    if isinstance(payload.get("latestReport"), dict):
-        payload["latestReport"] = report
-    elif isinstance(payload.get("report"), dict):
-        payload["report"] = report
-    else:
-        payload = report
-    dump_json(LATEST_REPORT, payload)
+    # The mutation above is diagnostic only. Persisting it would create a
+    # different canonical payload under the same source revision/body hash.
     return changed
 
 
@@ -264,8 +258,8 @@ def main() -> None:
     changed = update_latest_report(snapshot)
     if changed:
         print(
-            "Reconciled verified market data into latest report: "
-            + ", ".join(changed)
+            "Verified market data remains independent; canonical report "
+            "revision was not rewritten. Matching fields: " + ", ".join(changed)
         )
     else:
         print("No unavailable latest-report market fields matched a verified snapshot.")

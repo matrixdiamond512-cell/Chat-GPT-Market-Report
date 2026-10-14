@@ -4,6 +4,7 @@ import argparse
 from datetime import datetime, timezone, timedelta
 import json
 from pathlib import Path
+from report_identity import canonical_path, internal_report_key
 
 JST = timezone(timedelta(hours=9))
 SLOTS = ("08:00", "12:00", "16:00", "21:00")
@@ -12,7 +13,7 @@ SLOTS = ("08:00", "12:00", "16:00", "21:00")
 def verify(root: Path, date: str, slot: str) -> dict:
     if slot not in SLOTS:
         raise ValueError("Unknown market report slot")
-    report_path = root / "reports" / (date + "_" + slot.replace(":", "-") + ".json")
+    report_path = canonical_path({"date": date, "time": slot}, root / "reports")
     if not report_path.is_file():
         raise ValueError("Missing published canonical " + report_path.name)
     canonical = json.loads(report_path.read_text(encoding="utf-8"))
@@ -31,7 +32,7 @@ def verify(root: Path, date: str, slot: str) -> dict:
     dashboard = json.loads((root / "data" / "dashboard.json").read_text(encoding="utf-8"))
     if dashboard.get("latestReport") != latest:
         raise ValueError("Dashboard and latest report pointer disagree")
-    if dashboard.get("currentReportKey") != latest.get("date") + " " + latest.get("time"):
+    if dashboard.get("currentReportKey") != internal_report_key(latest):
         raise ValueError("Dashboard currentReportKey disagrees with latest report")
     return {"status": "PASS", "date": date, "slot": slot, "canonical": str(report_path)}
 

@@ -1,0 +1,46 @@
+name: Market report synchronization recovery CI
+
+on:
+  pull_request:
+    paths:
+      - "reports/*.json"
+      - "reports.json"
+      - "data/latest-report.json"
+      - "data/dashboard.json"
+      - "scripts/build_reports.py"
+      - "scripts/build_report_index.py"
+      - "scripts/report_identity.py"
+      - "scripts/reconcile_latest_report_market_data.py"
+      - "scripts/sync_latest_report_publication.py"
+      - "scripts/verify_publication_consistency.py"
+      - "scripts/verify_scheduled_report_delivery.py"
+      - "tests/test_market_report_sync_contract.py"
+      - "tests/test_report_contract.py"
+      - "tests/test_dashboard_publication_health.py"
+      - "tests/test_scheduled_report_delivery.py"
+      - "docs/マーケットレポート配信システム_*.md"
+      - "docs/project-control/production-recovery-*/**"
+      - ".github/workflows/market-report-sync-recovery-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  publication-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run synchronization and publication regression tests
+        run: |
+          python -m unittest discover -s tests -p 'test_market_report_sync_contract.py' -v
+          python -m unittest discover -s tests -p 'test_dashboard_publication_health.py' -v
+          python -m unittest discover -s tests -p 'test_scheduled_report_delivery.py' -v
+          python -m unittest discover -s tests -p 'test_report_contract.py' -k publication_consistency -v
+          python scripts/test_reconcile_latest_report_market_data.py
+      - name: Verify publication and history
+        run: |
+          python scripts/verify_publication_consistency.py
+          python scripts/validate_report_index.py

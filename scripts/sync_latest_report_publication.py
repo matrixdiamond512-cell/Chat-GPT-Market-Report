@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 from report_source_contract import heading, validate_saved_body
+from report_identity import internal_report_key
 
 ROOT = Path(__file__).resolve().parents[1]
 LATEST = ROOT / "data/latest-report.json"
@@ -156,6 +157,9 @@ def sync_report_file(report: dict) -> Path:
         current = unwrap(load_json(path, {}), str(path))
         if _choose_canonical_update(current, report, str(path)) == "keep":
             return path
+    else:
+        from build_reports import _verified_source_revision
+        _verified_source_revision(report)
     dump_json(path, report)
     return path
 
@@ -177,12 +181,27 @@ def sync_dashboard(report: dict) -> None:
         snapshot = dashboard.get("marketData") or previous_report.get("marketData")
         if snapshot:
             dashboard["marketData"] = snapshot
-    key = f"{report['date']} {report['time']}"
+    key = internal_report_key(report)
     data_as_of = f"{report['date']}T{report['time']}:00+09:00"
 
     # Scheduled recovery runs must be idempotent. If the exact same report is
     # already projected, do not create a timestamp-only dashboard commit.
-    status, is_stale, stale_reason = report_publication_health(report)
+    source_status, source_is_stale, source_stale_reason = report_publication_health(report)
+    previous_status = str(dashboard.get("status") or "partial")
+    previous_stale_reason = str(dashboard.get("staleReason") or "")
+    if previous_stale_reason == "REPORT_SOURCE_RECONSTRUCTED_UNVERIFIED":
+        # Clear only a status previously caused by the report source. Unknown
+        # independent data completeness remains partial until separately verified.
+        previous_status = "partial"
+        previous_is_stale = False
+        previous_stale_reason = ""
+    else:
+        previous_is_stale = bool(dashboard.get("isStale", False))
+    status = "degraded" if source_status == "degraded" else (
+        previous_status if previous_status in {"ok", "partial", "degraded"} else "partial"
+    )
+    is_stale = source_is_stale or previous_is_stale
+    stale_reason = source_stale_reason or previous_stale_reason
     if (previous_report == report and dashboard.get("currentReportKey") == key
             and dashboard.get("status") == status
             and dashboard.get("isStale") is is_stale

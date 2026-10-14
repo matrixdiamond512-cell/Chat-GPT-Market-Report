@@ -16,6 +16,7 @@ import verify_publication_consistency
 
 class ReportContractTests(unittest.TestCase):
     def test_schedule_has_no_new_weekend_publication_and_retains_historical_slots(self):
+        # New Saturday/Sunday publications are disabled; legacy slots remain valid history.
         self.assertEqual(validate_market_reports.publication_slots("2026-09-19"), set())
         self.assertEqual(validate_market_reports.publication_slots("2026-09-20"), set())
         self.assertEqual(validate_market_reports.expected_slots("2026-09-19"), {"07:00", "08:00", "09:00"})
@@ -70,7 +71,7 @@ class ReportContractTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             reconcile_report_history._should_replace(current, incoming, ("2026-09-22", "08:00"))
 
-    def test_publication_consistency_accepts_one_projection(self):
+    def test_publication_consistency_requires_complete_dashboard_copy(self):
         report = {
             "date": "2020-01-01",
             "time": "08:00",
@@ -86,8 +87,8 @@ class ReportContractTests(unittest.TestCase):
             (root / "reports.json").write_text(json.dumps([report]), encoding="utf-8")
             (root / "data/dashboard.json").write_text(
                 json.dumps({
-                    "currentReportKey": "2020-01-01 08:00",
-                    "latestReport": {"date": report["date"], "time": report["time"], "title": report["title"], "summary": "projection"},
+                    "currentReportKey": "2020-01-01_08-00",
+                    "latestReport": report,
                 }),
                 encoding="utf-8",
             )
@@ -101,6 +102,10 @@ class ReportContractTests(unittest.TestCase):
                     "--dashboard", str(root / "data/dashboard.json"),
                 ]
                 self.assertEqual(verify_publication_consistency.main(), 0)
+                dashboard = json.loads((root / "data/dashboard.json").read_text(encoding="utf-8"))
+                dashboard["latestReport"] = {"date": report["date"], "time": report["time"], "title": report["title"]}
+                with self.assertRaisesRegex(SystemExit, "complete latest report"):
+                    verify_publication_consistency.verify_dashboard_copy(report, dashboard)
             finally:
                 sys.argv = old_argv
 
