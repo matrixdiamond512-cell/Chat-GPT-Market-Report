@@ -12,6 +12,8 @@ on:
       - 'tests/test_canonical_v2.py'
       - 'scripts/reporting/d2_preflight.py'
       - 'tests/test_d2_preflight.py'
+      - 'scripts/reporting/d2_responses_contract.py'
+      - 'tests/test_d2_responses_contract.py'
       - 'scripts/reporting/shadow_hash_golden.py'
       - 'scripts/test_shadow_hash_golden.js'
       - 'apps-script/MarketReportProducerProof.gs'
@@ -45,6 +47,8 @@ jobs:
         run: |
           python -m unittest discover -s tests -p 'test_d2_preflight.py' -v
           python -m scripts.reporting.d2_preflight
+      - name: Validate real-shaped Responses payload offline (no network)
+        run: python -m unittest discover -s tests -p 'test_d2_responses_contract.py' -v
       - name: Verify versioned v2 Python canonicalization
         run: python -m unittest discover -s tests -p 'test_canonical_v2.py' -v
       - name: Verify Python and Apps Script v2 canonical bytes digests and test HMAC
