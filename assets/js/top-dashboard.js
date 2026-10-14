@@ -1,4 +1,4 @@
-const REPORT_TIMES = ["07:00", "12:00", "16:00", "21:00"];
+const REPORT_TIMES = ["08:00", "12:00", "16:00", "21:00"];
 
 const MARKET_DEFINITIONS = [
   {
