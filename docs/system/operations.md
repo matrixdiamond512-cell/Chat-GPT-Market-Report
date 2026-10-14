@@ -40,3 +40,9 @@
 - PR #128 `4cb2dce385300c51447d7c4a8ed316bc4637ab8a` の関連Actions 8件はSUCCESS。回帰テスト用Apps Script合成本文の6市場説明を充実させて再実行した。production gate・Apps Scriptトリガー・本番スケジュールは変更していない。PRは未マージ。
 - 次の16:00実行では生成時刻と本文全文、Docs保存readbackと本文hash、発行前snapshot/contextの結合、GitHub正本/receipt、reports.json・latest・dashboard、Pages全文readbackを時刻付きで確認する。欠落工程はUNKNOWNまたはBLOCKEDとして記録し、他の時間帯へ成功を外挿しない。
 - 08:00の後刻10:24 snapshotと12:00 snapshot不在は継続ブロッカー。現在値から過去snapshotを作らず、保存receiptをpublication receiptと見なさない。
+
+## 2026-10-14 ダッシュボードキー整合・本番停止追補 v1.11
+- 本番21:30の実トリガー `runMarketReportMaster2130` は公開前SOPの複合見出し判定で停止した。GitHub書込以前の失敗でありPNG生成は直接原因ではない。PR #128の見出しエイリアス修正と厳格な本文内容検査は維持し、原文は改変しない。
+- 同期回帰CI失敗の原因として、`apps-script/DashboardJsonSync.gs` が `currentReportKey` に日時表示形式 `YYYY-MM-DD HH:MM` を生成する一方、`scripts/report_identity.py` と `verify_publication_consistency.py` は正規キー `YYYY-MM-DD_HH-MM` を要求していた。PR #128でApps Script側を正規キーへ修正し、`sources[].asOf` の読みやすい表示時刻と `dataAsOf` のタイムゾーン付き時刻は従来どおり保持する。
+- 同一PRに `scripts/test_dashboard_report_key_contract.js` を追加し、`market-report-sync-recovery-ci.yml` の回帰検証に組み込んだ。コード修正コミット `fdf71abad8bf976627f0b9a828826f8e4213117f` の関連Actions 8系統はSUCCESS。再発防止はコード/CIの合格までであり、Apps Script本番環境への反映・本番再実行を意味しない。
+- 2026-10-14 08/12/16/21のレポートはsnapshot/contextと本文hashの受入証拠が不足するため公開保留を維持する。過去データを後付けせず、ChatGPT本文↔Google Docs↔GitHub本文の同一性とreceipt/Pages全文readbackを時刻ごとに検証する。PR #129は停止記録であり公開成功ではない。
