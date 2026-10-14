@@ -46,9 +46,12 @@ PR #130に`scripts/reporting/d2_preflight.py`（標準ライブラリのみ・�
 
 候補モデルsnapshotをOpenAI公式資料で確認し、`gpt-5.4-mini-2026-03-17` とした。単価は入力 $0.75 / 100万token・出力 $4.50 / 100万token（標準テキスト、税／外部サービス除く）。最初の承認見積は入力12,000、出力4,000tokensならモデル料金 $0.027/slot、月80枠の場合 $2.16/月（再試行・検索・保管費用別）。出力tokenや実modelが変われば再見積する。
 
-GitHub PR #130に`scripts/reporting/d2_responses_contract.py`と`tests/test_d2_responses_contract.py`を追加。模擬providerレスポンスからresponse ID／status／usage／本文SHA／raw response SHAを検証し、strict JSON／tools禁止／未完了・refusal・tool呼出し・誤モデルを拒否。合成データ8件のoffline contractテストであり、実APIは未送信。ユーザーのOpenAI API利用権限と費用承認、非公開保存先、データ利用権を確認するまでは`api_send_allowed=false`を維持する。
+GitHub PR #130に`scripts/reporting/d2_responses_contract.py`と`tests/test_d2_responses_contract.py`を追加。模擬providerレスポンスからresponse ID／status／usage／本文SHA／再正規化response object SHAを検証し、strict JSON／tools禁止／未完了・refusal・tool呼出し・誤モデルを拒否。合成データ8件のoffline contractテストであり、実APIは未送信。ユーザーのOpenAI API利用権限と費用承認、非公開保存先、データ利用権を確認するまでは`api_send_allowed=false`を維持する。
 
 確認出典：
 - https://developers.openai.com/api/docs/models/gpt-5.4-mini
 - https://developers.openai.com/api/reference/resources/responses/methods/create
 - https://developers.openai.com/api/docs/guides/structured-outputs
+
+## 2026-10-15 D2受信バイト・証拠分離の追加確認（無通信）
+以前の`raw response SHA`記載は、パース済みdictのJSON再シリアライズSHAであり、真の受信bytesのhashと区別できていなかった。今回のD2コード修正で、`normalized_response_sha256`（オブジェクトからの正規化JSON）と`raw_response_sha256`（検証済み原本UTF-8バイト、未提供時はnull）を分離した。バイト差異・不正エンコーディング・二重key・原文不一致の停止をCIで確認する。将来のD2手動1slot試験でraw bytesを取得し、非公開の不変保存先にbyte-exactで保存・読み戻すのは別作業。原本bytesのhashはprovider真正性の証明ではなく、本番署名とE5公開を許可しない。
