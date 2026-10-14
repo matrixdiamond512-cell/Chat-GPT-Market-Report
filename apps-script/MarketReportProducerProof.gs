@@ -34,6 +34,66 @@ function marketReportProofCanonical_(value) {
   marketReportProofFail_('invalid JSON value');
 }
 
+/*
+ * Offline-tested canonical-json/v2 helper for NEW producer evidence only.
+ * Does not change schema_version:1 / snapshot_id / signature acceptance above.
+ * Financial float values MUST be tagged before JSON transport:
+ *   { "decimal_v2": "100.0" }, { "decimal_v2": "-0.0" },
+ *   { "decimal_v2": "1e-07" }.
+ * Raw JSON floats collapse to Number and MUST NOT be silently accepted.
+ */
+function marketReportProofV2ValidText_(value) {
+  for (var i = 0; i < value.length; i++) {
+    var unit = value.charCodeAt(i);
+    if (unit >= 0xD800 && unit <= 0xDBFF) {
+      var next = value.charCodeAt(++i);
+      if (!(next >= 0xDC00 && next <= 0xDFFF)) {
+        marketReportProofFail_('v2 invalid Unicode high surrogate');
+      }
+    } else if (unit >= 0xDC00 && unit <= 0xDFFF) {
+      marketReportProofFail_('v2 invalid Unicode low surrogate');
+    }
+  }
+}
+
+function marketReportProofCanonicalV2_(value) {
+  if (value === null || typeof value === 'boolean') return JSON.stringify(value);
+  if (typeof value === 'string') {
+    marketReportProofV2ValidText_(value);
+    return JSON.stringify(value);
+  }
+  if (typeof value === 'number') {
+    if (!Number.isSafeInteger(value) || Object.is(value, -0)) {
+      marketReportProofFail_('v2 raw float/unsafe integer prohibited; require decimal_v2 tag');
+    }
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) {
+    return '[' + value.map(marketReportProofCanonicalV2_).join(',') + ']';
+  }
+  if (value && typeof value === 'object' && Object.prototype.toString.call(value) === '[object Object]') {
+    var keys = Object.keys(value).sort();
+    if (keys.length === 1 && keys[0] === 'decimal_v2') {
+      if (typeof value.decimal_v2 !== 'string' ||
+          !/^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:e[+-]?[0-9]+)?$/.test(value.decimal_v2)) {
+        marketReportProofFail_('v2 tagged decimal syntax invalid');
+      }
+    }
+    return '{' + keys.map(function(key) {
+      if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) {
+        marketReportProofFail_('v2 object key must be an ASCII identifier');
+      }
+      return JSON.stringify(key) + ':' + marketReportProofCanonicalV2_(value[key]);
+    }).join(',') + '}';
+  }
+  marketReportProofFail_('v2 value not interoperable JSON');
+}
+
+function marketReportProofShaV2_(value) {
+  return marketReportSha256_(Utilities.newBlob(
+    marketReportProofCanonicalV2_(value), 'application/json').getBytes());
+}
+
 function marketReportProofSha_(value) {
   return marketReportSha256_(Utilities.newBlob(
     marketReportProofCanonical_(value), 'application/json').getBytes());
