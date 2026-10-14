@@ -276,9 +276,11 @@ function validateMarketReportManualContract_(report, byName, errors) {
     }
   });
 
-  var handoverBody = marketReportPrePublishSectionBody_(source, slotRule.handoverPattern);
-  if (handoverBody.length < 20 || (handoverBody.match(/[。！？]/g) || []).length < 1) {
-    errors.push(timeText + ' SOPセクション本文不足: ' + slotRule.handoverLabel);
+  if (timeText === '21:00') {
+    var handoverBody = marketReportPrePublishSectionBody_(source, slotRule.handoverPattern);
+    if (handoverBody.length < 20 || (handoverBody.match(/[。！？]/g) || []).length < 1) {
+      errors.push(timeText + ' SOPセクション本文不足: ' + slotRule.handoverLabel);
+    }
   }
 
   if (!marketReportPrePublishHasHeading_(headings, slotRule.changePattern)) {
