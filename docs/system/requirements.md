@@ -31,3 +31,7 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 
 ## 2026-10-15 D2事前判定要件追補（Draft）
 有料API実行の前に、固定モデル版・1slot/1attempt・入力/出力token上限・USD費用上限・private immutable store・readback・データ利用権・実承認の独立証拠が必須。文書内の宣言だけを実承認と見なさず、未確認ならAPI送信／公開とも禁止する。PR #130に`d2_preflight.py`とオフラインテストを追加した。ChatGPT既存タスク稼働・本番公開停止・PR Draft未マージは不変。
+
+
+## 2026-10-15 D2 Responses API受信契約（Draft）
+OpenAI API worker実行前のオフライン契約として固定モデルsnapshot、凍結market context/snapshot、出力strict JSON schema、toolsなし、応答ID/status/model/usage検証、原文/raw応答SHA記録を必須とする。公式資料で確認した候補IDは`gpt-5.4-mini-2026-03-17`。ただし利用プロジェクトへのアクセス、真のAPI応答は未確認。検証用モデル応答からChatGPT定期タスクの原文を推定してはならない。D2実課金・private store・publisherは未実装であり、公開停止・PR Draftは維持。
