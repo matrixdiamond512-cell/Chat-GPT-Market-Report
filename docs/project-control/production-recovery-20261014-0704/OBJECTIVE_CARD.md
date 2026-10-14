@@ -12,8 +12,8 @@ OUT OF SCOPE: Market portal feature work; editing past report content; Apps Scri
 
 FORBIDDEN SUBSTITUTE: A passing heading test, local suite, open/merged PR, `saved` receipt, successful single slot, or source-only deployment is not the E2E objective.
 
-ACTIVE PROFILE: dashboard + data-tool. Base main `931dd9b53a04b85a32ee59a8ca61bf4a3fb51188`. Branch `codex/heading-snapshot-e2e-recovery-20261014`, PR #128, current head `4cb2dce385300c51447d7c4a8ed316bc4637ab8a`.
+ACTIVE PROFILE: dashboard + data-tool. Base main `931dd9b53a04b85a32ee59a8ca61bf4a3fb51188`. Branch `codex/heading-snapshot-e2e-recovery-20261014`, PR #128; validator/test commit `4cb2dce385300c51447d7c4a8ed316bc4637ab8a`, append-only documentation commit `5420f316038dba58ea0e867fdceedfd0f1a2f26c`.
 
 OPEN OUTCOMES: PR #128 merge/deploy status; snapshot creation/binding defect; exact Google Docs readback hash contract for 12:00; ChatGPT scheduled-task step logs and GitHub connector behavior; production E2E for each of 4 slots; public Pages readback.
 
-NEXT NECESSARY ACTION: Hosted PR #128 checks pass at run IDs 38517550618, 38517550633, 38517550609, 38517550615, 38517550639, 38517550571, 38517550604, and 38517550583. The same v1.10 correction was revision-guarded and read back in all three formal Google Docs. Check the scheduled 16:00 run without reconstructing a missing snapshot; keep the overall objective pending for all four slots.
+NEXT NECESSARY ACTION: Hosted PR #128 checks pass at run IDs 38517550618, 38517550633, 38517550609, 38517550615, 38517550639, 38517550571, 38517550604, and 38517550583. The same v1.10 correction was revision-guarded and read back in all three formal Google Docs. PR #128 remains open and unmerged. Check the scheduled 16:00 run without reconstructing a missing snapshot; keep the overall objective pending for all four slots.

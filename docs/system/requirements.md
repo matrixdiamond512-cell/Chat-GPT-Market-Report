@@ -30,5 +30,5 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - 3文書共通の受入未完了事項：08/12/16/21の次回各定期実行について、原本・bound snapshot・GitHub正本・公開receipt・各JSON・Pages本文readbackを工程別に確認する。1枠成功だけで復旧完了にしない。
 
 ## 2026-10-14 14:36 JST 継続追補 v1.10
-- PR #128の現head `4cb2dce385300c51447d7c4a8ed316bc4637ab8a` の関連Actions 8件はすべてSUCCESS。Apps Script suiteの最初の失敗は合成fixtureの市場本文量不足であり、公開ゲートを変更せずfixtureのみ説明的なテキストへ修正した。PRは未マージ。
+- PR #128のvalidator/test commit `4cb2dce385300c51447d7c4a8ed316bc4637ab8a` の関連Actions 8件はすべてSUCCESS。Apps Script suiteの最初の失敗は合成fixtureの市場本文量不足であり、公開ゲートを変更せずfixtureのみ説明的なテキストへ修正した。文書更新は後続commit `5420f316038dba58ea0e867fdceedfd0f1a2f26c` に含む。PRは未マージ。
 - 3つの既定Google Drive正式文書へ同一の追補をrevision guard付きで追記し、読み戻しを確認した。次回16:00の実行結果および08/12/16/21の反復本番E2Eは未確認で、全枠受入は未達。

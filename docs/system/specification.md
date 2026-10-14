@@ -25,6 +25,6 @@
 - PR #128（head `2c1e9b2`）は未マージ。ローカルの関連57テストはPASS、164件の履歴検証PASS。GitHub Actions最終結果と本番Pages反映は未確定であり、ライブ受入はPENDING。
 
 ## 2026-10-14 14:36 JST 継続追補 v1.10
-- PR #128のheadは`4cb2dce385300c51447d7c4a8ed316bc4637ab8a`。最終headの関連Actions 8件（sync recovery、morning source check、market validation、dashboard health、21h source validation、heading compatibility、Apps Script pre-publish、report structure）はSUCCESS。Apps Script回帰テストの合成fixtureが市場行の本文量不足で一度失敗したため、ゲートを緩めず6市場の説明をfixtureへ追加して再実行した。CIはPASS、PRは未マージ。
+- PR #128のvalidator/test commitは`4cb2dce385300c51447d7c4a8ed316bc4637ab8a`。その関連Actions 8件（sync recovery、morning source check、market validation、dashboard health、21h source validation、heading compatibility、Apps Script pre-publish、report structure）はSUCCESS。Apps Script回帰テストの合成fixtureが市場行の本文量不足で一度失敗したため、ゲートを緩めず6市場の説明をfixtureへ追加して再実行した。後続commit `5420f316038dba58ea0e867fdceedfd0f1a2f26c` は文書と証拠台帳のみ。PRは未マージ。
 - 08:00/12:00の実Docs本文は修正後Python native-Docs経路でPASS。原文は編集していない。08:00 snapshotは10:24:21 JST生成でレポート識別情報と結合されず、12:00 snapshotも未確認。どちらも過去データ再構成をせず公開保留。
 - 3つのGoogle Drive正式文書に同一v1.10追補を追記し、revision guarded write後の読み戻しで全件確認した。次の16:00 runおよび08/12/16/21の本番E2Eは未検証。復旧完了は未達。
