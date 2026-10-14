@@ -40,6 +40,38 @@ function parseCanonical(b,limit){
     fail('HANDOFF_NONCANONICAL_JSON');
   return parsed;
 }
+// Recheck the meaning of Python's saved count response, not only its hash.
+// Responses input_tokens objects are flat. Lex the member names to reject
+// duplicate JSON keys (JSON.parse alone silently uses the last occurrence).
+// Do not require canonical response bytes: the provider may add whitespace.
+function reviewCountSemantics(raw,prep){
+  let object,text;
+  try{
+    text=new TextDecoder('utf-8',{fatal:true}).decode(raw);
+    object=JSON.parse(text);
+  }catch(_){fail('HANDOFF_COUNT_JSON_INVALID');}
+  if(!exact(object,['object','input_tokens'])||
+      object.object!=='response.input_tokens')
+    fail('HANDOFF_COUNT_SCHEMA_INVALID');
+  const memberNames=[];
+  const keyPattern=/"(?:[^"\\\u0000-\u001f]|\\(?:["\\/bfnrt]|u[0-9a-fA-F]{4}))*"\s*:/g;
+  try{
+    for(const match of text.matchAll(keyPattern)){
+      memberNames.push(JSON.parse(match[0].slice(0,match[0].lastIndexOf(':')).trim()));
+    }
+  }catch(_){fail('HANDOFF_COUNT_DUPLICATE_OR_UNSAFE_KEYS');}
+  if(memberNames.length!==2||
+      new Set(memberNames).size!==2||
+      !memberNames.includes('object')||!memberNames.includes('input_tokens'))
+    fail('HANDOFF_COUNT_DUPLICATE_OR_UNSAFE_KEYS');
+  if(!Number.isSafeInteger(prep.max_input_tokens)||
+      prep.max_input_tokens<1||prep.max_input_tokens>12000||
+      !Number.isSafeInteger(object.input_tokens)||
+      object.input_tokens<0||object.input_tokens>prep.max_input_tokens||
+      object.input_tokens!==prep.counted_input_tokens)
+    fail('HANDOFF_COUNTED_INPUT_TOKENS_MISMATCH');
+}
+
 function reviewPreparedHandoff({
   preparationBytes,countBytes,monthlyBytes,countProof,billingProof,
   trustRoots,expectations,nowMs
@@ -64,6 +96,7 @@ function reviewPreparedHandoff({
       countBytes.length>16384)fail('HANDOFF_COUNT_BYTES_INVALID');
   if(sha(countBytes)!==prep.raw_count_sha256)
     fail('HANDOFF_RAW_COUNT_DIGEST_MISMATCH');
+  reviewCountSemantics(countBytes,prep);
   if(sha(monthlyBytes)!==prep.monthly_inputs_sha256)
     fail('HANDOFF_MONTHLY_INPUT_DIGEST_MISMATCH');
 
