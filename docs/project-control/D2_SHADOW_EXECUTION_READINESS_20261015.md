@@ -40,3 +40,15 @@ PR #130に`scripts/reporting/d2_preflight.py`（標準ライブラリのみ・�
 **全条件に形式上合格しても`api_send_allowed=false`／`publication_allowed=false`。** ローカルのJSON参照文字列を費用やアクセス権限の実承認とは見なさない。実際のOpenAI project、利用モデルID、料金、Secrets、IAM、保持期間、外部データ利用権、実API送信の明示承認を独立に確認するまではBLOCKED。テストは合成例に基づくため、モデルsnapshot文字列や料金を実契約の確定値と見なさない。
 
 無課金D2 preflight検査：`python -m unittest discover -s tests -p 'test_d2_preflight.py' -v`、`python -m scripts.reporting.d2_preflight`。同PRのD1 offline CIに追加し、実行証跡はGitHub Actionsに残す。本番publisherを起動させる構成・資格情報・公開書込を含めない。
+
+
+## 2026-10-15 D2 API契約実装追補（通信なし）
+
+候補モデルsnapshotをOpenAI公式資料で確認し、`gpt-5.4-mini-2026-03-17` とした。単価は入力 $0.75 / 100万token・出力 $4.50 / 100万token（標準テキスト、税／外部サービス除く）。最初の承認見積は入力12,000、出力4,000tokensならモデル料金 $0.027/slot、月80枠の場合 $2.16/月（再試行・検索・保管費用別）。出力tokenや実modelが変われば再見積する。
+
+GitHub PR #130に`scripts/reporting/d2_responses_contract.py`と`tests/test_d2_responses_contract.py`を追加。模擬providerレスポンスからresponse ID／status／usage／本文SHA／raw response SHAを検証し、strict JSON／tools禁止／未完了・refusal・tool呼出し・誤モデルを拒否。合成データ8件のoffline contractテストであり、実APIは未送信。ユーザーのOpenAI API利用権限と費用承認、非公開保存先、データ利用権を確認するまでは`api_send_allowed=false`を維持する。
+
+確認出典：
+- https://developers.openai.com/api/docs/models/gpt-5.4-mini
+- https://developers.openai.com/api/reference/resources/responses/methods/create
+- https://developers.openai.com/api/docs/guides/structured-outputs
