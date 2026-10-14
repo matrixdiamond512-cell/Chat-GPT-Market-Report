@@ -53,8 +53,13 @@ def get_json(session, endpoint, params=None):
         raise RuntimeError(f"Google API HTTP {response.status_code} ({error.get('status','')})")
     return response.json()
 
-def eligible_sources(session, now):
+def eligible_sources(session, now, folder_id=None):
+    # When the owner has shared the monthly report folder, limit discovery to
+    # direct children of that authoritative folder, excluding identically
+    # named orphan/root copies from older recovery attempts.
     query = "name contains 'マーケットレポート_' and mimeType = 'application/vnd.google-apps.document' and trashed = false"
+    if folder_id:
+        query += " and '" + folder_id.replace("'", "\\'") + "' in parents"
     page = None
     found = {}
     scanned = 0
@@ -143,19 +148,23 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
         raise RuntimeError("missing existing publication latestReport")
     session = open_session()
     try:
-        source_files, scanned = eligible_sources(session, now)
-        folder_access = False
-        # A folder grant is preferred: future child Docs then inherit visibility.
-        # Individually shared Google Docs also work without this grant.
+        # Locate the owner-authoritative month folder first; the service
+        # account's inherited read access is verified through this lookup.
         month_folder_name = f"マーケットレポート{now.year}年{now.month}月"
         folders = get_json(session, DRIVE + "/files", {
             "q": "name = '" + month_folder_name + "' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
             "fields": "nextPageToken,files(id,name,mimeType)",
             "pageSize": 100
         })
-        folder_access = bool(folders.get("files"))
+        folder_matches = folders.get("files", [])
+        if len(folder_matches) > 1:
+            raise RuntimeError(f"multiple accessible monthly report folders: {month_folder_name}")
+        folder_id = folder_matches[0]["id"] if folder_matches else None
+        folder_access = bool(folder_id)
+        source_files, scanned = eligible_sources(session, now, folder_id=folder_id)
         print(f"Google Drive scan: {scanned} accessible report-name candidates; "
-              f"{len(source_files)} recent slots; monthly_folder_access={folder_access}")
+              f"{len(source_files)} recent slots; monthly_folder_access={folder_access}; "
+              f"authoritative_folder_scoped={folder_access}")
         latest_slot = (old_latest["date"], old_latest["time"])
         to_write = {}
         invalid_sources = {}
@@ -169,8 +178,18 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                 canonical_id = canonical.get("sourceDocument", {}).get("id")
                 anchored = [candidate for candidate in matches
                             if candidate["id"] == canonical_id]
+                if not canonical_id:
+                    # Older reports often predate the sourceDocument field.
+                    # Preserve their canonical content and flag for separate
+                    # manual provenance audit; never adopt a new source ID.
+                    print(f"EXISTING_CANONICAL_LEGACY_NO_SOURCE_ID: {key}; preserving archive")
+                    continue
                 if len(anchored) != 1:
-                    raise RuntimeError(f"canonical Google Docs source not accessible or ID conflict: {key}")
+                    # An old archive may be linked to a different Doc or a
+                    # since-removed source. Do not overwrite or adopt another
+                    # Doc; report as a conflict without blocking new slots.
+                    print(f"EXISTING_CANONICAL_SOURCE_NOT_IN_MONTH_FOLDER: {key}; preserving archive")
+                    continue
                 if len(matches) > 1:
                     print(f"EXISTING_CANONICAL_NAME_DUPLICATE: {key}; "
                           f"anchored source retained, extra_docs={len(matches)-1}")
