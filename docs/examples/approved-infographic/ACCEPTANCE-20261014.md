@@ -17,16 +17,18 @@ The generated panels retain the approved 16-panel order, place the event schedul
 
 ## Historical source and snapshot investigation
 
-The four October 13 reports are not formally reproducible from the evidence recovered:
+The four October 13 reports are not formally reproducible from the evidence recovered. GitHub history does preserve one on-window 12:00 market snapshot, but it has no canonical report-body/identity/spec link:
 
 | Slot | Source evidence | Snapshot/spec disposition |
 |---|---|---|
-| 08:00 | Google Doc exists and its current text resembles a Git source version. Its initial revision returned no body; the local lock has no original body hash, revision, snapshot ID, or report ID. Git history marks the report withdrawn. | `MARKET_DATA_SNAPSHOT_NOT_FOUND`; required body/identity/spec evidence missing. Later market-history acquisition is not a substitute. |
-| 12:00 | Google Doc exists, but the earliest revision returned no body. Git contains an explicitly sourced reconstruction after the slot and the report was later withdrawn. | Snapshot and original identity absent. The reconstruction is not accepted as original. |
-| 16:00 | Google Doc exists; the retained report text does not establish an immutable original body/revision-to-snapshot link. | Snapshot ID, typed historical snapshot, and source-bound spec absent. Current text alone is insufficient. |
-| 21:00 | Google Doc exists, but the initial revision returned no body and usable original body/revision/hash proof was not recovered. Git history marks the report withdrawn. | `MARKET_DATA_SNAPSHOT_NOT_FOUND`; identity/spec absent. Later history cannot restore the prior market state. |
+| 08:00 | Git acquisition history records recovery at 11:37:42 JST, 307.7 minutes after the scheduled 06:30 fetch. No canonical report exists at that commit or current main. | The stored snapshot is late, not an 08:00 original. Report identity/spec remain missing; withdrawn content was not restored. |
+| 12:00 | Git commit `76cf749` preserves a verified no-fallback snapshot generated at 11:34:12 JST (blob `8b093c6285f4154f249b99bd53f768fc67d3c7f2`). Current history was later replaced by an 18:34:55 recovery snapshot. No canonical report exists at the original acquisition commit or current main. | On-window market snapshot is recoverable, but original body/revision/hash/spec link is not. The later snapshot and reconstructed review body are not accepted as original. |
+| 16:00 | Canonical report has revision `1791875571770` and bodyHash `5fdc2e936ad7b60d7c3ca4bb4c8963a729a27d43d6dd6d4b33492d542dde3e17`. Slot-labelled snapshots were generated at 18:19:41 and 23:28:05 JST; no snapshot identity is bound to the canonical body. | Body identity exists, but the matching historical snapshot/spec envelope is missing. Later snapshot data is not substituted. |
+| 21:00 | Git acquisition/snapshot record is generated at 23:05:42 JST, after the report slot. No canonical report exists at that commit or current main. | Later market history is not a 21:00 original. Report body identity/spec remain missing; withdrawn content was not restored. |
 
-All retrieved historic market-history records were acquired after their report slots. No later prices were backfilled into the October 13 reports, and withdrawn source documents were not restored. Required recovery is the original pre-render acquisition payload/snapshot plus its immutable report identity, body hash, spec, and revision linkage from the original generator/archive or provider history. If that evidence no longer exists, those historical outputs remain unrecoverable as formal source reports.
+The time-specific 08:00, 16:00, and 21:00 snapshot versions found in current history were acquired after their slots; the 12:00 on-window snapshot is recoverable only from an older Git blob, without its report-body identity link. No later prices were backfilled into the October 13 reports, and withdrawn source documents were not restored. The remaining recovery requirement is the original pre-render acquisition payload plus its immutable report identity, body hash, spec, and revision linkage from the original generator/archive or provider history. If that evidence no longer exists, the affected historical output remains unrecoverable as a formal source report.
+
+Detailed Git object and run-log evidence: [`HISTORICAL-SNAPSHOT-AUDIT-20261013.md`](../../project-control/0800-design/HISTORICAL-SNAPSHOT-AUDIT-20261013.md).
 
 ## Fresh-report formal-generation trial
 
@@ -52,7 +54,7 @@ The approved-layout DRAFT render also passed with a current Git source at commit
 
 ## Next necessary work
 
-1. Further reduce visual height, improve compact table readability, and make risk conditions closer to the approved three-item illustration; review the new four-slot PNGs at display scale.
+1. Resolve the 08:00 content/approved-geometry fit conflict without shrinking text or dropping information, then produce and compare only the 08:00 candidate. Do not propagate the design to the other three slots before 08:00 visual approval.
 2. Exercise event ingestion in a fresh report with event data bound to verified primary sources; the current pipeline test intentionally has no real event entries.
 3. Recover original pre-slot source snapshots and immutable report identity evidence from source archives if available. Keep unrecoverable slots explicitly blocked.
 4. Treat Drive/Portal readback and publication manifest as separate external work after explicit authorization; do not publish this PR branch.
@@ -64,6 +66,8 @@ The approved-layout DRAFT render also passed with a current Git source at commit
 Read-only comparison of the ChatGPT report message to the current Google Docs body confirms they are not the same text. After removing Markdown presentation, whitespace, and citation markers, the normalized lengths are 5,174 characters for ChatGPT and 4,219 for Docs; the first substantive differences appear at the preamble and in the first section. ChatGPT's opening sentence under `1．総合判断` (“今日の最大の特徴は、日経平均の後場急反転です。”) is absent from the Doc, which begins directly with the market-price paragraph. The exact internal writer call is not exposed, so the proven boundary is the ChatGPT-to-Docs handoff, not a specific script.
 
 The ChatGPT task's final-state text says GitHub body registration did not occur. `reports/2026-10-14_16-00.json` is absent from main (404), and `data/latest-report.json` remains 2026-10-13 16:00. This is a missing canonical registration, not an observed mismatch against a 10/14 GitHub canonical body. Drive revision 1 contained only a BOM; revision 7 contains the current body. No source body hash/snapshot envelope in that production task is available to prove an identical write/render/publish transaction.
+
+Latest-main acquisition history adds a verified 16:00-labeled market snapshot generated at 16:30:22 JST (commit `68562b0`, blob `ea9bea4d96d9be7c3cb9622fd1e67fc8e10f6189`). The Google Docs readback revision was already present at 16:06:16 JST, and the history file was subsequently overwritten by a 21:13 recovery fetch. There is no receipt tying either snapshot to the ChatGPT body, so neither is treated as its source snapshot. The TEST ONLY fixture remains separate.
 
 Detailed evidence: [`E2E-20261014-1600-DIAGNOSIS.md`](../../project-control/0800-design/E2E-20261014-1600-DIAGNOSIS.md).
 
