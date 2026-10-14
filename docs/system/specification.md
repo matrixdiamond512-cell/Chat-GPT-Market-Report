@@ -102,3 +102,10 @@ E4＝合成データ・クロス言語golden・関連CIが最新HEADで成功。
 
 **改訂記録**：2026-10-15 JST／v1.13（Draft）／旧「生成元証拠連携・公開前検証変更仕様書」1〜11節とD1/D2の後続追加を統合、重複・旧時点情報は履歴扱い。旧文書は更新停止・アーカイブ。
 
+### H. D2オフライン通し試験（v1.14／2026-10-15、非本番）
+- `scripts/reporting/d2_offline_pipeline.py` を追加し、D2要求構築→実行前の固定slot claim永続化→**注入されたテスト用関数から**Responses形式のUTF-8原本bytesを1回だけ受信→private原本保存・別descriptor読戻し→Responses構造・市場数値監査→模擬モデル費用上限検査→不変の結果receipt保存・読戻しを連結する。ローカルPOSIX試験用ストア以外は拒否する。
+- 一意slot claimは `shadow/slot-<report_id>-r<revision>/claim` に O_EXCL で先に書き込み、同じslotの再実行は別プロセス・別run IDでも実際にfixtureが呼ばれる前に拒否する。障害・UNKNOWN・不正応答後もclaimを削除せず、独立した明示的reconciliation手順が整うまで盲目的retryしない。これは**単一ローカルstaging領域内の排他**に限り、複数サーバー・別ボリュームの分散排他ではない。
+- 原文bytesを保存・読戻ししてから検証し、valid, invalid, budget超過, malformed raw, timeoutそれぞれを `shadow/<run>/<attempt>-result` に独立記録。synthetic responseでも`api_send_allowed=false`、`publication_allowed=false`、`publishable=false`。不正値を修正して成功扱いにしない。
+- `tests/test_d2_offline_pipeline.py` に無課金の通し試験10件を追加し、CIのD1 Offline Market Report Shadow Workerから実行する。受信raw bytesのhashとdict再正規化hashは別概念であり、前者は実際のHTTP原文真正性を証明しない。
+- **注入したCallableそのものの通信禁止をPython型で強制できるわけではない**。本モジュールにHTTP client/SDKは実装しないが、実運用では別プロセスのネットワーク遮断・資格情報不付与・API利用権限の独立承認が不可欠。ローカルPOSIX領域は暗号化/IAM/証跡retention/遠隔readbackを保証せず、専用workerの本番稼働・API課金許可・外部公開の判定には利用しない。
+- **改訂記録**：2026-10-15 v1.14（Draft）／正式仕様書にのみ追記。別の「変更仕様書」は作成・更新しない。PR #130 Draft維持、既存ChatGPTタスク/本番公開を変更しない。
