@@ -177,3 +177,25 @@ PR #130のDraftブランチに `scripts/reporting/shadow_worker.py`、`tests/tes
 **互換性の停止条件を維持**：Python/GAS golden vectorsは2ケースが完全一致し、`100.0`、`-0.0`、`1e-7`に相当する3ケースでcanonicalization差分を検知した。テストのSUCCESSは「相違を検出し、署名の本番転用を防止できる」ことを意味し、ハッシュ互換が解消された証明ではない。既存snapshot_idとproducer proofの自動変換・再署名は行わない。
 
 D1の到達範囲は固定fixtureとin-memory storeの契約。外部の永続ストレージに対する原子的な重複防止、実市場adapterの網羅（特に08時追加必須データ）、全文中の**あらゆる**数値を結び付ける意味検証、正式なResponses API strict schema/usage制御、Python/GAS完全ハッシュ互換、実API実行は未達であり、D2の受入には使えない。ChatGPT定期タスクと本番公開を変更せずPR #130はDraft維持。
+
+
+## 10. Python／Apps Script共通canonical JSON v2（2026-10-15実装追補）
+
+**状態：OFFLINE_VERIFIED／本番接続は未承認。** D1の既存GAS `marketReportProofCanonical_` およびPython `snapshot.digest` はv1のまま変更していない。バージョン付きの新規証拠用実装としてPython `scripts/reporting/canonical_v2.py` とGAS `marketReportProofCanonicalV2_`／`marketReportProofVerifyV2EvidenceDigests_` を追加した。呼出し元のv1本番公開ゲートへの切替は行っていない。
+
+v2識別子：`report-canonical-json/v2`。JSON object keyはASCII識別子とし、辞書キーを昇順ソート、UTF-8でエンコード、配列順は保持、null/bool/安全な整数を許容、孤立サロゲート・NaN/無限大・unsafe integerを拒否する。Python floatはJSON数値に直接せず、`{"decimal_v2":"100.0"}`、`{"decimal_v2":"-0.0"}`、`{"decimal_v2":"1e-07"}` のような型付き表記で固定し、GAS側は金融数値のuntagged表現を拒否する。小数文字列は最初にPython producerが決めて記録し、JavaScriptで再構成・丸めをしない。
+
+既存 `snapshot_id=snapshot-<v1 digest>` は**原型のまま保持**し、新規証拠は別フィールド `snapshot_digest_v2` と `context_digest_v2` に独立SHA-256を追加する。GASはv2の型付きsnapshot／contextの内容と新しいdigestを照合し、Python v1 snapshot_idをGAS側で作り直さない。v1 IDの原本検証はproducer側の既存 `MarketDataSnapshot` で実施する。v2検証が正しくてもissuerの真正性やChatGPT task原文取得の欠落を自動解決しない。
+
+ゴールデンfixture：`scripts/reporting/canonical_v2_golden.py`・`scripts/test_canonical_v2_golden.js`。日本語・絵文字・改行・null・100.0・-0.0・1e-7・日時offsetを含む5ベクトルのcanonical UTF-8文字列、SHA-256、テスト専用HMAC一致を確認し、snapshot/context v2 digestとlegacy snapshot ID維持を検証。不正版／改ざん／untagged金融数値／異常小数文字列を拒否。`tests/test_canonical_v2.py` は型・unsafe値・配列順序・旧snapshot ID維持を確認。
+
+関連GitHub Actions（初期コードHEAD `84c1a264feb8bbce2b0745199093736ea357e696`）8/8 SUCCESS、うち D1 offline run `38609373349` SUCCESS。これはv2形式の**オフライン相互運用性検査**であり、本番署名に使用できる証明ではない。独立issuer・private store・API key・API workerの実レスポンス取得は引き続き未実装。
+
+## 11. D2移行前の具体的チェック項目（未承認）
+
+- モデルと計測上限：初回1 slot、モデルIDの固定、入力／出力最大tokens、上限超過時の送信停止、timeout時のUNKNOWN照合手順、API responsesの保存形式と実費集計。
+- API資源：専用OpenAI API project/keyと権限、secret managerによる注入、費用上限（月額および1run）、再試行なしの初期設定。APIキーはGitHub・Google Docsに書かない。
+- private store：保存先候補はGCP Cloud Storage（保持／Object Versioning・IAM制御）等。暗号化・署名担当とpublisherの権限分離、オブジェクト単位の作成専用条件、保持期間、監査ログ、読戻しの方法を比較。候補であって選定完了ではない。
+- 実データ：08:00など時刻別必須市場観測、source/asOfの確認、法的・利用規約上の利用権、ニュースと全数値の意味検証方法を事前検証。
+- 監視：SHADOW_NOT_ELIGIBLEを維持し、Docs/Sheets/GitHub/Pages/publisherの資格情報ゼロ、外部writerコールゼロ、API費用・status・usage・hashを記録。
+- 合格後であってもD2は手動・単一slotの**有料API実行を別承認**とし、公開／旧ChatGPTタスク停止／PR本番統合は別判断とする。
