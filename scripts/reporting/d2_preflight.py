@@ -115,6 +115,10 @@ def evaluate_d2_manifest(manifest: dict | None = None) -> PreflightOutcome:
     caps = manifest.get("caps") if isinstance(manifest.get("caps"), dict) else {}
     n_input = _positive_int(caps.get("max_input_tokens"), "MAX_INPUT", errors)
     n_output = _positive_int(caps.get("max_output_tokens"), "MAX_OUTPUT", errors)
+    if n_input > 12000:
+        errors.append("MAX_INPUT_ABOVE_D2_SAFE_BOUND")
+    if n_output > 4000:
+        errors.append("MAX_OUTPUT_ABOVE_D2_SAFE_BOUND")
     if caps.get("max_attempts") != 1 or type(caps.get("max_attempts")) is not int:
         errors.append("ONE_MANUAL_ATTEMPT_REQUIRED")
     if caps.get("max_runs") != 1 or type(caps.get("max_runs")) is not int:
