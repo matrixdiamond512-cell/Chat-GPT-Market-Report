@@ -88,3 +88,6 @@ CIで`python -m unittest discover -s tests -p 'test_d2_offline_prepared_run.py' 
 
 ## 2026-10-15 D2.2準備/生成チェーンの読み取り専用復旧SOP（v1.19）
 GitHub ActionsのD1 offline worker CIで`python -m unittest discover -s tests -p 'test_d2_prepared_reconciliation.py' -v`（20件）を実行する。中断後は元ファイルを移動・上書き・削除せず、`reconcile_prepared_offline`で同一run/attemptの`-inputcount`、`-preparation`、`slot claim`、`-raw`、`-result`の存在・許可境界・SHA/費用再計算を確認する。`UNRESOLVED_NO_PREPARATION`は未実行の証明にならない。`INTERRUPTED_NEEDS_MANUAL_REVIEW`は手動provider照合待ち。`INCONSISTENT_UNTRUSTED`は隔離・停止。`OFFLINE_BLOCKED_RECORDED`も再実行しない。`OFFLINE_CHAIN_CONSISTENT_UNATTESTED`であっても送信・本番保存/公開を禁止。合成月額入力値の外部真正性・実API通信・本番秘密鍵・cloud証拠保存・独立承認は別工程。変更仕様書を増やさない。
+
+## 2026-10-15 月間予算証拠の全入力コミットメントSOP（v1.20）
+生成前preparationには`schema=d2-offline-preparation/v2`と`monthly_inputs_sha256`が必要。読取り専用復旧診断では再提示された月間予算のすべての内訳、両hard限度、承認月限度、対象年月・枠IDでSHA-256を再計算し、記録値と不一致なら`INCONSISTENT_UNTRUSTED`。同じ合計支出でも実績と予約の配分が異なる場合、また最小限度に関係しない上限値だけが変わった場合も停止する。旧v1のpreparationをv2として自動受入れしない。CIの`test_d2_prepared_reconciliation.py`と`test_d2_offline_prepared_run.py`で回帰確認。これは局所fixtureの同一性チェックで、暗号化・真正な請求receiptやAPI送信許可の代替ではない。独立変更仕様書は増やさない。
