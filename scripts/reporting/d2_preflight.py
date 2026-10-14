@@ -26,6 +26,15 @@ REQUIRED_EVIDENCE = (
     "verified_source_bundle", "model_snapshot", "response_schema",
     "full_numeric_claim_check", "timeout_reconciliation",
     "no_publication_credentials",
+    # New D2.1 readiness: references only. Independently authenticate each
+    # one before any production traffic; strings in a manifest are NOT proof.
+    "official_input_count_request_response",
+    "input_count_transport_authentication",
+    "current_price_quote_confirmation",
+    "project_hard_spend_limit_enabled",
+    "organization_hard_spend_limit_enabled",
+    "authoritative_month_to_date_usage",
+    "pending_spend_reservation_consistency",
 )
 MODEL_PATTERN = re.compile(r"^gpt-[A-Za-z0-9.]+(?:-[A-Za-z0-9.]+)*-\d{4}-\d{2}-\d{2}$")
 EVIDENCE_PATTERN = re.compile(r"^[A-Za-z0-9_.:/-]{8,256}$")
