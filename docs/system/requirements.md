@@ -28,3 +28,6 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - float値はJSON数値としての情報喪失を避けるため、生成元で型付きdecimal_v2文字列へ変換し、Python/GASでcanonical bytesおよびSHA-256一致を確認する。原文・market dataの真正性と署名権限は別途検証する。
 - D1成功はE4相当のoff-line契約検証のみ。API費用、非公開永続保存先、issuer鍵、D2実運用は未承認。既存ChatGPTタスクは稼働継続、PR #130 Draft、本番レポート公開はBLOCKEDのまま。
 - 変更実装：PR #130の`scripts/reporting/canonical_v2.py`、`apps-script/MarketReportProducerProof.gs`のv2 helper、およびgoldenテスト。変更仕様書のv2追補と対応づける。
+
+## 2026-10-15 D2事前判定要件追補（Draft）
+有料API実行の前に、固定モデル版・1slot/1attempt・入力/出力token上限・USD費用上限・private immutable store・readback・データ利用権・実承認の独立証拠が必須。文書内の宣言だけを実承認と見なさず、未確認ならAPI送信／公開とも禁止する。PR #130に`d2_preflight.py`とオフラインテストを追加した。ChatGPT既存タスク稼働・本番公開停止・PR Draft未マージは不変。
