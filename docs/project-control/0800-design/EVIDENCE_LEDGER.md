@@ -157,3 +157,19 @@ PR #97 remains OPEN/Draft. No 12:00/16:00/21:00 design, main merge, production r
 Run ID: `latest-main-sync-20261014-f8ad26`. GitHub compare found main advanced 14 commits beyond `0a6c9524f0b438eeb7985446358b716aeabea22f` to `f8ad26e21e01e490d4fe4e6fe2bc380f163969de`. The changes are event history/latest/upcoming, 2026-10-14 market/supply-demand archives, dashboard, and the `2026-10-13_16-00` report record. The compare listed no workflows, renderer, report contract, or publication-gate changes. `git merge-tree --write-tree HEAD origin/main` reported no conflicts; merge commit `ca73c24` integrates main into the PR branch (not main into production). Existing `NOT_READY` behavior and snapshot-to-report separation remain.
 
 Post-sync local regression: Python 261/261 PASS; independent publication-path Node regression PASS; `node --check scripts/render_morning_png.js` PASS; `git diff --check` PASS. The PR branch still needs a push and GitHub post-push verification. PR #97 remains OPEN/Draft/unmerged; no main write, production publication, or Drive write was performed.
+
+## 2026-10-14 — independent market data / canonical dashboard projection repair
+
+Run ID: `dashboard-projection-canonical-copy-20261014`. Latest-main recovery CI first reported that `data/dashboard.json.currentReportKey` used the display-space form instead of the canonical key, and then—after correcting the key locally—that `dashboard.latestReport` was not the complete canonical latest report. Inspection traced the mutation path to `scripts/build_market_json.py::attach_market_data`: it added independent `marketData` inside both `latestReport` and `reports[0]`, while the fail-closed contract in `scripts/verify_publication_consistency.py` correctly requires an exact canonical report copy. The independent snapshot remains in the dashboard envelope (`marketData`) and in `data/market/latest.json`; no snapshot was linked to an unrelated body.
+
+Repair: stopped injecting the independent snapshot into report objects, added a regression test for deep-copy immutability and envelope-only placement, and regenerated only the local dashboard projection from the already-canonical `data/latest-report.json` (including canonical report key and exact report copies). No gate or validator was weakened.
+
+| Claim | Evidence | Level / result | Limit |
+|---|---|---|---|
+| Independent market-data addition preserves canonical dashboard report | `tests/test_build_market_json.py::test_market_data_stays_in_dashboard_envelope` | E1 / PASS | Unit-level builder test |
+| Latest dashboard equals canonical report | `scripts/verify_publication_consistency.py` | E2 / PASS | Local repository data only |
+| Report history parity | `scripts/validate_report_index.py` | E2 / PASS, 164 reports | Does not prove external dashboard readback |
+| Regression suite | `python -m unittest discover -s tests -q` | E1–E3 / PASS, 262 tests | Local runtime only |
+| Reconciliation and publication-path regressions | `scripts/test_reconcile_latest_report_market_data.py`; `node scripts/test_independent_publication.js`; renderer syntax check; `git diff --check` | E1–E3 / PASS | External services not called |
+
+The previously built 08:00 summary PNG and comparison artifacts were preserved; no other time slot was redesigned. Visual acceptance remains PENDING and formal generation remains NOT_READY because no verified report identity/bodyHash/snapshot link exists for the historical source. Hosted checks for the repair are pending until the PR branch update is observed. No main merge, production publication, or Drive write occurred.
