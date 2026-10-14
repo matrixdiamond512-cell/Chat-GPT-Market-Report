@@ -55,3 +55,7 @@ GitHub PR #130に`scripts/reporting/d2_responses_contract.py`と`tests/test_d2_r
 
 ## 2026-10-15 D2受信バイト・証拠分離の追加確認（無通信）
 以前の`raw response SHA`記載は、パース済みdictのJSON再シリアライズSHAであり、真の受信bytesのhashと区別できていなかった。今回のD2コード修正で、`normalized_response_sha256`（オブジェクトからの正規化JSON）と`raw_response_sha256`（検証済み原本UTF-8バイト、未提供時はnull）を分離した。バイト差異・不正エンコーディング・二重key・原文不一致の停止をCIで確認する。将来のD2手動1slot試験でraw bytesを取得し、非公開の不変保存先にbyte-exactで保存・読み戻すのは別作業。原本bytesのhashはprovider真正性の証明ではなく、本番署名とE5公開を許可しない。
+
+## 2026-10-15 D2 local private evidence store試作（無課金）
+新規`scripts/reporting/d2_private_store.py`と`tests/test_d2_private_store.py`で、GitHub repo外のPOSIX専用ローカル領域へのO_EXCL不可逆書込み、owner／permissions検査、SHA-256／byte-exact独立readback、再インスタンス後の保持、改ざん・重複・危険なpathの拒否をoffline fixtureで検証する。
+**この実装はローカル開発用のproof of conceptであり、暗号化ストレージやIAM、クラウド永続private store、保持ポリシー、複数worker間の分散ロックを提供しない。** D2 real API senderを追加せず、OpenAI project・key・課金、data source rights、全数値のsemantic verification、原本の独立性と本番署名／E5は未解決。API送信もpublicationもBLOCKED。
