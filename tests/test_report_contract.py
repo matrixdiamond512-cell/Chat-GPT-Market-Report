@@ -162,8 +162,12 @@ BTCUSD：84,000ドル
     def test_actual_october_14_heading_aliases_are_recognized_by_strict_section_patterns(self):
         morning = "6．金利・為替・クロスアセットの因果関係"
         midday = "11．主要6市場の短期見通し（条件付き）"
+        evening_flow = "7．金利・為替・クロスアセット資金フロー"
+        evening_handover = "14．NY時間への引き継ぎ・リスク管理"
         self.assertRegex(morning, validate_market_reports.REQUIRED_21_SECTIONS["クロスアセット資金フロー"])
         self.assertRegex(midday, validate_market_reports.REQUIRED_21_SECTIONS["6市場の見通し"])
+        self.assertRegex(evening_flow, validate_market_reports.REQUIRED_21_SECTIONS["クロスアセット資金フロー"])
+        self.assertRegex(evening_handover, validate_market_reports.REQUIRED_21_SECTIONS["引き継ぎ"])
 
 if __name__ == "__main__":
     unittest.main()
