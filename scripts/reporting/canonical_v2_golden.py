@@ -53,14 +53,13 @@ def evidence():
     assert legacy_id == "snapshot-" + digest(snapshot.identity_payload())
     wrapped_context = tagged_v2(context.to_dict())
     wrapped_snapshot = tagged_v2(snapshot.to_dict())
-    typed_snapshot_identity = deepcopy(wrapped_snapshot)
-    del typed_snapshot_identity["snapshot_id"]
     proof = {
         "canonicalization_version": VERSION,
         "context": wrapped_context,
         "context_digest_v2": sha256_v2(wrapped_context),
         "snapshot": wrapped_snapshot,
-        "snapshot_digest_v2": sha256_v2(typed_snapshot_identity),
+        "snapshot_digest_v2": sha256_v2(wrapped_snapshot),
+        "legacy_snapshot_id": legacy_id,
     }
     return proof, legacy_id, snapshot.snapshot_id
 
