@@ -30,3 +30,8 @@
 
 ## 2026-10-15 D2 Responses API offline契約（Draft）
 `scripts/reporting/d2_responses_contract.py`は一切のHTTP、API SDK、秘密鍵、publisher実装を含まない純粋な構築／検査モジュール。`model=gpt-5.4-mini-2026-03-17`、strict `text.format.json_schema`、`tools=[]`、`tool_choice=none`、`store=false`、max_output_tokens上限4000。模擬レスポンスの`status=completed`、`id`、`model`、`usage`、assistant output_text JSONを検査し、refusal/途中終了/多重tool call/非一致観測値/重複JSON keyを拒否。`tests/test_d2_responses_contract.py`8件をCIに追加。実市場の全数値と意味内容の検証は別ゲートで未実装。
+
+## 2026-10-15 D2 raw bytes／normalized JSON分離仕様（Draft）
+- `CapturedResponse.raw_response_sha256`は元の応答UTF-8バイト列が明示提供され、重複JSON key・不正UTF-8・非有限値を拒否したうえでパース済み`raw`と再正規化bytes一致を検査したときだけセットし、それ以外は`None`。
+- `CapturedResponse.normalized_response_sha256`はdictの確定的JSONシリアライズから求める別ハッシュ。本文の`body_sha256`も独立。型上・意味上の区別を残し、旧snapshot IDやv2 canonical証拠を変更しない。
+- `tests/test_d2_responses_contract.py`にbytesの空白・整形差、原本とパース値の食い違い、重複キー、不正UTF-8、非bytes拒否を追加。依然としてSDK・ネットワーク・本番書込はない。
