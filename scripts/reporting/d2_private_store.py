@@ -179,6 +179,45 @@ class LocalPrivateEvidenceStore:
         return data
 
 
+    def read_for_diagnostics(self, object_id: str, *, max_bytes: int = 16 * 1024 * 1024) -> bytes | None:
+        """Read local candidate evidence WITHOUT a trusted receipt.
+
+        Intended only for offline reconciliation. The returned bytes are
+        UNTRUSTED: recomputing a hash of them cannot attest original content,
+        author, integrity, provider authenticity or publication eligibility.
+        Missing object => None; permission, symlink, or path anomaly => error.
+        """
+        run, attempt = _object_parts(object_id)
+        if type(max_bytes) is not int or not 1 <= max_bytes <= 16 * 1024 * 1024:
+            _reject("DIAGNOSTIC_SIZE_LIMIT_INVALID")
+        with self._open_root() as root_fd:
+            try:
+                os.stat(run, dir_fd=root_fd, follow_symlinks=False)
+            except FileNotFoundError:
+                return None
+            except OSError as exc:
+                raise PrivateEvidenceError("DIAGNOSTIC_RUN_STAT_FAILED") from exc
+            with self._run_directory(root_fd, run, create=False) as run_fd:
+                try:
+                    fd = os.open(attempt + ".json", os.O_RDONLY | os.O_NOFOLLOW,
+                                 dir_fd=run_fd)
+                except FileNotFoundError:
+                    return None
+                except OSError as exc:
+                    raise PrivateEvidenceError("DIAGNOSTIC_OBJECT_UNSAFE") from exc
+                try:
+                    _private_file(fd)
+                    if os.fstat(fd).st_size > max_bytes:
+                        _reject("DIAGNOSTIC_BYTES_EXCEED_LIMIT")
+                    with os.fdopen(fd, "rb", closefd=False) as stream:
+                        result = stream.read(max_bytes + 1)
+                finally:
+                    os.close(fd)
+        if len(result) > max_bytes:
+            _reject("DIAGNOSTIC_BYTES_EXCEED_LIMIT")
+        return result
+
+
 class _FD:
     """Close file descriptors even if a check or read fails."""
 
