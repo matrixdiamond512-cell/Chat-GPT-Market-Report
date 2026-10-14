@@ -75,7 +75,7 @@ function marketReportProofCanonicalV2_(value) {
     var keys = Object.keys(value).sort();
     if (keys.length === 1 && keys[0] === 'decimal_v2') {
       if (typeof value.decimal_v2 !== 'string' ||
-          !/^-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:e[+-]?[0-9]+)?$/.test(value.decimal_v2)) {
+          !/^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:e[+-]?[0-9]+)?$/.test(value.decimal_v2)) {
         marketReportProofFail_('v2 tagged decimal syntax invalid');
       }
     }
