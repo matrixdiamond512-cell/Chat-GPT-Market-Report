@@ -149,3 +149,15 @@ E4＝合成データ・クロス言語golden・関連CIが最新HEADで成功。
 6. 追加処理は現在のD2 **offline review** 専用。正規で認証済みのcount取得、実API請求額台帳の独立readback、暗号化Private Store、承認と上限制御、実provider response真正性は未接続。既存ChatGPTタスクの設定、publisher、過去分は変更しない。PR #130 Draft・main未マージ・E5未達・本番公開BLOCKEDを継続。
 
 **改訂履歴**：2026-10-15 v1.17（Draft）／正式仕様書の本章だけに仕様追加。旧変更仕様書はアーカイブ・更新停止のまま維持。
+
+### L. D2入力計測→月間予算→合成生成の連結ゲート（v1.18／2026-10-15・Draft）
+**実装対象**：`scripts/reporting/d2_offline_prepared_run.py` に `run_prepared_offline` を設け、独立していた D2 入力token-count契約・月間予算検査・Responses合成生成パイプラインを**一つのオフライン呼出し経路**に接続する。現段階では外部ネットワーク接続、OpenAI API認証、課金、実生成、本番Writer権限は存在しない。
+**処理順序（前提失敗は生成関数呼出し0）**：
+1. `ReportContext/MarketDataSnapshot` を検証し、固定model・instructions・input・JSON schemaを含む現行Responses要求を生成する。別の最新データを暗黙に取得しない。
+2. その要求と完全なSHA対応を持つ `InputCountPlan` を構築し、外部認証ではない**合成原本bytes**のinput count結果を検査。boolean、余計なフィールド、重複JSON key、限度超過、旧countと要求改変を拒否する。
+3. `MonthlySpendInputs.report_id` と生成対象の `report_id` を完全一致させてから、月額の実績模擬値・未決済予約・次回最大モデル費用を三つの上限と照合する。ProjectとOrganizationのhard capがどちらも有効でない値はBLOCKED。月額請求の暦境界とAPI利用料金の最新性は別途一次認証が必要。
+4. 前提が揃った場合にのみ、証拠をPOSIX非公開領域の `shadow/<run>/<attempt>-inputcount`（count原文bytes）と `shadow/<run>/<attempt>-preparation`（原文SHA、要求SHA、model単回cap、count値、予算比較、報告ID、snapshot ID、実行ID、**未認証fixture宣言**）へ`O_EXCL`で永続化・byte-exactに独立読戻し。重複オブジェクトや改ざんは停止。
+5. その後に限り既存 `exercise_d2_offline` へ進む。既存のslot claim、timeout UNKNOWN・盲目的再実行禁止、raw response保全、数値claim監査、モデル費用上限、結果receipt・読戻しを維持する。生成後に preparation のcreate-request SHAと実行claimの SHA、入力・出力token cap、model費用capを照合する。不一致を成功に修正しない。
+**受入テスト**：`tests/test_d2_offline_prepared_run.py`の15件で、正常な合成fixture一連確認、事前のcount/予算/ID/limit異常による呼出し0、別promptによる要求SHA差、二重起動とtimeout、生成結果不正・証拠独立readbackを検査する。従来のD1/D2各moduleテストもCI回帰させる。
+**証明できないこと**：合成入力token-countと月次金額は自己申告に過ぎず、OpenAIが返した本当の結果でも、認証済みの請求実績でもない。ローカルハッシュ・パイプライン合格はprovider真正性／料金hard cap実適用／複数ホスト予約原子性／production issuer署名／Google Docs・GitHub・Pages公開の証明ではない。すべて`api_send_allowed=false`、`publication_allowed=false`。E5・実API・本番公開は引き続きBLOCKED。アーカイブした変更仕様書を再開しない。
+**改訂履歴**：2026-10-15 v1.18（Draft）。技術仕様の唯一の正本は本書。
