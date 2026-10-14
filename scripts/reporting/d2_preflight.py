@@ -35,6 +35,13 @@ REQUIRED_EVIDENCE = (
     "organization_hard_spend_limit_enabled",
     "authoritative_month_to_date_usage",
     "pending_spend_reservation_consistency",
+    # Independent signer provenance is NOT established by the local Ed25519
+    # mathematical test. These remain external, unverified blockers.
+    "count_signer_independent_trust_root",
+    "billing_signer_independent_trust_root",
+    "signer_key_rotation_and_revocation",
+    "signed_count_and_billing_raw_handoff",
+    "frozen_preparation_digest_independent_binding",
 )
 MODEL_PATTERN = re.compile(r"^gpt-[A-Za-z0-9.]+(?:-[A-Za-z0-9.]+)*-\d{4}-\d{2}-\d{2}$")
 EVIDENCE_PATTERN = re.compile(r"^[A-Za-z0-9_.:/-]{8,256}$")
