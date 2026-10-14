@@ -85,3 +85,6 @@ CI：`python -m unittest discover -s tests -p 'test_d2_offline_pipeline.py' -v`�
 
 ## 2026-10-15 D2オフライン事前審査→生成統合のSOP（v1.18）
 CIで`python -m unittest discover -s tests -p 'test_d2_offline_prepared_run.py' -v` を実行する。前段count不正、月額予算超過、hard cap無効、report_id不一致、run ID重複が生じたら、**生成用fixtureを呼び出さない**ことを確認する。合成count原本とpreparation判断記録をworktree外のローカルprivate stagingに保存・独立読戻しし、実行claimの要求SHA/予算capと突合する。timeout/中断/重複時は記録を保持し無条件再実行しない。本統合は実API countの認証、外部請求額の真実性、クラウドIAM、月額予算の原子的予約を保証しないため、合成PASSをproduction API送信許可に使用しない。既存定時ChatGPTタスク、GAS、本番公開、PR #130 Draftは変更しない。仕様の詳細を別の変更仕様書へ増やさない。
+
+## 2026-10-15 D2.2準備/生成チェーンの読み取り専用復旧SOP（v1.19）
+GitHub ActionsのD1 offline worker CIで`python -m unittest discover -s tests -p 'test_d2_prepared_reconciliation.py' -v`（20件）を実行する。中断後は元ファイルを移動・上書き・削除せず、`reconcile_prepared_offline`で同一run/attemptの`-inputcount`、`-preparation`、`slot claim`、`-raw`、`-result`の存在・許可境界・SHA/費用再計算を確認する。`UNRESOLVED_NO_PREPARATION`は未実行の証明にならない。`INTERRUPTED_NEEDS_MANUAL_REVIEW`は手動provider照合待ち。`INCONSISTENT_UNTRUSTED`は隔離・停止。`OFFLINE_BLOCKED_RECORDED`も再実行しない。`OFFLINE_CHAIN_CONSISTENT_UNATTESTED`であっても送信・本番保存/公開を禁止。合成月額入力値の外部真正性・実API通信・本番秘密鍵・cloud証拠保存・独立承認は別工程。変更仕様書を増やさない。
