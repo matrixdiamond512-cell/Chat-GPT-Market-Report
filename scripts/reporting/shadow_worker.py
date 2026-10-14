@@ -62,10 +62,17 @@ def freeze_shadow_input(context: ReportContext, snapshot: MarketDataSnapshot):
             raise ShadowBlocked("MARKET_UNVERIFIED_OR_STALE")
         if market.priceValue is None or market.asOf is None or aware(market.asOf) > cutoff:
             raise ShadowBlocked("OBSERVATION_AFTER_CUTOFF_OR_MISSING")
-        allowed = {src["id"] for src in cfg["sources"] if not src.get("referenceOnly")
-                   and src.get("marketType") == market.marketType}
+        # A matching source ID alone is insufficient: the URL must be one of
+        # the independently configured endpoints for the same market type.
+        allowed = set()
+        for src in cfg["sources"]:
+            if src.get("referenceOnly") or src.get("marketType") != market.marketType:
+                continue
+            for address in (src.get("url"), src.get("sourceUrl")):
+                if isinstance(address, str) and address.startswith("https://"):
+                    allowed.add((src["id"], address))
         if not market.source or not all(
-            src.get("id") in allowed and str(src.get("url") or "").startswith("https://")
+            (src.get("id"), src.get("url")) in allowed
             for src in market.source
         ):
             raise ShadowBlocked("OBSERVATION_SOURCE_UNVERIFIED")
