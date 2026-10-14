@@ -142,6 +142,16 @@ function verifyPair(rawCount,rawBilling,trustRoots,expected,nowMs){
   if(!trustRoots||!keysExactly(trustRoots,['input_count','monthly_billing'])||
       trustRoots.input_count.key_id===trustRoots.monthly_billing.key_id)
     fail('DISTINCT_ROLE_TRUST_ROOTS_REQUIRED');
+  // Distinct aliases/key IDs do not imply distinct cryptographic keys.
+  // Fingerprints are re-derived from the actual public keys by verifyOne.
+  if(typeof trustRoots.input_count.fingerprint_sha256!=='string' ||
+      typeof trustRoots.monthly_billing.fingerprint_sha256!=='string' ||
+      !HASH.test(trustRoots.input_count.fingerprint_sha256) ||
+      !HASH.test(trustRoots.monthly_billing.fingerprint_sha256))
+    fail('DISTINCT_ROLE_TRUST_ROOTS_REQUIRED');
+  if(trustRoots.input_count.fingerprint_sha256===
+      trustRoots.monthly_billing.fingerprint_sha256)
+    fail('SAME_PUBLIC_KEY_USED_FOR_DISTINCT_ROLES');
   if(!expected||!keysExactly(expected,['input_count','monthly_billing']))
     fail('DISTINCT_ROLE_EXPECTATIONS_REQUIRED');
   if(expected.input_count.scope!=='input_count'||
