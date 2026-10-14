@@ -91,3 +91,6 @@ GitHub ActionsのD1 offline worker CIで`python -m unittest discover -s tests -p
 
 ## 2026-10-15 月間予算証拠の全入力コミットメントSOP（v1.20）
 生成前preparationには`schema=d2-offline-preparation/v2`と`monthly_inputs_sha256`が必要。読取り専用復旧診断では再提示された月間予算のすべての内訳、両hard限度、承認月限度、対象年月・枠IDでSHA-256を再計算し、記録値と不一致なら`INCONSISTENT_UNTRUSTED`。同じ合計支出でも実績と予約の配分が異なる場合、また最小限度に関係しない上限値だけが変わった場合も停止する。旧v1のpreparationをv2として自動受入れしない。CIの`test_d2_prepared_reconciliation.py`と`test_d2_offline_prepared_run.py`で回帰確認。これは局所fixtureの同一性チェックで、暗号化・真正な請求receiptやAPI送信許可の代替ではない。独立変更仕様書は増やさない。
+
+## 2026-10-15 D2署名付き証拠の安全運用SOP（v1.21）
+CIで`node scripts/test_d2_detached_evidence.js`を実行する。試験の秘密鍵は毎回Nodeがメモリ上で生成し、固定秘密鍵・署名権限・APIキーをリポジトリやCIログへ保存しない。Pythonの固定した生成要求/計測要求/月額入力のハッシュが署名ペイロードと一致すること、他用途/他対象、改ざん、期限切れ、非正規JSON、なりすまし公開鍵、単一鍵流用を拒否することを確認する。将来の本番利用では、署名発行者の法的・技術的認証、鍵fingerprintの独立承認、発行/失効時刻・鍵ローテーション・nonce/replay台帳、取得元ログ原本・請求原本・IAM/Cloud KMSを用意するまで実行許可を付与しない。現コードはオフラインの数学的検証専用で`api_send_allowed=false`、公開不可のまま。別の変更仕様書は作成しない。
