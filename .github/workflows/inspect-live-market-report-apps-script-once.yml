@@ -21,4 +21,12 @@ jobs:
         env:
           APPS_SCRIPT_ID: ${{ secrets.APPS_SCRIPT_ID }}
           APPS_SCRIPT_OAUTH_JSON: ${{ secrets.APPS_SCRIPT_OAUTH_JSON }}
-        run: python scripts/deploy_market_report_apps_script.py
+        run: |
+          python - <<'PY'
+          import json,os
+          print(json.dumps({
+            "APPS_SCRIPT_ID_configured": bool(os.getenv("APPS_SCRIPT_ID","").strip()),
+            "APPS_SCRIPT_OAUTH_JSON_configured": bool(os.getenv("APPS_SCRIPT_OAUTH_JSON","").strip())
+          }))
+          PY
+          python scripts/deploy_market_report_apps_script.py
