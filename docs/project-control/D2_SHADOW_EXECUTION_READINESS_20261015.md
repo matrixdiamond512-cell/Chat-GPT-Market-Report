@@ -33,3 +33,10 @@ D2の予算承認では、model ID、output token上限、入力size上限、試
 
 ## D2判定
 未承認＝BLOCKED。すべて埋まった段階でユーザーによる費用・保存・API試行承認を取得する。その後もD2は **手動1slotだけ** 実行し、次枠への自動スケジュール移行、Apps Script本番公開、既存ChatGPTタスク停止、mainマージは別途判断する。
+
+## 2026-10-15 D2事前判定コード追補（無課金・実行不可）
+PR #130に`scripts/reporting/d2_preflight.py`（標準ライブラリのみ・外部ネットワークなし）と`tests/test_d2_preflight.py`を追加。モデル版の固定、対象slotの週日・日付、immutable context/snapshot入力契約、Responses strict schema指定、外部toolsゼロ、1run×1attempt、入力/出力token cap、USDのDecimal料金計算、run/month cap、private immutable byte-exact readback、保持日数、timeout UNKNOWN停止、外部認証記録の存在を検査する。
+
+**全条件に形式上合格しても`api_send_allowed=false`／`publication_allowed=false`。** ローカルのJSON参照文字列を費用やアクセス権限の実承認とは見なさない。実際のOpenAI project、利用モデルID、料金、Secrets、IAM、保持期間、外部データ利用権、実API送信の明示承認を独立に確認するまではBLOCKED。テストは合成例に基づくため、モデルsnapshot文字列や料金を実契約の確定値と見なさない。
+
+無課金D2 preflight検査：`python -m unittest discover -s tests -p 'test_d2_preflight.py' -v`、`python -m scripts.reporting.d2_preflight`。同PRのD1 offline CIに追加し、実行証跡はGitHub Actionsに残す。本番publisherを起動させる構成・資格情報・公開書込を含めない。
