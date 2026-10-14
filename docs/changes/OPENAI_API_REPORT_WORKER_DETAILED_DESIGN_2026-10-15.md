@@ -220,3 +220,6 @@ APIレスポンスをdictから`json_bytes(raw)`で再シリアライズしたdi
 ## 2026-10-15 D2 numeric-claim audit接続（offline、Draft）
 D2 Responses v2のstrict JSON schemaに`numeric_claims`を追加。本文中の数値出現offsetを要求し、producer入力のReportContextとMarketDataSnapshotから構築した固定`verified_numeric_source_bundle`（値・出典ID/URL・asOf・cutoff・単位）に結び付けて検証。自称cite/source・無根拠の価格予想は信用せず、欠落・重複・不一致・誤％・誤時刻・未収録フィールドで停止する。登録済みsource IDとソースURLの組み合わせの両方を検査する。旧v1 snapshot IDは維持。
 本件は**lexical coverage v1**であり、モデルが近傍で誤った意味付けをする問題、ニュース統計やPER/EPSなどsnapshot外情報の独立source取得、出典ライセンス、署名権限分離や原文⇄Docs真正性は未解決。従来どおりAPI未送信・未公開、D2 real trialは外部承認が必要。
+
+## 2026-10-15 単一正本への統合
+本詳細設計は検証の経緯を残す参考資料であり、独立した有効仕様ではない。現行契約は `docs/system/specification.md` の「2026-10-15 統合仕様 v1.13」が優先する。今後、D1/D2の仕様追加・変更を本詳細設計に単独追記せず、正式仕様書だけを規範の正本として改訂する。
