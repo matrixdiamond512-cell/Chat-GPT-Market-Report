@@ -36,6 +36,8 @@ on:
       - 'tests/test_d3_latest_input_probe.py'
       - 'scripts/reporting/d3_release_evidence.py'
       - 'tests/test_d3_release_evidence.py'
+      - 'scripts/reporting/d3_narrative_quality.py'
+      - 'tests/test_d3_narrative_quality.py'
       - 'data/market/latest.json'
       - 'scripts/reporting/shadow_hash_golden.py'
       - 'scripts/test_shadow_hash_golden.js'
@@ -102,6 +104,8 @@ jobs:
           python -m scripts.reporting.d3_latest_input_probe --market-json data/market/history/2026-10-14_21-00.json
       - name: Verify real report evidence and freshness requirements (no paid API)
         run: python -m unittest discover -s tests -p 'test_d3_release_evidence.py' -v
+      - name: Validate Japanese report weekday and observed direction consistency (no paid API)
+        run: python -m unittest discover -s tests -p 'test_d3_narrative_quality.py' -v
       - name: Verify versioned v2 Python canonicalization
         run: python -m unittest discover -s tests -p 'test_canonical_v2.py' -v
       - name: Verify Python and Apps Script v2 canonical bytes digests and test HMAC
