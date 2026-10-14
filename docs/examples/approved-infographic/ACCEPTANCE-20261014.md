@@ -67,7 +67,7 @@ Read-only comparison of the ChatGPT report message to the current Google Docs bo
 
 The ChatGPT task's final-state text says GitHub body registration did not occur. `reports/2026-10-14_16-00.json` is absent from main (404), and `data/latest-report.json` remains 2026-10-13 16:00. This is a missing canonical registration, not an observed mismatch against a 10/14 GitHub canonical body. Drive revision 1 contained only a BOM; revision 7 contains the current body. No source body hash/snapshot envelope in that production task is available to prove an identical write/render/publish transaction.
 
-Latest-main acquisition history adds a verified 16:00-labeled market snapshot generated at 16:30:22 JST (commit `68562b0`, blob `ea9bea4d96d9be7c3cb9622fd1e67fc8e10f6189`). The Google Docs readback revision was already present at 16:06:16 JST, and the history file was subsequently overwritten by a 21:13 recovery fetch. There is no receipt tying either snapshot to the ChatGPT body, so neither is treated as its source snapshot. The TEST ONLY fixture remains separate.
+Latest-main acquisition history adds a verified 16:00-labeled market snapshot generated at 16:30:22 JST (commit `68562b0`, blob `ea9bea4d96d9be7c3cb9622fd1e67fc8e10f6189`). The Google Docs readback revision was already present at 16:06:16 JST, and the history file was subsequently overwritten by a 21:13 recovery fetch. Main also records a Japanese close-reference package generated at 21:50:35 JST with `complete=false`. There is no receipt tying either later data package to the ChatGPT body, so neither is treated as its source snapshot. The TEST ONLY fixture remains separate.
 
 Detailed evidence: [`E2E-20261014-1600-DIAGNOSIS.md`](../../project-control/0800-design/E2E-20261014-1600-DIAGNOSIS.md).
 
