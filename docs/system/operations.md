@@ -97,3 +97,6 @@ CIで`node scripts/test_d2_detached_evidence.js`を実行する。試験の秘�
 
 ## 2026-10-15 D2準備記録と署名原文のクロスチェックSOP（v1.22）
 CIで`node scripts/test_d2_detached_evidence.js`および`node scripts/test_d2_offline_proof_handoff.js`を実行し、前者32件・後者18件の正常/異常試験を確認する。試験用鍵はメモリ内で一時生成し、実鍵・本番信頼rootをリポジトリへ保存しない。D2 preparation v2、count raw、月間予算の全入力JSONをそれぞれbyte-exactに照合し、2つの役割で別公開鍵fingerprintを要求する。異なるIDだが同じ鍵、原文変更、古いproof、ID・snapshot・request SHA変更、月間入力SHA変更、署名の取り違え、署名失効は停止。**ローカルの数学的検証は実課金・Provider発行者の認証・公開許可と切り離す**。実本番を許可するには、信頼rootの独立設定、署名主体認証、鍵失効と照合ログ、請求実績と費用上限の第三者確認が先決。旧変更仕様書は増やさない。
+
+## 2026-10-15 D2計測原文の意味照合SOP（v1.23）
+`node scripts/test_d2_offline_proof_handoff.js`をCIで実行する。従来の18試験に5件追加し、合成原文とEd25519署名がSHA・IDに一致していても、計測原文の`input_tokens`がpreparationの`counted_input_tokens`と違う場合を拒否する。重複`input_tokens`・誤ったobject種別・凍結preparation側の数値差も停止する。JSONの空白やフィールド順が違うだけの場合は構造と実数値が一致する限りオフライン検証を継続しても、`api_send_allowed=false`、`retry_allowed=false`、`publication_allowed=false`のままとする。必ずD1 offline CI全系成功を確認し、暗号鍵・APIキーは試験へ付与しない。旧変更仕様書は更新しない。実API・請求・出典の認証と費用承認、本番公開は別ゲートでBLOCKEDを維持する。
