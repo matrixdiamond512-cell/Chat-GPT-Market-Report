@@ -121,3 +121,15 @@ E4＝合成データ・クロス言語golden・関連CIが最新HEADで成功。
 - `tests/test_d2_reconciliation.py`の**15件**でクラッシュ窓（claim直後／raw保存後）、timeout、正常fixtureの反復読取、malformed・重複JSONキー、claim/raw/結果改ざん、孤立原本、symlink、サイズ制限、読み取り専用を検証。GitHub ActionsのD1 Offline Market Report Shadow Workerで実行し、従来の失敗時停止ルールを緩和しない。
 - **限界**：POSIX一台の試作で、ネットワーク隔離／IAM／暗号化／遠隔不変証拠／認証済み外部タイムスタンプ／複数マシン跨り排他／失敗時の正式再送承認手続きは未整備。完全停止したプロセスが原本を一度も送信しなかったかをローカル証拠だけで証明できない。実API trial・production署名・E5公開は引き続きBLOCKED。
 - **改訂記録**：2026-10-15 v1.15（Draft）／旧変更仕様書を更新せず、本正式仕様書1本へ統合。
+
+### J. D2送信前の計画費用境界とpreflight正規化（v1.16／2026-10-15、Draft）
+**発見した実装上の差異**：従前の `d2_offline_pipeline.py` では模擬応答が返った後にだけ費用を比較していたため、将来のAPI「送信前の支出上限」としては不十分だった。また従来 `d2_preflight.py` の任意モデル／任意の安価な単価申告／旧generic response契約は、実際の固定 `d2_responses_contract.py`（Responses v2）と一致していなかった。
+**修正契約**：
+1. 実行計画は `max_input_tokens`（正整数、上限12,000）、`max_output_tokens`（正整数、上限4,000）、`max_model_cost_usd`（正の10進数文字列）を必須の検査対象とする。計画時に固定モデルの参照単価から `planned_model_cost_usd = (max_input_tokens×入力単価＋max_output_tokens×出力単価)/1,000,000` をDecimalで算出し、費用上限超過または不正な型・値なら**slot claim作成およびfixture responder呼出し前に停止**する。
+2. 合格した計画の上限値、上限費用、計画額は書換不可slot claimと結果receiptの双方に収録し、復旧診断でも一致と計画額再計算を検査する。応答で申告された実入力・出力token数が個別capを超過する場合、事後結果は`OFFLINE_BLOCKED`となり公開可能にはならない。
+3. `d2_preflight.py`が受け付ける `model_snapshot` は `d2_responses_contract.MODEL` と同一、`response_contract` は `shadow-responses-json/v2` と同一に限定する。従来の `strict-json-schema/v1` 記載は旧仕様とし、採用しない。入力・出力単価は `d2_responses_contract` の固定オフライン参照料金と一致を要求し、安い値の自己申告を拒否する。
+4. 固定のオフライン参考単価は当該2026-10-15設計時点の `gpt-5.4-mini-2026-03-17` 入力USD0.75/百万token・出力USD4.50/百万token。単価は実課金直前に公式価格を再取得して検証すること。別モデルへの切替は独立した正式仕様変更・費用再見積・回帰が必要。
+5. **限界**：事前計画上の12,000入力tokenは実APIに投入される入力の実測上限ではない。OpenAI側の実token算出、予想外の追加請求、課金の継続状況、月間累積費用を、このoffline見積だけで制限・保証できない。実API試験前に独立token計測／モデル実在・正式料金確認／課金上限／手動承認／月間実測台帳／ネットワーク権限分離が必要。本モジュールは送信機能なし、publishable=false、D2 API送信・E5公開は引き続きBLOCKED。
+6. 回帰：`tests/test_d2_offline_pipeline.py`で計画超過時の呼出し0・claim0、料金record整合、token cap失敗を検査。`tests/test_d2_preflight.py`で偽の単価、別モデル、旧schemaを拒否。`tests/test_d2_reconciliation.py`でclaim/resultの見積改ざんとtoken cap超過の再評価を検査。CIは新HEADで再実行し、旧run成功を流用しない。
+
+**改訂記録**：2026-10-15 v1.16（Draft）／統合済み正式仕様書のみに契約追加。変更仕様書は更新しない。
