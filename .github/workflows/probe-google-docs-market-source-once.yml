@@ -39,17 +39,17 @@ jobs:
           session=AuthorizedSession(creds)
           document_id="1lWs4U-tg4T-8ZEN86JU6OxcUqx9uAJkJRZv_b952ojs"
           try:
-              meta=session.get("https://www.googleapis.com/drive/v3/files/"+document_id,
-                  params={"fields":"id,name,mimeType,trashed"},timeout=20)
-              if meta.status_code!=200:
-                  raise SystemExit("BLOCKED: SOURCE_DOC_NOT_ACCESSIBLE_HTTP_"+str(meta.status_code))
-              result=meta.json()
-              if result.get("mimeType")!="application/vnd.google-apps.document":
-                  raise SystemExit("BLOCKED: NOT_NATIVE_GOOGLE_DOC")
+              # Docs endpoint alone is sufficient; Drive.files.get may be 403
+              # when Drive API itself is disabled even for a shared document.
               doc=session.get("https://docs.googleapis.com/v1/documents/"+document_id,
                   params={"fields":"documentId,title,body(content)"},timeout=30)
               if doc.status_code!=200:
-                  raise SystemExit("BLOCKED: GOOGLE_DOCS_API_HTTP_"+str(doc.status_code))
+                  try:
+                      err=doc.json().get("error",{})
+                      info={"status":err.get("status",""),"reasons":[x.get("reason","") for x in err.get("errors",[])]}
+                  except ValueError:
+                      info={"status":"NON_JSON_ERROR"}
+                  raise SystemExit("BLOCKED: GOOGLE_DOCS_API_HTTP_"+str(doc.status_code)+" "+json.dumps(info))
               data=doc.json()
               elements=data.get("body",{}).get("content",[])
               chars=sum(len(e.get("textRun",{}).get("content","")) for p in elements
