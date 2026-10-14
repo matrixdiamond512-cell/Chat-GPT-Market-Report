@@ -56,3 +56,25 @@ The approved-layout DRAFT render also passed with a current Git source at commit
 2. Exercise event ingestion in a fresh report with event data bound to verified primary sources; the current pipeline test intentionally has no real event entries.
 3. Recover original pre-slot source snapshots and immutable report identity evidence from source archives if available. Keep unrecoverable slots explicitly blocked.
 4. Treat Drive/Portal readback and publication manifest as separate external work after explicit authorization; do not publish this PR branch.
+
+## 2026-10-14 continuation — 16:00 E2E body identity and 08:00-only design gate
+
+### Production 16:00 body mismatch
+
+Read-only comparison of the ChatGPT report message to the current Google Docs body confirms they are not the same text. After removing Markdown presentation, whitespace, and citation markers, the normalized lengths are 5,174 characters for ChatGPT and 4,219 for Docs; the first substantive differences appear at the preamble and in the first section. ChatGPT's opening sentence under `1．総合判断` (“今日の最大の特徴は、日経平均の後場急反転です。”) is absent from the Doc, which begins directly with the market-price paragraph. The exact internal writer call is not exposed, so the proven boundary is the ChatGPT-to-Docs handoff, not a specific script.
+
+The ChatGPT task's final-state text says GitHub body registration did not occur. `reports/2026-10-14_16-00.json` is absent from main (404), and `data/latest-report.json` remains 2026-10-13 16:00. This is a missing canonical registration, not an observed mismatch against a 10/14 GitHub canonical body. Drive revision 1 contained only a BOM; revision 7 contains the current body. No source body hash/snapshot envelope in that production task is available to prove an identical write/render/publish transaction.
+
+Detailed evidence: [`E2E-20261014-1600-DIAGNOSIS.md`](../../project-control/0800-design/E2E-20261014-1600-DIAGNOSIS.md).
+
+### Fresh TEST ONLY report identity check
+
+The isolated new-report TEST ONLY input and local approved-layout preview carry the same `report_id`, revision, `snapshot_id`, and `bodyHash`. The render contract is `PASS` for a `DEBUG_PREVIEW`, with `publish_allowed=false`; no publication manifest was created. This proves local report-to-render identity only. It does not prove Google Docs readback, real publication manifest creation, GitHub registration, or production generation. The test-only source remains outside canonical report history.
+
+### 08:00 fixed reference fit
+
+The latest instruction restricts design work to 08:00 until visual approval. The current 08:00 output remains a rejected 1536×2539 baseline against the 1536×1024 reference. The exact reference rectangles are fixed in the layout specification. A 14px Meiryo width-aware estimate finds a minimum of 3,320 excess body characters across panels 06 (+264), 07 (+613), 08 (+638), 10 (+97), 11 (+39), 12 (+152), 13 (+719), 14 (+269), 15 (+178), and 16 (+351). A simpler optimistic area model gives a lower 2,241-character total, confirming that these are model-dependent lower-bound estimates, not exact browser clipping counts. Both omit required icon/table space, arrows, row gaps, and larger heading text. No 08:00 candidate is claimed complete because the complete current text does not fit the fixed rectangles under either optimistic model at 14px. Visual acceptance remains `PENDING`; 12:00, 16:00, and 21:00 design outputs were not changed in this continuation.
+
+Detailed geometry, method, panel count, estimates, and overlay: [`REFERENCE-FIXED-FIT-ANALYSIS-20261014.md`](../../project-control/0800-design/REFERENCE-FIXED-FIT-ANALYSIS-20261014.md), [`overflow-estimates.json`](../../../validation/0800-reference-fixed-analysis-20261014/overflow-estimates.json), [`fit-calculation.json`](../../../validation/0800-reference-fixed-analysis-20261014/fit-calculation.json), and [overlay of the rejected 08:00 baseline](../../../validation/0800-reference-fixed-analysis-20261014/reference-overlay-existing-08-rejected-baseline.png).
+
+No Drive writes, production publication, main merge, or gate weakening occurred.

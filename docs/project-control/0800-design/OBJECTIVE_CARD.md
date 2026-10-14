@@ -30,3 +30,15 @@ OPEN OUTCOMES:
 NEXT NECESSARY ACTION: ユーザーに`content-review-2026-10-13`の未検証レビューPNGを確認してもらい、見本との差や内容の並べ方について指示を受ける。正式再生成は正規snapshot/本文/specが揃った後に既存ゲートで検証する。本番接続は別承認後。
 
 既存の他作業のobjective記録は変更しない。この記録は今回の08:00変更専用。
+
+## Continuation update — 2026-10-14
+
+Latest user direction takes precedence: retain infographic generation, keep visual acceptance `PENDING`, complete only 08:00, and do not expand the design to 12:00/16:00/21:00 before 08:00 visual approval. Main merge, production publication, and Google Drive writes remain out of scope.
+
+OPEN OUTCOMES:
+- O-010 2026-10-14 16:00 production E2E identity: FIRST DIVERGENCE LOCATED at the ChatGPT-to-Google-Docs body handoff (normalized body mismatch); exact internal writer call remains UNKNOWN. GitHub main registration did not occur; no 10/14 canonical file exists. See `E2E-20261014-1600-DIAGNOSIS.md`.
+- O-011 Exact approved 1536×1024 fixed 08:00 layout: BLOCKED by a source-content/geometry fit conflict. Optimistic 14px Meiryo width-aware estimates show 3,320 minimum excess body characters across panels 06, 07, 08, 10, 11, 12, 13, 14, 15, and 16; a separate area model gives 2,241. Neither is browser-observed exact clipping. No content or layout was altered to hide overflow. See `REFERENCE-FIXED-FIT-ANALYSIS-20261014.md`.
+- O-012 New-report identity connection: local TEST ONLY report uses one report_id/revision/bodyHash/snapshot_id through spec validation and DRAFT rendering. `DEBUG_PREVIEW`, `publish_allowed=false`, publication manifest NOT_CREATED; Drive/Portal/external E2E NOT_RUN. Not a formal production generation pass.
+- O-013 Visual acceptance: PENDING. Current 08 PNG is a rejected 1536×2539 baseline; no new fixed-layout candidate is claimed. Other three slot designs remain untouched during this continuation.
+
+NEXT NECESSARY ACTION: Present the measured 08:00 content/geometry conflict for user direction on how to preserve all information inside the approved panel geometry. Until resolved, do not claim a fixed-layout candidate or propagate design to the other slots. Keep the existing stop gates and Draft/Open PR state.

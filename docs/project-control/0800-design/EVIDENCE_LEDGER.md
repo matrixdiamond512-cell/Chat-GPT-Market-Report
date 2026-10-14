@@ -100,3 +100,18 @@ Run ID: `0800-source-content-review-20261013`; direction: 利用者は保存済�
 | regression | `python -m unittest discover -s tests -q` (`TEMP/TMP=.test-tmp-0800`); `node scripts/test_independent_publication.js`; `node --check scripts/render_morning_png.js`; `git diff --check` | E1〜E3 | PASS 176/176 + publication regression PASS + syntax/diff PASS | 外部Drive/Portal/hosted CIは未確認 |
 
 差異: 10/09参考の写真調夜景は使わず、ヘッダーは簡素な濃紺。参考の画像比率はより横長。パネル表現・アイコンの種類、余白と密度は引き続き異なる。今回の16項目構成を優先したため内容見出しも異なる。候補: `docs/examples/0800-design/content-review-2026-10-13/`; PNG SHA-256 `ff76043361881e404866ca020fe804ab5ac9796ba700507f582eaf167193139d`。デザイン受け入れPENDING。正式再生成はBLOCKEDを維持。PR #97はDraftのまま。次の必要行動はこの画像に対するユーザーのデザイン確認。
+
+## 2026-10-14 continuation — E2E body divergence and 08:00 fixed-layout fit
+
+Run IDs: `e2e-body-identity-20261014-1600-audit`; `0800-fixed-layout-fit-20261014`.
+
+| Claim | Evidence | Level / result | Limit |
+|---|---|---|---|
+| ChatGPT report and current Google Docs body differ before GitHub canonical registration | Read-only ChatGPT task history + current Docs text comparison; after stripping Markdown/whitespace/citation markers the normalized texts are 5,174 and 4,219 chars. First content difference follows the preamble; the ChatGPT `今日の最大の特徴は、日経平均の後場急反転です。` sentence is absent in Docs. | E5 / FAIL identity equality | Normalized character delta is not a semantic-loss count. Internal writer call is not exposed. |
+| Docs revision sequence | Revision 1 contained a BOM only (2026-10-14 07:05:20Z); revision 7 contained the current body (07:06:16Z). | E5 / PASS observed history | Does not identify the client/transform between revisions. |
+| GitHub registration stage | ChatGPT final status says GitHub body not registered; `reports/2026-10-14_16-00.json` on main returned 404; `data/latest-report.json` remains 2026-10-13 16:00. | E5 / PASS observed fail-closed state | No canonical 10/14 body exists to hash-compare. |
+| New TEST ONLY report connects exact identity/body/snapshot through local rendering | Local `report.json` and approved-preview-v2 `source-report.json` share report_id/revision/snapshot_id/bodyHash; render contract PASS, DEBUG_PREVIEW, `publish_allowed=false`; publication manifest absent. | E2 / PASS local report-to-render; formal publication NOT_RUN | TEST ONLY; no Google Docs write/readback, real infographic manifest, GitHub canonical registration, or publication. |
+| 08:00 fixed reference fit | Approved reference and tracked `layout.json`; saved source HTML panel-body character counts with 14px Meiryo width-aware and area-equivalent estimates in `REFERENCE-FIXED-FIT-ANALYSIS-20261014.md`, `overflow-estimates.json`, and `fit-calculation.json`. | E0 / LAYOUT_CONFLICT_DETECTED | Width-aware model gives minimum excesses: 06 +264, 07 +613, 08 +638, 10 +97, 11 +39, 12 +152, 13 +719, 14 +269, 15 +178, 16 +351 (3,320 total). The separate area model gives 2,241 total. Both are optimistic model estimates, not browser-measured exact clipping; icons, row/table padding and larger lead text reduce real capacity. |
+| Visual acceptance and slot scope | Approved PNG overlay with rejected existing 08 baseline, plus saved 08 baseline dimensions 1536×2539 vs reference 1536×1024. | E4 / PENDING | Overlay documents old rejected output; no fixed-layout candidate was generated because source does not fit; no 12:00/16:00/21:00 design work was performed. |
+
+No publication, Drive write, main merge, gate weakening, source-history restoration, or other-slot design change occurred in this continuation. The first divergence is bounded to the ChatGPT-to-Docs handoff; exact internal cause remains UNKNOWN. Next action: resolve the source-content/approved-geometry fit conflict before producing an 08:00 acceptance candidate.
