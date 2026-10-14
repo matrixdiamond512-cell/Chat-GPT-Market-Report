@@ -260,10 +260,27 @@ function marketSectionTitle(report, title) {
   const dataDate = previousCloseDataDate(report);
   return dataDate ? `主要市場データ（前営業日終値：${dataDate}）` : "主要市場データ（前営業日終値）";
 }
+function marketRowsFromSectionLines(lines) {
+  const rows = [];
+  for (const raw of lines || []) {
+    const line = clean(raw);
+    if (!line || /^【.*】$/.test(line) || /^(項目|市場・指標)[｜|]/.test(line)) continue;
+    // Morning report prose uses "label value / change / rate", not a Markdown table.
+    const m = line.match(/^(.+?)\s+([+−-]?(?:約\s*)?[\d,]+(?:\.\d+)?\s*(?:円|ドル|%|％|倍|銘柄|ポイント|pt|bp)?)(?:\s*\/\s*([^\/\n（]+))?(?:\s*\/\s*([^\/\n（]+))?(.*)$/);
+    if (!m || m[1].length > 58 || !/[0-9]/.test(m[2])) continue;
+    const label = m[1].trim();
+    if (/^(?:作成基準|注|出典)/.test(label)) continue;
+    const remainder = [m[3], m[4], m[5]].filter(Boolean).join(" ").trim();
+    const percent = remainder.match(/[+−-]?\d+(?:\.\d+)?\s*[%％]/);
+    rows.push({label, value:m[2].trim(), change:(m[3] || "").trim() || "—", rate:percent ? percent[0] : "—", direction:"—"});
+  }
+  return rows;
+}
 function renderMarketTable(report, lines, sectionTitle = "") {
   const previousClose = isPreviousCloseTable(report, sectionTitle);
   const hasStructuredRows = Array.isArray(report?.marketDataTable?.rows) && report.marketDataTable.rows.length > 0;
   let rows = marketRows(report);
+  if (!rows.length) rows = marketRowsFromSectionLines(lines || []);
   if (!rows.length) rows = legacyMarketRowsFromFullText(report);
   // A structured 08:00 table is the canonical 28-row contract. Do not append
   // guesses extracted from prose, which can reintroduce current-value rows.
