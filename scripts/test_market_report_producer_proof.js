@@ -171,6 +171,7 @@ const historyProps = {
   deleteProperty: () => {},
 };
 const historyDry = {
+  WEB_REPORT_CONFIG: {targetPath: 'reports.json', prefix: 'マーケットレポート_'},
   MARKET_REPORT_HISTORY_CONFIG: {
     stateProperty: 'MARKET_REPORT_HISTORY_IMPORT_STATE',
     resultProperty: 'MARKET_REPORT_HISTORY_IMPORT_RESULT',
