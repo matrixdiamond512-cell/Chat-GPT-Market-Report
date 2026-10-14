@@ -5,7 +5,7 @@ import json
 import re
 from pathlib import Path
 
-from report_source_contract import heading, validate_saved_body
+from report_source_contract import heading, validate_key_section_bodies, validate_saved_body
 from report_identity import internal_report_key
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -103,21 +103,22 @@ def validate_sop_body(report: dict) -> None:
         (r"材料と値動きの整合性|価格の動きと材料の整合性", "材料と値動きの整合性", ("consistency",)),
         (r"(?:今日の)?主導市場|どの市場が主導", "主導市場", ("leadingMarket",)),
         (r"重要ニュース|重要ニュースと市場への伝播|昨夜のNY市場で何が起きたか", "重要ニュース", ("news",)),
-        (r"クロスアセット資金フロー", "クロスアセット資金フロー", ("crossAssetFlow",)),
+        (r"クロスアセット資金フロー|金利・為替・クロスアセットの因果関係|金利・為替・クロスアセット資金フロー", "クロスアセット資金フロー", ("crossAssetFlow",)),
         (r"需給・ポジション", "需給・ポジション", ("positioning",)),
-        (r"個別(?:市場)?見通し|6市場の(?:個別)?見通し", "個別市場見通し", ("markets",)),
+        (r"個別(?:市場)?見通し|(?:主要)?6市場の(?:個別|短期)?見通し(?:（条件付き）)?", "個別市場見通し", ("markets",)),
         (r"シナリオ", "シナリオ", ("mainScenario", "alternativeScenario")),
         (r"崩れる条件", "シナリオが崩れる条件", ("breakConditions",)),
         (r"結論|最終判断", "結論", ()),
     ]
     for pattern, label, fields in requirements:
         require_semantic_section(report, headings, pattern, label, fields)
+    validate_key_section_bodies(full_text, slot)
 
     transition_patterns = {
         "08:00": r"前回からの(?:主な)?変化|前回から市場解釈は変わったか|東京時間への引き継ぎ|本日の監視順",
         "12:00": r"08:00からの(?:主な)?変化|欧州時間への引き継ぎ|次の時間帯への引き継ぎ",
         "16:00": r"12:00からの(?:主な)?変化|NY時間への引き継ぎ|次の時間帯への引き継ぎ",
-        "21:00": r"16:00からの(?:主な)?変化|翌東京時間への引き継ぎ|NY時間への引き継ぎ|次の時間帯への引き継ぎ",
+        "21:00": r"16:00からの(?:主な)?変化|(?:翌東京時間|NY時間)への引き継ぎ(?:・リスク管理)?|次の時間帯への引き継ぎ",
     }
     if not any(re.search(transition_patterns[slot], h) for h in headings):
         if slot == "08:00" and has_structured_value(report, ("changes",)):
@@ -139,6 +140,7 @@ def validate_report(report: dict) -> None:
         # Native Docs use plain headings and may contain the market table only
         # in their original body. Validate the saved content without rewriting it.
         validate_saved_body(report)
+        validate_sop_body(report)
         return
     if report.get("time") == "08:00":
         table = report.get("marketDataTable") or {}
