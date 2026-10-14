@@ -1,6 +1,6 @@
 # 2026-10-13 four-slot original and snapshot audit
 
-Audit run: `historical-snapshot-audit-20261014-main-4a9e70f`  
+Audit run: `historical-snapshot-audit-20261014-main-4a9e70f`
 Source refs: GitHub `main` at `4a9e70f4cb3af0848259504740f53b53bb40a6b9`; PR branch before main integration `61456f7a610d04a583c98e5d2910e1c29aa62bc7`.
 
 ## Findings
