@@ -265,16 +265,13 @@ function validateMarketReportManualContract_(report, byName, errors) {
     { label: 'クロスアセット資金フロー', pattern: /^(?:クロスアセット|クロスアセット資金フロー|資金フロー|金利・為替・クロスアセットの因果関係)$/,
       minimum: 20, sentences: 1 },
     { label: '個別市場見通し', pattern: /^(?:(?:主要)?6市場の(?:(?:個別|短期))?見通し(?:（.*）)?|個別市場見通し|個別見通し)$/,
-      minimum: 180, markets: [/^(?:金|ゴールド)(?:先物)?\s*[：:][^\n]*/m, /^(?:WTI原油|原油)\s*[：:][^\n]*/m,
-        /^日経225先物[^\n：:]*\s*[：:][^\n]*/m, /^(?:USD\/JPY|ドル円)\s*[：:][^\n]*/m,
-        /^(?:EUR\/USD|ユーロドル)\s*[：:][^\n]*/m, /^(?:BTCUSD|BTC\/USD|ビットコイン)\s*[：:][^\n]*/m] }
+      minimum: 180, markets: [/^[ \t]*(?:金|ゴールド)(?:先物)?[ \t]*[：:]/m, /^[ \t]*(?:WTI原油|原油)[ \t]*[：:]/m,
+        /^[ \t]*日経225先物[^\n：:]*[ \t]*[：:]/m, /^[ \t]*(?:USD\/JPY|ドル円)[ \t]*[：:]/m,
+        /^[ \t]*(?:EUR\/USD|ユーロドル)[ \t]*[：:]/m, /^[ \t]*(?:BTCUSD|BTC\/USD|ビットコイン)[ \t]*[：:]/m] }
   ].forEach(function(rule) {
     var body = marketReportPrePublishSectionBody_(source, rule.pattern);
     if (body.length < rule.minimum || (rule.sentences && (body.match(/[。！？]/g) || []).length < rule.sentences) ||
-        (rule.markets && !rule.markets.every(function(pattern) {
-          var match = body.match(pattern);
-          return match && match[0].trim().length >= 8;
-        }))) {
+        (rule.markets && !marketReportPrePublishHasSubstantiveMarketRows_(body, rule.markets))) {
       errors.push(timeText + ' SOPセクション本文不足: ' + rule.label);
     }
   });
@@ -437,17 +434,42 @@ function marketReportPrePublishSectionBody_(source, pattern) {
     var line = String(raw || '').trim();
     var normalized = marketReportPrePublishNormalizeHeading_(line);
     var isNumberedHeading = /^(?:\d{1,2}[．.、)）]|【|[■◆◇●▶])/.test(line);
-    if (isNumberedHeading && normalized && pattern.test(normalized)) {
+    var isKnownHeading = marketReportPrePublishIsKnownSectionHeading_(normalized);
+    if (normalized && pattern.test(normalized) && (isNumberedHeading || isKnownHeading)) {
       active = true;
       return;
     }
-    if (active && isNumberedHeading) {
+    if (active && (isNumberedHeading || isKnownHeading)) {
       active = false;
       return;
     }
     if (active) body.push(line);
   });
   return body.join('\n').trim();
+}
+
+function marketReportPrePublishIsKnownSectionHeading_(line) {
+  if (!line) return false;
+  if (MARKET_REPORT_PREPUBLISH_CONFIG.commonSectionRules.some(function(rule) { return rule.pattern.test(line); })) return true;
+  return Object.keys(MARKET_REPORT_PREPUBLISH_CONFIG.slotRules).some(function(slot) {
+    var rule = MARKET_REPORT_PREPUBLISH_CONFIG.slotRules[slot];
+    return rule.changePattern.test(line) || rule.handoverPattern.test(line);
+  });
+}
+
+function marketReportPrePublishHasSubstantiveMarketRows_(body, patterns) {
+  var positions = [];
+  for (var i = 0; i < patterns.length; i++) {
+    var match = patterns[i].exec(body);
+    if (!match) return false;
+    positions.push(match.index);
+  }
+  positions.sort(function(a, b) { return a - b; });
+  for (var j = 0; j < positions.length; j++) {
+    var end = j + 1 < positions.length ? positions[j + 1] : body.length;
+    if (body.slice(positions[j], end).trim().length < 20) return false;
+  }
+  return true;
 }
 
 function testLatestMarketReportPrePublishValidation() {

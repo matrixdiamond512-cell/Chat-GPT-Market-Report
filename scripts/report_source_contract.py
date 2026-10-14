@@ -72,15 +72,26 @@ def validate_key_section_bodies(text: str) -> None:
 
     outlook = sections.get("個別市場見通し", "")
     market_patterns = (
-        r"(?:^|\n)\s*(?:金|ゴールド)(?:先物)?\s*[：:][^\n]+",
-        r"(?:^|\n)\s*(?:WTI原油|原油)\s*[：:][^\n]+",
-        r"(?:^|\n)\s*日経225先物[^\n：:]*\s*[：:][^\n]+",
-        r"(?:^|\n)\s*(?:USD/JPY|ドル円)\s*[：:][^\n]+",
-        r"(?:^|\n)\s*(?:EUR/USD|ユーロドル)\s*[：:][^\n]+",
-        r"(?:^|\n)\s*(?:BTCUSD|BTC/USD|ビットコイン)\s*[：:][^\n]+",
+        r"^[ \t]*(?:金|ゴールド)(?:先物)?[ \t]*[：:]",
+        r"^[ \t]*(?:WTI原油|原油)[ \t]*[：:]",
+        r"^[ \t]*日経225先物[^\n：:]*[ \t]*[：:]",
+        r"^[ \t]*(?:USD/JPY|ドル円)[ \t]*[：:]",
+        r"^[ \t]*(?:EUR/USD|ユーロドル)[ \t]*[：:]",
+        r"^[ \t]*(?:BTCUSD|BTC/USD|ビットコイン)[ \t]*[：:]",
     )
-    market_lines = [re.search(pattern, outlook, re.I) for pattern in market_patterns]
-    missing_markets = sum(match is None or len(match.group(0).strip()) < 8 for match in market_lines)
+    positions = []
+    missing_markets = 0
+    for pattern in market_patterns:
+        match = re.search(pattern, outlook, re.I | re.M)
+        if match is None:
+            missing_markets += 1
+        else:
+            positions.append(match.start())
+    positions.sort()
+    for index, start in enumerate(positions):
+        end = positions[index + 1] if index + 1 < len(positions) else len(outlook)
+        if len(outlook[start:end].strip()) < 20:
+            missing_markets += 1
     if len(outlook) < 180 or missing_markets:
         raise ValueError(f"incomplete saved report section: 個別市場見通し requires substantive outlooks for six markets (chars={len(outlook)}, missing={missing_markets})")
 
