@@ -69,3 +69,6 @@ D2オフラインstagingにおいて、slot claim／raw bytes／結果receiptを
 
 ## 2026-10-15 正規token計測・月間hard費用ゲート要件（v1.17）
 D2実API送信前には、固定した最終Responses要求と同一の入力（指示文・schema込み）に対するOpenAI公式input-token countの*認証済み*結果、Project/Organization両方のhard spend limitの実適用、独立した当月請求実績・予約の整合、ユーザー承認の単回・月間費用上限、直近モデル料金の再確認が必要。自己申告のJSON・認証されないraw応答・alert-only設定では送信許可しない。上限超過・不明・実行中・競合状態は必ずBLOCKEDで再送と公開を行わない。現段階のcountと月間予算は無通信fixtureの数学的照合に限りE5を保証しない。技術仕様の正本はv1.17の正式仕様書1本。
+
+## 2026-10-15 D2事前審査と生成の連結要件（v1.18）
+入力token計測・固定した最終Responses要求のハッシュ照合・レポートIDと月額予算の整合・Project/Organization hard cap判定・immutable preflight証拠保存/読戻しを、生成前に一連の処理として検査すること。いずれかが失敗した場合、生成関数呼出し0・公開0。合格後も二重起動・timeout後再送禁止・原文/請求額の独立認証不足を維持すること。現段階の合成fixtureは課金承認や本番E2Eではなく、唯一の技術上の有効仕様はv1.18の正式仕様書に置く。
