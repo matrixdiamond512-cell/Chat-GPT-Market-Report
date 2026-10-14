@@ -39,10 +39,25 @@ def probe_latest_market_input(payload: dict) -> dict:
         present = {m.instrument for m in snapshot.markets}
         if not set(REQUIRED_SIX).issubset(present):
             raise ValueError("SIX_REQUIRED_MARKETS_MISSING")
+        # Build the exact OpenAI-shaped request and count plan without
+        # contacting the provider. This proves the real archived source can
+        # pass D1+D2 request preparation, not that the model will answer.
+        from .d2_responses_contract import build_request
+        from .d2_token_count_contract import build_count_plan
+        from .shadow_worker import json_bytes, sha256_bytes
+        request = build_request(
+            context, snapshot,
+            instructions="Only use the independently verified frozen market data. "
+                         "Do not invent prices, timing, sources or events.",
+        )
+        plan = build_count_plan(request)
         output["status"] = "INPUT_READY_FOR_SAVED_SLOT_ONLY"
         output["reason"] = None
         output["market_count"] = len(snapshot.markets)
         output["frozen_snapshot_id"] = snapshot.snapshot_id
+        output["offline_request_sha256"] = sha256_bytes(json_bytes(request))
+        output["planned_count_request_sha256"] = plan.count_request_sha256
+        output["offline_model"] = request["model"]
     except (ValueError, KeyError, TypeError, AttributeError) as exc:
         output["reason"] = str(exc)
     return output
