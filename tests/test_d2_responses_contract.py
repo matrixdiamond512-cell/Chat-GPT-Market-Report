@@ -92,7 +92,8 @@ class TestD2Responses(unittest.TestCase):
                          b.normalized_response_sha256)
         self.assertFalse(a.publishable)
         for payload, reason in (
-            (b"\\xff", "RAW_RESPONSE_BYTES_INVALID"),
+            (bytes([0xff]), "RAW_RESPONSE_BYTES_INVALID"),
+            (b'{"x":NaN}', "RAW_RESPONSE_BYTES_INVALID"),
             (b'{"id":"x","id":"y"}', "RAW_RESPONSE_BYTES_INVALID"),
             (json.dumps(dict(self.response, id="resp_changed12345")).encode(),
              "RAW_RESPONSE_OBJECT_MISMATCH"),
