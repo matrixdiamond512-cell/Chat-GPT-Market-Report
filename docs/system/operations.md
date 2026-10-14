@@ -66,3 +66,6 @@ PR #130の`python -m unittest discover -s tests -p 'test_d2_preflight.py' -v`と
 
 ## 2026-10-15 文書一本化後の運用手順
 技術仕様の正本は `docs/system/specification.md` とGoogle Docs正式仕様書の1組のみ。旧変更仕様書はアーカイブ・更新停止とし、今後別の変更仕様書を作成して仕様を二重管理しない。仕様変更時は正本の関連章・改訂履歴を更新してから、要件定義書（要求）と本マニュアル（実施・検証手順）に必要な差分のみ反映する。実装詳細ノートは参考・証拠記録に限る。改訂はGitHub blob SHAとGoogle Docs revisionを確認し、readbackまで終えて初めて更新済みと報告する。現行PR #130 Draft・未マージ、本番公開停止は変えない。
+
+## 2026-10-15 D2オフライン通し試験の運用（v1.14）
+CI：`python -m unittest discover -s tests -p 'test_d2_offline_pipeline.py' -v`。新規のテスト用一時POSIX非公開領域と合成応答だけを使う。固定slot claimが作成された後の失敗・timeout・invalidは「UNKNOWNまたはBLOCKED」で保存し、claimを勝手に削除しない。再実行前に独立のreconciliationと承認を要する。応答の原文保存・読戻しと数値照合・模擬費用の判定を分けてログに残す。Callableは任意の外部通信を技術的には実行できるため、CIの実行権限・通信遮断・秘密情報不付与を維持し、実API clientを渡さない。原文/private証拠を公開repoやCI artifactへアップロードしない。これは実API送信・デプロイ・公開手順ではない。正本は正式仕様書v1.14。
