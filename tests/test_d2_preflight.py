@@ -16,7 +16,7 @@ def candidate():
         "eligibility": "SHADOW_NOT_ELIGIBLE",
         "dry_run_only": True, "allow_publication": False,
         "report_id": "2026-10-15_16-00",
-        "model_snapshot": "gpt-5.4-mini-2026-10-01",
+        "model_snapshot": "gpt-5.4-mini-2026-03-17",
         "external_tools": [], "web_search_calls": 0,
         "data_contract": "immutable-context-snapshot/v1",
         "response_contract": "strict-json-schema/v1",
@@ -27,7 +27,7 @@ def candidate():
             "max_run_usd": "0.05", "max_month_usd": "1.00",
         },
         "price_quote": {
-            "model": "gpt-5.4-mini-2026-10-01",
+            "model": "gpt-5.4-mini-2026-03-17",
             "unit": "USD_PER_MILLION_TOKENS",
             "input_per_million": "0.75", "output_per_million": "4.50",
         },
