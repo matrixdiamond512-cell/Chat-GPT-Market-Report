@@ -123,6 +123,40 @@ rejected('noncanonical preparation whitespace rejected',
 rejected('noncanonical monthly JSON whitespace rejected',
   {monthlyBytes:Buffer.concat([monthlyBytes,Buffer.from('\n')])},
   /HANDOFF_NONCANONICAL_JSON/);
+// Reconstruct a fully hash-consistent, freshly signed synthetic count to
+// prove the bridge is checking semantic agreement, not just SHA/signatures.
+function withResignedCount(raw){
+  const prepNext={...prep,raw_count_sha256:sha(raw)};
+  const countExpected={...e.input_count,evidence_sha256:sha(raw)};
+  return {
+    countBytes:raw,
+    preparationBytes:Buffer.from(canonical(prepNext),'utf8'),
+    expectations:{input_count:countExpected,monthly_billing:e.monthly_billing},
+    countProof:sign(c,countExpected)
+  };
+}
+rejected('validly resigned raw count of 9001 conflicts with frozen 9000',(()=>{
+  const newBytes=Buffer.from('{"object":"response.input_tokens","input_tokens":9001}\\n');
+  return withResignedCount(newBytes);
+})(),/HANDOFF_COUNTED_INPUT_TOKENS_MISMATCH/);
+rejected('duplicate count JSON field rejected even when bytes SHA and signature agree',(()=>{
+  const newBytes=Buffer.from('{"object":"response.input_tokens","input_tokens":9000,"input_tokens":9000}\\n');
+  return withResignedCount(newBytes);
+})(),/HANDOFF_COUNT_DUPLICATE_OR_UNSAFE_KEYS/);
+rejected('count object type changed and re-signed is not a token response',(()=>{
+  const newBytes=Buffer.from('{"object":"response","input_tokens":9000}\\n');
+  return withResignedCount(newBytes);
+})(),/HANDOFF_COUNT_SCHEMA_INVALID/);
+rejected('prepared counted_input_tokens changed with signatures unchanged',(()=>{
+  const changed={...prep,counted_input_tokens:8999};
+  return {preparationBytes:Buffer.from(canonical(changed),'utf8')};
+})(),/HANDOFF_COUNTED_INPUT_TOKENS_MISMATCH/);
+test('whitespace-flexible count with identical token semantics still stays BLOCKED',()=>{
+  const newBytes=Buffer.from(' { "input_tokens":9000, "object":"response.input_tokens" }\\n');
+  const x=reviewPreparedHandoff({...base,...withResignedCount(newBytes)});
+  assert.equal(x.publication_allowed,false);
+  assert.equal(x.api_send_allowed,false);
+});
 test('no network or writer dependency in bridge',()=>{
   const fs=require('node:fs');
   const txt=fs.readFileSync('scripts/reporting/d2_offline_proof_handoff.js','utf8');
