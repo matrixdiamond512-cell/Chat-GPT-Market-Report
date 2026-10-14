@@ -6,12 +6,13 @@ hard limits. Rechecking external authenticated usage at send time is required.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from datetime import date
 from decimal import Decimal, InvalidOperation
 import re
 
 from .d2_token_count_contract import InputCountPlan
+from .shadow_worker import json_bytes, sha256_bytes
 from .d2_responses_contract import (
     INPUT_RATE_USD_PER_MILLION, OUTPUT_RATE_USD_PER_MILLION,
 )
@@ -49,6 +50,16 @@ class MonthlyBudgetReview:
     external_billing_attested: bool = False
     send_allowed: bool = False
     publication_allowed: bool = False
+
+def monthly_inputs_sha256(inputs: MonthlySpendInputs) -> str:
+    """Bind every supplied untrusted input field, not only calculated totals.
+
+    This is a LOCAL SHA-256 commitment, not a verified billing-system receipt,
+    external signature, or authorization for the API sender.
+    """
+    if type(inputs) is not MonthlySpendInputs:
+        raise BudgetReviewBlocked("MONTHLY_INPUT_TYPE_INVALID")
+    return sha256_bytes(json_bytes(asdict(inputs)))
 
 
 def _amount(value: str, field: str, *, positive: bool = False) -> Decimal:
