@@ -20,6 +20,9 @@ from .d2_numeric_claims import audit_numeric_claims, verified_source_bundle, Num
 # on a particular API project must still be checked independently.
 MODEL = "gpt-5.4-mini-2026-03-17"
 STRUCTURED_SCHEMA_VERSION = "shadow-responses-json/v2"
+# Static offline planning reference only; independently re-verify prices before paid use.
+INPUT_RATE_USD_PER_MILLION = Decimal("0.75")
+OUTPUT_RATE_USD_PER_MILLION = Decimal("4.50")
 
 
 class ResponsesContractError(ValueError):
@@ -255,5 +258,5 @@ def estimate_usage_usd(usage: dict) -> Decimal:
         for k in ("input_tokens", "output_tokens")
     ):
         _fail("USAGE_INVALID")
-    return (Decimal(usage["input_tokens"]) * Decimal("0.75") +
-            Decimal(usage["output_tokens"]) * Decimal("4.50")) / Decimal(1000000)
+    return (Decimal(usage["input_tokens"]) * INPUT_RATE_USD_PER_MILLION +
+            Decimal(usage["output_tokens"]) * OUTPUT_RATE_USD_PER_MILLION) / Decimal(1000000)
