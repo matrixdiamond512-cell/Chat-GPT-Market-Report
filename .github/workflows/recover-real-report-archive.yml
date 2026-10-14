@@ -1,0 +1,56 @@
+name: Recover actual 2026-10-14 report publication
+on:
+  pull_request:
+    paths:
+      - "scripts/recover_embedded_report_archive.py"
+      - ".github/workflows/recover-real-report-archive.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/recover_embedded_report_archive.py"
+      - ".github/workflows/recover-real-report-archive.yml"
+permissions:
+  contents: write
+concurrency:
+  group: recover-2026-10-14-real-report-archive
+  cancel-in-progress: false
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout pinned branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Inspect four existing Google Docs-backed report slots
+        run: python scripts/recover_embedded_report_archive.py --date 2026-10-14
+      - name: Restore and verify canonical, index, dashboard in disposable checkout
+        run: python scripts/recover_embedded_report_archive.py --date 2026-10-14 --apply
+      - name: Verify full report history is rebuild-stable
+        shell: bash
+        run: |
+          cp reports.json /tmp/report-index-before.json
+          python scripts/build_reports.py --canonical-only
+          cmp -s reports.json /tmp/report-index-before.json
+          python scripts/verify_publication_consistency.py
+      - name: Persist only if this is a verified main-branch run
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reports/2026-10-14_08-00.json reports/2026-10-14_12-00.json \
+            reports/2026-10-14_16-00.json reports/2026-10-14_21-00.json \
+            data/latest-report.json data/dashboard.json reports.json
+          if git diff --cached --quiet; then
+            echo 'Already recovered; no publication changes'
+            exit 0
+          fi
+          git commit -m 'Archive four verified 2026-10-14 market reports and synchronize portal index'
+          git pull --rebase origin main
+          git push origin main
