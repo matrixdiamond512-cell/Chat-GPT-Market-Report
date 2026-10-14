@@ -60,3 +60,6 @@ OpenAI API worker実行前のオフライン契約として固定モデルsnapsh
 
 ## 2026-10-15 D2一連試験の受入要件（v1.14）
 D2の個別構成部品を接続したオフライン通し試験を必須とする。固定ReportContextとMarketDataSnapshotから要求を生成し、呼出し前のslot占有証拠、原本bytes保全と独立readback、本文・数値と出典照合、費用cap、fail-closed、timeout UNKNOWN後の再試行禁止、結果receiptの一致を検査する。実API・外部書込を必要としない合成fixture試験はE4用でありE5ではない。既存タスク・main・本番公開を変更せず、実API実行の独立承認を要する。正式仕様は統合仕様書v1.14が唯一の技術上の正本。
+
+## 2026-10-15 D2中断証拠の再照合要件（v1.15）
+D2オフラインstagingにおいて、slot claim／raw bytes／結果receiptを再起動後に読み取り専用で照合する機能を要求する。claimだけ・rawだけ・タイムアウト・不正ファイル・不一致・ローカル整合を判別し、**すべての状態で自動再送、API送信、本番公開を不許可**とする。独立した受信真正性、外部IAM/retention、provider実行有無、原本署名がない場合は、ローカルhashを検証済み本番証拠へ昇格させない。技術契約は正式仕様書v1.15だけを正本とする。
