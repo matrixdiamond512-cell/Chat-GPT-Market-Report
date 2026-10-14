@@ -13,7 +13,7 @@ import json
 import re
 from typing import Callable, Protocol
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import Request, HTTPRedirectHandler, build_opener
 
 from .context import ReportContext
 from .snapshot import MarketDataSnapshot
@@ -73,10 +73,21 @@ class LiveShadowReceipt:
     publishable: bool = False
 
 
+class _RejectRedirect(HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise LiveTransportBlocked("OPENAI_PROVIDER_REDIRECT_REJECTED")
+
+
+def _fixed_urlopen(request, timeout):
+    # urllib's default opener follows redirects. Never forward a project-scoped
+    # Authorization header or provider body to an unreviewed redirect target.
+    return build_opener(_RejectRedirect()).open(request, timeout=timeout)
+
+
 class FixedOpenAIHTTPS:
     """Minimal fixed-endpoint HTTP client. No redirect/URL override or retry."""
     def __init__(self, *, api_key: str, project_id: str,
-                 opener: Callable = urlopen):
+                 opener: Callable = _fixed_urlopen):
         if not isinstance(api_key, str) or not _ALLOWED_KEY.fullmatch(api_key):
             raise LiveTransportBlocked("API_SECRET_MISSING_OR_FORMAT_INVALID")
         if not isinstance(project_id, str) or not _ALLOWED_PROJECT.fullmatch(project_id):
