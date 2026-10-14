@@ -114,12 +114,46 @@ class TestD2OfflineIntegrated(unittest.TestCase):
                     self.assertIsNotNone(r.response_receipt)
                     self.assertEqual(store.read_verified(r.response_receipt), payload)
 
-    def test_cost_ceiling_blocks_without_publishing(self):
-        r = self.run_once(max_model_cost_usd="0.000001")
+    def test_cost_ceiling_blocks_before_slot_claim_and_responder(self):
+        with self.assertRaisesRegex(OfflineD2Blocked, "PLANNED_BUDGET_EXCEEDED"):
+            self.run_once(max_model_cost_usd="0.000001")
+        self.assertEqual(self.invocations, 0)
+        self.assertFalse((self.root /
+                          f"slot-{self.context.report_id}-r{self.context.revision}").exists())
+
+    def test_pre_claim_worst_case_quote_is_immutable(self):
+        r = self.run_once()
+        claim = json.loads(self.store.read_verified(r.claim_receipt))
+        record = json.loads(self.store.read_verified(r.result_receipt))
+        for field in ("max_input_tokens", "max_output_tokens",
+                      "max_model_cost_usd", "planned_model_cost_usd"):
+            self.assertEqual(record[field], claim[field])
+        self.assertEqual(claim["max_input_tokens"], 12000)
+        self.assertEqual(claim["max_output_tokens"], 4000)
+        self.assertEqual(claim["max_model_cost_usd"], "0.03")
+        self.assertEqual(claim["planned_model_cost_usd"], "0.027")
+
+    def test_reported_input_tokens_over_plan_cap_are_blocked(self):
+        r = self.run_once(max_input_tokens=11999)
         self.assertEqual(r.status, "OFFLINE_BLOCKED")
-        self.assertEqual(r.reason, "SIMULATED_BUDGET_EXCEEDED")
+        self.assertEqual(r.reason, "ACTUAL_TOKEN_CAP_EXCEEDED")
         self.assertIsNotNone(r.response_receipt)
         self.assertFalse(r.publishable)
+
+    def test_reported_output_tokens_over_request_cap_are_blocked(self):
+        r = self.run_once(max_output_tokens=3999)
+        self.assertEqual(r.status, "OFFLINE_BLOCKED")
+        self.assertEqual(r.reason, "ACTUAL_TOKEN_CAP_EXCEEDED")
+        self.assertFalse(r.publishable)
+
+    def test_bad_token_caps_never_claim_or_invoke_responder(self):
+        for opts in ({"max_input_tokens": True}, {"max_input_tokens": 12001},
+                     {"max_input_tokens": 0}, {"max_output_tokens": 0},
+                     {"max_output_tokens": 4001}, {"max_output_tokens": False}):
+            with self.subTest(opts=opts), self.assertRaisesRegex(
+                    OfflineD2Blocked, "TOKEN_CAP_INVALID"):
+                self.run_once(**opts)
+        self.assertEqual(self.invocations, 0)
 
     def test_missing_frozen_data_blocks_before_claim_and_response(self):
         markets = tuple(fixture_market(x, i) for i, x in enumerate(REQUIRED_SIX[:-1]))
@@ -133,6 +167,8 @@ class TestD2OfflineIntegrated(unittest.TestCase):
         for kwargs in (
             {"run_id": "../escape"}, {"attempt_id": "x/y"},
             {"max_model_cost_usd": "nan"}, {"max_model_cost_usd": "-1"},
+            {"max_model_cost_usd": "1e9"}, {"max_model_cost_usd": "00.030"},
+            {"max_model_cost_usd": "0.123456789"},
         ):
             with self.subTest(kwargs=kwargs), self.assertRaises(OfflineD2Blocked):
                 self.run_once(**kwargs)
