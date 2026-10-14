@@ -161,3 +161,17 @@ E4＝合成データ・クロス言語golden・関連CIが最新HEADで成功。
 **受入テスト**：`tests/test_d2_offline_prepared_run.py`の15件で、正常な合成fixture一連確認、事前のcount/予算/ID/limit異常による呼出し0、別promptによる要求SHA差、二重起動とtimeout、生成結果不正・証拠独立readbackを検査する。従来のD1/D2各moduleテストもCI回帰させる。
 **証明できないこと**：合成入力token-countと月次金額は自己申告に過ぎず、OpenAIが返した本当の結果でも、認証済みの請求実績でもない。ローカルハッシュ・パイプライン合格はprovider真正性／料金hard cap実適用／複数ホスト予約原子性／production issuer署名／Google Docs・GitHub・Pages公開の証明ではない。すべて`api_send_allowed=false`、`publication_allowed=false`。E5・実API・本番公開は引き続きBLOCKED。アーカイブした変更仕様書を再開しない。
 **改訂履歴**：2026-10-15 v1.18（Draft）。技術仕様の唯一の正本は本書。
+
+### M. D2.2準備証拠と生成結果の読み取り専用全連結復旧照合（v1.19／2026-10-15・Draft）
+**目的**：v1.18の`input count→月間予算→非公開証拠保存→合成生成→結果記録`を、処理中断・改ざん後に**追加の呼び出し・書込なし**で安全に再点検する。既存のD2.1 `d2_reconciliation.py` はslot claim/raw/resultの局所確認までで、`-inputcount`と`-preparation`が当該要求・計測・月額予算と一致することは保証していなかった。
+**実装**：`scripts/reporting/d2_prepared_reconciliation.py` の `reconcile_prepared_offline(context,snapshot,store,monthly_inputs,run_id,attempt_id,instructions)` は、同一run/attemptについて `-inputcount`（模擬公式計測原文bytes）、`-preparation`（合成計測/予算証拠JSON）、`slot-<report_id>-r<revision>/claim`（枠の使用記録）、`-raw`（合成Responses生バイト列）、`-result`（結果receipt）を、`LocalPrivateEvidenceStore.read_for_diagnostics`で**読み取り専用・最大16MiB・所有者/permission/symlink検査付き**で読込。
+検証順は①存在状態確認、②準備証拠JSONの厳格なキー・型・偽造許可フラグ拒否、③凍結Context/Snapshotと明示的なinstructionsから元の作成要求・計測用要求のSHAを再計算、④未認証count原本を重複key/UTF-8/型・閾値の観点で再検証、⑤呼出し元が指定した**同じ合成月額入力値**で月間予算を再計算し、計測数・費用・月額残・限度額とprep証拠が一致するか確認、⑥存在する場合は既存`reconcile_d2_offline`でclaim/raw/resultを再監査し、prepとの作成要求SHAとrun・capを突合する。照合のためにモデルを再呼出ししたり、結果を書き換えたりしてはならない。
+**限定結果**：
+- `UNRESOLVED_NO_PREPARATION`：このローカルstagingに5種類の証拠が存在しない。ただし本物のAPIが未送信である証明にはならない。
+- `INTERRUPTED_NEEDS_MANUAL_REVIEW`：countだけ、prepまで、claimだけ、その後のtimeout/結果未記録など。手動照合まで自動retry禁止。
+- `INCONSISTENT_UNTRUSTED`：孤立した下流記録、準備証拠欠落、count/予算改ざん、モデル入力・指示変更、slot claim・raw・結果の不一致、危険なファイルなど。停止。
+- `OFFLINE_BLOCKED_RECORDED`：準備は一致するが合成生成結果はBLOCKED。後付けで成功へ昇格しない。
+- `OFFLINE_CHAIN_CONSISTENT_UNATTESTED`：合成準備・局所claim/raw/resultの内容上の一致のみ。第三者証明・provider署名・実料金・クラウド監査・production E5とは無関係。
+**不変条件**：全結果で`retry_allowed=false`、`api_send_allowed=false`、`publication_allowed=false`、`externally_attested=false`。呼出し時の`monthly_inputs`自体は外部請求基盤と独立照合していない。局所ファイルのSHAが計算上一致しても、保存以降の完全な改ざん耐性と外部真正性は証明不能。複数ホスト間の競合・原子的月額予約・IAM/secret manager・本番計測transport・OpenAI API生成は未着手の独立課題。
+**テスト**：`tests/test_d2_prepared_reconciliation.py`に20件を追加し、成功fixtureの繰返し読込、countだけ・prepだけ・claim後のcrash・timeout、月額使用/上限変更、SHA改変、計測raw変更、モデル指示変更、下流BLOCKED、孤立・欠落・UTF-8/重複キー・symlink、重複起動、保存内容非変更と実行関数呼出し増分0を検証する。CI`shadow-worker-d1-offline-ci.yml`に組み込み、従来ゲートの弱体化なし。
+**改訂履歴**：2026-10-15 v1.19（Draft）。正式技術仕様の正本は本書のみ。旧変更仕様書は別正本にしない。
