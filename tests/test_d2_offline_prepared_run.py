@@ -12,7 +12,7 @@ from scripts.reporting.d2_offline_prepared_run import (
 from scripts.reporting.d2_private_store import LocalPrivateEvidenceStore
 from test_shadow_worker_offline import fixture_context, fixture_snapshot
 from test_d2_responses_contract import provider_fixture
-from scripts.reporting.d2_monthly_budget import MonthlySpendInputs
+from scripts.reporting.d2_monthly_budget import MonthlySpendInputs, monthly_inputs_sha256
 
 
 @unittest.skipUnless(os.name == "posix", "POSIX private staging only")
@@ -75,6 +75,10 @@ class TestD2PreparedOfflineRun(unittest.TestCase):
         self.assertEqual(prep["max_input_tokens"], 12000)
         self.assertEqual(prep["monthly_total_with_reservation_usd"], "1.027")
         self.assertEqual(prep["monthly_effective_cap_usd"], "1.50")
+        self.assertEqual(prep["schema"], "d2-offline-preparation/v2")
+        self.assertEqual(prep["monthly_inputs_sha256"],
+                         monthly_inputs_sha256(self.monthly))
+        self.assertEqual(len(prep["monthly_inputs_sha256"]), 64)
         self.assertEqual(prep["count_evidence_kind"],
                          "SYNTHETIC_FIXTURE_NOT_AUTHENTICATED")
         self.assertEqual(prep["billing_evidence_kind"],
@@ -83,6 +87,18 @@ class TestD2PreparedOfflineRun(unittest.TestCase):
             self.store.read_verified(outcome.count_receipt), self.count)
         self.assertFalse(prep["api_send_allowed"])
         self.assertFalse(prep["publication_allowed"])
+
+    def test_monthly_full_field_digest_catches_equal_sum_inputs(self):
+        # Only the local commitment changes, not total monthly amount.
+        changed = replace(self.monthly,
+                          reported_month_spend_usd="0.79",
+                          outstanding_reservations_usd="0.21")
+        self.assertNotEqual(monthly_inputs_sha256(self.monthly),
+                            monthly_inputs_sha256(changed))
+        first = self.execute()
+        prep = json.loads(self.store.read_verified(first.preparation_receipt))
+        self.assertEqual(prep["monthly_inputs_sha256"],
+                         monthly_inputs_sha256(self.monthly))
 
     def test_count_over_cap_fails_before_claim_and_fixture(self):
         bad = b'{"object":"response.input_tokens","input_tokens":12001}'
