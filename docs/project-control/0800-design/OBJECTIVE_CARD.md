@@ -45,3 +45,21 @@ OPEN OUTCOMES:
 - O-016 PR branch synchronization: the prior pushed head `2ce1b12` was verified OPEN/Draft/unmerged; the branch now includes current fetched `origin/main` through `0a6c952`. The new merge and evidence update still need a push and post-push verification. Keep the PR OPEN/Draft and do not merge main or publish.
 
 NEXT NECESSARY ACTION: Push merge commit `235713592294f9650e169589dca5d286876d079e` and this evidence update to the PR branch, then preserve the measured 08:00 content/geometry conflict for user direction on how to preserve all information inside the approved panel geometry. Until resolved, do not claim a fixed-layout candidate or propagate design to the other slots. Keep the stop gates and Draft/Open PR state.
+
+## Latest instruction correction — diagram-only source-bound summary
+
+The user clarified that a market infographic is a visual summary, not a full transcription. Preserve the full report body unchanged; draw only a human-authored structured summary with exact source location, number/unit/direction checks, panel-specific judgment basis and risk conditions, and a mandatory human semantic/visual review. This supersedes the earlier assumption that all source prose must fit in the fixed boxes; it does not withdraw body integrity, snapshot, identity, numeric, or publication gates.
+
+### O-017 — 08:00 summary layer
+
+Implemented a preview-only summary data model with 59 sourced claims for the 16 approved panels. Source identity is tied to the exact input body hash; references retain Unicode codepoint spans, actual source line numbers, section IDs, and excerpts. Checks require all panel kinds, numeric tokens and units to occur in citations, direction terms to be sourced, and judgment basis/risk condition roles to appear in panels 01/04. Automated checks do not claim semantic correctness; human review stays PENDING.
+
+### O-018 — reference-sized 08:00 candidate
+
+Generated only the new 08:00 PNG at 1536×1024 with exact approved panel rectangles and width ratios. Output and comparison are in `docs/examples/approved-infographic/summary-preview-0800-review6/`. The preview is sourced from withdrawn historical body text whose report identity and linked snapshot are unavailable. It is not restored as canonical; formal generation is NOT_READY, publish is false, and the image visibly states withdrawn/snapshot-unverified/public-prohibited.
+
+### O-019 — regression and review disposition
+
+Python 261/261, independent publication-path Node regression, renderer JavaScript syntax check, and `git diff --check` pass locally. Candidate machine comparison confirms geometry only. Browser rendering and real-device readability are NOT_RUN. Human meaning/fact/visual acceptance is PENDING. Do not propagate this design to 12:00/16:00/21:00 before the user accepts the 08:00 image.
+
+NEXT NECESSARY ACTION: show the reference side-by-side and 08:00 PNG for human review, incorporate specific design feedback in 08:00 only, then regenerate and re-evaluate. Keep PR #97 OPEN/Draft and all existing snapshot/identity/publication stops. No merge, production publish, or Drive write.
