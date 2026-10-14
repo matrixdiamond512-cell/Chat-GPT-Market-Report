@@ -26,3 +26,7 @@
 
 ## 2026-10-15 D2 preflightコード契約追補（Draft）
 `scripts/reporting/d2_preflight.py`は`market-report-d2-preflight/v1`構造を純粋関数で検査する。必須契約：lane=api-shadow、eligibility=SHADOW_NOT_ELIGIBLE、dry_run_only=true、allow_publication=false、external_tools=[]、web_search_calls=0、固定モデル版、営業日の08/12/16/21、immutable-context-snapshot/v1、strict-json-schema/v1、max_attempts=max_runs=1、Decimal入力・出力単価とtoken上限、USD run/month cap、private/immutable/readback/store-retention、timeout UNKNOWN停止、独立承認記録参照。参照文字列は独立認証ではないため、`api_send_allowed=false`と`publication_allowed=false`は常に維持する。worker外部APIやpublisherへの資格情報は追加しない。
+
+
+## 2026-10-15 D2 Responses API offline契約（Draft）
+`scripts/reporting/d2_responses_contract.py`は一切のHTTP、API SDK、秘密鍵、publisher実装を含まない純粋な構築／検査モジュール。`model=gpt-5.4-mini-2026-03-17`、strict `text.format.json_schema`、`tools=[]`、`tool_choice=none`、`store=false`、max_output_tokens上限4000。模擬レスポンスの`status=completed`、`id`、`model`、`usage`、assistant output_text JSONを検査し、refusal/途中終了/多重tool call/非一致観測値/重複JSON keyを拒否。`tests/test_d2_responses_contract.py`8件をCIに追加。実市場の全数値と意味内容の検証は別ゲートで未実装。
