@@ -1,0 +1,23 @@
+# Evidence Ledger — publication synchronization recovery
+
+Run ID: `production-recovery-20261014-0704`; times recorded in JST unless stated.
+
+| Claim | Evidence | Level | Result and limit |
+|---|---|---|---|
+| GitHub main baseline | `git clone --depth 1 --branch main`; HEAD `3ec46ff65b76af29ebd211239cf155a9a7e05e29` | E0 | PASS for current source snapshot. |
+| Four reported failures still reproduced in Actions | Runs 38474437302, 38474437182, 38474437241, 38474437157; failed-job logs fetched and error lines inspected | E4 | PASS: same revision rejected; dashboard projection equality rejected; underscore key rejected against spaced expectation; missing `fullText` in display sample rejected. This establishes the specified failures at 2026-10-14 06:58 JST. |
+| Latest/canonical report content is currently consistent | `data/latest-report.json` and `reports/2026-10-13_16-00.json` match, revision `1791875571770`, body hash `5fdc2e936ad7b60d7c3ca4bb4c8963a729a27d43d6dd6d4b33492d542dde3e17` | E0 | PASS for checked report files. |
+| Current dashboard projection differs from canonical report | Main JSON comparison; dashboard lacks `consistency`, `crossAssetFlow`, `handover`, `news`, `positioning`, `revision`, `riskManagement`, `sectors`, `structureVersion`, `structuredFromFullText`; current key `2026-10-13_16-00`; status `partial` | E0 | PASS for mismatch finding. Dashboard status must remain independent. |
+| History size and sample identified | `reports.json` has 165 unique slots and contains 2026-07-27 21:00; matching canonical sample SHA-256 `b603f390ff028a9e118c7bcf886dc9e20c323b017acf6170dff18d69e5a79413`; no `fullText` | E0 | PASS for baseline counts/hash. Sample is display-only and should be preserved as a fixture, not public history. |
+| Production Apps Script E2E | Prior recovery evidence and current execution history | E4/E5 | PENDING_LIVE_RUN. Do not infer successful scheduled delivery from repository CI. |
+
+Baseline SHA-256: `reports.json` `53811d9ee117e0339a9839e4c9065f41e44877b39e6735bc5c77235fc44ba2fb`; `data/latest-report.json` `0dfb200d554ae8acc3a7f3f460235eb9bfb9c76236cc06e498a5692b5577343b`; `data/dashboard.json` `70a4ba7f626406d7bdb4872ad5300c6e6ab28aa3b289f0536f56700e630414d3`.
+
+No Apps Script authorization, trigger, Drive document, or GitHub secret was changed/read as part of this follow-up audit.
+
+| Same-revision, key, dashboard, and history repairs | Branch `codex/market-report-sync-recovery-20261014`; focused unittest results: 9 sync-contract, 4 dashboard-health, 4 scheduled-delivery, 1 dashboard-copy contract, and 4 reconciliation tests passed. | E2 | PASS for local components; GitHub PR CI remains pending. |
+| Publication and history builders | `scripts/verify_publication_consistency.py`; `scripts/validate_report_index.py`; ran `scripts/build_reports.py` against committed working data and compared SHA-256 of latest/dashboard/index before and after. | E2 | PASS: consistency verified, 164 indexed reports, canonical parity; repeat build wrote no differences. |
+| History preservation | Compared current `reports.json` objects by date/time to `git show 3ec46ff65b76af29ebd211239cf155a9a7e05e29:reports.json`. | E2 | PASS: exactly one slot removed, 2026-07-27 21:00 display sample; all other 164 slots byte-equivalent as parsed JSON values, no additions. Fixture is retained at `tests/fixtures/2026-07-27_21-00_display-sample.json`. |
+| Broader report-contract module | `python -m unittest discover -s tests -p test_report_contract.py -v`. | E2 | FAIL: one existing Saturday schedule expectation (`2026-09-19` expects 08:00 while current schedule returns no publication slot); schedule config and validator are unchanged in this patch. Targeted publication-consistency test passes. This remains a separate existing test discrepancy. |
+| OAuth and live delivery | Inspected workflow/secret configuration without reading secret values; previous safe Actions diagnostic for run 38407758815 reported `APPS_SCRIPT_OAUTH_JSON` unavailable. No Apps Script trigger, Google approval, or Drive original was touched in this follow-up. | E4/E5 | OAuth setup remains incomplete for the manual Apps Script update workflow. Live scheduled Apps Script-to-GitHub-to-Pages acceptance remains `PENDING_LIVE_RUN`. |
+| GitHub Pages production readback | No post-merge deployment from this branch exists yet. | E5 | NOT_RUN; requires PR review/merge and deployment, then URL readback. |

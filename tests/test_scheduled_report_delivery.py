@@ -3,8 +3,10 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+import sys
 
 p = Path(__file__).resolve().parents[1] / "scripts" / "verify_scheduled_report_delivery.py"
+sys.path.insert(0, str(p.parent))
 spec = importlib.util.spec_from_file_location("delivery", p)
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
@@ -21,7 +23,7 @@ class DeliveryTests(unittest.TestCase):
         self.write("reports.json", [self.report])
         self.write("data/latest-report.json", {"latestReport": self.report})
         self.write("data/dashboard.json", {"latestReport": self.report,
-                                            "currentReportKey": "2026-10-13 08:00"})
+                                            "currentReportKey": "2026-10-13_08-00"})
 
     def tearDown(self):
         self.temp.cleanup()
