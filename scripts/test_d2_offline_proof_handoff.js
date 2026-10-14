@@ -107,7 +107,7 @@ rejected('self-declared trust root embedded into preparation forbidden',(()=>{
 rejected('altered report ID in preparation not accepted',(()=>{
   const d={...prep,report_id:'2026-10-15_12-00'};
   return {preparationBytes:Buffer.from(canonical(d))};
-})(),/HANDOFF_PROOF_PREPARATION_MISMATCH_input_count_report_id/);
+})(),/HANDOFF_MONTHLY_INPUT_SCHEMA_INVALID/);
 rejected('unaligned monthly report identifier forbidden',(()=>{
   const d=JSON.parse(monthlyBytes.toString());
   d.report_id='2026-10-15_12-00';
