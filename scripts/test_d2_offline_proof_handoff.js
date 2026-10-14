@@ -157,6 +157,69 @@ test('whitespace-flexible count with identical token semantics still stays BLOCK
   assert.equal(x.publication_allowed,false);
   assert.equal(x.api_send_allowed,false);
 });
+// Re-sign both roles when the underlying monthly statement is replaced;
+// the reviewer must independently recompute what the statement means.
+function withResignedMonthly(changes,preparationChanges={}){
+  const newMonthly={...JSON.parse(monthlyBytes.toString('utf8')),...changes};
+  const raw=Buffer.from(canonical(newMonthly),'utf8');
+  const nextPrep={...prep,monthly_inputs_sha256:sha(raw),...preparationChanges};
+  const countExpectation={...e.input_count,monthly_inputs_sha256:sha(raw)};
+  const billingExpectation={...e.monthly_billing,
+    monthly_inputs_sha256:sha(raw),evidence_sha256:sha(raw)};
+  return {
+    monthlyBytes:raw,
+    preparationBytes:Buffer.from(canonical(nextPrep),'utf8'),
+    expectations:{input_count:countExpectation,monthly_billing:billingExpectation},
+    countProof:sign(c,countExpectation),billingProof:sign(b,billingExpectation)
+  };
+}
+rejected('count-derived cost in prep cannot be understated',(()=>{
+  const d={...prep,counted_model_cost_usd:'0.01'};
+  return {preparationBytes:Buffer.from(canonical(d),'utf8')};
+})(),/HANDOFF_COUNTED_COST_MISMATCH/);
+rejected('monthly total in prep must equal recomputed reservation',(()=>{
+  const d={...prep,monthly_total_with_reservation_usd:'0.90'};
+  return {preparationBytes:Buffer.from(canonical(d),'utf8')};
+})(),/HANDOFF_MONTHLY_TOTAL_MISMATCH/);
+rejected('monthly cap in prep must equal strictest cap',(()=>{
+  const d={...prep,monthly_effective_cap_usd:'2.00'};
+  return {preparationBytes:Buffer.from(canonical(d),'utf8')};
+})(),/HANDOFF_MONTHLY_EFFECTIVE_CAP_MISMATCH/);
+rejected('signatures and hashes cannot mask a new spending line with stale total',()=>
+  withResignedMonthly({reported_month_spend_usd:'0.81'}),
+  /HANDOFF_MONTHLY_TOTAL_MISMATCH/);
+rejected('signatures and hashes cannot mask a disabled project hard cap',()=>
+  withResignedMonthly({project_hard_limit_enabled:false}),
+  /HANDOFF_HARD_LIMITS_NOT_ENABLED/);
+rejected('signatures and hashes cannot mask a different billing month',()=>
+  withResignedMonthly({month_jst:'2026-11'}),
+  /HANDOFF_BILLING_MONTH_MISMATCH/);
+rejected('signed monthly spend above actual minimum cap blocked',()=>
+  withResignedMonthly({reported_month_spend_usd:'1.80'},
+    {monthly_total_with_reservation_usd:'2.027'}),
+  /HANDOFF_MONTHLY_BUDGET_EXCEEDED/);
+rejected('run cap lower than independent worst-case model estimate blocked',(()=>{
+  const d={...prep,max_model_cost_usd:'0.02'};
+  return {preparationBytes:Buffer.from(canonical(d),'utf8')};
+})(),/HANDOFF_RUN_COST_CAP_EXCEEDED/);
+rejected('malformed money notation in prepared receipt blocked',(()=>{
+  const d={...prep,monthly_total_with_reservation_usd:'1e0'};
+  return {preparationBytes:Buffer.from(canonical(d),'utf8')};
+})(),/HANDOFF_USD_INVALID_monthly_total_with_reservation_usd/);
+test('fully reconciled re-signed monthly numbers are still offline only',()=>{
+  const overrides=withResignedMonthly({reported_month_spend_usd:'0.81'},
+    {monthly_total_with_reservation_usd:'1.037'});
+  const x=reviewPreparedHandoff({...base,...overrides});
+  assert.equal(x.api_send_allowed,false);
+  assert.equal(x.publication_allowed,false);
+});
+test('lower correctly re-signed project cap is recomputed and stays blocked',()=>{
+  const overrides=withResignedMonthly({project_hard_limit_usd:'1.40'},
+    {monthly_effective_cap_usd:'1.40'});
+  const x=reviewPreparedHandoff({...base,...overrides});
+  assert.equal(x.retry_allowed,false);
+  assert.equal(x.api_send_allowed,false);
+});
 test('no network or writer dependency in bridge',()=>{
   const fs=require('node:fs');
   const txt=fs.readFileSync('scripts/reporting/d2_offline_proof_handoff.js','utf8');
