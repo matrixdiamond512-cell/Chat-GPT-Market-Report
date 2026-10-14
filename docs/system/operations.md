@@ -56,3 +56,10 @@ PR #130の`python -m unittest discover -s tests -p 'test_d2_preflight.py' -v`と
 - CI実行：`python -m unittest discover -s tests -p 'test_d2_numeric_claims.py' -v`、`python -m unittest discover -s tests -p 'test_d2_responses_contract.py' -v`、既存D1テストを実行。本文に根拠なしの数値、数字位置重複、不正な単位、別出典ID、cutoff以降の観測、誤ったsource URL等が含まれた場合は生成結果を隔離・停止する。
 - 模擬出力の数字を検査し合格しても実報告の数値監査完了やE5承認とは呼ばない。現在の適用範囲は凍結6市場の`priceValue/changeValue/changePct`と限定的な字句解析。ニュース統計・PER/EPS・金利・日時・他市場の数値は根拠バンドル未接続のため遮断する。必要項目を削除して合格に偽装してはならない。
 - source bundleはスナップショットに含まれる主張の再照合用であり、取得先の独立認証・法的データ使用権・自然言語の意味照合の代わりではない。実API課金、永続private store接続、署名、公開は実施しない。
+
+## 2026-10-15 正式仕様書の単一正本運用手順
+1. 仕様追加/変更/削除時は最初に `docs/system/specification.md` と正式Google Docsの同一版「統合仕様」を更新する。**独立した変更仕様書を作成・継続更新しない**。詳細設計/PRコメントは検証ログに限り、正本にはしない。
+2. 旧変更仕様書は【アーカイブ・統合済・更新停止】に変更済み。参照・旧版復元は許可するが、現行手順の根拠は正本からのみ取り、変更内容の重複記載を禁ずる。
+3. 要件定義書は要求、運用マニュアルは検証/停止/復旧の手順を分担し、具体的な契約（schema、API、署名、数値照合、全writer）は仕様書へ集約。設計差分に応じて3文書の整合を確認する。
+4. 編集前後のGoogle Docs revision、GitHub blob SHA、ファイル名、章名、適用範囲、検証結果を確認する。未確認・Draft・本番採用済みの区別を維持し、GitHub/Google Docsのreadback後にのみ更新済みと報告する。
+5. 2026-10-15の変更は文書統合のみで、PR #130をmainにマージせず、APIキー/有料API送信/実トリガー/Apps Script本番配備/過去分公開を変更しない。
