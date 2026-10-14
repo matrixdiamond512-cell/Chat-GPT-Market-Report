@@ -1,0 +1,31 @@
+name: D1 Offline Market Report Shadow Worker
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/reporting/shadow_worker.py'
+      - 'tests/test_shadow_worker_offline.py'
+      - 'scripts/reporting/context.py'
+      - 'scripts/reporting/snapshot.py'
+      - 'scripts/reporting/report.py'
+      - 'config/report_heading_registry.json'
+      - 'config/market_data_sources.json'
+      - '.github/workflows/shadow-worker-d1-offline-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  offline-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile offline D1 contract and test
+        run: python -m compileall -q scripts/reporting/shadow_worker.py tests/test_shadow_worker_offline.py
+      - name: Test shadow report contract with fake data only
+        run: python -m unittest discover -s tests -p 'test_shadow_worker_offline.py' -v
