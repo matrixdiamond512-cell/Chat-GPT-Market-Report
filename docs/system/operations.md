@@ -74,3 +74,6 @@ CI：`python -m unittest discover -s tests -p 'test_d2_offline_pipeline.py' -v`�
 - `python -m unittest discover -s tests -p 'test_d2_reconciliation.py' -v` をGitHub ActionsのD1 offline CIに含める。**現状は合成fixtureのみ**。本番API・publisherには実行しない。
 - 異常発生時はまず`slot claim`・`raw`・`result`の有無を読取専用で検査する。`UNRESOLVED_NO_CLAIM`は未送信の証明ではない。`INTERRUPTED_NEEDS_MANUAL_REVIEW`や`UNKNOWN`はprovider照合・オーナー判断まで再試行禁止。`INCONSISTENT_UNTRUSTED`は証拠毀損として隔離・停止する。`OFFLINE_CONSISTENT_UNATTESTED`もprovider原本・IAM・署名の保証ではなく公開しない。
 - 診断の`read_for_diagnostics`は未認証bytesを検査する補助関数であり、返されたbytesから計算したSHAを新しい独立receiptとして発行しない。原本を上書き・削除せず、元のreceipt・record・ログを保全する。正式な手動reconciliation/再送承認の運用は未実装であり、現行の全状態は`retry_allowed=false`。
+
+## 2026-10-15 D2費用・schema安全ゲートの運用（v1.16）
+オフラインテストは `python -m unittest discover -s tests -p 'test_d2_offline_pipeline.py' -v`、`-p 'test_d2_preflight.py'`、`-p 'test_d2_reconciliation.py'`。preflight計画額とrun cap、固定のmodel/schema/料金、claim/結果receiptの費用フィールドとreadbackを確認。超過時にfixture呼出しが0で、claimも生成されないことを必須判定とする。実行後のusage申告が個別token capを超えたらOFFLINE_BLOCKED。テストPASSでも料金の最新性、APIの実入力token、外部上限設定、月間請求額は未確認として扱い、有料API・本番公開を開始しない。正式仕様は技術仕様書v1.16のみに置き、旧変更仕様書を更新しない。
