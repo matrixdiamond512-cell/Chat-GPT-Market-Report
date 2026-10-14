@@ -1,6 +1,7 @@
 """D1 offline/fake-data tests. Never connect to OpenAI or publication targets."""
 import copy
 from datetime import datetime
+from dataclasses import replace
 import unittest
 
 from scripts.reporting.context import ReportContext
@@ -170,6 +171,17 @@ class TestShadowWorkerD1(unittest.TestCase):
         self.snapshot = fixture_snapshot(self.context, markets=tuple(markets))
         self.assertEqual(self.run_response(lambda _: self.fail("no call")).reason,
                          "OBSERVATION_SOURCE_UNVERIFIED")
+
+    def test_matching_source_id_with_unregistered_url_is_blocked(self):
+        markets = [fixture_market(x, i) for i, x in enumerate(REQUIRED_SIX)]
+        source_id = markets[0].source[0]["id"]
+        markets[0] = replace(markets[0], source=(
+            {"id": source_id, "url": "https://unrelated.example/quote"},))
+        self.snapshot = fixture_snapshot(self.context, markets=tuple(markets))
+        self.assertEqual(
+            self.run_response(lambda _: self.fail("spoofed source must not run")).reason,
+            "OBSERVATION_SOURCE_UNVERIFIED"
+        )
 
     def test_snapshot_capture_after_slot_is_blocked(self):
         self.snapshot = fixture_snapshot(self.context, captured="2026-10-15T16:01:00+09:00")
