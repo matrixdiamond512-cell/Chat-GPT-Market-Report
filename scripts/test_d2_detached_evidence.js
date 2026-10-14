@@ -20,6 +20,7 @@ const count=key('synthetic-count-key'),billing=key('synthetic-billing-key');
 const base={
   attempt_id:'test-attempt',audience:'market-report-d2-shadow-offline',
   create_request_sha256:'a'.repeat(64),
+  count_request_sha256:'1'.repeat(64),
   monthly_inputs_sha256:'b'.repeat(64),
   report_id:'2026-10-15_16-00',run_id:'test-run',
   snapshot_id:'snapshot-'+'c'.repeat(64),
@@ -79,6 +80,9 @@ rejected('signature cannot authenticate modified requested amount',()=>{
 rejected('old evidence hash cannot be replayed on a new generation',()=>{
   verifyOne(rawCount,count.trust,{...countExp,create_request_sha256:'0'.repeat(64)},now);
 },/EVIDENCE_BINDING_MISMATCH_create_request_sha256/);
+rejected('count input request digest cannot be substituted',()=>{
+  verifyOne(rawCount,count.trust,{...countExp,count_request_sha256:'0'.repeat(64)},now);
+},/EVIDENCE_BINDING_MISMATCH_count_request_sha256/);
 rejected('other monthly input digest cannot be substituted',()=>{
   verifyOne(rawBilling,billing.trust,{...billExp,monthly_inputs_sha256:'0'.repeat(64)},now);
 },/EVIDENCE_BINDING_MISMATCH_monthly_inputs_sha256/);
