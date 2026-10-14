@@ -19,7 +19,7 @@ def candidate():
         "model_snapshot": "gpt-5.4-mini-2026-03-17",
         "external_tools": [], "web_search_calls": 0,
         "data_contract": "immutable-context-snapshot/v1",
-        "response_contract": "strict-json-schema/v1",
+        "response_contract": "shadow-responses-json/v2",
         "caps": {
             "max_input_tokens": 12000,
             "max_output_tokens": 4000,
@@ -87,6 +87,10 @@ class TestD2Preflight(unittest.TestCase):
                          "INPUT_RATE_NOT_APPROVED_DECIMAL_STRING")
         self.check_block(lambda p: p["price_quote"].update(model="other"),
                          "RATE_MODEL_OR_UNIT_MISMATCH")
+        self.check_block(lambda p: p["price_quote"].update(input_per_million="0.01"),
+                         "INPUT_RATE_MISMATCH_PINNED_MODEL")
+        self.check_block(lambda p: p["price_quote"].update(output_per_million="0.01"),
+                         "OUTPUT_RATE_MISMATCH_PINNED_MODEL")
 
     def test_prohibit_publication_and_tool_use(self):
         self.check_block(lambda p: p.update(lane="chatgpt-task"), "SHADOW_LANE_REQUIRED")
@@ -101,6 +105,10 @@ class TestD2Preflight(unittest.TestCase):
                          "MODEL_SNAPSHOT_NOT_PINNED")
         self.check_block(lambda p: p.update(model_snapshot="gpt-5.4-mini"),
                          "MODEL_SNAPSHOT_NOT_PINNED")
+        self.check_block(lambda p: p.update(model_snapshot="gpt-5.6-terra-2026-06-01"),
+                         "MODEL_NOT_SUPPORTED_BY_D2_CONTRACT")
+        self.check_block(lambda p: p.update(response_contract="strict-json-schema/v1"),
+                         "STRICT_OUTPUT_CONTRACT_MISSING")
         self.check_block(lambda p: p.update(report_id="2026-99-99_16-00"),
                          "REPORT_ID_OR_SLOT_INVALID")
         self.check_block(lambda p: p.update(report_id="2026-10-15_18-00"),
