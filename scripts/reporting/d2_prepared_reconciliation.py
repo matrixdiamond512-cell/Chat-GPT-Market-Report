@@ -20,6 +20,7 @@ from .d2_token_count_contract import (
 )
 from .d2_monthly_budget import (
     MonthlySpendInputs, review_monthly_budget, BudgetReviewBlocked,
+    monthly_inputs_sha256,
 )
 from .d2_offline_prepared_run import SCHEMA
 from .d2_reconciliation import reconcile_d2_offline
@@ -31,6 +32,7 @@ _PREP_KEYS = frozenset((
     "raw_count_sha256", "counted_input_tokens", "counted_model_cost_usd",
     "max_input_tokens", "max_output_tokens", "max_model_cost_usd",
     "monthly_total_with_reservation_usd", "monthly_effective_cap_usd",
+    "monthly_inputs_sha256",
     "count_evidence_kind", "billing_evidence_kind", "api_send_allowed",
     "publication_allowed",
 ))
@@ -164,6 +166,7 @@ def reconcile_prepared_offline(
             "monthly_total_with_reservation_usd":
                 monthly.total_with_proposed_reservation_usd,
             "monthly_effective_cap_usd": monthly.strictest_cap_usd,
+            "monthly_inputs_sha256": monthly_inputs_sha256(monthly_inputs),
         }
         if any(prep[key] != value or type(prep[key]) is not type(value)
                for key, value in expected.items()):
