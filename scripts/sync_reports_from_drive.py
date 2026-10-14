@@ -22,7 +22,7 @@ from google.oauth2 import service_account
 ROOT = Path(__file__).resolve().parents[1]
 JST = timezone(timedelta(hours=9))
 SLOTS = ("08:00", "12:00", "16:00", "21:00")
-MONTH_FOLDER = "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz"  # October 2026 only
+# Monthly report folder is discovered by name, not a fixed October ID.
 SOURCE = re.compile(r"^マーケットレポート_(\d{4}-\d{2}-\d{2})_(08|12|16|21)-00$")
 FIELDS = "nextPageToken,files(id,name,mimeType,parents)"
 DRIVE = "https://www.googleapis.com/drive/v3"
@@ -147,9 +147,13 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
         folder_access = False
         # A folder grant is preferred: future child Docs then inherit visibility.
         # Individually shared Google Docs also work without this grant.
-        response = session.get(f"{DRIVE}/files/{MONTH_FOLDER}",
-                               params={"fields": "id,mimeType"}, timeout=20)
-        folder_access = response.ok
+        month_folder_name = f"マーケットレポート{now.year}年{now.month}月"
+        folders = get_json(session, DRIVE + "/files", {
+            "q": "name = '" + month_folder_name + "' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+            "fields": "nextPageToken,files(id,name,mimeType)",
+            "pageSize": 100
+        })
+        folder_access = bool(folders.get("files"))
         print(f"Google Drive scan: {scanned} accessible report-name candidates; "
               f"{len(source_files)} recent slots; monthly_folder_access={folder_access}")
         latest_slot = (old_latest["date"], old_latest["time"])
