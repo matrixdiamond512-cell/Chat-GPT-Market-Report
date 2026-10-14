@@ -9,6 +9,7 @@ const report={date:'2026-10-13',time:'08:00',title:'マーケットレポート�
 const data={...report,bodyHash:'expected-sha',sourceDocument:{id:'document-abc'}};
 const ctx={
  buildWebReportFromGoogleDoc_:()=>report,
+ marketReportVerifyProducerProof_:(report)=>{report.bodyHash='expected-sha'; return {revision:123}},
  marketReportSha256_:()=> 'expected-sha',
  Utilities:{newBlob:()=>({getBytes:()=>[]})},
  normalizeWebReportList_:x=>x,
