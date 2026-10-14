@@ -109,7 +109,8 @@ function marketReportProofVerifyV2EvidenceDigests_(evidence) {
   }
   var snapshot = evidence.snapshot;
   if (!Array.isArray(snapshot.markets) || !snapshot.markets.length ||
-      typeof snapshot.snapshot_id !== 'string' || !snapshot.snapshot_id.startsWith('snapshot-')) {
+      !/^snapshot-[0-9a-f]{64}$/.test(String(snapshot.snapshot_id || '')) ||
+      evidence.legacy_snapshot_id !== snapshot.snapshot_id) {
     marketReportProofFail_('v2 snapshot identity missing');
   }
   snapshot.markets.forEach(function(market) {
@@ -125,12 +126,15 @@ function marketReportProofVerifyV2EvidenceDigests_(evidence) {
       marketReportProofCanonicalV2_(val);
     });
   });
-  var snapshotIdentity = {};
-  Object.keys(snapshot).forEach(function(key) {
-    if (key !== 'snapshot_id') snapshotIdentity[key] = snapshot[key];
-  });
+  // Include the original v1 snapshot_id inside v2 digest: replacing that ID
+  // then necessarily breaks the content hash even before issuer verification.
+  if (evidence.context.report_id !== snapshot.report_id ||
+      evidence.context.revision !== snapshot.revision ||
+      evidence.context.data_cutoff !== snapshot.data_cutoff) {
+    marketReportProofFail_('v2 context/snapshot identity mismatch');
+  }
   if (marketReportProofShaV2_(evidence.context) !== evidence.context_digest_v2 ||
-      marketReportProofShaV2_(snapshotIdentity) !== evidence.snapshot_digest_v2) {
+      marketReportProofShaV2_(snapshot) !== evidence.snapshot_digest_v2) {
     marketReportProofFail_('v2 context or snapshot content digest mismatch');
   }
   return true;
