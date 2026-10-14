@@ -28,3 +28,9 @@
 - PR #128のvalidator/test commitは`4cb2dce385300c51447d7c4a8ed316bc4637ab8a`。その関連Actions 8件（sync recovery、morning source check、market validation、dashboard health、21h source validation、heading compatibility、Apps Script pre-publish、report structure）はSUCCESS。Apps Script回帰テストの合成fixtureが市場行の本文量不足で一度失敗したため、ゲートを緩めず6市場の説明をfixtureへ追加して再実行した。後続commit `5420f316038dba58ea0e867fdceedfd0f1a2f26c` は文書と証拠台帳のみ。PRは未マージ。
 - 08:00/12:00の実Docs本文は修正後Python native-Docs経路でPASS。原文は編集していない。08:00 snapshotは10:24:21 JST生成でレポート識別情報と結合されず、12:00 snapshotも未確認。どちらも過去データ再構成をせず公開保留。
 - 3つのGoogle Drive正式文書に同一v1.10追補を追記し、revision guarded write後の読み戻しで全件確認した。次の16:00 runおよび08/12/16/21の本番E2Eは未検証。復旧完了は未達。
+
+## 2026-10-14 ダッシュボードキー整合・本番停止追補 v1.11
+- 本番21:30の実トリガー `runMarketReportMaster2130` は公開前SOPの複合見出し判定で停止した。GitHub書込以前の失敗でありPNG生成は直接原因ではない。PR #128の見出しエイリアス修正と厳格な本文内容検査は維持し、原文は改変しない。
+- 同期回帰CI失敗の原因として、`apps-script/DashboardJsonSync.gs` が `currentReportKey` に日時表示形式 `YYYY-MM-DD HH:MM` を生成する一方、`scripts/report_identity.py` と `verify_publication_consistency.py` は正規キー `YYYY-MM-DD_HH-MM` を要求していた。PR #128でApps Script側を正規キーへ修正し、`sources[].asOf` の読みやすい表示時刻と `dataAsOf` のタイムゾーン付き時刻は従来どおり保持する。
+- 同一PRに `scripts/test_dashboard_report_key_contract.js` を追加し、`market-report-sync-recovery-ci.yml` の回帰検証に組み込んだ。コード修正コミット `fdf71abad8bf976627f0b9a828826f8e4213117f` の関連Actions 8系統はSUCCESS。再発防止はコード/CIの合格までであり、Apps Script本番環境への反映・本番再実行を意味しない。
+- 2026-10-14 08/12/16/21のレポートはsnapshot/contextと本文hashの受入証拠が不足するため公開保留を維持する。過去データを後付けせず、ChatGPT本文↔Google Docs↔GitHub本文の同一性とreceipt/Pages全文readbackを時刻ごとに検証する。PR #129は停止記録であり公開成功ではない。
