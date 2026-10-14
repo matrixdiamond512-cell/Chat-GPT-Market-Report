@@ -109,3 +109,15 @@ E4＝合成データ・クロス言語golden・関連CIが最新HEADで成功。
 - `tests/test_d2_offline_pipeline.py` に無課金の通し試験10件を追加し、CIのD1 Offline Market Report Shadow Workerから実行する。受信raw bytesのhashとdict再正規化hashは別概念であり、前者は実際のHTTP原文真正性を証明しない。
 - **注入したCallableそのものの通信禁止をPython型で強制できるわけではない**。本モジュールにHTTP client/SDKは実装しないが、実運用では別プロセスのネットワーク遮断・資格情報不付与・API利用権限の独立承認が不可欠。ローカルPOSIX領域は暗号化/IAM/証跡retention/遠隔readbackを保証せず、専用workerの本番稼働・API課金許可・外部公開の判定には利用しない。
 - **改訂記録**：2026-10-15 v1.14（Draft）／正式仕様書にのみ追記。別の「変更仕様書」は作成・更新しない。PR #130 Draft維持、既存ChatGPTタスク/本番公開を変更しない。
+
+### I. D2クラッシュ・中断の読み取り専用復旧診断（v1.15／2026-10-15、Draft）
+- `scripts/reporting/d2_private_store.py`の`read_for_diagnostics(object_id,max_bytes)`は、危険なパス、symlink、owner/permission不正、サイズ上限超過を拒否して、既存のPOSIX staging候補bytesだけを読み込む。対象が存在しない場合はNone。**受信の真正性、保存時点の改ざん不存在、署名、実APIの実行有無、producerの正当性を認定しない**。独立receiptがない状態で再計算したhashを「検証済み原本」と称しない。
+- `scripts/reporting/d2_reconciliation.py`の`reconcile_d2_offline(context,snapshot,store,run_id,attempt_id)`は、新規書込・再送・外部ネットワークなしで同一枠のclaim/raw/result存在と内容を照合する。全結果で`retry_allowed=false`、`api_send_allowed=false`、`publication_allowed=false`を固定する。診断結果は次の限定分類：
+  - `UNRESOLVED_NO_CLAIM`：ローカル使用記録なし。ただし実行していない証明にはならない。
+  - `INTERRUPTED_NEEDS_MANUAL_REVIEW`：claimだけ、rawのみ後続結果なし、またはタイムアウトUNKNOWN。手動調査前の再送禁止。
+  - `OFFLINE_BLOCKED_RECORDED`：検証不合格の既存結果を保存済み。後付けでPASSに上げない。
+  - `INCONSISTENT_UNTRUSTED`：claim/run/responseの構造矛盾、検証ハッシュの食い違い、欠損・改ざん・危険なファイル。停止。
+  - `OFFLINE_CONSISTENT_UNATTESTED`：結果JSON、raw bytesと固定snapshotの再検証が整合。ただしローカル一致であってprovider真正性／publisher権限／E5の証明ではない。
+- `tests/test_d2_reconciliation.py`の**15件**でクラッシュ窓（claim直後／raw保存後）、timeout、正常fixtureの反復読取、malformed・重複JSONキー、claim/raw/結果改ざん、孤立原本、symlink、サイズ制限、読み取り専用を検証。GitHub ActionsのD1 Offline Market Report Shadow Workerで実行し、従来の失敗時停止ルールを緩和しない。
+- **限界**：POSIX一台の試作で、ネットワーク隔離／IAM／暗号化／遠隔不変証拠／認証済み外部タイムスタンプ／複数マシン跨り排他／失敗時の正式再送承認手続きは未整備。完全停止したプロセスが原本を一度も送信しなかったかをローカル証拠だけで証明できない。実API trial・production署名・E5公開は引き続きBLOCKED。
+- **改訂記録**：2026-10-15 v1.15（Draft）／旧変更仕様書を更新せず、本正式仕様書1本へ統合。
