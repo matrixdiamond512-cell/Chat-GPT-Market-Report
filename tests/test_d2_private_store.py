@@ -57,7 +57,7 @@ class TestLocalPrivateEvidenceStore(unittest.TestCase):
         for item in (
             "", "reports/run/attempt", "shadow/../bad", "shadow/run/../../x",
             "shadow/run/try.json", "shadow/run/at tempt",
-            "shadow/run\\evil/attempt", "/shadow/run/attempt", "shadow/run",
+            r"shadow/run\\evil/attempt", "/shadow/run/attempt", "shadow/run",
         ):
             with self.subTest(item=item):
                 with self.assertRaisesRegex(PrivateEvidenceError, "OBJECT_ID_INVALID"):
@@ -110,7 +110,7 @@ class TestLocalPrivateEvidenceStore(unittest.TestCase):
         arbitrary = b'{"raw":"\\u2605"}\n'
         receipt = self.store.put_once(self.object_id, arbitrary)
         self.assertEqual(self.store.read_verified(receipt), arbitrary)
-        self.assertNotEqual(receipt.content_sha256, hashlib.sha256(b'{"raw":"★"}\n').hexdigest())
+        self.assertNotEqual(receipt.content_sha256, hashlib.sha256('{"raw":"★"}\n'.encode("utf-8")).hexdigest())
 
 
 if __name__ == "__main__":
