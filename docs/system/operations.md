@@ -100,3 +100,6 @@ CIで`node scripts/test_d2_detached_evidence.js`および`node scripts/test_d2_o
 
 ## 2026-10-15 D2計測原文の意味照合SOP（v1.23）
 `node scripts/test_d2_offline_proof_handoff.js`をCIで実行する。従来の18試験に5件追加し、合成原文とEd25519署名がSHA・IDに一致していても、計測原文の`input_tokens`がpreparationの`counted_input_tokens`と違う場合を拒否する。重複`input_tokens`・誤ったobject種別・凍結preparation側の数値差も停止する。JSONの空白やフィールド順が違うだけの場合は構造と実数値が一致する限りオフライン検証を継続しても、`api_send_allowed=false`、`retry_allowed=false`、`publication_allowed=false`のままとする。必ずD1 offline CI全系成功を確認し、暗号鍵・APIキーは試験へ付与しない。旧変更仕様書は更新しない。実API・請求・出典の認証と費用承認、本番公開は別ゲートでBLOCKEDを維持する。
+
+## 2026-10-15 D2月間予算算術の証拠照合SOP（v1.24）
+CIで`node scripts/test_d2_offline_proof_handoff.js`を実行し、従来23ケースに11件追加した全34ケースの結果を確認する。特に月額原文を再生成してSHAとEd25519署名を作り直しても、`counted_model_cost_usd`・`monthly_total_with_reservation_usd`・`monthly_effective_cap_usd`が計算上矛盾する場合にfail-closedとなることを確かめる。計測token、最大token、run cap、両hard limit有効状態、対象月、過大支出・予約、不正小数表記をテストする。整合した合成fixtureは`OFFLINE_PREPARATION_DETACHED_PROOFS_MATCH_UNATTESTED`のみとし、API送信・再送・公開は常にfalse。CI結果は最新版commit単位で読み戻してから報告し、本番鍵・外部証拠・費用承認が未接続のまま実送信へ移行しない。旧変更仕様書はアーカイブのまま更新しない。
