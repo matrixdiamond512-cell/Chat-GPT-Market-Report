@@ -9,6 +9,7 @@ A simulation may establish contract validity but NEVER grant an API send.
 from __future__ import annotations
 
 from dataclasses import dataclass, asdict
+from datetime import date
 from decimal import Decimal, InvalidOperation
 import json
 import re
@@ -22,7 +23,7 @@ REQUIRED_EVIDENCE = (
     "full_numeric_claim_check", "timeout_reconciliation",
     "no_publication_credentials",
 )
-MODEL_PATTERN = re.compile(r"^gpt-[a-zA-Z0-9.]+(?:-[a-zA-Z0-9.]+)+$")
+MODEL_PATTERN = re.compile(r"^gpt-[A-Za-z0-9.]+(?:-[A-Za-z0-9.]+)*-\d{4}-\d{2}-\d{2}$")
 EVIDENCE_PATTERN = re.compile(r"^[A-Za-z0-9_.:/-]{8,256}$")
 COST_LIMIT = Decimal("1000000")
 
@@ -85,11 +86,22 @@ def evaluate_d2_manifest(manifest: dict | None = None) -> PreflightOutcome:
     if manifest.get("external_tools") != [] or manifest.get("web_search_calls") != 0:
         errors.append("MODEL_TOOL_CALLS_FORBIDDEN_IN_D2")
     model = manifest.get("model_snapshot")
-    if not isinstance(model, str) or not MODEL_PATTERN.fullmatch(model) or model.endswith("-latest"):
+    if not isinstance(model, str) or not MODEL_PATTERN.fullmatch(model):
         errors.append("MODEL_SNAPSHOT_NOT_PINNED")
+    else:
+        try:
+            date.fromisoformat(model[-10:])
+        except ValueError:
+            errors.append("MODEL_SNAPSHOT_NOT_PINNED")
     report_id = manifest.get("report_id")
     if not isinstance(report_id, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}_(08|12|16|21)-00", report_id):
         errors.append("REPORT_ID_OR_SLOT_INVALID")
+    if isinstance(report_id, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}_(08|12|16|21)-00", report_id):
+        try:
+            if date.fromisoformat(report_id[:10]).weekday() > 4:
+                errors.append("REPORT_ID_OR_SLOT_INVALID")
+        except ValueError:
+            errors.append("REPORT_ID_OR_SLOT_INVALID")
     if manifest.get("data_contract") != "immutable-context-snapshot/v1":
         errors.append("IMMUTABLE_INPUT_CONTRACT_MISSING")
     if manifest.get("response_contract") != "strict-json-schema/v1":
