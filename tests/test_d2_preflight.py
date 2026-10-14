@@ -81,6 +81,10 @@ class TestD2Preflight(unittest.TestCase):
                          "MAX_INPUT_NOT_POSITIVE_INTEGER")
         self.check_block(lambda p: p["caps"].update(max_output_tokens=True),
                          "MAX_OUTPUT_NOT_POSITIVE_INTEGER")
+        self.check_block(lambda p: p["caps"].update(max_input_tokens=12001),
+                         "MAX_INPUT_ABOVE_D2_SAFE_BOUND")
+        self.check_block(lambda p: p["caps"].update(max_output_tokens=4001),
+                         "MAX_OUTPUT_ABOVE_D2_SAFE_BOUND")
         self.check_block(lambda p: p["caps"].update(max_run_usd="0.0050000009"),
                          "RUN_CAP_NOT_APPROVED_DECIMAL_STRING")
         self.check_block(lambda p: p["price_quote"].update(input_per_million="-1"),
