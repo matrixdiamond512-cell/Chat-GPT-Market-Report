@@ -46,6 +46,8 @@ def exercise_d2_offline(
     run_id: str, attempt_id: str,
     instructions: str = "Only use the pre-verified frozen observation bundle.",
     max_model_cost_usd: str = "0.03",
+    max_input_tokens: int = 12000,
+    max_output_tokens: int = 4000,
 ) -> OfflineD2Result:
     """One synthetic attempt, no network and zero public writes.
 
@@ -59,15 +61,29 @@ def exercise_d2_offline(
     if any(not re.fullmatch(r"[A-Za-z0-9_-]{1,60}", s or "")
            for s in (run_id, attempt_id)):
         raise OfflineD2Blocked("RUN_OR_ATTEMPT_ID_INVALID")
-    try:
-        limit = Decimal(max_model_cost_usd)
-    except (ValueError, TypeError):
-        raise OfflineD2Blocked("COST_LIMIT_INVALID") from None
+    if (type(max_input_tokens) is not int or
+            not 1 <= max_input_tokens <= 12000 or
+            type(max_output_tokens) is not int or
+            not 1 <= max_output_tokens <= 4000):
+        raise OfflineD2Blocked("TOKEN_CAP_INVALID")
+    if (type(max_model_cost_usd) is not str or
+            not re.fullmatch(r"(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,8})?", max_model_cost_usd)):
+        raise OfflineD2Blocked("COST_LIMIT_INVALID")
+    limit = Decimal(max_model_cost_usd)
     if not limit.is_finite() or limit <= 0:
         raise OfflineD2Blocked("COST_LIMIT_INVALID")
+    # Contractual offline quote, NOT a tokenizer-measured input count or
+    # enforceable provider-side spending limit. No live cost authorization.
+    planned = estimate_usage_usd({
+        "input_tokens": max_input_tokens,
+        "output_tokens": max_output_tokens,
+    })
+    if planned > limit:
+        raise OfflineD2Blocked("PLANNED_BUDGET_EXCEEDED")
 
     # Build and validate BEFORE any slot claim and BEFORE responder call.
-    request = build_request(context, snapshot, model=MODEL, instructions=instructions)
+    request = build_request(context, snapshot, model=MODEL, instructions=instructions,
+                            max_output_tokens=max_output_tokens)
     slot = f"slot-{context.report_id}-r{context.revision}"
     claim_id = f"shadow/{slot}/claim"
     claim_bytes = json_bytes({
@@ -75,6 +91,9 @@ def exercise_d2_offline(
         "report_id": context.report_id, "revision": context.revision,
         "snapshot_id": snapshot.snapshot_id, "run_id": run_id,
         "attempt_id": attempt_id, "request_sha256": sha256_bytes(json_bytes(request)),
+        "max_input_tokens": max_input_tokens, "max_output_tokens": max_output_tokens,
+        "max_model_cost_usd": str(limit),
+        "planned_model_cost_usd": str(planned),
         "lane": "api-shadow", "api_send_allowed": False,
         "publication_allowed": False,
     })
@@ -106,6 +125,9 @@ def exercise_d2_offline(
             raise OfflineD2Blocked("RAW_FIXTURE_JSON_INVALID") from exc
         captured = capture_response(raw_obj, context, snapshot, raw_response_bytes=readback)
         estimate = estimate_usage_usd(captured.usage)
+        if (captured.usage["input_tokens"] > max_input_tokens or
+                captured.usage["output_tokens"] > max_output_tokens):
+            raise OfflineD2Blocked("ACTUAL_TOKEN_CAP_EXCEEDED")
         if estimate > limit:
             raise OfflineD2Blocked("SIMULATED_BUDGET_EXCEEDED")
         if captured.raw_response_sha256 != raw_receipt.content_sha256:
@@ -127,6 +149,8 @@ def exercise_d2_offline(
         "snapshot_id": snapshot.snapshot_id,
         "request_sha256": sha256_bytes(json_bytes(request)),
         "slot_claim_sha256": claim.content_sha256,
+        "max_input_tokens": max_input_tokens, "max_output_tokens": max_output_tokens,
+        "max_model_cost_usd": str(limit), "planned_model_cost_usd": str(planned),
         "raw_response_sha256": (raw_receipt.content_sha256 if raw_receipt else None),
         "raw_response_object": (raw_receipt.object_id if raw_receipt else None),
         "body_sha256": (captured.body_sha256 if captured else None),
