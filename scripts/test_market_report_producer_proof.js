@@ -195,4 +195,25 @@ assert.throws(() => historyDry.processHistoricalMarketReportBatch_(), /PRODUCER_
 assert.strictEqual(historyState.writes, 0, 'unproved historical batch must not rewrite reports.json');
 assert.strictEqual(historyState.saves, 0, 'blocked batch must not save a success receipt');
 
+// Scheduled/manual/retry entry points must converge on the shared proof-gated writer.
+assert(/function autoPublishScheduledMarketReport_\\([\\s\\S]*?return publishMarketReportSlot_\\(/.test(autoSource),
+  'ordinary scheduled publication must route through the shared slot publisher');
+assert(/function autoPublishDueMarketReports_\\([\\s\\S]*?results\\.push\\(publishMarketReportSlot_\\(/.test(autoSource),
+  'retry/watchdog publication must route through the shared slot publisher');
+for (const handler of [
+  'autoPublishMarketReport0930Retry', 'autoPublishMarketReport1330Retry',
+  'autoPublishMarketReport1730Retry', 'autoPublishMarketReport2230Retry',
+  'autoPublishMarketReport0830Retry'
+]) {
+  const escaped = handler.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\console.log('Signed producer-owned report gate / no-write regressions PASS');');
+  assert(new RegExp('function ' + escaped + '\\\\(\\\\)\\\\s*\\\\{\\\\s*return autoPublishDueMarketReports_\\\\(').test(autoSource),
+    handler + ' must route to the shared retry dispatcher');
+}
+const scheduledWriter = extract(autoSource, 'function publishMarketReportSlot_(hour, mode, throwOnError, targetDate)',
+  '\\nfunction marketReportAutoVerifyPublishedSource_');
+assert(scheduledWriter.includes('publishWebReportObject_(report)'),
+  'scheduled and retry slot writer must call the proof-gated canonical publisher');
+assert(!scheduledWriter.includes('putGitHubJsonFile_'),
+  'scheduled and retry slot writer must not add a direct GitHub write bypass');
+
 console.log('Signed producer-owned report gate / no-write regressions PASS');
