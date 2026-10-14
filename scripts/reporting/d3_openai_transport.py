@@ -118,8 +118,27 @@ class FixedOpenAIHTTPS:
                 if len(raw) > MAX_RESPONSE_BYTES or not raw:
                     raise LiveTransportBlocked("OPENAI_PROVIDER_RESPONSE_SIZE_INVALID")
                 return raw
-        except (HTTPError, URLError, TimeoutError, OSError) as exc:
-            raise LiveTransportBlocked("OPENAI_TRANSPORT_FAILED_NO_AUTOMATIC_RETRY") from exc
+        except HTTPError as exc:
+            # Only expose a documented structured error *code*, not the raw
+            # provider body, headers, request, key or project identifier.
+            # Never retry an ambiguous model send (including 429).
+            provider_code = "UNKNOWN"
+            if exc.code == 429:
+                try:
+                    body = exc.read(4097)
+                    if len(body) <= 4096:
+                        decoded = json.loads(body.decode("utf-8"))
+                        raw_code = (decoded.get("error") or {}).get("code")
+                        if isinstance(raw_code, str) and re.fullmatch(
+                                r"[a-z][a-z0-9_]{1,75}", raw_code):
+                            provider_code = raw_code
+                except (UnicodeError, ValueError, TypeError, AttributeError):
+                    pass
+            raise LiveTransportBlocked(
+                f"OPENAI_HTTP_{exc.code}_CODE_{provider_code}_NO_AUTOMATIC_RETRY"
+            ) from None
+        except (URLError, TimeoutError, OSError) as exc:
+            raise LiveTransportBlocked("OPENAI_TRANSPORT_FAILED_NO_AUTOMATIC_RETRY") from None
 
 
 def _parse_api_json(raw: bytes) -> dict:
