@@ -40,3 +40,9 @@
 - `scripts/reporting/d2_private_store.py`に`LocalPrivateEvidenceStore`を追加。明示したPOSIX絶対パス配下に`shadow/<run>/<attempt>.json`のみ保管し、Git worktree内は拒否。
 - ディレクトリ0700／証拠ファイル0600、所有者・ハードリンク・symlinkを検査。O_EXCLによる一度限りのファイル生成、fsync後、別descriptorで独立読み戻し、byte長・SHA-256照合を行う。receipt契約は`d2-local-private-evidence/v1`。
 - byte hashとローカルreceiptはOpenAI API受信の真正性、Cloud IAM、暗号化、遠隔readback、跨ホスト同時起動排他、publisher署名／E5を証明しない。production storeは別実装、監査・鍵・暗号化・権限の確認が必要。
+
+## 2026-10-15 D2 numeric claims／source bundle仕様（Draft）
+- `scripts/reporting/d2_numeric_claims.py`：`verified_source_bundle(context,snapshot)`で既存凍結snapshotから構築した参照バンドル（report_id、revision、snapshot_id、cutoff、系列、marketType、asOf、source ID/URL、unit、priceValue/changeValue/changePct）を生成。モデルが値・出典を増やすことはできない。バンドルSHAは旧snapshot IDとは別のオフライン記録。
+- `audit_numeric_claims(context,snapshot,body,claims)`は本文の字句数値出現位置を網羅的に抽出し、`{start,literal,series,field,source_id,as_of}`との1:1対応を要求。値はDecimal比較、パーセント単位、負のゼロ、未取得フィールド、参照時刻・出典ID、重複・欠損を検査。日時・銘柄名の数字の限定例外以外はBLOCKED。未知の数値エビデンスを自主生成しない。
+- `d2_responses_contract.py`はshadow-responses-json/v2のstrict schemaに`numeric_claims`を追加し、Responseの取得後に数字監査を行う。成功時も`CapturedResponse.publishable=false`。既存の旧schema出力はD2で自動補正しない。
+- `shadow_worker.freeze_shadow_input`で登録済みsource IDと登録URLのペア一致を必須に変更。IDだけ正しくURLが偽装された入力はfail-closed。ニュース等の独立検証ソース・意味論・利用許諾は別工程。
