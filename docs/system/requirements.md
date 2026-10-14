@@ -21,3 +21,10 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - PR #99はmainにマージ済み。現行スケジュールは平日08/12/16/21のみ、土日なし。
 - PR #94の修正後Actions run 38298392598はSUCCESS。Draft・未マージであり、本番データ書込を検証したものではない。
 - この文書に記載するPR #98のReceipt強制ゲートは撤回済み。Docs保存証跡の旧スキーマ移行が未完了のため、公開ゲートの新設を完了とはしない。
+
+## 2026-10-15 生成元証拠v2の要件追補（v1.12 / Draft）
+
+- D1の非公開API-shadow用source証拠は、旧Python v1 snapshot IDを変更せず、別の`report-canonical-json/v2`形式で追加digestを保持すること。旧証拠や既存レポートを自動再署名しない。
+- float値はJSON数値としての情報喪失を避けるため、生成元で型付きdecimal_v2文字列へ変換し、Python/GASでcanonical bytesおよびSHA-256一致を確認する。原文・market dataの真正性と署名権限は別途検証する。
+- D1成功はE4相当のoff-line契約検証のみ。API費用、非公開永続保存先、issuer鍵、D2実運用は未承認。既存ChatGPTタスクは稼働継続、PR #130 Draft、本番レポート公開はBLOCKEDのまま。
+- 変更実装：PR #130の`scripts/reporting/canonical_v2.py`、`apps-script/MarketReportProducerProof.gs`のv2 helper、およびgoldenテスト。変更仕様書のv2追補と対応づける。
