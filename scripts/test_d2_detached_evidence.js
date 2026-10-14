@@ -117,6 +117,16 @@ rejected('cannot use one key for both evidence roles',()=>{
   verifyPair(rawCount,rawBilling,
     {input_count:count.trust,monthly_billing:count.trust},exps,now);
 },/DISTINCT_ROLE_TRUST_ROOTS_REQUIRED/);
+rejected('distinct IDs with identical signing public key are not distinct roots',()=>{
+  const recycled={
+    privateKey:count.privateKey,
+    trust:{...count.trust,key_id:'different-key-id'}
+  };
+  const rawRecycled=sign(recycled,billExp);
+  verifyPair(rawCount,rawRecycled,{
+    input_count:count.trust,monthly_billing:recycled.trust
+  },exps,now);
+},/SAME_PUBLIC_KEY_USED_FOR_DISTINCT_ROLES/);
 rejected('cross-role request hash split blocked',()=>{
   verifyPair(rawCount,rawBilling,roots,{
     ...exps,monthly_billing:{...billExp,create_request_sha256:'9'.repeat(64)}
