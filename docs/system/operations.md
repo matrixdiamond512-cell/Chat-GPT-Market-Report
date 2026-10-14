@@ -69,3 +69,8 @@ PR #130の`python -m unittest discover -s tests -p 'test_d2_preflight.py' -v`と
 
 ## 2026-10-15 D2オフライン通し試験の運用（v1.14）
 CI：`python -m unittest discover -s tests -p 'test_d2_offline_pipeline.py' -v`。新規のテスト用一時POSIX非公開領域と合成応答だけを使う。固定slot claimが作成された後の失敗・timeout・invalidは「UNKNOWNまたはBLOCKED」で保存し、claimを勝手に削除しない。再実行前に独立のreconciliationと承認を要する。応答の原文保存・読戻しと数値照合・模擬費用の判定を分けてログに残す。Callableは任意の外部通信を技術的には実行できるため、CIの実行権限・通信遮断・秘密情報不付与を維持し、実API clientを渡さない。原文/private証拠を公開repoやCI artifactへアップロードしない。これは実API送信・デプロイ・公開手順ではない。正本は正式仕様書v1.14。
+
+## 2026-10-15 D2オフライン復旧診断のSOP（v1.15）
+- `python -m unittest discover -s tests -p 'test_d2_reconciliation.py' -v` をGitHub ActionsのD1 offline CIに含める。**現状は合成fixtureのみ**。本番API・publisherには実行しない。
+- 異常発生時はまず`slot claim`・`raw`・`result`の有無を読取専用で検査する。`UNRESOLVED_NO_CLAIM`は未送信の証明ではない。`INTERRUPTED_NEEDS_MANUAL_REVIEW`や`UNKNOWN`はprovider照合・オーナー判断まで再試行禁止。`INCONSISTENT_UNTRUSTED`は証拠毀損として隔離・停止する。`OFFLINE_CONSISTENT_UNATTESTED`もprovider原本・IAM・署名の保証ではなく公開しない。
+- 診断の`read_for_diagnostics`は未認証bytesを検査する補助関数であり、返されたbytesから計算したSHAを新しい独立receiptとして発行しない。原本を上書き・削除せず、元のreceipt・record・ログを保全する。正式な手動reconciliation/再送承認の運用は未実装であり、現行の全状態は`retry_allowed=false`。
