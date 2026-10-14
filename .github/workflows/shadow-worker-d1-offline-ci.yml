@@ -32,6 +32,9 @@ on:
       - 'tests/test_d2_prepared_reconciliation.py'
       - 'scripts/reporting/d3_openai_transport.py'
       - 'tests/test_d3_openai_transport.py'
+      - 'scripts/reporting/d3_latest_input_probe.py'
+      - 'tests/test_d3_latest_input_probe.py'
+      - 'data/market/latest.json'
       - 'scripts/reporting/shadow_hash_golden.py'
       - 'scripts/test_shadow_hash_golden.js'
       - 'scripts/reporting/d2_detached_evidence.js'
@@ -89,6 +92,10 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_d2_prepared_reconciliation.py' -v
       - name: Offline-test paid OpenAI sender transport and fail-closed execution gate
         run: python -m unittest discover -s tests -p 'test_d3_openai_transport.py' -v
+      - name: Probe actual saved market input eligibility (no API, no publication)
+        run: |
+          python -m unittest discover -s tests -p 'test_d3_latest_input_probe.py' -v
+          python -m scripts.reporting.d3_latest_input_probe --market-json data/market/latest.json
       - name: Verify versioned v2 Python canonicalization
         run: python -m unittest discover -s tests -p 'test_canonical_v2.py' -v
       - name: Verify Python and Apps Script v2 canonical bytes digests and test HMAC
