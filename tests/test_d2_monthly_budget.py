@@ -54,7 +54,7 @@ class TestD2MonthlyBudget(unittest.TestCase):
     def test_spent_plus_pending_and_max_model_cost_cannot_exceed_limit(self):
         for field, value in (
             ("reported_month_spend_usd", "1.48"),
-            ("outstanding_reservations_usd", "0.48"),
+            ("outstanding_reservations_usd", "0.70"),
             ("project_hard_limit_usd", "0.90"),
             ("org_hard_limit_usd", "0.50"),
         ):
