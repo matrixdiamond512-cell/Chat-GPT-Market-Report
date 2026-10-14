@@ -31,12 +31,6 @@ on:
     # when an upstream GITHUB_TOKEN commit does not emit a downstream push event.
     - cron: "10 23 * * 0-4"  # 08:10 JST Monday-Friday
     - cron: "25 23 * * 0-4"  # 08:25 JST Monday-Friday
-    - cron: "40 23 * * 0-4"  # 08:40 JST after Docs ingestion
-    - cron: "10 0 * * 1-5"   # 09:10 JST after fallback ingestion
-    - cron: "40 3 * * 1-5"   # 12:40 JST after Docs ingestion
-    - cron: "10 4 * * 1-5"   # 13:10 JST after fallback ingestion
-    - cron: "40 12 * * 1-5"  # 21:40 JST after Docs ingestion
-    - cron: "10 13 * * 1-5"  # 22:10 JST after fallback ingestion
     # Run shortly after each Japan-close capture retry.
     - cron: "20 7 * * 1-5"   # 16:20 JST
     - cron: "50 7 * * 1-5"   # 16:50 JST
