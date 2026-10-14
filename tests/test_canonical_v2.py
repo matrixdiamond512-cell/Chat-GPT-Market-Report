@@ -24,9 +24,8 @@ class TestCanonicalV2(unittest.TestCase):
         self.assertEqual(original, preserved)
         self.assertEqual(proof["snapshot"]["snapshot_id"], original)
         self.assertEqual(proof["canonicalization_version"], "report-canonical-json/v2")
-        snapshot = dict(proof["snapshot"])
-        del snapshot["snapshot_id"]
-        self.assertEqual(sha256_v2(snapshot), proof["snapshot_digest_v2"])
+        self.assertEqual(sha256_v2(proof["snapshot"]), proof["snapshot_digest_v2"])
+        self.assertEqual(proof["legacy_snapshot_id"], original)
         self.assertEqual(sha256_v2(proof["context"]), proof["context_digest_v2"])
         self.assertNotEqual(original.replace("snapshot-", ""), proof["snapshot_digest_v2"])
 
