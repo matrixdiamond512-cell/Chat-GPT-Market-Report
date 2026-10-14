@@ -53,8 +53,11 @@ const sign = value => {
   return result;
 };
 const state = { data: sign(record), requests: [], writes: 0 };
+const TestDate = class extends Date {
+  static now() { return new Date('2026-10-15T17:00:00+09:00').getTime(); }
+};
 const context = {
-  Date, console,
+  Date: TestDate, console,
   PropertiesService: {getScriptProperties: () => ({
     getProperty: name => name === 'MARKET_REPORT_PRODUCER_HMAC_KEY' ? secret : ''
   })},
