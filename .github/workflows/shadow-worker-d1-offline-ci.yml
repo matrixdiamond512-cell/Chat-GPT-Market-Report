@@ -6,6 +6,9 @@ on:
     paths:
       - 'scripts/reporting/shadow_worker.py'
       - 'tests/test_shadow_worker_offline.py'
+      - 'scripts/reporting/shadow_hash_golden.py'
+      - 'scripts/test_shadow_hash_golden.js'
+      - 'apps-script/MarketReportProducerProof.gs'
       - 'scripts/reporting/context.py'
       - 'scripts/reporting/snapshot.py'
       - 'scripts/reporting/report.py'
@@ -25,7 +28,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - name: Compile offline D1 contract and test
         run: python -m compileall -q scripts/reporting/shadow_worker.py tests/test_shadow_worker_offline.py
       - name: Test shadow report contract with fake data only
         run: python -m unittest discover -s tests -p 'test_shadow_worker_offline.py' -v
+      - name: Detect Python/GAS serialization parity and incompatible float cases
+        run: node scripts/test_shadow_hash_golden.js
