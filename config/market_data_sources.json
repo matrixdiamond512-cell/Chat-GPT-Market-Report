@@ -7,6 +7,127 @@
     "Free sources are used first. Each value must keep source id, source url, market type, session, unit, and verification status."
   ],
   "symbols": {
+    "dow": {
+      "displayName": "NYダウ",
+      "dashboardKey": "dow",
+      "unit": "pt",
+      "marketType": "index",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_dow",
+          "name": "Yahoo Finance Dow Jones Industrial Average",
+          "kind": "yahoo_chart",
+          "symbol": "^DJI",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EDJI",
+          "sourceUrl": "https://finance.yahoo.com/quote/%5EDJI/",
+          "priority": 1,
+          "marketType": "index",
+          "session": "daily"
+        }
+      ]
+    },
+    "nasdaq": {
+      "displayName": "NASDAQ総合",
+      "dashboardKey": "nasdaq",
+      "unit": "pt",
+      "marketType": "index",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_nasdaq_comp",
+          "name": "Yahoo Finance NASDAQ Composite",
+          "kind": "yahoo_chart",
+          "symbol": "^IXIC",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EIXIC",
+          "sourceUrl": "https://finance.yahoo.com/quote/%5EIXIC/",
+          "priority": 1,
+          "marketType": "index",
+          "session": "daily"
+        }
+      ]
+    },
+    "sp500": {
+      "displayName": "S&P500",
+      "dashboardKey": "sp500",
+      "unit": "pt",
+      "marketType": "index",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_sp500",
+          "name": "Yahoo Finance S&P 500",
+          "kind": "yahoo_chart",
+          "symbol": "^GSPC",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EGSPC",
+          "sourceUrl": "https://finance.yahoo.com/quote/%5EGSPC/",
+          "priority": 1,
+          "marketType": "index",
+          "session": "daily"
+        }
+      ]
+    },
+    "russell2000": {
+      "displayName": "Russell 2000",
+      "dashboardKey": "russell2000",
+      "unit": "pt",
+      "marketType": "index",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "yahoo_russell2000",
+          "name": "Yahoo Finance Russell 2000",
+          "kind": "yahoo_chart",
+          "symbol": "^RUT",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5ERUT",
+          "sourceUrl": "https://finance.yahoo.com/quote/%5ERUT/",
+          "priority": 1,
+          "marketType": "index",
+          "session": "daily"
+        }
+      ]
+    },
+    "nikkei225_cash": {
+      "displayName": "日経225現物",
+      "dashboardKey": "nikkei_cash",
+      "unit": "円",
+      "marketType": "index",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "nikkei_nk225_official_daily_csv",
+          "name": "Nikkei 225 official daily close CSV",
+          "kind": "nikkei_daily_csv",
+          "url": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_daily_jp.csv",
+          "sourceUrl": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_daily_jp.csv",
+          "sourceSeriesId": "nikkei_nk225_official_daily_csv",
+          "priority": 1,
+          "marketType": "index",
+          "session": "japan_cash",
+          "closeTimeJst": "15:30",
+          "timeoutSeconds": 20,
+          "note": "Official Nikkei daily CSV; use source market date and published close, not a continuous or intraday proxy.",
+          "dateColumnIndex": 0,
+          "valueColumnIndex": 1
+        },
+        {
+          "id": "yahoo_nikkei225_cash",
+          "name": "Yahoo Finance Nikkei 225",
+          "kind": "yahoo_chart",
+          "symbol": "^N225",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/%5EN225",
+          "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/",
+          "priority": 2,
+          "marketType": "index",
+          "session": "daily"
+        }
+      ]
+    },
     "gold": {
       "displayName": "金",
       "dashboardKey": "gold",
@@ -136,6 +257,44 @@
           "priority": 2,
           "marketType": "spot",
           "session": "continuous"
+        },
+        {
+          "id": "boj_usdjpy_17_reference",
+          "name": "Bank of Japan daily USD/JPY spot reference (17:00 JST)",
+          "kind": "boj_daily_fx_pdf",
+          "listingUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/index.htm",
+          "sourceUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/index.htm",
+          "sourceSeriesId": "boj:USDJPY:spot:17:00:JST:bid_offer_midpoint",
+          "priority": 99,
+          "marketType": "spot",
+          "session": "tokyo_17_daily_reference",
+          "referenceOnly": true,
+          "timeoutSeconds": 25,
+          "observationHourJst": 17,
+          "publishedDecimalPlaces": 2,
+          "validationStaleHours": 120,
+          "observationDefinition": "BOJ Tokyo USD/JPY spot bid-offer midpoint at 17:00 JST from dated daily FX publication PDF",
+          "sessionCloseAt": "17:00 Asia/Tokyo",
+          "note": "Official daily publication PDF is primary for current observations; legacy time-series API remains a delayed diagnostic reference."
+        },
+        {
+          "id": "boj_usdjpy_17_timeseries_delayed",
+          "name": "BOJ Time-Series API USD/JPY 17:00 (lagged long-series reference)",
+          "kind": "boj_time_series",
+          "url": "https://www.stat-search.boj.or.jp/api/v1/getDataCode",
+          "database": "FM08",
+          "seriesCode": "FXERD04",
+          "sourceSeriesId": "FM08:FXERD04",
+          "sourceUrl": "https://www.stat-search.boj.or.jp/ssi/mtshtml/fxerd04_en.html",
+          "priority": 100,
+          "marketType": "spot",
+          "session": "tokyo_17_daily_reference",
+          "referenceOnly": true,
+          "lookbackDays": 90,
+          "observationHourJst": 17,
+          "publishedDecimalPlaces": 2,
+          "validationStaleHours": 36,
+          "note": "Long-term time-series API can lag the daily release; never treat its latest observation as current without freshness validation."
         }
       ]
     },
@@ -168,6 +327,25 @@
           "priority": 2,
           "marketType": "spot",
           "session": "continuous"
+        },
+        {
+          "id": "ecb_eurusd_daily_reference",
+          "name": "ECB daily EUR/USD reference rate",
+          "kind": "ecb_exchange_rate",
+          "url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD.EUR.SP00.A",
+          "seriesKey": "D.USD.EUR.SP00.A",
+          "sourceSeriesId": "EXR.D.USD.EUR.SP00.A",
+          "sourceUrl": "https://data.ecb.europa.eu/key-figures/ecb-interest-rates-and-exchange-rates/exchange-rates",
+          "priority": 99,
+          "marketType": "spot",
+          "session": "euro_reference_daily_1600_cet",
+          "referenceOnly": true,
+          "validationStaleHours": 168,
+          "lookbackDays": 20,
+          "currency": "USD",
+          "currencyDenominator": "EUR",
+          "publishedDecimalPlaces": 4,
+          "note": "ECB's daily USD per EUR spot reference rate, normally published around 16:00 CET on TARGET business days. Informational daily reference, not an intraday or market-close execution quote; reference-only until the report field accepts this timing."
         }
       ]
     },
@@ -200,6 +378,24 @@
           "priority": 2,
           "marketType": "spot_crypto",
           "session": "continuous"
+        },
+        {
+          "id": "kraken_btcusd_daily_close",
+          "name": "Kraken BTC/USD spot exchange daily UTC close",
+          "kind": "kraken_ohlc",
+          "url": "https://api.kraken.com/0/public/OHLC",
+          "pair": "XBTUSD",
+          "resultKey": "XXBTZUSD",
+          "intervalMinutes": 1440,
+          "sourceUrl": "https://docs.kraken.com/api/docs/rest-api/get-ohlc-data",
+          "sourceSeriesId": "Kraken:XXBTZUSD:1D:UTC",
+          "priority": 99,
+          "marketType": "spot_crypto",
+          "session": "kraken_utc_daily_close",
+          "referenceOnly": true,
+          "validationStaleHours": 72,
+          "timeoutSeconds": 20,
+          "note": "Public Kraken spot BTC/USD venue candle; last completed UTC 1-day close, excluding the current uncommitted candle. Single-exchange close, not a global composite; reference-only because Kraken content is licensed for own benefit and public redistribution/display requires prior approval."
         }
       ]
     },
@@ -244,12 +440,28 @@
       "required": true,
       "sources": [
         {
+          "id": "nikkei_nk225vi_official_daily_csv",
+          "name": "Nikkei VI official daily close CSV",
+          "kind": "nikkei_daily_csv",
+          "url": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_vi_daily_jp.csv",
+          "sourceUrl": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_vi_daily_jp.csv",
+          "sourceSeriesId": "nikkei_nk225vi_official_daily_csv",
+          "priority": 1,
+          "marketType": "index",
+          "session": "japan_cash",
+          "closeTimeJst": "15:30",
+          "timeoutSeconds": 20,
+          "note": "Official Nikkei daily CSV; use source market date and published close, not a continuous or intraday proxy.",
+          "dateColumnIndex": 0,
+          "valueColumnIndex": 1
+        },
+        {
           "id": "nikkei_nk225vi_profile",
           "name": "Nikkei 225 VI official profile",
           "kind": "nikkei_profile",
-          "url": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
-          "sourceUrl": "https://indexes.nikkei.co.jp/en/nkave/index/profile?cid=1&idx=nk225vi",
-          "priority": 1,
+          "url": "https://indexes.nikkei.co.jp/nkave/index/profile?cid=7&idx=nk225vi",
+          "sourceUrl": "https://indexes.nikkei.co.jp/nkave/index/profile?cid=7&idx=nk225vi",
+          "priority": 2,
           "marketType": "index",
           "session": "daily",
           "note": "Nikkei official index page. Realtime calculation is every 5 seconds, but fetched value is treated as delayed/page value."
@@ -295,6 +507,168 @@
           "marketType": "crypto_sentiment",
           "session": "daily",
           "note": "CoinMarketCapのキーレス公式API。株式Fear & Greedとは別IDで管理する。"
+        }
+      ]
+    },
+    "jp10y": {
+      "displayName": "日本10年債利回り",
+      "dashboardKey": "jp10y",
+      "unit": "%",
+      "marketType": "yield",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "rates_bonds_jp10y",
+          "name": "確認済み金利JSON（TradingView JGB market snapshot (LSEG)）",
+          "kind": "local_rates_json",
+          "path": "data/rates-bonds.json",
+          "recordName": "日本10年国債利回り",
+          "sourceUrl": "data/rates-bonds.json",
+          "marketType": "yield",
+          "session": "daily",
+          "priority": 2,
+          "maxRetries": 1
+        },
+        {
+          "id": "mof_jgbcm_10y",
+          "name": "Ministry of Finance Japan 10-year constant-maturity JGB yield (daily 15:00 reference)",
+          "kind": "mof_jgb_yield_csv",
+          "url": "https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/jgbcme.csv",
+          "sourceUrl": "https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/index.htm",
+          "sourceSeriesId": "MOF:JGB:10Y:CONSTANT_MATURITY",
+          "encoding": "cp932",
+          "priority": 1,
+          "marketType": "yield",
+          "session": "daily_1500_jst_published_next_business_day",
+          "validationStaleHours": 144,
+          "note": "MOF official semiannual-compound constant-maturity 10-year yield based on JSDA OTC reference prices at 15:00 JST, released 09:30 next business day. This is the report's selected Japanese 10-year series; do not compare it as an intraday quote. Source validation allows up to 144 hours to cover a three-day Japan market closure plus the next-business-day 09:30 publication lag; the asOf date remains visible and historical values are never relabeled as current."
+        }
+      ]
+    },
+    "us10y": {
+      "displayName": "米10年債利回り",
+      "dashboardKey": "us10y",
+      "unit": "%",
+      "marketType": "yield",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "us_treasury_yield_curve",
+          "name": "U.S. Treasury Daily Par Yield Curve Rates",
+          "kind": "treasury_yield_xml",
+          "url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/pages/xml",
+          "data": "daily_treasury_yield_curve",
+          "dateField": "NEW_DATE",
+          "valueField": "BC_10YEAR",
+          "sourceSeriesId": "daily_treasury_yield_curve:BC_10YEAR",
+          "unit": "%",
+          "publishedDecimalPlaces": 2,
+          "sourceUrl": "https://home.treasury.gov/treasury-daily-interest-rate-xml-feed",
+          "marketType": "yield",
+          "session": "daily",
+          "priority": 1,
+          "timeoutSeconds": 45,
+          "note": "Official documented XML feed; par yield curve 10-year point, not the FRED DGS10 series."
+        },
+        {
+          "id": "fred_dgs10",
+          "name": "Federal Reserve H.15 / FRED DGS10",
+          "kind": "fred_api",
+          "seriesId": "DGS10",
+          "dateField": "date",
+          "valueField": "value",
+          "url": "https://api.stlouisfed.org/fred/series/observations",
+          "apiKeyEnv": "FRED_API_KEY",
+          "observationLimit": 10,
+          "timeoutSeconds": 15,
+          "sourceUrl": "https://fred.stlouisfed.org/series/DGS10",
+          "marketType": "yield",
+          "session": "daily",
+          "priority": 2,
+          "maxRetries": 2,
+          "note": "Documented FRED observations API; requires FRED_API_KEY. Series page shows Board of Governors source and citation request; public storage/display scope is not inferred."
+        }
+      ]
+    },
+    "nikkei225_dev25": {
+      "displayName": "日経225 25日移動平均乖離率",
+      "dashboardKey": "nikkei225_dev25",
+      "unit": "%",
+      "marketType": "technical",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "nikkei_nk225_official_sma25",
+          "name": "Nikkei official daily close SMA25 deviation",
+          "kind": "nikkei_sma_deviation",
+          "url": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_daily_jp.csv",
+          "sourceUrl": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_daily_jp.csv",
+          "sourceSeriesId": "Nikkei225 official daily close",
+          "priority": 1,
+          "marketType": "index",
+          "session": "japan_cash",
+          "window": 25,
+          "closeTimeJst": "15:30",
+          "timeoutSeconds": 20,
+          "note": "Calculated from 25 most recent official Nikkei daily closes on or before the report market date.",
+          "dateColumnIndex": 0,
+          "valueColumnIndex": 1
+        },
+        {
+          "id": "yahoo_nikkei225_dev25",
+          "name": "Yahoo Finance Nikkei 225 SMA25 deviation",
+          "kind": "yahoo_sma_deviation",
+          "symbol": "^N225",
+          "range": "1y",
+          "window": 25,
+          "priority": 2,
+          "marketType": "technical",
+          "session": "daily",
+          "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
+          "note": "Derived from official close bars on or before the latest completed JST session; route is a technical calculation, not an index level."
+        }
+      ]
+    },
+    "nikkei225_dev200": {
+      "displayName": "日経225 200日移動平均乖離率",
+      "dashboardKey": "nikkei225_dev200",
+      "unit": "%",
+      "marketType": "technical",
+      "session": "daily",
+      "required": true,
+      "sources": [
+        {
+          "id": "nikkei_nk225_official_sma200",
+          "name": "Nikkei official daily close SMA200 deviation",
+          "kind": "nikkei_sma_deviation",
+          "url": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_daily_jp.csv",
+          "sourceUrl": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_daily_jp.csv",
+          "sourceSeriesId": "Nikkei225 official daily close",
+          "priority": 1,
+          "marketType": "index",
+          "session": "japan_cash",
+          "window": 200,
+          "closeTimeJst": "15:30",
+          "timeoutSeconds": 20,
+          "note": "Calculated from 200 most recent official Nikkei daily closes on or before the report market date.",
+          "dateColumnIndex": 0,
+          "valueColumnIndex": 1
+        },
+        {
+          "id": "yahoo_nikkei225_dev200",
+          "name": "Yahoo Finance Nikkei 225 SMA200 deviation",
+          "kind": "yahoo_sma_deviation",
+          "symbol": "^N225",
+          "range": "1y",
+          "window": 200,
+          "priority": 2,
+          "marketType": "technical",
+          "session": "daily",
+          "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
+          "note": "Derived from official close bars on or before the latest completed JST session; route is a technical calculation, not an index level."
         }
       ]
     }

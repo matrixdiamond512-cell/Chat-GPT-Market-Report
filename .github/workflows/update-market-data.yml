@@ -1,6 +1,33 @@
 name: Update independent market data
 
 on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/update-market-data.yml
+      - scripts/validate_market_data_source.py
+      - scripts/test_treasury_sheets_roundtrip.py
+      - scripts/test_nikkei_sheets_roundtrip.py
+      - tests/test_nikkei_sheets_roundtrip.py
+      - scripts/fetch_market_data.py
+      - config/market_data_sources.json
+      - config/market_data_validation.json
+      - tests/test_official_market_data_adapters.py
+      - scripts/sync_market_close_sheet.py
+      - tests/test_sync_market_close_sheet.py
+      - scripts/import_tradingview_mcp_candidates.py
+      - scripts/test_import_tradingview_mcp_candidates.py
+      - scripts/import_manual_nikkei_data.py
+      - scripts/test_import_manual_nikkei_data.py
+      - scripts/build_chatgpt_report_input.py
+      - scripts/build_personal_market_report.py
+      - scripts/build_personal_market_snapshot.py
+      - scripts/build_personal_market_supplements.py
+      - tests/test_personal_market_report.py
+      - tests/test_personal_market_snapshot.py
+      - scripts/verify_tradingview_close.py
+      - scripts/test_verify_tradingview_close.py
   # Manual utility only. Scheduled acquisitions are handled by the dedicated
   # report-window workflows. Code/config pushes must never refresh or retag the
   # live market snapshot because the latest published report may belong to a
@@ -12,25 +39,112 @@ on:
         required: false
         default: "auto"
       acquisition_mode:
-        description: "auto keeps verified values and retries gaps; full refreshes all symbols"
+        description: "Manual dispatch defaults to Treasury-only validation; choose auto/full only for an authorized data run"
         required: false
-        default: "auto"
+        default: "validate-only"
         type: choice
         options:
           - auto
           - full
+          - validate-only
+      validation_target:
+        description: "validate-only scope; single-provider choices contact only that feed; all-configured contacts the entire provider list"
+        required: false
+        default: treasury-us10y
+        type: choice
+        options:
+          - treasury-us10y
+          - fred-us10y
+          - nikkei-official-indexes
+          - cmc-crypto-fear-greed-eval
+          - all-configured
+      source_automation_rights_confirmed:
+        description: "Confirm that automated collection is permitted for every provider this run will contact"
+        required: false
+        default: false
+        type: boolean
+      public_github_storage_confirmed:
+        description: "Confirm that collected market values may be committed to this public GitHub repository"
+        required: false
+        default: false
+        type: boolean
+      public_dashboard_display_confirmed:
+        description: "Confirm that collected market values may be displayed in the public dashboard/report"
+        required: false
+        default: false
+        type: boolean
+      private_sheets_storage_confirmed:
+        description: "Confirm that this run may store its collected values in the configured private Google Sheet"
+        required: false
+        default: false
+        type: boolean
+      run_sheets_test_roundtrip:
+        description: "Run only synthetic write/readback/idempotency checks against MARKET_DATA_TEST_SPREADSHEET_ID"
+        required: false
+        default: false
+        type: boolean
+      run_treasury_sheets_test:
+        description: "Fetch only verified U.S. Treasury 10-year data and save/read it only in the dedicated test spreadsheet"
+        required: false
+        default: false
+        type: boolean
+      run_nikkei_sheets_test:
+        description: "Fetch the official Nikkei 225, VI, 25/200-day values and save/read only in dedicated private test tabs"
+        required: false
+        default: false
+        type: boolean
+      save_personal_report_to_test_sheet:
+        description: "Build the personal report from the acquired snapshot and append it to the private test sheet"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: update-independent-market-data
   cancel-in-progress: false
 
 jobs:
+  tradingview-mcp-candidate-tests:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout PR revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile market snapshot, report and manual import paths
+        run: python -m py_compile scripts/import_tradingview_mcp_candidates.py scripts/import_manual_nikkei_data.py scripts/verify_tradingview_close.py scripts/build_chatgpt_report_input.py scripts/build_personal_market_snapshot.py scripts/build_personal_market_supplements.py scripts/build_personal_market_report.py
+      - name: Test candidate validation, duplicate guards, and close evidence
+        run: python -m unittest scripts.test_import_tradingview_mcp_candidates scripts.test_verify_tradingview_close scripts.test_import_manual_nikkei_data
+      - name: Test one market snapshot feeds Sheets contract and private report draft
+        run: python -m unittest tests.test_personal_market_report tests.test_personal_market_snapshot -v
+      - name: Compile market data adapters, Sheets writer and private Nikkei roundtrip
+        run: python -m py_compile scripts/fetch_market_data.py scripts/sync_market_close_sheet.py scripts/test_nikkei_sheets_roundtrip.py scripts/build_chatgpt_report_input.py scripts/build_personal_market_snapshot.py scripts/build_personal_market_supplements.py scripts/build_personal_market_report.py
+      - name: Test official source parsers and date alignment
+        run: python -m unittest discover -s tests -p test_official_market_data_adapters.py -v
+      - name: Test close-list series lineage and preservation
+        run: python -m unittest tests.test_sync_market_close_sheet -v
+      - name: Test Nikkei test-sheet acquisition date and source guards
+        run: python -m unittest tests.test_nikkei_sheets_roundtrip -v
+      - name: Test personal report uses the shared 28-item snapshot
+        run: python -m unittest tests.test_personal_market_report -v
+
   update:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_sheets_test_roundtrip != true && inputs.run_treasury_sheets_test != true && inputs.run_nikkei_sheets_test != true
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,10 +172,11 @@ jobs:
         shell: bash
         run: |
           MODE="auto"
-          if [ "${{ inputs.acquisition_mode }}" = "full" ]; then
+          if [ "${{ inputs.acquisition_mode }}" = "full" ] || [ "${{ inputs.acquisition_mode }}" = "validate-only" ]; then
             MODE="full"
           fi
           echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "summary_flag=" >> "$GITHUB_OUTPUT"
 
       - name: Check acquisition scripts
         run: |
@@ -70,27 +185,96 @@ jobs:
           python -m py_compile scripts/run_market_data_window.py
           python -m py_compile scripts/resolve_market_report_slot.py
           python -m py_compile scripts/verify_market_report_readiness.py
+          python -m py_compile scripts/validate_market_data_source.py
+          python -m py_compile scripts/summarize_market_data_diagnostics.py
+          python -m py_compile scripts/import_tradingview_mcp_candidates.py scripts/import_manual_nikkei_data.py scripts/verify_tradingview_close.py
+          python -m unittest scripts.test_import_tradingview_mcp_candidates scripts.test_verify_tradingview_close scripts.test_import_manual_nikkei_data
+
+      - name: Require source-rights confirmation before contacting configured providers
+        if: github.event_name == 'workflow_dispatch' && (inputs.acquisition_mode != 'validate-only' || inputs.validation_target == 'all-configured' || inputs.validation_target == 'fred-us10y' || inputs.validation_target == 'nikkei-official-indexes')
+        shell: bash
+        run: |
+          if [ "${{ inputs.source_automation_rights_confirmed }}" != "true" ]; then
+            echo "::error::Collection not attempted. Confirm automated access rights for every provider contacted by this run."
+            exit 78
+          fi
 
       - name: Fetch, retry, and preserve best verified market data
+        if: inputs.acquisition_mode != 'validate-only' || inputs.validation_target == 'all-configured'
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: |
           python scripts/run_market_data_acquisition.py \
             --slot "${{ steps.slot.outputs.slot }}" \
             --mode "${{ steps.acquisition.outputs.mode }}" \
-            --print-summary
+            ${{ steps.acquisition.outputs.summary_flag }}
+
+      - name: Validate the U.S. Treasury daily 10-year source only
+        if: inputs.acquisition_mode == 'validate-only' && inputs.validation_target == 'treasury-us10y'
+        run: python scripts/validate_market_data_source.py --symbol us10y --source-id us_treasury_yield_curve
+
+      - name: Validate the FRED DGS10 source only
+        if: inputs.acquisition_mode == 'validate-only' && inputs.validation_target == 'fred-us10y'
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: python scripts/validate_market_data_source.py --symbol us10y --source-id fred_dgs10
+
+      # Manual, read-only check of the official Nikkei daily close and derived report fields.
+      # This emits metadata only and never updates snapshots, Sheets, Git, or dashboard outputs.
+      - name: Validate official Nikkei close, VI, and SMA deviation routes only
+        if: inputs.acquisition_mode == 'validate-only' && inputs.validation_target == 'nikkei-official-indexes'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_market_data_source.py --symbol nikkei225_cash --source-id nikkei_nk225_official_daily_csv
+          python scripts/validate_market_data_source.py --symbol nikkei_vi --source-id nikkei_nk225vi_official_daily_csv
+          python scripts/validate_market_data_source.py --symbol nikkei225_dev25 --source-id nikkei_nk225_official_sma25
+          python scripts/validate_market_data_source.py --symbol nikkei225_dev200 --source-id nikkei_nk225_official_sma200
+
+      # One-off metadata-only evaluation of the documented keyless public endpoint.
+      # This validates source/date/numeric/direction without storing or publishing values.
+      - name: Evaluate CoinMarketCap Crypto Fear and Greed source only
+        if: inputs.acquisition_mode == 'validate-only' && inputs.validation_target == 'cmc-crypto-fear-greed-eval'
+        run: python scripts/validate_market_data_source.py --symbol crypto_fear_greed --source-id coinmarketcap_crypto_fear_greed
 
       - name: Validate generated acquisition JSON
+        if: inputs.acquisition_mode != 'validate-only' || inputs.validation_target == 'all-configured'
         run: |
           python -m json.tool data/market/latest.json > /dev/null
           python -m json.tool data/market/last_verified.json > /dev/null
           python -m json.tool data/market/acquisition_status.json > /dev/null
 
+      - name: Report acquisition status and source errors (no quote values)
+        if: inputs.acquisition_mode != 'validate-only' || inputs.validation_target == 'all-configured'
+        run: python scripts/summarize_market_data_diagnostics.py
+
+      - name: Build report draft from the acquired snapshot
+        if: inputs.acquisition_mode != 'validate-only'
+        env:
+          MARKET_REPORT_OUTPUT: ${{ runner.temp }}/personal-market-report.md
+        run: python scripts/build_personal_market_report.py --input data/market/latest.json --output "$MARKET_REPORT_OUTPUT"
+
+      - name: Save report draft from the same snapshot to the private test sheet
+        if: inputs.acquisition_mode != 'validate-only' && inputs.save_personal_report_to_test_sheet == true
+        env:
+          MARKET_DATA_TEST_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_TEST_SPREADSHEET_ID }}
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          MARKET_REPORT_OUTPUT: ${{ runner.temp }}/personal-market-report.md
+        run: |
+          python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
+          python scripts/build_personal_market_report.py --input data/market/latest.json --output "$MARKET_REPORT_OUTPUT" --write-test-sheet
+
       - name: Build ChatGPT and Google Sheets CSV exports
+        if: inputs.acquisition_mode != 'validate-only' && inputs.public_github_storage_confirmed && inputs.public_dashboard_display_confirmed
         run: python scripts/build_market_sheet_exports.py
 
       - name: Merge market data into dashboard JSON
+        if: inputs.acquisition_mode != 'validate-only' && inputs.public_github_storage_confirmed && inputs.public_dashboard_display_confirmed
         run: python scripts/build_market_json.py --market-data data/market/latest.json --dashboard data/dashboard.json
 
       - name: Validate output files
+        if: inputs.acquisition_mode != 'validate-only' && inputs.public_github_storage_confirmed && inputs.public_dashboard_display_confirmed
         run: |
           python -m json.tool data/market/latest.json > /dev/null
           python -m json.tool data/market/last_verified.json > /dev/null
@@ -100,6 +284,7 @@ jobs:
           test -s data/market/verified_history.csv
 
       - name: Read acquisition status
+        if: inputs.acquisition_mode != 'validate-only'
         id: market_status
         shell: bash
         run: |
@@ -107,6 +292,7 @@ jobs:
           echo "overall_status=$STATUS" >> "$GITHUB_OUTPUT"
 
       - name: Commit staged market data
+        if: inputs.acquisition_mode != 'validate-only' && inputs.public_github_storage_confirmed && inputs.public_dashboard_display_confirmed
         shell: bash
         run: |
           if git diff --quiet -- data/market data/dashboard.json; then
@@ -122,8 +308,8 @@ jobs:
           git push
 
       - name: Sync staged data to Google Sheets and record result
+        if: always() && inputs.acquisition_mode != 'validate-only' && inputs.private_sheets_storage_confirmed
         id: sheets_sync
-        if: always()
         continue-on-error: true
         env:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
@@ -174,7 +360,7 @@ jobs:
           exit "$CODE"
 
       - name: Commit Google Sheets sync status
-        if: always()
+        if: always() && inputs.acquisition_mode != 'validate-only' && inputs.public_github_storage_confirmed
         shell: bash
         run: |
           if [ ! -f data/market/sheets_sync_status.json ]; then
@@ -194,13 +380,180 @@ jobs:
           git push
 
       - name: Fail when configured Google Sheets sync failed
-        if: always()
+        if: always() && inputs.acquisition_mode != 'validate-only' && inputs.private_sheets_storage_confirmed
         run: |
           python - <<'PYCODE'
           import json
           from pathlib import Path
           payload = json.loads(Path("data/market/sheets_sync_status.json").read_text(encoding="utf-8"))
-          if payload.get("outcome") == "failed":
-              raise SystemExit("Google Sheets sync failed: " + str(payload.get("message") or ""))
+          if payload.get("outcome") != "success":
+              raise SystemExit("Google Sheets sync did not complete successfully: " + str(payload.get("outcome") or "unknown"))
           print("Google Sheets sync outcome:", payload.get("outcome"))
           PYCODE
+
+  sheets-test:
+    if: inputs.run_sheets_test_roundtrip == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout selected PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Sheets API dependencies
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
+
+      - name: Run synthetic Sheets write/readback/idempotency test
+        env:
+          MARKET_DATA_TEST_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_TEST_SPREADSHEET_ID }}
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python -m scripts.test_market_data_sheets_roundtrip
+
+  treasury-sheets-test:
+    if: inputs.run_treasury_sheets_test == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Require explicit source and private-sheet authorization
+        shell: bash
+        run: |
+          if [ "${{ inputs.source_automation_rights_confirmed }}" != "true" ] || [ "${{ inputs.private_sheets_storage_confirmed }}" != "true" ]; then
+            echo "::error::Treasury test not started. Confirm official-source automated access and private test-sheet storage."
+            exit 78
+          fi
+
+      - name: Checkout selected PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Sheets API dependencies
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
+
+      - name: Save, read back, and retry official Treasury data in test sheet only
+        env:
+          MARKET_DATA_TEST_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_TEST_SPREADSHEET_ID }}
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python -m scripts.test_treasury_sheets_roundtrip
+
+  nikkei-sheets-test:
+    if: inputs.run_nikkei_sheets_test == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Require source and private test-sheet authorization
+        shell: bash
+        run: |
+          if [ "${{ inputs.source_automation_rights_confirmed }}" != "true" ] || [ "${{ inputs.private_sheets_storage_confirmed }}" != "true" ]; then
+            echo "::error::Nikkei test not started. Confirm automated source access and private test-sheet storage."
+            exit 78
+          fi
+
+      - name: Checkout selected PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Sheets API dependencies
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
+
+      - name: Save and read back official Nikkei data in dedicated test tabs only
+        env:
+          MARKET_DATA_TEST_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_TEST_SPREADSHEET_ID }}
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python -m scripts.test_nikkei_sheets_roundtrip
+
+  treasury-validation:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout PR revision
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install BOJ PDF parser
+        run: python -m pip install "pypdf>=5,<6"
+
+      - name: Compile validation path
+        run: |
+          python -m py_compile scripts/fetch_market_data.py scripts/validate_market_data_source.py
+          python -m unittest discover -s tests -p test_official_market_data_adapters.py -v
+
+      - name: Validate official U.S. Treasury daily 10-year source
+        if: github.event_name == 'workflow_dispatch' && inputs.acquisition_mode == 'validate-only' && inputs.validation_target == 'treasury-us10y'
+        run: python scripts/validate_market_data_source.py --symbol us10y --source-id us_treasury_yield_curve
+      - name: Validate official Ministry of Finance Japan 10-year reference series
+        if: always() && github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          # Retry transient official-feed errors; do not convert a persistent
+          # source or validation failure into a passing result.
+          for attempt in 1 2 3; do
+            result="$(python scripts/validate_market_data_source.py --symbol jp10y --source-id mof_jgbcm_10y 2>&1)" && status=0 || status=$?
+            echo "MOF 10Y attempt $attempt/3: $result"
+            if [ "$status" -eq 0 ]; then
+              echo "MOF 10Y verification succeeded (attempt $attempt)" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              sleep 10
+            fi
+          done
+          # The source validator emits a non-sensitive structured error code.
+          # Put it in Actions annotations and job summary to distinguish
+          # FETCH_ERROR/PARSE_ERROR/STALE_DATA without guessing.
+          echo "::error title=MOF 10Y source validation failed::$result"
+          {
+            echo "### MOF 10Y source validation failed"
+            echo '~~~json'
+            echo "$result"
+            echo '~~~'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+      - name: Validate official Bank of Japan Tokyo USD/JPY 17:00 reference series
+        if: always() && github.event_name == 'pull_request'
+        run: python scripts/validate_market_data_source.py --symbol usdjpy --source-id boj_usdjpy_17_reference
+
+      - name: Validate official ECB EUR/USD daily reference series
+        if: always() && github.event_name == 'pull_request'
+        run: python scripts/validate_market_data_source.py --symbol eurusd --source-id ecb_eurusd_daily_reference
+
+      - name: Validate Kraken BTC/USD completed daily reference candle
+        if: always() && github.event_name == 'pull_request'
+        run: python scripts/validate_market_data_source.py --symbol btcusd --source-id kraken_btcusd_daily_close
+
