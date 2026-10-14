@@ -18,7 +18,7 @@ from .shadow_worker import REGISTRY, freeze_shadow_input, json_bytes, sha256_byt
 
 SCHEMA = "d2-numeric-claims/v1"
 FIELDS = ("priceValue", "changeValue", "changePct")
-CLAIM_KEYS = frozenset(("start", "literal", "series", "field", "source_id", "as_of"))
+CLAIM_KEYS = ("start", "literal", "series", "field", "source_id", "as_of")
 # The text must use plain decimal numbers, not exponential form or estimated
 # prose ("about 100"). The lexer still detects exponents as unmatched tokens.
 NUMBER_RE = re.compile(
@@ -137,7 +137,7 @@ def audit_numeric_claims(context: ReportContext, snapshot: MarketDataSnapshot,
     markets = {m.instrument: m for m in snapshot.markets}
     used = set()
     for claim in claims:
-        if not isinstance(claim, dict) or set(claim) != CLAIM_KEYS:
+        if not isinstance(claim, dict) or set(claim) != set(CLAIM_KEYS):
             raise NumericClaimBlocked("NUMERIC_CLAIM_SCHEMA_INVALID")
         start, literal = claim["start"], claim["literal"]
         if type(start) is not int or not isinstance(literal, str):
