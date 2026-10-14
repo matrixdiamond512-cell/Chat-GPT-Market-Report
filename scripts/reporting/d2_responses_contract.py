@@ -7,6 +7,7 @@ The model's JSON schema is never treated as factual validation of markets.
 """
 from __future__ import annotations
 from dataclasses import dataclass
+from datetime import date
 from decimal import Decimal
 import json
 import re
@@ -85,9 +86,31 @@ def build_request(context: ReportContext, snapshot: MarketDataSnapshot, *,
     if type(max_output_tokens) is not int or not 1 <= max_output_tokens <= 4000:
         _fail("OUTPUT_TOKEN_BUDGET_UNSAFE")
     context_data, snapshot_data = freeze_shadow_input(context, snapshot)
+    # The report identity is deterministic; the model must never infer the
+    # Japanese weekday or reinterpret directional observations.
+    report_day = date.fromisoformat(context.report_date)
+    expected_title = (
+        f"マーケットレポート｜{report_day:%Y/%m/%d}"
+        f"（{'月火水木金土日'[report_day.weekday()]}）{context.report_time}"
+    )
+    observed_directions = [
+        {"series": market.instrument, "direction": market.direction,
+         "change": market.changeValue, "change_pct": market.changePct}
+        for market in snapshot.markets
+    ]
+    anchored_instructions = (
+        instructions
+        + "\n[検証可能な出力制約] title と full_text の第1行は次の文字列に完全一致させる: "
+        + expected_title
+        + "。曜日を再計算しない。価格変化の方向を推定せず、"
+          "下記の観測方向と矛盾する上昇・下落の断定を書かない。"
+          "市場ニュースや需給の裏付けがない場合は、原因や資金フローを事実として書かない。"
+    )
     # All information goes in a fixed request. No latest/latest.json fallback.
     input_data = {
         "report_id": context.report_id,
+        "expected_title": expected_title,
+        "observed_directions": observed_directions,
         "context": context_data,
         "snapshot": snapshot_data,
         "approved_market_series": list(REQUIRED_SIX),
@@ -95,7 +118,7 @@ def build_request(context: ReportContext, snapshot: MarketDataSnapshot, *,
     }
     return {
         "model": model,
-        "instructions": instructions,
+        "instructions": anchored_instructions,
         "input": json.dumps(input_data, ensure_ascii=False, allow_nan=False,
                             sort_keys=True, separators=(",", ":")),
         "max_output_tokens": max_output_tokens,
