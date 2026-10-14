@@ -118,3 +118,16 @@ Run IDs: `e2e-body-identity-20261014-1600-audit`; `0800-fixed-layout-fit-2026101
 | Latest main integration regression | Same Python suite after latest merge commit `d259b652b71f73403a309aa06973dcbf758c7514`; `node scripts/test_independent_publication.js`; acquisition JSONL parse; code/test diff inspection | E1–E3 / PASS | Python 250/250; Node publication regression PASS; latest main additions were six expired acquisition-log rows and Japanese close data only (26 JSONL rows total; 24 expired, 2 verified). The 21:50:35 close reference is incomplete and not linked to the ChatGPT body. The current PR-head hosted check status is not reported yet. |
 
 No publication, Drive write, main-branch write, gate weakening, withdrawn-source restoration, or other-slot design change occurred in this continuation. Latest main `040f5fd5be4f8111aed5a45cb6b5426bc501a66a` was merged into the PR branch at `d259b652b71f73403a309aa06973dcbf758c7514` with no conflict; its new commits update acquisition logs and Japanese close data only. The 21:50:35 JST close-reference package is incomplete and was not backfilled into the 16:00 body. The 10/13 acquisition history is documented separately. The first 10/14 body divergence is bounded to the ChatGPT-to-Docs handoff; exact internal cause remains UNKNOWN. Next action: resolve the source-content/approved-geometry fit conflict before producing an 08:00 acceptance candidate.
+
+## 2026-10-14 continuation — latest main synchronization
+
+Run ID: `latest-main-sync-20261014-c112aac`. GitHub PR #97 was read before changes: OPEN, Draft, unmerged; its description still referenced main `4a9e70f` and head `141a8fa`. `origin/main` advanced from `040f5fd` to `c112aac` through three commits (`a3a97ce`, `190571f`, `c112aac`). Their changed paths are verified Nikkei contributions, gold supply/demand, sector performance, and related stock-history datasets. No workflow, renderer, report contract, or publication gate changed. `git merge-tree` reported a clean merge; merge commit `06aa44ba64f34aa3e7038a070dc6468142e9d0c3` was created locally.
+
+| Claim | Evidence | Level / result | Limit |
+|---|---|---|---|
+| Merged-tree Python tests | Bundled Python 3.12, `PYTHONPATH=.test-deps`, `python -m unittest discover -s tests -q` | E1–E3 / PASS 250/250 | Local suite only; no hosted CI claim. |
+| Existing independent publication regression | Bundled Node, `node scripts/test_independent_publication.js` | E2/E3 / PASS | Mock/local test; no external publication. |
+| Merged-tree whitespace check | `git diff --check` | E0 / PASS | Structural check only. |
+| PR state before syncing new local merge | GitHub PR metadata | E5 / OPEN, Draft, unmerged | Local merge commit had not yet been pushed at evidence capture. |
+
+The main data updates do not recover any historical source identity or link a snapshot to the 10/14 16:00 body. No later dataset was substituted for that snapshot. The measured 08:00 fit conflict and visual acceptance PENDING remain unchanged. No new PNG candidate or other-slot design was generated.
