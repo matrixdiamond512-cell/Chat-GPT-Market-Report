@@ -131,3 +131,9 @@ Run ID: `latest-main-sync-20261014-c112aac`. GitHub PR #97 was read before chang
 | PR state before syncing new local merge | GitHub PR metadata | E5 / OPEN, Draft, unmerged | Local merge commit had not yet been pushed at evidence capture. |
 
 The main data updates do not recover any historical source identity or link a snapshot to the 10/14 16:00 body. No later dataset was substituted for that snapshot. The measured 08:00 fit conflict and visual acceptance PENDING remain unchanged. No new PNG candidate or other-slot design was generated.
+
+## 2026-10-14 continuation — latest main publication-data sync
+
+Run ID: `latest-main-sync-20261014-0a6c952`. After pushing head `2ce1b12`, GitHub reported main had advanced by commits `0689089` and `0a6c952`. The first updates Nikkei 225 supply/demand data; the second syncs publication data. `data/dashboard.json` changed its generation time to 21:53:34 JST and retains `dataAsOf: 2026-10-13T16:00:00+09:00` and `currentReportKey: 2026-10-13_16-00`. It removed the 10/14 21:13 market snapshot from the nested report object; `infographic_status: NOT_READY` remains. Current independent market data remains a separate dashboard feed. No workflow, renderer, report contract, or gate changed. The user-facing PR source records are retained on the PR branch; no withdrawn report was restored.
+
+The latest-main tree merged without conflict at `235713592294f9650e169589dca5d286876d079e`. On that merged tree, bundled Python `python -m unittest discover -s tests -q` passed **250/250**, `node scripts/test_independent_publication.js` passed, and `git diff --check` passed. These are local evidence; hosted checks for the newer post-merge head are pending. The 08:00 fixed-layout fit conflict remains unresolved; visual acceptance remains PENDING, and no new candidate or other-slot design was produced.
