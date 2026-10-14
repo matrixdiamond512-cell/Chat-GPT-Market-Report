@@ -71,7 +71,12 @@ class LocalPrivateEvidenceStore:
         if os.name != "posix" or not hasattr(os, "O_NOFOLLOW"):
             _reject("POSIX_PRIVATE_STORE_REQUIRED")
         p = Path(root)
-        if not p.is_absolute() or p.is_symlink() or REPO_ROOT == p or REPO_ROOT in p.parents:
+        if not p.is_absolute() or p.is_symlink():
+            _reject("PRIVATE_ROOT_INVALID")
+        # Resolve path traversal and symlinked ancestors before checking
+        # for repository-backed storage. Never store evidence in the worktree.
+        canonical = p.resolve(strict=False)
+        if canonical == REPO_ROOT or REPO_ROOT in canonical.parents:
             _reject("PRIVATE_ROOT_INVALID")
         if not p.exists():
             try:
