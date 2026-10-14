@@ -30,6 +30,8 @@ on:
       - 'tests/test_d2_offline_prepared_run.py'
       - 'scripts/reporting/d2_prepared_reconciliation.py'
       - 'tests/test_d2_prepared_reconciliation.py'
+      - 'scripts/reporting/d3_openai_transport.py'
+      - 'tests/test_d3_openai_transport.py'
       - 'scripts/reporting/shadow_hash_golden.py'
       - 'scripts/test_shadow_hash_golden.js'
       - 'scripts/reporting/d2_detached_evidence.js'
@@ -85,6 +87,8 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_d2_offline_prepared_run.py' -v
       - name: Verify full D2 prepared slot read-only forensic replay after crash or tampering
         run: python -m unittest discover -s tests -p 'test_d2_prepared_reconciliation.py' -v
+      - name: Offline-test paid OpenAI sender transport and fail-closed execution gate
+        run: python -m unittest discover -s tests -p 'test_d3_openai_transport.py' -v
       - name: Verify versioned v2 Python canonicalization
         run: python -m unittest discover -s tests -p 'test_canonical_v2.py' -v
       - name: Verify Python and Apps Script v2 canonical bytes digests and test HMAC
