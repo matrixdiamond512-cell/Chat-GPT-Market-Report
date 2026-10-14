@@ -2,11 +2,15 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 JST = timezone(timedelta(hours=9))
 NAME = re.compile(r"^マーケットレポート_(\d{4}-\d{2}-\d{2})_(08|12|16|21)-00(?:\.(png|jpg|jpeg|webp))?$")
+HEADING_REGISTRY = json.loads((Path(__file__).resolve().parents[1] / "config/report_heading_registry.json").read_text(encoding="utf-8"))
+HEADING_ALIASES = {alias: canonical for canonical, aliases in HEADING_REGISTRY["sections"].items() for alias in aliases}
 PLAIN_HEADING = re.compile(
     r"^(?:総括|結論|最終判断|今日の相場テーマ|主導市場|今日の主導市場|金利|"
     r"材料と値動きの整合性|重要ニュース(?:・金利)?|主要市場(?:データ|の確認値|まとめ)|"
@@ -41,6 +45,44 @@ def heading(line: str) -> str:
     if explicit:
         return next(value.strip() for value in explicit.groups() if value)
     return line if PLAIN_HEADING.fullmatch(line) else ""
+
+
+def section_bodies(text: str) -> dict[str, str]:
+    """Return content under registry headings; incidental prose is never a heading."""
+    sections: dict[str, list[str]] = {}
+    current: str | None = None
+    for line in str(text or "").replace("\r", "").split("\n"):
+        label = heading(line)
+        canonical = HEADING_ALIASES.get(label)
+        if label:
+            current = canonical
+            if canonical:
+                sections.setdefault(canonical, [])
+        elif current:
+            sections[current].append(line)
+    return {name: "\n".join(lines).strip() for name, lines in sections.items()}
+
+
+def validate_key_section_bodies(text: str) -> None:
+    """Keep causal-flow and outlook sections substantive after heading recognition."""
+    sections = section_bodies(text)
+    causal = sections.get("クロスアセット資金フロー", "")
+    if len(causal) < 20 or len(re.findall(r"[。！？]", causal)) < 1:
+        raise ValueError("incomplete saved report section: クロスアセット資金フロー body is missing or insubstantial")
+
+    outlook = sections.get("個別市場見通し", "")
+    market_patterns = (
+        r"(?:^|\n)\s*(?:金|ゴールド)(?:先物)?\s*[：:][^\n]+",
+        r"(?:^|\n)\s*(?:WTI原油|原油)\s*[：:][^\n]+",
+        r"(?:^|\n)\s*日経225先物[^\n：:]*\s*[：:][^\n]+",
+        r"(?:^|\n)\s*(?:USD/JPY|ドル円)\s*[：:][^\n]+",
+        r"(?:^|\n)\s*(?:EUR/USD|ユーロドル)\s*[：:][^\n]+",
+        r"(?:^|\n)\s*(?:BTCUSD|BTC/USD|ビットコイン)\s*[：:][^\n]+",
+    )
+    market_lines = [re.search(pattern, outlook, re.I) for pattern in market_patterns]
+    missing_markets = sum(match is None or len(match.group(0).strip()) < 8 for match in market_lines)
+    if len(outlook) < 180 or missing_markets:
+        raise ValueError(f"incomplete saved report section: 個別市場見通し requires substantive outlooks for six markets (chars={len(outlook)}, missing={missing_markets})")
 
 
 def validate_saved_body(report: dict) -> None:

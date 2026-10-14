@@ -159,5 +159,11 @@ BTCUSD：84,000ドル
         validate_market_reports.validate_report_content(report, "report", True, errors, warnings)
         self.assertFalse(any("必須市場不足" in error for error in errors))
 
+    def test_actual_october_14_heading_aliases_are_recognized_by_strict_section_patterns(self):
+        morning = "6．金利・為替・クロスアセットの因果関係"
+        midday = "11．主要6市場の短期見通し（条件付き）"
+        self.assertRegex(morning, validate_market_reports.REQUIRED_21_SECTIONS["クロスアセット資金フロー"])
+        self.assertRegex(midday, validate_market_reports.REQUIRED_21_SECTIONS["6市場の見通し"])
+
 if __name__ == "__main__":
     unittest.main()

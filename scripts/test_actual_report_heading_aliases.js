@@ -28,6 +28,44 @@ for (const heading of expected) {
 }
 const bodyOnly = context.marketReportPrePublishHeadingLines_('このニュースと市場への影響は重要だが、見出しではない。');
 assert(!bodyOnly.includes('重要ニュース'));
+const actualOctober14 = context.marketReportPrePublishHeadingLines_([
+  '6．金利・為替・クロスアセットの因果関係',
+  '10．主要6市場の短期見通し（条件付き）'
+].join('\n'));
+assert(actualOctober14.includes('クロスアセット資金フロー'), '08:00 causal-flow heading alias');
+assert(actualOctober14.includes('6市場の見通し'), '12:00 conditional six-market heading alias');
+const proseOnly = context.marketReportPrePublishHeadingLines_([
+  '本文では金利・為替・クロスアセットの因果関係を確認する。',
+  '本文では主要6市場の短期見通し（条件付き）を説明する。'
+].join('\n'));
+assert(!proseOnly.includes('クロスアセット資金フロー'));
+assert(!proseOnly.includes('6市場の見通し'));
+assert.strictEqual(context.marketReportPrePublishSectionBody_('6．金利・為替・クロスアセットの因果関係', /^金利・為替・クロスアセットの因果関係$/), '');
+const causalSource = [
+  '6．金利・為替・クロスアセットの因果関係',
+  '金利低下はドルの上昇圧力を和らげる。一方、原油供給リスクは金利上昇を通じて株式に逆風となる。',
+  '7．材料と値動きの整合性'
+].join('\n');
+const causalBody = context.marketReportPrePublishSectionBody_(causalSource, /^金利・為替・クロスアセットの因果関係$/);
+assert(causalBody.length >= 20 && /[。！？]/.test(causalBody), 'causal section requires meaningful body');
+const outlookSource = [
+  '11．主要6市場の短期見通し（条件付き）',
+  '金：中立。米金利とドルの動きを確認し、CPI上振れ時は下落リスクを見る。',
+  'WTI原油：中立。供給懸念の継続と在庫統計の変化を見て方向を判断する。',
+  '日経225先物（大阪）：中立。重要な価格節目を維持できるか確認する。',
+  'USD/JPY：中立。米金利差と発表前後のドル需給を確認する。',
+  'EUR/USD：中立。米欧の政策差と経済指標の影響を確認する。',
+  'BTCUSD：中立。株式との相関と市場流動性の変化を確認する。',
+  '12．シナリオ'
+].join('\n');
+const outlookBody = context.marketReportPrePublishSectionBody_(outlookSource, /^(?:主要)?6市場の短期見通し(?:（.*）)?$/);
+assert(outlookBody.length >= 180, 'six-market outlook requires substantive body');
+for (const pattern of [/^金\s*[：:][^\n]*/m, /^WTI原油\s*[：:][^\n]*/m,
+  /^日経225先物[^\n：:]*\s*[：:][^\n]*/m, /^USD\/JPY\s*[：:][^\n]*/m,
+  /^EUR\/USD\s*[：:][^\n]*/m, /^BTCUSD\s*[：:][^\n]*/m]) {
+  const match = outlookBody.match(pattern);
+  assert(match && match[0].trim().length >= 8, 'six-market section has empty or missing row');
+}
 const morning = context.marketReportPrePublishHeadingLines_([
   '2．前営業日終値一覧と基準時刻',
   '4．前回21:00からの変化',

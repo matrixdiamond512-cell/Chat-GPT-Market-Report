@@ -9,6 +9,13 @@ on:
       - 'apps-script/MarketReportContext.gs'
       - 'apps-script/MarketReportMasterScheduler.gs'
       - 'apps-script/MarketReportPrePublishValidation.gs'
+      - 'config/report_heading_registry.json'
+      - 'scripts/report_source_contract.py'
+      - 'scripts/reporting/report.py'
+      - 'scripts/sync_latest_report_publication.py'
+      - 'scripts/validate_market_reports.py'
+      - 'tests/test_report_heading_registry.py'
+      - 'tests/test_report_contract.py'
       - 'scripts/test_apps_script_narrative_report.js'
       - 'scripts/test_actual_1600_source_recovery.js'
       - 'scripts/test_github_large_report_index_read.js'
@@ -38,6 +45,13 @@ on:
       - 'apps-script/MarketReportContext.gs'
       - 'apps-script/MarketReportMasterScheduler.gs'
       - 'apps-script/MarketReportPrePublishValidation.gs'
+      - 'config/report_heading_registry.json'
+      - 'scripts/report_source_contract.py'
+      - 'scripts/reporting/report.py'
+      - 'scripts/sync_latest_report_publication.py'
+      - 'scripts/validate_market_reports.py'
+      - 'tests/test_report_heading_registry.py'
+      - 'tests/test_report_contract.py'
       - 'scripts/test_apps_script_narrative_report.js'
       - 'scripts/test_actual_1600_source_recovery.js'
       - 'tests/fixtures/market_report_20261013_1600_original.txt'
@@ -80,6 +94,9 @@ jobs:
 
       - name: Run infographic validator regression suite
         run: python -m unittest discover -s tests -p 'test_infographic_validation.py' -q
+
+      - name: Run actual report heading and body contract regressions
+        run: python -m unittest tests.test_report_heading_registry tests.test_report_contract -v
 
       - name: Run trusted Vision signer regression suite
         run: python -m unittest discover -s tests -p 'test_vision_signer.py' -q

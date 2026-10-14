@@ -28,10 +28,10 @@ var MARKET_REPORT_PREPUBLISH_CONFIG = {
     { label: '主導市場', pattern: /^(?:今日の)?主導市場$/ },
     { label: '重要ニュース', pattern: /^(?:重要ニュース|重要ニュース・金利|重要材料)$/ },
     { label: '金利', pattern: /^(?:金利|金利分析|金利・為替|金利・為替の連動|重要ニュース・金利)$/ },
-    { label: 'クロスアセット資金フロー', pattern: /^(?:クロスアセット|クロスアセット資金フロー|資金フロー)$/ },
+    { label: 'クロスアセット資金フロー', pattern: /^(?:クロスアセット|クロスアセット資金フロー|資金フロー|金利・為替・クロスアセットの因果関係)$/ },
     { label: '需給・ポジション', pattern: /^(?:需給・ポジション|需給・ポジショニング|ポジションの偏り)$/ },
     { label: '重要イベント', pattern: /^(?:(?:今後の|その日の)?重要イベント|今後の予定)$/ },
-    { label: '個別市場見通し', pattern: /^(?:6市場の(?:個別)?見通し|個別市場見通し|個別見通し)$/ },
+    { label: '個別市場見通し', pattern: /^(?:(?:主要)?6市場の(?:(?:個別|短期))?見通し(?:（.*）)?|個別市場見通し|個別見通し)$/ },
     { label: 'メインシナリオ', pattern: /^(?:メインシナリオ|基本シナリオ|メイン[：:].*)$/ },
     { label: '代替シナリオ', pattern: /^(?:代替シナリオ|別シナリオ|代替[：:].*)$/ },
     { label: 'シナリオが崩れる条件', pattern: /^(?:シナリオが)?崩れる条件(?:[：:].*)?$/ },
@@ -261,6 +261,24 @@ function validateMarketReportManualContract_(report, byName, errors) {
     }
   });
 
+  [
+    { label: 'クロスアセット資金フロー', pattern: /^(?:クロスアセット|クロスアセット資金フロー|資金フロー|金利・為替・クロスアセットの因果関係)$/,
+      minimum: 20, sentences: 1 },
+    { label: '個別市場見通し', pattern: /^(?:(?:主要)?6市場の(?:(?:個別|短期))?見通し(?:（.*）)?|個別市場見通し|個別見通し)$/,
+      minimum: 180, markets: [/^(?:金|ゴールド)(?:先物)?\s*[：:][^\n]*/m, /^(?:WTI原油|原油)\s*[：:][^\n]*/m,
+        /^日経225先物[^\n：:]*\s*[：:][^\n]*/m, /^(?:USD\/JPY|ドル円)\s*[：:][^\n]*/m,
+        /^(?:EUR\/USD|ユーロドル)\s*[：:][^\n]*/m, /^(?:BTCUSD|BTC\/USD|ビットコイン)\s*[：:][^\n]*/m] }
+  ].forEach(function(rule) {
+    var body = marketReportPrePublishSectionBody_(source, rule.pattern);
+    if (body.length < rule.minimum || (rule.sentences && (body.match(/[。！？]/g) || []).length < rule.sentences) ||
+        (rule.markets && !rule.markets.every(function(pattern) {
+          var match = body.match(pattern);
+          return match && match[0].trim().length >= 8;
+        }))) {
+      errors.push(timeText + ' SOPセクション本文不足: ' + rule.label);
+    }
+  });
+
   if (!marketReportPrePublishHasHeading_(headings, slotRule.changePattern)) {
     errors.push(timeText + ' SOP必須セクション不足: ' + slotRule.changeLabel);
   }
@@ -379,6 +397,7 @@ function marketReportPrePublishHeadingLines_(source) {
       [/^材料と値動きの整合性・(?:今日の)?主導市場$/, ['材料と値動きの整合性', '今日の主導市場']],
       [/^重要ニュースと市場への影響$/, ['重要ニュース']],
       [/^金利・為替・(?:市場心理|センチメント)$/, ['金利・為替']],
+      [/^金利・為替・クロスアセットの因果関係$/, ['クロスアセット資金フロー']],
       [/^需給・ポジション(?:・SQ(?:・.*)?|、SQ／オプション)$/, ['需給・ポジション']],
       [/^(?:主要)?6市場の(?:短期)?見通し(?:（.*）)?$/, ['6市場の見通し']],
       [/^今後のイベント$/, ['今後の予定']],
@@ -408,6 +427,27 @@ function marketReportPrePublishNormalizeHeading_(line) {
 
 function marketReportPrePublishHasHeading_(headings, pattern) {
   return headings.some(function(line) { return pattern.test(line); });
+}
+
+function marketReportPrePublishSectionBody_(source, pattern) {
+  var lines = String(source || '').replace(/\r/g, '').split('\n');
+  var active = false;
+  var body = [];
+  lines.forEach(function(raw) {
+    var line = String(raw || '').trim();
+    var normalized = marketReportPrePublishNormalizeHeading_(line);
+    var isNumberedHeading = /^(?:\d{1,2}[．.、)）]|【|[■◆◇●▶])/.test(line);
+    if (isNumberedHeading && normalized && pattern.test(normalized)) {
+      active = true;
+      return;
+    }
+    if (active && isNumberedHeading) {
+      active = false;
+      return;
+    }
+    if (active) body.push(line);
+  });
+  return body.join('\n').trim();
 }
 
 function testLatestMarketReportPrePublishValidation() {
