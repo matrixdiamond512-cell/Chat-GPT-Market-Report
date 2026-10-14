@@ -19,6 +19,7 @@
 mainにある既存Pythonは、対象slotを明示する不変 `ReportContext` と、取得値をfreezeしてdigestを持つ `MarketDataSnapshot` を提供する（`scripts/reporting/context.py`, `scripts/reporting/snapshot.py`）。
 
 - contextの `report_id` は `YYYY-MM-DD_HH-MM`。時刻は `08:00/12:00/16:00/21:00` のいずれか。
+- `ReportContext.mode` は既存enumに従いshadow時も `new`。shadow区分は別のrun receiptの `lane=api-shadow` / `run_mode=shadow` で表し、既存Context schemaへ未知値を追加しない。
 - `data_cutoff` と各値の `asOf` を検証し、slot後や別日のデータを紐付けない。
 - snapshotを一度固定した後、モデル再試行で市場データを取り直さない。再試行は同じcontext/snapshotを参照し、異なるAPI応答は別attemptとして残す。
 - Python digestのserializationはGAS側 `marketReportProofCanonical_` と互換とはまだ証明されていない。shadow内の記録と本番proofを混同せず、Python/GAS golden fixturesが通る前に共通署名対象として使わない。
