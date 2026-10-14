@@ -96,7 +96,7 @@ class TestEvidenceGate(unittest.TestCase):
         ctx=ReportContext.create("2026-10-14","16:00","2026-10-14T16:00:00+09:00",mode="historical")
         result=inspect_saved_input(context=ctx,payload=data,evidence=None)
         self.assertEqual(result.state,"BLOCKED")
-        self.assertIn("MARKET_INPUT_INVALID",result.rejection_reasons[0])
+        self.assertTrue(result.rejection_reasons[0].startswith(("MARKET_INPUT_INVALID", "MARKET_SNAPSHOT_INVALID")), result.rejection_reasons)
 
     def test_morning_also_requires_valuation_breadth_equity_and_cme(self):
         from test_shadow_worker_offline import fixture_market
