@@ -27,3 +27,10 @@
 - Receipt正式移行には、既存Google Docsの実体ID・保存時刻・発行者を独立に照合し、schema-version付き新Receiptを生成・readbackする統合テストが必要。旧Receiptの欠損値を補作しない。公開の強制ゲートは移行完了・回帰テスト前に有効化しない。
 - Apps Scriptのインストール済みトリガーは、プロジェクトの権限付き実行環境で実トリガー一覧・所有者・直近実行履歴を確認するまで未確認とする。ソース上の定義と実際の定期実行を区別する。
 - 発行設定はmainのconfig/report_schedule.jsonで平日08:00/12:00/16:00/21:00、土日なし。旧時刻はlegacyStoredSlotsで履歴管理。
+
+## 2026-10-15 オフラインv2ハッシュ検証・D2着手判定（v1.12 / Draft）
+
+- 作業ブランチ`codex/producer-bound-publish-gate-20261015`のPR #130で`python -m unittest discover -s tests -p 'test_canonical_v2.py' -v`と`node scripts/test_canonical_v2_golden.js`、従来D1テストおよびApps Script回帰をGitHub Actionsで検証する。Python/GAS 5ベクトル一致・snapshot v1 ID維持・改ざん拒否を確認する。
+- 実行時はAPI key、Apps Script本番、Docs/Sheets/GitHub/Pages writerを使わない。v2 helperはまだ公開ゲートに接続しない。旧v1を自動移行せず、10月14日各レポートの公開保留を継続する。
+- D2の起動前に、OpenAI API projectと費用上限の個別承認、private store/IAM/retention/readback、source adapter/全数値検証、モデル版・request timeout/retry、producer専用署名鍵/検証鍵分離を確認する。未達項目は`BLOCKED`で記録し実API送信しない。
+- 既存ChatGPTタスクと時刻設定は変更しない。GitHub PR #130はDraft・未マージ、本番E5は未達。スケジュール／デプロイ／main統合は別途安全審査のうえ実施。
