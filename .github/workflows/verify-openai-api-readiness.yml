@@ -1,0 +1,45 @@
+name: OpenAI API read-only readiness
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/verify-openai-api-readiness.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check whether a dedicated OpenAI API connection exists
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_PROJECT_ID: ${{ secrets.OPENAI_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${OPENAI_API_KEY:-}" ]]; then
+            echo "OPENAI_API_KEY_NOT_CONFIGURED: GitHub OpenAI API generation cannot run."
+            exit 1
+          fi
+          if [[ -z "${OPENAI_PROJECT_ID:-}" ]]; then
+            echo "OPENAI_PROJECT_ID_NOT_CONFIGURED: dedicated API project not verified."
+            exit 1
+          fi
+          echo "OPENAI_API_SECRETS_PRESENT: key and dedicated project identifier exist."
+          # Read-only endpoint: no generation and no token billing.
+          status=$(curl --fail-with-body --silent --show-error --output /tmp/openai-models-readonly.json \
+            --write-out '%{http_code}' --connect-timeout 7 --max-time 25 \
+            -H "Authorization: Bearer ${OPENAI_API_KEY}" \
+            -H "OpenAI-Project: ${OPENAI_PROJECT_ID}" \
+            https://api.openai.com/v1/models) || {
+              echo "OPENAI_API_READONLY_AUTH_FAILED: no generation was attempted."
+              exit 1
+            }
+          test "$status" = "200"
+          python - <<'PY'
+          import json
+          p=json.load(open('/tmp/openai-models-readonly.json'))
+          ids={x.get('id') for x in p.get('data',[]) if isinstance(x,dict)}
+          print('OPENAI_API_READONLY_AUTH_OK; configured_model_list_count='+str(len(ids)))
+          print('APPROVED_D2_MODEL_IN_LIST='+str('gpt-5.4-mini-2026-03-17' in ids))
+          PY
