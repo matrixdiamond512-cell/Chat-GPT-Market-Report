@@ -63,3 +63,9 @@ Generated only the new 08:00 PNG at 1536×1024 with exact approved panel rectang
 Python 261/261, independent publication-path Node regression, renderer JavaScript syntax check, and `git diff --check` pass locally. Candidate machine comparison confirms geometry only. Browser rendering and real-device readability are NOT_RUN. Human meaning/fact/visual acceptance is PENDING. Do not propagate this design to 12:00/16:00/21:00 before the user accepts the 08:00 image.
 
 NEXT NECESSARY ACTION: show the reference side-by-side and 08:00 PNG for human review, incorporate specific design feedback in 08:00 only, then regenerate and re-evaluate. Keep PR #97 OPEN/Draft and all existing snapshot/identity/publication stops. No merge, production publish, or Drive write.
+
+## Latest main sync — 2026-10-14
+
+Main advanced 14 commits to `f8ad26e21e01e490d4fe4e6fe2bc380f163969de`, updating event histories, 10/14 market/supply-demand data, dashboard, and the 10/13 16:00 report record. No renderer, workflow, report contract, or publication gate changed in this batch. A no-conflict merge-tree preview preceded merge commit `ca73c24`, integrating latest main into this PR branch only. The 08:00 preview uses the unchanged withdrawn historical source; none of the later market data was substituted for it.
+
+The 261-test Python suite, independent publication regression, JS syntax, and diff checks passed on the merged tree. Push and post-push PR verification remain outstanding. Keep PR #97 OPEN/Draft; main and production remain unchanged.

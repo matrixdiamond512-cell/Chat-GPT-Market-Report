@@ -151,3 +151,9 @@ Run ID: `0800-summary-layer-review-20261014-2329JST`; source branch was the PR #
 | Formal generation/publication | Candidate `validation.json` | BLOCKED / NOT_READY, `publish_allowed=false`, no publication manifest | `report_id`, `revision`, `snapshot_id`, `bodyHash`, and linked verified snapshot are missing; no withdrawn data restored. |
 
 PR #97 remains OPEN/Draft. No 12:00/16:00/21:00 design, main merge, production release, Google Drive write, or publication occurred. The latest requested next action is human review of the single 08:00 candidate; only after visual approval should the remaining slots be considered.
+
+## 2026-10-14 — latest main synchronization after summary preview
+
+Run ID: `latest-main-sync-20261014-f8ad26`. GitHub compare found main advanced 14 commits beyond `0a6c9524f0b438eeb7985446358b716aeabea22f` to `f8ad26e21e01e490d4fe4e6fe2bc380f163969de`. The changes are event history/latest/upcoming, 2026-10-14 market/supply-demand archives, dashboard, and the `2026-10-13_16-00` report record. The compare listed no workflows, renderer, report contract, or publication-gate changes. `git merge-tree --write-tree HEAD origin/main` reported no conflicts; merge commit `ca73c24` integrates main into the PR branch (not main into production). Existing `NOT_READY` behavior and snapshot-to-report separation remain.
+
+Post-sync local regression: Python 261/261 PASS; independent publication-path Node regression PASS; `node --check scripts/render_morning_png.js` PASS; `git diff --check` PASS. The PR branch still needs a push and GitHub post-push verification. PR #97 remains OPEN/Draft/unmerged; no main write, production publication, or Drive write was performed.
