@@ -78,6 +78,7 @@ class TestShadowWorkerD1(unittest.TestCase):
         self.engine = OfflineShadowWorker()
 
     def run_response(self, fn=None, **kw):
+        kw.setdefault("shadow_run_id", "fixture-run-for-slot")
         return self.engine.run(
             self.context, self.snapshot,
             fn or (lambda request: fixture_response(self.context, self.snapshot)),
@@ -120,6 +121,17 @@ class TestShadowWorkerD1(unittest.TestCase):
             self.fail("responder must not be called")
         with self.assertRaisesRegex(ShadowBlocked, "DUPLICATE_ATTEMPT"):
             self.run_response(forbidden, attempt_id="a1")
+
+    def test_second_worker_same_slot_different_run_rejected(self):
+        first = self.run_response(attempt_id="a1")
+        self.assertEqual(first.status, "SHADOW_VALIDATED")
+        second_worker = OfflineShadowWorker(store=self.engine.store)
+        def forbidden(_):
+            self.fail("duplicate run must not invoke responder")
+        with self.assertRaisesRegex(ShadowBlocked, "DUPLICATE_SLOT"):
+            second_worker.run(self.context, self.snapshot, forbidden,
+                              shadow_run_id="other-shadow-run", attempt_id="a2")
+        self.assertEqual(second_worker.public_writes, 0)
 
     def test_timeout_unknown_prevents_blind_retry(self):
         def timeout(_):
