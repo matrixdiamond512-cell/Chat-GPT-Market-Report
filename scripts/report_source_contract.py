@@ -14,11 +14,11 @@ HEADING_ALIASES = {alias: canonical for canonical, aliases in HEADING_REGISTRY["
 PLAIN_HEADING = re.compile(
     r"^(?:総括|結論|最終判断|今日の相場テーマ|主導市場|今日の主導市場|金利|"
     r"材料と値動きの整合性|重要ニュース(?:・金利)?|主要市場(?:データ|の確認値|まとめ)|"
-    r"クロスアセット資金フロー|需給・ポジション|6市場の(?:個別)?見通し|"
+    r"クロスアセット資金フロー|金利・為替・クロスアセット資金フロー|需給・ポジション|6市場の(?:個別)?見通し|"
     r"個別市場見通し|今後の(?:重要)?イベント|メインシナリオ|代替シナリオ|"
     r"(?:シナリオが)?崩れる条件|クロスチェック結果|"
     r"(?:前回|\d{2}:00)(?:から|→)(?:\d{2}:00)?の(?:主な)?変化|"
-    r"(?:\d{2}:00|次の時間帯|翌東京時間|東京時間|欧州時間|NY時間)への引き継ぎ)$"
+    r"(?:\d{2}:00|次の時間帯|翌東京時間|東京時間|欧州時間|NY時間)への引き継ぎ(?:・リスク管理)?$"
 )
 
 
@@ -63,12 +63,17 @@ def section_bodies(text: str) -> dict[str, str]:
     return {name: "\n".join(lines).strip() for name, lines in sections.items()}
 
 
-def validate_key_section_bodies(text: str) -> None:
+def validate_key_section_bodies(text: str, slot: str = "") -> None:
     """Keep causal-flow and outlook sections substantive after heading recognition."""
     sections = section_bodies(text)
     causal = sections.get("クロスアセット資金フロー", "")
     if len(causal) < 20 or len(re.findall(r"[。！？]", causal)) < 1:
         raise ValueError("incomplete saved report section: クロスアセット資金フロー body is missing or insubstantial")
+
+    if slot == "21:00":
+        handover = sections.get("引き継ぎ", "")
+        if len(handover) < 20 or len(re.findall(r"[。！？]", handover)) < 1:
+            raise ValueError("incomplete saved report section: 引き継ぎ body is missing or insubstantial")
 
     outlook = sections.get("個別市場見通し", "")
     market_patterns = (
