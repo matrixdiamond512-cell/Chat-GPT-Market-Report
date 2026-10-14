@@ -17,7 +17,7 @@ from uuid import uuid4
 
 from .context import ReportContext, aware
 from .snapshot import MarketDataSnapshot, digest, plain
-from .report import REGISTRY, parse_sections
+from .report import REGISTRY as HEADING_REGISTRY, parse_sections
 
 SCHEMA = "market-report-shadow/v1"
 LANE = "api-shadow"
@@ -261,7 +261,7 @@ def validate_mock_response(reply: dict, context: ReportContext, snapshot: Market
             text.splitlines()[0].strip() != title or reply["title"] != title):
         raise ShadowBlocked("REPORT_BODY_OR_TITLE_INVALID")
     headings = {section["heading"] for section in parse_sections(text)}
-    if not set(REGISTRY["required"]).issubset(headings):
+    if not set(HEADING_REGISTRY["required"]).issubset(headings):
         raise ShadowBlocked("REQUIRED_SOP_HEADINGS_MISSING")
     usage = reply["usage"]
     if not isinstance(usage, dict) or set(usage) != {"input_tokens", "output_tokens"} or any(
