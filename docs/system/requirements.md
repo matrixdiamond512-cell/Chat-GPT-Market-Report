@@ -45,3 +45,9 @@ OpenAI API worker実行前のオフライン契約として固定モデルsnapsh
 - D1の試験用メモリストアに加え、D2では再起動をまたぐbyte-exact読み戻し・保存時の不変性・改ざん拒否・安全なroot/path/権限検査を試験する。ただし同実装はローカルPOSIXのstaging試作で、クラウドprivate store／暗号化／独立運用主体／分散排他は未提供。
 - GitHub公開ワークツリーへの証拠保存は禁止。原本bytesのSHAと保存読戻しを突合し、同object IDへの重複保存やパス横断・シンボリックリンク・危険なアクセス権限を拒否する。
 - 実API呼び出しとpublishの許可判定は変更しない。D2有料試験は別途承認、実本番配信はBLOCKEDを維持。
+
+## 2026-10-15 D2数値・出典照合ゲート要件（Draft）
+- API shadow応答で、本文の価格等の数字をモデル自身の出典申告だけで承認しない。取得済みのReportContext／MarketDataSnapshotを再検証し、検証済みソースID・登録URL・観測時刻・cutoff・market type・数量単位・値（priceValue/changeValue/changePct）に結び付ける。
+- Responses出力JSONは従来のshadow-responses-json/v1から検証用v2へ拡張し、`numeric_claims`（文字位置、原文、系列、フィールド、出典ID、観測時刻）を必須とする。タイトル行と登録銘柄識別子内の数字のみ限定的にメタデータ扱いとし、その他の数値記載は全出現箇所の照合が必要。
+- 対応する証拠がないニュース・金利・PER/EPS・移動平均・イベントの数値等は、推測・モデル申告で穴埋めせずBLOCKED。v1は字句・参照照合であり自然言語の意味的整合性や取得元の真正性・許諾を保証しない。
+- D2実API試験、本番発行者署名、Docs/Pages公開、既存タスク変更は未許可。
