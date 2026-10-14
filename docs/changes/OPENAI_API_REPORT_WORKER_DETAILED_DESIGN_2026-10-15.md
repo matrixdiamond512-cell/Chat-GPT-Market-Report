@@ -216,3 +216,7 @@ APIレスポンスをdictから`json_bytes(raw)`で再シリアライズしたdi
 
 ## 2026-10-15 D2 offline evidence store試作（実API・本番デプロイなし）
 `LocalPrivateEvidenceStore`はD1 MemoryEvidenceStoreの代替本番基盤ではなく、POSIX staging上でprivate evidenceの保存・再起動後readbackの基本条件を検証するもの。明示root、worktree外、ディレクトリ0700、ファイル0600、O_EXCL、O_NOFOLLOW、fsync、SHA-256、同一ID保存拒否、所有者／hardlink検査を実装した。`tests/test_d2_private_store.py`をCIへ接続し、tamper・unsafe path/mode・symlink・duplicate・receipt不一致をfail-closed確認する。暗号化・IAM・retention・cross-host mutex・実API原本受信・独立staging cloud readbackは別工程で、これらが未実証なら本番公開不可。
+
+## 2026-10-15 D2 numeric-claim audit接続（offline、Draft）
+D2 Responses v2のstrict JSON schemaに`numeric_claims`を追加。本文中の数値出現offsetを要求し、producer入力のReportContextとMarketDataSnapshotから構築した固定`verified_numeric_source_bundle`（値・出典ID/URL・asOf・cutoff・単位）に結び付けて検証。自称cite/source・無根拠の価格予想は信用せず、欠落・重複・不一致・誤％・誤時刻・未収録フィールドで停止する。登録済みsource IDとソースURLの組み合わせの両方を検査する。旧v1 snapshot IDは維持。
+本件は**lexical coverage v1**であり、モデルが近傍で誤った意味付けをする問題、ニュース統計やPER/EPSなどsnapshot外情報の独立source取得、出典ライセンス、署名権限分離や原文⇄Docs真正性は未解決。従来どおりAPI未送信・未公開、D2 real trialは外部承認が必要。
