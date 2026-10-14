@@ -72,6 +72,62 @@ function reviewCountSemantics(raw,prep){
     fail('HANDOFF_COUNTED_INPUT_TOKENS_MISMATCH');
 }
 
+// Recalculate the frozen synthetic budget decisions independently in JS.
+// USD values have at most eight decimal places: 1 unit is USD 10^-8.
+// The model rates here are versioned OFFLINE TEST assumptions, not live prices.
+const MONEY=/^(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,8})?$/;
+const USD_SCALE=100000000n;
+const OFFLINE_INPUT_USD_UNITS_PER_TOKEN=75n;  // USD 0.75 / million
+const OFFLINE_OUTPUT_USD_UNITS_PER_TOKEN=450n; // USD 4.50 / million
+function usdUnits(value,field,positive=false){
+  if(typeof value!=='string'||!MONEY.test(value))
+    fail('HANDOFF_USD_INVALID_'+field);
+  const [whole,frac='']=value.split('.');
+  const units=BigInt(whole)*USD_SCALE+BigInt((frac+'00000000').slice(0,8));
+  if(positive&&units===0n)fail('HANDOFF_USD_NOT_POSITIVE_'+field);
+  return units;
+}
+function reviewBudgetSemantics(monthly,prep){
+  if(monthly.month_jst!==prep.report_id.slice(0,7) ||
+      !/^\\d{4}-\\d{2}-\\d{2}_(08|12|16|21)-00$/.test(prep.report_id))
+    fail('HANDOFF_BILLING_MONTH_MISMATCH');
+  if(monthly.project_hard_limit_enabled!==true||
+      monthly.org_hard_limit_enabled!==true)
+    fail('HANDOFF_HARD_LIMITS_NOT_ENABLED');
+  if(!Number.isSafeInteger(prep.max_input_tokens)||
+      prep.max_input_tokens<1||prep.max_input_tokens>12000||
+      !Number.isSafeInteger(prep.max_output_tokens)||
+      prep.max_output_tokens<1||prep.max_output_tokens>4000||
+      !Number.isSafeInteger(prep.counted_input_tokens)||
+      prep.counted_input_tokens<0||
+      prep.counted_input_tokens>prep.max_input_tokens)
+    fail('HANDOFF_TOKEN_PLAN_INVALID');
+  const runCap=usdUnits(prep.max_model_cost_usd,'max_model_cost_usd',true);
+  const claimedCost=usdUnits(prep.counted_model_cost_usd,'counted_model_cost_usd');
+  const actualCost=BigInt(prep.counted_input_tokens)*
+      OFFLINE_INPUT_USD_UNITS_PER_TOKEN+
+      BigInt(prep.max_output_tokens)*OFFLINE_OUTPUT_USD_UNITS_PER_TOKEN;
+  const worstCost=BigInt(prep.max_input_tokens)*
+      OFFLINE_INPUT_USD_UNITS_PER_TOKEN+
+      BigInt(prep.max_output_tokens)*OFFLINE_OUTPUT_USD_UNITS_PER_TOKEN;
+  if(claimedCost!==actualCost)fail('HANDOFF_COUNTED_COST_MISMATCH');
+  if(worstCost>runCap)fail('HANDOFF_RUN_COST_CAP_EXCEEDED');
+  const spend=usdUnits(monthly.reported_month_spend_usd,'reported_month_spend_usd');
+  const reserved=usdUnits(monthly.outstanding_reservations_usd,'outstanding_reservations_usd');
+  const userCap=usdUnits(monthly.approved_month_cap_usd,'approved_month_cap_usd',true);
+  const projectCap=usdUnits(monthly.project_hard_limit_usd,'project_hard_limit_usd',true);
+  const orgCap=usdUnits(monthly.org_hard_limit_usd,'org_hard_limit_usd',true);
+  const minimum=[userCap,projectCap,orgCap].reduce((a,b)=>a<b?a:b);
+  const total=spend+reserved+worstCost;
+  if(total>minimum)fail('HANDOFF_MONTHLY_BUDGET_EXCEEDED');
+  if(usdUnits(prep.monthly_total_with_reservation_usd,
+       'monthly_total_with_reservation_usd')!==total)
+    fail('HANDOFF_MONTHLY_TOTAL_MISMATCH');
+  if(usdUnits(prep.monthly_effective_cap_usd,
+       'monthly_effective_cap_usd',true)!==minimum)
+    fail('HANDOFF_MONTHLY_EFFECTIVE_CAP_MISMATCH');
+}
+
 function reviewPreparedHandoff({
   preparationBytes,countBytes,monthlyBytes,countProof,billingProof,
   trustRoots,expectations,nowMs
@@ -99,6 +155,7 @@ function reviewPreparedHandoff({
   reviewCountSemantics(countBytes,prep);
   if(sha(monthlyBytes)!==prep.monthly_inputs_sha256)
     fail('HANDOFF_MONTHLY_INPUT_DIGEST_MISMATCH');
+  reviewBudgetSemantics(monthly,prep);
 
   if(!expectations||!exact(expectations,['input_count','monthly_billing']))
     fail('HANDOFF_EXPECTATIONS_REQUIRED');
