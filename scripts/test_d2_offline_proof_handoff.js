@@ -7,7 +7,7 @@ const cp=require('node:child_process');
 const {canonical,PREFIX,SCHEMA}=require('./reporting/d2_detached_evidence');
 const {reviewPreparedHandoff,D2EvidenceBlocked}=
   require('./reporting/d2_offline_proof_handoff');
-const pyFixture="import json,sys,base64,tempfile\nfrom pathlib import Path\nfrom dataclasses import asdict\nsys.path.insert(0,'tests')\nfrom test_shadow_worker_offline import fixture_context,fixture_snapshot\nfrom test_d2_responses_contract import provider_fixture\nfrom scripts.reporting.d2_private_store import LocalPrivateEvidenceStore\nfrom scripts.reporting.d2_offline_prepared_run import run_prepared_offline\nfrom scripts.reporting.d2_monthly_budget import MonthlySpendInputs\nfrom scripts.reporting.shadow_worker import json_bytes\nctx=fixture_context()\nsnapshot=fixture_snapshot(ctx)\nmonthly=MonthlySpendInputs(report_id=ctx.report_id,month_jst=ctx.report_date[:7],reported_month_spend_usd='0.80',outstanding_reservations_usd='0.20',approved_month_cap_usd='2.00',project_hard_limit_usd='1.50',org_hard_limit_usd='3.00',project_hard_limit_enabled=True,org_hard_limit_enabled=True)\nwith tempfile.TemporaryDirectory() as tmp:\n  store=LocalPrivateEvidenceStore(Path(tmp)/'private')\n  fixture=lambda request:json.dumps(provider_fixture(ctx,snapshot),ensure_ascii=False,indent=2).encode('utf8')\n  raw_count=b'{\"object\":\"response.input_tokens\",\"input_tokens\":9000}\\n'\n  result=run_prepared_offline(ctx,snapshot,store,fixture,raw_count_fixture=raw_count,monthly_inputs=monthly,run_id='handoff-run',attempt_id='handoff-attempt')\n  prep=store.read_verified(result.preparation_receipt)\n  monthly_bytes=json_bytes(asdict(monthly))\n  print(json.dumps({'preparation_b64':base64.b64encode(prep).decode(),'count_b64':base64.b64encode(raw_count).decode(),'monthly_b64':base64.b64encode(monthly_bytes).decode(),'execution_status':result.execution.status}))";
+const pyFixture="import json,sys,base64,tempfile\nfrom pathlib import Path\nfrom dataclasses import asdict\nsys.path.insert(0,'tests')\nfrom test_shadow_worker_offline import fixture_context,fixture_snapshot\nfrom test_d2_responses_contract import provider_fixture\nfrom scripts.reporting.d2_private_store import LocalPrivateEvidenceStore\nfrom scripts.reporting.d2_offline_prepared_run import run_prepared_offline\nfrom scripts.reporting.d2_monthly_budget import MonthlySpendInputs\nfrom scripts.reporting.shadow_worker import json_bytes\nctx=fixture_context()\nsnapshot=fixture_snapshot(ctx)\nmonthly=MonthlySpendInputs(report_id=ctx.report_id,month_jst=ctx.report_date[:7],reported_month_spend_usd='0.80',outstanding_reservations_usd='0.20',approved_month_cap_usd='2.00',project_hard_limit_usd='1.50',org_hard_limit_usd='3.00',project_hard_limit_enabled=True,org_hard_limit_enabled=True)\nwith tempfile.TemporaryDirectory() as tmp:\n  store=LocalPrivateEvidenceStore(Path(tmp)/'private')\n  fixture=lambda request:json.dumps(provider_fixture(ctx,snapshot),ensure_ascii=False,indent=2).encode('utf8')\n  raw_count=b'{\"object\":\"response.input_tokens\",\"input_tokens\":9000}\n'\n  result=run_prepared_offline(ctx,snapshot,store,fixture,raw_count_fixture=raw_count,monthly_inputs=monthly,run_id='handoff-run',attempt_id='handoff-attempt')\n  prep=store.read_verified(result.preparation_receipt)\n  monthly_bytes=json_bytes(asdict(monthly))\n  print(json.dumps({'preparation_b64':base64.b64encode(prep).decode(),'count_b64':base64.b64encode(raw_count).decode(),'monthly_b64':base64.b64encode(monthly_bytes).decode(),'execution_status':result.execution.status}))";
 const source=JSON.parse(cp.execFileSync('python',['-c',pyFixture],
   {encoding:'utf8',timeout:15000,maxBuffer:1024*1024}));
 assert.equal(source.execution_status,'OFFLINE_FIXTURE_VALIDATED');
@@ -136,15 +136,15 @@ function withResignedCount(raw){
   };
 }
 rejected('validly resigned raw count of 9001 conflicts with frozen 9000',(()=>{
-  const newBytes=Buffer.from('{"object":"response.input_tokens","input_tokens":9001}\\n');
+  const newBytes=Buffer.from('{"object":"response.input_tokens","input_tokens":9001}\n');
   return withResignedCount(newBytes);
 })(),/HANDOFF_COUNTED_INPUT_TOKENS_MISMATCH/);
 rejected('duplicate count JSON field rejected even when bytes SHA and signature agree',(()=>{
-  const newBytes=Buffer.from('{"object":"response.input_tokens","input_tokens":9000,"input_tokens":9000}\\n');
+  const newBytes=Buffer.from('{"object":"response.input_tokens","input_tokens":9000,"input_tokens":9000}\n');
   return withResignedCount(newBytes);
 })(),/HANDOFF_COUNT_DUPLICATE_OR_UNSAFE_KEYS/);
 rejected('count object type changed and re-signed is not a token response',(()=>{
-  const newBytes=Buffer.from('{"object":"response","input_tokens":9000}\\n');
+  const newBytes=Buffer.from('{"object":"response","input_tokens":9000}\n');
   return withResignedCount(newBytes);
 })(),/HANDOFF_COUNT_SCHEMA_INVALID/);
 rejected('prepared counted_input_tokens changed with signatures unchanged',(()=>{
@@ -152,7 +152,7 @@ rejected('prepared counted_input_tokens changed with signatures unchanged',(()=>
   return {preparationBytes:Buffer.from(canonical(changed),'utf8')};
 })(),/HANDOFF_COUNTED_INPUT_TOKENS_MISMATCH/);
 test('whitespace-flexible count with identical token semantics still stays BLOCKED',()=>{
-  const newBytes=Buffer.from(' { "input_tokens":9000, "object":"response.input_tokens" }\\n');
+  const newBytes=Buffer.from(' { "input_tokens":9000, "object":"response.input_tokens" }\n');
   const x=reviewPreparedHandoff({...base,...withResignedCount(newBytes)});
   assert.equal(x.publication_allowed,false);
   assert.equal(x.api_send_allowed,false);
