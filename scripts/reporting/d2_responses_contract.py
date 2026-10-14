@@ -233,6 +233,16 @@ def capture_response(raw: dict, context: ReportContext, snapshot: MarketDataSnap
         }, context, snapshot)
     except (ShadowBlocked, ValueError, KeyError, TypeError) as exc:
         raise ResponsesContractError("OUTPUT_SHADOW_VALIDATION_BLOCKED") from exc
+    # The model's numerical claims and its natural-language summary can
+    # contradict one another. Reject objectively detectable contradictions
+    # before accepting the private draft; complete evidence and extended SOP
+    # checks are handled by the separate production release preflight.
+    from .d3_narrative_quality import check_narrative_quality
+    narrative = check_narrative_quality(
+        context, snapshot, parsed["title"], full_text, require_full_sop=False
+    )
+    if narrative.status != "PASS":
+        raise ResponsesContractError("NARRATIVE_FACT_CONTRADICTION:" + "|".join(narrative.issues))
     # The model-supplied spans are audited against independently frozen
     # source data. A JSON schema or self-declared citation grants no authority.
     try:
