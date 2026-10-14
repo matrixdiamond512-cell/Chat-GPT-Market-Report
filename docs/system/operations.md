@@ -41,3 +41,8 @@ PR #130の`python -m unittest discover -s tests -p 'test_d2_preflight.py' -v`と
 
 ## 2026-10-15 D2 Responses API offline検査・運用境界（Draft）
 `python -m unittest discover -s tests -p 'test_d2_responses_contract.py' -v`で、Responses APIの模擬レスポンス8件を通信なしで検証する。候補モデルsnapshotはOpenAI公式確認の`gpt-5.4-mini-2026-03-17`。出力はモデル応答構造の形式検査であり、実API呼出しの証明ではない。OpenAI project/API key・保存先・費用上限・独立承認が揃うまで送信しない。既存ChatGPTタスクは変更せず、Apps Script・GitHub本番公開も停止したままとする。
+
+## 2026-10-15 D2受信原本確認の運用追補（Draft）
+- CIで`python -m unittest discover -s tests -p 'test_d2_responses_contract.py' -v`を実行し、raw response bytesとnormalized JSONのdigestが別物であること、原本不一致／重複キー／不正UTF-8時の停止を確認する。
+- 今後の有料D2試験では、実際に受信したレスポンスの原本bytesを非公開で保存し、保存オブジェクトの再読み戻しとのbyte-exact比較まで確認する。dictから再生成したJSON bytesを「API原本」として保存・署名しない。
+- 原本バイト列のhashだけでは真正性は立証できない。外部送信権限、実API課金承認、private store、ソース利用権・原文↔Docs照合・全数値意味検証が未達ならAPI送信・公開ともBLOCKED。
