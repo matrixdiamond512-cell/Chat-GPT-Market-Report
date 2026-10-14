@@ -13,6 +13,10 @@ from datetime import date
 from decimal import Decimal, InvalidOperation
 import json
 import re
+from .d2_responses_contract import (
+    MODEL, STRUCTURED_SCHEMA_VERSION,
+    INPUT_RATE_USD_PER_MILLION, OUTPUT_RATE_USD_PER_MILLION,
+)
 
 REQUIRED_EVIDENCE = (
     "api_project", "least_privilege_key", "secret_manager",
@@ -93,6 +97,8 @@ def evaluate_d2_manifest(manifest: dict | None = None) -> PreflightOutcome:
             date.fromisoformat(model[-10:])
         except ValueError:
             errors.append("MODEL_SNAPSHOT_NOT_PINNED")
+        if model != MODEL:
+            errors.append("MODEL_NOT_SUPPORTED_BY_D2_CONTRACT")
     report_id = manifest.get("report_id")
     if not isinstance(report_id, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}_(08|12|16|21)-00", report_id):
         errors.append("REPORT_ID_OR_SLOT_INVALID")
@@ -104,7 +110,7 @@ def evaluate_d2_manifest(manifest: dict | None = None) -> PreflightOutcome:
             errors.append("REPORT_ID_OR_SLOT_INVALID")
     if manifest.get("data_contract") != "immutable-context-snapshot/v1":
         errors.append("IMMUTABLE_INPUT_CONTRACT_MISSING")
-    if manifest.get("response_contract") != "strict-json-schema/v1":
+    if manifest.get("response_contract") != STRUCTURED_SCHEMA_VERSION:
         errors.append("STRICT_OUTPUT_CONTRACT_MISSING")
     caps = manifest.get("caps") if isinstance(manifest.get("caps"), dict) else {}
     n_input = _positive_int(caps.get("max_input_tokens"), "MAX_INPUT", errors)
@@ -118,6 +124,12 @@ def evaluate_d2_manifest(manifest: dict | None = None) -> PreflightOutcome:
         errors.append("RATE_MODEL_OR_UNIT_MISMATCH")
     in_price = _money(pricing.get("input_per_million"), "INPUT_RATE", errors)
     out_price = _money(pricing.get("output_per_million"), "OUTPUT_RATE", errors)
+    # A caller-controlled, artificially low "quote" cannot make an unsafe
+    # plan appear affordable. These are dated offline planning rates only.
+    if in_price is not None and in_price != INPUT_RATE_USD_PER_MILLION:
+        errors.append("INPUT_RATE_MISMATCH_PINNED_MODEL")
+    if out_price is not None and out_price != OUTPUT_RATE_USD_PER_MILLION:
+        errors.append("OUTPUT_RATE_MISMATCH_PINNED_MODEL")
     run_cap = _money(caps.get("max_run_usd"), "RUN_CAP", errors)
     monthly_cap = _money(caps.get("max_month_usd"), "MONTH_CAP", errors)
     estimate = None
