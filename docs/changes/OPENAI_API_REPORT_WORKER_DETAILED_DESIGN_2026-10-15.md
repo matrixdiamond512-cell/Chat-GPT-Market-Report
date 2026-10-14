@@ -213,3 +213,6 @@ v2識別子：`report-canonical-json/v2`。JSON object keyはASCII識別子と�
 
 ## 2026-10-15 D2 raw provider response hash の意味修正（Draft）
 APIレスポンスをdictから`json_bytes(raw)`で再シリアライズしたdigestは「raw HTTP response bytes」のdigestではなかった。D2 offline contractで2者を区別し、`normalized_response_sha256`は正規化JSONのdigest、`raw_response_sha256`は元のUTF-8 byte列が提供され、dictと内容照合できた場合のみ存在するよう変更。内容相違、JSON重複キー、不正UTF-8、非有限値をrejectし、空白差によるraw digest差と正規化digest一致をfixtureで確認する。これは受信バイト完全性の基礎であり、API由来の証明、独立private readback、本番署名・公開許可ではない。
+
+## 2026-10-15 D2 offline evidence store試作（実API・本番デプロイなし）
+`LocalPrivateEvidenceStore`はD1 MemoryEvidenceStoreの代替本番基盤ではなく、POSIX staging上でprivate evidenceの保存・再起動後readbackの基本条件を検証するもの。明示root、worktree外、ディレクトリ0700、ファイル0600、O_EXCL、O_NOFOLLOW、fsync、SHA-256、同一ID保存拒否、所有者／hardlink検査を実装した。`tests/test_d2_private_store.py`をCIへ接続し、tamper・unsafe path/mode・symlink・duplicate・receipt不一致をfail-closed確認する。暗号化・IAM・retention・cross-host mutex・実API原本受信・独立staging cloud readbackは別工程で、これらが未実証なら本番公開不可。
