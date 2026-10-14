@@ -7,6 +7,8 @@ const vm = require('vm');
 const proofSource = fs.readFileSync('apps-script/MarketReportProducerProof.gs', 'utf8');
 const publisherSource = fs.readFileSync('apps-script/MarketReportWebSync.gs', 'utf8');
 const autoSource = fs.readFileSync('apps-script/MarketReportAutoPublish.gs', 'utf8');
+const structuredSource = fs.readFileSync('apps-script/MarketReportStructuredImport.gs', 'utf8');
+const historicalSource = fs.readFileSync('apps-script/MarketReportHistoricalImport.gs', 'utf8');
 const secret = 'test-only-independent-producer-secret-at-least-32-characters';
 const hash = text => crypto.createHash('sha256').update(text).digest('hex');
 const canonical = value => {
@@ -138,5 +140,58 @@ assert(manual.indexOf('marketReportVerifyProducerProof_(report)') <
 assert(archive.indexOf('marketReportVerifyProducerProof_(report)') <
   archive.indexOf("putGitHubJsonFile_(path, JSON.stringify(report"),
   'archive proof gate must precede actual canonical write, not dependency checking');
+
+// Legacy structured import has a separate reports.json writer. Validate every
+// serialized row at that writer boundary before any GitHub API request.
+const structuredWriter = extract(structuredSource, 'function mrPublishReportsJson_(reports)',
+  '\\nfunction mrGithubConfig_');
+const structuredState = {fetches: 0, writes: 0};
+const structuredDry = {
+  marketReportVerifyProducerProof_: () => {
+    throw Error('PRODUCER_PROOF_BLOCKED: absent trusted record');
+  },
+  mrGithubConfig_: () => ({owner: 'test', repo: 'test', branch: 'main', token: 'unused'}),
+  UrlFetchApp: {fetch: () => {structuredState.fetches += 1; return {getResponseCode: () => 200};}},
+};
+vm.createContext(structuredDry);
+vm.runInContext(structuredWriter, structuredDry);
+assert.throws(() => structuredDry.mrPublishReportsJson_([report]), /PRODUCER_PROOF_BLOCKED/);
+assert.strictEqual(structuredState.fetches, 0, 'structured import must reject before GitHub reads/writes');
+
+// The historical continuation importer writes reports.json directly. Verify
+// missing evidence aborts a batch before its putGitHubJsonFile_ call.
+const historicalBatch = extract(historicalSource, 'function processHistoricalMarketReportBatch_()',
+  '\\nfunction listHistoricalMarketReportDocs_');
+const historyState = {writes: 0, saves: 0};
+const historyFile = {getName: () => 'マーケットレポート_2026-10-15_16-00'};
+const historyProps = {
+  getProperty: key => key === 'MARKET_REPORT_HISTORY_IMPORT_STATE'
+    ? JSON.stringify({offset: 0, imported: 0, fallback: 0, failed: 0}) : null,
+  setProperty: () => {},
+  deleteProperty: () => {},
+};
+const historyDry = {
+  MARKET_REPORT_HISTORY_CONFIG: {
+    stateProperty: 'MARKET_REPORT_HISTORY_IMPORT_STATE',
+    resultProperty: 'MARKET_REPORT_HISTORY_IMPORT_RESULT',
+    timezone: 'Asia/Tokyo', batchSize: 20,
+  },
+  LockService: {getScriptLock: () => ({waitLock: () => {}, releaseLock: () => {}})},
+  PropertiesService: {getScriptProperties: () => historyProps},
+  listHistoricalMarketReportDocs_: () => [historyFile],
+  getGitHubJsonFile_: () => ({data: [], sha: 'existing-index-sha'}),
+  buildWebReportFromGoogleDoc_: () => ({...report, sourceDocument: {...report.sourceDocument}}),
+  buildLegacyWebReportFromGoogleDoc_: () => ({...report, sourceDocument: {...report.sourceDocument}}),
+  marketReportVerifyProducerProof_: () => {throw Error('PRODUCER_PROOF_BLOCKED: no signed proof');},
+  putGitHubJsonFile_: () => {historyState.writes += 1;},
+  saveHistoricalImportResult_: () => {historyState.saves += 1;},
+  clearHistoricalImportTriggers_: () => {},
+  Utilities: {formatDate: () => '2026-10-15 17:00:00'},
+};
+vm.createContext(historyDry);
+vm.runInContext(historicalBatch, historyDry);
+assert.throws(() => historyDry.processHistoricalMarketReportBatch_(), /PRODUCER_PROOF_BLOCKED/);
+assert.strictEqual(historyState.writes, 0, 'unproved historical batch must not rewrite reports.json');
+assert.strictEqual(historyState.saves, 0, 'blocked batch must not save a success receipt');
 
 console.log('Signed producer-owned report gate / no-write regressions PASS');
