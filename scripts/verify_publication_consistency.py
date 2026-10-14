@@ -7,6 +7,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from report_identity import canonical_path as shared_canonical_path, display_report_datetime, internal_report_key, slot_key as shared_slot_key
 
 JST = ZoneInfo("Asia/Tokyo")
 
@@ -28,7 +29,7 @@ def unwrap(payload: object, source: str) -> dict:
 
 
 def key(report: dict) -> tuple[str, str]:
-    return str(report["date"]), str(report["time"])
+    return shared_slot_key(report)
 
 
 def slot_datetime(report: dict) -> datetime:
@@ -40,23 +41,13 @@ def slot_datetime(report: dict) -> datetime:
         raise SystemExit(f"invalid report slot {report.get('date')} {report.get('time')}: {exc}") from exc
 
 
-def verify_dashboard_projection(latest: dict, dashboard: dict) -> None:
-    """Check the dashboard's projection without requiring identical schemas."""
+def verify_dashboard_copy(latest: dict, dashboard: dict) -> None:
+    """The dashboard stores the complete canonical latest report."""
     projected = dashboard.get("latestReport")
     if not isinstance(projected, dict):
         raise SystemExit("dashboard.latestReport is missing")
-    for field in ("date", "time", "title"):
-        if not str(projected.get(field) or "").strip():
-            raise SystemExit(f"dashboard.latestReport is missing {field}")
-    if key(projected) != key(latest):
-        raise SystemExit(
-            f"dashboard.latestReport slot mismatch: {key(projected)} != {key(latest)}"
-        )
-    if str(projected.get("title") or "") != str(latest.get("title") or ""):
-        raise SystemExit("dashboard.latestReport title does not match latest-report.json")
-    for field in ("reportId", "revision", "bodyHash"):
-        if field in latest and field in projected and latest[field] != projected[field]:
-            raise SystemExit(f"dashboard.latestReport {field} does not match latest-report.json")
+    if projected != latest:
+        raise SystemExit("dashboard.latestReport does not match complete latest report")
 
 
 def main() -> int:
@@ -71,15 +62,16 @@ def main() -> int:
 
     latest = unwrap(load(Path(args.latest)), args.latest)
     date_text, time_text = key(latest)
-    if args.expected_key and args.expected_key != f"{date_text} {time_text}":
+    expected_internal_key = internal_report_key(latest)
+    if args.expected_key and args.expected_key != expected_internal_key:
         raise SystemExit(
             f"latest report slot mismatch: expected {args.expected_key}, "
-            f"got {date_text} {time_text}"
+            f"got {expected_internal_key}"
         )
     if not args.allow_future and slot_datetime(latest) > datetime.now(JST):
         raise SystemExit(f"future report cannot be public latest: {date_text} {time_text}")
 
-    canonical_path = Path(args.reports) / f"{date_text}_{time_text.replace(':', '-')}.json"
+    canonical_path = shared_canonical_path(latest, Path(args.reports))
     if not canonical_path.exists():
         raise SystemExit(f"canonical report missing: {canonical_path}")
     canonical = unwrap(load(canonical_path), str(canonical_path))
@@ -98,16 +90,16 @@ def main() -> int:
     dashboard = load(Path(args.dashboard))
     if not isinstance(dashboard, dict):
         raise SystemExit(f"{args.dashboard}: expected a JSON object")
-    expected_key = f"{date_text} {time_text}"
-    if dashboard.get("currentReportKey") != expected_key:
+    if dashboard.get("currentReportKey") != expected_internal_key:
         raise SystemExit(
             f"dashboard currentReportKey mismatch: "
-            f"{dashboard.get('currentReportKey')!r} != {expected_key!r}"
+            f"{dashboard.get('currentReportKey')!r} != {expected_internal_key!r}"
         )
-    verify_dashboard_projection(latest, dashboard)
+    verify_dashboard_copy(latest, dashboard)
 
     print(
-        f"Publication consistency verified: {expected_key}; "
+        f"Publication consistency verified: {display_report_datetime(latest)} "
+        f"(key={expected_internal_key}); "
         f"canonical={canonical_path}; dashboard={args.dashboard}"
     )
     return 0
