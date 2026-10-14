@@ -27,7 +27,7 @@ TIMELINES = {
     '16:00': ('12:00', '12:30後場寄り', '13:00〜14:00', '15:00前後', '大引け', '16:00判断'),
     '21:00': ('欧州市場', 'EUR/USD', '欧州債券', 'US Treasury', 'US equity futures', 'OSE Nikkei night session', 'USD/JPY', 'Gold', 'WTI', 'BTCUSD'),
 }
-_NUMBER = re.compile(r'(?<![\w])[-+]?\d[\d,]*(?:\.\d+)?%?')
+_NUMBER = re.compile(r'(?<![A-Za-z0-9_])[-+]?\d[\d,]*(?:\.\d+)?%?')
 _BANNED = {
     'line_chart': 'DECORATIVE_CHART_DETECTED', 'bar_chart': 'DECORATIVE_CHART_DETECTED',
     'pie_chart': 'DECORATIVE_CHART_DETECTED', 'decorative_chart': 'DECORATIVE_CHART_DETECTED',
@@ -162,7 +162,7 @@ def validate_report(report: dict) -> dict:
         '総合判断': ('総合判断',), '材料と値動きの整合性': ('材料と値動きの整合性',),
         '今日の主導市場': ('今日の主導市場',), '金利': ('金利', '米国債', '日本国債'),
         '今後のイベント': ('今後のイベント', '重要イベント', '今日の重要イベント'),
-        '主要6市場の見通し': ('主要6市場の見通し', '個別市場見通し', '6市場の見通し'),
+        '主要6市場の見通し': ('主要6市場の見通し', '主要6市場の短期見通し', '個別市場見通し', '6市場の見通し'),
         'メインシナリオ': ('メインシナリオ', 'シナリオ'), '代替シナリオ': ('代替シナリオ', '上振れシナリオ', '下振れシナリオ'),
         'シナリオが崩れる条件': ('シナリオが崩れる条件', 'ブレイク条件'),
         '次時間帯への引き継ぎ': ('次時間帯への引き継ぎ', '12:00への引き継ぎ', '16:00への引き継ぎ', '21:00への引き継ぎ', '08:00への引き継ぎ'),
@@ -192,7 +192,7 @@ def _numeric_tokens(value: str):
 
 
 def _text(value):
-    ignored = {'timestamp', 'source_section', 'unit', 'instrument', 'report_id', 'source_sha256'}
+    ignored = {'timestamp', 'source_section', 'unit', 'instrument', 'source_field', 'line_sha256', 'report_id', 'source_sha256'}
     def collect(item, key=''):
         if key in ignored:
             return []
@@ -205,7 +205,7 @@ def _text(value):
 
 
 def _display_text(panels):
-    ignored = {'title', 'timestamp', 'source_section', 'unit', 'instrument', 'report_id', 'source_sha256'}
+    ignored = {'title', 'timestamp', 'source_section', 'unit', 'instrument', 'source_field', 'line_sha256', 'report_id', 'source_sha256'}
     def collect(item, key=''):
         if key in ignored:
             return []
@@ -259,15 +259,26 @@ def validate_spec(report: dict, spec: dict, source_lock: dict | None = None) -> 
     panel_titles = [str(panel.get('title', '')) for panel in panels if isinstance(panel, dict)]
     all_panel_text = _text(panels)
     section_aliases = {
-        '主要6市場の見通し': ('主要6市場の見通し', '個別市場見通し', '6市場の見通し'),
+        '今日の相場テーマ': ('今日の相場テーマ',),
+        '前回からの変化': ('前回からの変化',),
+        '材料と値動きの整合性': ('材料と値動きの整合性',),
+        '今日の主導市場': ('今日の主導市場',),
+        '重要ニュース': ('重要ニュース',),
+        '金利': ('金利', '米国債', '日本国債'),
+        'クロスアセット資金フロー': ('クロスアセット資金フロー',),
+        '需給・ポジション': ('需給・ポジション',),
+        '主要6市場の見通し': ('主要6市場の見通し', '主要6市場の短期見通し', '個別市場見通し', '6市場の見通し'),
         'メインシナリオ': ('メインシナリオ', 'シナリオ'),
         '代替シナリオ': ('代替シナリオ', '上振れシナリオ', '下振れシナリオ'),
         'シナリオが崩れる条件': ('シナリオが崩れる条件', 'ブレイク条件'),
         '今後のイベント': ('今後のイベント', '重要イベント', '今日の重要イベント'),
         '次時間帯への引き継ぎ': ('次時間帯への引き継ぎ', 'への引き継ぎ'),
+        '結論': ('結論',),
+        'クロスチェック結果': ('クロスチェック結果',),
     }
+    normalized_panel_titles = [re.sub(r'^\s*\d{1,2}[．.、)]\s*', '', title).strip() for title in panel_titles]
     missing_panels = [required for required in REQUIRED_SECTIONS
-                      if not any(alias in title for alias in section_aliases.get(required, (required,)) for title in panel_titles)]
+                      if not any(alias in title for alias in section_aliases.get(required, (required,)) for title in normalized_panel_titles)]
     if missing_panels:
         violations.append('MISSING_REQUIRED_SECTION')
     missing_market_panels = [market for market in MARKETS
@@ -311,12 +322,29 @@ def validate_spec(report: dict, spec: dict, source_lock: dict | None = None) -> 
         violations.append('NUMBER_NOT_FOUND_IN_SOURCE')
     for panel in panels:
         for number in panel.get('numbers', []) if isinstance(panel, dict) else []:
-            if not isinstance(number, dict) or 'value' not in number or not all(number.get(k) for k in ('unit', 'timestamp', 'source_section', 'instrument')):
+            if not isinstance(number, dict) or 'value' not in number:
                 violations.append('NUMBER_PROVENANCE_MISSING')
                 continue
             try:
                 parsed = set(_numeric_tokens(str(number['value'])))
                 annotated_numbers.update(parsed)
+                source_field = number.get('source_field', 'priceValue')
+                if source_field == 'report_text':
+                    if not number.get('source_section') or not number.get('line_sha256'):
+                        violations.append('NUMBER_PROVENANCE_MISSING')
+                        continue
+                    source_lines = [line for section in _report_sections(report_text(report))
+                                    if section['heading'] == number['source_section'] for line in section['lines']]
+                    if number['line_sha256'] not in {hashlib.sha256(line.encode('utf-8')).hexdigest() for line in source_lines}:
+                        violations.append('NUMBER_PROVENANCE_MISSING')
+                    if not parsed or not any(parsed <= set(_numeric_tokens(line)) and
+                                             hashlib.sha256(line.encode('utf-8')).hexdigest() == number['line_sha256']
+                                             for line in source_lines):
+                        violations.append('NUMERIC_DRIFT')
+                    continue
+                if not all(number.get(k) for k in ('unit', 'timestamp', 'source_section', 'instrument')):
+                    violations.append('NUMBER_PROVENANCE_MISSING')
+                    continue
                 source_instrument_lines = [line for line in report_text(report).splitlines()
                                            if any(alias.lower() in line.lower() for alias in _instrument_aliases(number['instrument']))]
                 if source_instrument_lines and parsed and not any(parsed <= set(_numeric_tokens(line)) for line in source_instrument_lines):
@@ -334,10 +362,15 @@ def validate_spec(report: dict, spec: dict, source_lock: dict | None = None) -> 
                                           if any(alias.lower() in instrument.lower() for alias in _instrument_aliases(number['instrument']))), None)
                 if source_market is None:
                     violations.append('NUMBER_PROVENANCE_MISSING')
-                if source_market is not None and (number['unit'] != source_market.priceUnit or number['timestamp'] != source_market.asOf):
-                    violations.append('NUMBER_PROVENANCE_MISSING')
-                if source_market is not None and source_market.priceValue is not None:
-                    if parsed != set(_numeric_tokens(str(source_market.priceValue))):
+                if source_market is not None:
+                    if source_field not in ('priceValue', 'changeValue', 'changePct'):
+                        violations.append('NUMBER_PROVENANCE_MISSING')
+                        continue
+                    expected_value = getattr(source_market, source_field)
+                    expected_unit = '%' if source_field == 'changePct' else source_market.priceUnit
+                    if number['unit'] != expected_unit or number['timestamp'] != source_market.asOf:
+                        violations.append('NUMBER_PROVENANCE_MISSING')
+                    if expected_value is None or parsed != set(_numeric_tokens(str(expected_value))):
                         violations.append('NUMERIC_DRIFT')
             except (InvalidOperation, TypeError):
                 violations.append('NUMBER_NOT_FOUND_IN_SOURCE')
@@ -375,17 +408,26 @@ def build_spec(report: dict) -> dict:
     panels = [{'title': str(section['original_heading']).strip('# 【】 '),
                'type': 'text_panel', 'text': '\n'.join(section['lines']), 'numbers': []}
               for section in parsed_sections]
+    for section, panel in zip(parsed_sections, panels):
+        for line in section['lines']:
+            for token in _numeric_tokens(line):
+                panel['numbers'].append({'source_field': 'report_text', 'value': format(token, 'f'),
+                                         'source_section': section['heading'],
+                                         'line_sha256': hashlib.sha256(line.encode('utf-8')).hexdigest()})
     for market in MarketDataSnapshot.restore(report.get('snapshot') or report.get('marketDataSnapshot') or report.get('market_data_snapshot')).markets:
         if market.priceValue is None:
             continue
         matching = next((section for section in parsed_sections
                         if any(Decimal(str(market.priceValue)) == value for line in section['lines'] for value in _numeric_tokens(line))), None)
         if matching is not None:
-            observations = [value for value in (market.priceValue, market.changeValue, market.changePct)
+            observations = [(field, value) for field, value in (('priceValue', market.priceValue),
+                            ('changeValue', market.changeValue), ('changePct', market.changePct))
                             if value is not None and any(Decimal(str(value)) == token for line in matching['lines'] for token in _numeric_tokens(line))]
             panels.append({'title': market.instrument, 'type': 'numeric_card', 'text': market.displayText,
-                           'numbers': [{'instrument': market.instrument, 'value': str(value), 'unit': market.priceUnit,
-                                        'timestamp': market.asOf, 'source_section': matching['heading']} for value in observations]})
+                           'numbers': [{'instrument': market.instrument, 'source_field': field, 'value': str(value),
+                                        'unit': '%' if field == 'changePct' else market.priceUnit,
+                                        'timestamp': market.asOf, 'source_section': matching['heading']}
+                                       for field, value in observations]})
     return {'report_id': lock.report_id, 'title': report.get('title'), 'date': report.get('date') or report.get('report_date'),
             'time': slot, 'source_sha256': lock.sha256, 'snapshot_id': market_data_result['snapshot_id'], 'source_locked': True, 'layout': 'high_information_grid',
             'allow_charts': False, 'allow_gauges': False, 'allow_people': False,
