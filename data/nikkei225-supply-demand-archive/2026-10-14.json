@@ -2,12 +2,12 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-supply-demand",
   "reportDate": "2026-10-14",
-  "generatedAt": "2026-10-14T21:53:21+09:00",
+  "generatedAt": "2026-10-14T23:30:11+09:00",
   "nikkei": {
     "schemaVersion": "2.1.0",
     "pageId": "nikkei225-supply-demand",
     "pageTitle": "日経225需給分析",
-    "generatedAt": "2026-10-14T21:53:21+09:00",
+    "generatedAt": "2026-10-14T23:30:11+09:00",
     "spot": {
       "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
@@ -16,7 +16,7 @@
       "value": 67744.29,
       "asOfDate": "2026-10-14",
       "status": "verified",
-      "fetchedAt": "2026-10-14T21:53:21+09:00"
+      "fetchedAt": "2026-10-14T23:30:11+09:00"
     },
     "futures": {
       "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -32,10 +32,10 @@
       "miniOpenInterest": 250009,
       "openInterestChange": 1151,
       "miniOpenInterestChange": -2186,
-      "volumeChangePercent": 0.0,
-      "miniVolumeChangePercent": 0.0,
+      "volumeChangePercent": null,
+      "miniVolumeChangePercent": null,
       "status": "verified",
-      "fetchedAt": "2026-10-14T21:51:27+09:00",
+      "fetchedAt": "2026-10-14T23:28:39+09:00",
       "previousOpenInterest": 163043,
       "miniPreviousOpenInterest": 252195,
       "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261014open_interest.xlsx"
@@ -55,7 +55,7 @@
       "asOfDate": "2026-09-30",
       "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260930_derivatives_market_data_night.xlsx",
       "status": "stale",
-      "fetchedAt": "2026-10-14T21:53:10+09:00",
+      "fetchedAt": "2026-10-14T23:30:02+09:00",
       "error": "JPXセッション別出来高取得失敗: ValueError: night-session workbook link not found"
     },
     "arbitrage": {
@@ -70,9 +70,9 @@
       "buyChange": 33676,
       "status": "verified",
       "frequency": "daily",
-      "lastAttemptAt": "2026-10-14T21:51:18+09:00",
-      "lastSuccessAt": "2026-10-14T21:51:18+09:00",
-      "fetchedAt": "2026-10-14T21:51:18+09:00",
+      "lastAttemptAt": "2026-10-14T23:28:35+09:00",
+      "lastSuccessAt": "2026-10-14T23:28:35+09:00",
+      "fetchedAt": "2026-10-14T23:28:35+09:00",
       "error": null
     },
     "options": {
@@ -87,7 +87,7 @@
       "asOfDate": "2026-10-14",
       "status": "calculated",
       "error": "Put/Call・IVはJPX列構造を確認できるまで推測せず空欄",
-      "fetchedAt": "2026-10-14T21:53:21+09:00",
+      "fetchedAt": "2026-10-14T23:30:11+09:00",
       "putVolume": null,
       "callVolume": null,
       "putCallStatus": "unavailable",
@@ -163,7 +163,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202610/20261014_volume_by_participant_whole_day.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-10-14T21:53:12+09:00"
+      "fetchedAt": "2026-10-14T23:30:04+09:00"
     },
     "foreignInvestors": {
       "sourceName": "JPX 投資部門別売買状況",
@@ -776,7 +776,7 @@
         ]
       },
       "status": "verified",
-      "fetchedAt": "2026-10-14T21:53:10+09:00"
+      "fetchedAt": "2026-10-14T23:30:01+09:00"
     },
     "participantOpenInterest": {
       "sourceName": "JPX 取引参加者別建玉残高",
@@ -890,7 +890,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20261009_indexfut_oi_by_tp.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-10-14T21:53:14+09:00"
+      "fetchedAt": "2026-10-14T23:30:05+09:00"
     },
     "shortSelling": {
       "sourceName": "JPX 空売り集計",
@@ -950,7 +950,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-10-14T21:51:25+09:00"
+      "fetchedAt": "2026-10-14T23:28:38+09:00"
     },
     "margin": {
       "sourceName": "JPX 信用取引現在高",
@@ -1011,7 +1011,7 @@
         }
       ],
       "status": "stale",
-      "fetchedAt": "2026-10-14T21:51:27+09:00",
+      "fetchedAt": "2026-10-14T23:28:39+09:00",
       "error": "JPX信用需給取得失敗: ValueError: weekly margin total monetary row not found"
     },
     "assessment": {
@@ -1307,7 +1307,7 @@
       "market": null,
       "status": "partial",
       "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202610.xlsx",
-      "fetchedAt": "2026-10-14T21:53:18+09:00",
+      "fetchedAt": "2026-10-14T23:30:09+09:00",
       "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
     },
     "nikkeiFuturesDailyHistory": [
@@ -1319,7 +1319,7 @@
         "sourceName": "JPX / 大阪取引所 日経225先物",
         "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
         "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261014open_interest.xlsx",
-        "capturedAt": "2026-10-14T21:53:17+09:00",
+        "capturedAt": "2026-10-14T23:30:08+09:00",
         "status": "verified"
       }
     ],
@@ -1336,7 +1336,7 @@
       "status": "verified",
       "releaseFrequency": "weekly",
       "lookbackWeeks": 52,
-      "fetchedAt": "2026-10-14T21:53:21+09:00",
+      "fetchedAt": "2026-10-14T23:30:12+09:00",
       "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
       "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
       "priceStatus": "available",
@@ -2372,7 +2372,7 @@
       {
         "title": "需給・ポジション",
         "items": [
-          "日本：値上がり/値下がり 1140 / 380、東証プライム売買代金 7.96 兆円。",
+          "日本：値上がり/値下がり 604 / 892、東証プライム売買代金 7.45 兆円。",
           "海外投資家動向（週次）：-2,749.34億円。",
           "米国：NYSE 1,129 / 927、NASDAQ 1,145 / 2,061で下落優勢。"
         ]
@@ -2380,7 +2380,7 @@
       {
         "title": "フロー判断",
         "items": [
-          "日本：TOPIX +5.86（+0.14%）に対し、グロース250 -9.58（-1.19%）。指数間の強弱が残る。",
+          "日本：TOPIX -13.89（-0.34%）に対し、グロース250 -15.46（-1.94%）。指数間の強弱が残る。",
           "日本の上位セクター：電気機器 +1.72%、情報・通信業 +1.34%、輸送用機器 +1.05%。米国の上位セクター：コミュニケーション・サービス +1.78%、ヘルスケア +1.33%、一般消費財・サービス +1.07%。",
           "米国：SOX -28.00（-0.23%）、Russell2000 -11.11（-0.40%）。資金の広がりは未確認。"
         ]
@@ -2388,7 +2388,7 @@
       {
         "title": "メインシナリオ",
         "items": [
-          "TOPIX +5.86（+0.14%）の相対優位が続くか、グロース250 -9.58（-1.19%）の下落が縮小するかを確認。",
+          "TOPIX -13.89（-0.34%）の相対優位が続くか、グロース250 -15.46（-1.94%）の下落が縮小するかを確認。",
           "米国はSOX -28.00（-0.23%）の底堅さが、S&P500 -1.79（-0.02%）・Nasdaq -41.52（-0.15%）の下落を吸収できるかが分岐。",
           "寄り付き確認：TOPIX 4,110.39 -0.01%。"
         ]
@@ -2397,7 +2397,7 @@
         "title": "崩れる条件",
         "items": [
           "米国でS&P500/Nasdaqの下落とVIX +0.06（+0.39%）の上昇が同時に続く場合。",
-          "日本でTOPIXの上昇が広がりを伴わず、グロース250 -9.58（-1.19%）の下落が拡大する場合。",
+          "日本でTOPIXの上昇が広がりを伴わず、グロース250 -15.46（-1.94%）の下落が拡大する場合。",
           "個別株の下落が拡大：ニデック（6594） -6.07%、ベルク（9974） -5.25%、ファーストリテイ（9983） -4.04%。"
         ]
       },
@@ -4168,14 +4168,14 @@
         "freshness": "unavailable",
         "dataDate": null,
         "asOf": null,
-        "updatedAt": "2026-10-13T23:59:14+09:00",
+        "updatedAt": "2026-10-14T21:50:45+09:00",
         "source": {
           "name": "株探 日経平均の寄与度ランキング",
           "topUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=desc&market=all&order=contrib_price",
           "bottomUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=asc&market=all&order=contrib_price"
         },
         "error": "APIError: [403]: The caller does not have permission",
-        "generatedAt": "2026-10-13T23:59:14+09:00",
+        "generatedAt": "2026-10-14T21:50:45+09:00",
         "sourceAt": {},
         "top": [],
         "bottom": [],
@@ -4184,19 +4184,19 @@
           "flag": "JP",
           "status": "verified",
           "freshness": "stale",
-          "dataDate": "2026-10-13",
-          "asOf": "2026-10-13",
-          "updatedAt": "2026-10-13T23:59:12+09:00",
+          "dataDate": "2026-10-14",
+          "asOf": "2026-10-14",
+          "updatedAt": "2026-10-14T21:50:43+09:00",
           "source": {
             "name": "株探 日経平均の寄与度ランキング",
             "topUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=desc&market=all&order=contrib_price",
             "bottomUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=asc&market=all&order=contrib_price"
           },
           "error": null,
-          "generatedAt": "2026-10-13T23:59:12+09:00",
+          "generatedAt": "2026-10-14T21:50:43+09:00",
           "sourceAt": {
-            "top": "2026-10-13T16:00:00+09:00",
-            "bottom": "2026-10-13T16:00:00+09:00"
+            "top": "2026-10-14T16:00:00+09:00",
+            "bottom": "2026-10-14T16:00:00+09:00"
           },
           "top": [
             {
@@ -4204,45 +4204,45 @@
               "code": "9983",
               "name": "ファストリ（9983）",
               "shortName": "ファストリ",
-              "close": "73,790",
-              "contribution": "+162.62",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-13"
+              "close": "75,840",
+              "contribution": "+165.86",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-14"
             },
             {
               "rank": 2,
-              "code": "6098",
-              "name": "リクルート（6098）",
-              "shortName": "リクルート",
-              "close": "18,020",
-              "contribution": "+26.80",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-13"
+              "code": "9984",
+              "name": "ＳＢＧ（9984）",
+              "shortName": "ＳＢＧ",
+              "close": "5,351",
+              "contribution": "+33.17",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-14"
             },
             {
               "rank": 3,
-              "code": "9766",
-              "name": "コナミＧ（9766）",
-              "shortName": "コナミＧ",
-              "close": "23,765",
-              "contribution": "+21.74",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-13"
+              "code": "6098",
+              "name": "リクルート（6098）",
+              "shortName": "リクルート",
+              "close": "18,300",
+              "contribution": "+28.32",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-14"
             },
             {
               "rank": 4,
-              "code": "8015",
-              "name": "豊田通商（8015）",
-              "shortName": "豊田通商",
-              "close": "7,281",
-              "contribution": "+16.18",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-13"
+              "code": "5803",
+              "name": "フジクラ（5803）",
+              "shortName": "フジクラ",
+              "close": "5,200",
+              "contribution": "+26.29",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-14"
             },
             {
               "rank": 5,
-              "code": "4519",
-              "name": "中外薬（4519）",
-              "shortName": "中外薬",
-              "close": "6,170",
-              "contribution": "+15.27",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-13"
+              "code": "4063",
+              "name": "信越化（4063）",
+              "shortName": "信越化",
+              "close": "6,175",
+              "contribution": "+17.36",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-14"
             }
           ],
           "bottom": [
@@ -4251,45 +4251,45 @@
               "code": "8035",
               "name": "東エレク（8035）",
               "shortName": "東エレク",
-              "close": "11,555",
-              "contribution": "-450.04",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-13"
+              "close": "11,240",
+              "contribution": "-159.28",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-14"
             },
             {
               "rank": 2,
-              "code": "9984",
-              "name": "ＳＢＧ（9984）",
-              "shortName": "ＳＢＧ",
-              "close": "5,310",
-              "contribution": "-398.86",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-13"
+              "code": "7733",
+              "name": "オリンパス（7733）",
+              "shortName": "オリンパス",
+              "close": "1,759.0",
+              "contribution": "-36.88",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-14"
             },
             {
               "rank": 3,
-              "code": "6857",
-              "name": "アドテスト（6857）",
-              "shortName": "アドテスト",
-              "close": "40,400",
-              "contribution": "-261.05",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-13"
-            },
-            {
-              "rank": 4,
               "code": "285A",
               "name": "キオクシア（285A）",
               "shortName": "キオクシア",
-              "close": "15,180",
-              "contribution": "-164.59",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-13"
+              "close": "14,690",
+              "contribution": "-34.69",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-14"
+            },
+            {
+              "rank": 4,
+              "code": "4543",
+              "name": "テルモ（4543）",
+              "shortName": "テルモ",
+              "close": "2,254.5",
+              "contribution": "-19.96",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-14"
             },
             {
               "rank": 5,
               "code": "4062",
               "name": "イビデン（4062）",
               "shortName": "イビデン",
-              "close": "10,620",
-              "contribution": "-120.68",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-13"
+              "close": "10,495",
+              "contribution": "-16.86",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-14"
             }
           ],
           "lastGood": null
@@ -4302,12 +4302,12 @@
       "conclusion": {
         "title": "今日の結論",
         "main": "米国主要指数は下落、日本はTOPIXが小幅高だがグロース250は下落。大型株・半導体を軸に強弱が分かれる株式市場。",
-        "sub": "日経225 67,777.52 / TOPIX 4,110.67 / S&P500 7,805.45 / Nasdaq 27,204.38。"
+        "sub": "日経225 67,744.29 / TOPIX 4,096.78 / S&P500 7,805.45 / Nasdaq 27,204.38。"
       },
       "reason": {
         "title": "なぜ買われたか／売られたか",
         "items": [
-          "日本：TOPIX +5.86（+0.14%）、値上がり/値下がり 1140 / 380。",
+          "日本：TOPIX -13.89（-0.34%）、値上がり/値下がり 604 / 892。",
           "米国：SOX -28.00（-0.23%）に対し、S&P500 -1.79（-0.02%）、Nasdaq -41.52（-0.15%）。",
           "日本の強いセクター：電気機器 +1.72%、情報・通信業 +1.34%。個別ではローツェ（6323） +15.79%、平田機工（6258） +11.34%。"
         ]
@@ -4316,7 +4316,7 @@
         "title": "リスク",
         "items": [
           "米国はVIX +0.06（+0.39%）、NYSE値上がり/値下がり 1,129 / 927で内部下落が優勢。",
-          "日本はグロース250 -9.58（-1.19%）で、TOPIXとの乖離に注意。",
+          "日本はグロース250 -15.46（-1.94%）で、TOPIXとの乖離に注意。",
           "日本の下落率上位：ニデック（6594） -6.07%、ベルク（9974） -5.25%。"
         ]
       },
@@ -4324,7 +4324,7 @@
         "title": "次の注目点",
         "items": [
           "S&P500 -1.79（-0.02%）・Nasdaq -41.52（-0.15%）の下落が続くか、SOX -28.00（-0.23%）が下支えを維持するか。",
-          "日経225 / TOPIX / グロース250の方向と、値上がり・値下がり 1140 / 380の広がり。",
+          "日経225 / TOPIX / グロース250の方向と、値上がり・値下がり 604 / 892の広がり。",
           "次回寄り付き：TOPIX 4,110.39 -0.01%、日経225先物（CME参考） 68,560.00 +0.52%。"
         ]
       }
@@ -4507,7 +4507,7 @@
           ]
         ],
         "dataDate": "2026-10-14",
-        "updatedAt": "2026-10-14T21:49:35+09:00",
+        "updatedAt": "2026-10-14T22:39:19+09:00",
         "source": {
           "name": "東京市場確定値統合（複数ソース・項目別基準日）",
           "sheet": "終値一覧",
@@ -4532,7 +4532,7 @@
       }
     },
     "marketUpdatedAt": {
-      "japan": "2026-10-14T21:49:35+09:00",
+      "japan": "2026-10-14T22:39:19+09:00",
       "us": "2026-10-14T09:29:34+09:00"
     },
     "movers": {
