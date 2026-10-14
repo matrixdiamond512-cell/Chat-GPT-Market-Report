@@ -63,3 +63,6 @@ PR #130の`python -m unittest discover -s tests -p 'test_d2_preflight.py' -v`と
 3. 要件定義書は要求、運用マニュアルは検証/停止/復旧の手順を分担し、具体的な契約（schema、API、署名、数値照合、全writer）は仕様書へ集約。設計差分に応じて3文書の整合を確認する。
 4. 編集前後のGoogle Docs revision、GitHub blob SHA、ファイル名、章名、適用範囲、検証結果を確認する。未確認・Draft・本番採用済みの区別を維持し、GitHub/Google Docsのreadback後にのみ更新済みと報告する。
 5. 2026-10-15の変更は文書統合のみで、PR #130をmainにマージせず、APIキー/有料API送信/実トリガー/Apps Script本番配備/過去分公開を変更しない。
+
+## 2026-10-15 文書一本化後の運用手順
+技術仕様の正本は `docs/system/specification.md` とGoogle Docs正式仕様書の1組のみ。旧変更仕様書はアーカイブ・更新停止とし、今後別の変更仕様書を作成して仕様を二重管理しない。仕様変更時は正本の関連章・改訂履歴を更新してから、要件定義書（要求）と本マニュアル（実施・検証手順）に必要な差分のみ反映する。実装詳細ノートは参考・証拠記録に限る。改訂はGitHub blob SHAとGoogle Docs revisionを確認し、readbackまで終えて初めて更新済みと報告する。現行PR #130 Draft・未マージ、本番公開停止は変えない。
