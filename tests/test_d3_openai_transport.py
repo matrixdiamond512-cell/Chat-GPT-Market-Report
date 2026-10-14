@@ -77,6 +77,37 @@ class TestFixedTransport(unittest.TestCase):
             client.post("/v1/responses", {})
 
 
+    def test_429_error_code_is_visible_without_logging_body_or_retry(self):
+        import io
+        from urllib.error import HTTPError
+        calls = []
+        error_body = b'{"error":{"code":"credit_balance_exhausted","message":"private detail"}}'
+        def fail(request, timeout):
+            calls.append(request.full_url)
+            raise HTTPError(request.full_url, 429, "too many requests",
+                            {}, io.BytesIO(error_body))
+        client = FixedOpenAIHTTPS(api_key=KEY, project_id=PROJECT, opener=fail)
+        with self.assertRaises(LiveTransportBlocked) as caught:
+            client.post("/v1/responses", {"model":"fixture"})
+        message = str(caught.exception)
+        self.assertIn("OPENAI_HTTP_429_CODE_credit_balance_exhausted_NO_AUTOMATIC_RETRY",message)
+        self.assertNotIn("private detail",message)
+        self.assertNotIn(KEY,message)
+        self.assertEqual(len(calls),1)
+
+    def test_unknown_429_code_never_exposes_provider_message(self):
+        import io
+        from urllib.error import HTTPError
+        def fail(request, timeout):
+            raise HTTPError(request.full_url, 429, "quota",
+                            {}, io.BytesIO(b'{"error":{"code":"INVALID secret message","message":"sensitive"}}'))
+        client = FixedOpenAIHTTPS(api_key=KEY, project_id=PROJECT, opener=fail)
+        with self.assertRaises(LiveTransportBlocked) as caught:
+            client.post("/v1/responses",{"model":"fixture"})
+        self.assertIn("HTTP_429_CODE_UNKNOWN_NO_AUTOMATIC_RETRY",str(caught.exception))
+        self.assertNotIn("sensitive",str(caught.exception))
+
+
 class TestLiveGate(unittest.TestCase):
     def test_independent_authorizer_is_required_before_network(self):
         calls = []
