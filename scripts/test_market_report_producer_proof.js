@@ -205,8 +205,7 @@ for (const handler of [
   'autoPublishMarketReport1730Retry', 'autoPublishMarketReport2230Retry',
   'autoPublishMarketReport0830Retry'
 ]) {
-  const escaped = handler.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\console.log('Signed producer-owned report gate / no-write regressions PASS');');
-  assert(new RegExp('function ' + escaped + '\\\\(\\\\)\\\\s*\\\\{\\\\s*return autoPublishDueMarketReports_\\\\(').test(autoSource),
+  assert(new RegExp('function ' + handler + '\\(\\)\\s*\\{\\s*return autoPublishDueMarketReports_\\(').test(autoSource),
     handler + ' must route to the shared retry dispatcher');
 }
 const scheduledWriter = extract(autoSource, 'function publishMarketReportSlot_(hour, mode, throwOnError, targetDate)',
