@@ -144,7 +144,7 @@ assert(archive.indexOf('marketReportVerifyProducerProof_(report)') <
 // Legacy structured import has a separate reports.json writer. Validate every
 // serialized row at that writer boundary before any GitHub API request.
 const structuredWriter = extract(structuredSource, 'function mrPublishReportsJson_(reports)',
-  '\\nfunction mrGithubConfig_');
+  String.fromCharCode(10) + 'function mrGithubConfig_');
 const structuredState = {fetches: 0, writes: 0};
 const structuredDry = {
   marketReportVerifyProducerProof_: () => {
@@ -161,7 +161,7 @@ assert.strictEqual(structuredState.fetches, 0, 'structured import must reject be
 // The historical continuation importer writes reports.json directly. Verify
 // missing evidence aborts a batch before its putGitHubJsonFile_ call.
 const historicalBatch = extract(historicalSource, 'function processHistoricalMarketReportBatch_()',
-  '\\nfunction listHistoricalMarketReportDocs_');
+  String.fromCharCode(10) + 'function listHistoricalMarketReportDocs_');
 const historyState = {writes: 0, saves: 0};
 const historyFile = {getName: () => 'マーケットレポート_2026-10-15_16-00'};
 const historyProps = {
