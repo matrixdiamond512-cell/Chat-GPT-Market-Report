@@ -35,3 +35,8 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 
 ## 2026-10-15 D2 Responses API受信契約（Draft）
 OpenAI API worker実行前のオフライン契約として固定モデルsnapshot、凍結market context/snapshot、出力strict JSON schema、toolsなし、応答ID/status/model/usage検証、原文/raw応答SHA記録を必須とする。公式資料で確認した候補IDは`gpt-5.4-mini-2026-03-17`。ただし利用プロジェクトへのアクセス、真のAPI応答は未確認。検証用モデル応答からChatGPT定期タスクの原文を推定してはならない。D2実課金・private store・publisherは未実装であり、公開停止・PR Draftは維持。
+
+## 2026-10-15 D2原本バイト完全性要件（Draft／追補）
+- API受信の証拠は「元の受信JSONバイト列のSHA-256」と「パース済みJSONを再正規化したSHA-256」を混同しない。前者は元バイト列が取得・照合できた場合にのみ記録し、ない場合はnullとして扱う。
+- 非公開保存する原本のbytes、応答ID、usage、hash、保存先オブジェクトバージョン、独立readbackを一緒に照合する。ハッシュ単独はOpenAIからの真正な応答であることの証明ではない。
+- D2手動shadow実API試験を承認する条件、本番producer署名、E5公開ゲートは従来どおり未成立。PR #130はDraft・本番公開停止を維持する。
