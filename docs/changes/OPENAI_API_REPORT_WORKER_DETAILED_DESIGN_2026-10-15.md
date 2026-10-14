@@ -210,3 +210,6 @@ v2識別子：`report-canonical-json/v2`。JSON object keyはASCII識別子と�
 `tests/test_d2_responses_contract.py`の8件はオフラインの合成provider応答のみで実行。公式APIの[Create a model response](https://developers.openai.com/api/reference/resources/responses/methods/create)および[Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs)に基づくshapeでテストする。出力の事実性を全数値について証明したわけではなく、プロバイダー応答の構造上の整合と既存D1検証に限る。
 
 新モジュールにはOpenAI SDK・HTTP client・実API key・クラウド保存・Scheduler・Docs／GitHub publisherは存在しない。実APIの送信を可能にする実行器は追加しておらず、D2`d2_preflight.py`の`api_send_allowed=false`を維持。API project/key、秘密のprivate store、データソース利用権、費用上限・実送信の明示承認が揃う前に有料APIを実行しない。
+
+## 2026-10-15 D2 raw provider response hash の意味修正（Draft）
+APIレスポンスをdictから`json_bytes(raw)`で再シリアライズしたdigestは「raw HTTP response bytes」のdigestではなかった。D2 offline contractで2者を区別し、`normalized_response_sha256`は正規化JSONのdigest、`raw_response_sha256`は元のUTF-8 byte列が提供され、dictと内容照合できた場合のみ存在するよう変更。内容相違、JSON重複キー、不正UTF-8、非有限値をrejectし、空白差によるraw digest差と正規化digest一致をfixtureで確認する。これは受信バイト完全性の基礎であり、API由来の証明、独立private readback、本番署名・公開許可ではない。
