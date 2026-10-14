@@ -160,18 +160,27 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
         to_write = {}
         for key, matches in sorted(source_files.items()):
             path = root / "reports" / f"{key[0]}_{key[1].replace(':','-')}.json"
-            if len(matches) > 1:
-                # Identity cannot be decided from filenames alone.
-                # Do not choose arbitrarily between duplicate Docs.
-                raise RuntimeError(f"multiple Google Docs share one slot: {key}")
-            item = matches[0]
             if path.exists():
+                # Once a canonical source has been established, its document ID
+                # is the authority. A duplicate file with the same display
+                # name must not make future report publishing fail globally.
                 canonical = read_json(path)
-                if canonical.get("sourceDocument", {}).get("id") != item["id"]:
-                    raise RuntimeError(f"canonical and Google Docs IDs conflict: {key}")
-                # Do not rewrite already published originals using lossy
-                # reconstructed text from a separate API surface.
+                canonical_id = canonical.get("sourceDocument", {}).get("id")
+                anchored = [candidate for candidate in matches
+                            if candidate["id"] == canonical_id]
+                if len(anchored) != 1:
+                    raise RuntimeError(f"canonical Google Docs source not accessible or ID conflict: {key}")
+                if len(matches) > 1:
+                    print(f"EXISTING_CANONICAL_NAME_DUPLICATE: {key}; "
+                          f"anchored source retained, extra_docs={len(matches)-1}")
+                # Preserve already published source text and revision. Never
+                # replace it by a separately parsed version from Google Docs.
                 continue
+            if len(matches) != 1:
+                # A new slot has no established document ID; conflicting
+                # names cannot safely be assigned to a canonical source.
+                raise RuntimeError(f"ambiguous new report with multiple Google Docs: {key}")
+            item = matches[0]
             new_report = build_report(session, *key, item)
             _verified_source_revision(new_report)
             to_write[key] = new_report
