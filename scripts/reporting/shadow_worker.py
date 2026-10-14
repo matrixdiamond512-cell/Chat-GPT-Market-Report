@@ -11,6 +11,7 @@ from datetime import datetime
 import hashlib
 import json
 from pathlib import Path
+from threading import Lock
 import re
 from typing import Callable
 from uuid import uuid4
@@ -90,32 +91,62 @@ class ShadowResult:
 
 
 class MemoryEvidenceStore:
-    """D1 fixture-only private store: immutable bytes, no external writes."""
+    """D1 fixture-only private store and in-memory atomic slot registry."""
     def __init__(self):
         self._objects: dict[str, bytes] = {}
+        self._run_owner: dict[tuple, str] = {}
+        self._attempts: set[tuple] = set()
+        self._body_hashes: dict[tuple, str] = {}
+        self._conflicted: set[tuple] = set()
+        self._unknown: set[tuple] = set()
+        self._lock = Lock()
+
+    def claim_attempt(self, key: tuple, run_id: str, attempt_id: str) -> None:
+        with self._lock:
+            if key in self._unknown:
+                raise ShadowBlocked("UNKNOWN_PROVIDER_RESULT_REQUIRES_RECONCILIATION")
+            if key in self._run_owner and self._run_owner[key] != run_id:
+                raise ShadowBlocked("DUPLICATE_SLOT")
+            unique = key + (attempt_id,)
+            if unique in self._attempts:
+                raise ShadowBlocked("DUPLICATE_ATTEMPT")
+            self._run_owner.setdefault(key, run_id)
+            self._attempts.add(unique)
+
+    def mark_unknown(self, key: tuple) -> None:
+        with self._lock:
+            self._unknown.add(key)
+
+    def track_body(self, key: tuple, body_hash: str) -> bool:
+        with self._lock:
+            old = self._body_hashes.setdefault(key, body_hash)
+            if old != body_hash:
+                self._conflicted.add(key)
+            return key not in self._conflicted
+
+    def is_conflicted(self, key: tuple) -> bool:
+        with self._lock:
+            return key in self._conflicted
 
     def put_once(self, object_id: str, content: bytes) -> None:
-        if object_id in self._objects:
-            raise ShadowBlocked("STORAGE_OBJECT_ALREADY_EXISTS")
-        self._objects[object_id] = bytes(content)
+        with self._lock:
+            if object_id in self._objects:
+                raise ShadowBlocked("STORAGE_OBJECT_ALREADY_EXISTS")
+            self._objects[object_id] = bytes(content)
 
     def read(self, object_id: str) -> bytes:
-        return self._objects[object_id]
-
+        with self._lock:
+            return self._objects[object_id]
 
 class OfflineShadowWorker:
     """Synchronous D1 harness: only invokes injected in-process fixture callable."""
 
     def __init__(self, store: MemoryEvidenceStore | None = None):
         self.store = store if store is not None else MemoryEvidenceStore()
-        self._attempts: set[tuple] = set()
-        self._body_hashes: dict[tuple, str] = {}
-        self._conflicted: set[tuple] = set()
-        self._unknown: set[tuple] = set()
         self.public_writes = 0  # no writer is defined or reachable
 
     def conflicted(self, report_id: str, revision: int) -> bool:
-        return (report_id, revision, LANE) in self._conflicted
+        return self.store.is_conflicted((report_id, revision, LANE))
 
     def effective_status(self, result: ShadowResult) -> str:
         """Conflicting attempts are quarantined even if prior evidence is immutable."""
@@ -141,12 +172,7 @@ class OfflineShadowWorker:
         if not shadow_run_id or not attempt_id or not model or not prompt:
             raise ShadowBlocked("INVALID_RUN_ID_OR_CONFIG")
         key = (context.report_id, context.revision, LANE)
-        unique = key + (attempt_id,)
-        if unique in self._attempts:
-            raise ShadowBlocked("DUPLICATE_ATTEMPT")
-        if key in self._unknown:
-            raise ShadowBlocked("UNKNOWN_PROVIDER_RESULT_REQUIRES_RECONCILIATION")
-        self._attempts.add(unique)
+        self.store.claim_attempt(key, shadow_run_id, attempt_id)
         states = ["QUEUED"]
         record = {
             "schema_version": SCHEMA,
@@ -203,19 +229,15 @@ class OfflineShadowWorker:
             record["body_text"] = full_text
             body_hash = sha256_bytes(full_text.encode("utf-8"))
             record["producer"]["body_utf8_sha256"] = body_hash
-            if key in self._body_hashes and self._body_hashes[key] != body_hash:
-                self._conflicted.add(key)
+            if not self.store.track_body(key, body_hash):
                 raise ShadowBlocked("SAME_REVISION_BODY_HASH_CONFLICT")
-            if key in self._conflicted:
-                raise ShadowBlocked("SAME_REVISION_BODY_HASH_CONFLICT")
-            self._body_hashes.setdefault(key, body_hash)
             record["validation"] = {"status": "PASS", "reasons": []}
             states.append("VALIDATED")
             final_status = "SHADOW_VALIDATED"
         except TimeoutError:
             reason = "UNKNOWN_PROVIDER_RESULT"
             final_status = "UNKNOWN_PROVIDER_RESULT"
-            self._unknown.add(key)
+            self.store.mark_unknown(key)
         except (ShadowBlocked, ValueError, TypeError, KeyError, AttributeError) as exc:
             reason = str(exc) if isinstance(exc, ShadowBlocked) else "INVALID_INPUT_OR_RESPONSE"
             final_status = "BLOCKED"
