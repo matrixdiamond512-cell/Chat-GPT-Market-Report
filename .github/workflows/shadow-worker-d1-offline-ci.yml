@@ -34,6 +34,8 @@ on:
       - 'scripts/test_shadow_hash_golden.js'
       - 'scripts/reporting/d2_detached_evidence.js'
       - 'scripts/test_d2_detached_evidence.js'
+      - 'scripts/reporting/d2_offline_proof_handoff.js'
+      - 'scripts/test_d2_offline_proof_handoff.js'
       - 'apps-script/MarketReportProducerProof.gs'
       - 'scripts/reporting/context.py'
       - 'scripts/reporting/snapshot.py'
@@ -89,5 +91,7 @@ jobs:
         run: node scripts/test_canonical_v2_golden.js
       - name: Test role-distinct detached Ed25519 evidence shape and anti-replay offline
         run: node scripts/test_d2_detached_evidence.js
+      - name: Check signed offline evidence handoff against Python frozen preparation
+        run: node scripts/test_d2_offline_proof_handoff.js
       - name: Detect Python/GAS serialization parity and incompatible float cases
         run: node scripts/test_shadow_hash_golden.js
