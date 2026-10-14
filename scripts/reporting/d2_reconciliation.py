@@ -16,6 +16,7 @@ from .shadow_worker import freeze_shadow_input, sha256_bytes
 from .d2_private_store import LocalPrivateEvidenceStore, PrivateEvidenceError
 from .d2_responses_contract import (
     capture_response, ResponsesContractError, _no_duplicate_keys, _bad_float,
+    estimate_usage_usd,
 )
 
 _DIGEST = re.compile(r"[0-9a-f]{64}\Z")
@@ -23,12 +24,16 @@ _ID = re.compile(r"[A-Za-z0-9_-]{1,60}\Z")
 _CLAIM_KEYS = {
     "schema", "report_id", "revision", "snapshot_id", "run_id", "attempt_id",
     "request_sha256", "lane", "api_send_allowed", "publication_allowed",
+    "max_input_tokens", "max_output_tokens", "max_model_cost_usd",
+    "planned_model_cost_usd",
 }
 _RESULT_KEYS = {
     "schema", "lane", "status", "reason", "report_id", "revision", "run_id",
     "attempt_id", "snapshot_id", "request_sha256", "slot_claim_sha256",
     "raw_response_sha256", "raw_response_object", "body_sha256",
     "numeric_audit_bundle_sha256", "api_send_allowed", "publication_allowed",
+    "max_input_tokens", "max_output_tokens", "max_model_cost_usd",
+    "planned_model_cost_usd",
 }
 _VALID_STATUSES = {
     "OFFLINE_FIXTURE_VALIDATED",
@@ -111,10 +116,27 @@ def reconcile_d2_offline(
             or claim["run_id"] != run_id
             or claim["attempt_id"] != attempt_id
             or not _digest(claim["request_sha256"])
+            or type(claim["max_input_tokens"]) is not int
+            or not 1 <= claim["max_input_tokens"] <= 12000
+            or type(claim["max_output_tokens"]) is not int
+            or not 1 <= claim["max_output_tokens"] <= 4000
+            or type(claim["max_model_cost_usd"]) is not str
+            or type(claim["planned_model_cost_usd"]) is not str
+            or claim["planned_model_cost_usd"] != str(estimate_usage_usd({
+                "input_tokens": claim["max_input_tokens"],
+                "output_tokens": claim["max_output_tokens"],
+            }))
             or claim["api_send_allowed"] is not False
             or claim["publication_allowed"] is not False
         ):
             return finding("INCONSISTENT_UNTRUSTED", "SLOT_CLAIM_CONTENT_INVALID")
+        try:
+            from decimal import Decimal
+            cap = Decimal(claim["max_model_cost_usd"])
+            if not cap.is_finite() or cap <= 0 or Decimal(claim["planned_model_cost_usd"]) > cap:
+                return finding("INCONSISTENT_UNTRUSTED", "SLOT_CLAIM_COST_INVALID")
+        except (ValueError, TypeError, ArithmeticError):
+            return finding("INCONSISTENT_UNTRUSTED", "SLOT_CLAIM_COST_INVALID")
         if result_bytes is None:
             return finding(
                 "INTERRUPTED_NEEDS_MANUAL_REVIEW",
@@ -134,6 +156,10 @@ def reconcile_d2_offline(
             or result["snapshot_id"] != snapshot.snapshot_id
             or result["request_sha256"] != claim["request_sha256"]
             or result["slot_claim_sha256"] != sha256_bytes(claim_bytes)
+            or result["max_input_tokens"] != claim["max_input_tokens"]
+            or result["max_output_tokens"] != claim["max_output_tokens"]
+            or result["max_model_cost_usd"] != claim["max_model_cost_usd"]
+            or result["planned_model_cost_usd"] != claim["planned_model_cost_usd"]
             or result["api_send_allowed"] is not False
             or result["publication_allowed"] is not False
         ):
@@ -170,6 +196,10 @@ def reconcile_d2_offline(
                 parsed, context, snapshot, raw_response_bytes=raw_bytes)
         except (ResponsesContractError, ValueError, TypeError):
             return finding("INCONSISTENT_UNTRUSTED", "RAW_RESPONSE_REVALIDATION_FAILED")
+        if (captured.usage["input_tokens"] > claim["max_input_tokens"]
+            or captured.usage["output_tokens"] > claim["max_output_tokens"]
+            or estimate_usage_usd(captured.usage) > cap):
+            return finding("INCONSISTENT_UNTRUSTED", "REPLAY_USAGE_CAP_EXCEEDED")
         if (captured.raw_response_sha256 != result["raw_response_sha256"] or
             captured.body_sha256 != result["body_sha256"] or
             captured.numeric_audit_bundle_sha256 != result["numeric_audit_bundle_sha256"]):
