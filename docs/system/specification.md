@@ -133,3 +133,19 @@ E4＝合成データ・クロス言語golden・関連CIが最新HEADで成功。
 6. 回帰：`tests/test_d2_offline_pipeline.py`で計画超過時の呼出し0・claim0、料金record整合、token cap失敗を検査。`tests/test_d2_preflight.py`で偽の単価、別モデル、旧schemaを拒否。`tests/test_d2_reconciliation.py`でclaim/resultの見積改ざんとtoken cap超過の再評価を検査。CIは新HEADで再実行し、旧run成功を流用しない。
 
 **改訂記録**：2026-10-15 v1.16（Draft）／統合済み正式仕様書のみに契約追加。変更仕様書は更新しない。
+
+### K. D2正規入力token計測・月間費用ゲートのオフライン契約（v1.17／2026-10-15、Draft）
+**背景・外部一次資料**：
+- OpenAI公式「Counting tokens」 https://developers.openai.com/api/docs/guides/token-counting は、\`POST /v1/responses/input_tokens\` を公開し、Responsesで使う入力・指示・schema・toolの形式を含めモデルへ渡すtoken数を事前に計測できることを明記。返値は \`{"object":"response.input_tokens","input_tokens":正整数}\`（空入力で0も型上許容）。計測エンドポイントへの接続には別途API権限が必要。本実装は通信せず、実カウントを実行していない。
+- GPT-5.4 Mini公式モデルページ https://developers.openai.com/api/docs/models/gpt-5.4-mini の2026-10-15照合では、固定 \`gpt-5.4-mini-2026-03-17\` を掲載し、通常text input USD0.75／百万token、output USD4.50／百万token。キャッシュ等の割引は保守的見積に使わない。料金の変更・専用エンドポイント割増・追加tool/データ保存料金の有無は、実際の契約・実行直前に再照合が必要。
+- OpenAI公式「Spend limits」 https://developers.openai.com/api/docs/guides/spend-limits によれば、月間アラートは**通信停止を保証しない**。OrganizationおよびProjectのhard spend limitが有効であれば429エラーで対象トラフィックを停止するが、反映遅延のため閾値を若干超えることがある。OpenAIの利用枠・信用枠とは区別する。
+
+**実装契約・非課金**：
+1. \`scripts/reporting/d2_token_count_contract.py\` は現行 \`d2_responses_contract.build_request\` に必要な固定 \`model/instructions/input/tools/tool_choice/text\` を変更なく射影し、\`POST /v1/responses/input_tokens\` に送る*予定の*payloadを生成する。実際には一切HTTP送信しない。作成要求全体のSHA-256および計測payloadのSHA-256を別々に固定。新たなcreate要求フィールド・別モデル・tools・schema変更・指示文変更・token上限変更なら照合を拒否。
+2. \`review_count_fixture\` は元UTF-8バイト列の模擬 \`object=response.input_tokens, input_tokens=int\` をstrictに検査（重複JSON key、非有限値、boolean偽装、未知フィールド、UTF-8エラー拒否）、入力計測capを超えた場合はBLOCKED。入力計測結果を使った予定最大出力との保守的単回見積を計算してrun capと比較する。fixture合格は \`OFFLINE_COUNT_SHAPE_PASS_NOT_ATTESTED\` のみ。OpenAI計測レスポンス自体にrequest SHA/model情報や署名は含まれず、**計測結果とリクエストの真の結合は権限分離した外部transport証跡で別途検証する必要がある**。
+3. \`scripts/reporting/d2_monthly_budget.py\` は同じ \`InputCountPlan\` のモデル費用上限と、暦月JSTに対応した「当月実績（外部監査待ち）＋未決済予約＋次の単回最大モデル費用」をDecimalで加算。利用者承認の月額cap／Project hard cap／Organization hard capの**最小値**を超えれば拒否。両方のhard limitが有効でない設定も拒否。全データは現段階では合成値で、\`OFFLINE_MONTHLY_ARITHMETIC_PASS_NOT_ATTESTED\`でも\`send_allowed=false\`、\`publication_allowed=false\`。実使用額・予約・費用上限の真正な認証、他の実行との競合排他、課金の数分遅延を解決していない。
+4. \`d2_preflight.REQUIRED_EVIDENCE\`に、公式token計測とその通信認証・直近料金・Project/Organization hard limits・当月usage・pending reservation照合の外部証跡参照を追加。**参照文字列を埋めるだけでは第三者の認証にはならず、\`api_send_allowed=false\`を解除しない**。料金計測、hard cap、アカウント支出実額およびprivate IAMの独立検証が必要。
+5. GitHub Actionsに\`test_d2_token_count_contract.py\`（14件）と\`test_d2_monthly_budget.py\`（11件）を追加。無課金fixtureで入力リクエスト変化、認証されないcount、数値偽装、計測超過、月跨ぎ、二重hard limit、月間支出超過・価格の型を検証。計測APIを実際に呼ばず、主張されたcountやbilling値を真正だと見なさない。
+6. 追加処理は現在のD2 **offline review** 専用。正規で認証済みのcount取得、実API請求額台帳の独立readback、暗号化Private Store、承認と上限制御、実provider response真正性は未接続。既存ChatGPTタスクの設定、publisher、過去分は変更しない。PR #130 Draft・main未マージ・E5未達・本番公開BLOCKEDを継続。
+
+**改訂履歴**：2026-10-15 v1.17（Draft）／正式仕様書の本章だけに仕様追加。旧変更仕様書はアーカイブ・更新停止のまま維持。
