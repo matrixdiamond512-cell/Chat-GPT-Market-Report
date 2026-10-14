@@ -82,3 +82,6 @@ CI：`python -m unittest discover -s tests -p 'test_d2_offline_pipeline.py' -v`�
 - 無課金CI：\`python -m unittest discover -s tests -p 'test_d2_token_count_contract.py' -v\` と \`python -m unittest discover -s tests -p 'test_d2_monthly_budget.py' -v\`。D1 Offline Market Report Shadow WorkerのCIで成功数を確認する。
 - 送信前の外部確認項目：①固定モデルの現行料金・利用可否、②最終create payloadと完全一致する対象で公式 \`responses.input_tokens.count\` を権限のある環境から実行し、通信のリクエスト・レスポンス原本・認証された取得者を結ぶこと、③実際のAPIプロジェクトと組織双方の**hard spend limit**を設定・第三者確認（アラートのみでは不十分）、④月間実績・予約済み額・残高の監査と競合排他、⑤費用オーナーによる明示承認、⑥private evidenceと鍵・IAM・retention、⑦異常時provider照合のSOP。公式のhard capも反映遅延で設定額を若干超える可能性がある。
 - 現時点では上記の外部認証と送信権限が揃っておらず、模擬countや月間残高だけで送信してはならない。APIキーを公開リポジトリ／Docs／CIログへ記録しない。実API計測とResponses送信は承認まで行わない。本文の保存・公開は別ゲートでBLOCKEDのまま。独立変更仕様書は作らず、正式仕様書v1.17を正本として更新する。
+
+## 2026-10-15 D2オフライン事前審査→生成統合のSOP（v1.18）
+CIで`python -m unittest discover -s tests -p 'test_d2_offline_prepared_run.py' -v` を実行する。前段count不正、月額予算超過、hard cap無効、report_id不一致、run ID重複が生じたら、**生成用fixtureを呼び出さない**ことを確認する。合成count原本とpreparation判断記録をworktree外のローカルprivate stagingに保存・独立読戻しし、実行claimの要求SHA/予算capと突合する。timeout/中断/重複時は記録を保持し無条件再実行しない。本統合は実API countの認証、外部請求額の真実性、クラウドIAM、月額予算の原子的予約を保証しないため、合成PASSをproduction API送信許可に使用しない。既存定時ChatGPTタスク、GAS、本番公開、PR #130 Draftは変更しない。仕様の詳細を別の変更仕様書へ増やさない。
