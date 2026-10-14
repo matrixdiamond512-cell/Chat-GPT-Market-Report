@@ -52,8 +52,10 @@ jobs:
       - name: Read-back check canonical, latest and public index projections
         run: |
           python scripts/verify_publication_consistency.py
+          cp reports.json /tmp/market-report-index-before-idempotency.json
           python scripts/build_reports.py --canonical-only
-          git diff --exit-code -- reports.json
+          cmp /tmp/market-report-index-before-idempotency.json reports.json
+          echo "CANONICAL_INDEX_IDEMPOTENT: indexed changes are expected and preserved for commit."
       - name: Persist actual Docs-derived changes to main and request Pages deploy
         run: |
           set -euo pipefail
