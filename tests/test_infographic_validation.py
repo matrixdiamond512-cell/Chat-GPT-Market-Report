@@ -245,6 +245,9 @@ class InfographicRegressionTests(unittest.TestCase):
         validated = validate_publication_evidence(report, evidence, image_sha256=image_sha)
         self.assertEqual(validated['status'], 'STRUCTURE_PASS')
         self.assertFalse(validated['external_observation_verified'])
+        evidence['drive_image']['read_file_id'] = 'different-png'
+        self.fails('DRIVE_IMAGE_READBACK_FAILED', lambda: validate_publication_evidence(report, evidence, image_sha256=image_sha))
+        evidence['drive_image']['read_file_id'] = 'png1'
         evidence['portal']['latest_report_id'] = '2026-10-06_16-00'
         self.fails('PORTAL_READBACK_FAILED', lambda: validate_publication_evidence(report, evidence, image_sha256=image_sha))
 

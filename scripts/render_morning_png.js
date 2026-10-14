@@ -11,6 +11,8 @@ const args = Object.fromEntries(process.argv.slice(2).reduce((rows, value, i, al
 async function main() {
   for (const key of ['html', 'contract', 'out']) if (!args[key]) throw new Error(`Missing --${key}`);
   const contract = JSON.parse(fs.readFileSync(args.contract, 'utf8'));
+  const approved = contract.layout_profile === 'APPROVED_16_PANEL';
+  if (approved && (contract.validation.artifact_type !== 'DEBUG_PREVIEW' || contract.publication?.publish_allowed !== false)) throw new Error('Approved renderer is DRAFT-only');
   const html = fs.readFileSync(args.html);
   if (digest(html) !== contract.html_sha256 || contract.validation.status !== 'PASS') throw new Error('HTML contract mismatch');
   const out = path.resolve(args.out);
@@ -24,13 +26,16 @@ async function main() {
     page.on('console', msg => { if (msg.type() === 'error') observed.console_errors.push(msg.text()); });
     await page.setContent(html.toString('utf8'), {waitUntil: 'load'});
     await page.evaluate(() => document.fonts.ready);
-    const check = async expectedVisualOrder => page.evaluate(({expected, visualOrder}) => {
+    const check = async expectedVisualOrder => page.evaluate(({expected, expectedNumeric, visualOrder}) => {
       const all = [...document.querySelectorAll('.fact')];
       const ids = [...new Set(all.map(el => el.dataset.factId))].sort();
       const differences = all.filter(el => el.textContent !== expected[el.dataset.factId]).map(el => el.dataset.factId);
+      const numeric = [...document.querySelectorAll('[data-numeric-id]')];
+      const numericDifferences = numeric.filter(el => el.textContent !== expectedNumeric[el.dataset.numericId]).map(el => el.dataset.numericId);
+      const numericIds = [...new Set(numeric.map(el => el.dataset.numericId))].sort();
       const overflow = [...document.querySelectorAll('.card,.card-body,.market,.fact,td,th,h2,h3,header,.chain,.inflow,.outflow')].filter(el => {
         const box = el.getBoundingClientRect();
-        return el.scrollWidth > el.clientWidth + 2 || el.scrollHeight > el.clientHeight + 2 || box.right > 1537 || box.left < -1;
+        return el.scrollWidth > el.clientWidth + 2 || el.scrollHeight > el.clientHeight + 2 || box.right > window.innerWidth + 1 || box.left < -1;
       }).map(el => ({name: (el.className || el.tagName) + '@' + (el.closest('[data-card]')?.dataset.card || 'header'), scroll: [el.scrollWidth, el.scrollHeight], client: [el.clientWidth, el.clientHeight]}));
       const outside = all.filter(el => {
         const parent = el.closest('.card') || el.closest('header');
@@ -54,36 +59,39 @@ async function main() {
       const cardsStyle = getComputedStyle(cardsElement);
       const cardsContentWidth = cardsElement.clientWidth - parseFloat(cardsStyle.paddingLeft) - parseFloat(cardsStyle.paddingRight);
       const outlookWidthFraction = document.querySelector('.card-13').getBoundingClientRect().width / cardsContentWidth;
-      return {ids, differences, overflow, outside, cards, markets, colors, color_errors: colorErrors.length,
+      return {ids, differences, numeric_ids: numericIds, numeric_differences: numericDifferences, overflow, outside, cards, markets, colors, color_errors: colorErrors.length,
         overlapping_cards: overlappingCards.length, min_font_px, grid_columns: gridColumns,
         visual_order: visualCards,
         visual_order_matches: JSON.stringify(visualCards) === JSON.stringify(visualOrder),
         market_single_row: marketSingleRow, outlook_width_fraction: outlookWidthFraction,
         height: Math.ceil(document.getElementById('report').getBoundingClientRect().height)};
-    }, {expected: contract.expected_text, visualOrder: expectedVisualOrder});
+    }, {expected: contract.expected_text, expectedNumeric: contract.expected_numeric || {}, visualOrder: expectedVisualOrder});
     const desktopVisualOrder = Array.from({length: 16}, (_, i) => String(i + 1).padStart(2, '0'));
     const native = await check(desktopVisualOrder);
     const expectedIds = Object.keys(contract.expected_text).sort();
     const expectedCards = Array.from({length: 16}, (_, i) => String(i + 1).padStart(2, '0'));
-    if (JSON.stringify(native.ids) !== JSON.stringify(expectedIds) || native.differences.length || native.overflow.length || native.outside.length || native.color_errors || native.overlapping_cards || native.min_font_px < 12 || native.grid_columns !== 12 || !native.market_single_row || Math.abs(native.outlook_width_fraction - 1.0) > 0.03 || !native.visual_order_matches || JSON.stringify(native.cards) !== JSON.stringify(expectedCards) || native.markets.length !== 6 || observed.page_errors.length || observed.console_errors.length) {
+    if (JSON.stringify(native.ids) !== JSON.stringify(expectedIds) || native.differences.length || native.numeric_differences.length || JSON.stringify(native.numeric_ids) !== JSON.stringify(Object.keys(contract.expected_numeric || {}).sort()) || native.overflow.length || native.outside.length || native.color_errors || native.overlapping_cards || native.min_font_px < 12 || native.grid_columns !== (approved ? 60 : 12) || !native.market_single_row || Math.abs(native.outlook_width_fraction - (approved ? 40/60 : 1.0)) > 0.03 || !native.visual_order_matches || JSON.stringify(native.cards) !== JSON.stringify(expectedCards) || native.markets.length !== 6 || observed.page_errors.length || observed.console_errors.length) {
       throw new Error(`Renderer validation failed: ${JSON.stringify({...native, ...observed})}`);
     }
     fs.mkdirSync(out, {recursive: true});
-    const pngPath = path.join(out, 'morning-0800.png');
+    const basename = approved ? contract.output_basename : 'morning-0800';
+    if (!/^[a-z0-9_-]+$/.test(basename)) throw new Error('Invalid output basename');
+    const pngPath = path.join(out, basename + '.png');
     await page.locator('#report').screenshot({path: pngPath, animations: 'disabled'});
     // Actual same-PNG fit-at-768 rendering, independently checked against source bytes.
     const png = fs.readFileSync(pngPath);
     await page.setViewportSize({width: 768, height: 1000});
     await page.setContent(`<html><body style="margin:0"><img style="display:block;width:768px" src="data:image/png;base64,${png.toString('base64')}"></body></html>`);
-    await page.locator('img').screenshot({path: path.join(out, 'morning-0800-at-768.png')});
+    await page.locator('img').screenshot({path: path.join(out, basename + '-at-768.png')});
     // A companion portrait export maintains readable type at mobile fit width.
     await page.setContent(html.toString('utf8'));
-    await page.addStyleTag({content: '#report{width:768px}.cards{grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:none;grid-auto-flow:row}.card{grid-row:auto!important}.card-01,.card-02,.card-03,.card-04,.card-05,.card-06,.card-09,.card-10,.card-11,.card-12,.card-14,.card-15{grid-column:span 3}.card-07,.card-08,.card-13,.card-16{grid-column:span 6}.market-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.card-16 .card-body{grid-template-columns:1fr}'});
+    if (approved) await page.evaluate(() => document.documentElement.classList.add('mobile'));
+    else await page.addStyleTag({content: '#report{width:768px}.cards{grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:none;grid-auto-flow:row}.card{grid-row:auto!important}.card-01,.card-02,.card-03,.card-04,.card-05,.card-06,.card-09,.card-10,.card-11,.card-12,.card-14,.card-15{grid-column:span 3}.card-07,.card-08,.card-13,.card-16{grid-column:span 6}.market-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.card-16 .card-body{grid-template-columns:1fr}'});
     await page.evaluate(() => document.fonts.ready);
     const mobile = await check(expectedCards);
-    if (mobile.differences.length || mobile.overflow.length || mobile.outside.length || mobile.overlapping_cards || mobile.color_errors || mobile.min_font_px < 14 || !mobile.visual_order_matches) throw new Error(`Mobile export validation failed: ${JSON.stringify(mobile)}`);
-    await page.locator('#report').screenshot({path: path.join(out, 'morning-0800-mobile.png'), animations: 'disabled'});
-    const receipt = {status: 'PASS', numeric_validation: 'PASS', renderer_status: 'PASS',
+    if (mobile.differences.length || mobile.numeric_differences.length || mobile.overflow.length || mobile.outside.length || mobile.overlapping_cards || mobile.color_errors || mobile.min_font_px < 14 || !mobile.visual_order_matches) throw new Error(`Mobile export validation failed: ${JSON.stringify(mobile)}`);
+    await page.locator('#report').screenshot({path: path.join(out, basename + '-mobile.png'), animations: 'disabled'});
+    const receipt = {status: 'PASS', numeric_validation: approved ? 'UNVERIFIED' : 'PASS', source_transcription_validation: 'PASS', renderer_status: 'PASS',
       html_sha256: contract.html_sha256, view_sha256: contract.view_sha256, png_sha256: digest(png),
       artifact_type: contract.validation.artifact_type, rendered_fact_ids: native.ids,
       checks: {native, mobile, ...observed, preview_768: true, min_font_at_768_px: mobile.min_font_px},

@@ -1,0 +1,123 @@
+{
+  "run_id": "infographic-completion-resume-20261014",
+  "timestamp_utc": "2026-10-13T22:17:24.439793+00:00",
+  "source_commit": "a47ca3e9c2010d4c5d1eaaa4510bdb2961b2645a",
+  "merged_main": "3ec46ff65b76af29ebd211239cf155a9a7e05e29",
+  "merge_commit": "2251909b04fefbb382184c7287d3801250a53f87",
+  "saved_previous_merge": "92c738e568b1ff60bf9cdd5e5cb4ff4bf51c04da",
+  "pr_initial_head": "8d9886861f1ab9d6abc58543d330ec4f362c7b8d",
+  "withdrawal_commit": "43f97b30a5aa90f483d6bf30388f9104d28ee931",
+  "source_rows": [
+    {
+      "slot": "08-00",
+      "report_status_at_input": "DOC_READBACK_SOURCE",
+      "current_source_state": "HISTORICAL_SOURCE_WITHDRAWN",
+      "claimed_bodyHash": null,
+      "observed_body_sha256": "5ded62422350dd26d1fa96db8e95f7b723cba5a8b871e1fb5ed3991a5655de94",
+      "hash_match": null,
+      "revision": null,
+      "snapshot_id": null,
+      "market_history_generatedAt": "2026-10-13T11:37:42+09:00",
+      "market_history_reportSlot": "08:00",
+      "market_history_schema": "1.1.0",
+      "market_history_not_a_bound_typed_snapshot": true,
+      "formal_reasons": [
+        "MARKET_DATA_SNAPSHOT_NOT_FOUND",
+        "MISSING_REQUIRED_REPORT_SECTION",
+        "SOURCE_REVISION_MISSING",
+        "SOURCE_SNAPSHOT_ID_MISSING",
+        "SOURCE_BODYHASH_MISSING",
+        "INFOGRAPHIC_SPEC_NOT_PROVIDED",
+        "HISTORICAL_SOURCE_WITHDRAWN"
+      ]
+    },
+    {
+      "slot": "12-00",
+      "report_status_at_input": "RECONSTRUCTED_FROM_12H_SOURCE_AND_VALIDATED_CONTEXT",
+      "current_source_state": "HISTORICAL_SOURCE_WITHDRAWN",
+      "claimed_bodyHash": null,
+      "observed_body_sha256": "c4d81d6e5616a1125bf5192c9b7cb960d6f1b09ade80de8a3f1b49b2dc3f4bae",
+      "hash_match": null,
+      "revision": null,
+      "snapshot_id": null,
+      "market_history_generatedAt": "2026-10-13T18:34:55+09:00",
+      "market_history_reportSlot": "12:00",
+      "market_history_schema": "1.1.0",
+      "market_history_not_a_bound_typed_snapshot": true,
+      "formal_reasons": [
+        "MARKET_DATA_SNAPSHOT_NOT_FOUND",
+        "MISSING_REQUIRED_REPORT_SECTION",
+        "SOURCE_REVISION_MISSING",
+        "SOURCE_SNAPSHOT_ID_MISSING",
+        "SOURCE_BODYHASH_MISSING",
+        "INFOGRAPHIC_SPEC_NOT_PROVIDED",
+        "HISTORICAL_SOURCE_WITHDRAWN"
+      ]
+    },
+    {
+      "slot": "16-00",
+      "report_status_at_input": "PUBLISHED",
+      "current_source_state": "CURRENT_GIT_SOURCE",
+      "claimed_bodyHash": "5fdc2e936ad7b60d7c3ca4bb4c8963a729a27d43d6dd6d4b33492d542dde3e17",
+      "observed_body_sha256": "5fdc2e936ad7b60d7c3ca4bb4c8963a729a27d43d6dd6d4b33492d542dde3e17",
+      "hash_match": true,
+      "revision": "1791875571770",
+      "snapshot_id": null,
+      "market_history_generatedAt": "2026-10-13T23:28:05+09:00",
+      "market_history_reportSlot": "16:00",
+      "market_history_schema": "1.1.0",
+      "market_history_not_a_bound_typed_snapshot": true,
+      "formal_reasons": [
+        "MARKET_DATA_SNAPSHOT_NOT_FOUND",
+        "MISSING_REQUIRED_REPORT_SECTION",
+        "SOURCE_SNAPSHOT_ID_MISSING",
+        "INFOGRAPHIC_SPEC_NOT_PROVIDED"
+      ]
+    },
+    {
+      "slot": "21-00",
+      "report_status_at_input": "DOC_READBACK_SOURCE",
+      "current_source_state": "HISTORICAL_SOURCE_WITHDRAWN",
+      "claimed_bodyHash": null,
+      "observed_body_sha256": "228b76051d79da52ed10150e185b0e60c346d5714f513297b2a468447f8676d2",
+      "hash_match": null,
+      "revision": null,
+      "snapshot_id": null,
+      "market_history_generatedAt": "2026-10-13T23:05:42+09:00",
+      "market_history_reportSlot": "21:00",
+      "market_history_schema": "1.1.0",
+      "market_history_not_a_bound_typed_snapshot": true,
+      "formal_reasons": [
+        "MARKET_DATA_SNAPSHOT_NOT_FOUND",
+        "MISSING_REQUIRED_REPORT_SECTION",
+        "SOURCE_REVISION_MISSING",
+        "SOURCE_SNAPSHOT_ID_MISSING",
+        "SOURCE_BODYHASH_MISSING",
+        "INFOGRAPHIC_SPEC_NOT_PROVIDED",
+        "HISTORICAL_SOURCE_WITHDRAWN"
+      ]
+    }
+  ],
+  "saved_v20_body_diff": [
+    "--- saved-main",
+    "+++ saved-events-v20",
+    "@@ -58,3 +58,8 @@",
+    " 東京現物再開後の寄り付きギャップ、東証プライム騰落銘柄数、半導体寄与度、先物出来高、ドル円158.8円、WTI93〜95ドル、金4180ドル、BTC82000ドルを確認。寄り付き直後の薄い板で成行追随せず、損切り条件を先に定める。",
+    " 16．結論・クロスチェック",
+    " 10/12米株はダウ高・Nasdaq安、原油高・ドル高・金安で選別的リスクオフ。10/13日本株現物再開では日経先物68,400円台とSQ値68,465円近辺の攻防が焦点。米株指数はAP/みんかぶ、WTIはReuters、VIXはYahoo Finance、日経現物・PER/EPS/25日乖離は投資の森、ドル円・ユーロドル・金先物はInvesting.com、大阪先物は株探と日経先物情報サイトをクロスチェック。Russell2000はAP確報2794.48を採用し他サイト途中値は採用しない。取得不能：CME円建て・ドル建て別の清算値、200日乖離率の独立再照合、ETF/CFTC/MMF最新定量フロー、東京ドル円出来高。",
+    "+【重要イベント予定（日本時間・発表時刻は一次情報再照合待ち）】",
+    "+2026-10-14 21:30 JST｜米消費者物価指数（CPI）｜要一次情報再照合",
+    "+2026-10-15 21:30 JST｜米生産者物価指数（PPI）｜要一次情報再照合",
+    "+2026-10-15 21:30 JST｜米小売売上高｜要一次情報再照合",
+    "+2026-10-13 時刻未確定 JST｜米大手銀行決算｜発表時刻未確定"
+  ],
+  "approved_reference_sha256": "7a0df07274b2321f1772974abab036aed9b2298103e7f6399fb395c93c922fc5",
+  "publication": "NOT_RUN",
+  "formal_generation": "BLOCKED",
+  "visual_acceptance": "PENDING",
+  "provisional_runs_disposition": "KEEP_LOCAL_ONLY: superseded render iterations and initial browser sandbox failure",
+  "shared_ci_matches_main": {
+    ".github/workflows/apps-script-prepublish-validation.yml": true,
+    ".github/workflows/qa-morning-report.yml": true
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "run_id": "infographic-completion-resume-20261014",
+  "timestamp": "2026-10-13T22:20:11.791624+00:00",
+  "results": [
+    {
+      "command": [
+        "python.exe",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests",
+        "-q"
+      ],
+      "status": "PASS",
+      "exit_code": 0,
+      "output": "Publication consistency verified: 2020-01-01 08:00; canonical=<workspace>\\.test-tmp-0800\\tmphfj7c64r\\reports\\2020-01-01_08-00.json; dashboard=<workspace>\\.test-tmp-0800\\tmphfj7c64r\\data\\dashboard.json\n----------------------------------------------------------------------\nRan 237 tests in 6.189s\n\nOK\n"
+    },
+    {
+      "command": [
+        "node.exe",
+        "scripts/test_independent_publication.js"
+      ],
+      "status": "PASS",
+      "exit_code": 0,
+      "output": "Independent report/infographic production-path tests passed.\n"
+    },
+    {
+      "command": [
+        "node.exe",
+        "scripts/test_apps_script_infographic_gate.js"
+      ],
+      "status": "PASS",
+      "exit_code": 0,
+      "output": "Apps Script infographic gate tests passed (fixture production rejection and test-only HMAC cases included).\n"
+    },
+    {
+      "command": [
+        "node.exe",
+        "scripts/test_actual_1600_source_recovery.js"
+      ],
+      "status": "PASS",
+      "exit_code": 0,
+      "output": "Actual 16:00 original recovery and fail-closed controls PASS\n"
+    },
+    {
+      "command": [
+        "node.exe",
+        "scripts/test_github_large_report_index_read.js"
+      ],
+      "status": "PASS",
+      "exit_code": 0,
+      "output": "GitHub large report-index read fallback and small-file path PASS\n"
+    },
+    {
+      "command": [
+        "node.exe",
+        "scripts/test_morning_actual_source_values.js"
+      ],
+      "status": "PASS",
+      "exit_code": 0,
+      "output": "Morning real-source labels, value presence and missing-data fail-closed PASS\n"
+    },
+    {
+      "command": [
+        "node.exe",
+        "scripts/test_report_watchdog_fail_closed.js"
+      ],
+      "status": "PASS",
+      "exit_code": 0,
+      "output": "Watchdog schedule and missing 21:00 fail-closed PASS\n"
+    },
+    {
+      "command": [
+        "node.exe",
+        "scripts/test_market_report_fail_closed.js"
+      ],
+      "status": "PASS",
+      "exit_code": 0,
+      "output": "GAS fail-closed validation test PASS\n"
+    },
+    {
+      "command": [
+        "node.exe",
+        "--check",
+        "scripts/render_morning_png.js"
+      ],
+      "status": "PASS",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "status": "PASS",
+      "exit_code": 0,
+      "output": "warning: in the working copy of '.github/workflows/morning-infographic-design.yml', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/マーケットレポート配信システム_仕様書_v1.8.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/マーケットレポート配信システム_要件定義書_v1.8.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/マーケットレポート配信システム_運用マニュアル_v1.8.md', LF will be replaced by CRLF the next time Git touches it\n"
+    },
+    {
+      "command": [
+        "shared-CI-node-block",
+        "0"
+      ],
+      "status": "PASS",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "shared-CI-node-block",
+        "1"
+      ],
+      "status": "PASS",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "shared-CI-node-block",
+        "2"
+      ],
+      "status": "PASS",
+      "exit_code": 0,
+      "output": ""
+    }
+  ],
+  "external_publication": "NOT_RUN"
+}

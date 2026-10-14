@@ -1,0 +1,29 @@
+{
+  "status": "BLOCKED",
+  "checks": {
+    "market_data": {
+      "status": "FAIL",
+      "reason": "MARKET_DATA_SNAPSHOT_NOT_FOUND"
+    },
+    "body": {
+      "status": "FAIL",
+      "reason": "MISSING_REQUIRED_REPORT_SECTION"
+    },
+    "spec": {
+      "status": "NOT_RUN",
+      "reason": "INFOGRAPHIC_SPEC_NOT_PROVIDED"
+    }
+  },
+  "reasons": [
+    "MARKET_DATA_SNAPSHOT_NOT_FOUND",
+    "MISSING_REQUIRED_REPORT_SECTION",
+    "SOURCE_REVISION_MISSING",
+    "SOURCE_SNAPSHOT_ID_MISSING",
+    "SOURCE_BODYHASH_MISSING",
+    "INFOGRAPHIC_SPEC_NOT_PROVIDED",
+    "HISTORICAL_SOURCE_WITHDRAWN"
+  ],
+  "publish_allowed": false,
+  "publication_status": "NOT_READY",
+  "external_publication": "NOT_RUN"
+}
