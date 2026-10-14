@@ -136,6 +136,7 @@ assert.strictEqual(state.writes, 0, 'missing producer proof must never reach Git
 assert(manual.indexOf('marketReportVerifyProducerProof_(report)') <
   manual.indexOf('putGitHubJsonFile_'), 'proof gate must precede canonical write');
 assert(archive.indexOf('marketReportVerifyProducerProof_(report)') <
-  archive.indexOf('putGitHubJsonFile_'), 'archive proof gate must precede writer');
+  archive.indexOf("putGitHubJsonFile_(path, JSON.stringify(report"),
+  'archive proof gate must precede actual canonical write, not dependency checking');
 
 console.log('Signed producer-owned report gate / no-write regressions PASS');
