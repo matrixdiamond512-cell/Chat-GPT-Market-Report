@@ -14,11 +14,12 @@ from typing import Any
 from .context import ReportContext
 from .snapshot import MarketDataSnapshot
 from .shadow_worker import freeze_shadow_input, REQUIRED_SIX, sha256_bytes, json_bytes
+from .d2_numeric_claims import audit_numeric_claims, verified_source_bundle, NumericClaimBlocked, CLAIM_KEYS
 
 # Verified against official model page on 2026-10-15; eligibility and availability
 # on a particular API project must still be checked independently.
 MODEL = "gpt-5.4-mini-2026-03-17"
-STRUCTURED_SCHEMA_VERSION = "shadow-responses-json/v1"
+STRUCTURED_SCHEMA_VERSION = "shadow-responses-json/v2"
 
 
 class ResponsesContractError(ValueError):
@@ -40,9 +41,21 @@ def response_format() -> dict:
         },
         "required": ["series", "value", "unit"]
     }
+    numeric_item = {
+        "type": "object", "additionalProperties": False,
+        "properties": {
+            "start": {"type": "integer"},
+            "literal": {"type": "string"},
+            "series": {"type": "string"},
+            "field": {"type": "string"},
+            "source_id": {"type": "string"},
+            "as_of": {"type": "string"},
+        },
+        "required": list(CLAIM_KEYS),
+    }
     return {
         "type": "json_schema",
-        "name": "market_report_shadow_v1",
+        "name": "market_report_shadow_v2",
         "strict": True,
         "schema": {
             "type": "object", "additionalProperties": False,
@@ -51,8 +64,9 @@ def response_format() -> dict:
                 "title": {"type": "string"},
                 "full_text": {"type": "string"},
                 "observations_used": {"type": "array", "items": item},
+                "numeric_claims": {"type": "array", "items": numeric_item},
             },
-            "required": ["report_id", "title", "full_text", "observations_used"]
+            "required": ["report_id", "title", "full_text", "observations_used", "numeric_claims"]
         },
     }
 
@@ -74,6 +88,7 @@ def build_request(context: ReportContext, snapshot: MarketDataSnapshot, *,
         "context": context_data,
         "snapshot": snapshot_data,
         "approved_market_series": list(REQUIRED_SIX),
+        "verified_numeric_source_bundle": verified_source_bundle(context, snapshot),
     }
     return {
         "model": model,
@@ -114,6 +129,8 @@ class CapturedResponse:
     raw_response_sha256: str | None
     normalized_response_sha256: str
     body_sha256: str
+    numeric_audit_bundle_sha256: str
+    numeric_claims_checked: int
     # Never equate model emission with verified market truth or ChatGPT task output.
     publishable: bool = False
 
@@ -166,7 +183,7 @@ def capture_response(raw: dict, context: ReportContext, snapshot: MarketDataSnap
     except (ValueError, TypeError) as exc:
         raise ResponsesContractError("OUTPUT_JSON_INVALID") from exc
     if not isinstance(parsed, dict) or set(parsed) != {
-        "report_id", "title", "full_text", "observations_used"
+        "report_id", "title", "full_text", "observations_used", "numeric_claims"
     }:
         _fail("OUTPUT_SCHEMA_VIOLATION")
     if parsed["report_id"] != context.report_id:
@@ -190,6 +207,12 @@ def capture_response(raw: dict, context: ReportContext, snapshot: MarketDataSnap
         }, context, snapshot)
     except (ShadowBlocked, ValueError, KeyError, TypeError) as exc:
         raise ResponsesContractError("OUTPUT_SHADOW_VALIDATION_BLOCKED") from exc
+    # The model-supplied spans are audited against independently frozen
+    # source data. A JSON schema or self-declared citation grants no authority.
+    try:
+        audit = audit_numeric_claims(context, snapshot, full_text, parsed["numeric_claims"])
+    except NumericClaimBlocked as exc:
+        raise ResponsesContractError("NUMERIC_CLAIM_AUDIT_BLOCKED:" + str(exc)) from exc
     # The parsed response-object hash is NOT a hash of the original HTTP bytes.
     # Only record a raw-byte digest when exact original bytes are independently
     # supplied and verified against the parsed object. A digest alone does not
@@ -219,7 +242,9 @@ def capture_response(raw: dict, context: ReportContext, snapshot: MarketDataSnap
         tuple(parsed["observations_used"]),
         raw_sha,
         normalized_sha,
-        sha256_bytes(full_text.encode("utf8"))
+        sha256_bytes(full_text.encode("utf8")),
+        audit.source_bundle_sha256,
+        audit.checked_claims
     )
 
 
