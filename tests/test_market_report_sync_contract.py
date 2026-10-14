@@ -15,6 +15,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import build_reports
 import reconcile_latest_report_market_data as market_reconcile
 import report_identity
+import sync_latest_report_publication
 
 
 SOURCE_TEXT = (ROOT / "tests/fixtures/market_report_20261013_1600_original.txt").read_text(encoding="utf-8")
@@ -113,6 +114,31 @@ class ReconcileIsolationTests(unittest.TestCase):
                 changed = market_reconcile.update_latest_report(snapshot)
             self.assertEqual(changed, ["gold"])
             self.assertEqual(latest_path.read_bytes(), before)
+
+
+class SavedDocHeadingCompatibilityTests(unittest.TestCase):
+    def test_morning_previous_report_version_heading_is_valid(self):
+        headings = [
+            "1．総合判断・今日の相場テーマ",
+            "2．前営業日終値・主要市場データ",
+            "3．昨夜NY市場の時系列",
+            "4．前回21:00版からの変化・材料と値動きの整合性",
+            "5．主導市場・クロスアセット資金フロー",
+            "6．重要ニュースと影響市場",
+            "7．需給・ポジション",
+            "8．主要6市場の短期見通し",
+            "9．本日のメインシナリオと代替シナリオ",
+            "10．シナリオが崩れる条件・リスク管理",
+            "11．本日イベント・次の時間帯への引き継ぎ",
+            "12．結論",
+        ]
+        text = "マーケットレポート｜2026/10/15（木）08:00\\n" + "".join(
+            heading + "\\n" + ("根拠・市場反応・比較基準を整理し監視条件を確認する。"*5) + "\\n"
+            for heading in headings
+        )
+        sync_latest_report_publication.validate_sop_body({
+            "date": "2026-10-15", "time": "08:00", "fullText": text
+        })
 
 
 class HistoricalFixtureTests(unittest.TestCase):
