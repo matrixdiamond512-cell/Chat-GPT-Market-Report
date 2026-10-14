@@ -37,3 +37,7 @@
 
 ## 2026-10-15 D2事前検証手順追補（Draft）
 PR #130の`python -m unittest discover -s tests -p 'test_d2_preflight.py' -v`と`python -m scripts.reporting.d2_preflight`をD1 CIで実行する。無設定時は`MISSING_MANIFEST`と`EXTERNAL_ATTESTATIONS_NOT_VERIFIED`でBLOCKED。合成manifestで形式上PASSでも実API送信と公開は許可されない。実API Projectと鍵、モデル実在/費用、private保存先・IAM/保持期間、source利用権、認証済み承認レコードを確認できるまでD2実行禁止。ログ/PR/Docsに秘密情報を貼らない。旧タスク・本番停止・Draft PRを維持する。
+
+
+## 2026-10-15 D2 Responses API offline検査・運用境界（Draft）
+`python -m unittest discover -s tests -p 'test_d2_responses_contract.py' -v`で、Responses APIの模擬レスポンス8件を通信なしで検証する。候補モデルsnapshotはOpenAI公式確認の`gpt-5.4-mini-2026-03-17`。出力はモデル応答構造の形式検査であり、実API呼出しの証明ではない。OpenAI project/API key・保存先・費用上限・独立承認が揃うまで送信しない。既存ChatGPTタスクは変更せず、Apps Script・GitHub本番公開も停止したままとする。
