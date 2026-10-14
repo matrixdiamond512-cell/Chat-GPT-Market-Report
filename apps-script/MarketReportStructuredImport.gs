@@ -255,6 +255,17 @@ function mrFetchReportsJson_() {
 }
 
 function mrPublishReportsJson_(reports) {
+  // This legacy writer replaces the public history index directly. Require
+  // valid producer proof for every row before even reading or writing GitHub.
+  if (typeof marketReportVerifyProducerProof_ !== 'function') {
+    throw new Error('PRODUCER_PROOF_BLOCKED: signed producer proof verifier is unavailable.');
+  }
+  if (!Array.isArray(reports) || !reports.length) {
+    throw new Error('PRODUCER_PROOF_BLOCKED: a non-empty verified report list is required.');
+  }
+  reports.forEach(function(report) {
+    marketReportVerifyProducerProof_(report);
+  });
   var config = mrGithubConfig_();
   var path = 'reports.json';
   var url = 'https://api.github.com/repos/' + config.owner + '/' + config.repo + '/contents/' + path;
