@@ -94,6 +94,48 @@ function marketReportProofShaV2_(value) {
     marketReportProofCanonicalV2_(value), 'application/json').getBytes());
 }
 
+/*
+ * Offline v2 evidence verification. Untagged financial values are rejected.
+ * A legacy v1 snapshot_id is carried but is NEVER recomputed in GAS.
+ * This routine is NOT called by the v1 publication verifier; accepting v2
+ * proofs requires a separately reviewed issuer/trust-boundary release.
+ */
+function marketReportProofVerifyV2EvidenceDigests_(evidence) {
+  if (!evidence || evidence.canonicalization_version !== 'report-canonical-json/v2' ||
+      !evidence.context || !evidence.snapshot ||
+      !/^[0-9a-f]{64}$/.test(String(evidence.context_digest_v2 || '')) ||
+      !/^[0-9a-f]{64}$/.test(String(evidence.snapshot_digest_v2 || ''))) {
+    marketReportProofFail_('v2 evidence version/digests absent');
+  }
+  var snapshot = evidence.snapshot;
+  if (!Array.isArray(snapshot.markets) || !snapshot.markets.length ||
+      typeof snapshot.snapshot_id !== 'string' || !snapshot.snapshot_id.startsWith('snapshot-')) {
+    marketReportProofFail_('v2 snapshot identity missing');
+  }
+  snapshot.markets.forEach(function(market) {
+    if (!market || typeof market !== 'object') marketReportProofFail_('v2 market required');
+    ['priceValue', 'changeValue', 'changePct'].forEach(function(key) {
+      var val = market[key];
+      if (val === null) return;
+      if (!val || typeof val !== 'object' || Array.isArray(val) ||
+          Object.keys(val).length !== 1 || !Object.prototype.hasOwnProperty.call(val, 'decimal_v2')) {
+        marketReportProofFail_('v2 numeric market observation must be decimal_v2 tag: ' + key);
+      }
+      // Recursively validate syntax, including the decimal tag.
+      marketReportProofCanonicalV2_(val);
+    });
+  });
+  var snapshotIdentity = {};
+  Object.keys(snapshot).forEach(function(key) {
+    if (key !== 'snapshot_id') snapshotIdentity[key] = snapshot[key];
+  });
+  if (marketReportProofShaV2_(evidence.context) !== evidence.context_digest_v2 ||
+      marketReportProofShaV2_(snapshotIdentity) !== evidence.snapshot_digest_v2) {
+    marketReportProofFail_('v2 context or snapshot content digest mismatch');
+  }
+  return true;
+}
+
 function marketReportProofSha_(value) {
   return marketReportSha256_(Utilities.newBlob(
     marketReportProofCanonical_(value), 'application/json').getBytes());
