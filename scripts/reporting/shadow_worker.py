@@ -17,6 +17,7 @@ from uuid import uuid4
 
 from .context import ReportContext, aware
 from .snapshot import MarketDataSnapshot, digest, plain
+from .report import REGISTRY, parse_sections
 
 SCHEMA = "market-report-shadow/v1"
 LANE = "api-shadow"
@@ -115,6 +116,11 @@ class OfflineShadowWorker:
 
     def conflicted(self, report_id: str, revision: int) -> bool:
         return (report_id, revision, LANE) in self._conflicted
+
+    def effective_status(self, result: ShadowResult) -> str:
+        """Conflicting attempts are quarantined even if prior evidence is immutable."""
+        return ("BLOCKED_CONFLICT" if self.conflicted(result.report_id, result.record["revision"])
+                else result.status)
 
     def run(
         self,
@@ -254,6 +260,9 @@ def validate_mock_response(reply: dict, context: ReportContext, snapshot: Market
     if (not isinstance(text, str) or len(text) < 1200 or
             text.splitlines()[0].strip() != title or reply["title"] != title):
         raise ShadowBlocked("REPORT_BODY_OR_TITLE_INVALID")
+    headings = {section["heading"] for section in parse_sections(text)}
+    if not set(REGISTRY["required"]).issubset(headings):
+        raise ShadowBlocked("REQUIRED_SOP_HEADINGS_MISSING")
     usage = reply["usage"]
     if not isinstance(usage, dict) or set(usage) != {"input_tokens", "output_tokens"} or any(
         type(usage[k]) is not int or usage[k] < 0 for k in usage
