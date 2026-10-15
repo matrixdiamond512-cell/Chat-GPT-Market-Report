@@ -556,6 +556,33 @@
     container.innerHTML = definitions.map((definition) => {
       const sources = normalizeSources(definition.key, report?.time, { report, latestReport: report });
       const card = buildMarketCard(definition.key, report?.time, sources);
+      if (report?.historicalArchiveDisplayOnly) {
+        // Historical records never inherit a different slot's price or a current
+        // snapshot, and the source note cannot claim an official quote.
+        const archived = report.archiveQuotes?.[definition.key] || null;
+        const numberText = String(archived?.value || "").replace(/,/g, "");
+        const numeric = archived?.value && Number.isFinite(Number(numberText)) ? Number(numberText) : null;
+        const original = String(archived?.originalLine || "取得不能（保存記録に価格の記載なし）");
+        const outlook = String(archived?.outlook || "");
+        const isReference = /(?:前日|前営業日|10\/14|同時刻値は取得不能|同時刻の|参考|前回|09:00)/.test(original);
+        card.price = numeric;
+        card.priceText = archived?.value || null;
+        card.priceStatus = numeric === null ? "missing" : "fallback";
+        card.change = Number.isFinite(archived?.change) ? archived.change : null;
+        card.changePct = Number.isFinite(archived?.changePct) ? archived.changePct : null;
+        card.changeStatus = card.change === null && card.changePct === null ? "missing" : "fallback";
+        card.priceSourceType = isReference ? "previous_confirmed" : "latest_report";
+        card.changeSourceType = "latest_report";
+        card.basisLabel = "事後改訂の保存原本：" + original.slice(0, 150);
+        card.reasoningText = outlook || original;
+        card.keyPoint = outlook || original;
+        card.riskText = outlook || "具体的なリスク条件は保存原本参照";
+        card.directionLabel = outlook.split("。")[0] || "取得不能（方向感の原本記載なし）";
+        card.directionConfidence = "textual";
+        card.trend = card.changePct > 0 ? "up" : card.changePct < 0 ? "down" : "flat";
+        card.consistencyStatus = "判定保留";
+        card.consistencyReason = "発行当時の数値snapshot未照合。参考値と各時間帯の観測時刻を区別してください。";
+      }
       const trend = card.trend;
       const trendClass = trend === "up" ? "up" : trend === "down" ? "down" : trend === "missing" ? "missing" : "flat";
       const reasonLabel = trend === "down" ? "なぜ売られたか" : trend === "up" ? "なぜ買われたか" : "なぜ動いたか";
