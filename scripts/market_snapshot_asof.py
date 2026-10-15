@@ -126,7 +126,17 @@ def _availability(observation: dict[str, Any], cutoff: dt.datetime) -> tuple[boo
         return False, "invalid_market_date_or_timestamp"
     finalized = observation.get("finalizedAt") or observation.get("marketCloseAt")
     raw_as_of = str(observation.get("asOf") or "")
-    if "T" not in raw_as_of and not finalized:
+    retrieved = observation.get("fetchedAt") or observation.get("retrievedAt")
+    intraday_capture_in_time = False
+    if (status == "reference_only" and observation.get("referenceOnly") is True
+            and observation.get("freshnessStatus") in {"intraday", "intraday_delayed"}
+            and observation.get("quoteUpdateMode")
+            and observation.get("sourceId") and retrieved):
+        try:
+            intraday_capture_in_time = _instant(retrieved) <= cutoff
+        except AsOfProjectionError:
+            return False, "invalid_retrieval_time"
+    if "T" not in raw_as_of and not finalized and not intraday_capture_in_time:
         return False, "market_close_time_unproven"
     if finalized:
         try:
@@ -134,7 +144,6 @@ def _availability(observation: dict[str, Any], cutoff: dt.datetime) -> tuple[boo
                 return False, "daily_boundary_after_cutoff"
         except AsOfProjectionError:
             return False, "invalid_daily_boundary"
-    retrieved = observation.get("fetchedAt") or observation.get("retrievedAt")
     retrieved_in_time = False
     if retrieved:
         try:
@@ -408,4 +417,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
 

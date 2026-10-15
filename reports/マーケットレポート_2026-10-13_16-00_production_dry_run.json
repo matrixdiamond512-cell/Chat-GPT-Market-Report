@@ -9,9 +9,9 @@
     "MATCH": 0,
     "VALUE_CONFLICT": 0,
     "DEFINITION_PENDING": 2,
-    "UNAVAILABLE_AS_OF": 26,
+    "UNAVAILABLE_AS_OF": 13,
     "FORMULA_PROTECTED": 0,
-    "NO_ELIGIBLE_WRITE": 0
+    "NO_ELIGIBLE_WRITE": 13
   },
   "items": [
     {
@@ -19,8 +19,8 @@
       "label": "NYダウ",
       "unit": "pt",
       "header": "Dow終値",
-      "status": "UNAVAILABLE_AS_OF",
-      "reason": "market_close_time_unproven",
+      "status": "NO_ELIGIBLE_WRITE",
+      "reason": "historical reconstruction is production-ineligible",
       "existingValue": "",
       "proposedValue": null
     },
@@ -29,8 +29,8 @@
       "label": "NASDAQ総合",
       "unit": "pt",
       "header": "Nasdaq終値",
-      "status": "UNAVAILABLE_AS_OF",
-      "reason": "market_close_time_unproven",
+      "status": "NO_ELIGIBLE_WRITE",
+      "reason": "historical reconstruction is production-ineligible",
       "existingValue": "",
       "proposedValue": null
     },
@@ -39,8 +39,8 @@
       "label": "S&P500",
       "unit": "pt",
       "header": "S&P500終値",
-      "status": "UNAVAILABLE_AS_OF",
-      "reason": "market_close_time_unproven",
+      "status": "NO_ELIGIBLE_WRITE",
+      "reason": "historical reconstruction is production-ineligible",
       "existingValue": "",
       "proposedValue": null
     },
@@ -49,8 +49,8 @@
       "label": "Russell 2000",
       "unit": "pt",
       "header": "Russell 2000終値",
-      "status": "UNAVAILABLE_AS_OF",
-      "reason": "market_close_time_unproven",
+      "status": "NO_ELIGIBLE_WRITE",
+      "reason": "historical reconstruction is production-ineligible",
       "existingValue": "",
       "proposedValue": null
     },
@@ -89,8 +89,8 @@
       "label": "日経225先物（大阪取引所）",
       "unit": "円",
       "header": "日経225先物大阪終値",
-      "status": "UNAVAILABLE_AS_OF",
-      "reason": "market_close_time_unproven",
+      "status": "NO_ELIGIBLE_WRITE",
+      "reason": "historical reconstruction is production-ineligible",
       "existingValue": "",
       "proposedValue": null
     },
@@ -99,8 +99,8 @@
       "label": "USD/JPY",
       "unit": "円",
       "header": "USDJPY終値",
-      "status": "UNAVAILABLE_AS_OF",
-      "reason": "market_close_time_unproven",
+      "status": "NO_ELIGIBLE_WRITE",
+      "reason": "historical reconstruction is production-ineligible",
       "existingValue": "",
       "proposedValue": null
     },
@@ -109,8 +109,8 @@
       "label": "EUR/USD",
       "unit": "USD",
       "header": "EURUSD終値",
-      "status": "UNAVAILABLE_AS_OF",
-      "reason": "market_close_time_unproven",
+      "status": "NO_ELIGIBLE_WRITE",
+      "reason": "historical reconstruction is production-ineligible",
       "existingValue": "",
       "proposedValue": null
     },
@@ -119,8 +119,8 @@
       "label": "COMEX金先物",
       "unit": "USD/oz",
       "header": "ゴールド終値",
-      "status": "UNAVAILABLE_AS_OF",
-      "reason": "market_close_time_unproven",
+      "status": "NO_ELIGIBLE_WRITE",
+      "reason": "historical reconstruction is production-ineligible",
       "existingValue": "",
       "proposedValue": null
     },
@@ -129,8 +129,8 @@
       "label": "WTI原油",
       "unit": "USD/bbl",
       "header": "WTI原油終値",
-      "status": "UNAVAILABLE_AS_OF",
-      "reason": "market_close_time_unproven",
+      "status": "NO_ELIGIBLE_WRITE",
+      "reason": "historical reconstruction is production-ineligible",
       "existingValue": "",
       "proposedValue": null
     },
@@ -139,8 +139,8 @@
       "label": "BTCUSD",
       "unit": "USD",
       "header": "BTCUSD終値",
-      "status": "UNAVAILABLE_AS_OF",
-      "reason": "market_close_time_unproven",
+      "status": "NO_ELIGIBLE_WRITE",
+      "reason": "historical reconstruction is production-ineligible",
       "existingValue": "",
       "proposedValue": null
     },
@@ -149,8 +149,8 @@
       "label": "VIX",
       "unit": "pt",
       "header": "VIX終値",
-      "status": "UNAVAILABLE_AS_OF",
-      "reason": "market_close_time_unproven",
+      "status": "NO_ELIGIBLE_WRITE",
+      "reason": "historical reconstruction is production-ineligible",
       "existingValue": "",
       "proposedValue": null
     },
@@ -179,8 +179,8 @@
       "label": "米10年債利回り",
       "unit": "%",
       "header": "米10年債利回り",
-      "status": "UNAVAILABLE_AS_OF",
-      "reason": "market_close_time_unproven",
+      "status": "NO_ELIGIBLE_WRITE",
+      "reason": "historical reconstruction is production-ineligible",
       "existingValue": "",
       "proposedValue": null
     },
@@ -189,8 +189,8 @@
       "label": "日本10年国債利回り",
       "unit": "%",
       "header": "日本10年債利回り",
-      "status": "UNAVAILABLE_AS_OF",
-      "reason": "market_close_time_unproven",
+      "status": "NO_ELIGIBLE_WRITE",
+      "reason": "historical reconstruction is production-ineligible",
       "existingValue": "",
       "proposedValue": null
     },
@@ -319,12 +319,6 @@
     "USDJPY価格取得元": "Yahoo Finance USD/JPY日足OHLC（Investing.com取得失敗時の予備）",
     "USDJPY価格取得日時": "2026-10-13T07:28:10+09:00"
   },
-  "sourceSnapshotId": "asof-8fb93c8c729be84e0fab17be",
-  "postReadback": {
-    "dataUnchanged": true,
-    "structureUnchanged": true,
-    "duplicateDateRows": 1,
-    "conditionalFormatRules": 23,
-    "productionWriteCallsObserved": 0
-  }
+  "sourceSnapshotId": "asof-7c05cd9ed95a609865f57e9a"
 }
+

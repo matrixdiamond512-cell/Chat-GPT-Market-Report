@@ -149,6 +149,25 @@ class SnapshotCutoffTests(unittest.TestCase):
         result = project_snapshot_asof(source, CUTOFF)
         self.assertIsNone(result["markets"]["dow"]["value"])
 
+    def test_intraday_delayed_capture_before_cutoff_is_reference_only(self):
+        observation = {
+            "value": 68570, "asOf": "2026-10-12", "fetchedAt": "2026-10-12T15:08:30Z",
+            "sourceId": "tradingview_mcp_cme_niy1_", "verificationStatus": "reference_only",
+            "referenceOnly": True, "freshnessStatus": "intraday_delayed",
+            "quoteUpdateMode": "delayed_streaming_600", "marketType": "futures_cme",
+        }
+        payload = {"markets": {"nikkei225_futures_cme_yen": observation}}
+
+        projected = project_snapshot_asof(payload, "2026-10-13T16:00:00+09:00")
+        market = projected["markets"]["nikkei225_futures_cme_yen"]
+        self.assertEqual(market["value"], 68570)
+        self.assertEqual(market["verificationStatus"], "reference_only")
+        self.assertFalse(market["productionEligible"])
+
+        observation["fetchedAt"] = "2026-10-13T08:00:00Z"
+        after_cutoff = project_snapshot_asof(payload, "2026-10-13T16:00:00+09:00")
+        self.assertIsNone(after_cutoff["markets"]["nikkei225_futures_cme_yen"]["value"])
+
     def test_cutoff_checks_explicit_daily_boundary_and_strict_timestamp(self):
         source = self._payload()
         source["markets"]["dow"]["finalizedAt"] = "2026-10-13T08:00:00Z"
@@ -215,4 +234,5 @@ class SnapshotCutoffTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
 
