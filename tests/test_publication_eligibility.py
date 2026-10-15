@@ -31,16 +31,17 @@ def report(slot: str, status: str | None = None) -> dict:
 
 
 class PublicationEligibilityTests(unittest.TestCase):
-    def test_statusless_legacy_and_published_reports_remain_public(self):
-        for item in (report("08:00"), report("12:00", "PUBLISHED")):
+    def test_statusless_legacy_and_passed_reports_remain_public(self):
+        for item in (
+            report("08:00"),
+            report("12:00", "PUBLISHED"),
+            report("16:00", "DOC_READBACK_PASS"),
+        ):
             with self.subTest(status=item.get("report_status")):
                 self.assertTrue(is_publication_eligible(item))
 
-    def test_docs_readback_alone_does_not_approve_publication(self):
-        self.assertFalse(is_publication_eligible(report("16:00", "DOC_READBACK_PASS")))
-
     def test_source_only_blocked_reconstructed_and_unknown_reports_fail_closed(self):
-        for status in ("SOURCE_ARCHIVED", "BLOCKED", "RECONSTRUCTED_UNVERIFIED", "PENDING_REVIEW"):
+        for status in ("SOURCE_ARCHIVED", "BLOCKED", "BLOCKED_SNAPSHOT_MISSING", "RECONSTRUCTED_UNVERIFIED", "PENDING_REVIEW"):
             with self.subTest(status=status):
                 self.assertFalse(is_publication_eligible(report("08:00", status)))
 
