@@ -18,8 +18,7 @@ function dateToJp(dateText) {
 }
 function reportKey(r) { return `${r?.date || ""} ${r?.time || ""}`; }
 function isPublicReport(r) {
-  const status = String(r?.report_status || "").trim().toUpperCase();
-  return !status || status === "PUBLISHED" || status === "DOC_READBACK_PASS";
+  return window.MarketReportPublicationPolicy.isEligible(r);
 }
 function sortReports(list) {
   return list.filter(r => r && isPublicReport(r)
