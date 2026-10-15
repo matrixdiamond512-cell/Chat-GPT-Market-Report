@@ -57,10 +57,13 @@ def _availability(observation: dict[str, Any], cutoff: dt.datetime) -> tuple[boo
     if status not in {"verified", "reference_only"}:
         return False, "not_verified_or_reference"
     try:
-        if _market_date(observation.get("asOf")) > cutoff.astimezone(JST).date():
+        raw_as_of = str(observation.get("asOf") or "")
+        if _market_date(raw_as_of) > cutoff.astimezone(JST).date():
             return False, "market_date_after_cutoff"
+        if "T" in raw_as_of and _instant(raw_as_of) > cutoff:
+            return False, "observation_timestamp_after_cutoff"
     except AsOfProjectionError:
-        return False, "invalid_market_date"
+        return False, "invalid_market_date_or_timestamp"
     finalized = observation.get("finalizedAt") or observation.get("marketCloseAt")
     if finalized:
         try:
