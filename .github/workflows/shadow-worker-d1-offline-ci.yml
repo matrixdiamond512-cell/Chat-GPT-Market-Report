@@ -34,6 +34,13 @@ on:
       - 'tests/test_d3_openai_transport.py'
       - 'scripts/reporting/d3_latest_input_probe.py'
       - 'tests/test_d3_latest_input_probe.py'
+      - 'scripts/reporting/d3_source_context.py'
+      - 'tests/test_d3_source_context.py'
+      - 'data/rates-bonds.json'
+      - 'data/events/upcoming.json'
+      - 'data/usdjpy-supply-demand.json'
+      - 'data/gold-supply-demand.json'
+      - 'data/nikkei225-supply-demand.json'
       - 'scripts/reporting/d3_release_evidence.py'
       - 'tests/test_d3_release_evidence.py'
       - 'scripts/reporting/d3_narrative_quality.py'
@@ -113,6 +120,8 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_d3_report_candidate_review.py' -v
       - name: Confirm production 21h baseline is still BLOCKED until news, rate, positioning and event evidence arrives
         run: python -m scripts.reporting.d3_release_preflight_cli --date 2026-10-14 --slot 21:00 --market data/market/history/2026-10-14_21-00.json --diagnostic
+      - name: Verify supplementary rates, calendar and position as-of provenance gates offline
+        run: python -m unittest discover -s tests -p 'test_d3_source_context.py' -v
       - name: Verify versioned v2 Python canonicalization
         run: python -m unittest discover -s tests -p 'test_canonical_v2.py' -v
       - name: Verify Python and Apps Script v2 canonical bytes digests and test HMAC
