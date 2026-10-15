@@ -126,8 +126,8 @@ def project_snapshot_asof(payload: dict[str, Any], cutoff_iso: str) -> dict[str,
         allowed, reason = _availability(market, cutoff)
         if allowed:
             retained.append(symbol)
-            market["productionEligible"] = (market.get("verificationStatus") == "verified"
-                                            and not bool(market.get("referenceOnly")))
+            # Historical as-of reports are never eligible for production close-list writes.
+            market["productionEligible"] = False
             continue
         if market.get("value") not in (None, ""):
             excluded.append({"symbol": symbol, "reason": reason})
