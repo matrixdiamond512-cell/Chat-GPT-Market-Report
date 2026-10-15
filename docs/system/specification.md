@@ -34,3 +34,7 @@
 Python report validatorは最新/期限対象を厳格検査し、過去分は警告として扱う。Apps Script公開前検査は現行の日付適用基準に従って不合格にする。単なる時刻・価格行、必須区分欠落、意味・反応・根拠・引き継ぎ欄の欠落をTIMELINE_CHECKで拒否する。この検査は形式・手掛かりを機械判定するもので、情報源の真偽や因果の正しさを自動証明しない。
 
 本文/図解の独立公開、既存図解の構成・レイアウト、公開Receipt/Manifestゲートの条件は変更しない。
+
+## PR #133 のHosted検証記録
+
+2026-10-15 head `994642c43af8aa42b5d1bb1650944595cb3abacd`: Apps Script Pre-Publish、見出し互換、朝の実ソース価格検査はPASS。Market Report Validation / Structure Market Reports / Source-backed 21hの最終全体検証は、最新`reports[0]`が時系列表未搭載のためFAIL。同期回復の回帰検査はPASSしたが、その後の公開整合検査が既存のdashboard/latest-report不一致でFAIL。PR #133はDraft維持。現在の市場データを推測で補わず、producer対応後に再実行する。

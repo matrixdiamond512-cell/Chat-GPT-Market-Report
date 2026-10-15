@@ -29,4 +29,4 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - REQ-11: 自動検査は必須時間帯・表の列・説明欄・観測制約を確認する。原因の推測や未取得データの補作をしない。
 - 本文公開と図解公開の状態は引き続き独立する。時系列本文ゲートが失敗した本文は公開判定を通さないが、図解単独の失敗で検証済み本文を取り消さない。
 
-実装状態: Draft PR `codex/market-report-timeline-quality-20261015` に実装・回帰検査を追加中。PR/CI・本番本文への適用は未検証。
+実装状態: Draft PR #133 (`codex/market-report-timeline-quality-20261015`, head `994642c43af8aa42b5d1bb1650944595cb3abacd`) に実装。Apps Script/一部回帰ActionsはPASS。厳格なPython全体検証は最新reports[0]の表欠落でFAIL。producerの実データ対応は未完了。

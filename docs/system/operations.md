@@ -36,4 +36,4 @@
 5. `scripts/validate_market_reports.py` とApps Scriptの公開前検査がTIMELINE_CHECKを出したら本文を修正して再検証する。対象時間帯が揃っただけで合格とはしない。
 6. 時系列検査の失敗で本文を公開不可と判定しても、図解の状態は別記録のまま扱う。図解の未完成・不合格だけで本文の公開状態を巻き戻さない。
 
-今回の実装確認は合成fixtureのローカル検査に限る。Google Docs/ChatGPT/Portalの実レポートreadback、時系列の事実検証、main反映は未確認。
+Draft PR #133のローカル合成fixture群とApps Script pre-publish ActionsはPASS。Python全体検証は最新reports[0]に時系列表がなくFAILする。Google Docs要件・仕様・運用文書の追記自体はrevision-guard付き更新後にreadback済み。Google Docs/ChatGPT/Portalの実レポートreadback、時系列の市場事実検証、main反映は未確認。
