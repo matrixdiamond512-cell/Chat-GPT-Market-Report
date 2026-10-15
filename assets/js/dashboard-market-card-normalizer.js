@@ -569,7 +569,8 @@
         card.priceText = archived?.value || null;
         card.priceStatus = numeric === null ? "missing" : "fallback";
         card.change = Number.isFinite(archived?.change) ? archived.change : null;
-        card.changePct = Number.isFinite(archived?.changePct) ? archived.changePct : null;
+        // 24-hour crypto change and daily-close change use different benchmarks.
+        card.changePct = /24時間比/.test(original) ? null : Number.isFinite(archived?.changePct) ? archived.changePct : null;
         card.changeStatus = card.change === null && card.changePct === null ? "missing" : "fallback";
         card.priceSourceType = isReference ? "previous_confirmed" : "latest_report";
         card.changeSourceType = "latest_report";
@@ -596,13 +597,16 @@
       const href = definition.route ? ` href="${definition.route}"` : "";
       const aria = definition.route ? ` aria-label="${esc(definition.display)}の詳細へ"` : "";
       const price = card.priceText || "取得不能";
+      const name = report?.historicalArchiveDisplayOnly && definition.key === "gold"
+        ? (/^金先物/.test(report.archiveQuotes?.gold?.originalLine || "") ? "金先物（GC=F）" : "金スポット（参考値）")
+        : definition.display;
       const consistencyClass = card.consistencyStatus === "整合" ? "match"
         : card.consistencyStatus === "不整合" ? "conflict"
           : card.consistencyStatus === "判定保留" ? "pending" : "partial";
       return `<${tag} class="market-card"${href}${aria}>
         <span class="asset-icon ${esc(definition.iconClass || "")}">${esc(definition.icon || "")}</span>
         <span>
-          <h3>${esc(definition.display)}</h3>
+          <h3>${esc(name)}</h3>
           <p class="market-value">${esc(price)}${definition.unit ? `<small>${esc(definition.unit)}</small>` : ""}</p>
           <p class="change-line ${trendClass}">${esc(changeDisplay(card))}</p>
           <p class="market-direction-line ${trendClass}">方向感：${esc(directionText)}</p>
