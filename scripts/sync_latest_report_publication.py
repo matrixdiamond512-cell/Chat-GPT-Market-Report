@@ -32,20 +32,32 @@ def dump_json(path: Path, payload) -> None:
 
 
 def normalize_heading(line: str) -> str:
-    if heading(line):
-        return heading(line)
+    """Return a normalized heading only when the entire source line is heading-shaped."""
     text = str(line or "").strip()
-    m = re.match(r"^【\s*(.+?)\s*】$", text)
-    if m:
-        return m.group(1).strip()
-    m = re.match(r"^\s*(?:第?\d{1,2}|[一二三四五六七八九十]+)\s*[．.、)）]\s*(.+?)\s*$", text)
-    if m:
-        return m.group(1).strip()
-    return ""
+    if not heading(text):
+        return ""
+    text = re.sub(r"^#{1,6}\s+", "", text)
+    if text.startswith("【") and text.endswith("】"):
+        text = text[1:-1].strip()
+    text = re.sub(r"^\s*(?:第?\d{1,2}|[一二三四五六七八九十]+)\s*[．.、)）]\s*", "", text)
+    return text.strip()
+
+
+def sop_sections(full_text: str) -> list[tuple[str, str]]:
+    """Extract heading-line bodies without treating incidental prose as headings."""
+    sections: list[list[object]] = []
+    for line in str(full_text or "").replace("\r", "").split("\n"):
+        title = normalize_heading(line)
+        if title:
+            sections.append([title, []])
+        elif sections:
+            sections[-1][1].append(line)
+    return [(str(title), "\n".join(body).strip()) for title, body in sections]
 
 
 def sop_headings(full_text: str) -> list[str]:
-    return [h for line in str(full_text or "").replace("\r", "").split("\n") if (h := normalize_heading(line))]
+    return [title for title, _ in sop_sections(full_text)]
+
 
 
 def has_structured_value(report: dict, fields: tuple[str, ...]) -> bool:
@@ -65,12 +77,17 @@ def require_semantic_section(
     pattern: str,
     label: str,
     fields: tuple[str, ...] = (),
+    sections: list[tuple[str, str]] | None = None,
 ) -> None:
-    if any(re.search(pattern, h) for h in headings):
+    matching = [body for title, body in (sections or []) if re.search(pattern, title)]
+    if matching and any(len(re.sub(r"\s", "", body)) >= 24 for body in matching):
         return
+    if matching:
+        raise SystemExit(f"SOP fullText section is empty or substantively insufficient: {label}")
     if fields and has_structured_value(report, fields):
         return
     raise SystemExit(f"SOP fullText missing required section: {label}")
+
 
 
 def sanitize_public_full_text(report: dict) -> None:
@@ -94,17 +111,18 @@ def validate_sop_body(report: dict) -> None:
     if len(full_text) < 1200:
         raise SystemExit(f"{slot} SOP fullText is too short to be a complete report: {len(full_text)} chars")
 
-    headings = sop_headings(full_text)
+    sections = sop_sections(full_text)
+    headings = [title for title, _ in sections]
     if len(headings) < 9:
         raise SystemExit(f"{slot} SOP fullText requires multiple explicit sections; found {len(headings)}")
 
     requirements = [
         (r"今日の相場テーマ", "今日の相場テーマ", ("theme",)),
-        (r"主要市場データ|主要市場まとめ|主要6市場|6市場の(?:短期)?見通し", "主要市場データ", ("marketDataTable",)),
+        (r"主要市場データ|主要市場まとめ|市場データ一覧|主要6市場|6市場の(?:短期)?見通し", "主要市場データ", ("marketDataTable",)),
         (r"材料と値動きの整合性|価格の動きと材料の整合性", "材料と値動きの整合性", ("consistency",)),
         (r"(?:今日の)?主導市場|どの市場が主導", "主導市場", ("leadingMarket",)),
         (r"重要ニュース|重要ニュースと市場への伝播|昨夜のNY市場で何が起きたか", "重要ニュース", ("news",)),
-        (r"クロスアセット資金フロー", "クロスアセット資金フロー", ("crossAssetFlow",)),
+        (r"クロスアセット資金フロー|金利・為替・クロスアセットの因果関係", "クロスアセット資金フロー", ("crossAssetFlow",)),
         (r"需給・ポジション", "需給・ポジション", ("positioning",)),
         (r"個別(?:市場)?見通し|(?:主要)?6市場の(?:個別|短期)?見通し", "個別市場見通し", ("markets",)),
         (r"シナリオ", "シナリオ", ("mainScenario", "alternativeScenario")),
@@ -112,11 +130,11 @@ def validate_sop_body(report: dict) -> None:
         (r"結論|最終判断", "結論", ()),
     ]
     for pattern, label, fields in requirements:
-        require_semantic_section(report, headings, pattern, label, fields)
+        require_semantic_section(report, headings, pattern, label, fields, sections)
 
     transition_patterns = {
-        "08:00": r"前回(?:\d{2}:\d{2})?(?:版)?からの(?:主な)?変化|前回から市場解釈は変わったか|東京時間への引き継ぎ|本日の監視順",
-        "12:00": r"08:00からの(?:主な)?変化|欧州時間への引き継ぎ|次の時間帯への引き継ぎ",
+        "08:00": r"前回(?:\d{2}:\d{2})?(?:版)?からの(?:主な)?変化|前回から市場解釈は変わったか|東京時間への引き継ぎ|次の時間帯への引き継ぎ|本日の監視順",
+        "12:00": r"08:00からの(?:主な)?変化|欧州(?:・NY)?時間への引き継ぎ|次の時間帯への引き継ぎ",
         "16:00": r"12:00からの(?:主な)?変化|NY時間への引き継ぎ|次の時間帯への引き継ぎ",
         "21:00": r"16:00からの(?:主な)?変化|翌東京時間への引き継ぎ|NY時間への引き継ぎ|次の時間帯への引き継ぎ",
     }
@@ -140,6 +158,7 @@ def validate_report(report: dict) -> None:
         # Native Docs use plain headings and may contain the market table only
         # in their original body. Validate the saved content without rewriting it.
         validate_saved_body(report)
+        validate_sop_body(report)
         return
     if report.get("time") == "08:00":
         table = report.get("marketDataTable") or {}
