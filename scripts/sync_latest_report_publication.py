@@ -264,6 +264,34 @@ def sync_dashboard(report: dict) -> None:
     dump_json(DASHBOARD, dashboard)
 
 
+def select_same_slot_revision(reports: list[dict], source: str) -> dict:
+    """Choose a verified newest revision for one slot, never an input-order winner.
+
+    The canonical file and latest pointer can briefly carry different Drive
+    modification revisions for the same source Doc. Sort by the existing
+    monotonic revision contract, then apply the canonical conflict guard at
+    every step. Newer revisions from another Doc or same-revision conflicts
+    remain blocked.
+    """
+    if not reports:
+        raise SystemExit(f"no report candidates for {source}")
+    from build_reports import _choose_canonical_update, _revision_number
+
+    ordered = sorted(
+        enumerate(reports),
+        key=lambda item: (
+            _revision_number(item[1]) is not None,
+            _revision_number(item[1]) if _revision_number(item[1]) is not None else -1,
+            item[0],
+        ),
+    )
+    selected = ordered[0][1]
+    for _, candidate in ordered[1:]:
+        if _choose_canonical_update(selected, candidate, source) == "write":
+            selected = candidate
+    return selected
+
+
 def main() -> None:
     payload = load_json(LATEST, {})
     source_report = payload.get("latestReport") or payload.get("report") or payload
@@ -288,12 +316,7 @@ def main() -> None:
         raise SystemExit("no issued publication-eligible report source exists")
     newest = max((r["date"], r["time"]) for r in due)
     matching = [r for r in due if (r["date"], r["time"]) == newest]
-    report = matching[0]
-    for candidate in matching[1:]:
-        if candidate != report:
-            # Refuse an ambiguous same-slot correction instead of losing data.
-            _choose_canonical_update(report, candidate, str(newest))
-            report = candidate
+    report = select_same_slot_revision(matching, str(newest))
     validate_report(report)
     report_path = sync_report_file(report)
     payload["latestReport"] = report
