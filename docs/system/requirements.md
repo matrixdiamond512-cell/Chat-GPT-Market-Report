@@ -30,3 +30,8 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - 本文公開と図解公開の状態は引き続き独立する。時系列本文ゲートが失敗した本文は公開判定を通さないが、図解単独の失敗で検証済み本文を取り消さない。
 
 実装状態: Draft PR #133 (`codex/market-report-timeline-quality-20261015`, head `994642c43af8aa42b5d1bb1650944595cb3abacd`) に実装。Apps Script/一部回帰ActionsはPASS。厳格なPython全体検証は最新reports[0]の表欠落でFAIL。producerの実データ対応は未完了。
+
+
+## 2026-10-15 PR #133 継続対応 — 本文正本と市場データの分離
+- `data/latest-report.json` と `data/dashboard.json` の `latestReport` は完全一致を要求する。独立市場スナップショットはトップレベルの `dashboard.marketData` に保管し、正本本文に別時刻の値を挿入しない。
+- 本文・出典・bodyHash・revision を変更せず、付随する古い二重格納のみ是正する。時系列表のない最新本文については引き続き公開BLOCKEDとする。
