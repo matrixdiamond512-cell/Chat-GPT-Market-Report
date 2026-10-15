@@ -1155,47 +1155,84 @@ function archiveSectionBody(report, pattern) {
 }
 function archiveDashboardSummary(record) {
   const section = pattern => archiveSectionBody(record, pattern);
-  const split = text => text.split("\n").map(x => x.trim()).filter(Boolean);
+  const split = text => String(text || "").split("\n").map(s => s.trim()).filter(Boolean);
+  const summary = section(/総合判断|今日の相場テーマ/);
+  const timeline = section(/時系列/);
+  const mainPrices = section(/前営業日終値・主要市場データ|主要市場データ/);
+  const outlook = section(/主要6市場の短期見通し|6市場の個別見通し|主要6市場の|主要6市場の短期|個別6市場の/);
+  const marketSpecs = [
+    { key: "gold", name: "金", quote: /(?:金スポット|金先物GC=F)\s*[：:]?\s*(?:約\s*)?([\d,]+(?:\.\d+)?)/, outlook: /^(?:金(?:（XAU\/USD）)?)[：:]\s*(.+)$/m },
+    { key: "oil", name: "原油", quote: /(?:WTI原油先物CL=F|WTI原油|WTI)\s*[：:]?\s*([\d,]+(?:\.\d+)?)/, outlook: /^WTI(?:原油)?[：:]\s*(.+)$/m },
+    { key: "nikkei", name: "日経225先物", quote: /(?:大阪日経225先物12月限(?:・夜間終値)?|日経225先物（大阪取引所(?:・12月限)?）)\s*[：:]?\s*([\d,]+(?:\.\d+)?)/, outlook: /^日経225先物（大阪(?:取引所)?）[：:]\s*(.+)$/m },
+    { key: "usdjpy", name: "USD/JPY", quote: /USD\/JPY\s*[：:]?\s*([\d,]+(?:\.\d+)?)/, outlook: /^USD\/JPY[：:]\s*(.+)$/m },
+    { key: "eurusd", name: "EUR/USD", quote: /EUR\/USD\s*[：:]?\s*([\d,]+(?:\.\d+)?)/, outlook: /^EUR\/USD[：:]\s*(.+)$/m },
+    { key: "btc", name: "BTCUSD", quote: /BTCUSD\s*[：:]?\s*(?:約\s*)?([\d,]+(?:\.\d+)?)/, outlook: /^BTCUSD[：:]\s*(.+)$/m }
+  ];
+  const archiveQuotes = {};
+  const markets = [];
+  for (const spec of marketSpecs) {
+    const m = spec.quote.exec(mainPrices);
+    const raw = m ? mainPrices.slice(m.index, m.index + 260).split(/[。\n]/)[0].trim() : "";
+    const outlookLine = outlook.match(spec.outlook)?.[1] || "";
+    const changePair = raw.match(/([+-]\d[\d,.]*)\s*(?:円|ドル|USD)?\s*[,、/]\s*([+-]\d[\d,.]*)\s*%/);
+    const pct = changePair ? Number(changePair[2].replace(/,/g, "")) : null;
+    const pctOnly = !changePair && raw.match(/([+-]\d+(?:\.\d+)?)\s*%/);
+    // Missing current-session quotes remain labeled as historical references.
+    const atSource = raw.match(/(?:10\/\d{1,2}[^）]{0,55}|\b\d{1,2}:\d{2}[^）]{0,35})/);
+    const observedAt = atSource ? atSource[0].slice(0, 56) : "原本の基準時刻を確認";
+    const value = m ? m[1] : null;
+    const outlookDesc = String(outlookLine).trim();
+    archiveQuotes[spec.key] = {
+      value, observedAt,
+      originalLine: raw || "取得不能（当該資料に価格欄なし）",
+      change: changePair ? Number(changePair[1].replace(/,/g, "")) : null,
+      changePct: pct !== null ? pct : pctOnly ? Number(pctOnly[1]) : null,
+      outlook: outlookDesc
+    };
+    markets.push({
+      name: spec.name,
+      price: raw || "取得不能（当該資料に価格欄なし）",
+      direction: outlookDesc.split("。")[0] || "方向判断は保存原本参照",
+      outlook: outlookDesc,
+      material: outlookDesc,
+      risk: outlookDesc
+    });
+  }
+  const timelineRows = split(timeline)
+    .filter(s => /^(?:\d{1,2}:\d{2}|NY|欧州|東京への引き継ぎ)/.test(s))
+    .filter(s => /出来事|反応|米金利|株|市場|発表/.test(s))
+    .slice(0, 8)
+    .map(s => ({ time: s.match(/\b[0-2]?\d:[0-5]\d\b/)?.[0] || "時間帯", text: s }));
+  const originalNews = split(section(/重要ニュース|ニュースと影響市場|ニュースと波及/));
+  const news = originalNews.length ? originalNews : timelineRows.slice(0, 4).map(r => r.text);
+  const main = section(/メインシナリオ/);
+  const scenarios = section(/メイン・代替シナリオ/);
   return {
     ...record,
-    // Distinct from eligible PUBLISHED / DOC_READBACK_PASS / legacy no-status records.
+    // A record in this state is NEVER treated as officially published.
     report_status: "HISTORICAL_ARCHIVE_DISPLAY_ONLY",
-    theme: split(section(/総合判断|今日の相場テーマ/)).slice(0, 2).join(" ").slice(0, 450),
-    changes: split(section(/からの変化/)).slice(0, 5),
-    leadingMarket: split(section(/材料と値動きの整合性・主導市場|今日の主導市場/)).slice(0, 3).join(" "),
-    crossAssetFlow: split(section(/クロスアセット資金フロー|主導市場・クロスアセット/)).slice(0, 5),
-    news: split(section(/重要ニュース|ニュースと影響市場|ニュースと波及/)).slice(0, 6),
-    positioning: split(section(/需給・ポジション/)).slice(0, 5),
-    mainScenario: split(section(/メインシナリオ/)).slice(0, 4).join(" "),
-    alternativeScenario: split(section(/代替シナリオ/)).slice(0, 4).join(" "),
-    breakConditions: split(section(/崩れる条件/)).slice(0, 4).join(" "),
-    handover: split(section(/引き継ぎ/)).slice(0, 4),
-    historicalArchiveDisplayOnly: true
+    historicalArchiveDisplayOnly: true,
+    archiveQuotes,
+    archiveTimelineRows: timelineRows,
+    markets,
+    theme: split(summary).slice(0, 3).join(" ").slice(0, 560),
+    changes: split(section(/版からの変化|からの変化/)).slice(0, 5),
+    consistency: split(section(/材料と値動きの整合性/)).slice(0, 5),
+    leadingMarket: split(section(/主導市場・クロスアセット|材料と値動きの整合性・主導市場|今日の主導市場/)).slice(0, 3).join(" ") || split(summary)[0] || "",
+    crossAssetFlow: split(section(/クロスアセット資金フロー|主導市場・クロスアセット/)).slice(0, 6),
+    news,
+    positioning: split(section(/需給・ポジション/)).slice(0, 6),
+    mainScenario: split(main || scenarios).slice(0, 5).join(" "),
+    alternativeScenario: split(section(/代替シナリオ/) || scenarios).slice(0, 5).join(" "),
+    breakConditions: split(section(/崩れる条件/)).slice(0, 5).join(" "),
+    riskManagement: split(section(/リスク管理|崩れる条件/)).slice(0, 5),
+    handover: split(section(/引き継ぎ/)).slice(0, 5)
   };
 }
 function renderDashboardArchive(report) {
-  let node = document.getElementById("historicalArchiveDetails");
-  if (!isDashboardHistoricalArchive(report)) { if (node) node.remove(); return; }
-  if (!node) {
-    node = document.createElement("section");
-    node.id = "historicalArchiveDetails";
-    node.className = "panel";
-    document.querySelector(".control-bar")?.insertAdjacentElement("afterend", node);
-  }
-  node.style.cssText = "background:#fff;border:2px solid #bac9d9;border-radius:10px;padding:16px 20px;margin:14px 0 18px;color:#172b43;line-height:1.7";
-  const timeline = archiveSectionBody(report, /時系列/);
-  const marketData = archiveSectionBody(report, /主要市場データ|前営業日終値・主要市場データ/);
-  const fullReport = "report.html?date=" + encodeURIComponent(report.date) + "&time=" + encodeURIComponent(report.time);
-  const docUrl = String(report.sourceDocument?.url || "");
-  node.innerHTML =
-    '<h2 style="margin:0 0 8px;font-size:20px">過去の保存記録：' + esc(report.date + " " + report.time) + '（事後改訂を含む）</h2>'
-    + '<p style="color:#874b12;font-weight:700">正式発行・当時のデータ照合を証明するものではありません。原本状態：' + esc(report.originalReportStatus || "不明") + '。</p>'
-    + '<p>' + esc(report.archiveNotice) + '</p>'
-    + '<p><a href="' + esc(fullReport) + '">マーケットレポート本文ページ</a>'
-    + (docUrl ? '　｜　<a href="' + esc(docUrl) + '" target="_blank" rel="noopener noreferrer">Google Docs保存原本</a>' : '') + '</p>'
-    + (timeline ? '<h3>出来事と市場反応の時系列</h3><div style="white-space:pre-wrap;background:#f2f7fb;border-left:4px solid #1861a8;padding:10px 12px">' + esc(timeline) + '</div>' : '')
-    + (marketData ? '<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700">当時の市場データ（原本の記載）</summary><div style="white-space:pre-wrap;padding:10px">' + esc(marketData) + '</div></details>' : '')
-    + '<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700">本文全文をダッシュボード内で読む</summary><div style="white-space:pre-wrap;overflow-wrap:anywhere;padding:12px 0;font-size:14px">' + esc(report.fullText) + '</div></details>';
+  // No extra box: historical report contents are presented in the normal
+  // dashboard cards, news/event table, flows, positioning and scenarios.
+  document.getElementById("historicalArchiveDetails")?.remove();
 }
 
 function renderHeader(report) {
@@ -1962,6 +1999,12 @@ function reportEventNextText(row, report) {
 }
 
 function renderEvents(report) {
+  if (report?.historicalArchiveDisplayOnly) {
+    const rows = Array.isArray(report.archiveTimelineRows) ? report.archiveTimelineRows : [];
+    $("eventRows").innerHTML = rows.length ? rows.map(row => `<tr><td>${esc(row.time)}</td><td><span class="event-title">${esc(row.text)}</span></td><td>当時の市場</td><td>出来事</td><td>保存本文の時系列</td></tr>`).join("")
+      : '<tr><td>取得不能</td><td>保存本文に時系列情報なし</td><td>—</td><td>—</td><td>—</td></tr>';
+    return;
+  }
   const calendarRows = calendarRowsForReport(report);
   if (calendarRows.length) {
     $("eventRows").innerHTML = calendarRows.map((row) => `<tr>
@@ -2003,6 +2046,18 @@ function renderEvents(report) {
 }
 
 function lensItems(report) {
+  if (report?.historicalArchiveDisplayOnly) {
+    const li = (pattern, fallback) => String(archiveSectionBody(report, pattern) || fallback).split("。").slice(0, 3);
+    const quote = key => report.archiveQuotes?.[key]?.originalLine || "保存原本の記載なし";
+    return [
+      ["金利・債券市場", "%", li(/金利・為替・債券|金利・為替・株式/, "同時刻の金利観測値なし")],
+      ["株式市場", "株", li(/市場内部|市場の広がり|材料と値動きの整合性/, "株式の値動きは原本参照")],
+      ["商品市場（原油・金）", "CL", [quote("gold"), quote("oil")]],
+      ["為替市場", "FX", [quote("usdjpy"), quote("eurusd")]],
+      ["暗号資産市場", "BTC", [quote("btc")]],
+      ["今日の注目ポイント", "P", report.handover?.slice(0, 3).length ? report.handover.slice(0, 3) : ["次時間帯への引き継ぎは保存本文参照"]]
+    ];
+  }
   const text = allText(report);
   const metricLine = (pattern) => sourceLines(report).find((line) => pattern.test(line));
   const usRate = metricLine(/米10年債利回り/);
@@ -2056,6 +2111,11 @@ function renderScenarios(report) {
 }
 
 function renderFootnote(report) {
+  if (report?.historicalArchiveDisplayOnly) {
+    const foot = $("dataFootnote");
+    foot.textContent = "過去の保存記録（事後改訂版）：正式発行・発行時点の独立照合済みデータとは区別します。表示された市場価格は原本に記録された各観測時刻の参考値です。";
+    return;
+  }
   const missing = MARKET_DEFINITIONS
     .map((definition) => [definition.display, parseMetric(report, definition)])
     .filter(([, metric]) => metric.value === "取得不能")
