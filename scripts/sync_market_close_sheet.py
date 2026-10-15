@@ -1136,7 +1136,7 @@ def main() -> int:
         }
     write_status_file(Path(args.status_output), summary)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
-    return 0 if summary.get("status") in {"SUCCESS", "PARTIAL"} else 1
+    return 0 if summary.get("status") in {"SUCCESS", "PARTIAL", "DRY_RUN_COMPLETE"} else 1
 
 
 if __name__ == "__main__":
