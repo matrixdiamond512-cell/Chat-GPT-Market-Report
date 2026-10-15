@@ -2,7 +2,7 @@
   "schemaVersion": "1.0.0",
   "pageId": "usdjpy-supply-demand-archive",
   "reportDate": "2026-10-15",
-  "generatedAt": "2026-10-15T20:34:06+09:00",
+  "generatedAt": "2026-10-15T22:15:50+09:00",
   "market": {
     "schemaVersion": "1.1.0",
     "generatedAt": "2026-10-15T20:21:42+09:00",
@@ -134,7 +134,7 @@
   },
   "volume": {
     "schemaVersion": "1.0.0",
-    "generatedAt": "2026-10-15T16:32:47+09:00",
+    "generatedAt": "2026-10-15T21:35:50+09:00",
     "status": "ok",
     "data": {
       "sourceName": "日本銀行 外国為替市況（日次）",
@@ -143,12 +143,29 @@
       "priceSourceName": "Investing.com USD/JPY日足OHLC",
       "unit": "百万ドル",
       "latestJudgement": {
-        "targetDate": "2026-10-13",
-        "publicationDate": "2026-10-14",
+        "targetDate": "2026-10-14",
+        "publicationDate": "2026-10-15",
         "spotVolumeLevel": "通常",
-        "summary": "直近のUSD/JPYスポット出来高は20営業日平均を下回っています。同日のUSD/JPY価格は未入力です。"
+        "summary": "直近のUSD/JPYスポット出来高は20営業日平均を上回っています。同日のUSD/JPY価格は未入力です。"
       },
       "records": [
+        {
+          "targetDate": "2026-10-14",
+          "publicationDate": "2026-10-15",
+          "sourcePdfName": "fx261015.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx261015.pdf",
+          "spotVolume": 4178,
+          "volumeChange": 515,
+          "volumeChangePct": 14.06,
+          "avg20": 4144,
+          "vs20": 34,
+          "vs20Pct": 0.82,
+          "close": null,
+          "open": null,
+          "high": null,
+          "low": null,
+          "priceChangePct": null
+        },
         {
           "targetDate": "2026-10-13",
           "publicationDate": "2026-10-14",
@@ -811,23 +828,6 @@
           "high": 159.49,
           "low": 158.64,
           "priceChangePct": 0.06
-        },
-        {
-          "targetDate": "2026-08-13",
-          "publicationDate": "2026-08-14",
-          "sourcePdfName": "fx260814.pdf",
-          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260814.pdf",
-          "spotVolume": 2316,
-          "volumeChange": -45,
-          "volumeChangePct": -1.91,
-          "avg20": 5461,
-          "vs20": -3145,
-          "vs20Pct": -57.59,
-          "close": 159.33,
-          "open": 159.32,
-          "high": 159.48,
-          "low": 159.03,
-          "priceChangePct": 0.04
         }
       ],
       "priceRange": {
@@ -5523,7 +5523,7 @@
   "config": {
     "schemaVersion": "3.2.0",
     "pageId": "usdjpy-supply-demand",
-    "generatedAt": "2026-10-15T20:34:06+09:00",
+    "generatedAt": "2026-10-15T22:15:50+09:00",
     "mode": "integrated-realistic",
     "sourceStatus": {
       "tradersWebFx": "confirmed",
@@ -5534,7 +5534,7 @@
       "name": "トレーダーズ・ウェブFX 無料ページ",
       "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
       "sourceUpdatedAt": "2026-10-15T06:22:00+09:00",
-      "checkedAt": "2026-10-15T20:34:07+09:00",
+      "checkedAt": "2026-10-15T22:15:52+09:00",
       "status": "confirmed",
       "pageConfirmed": true,
       "publicScope": "一般公開はUSD/JPYの直近情報",
@@ -5543,7 +5543,7 @@
       "sourceDate": "2026-10-15",
       "sourceTime": "06:22",
       "freshness": "today",
-      "ageHours": 14.2,
+      "ageHours": 15.9,
       "keyLevels": {
         "referenceSpot": "158.33",
         "referenceSpotDescription": "10/15 06:00現在（10/14 高値158.95円 - 安値158.05円）",
@@ -6046,7 +6046,7 @@
       "judgement": "円買い越し拡大",
       "judgementSub": "USD/JPYの下押し圧力",
       "priceStatus": "available",
-      "checkedAt": "2026-10-15T20:34:06+09:00",
+      "checkedAt": "2026-10-15T22:15:50+09:00",
       "comment": "円買い越し拡大。円先物のNetは+62,325枚、前週比+6,885枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
       "verifiedPoints": 52,
       "priceVerifiedPoints": 52,
@@ -6064,9 +6064,9 @@
         "status": "confirmed"
       },
       "usdJpyVolume": {
-        "generatedAt": "2026-10-15T16:32:47+09:00",
-        "targetDate": "2026-10-13",
-        "publicationDate": "2026-10-14",
+        "generatedAt": "2026-10-15T21:35:50+09:00",
+        "targetDate": "2026-10-14",
+        "publicationDate": "2026-10-15",
         "status": "ok"
       }
     },
@@ -6086,7 +6086,7 @@
   "flow": {
     "schemaVersion": "1.0.0",
     "pageId": "usdjpy-flow-summary",
-    "generatedAt": "2026-10-15T20:34:07+09:00",
+    "generatedAt": "2026-10-15T22:15:52+09:00",
     "status": "ok",
     "realDemand": {
       "score": null,
@@ -6104,8 +6104,8 @@
           "direction": "unknown",
           "score": null,
           "status": "unavailable",
-          "asOf": "2026-10-13",
-          "updatedAt": "2026-10-15T16:32:47+09:00",
+          "asOf": "2026-10-14",
+          "updatedAt": "2026-10-15T21:35:50+09:00",
           "valueText": "東京市場価格を取得できません",
           "sourceName": "日本銀行 外国為替市況（日次）",
           "sourceUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/index.htm",
@@ -6118,8 +6118,8 @@
           "direction": "unknown",
           "score": null,
           "status": "unavailable",
-          "asOf": "2026-10-13",
-          "updatedAt": "2026-10-15T16:32:47+09:00",
+          "asOf": "2026-10-14",
+          "updatedAt": "2026-10-15T21:35:50+09:00",
           "valueText": "価格方向と出来高の組み合わせを取得不能",
           "sourceName": "日本銀行 外国為替市況（日次）",
           "sourceUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/index.htm",
@@ -6133,7 +6133,7 @@
           "score": 0.0,
           "status": "verified",
           "asOf": "2026-10-15",
-          "updatedAt": "2026-10-15T20:34:07+09:00",
+          "updatedAt": "2026-10-15T22:15:52+09:00",
           "valueText": "該当（仲値反応未確認のため加点なし）",
           "sourceName": "",
           "sourceUrl": "",
@@ -6147,7 +6147,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-10-15T20:34:07+09:00",
+          "updatedAt": "2026-10-15T22:15:52+09:00",
           "valueText": "対外－対内ネット +7,528億円。企業の当日実額ではなく週次資本フロー代理（為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -6161,7 +6161,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-06",
-          "updatedAt": "2026-10-15T20:34:07+09:00",
+          "updatedAt": "2026-10-15T22:15:52+09:00",
           "valueText": "輸出 10.93兆円／輸入 11.34兆円／収支 -4099億円（構造要因）",
           "sourceName": "財務省 貿易統計",
           "sourceUrl": "https://www.customs.go.jp/toukei/shinbun/trade-st/2026/2026065.pdf",
@@ -6175,7 +6175,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-10-15T20:34:07+09:00",
+          "updatedAt": "2026-10-15T22:15:52+09:00",
           "valueText": "合計 +6,262億円（取得超は外貨需要候補、為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -6189,7 +6189,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-10-15T20:34:07+09:00",
+          "updatedAt": "2026-10-15T22:15:52+09:00",
           "valueText": "合計 -1,266億円（取得超は円需要候補、為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -6203,7 +6203,7 @@
           "score": 0.0,
           "status": "verified",
           "asOf": "2026-10-15",
-          "updatedAt": "2026-10-15T20:34:07+09:00",
+          "updatedAt": "2026-10-15T22:15:52+09:00",
           "valueText": "月末非該当",
           "sourceName": "",
           "sourceUrl": "",
@@ -6226,7 +6226,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-10-06",
-          "updatedAt": "2026-10-15T20:34:06+09:00",
+          "updatedAt": "2026-10-15T22:15:50+09:00",
           "valueText": "円Net前週比 +6,885枚（USD/JPY方向へ符号反転）／基準日から9日",
           "sourceName": "CFTC Commitments of Traders - Japanese Yen",
           "sourceUrl": "https://www.cftc.gov/dea/newcot/deafut.txt",
@@ -6295,14 +6295,14 @@
       "judgement": "判定保留",
       "leadingFlow": "保留",
       "relationship": "判定保留",
-      "sessionComment": "ロンドン時間は投機・金利・ストップを優先監視。",
+      "sessionComment": "NY時間は米金利・米指標・オプション・NYカット・ストップを優先監視。",
       "comment": "実需または投機の確認済みカテゴリーが不足しているため、総合判定を保留します。"
     },
     "previous": {
       "realDemand": null,
-      "speculative": 0.0,
+      "speculative": -1.0,
       "combined": null,
-      "generatedAt": "2026-10-15T09:03:28+09:00"
+      "generatedAt": "2026-10-15T20:34:07+09:00"
     },
     "officialFlows": {
       "trade": {
@@ -6327,7 +6327,7 @@
     "priceDataDate": "2026-10-15",
     "usDataDate": "2026-10-13",
     "japanDataDate": "2026-10-14",
-    "tokyoDataDate": "2026-10-13",
+    "tokyoDataDate": "2026-10-14",
     "cftcDate": "2026-10-06"
   }
 }
