@@ -220,8 +220,9 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                 # Preserve canonical text. A previously archived source can
                 # only move forward after exact readback plus contemporaneous
                 # snapshot evidence is independently verified.
+                from reporting.publication_evidence import is_canonical_document
                 if (canonical.get("report_status") == "SOURCE_ARCHIVED" and
-                        anchored[0].get("id") == docid):
+                        is_canonical_document(anchored, canonical_id)):
                     try:
                         rebuilt = build_report(session, *key, anchored[0])
                         _verified_source_revision(rebuilt)
