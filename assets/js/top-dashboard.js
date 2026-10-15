@@ -1137,14 +1137,27 @@ function renderList(id, values, fallback) {
 
 /* Historical archive is display-only and never passes formal publication gates. */
 function isDashboardHistoricalArchive(r) {
-  return !!r && r.archiveStatus === "HISTORICAL_ARCHIVE" && r.verifiedAtSlot === false
-    && /^\d{4}-\d{2}-\d{2}$/.test(String(r.date || "")) && REPORT_TIMES.includes(r.time)
-    && String(r.title || "").startsWith("マーケットレポート｜")
-    && typeof r.fullText === "string" && r.fullText.startsWith(r.title)
-    && typeof r.archiveNotice === "string" && r.archiveNotice.length > 10
-    && /^[a-f0-9]{64}$/.test(String(r.originalBodyHash || ""))
-    && !!r.sourceDocument?.id && r.originalReportStatus !== "PUBLISHED";
+  if (!r || r.archiveStatus !== "HISTORICAL_ARCHIVE" || r.verifiedAtSlot !== false) return false;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(r.date || "")) || !REPORT_TIMES.includes(r.time)) return false;
+  if (typeof r.fullText !== "string" || r.fullText.length < 250) return false;
+  if (!String(r.title || "").startsWith("マーケットレポート｜") || !r.fullText.startsWith(r.title)) return false;
+  if (!r.title.includes(r.date.replace(/-/g, "/")) || !r.title.endsWith(r.time)) return false;
+  if (typeof r.archiveNotice !== "string" || r.archiveNotice.length < 15) return false;
+  if (r.originalReportStatus === "PUBLISHED" || r.report_status === "PUBLISHED") return false;
+  const legacyOriginal = /^[a-f0-9]{64}$/.test(String(r.originalBodyHash || "")) && !!r.sourceDocument?.id;
+  const sourceDocReadback = ["DRIVE_SAVED_DOCUMENT", "DRIVE_RECOVERY_DOCUMENT"].includes(r.archiveType)
+    && r.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED"
+    && !!r.sourceDocument?.id && !!r.driveRevisionId && r.driveTextLength === r.fullText.length
+    && Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length > 0;
+  const reconstructed = ["ORIGINAL_NOT_FOUND", "RECONSTRUCTED_UNVERIFIED"].includes(r.originalReportStatus)
+    && !r.sourceDocument?.id && typeof r.archiveSource === "string" && r.archiveSource.length > 10
+    && Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length > 0;
+  return legacyOriginal || sourceDocReadback || reconstructed;
 }
+function isDashboardReconstructedArchive(r) {
+  return ["ORIGINAL_NOT_FOUND", "RECONSTRUCTED_UNVERIFIED"].includes(r?.originalReportStatus);
+}
+
 function archiveSectionBody(report, pattern) {
   const lines = String(report.fullText || "").replace(/\r/g, "").split("\n");
   const at = lines.findIndex(line => /^\d{1,2}(?:補)?[．.]\s*/.test(line) && pattern.test(line));
@@ -2248,6 +2261,31 @@ async function loadDashboardReports() {
   // Formal verified publication is always authoritative when the same slot exists.
   publishedList.forEach(r => bySlot.set(r.date + " " + r.time, r));
   const reportList = [...bySlot.values()];
+  // User-owned Google Docs kept in the canonical monthly folder, read back at
+  // the revision recorded in each archive file. Never grant formal-publication status.
+  const driveArchivePaths = [
+    "data/dashboard-drive-archive-2026-10-01-05.json",
+    "data/dashboard-drive-archive-2026-10-06-07.json",
+    "data/dashboard-drive-archive-2026-10-09-12.json"
+  ];
+  const drivePayloads = await Promise.all(driveArchivePaths.map(async path => {
+    try {
+      const response = await fetch(path + "?ts=" + Date.now(), { cache: "no-store" });
+      if (!response.ok) throw new Error(path + " HTTP " + response.status);
+      const payload = await response.json();
+      if (payload?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION"
+          || payload?.sourceFolderId !== "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz"
+          || !Array.isArray(payload.reports)) throw new Error("source archive schema mismatch");
+      return payload.reports.filter(isDashboardHistoricalArchive).map(archiveDashboardSummary);
+    } catch (error) {
+      console.warn("[dashboard Drive archive] unavailable", path, error.message);
+      return [];
+    }
+  }));
+  const bySlotDrive = new Map(drivePayloads.flat().map(r => [r.date + " " + r.time, r]));
+  // Owner-folder archives may not replace formal, validated publication.
+  reportList.forEach(r => bySlotDrive.set(r.date + " " + r.time, r));
+  const combinedReportList = [...bySlotDrive.values()];
 
   if (!reportList.length) {
     throw new Error(`ダッシュボードJSONを取得できませんでした。理由：${errors.join(" / ")}`);
@@ -2259,7 +2297,7 @@ async function loadDashboardReports() {
   const marketDataReportKey = REPORT_TIMES.includes(marketData?.reportSlot)
     ? `${String(marketData?.generatedAt || "").slice(0, 10)} ${marketData.reportSlot}`
     : "";
-  const enrichedReports = reportList.map((report) => {
+  const enrichedReports = combinedReportList.map((report) => {
     const key = `${report.date || ""} ${report.time || ""}`;
     if (marketData && !isDashboardHistoricalArchive(report) && key === marketDataReportKey && !report.marketData) {
       return { ...report, marketData };
