@@ -107,8 +107,10 @@ if (!localValidator.includes("status: failures.length ? 'FAIL' : 'PASS'")
 if (!core.includes('splitCanonicalTitleFromSource_') || !core.includes('bodySource:text.slice(title.length)')) {
   throw new Error('Canonical title split and malformed-body recovery are missing');
 }
-if (!core.includes("status === \"PUBLISHED\"") || !core.includes("status === \"DOC_READBACK_PASS\"")) {
-  throw new Error('Report renderer must hide source-only/unknown publication states');
+const publicationPolicy = fs.readFileSync('assets/js/report-publication-policy.js', 'utf8');
+if (!core.includes('return window.MarketReportPublicationPolicy.isEligible(r);')
+  || !publicationPolicy.includes('return !status || status === "PUBLISHED" || status === "DOC_READBACK_PASS";')) {
+  throw new Error('Report renderer must use the shared fail-closed publication policy');
 }
 if (/^  push:/m.test(archiveWorkflow) || archiveWorkflow.includes('git push origin main')) {
   throw new Error('Archive recovery workflow must not mutate main directly');

@@ -2022,6 +2022,7 @@ async function init() {
   try {
     const data = await loadDashboardReports();
     reports = asArray(data.reports)
+      .filter((report) => window.MarketReportPublicationPolicy.isEligible(report))
       .filter((report) => /^\d{4}-\d{2}-\d{2}$/.test(report.date || ""))
       .sort((a, b) => reportKey(b).localeCompare(reportKey(a)));
     dashboardMeta = data.meta || null;
@@ -2035,7 +2036,14 @@ async function init() {
     const params = new URLSearchParams(window.location.search);
     const date = params.get("date");
     const time = params.get("time");
-    selectedReport = reports.find((report) => report.date === date && report.time === time) || reports[0];
+    const exactRequestedReport = reports.find((report) => report.date === date && report.time === time);
+    selectedReport = exactRequestedReport || reports[0];
+    if (!exactRequestedReport && date && time && selectedReport) {
+      const canonicalUrl = new URL(window.location.href);
+      canonicalUrl.searchParams.set("date", selectedReport.date);
+      canonicalUrl.searchParams.set("time", selectedReport.time);
+      window.history.replaceState({}, "", canonicalUrl);
+    }
     render();
   } catch (error) {
     $("reportStatus").textContent = "データ取得エラー";
@@ -2084,23 +2092,7 @@ async function loadDashboardReports() {
     errors.push(error.message);
   }
 
-  const mergedByKey = new Map();
-  historyReports.forEach((report) => {
-    mergedByKey.set(reportKey(report), report);
-  });
-  dashboardReports.forEach((report) => {
-    const key = reportKey(report);
-    const history = mergedByKey.get(key) || {};
-    mergedByKey.set(key, {
-      ...history,
-      ...report,
-      fullText: report.fullText || history.fullText || ""
-    });
-  });
-
-  const reportList = [...mergedByKey.values()]
-    .filter((report) => /^\d{4}-\d{2}-\d{2}$/.test(report?.date || ""))
-    .sort((a, b) => reportKey(b).localeCompare(reportKey(a)));
+  const reportList = window.MarketReportPublicationPolicy.merge(historyReports, dashboardReports);
 
   if (!reportList.length) {
     throw new Error(`ダッシュボードJSONを取得できませんでした。理由：${errors.join(" / ")}`);
