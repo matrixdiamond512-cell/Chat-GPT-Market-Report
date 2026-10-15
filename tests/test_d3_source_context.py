@@ -44,17 +44,24 @@ class TestSupplementaryEvidence(unittest.TestCase):
         for item in b["entries"]:
             self.assertLessEqual(item["source_generated_at"], c.data_cutoff)
             self.assertTrue(item["source_url"].startswith("https://"))
-        self.assertFalse(any(x.get("series") == "米10年債利回り" for x in b["entries"]),
-                         "Stale dated US yield is not same-day evidence; "
-                         + repr({"us10_source_rows": [
-                             (r.get("name"), r.get("asOf")) for r in
-                             load_repository_sources(ROOT)["rates"]["rates"]
-                             if r.get("name") == "米10年債利回り"
-                         ], "included": [
-                             (r.get("series"), r.get("as_of")) for r in b["entries"]
-                             if r.get("category") == "rates"
-                         ], "cutoff": c.data_cutoff}))
+        for row in (r for r in b["entries"] if r.get("category") == "rates"):
+            observed = __import__("datetime").date.fromisoformat(row["as_of"])
+            actual = __import__("datetime").date.fromisoformat(c.report_date)
+            self.assertGreaterEqual((actual - observed).days, 1)
+            self.assertLessEqual((actual - observed).days, 4)
         self.assertTrue(any(x.get("series") == "日本10年国債利回り" for x in b["entries"]))
+
+    def test_observation_older_than_age_limit_is_excluded_independently_of_live_feed_updates(self):
+        c = context()
+        sources = load_repository_sources(ROOT)
+        old = copy.deepcopy(sources)
+        for row in old["rates"]["rates"]:
+            if row.get("name") == "米10年債利回り":
+                row["asOf"] = "2026-10-01"
+        b = create_source_context(c, old)
+        self.assertFalse(any(x.get("series") == "米10年債利回り" for x in b["entries"]))
+        self.assertTrue(any(x.get("reason") == "米10年債利回り_UNVERIFIED_OR_STALE"
+                            for x in b["omissions"]))
 
     def test_mutating_asof_or_source_without_hash_is_rejected(self):
         c = context()
