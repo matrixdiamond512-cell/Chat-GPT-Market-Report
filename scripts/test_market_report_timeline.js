@@ -72,4 +72,17 @@ assert(context.marketReportPrePublishTimelineIssues_(buildText('21:00', { future
 assert(!context.marketReportPrePublishTimelineIssues_(buildText('21:00', { planned: true }), '21:00')
   .some(item => item.includes('21:00時点より後')), 'planned future event was rejected');
 
+const latePastTense = buildText('21:00').replace(
+  '市場の状態を確認し、売買材料の変化を整理した。',
+  '22:30に指標が発表され、市場が反応した。'
+);
+assert(context.marketReportPrePublishTimelineIssues_(latePastTense, '21:00')
+  .some(item => item.includes('21:00時点より後')), 'late past-tense event without schedule marker accepted');
+const priorDay = buildText('21:00').replace(
+  '市場の状態を確認し、売買材料の変化を整理した。',
+  '前日22:30の指標が発表され、市場が反応した。'
+);
+assert(!context.marketReportPrePublishTimelineIssues_(priorDay, '21:00')
+  .some(item => item.includes('21:00時点より後')), 'explicit previous-day event wrongly rejected');
+
 console.log('Market report timeline validation passed for all four slots and negative cases.');
