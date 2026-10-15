@@ -16,6 +16,7 @@ from .context import ReportContext
 from .snapshot import MarketDataSnapshot
 from .shadow_worker import freeze_shadow_input, REQUIRED_SIX, sha256_bytes, json_bytes
 from .d2_numeric_claims import audit_numeric_claims, verified_source_bundle, NumericClaimBlocked, CLAIM_KEYS
+from .d3_source_context import verify_source_context
 
 # Verified against official model page on 2026-10-15; eligibility and availability
 # on a particular API project must still be checked independently.
@@ -77,7 +78,8 @@ def response_format() -> dict:
 
 def build_request(context: ReportContext, snapshot: MarketDataSnapshot, *,
                   model: str = MODEL, instructions: str,
-                  max_output_tokens: int = 4000) -> dict:
+                  max_output_tokens: int = 4000,
+                  supplementary_context: dict | None = None) -> dict:
     """Freeze once; reject unverified source before constructing provider payload."""
     if model != MODEL:
         _fail("MODEL_NOT_APPROVED_FOR_OFFLINE_CONTRACT")
@@ -86,6 +88,8 @@ def build_request(context: ReportContext, snapshot: MarketDataSnapshot, *,
     if type(max_output_tokens) is not int or not 1 <= max_output_tokens <= 4000:
         _fail("OUTPUT_TOKEN_BUDGET_UNSAFE")
     context_data, snapshot_data = freeze_shadow_input(context, snapshot)
+    if supplementary_context is not None:
+        verify_source_context(context, supplementary_context)
     # The report identity is deterministic; the model must never infer the
     # Japanese weekday or reinterpret directional observations.
     report_day = date.fromisoformat(context.report_date)
@@ -116,6 +120,19 @@ def build_request(context: ReportContext, snapshot: MarketDataSnapshot, *,
         "approved_market_series": list(REQUIRED_SIX),
         "verified_numeric_source_bundle": verified_source_bundle(context, snapshot),
     }
+    if supplementary_context is not None:
+        # Contextual source facts are separately dated and attributed but NOT
+        # yet eligible numeric claim sources in D2 audit. Until a matching
+        # source-bound numeric-claim adapter is added, do not request their
+        # literal numeric values in the report prose.
+        input_data["supplementary_context"] = supplementary_context
+        anchored_instructions += (
+            "\n[追加文脈] supplementary_context は市場の参考資料。"
+            "事実・仮説・未取得情報を区別し、ニュース記事が無い場合はニュースを創作しない。"
+            "この版の数値検証は凍結された主要市場の数値のみ対象なので、"
+            "補助情報にある金利・建玉・イベント日時・統計値を本文へ数値で転記しない。"
+            "参考の対象日と情報源が異なる場合は、同時点の情報として扱わない。"
+        )
     return {
         "model": model,
         "instructions": anchored_instructions,
