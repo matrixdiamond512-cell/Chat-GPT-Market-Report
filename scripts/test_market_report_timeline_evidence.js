@@ -3,7 +3,8 @@ const vm = require('vm');
 
 const context = {};
 vm.createContext(context);
-vm.runInContext(fs.readFileSync('apps-script/MarketReportWebSync.gs', 'utf8'), context);\nvm.runInContext(fs.readFileSync('apps-script/MarketReportPrePublishValidation.gs', 'utf8'), context);
+vm.runInContext(fs.readFileSync('apps-script/MarketReportWebSync.gs', 'utf8'), context);
+vm.runInContext(fs.readFileSync('apps-script/MarketReportPrePublishValidation.gs', 'utf8'), context);
 
 function sample(generatedAt, value, asOf = generatedAt) {
   return {
