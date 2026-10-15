@@ -37,3 +37,10 @@
 6. 時系列検査の失敗で本文を公開不可と判定しても、図解の状態は別記録のまま扱う。図解の未完成・不合格だけで本文の公開状態を巻き戻さない。
 
 Draft PR #133のローカル合成fixture群とApps Script pre-publish ActionsはPASS。Python全体検証は最新reports[0]に時系列表がなくFAILする。Google Docs要件・仕様・運用文書の追記自体はrevision-guard付き更新後にreadback済み。Google Docs/ChatGPT/Portalの実レポートreadback、時系列の市場事実検証、main反映は未確認。
+
+
+## 2026-10-15 PR #133 継続修正 — 公開前整合確認
+1. `data/latest-report.json` と `dashboard.latestReport` が同一オブジェクトであることを確認する。
+2. 価格カードの市場データは `dashboard.marketData`（独立snapshot）にあることを確認する。本文正本に自動注入しない。
+3. `python -m unittest discover -s tests -p 'test_market_report_sync_contract.py' -v` と `python scripts/verify_publication_consistency.py` を実行する。
+4. 同期復旧CI PASS（run 38714305014、HEAD 285a18c）のみ確認済み。時系列本文を満たすproducerと他のレポートCIは未解決。公開、マージ、既存レポートの事実推測による改稿は行わない。
