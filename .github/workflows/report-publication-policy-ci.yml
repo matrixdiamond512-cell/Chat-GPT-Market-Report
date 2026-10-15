@@ -1,0 +1,23 @@
+name: Dashboard report publication eligibility
+on:
+  pull_request:
+    paths:
+      - assets/js/report-publication-policy.js
+      - assets/js/top-dashboard.js
+      - assets/js/report-core-v3.js
+      - index.html
+      - report.html
+      - tests/test_report_publication_policy.js
+      - .github/workflows/report-publication-policy-ci.yml
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify public report projection eligibility
+        run: node tests/test_report_publication_policy.js
