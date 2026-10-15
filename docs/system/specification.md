@@ -38,3 +38,9 @@ Python report validatorは最新/期限対象を厳格検査し、過去分は�
 ## PR #133 のHosted検証記録
 
 2026-10-15 head `994642c43af8aa42b5d1bb1650944595cb3abacd`: Apps Script Pre-Publish、見出し互換、朝の実ソース価格検査はPASS。Market Report Validation / Structure Market Reports / Source-backed 21hの最終全体検証は、最新`reports[0]`が時系列表未搭載のためFAIL。同期回復の回帰検査はPASSしたが、その後の公開整合検査が既存のdashboard/latest-report不一致でFAIL。PR #133はDraft維持。現在の市場データを推測で補わず、producer対応後に再実行する。
+
+
+## 2026-10-15 PR #133 継続対応 — ダッシュボード最新レポート同一性
+- `scripts/build_market_json.py` の `attach_market_data` は独立市場データをトップレベルの `marketData`／`marketDataUpdatedAt` にのみ更新する。旧コードが `dashboard.latestReport.marketData` や `dashboard.reports[*].marketData` に加えた複製を除去する。
+- `verify_publication_consistency.py` の完全一致チェックは維持する。`tests/test_market_report_sync_contract.py` で本文正本の不変、トップレベルの保存、旧二重格納削除、元入力不変および繰返し実行の冪等を試験する。
+- `data/dashboard.json` のDraft版では重複fieldだけを除去し、市場スナップショットと本文を保持した。run 38714305014 同期回復CI PASS。時系列の不足による独立のレポート検査FAILをPASSとは扱わない。
