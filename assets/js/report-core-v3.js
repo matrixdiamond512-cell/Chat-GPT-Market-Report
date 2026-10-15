@@ -86,7 +86,7 @@ function renderMissingReport(date, time) {
   window.MarketReportLastRendered = null;
 }
 function renderInfographic(report) {
-  if (isArchivedRecovery(report)) return "";
+  if (typeof isArchivedRecovery === "function" && isArchivedRecovery(report)) return "";
   const image = report.infographic;
   if (!image || report.infographic_status !== "READY") return "";
   if (image.artifact_type !== "FORMAL_INFOGRAPHIC" || image.debug_preview === true) return "";
