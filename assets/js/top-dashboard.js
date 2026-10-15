@@ -1168,7 +1168,7 @@ function archiveSectionBody(report, pattern) {
       // Bracketed column headers inside a numbered market-data section are data,
       // not new sections. Do not truncate the 08:00 previous-close table.
       if (/^【/.test(String(line||"").trim())
-          && /^(?:金|原油|日経225先物|USD\/JPY|EUR\/USD|BTCUSD|米株|日本株|為替・商品・暗号資産|日経225評価|海外株|主要株価|先物)$/.test(title)) return "";
+          && !/^(?:総合判断|今日の相場テーマ|前回からの変化|主要市場データ|主要市場の現状|材料と値動きの整合性|今日の主導市場|重要ニュース|重要ニュース・材料|クロスアセット資金フロー|需給・ポジション|今後のイベント|主要6市場の短期見通し|6市場の短期見通し|メインシナリオ|代替シナリオ|シナリオが崩れる条件|次の時間帯への引き継ぎ|08:00からの変化|16:00からの変化)$/.test(title)) return "";
       return title;
     }
     const bare=String(line||"").trim();
