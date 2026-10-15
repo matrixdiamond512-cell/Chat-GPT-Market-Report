@@ -138,11 +138,18 @@ def validate_sop_body(report: dict) -> None:
         "16:00": r"12:00からの(?:主な)?変化|NY時間への引き継ぎ|次の時間帯への引き継ぎ",
         "21:00": r"16:00からの(?:主な)?変化|翌東京時間への引き継ぎ|NY時間への引き継ぎ|次の時間帯への引き継ぎ",
     }
-    if not any(re.search(transition_patterns[slot], h) for h in headings):
-        if slot == "08:00" and has_structured_value(report, ("changes",)):
-            pass
-        else:
-            raise SystemExit(f"{slot} SOP fullText missing time-slot transition/change section")
+    matching_transition_sections = [
+        body for title, body in sections if re.search(transition_patterns[slot], title)
+    ]
+    if matching_transition_sections:
+        if not any(len(re.sub(r"\s", "", body)) >= 24 for body in matching_transition_sections):
+            raise SystemExit(
+                f"{slot} SOP fullText transition section is empty or substantively insufficient"
+            )
+    elif slot == "08:00" and has_structured_value(report, ("changes",)):
+        pass
+    else:
+        raise SystemExit(f"{slot} SOP fullText missing time-slot transition/change section")
 
     public_forbidden = [r"\bverified\b", r"JSONにありません", r"構造化JSON", r"内部構造"]
     for pattern in public_forbidden:
