@@ -36,3 +36,5 @@ jobs:
         run: python -m compileall -q scripts/run_market_data_window.py scripts/run_market_data_acquisition.py scripts/persist_report_slot_evidence.py
       - name: Run strictly offline cutoff and immutable-evidence regression suites
         run: python -m unittest scripts.test_run_market_data_window scripts.test_market_acquisition_cutoff tests.test_report_slot_evidence -v
+      - name: Validate the complete current canonical report history
+        run: python scripts/validate_market_reports.py --file reports.json
