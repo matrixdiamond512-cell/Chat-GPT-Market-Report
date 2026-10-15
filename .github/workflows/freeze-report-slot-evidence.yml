@@ -1,0 +1,70 @@
+name: Freeze pre-draft report-slot evidence
+
+on:
+  schedule:
+    # Capture only after each slot's final scheduled acquisition attempt:
+    # 07:57, 11:57, 15:57, and 20:57 Asia/Tokyo on weekdays.
+    - cron: "57 22 * * 0-4"
+    - cron: "57 2 * * 1-5"
+    - cron: "57 6 * * 1-5"
+    - cron: "57 11 * * 1-5"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: freeze-pre-draft-report-slot-evidence
+  cancel-in-progress: false
+
+jobs:
+  freeze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Resolve explicit JST report slot
+        id: slot
+        shell: bash
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
+        run: |
+          case "$SCHEDULE" in
+            "57 22 * * 0-4") SLOT="08:00" ;;
+            "57 2 * * 1-5") SLOT="12:00" ;;
+            "57 6 * * 1-5") SLOT="16:00" ;;
+            "57 11 * * 1-5") SLOT="21:00" ;;
+            *) echo "Unexpected schedule: $SCHEDULE" >&2; exit 1 ;;
+          esac
+          echo "date=$(TZ=Asia/Tokyo date +%F)" >> "$GITHUB_OUTPUT"
+          echo "slot=$SLOT" >> "$GITHUB_OUTPUT"
+      - name: Validate writer and its offline regression suite
+        run: |
+          python -m py_compile scripts/persist_report_slot_evidence.py
+          python -m unittest tests.test_report_slot_evidence -v
+      - name: Freeze verified acquisition for the explicit slot
+        run: |
+          python scripts/persist_report_slot_evidence.py \
+            --date "${{ steps.slot.outputs.date }}" \
+            --slot "${{ steps.slot.outputs.slot }}" \
+            --max-age-minutes 15
+      - name: Commit immutable evidence without rewriting existing history
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add data/report-evidence/
+          if git diff --cached --quiet; then
+            echo "NO_OP: identical pre-draft evidence already exists."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Freeze pre-draft evidence for ${{ steps.slot.outputs.date }} ${{ steps.slot.outputs.slot }}"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "PRE_DRAFT_EVIDENCE_PERSISTED: ready for producer consumption; publication is still separately gated."
