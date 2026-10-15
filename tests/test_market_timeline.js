@@ -129,3 +129,59 @@ test("12: panel is below six-market summary, upcoming-events table remains, and 
   assert.match(css, /\.market-timeline-event dl\s*\{\s*grid-template-columns:\s*1fr/s);
   assert.match(css, /\.top-header p\[data-stale="true"\]/);
 });
+
+
+test("13: concrete narrative with timed quantified reaction passes the automated field screen", () => {
+  const result = MarketTimeline.assessTimelineQuality([{
+    phase: "NY開場前", occurredAt: "10/14 21:30 JST", reactionObservedAt: "10/14 21:35 JST",
+    event: "米国の9月CPIが市場予想を上回って発表され、インフレ再加速が意識された。",
+    reaction: "21:35 JSTに米10年債利回りが5.33%へ上昇し、Nasdaq先物は1.2%下落。",
+    meaning: "利上げ観測が強まり、高PERのAI関連株の評価を圧迫する材料へ変わった。",
+    nextWatch: "NY寄り付き後の米金利と半導体株。", sources: ["米CPI発表・保存市場データ"]
+  }]);
+  assert.equal(result.status, "EVIDENCE_FIELDS_COMPLETE");
+  assert.equal(result.incompleteEventCount, 0);
+  assert.match(result.note, /独立確認した証明ではありません/);
+});
+
+test("14: number-only timeline entries fail content evidence assessment", () => {
+  const result = MarketTimeline.assessTimelineQuality([{
+    phase: "序盤", timeLabel: "10:06", occurredAt: "10:06", reactionObservedAt: null,
+    event: "日経225 68,564.85円 67,486.57円 67,292.39円",
+    reaction: "日経平均 67,292.39円", meaning: "相場に注目して確認することが必要です。",
+    nextWatch: "大引け", sources: ["保存レポート"]
+  }]);
+  assert.equal(result.status, "INCOMPLETE");
+  assert.ok(result.gaps.includes("reaction-observation-time-not-evidenced"));
+  assert.ok(result.gaps.includes("reaction-direction-not-evidenced"));
+  assert.ok(result.gaps.includes("market-meaning-too-generic"));
+});
+
+test("15: all four retrospective 2026-10-15 timelines disclose content evidence gaps", () => {
+  for (const timeline of archive.reports) {
+    assert.equal(timeline.qualityAssessment.status, "INCOMPLETE", timeline.reportTime);
+    assert.ok(timeline.qualityAssessment.incompleteEventCount > 0, timeline.reportTime);
+    assert.ok(timeline.qualityAssessment.gaps.includes("source-document-revision-not-recorded"), timeline.reportTime);
+  }
+});
+
+
+test("16: selected archive content is accepted only when its body hash matches the verified timeline source", async () => {
+  const timeline = archive.reports.find((item) => item.reportTime === "08:00");
+  const source = sourceFor(timeline);
+  const exactDisplayCopy = { ...source, historicalArchiveDisplayOnly: true };
+  const verified = await MarketTimeline.verifyArchivedTimelineForDisplay(timeline, source, exactDisplayCopy);
+  assert.equal(verified.valid, true);
+  const mismatchedCopy = { ...exactDisplayCopy, fullText: `${source.fullText}異なる追記` };
+  const rejected = await MarketTimeline.verifyArchivedTimelineForDisplay(timeline, source, mismatchedCopy);
+  assert.equal(rejected.valid, false);
+  assert.match(rejected.reason, /ハッシュが一致しません/);
+});
+
+
+test("17: recovery watchdog preserves historical reports and the explicit date/time selection", () => {
+  const guard = fs.readFileSync(path.join(root, "assets/js/dashboard-freeze-guard.js"), "utf8");
+  assert.match(guard, /const existing = Array\.isArray\(reports\) \? reports : \[\]/);
+  assert.match(guard, /const requested = reports\.find\(\(report\) => report\.date === params\.get\("date"\)/);
+  assert.match(guard, /\|\| requested\s*\|\|\s*reports\[0\]/);
+});

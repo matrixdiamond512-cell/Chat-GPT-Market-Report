@@ -18,7 +18,7 @@
   let referencePayload = null;
   let referencePromise = null;
 
-  function enforce(report) { return Boolean(report && report.time === "08:00" && String(report.date || "") >= ENFORCE_FROM); }
+  function enforce(report) { return Boolean(report && report.archiveStatus !== "HISTORICAL_ARCHIVE" && report.time === "08:00" && String(report.date || "") >= ENFORCE_FROM); }
   function normalizeLabel(value = "") {
     const label = String(value).replace(NUMBER_PREFIX, "").trim();
     return ({
@@ -156,6 +156,10 @@
     return result;
   }
   function runRenderedQA(report) {
+    if (report?.archiveStatus === "HISTORICAL_ARCHIVE") {
+      document.documentElement.dataset.morningReportQa = "historical-archive";
+      return {ready:false, enforced:false, archive:true, reasons:["historical record; formal 28-item close-data QA not asserted"]};
+    }
     const result = validateRendered(report);
     window.MorningReportQA.lastRendered = result;
     document.documentElement.dataset.morningReportQa = result.ready ? "pass" : "fail";

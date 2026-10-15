@@ -134,7 +134,47 @@
       amendmentDate: amendment ? (amendment[1] || amendment[2]) : null,
       publicationStatus: report.report_status || "UNKNOWN",
       sourceDocumentId: report.sourceDocument?.id || null,
-      events
+      sourceDocumentRevisionId: report.sourceRevisionId || null,
+      events,
+      qualityAssessment: assessTimelineQuality(events, { sourceDocumentRevisionId: report.sourceRevisionId || null, sourceBodyHash: report.bodyHash || null })
+    };
+  }
+
+  function assessTimelineQuality(events, source = null) {
+    const assessed = (Array.isArray(events) ? events : []).map((event) => {
+      const gaps = [];
+      const reaction = clean(event?.reaction);
+      const fact = clean(event?.event);
+      const meaning = clean(event?.meaning);
+      if (!event?.occurredAt) gaps.push("event-time-not-evidenced");
+      if (!event?.reactionObservedAt) gaps.push("reaction-observation-time-not-evidenced");
+      if (!/[+-]?\d[\d,.]*(?:%|％|円|ドル|USD|JPY|bp|bps|ポイント|pt|枚|億|兆|回|件|万)/i.test(reaction)) {
+        gaps.push("reaction-quantified-value-not-evidenced");
+      }
+      if (!/(?:上昇|上が|上振|高|買わ|買い|続伸|反発|下落|下が|低下|急落|安|売ら|売り|続落|減少|増加|拡大|縮小|軟調|堅調|弱含|強含|[+＋−-]\s*\d)/.test(reaction)) {
+        gaps.push("reaction-direction-not-evidenced");
+      }
+      if (fact.length < 24 || !/(?:指標|発表|当局|発言|決算|報道|ニュース|株|指数|先物|金利|為替|ドル|金|原油|Bitcoin|ビットコイン|CPI|NASDAQ|Nasdaq|S&P|TOPIX|日経|韓国|半導体|AI|信用|国債)/i.test(fact)) {
+        gaps.push("event-specific-fact-not-evidenced");
+      }
+      if (meaning.length < 24 || !/(?:ため|受け|背景|につなが|波及|結果|示す|意味|切り替わ|変わ|一方|ただし|とは限ら|可能性|となる|となり|支え|重し|促し|後押し|圧力|需給|警戒|観測)/.test(meaning) || /(?:注目する|注視する|確認する|材料となる。?$)/.test(meaning)) {
+        gaps.push("market-meaning-too-generic");
+      }
+      if (!Array.isArray(event?.sources) || !event.sources.some((source) => clean(source))) gaps.push("source-not-evidenced");
+      if (!clean(event?.nextWatch)) gaps.push("next-watch-not-evidenced");
+      return { phase: event?.phase || "", status: gaps.length ? "INCOMPLETE" : "EVIDENCE_FIELDS_COMPLETE", gaps };
+    });
+    const gaps = [...new Set(assessed.flatMap((item) => item.gaps))];
+    if (source && !source.sourceDocumentRevisionId) gaps.push("source-document-revision-not-recorded");
+    if (source && !source.sourceBodyHash) gaps.push("source-body-hash-not-recorded");
+    return {
+      status: assessed.length && assessed.every((item) => item.status === "EVIDENCE_FIELDS_COMPLETE") && gaps.length === 0 ? "EVIDENCE_FIELDS_COMPLETE" : "INCOMPLETE",
+      scope: "AUTOMATED_EVIDENCE_FIELD_SCREEN",
+      note: "項目の有無を機械判定した結果です。事実・数値・因果関係の正しさを独立確認した証明ではありません。",
+      eventCount: assessed.length,
+      incompleteEventCount: assessed.filter((item) => item.status !== "EVIDENCE_FIELDS_COMPLETE").length,
+      gaps: [...new Set(gaps)],
+      events: assessed
     };
   }
 
@@ -151,6 +191,26 @@
       return { valid: false, reason: "日付・時刻・版・本文ハッシュが一致しません" };
     }
     return { valid: true, reason: "" };
+  }
+
+  async function verifyArchivedTimelineForDisplay(timeline, sourceReport, displayReport) {
+    const sourceResult = await verifyArchivedTimeline(timeline, sourceReport);
+    if (!sourceResult.valid) return sourceResult;
+    if (!displayReport || displayReport.date !== timeline.reportDate || displayReport.time !== timeline.reportTime) {
+      return { valid: false, reason: "表示中のアーカイブと時系列の日付・時刻が一致しません" };
+    }
+    if (displayReport.sourceDocument?.id !== timeline.sourceDocumentId) {
+      return { valid: false, reason: "表示中の本文と時系列の出典文書IDが一致しません" };
+    }
+    if (!displayReport.fullText || !root.crypto?.subtle || typeof root.TextEncoder !== "function") {
+      return { valid: false, reason: "表示中の本文ハッシュを照合できません" };
+    }
+    const digest = await root.crypto.subtle.digest("SHA-256", new root.TextEncoder().encode(displayReport.fullText));
+    const hash = [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    if (hash !== timeline.sourceBodyHash) {
+      return { valid: false, reason: "表示中の保存本文と時系列の対象本文ハッシュが一致しません" };
+    }
+    return { valid: true, reason: "", bodyHash: hash };
   }
 
   async function verifyArchivedTimeline(timeline, report) {
@@ -171,6 +231,6 @@
     return { valid: true, reason: "" };
   }
 
-  root.MarketTimeline = Object.freeze({ SLOT_DEFINITIONS, parseTimelineText, verifyTimelineIdentity, verifyArchivedTimeline, reportId });
+  root.MarketTimeline = Object.freeze({ SLOT_DEFINITIONS, parseTimelineText, assessTimelineQuality, verifyTimelineIdentity, verifyArchivedTimeline, verifyArchivedTimelineForDisplay, reportId });
   if (typeof module !== "undefined" && module.exports) module.exports = root.MarketTimeline;
 })(globalThis);

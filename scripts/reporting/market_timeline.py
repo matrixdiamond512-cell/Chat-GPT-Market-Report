@@ -83,6 +83,46 @@ def _event(line: str, slot: str) -> dict | None:
     }
 
 
+def assess_timeline_quality(events: list[dict], source: dict | None = None) -> dict:
+    assessments = []
+    for event in events if isinstance(events, list) else []:
+        reaction = str(event.get("reaction") or "")
+        fact = str(event.get("event") or "")
+        meaning = str(event.get("meaning") or "")
+        gaps = []
+        if not event.get("occurredAt"):
+            gaps.append("event-time-not-evidenced")
+        if not event.get("reactionObservedAt"):
+            gaps.append("reaction-observation-time-not-evidenced")
+        if not re.search(r"[+\-]?\d[\d,.]*(?:%|％|円|ドル|USD|JPY|bp|bps|ポイント|pt|枚|億|兆|回|件|万)", reaction, re.I):
+            gaps.append("reaction-quantified-value-not-evidenced")
+        if not re.search(r"(?:上昇|上が|上振|高|買わ|買い|続伸|反発|下落|下が|低下|急落|安|売ら|売り|続落|減少|増加|拡大|縮小|軟調|堅調|弱含|強含|[+＋−-]\s*\d)", reaction):
+            gaps.append("reaction-direction-not-evidenced")
+        if len(fact) < 24 or not re.search(r"(?:指標|発表|当局|発言|決算|報道|ニュース|株|指数|先物|金利|為替|ドル|金|原油|Bitcoin|ビットコイン|CPI|NASDAQ|Nasdaq|S&P|TOPIX|日経|韓国|半導体|AI|信用|国債)", fact, re.I):
+            gaps.append("event-specific-fact-not-evidenced")
+        if len(meaning) < 24 or not re.search(r"(?:ため|受け|背景|につなが|波及|結果|示す|意味|切り替わ|変わ|一方|ただし|とは限ら|可能性|となる|となり|支え|重し|促し|後押し|圧力|需給|警戒|観測)", meaning) or re.search(r"(?:注目する|注視する|確認する|材料となる。?$)", meaning):
+            gaps.append("market-meaning-too-generic")
+        if not any(str(source).strip() for source in event.get("sources", [])):
+            gaps.append("source-not-evidenced")
+        if not str(event.get("nextWatch") or "").strip():
+            gaps.append("next-watch-not-evidenced")
+        assessments.append({"phase": event.get("phase", ""), "status": "INCOMPLETE" if gaps else "EVIDENCE_FIELDS_COMPLETE", "gaps": gaps})
+    all_gaps = {gap for item in assessments for gap in item["gaps"]}
+    if source is not None and not source.get("sourceDocumentRevisionId"):
+        all_gaps.add("source-document-revision-not-recorded")
+    if source is not None and not source.get("sourceBodyHash"):
+        all_gaps.add("source-body-hash-not-recorded")
+    return {
+        "status": "EVIDENCE_FIELDS_COMPLETE" if assessments and all(item["status"] == "EVIDENCE_FIELDS_COMPLETE" for item in assessments) and not all_gaps else "INCOMPLETE",
+        "scope": "AUTOMATED_EVIDENCE_FIELD_SCREEN",
+        "note": "項目の有無を機械判定した結果です。事実・数値・因果関係の正しさを独立確認した証明ではありません。",
+        "eventCount": len(assessments),
+        "incompleteEventCount": sum(item["status"] != "EVIDENCE_FIELDS_COMPLETE" for item in assessments),
+        "gaps": sorted(all_gaps),
+        "events": assessments,
+    }
+
+
 def parse_saved_timeline(report: dict) -> dict | None:
     """Extract source-labeled events and bind them to the exact saved body."""
     slot = str(report.get("time") or "")
@@ -119,5 +159,7 @@ def parse_saved_timeline(report: dict) -> dict | None:
         "snapshotId": (report.get("publicationEvidence") or {}).get("snapshotId"),
         "snapshotHash": (report.get("publicationEvidence") or {}).get("snapshotHash"),
         "sourceDocumentId": (report.get("sourceDocument") or {}).get("id"),
+        "sourceDocumentRevisionId": report.get("sourceRevisionId"),
         "events": events,
+        "qualityAssessment": assess_timeline_quality(events, {"sourceDocumentRevisionId": report.get("sourceRevisionId"), "sourceBodyHash": report.get("bodyHash")}),
     }

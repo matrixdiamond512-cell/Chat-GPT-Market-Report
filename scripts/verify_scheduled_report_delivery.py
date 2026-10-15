@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail when a scheduled report has not actually reached canonical, index, and dashboard."""
+"""Verify canonical/index/dashboard readiness without claiming ChatGPT conversation delivery."""
 import argparse
 from datetime import datetime, timezone, timedelta
 import json
@@ -40,7 +40,17 @@ def verify(root: Path, date: str, slot: str) -> dict:
         raise ValueError("Dashboard and latest report pointer disagree")
     if dashboard.get("currentReportKey") != internal_report_key(latest):
         raise ValueError("Dashboard currentReportKey disagrees with latest report")
-    return {"status": "PASS", "date": date, "slot": slot, "canonical": str(report_path)}
+    return {
+        "status": "PASS",
+        "verifiedScope": ["canonical-report", "history-index", "dashboard-projection"],
+        "date": date,
+        "slot": slot,
+        "canonical": str(report_path),
+        "chatgptConversationDelivery": {
+            "status": "NOT_IMPLEMENTED",
+            "reason": "The scheduled workflow publishes repository artifacts; no ChatGPT conversation delivery adapter or receipt is configured.",
+        },
+    }
 
 
 def main():

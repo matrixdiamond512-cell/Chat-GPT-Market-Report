@@ -80,13 +80,24 @@
         return false;
       }
 
-      reports = list
-        .filter((report) => report && /^\d{4}-\d{2}-\d{2}$/.test(report.date || ""))
-        .slice()
-        .sort((a, b) => reportKey(b).localeCompare(reportKey(a)));
+      const current = selectedReport || null;
+      const existing = Array.isArray(reports) ? reports : [];
+      const byKey = new Map();
+      existing.forEach((report) => {
+        if (report && /^\d{4}-\d{2}-\d{2}$/.test(report.date || "")) byKey.set(reportKey(report), report);
+      });
+      list.forEach((report) => {
+        if (report && /^\d{4}-\d{2}-\d{2}$/.test(report.date || "")) byKey.set(reportKey(report), report);
+      });
+      reports = [...byKey.values()].sort((a, b) => reportKey(b).localeCompare(reportKey(a)));
       if (!reports.length) return false;
 
-      selectedReport = reports[0];
+      const params = new URLSearchParams(location.search);
+      const requested = reports.find((report) => report.date === params.get("date") && report.time === params.get("time"));
+      const currentKey = current ? reportKey(current) : "";
+      selectedReport = reports.find((report) => currentKey && reportKey(report) === currentKey)
+        || requested
+        || reports[0];
 
       if (typeof dashboardMeta !== "undefined") {
         dashboardMeta = {

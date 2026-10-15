@@ -32,7 +32,8 @@ function buildArchive(date, repositoryRoot = path.resolve(__dirname, "../..")) {
       reportRevision: source.revision,
       publicationStatus: source.report_status,
       sourceDocumentId: source.sourceDocument?.id || null,
-      sourceTitle: source.title
+      sourceTitle: source.title,
+      qualityAssessment: MarketTimeline.assessTimelineQuality(timeline.events, timeline)
     };
   });
 
