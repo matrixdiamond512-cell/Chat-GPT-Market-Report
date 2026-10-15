@@ -21,6 +21,7 @@ on:
     - cron: "25 13 * * 1-5"
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: google-docs-real-report-ingestion
   cancel-in-progress: false
@@ -59,16 +60,35 @@ jobs:
           cmp /tmp/market-report-index-before-idempotency.json reports.json
           echo "CANONICAL_INDEX_IDEMPOTENT: indexed changes are expected and preserved for commit."
       - name: Persist actual Docs-derived changes to main and request Pages deploy
+        id: persist
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add reports/ reports.json data/latest-report.json data/dashboard.json
           if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             echo "NO_NEW_REPORTS: all reachable Docs already published; no fake publication."
             exit 0
           fi
           git commit -m "Publish verified saved Google Docs report to canonical history"
           git pull --rebase origin main
           git push origin HEAD:main
-          echo "PUSHED_REAL_DOCS_ARCHIVE: GitHub Pages deployment must be verified separately."
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "PUSHED_REAL_DOCS_ARCHIVE: source archive committed; Pages dispatch follows."
+
+      - name: Dispatch Pages deployment for the committed archive
+        if: steps.persist.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error \
+            --request POST \
+            --url "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/deploy-pages.yml/dispatches" \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            --header "Content-Type: application/json" \
+            --data '{"ref":"main"}'
+          echo "PAGES_WORKFLOW_DISPATCHED: deployment and public read-back are tracked separately."
