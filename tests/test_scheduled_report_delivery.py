@@ -34,6 +34,12 @@ class DeliveryTests(unittest.TestCase):
     def test_complete_slot(self):
         self.assertEqual(module.verify(self.root, "2026-10-13", "08:00")["status"], "PASS")
 
+    def test_delivery_health_marks_chatgpt_conversation_as_not_implemented(self):
+        result = module.verify(self.root, "2026-10-13", "08:00")
+        self.assertEqual(result["status"], "PASS")
+        self.assertEqual(result["verifiedScope"], ["canonical-report", "history-index", "dashboard-projection"])
+        self.assertEqual(result["chatgptConversationDelivery"]["status"], "NOT_IMPLEMENTED")
+
     def test_missing_canonical_detected(self):
         with self.assertRaisesRegex(ValueError, "Missing published canonical"):
             module.verify(self.root, "2026-10-13", "12:00")

@@ -1,4 +1,4 @@
-name: Scheduled report actual-delivery health
+name: Scheduled report canonical publication health
 on:
   workflow_dispatch:
     inputs:
@@ -42,7 +42,11 @@ jobs:
           esac
           test -n "$SLOT" || { echo "Missing scheduled slot"; exit 1; }
           if [[ -n "$DATE" ]]; then
-            python scripts/verify_scheduled_report_delivery.py --slot "$SLOT" --date "$DATE"
+            RESULT=$(python scripts/verify_scheduled_report_delivery.py --slot "$SLOT" --date "$DATE")
           else
-            python scripts/verify_scheduled_report_delivery.py --slot "$SLOT"
+            RESULT=$(python scripts/verify_scheduled_report_delivery.py --slot "$SLOT")
           fi
+          echo "$RESULT"
+          echo '### Scheduled report delivery scope' >> "$GITHUB_STEP_SUMMARY"
+          echo '- Canonical report, history index, and dashboard projection: PASS when this job succeeds.' >> "$GITHUB_STEP_SUMMARY"
+          echo '- ChatGPT conversation body delivery: NOT_IMPLEMENTED; this job does not prove a ChatGPT message was delivered.' >> "$GITHUB_STEP_SUMMARY"

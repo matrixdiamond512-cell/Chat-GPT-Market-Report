@@ -157,6 +157,11 @@
     }
 
     const latest = latestReport(list);
+    const requestedDate = new URLSearchParams(location.search).get("date");
+    const requestedTime = new URLSearchParams(location.search).get("time");
+    if (requestedDate && requestedTime && list.some(report => report?.date === requestedDate && report?.time === requestedTime)) {
+      return;
+    }
     // Historical archive view is a user-visible record, not an eligible latest report override.
     try { if (selectedReport?.archiveStatus === "HISTORICAL_ARCHIVE") return; } catch (error) { /* no selection */ }
     if (!latest || shouldKeepHistoricalSelection(latest)) return;

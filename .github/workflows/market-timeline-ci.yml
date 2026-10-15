@@ -1,0 +1,30 @@
+name: Market timeline contract and dashboard checks
+on:
+  pull_request:
+    paths:
+      - assets/js/market-timeline.js
+      - assets/js/top-dashboard.js
+      - assets/css/top-dashboard.css
+      - apps-script/MarketReportWebSync.gs
+      - index.html
+      - data/market-timelines/**
+      - scripts/reporting/build_market_timeline_archive.js
+      - tests/test_market_timeline.js
+      - .github/workflows/market-timeline-ci.yml
+permissions:
+  contents: read
+jobs:
+  market-timeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/js/market-timeline.js
+          node --check assets/js/top-dashboard.js
+          node --check scripts/reporting/build_market_timeline_archive.js
+      - name: Verify timeline contract and regressions
+        run: node --test tests/test_market_timeline.js

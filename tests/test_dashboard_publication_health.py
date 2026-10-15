@@ -15,7 +15,38 @@ class DashboardHealthTests(unittest.TestCase):
                          ("degraded", True, "REPORT_SOURCE_RECONSTRUCTED_UNVERIFIED"))
 
     def test_readback_source_retains_original_status(self):
-        self.assertEqual(sync.report_publication_health({"report_status":"DOC_READBACK_PASS"}), ("ok", False, ""))
+        with tempfile.TemporaryDirectory() as dirname:
+            self.assertEqual(sync.report_publication_health(
+                {"date":"2026-10-13", "time":"16:00", "report_status":"DOC_READBACK_PASS"},
+                Path(dirname)), ("ok", False, ""))
+
+    def test_later_held_canonical_slots_mark_dashboard_stale_without_promotion(self):
+        with tempfile.TemporaryDirectory() as dirname:
+            root = Path(dirname)
+            sync.dump_json(root / "2026-10-15_08-00.json", {
+                "date":"2026-10-15", "time":"08:00", "report_status":"SOURCE_ARCHIVED"})
+            sync.dump_json(root / "2026-10-15_16-00.json", {
+                "date":"2026-10-15", "time":"16:00", "report_status":"BLOCKED_SNAPSHOT_MISSING"})
+            report = {"date":"2026-10-13", "time":"16:00", "report_status":"PUBLISHED"}
+            self.assertTrue(sync.report_publication_health(report, root)[1])
+            path = root / "dashboard.json"
+            sync.dump_json(path, {"latestReport":{}, "currentReportKey":"", "status":"ok",
+                                  "isStale":False, "staleReason":""})
+            with patch.object(sync, "DASHBOARD", path), patch.object(sync, "REPORTS_DIR", root):
+                sync.sync_dashboard(report)
+            changed = sync.load_json(path, {})
+            self.assertEqual(changed["latestReport"], report)
+            self.assertEqual(changed["status"], "degraded")
+            self.assertIs(changed["isStale"], True)
+            self.assertTrue(changed["staleReason"].startswith("LATEST_PUBLICATION_LAGGING_HELD_SOURCES:"))
+
+    def test_newer_eligible_report_is_not_marked_stale_by_older_archives(self):
+        with tempfile.TemporaryDirectory() as dirname:
+            root = Path(dirname)
+            sync.dump_json(root / "2026-10-15_08-00.json", {
+                "date":"2026-10-15", "time":"08:00", "report_status":"SOURCE_ARCHIVED"})
+            report = {"date":"2026-10-16", "time":"08:00", "report_status":"DOC_READBACK_PASS"}
+            self.assertEqual(sync.report_publication_health(report, root), ("ok", False, ""))
 
     def test_sync_repairs_old_false_ok_without_changing_report(self):
         with tempfile.TemporaryDirectory() as dirname:
@@ -24,7 +55,7 @@ class DashboardHealthTests(unittest.TestCase):
             initial = {"latestReport":report,"currentReportKey":"2026-10-12_08-00",
                        "status":"ok","isStale":False,"staleReason":""}
             sync.dump_json(path, initial)
-            with patch.object(sync,"DASHBOARD",path):
+            with patch.object(sync,"DASHBOARD",path), patch.object(sync,"REPORTS_DIR",Path(dirname) / "empty-reports"):
                 sync.sync_dashboard(report)
                 changed = sync.load_json(path,{})
                 self.assertEqual(changed["latestReport"],report)
@@ -43,7 +74,7 @@ class DashboardHealthTests(unittest.TestCase):
             initial = {"latestReport":{},"currentReportKey":"","status":"partial",
                        "isStale":False,"staleReason":"MARKET_DATA_PARTIAL"}
             sync.dump_json(path, initial)
-            with patch.object(sync,"DASHBOARD",path):
+            with patch.object(sync,"DASHBOARD",path), patch.object(sync,"REPORTS_DIR",Path(dirname) / "empty-reports"):
                 sync.sync_dashboard(report)
                 changed = sync.load_json(path,{})
                 self.assertEqual(changed["status"],"partial")

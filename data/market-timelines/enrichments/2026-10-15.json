@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "market-timeline-enrichment/v1",
+  "date": "2026-10-15",
+  "evidenceStatus": "AFTER_ISSUANCE_AMENDMENT",
+  "amendmentDate": "2026/10/16",
+  "note": "Post-issuance normalization and retrospective corroboration. Patches apply only to exact saved-body hashes; they do not alter report bodies, issuance snapshots, receipts, or publication eligibility.",
+  "reports": [
+    {
+      "reportTime": "08:00",
+      "sourceBodyHash": "9f67575806603bbe6b71b75c0c9b64ec248dcb49ae0e16f62f3c37eb58fffeaa",
+      "patches": [
+        {
+          "eventIndex": 0,
+          "appendSources": [
+            "BLS 2026-10-14公式CPI発表 https://www.bls.gov/news.release/archives/cpi_10142026.htm"
+          ]
+        },
+        {
+          "eventIndex": 4,
+          "appendSources": [
+            "AP 2026-10-14米株引け https://apnews.com/article/224008b0bae0921d1e2867a4b1ecf511"
+          ]
+        }
+      ]
+    },
+    {
+      "reportTime": "12:00",
+      "sourceBodyHash": "f1fc4f6750476d156551d02f2b67868cfdd6657b8a1e006115f792a50087a63f",
+      "patches": [
+        {
+          "eventIndex": 0,
+          "values": {
+            "reaction": "08:45観測：大阪日経225先物12月限66,200円、前日清算値比-1,960円。",
+            "reactionObservedAt": "08:45"
+          }
+        },
+        {
+          "eventIndex": 1,
+          "values": {
+            "event": "米AI・半導体株安を受けた売り圧力のなか、東京現物市場が寄り付いた。",
+            "reaction": "09:00寄り付き：日経平均66,880.37円（前日比-863.92円）、TOPIX4,053.07（-43.71）。",
+            "reactionObservedAt": "09:00"
+          }
+        },
+        {
+          "eventIndex": 2,
+          "values": {
+            "event": "寄り後も日経平均が続落し、半導体など指数寄与度の高い銘柄への売りが続いた。",
+            "reaction": "09:13に日経平均65,590.87円、09:15に65,485.38円。前日比下げ幅は2,258.91円へ拡大し、TOPIXは4,016.20。",
+            "reactionObservedAt": "09:13–09:15"
+          }
+        },
+        {
+          "eventIndex": 3,
+          "values": {
+            "event": "前場中盤に半導体・AI関連株の売りが広がった。",
+            "reaction": "10:27頃、日経平均は前日比2,700円超安。原本に指数の正確な当該時刻値は記載なし。",
+            "reactionObservedAt": "10:27頃（原本記載）"
+          }
+        },
+        {
+          "eventIndex": 4,
+          "values": {
+            "event": "東京前場が大幅安で終了し、東証プライムにも下落が広がった。",
+            "reaction": "11:30日経平均64,489.06円（-4.81%）、TOPIX3,993.50（-2.52%）。11:31東証プライム値下がり1,007・値上がり509、33業種中24業種下落。11:36大阪先物64,600円（-5.22%）。",
+            "reactionObservedAt": "11:30–11:36"
+          }
+        }
+      ]
+    },
+    {
+      "reportTime": "16:00",
+      "sourceBodyHash": "2a0eebc9aafd01d4f2bbe8f8bf7b6196ea7aa5125e36124fcc20302c0268c4da",
+      "patches": [
+        {
+          "eventIndex": 0,
+          "values": {
+            "reactionObservedAt": "08:45"
+          }
+        },
+        {
+          "eventIndex": 1,
+          "values": {
+            "reactionObservedAt": "09:13–09:15"
+          }
+        },
+        {
+          "eventIndex": 2,
+          "values": {
+            "reaction": "原本は後場に下落幅が拡大したと記すが、12:30の独立約定値・観測値は記録なし。",
+            "reactionObservedAt": null
+          }
+        },
+        {
+          "eventIndex": 3,
+          "values": {
+            "reaction": "KOSPI下落が8%を超え、20分間の売買停止が発動。Yonhapは発動時刻を12:38 KSTと報道。日本株の同時刻反応を直接結びつける値は未確認。",
+            "occurredAt": "12:38 KST",
+            "timePrecision": "retrospective-cross-check",
+            "reactionObservedAt": "12:38 KST",
+            "timeLabel": "12:38 KST（日本時間と同じ）／後場中盤",
+            "meaning": "韓国市場で急落と売買停止が起きたことは、アジア半導体株の共通リスクを示す。ただし日本株の個別下落を韓国の値動きが引き起こしたとは判断できない。"
+          },
+          "appendSources": [
+            "後日照合：Yonhap 2026-10-15 12:40 KST（12:38 KST発動を記載） https://en.yna.co.kr/view/AEN20261015002800320"
+          ]
+        },
+        {
+          "eventIndex": 4,
+          "appendSources": [
+            "TSMC公式Q3 2026決算発表 https://investor.tsmc.com/japanese/encrypt/files/encrypt_file/reports/2026-10/526b65af7305df2dde6b9ece6812b1fdf1e49f9b/3Q26%20EarningsRelease.pdf"
+          ]
+        },
+        {
+          "eventIndex": 5,
+          "values": {
+            "reaction": "15:30の日経平均公式終値64,425.95円（前日比-3,318.34円、-4.90%）。東証プライム値下がり946・値上がり561・変わらず39。",
+            "reactionObservedAt": "15:30",
+            "event": "15:00時点の急落から戻りの質が焦点となるなか、東京現物市場が15:30に大引け。"
+          },
+          "appendSources": [
+            "後日照合：日経平均プロフィル公式日次サマリー https://indexes.nikkei.co.jp/nkave/archives/summary?dt=20261015&idx=nk225"
+          ]
+        }
+      ]
+    },
+    {
+      "reportTime": "21:00",
+      "sourceBodyHash": "194181bc5f21ca09a0ac8a78bb5ba0eb6e299cd700a311f16155be516f83d570",
+      "patches": [
+        {
+          "eventIndex": 1,
+          "appendSources": [
+            "Reuters記事（07:09 GMT観測、10/15） https://www.marketscreener.com/news/european-shares-fall-as-global-tech-rout-hits-risk-appetite-ce785dd3db88f026"
+          ]
+        },
+        {
+          "eventIndex": 3,
+          "values": {
+            "reactionObservedAt": "18:18頃（米10年債の参考観測。その他の資産は原本に時刻なし）"
+          }
+        },
+        {
+          "eventIndex": 4,
+          "values": {
+            "reaction": "大阪日経先物64,500円（20:06、15分遅延参考気配）、金先物4,178.60ドル・WTI93.94ドル（各20:11）、USD/JPY157.804円・EUR/USD1.12200・BTCUSD80,963.93ドル（各20:21）。一斉同時刻の値ではない。",
+            "reactionObservedAt": "20:06–20:21 JST（銘柄ごとに非同時刻）",
+            "event": "21:30の米国指標発表を前に、NY市場への引き継ぎ時点で株先物・商品・為替・暗号資産に異なる値動きが現れた。"
+          }
+        }
+      ]
+    }
+  ]
+}

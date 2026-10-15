@@ -3,11 +3,29 @@ on:
   pull_request:
     paths:
       - assets/js/report-publication-policy.js
+      - assets/js/market-timeline.js
       - assets/js/top-dashboard.js
+      - assets/js/latest-report-bootstrap.js
+      - assets/js/dashboard-freeze-guard.js
+      - assets/css/top-dashboard.css
       - assets/js/report-core-v3.js
       - index.html
       - report.html
+      - apps-script/MarketReportWebSync.gs
+      - data/market-timelines/**
+      - scripts/reporting/build_market_timeline_archive.js
       - tests/test_report_publication_policy.js
+      - tests/test_market_timeline.js
+      - scripts/reporting/market_timeline.py
+      - scripts/sync_reports_from_drive.py
+      - scripts/sync_latest_report_publication.py
+      - tests/test_dashboard_publication_health.py
+      - tests/test_market_timeline_ingestion.py
+      - tests/test_report_contract.py
+      - tests/test_scheduled_report_delivery.py
+      - scripts/verify_scheduled_report_delivery.py
+      - .github/workflows/check-scheduled-report-delivery.yml
+      - .github/workflows/publish-saved-google-docs-reports.yml
       - .github/workflows/report-publication-policy-ci.yml
 permissions:
   contents: read
@@ -19,5 +37,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Verify public report projection eligibility
         run: node tests/test_report_publication_policy.js
+      - name: Verify timeline contracts and dashboard regressions
+        run: |
+          node --check assets/js/market-timeline.js
+          node --check assets/js/top-dashboard.js
+          node --check scripts/reporting/build_market_timeline_archive.js
+          node --test tests/test_market_timeline.js
+      - name: Verify held-source health, timeline ingestion, and report contract
+        run: python -m unittest tests.test_dashboard_publication_health tests.test_market_timeline_ingestion tests.test_report_contract tests.test_scheduled_report_delivery -v

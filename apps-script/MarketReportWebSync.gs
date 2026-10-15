@@ -748,6 +748,12 @@ function validateWebReportObject_(report) {
     throw new Error('time は HH:MM 形式にしてください。');
   }
 
+  if (report.timeline !== undefined && report.timeline !== null) {
+    validateMarketTimelineBinding_(report, report.timeline);
+  } else if (report.date >= '2026-10-16' && ['08:00', '12:00', '16:00', '21:00'].indexOf(report.time) >= 0) {
+    throw new Error('新規レポートに本文・時刻・版・証拠情報と結び付いたtimelineがありません。');
+  }
+
   const required = ['金', '原油', '日経225先物', 'USD/JPY', 'EUR/USD', 'BTCUSD'];
   const names = (report.markets || []).map(item => item && item.name).filter(Boolean);
   const missing = required.filter(name => !names.includes(name));
@@ -867,15 +873,165 @@ function buildWebReportFromGoogleDoc_(file) {
       updatedAt: file.getLastUpdated().toISOString()
     },
     structuredFromFullText: true,
-    structureVersion: 7,
+    structureVersion: 8,
     revision: String(file.getLastUpdated().getTime())
   };
 
+  report.timeline = buildMarketTimeline_(text, report);
   if ((!report.riskManagement || !report.riskManagement.length) && report.breakConditions) {
     report.riskManagement = [report.breakConditions];
   }
   enrichSparseReport_(report, text);
   return validateWebReportObject_(report);
+}
+
+function buildMarketTimeline_(text, report) {
+  const slot = String(report.time || '');
+  const titlePatterns = {
+    '08:00': /昨夜NY市場の時系列|NY市場の時系列/,
+    '12:00': /東京前場の時系列|東京市場.*前場.*時系列|前場の時系列/,
+    '16:00': /東京市場の時系列/,
+    '21:00': /欧州市場.*時系列|欧州.*時系列.*反応/
+  };
+  const pattern = titlePatterns[slot];
+  if (!pattern) return null;
+  const lines = String(text || '').replace(/\r/g, '').split('\n');
+  const headingIndex = lines.findIndex(line => pattern.test(line));
+  const bodyHash = marketReportSha256_(Utilities.newBlob(String(text || ''), 'text/plain').getBytes());
+  const timeline = {
+    schemaVersion: 'market-timeline/v1',
+    reportId: report.date + '_' + slot.replace(':', '-'),
+    reportDate: report.date,
+    reportTime: slot,
+    reportRevision: report.revision || 1,
+    sourceBodyHash: bodyHash,
+    evidenceStatus: 'SAVED_SOURCE_BODY',
+    amendmentDate: null,
+    publicationStatus: report.report_status || 'SOURCE_DOCUMENT_PENDING',
+    sourceDocumentId: report.sourceDocument && report.sourceDocument.id || null,
+    sourceDocumentRevision: report.sourceDocument && report.sourceDocument.updatedAt || null,
+    events: []
+  };
+  if (headingIndex < 0) return timeline;
+
+  const section = [];
+  for (let index = headingIndex + 1; index < lines.length; index += 1) {
+    if (/^\s*\d{1,2}[.．、]/.test(lines[index])) break;
+    section.push(lines[index]);
+  }
+  const amendment = [lines[headingIndex], ...section].join('\n').match(/改訂追補[：:]?\s*(\d{4}[\/.-]\d{1,2}[\/.-]\d{1,2})|(\d{4}[\/.-]\d{1,2}[\/.-]\d{1,2})改訂追補/);
+  if (amendment) {
+    timeline.evidenceStatus = 'AFTER_ISSUANCE_AMENDMENT';
+    timeline.amendmentDate = (amendment[1] || amendment[2]).replace(/[.-]/g, '/');
+  }
+  section.forEach(line => {
+    const event = parseMarketTimelineLine_(line, slot);
+    if (event) timeline.events.push(event);
+  });
+  return timeline;
+}
+
+function parseMarketTimelineLine_(line, slot) {
+  const value = String(line || '').replace(/\s+/g, ' ').trim();
+  if (!value || /改訂追補|この時系列は|以下は.*時系列|まとめ：|結論：/.test(value)) return null;
+  if (/未発表|発表予定|発表前/.test(value) && !/発表された|発表後/.test(value)) return null;
+  const eventAt = value.indexOf('出来事：');
+  const reactionAt = value.indexOf('反応：');
+  const meaningAt = value.indexOf('意味：');
+  if (eventAt < 0 || reactionAt < 0 || meaningAt < 0) return null;
+
+  const labels = [
+    { name: '出来事', marker: '出来事：', at: eventAt },
+    { name: '反応', marker: '反応：', at: reactionAt },
+    { name: '意味', marker: '意味：', at: meaningAt },
+    { name: '出典', marker: '出典：', at: value.indexOf('出典：') },
+    { name: '次の注目点', marker: '次の注目点：', at: value.indexOf('次の注目点：') },
+    { name: '次', marker: '次は', at: value.indexOf('次は') }
+  ].filter(item => item.at >= 0).sort((left, right) => left.at - right.at);
+  const field = name => {
+    const index = labels.findIndex(item => item.name === name);
+    if (index < 0) return '';
+    const current = labels[index];
+    const end = labels[index + 1] ? labels[index + 1].at : value.length;
+    return value.substring(current.at + current.marker.length, end).replace(/[。；;]$/, '').trim();
+  };
+  const prefix = value.substring(0, eventAt).replace(/[｜|／/]$/, '').trim();
+  const phase = marketTimelinePhase_(slot, prefix);
+  if (!phase) return null;
+  const reaction = field('反応');
+  const occurredAt = marketTimelineTimestamp_(prefix);
+  const source = field('出典');
+  return {
+    phase,
+    timeLabel: prefix || '時刻記載なし',
+    occurredAt,
+    timePrecision: occurredAt ? 'source-stated' : 'time-not-recorded',
+    reactionObservedAt: marketTimelineTimestamp_(reaction),
+    event: field('出来事'),
+    reaction,
+    meaning: field('意味'),
+    nextWatch: field('次の注目点') || field('次'),
+    sources: source ? [source] : []
+  };
+}
+
+function marketTimelinePhase_(slot, label) {
+  const value = String(label || '');
+  if (slot === '08:00') {
+    if (/NY開場前/.test(value)) return 'NY開場前';
+    if (/寄り付き/.test(value)) return '寄り付き';
+    if (/序盤/.test(value)) return '序盤';
+    if (/中盤/.test(value)) return '中盤';
+    if (/終盤|引け/.test(value) && !/東京/.test(value)) return '終盤・引け';
+    if (/東京/.test(value)) return '東京への引き継ぎ';
+  }
+  if (slot === '12:00') {
+    if (/寄り付き前/.test(value)) return '寄り付き前';
+    if (/寄り付き/.test(value)) return '寄り付き';
+    if (/序盤/.test(value)) return '前場序盤';
+    if (/中盤/.test(value)) return '中盤';
+    if (/前引け/.test(value)) return '前引け';
+  }
+  if (slot === '16:00') {
+    if ((/午前|前場/.test(value) && /振り返|前引け|序盤|寄り付き/.test(value)) || /寄り付き前/.test(value)) return '午前の振り返り';
+    if (/後場開始|後場序盤|後場.*再開/.test(value)) return '後場開始';
+    if (/後場中盤/.test(value)) return '後場中盤';
+    if (/大引け/.test(value)) return '大引け';
+    if (/欧州/.test(value)) return '欧州への引き継ぎ';
+  }
+  if (slot === '21:00') {
+    if (/欧州開場前/.test(value)) return '欧州開場前';
+    if (/欧州寄り付き|寄り付き/.test(value)) return '寄り付き';
+    if (/欧州序盤|序盤/.test(value)) return '序盤';
+    if (/欧州中盤|中盤/.test(value)) return '中盤';
+    if (/NY開場前|NYへの引き継ぎ/.test(value)) return 'NYへの引き継ぎ';
+  }
+  return '';
+}
+
+function marketTimelineTimestamp_(text) {
+  const match = String(text || '').replace(/\s+/g, ' ').match(/(?:\d{1,2}[/-]\d{1,2}\s*)?\d{1,2}[:：]\d{2}(?:\s*[–—~〜-]\s*\d{1,2}[:：]\d{2})?(?:\s*JST)?/);
+  return match ? match[0].trim() : null;
+}
+
+function validateMarketTimelineBinding_(report, timeline) {
+  const expectedId = report.date + '_' + String(report.time || '').replace(':', '-');
+  const expectedHash = marketReportSha256_(Utilities.newBlob(String(report.fullText || ''), 'text/plain').getBytes());
+  if (timeline.schemaVersion !== 'market-timeline/v1' || timeline.reportId !== expectedId || timeline.reportDate !== report.date || timeline.reportTime !== report.time) {
+    throw new Error('timelineのレポート日付・時刻・IDが本文と一致しません。');
+  }
+  if (String(timeline.reportRevision || '') !== String(report.revision || 1) || timeline.sourceBodyHash !== expectedHash) {
+    throw new Error('timelineの版または本文ハッシュが一致しません。');
+  }
+  if (!Array.isArray(timeline.events)) throw new Error('timeline.eventsは配列にしてください。');
+  if (report.date >= '2026-10-16' && timeline.events.length === 0) {
+    throw new Error('新規レポートに確認可能な時系列イベントがありません。');
+  }
+  if (report.date >= '2026-10-16' && timeline.events.some(event =>
+    !event || !event.event || !event.reaction || !event.meaning || !event.nextWatch ||
+    !Array.isArray(event.sources) || !event.sources.length || !event.timeLabel || !event.timePrecision)) {
+    throw new Error('新規レポートtimelineに出来事・反応・意味・次の注目点・時刻・出典が揃っていません。');
+  }
 }
 
 function buildLegacyWebReportFromGoogleDoc_(file, parseError) {

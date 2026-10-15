@@ -149,6 +149,10 @@ def build_report(session, date: str, slot: str, item: dict) -> dict:
     }
     validate_saved_body(result)
     validate_sop_body(result)
+    from reporting.market_timeline import parse_saved_timeline
+    timeline = parse_saved_timeline(result)
+    if timeline:
+        result["timeline"] = timeline
     return result
 
 
@@ -221,7 +225,7 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                 # only move forward after exact readback plus contemporaneous
                 # snapshot evidence is independently verified.
                 from reporting.publication_evidence import is_canonical_document
-                if (canonical.get("report_status") == "SOURCE_ARCHIVED" and
+                if (canonical.get("report_status") in {"SOURCE_ARCHIVED", "BLOCKED_SNAPSHOT_MISSING"} and
                         is_canonical_document(anchored, canonical_id)):
                     try:
                         rebuilt = build_report(session, *key, anchored[0])
@@ -239,10 +243,15 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                         print(f"PUBLICATION_HELD: {key[0]} {key[1]}: {hold}")
                         continue
                     promoted = dict(canonical)
+                    if rebuilt.get("timeline"):
+                        promoted["timeline"] = rebuilt["timeline"]
                     promoted["report_status"] = "DOC_READBACK_PASS"
                     promoted["publicationEvidence"] = {k: receipt[k] for k in (
                         "evidenceId", "snapshotId", "contextHash", "snapshotHash", "bodyHash", "documentRevisionId"
                     )}
+                    if promoted.get("timeline"):
+                        from reporting.market_timeline import parse_saved_timeline
+                        promoted["timeline"] = parse_saved_timeline(promoted)
                     receipt_path = root / "publication-receipts" / f"{key[0]}_{key[1].replace(':','-')}.json"
                     if receipt_path.exists() and read_json(receipt_path) != receipt:
                         print(f"PUBLICATION_RECEIPT_CONFLICT: {key}; canonical remains archived")
@@ -272,6 +281,9 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                 new_report["publicationEvidence"] = {k: receipt[k] for k in (
                     "evidenceId", "snapshotId", "contextHash", "snapshotHash", "bodyHash", "documentRevisionId"
                 )}
+                if new_report.get("timeline"):
+                    from reporting.market_timeline import parse_saved_timeline
+                    new_report["timeline"] = parse_saved_timeline(new_report)
             else:
                 print(f"PUBLICATION_HELD: {key[0]} {key[1]}: {hold}")
             to_write[key] = (new_report, receipt)
@@ -300,6 +312,8 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
             "folder_access": folder_access,
         }, ensure_ascii=False))
         if not apply or (not to_write and not to_promote):
+            if not to_write and not to_promote:
+                print("NO_NEW_ELIGIBLE_REPORTS: existing canonical sources remain archived/blocked; no publication change.")
             return
         # Stage append-only canonical files. No overwrite, no older latest.
         for key, (report, receipt) in sorted(to_write.items()):
