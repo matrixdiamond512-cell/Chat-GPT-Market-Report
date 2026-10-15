@@ -1,0 +1,330 @@
+{
+  "status": "DRY_RUN_COMPLETE",
+  "mode": "read_only_historical_asof",
+  "targetAsOf": "2026-10-13T07:00:00+00:00",
+  "row": 27,
+  "duplicateDateRows": 1,
+  "duplicateCheck": "PASS",
+  "classifications": {
+    "MATCH": 0,
+    "VALUE_CONFLICT": 0,
+    "DEFINITION_PENDING": 2,
+    "UNAVAILABLE_AS_OF": 26,
+    "FORMULA_PROTECTED": 0,
+    "NO_ELIGIBLE_WRITE": 0
+  },
+  "items": [
+    {
+      "symbol": "dow",
+      "label": "NYダウ",
+      "unit": "pt",
+      "header": "Dow終値",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "market_close_time_unproven",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "nasdaq",
+      "label": "NASDAQ総合",
+      "unit": "pt",
+      "header": "Nasdaq終値",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "market_close_time_unproven",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "sp500",
+      "label": "S&P500",
+      "unit": "pt",
+      "header": "S&P500終値",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "market_close_time_unproven",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "russell2000",
+      "label": "Russell 2000",
+      "unit": "pt",
+      "header": "Russell 2000終値",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "market_close_time_unproven",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "nikkei225_cash",
+      "label": "日経225現物",
+      "unit": "円",
+      "header": "日経225終値",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "no_value",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "nikkei225_futures_cme_yen",
+      "label": "CME日経225先物・円建て",
+      "unit": "円",
+      "header": null,
+      "status": "DEFINITION_PENDING",
+      "reason": "no matching close-list column",
+      "existingValue": null,
+      "proposedValue": null
+    },
+    {
+      "symbol": "nikkei225_futures_cme_usd",
+      "label": "CME日経225先物・ドル建て",
+      "unit": "円",
+      "header": null,
+      "status": "DEFINITION_PENDING",
+      "reason": "no matching close-list column",
+      "existingValue": null,
+      "proposedValue": null
+    },
+    {
+      "symbol": "nikkei225_futures_ose",
+      "label": "日経225先物（大阪取引所）",
+      "unit": "円",
+      "header": "日経225先物大阪終値",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "market_close_time_unproven",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "usdjpy",
+      "label": "USD/JPY",
+      "unit": "円",
+      "header": "USDJPY終値",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "market_close_time_unproven",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "eurusd",
+      "label": "EUR/USD",
+      "unit": "USD",
+      "header": "EURUSD終値",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "market_close_time_unproven",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "gold",
+      "label": "COMEX金先物",
+      "unit": "USD/oz",
+      "header": "ゴールド終値",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "market_close_time_unproven",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "wti",
+      "label": "WTI原油",
+      "unit": "USD/bbl",
+      "header": "WTI原油終値",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "market_close_time_unproven",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "btcusd",
+      "label": "BTCUSD",
+      "unit": "USD",
+      "header": "BTCUSD終値",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "market_close_time_unproven",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "vix",
+      "label": "VIX",
+      "unit": "pt",
+      "header": "VIX終値",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "market_close_time_unproven",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "nikkei_vi",
+      "label": "日経VI",
+      "unit": "pt",
+      "header": "日経VI終値",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "no_value",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "fear_greed",
+      "label": "Fear & Greed Index",
+      "unit": "score",
+      "header": "FearGreed終値",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "no_value",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "us10y",
+      "label": "米10年債利回り",
+      "unit": "%",
+      "header": "米10年債利回り",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "market_close_time_unproven",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "jp10y",
+      "label": "日本10年国債利回り",
+      "unit": "%",
+      "header": "日本10年債利回り",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "market_close_time_unproven",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "nikkei225_per",
+      "label": "日経225予想PER",
+      "unit": "倍",
+      "header": "日経225予想PER",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "no_value",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "nikkei225_pbr",
+      "label": "日経225 PBR",
+      "unit": "倍",
+      "header": "日経225予想PBR",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "no_value",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "nikkei225_eps",
+      "label": "日経225予想EPS",
+      "unit": "円",
+      "header": "日経225予想EPS",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "no_value",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "nikkei225_dev25",
+      "label": "日経225 25日移動平均乖離率",
+      "unit": "%",
+      "header": "日経225_25日乖離率",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "no_value",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "nikkei225_dev200",
+      "label": "日経225 200日移動平均乖離率",
+      "unit": "%",
+      "header": "日経225_200日乖離率",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "no_value",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "tse_prime_turnover",
+      "label": "東証プライム売買代金",
+      "unit": "兆円",
+      "header": "東証プライム売買代金",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "no_value",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "tse_prime_volume",
+      "label": "東証プライム売買高",
+      "unit": "百万株",
+      "header": "東証プライム売買高",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "no_value",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "tse_prime_advancers",
+      "label": "東証プライム値上がり銘柄数",
+      "unit": "銘柄",
+      "header": "東証プライム値上がり銘柄数",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "no_value",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "tse_prime_decliners",
+      "label": "東証プライム値下がり銘柄数",
+      "unit": "銘柄",
+      "header": "東証プライム値下がり銘柄数",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "no_value",
+      "existingValue": "",
+      "proposedValue": null
+    },
+    {
+      "symbol": "tse_prime_ad_ratio25",
+      "label": "東証プライム25日騰落レシオ",
+      "unit": "%",
+      "header": "東証プライム騰落レシオ",
+      "status": "UNAVAILABLE_AS_OF",
+      "reason": "no_value",
+      "existingValue": "",
+      "proposedValue": null
+    }
+  ],
+  "productionWriteCalls": 0,
+  "insertedRows": 0,
+  "auditLogWrites": 0,
+  "formattingChanges": 0,
+  "productionEligible": false,
+  "spreadsheetId": "1n2ACInX4pmK0TdijC8xaur2RIiNZyVa6GFTZAyofcuE",
+  "targetDate": "2026-10-13",
+  "existingRowFound": true,
+  "productionSnapshotBefore": {
+    "sheetId": 1589411552,
+    "row": 27,
+    "columnCount": 186,
+    "conditionalFormatRules": 23
+  },
+  "existingNonemptyUnmapped": {
+    "USDJPY前日比": "0.28",
+    "USDJPY騰落率": "0.33",
+    "USDJPY始値（Investing.com）": "158.56",
+    "USDJPY高値（Investing.com）": "158.62",
+    "USDJPY安値（Investing.com）": "158.54",
+    "USDJPY終値（Investing.com）": "158.58",
+    "USDJPY価格取得元": "Yahoo Finance USD/JPY日足OHLC（Investing.com取得失敗時の予備）",
+    "USDJPY価格取得日時": "2026-10-13T07:28:10+09:00"
+  },
+  "sourceSnapshotId": "asof-8fb93c8c729be84e0fab17be",
+  "postReadback": {
+    "dataUnchanged": true,
+    "structureUnchanged": true,
+    "duplicateDateRows": 1,
+    "conditionalFormatRules": 23,
+    "productionWriteCallsObserved": 0
+  }
+}

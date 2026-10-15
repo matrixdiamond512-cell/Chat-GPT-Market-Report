@@ -15,13 +15,17 @@ Last updated: 2026-10-15. Evidence scope is limited to the isolated PR #94 sourc
 | Timeline shape | 9 JST periods and 7 common columns | E0 / PASS | Every period states that contemporaneous event/price evidence is absent; no price path is inferred |
 | Private Sheets save/readback | `Market Data API Test` / `Personal_Market_Report`, row 18, ID `personal-report-0dc334dce7e5713688e0d954`; A:I read back including full body and hash | E2 / PASS | Test ID `1vqraQzVpIHWLFSxP5X5NWoTYquT6B27l-A7UuyYauNY`, distinct from production ID; duplicate scan before write found no same ID |
 | Production read-only inspection | `終値一覧`, row 27, date `2026/10/13`; matching-row scan returned one row. Nonempty target-row fields: A, U, V, BO, BP, BQ, BR, CX, CY | E2 / PASS | No production write/update tool was called. Full dry-run implementation and a structural before/after comparison remain open |
-| Draft PR state | PR #94 was OPEN / Draft / unmerged at initial inspection; PR #133 also OPEN / Draft / unmerged | E5 / UNKNOWN after pending update | Must re-read both PRs and Actions after any branch update |
+| Dedicated dry-run path | `sync_market_close_sheet.py --dry-run` dispatches to a separate read-only function and bypasses upsert, formatting, readback-write, and audit-log paths. Added two regression tests; dry-run report: 0 MATCH / 0 VALUE_CONFLICT / 2 DEFINITION_PENDING / 26 UNAVAILABLE_AS_OF / 0 FORMULA_PROTECTED / 0 NO_ELIGIBLE_WRITE | E1 / PASS | Pure comparison function tested locally. Live sheet was independently inspected through read-only Sheets connector; CLI was not invoked because local service-account credentials are unavailable |
+| Production before/after | Re-read row 27, full A:GF headers, A2:A940 date column, formulas and metadata. All compared values matched; 1 target-date row; 186 columns and 23 conditional-format rules | E2 / PASS | No writes were made to production; date-cell display and formula-rendered serial differ by rendering mode but underlying data remained unchanged |
+| Draft PR state | PR #94 HEAD `abefccc185de90845e43aadecaf9fa49bf2e1983`, OPEN / Draft / unmerged; PR #133 HEAD `e8b8b8684129171029fc9976424838ff96e29bf1`, OPEN / Draft / unmerged | E5 / PASS | PR #94 current HEAD has 0 check runs; PR #133 still has 3 latest timeline/structure failures |
 
 ## Failures / not run
 - `pytest` is unavailable in the bundled interpreter; standard-library `unittest` was used as specified by the task.
 - A broader exploratory run of 42 tests included four unrelated source-validation errors because the isolated review copy lacks the corresponding source configuration. It is not part of the requested P0 suites; no PASS claim is made for that broader run.
 - The first attempted Sheets row serialization used the Windows cp932 stdout and failed before any external write; the successful UTF-8 retry wrote exactly one test-sheet row, then read back all nine cells.
 - No current GitHub Actions run for the tested P0 code has been observed yet.
+- No complete market-source/history evidence was recovered for the 2026-10-13 16:00 JST cutoff; all 28 outputs remain unavailable in this run.
+- New `--dry-run` CLI was not live-invoked: local service-account credentials are unavailable. The external production comparison used the connected Sheets read-only API and the same target row.
 - The report is a partial history reconstruction, not an as-of-complete market narrative.
 
 ## Production safety

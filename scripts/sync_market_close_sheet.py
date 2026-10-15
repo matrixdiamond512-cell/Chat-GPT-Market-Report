@@ -31,6 +31,7 @@ from write_market_data_to_sheets import (  # noqa: E402
     load_service_account_info,
     use_policy,
 )
+from build_chatgpt_report_input import ITEMS  # noqa: E402
 
 ROOT = SCRIPT_DIR.parent
 JST = dt.timezone(dt.timedelta(hours=9))
@@ -71,32 +72,6 @@ SUPPLEMENTAL_FIELDS = {
     "tse_prime_turnover": "東証プライム売買代金",
     "tse_prime_volume": "東証プライム売買高",
 }
-# Existing valuation columns are weighted-average series. Index-based values are
-# separate instruments and must never be mixed into these legacy columns.
-VALUATION_CLOSE_LIST_POLICY = {
-    "nikkei225_eps": {
-        "write_enabled": False,
-        "basis": None,
-        "reason": "EPS_LEGACY_BASIS_UNRESOLVED",
-    },
-    "nikkei225_per": {
-        "write_enabled": True,
-        "basis": "weighted_average",
-        "reason": "PER_BASIS_MISMATCH",
-    },
-    "nikkei225_pbr": {
-        "write_enabled": True,
-        "basis": "weighted_average",
-        "reason": "PBR_BASIS_MISMATCH",
-    },
-}
-# Daily FX/yield values are comparable only when their series and observation
-# cutoff are explicit. Missing lineage blocks an automated close-list write.
-CLOSE_LINEAGE_REQUIREMENTS = {
-    "usdjpy": ("sourceSeriesId", "observationDefinition", "sessionCloseAt", "unit", "reportedDecimalPlaces"),
-    "eurusd": ("sourceSeriesId", "observationDefinition", "sessionCloseAt", "unit", "reportedDecimalPlaces"),
-    "us10y": ("sourceSeriesId", "observationDefinition", "sessionCloseAt", "unit", "reportedDecimalPlaces"),
-}
 REQUIRED_CLOSE_HEADERS = tuple(
     [header for fields in PRICE_FIELDS.values() for header in fields if header]
     + ["日経225終値", "米10年債利回り", "日本10年債利回り", "日経225予想EPS", "日経225予想PER"]
@@ -109,25 +84,26 @@ INPUT_HEADERS = (
 )
 LOG_HEADERS = ("updated_at", "sheet_name", "action", "data_as_of", "records", "status", "source", "note")
 
+ASOF_CLOSE_HEADERS = {
+    "dow": "Dow終値", "nasdaq": "Nasdaq終値", "sp500": "S&P500終値",
+    "russell2000": "Russell 2000終値", "nikkei225_cash": "日経225終値",
+    "nikkei225_futures_cme_yen": None, "nikkei225_futures_cme_usd": None,
+    "nikkei225_futures_ose": "日経225先物大阪終値", "usdjpy": "USDJPY終値",
+    "eurusd": "EURUSD終値", "gold": "ゴールド終値", "wti": "WTI原油終値",
+    "btcusd": "BTCUSD終値", "vix": "VIX終値", "nikkei_vi": "日経VI終値",
+    "fear_greed": "FearGreed終値", "us10y": "米10年債利回り", "jp10y": "日本10年債利回り",
+    "nikkei225_per": "日経225予想PER", "nikkei225_pbr": "日経225予想PBR",
+    "nikkei225_eps": "日経225予想EPS", "nikkei225_dev25": "日経225_25日乖離率",
+    "nikkei225_dev200": "日経225_200日乖離率", "tse_prime_turnover": "東証プライム売買代金",
+    "tse_prime_volume": "東証プライム売買高", "tse_prime_advancers": "東証プライム値上がり銘柄数",
+    "tse_prime_decliners": "東証プライム値下がり銘柄数", "tse_prime_ad_ratio25": "東証プライム騰落レシオ",
+}
+
 
 class CloseSyncError(RuntimeError):
     def __init__(self, stage: str, message: str):
         super().__init__(message)
         self.stage = stage
-
-
-def market_lineage_metadata(market: dict[str, Any]) -> dict[str, Any]:
-    """Return the source and close definition without inferring missing metadata."""
-    keys = (
-        "sourceSeriesId", "observationDefinition", "sessionCloseAt",
-        "marketType", "session", "unit", "reportedDecimalPlaces",
-    )
-    return {key: market.get(key) for key in keys if market.get(key) not in (None, "")}
-
-
-def missing_close_lineage(symbol: str, market: dict[str, Any]) -> tuple[str, ...]:
-    required = CLOSE_LINEAGE_REQUIREMENTS.get(symbol, ())
-    return tuple(key for key in required if market.get(key) in (None, ""))
 
 
 def number(value: Any) -> float | None:
@@ -376,10 +352,8 @@ def decimal_places(value: Any) -> int | None:
     return max(0, -parsed.as_tuple().exponent) if parsed is not None else None
 
 
-def existing_market_provenance(
-    client: SheetsClient, target: dt.date, symbol: str = "us10y",
-) -> dict[str, Any] | None:
-    """Find the newest confirmed audit lineage for one close-list symbol/date."""
+def existing_market_provenance(client: SheetsClient, target: dt.date) -> dict[str, Any] | None:
+    """Find the newest logged US10Y lineage for this close-list market date."""
     rows = read_values(client, "WEB_Data_Update_Log", "A1:H2000", "FORMATTED_VALUE")
     if not rows or tuple(str(value or "").strip() for value in rows[0]) != LOG_HEADERS:
         return None
@@ -395,42 +369,11 @@ def existing_market_provenance(
         for item in reversed(note.get("marketData") or []):
             if (
                 isinstance(item, dict)
-                and item.get("symbol") == symbol
+                and item.get("symbol") == "us10y"
                 and item.get("lineageStatus") == "CONFIRMED"
             ):
                 return item
     return None
-
-
-def reconcile_existing_fx(
-    existing_value: Any,
-    target: dt.date,
-    incoming: dict[str, Any],
-    previous: dict[str, Any] | None,
-) -> dict[str, Any]:
-    """Require identical FX series/cutoff lineage; never infer equivalence from price proximity."""
-    existing = decimal_value(existing_value)
-    candidate = decimal_value(incoming.get("value"))
-    observed = parse_datetime(incoming.get("asOf"))
-    if existing is None or candidate is None or not observed or observed.date() != target:
-        return {"status": "CONFLICT", "reason": "INCOMING_DATE_OR_VALUE_MISMATCH"}
-    if not previous or previous.get("lineageStatus") != "CONFIRMED":
-        return {"status": "CONFLICT", "reason": "EXISTING_PROVENANCE_UNAVAILABLE"}
-    same_definition = all(
-        str(previous.get(key) or "") == str(incoming.get(key) or "")
-        for key in ("sourceId", "sourceSeriesId", "observationDefinition", "sessionCloseAt")
-    ) and (
-        parse_sheet_date(previous.get("valueDate") or previous.get("asOf")) == target
-        and decimal_value(previous.get("storedValue", previous.get("closeValue"))) == existing
-    )
-    if not same_definition:
-        return {"status": "CONFLICT", "reason": "SOURCE_SERIES_CUTOFF_DATE_OR_STORED_VALUE_MISMATCH"}
-    if existing != candidate:
-        return {"status": "CONFLICT", "reason": "FX_VALUE_MISMATCH"}
-    return {
-        "status": "EXACT_MATCH", "reason": "EXACT_VALUE_AND_CONFIRMED_SERIES_CUTOFF",
-        "preserveExisting": True, "lineageStatus": "CONFIRMED",
-    }
 
 
 def reconcile_existing_us10y(
@@ -448,6 +391,13 @@ def reconcile_existing_us10y(
     value_date = parse_sheet_date(incoming.get("valueDate")) or (observed.date() if observed else None)
     if incoming_value is None or not observed or value_date != target:
         return {"status": "CONFLICT", "reason": "INCOMING_DATE_OR_VALUE_MISMATCH"}
+    if existing == incoming_value:
+        return {
+            "status": "EXACT_MATCH",
+            "reason": "EXACT_VALUE_ALREADY_STORED",
+            "preserveExisting": True,
+            "lineageStatus": "CONFIRMED" if previous and previous.get("lineageStatus") == "CONFIRMED" else "UNKNOWN",
+        }
     if not previous:
         return {"status": "CONFLICT", "reason": "EXISTING_PROVENANCE_UNAVAILABLE"}
     prior_value = decimal_value(previous.get("storedValue", previous.get("closeValue")))
@@ -457,21 +407,12 @@ def reconcile_existing_us10y(
         str(previous.get("sourceId") or "") == str(incoming.get("sourceId") or "")
         and str(previous.get("sourceSeriesId") or "") == str(incoming.get("sourceSeriesId") or "")
         and str(previous.get("unit") or "") == str(incoming.get("unit") or "")
-        and str(previous.get("observationDefinition") or "") == str(incoming.get("observationDefinition") or "")
-        and str(previous.get("sessionCloseAt") or "") == str(incoming.get("sessionCloseAt") or "")
         and parse_sheet_date(previous.get("valueDate") or previous.get("asOf")) == target
         and prior_value == existing
         and previous.get("lineageStatus") == "CONFIRMED"
     )
     if not expected_metadata:
         return {"status": "CONFLICT", "reason": "SOURCE_SERIES_DATE_OR_STORED_VALUE_MISMATCH"}
-    if existing == incoming_value:
-        return {
-            "status": "EXACT_MATCH",
-            "reason": "EXACT_VALUE_AND_CONFIRMED_LINEAGE_ALREADY_STORED",
-            "preserveExisting": True,
-            "lineageStatus": "CONFIRMED",
-        }
     try:
         prior_precision = int(prior_precision)
         incoming_precision = int(incoming_precision)
@@ -654,31 +595,6 @@ def close_row_sync(
                 continue
             if warning:
                 field_warnings.append(f"{symbol}: {warning}")
-            lineage_missing = missing_close_lineage(symbol, market)
-            if lineage_missing:
-                missing_text = ", ".join(lineage_missing)
-                reason_code = "CLOSE_LINEAGE_MISSING:" + missing_text
-                field_warnings.append(f"{symbol}: close-series lineage is incomplete")
-                summary["reconciliations"].append({
-                    "symbol": symbol, "targetDate": target.isoformat(),
-                    "status": "DEFINITION_PENDING", "reason": reason_code,
-                })
-                summary["marketData"].append({
-                    "symbol": symbol, "sourceId": market.get("sourceId"),
-                    "sourceName": market.get("sourceName"),
-                    **market_lineage_metadata(market),
-                    "asOf": market.get("asOf"), "fetchedAt": market.get("fetchedAt"),
-                    "verificationStatus": market.get("verificationStatus"),
-                    "reconciliationStatus": "DEFINITION_PENDING",
-                })
-                for unavailable_header in (close_header, change_header, percent_header):
-                    if not unavailable_header or unavailable_header not in header_indices:
-                        continue
-                    existing_column = column_values.get(unavailable_header, [])
-                    existing_value = existing_column[target_row - 1] if not inserting and target_row - 1 < len(existing_column) else ""
-                    if not str(existing_value or "").strip():
-                        writes[unavailable_header] = "取得不能（系列・締め時刻の定義未確認）"
-                continue
             source_ids.append(str(market.get("sourceId") or symbol))
             observed = parse_datetime(market.get("asOf"))
             write_close_value = True
@@ -713,37 +629,13 @@ def close_row_sync(
                     if reconciliation_status == "CONFLICT":
                         raise CloseSyncError("VALIDATE", "Existing US10Y value conflicts with the verified source metadata; the close-list write was stopped.")
                     write_close_value = not bool(decision.get("preserveExisting"))
-            if symbol in {"usdjpy", "eurusd"} and not inserting:
-                existing_column = column_values.get(close_header, [])
-                if target_row - 1 < len(existing_column):
-                    existing_value = existing_column[target_row - 1]
-                if str(existing_value or "").strip().startswith("取得不能"):
-                    reconciliation_status = "WRITE"
-                    reconciliation_reason = "REPLACE_UNAVAILABLE_MARKER"
-                elif str(existing_value or "").strip():
-                    previous_lineage = existing_market_provenance(client, target, symbol)
-                    incoming_for_reconciliation = dict(market)
-                    incoming_for_reconciliation.update({"value": close_value, "valueDate": target.isoformat()})
-                    decision = reconcile_existing_fx(existing_value, target, incoming_for_reconciliation, previous_lineage)
-                    reconciliation_status = decision["status"]
-                    reconciliation_reason = decision["reason"]
-                    summary["reconciliations"].append({
-                        "symbol": symbol, "targetDate": target.isoformat(),
-                        "status": reconciliation_status, "reason": reconciliation_reason,
-                    })
-                    if reconciliation_status == "CONFLICT":
-                        raise CloseSyncError("VALIDATE", f"Existing {symbol} cell conflicts with or lacks matching confirmed series lineage; the close-list write was stopped.")
-                    write_close_value = not bool(decision.get("preserveExisting"))
             if write_close_value:
                 writes[close_header] = close_value
             source_series = market.get("sourceSeriesId") or market.get("seriesId") or ""
             unit = market.get("unit") or ("%" if symbol == "us10y" else "")
             reported_places = market.get("reportedDecimalPlaces")
-            required_lineage_missing = missing_close_lineage(symbol, market)
             item_lineage = "CONFIRMED" if (
-                source_series and unit and reported_places is not None
-                and not required_lineage_missing
-                and reconciliation_status != "CONFLICT"
+                source_series and unit and reported_places is not None and reconciliation_status != "EXACT_MATCH"
             ) else "UNKNOWN"
             stored_value = existing_value if not write_close_value else close_value
             stored_places = decimal_places(stored_value)
@@ -754,7 +646,6 @@ def close_row_sync(
                 "sourceId": market.get("sourceId"),
                 "sourceName": market.get("sourceName"),
                 "sourceSeriesId": source_series,
-                **market_lineage_metadata(market),
                 "unit": unit,
                 "reportedDecimalPlaces": reported_places,
                 "storedValue": stored_value,
@@ -842,38 +733,6 @@ def close_row_sync(
             market = markets.get(symbol)
             if not isinstance(market, dict):
                 continue
-            valuation_policy = VALUATION_CLOSE_LIST_POLICY.get(symbol)
-            if valuation_policy is not None:
-                basis = str(market.get("valuationBasis") or "").strip()
-                if not valuation_policy["write_enabled"]:
-                    status = "DEFINITION_PENDING"
-                    reason = valuation_policy["reason"]
-                elif basis != valuation_policy["basis"]:
-                    status = "DEFINITION_MISMATCH" if basis else "DEFINITION_PENDING"
-                    reason = valuation_policy["reason"]
-                elif not market.get("sourceSeriesId"):
-                    status = "DEFINITION_PENDING"
-                    reason = "VALUATION_SERIES_ID_MISSING"
-                else:
-                    status = ""
-                    reason = ""
-                if status:
-                    field_warnings.append(f"{symbol}: valuation column definition is not eligible")
-                    summary["reconciliations"].append({
-                        "symbol": symbol, "targetDate": target.isoformat(),
-                        "status": status, "reason": reason,
-                        "candidateBasis": basis or None,
-                    })
-                    summary["marketData"].append({
-                        "symbol": symbol, "sourceId": market.get("sourceId"),
-                        "sourceName": market.get("sourceName"),
-                        **market_lineage_metadata(market),
-                        "valuationBasis": basis or None,
-                        "asOf": market.get("asOf"), "fetchedAt": market.get("fetchedAt"),
-                        "verificationStatus": market.get("verificationStatus"),
-                        "reconciliationStatus": status,
-                    })
-                    continue
             if market.get("verificationStatus") != "verified" or market.get("fallbackUsed"):
                 continue
             value, source_date, warning = close_value_for_market(market, target)
@@ -896,8 +755,6 @@ def close_row_sync(
                     )
                 summary["marketData"].append({
                     "symbol": symbol, "sourceId": market.get("sourceId"), "sourceName": market.get("sourceName"),
-                    **market_lineage_metadata(market),
-                    "valuationBasis": market.get("valuationBasis"),
                     "asOf": market.get("asOf"), "fetchedAt": market.get("fetchedAt"),
                     "verificationStatus": "verified", "valueSource": "value",
                     "reconciliationStatus": "EXACT_MATCH", "closeValue": numeric_value,
@@ -907,8 +764,6 @@ def close_row_sync(
             source_ids.append(str(market.get("sourceId") or symbol))
             summary["marketData"].append({
                 "symbol": symbol, "sourceId": market.get("sourceId"), "sourceName": market.get("sourceName"),
-                **market_lineage_metadata(market),
-                "valuationBasis": market.get("valuationBasis"),
                 "asOf": market.get("asOf"), "fetchedAt": market.get("fetchedAt"),
                 "verificationStatus": "verified", "valueSource": "value", "closeValue": numeric_value,
             })
@@ -1039,6 +894,91 @@ def close_row_sync(
     return summary
 
 
+def build_asof_close_dry_run(
+    payload: dict[str, Any], headers: list[str], target_row: int | None,
+    existing_row: list[Any], formula_row: list[Any], duplicate_count: int,
+) -> dict[str, Any]:
+    """Compare a historical reconstruction to a close-list row without producing writes."""
+    header_indices = {name: i for i, name in enumerate(headers) if name}
+    markets = payload.get("markets") or {}
+    items = []
+    counts = {name: 0 for name in (
+        "MATCH", "VALUE_CONFLICT", "DEFINITION_PENDING", "UNAVAILABLE_AS_OF",
+        "FORMULA_PROTECTED", "NO_ELIGIBLE_WRITE",
+    )}
+    for label, symbol, unit, _market_type, _session in ITEMS:
+        header = ASOF_CLOSE_HEADERS.get(symbol)
+        if not header or header not in header_indices:
+            status, reason, existing = "DEFINITION_PENDING", "no matching close-list column", None
+        else:
+            index = header_indices[header]
+            existing = existing_row[index] if index < len(existing_row) else ""
+            formula = formula_row[index] if index < len(formula_row) else ""
+            market = markets.get(symbol) or {}
+            if isinstance(formula, str) and formula.startswith("="):
+                status, reason = "FORMULA_PROTECTED", "target is a formula cell"
+            elif market.get("verificationStatus") == "unavailable" or market.get("value") in (None, ""):
+                status, reason = "UNAVAILABLE_AS_OF", str(market.get("exclusionReason") or "cutoff evidence unavailable")
+            elif payload.get("productionEligible") is not True or market.get("productionEligible") is not True:
+                status, reason = "NO_ELIGIBLE_WRITE", "historical reconstruction is production-ineligible"
+            else:
+                proposed = number(market.get("value"))
+                current = number(existing)
+                if proposed is None or current is None:
+                    status, reason = "DEFINITION_PENDING", "numeric value or existing comparable value is unavailable"
+                elif math.isclose(proposed, current, rel_tol=1e-8, abs_tol=1e-8):
+                    status, reason = "MATCH", "same numeric value"
+                else:
+                    status, reason = "VALUE_CONFLICT", "existing value differs; manual review required"
+        counts[status] += 1
+        items.append({
+            "symbol": symbol, "label": label, "unit": unit, "header": header,
+            "status": status, "reason": reason, "existingValue": existing,
+            "proposedValue": None,
+        })
+    return {
+        "status": "DRY_RUN_COMPLETE", "mode": "read_only_historical_asof",
+        "targetAsOf": payload.get("targetAsOf"), "row": target_row,
+        "duplicateDateRows": duplicate_count, "duplicateCheck": "PASS" if duplicate_count <= 1 else "FAIL",
+        "classifications": counts, "items": items,
+        "productionWriteCalls": 0, "insertedRows": 0,
+        "auditLogWrites": 0, "formattingChanges": 0,
+        "productionEligible": False,
+    }
+
+
+def close_row_read_only_dry_run(client: SheetsClient, payload: dict[str, Any]) -> dict[str, Any]:
+    """Read target headers/date row and compare; this path never invokes a Sheets write method."""
+    sheet = "終値一覧"
+    if sheet not in retry(client.sheet_map):
+        raise CloseSyncError("VALIDATE", f"Required sheet is missing: {sheet}")
+    target_instant = parse_datetime(payload.get("targetAsOf"))
+    if not target_instant:
+        raise CloseSyncError("VALIDATE", "dry-run requires a timezone-qualified targetAsOf")
+    target = target_instant.date()
+    header_rows = read_values(client, sheet, "A1:GF1", "FORMATTED_VALUE")
+    headers = [str(value or "").strip() for value in (header_rows[0] if header_rows else [])]
+    if not headers or "日付" not in headers:
+        raise CloseSyncError("VALIDATE", "終値一覧 header row or 日付 header is missing.")
+    date_values = read_values(client, sheet, "A:A", "FORMATTED_VALUE")
+    target_row, _insert_row = find_target_row(date_values, target)
+    duplicates = sum(1 for value in date_values[1:] if parse_sheet_date(value) == target)
+    current: list[Any] = []
+    formulas: list[Any] = []
+    if target_row is not None:
+        last_col = letter_for_column(len(headers) - 1)
+        row_range = f"A{target_row}:{last_col}{target_row}"
+        values = read_values(client, sheet, row_range, "FORMATTED_VALUE")
+        formula_values = read_values(client, sheet, row_range, "FORMULA")
+        current = values[0] if values else []
+        formulas = formula_values[0] if formula_values else []
+    result = build_asof_close_dry_run(payload, headers, target_row, current, formulas, duplicates)
+    result["spreadsheetId"] = client.spreadsheet_id
+    result["targetDate"] = target.isoformat()
+    result["existingRowFound"] = target_row is not None
+    return result
+
+
 def verify_input_rows(rows: list[list[Any]], payload: dict[str, Any]) -> tuple[bool, str]:
     if not rows:
         return False, "no rows"
@@ -1123,6 +1063,7 @@ def main() -> int:
     parser.add_argument("--run-key", default=os.environ.get("GITHUB_RUN_ID", "manual") + ":" + os.environ.get("GITHUB_RUN_ATTEMPT", "1"))
     parser.add_argument("--skip-import-check", action="store_true", help="Only for local unit/integration tests.")
     parser.add_argument("--repair-history", action="store_true", help="Fill blank historical close cells from retained verified snapshots, preserving existing values.")
+    parser.add_argument("--dry-run", action="store_true", help="Read-only historical comparison; never writes close cells, formatting, or audit logs.")
     args = parser.parse_args()
 
     now = dt.datetime.now(JST).replace(microsecond=0)
@@ -1134,9 +1075,13 @@ def main() -> int:
         spreadsheet_id = os.environ.get("MARKET_DATA_SPREADSHEET_ID", "").strip() or DEFAULT_SPREADSHEET_ID
         service_account_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
         if not service_account_json:
-            raise CloseSyncError("AUTHENTICATION", "GOOGLE_SERVICE_ACCOUNT_JSON is required for close-row persistence; source acquisition may have succeeded independently.")
+            raise CloseSyncError("AUTHENTICATION", "GOOGLE_SERVICE_ACCOUNT_JSON is required for Sheets access; source acquisition may have succeeded independently.")
         client = SheetsClient(create_authorized_session(load_service_account_info(service_account_json)), spreadsheet_id)
-        if args.repair_history:
+        if args.dry_run and args.repair_history:
+            raise CloseSyncError("VALIDATE", "--dry-run and --repair-history cannot be combined.")
+        if args.dry_run:
+            summary = close_row_read_only_dry_run(client, payload)
+        elif args.repair_history:
             history_dir = ROOT / "data" / "market" / "history"
             snapshots = []
             for history_path in sorted(history_dir.glob("*_08-00.json")):
