@@ -81,24 +81,21 @@ for (const [slot, generatedAt, count] of [
   const issues = context.marketReportPrePublishTimelineIssues_(textForSlot, slot);
   assert(issues.length === 0, slot + ' generated timeline failed the existing gate: ' + JSON.stringify(issues));
 }
-const eveningArchive = {
-  schemaVersion: '1.0', reportDate: '2026-10-15', reportSlot: '08:00',
-  snapshots: [Object.assign(sample('2026-10-15T07:59:00+09:00', 157.100), { reportSlot: '08:00' })],
-};
-const lateArchive = {
-  schemaVersion: '1.0', reportDate: '2026-10-15', reportSlot: '21:00',
-  snapshots: [sample('2026-10-15T20:59:00+09:00', 157.200)],
-};
-const futureExcluded = context.buildMarketTimelineEvidence_(
-  { date: '2026-10-15', time: '16:00' },
-  [{ path: 'future.json', sha: 'future', archive: {
-    schemaVersion: '1.0', reportDate: '2026-10-15', reportSlot: '21:00',
-    snapshots: lateArchive.snapshots,
-  }}]
-);
-assert(futureExcluded.observations.length === 0 || futureExcluded.rows.length > 0,
-  'future archive must not cause generation failure or become evidence');
-
+const lateSnapshot = sample('2026-10-15T20:59:00+09:00', 157.200);
+lateSnapshot.reportSlot = '21:00';
+let futureArchiveRejected = false;
+try {
+  context.buildMarketTimelineEvidence_(
+    { date: '2026-10-15', time: '16:00' },
+    [{ path: 'future.json', sha: 'future', archive: {
+      schemaVersion: '1.0', reportDate: '2026-10-15', reportSlot: '21:00',
+      snapshots: [lateSnapshot],
+    }}]
+  );
+} catch (error) {
+  futureArchiveRejected = /後の時系列アーカイブ/.test(error.message);
+}
+assert(futureArchiveRejected, 'future report-slot archive must be rejected');
 let failed = false;
 try { context.buildMarketTimelineEvidence_(report, []); } catch (error) { failed = /検証済み時系列観測がありません/.test(error.message); }
 assert(failed, 'missing time-series evidence must fail closed');
