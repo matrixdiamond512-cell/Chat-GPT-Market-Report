@@ -104,6 +104,10 @@ def _availability(observation: dict[str, Any], cutoff: dt.datetime) -> tuple[boo
         basis = str(observation.get("seriesBasis") or "")
         if basis not in ALLOWED_BASIS:
             return False, "valuation_basis_unproven"
+        if field in {"nikkei225_per", "nikkei225_pbr"} and basis != "weighted_average":
+            return False, "valuation_basis_does_not_match_report_field"
+        if field == "nikkei225_eps" and basis != "index_basis":
+            return False, "eps_basis_does_not_match_report_field"
         if field == "nikkei225_eps" and observation.get("derivedFromRoundedPER"):
             return False, "rounded_per_derived_eps"
     if field in DEVIATION_FIELDS and status == "verified":
