@@ -1,9 +1,11 @@
+import hashlib
 import json
 from pathlib import Path
 import tempfile
 import unittest
 
 from scripts.persist_report_slot_evidence import persist_slot_evidence
+from scripts.reporting.snapshot import digest
 
 
 class ReportSlotEvidenceTests(unittest.TestCase):
@@ -52,8 +54,8 @@ class ReportSlotEvidenceTests(unittest.TestCase):
         self.assertEqual(record["context"]["data_cutoff"], "2026-10-16T07:50:00+09:00")
         self.assertEqual(record["snapshot"]["report_id"], record["reportId"])
         self.assertEqual(record["snapshot"]["revision"], record["revision"])
-        self.assertEqual(record["snapshotHash"], __import__("scripts.reporting.snapshot", fromlist=["digest"]).digest(record["snapshot"]))
-        self.assertEqual(record["acquisitionSource"]["contentHash"], __import__("hashlib").sha256(self.market_path.read_bytes()).hexdigest())
+        self.assertEqual(record["snapshotHash"], digest(record["snapshot"]))
+        self.assertEqual(record["acquisitionSource"]["contentHash"], hashlib.sha256(self.market_path.read_bytes()).hexdigest())
 
     def test_identical_repeat_is_no_op(self):
         first_path, first_created = persist_slot_evidence("2026-10-16", "08:00", self.market_path, self.output)
