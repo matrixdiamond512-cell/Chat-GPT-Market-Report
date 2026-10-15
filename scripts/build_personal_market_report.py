@@ -275,6 +275,12 @@ def render_report(payload: dict[str, Any]) -> str:
             "> 履歴データからの再構成です。生成日時点の最新相場ではなく、現在の投資判断用スナップショットとして使用しないでください。",
             "",
         ])
+    if payload.get("asOfCutoff"):
+        lines.extend([
+            f"時点判定: {payload['asOfCutoff']} / 時点外または証拠不足で除外 {payload.get('asOfExcludedCount', 0)}項目",
+            "注記: 過去時点で利用可能だったことを証明できない値は、後日確定した値でも本文に表示しません。",
+            "",
+        ])
     lines.extend([
         "各市場の営業日と日次締めは項目ごとに記録しています。参考値は清算値などの確定値と混同しません。",
         "",
@@ -371,9 +377,16 @@ def main() -> int:
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--write-test-sheet", action="store_true")
+    parser.add_argument("--as-of", help="Strict timestamped historical view, e.g. 2026-10-13T16:00:00+09:00")
     args = parser.parse_args()
     try:
         payload = load_payload(args.input)
+        if args.as_of:
+            try:
+                from scripts.market_snapshot_asof import project_snapshot_asof
+            except ModuleNotFoundError:
+                from market_snapshot_asof import project_snapshot_asof
+            payload = project_snapshot_asof(payload, args.as_of)
         body = render_report(payload)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(body, encoding="utf-8")
@@ -386,6 +399,8 @@ def main() -> int:
             "output": str(args.output),
         }
         if args.write_test_sheet:
+            if args.as_of and report_counts(payload)[0] == 0:
+                raise PersonalReportError("as-of report has no cutoff-eligible verified values; refuse empty test history")
             result["sheets"] = write_test_sheet(report_sheet_row(payload, body))
         print(json.dumps(result, ensure_ascii=False))
         return 0
