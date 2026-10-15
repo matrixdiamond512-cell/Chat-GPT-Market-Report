@@ -5,11 +5,18 @@ import tempfile
 import unittest
 
 from scripts.persist_report_slot_evidence import persist_slot_evidence
-from scripts.reporting.publication_evidence import validate_receipt, verify_slot_evidence
+from scripts.reporting.publication_evidence import is_canonical_document, validate_receipt, verify_slot_evidence
 from scripts.verify_publication_consistency import requires_strict_receipt
 
 
 class PublicationEvidenceTests(unittest.TestCase):
+    def test_archived_report_promotion_uses_unique_canonical_doc_identity(self):
+        canonical = [{"id": "original-doc"}]
+        self.assertTrue(is_canonical_document(canonical, "original-doc"))
+        self.assertFalse(is_canonical_document(canonical, "duplicate-doc"))
+        self.assertFalse(is_canonical_document(canonical + [{"id": "original-doc"}], "original-doc"))
+        self.assertFalse(is_canonical_document(canonical, None))
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)

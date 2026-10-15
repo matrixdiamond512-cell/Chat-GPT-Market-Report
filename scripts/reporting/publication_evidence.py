@@ -16,6 +16,11 @@ def _canonical_hash(value: object) -> str:
     return digest(value)
 
 
+def is_canonical_document(matches: list[dict], canonical_id: str | None) -> bool:
+    """Only a unique Drive match already anchored by canonical metadata may be promoted."""
+    return bool(canonical_id) and len(matches) == 1 and matches[0].get("id") == canonical_id
+
+
 def verify_slot_evidence(report: dict, path: Path, drive_file: dict, document_revision: str) -> dict:
     """Validate evidence created before the report slot and bind the exact Doc readback.
 
