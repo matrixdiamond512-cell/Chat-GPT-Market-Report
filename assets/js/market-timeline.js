@@ -165,6 +165,9 @@
     if (timeline.sourceDocumentId && report.sourceDocument?.id !== timeline.sourceDocumentId) {
       return { valid: false, reason: "出典文書IDが一致しません" };
     }
+    if (timeline.sourceDocumentRevisionId && report.sourceRevisionId !== timeline.sourceDocumentRevisionId) {
+      return { valid: false, reason: "出典文書の版が一致しません" };
+    }
     return { valid: true, reason: "" };
   }
 

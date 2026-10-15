@@ -49,6 +49,13 @@ def sop_sections(full_text: str) -> list[tuple[str, str]]:
     for line in str(full_text or "").replace("\r", "").split("\n"):
         title = normalize_heading(line)
         if title:
+            # Retrospective amendment labels inside a time-slot section are
+            # annotations, not a replacement section. Keep their narrative
+            # attached to the surrounding source heading so the existing
+            # substantive-section threshold still evaluates the saved text.
+            if re.match(r"^改訂追補(?:[：:].*)?$", title) and sections:
+                sections[-1][1].append(line)
+                continue
             sections.append([title, []])
         elif sections:
             sections[-1][1].append(line)
@@ -191,11 +198,24 @@ def sync_report_file(report: dict) -> Path:
     return path
 
 
-def report_publication_health(report: dict) -> tuple[str, bool, str]:
-    """Never label a known reconstructed/unverified source as healthy."""
+def report_publication_health(report: dict, reports_dir: Path | None = None) -> tuple[str, bool, str]:
+    """Expose newer held canonical source slots without promoting them."""
     state = str(report.get("report_status") or "").upper()
     if state == "RECONSTRUCTED_UNVERIFIED":
         return ("degraded", True, "REPORT_SOURCE_RECONSTRUCTED_UNVERIFIED")
+    current_key = (str(report.get("date") or ""), str(report.get("time") or ""))
+    held = []
+    for path in (reports_dir or REPORTS_DIR).glob("*.json"):
+        candidate = load_json(path, {})
+        candidate_key = (str(candidate.get("date") or ""), str(candidate.get("time") or ""))
+        status = str(candidate.get("report_status") or "").upper()
+        if (candidate_key > current_key and candidate_key[1] in SOP_SLOTS
+                and status and not is_publication_eligible(candidate)):
+            held.append((candidate_key, status))
+    if held:
+        details = ", ".join(f"{date}_{slot.replace(':', '-') }={status}"
+                             for (date, slot), status in sorted(held))
+        return ("degraded", True, f"LATEST_PUBLICATION_LAGGING_HELD_SOURCES: {details}")
     return ("ok", False, "")
 
 
@@ -216,7 +236,11 @@ def sync_dashboard(report: dict) -> None:
     source_status, source_is_stale, source_stale_reason = report_publication_health(report)
     previous_status = str(dashboard.get("status") or "partial")
     previous_stale_reason = str(dashboard.get("staleReason") or "")
-    if previous_stale_reason == "REPORT_SOURCE_RECONSTRUCTED_UNVERIFIED":
+    managed_stale_prefixes = (
+        "REPORT_SOURCE_RECONSTRUCTED_UNVERIFIED",
+        "LATEST_PUBLICATION_LAGGING_HELD_SOURCES:",
+    )
+    if any(previous_stale_reason.startswith(prefix) for prefix in managed_stale_prefixes) and not source_is_stale:
         # Clear only a status previously caused by the report source. Unknown
         # independent data completeness remains partial until separately verified.
         previous_status = "partial"

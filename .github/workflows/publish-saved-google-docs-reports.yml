@@ -78,7 +78,7 @@ jobs:
           git add reports/ reports.json data/latest-report.json data/dashboard.json publication-receipts/
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "NO_NEW_REPORTS: all reachable Docs already published; no fake publication."
+            echo "NO_CANONICAL_CHANGES: no new report source or evidence-backed promotion was verified; no publication change."
             exit 0
           fi
           git commit -m "Publish verified saved Google Docs report to canonical history"

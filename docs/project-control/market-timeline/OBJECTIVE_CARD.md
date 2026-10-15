@@ -15,3 +15,21 @@ OPEN OUTCOMES:
 - O-004 Create a draft PR with changed files and evidence; do not merge or deploy. COMPLETE (Draft PR #150 created; not merged/deployed).
 
 NEXT NECESSARY ACTION: Have the Draft PR receive its required browser/mobile visual verification and CI run before review. Do not merge or deploy.
+
+## Sync and evidence audit continuation — 2026-10-16 (ADD)
+
+PRIMARY OBJECTIVE: Correct the stale-latest false-green status, make source ingestion preserve independently parsed timeline data, and record the actual state of numeric infographic verification and ChatGPT body delivery while keeping all publication gates intact.
+
+ACCEPTANCE: Later archived/blocked canonical slots mark the dashboard degraded and stale without changing latest-report eligibility; exact source retries include BLOCKED_SNAPSHOT_MISSING but still require exact Docs readback and contemporaneous evidence; new imported reports carry timeline fields bound to date/slot/revision/body hash/Docs revision/evidence; 10/15 retrospective amendments remain labeled as later amendments; active CI runs the relevant Python and timeline tests; no main merge or Pages deployment.
+
+IMPLEMENTED: Stale held-source detection and recovery; blocked-source retry; 12:00 amendment-heading parsing correction; Python timeline extraction in the canonical Docs importer; retained publication health gates; accurate no-change workflow diagnostic. Local `data/dashboard.json` now exposes observed stale state while `data/latest-report.json` still points at the latest eligible report.
+
+OPEN OUTCOMES:
+- O-005 Google Drive/Actions/Pages production end-to-end sync after the Draft PR is reviewed and merged: NOT_RUN. Current main remains stale because the October 15 source reports are archived or evidence-blocked.
+- O-006 Actual numeric equality of October 15 infographics and report bodies: UNKNOWN / NOT_VERIFIED; the four source records declare `infographic_status=NOT_VERIFIED` and no corresponding verified manifest/image evidence was observed.
+- O-007 Automated ChatGPT full-body generation/delivery and failure alerting: NOT_IMPLEMENTED in the inspected scheduled path; it builds ChatGPT input files and uses a manual paste-to-Sidebar flow. One-time OpenAI workflows exist, but no run/result was observed in the accessible action history.
+- O-008 Draft PR active CI, browser/mobile visual verification, final source-to-Pages readback: OPEN.
+
+CONSTRAINTS: Draft PR only. Do not merge, deploy Pages, write Google Drive/Docs, configure secrets, or fabricate missing historical evidence.
+
+NEXT NECESSARY ACTION: Push the reviewed code and stale-state correction to Draft PR #150, inspect its active CI results, and leave browser/mobile and external service acceptance open where the environment cannot observe them.

@@ -238,5 +238,16 @@ BTCUSD：84,000ドル
         ):
             sync_latest_report_publication.validate_sop_body(blocked)
 
+    def test_october_15_noon_amendment_remains_in_its_parent_transition_section(self):
+        report = json.loads(
+            (ROOT / "reports" / "2026-10-15_12-00.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(report.get("report_status"), "SOURCE_ARCHIVED")
+        sync_latest_report_publication.validate_sop_body(report)
+        sections = sync_latest_report_publication.sop_sections(report["fullText"])
+        transition = next(body for title, body in sections if "08:00からの変化" in title)
+        self.assertIn("改訂追補", transition)
+        self.assertIn("出来事：", transition)
+
 if __name__ == "__main__":
     unittest.main()

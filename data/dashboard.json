@@ -1,19 +1,19 @@
 {
   "schemaVersion": "1.1.0",
   "pageId": "dashboard",
-  "generatedAt": "2026-10-15T23:24:56+09:00",
-  "publishedAt": "2026-10-15T23:24:56+09:00",
+  "generatedAt": "2026-10-16T04:40:00+09:00",
+  "publishedAt": "2026-10-16T04:40:00+09:00",
   "dataAsOf": "2026-10-13T16:00:00+09:00",
-  "status": "ok",
-  "isStale": false,
-  "staleReason": "",
+  "status": "degraded",
+  "isStale": true,
+  "staleReason": "LATEST_PUBLICATION_LAGGING_HELD_SOURCES: 2026-10-13_21-00=SOURCE_ARCHIVED, 2026-10-14_08-00=SOURCE_ARCHIVED, 2026-10-14_12-00=SOURCE_ARCHIVED, 2026-10-14_16-00=SOURCE_ARCHIVED, 2026-10-14_21-00=SOURCE_ARCHIVED, 2026-10-15_08-00=SOURCE_ARCHIVED, 2026-10-15_12-00=SOURCE_ARCHIVED, 2026-10-15_16-00=BLOCKED_SNAPSHOT_MISSING, 2026-10-15_21-00=SOURCE_ARCHIVED",
   "currentReportKey": "2026-10-13_16-00",
   "sources": [
     {
       "id": "MARKET_REPORTS_JSON",
       "name": "マーケットレポート本文の構造化JSON",
       "path": "reports.json",
-      "asOf": "2026-10-13 16:00",
+      "asOf": "2026-10-13_16-00",
       "status": "ok",
       "note": "Google Docsのマーケットレポート本文をGASで構造化したデータ。日中レポートの価格は本文を優先します。"
     },
