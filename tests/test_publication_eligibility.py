@@ -41,7 +41,7 @@ class PublicationEligibilityTests(unittest.TestCase):
                 self.assertTrue(is_publication_eligible(item))
 
     def test_source_only_blocked_reconstructed_and_unknown_reports_fail_closed(self):
-        for status in ("SOURCE_ARCHIVED", "BLOCKED", "RECONSTRUCTED_UNVERIFIED", "PENDING_REVIEW"):
+        for status in ("SOURCE_ARCHIVED", "BLOCKED", "BLOCKED_SNAPSHOT_MISSING", "RECONSTRUCTED_UNVERIFIED", "PENDING_REVIEW"):
             with self.subTest(status=status):
                 self.assertFalse(is_publication_eligible(report("08:00", status)))
 
