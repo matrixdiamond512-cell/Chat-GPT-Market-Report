@@ -1158,6 +1158,8 @@ function archiveDashboardSummary(record) {
   const split = text => text.split("\n").map(x => x.trim()).filter(Boolean);
   return {
     ...record,
+    // Distinct from eligible PUBLISHED / DOC_READBACK_PASS / legacy no-status records.
+    report_status: "HISTORICAL_ARCHIVE_DISPLAY_ONLY",
     theme: split(section(/総合判断|今日の相場テーマ/)).slice(0, 2).join(" ").slice(0, 450),
     changes: split(section(/からの変化/)).slice(0, 5),
     leadingMarket: split(section(/材料と値動きの整合性・主導市場|今日の主導市場/)).slice(0, 3).join(" "),
