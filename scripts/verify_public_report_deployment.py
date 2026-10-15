@@ -33,6 +33,18 @@ def key(report: dict) -> tuple[str, str]:
     return str(report.get("date") or ""), str(report.get("time") or "")
 
 
+
+def wait_for_removed_canonical(url: str, timeout_seconds: int) -> int | None:
+    """Wait for a non-public canonical file to disappear from the Pages edge cache."""
+    deadline = time.monotonic() + timeout_seconds
+    status = None
+    while time.monotonic() < deadline:
+        status, _, _ = fetch(cache_busted(url))
+        if status == 404:
+            return status
+        time.sleep(5)
+    return status
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--base-url", required=True)
@@ -86,11 +98,14 @@ def main() -> int:
         canonical = json.loads(local_path.read_text(encoding="utf-8"))
         if is_publication_eligible(canonical):
             continue
-        status, _, _ = fetch(cache_busted(urljoin(base, f"reports/{local_path.name}")))
+        status = wait_for_removed_canonical(
+            urljoin(base, f"reports/{local_path.name}"),
+            timeout_seconds=args.timeout_seconds,
+        )
         if status != 404:
             raise SystemExit(
-                f"non-publication-eligible canonical report is publicly served: "
-                f"{local_path.name} HTTP {status}"
+                f"non-publication-eligible canonical report is publicly served after "
+                f"Pages propagation wait: {local_path.name} HTTP {status}"
             )
         verified_excluded.append(local_path.name)
 
