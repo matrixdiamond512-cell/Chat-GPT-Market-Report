@@ -12,9 +12,14 @@ import json
 from datetime import date
 from pathlib import Path
 
-from reporting.context import ReportContext, aware
-from reporting.snapshot import MarketDataSnapshot, digest
-from run_market_data_window import snapshot_is_current
+if __package__:
+    from .reporting.context import ReportContext, aware
+    from .reporting.snapshot import MarketDataSnapshot, digest
+    from .run_market_data_window import snapshot_is_current
+else:
+    from reporting.context import ReportContext, aware
+    from reporting.snapshot import MarketDataSnapshot, digest
+    from run_market_data_window import snapshot_is_current
 
 ROOT = Path(__file__).resolve().parents[1]
 
