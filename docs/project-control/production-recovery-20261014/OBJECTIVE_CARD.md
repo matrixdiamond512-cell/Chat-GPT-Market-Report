@@ -27,4 +27,4 @@ PRIMARY OBJECTIVE: Prevent Drive-backed source archives that have not passed pub
 
 IMPLEMENTED LOCALLY: Shared fail-closed eligibility, source archive separation from latest/dashboard, sanitized Pages staging, public URL 404 verifier, and removal of main-push behavior from the 2026-10-14 archive workflow. Nine ineligible canonical files remain preserved; local `reports.json` now contains 162 eligible slots.
 
-OPEN OUTCOMES: Review/create PR, wait for Actions, merge only after review/CI, verify Pages deployment and external readback. ChatGPT scheduled task E2E and all-slot acceptance remain open.
+OPEN OUTCOMES: PR #134 is open. The first hosted run found the archive-preservation mismatch in the structured-report workflow and an existing heading test fixture using literal newline escapes; both are corrected locally and await hosted rerun. Merge only after latest-base CI passes. Pages deployment and external readback, ChatGPT scheduled task E2E, and all-slot acceptance remain open.

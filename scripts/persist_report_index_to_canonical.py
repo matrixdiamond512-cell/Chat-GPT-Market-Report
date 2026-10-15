@@ -4,6 +4,8 @@ import json
 import re
 from pathlib import Path
 
+from reporting.publication_eligibility import is_publication_eligible
+
 REPORTS_DIR = Path("reports")
 INDEX_FILE = Path("reports.json")
 DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -49,8 +51,8 @@ def load_index() -> list[dict]:
     return reports
 
 
-def canonical_keys() -> set[tuple[str, str]]:
-    keys: set[tuple[str, str]] = set()
+def canonical_reports() -> dict[tuple[str, str], dict]:
+    reports: dict[tuple[str, str], dict] = {}
     for path in sorted(REPORTS_DIR.glob("*.json")):
         if path.name.startswith("_"):
             continue
@@ -63,23 +65,36 @@ def canonical_keys() -> set[tuple[str, str]]:
             raise ValueError(
                 f"{path}: canonical filename mismatch; expected {canonical_path(report)}"
             )
-        if key in keys:
+        if key in reports:
             raise ValueError(f"duplicate canonical report slot {key[0]} {key[1]}")
-        keys.add(key)
-    return keys
+        reports[key] = report
+    return reports
+
+
+def validate_slot_sets(
+    reports: list[dict],
+    canonical_by_slot: dict[tuple[str, str], dict],
+) -> None:
+    """Permit only explicitly non-public canonical files outside the index."""
+    index_keys = {slot_key(report) for report in reports}
+    file_keys = set(canonical_by_slot)
+    missing_files = index_keys - file_keys
+    eligible_files_missing_from_index = {
+        key for key in file_keys - index_keys
+        if is_publication_eligible(canonical_by_slot[key])
+    }
+    if missing_files or eligible_files_missing_from_index:
+        raise SystemExit(
+            "refusing to persist reports.json to canonical files because slot sets differ: "
+            f"missing_canonical={sorted(missing_files)}, "
+            f"eligible_canonical_missing_from_index={sorted(eligible_files_missing_from_index)}"
+        )
 
 
 def main() -> None:
     reports = load_index()
-    index_keys = {slot_key(report) for report in reports}
-    file_keys = canonical_keys()
-
-    if index_keys != file_keys:
-        raise SystemExit(
-            "refusing to persist reports.json to canonical files because slot sets differ: "
-            f"only_in_index={sorted(index_keys - file_keys)}, "
-            f"only_in_files={sorted(file_keys - index_keys)}"
-        )
+    canonical_by_slot = canonical_reports()
+    validate_slot_sets(reports, canonical_by_slot)
 
     for report in reports:
         canonical_path(report).write_text(

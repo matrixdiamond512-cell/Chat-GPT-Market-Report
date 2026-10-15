@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import build_reports
 import prepare_pages_site
+import persist_report_index_to_canonical
 import validate_report_index
 import verify_scheduled_report_delivery
 from reporting.publication_eligibility import is_publication_eligible
@@ -43,6 +44,48 @@ class PublicationEligibilityTests(unittest.TestCase):
         for status in ("SOURCE_ARCHIVED", "BLOCKED", "RECONSTRUCTED_UNVERIFIED", "PENDING_REVIEW"):
             with self.subTest(status=status):
                 self.assertFalse(is_publication_eligible(report("08:00", status)))
+
+    def test_canonical_persistence_allows_only_explicitly_nonpublic_extra_files(self):
+        published = report("16:00", "PUBLISHED")
+        archived = report("08:00", "SOURCE_ARCHIVED")
+        canonical = {
+            persist_report_index_to_canonical.slot_key(published): published,
+            persist_report_index_to_canonical.slot_key(archived): archived,
+        }
+
+        persist_report_index_to_canonical.validate_slot_sets([published], canonical)
+
+        legacy = report("12:00")
+        canonical[persist_report_index_to_canonical.slot_key(legacy)] = legacy
+        with self.assertRaisesRegex(SystemExit, "eligible_canonical_missing_from_index"):
+            persist_report_index_to_canonical.validate_slot_sets([published], canonical)
+
+    def test_canonical_persistence_rejects_index_entries_without_files(self):
+        published = report("16:00", "PUBLISHED")
+        with self.assertRaisesRegex(SystemExit, "missing_canonical"):
+            persist_report_index_to_canonical.validate_slot_sets([published], {})
+
+    def test_persistence_keeps_archived_canonical_source_unchanged(self):
+        with tempfile.TemporaryDirectory(dir=ROOT.parent) as directory:
+            root = Path(directory)
+            reports_dir = root / "reports"
+            reports_dir.mkdir()
+            published = report("16:00", "PUBLISHED")
+            archived = report("08:00", "SOURCE_ARCHIVED")
+            published_path = reports_dir / "2026-10-14_16-00.json"
+            archived_path = reports_dir / "2026-10-14_08-00.json"
+            published_path.write_text(json.dumps(published, ensure_ascii=False), encoding="utf-8")
+            archived_path.write_text(json.dumps(archived, ensure_ascii=False, indent=4), encoding="utf-8")
+            archived_before = archived_path.read_bytes()
+            index_path = root / "reports.json"
+            index_path.write_text(json.dumps([published], ensure_ascii=False), encoding="utf-8")
+
+            with patch.object(persist_report_index_to_canonical, "REPORTS_DIR", reports_dir), \
+                 patch.object(persist_report_index_to_canonical, "INDEX_FILE", index_path):
+                persist_report_index_to_canonical.main()
+
+            self.assertEqual(archived_path.read_bytes(), archived_before)
+            self.assertEqual(json.loads(published_path.read_text(encoding="utf-8")), published)
 
     def test_builder_keeps_quarantined_history_but_excludes_it_from_public_index(self):
         with tempfile.TemporaryDirectory(dir=ROOT.parent) as directory:
