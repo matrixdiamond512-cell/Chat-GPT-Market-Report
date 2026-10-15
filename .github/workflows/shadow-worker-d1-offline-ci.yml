@@ -40,6 +40,7 @@ on:
       - 'tests/test_d3_narrative_quality.py'
       - 'scripts/reporting/d3_report_candidate_review.py'
       - 'tests/test_d3_report_candidate_review.py'
+      - 'scripts/reporting/d3_release_preflight_cli.py'
       - 'data/market/latest.json'
       - 'scripts/reporting/shadow_hash_golden.py'
       - 'scripts/test_shadow_hash_golden.js'
@@ -110,6 +111,8 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_d3_narrative_quality.py' -v
       - name: Validate complete evidence -> OpenAI output -> private draft QA, no publication
         run: python -m unittest discover -s tests -p 'test_d3_report_candidate_review.py' -v
+      - name: Confirm production 21h baseline is still BLOCKED until news, rate, positioning and event evidence arrives
+        run: python -m scripts.reporting.d3_release_preflight_cli --date 2026-10-14 --slot 21:00 --market data/market/history/2026-10-14_21-00.json --diagnostic
       - name: Verify versioned v2 Python canonicalization
         run: python -m unittest discover -s tests -p 'test_canonical_v2.py' -v
       - name: Verify Python and Apps Script v2 canonical bytes digests and test HMAC
