@@ -1,13 +1,20 @@
 name: Freeze pre-draft report-slot evidence
 
 on:
+  workflow_dispatch:
+    inputs:
+      report_slot:
+        description: "Current JST report slot only. Past slots are rejected."
+        required: true
+        type: choice
+        options: ["08:00", "12:00", "16:00", "21:00"]
   schedule:
-    # Capture only after each slot's final scheduled acquisition attempt:
-    # 07:57, 11:57, 15:57, and 20:57 Asia/Tokyo on weekdays.
-    - cron: "57 22 * * 0-4"
-    - cron: "57 2 * * 1-5"
-    - cron: "57 6 * * 1-5"
-    - cron: "57 11 * * 1-5"
+    # Redundant pre-slot attempts tolerate skipped/delayed Actions schedules.
+    # No attempt may synthesize evidence after the slot cutoff.
+    - cron: "47,53,57 22 * * 0-4"
+    - cron: "47,53,57 2 * * 1-5"
+    - cron: "47,53,57 6 * * 1-5"
+    - cron: "47,53,57 11 * * 1-5"
 
 permissions:
   contents: write
@@ -19,7 +26,7 @@ concurrency:
 jobs:
   freeze:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,33 +40,100 @@ jobs:
         shell: bash
         env:
           SCHEDULE: ${{ github.event.schedule }}
+          MANUAL_SLOT: ${{ inputs.report_slot }}
         run: |
           case "$SCHEDULE" in
-            "57 22 * * 0-4") SLOT="08:00" ;;
-            "57 2 * * 1-5") SLOT="12:00" ;;
-            "57 6 * * 1-5") SLOT="16:00" ;;
-            "57 11 * * 1-5") SLOT="21:00" ;;
+            "47,53,57 22 * * 0-4") SLOT="08:00" ;;
+            "47,53,57 2 * * 1-5") SLOT="12:00" ;;
+            "47,53,57 6 * * 1-5") SLOT="16:00" ;;
+            "47,53,57 11 * * 1-5") SLOT="21:00" ;;
+            "") SLOT="$MANUAL_SLOT" ;;
             *) echo "Unexpected schedule: $SCHEDULE" >&2; exit 1 ;;
+          esac
+          case "$SLOT" in
+            "08:00"|"12:00"|"16:00"|"21:00") ;;
+            *) echo "Unsupported report slot: $SLOT" >&2; exit 1 ;;
           esac
           echo "date=$(TZ=Asia/Tokyo date +%F)" >> "$GITHUB_OUTPUT"
           echo "slot=$SLOT" >> "$GITHUB_OUTPUT"
-      - name: Validate writer and its offline regression suite
+      - name: Reject any run that starts at or after the report cutoff
+        env:
+          REPORT_DATE: ${{ steps.slot.outputs.date }}
+          REPORT_SLOT: ${{ steps.slot.outputs.slot }}
+        run: |
+          python - <<'PY'
+          import os
+          from scripts.persist_report_slot_evidence import require_before_slot
+          require_before_slot(os.environ["REPORT_DATE"], os.environ["REPORT_SLOT"])
+          print("LIVE_PRE_SLOT_WINDOW=PASS")
+          PY
+      - name: Validate writer and offline regression tests
         run: |
           python -m py_compile scripts/persist_report_slot_evidence.py
           python -m unittest tests.test_report_slot_evidence -v
-      - name: Freeze verified acquisition for the explicit slot
+      - name: Check whether a fresh verified acquisition already exists
+        id: input
+        continue-on-error: true
+        env:
+          REPORT_DATE: ${{ steps.slot.outputs.date }}
+          REPORT_SLOT: ${{ steps.slot.outputs.slot }}
+        run: |
+          python - <<'PY'
+          import json, os, sys
+          from datetime import date
+          from pathlib import Path
+          from scripts.persist_report_slot_evidence import build_slot_evidence
+          source = Path("data/market/latest.json")
+          if not source.exists():
+              print("INPUT_MISSING: no acquisition file")
+              sys.exit(2)
+          raw = source.read_bytes()
+          try:
+              build_slot_evidence(os.environ["REPORT_DATE"], os.environ["REPORT_SLOT"],
+                                  json.loads(raw), raw, max_age_minutes=15)
+          except (ValueError, KeyError, TypeError) as exc:
+              print("INPUT_NOT_ELIGIBLE: " + str(exc))
+              sys.exit(2)
+          print("CURRENT_VERIFIED_INPUT=PASS")
+          PY
+      - name: Recover missing acquisition once before the slot (never after)
+        if: steps.input.outcome != 'success'
+        env:
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          REPORT_SLOT: ${{ steps.slot.outputs.slot }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
+          TARGET_DATE="$(TZ=Asia/Tokyo date +%F)"
+          ACTUAL_TIME="$(TZ=Asia/Tokyo date +%H:%M)"
+          python - "$TARGET_DATE" "$REPORT_SLOT" <<'PY'
+          import sys
+          from scripts.persist_report_slot_evidence import require_before_slot
+          require_before_slot(sys.argv[1], sys.argv[2])
+          PY
+          python scripts/run_market_data_window.py \
+            --slot "$REPORT_SLOT" \
+            --times "$ACTUAL_TIME" \
+            --trigger-source report_evidence_pre_slot_recovery \
+            --max-catchup-minutes 5 \
+            --mode auto \
+            --recover-expired
+      - name: Freeze only verified current-slot acquisition, with live cutoff guard
         run: |
           python scripts/persist_report_slot_evidence.py \
             --date "${{ steps.slot.outputs.date }}" \
             --slot "${{ steps.slot.outputs.slot }}" \
-            --max-age-minutes 15
-      - name: Commit immutable evidence without rewriting existing history
+            --max-age-minutes 15 \
+            --require-live-before-slot
+      - name: Commit immutable evidence (not a report or publication receipt)
         shell: bash
         run: |
           set -euo pipefail
           git add data/report-evidence/
           if git diff --cached --quiet; then
-            echo "NO_OP: identical pre-draft evidence already exists."
+            echo "NO_OP: identical evidence already exists."
             exit 0
           fi
           git config user.name "github-actions[bot]"
@@ -67,4 +141,4 @@ jobs:
           git commit -m "Freeze pre-draft evidence for ${{ steps.slot.outputs.date }} ${{ steps.slot.outputs.slot }}"
           git pull --rebase origin main
           git push origin HEAD:main
-          echo "PRE_DRAFT_EVIDENCE_PERSISTED: ready for producer consumption; publication is still separately gated."
+          echo "PRE_DRAFT_EVIDENCE_PERSISTED: publication remains separately gated."
