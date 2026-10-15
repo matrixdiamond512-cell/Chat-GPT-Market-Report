@@ -5,6 +5,7 @@ from datetime import datetime, timezone, timedelta
 import json
 from pathlib import Path
 from report_identity import canonical_path, internal_report_key
+from reporting.publication_eligibility import is_publication_eligible
 
 JST = timezone(timedelta(hours=9))
 SLOTS = ("08:00", "12:00", "16:00", "21:00")
@@ -18,6 +19,11 @@ def verify(root: Path, date: str, slot: str) -> dict:
         raise ValueError("Missing published canonical " + report_path.name)
     canonical = json.loads(report_path.read_text(encoding="utf-8"))
     key = (date, slot)
+    if not is_publication_eligible(canonical):
+        raise ValueError(
+            f"Report is archived but not publication-eligible: "
+            f"{date} {slot} ({canonical.get('report_status')})"
+        )
     if (canonical.get("date"), canonical.get("time")) != key or not str(canonical.get("fullText") or "").strip():
         raise ValueError("Incomplete or wrong-slot canonical report")
     index = json.loads((root / "reports.json").read_text(encoding="utf-8"))

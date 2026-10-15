@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: rebuild-report-history-index
@@ -24,43 +24,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Rebuild index from canonical files without overwriting their text
+      - name: Verify publication-eligible index is reproducible from canonical history
         run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          rows = []
-          seen = set()
-          for path in sorted(Path('reports').glob('*.json')):
-              if path.name.startswith('_'):
-                  continue
-              data = json.loads(path.read_text(encoding='utf-8'))
-              if not all(data.get(key) for key in ('date', 'time', 'title')):
-                  data = data.get('latestReport', data)
-              assert all(data.get(key) for key in ('date', 'time', 'title')), f'invalid report: {path}'
-              key = (data['date'], data['time'])
-              assert key not in seen, f'duplicate report: {key}'
-              assert path.name == f'{key[0]}_{key[1].replace(":", "-")}.json', f'filename mismatch: {path}'
-              seen.add(key)
-              rows.append(data)
-          old = json.loads(Path('reports.json').read_text(encoding='utf-8'))
-          assert {(r['date'], r['time']) for r in old}.issubset(seen), 'index-only history would be lost'
-          for time in ('12:00', '16:00'):
-              matches = [r for r in rows if (r['date'], r['time']) == ('2026-09-22', time)]
-              assert len(matches) == 1 and matches[0].get('fullText'), f'missing full text: {time}'
-          rows.sort(key=lambda r: (r['date'], r['time']), reverse=True)
-          Path('reports.json').write_text(json.dumps(rows, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-          print(f'Validated {len(rows)} canonical reports, including 2026-09-22 12:00 and 16:00.')
-          PY
-      - name: Commit rebuilt index
+          cp reports.json /tmp/report-index-before.json
+          python scripts/build_reports.py --canonical-only
+          cmp /tmp/report-index-before.json reports.json
+          python scripts/validate_report_index.py
+          python scripts/verify_publication_consistency.py
+      - name: Confirm verification made no publication changes
         run: |
-          if git diff --quiet -- reports.json; then
-            echo 'Report history index already consistent.'
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add reports.json
-          git commit -m 'Restore full canonical report history index'
-          git pull --rebase origin main
-          git push
+          git diff --exit-code -- reports reports.json data/latest-report.json data/dashboard.json

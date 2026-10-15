@@ -17,7 +17,15 @@ function dateToJp(dateText) {
   return `${m[1]}/${m[2]}/${m[3]}（${days[dow]}）`;
 }
 function reportKey(r) { return `${r?.date || ""} ${r?.time || ""}`; }
-function sortReports(list) { return list.filter(r => r && /^\d{4}-\d{2}-\d{2}$/.test(r.date || "")).sort((a,b) => reportKey(b).localeCompare(reportKey(a))); }
+function isPublicReport(r) {
+  const status = String(r?.report_status || "").trim().toUpperCase();
+  return !status || status === "PUBLISHED" || status === "DOC_READBACK_PASS";
+}
+function sortReports(list) {
+  return list.filter(r => r && isPublicReport(r)
+      && /^\d{4}-\d{2}-\d{2}$/.test(r.date || ""))
+    .sort((a,b) => reportKey(b).localeCompare(reportKey(a)));
+}
 function uniqueDates() { return [...new Set(reports.map(r => r.date))].sort().reverse(); }
 function reportsForDate(d) { return reports.filter(r => r.date === d).sort((a,b) => REPORT_TIMES.indexOf(a.time) - REPORT_TIMES.indexOf(b.time)); }
 function resolveAvailableDate(d) {

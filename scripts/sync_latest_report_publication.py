@@ -7,6 +7,7 @@ from pathlib import Path
 
 from report_source_contract import heading, validate_saved_body
 from report_identity import internal_report_key
+from reporting.publication_eligibility import is_publication_eligible
 
 ROOT = Path(__file__).resolve().parents[1]
 LATEST = ROOT / "data/latest-report.json"
@@ -254,12 +255,18 @@ def main() -> None:
     # replay an older latest report over it, and never select a future slot.
     from build_reports import validate_report as unwrap, _choose_canonical_update
     report = source_report
-    candidates = [unwrap(load_json(p, {}), str(p)) for p in REPORTS_DIR.glob("*.json") if not p.name.startswith("_")]
-    candidates.append(source_report)
+    candidates = [
+        unwrap(load_json(p, {}), str(p))
+        for p in REPORTS_DIR.glob("*.json")
+        if not p.name.startswith("_")
+    ]
+    candidates = [report for report in candidates if is_publication_eligible(report)]
+    if is_publication_eligible(source_report):
+        candidates.append(source_report)
     now = dt.datetime.now(JST)
     due = [r for r in candidates if dt.datetime.fromisoformat(f"{r['date']}T{r['time']}:00+09:00") <= now]
     if not due:
-        raise SystemExit("no issued report source exists")
+        raise SystemExit("no issued publication-eligible report source exists")
     newest = max((r["date"], r["time"]) for r in due)
     matching = [r for r in due if (r["date"], r["time"]) == newest]
     report = matching[0]

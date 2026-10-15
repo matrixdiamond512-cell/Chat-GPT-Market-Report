@@ -140,7 +140,6 @@ def build_report(session, date: str, slot: str, item: dict) -> dict:
 def poll(root: Path, *, apply: bool, enforce_slot: bool):
     from report_identity import internal_report_key
     from build_reports import _verified_source_revision
-    from sync_latest_report_publication import sync_dashboard
     now = datetime.now(JST)
     env = read_json(root / "data/latest-report.json")
     old_latest = env.get("latestReport")
@@ -165,7 +164,6 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
         print(f"Google Drive scan: {scanned} accessible report-name candidates; "
               f"{len(source_files)} recent slots; monthly_folder_access={folder_access}; "
               f"authoritative_folder_scoped={folder_access}")
-        latest_slot = (old_latest["date"], old_latest["time"])
         to_write = {}
         invalid_sources = {}
         for key, matches in sorted(source_files.items()):
@@ -243,13 +241,9 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
             if path.exists():
                 raise RuntimeError("canonical changed during scan")
             save_json(path, report)
-        newest = max(to_write)
-        if newest > latest_slot:
-            selected = to_write[newest]
-            env["latestReport"] = selected
-            env["dataAsOf"] = f"{newest[0]}T{newest[1]}:00+09:00"
-            save_json(root / "data/latest-report.json", env)
-            sync_dashboard(selected)
+        # This workflow verifies and archives Google Docs sources. Promotion
+        # to public latest/dashboard is separate and requires a passed
+        # publication gate; SOURCE_ARCHIVED records remain out of those views.
         subprocess.run([sys.executable, "scripts/build_reports.py", "--canonical-only"],
                        cwd=root, check=True)
         subprocess.run([sys.executable, "scripts/verify_publication_consistency.py"],
