@@ -78,11 +78,15 @@ class SnapshotCutoffTests(unittest.TestCase):
     def test_old_later_retrieval_requires_dated_publication_proof(self):
         source = self._payload()
         cash = source["markets"]["nikkei225_cash"]
-        cash.update({"publishedAt": "2026-10-13T06:20:00Z",
+        cash.update({"publishedAt": "2026-10-13T06:45:00Z",
+                     "finalizedAt": "2026-10-13T06:30:00Z",
                      "publicationEvidenceUrl": "https://example.org/dated-archive",
                      "publicationEvidence": "Dated public timestamp for exact official cash series"})
         result = project_snapshot_asof(source, CUTOFF)
         self.assertEqual(result["markets"]["nikkei225_cash"]["value"], 67777.52)
+        cash["publishedAt"] = "2026-10-13T06:20:00Z"
+        premature = project_snapshot_asof(source, CUTOFF)
+        self.assertIsNone(premature["markets"]["nikkei225_cash"]["value"])
         cash["publishedAt"] = "2026-10-13T08:30:00Z"
         blocked = project_snapshot_asof(source, CUTOFF)
         self.assertIsNone(blocked["markets"]["nikkei225_cash"]["value"])
