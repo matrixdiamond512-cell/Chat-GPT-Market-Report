@@ -1,0 +1,134 @@
+name: D1 Offline Market Report Shadow Worker
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/reporting/shadow_worker.py'
+      - 'tests/test_shadow_worker_offline.py'
+      - 'scripts/reporting/canonical_v2.py'
+      - 'scripts/reporting/canonical_v2_golden.py'
+      - 'scripts/test_canonical_v2_golden.js'
+      - 'tests/test_canonical_v2.py'
+      - 'scripts/reporting/d2_preflight.py'
+      - 'tests/test_d2_preflight.py'
+      - 'scripts/reporting/d2_responses_contract.py'
+      - 'tests/test_d2_responses_contract.py'
+      - 'scripts/reporting/d2_numeric_claims.py'
+      - 'tests/test_d2_numeric_claims.py'
+      - 'scripts/reporting/d2_private_store.py'
+      - 'tests/test_d2_private_store.py'
+      - 'scripts/reporting/d2_offline_pipeline.py'
+      - 'tests/test_d2_offline_pipeline.py'
+      - 'scripts/reporting/d2_reconciliation.py'
+      - 'tests/test_d2_reconciliation.py'
+      - 'scripts/reporting/d2_token_count_contract.py'
+      - 'tests/test_d2_token_count_contract.py'
+      - 'scripts/reporting/d2_monthly_budget.py'
+      - 'tests/test_d2_monthly_budget.py'
+      - 'scripts/reporting/d2_offline_prepared_run.py'
+      - 'tests/test_d2_offline_prepared_run.py'
+      - 'scripts/reporting/d2_prepared_reconciliation.py'
+      - 'tests/test_d2_prepared_reconciliation.py'
+      - 'scripts/reporting/d3_openai_transport.py'
+      - 'tests/test_d3_openai_transport.py'
+      - 'scripts/reporting/d3_latest_input_probe.py'
+      - 'tests/test_d3_latest_input_probe.py'
+      - 'scripts/reporting/d3_source_context.py'
+      - 'tests/test_d3_source_context.py'
+      - 'data/rates-bonds.json'
+      - 'data/events/upcoming.json'
+      - 'data/usdjpy-supply-demand.json'
+      - 'data/gold-supply-demand.json'
+      - 'data/nikkei225-supply-demand.json'
+      - 'scripts/reporting/d3_release_evidence.py'
+      - 'tests/test_d3_release_evidence.py'
+      - 'scripts/reporting/d3_narrative_quality.py'
+      - 'tests/test_d3_narrative_quality.py'
+      - 'scripts/reporting/d3_report_candidate_review.py'
+      - 'tests/test_d3_report_candidate_review.py'
+      - 'scripts/reporting/d3_release_preflight_cli.py'
+      - 'data/market/latest.json'
+      - 'scripts/reporting/shadow_hash_golden.py'
+      - 'scripts/test_shadow_hash_golden.js'
+      - 'scripts/reporting/d2_detached_evidence.js'
+      - 'scripts/test_d2_detached_evidence.js'
+      - 'scripts/reporting/d2_offline_proof_handoff.js'
+      - 'scripts/test_d2_offline_proof_handoff.js'
+      - 'apps-script/MarketReportProducerProof.gs'
+      - 'scripts/reporting/context.py'
+      - 'scripts/reporting/snapshot.py'
+      - 'scripts/reporting/report.py'
+      - 'config/report_heading_registry.json'
+      - 'config/market_data_sources.json'
+      - '.github/workflows/shadow-worker-d1-offline-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  offline-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Compile offline D1 contract and test
+        run: python -m compileall -q scripts/reporting/shadow_worker.py tests/test_shadow_worker_offline.py
+      - name: Test shadow report contract with fake data only
+        run: python -m unittest discover -s tests -p 'test_shadow_worker_offline.py' -v
+      - name: Validate no-charge D2 review and cost authorization blockers
+        run: |
+          python -m unittest discover -s tests -p 'test_d2_preflight.py' -v
+          python -m scripts.reporting.d2_preflight
+      - name: Validate real-shaped Responses payload offline (no network)
+        run: python -m unittest discover -s tests -p 'test_d2_responses_contract.py' -v
+      - name: Verify frozen-source numeric claim coverage gate (offline)
+        run: python -m unittest discover -s tests -p 'test_d2_numeric_claims.py' -v
+      - name: Verify offline immutable POSIX staging evidence (no network)
+        run: python -m unittest discover -s tests -p 'test_d2_private_store.py' -v
+      - name: Exercise full offline D2 stage with raw evidence and slot lock (no network)
+        run: python -m unittest discover -s tests -p 'test_d2_offline_pipeline.py' -v
+      - name: Reconcile crashed D2 slot artifacts without send, retry or publication
+        run: python -m unittest discover -s tests -p 'test_d2_reconciliation.py' -v
+      - name: Verify Responses official input-token count request/response contract offline
+        run: python -m unittest discover -s tests -p 'test_d2_token_count_contract.py' -v
+      - name: Check monthly spend and dual hard-cap math offline
+        run: python -m unittest discover -s tests -p 'test_d2_monthly_budget.py' -v
+      - name: Exercise D2 prepared count, monthly budget and local fixture E2E offline
+        run: python -m unittest discover -s tests -p 'test_d2_offline_prepared_run.py' -v
+      - name: Verify full D2 prepared slot read-only forensic replay after crash or tampering
+        run: python -m unittest discover -s tests -p 'test_d2_prepared_reconciliation.py' -v
+      - name: Offline-test paid OpenAI sender transport and fail-closed execution gate
+        run: python -m unittest discover -s tests -p 'test_d3_openai_transport.py' -v
+      - name: Probe actual saved market input eligibility (no API, no publication)
+        run: |
+          python -m unittest discover -s tests -p 'test_d3_latest_input_probe.py' -v
+          python -m scripts.reporting.d3_latest_input_probe --market-json data/market/latest.json
+          echo "History snapshot eligible for its original slot (2026-10-14 21:00):"
+          python -m scripts.reporting.d3_latest_input_probe --market-json data/market/history/2026-10-14_21-00.json
+      - name: Verify real report evidence and freshness requirements (no paid API)
+        run: python -m unittest discover -s tests -p 'test_d3_release_evidence.py' -v
+      - name: Validate Japanese report weekday and observed direction consistency (no paid API)
+        run: python -m unittest discover -s tests -p 'test_d3_narrative_quality.py' -v
+      - name: Validate complete evidence -> OpenAI output -> private draft QA, no publication
+        run: python -m unittest discover -s tests -p 'test_d3_report_candidate_review.py' -v
+      - name: Confirm production 21h baseline is still BLOCKED until news, rate, positioning and event evidence arrives
+        run: python -m scripts.reporting.d3_release_preflight_cli --date 2026-10-14 --slot 21:00 --market data/market/history/2026-10-14_21-00.json --diagnostic
+      - name: Verify supplementary rates, calendar and position as-of provenance gates offline
+        run: python -m unittest discover -s tests -p 'test_d3_source_context.py' -v
+      - name: Verify versioned v2 Python canonicalization
+        run: python -m unittest discover -s tests -p 'test_canonical_v2.py' -v
+      - name: Verify Python and Apps Script v2 canonical bytes digests and test HMAC
+        run: node scripts/test_canonical_v2_golden.js
+      - name: Test role-distinct detached Ed25519 evidence shape and anti-replay offline
+        run: node scripts/test_d2_detached_evidence.js
+      - name: Check signed offline evidence handoff against Python frozen preparation
+        run: node scripts/test_d2_offline_proof_handoff.js
+      - name: Detect Python/GAS serialization parity and incompatible float cases
+        run: node scripts/test_shadow_hash_golden.js

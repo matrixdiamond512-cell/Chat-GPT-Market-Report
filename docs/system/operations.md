@@ -27,3 +27,79 @@
 - Receipt正式移行には、既存Google Docsの実体ID・保存時刻・発行者を独立に照合し、schema-version付き新Receiptを生成・readbackする統合テストが必要。旧Receiptの欠損値を補作しない。公開の強制ゲートは移行完了・回帰テスト前に有効化しない。
 - Apps Scriptのインストール済みトリガーは、プロジェクトの権限付き実行環境で実トリガー一覧・所有者・直近実行履歴を確認するまで未確認とする。ソース上の定義と実際の定期実行を区別する。
 - 発行設定はmainのconfig/report_schedule.jsonで平日08:00/12:00/16:00/21:00、土日なし。旧時刻はlegacyStoredSlotsで履歴管理。
+
+## 2026-10-15 オフラインv2ハッシュ検証・D2着手判定（v1.12 / Draft）
+
+- 作業ブランチ`codex/producer-bound-publish-gate-20261015`のPR #130で`python -m unittest discover -s tests -p 'test_canonical_v2.py' -v`と`node scripts/test_canonical_v2_golden.js`、従来D1テストおよびApps Script回帰をGitHub Actionsで検証する。Python/GAS 5ベクトル一致・snapshot v1 ID維持・改ざん拒否を確認する。
+- 実行時はAPI key、Apps Script本番、Docs/Sheets/GitHub/Pages writerを使わない。v2 helperはまだ公開ゲートに接続しない。旧v1を自動移行せず、10月14日各レポートの公開保留を継続する。
+- D2の起動前に、OpenAI API projectと費用上限の個別承認、private store/IAM/retention/readback、source adapter/全数値検証、モデル版・request timeout/retry、producer専用署名鍵/検証鍵分離を確認する。未達項目は`BLOCKED`で記録し実API送信しない。
+- 既存ChatGPTタスクと時刻設定は変更しない。GitHub PR #130はDraft・未マージ、本番E5は未達。スケジュール／デプロイ／main統合は別途安全審査のうえ実施。
+
+## 2026-10-15 D2事前検証手順追補（Draft）
+PR #130の`python -m unittest discover -s tests -p 'test_d2_preflight.py' -v`と`python -m scripts.reporting.d2_preflight`をD1 CIで実行する。無設定時は`MISSING_MANIFEST`と`EXTERNAL_ATTESTATIONS_NOT_VERIFIED`でBLOCKED。合成manifestで形式上PASSでも実API送信と公開は許可されない。実API Projectと鍵、モデル実在/費用、private保存先・IAM/保持期間、source利用権、認証済み承認レコードを確認できるまでD2実行禁止。ログ/PR/Docsに秘密情報を貼らない。旧タスク・本番停止・Draft PRを維持する。
+
+
+## 2026-10-15 D2 Responses API offline検査・運用境界（Draft）
+`python -m unittest discover -s tests -p 'test_d2_responses_contract.py' -v`で、Responses APIの模擬レスポンス8件を通信なしで検証する。候補モデルsnapshotはOpenAI公式確認の`gpt-5.4-mini-2026-03-17`。出力はモデル応答構造の形式検査であり、実API呼出しの証明ではない。OpenAI project/API key・保存先・費用上限・独立承認が揃うまで送信しない。既存ChatGPTタスクは変更せず、Apps Script・GitHub本番公開も停止したままとする。
+
+## 2026-10-15 D2受信原本確認の運用追補（Draft）
+- CIで`python -m unittest discover -s tests -p 'test_d2_responses_contract.py' -v`を実行し、raw response bytesとnormalized JSONのdigestが別物であること、原本不一致／重複キー／不正UTF-8時の停止を確認する。
+- 今後の有料D2試験では、実際に受信したレスポンスの原本bytesを非公開で保存し、保存オブジェクトの再読み戻しとのbyte-exact比較まで確認する。dictから再生成したJSON bytesを「API原本」として保存・署名しない。
+- 原本バイト列のhashだけでは真正性は立証できない。外部送信権限、実API課金承認、private store、ソース利用権・原文↔Docs照合・全数値意味検証が未達ならAPI送信・公開ともBLOCKED。
+
+## 2026-10-15 D2 immutable evidence stagingのoffline運用（Draft）
+- `python -m unittest discover -s tests -p 'test_d2_private_store.py' -v`を既存D1 CIで実行する。CIには試験用の一時ディレクトリと無害なfixture bytesのみ使用し、実市場データ・API secrets・レポート原本を保存しない。
+- 専用private rootはPOSIX環境で外部管理された暗号化済みvolume上に配置する設計。現実の暗号化・IAM・保持期間・監査・分散lockは未設定のため、試作コードのみでD2実API試験を許可しない。
+- ファイル上書き・読戻し不一致・危険なpath/owner/mode/linkは即時停止し、欠落証拠を再生成して成功と扱わない。
+
+## 2026-10-15 D2数字照合ゲート運用追補（Draft）
+- CI実行：`python -m unittest discover -s tests -p 'test_d2_numeric_claims.py' -v`、`python -m unittest discover -s tests -p 'test_d2_responses_contract.py' -v`、既存D1テストを実行。本文に根拠なしの数値、数字位置重複、不正な単位、別出典ID、cutoff以降の観測、誤ったsource URL等が含まれた場合は生成結果を隔離・停止する。
+- 模擬出力の数字を検査し合格しても実報告の数値監査完了やE5承認とは呼ばない。現在の適用範囲は凍結6市場の`priceValue/changeValue/changePct`と限定的な字句解析。ニュース統計・PER/EPS・金利・日時・他市場の数値は根拠バンドル未接続のため遮断する。必要項目を削除して合格に偽装してはならない。
+- source bundleはスナップショットに含まれる主張の再照合用であり、取得先の独立認証・法的データ使用権・自然言語の意味照合の代わりではない。実API課金、永続private store接続、署名、公開は実施しない。
+
+## 2026-10-15 正式仕様書の単一正本運用手順
+1. 仕様追加/変更/削除時は最初に `docs/system/specification.md` と正式Google Docsの同一版「統合仕様」を更新する。**独立した変更仕様書を作成・継続更新しない**。詳細設計/PRコメントは検証ログに限り、正本にはしない。
+2. 旧変更仕様書は【アーカイブ・統合済・更新停止】に変更済み。参照・旧版復元は許可するが、現行手順の根拠は正本からのみ取り、変更内容の重複記載を禁ずる。
+3. 要件定義書は要求、運用マニュアルは検証/停止/復旧の手順を分担し、具体的な契約（schema、API、署名、数値照合、全writer）は仕様書へ集約。設計差分に応じて3文書の整合を確認する。
+4. 編集前後のGoogle Docs revision、GitHub blob SHA、ファイル名、章名、適用範囲、検証結果を確認する。未確認・Draft・本番採用済みの区別を維持し、GitHub/Google Docsのreadback後にのみ更新済みと報告する。
+5. 2026-10-15の変更は文書統合のみで、PR #130をmainにマージせず、APIキー/有料API送信/実トリガー/Apps Script本番配備/過去分公開を変更しない。
+
+## 2026-10-15 文書一本化後の運用手順
+技術仕様の正本は `docs/system/specification.md` とGoogle Docs正式仕様書の1組のみ。旧変更仕様書はアーカイブ・更新停止とし、今後別の変更仕様書を作成して仕様を二重管理しない。仕様変更時は正本の関連章・改訂履歴を更新してから、要件定義書（要求）と本マニュアル（実施・検証手順）に必要な差分のみ反映する。実装詳細ノートは参考・証拠記録に限る。改訂はGitHub blob SHAとGoogle Docs revisionを確認し、readbackまで終えて初めて更新済みと報告する。現行PR #130 Draft・未マージ、本番公開停止は変えない。
+
+## 2026-10-15 D2オフライン通し試験の運用（v1.14）
+CI：`python -m unittest discover -s tests -p 'test_d2_offline_pipeline.py' -v`。新規のテスト用一時POSIX非公開領域と合成応答だけを使う。固定slot claimが作成された後の失敗・timeout・invalidは「UNKNOWNまたはBLOCKED」で保存し、claimを勝手に削除しない。再実行前に独立のreconciliationと承認を要する。応答の原文保存・読戻しと数値照合・模擬費用の判定を分けてログに残す。Callableは任意の外部通信を技術的には実行できるため、CIの実行権限・通信遮断・秘密情報不付与を維持し、実API clientを渡さない。原文/private証拠を公開repoやCI artifactへアップロードしない。これは実API送信・デプロイ・公開手順ではない。正本は正式仕様書v1.14。
+
+## 2026-10-15 D2オフライン復旧診断のSOP（v1.15）
+- `python -m unittest discover -s tests -p 'test_d2_reconciliation.py' -v` をGitHub ActionsのD1 offline CIに含める。**現状は合成fixtureのみ**。本番API・publisherには実行しない。
+- 異常発生時はまず`slot claim`・`raw`・`result`の有無を読取専用で検査する。`UNRESOLVED_NO_CLAIM`は未送信の証明ではない。`INTERRUPTED_NEEDS_MANUAL_REVIEW`や`UNKNOWN`はprovider照合・オーナー判断まで再試行禁止。`INCONSISTENT_UNTRUSTED`は証拠毀損として隔離・停止する。`OFFLINE_CONSISTENT_UNATTESTED`もprovider原本・IAM・署名の保証ではなく公開しない。
+- 診断の`read_for_diagnostics`は未認証bytesを検査する補助関数であり、返されたbytesから計算したSHAを新しい独立receiptとして発行しない。原本を上書き・削除せず、元のreceipt・record・ログを保全する。正式な手動reconciliation/再送承認の運用は未実装であり、現行の全状態は`retry_allowed=false`。
+
+## 2026-10-15 D2費用・schema安全ゲートの運用（v1.16）
+オフラインテストは `python -m unittest discover -s tests -p 'test_d2_offline_pipeline.py' -v`、`-p 'test_d2_preflight.py'`、`-p 'test_d2_reconciliation.py'`。preflight計画額とrun cap、固定のmodel/schema/料金、claim/結果receiptの費用フィールドとreadbackを確認。超過時にfixture呼出しが0で、claimも生成されないことを必須判定とする。実行後のusage申告が個別token capを超えたらOFFLINE_BLOCKED。テストPASSでも料金の最新性、APIの実入力token、外部上限設定、月間請求額は未確認として扱い、有料API・本番公開を開始しない。正式仕様は技術仕様書v1.16のみに置き、旧変更仕様書を更新しない。
+
+## 2026-10-15 D2公式token計測・ハード費用管理の運用追補（v1.17）
+- 無課金CI：\`python -m unittest discover -s tests -p 'test_d2_token_count_contract.py' -v\` と \`python -m unittest discover -s tests -p 'test_d2_monthly_budget.py' -v\`。D1 Offline Market Report Shadow WorkerのCIで成功数を確認する。
+- 送信前の外部確認項目：①固定モデルの現行料金・利用可否、②最終create payloadと完全一致する対象で公式 \`responses.input_tokens.count\` を権限のある環境から実行し、通信のリクエスト・レスポンス原本・認証された取得者を結ぶこと、③実際のAPIプロジェクトと組織双方の**hard spend limit**を設定・第三者確認（アラートのみでは不十分）、④月間実績・予約済み額・残高の監査と競合排他、⑤費用オーナーによる明示承認、⑥private evidenceと鍵・IAM・retention、⑦異常時provider照合のSOP。公式のhard capも反映遅延で設定額を若干超える可能性がある。
+- 現時点では上記の外部認証と送信権限が揃っておらず、模擬countや月間残高だけで送信してはならない。APIキーを公開リポジトリ／Docs／CIログへ記録しない。実API計測とResponses送信は承認まで行わない。本文の保存・公開は別ゲートでBLOCKEDのまま。独立変更仕様書は作らず、正式仕様書v1.17を正本として更新する。
+
+## 2026-10-15 D2オフライン事前審査→生成統合のSOP（v1.18）
+CIで`python -m unittest discover -s tests -p 'test_d2_offline_prepared_run.py' -v` を実行する。前段count不正、月額予算超過、hard cap無効、report_id不一致、run ID重複が生じたら、**生成用fixtureを呼び出さない**ことを確認する。合成count原本とpreparation判断記録をworktree外のローカルprivate stagingに保存・独立読戻しし、実行claimの要求SHA/予算capと突合する。timeout/中断/重複時は記録を保持し無条件再実行しない。本統合は実API countの認証、外部請求額の真実性、クラウドIAM、月額予算の原子的予約を保証しないため、合成PASSをproduction API送信許可に使用しない。既存定時ChatGPTタスク、GAS、本番公開、PR #130 Draftは変更しない。仕様の詳細を別の変更仕様書へ増やさない。
+
+## 2026-10-15 D2.2準備/生成チェーンの読み取り専用復旧SOP（v1.19）
+GitHub ActionsのD1 offline worker CIで`python -m unittest discover -s tests -p 'test_d2_prepared_reconciliation.py' -v`（20件）を実行する。中断後は元ファイルを移動・上書き・削除せず、`reconcile_prepared_offline`で同一run/attemptの`-inputcount`、`-preparation`、`slot claim`、`-raw`、`-result`の存在・許可境界・SHA/費用再計算を確認する。`UNRESOLVED_NO_PREPARATION`は未実行の証明にならない。`INTERRUPTED_NEEDS_MANUAL_REVIEW`は手動provider照合待ち。`INCONSISTENT_UNTRUSTED`は隔離・停止。`OFFLINE_BLOCKED_RECORDED`も再実行しない。`OFFLINE_CHAIN_CONSISTENT_UNATTESTED`であっても送信・本番保存/公開を禁止。合成月額入力値の外部真正性・実API通信・本番秘密鍵・cloud証拠保存・独立承認は別工程。変更仕様書を増やさない。
+
+## 2026-10-15 月間予算証拠の全入力コミットメントSOP（v1.20）
+生成前preparationには`schema=d2-offline-preparation/v2`と`monthly_inputs_sha256`が必要。読取り専用復旧診断では再提示された月間予算のすべての内訳、両hard限度、承認月限度、対象年月・枠IDでSHA-256を再計算し、記録値と不一致なら`INCONSISTENT_UNTRUSTED`。同じ合計支出でも実績と予約の配分が異なる場合、また最小限度に関係しない上限値だけが変わった場合も停止する。旧v1のpreparationをv2として自動受入れしない。CIの`test_d2_prepared_reconciliation.py`と`test_d2_offline_prepared_run.py`で回帰確認。これは局所fixtureの同一性チェックで、暗号化・真正な請求receiptやAPI送信許可の代替ではない。独立変更仕様書は増やさない。
+
+## 2026-10-15 D2署名付き証拠の安全運用SOP（v1.21）
+CIで`node scripts/test_d2_detached_evidence.js`を実行する。試験の秘密鍵は毎回Nodeがメモリ上で生成し、固定秘密鍵・署名権限・APIキーをリポジトリやCIログへ保存しない。Pythonの固定した生成要求/計測要求/月額入力のハッシュが署名ペイロードと一致すること、他用途/他対象、改ざん、期限切れ、非正規JSON、なりすまし公開鍵、単一鍵流用を拒否することを確認する。将来の本番利用では、署名発行者の法的・技術的認証、鍵fingerprintの独立承認、発行/失効時刻・鍵ローテーション・nonce/replay台帳、取得元ログ原本・請求原本・IAM/Cloud KMSを用意するまで実行許可を付与しない。現コードはオフラインの数学的検証専用で`api_send_allowed=false`、公開不可のまま。別の変更仕様書は作成しない。
+
+## 2026-10-15 D2準備記録と署名原文のクロスチェックSOP（v1.22）
+CIで`node scripts/test_d2_detached_evidence.js`および`node scripts/test_d2_offline_proof_handoff.js`を実行し、前者32件・後者18件の正常/異常試験を確認する。試験用鍵はメモリ内で一時生成し、実鍵・本番信頼rootをリポジトリへ保存しない。D2 preparation v2、count raw、月間予算の全入力JSONをそれぞれbyte-exactに照合し、2つの役割で別公開鍵fingerprintを要求する。異なるIDだが同じ鍵、原文変更、古いproof、ID・snapshot・request SHA変更、月間入力SHA変更、署名の取り違え、署名失効は停止。**ローカルの数学的検証は実課金・Provider発行者の認証・公開許可と切り離す**。実本番を許可するには、信頼rootの独立設定、署名主体認証、鍵失効と照合ログ、請求実績と費用上限の第三者確認が先決。旧変更仕様書は増やさない。
+
+## 2026-10-15 D2計測原文の意味照合SOP（v1.23）
+`node scripts/test_d2_offline_proof_handoff.js`をCIで実行する。従来の18試験に5件追加し、合成原文とEd25519署名がSHA・IDに一致していても、計測原文の`input_tokens`がpreparationの`counted_input_tokens`と違う場合を拒否する。重複`input_tokens`・誤ったobject種別・凍結preparation側の数値差も停止する。JSONの空白やフィールド順が違うだけの場合は構造と実数値が一致する限りオフライン検証を継続しても、`api_send_allowed=false`、`retry_allowed=false`、`publication_allowed=false`のままとする。必ずD1 offline CI全系成功を確認し、暗号鍵・APIキーは試験へ付与しない。旧変更仕様書は更新しない。実API・請求・出典の認証と費用承認、本番公開は別ゲートでBLOCKEDを維持する。
+
+## 2026-10-15 D2月間予算算術の証拠照合SOP（v1.24）
+CIで`node scripts/test_d2_offline_proof_handoff.js`を実行し、従来23ケースに11件追加した全34ケースの結果を確認する。特に月額原文を再生成してSHAとEd25519署名を作り直しても、`counted_model_cost_usd`・`monthly_total_with_reservation_usd`・`monthly_effective_cap_usd`が計算上矛盾する場合にfail-closedとなることを確かめる。計測token、最大token、run cap、両hard limit有効状態、対象月、過大支出・予約、不正小数表記をテストする。整合した合成fixtureは`OFFLINE_PREPARATION_DETACHED_PROOFS_MATCH_UNATTESTED`のみとし、API送信・再送・公開は常にfalse。CI結果は最新版commit単位で読み戻してから報告し、本番鍵・外部証拠・費用承認が未接続のまま実送信へ移行しない。旧変更仕様書はアーカイブのまま更新しない。

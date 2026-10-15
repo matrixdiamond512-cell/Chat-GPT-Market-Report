@@ -80,6 +80,10 @@ function processHistoricalMarketReportBatch_() {
           usedFallback = true;
         }
 
+        if (typeof marketReportVerifyProducerProof_ !== 'function') {
+          throw new Error('PRODUCER_PROOF_BLOCKED: signed producer proof verifier is unavailable.');
+        }
+        marketReportVerifyProducerProof_(report);
         reportMap.set(report.date + ' ' + report.time, report);
         state.imported += 1;
         if (usedFallback) state.fallback += 1;
@@ -88,6 +92,16 @@ function processHistoricalMarketReportBatch_() {
         errors.push(file.getName() + ': ' + error.message);
       }
     });
+
+    // Missing producer evidence is a batch-level stop: do not write an index
+    // containing any unverified historical Docs from this import batch.
+    const producerProofFailures = errors.filter(function(error) {
+      return String(error).indexOf('PRODUCER_PROOF_BLOCKED:') >= 0;
+    });
+    if (producerProofFailures.length) {
+      throw new Error('PRODUCER_PROOF_BLOCKED: historical batch rejected before GitHub write.\\n' +
+        producerProofFailures.join('\\n'));
+    }
 
     const nextReports = Array.from(reportMap.values())
       .sort((a, b) => (b.date + ' ' + b.time).localeCompare(a.date + ' ' + a.time));

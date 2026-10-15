@@ -265,8 +265,9 @@ function archiveMarketReportFromDriveWithoutLatestRollback_(file, expectedHour) 
     throw new Error('GitHub archival publication dependencies missing');
   }
   const report = buildWebReportFromGoogleDoc_(file);
+  // The archival writer must enforce provenance before the first GitHub write.
+  marketReportVerifyProducerProof_(report);
   runMarketReportAutoValidation_(report, expectedHour);
-  report.bodyHash = marketReportSha256_(Utilities.newBlob(report.fullText, 'text/plain').getBytes());
   verifyMarketReportSourceDocReadback_(report);
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
@@ -385,6 +386,7 @@ function marketReportAutoVerifyPublishedSource_(file, expectedHour) {
     if (typeof getGitHubJsonFile_ !== 'function' ||
         typeof normalizeWebReportList_ !== 'function') return false;
     const report = buildWebReportFromGoogleDoc_(file);
+    marketReportVerifyProducerProof_(report);
     if (Number(String(report.time).slice(0, 2)) !== Number(expectedHour)) return false;
     const key = report.date + '_' + report.time.replace(':', '-');
     const canonicalResponse = getGitHubJsonFile_('reports/' + key + '.json');

@@ -233,6 +233,8 @@ function publishMarketReportFromDocUrlPrompt() {
 
 function publishWebReportObject_(report) {
   report = validateWebReportObject_(report);
+  // The publisher cannot manufacture identity from Docs or mutable latest data.
+  marketReportVerifyProducerProof_(report);
   report.report_status = 'BLOCKED';
   report.infographic_status = 'NOT_READY';
   if (typeof validateMarketReportBeforePublish_ !== 'function') {
@@ -250,7 +252,10 @@ function publishWebReportObject_(report) {
   lock.waitLock(30000);
 
   try {
-    report.bodyHash = marketReportSha256_(Utilities.newBlob(report.fullText, 'text/plain').getBytes());
+    // Compare against the producer-owned expectation, never reset it from Docs.
+    if (marketReportSha256_(Utilities.newBlob(report.fullText, 'text/plain').getBytes()) !== report.bodyHash) {
+      throw new Error('PRODUCER_PROOF_BLOCKED: body changed before publishing');
+    }
     verifyMarketReportSourceDocReadback_(report);
     const key = report.date + '_' + report.time.replace(':', '-');
     report.report_status = 'PUBLISHED';
@@ -868,7 +873,8 @@ function buildWebReportFromGoogleDoc_(file) {
     },
     structuredFromFullText: true,
     structureVersion: 7,
-    revision: String(file.getLastUpdated().getTime())
+    // The signed producer proof supplies revision; Drive mtime is not revision.
+    revision: null
   };
 
   if ((!report.riskManagement || !report.riskManagement.length) && report.breakConditions) {

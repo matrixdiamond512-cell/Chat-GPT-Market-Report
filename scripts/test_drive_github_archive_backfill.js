@@ -12,6 +12,8 @@ const ctx={
 marketReportAutoVerifyPublishedSource_:()=>record.length===2,
 buildWebReportFromGoogleDoc_:()=>({...report}),
 runMarketReportAutoValidation_:()=>({}),
+// This routing test simulates a successfully verified producer identity.
+marketReportVerifyProducerProof_:(report)=>{report.bodyHash='body-sha'; return {revision:42}}, 
 marketReportSha256_:()=> 'body-sha',
 Utilities:{newBlob:()=>({getBytes:()=>[]})},
 verifyMarketReportSourceDocReadback_:()=>true,

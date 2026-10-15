@@ -30,6 +30,15 @@ context.validateMarketReportBeforePublish_ = report => {
   return { ok: true };
 };
 context.marketReportSha256_ = bytes => crypto.createHash('sha256').update(Buffer.from(bytes.map(v => v & 255))).digest('hex');
+// This fixture exercises the independent body/image lanes after a separately
+// authenticated producer-bound source has passed. Cryptographic and no-write
+// failures are tested in test_market_report_producer_proof.js.
+context.marketReportVerifyProducerProof_ = report => {
+  report.revision = 1;
+  report.bodyHash = fixtureBodyHash;
+  report.snapshot_id = 'snap-1';
+  return {report_id: '2026-10-09_08-00', revision: 1, body_sha256: fixtureBodyHash};
+};
 context.verifyMarketReportSourceDocReadback_ = () => {};
 context.verifyPublicMarketReport_ = report => {
   if (report.report_status !== 'PUBLISHED') throw new Error('body was not published first');
