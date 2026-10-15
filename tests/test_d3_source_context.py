@@ -45,7 +45,15 @@ class TestSupplementaryEvidence(unittest.TestCase):
             self.assertLessEqual(item["source_generated_at"], c.data_cutoff)
             self.assertTrue(item["source_url"].startswith("https://"))
         self.assertFalse(any(x.get("series") == "米10年債利回り" for x in b["entries"]),
-                         "Stale dated US yield is not same-day evidence")
+                         "Stale dated US yield is not same-day evidence; "
+                         + repr({"us10_source_rows": [
+                             (r.get("name"), r.get("asOf")) for r in
+                             load_repository_sources(ROOT)["rates"]["rates"]
+                             if r.get("name") == "米10年債利回り"
+                         ], "included": [
+                             (r.get("series"), r.get("as_of")) for r in b["entries"]
+                             if r.get("category") == "rates"
+                         ], "cutoff": c.data_cutoff}))
         self.assertTrue(any(x.get("series") == "日本10年国債利回り" for x in b["entries"]))
 
     def test_mutating_asof_or_source_without_hash_is_rejected(self):
