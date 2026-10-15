@@ -1199,9 +1199,8 @@ function archiveDashboardSummary(record) {
     });
   }
   const timelineRows = split(timeline)
-    .filter(s => /^(?:\d{1,2}:\d{2}|NY|欧州|東京への引き継ぎ)/.test(s))
-    .filter(s => /出来事|反応|米金利|株|市場|発表/.test(s))
-    .slice(0, 8)
+    .filter(s => s.includes("｜出来事：") && /株|市場|金利|発表|決算|取引|先物|ニュース/.test(s))
+    .slice(0, 12)
     .map(s => ({ time: s.match(/\b[0-2]?\d:[0-5]\d\b/)?.[0] || "時間帯", text: s }));
   const originalNews = split(section(/重要ニュース|ニュースと影響市場|ニュースと波及/));
   const news = originalNews.length ? originalNews : timelineRows.slice(0, 4).map(r => r.text);
@@ -1216,7 +1215,9 @@ function archiveDashboardSummary(record) {
     archiveTimelineRows: timelineRows,
     markets,
     theme: split(summary).slice(0, 3).join(" ").slice(0, 560),
-    changes: split(section(/版からの変化|からの変化/)).slice(0, 5),
+    changes: record.time === "12:00"
+      ? split(summary).slice(0, 2)
+      : split(section(/版からの変化|からの変化/)).slice(0, 5),
     consistency: split(section(/材料と値動きの整合性/)).slice(0, 5),
     leadingMarket: split(section(/主導市場・クロスアセット|材料と値動きの整合性・主導市場|今日の主導市場/)).slice(0, 3).join(" ") || split(summary)[0] || "",
     crossAssetFlow: split(section(/クロスアセット資金フロー|主導市場・クロスアセット/)).slice(0, 6),
@@ -1999,6 +2000,10 @@ function reportEventNextText(row, report) {
 }
 
 function renderEvents(report) {
+  const eventPanelHeading = document.querySelector(".event-panel .section-title-row h2");
+  if (eventPanelHeading) eventPanelHeading.textContent = report?.historicalArchiveDisplayOnly
+    ? "当日の市場時系列（実際に起きた出来事と市場反応）"
+    : "今後の重要イベント（簡易）";
   if (report?.historicalArchiveDisplayOnly) {
     const rows = Array.isArray(report.archiveTimelineRows) ? report.archiveTimelineRows : [];
     $("eventRows").innerHTML = rows.length ? rows.map(row => `<tr><td>${esc(row.time)}</td><td><span class="event-title">${esc(row.text)}</span></td><td>当時の市場</td><td>出来事</td><td>保存本文の時系列</td></tr>`).join("")
