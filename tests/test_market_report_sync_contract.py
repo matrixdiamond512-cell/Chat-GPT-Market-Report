@@ -166,5 +166,24 @@ class HistoricalFixtureTests(unittest.TestCase):
         self.assertIn("表示確認用サンプル", json.dumps(row, ensure_ascii=False))
 
 
+    def test_newest_verified_revision_wins_over_stale_latest_pointer(self):
+        canonical = source_report(8)
+        stale_pointer = source_report(7)
+        selected = sync_latest_report_publication.select_same_slot_revision(
+            [canonical, stale_pointer], "2026-10-13 16:00"
+        )
+        self.assertEqual(selected["revision"], 8)
+        self.assertEqual(selected["bodyHash"], SOURCE_HASH)
+        self.assertEqual(selected["fullText"], SOURCE_TEXT)
+
+    def test_newer_revision_from_another_doc_stays_blocked(self):
+        canonical = source_report(8)
+        stale_pointer = source_report(7)
+        stale_pointer["sourceDocument"]["id"] = "different-doc-id"
+        with self.assertRaisesRegex(SystemExit, "source document ID changed"):
+            sync_latest_report_publication.select_same_slot_revision(
+                [canonical, stale_pointer], "2026-10-13 16:00"
+            )
+
 if __name__ == "__main__":
     unittest.main()
