@@ -45,7 +45,7 @@ class MarketTimeseriesEvidenceTests(unittest.TestCase):
             self.assertEqual("source-a", archive["snapshots"][0]["markets"]["usdjpy"]["sourceId"])
 
     def test_late_generated_or_observed_value_is_not_archived(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with local_temporary_directory() as directory:
             path = Path(directory) / "timeseries.json"
             self.assertFalse(record_market_timeseries(
                 sample(generated_at="2026-10-15T16:01:00+09:00"), path))
@@ -54,7 +54,7 @@ class MarketTimeseriesEvidenceTests(unittest.TestCase):
             self.assertFalse(path.exists())
 
     def test_archives_are_sorted_and_idempotent_for_same_timestamp(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with local_temporary_directory() as directory:
             path = Path(directory) / "timeseries.json"
             first = sample(generated_at="2026-10-15T15:30:00+09:00")
             second = sample(generated_at="2026-10-15T15:39:00+09:00", as_of="2026-10-15T15:38:00+09:00")
@@ -68,7 +68,7 @@ class MarketTimeseriesEvidenceTests(unittest.TestCase):
             )
 
     def test_conflicting_sample_at_same_timestamp_fails(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with local_temporary_directory() as directory:
             path = Path(directory) / "timeseries.json"
             record_market_timeseries(sample(), path)
             conflicting = sample()
@@ -77,7 +77,7 @@ class MarketTimeseriesEvidenceTests(unittest.TestCase):
                 record_market_timeseries(conflicting, path)
 
     def test_archive_rejects_cross_slot_or_naive_timestamp(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with local_temporary_directory() as directory:
             path = Path(directory) / "timeseries.json"
             cross_slot = sample()
             cross_slot["reportSlot"] = "12:00"
