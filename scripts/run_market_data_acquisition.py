@@ -303,6 +303,74 @@ def within_report_cutoff(payload: dict[str, Any]) -> bool:
     return True
 
 
+def _timestamp_jst(value: Any) -> dt.datetime | None:
+    if not value:
+        return None
+    try:
+        parsed = dt.datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
+    if parsed.tzinfo is None:
+        return None
+    return parsed.astimezone(JST)
+
+
+def record_market_timeseries(payload: dict[str, Any], path: Path) -> bool:
+    """Persist one cutoff-valid acquisition sample for report timelines."""
+    slot = str(payload.get("reportSlot") or "")
+    generated_at = _timestamp_jst(payload.get("generatedAt"))
+    if slot not in {"08:00", "12:00", "16:00", "21:00"} or generated_at is None:
+        return False
+    hour, minute = (int(part) for part in slot.split(":"))
+    cutoff = dt.datetime.combine(generated_at.date(), dt.time(hour, minute), tzinfo=JST)
+    if generated_at > cutoff:
+        return False
+    for item in (payload.get("markets") or {}).values():
+        if not isinstance(item, dict):
+            continue
+        for key in ("asOf", "fetchedAt"):
+            value = item.get(key)
+            if value:
+                timestamp = _timestamp_jst(value)
+                if timestamp is None or timestamp > cutoff:
+                    return False
+
+    record = {
+        "generatedAt": generated_at.isoformat(),
+        "reportSlot": slot,
+        "overallStatus": str(payload.get("overallStatus") or "unknown"),
+        "markets": payload.get("markets") if isinstance(payload.get("markets"), dict) else {},
+        "missingRequired": payload.get("missingRequired") or [],
+        "fallbackCount": int(payload.get("fallbackCount") or 0),
+    }
+    archive = market_data.load_json(path, {})
+    if archive and (
+        archive.get("schemaVersion") != "1.0"
+        or archive.get("reportDate") != generated_at.date().isoformat()
+        or archive.get("reportSlot") != slot
+        or not isinstance(archive.get("snapshots"), list)
+    ):
+        raise ValueError(f"Timeline evidence archive identity/schema mismatch: {path}")
+    archive = archive or {
+        "schemaVersion": "1.0",
+        "reportDate": generated_at.date().isoformat(),
+        "reportSlot": slot,
+        "snapshots": [],
+    }
+    by_time = {
+        str(item.get("generatedAt")): item
+        for item in archive["snapshots"] if isinstance(item, dict)
+    }
+    existing = by_time.get(record["generatedAt"])
+    if existing is not None and existing != record:
+        raise ValueError("Conflicting timeline evidence for generatedAt " + record["generatedAt"])
+    by_time[record["generatedAt"]] = record
+    archive["snapshots"] = [by_time[key] for key in sorted(by_time)]
+    archive["updatedAt"] = record["generatedAt"]
+    market_data.write_json(path, archive)
+    return True
+
+
 def write_acquisition_status(payload: dict[str, Any]) -> None:
     acquisition = payload.get("acquisition") or {}
     status = {
@@ -339,6 +407,13 @@ def main() -> int:
         # Never modify latest/history/dashboard/ChatGPT data when the
         # acquisition time is inconsistent with the requested report slot.
         return 5
+    generated = _timestamp_jst(payload.get("generatedAt"))
+    if generated:
+        archive_path = ROOT / "data" / "market" / "timeseries" / f"{generated.date().isoformat()}_{slot.replace(':', '-')}.json"
+        if record_market_timeseries(payload, archive_path):
+            print(f"Recorded cutoff-valid timeline sample: {archive_path.relative_to(ROOT)}", flush=True)
+        else:
+            print("Skipped timeline sample that could not be proven at the report cutoff.", flush=True)
     market_data.write_outputs(payload)
     # Reset the ChatGPT input to the current independent acquisition while the
     # report is still being assembled. Publication of the 08:00 report later

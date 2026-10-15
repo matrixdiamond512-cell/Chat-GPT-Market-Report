@@ -60,21 +60,25 @@ def attach_market_data(dashboard: dict[str, Any], market_data: dict[str, Any]) -
         )
     result["errors"] = errors
 
+    # The independent market feed belongs ONLY to the dashboard-level
+    # marketData field. It is not part of the canonical report body/identity.
+    # Remove stale nested copies created by earlier versions of this adapter
+    # without changing the report text, hash, revision, or source document.
     latest_report = result.get("latestReport")
-    if isinstance(latest_report, dict):
+    if isinstance(latest_report, dict) and "marketData" in latest_report:
         latest_report = deepcopy(latest_report)
-        latest_report["marketData"] = market_data
+        latest_report.pop("marketData", None)
         result["latestReport"] = latest_report
 
     reports = result.get("reports")
-    if isinstance(reports, list) and reports:
-        reports = deepcopy(reports)
-        current_key = result.get("currentReportKey") or ""
-        for index, report in enumerate(reports):
-            if index == 0 or f"{report.get('date', '')} {report.get('time', '')}" == current_key:
-                report["marketData"] = market_data
-                break
-        result["reports"] = reports
+    if isinstance(reports, list) and any(
+        isinstance(report, dict) and "marketData" in report for report in reports
+    ):
+        result["reports"] = [
+            {key: value for key, value in report.items() if key != "marketData"}
+            if isinstance(report, dict) else report
+            for report in reports
+        ]
     return result
 
 

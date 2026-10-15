@@ -243,6 +243,9 @@ function validateMarketReportManualContract_(report, byName, errors) {
   if (dateText >= MARKET_REPORT_PREPUBLISH_CONFIG.manualEnforceFrom && source.length < 1200) {
     errors.push(timeText + ' SOP公開本文は1,200文字以上の原文全文が必要です。');
   }
+  marketReportPrePublishTimelineIssues_(source, timeText).forEach(function(issue) {
+    errors.push(timeText + ' TIMELINE_CHECK: ' + issue);
+  });
   var firstLine = source.split('\n').map(function(line) { return line.trim(); }).filter(Boolean)[0] || '';
   if (firstLine !== String(report.title || '')) {
     errors.push(timeText + ' 本文先頭のタイトルとdate/timeタイトルが一致しません。');
@@ -298,6 +301,136 @@ function validateMarketReportManualContract_(report, byName, errors) {
       errors.push(timeText + ' ' + field + ': 複数セクションが1フィールドへ連結されています。');
     }
   });
+}
+
+/**
+ * Validate the narrative timeline table shared by the 08:00/12:00/16:00/21:00
+ * publication slots. The gate checks coverage and explanatory fields; it does
+ * not infer market causes from price rows or treat report time as event time.
+ */
+function marketReportPrePublishTimelineIssues_(source, timeText) {
+  var periods = {
+    '08:00': [
+      ['開場前', ['開場前', '寄り付き前']],
+      ['寄り付き', ['寄り付き', '開場']],
+      ['序盤', ['序盤']],
+      ['中盤', ['中盤']],
+      ['終盤', ['終盤']],
+      ['東京への引き継ぎ', ['東京への引き継ぎ', '東京時間への引き継ぎ']]
+    ],
+    '12:00': [
+      ['寄り付き前', ['寄り付き前', '前場寄り前']],
+      ['寄り付き', ['寄り付き']],
+      ['前場序盤', ['前場序盤']],
+      ['前場中盤', ['前場中盤']],
+      ['前引け', ['前引け']]
+    ],
+    '16:00': [
+      ['寄り付き前', ['寄り付き前', '前場寄り前']],
+      ['寄り付き', ['寄り付き']],
+      ['前場序盤', ['前場序盤']],
+      ['前場中盤', ['前場中盤']],
+      ['前引け', ['前引け']],
+      ['後場序盤', ['後場序盤']],
+      ['後場中盤', ['後場中盤']],
+      ['大引け', ['大引け']],
+      ['欧州への引き継ぎ', ['欧州への引き継ぎ', '欧州時間への引き継ぎ']]
+    ],
+    '21:00': [
+      ['欧州開場前', ['欧州開場前', '欧州寄り前']],
+      ['欧州寄り付き', ['欧州寄り付き', '欧州寄り']],
+      ['欧州序盤', ['欧州序盤']],
+      ['欧州中盤', ['欧州中盤']],
+      ['NY開場前', ['NY開場前', 'NY寄り前']]
+    ]
+  };
+  var columns = [
+    '時間帯', 'JST時間範囲/観測制約', '出来事・確認可能な市場状態',
+    '市場・業種・銘柄の反応', '相場上の意味・主導要因',
+    '時刻・出典・観測制約', '次の時間帯への引き継ぎ'
+  ];
+  var issues = [];
+  var lines = String(source || '').replace(/\r/g, '').split('\n');
+  var starts = [];
+  lines.forEach(function(line, index) {
+    if (/^\s*(?:\d{1,2}[．.、)）]|[■◆◇●▶]).*時系列/.test(line)) starts.push(index);
+  });
+  if (starts.length !== 1) return ['時系列セクションが一意に見つかりません'];
+
+  var sectionLines = [];
+  for (var i = starts[0] + 1; i < lines.length; i++) {
+    if (/^\s*\d{1,2}[．.、)）]\s*\S/.test(lines[i])) break;
+    sectionLines.push(lines[i]);
+  }
+  var headerIndex = -1;
+  var normalize = function(value) { return String(value || '').replace(/\s+/g, ''); };
+  for (var h = 0; h < sectionLines.length; h++) {
+    if (/^\s*\|.*\|\s*$/.test(sectionLines[h])) { headerIndex = h; break; }
+  }
+  if (headerIndex < 0) return ['時系列テーブルがありません'];
+  var header = sectionLines[headerIndex].trim().slice(1, -1).split('|').map(normalize);
+  if (header.length !== columns.length || !columns.every(function(value, index) { return header[index] === normalize(value); })) {
+    return ['時系列テーブルの列が共通契約と一致しません'];
+  }
+
+  var slotPeriods = periods[timeText];
+  var found = {};
+  var cellSignals = {
+    2: /確認|観測|報道|発表|材料|売買|続|転換|反転|急落|急騰|上昇|下落|横ばい|動|取引|休場|発生|形成|警戒/,
+    3: /上昇|下落|反応|買い|売り|円高|円安|低下|上昇|広が|優勢|軟調|堅調|反発|急落|急騰|横ばい|縮小|拡大/,
+    4: /ため|背景|示|意味|主導|重要|波及|影響|転換|続|反映|焦点|リスク|注目|警戒|評価|受け止|整合|乖離|局面|見極め|待ち/,
+    5: /出典|根拠|観測|制約|報道|発表|未確認|確認できず|確認不能|fact[-_ ]?\w+/i,
+    6: /引き継|次|注目|確認|継続|監視/
+  };
+  var timePattern = /(?:[01]?\d|2[0-3]):[0-5]\d/g;
+  for (var rowIndex = headerIndex + 1; rowIndex < sectionLines.length; rowIndex++) {
+    var rowText = sectionLines[rowIndex].trim();
+    if (!/^\|.*\|$/.test(rowText) || /^\|[-: |]+\|$/.test(rowText)) continue;
+    var cells = rowText.slice(1, -1).split('|').map(function(value) { return value.trim(); });
+    if (cells.length !== columns.length) {
+      issues.push('時系列の行に必須列の欠落があります');
+      continue;
+    }
+    var canonical = null;
+    slotPeriods.forEach(function(period) {
+      if (period[1].indexOf(cells[0]) >= 0) canonical = period[0];
+    });
+    if (!canonical) {
+      issues.push('対象時間帯ではない行があります: ' + cells[0]);
+      continue;
+    }
+    if (found[canonical]) issues.push('時間帯が重複しています: ' + canonical);
+    found[canonical] = true;
+    [[2, '出来事・市場状態'], [3, '市場反応'], [4, '相場上の意味'], [5, '時刻・出典'], [6, '次時間帯への引き継ぎ']].forEach(function(field) {
+      if (!cells[field[0]] || !cellSignals[field[0]].test(cells[field[0]])) {
+        issues.push(canonical + ': ' + field[1] + 'が説明文になっていません');
+      }
+    });
+    if (!/\d{1,2}:\d{2}/.test(cells[1]) && cells[1].indexOf('観測制約') < 0) {
+      issues.push(canonical + ': JST時間範囲または観測制約がありません');
+    }
+    var timedText = cells[2] + ' ' + cells[3];
+    if (/\d{1,2}:\d{2}/.test(timedText) && !/(?:発生|発表|報道|市場観測|観測)時刻/.test(cells[5])) {
+      issues.push(canonical + ': 出来事/市場反応時刻と根拠欄の時刻区分が不明です');
+    }
+    if (timeText === '21:00') {
+      var match;
+      timePattern.lastIndex = 0;
+      while ((match = timePattern.exec(timedText)) !== null) {
+        var parts = match[0].split(':').map(Number);
+        var aroundTime = timedText.slice(Math.max(0, match.index - 22), match.index + match[0].length + 28);
+        var planned = /(?:予定|予想|未発表|今後|これから|控え|待機|見込み|翌日|明日)/.test(aroundTime);
+        var historical = /(?:前日|昨日|昨夜|先週|過去)/.test(aroundTime);
+        if (parts[0] * 60 + parts[1] > 1260 && !planned && !historical) {
+          issues.push('21:00時点より後の出来事を発生済みとして記載しています');
+        }
+      }
+    }
+  }
+  slotPeriods.forEach(function(period) {
+    if (!found[period[0]]) issues.push('必須時間帯が不足しています: ' + period[0]);
+  });
+  return issues;
 }
 
 /**

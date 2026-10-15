@@ -12,6 +12,19 @@ import build_reports
 import reconcile_report_history
 import validate_market_reports
 import verify_publication_consistency
+from reporting.timeline import TIMELINE_COLUMNS, TIMELINE_PERIODS
+
+
+def compliant_timeline(slot):
+    lines = ["1．市場時系列", "|"+"|".join(TIMELINE_COLUMNS)+"|", "|---|---|---|---|---|---|---|"]
+    for index,(period,_aliases) in enumerate(TIMELINE_PERIODS[slot]):
+        lines.append(
+            f"|{period}|09:00-10:00|市場の状態を確認し、売買材料の変化を観測しました。"
+            "|日経先物が下落し、半導体株への売りが広がりました。"
+            "|金利と株価の連動を示し、次の時間帯も確認が必要です。"
+            f"|根拠 F-{index+1}、市場観測時刻 09:30。|次の時間帯は金利と先物の反応を確認します。|"
+        )
+    return "\n".join(lines)
 
 
 class ReportContractTests(unittest.TestCase):
@@ -41,7 +54,7 @@ class ReportContractTests(unittest.TestCase):
             "date": "2026-09-25",
             "time": "16:00",
             "title": "マーケットレポート｜2026/09/25（金）16:00",
-            "fullText": "既存レポート本文。" * 150,
+            "fullText": "既存レポート本文。" * 150 + "\n" + compliant_timeline("16:00"),
         }
         errors, warnings = [], []
         validate_market_reports.validate_report_content(report, "report", True, errors, warnings)
