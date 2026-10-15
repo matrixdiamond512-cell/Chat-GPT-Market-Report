@@ -90,6 +90,13 @@ def _availability(observation: dict[str, Any], cutoff: dt.datetime) -> tuple[boo
             return False, "invalid_publication_time"
     if not retrieved_in_time and not published_in_time:
         return False, "no_proof_available_at_cutoff"
+    if published_in_time and not retrieved_in_time:
+        # Retrospective publication proof alone must not precede finalization.
+        # Otherwise a later close could be labeled as already published.
+        if not finalized:
+            return False, "market_finalization_time_unproven"
+        if _instant(proof_time) < _instant(finalized):
+            return False, "publication_predates_finalization"
     if status == "verified" and observation.get("fallbackUsed"):
         return False, "fallback_not_verified"
     field = str(observation.get("id") or "")
