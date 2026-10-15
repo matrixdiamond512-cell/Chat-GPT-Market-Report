@@ -1618,3 +1618,209 @@ td:last-child {
   color: var(--muted);
   border-color: color-mix(in srgb, currentColor 35%, transparent);
 }
+
+.market-timeline-panel {
+  margin: 14px 0;
+  padding: 18px;
+}
+
+.market-timeline-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.market-timeline-heading h2 {
+  margin: 0;
+  color: var(--navy);
+  font-size: 21px;
+}
+
+.market-timeline-heading p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.timeline-timezone,
+.timeline-evidence-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.timeline-empty,
+.timeline-identity-error {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  color: var(--muted);
+  background: var(--soft-blue);
+}
+
+.timeline-status-warning,
+.timeline-archive-warning {
+  margin: 0 0 14px;
+  padding: 11px 13px;
+  border-left: 4px solid #b7791f;
+  background: #fff8e6;
+  color: #684b0b;
+  font-size: 13px;
+}
+
+.market-timeline-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.market-timeline-event {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.market-timeline-event-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 9px;
+}
+
+.market-timeline-phase {
+  color: var(--navy);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.market-timeline-observation {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.market-timeline-event dl {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  gap: 6px 12px;
+  margin: 0;
+}
+
+.market-timeline-event dt {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.market-timeline-event dd {
+  min-width: 0;
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.market-timeline-event dd.is-missing {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.market-timeline-event dd.timeline-sources {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.market-timeline-archive {
+  margin-top: 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 13px;
+}
+
+.market-timeline-archive summary {
+  color: var(--navy);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.timeline-archive-warning {
+  margin-top: 12px;
+}
+
+.timeline-archive-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.timeline-archive-tab {
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--navy);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.timeline-archive-tab[aria-pressed="true"] {
+  border-color: #b7791f;
+  background: #fff8e6;
+}
+
+.timeline-archive-tab:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+@media (max-width: 640px) {
+  .market-timeline-panel {
+    padding: 13px;
+  }
+
+  .market-timeline-heading {
+    display: block;
+  }
+
+  .timeline-timezone {
+    margin-top: 8px;
+  }
+
+  .market-timeline-event {
+    padding: 12px;
+  }
+
+  .market-timeline-event dl {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .market-timeline-event dd {
+    margin: 0 0 8px;
+  }
+
+  .market-timeline-event dd:last-child {
+    margin-bottom: 0;
+  }
+
+  .timeline-archive-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

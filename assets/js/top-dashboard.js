@@ -77,6 +77,9 @@ let dashboardMeta = null;
 let dashboardCalendarEvents = [];
 let dashboardCalendarMeta = null;
 let stockAnalysisData = null;
+let marketTimelineArchive = null;
+let activeTimelineArchiveSlot = "08:00";
+const verifiedMarketTimelines = new Map();
 
 const $ = (id) => document.getElementById(id);
 
@@ -1167,6 +1170,13 @@ function selectReport(dateText, timeText) {
   const sameDate = reportsForDate(dateText);
   selectedReport = sameDate.find((report) => report.time === timeText) || sameDate.at(-1) || reports[0];
   render();
+  const selected = selectedReport;
+  verifyReportTimeline(selected).then((result) => {
+    if (selectedReport === selected) {
+      verifiedMarketTimelines.set(`${selected.date} ${selected.time}`, result);
+      renderMarketTimeline(selected);
+    }
+  });
   const url = new URL(window.location.href);
   url.searchParams.set("date", selectedReport.date);
   url.searchParams.set("time", selectedReport.time);
@@ -1989,6 +1999,117 @@ function renderScenarios(report) {
   renderProseBlock("conclusionText", conclusionFrom(report), "理由：結論に必要な項目がJSONにありません", 4, Infinity);
 }
 
+function renderTimelineEvents(timeline, slot, emptyText) {
+  if (!timeline || !Array.isArray(timeline.events) || !timeline.events.length) {
+    return `<p class="timeline-empty">${esc(emptyText || "このレポートには、確認可能な市場時系列データがありません。")}</p>`;
+  }
+  const phases = window.MarketTimeline.SLOT_DEFINITIONS[slot].phases;
+  const grouped = new Map(phases.map((phase) => [phase, []]));
+  timeline.events.forEach((event) => {
+    if (grouped.has(event.phase)) grouped.get(event.phase).push(event);
+  });
+  const missing = (label) => `<dd class="is-missing">${label}</dd>`;
+  return `<ol class="market-timeline-list">${phases.map((phase) => {
+    const events = grouped.get(phase);
+    if (!events.length) {
+      return `<li class="market-timeline-event"><div class="market-timeline-event-head"><span class="market-timeline-phase">${esc(phase)}</span></div><p class="timeline-empty">保存記録にこの段階の出来事はありません。</p></li>`;
+    }
+    return events.map((event) => `<li class="market-timeline-event"><div class="market-timeline-event-head"><span class="market-timeline-phase">${esc(phase)}</span><span class="market-timeline-observation">区分：${esc(event.timeLabel || "時刻記載なし")}</span></div><dl><dt>出来事の発生時刻</dt>${event.occurredAt ? `<dd>${esc(event.occurredAt)}</dd>` : missing("原本に正確な時刻の記載なし")}<dt>出来事</dt>${event.event ? `<dd>${esc(event.event)}</dd>` : missing("出来事の記載なし")}<dt>市場の反応</dt>${event.reaction ? `<dd>${esc(event.reaction)}</dd>` : missing("反応の記載なし")}<dt>反応の観測時刻</dt>${event.reactionObservedAt ? `<dd>${esc(event.reactionObservedAt)}</dd>` : missing("原本に反応の観測時刻の記載なし")}<dt>相場への意味</dt>${event.meaning ? `<dd>${esc(event.meaning)}</dd>` : missing("意味づけの記載なし")}<dt>次の注目点</dt>${event.nextWatch ? `<dd>${esc(event.nextWatch)}</dd>` : missing("次の注目点の記載なし")}<dt>出典</dt>${event.sources?.length ? `<dd class="timeline-sources">${event.sources.map(esc).join(" / ")}</dd>` : missing("出典の記載なし")}</dl></li>`).join("");
+  }).join("")}</ol>`;
+}
+
+function renderMarketTimeline(report) {
+  const slot = report.time;
+  const definition = window.MarketTimeline.SLOT_DEFINITIONS[slot];
+  const content = $("marketTimelineContent");
+  const context = $("marketTimelineContext");
+  if (!definition || !content || !context) return;
+
+  const reportKey = `${report.date} ${report.time}`;
+  context.textContent = `${dateToJp(report.date)} ${report.time}｜${definition.title}｜選択中のレポートと本文・版を照合`;
+  const validation = verifiedMarketTimelines.get(reportKey);
+  if (!validation) {
+    content.innerHTML = `<p class="timeline-empty">レポート本文と時系列データの対応を確認しています。</p>`;
+    return;
+  }
+  if (!validation.valid) {
+    content.innerHTML = `<p class="timeline-identity-error">時系列を表示できません。理由：${esc(validation.reason)}。</p>`;
+    return;
+  }
+
+  const timeline = validation.timeline;
+  const amendmentBanner = timeline.evidenceStatus === "AFTER_ISSUANCE_AMENDMENT"
+    ? `<p class="timeline-status-warning"><strong>${esc(timeline.amendmentDate || "日付未確認")}の事後改訂追補です。</strong> 発行当時の本文・snapshot・receiptを示すものではありません。公開状態：${esc(timeline.publicationStatus || "未確認")}。</p>`
+    : "";
+  content.innerHTML = `${amendmentBanner}${renderTimelineEvents(timeline, slot)}`;
+}
+
+function renderTimelineArchive() {
+  const tabs = $("timelineArchiveTabs");
+  const content = $("timelineArchiveContent");
+  if (!tabs || !content) return;
+  const slots = REPORT_TIMES;
+  tabs.innerHTML = slots.map((slot) => {
+    const item = marketTimelineArchive?.reports?.find((record) => record.reportTime === slot);
+    const verification = marketTimelineArchive?.verified?.[slot];
+    const disabled = !item || !verification?.valid;
+    const pressed = slot === activeTimelineArchiveSlot;
+    return `<button type="button" class="timeline-archive-tab" data-slot="${esc(slot)}" aria-pressed="${pressed}"${disabled ? " disabled" : ""}>${esc(slot)}</button>`;
+  }).join("");
+  tabs.querySelectorAll("button:not(:disabled)").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeTimelineArchiveSlot = button.dataset.slot;
+      renderTimelineArchive();
+    });
+  });
+  const timeline = marketTimelineArchive?.reports?.find((record) => record.reportTime === activeTimelineArchiveSlot);
+  const verification = marketTimelineArchive?.verified?.[activeTimelineArchiveSlot];
+  if (!marketTimelineArchive) {
+    content.innerHTML = `<p class="timeline-empty">保存済みの追補時系列を読み込めませんでした。</p>`;
+  } else if (!timeline || !verification?.valid) {
+    content.innerHTML = `<p class="timeline-identity-error">この追補は元レポートとの照合に失敗したため表示しません。${esc(verification?.reason || "対象データがありません")}</p>`;
+  } else {
+    content.innerHTML = `<p class="timeline-status-warning"><strong>後日改訂追補（${esc(timeline.amendmentDate)}）</strong>｜元記録の状態：${esc(timeline.publicationStatus)}｜本文ハッシュ・版・レポート時刻を照合済み。正式発行済みデータではありません。</p>${renderTimelineEvents(timeline, timeline.reportTime, "この追補には時系列イベントがありません。")}`;
+  }
+}
+
+async function verifyReportTimeline(report) {
+  const explicit = report.timeline && typeof report.timeline === "object";
+  const timeline = explicit ? report.timeline : window.MarketTimeline.parseTimelineText(report);
+  if (!timeline) return { valid: true, timeline: null };
+  const result = await window.MarketTimeline.verifyArchivedTimeline(timeline, report);
+  return { ...result, timeline, sourceKind: explicit ? "structured" : "body-extracted" };
+}
+
+async function loadMarketTimelineArchive() {
+  try {
+    const response = await fetch(`data/market-timelines/2026-10-15.json?ts=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    if (payload.schemaVersion !== "market-timeline-archive/v1" || !Array.isArray(payload.reports)) throw new Error("タイムラインデータ形式が不正です");
+    const verified = {};
+    for (const timeline of payload.reports) {
+      if (timeline.evidenceStatus !== "AFTER_ISSUANCE_AMENDMENT" || timeline.amendmentDate !== "2026/10/16") {
+        verified[timeline.reportTime] = { valid: false, reason: "事後追補の証拠情報が不正です" };
+        continue;
+      }
+      try {
+        const sourceResponse = await fetch(`${timeline.sourcePath}?ts=${Date.now()}`, { cache: "no-store" });
+        if (!sourceResponse.ok) throw new Error(`元レポート HTTP ${sourceResponse.status}`);
+        const source = await sourceResponse.json();
+        if (source.report_status !== timeline.publicationStatus) throw new Error("公開状態の不一致");
+        verified[timeline.reportTime] = await window.MarketTimeline.verifyArchivedTimeline(timeline, source);
+      } catch (error) {
+        verified[timeline.reportTime] = { valid: false, reason: error.message };
+      }
+    }
+    marketTimelineArchive = { ...payload, verified };
+  } catch (error) {
+    marketTimelineArchive = null;
+  }
+  renderTimelineArchive();
+}
+
 function renderFootnote(report) {
   const missing = MARKET_DEFINITIONS
     .map((definition) => [definition.display, parseMetric(report, definition)])
@@ -2005,6 +2126,8 @@ function render() {
   renderHeader(report);
   renderControls(report);
   renderMarketCards(report);
+  renderMarketTimeline(report);
+  renderTimelineArchive();
   renderTemperatureMini(report);
   renderProseList("themeList", proseItems([report.theme], 5, 180), "理由：相場テーマがJSONにありません");
   renderProseList("changeList", proseItems(report.changes, 4, 170), "理由：前回からの変化がJSONにありません");
@@ -2030,6 +2153,7 @@ async function init() {
     dashboardCalendarMeta = calendar;
     dashboardCalendarEvents = asArray(calendar.events).map(normalizeCalendarEvent).filter(Boolean);
     stockAnalysisData = await loadStockAnalysisData();
+    await loadMarketTimelineArchive();
 
     if (!reports.length) throw new Error("表示できるレポートがありません");
 
@@ -2044,6 +2168,8 @@ async function init() {
       canonicalUrl.searchParams.set("time", selectedReport.time);
       window.history.replaceState({}, "", canonicalUrl);
     }
+    const timelineResult = await verifyReportTimeline(selectedReport);
+    verifiedMarketTimelines.set(`${selectedReport.date} ${selectedReport.time}`, timelineResult);
     render();
   } catch (error) {
     $("reportStatus").textContent = "データ取得エラー";
