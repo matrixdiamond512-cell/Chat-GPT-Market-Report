@@ -1163,7 +1163,14 @@ function archiveSectionBody(report, pattern) {
   const lines = String(report.fullText || "").replace(/\r/g, "").split("\n");
   const header = line => {
     const m=String(line||"").trim().match(/^(?:\d{1,2}(?:補)?[．.]\s*|#{1,4}\s*|【)(.+?)(?:】)?$/);
-    if (m) return m[1].replace(/】$/, "").trim();
+    if (m) {
+      const title=m[1].replace(/】$/, "").trim();
+      // Bracketed column headers inside a numbered market-data section are data,
+      // not new sections. Do not truncate the 08:00 previous-close table.
+      if (/^【/.test(String(line||"").trim())
+          && /^(?:金|原油|日経225先物|USD\/JPY|EUR\/USD|BTCUSD|米株|日本株|為替・商品・暗号資産|日経225評価|海外株|主要株価|先物)$/.test(title)) return "";
+      return title;
+    }
     const bare=String(line||"").trim();
     if (/^(?:総合判断|主要市場データ|今日の相場テーマ|前回からの変化|市場別価格・見通し.*|クロスアセット資金フロー|需給・ポジション|重要ニュース|材料と値動きの整合性|今日の主導市場|メインシナリオ|代替シナリオ|崩れる条件|次の時間帯への引き継ぎ|NY市場の流れ)$/.test(bare)) return bare;
     return "";
@@ -1257,13 +1264,21 @@ function archiveDashboardSummary(record) {
     // Missing current-session quotes remain labeled as historical references.
     const atSource = raw.match(/(?:10\/\d{1,2}[^）]{0,55}|\b\d{1,2}:\d{2}[^）]{0,35})/);
     const observedAt = atSource ? atSource[0].slice(0, 56) : "原本の基準時刻を確認";
-    const value = blocked ? null : m?.[1] || fromBlock?.value || direct?.value || null;
+    const candidate = blocked ? null : m?.[1] || fromBlock?.value || direct?.value || null;
+    const numeric = candidate === null ? null : Number(String(candidate).replace(/,/g, ""));
+    const allowed = {
+      gold: [2500, 10000], oil: [30, 300], nikkei: [30000, 120000],
+      usdjpy: [90, 220], eurusd: [0.7, 1.8], btc: [15000, 300000]
+    }[spec.key];
+    // Reject numbers from clock times, dates, ordinal headings, or a different asset.
+    const value = Number.isFinite(numeric) && allowed && numeric >= allowed[0] && numeric <= allowed[1]
+      ? candidate : null;
     const outlookDesc = String(outlookLine).trim();
     archiveQuotes[spec.key] = {
       value, observedAt,
-      originalLine: raw || "取得不能（当該資料に価格欄なし）",
-      change: changePair ? Number(changePair[1].replace(/,/g, "")) : null,
-      changePct: pct !== null ? pct : pctOnly ? Number(pctOnly[1]) : null,
+      originalLine: value ? raw : "取得不能（原本に対応する市場の価格がないか、数値形式を安全に解釈できないため）",
+      change: value && changePair ? Number(changePair[1].replace(/,/g, "")) : null,
+      changePct: !value ? null : pct !== null ? pct : pctOnly ? Number(pctOnly[1]) : null,
       outlook: outlookDesc
     };
     markets.push({
