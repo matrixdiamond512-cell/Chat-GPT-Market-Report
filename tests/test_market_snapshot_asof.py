@@ -75,6 +75,12 @@ class SnapshotCutoffTests(unittest.TestCase):
         self.assertFalse(output["markets"]["nikkei225_pbr"]["productionEligible"])
         self.assertIsNone(output["markets"]["tse_prime_advancers"]["value"])
 
+    def test_wrong_valuation_basis_is_not_used_in_weighted_average_field(self):
+        source = self._payload()
+        source["markets"]["nikkei225_pbr"]["seriesBasis"] = "index_basis"
+        projected = project_snapshot_asof(source, CUTOFF)
+        self.assertIsNone(projected["markets"]["nikkei225_pbr"]["value"])
+
     def test_old_later_retrieval_requires_dated_publication_proof(self):
         source = self._payload()
         cash = source["markets"]["nikkei225_cash"]
