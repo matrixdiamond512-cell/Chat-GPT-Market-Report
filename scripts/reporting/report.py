@@ -11,13 +11,12 @@ ALIASES = {alias: canonical for canonical, aliases in REGISTRY['sections'].items
 
 
 def canonical_heading(line):
-    text = line.strip()
-    text = re.sub(r'^#{1,3}\s+', '', text)
+    text = str(line or "").strip()
+    text = re.sub(r'^#{1,6}\\s+', '', text)
     if text.startswith('【') and text.endswith('】'):
         text = text[1:-1].strip()
-    text = re.sub(r'^\d{1,2}[．.]\s*', '', text)
+    text = re.sub(r'^\\s*(?:第?\\d{1,2}|[一二三四五六七八九十]+)\\s*[．.、)）]\\s*', '', text)
     return ALIASES.get(text)
-
 
 def parse_sections(full_text):
     sections = []
