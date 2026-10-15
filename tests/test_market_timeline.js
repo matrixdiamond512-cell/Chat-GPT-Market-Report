@@ -124,6 +124,7 @@ test("12: panel is below six-market summary, upcoming-events table remains, and 
   assert.match(dashboard, /反応の観測時刻/);
   assert.match(dashboard, /dashboardPayload\?\.isStale === true/);
   assert.match(dashboard, /後続レポートの証跡を確認中です/);
+  assert.match(dashboard, /activeTimelineArchiveSlot = selectedReport\.time/);
   const css = fs.readFileSync(path.join(root, "assets/css/top-dashboard.css"), "utf8");
   assert.match(css, /@media\s*\(max-width:\s*640px\)/);
   assert.match(css, /\.market-timeline-event dl\s*\{\s*grid-template-columns:\s*1fr/s);

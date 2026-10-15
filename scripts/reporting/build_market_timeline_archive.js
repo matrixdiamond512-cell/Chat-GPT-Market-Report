@@ -24,6 +24,26 @@ function buildArchive(date, repositoryRoot = path.resolve(__dirname, "../..")) {
     if (timeline.events.some((event) => !event.event || !event.reaction || !event.meaning || !event.sources.length)) {
       throw new Error(`${reportId}: an event is missing required evidence fields`);
     }
+    const enrichmentPath = path.join(repositoryRoot, "data", "market-timelines", "enrichments", `${date}.json`);
+    if (fs.existsSync(enrichmentPath)) {
+      const enrichment = JSON.parse(fs.readFileSync(enrichmentPath, "utf8"));
+      if (enrichment.schemaVersion !== "market-timeline-enrichment/v1" || enrichment.date !== date || enrichment.evidenceStatus !== "AFTER_ISSUANCE_AMENDMENT") {
+        throw new Error(`${reportId}: invalid retrospective enrichment identity`);
+      }
+      const record = enrichment.reports.find((item) => item.reportTime === time);
+      if (record) {
+        if (record.sourceBodyHash !== source.bodyHash) throw new Error(`${reportId}: enrichment source body hash mismatch`);
+        for (const patch of record.patches || []) {
+          const event = timeline.events[patch.eventIndex];
+          if (!event) throw new Error(`${reportId}: enrichment event index out of range`);
+          for (const [key, value] of Object.entries(patch.values || {})) {
+            if (!["event", "reaction", "meaning", "nextWatch", "occurredAt", "timePrecision", "reactionObservedAt", "timeLabel"].includes(key)) throw new Error(`${reportId}: enrichment field is not allowed: ${key}`);
+            event[key] = value;
+          }
+          for (const sourceRef of patch.appendSources || []) if (!event.sources.includes(sourceRef)) event.sources.push(sourceRef);
+        }
+      }
+    }
 
     return {
       ...timeline,

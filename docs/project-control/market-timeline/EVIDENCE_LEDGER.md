@@ -11,6 +11,16 @@
 | PR records files and evidence without publishing. | Draft [PR #150](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/150) created from `codex/market-session-timeline` into `main`; GitHub reports `draft=true`, `merged=false`. | E5 | PASS. | No merge or deployment performed. | GitHub / 2026-10-16 JST |
 | PR CI workflow ran. | GitHub workflow-run lookups for PR head commits `a822fd1ee86ab9ed63554b5ef551880358fc721e` and `d47bb6ec4` returned no pull-request workflow runs. | E5 | NOT_RUN. | Workflow result is unavailable; no pass claimed. | GitHub / 2026-10-16 JST |
 
+## PR #150 retrospective evidence and slot-sync check — 2026-10-16 05:37 JST
+
+| Claim | Evidence | Level | Result | Limit | Run ID / timestamp |
+| --- | --- | --- | --- | --- | --- |
+| Retrospective enrichment cannot silently bind to another report body or mutate report issuance identity. | `scripts/reporting/build_market_timeline_archive.js` accepts only the 2026-10-15 `AFTER_ISSUANCE_AMENDMENT` overlay, exact source `bodyHash`, valid slot/event indices and whitelisted fields; original report bodies/hashes and publication states are unchanged. | E1/E2 | PASS | Static/unit path only; no live Docs revision proof. | `market-timeline-pr150-20261016-continuation` / 2026-10-16 05:37 JST |
+| Archive selector follows the selected report slot on initial load and report changes. | Local browser reload opened 2026-10-15 21:00 and selected the 21:00 archive checkbox by default; sequential 12:00, 08:00, 16:00 selection kept the timeline and archive selector aligned. 21:00 original-body mismatch was refused while the separate later amendment remained readable with warning. | E4 | PASS | Localhost preview only; no Pages production readback. | `market-timeline-pr150-20261016-continuation` / 2026-10-16 05:37 JST |
+| Historical dates and empty timeline state remain explicit. | Local browser selected 2026-10-14 and 2026-10-13; the latter retained the 2026-10-13 16:00 report and displayed that no source-bound timeline matched it. | E4 | PASS | Localhost preview only. | `market-timeline-pr150-20261016-continuation` / 2026-10-16 05:37 JST |
+| Regression and publication consistency checks pass after enrichment/sync changes. | Python `tests.test_market_timeline_ingestion` 5/5; Node `tests/test_market_timeline.js` 17/17; `tests/test_report_publication_policy.js` PASS; three Node syntax checks; `scripts/verify_publication_consistency.py` PASS; `git diff --check` PASS. | E1/E2 | PASS | Not CI for the new PR head; no external import/deploy. | `market-timeline-pr150-20261016-continuation` / 2026-10-16 05:37 JST |
+| Actual 10/15 body-to-infographic equality, all market facts/causality, and production Pages rendering are established. | No corresponding 10/15 infographic artifact/verified manifest or contemporaneous publication evidence was available; Pages was not deployed. | E5 | NOT_RUN / UNKNOWN | No evidence was synthesized; all four timeline quality labels remain INCOMPLETE. | Source inspection / 2026-10-16 |
+
 ## Sync and evidence audit — 2026-10-16 04:41 JST
 
 | Claim | Evidence | Level | Result | Limit | Run ID / timestamp |

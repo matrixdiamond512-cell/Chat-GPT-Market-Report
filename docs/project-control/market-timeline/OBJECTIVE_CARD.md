@@ -11,10 +11,10 @@ CONSTRAINTS: Preserve current workspace changes and production data. No main mer
 OPEN OUTCOMES:
 - O-001 Inspect dashboard/report source contract and 2026-10-15 archived amendments. COMPLETE (source identity and archived amendments reviewed).
 - O-002 Implement source-bound timeline data and rendering for four slots. COMPLETE IN WORKTREE.
-- O-003 Test slot selection, report identity, historical amendment labeling, empty state, and mobile layout. PARTIAL (12 automated acceptance checks + publication-policy regression pass; browser visual verification unavailable because local loopback access is blocked in this environment).
+- O-003 Test slot selection, report identity, historical amendment labeling, empty state, and mobile layout. PARTIAL: current localhost browser smoke verified 10/15 four-slot switching, retrospective archive slot synchronization, 21:00 exact-body mismatch guard, and 10/14 + 10/13 historical empty timeline. Prior 390x844 mobile check remains applicable because CSS did not change. All 10/15 content quality outcomes remain INCOMPLETE; Pages production rendering is not tested.
 - O-004 Create a draft PR with changed files and evidence; do not merge or deploy. COMPLETE (Draft PR #150 created; not merged/deployed).
 
-NEXT NECESSARY ACTION: Have the Draft PR receive its required browser/mobile visual verification and CI run before review. Do not merge or deploy.
+NEXT NECESSARY ACTION: Commit and push the current content-evidence amendment and slot-sync fix to PR #150, then inspect CI for that exact head. Do not merge or deploy.
 
 ## Sync and evidence audit continuation — 2026-10-16 (ADD)
 

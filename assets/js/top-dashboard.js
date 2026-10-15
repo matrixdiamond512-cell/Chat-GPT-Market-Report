@@ -2357,6 +2357,9 @@ async function loadMarketTimelineArchive() {
   } catch (error) {
     marketTimelineArchive = null;
   }
+  if (selectedReport?.date === marketTimelineArchive?.date && REPORT_TIMES.includes(selectedReport.time)) {
+    activeTimelineArchiveSlot = selectedReport.time;
+  }
   renderTimelineArchive();
   if (selectedReport?.date === marketTimelineArchive?.date) {
     verifyReportTimeline(selectedReport).then((result) => {
@@ -2388,6 +2391,9 @@ function renderFootnote(report) {
 function render() {
   const report = selectedReport || reports[0];
   if (!report) return;
+  if (selectedReport?.date === marketTimelineArchive?.date && REPORT_TIMES.includes(selectedReport.time)) {
+    activeTimelineArchiveSlot = selectedReport.time;
+  }
   renderHeader(report);
   renderControls(report);
   renderDashboardArchive(report);
