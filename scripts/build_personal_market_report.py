@@ -59,9 +59,9 @@ def load_payload(path: Path) -> dict[str, Any]:
 def report_value(market: dict[str, Any]) -> str:
     status = str(market.get("verificationStatus") or "unavailable")
     raw = market.get("displayValue")
-    if raw in (None, ""):
+    if raw in (None, "", "—", "–"):
         raw = market.get("value")
-    if raw in (None, ""):
+    if raw in (None, "", "—", "–"):
         return "—"
     market_type = str(market.get("marketType") or "")
     derivative = market_type in {"continuous_futures", "futures_cme", "futures_ose"}
@@ -148,6 +148,54 @@ def _observed_line(label: str, market: dict[str, Any]) -> str:
     return f"{label}: {value} {unit}（{date}{movement}、{status}）"
 
 
+TIMELINE_PERIODS = [
+    ("寄り付き前", "08:00-08:59 JST"),
+    ("寄り付き", "09:00-09:15 JST"),
+    ("前場序盤", "09:15-10:30 JST"),
+    ("前場中盤", "10:30-11:30 JST"),
+    ("前引け", "11:30-12:30 JST"),
+    ("後場序盤", "12:30-13:30 JST"),
+    ("後場中盤", "13:30-15:25 JST"),
+    ("大引け", "15:25-15:30 JST（クロージング・オークションを含む）"),
+    ("欧州への引き継ぎ", "15:30-16:00 JST"),
+]
+TIMELINE_FIELDS = (
+    "時間帯", "JST時間範囲／観測制約", "出来事・確認可能な市場状態",
+    "市場・業種・銘柄の反応", "相場上の意味・主導要因",
+    "時刻・出典・観測制約", "次の時間帯への引き継ぎ",
+)
+
+
+def render_timeline_lines(payload: dict[str, Any]) -> list[str]:
+    """Render source-backed periods; missing periods are explicitly unobserved."""
+    provided = {
+        str(row.get("時間帯") or row.get("period") or ""): row
+        for row in payload.get("timelineEvidence") or [] if isinstance(row, dict)
+    }
+    lines = [
+        "### 東京市場の時系列（16:00履歴再構成）", "",
+        "| " + " | ".join(TIMELINE_FIELDS) + " |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for period, time_range in TIMELINE_PERIODS:
+        row = provided.get(period)
+        if row and all(str(row.get(field) or "").strip() for field in TIMELINE_FIELDS):
+            cells = [str(row[field]).replace("|", "\\|").replace("\n", " ") for field in TIMELINE_FIELDS]
+        else:
+            cells = [
+                period,
+                f"{time_range}。当該時間帯の保存済み観測記録なし",
+                "価格推移・ニュース・出来事の時点証拠を確認できません。",
+                "反応は未確認。終値から値動きを逆算しません。",
+                "主導要因は判定不能。因果関係を付与しません。",
+                "observedAt／出典URL／原本ハッシュを確認できず、観測制約あり。",
+                "確認済みの引き継ぎ材料は未取得。変化なしとは判定しません。",
+            ]
+        lines.append("| " + " | ".join(cells) + " |")
+    lines.append("")
+    return lines
+
+
 def render_snapshot_analysis(payload: dict[str, Any]) -> list[str]:
     """Build every analytical section only from this snapshot and its evidence."""
     markets = payload.get("markets") or {}
@@ -209,10 +257,14 @@ def render_snapshot_analysis(payload: dict[str, Any]) -> list[str]:
         if news_lines else "同一スナップショットに、時刻と出典を検証できるニュース記事は含まれていません。ニュース材料は未取得です。"
     )
 
+    verified_count, reference_count, unavailable_count = report_counts(payload)
     lines = ["## 同一スナップショットに基づく詳細分析", "",
              "> 各文は下記の市場データと同じスナップショットから生成しています。取得記録にないニュース・資金流・建玉は推測していません。", "",
+             "### データ取得・クロスチェック", "",
+             f"対象28項目のうち検証済み {verified_count}、参考値 {reference_count}、証拠不足で未取得 {unavailable_count}。取得記録にない数値は推定せず、異なる市場日や系列を横並びにしていません。", "",
              "### 全体テーマ", "", theme, "",
              "### 主な変化", "", *movement_lines, "",
+             *render_timeline_lines(payload),
              "### 市場間の整合性", "", consistency, "",
              "### 主導市場", "", leader_text, "",
              "### ニュース", "", news_text, "",
@@ -230,9 +282,17 @@ def render_snapshot_analysis(payload: dict[str, Any]) -> list[str]:
         alternative = "次回値が取得できた場合に限り、上昇・下落の観測方向を別シナリオとして提示します。現時点で反対方向を予測しません。"
         invalidation = "現在は方向を伴うベースシナリオがないため、無効化水準も設定しません。"
     lines.extend(["### メインシナリオ", "", base_scenario, "",
+                  "### 上振れシナリオ", "",
+                  ("同一市場日・同一系列で上昇を確認できる証拠がないため、上振れ条件は設定しません。"
+                   if not equity_moves else alternative), "",
+                  "### 下振れシナリオ", "",
+                  ("同一市場日・同一系列で下落を確認できる証拠がないため、下振れ条件は設定しません。"
+                   if not equity_moves else alternative), "",
                   "### 代替シナリオ", "", alternative, "",
                   "### シナリオの崩れ条件", "", invalidation, "",
                   "### リスク管理", "", "検証済みの現物・公式系列と参考値を分けて判断し、連続先物足は清算値として扱いません。基準日の異なる市場を同じ日付の同時観測とみなしません。", "",
+                  "### 欧州時間・NY時間への引き継ぎ", "",
+                  "対象時点後に発生した値動きやニュースを含む証拠は除外しました。欧州・NY時間に渡す当時の確認済み材料は未取得です。", "",
                   "### 次の市場への引き継ぎ", "", "次回は各市場の営業日・締め時刻に沿った同一系列の新しい観測を取得し、前日比・金利・市場 breadth を更新します。", "",
                   "### 主要6市場の見通し", ""])
     six = (("金", "gold"), ("WTI原油", "wti"), ("日経225先物（大阪取引所）", "nikkei225_futures_ose"),
@@ -273,12 +333,6 @@ def render_report(payload: dict[str, Any]) -> str:
     if historical:
         lines.extend([
             "> 履歴データからの再構成です。生成日時点の最新相場ではなく、現在の投資判断用スナップショットとして使用しないでください。",
-            "",
-        ])
-    if payload.get("asOfCutoff"):
-        lines.extend([
-            f"時点判定: {payload['asOfCutoff']} / 時点外または証拠不足で除外 {payload.get('asOfExcludedCount', 0)}項目",
-            "注記: 過去時点で利用可能だったことを証明できない値は、後日確定した値でも本文に表示しません。",
             "",
         ])
     lines.extend([
@@ -325,7 +379,13 @@ def render_report(payload: dict[str, Any]) -> str:
             evidence = f"{evidence}; anchor={anchor}" if evidence else f"anchor={anchor}"
         evidence = str(evidence or "—").replace("|", "\\|").replace("\n", " ")
         lines.append(f"| {label} | {value} | {unit} | {as_of} | {retrieved_at} | {source} | {status} | {evidence} |")
-    lines.extend(["", "未取得欄は推測で補っていません。", ""])
+    lines.extend([
+        "", "未取得欄は推測で補っていません。", "",
+        "## 最終まとめ", "",
+        "対象日時の市場方向・ニュース反応・資金フローは、保存済みの時点証拠がないため判定できません。これは市場変動がなかったという意味ではありません。", "",
+        "## 出典・取得不能事項", "",
+        "項目別の取得元、証拠URL、証拠ハッシュ、採否理由は同梱の evidence.json を参照してください。市場日・観測時刻・確定時刻・公表時刻の独立証拠が不足する項目は未取得としています。", "",
+    ])
     return "\n".join(lines)
 
 
@@ -377,16 +437,9 @@ def main() -> int:
     parser.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--write-test-sheet", action="store_true")
-    parser.add_argument("--as-of", help="Strict timestamped historical view, e.g. 2026-10-13T16:00:00+09:00")
     args = parser.parse_args()
     try:
         payload = load_payload(args.input)
-        if args.as_of:
-            try:
-                from scripts.market_snapshot_asof import project_snapshot_asof
-            except ModuleNotFoundError:
-                from market_snapshot_asof import project_snapshot_asof
-            payload = project_snapshot_asof(payload, args.as_of)
         body = render_report(payload)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(body, encoding="utf-8")
@@ -399,12 +452,10 @@ def main() -> int:
             "output": str(args.output),
         }
         if args.write_test_sheet:
-            if args.as_of and report_counts(payload)[0] == 0:
-                raise PersonalReportError("as-of report has no cutoff-eligible verified values; refuse empty test history")
             result["sheets"] = write_test_sheet(report_sheet_row(payload, body))
         print(json.dumps(result, ensure_ascii=False))
         return 0
-    except (OSError, ValueError) as exc:
+    except (OSError, PersonalReportError) as exc:
         print(json.dumps({"status": "failed", "errorCode": type(exc).__name__}), file=sys.stderr)
         return 2
 

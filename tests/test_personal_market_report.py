@@ -47,7 +47,17 @@ class PersonalMarketReportTests(unittest.TestCase):
 
         body = render_report(payload)
 
-        self.assertEqual(body.count("\n| "), 29)  # column header plus all 28 report fields
+        market_table = body.split("## 市場データスナップショット（項目別の取得記録）", 1)[1]
+        self.assertEqual(market_table.count("\n| "), 29)  # column header plus all 28 report fields
+        timeline = body.split("### 東京市場の時系列（16:00履歴再構成）", 1)[1].split("### 市場間の整合性", 1)[0]
+        self.assertEqual(sum(timeline.count(f"| {period} |") for period in
+                             ("寄り付き前", "寄り付き", "前場序盤", "前場中盤", "前引け",
+                              "後場序盤", "後場中盤", "大引け", "欧州への引き継ぎ")), 9)
+        self.assertIn("データ取得・クロスチェック", body)
+        self.assertIn("### 上振れシナリオ", body)
+        self.assertIn("### 下振れシナリオ", body)
+        self.assertIn("## 最終まとめ", body)
+        self.assertIn("## 出典・取得不能事項", body)
         self.assertIn("| Fear & Greed Index | — |", body)
         self.assertIn("参考値: 12", body)
         self.assertIn("未取得", body)
