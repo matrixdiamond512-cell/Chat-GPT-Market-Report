@@ -44,3 +44,5 @@ Draft PR #133のローカル合成fixture群とApps Script pre-publish Actions�
 2. 価格カードの市場データは `dashboard.marketData`（独立snapshot）にあることを確認する。本文正本に自動注入しない。
 3. `python -m unittest discover -s tests -p 'test_market_report_sync_contract.py' -v` と `python scripts/verify_publication_consistency.py` を実行する。
 4. 同期復旧CI PASS（run 38714305014、HEAD 285a18c）のみ確認済み。時系列本文を満たすproducerと他のレポートCIは未解決。公開、マージ、既存レポートの事実推測による改稿は行わない。
+
+- 2026-10-15追記：21:00版で22:30以降のイベントを言及するときは、「予定」「未発表」等または「前日」「昨夜」等の対象日の別を確認する。実際の発表時刻は別途ソース照合する。
