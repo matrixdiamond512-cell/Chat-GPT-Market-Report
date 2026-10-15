@@ -206,17 +206,37 @@ BTCUSD：84,000ドル
         ):
             sync_latest_report_publication.validate_sop_body(empty_section)
 
-    def test_oct15_21_archive_does_not_satisfy_handover_from_incidental_prose(self):
+    def test_oct15_21_archive_requires_substantive_change_section_body(self):
         report = json.loads(
             (ROOT / "reports" / "2026-10-15_21-00.json").read_text(encoding="utf-8")
         )
         self.assertEqual(report.get("report_status"), "SOURCE_ARCHIVED")
-        headings = sync_latest_report_publication.sop_headings(report["fullText"])
-        self.assertFalse(any("引き継ぎ" in title for title in headings))
+        lines = report["fullText"].splitlines()
+        section_index = next(
+            index for index, line in enumerate(lines)
+            if "16:00からの変化" in sync_latest_report_publication.normalize_heading(line)
+        )
+        next_heading = next(
+            index for index in range(section_index + 1, len(lines))
+            if sync_latest_report_publication.normalize_heading(lines[index])
+        )
+        self.assertTrue(
+            any(
+                len(body.strip()) >= 24
+                for title, body in sync_latest_report_publication.sop_sections(report["fullText"])
+                if "16:00からの変化" in title
+            )
+        )
+
+        # Keep incidental mentions elsewhere in the source, but blank the
+        # actual time-slot section in this in-memory validation copy.
+        blanked_text = "\n".join(lines[:section_index + 1] + [""] + lines[next_heading:])
+        self.assertIn("次の時間帯への引き継ぎ", blanked_text)
+        blocked = {**report, "fullText": blanked_text}
         with self.assertRaisesRegex(
-            SystemExit, "missing time-slot transition/change section"
+            SystemExit, "transition section is empty or substantively insufficient"
         ):
-            sync_latest_report_publication.validate_sop_body(report)
+            sync_latest_report_publication.validate_sop_body(blocked)
 
 if __name__ == "__main__":
     unittest.main()
