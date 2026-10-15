@@ -142,9 +142,13 @@ def validate_timeline(text: str, slot: str) -> list[str]:
         if slot == "21:00":
             for match in _TIME_RE.finditer(" ".join(cells[2:4])):
                 hour, minute = map(int, match.group().split(":"))
-                before = " ".join(cells[2:4])[max(0, match.start() - 16):match.start()]
-                after = " ".join(cells[2:4])[match.end():match.end() + 16]
-                if hour * 60 + minute > 21 * 60 and re.search(r"(発生|発表|報道|観測)時刻", before) and not re.search(r"予定|未発表|予想", after):
+                context = " ".join(cells[2:4])[max(0, match.start() - 22):match.end() + 28]
+                explicitly_scheduled = bool(re.search(r"予定|予想|未発表|今後|これから|控え|待機|見込み|翌日|明日", context))
+                explicitly_historical = bool(re.search(r"前日|昨日|昨夜|先週|過去", context))
+                # In a 21:00 report an unqualified 22:30 event cannot be
+                # stated as observed. Earlier-day references and clearly
+                # scheduled future releases remain permissible.
+                if hour * 60 + minute > 21 * 60 and not (explicitly_scheduled or explicitly_historical):
                     errors.append("21:00時点より後の出来事を発生済みとして記載しています")
 
     missing = [period for period, _ in TIMELINE_PERIODS[slot] if period not in found]
