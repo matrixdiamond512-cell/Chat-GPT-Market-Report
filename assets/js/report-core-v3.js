@@ -360,7 +360,7 @@ function renderDocument(report) {
     notice.className = "archive-provenance";
     notice.setAttribute("role", "note");
     const strong = document.createElement("strong");
-    strong.textContent = "記録復元版（当時の発行・公開承認とは別）";
+    strong.textContent = "記録復元版（正式な発行原本とは区別・公開承認とは別）";
     notice.appendChild(strong);
     for (const line of [
       report.archiveNotice,
