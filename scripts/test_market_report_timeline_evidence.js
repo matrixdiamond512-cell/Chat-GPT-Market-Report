@@ -58,7 +58,9 @@ assert(evidence.newsStatus === 'not_collected' && evidence.news.length === 0,
 const generated = context.renderMarketTimeline_('1．概要\n本文', evidence);
 assert(generated.includes('|時間帯|JST時間範囲/観測制約|出来事・確認可能な市場状態|市場・業種・銘柄の反応|相場上の意味・主導要因|時刻・出典・観測制約|次の時間帯への引き継ぎ|'),
   'producer did not generate the seven-column timeline');
-assert(generated.includes('市場時系列') && generated.includes('sourceId/asOf'), 'generated evidence table incomplete');\nconst validationIssues = context.marketReportPrePublishTimelineIssues_(generated, '16:00');\nassert(validationIssues.length === 0, 'generated seven-column timeline fails the existing publish gate: ' + JSON.stringify(validationIssues));
+assert(generated.includes('市場時系列') && generated.includes('sourceId/asOf'), 'generated evidence table incomplete');
+const validationIssues = context.marketReportPrePublishTimelineIssues_(generated, '16:00');
+assert(validationIssues.length === 0, 'generated seven-column timeline fails the existing publish gate: ' + JSON.stringify(validationIssues));
 let failed = false;
 try { context.buildMarketTimelineEvidence_(report, []); } catch (error) { failed = /検証済み時系列観測がありません/.test(error.message); }
 assert(failed, 'missing time-series evidence must fail closed');
