@@ -6,6 +6,12 @@ from pathlib import Path
 from scripts.run_market_data_acquisition import record_market_timeseries
 
 
+def local_temporary_directory():
+    root = Path(__file__).resolve().parents[1] / ".test-tmp"
+    root.mkdir(exist_ok=True)
+    return tempfile.TemporaryDirectory(dir=root)
+
+
 def sample(generated_at="2026-10-15T15:30:00+09:00", as_of="2026-10-15T15:29:00+09:00"):
     return {
         "generatedAt": generated_at,
@@ -29,7 +35,7 @@ def sample(generated_at="2026-10-15T15:30:00+09:00", as_of="2026-10-15T15:29:00+
 
 class MarketTimeseriesEvidenceTests(unittest.TestCase):
     def test_cutoff_valid_sample_is_saved_with_source_timestamps(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with local_temporary_directory() as directory:
             path = Path(directory) / "timeseries.json"
             self.assertTrue(record_market_timeseries(sample(), path))
             archive = json.loads(path.read_text(encoding="utf-8"))
