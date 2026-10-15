@@ -231,7 +231,229 @@ function publishMarketReportFromDocUrlPrompt() {
   return result;
 }
 
+
+const MARKET_TIMELINE_PERIODS_BY_SLOT_ = {
+  '08:00': [
+    ['開場前', '00:00-08:00'], ['寄り付き', '08:00-09:00'],
+    ['序盤', '09:00-10:00'], ['中盤', '10:00-11:00'],
+    ['終盤', '11:00-12:00'], ['東京への引き継ぎ', '12:00-12:30']
+  ],
+  '12:00': [
+    ['寄り付き前', '08:00-08:45'], ['寄り付き', '08:45-09:00'],
+    ['前場序盤', '09:00-10:00'], ['前場中盤', '10:00-11:00'],
+    ['前引け', '11:00-11:30']
+  ],
+  '16:00': [
+    ['寄り付き前', '08:00-08:45'], ['寄り付き', '08:45-09:00'],
+    ['前場序盤', '09:00-10:00'], ['前場中盤', '10:00-11:00'],
+    ['前引け', '11:00-11:30'], ['後場序盤', '12:30-13:00'],
+    ['後場中盤', '13:00-14:00'], ['大引け', '14:00-15:30'],
+    ['欧州への引き継ぎ', '15:30-16:00']
+  ],
+  '21:00': [
+    ['欧州開場前', '16:00-17:00'], ['欧州寄り付き', '17:00-18:00'],
+    ['欧州序盤', '18:00-19:00'], ['欧州中盤', '19:00-20:00'],
+    ['NY開場前', '20:00-21:00']
+  ]
+};
+
+function parseMarketEvidenceTime_(value) {
+  const text = String(value || '');
+  if (!/(?:Z|[+-]\\d{2}:\\d{2})$/i.test(text)) return null;
+  const millis = Date.parse(text);
+  return Number.isFinite(millis) ? millis : null;
+}
+
+function loadMarketTimelineArchives_(date, slot) {
+  const slots = ['08:00', '12:00', '16:00', '21:00'];
+  const slotIndex = slots.indexOf(slot);
+  if (slotIndex < 0) throw new Error('unsupported report slot for timeline evidence: ' + slot);
+  const archives = [];
+  slots.slice(0, slotIndex + 1).forEach(sourceSlot => {
+    const path = 'data/market/timeseries/' + date + '_' + sourceSlot.replace(':', '-') + '.json';
+    const result = getGitHubJsonFile_(path);
+    if (result && result.data) archives.push({ path: path, sha: result.sha || '', archive: result.data });
+  });
+  return archives;
+}
+
+function buildMarketTimelineEvidence_(report, archives) {
+  const date = String(report.date || '');
+  const slot = String(report.time || '');
+  const periods = MARKET_TIMELINE_PERIODS_BY_SLOT_[slot];
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date) || !periods) {
+    throw new Error('時系列証拠の対象日または発行枠が不正です。');
+  }
+  const cutoff = Date.parse(date + 'T' + slot + ':00+09:00');
+  if (!Number.isFinite(cutoff)) throw new Error('時系列証拠の発行時刻を解釈できません。');
+
+  const selectedArchives = [];
+  const observations = [];
+  (archives || []).forEach(entry => {
+    const archive = entry && entry.archive;
+    if (!archive || archive.schemaVersion !== '1.0' || archive.reportDate !== date ||
+        !Array.isArray(archive.snapshots)) {
+      throw new Error('時系列証拠アーカイブのschema/dateが一致しません。');
+    }
+    const sourceSlotIndex = ['08:00', '12:00', '16:00', '21:00'].indexOf(archive.reportSlot);
+    if (sourceSlotIndex < 0 || archive.reportSlot > slot) {
+      throw new Error('発行枠より後の時系列アーカイブを使用できません。');
+    }
+    const kept = [];
+    archive.snapshots.forEach(snapshot => {
+      const generatedMs = parseMarketEvidenceTime_(snapshot && snapshot.generatedAt);
+      if (snapshot.reportSlot !== archive.reportSlot || generatedMs === null ||
+          snapshot.generatedAt.slice(0, 10) !== date || generatedMs > cutoff) return;
+      const marketValues = {};
+      Object.keys(snapshot.markets || {}).forEach(id => {
+        const market = snapshot.markets[id];
+        const observedMs = parseMarketEvidenceTime_(market && market.asOf);
+        const fetchedMs = parseMarketEvidenceTime_(market && market.fetchedAt);
+        const value = Number(market && market.value);
+        if (!market || market.verificationStatus !== 'verified' || !Number.isFinite(value) ||
+            observedMs === null || fetchedMs === null || observedMs > cutoff || fetchedMs > cutoff) return;
+        marketValues[id] = {
+          id: id,
+          name: String(market.displayName || market.name || id),
+          value: value,
+          displayValue: String(market.displayValue || market.value),
+          unit: String(market.unit || ''),
+          sourceId: String(market.sourceId || ''),
+          sourceName: String(market.sourceName || market.sourceId || ''),
+          sourceUrl: String(market.sourceUrl || ''),
+          asOf: String(market.asOf),
+          fetchedAt: String(market.fetchedAt)
+        };
+      });
+      if (!Object.keys(marketValues).length) return;
+      const clean = {
+        generatedAt: snapshot.generatedAt,
+        reportSlot: snapshot.reportSlot,
+        overallStatus: snapshot.overallStatus || 'unknown',
+        markets: marketValues
+      };
+      kept.push(clean);
+      Object.keys(marketValues).forEach(id => observations.push(Object.assign({
+        generatedAt: snapshot.generatedAt
+      }, marketValues[id])));
+    });
+    if (kept.length) selectedArchives.push({
+      path: String(entry.path || ''),
+      sha: String(entry.sha || ''),
+      reportSlot: archive.reportSlot,
+      snapshots: kept
+    });
+  });
+  if (!observations.length) {
+    throw new Error('発行 cutoff 以前の検証済み時系列観測がありません。');
+  }
+
+  const rows = periods.map(period => {
+    const [label, range] = period;
+    const [start, end] = range.split('-');
+    const startMs = Date.parse(date + 'T' + start + ':00+09:00');
+    const endMs = Date.parse(date + 'T' + end + ':00+09:00');
+    const samples = observations.filter(item => {
+      const instant = parseMarketEvidenceTime_(item.generatedAt);
+      return instant !== null && instant >= startMs && instant < endMs && instant <= cutoff;
+    });
+    const byMarket = {};
+    samples.forEach(item => (byMarket[item.id] = byMarket[item.id] || []).push(item));
+    const reactions = Object.keys(byMarket).sort().map(id => {
+      const values = byMarket[id].sort((a, b) => parseMarketEvidenceTime_(a.generatedAt) - parseMarketEvidenceTime_(b.generatedAt));
+      const first = values[0], last = values[values.length - 1];
+      if (values.length > 1 && first.sourceId === last.sourceId && first.unit === last.unit) {
+        const change = last.value - first.value;
+        const sign = change > 0 ? '+' : '';
+        return last.name + ' ' + first.displayValue + '→' + last.displayValue +
+          ' (' + sign + String(Number(change.toFixed(6))) + (last.unit ? ' ' + last.unit : '') + ')';
+      }
+      return last.name + ' ' + last.displayValue + (last.unit ? ' ' + last.unit : '') +
+        ' (単一観測、方向判定なし)';
+    });
+    const times = samples.map(item => item.generatedAt.slice(11, 16)).sort();
+    const evidenceRefs = samples.map(item => item.sourceId + '@' + item.asOf);
+    const futureOnly = startMs >= cutoff;
+    const event = samples.length
+      ? '時刻付き市場観測 ' + samples.length + '件を記録。ニュース原本はこの保存経路にありません。'
+      : futureOnly
+        ? '発行時刻より後の時間帯です。市場状態はまだ観測できません。'
+        : 'この時間帯の時刻付き市場観測は保存されていません。出来事を補完しません。';
+    const reaction = reactions.length
+      ? reactions.join('；') + '。観測値のみを記録し、因果関係は付けません。'
+      : '時系列証拠がないため、市場反応は確認できず、値動きを記述しません。';
+    const meaning = samples.length
+      ? '同一系列の観測値の差を記録します。時刻付きニュース原本がないため主導要因は判断しません。'
+      : '証拠不足のため相場上の意味付けは行いません。';
+    const evidence = samples.length
+      ? 'JST市場観測時刻 ' + times[0] + (times.length > 1 ? '–' + times[times.length - 1] : '') +
+        '。sourceId/asOf: ' + evidenceRefs.join(', ') + '。'
+      : '観測制約: 対応する取得時刻付き原本なし。';
+    return {
+      period: label,
+      timeRange: range + ' JST' + (futureOnly ? '（発行後・未観測）' : ''),
+      event: event,
+      reaction: reaction,
+      meaning: meaning,
+      evidence: evidence,
+      handoff: '次の時間帯では新しい時刻付き観測と原本を保存してから記述します。'
+    };
+  });
+  return {
+    schemaVersion: '1.0',
+    reportDate: date,
+    reportSlot: slot,
+    cutoff: date + 'T' + slot + ':00+09:00',
+    capturedAt: new Date().toISOString(),
+    sourceArchives: selectedArchives,
+    observations: observations,
+    news: [],
+    newsStatus: 'not_collected',
+    rows: rows
+  };
+}
+
+function escapeMarketTimelineCell_(value) {
+  return String(value == null ? '' : value).replace(/\\|/g, '\\\\|').replace(/[\\r\\n]+/g, ' ');
+}
+
+function renderMarketTimeline_(text, evidence) {
+  const headings = ['時間帯', 'JST時間範囲/観測制約', '出来事・確認可能な市場状態',
+    '市場・業種・銘柄の反応', '相場上の意味・主導要因', '時刻・出典・観測制約',
+    '次の時間帯への引き継ぎ'];
+  const lines = ['2．市場時系列', '|' + headings.join('|') + '|',
+    '|---|---|---|---|---|---|---|'];
+  evidence.rows.forEach(row => {
+    lines.push('|' + [row.period, row.timeRange, row.event, row.reaction, row.meaning,
+      row.evidence, row.handoff].map(escapeMarketTimelineCell_).join('|') + '|');
+  });
+  const source = String(text || '').replace(/\\r\\n/g, '\\n').replace(/\\r/g, '\\n');
+  const all = source.split('\\n');
+  const starts = [];
+  all.forEach((line, index) => {
+    if (/^\\s*\\d+[．.、)）].*時系列/.test(line)) starts.push(index);
+  });
+  if (starts.length > 1) throw new Error('時系列セクションが複数あるため再生成を中止しました。');
+  if (!starts.length) return source.replace(/\\s*$/, '') + '\\n\\n' + lines.join('\\n');
+  const start = starts[0];
+  let end = all.length;
+  for (let i = start + 1; i < all.length; i++) {
+    if (/^\\s*\\d+[．.、)）]\\s*\\S/.test(all[i])) { end = i; break; }
+  }
+  all.splice(start, end - start, ...lines);
+  return all.join('\\n');
+}
+
+function prepareWebReportTimelineEvidence_(report) {
+  const archives = loadMarketTimelineArchives_(report.date, report.time);
+  const evidence = buildMarketTimelineEvidence_(report, archives);
+  report.fullText = renderMarketTimeline_(report.fullText, evidence);
+  report.timelineEvidence = evidence;
+  return report;
+}
+
 function publishWebReportObject_(report) {
+  report = prepareWebReportTimelineEvidence_(report);
   report = validateWebReportObject_(report);
   report.report_status = 'BLOCKED';
   report.infographic_status = 'NOT_READY';
