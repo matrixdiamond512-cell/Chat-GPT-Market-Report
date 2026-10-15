@@ -259,7 +259,7 @@ const MARKET_TIMELINE_PERIODS_BY_SLOT_ = {
 
 function parseMarketEvidenceTime_(value) {
   const text = String(value || '');
-  if (!/(?:Z|[+-]\\d{2}:\\d{2})$/i.test(text)) return null;
+  if (!/(?:Z|[+-]\d{2}:\d{2})$/i.test(text)) return null;
   const millis = Date.parse(text);
   return Number.isFinite(millis) ? millis : null;
 }
@@ -281,7 +281,7 @@ function buildMarketTimelineEvidence_(report, archives) {
   const date = String(report.date || '');
   const slot = String(report.time || '');
   const periods = MARKET_TIMELINE_PERIODS_BY_SLOT_[slot];
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date) || !periods) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !periods) {
     throw new Error('時系列証拠の対象日または発行枠が不正です。');
   }
   const cutoff = Date.parse(date + 'T' + slot + ':00+09:00');
@@ -414,7 +414,7 @@ function buildMarketTimelineEvidence_(report, archives) {
 }
 
 function escapeMarketTimelineCell_(value) {
-  return String(value == null ? '' : value).replace(/\\|/g, '\\\\|').replace(/[\\r\\n]+/g, ' ');
+  return String(value == null ? '' : value).replace(/\|/g, '\\|').replace(/[\r\n]+/g, ' ');
 }
 
 function renderMarketTimeline_(text, evidence) {
@@ -427,21 +427,21 @@ function renderMarketTimeline_(text, evidence) {
     lines.push('|' + [row.period, row.timeRange, row.event, row.reaction, row.meaning,
       row.evidence, row.handoff].map(escapeMarketTimelineCell_).join('|') + '|');
   });
-  const source = String(text || '').replace(/\\r\\n/g, '\\n').replace(/\\r/g, '\\n');
-  const all = source.split('\\n');
+  const source = String(text || '').replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const all = source.split('\n');
   const starts = [];
   all.forEach((line, index) => {
-    if (/^\\s*\\d+[．.、)）].*時系列/.test(line)) starts.push(index);
+    if (/^\s*\d+[．.、)）].*時系列/.test(line)) starts.push(index);
   });
   if (starts.length > 1) throw new Error('時系列セクションが複数あるため再生成を中止しました。');
-  if (!starts.length) return source.replace(/\\s*$/, '') + '\\n\\n' + lines.join('\\n');
+  if (!starts.length) return source.replace(/\s*$/, '') + '\n\n' + lines.join('\n');
   const start = starts[0];
   let end = all.length;
   for (let i = start + 1; i < all.length; i++) {
-    if (/^\\s*\\d+[．.、)）]\\s*\\S/.test(all[i])) { end = i; break; }
+    if (/^\s*\d+[．.、)）]\s*\S/.test(all[i])) { end = i; break; }
   }
   all.splice(start, end - start, ...lines);
-  return all.join('\\n');
+  return all.join('\n');
 }
 
 function prepareWebReportTimelineEvidence_(report) {

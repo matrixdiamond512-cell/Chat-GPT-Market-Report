@@ -103,6 +103,8 @@ jobs:
         run: node scripts/test_apps_script_narrative_report.js
       - name: Test all-slot narrative timeline quality gate
         run: node scripts/test_market_report_timeline.js
+      - name: Verify cutoff-bound timeline evidence producer
+        run: node scripts/test_market_report_timeline_evidence.js
 
       - name: Test actual 16:00 original parsing and fail-closed controls
         run: node scripts/test_actual_1600_source_recovery.js
