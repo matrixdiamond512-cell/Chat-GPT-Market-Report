@@ -897,54 +897,121 @@ def close_row_sync(
 def build_asof_close_dry_run(
     payload: dict[str, Any], headers: list[str], target_row: int | None,
     existing_row: list[Any], formula_row: list[Any], duplicate_count: int,
+    existing_lineage: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    """Compare a historical reconstruction to a close-list row without producing writes."""
+    """Diagnose comparable saved values separately from any write eligibility."""
     header_indices = {name: i for i, name in enumerate(headers) if name}
     markets = payload.get("markets") or {}
+    existing_lineage = existing_lineage or {}
+    target_instant = parse_datetime(payload.get("targetAsOf"))
+    if not target_instant:
+        raise CloseSyncError("VALIDATE", "dry-run requires a timezone-qualified targetAsOf")
+    target_date = target_instant.astimezone(JST).date()
     items = []
-    counts = {name: 0 for name in (
-        "MATCH", "VALUE_CONFLICT", "DEFINITION_PENDING", "UNAVAILABLE_AS_OF",
+    diagnostic_counts = {name: 0 for name in ("MATCH", "VALUE_CONFLICT", "NOT_COMPARABLE")}
+    eligibility_counts = {name: 0 for name in (
+        "WRITE_ELIGIBLE", "DEFINITION_PENDING", "UNAVAILABLE_AS_OF",
         "FORMULA_PROTECTED", "NO_ELIGIBLE_WRITE",
     )}
     for label, symbol, unit, _market_type, _session in ITEMS:
         header = ASOF_CLOSE_HEADERS.get(symbol)
         if not header or header not in header_indices:
-            status, reason, existing = "DEFINITION_PENDING", "no matching close-list column", None
+            eligibility, eligibility_reason, existing, formula = (
+                "DEFINITION_PENDING", "no matching close-list column", None, ""
+            )
         else:
             index = header_indices[header]
             existing = existing_row[index] if index < len(existing_row) else ""
             formula = formula_row[index] if index < len(formula_row) else ""
             market = markets.get(symbol) or {}
             if isinstance(formula, str) and formula.startswith("="):
-                status, reason = "FORMULA_PROTECTED", "target is a formula cell"
+                eligibility, eligibility_reason = "FORMULA_PROTECTED", "target is a formula cell"
             elif market.get("verificationStatus") == "unavailable" or market.get("value") in (None, ""):
-                status, reason = "UNAVAILABLE_AS_OF", str(market.get("exclusionReason") or "cutoff evidence unavailable")
-            elif payload.get("productionEligible") is not True or market.get("productionEligible") is not True:
-                status, reason = "NO_ELIGIBLE_WRITE", "historical reconstruction is production-ineligible"
+                eligibility, eligibility_reason = "UNAVAILABLE_AS_OF", str(market.get("exclusionReason") or "cutoff evidence unavailable")
+            elif (
+                payload.get("productionEligible") is not True
+                or market.get("productionEligible") is not True
+                or market.get("verificationStatus") not in {"verified", "fallback"}
+            ):
+                eligibility, eligibility_reason = "NO_ELIGIBLE_WRITE", "reference/historical or otherwise production-ineligible"
             else:
-                proposed = number(market.get("value"))
-                current = number(existing)
-                if proposed is None or current is None:
-                    status, reason = "DEFINITION_PENDING", "numeric value or existing comparable value is unavailable"
-                elif math.isclose(proposed, current, rel_tol=1e-8, abs_tol=1e-8):
-                    status, reason = "MATCH", "same numeric value"
+                observed = parse_datetime(market.get("asOf"))
+                if not observed or observed.astimezone(JST).date() != target_date:
+                    eligibility, eligibility_reason = "NO_ELIGIBLE_WRITE", "market date does not match target date"
+                elif number(market.get("value")) is None:
+                    eligibility, eligibility_reason = "UNAVAILABLE_AS_OF", "numeric value is unavailable"
                 else:
-                    status, reason = "VALUE_CONFLICT", "existing value differs; manual review required"
-        counts[status] += 1
+                    eligibility, eligibility_reason = "WRITE_ELIGIBLE", "verified same-date value"
+
+        market = markets.get(symbol) or {}
+        provenance = existing_lineage.get(symbol) or {}
+        observed = parse_datetime(market.get("asOf"))
+        incoming_series = str(market.get("sourceSeriesId") or "")
+        saved_series = str(provenance.get("sourceSeriesId") or "")
+        saved_date = parse_sheet_date(provenance.get("valueDate") or provenance.get("asOf"))
+        saved_value = decimal_value(provenance.get("storedValue", provenance.get("value")))
+        existing_number = decimal_value(existing)
+        incoming_number = decimal_value(market.get("value"))
+        same_definition_date_series = bool(
+            header and header in header_indices and observed
+            and observed.astimezone(JST).date() == target_date
+            and saved_date == target_date
+            and str(provenance.get("symbol") or "") == symbol
+            and str(provenance.get("unit") or "") == unit
+            and str(market.get("unit") or unit) == unit
+            and incoming_series and saved_series == incoming_series
+            and saved_value is not None and existing_number is not None
+            and saved_value == existing_number
+            and not (isinstance(formula, str) and formula.startswith("="))
+            and incoming_number is not None
+        )
+        if same_definition_date_series:
+            if existing_number == incoming_number:
+                diagnostic, diagnostic_reason = "MATCH", "same symbol, unit, date, source series, and numeric value"
+            else:
+                diagnostic, diagnostic_reason = "VALUE_CONFLICT", "same symbol, unit, date, and source series; numeric values differ"
+        else:
+            diagnostic, diagnostic_reason = "NOT_COMPARABLE", "existing value lacks matching symbol/unit/date/source-series provenance"
+        diagnostic_counts[diagnostic] += 1
+        eligibility_counts[eligibility] += 1
         items.append({
             "symbol": symbol, "label": label, "unit": unit, "header": header,
-            "status": status, "reason": reason, "existingValue": existing,
-            "proposedValue": None,
+            "status": eligibility, "reason": eligibility_reason,
+            "diagnosticStatus": diagnostic, "diagnosticReason": diagnostic_reason,
+            "existingValue": existing, "proposedValue": number(market.get("value")) if eligibility == "WRITE_ELIGIBLE" else None,
         })
+    duplicate_check = "PASS" if duplicate_count <= 1 else "FAIL"
     return {
-        "status": "DRY_RUN_COMPLETE", "mode": "read_only_historical_asof",
-        "targetAsOf": payload.get("targetAsOf"), "row": target_row,
-        "duplicateDateRows": duplicate_count, "duplicateCheck": "PASS" if duplicate_count <= 1 else "FAIL",
-        "classifications": counts, "items": items,
+        "status": "DRY_RUN_COMPLETE" if duplicate_check == "PASS" else "DRY_RUN_FAILED",
+        "mode": "read_only_historical_asof",
+        "targetAsOf": payload.get("targetAsOf"), "targetDate": target_date.isoformat(), "row": target_row,
+        "duplicateDateRows": duplicate_count, "duplicateCheck": duplicate_check,
+        "diagnosticClassifications": diagnostic_counts, "writeEligibility": eligibility_counts, "items": items,
         "productionWriteCalls": 0, "insertedRows": 0,
         "auditLogWrites": 0, "formattingChanges": 0,
-        "productionEligible": False,
+        "productionEligible": payload.get("productionEligible") is True,
     }
+
+
+def existing_market_records(client: SheetsClient, target: dt.date) -> dict[str, dict[str, Any]]:
+    """Read audit metadata only; incomplete lineage is deliberately non-comparable."""
+    rows = read_values(client, "WEB_Data_Update_Log", "A1:H2000", "FORMATTED_VALUE")
+    if not rows or tuple(str(value or "").strip() for value in rows[0]) != LOG_HEADERS:
+        return {}
+    records: dict[str, dict[str, Any]] = {}
+    for row in reversed(rows[1:]):
+        if len(row) < 8 or str(row[1] or "").strip() != "終値一覧":
+            continue
+        if parse_sheet_date(row[3]) != target:
+            continue
+        try:
+            note = json.loads(str(row[7] or "{}"))
+        except (TypeError, json.JSONDecodeError):
+            continue
+        for item in note.get("marketData") or []:
+            if isinstance(item, dict) and item.get("symbol"):
+                records.setdefault(str(item["symbol"]), item)
+    return records
 
 
 def close_row_read_only_dry_run(client: SheetsClient, payload: dict[str, Any]) -> dict[str, Any]:
@@ -960,9 +1027,12 @@ def close_row_read_only_dry_run(client: SheetsClient, payload: dict[str, Any]) -
     headers = [str(value or "").strip() for value in (header_rows[0] if header_rows else [])]
     if not headers or "日付" not in headers:
         raise CloseSyncError("VALIDATE", "終値一覧 header row or 日付 header is missing.")
-    date_values = read_values(client, sheet, "A:A", "FORMATTED_VALUE")
+    date_rows = read_values(client, sheet, "A:A", "FORMATTED_VALUE")
+    date_values = [row[0] if row else "" for row in date_rows]
     target_row, _insert_row = find_target_row(date_values, target)
     duplicates = sum(1 for value in date_values[1:] if parse_sheet_date(value) == target)
+    if duplicates >= 2:
+        raise CloseSyncError("VALIDATE", f"Duplicate date rows already exist for {target.isoformat()}: {duplicates}")
     current: list[Any] = []
     formulas: list[Any] = []
     if target_row is not None:
@@ -972,7 +1042,8 @@ def close_row_read_only_dry_run(client: SheetsClient, payload: dict[str, Any]) -
         formula_values = read_values(client, sheet, row_range, "FORMULA")
         current = values[0] if values else []
         formulas = formula_values[0] if formula_values else []
-    result = build_asof_close_dry_run(payload, headers, target_row, current, formulas, duplicates)
+    lineage = existing_market_records(client, target) if target_row is not None else {}
+    result = build_asof_close_dry_run(payload, headers, target_row, current, formulas, duplicates, lineage)
     result["spreadsheetId"] = client.spreadsheet_id
     result["targetDate"] = target.isoformat()
     result["existingRowFound"] = target_row is not None
@@ -1141,4 +1212,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 

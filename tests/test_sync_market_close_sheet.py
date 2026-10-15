@@ -497,8 +497,8 @@ class CloseSyncTests(unittest.TestCase):
 
         self.assertEqual(len(result["items"]), 28)
         self.assertEqual(result["duplicateCheck"], "PASS")
-        self.assertEqual(result["classifications"]["UNAVAILABLE_AS_OF"], 26)
-        self.assertEqual(result["classifications"]["DEFINITION_PENDING"], 2)
+        self.assertEqual(result["writeEligibility"]["UNAVAILABLE_AS_OF"], 26)
+        self.assertEqual(result["writeEligibility"]["DEFINITION_PENDING"], 2)
         self.assertEqual(result["productionWriteCalls"], 0)
         self.assertEqual(result["insertedRows"], 0)
         self.assertTrue(all(item["proposedValue"] is None for item in result["items"]))
@@ -519,12 +519,141 @@ class CloseSyncTests(unittest.TestCase):
         result = close_sync.build_asof_close_dry_run(payload, headers, 27, [""] * len(headers), formulas, 2)
 
         self.assertEqual(result["duplicateCheck"], "FAIL")
+        self.assertEqual(result["status"], "DRY_RUN_FAILED")
         dow = next(item for item in result["items"] if item["symbol"] == "dow")
         self.assertEqual(dow["status"], "FORMULA_PROTECTED")
         self.assertEqual(result["productionWriteCalls"], 0)
 
+    def test_asof_target_date_is_resolved_in_jst_from_utc_timestamp(self):
+        payload = {"targetAsOf": "2026-10-12T15:01:00Z", "productionEligible": False, "markets": {}}
+        result = close_sync.build_asof_close_dry_run(payload, ["日付"], None, [], [], 0)
+        self.assertEqual(result["targetDate"], "2026-10-13")
+        self.assertEqual(result["duplicateCheck"], "PASS")
+
+    def test_asof_diagnostics_compare_only_matching_lineage_and_stay_separate_from_eligibility(self):
+        headers = ["日付"] + list(dict.fromkeys(
+            header for header in close_sync.ASOF_CLOSE_HEADERS.values() if header
+        ))
+        symbol = "usdjpy"
+        item_unit = next(item[2] for item in close_sync.ITEMS if item[1] == symbol)
+        header = close_sync.ASOF_CLOSE_HEADERS[symbol]
+        existing = [""] * len(headers)
+        existing[headers.index(header)] = "158.60"
+        market = {
+            "value": 158.60, "unit": item_unit, "asOf": "2026-10-13T15:00:00+09:00",
+            "sourceSeriesId": "fx:USDJPY:NY17", "verificationStatus": "reference_only",
+            "productionEligible": False,
+        }
+        payload = {"targetAsOf": "2026-10-12T15:00:00Z", "productionEligible": False, "markets": {symbol: market}}
+        provenance = {symbol: {
+            "symbol": symbol, "unit": item_unit, "valueDate": "2026-10-13",
+            "sourceSeriesId": "fx:USDJPY:NY17", "storedValue": "158.60",
+        }}
+        result = close_sync.build_asof_close_dry_run(payload, headers, 27, existing, [], 1, provenance)
+        item = next(item for item in result["items"] if item["symbol"] == symbol)
+        self.assertEqual(item["diagnosticStatus"], "MATCH")
+        self.assertEqual(item["status"], "NO_ELIGIBLE_WRITE")
+        self.assertIsNone(item["proposedValue"])
+        self.assertEqual(result["diagnosticClassifications"]["MATCH"], 1)
+
+        payload["markets"][symbol] = {**market, "value": 158.61}
+        result = close_sync.build_asof_close_dry_run(payload, headers, 27, existing, [], 1, provenance)
+        item = next(item for item in result["items"] if item["symbol"] == symbol)
+        self.assertEqual(item["diagnosticStatus"], "VALUE_CONFLICT")
+        self.assertEqual(item["status"], "NO_ELIGIBLE_WRITE")
+        self.assertIsNone(item["proposedValue"])
+
+    def test_asof_diagnostics_require_same_definition_date_and_source_series(self):
+        headers = ["日付"] + list(dict.fromkeys(
+            header for header in close_sync.ASOF_CLOSE_HEADERS.values() if header
+        ))
+        symbol = "usdjpy"
+        item_unit = next(item[2] for item in close_sync.ITEMS if item[1] == symbol)
+        header = close_sync.ASOF_CLOSE_HEADERS[symbol]
+        existing = [""] * len(headers)
+        existing[headers.index(header)] = "158.60"
+        payload = {"targetAsOf": "2026-10-12T15:00:00Z", "productionEligible": False,
+                   "markets": {symbol: {"value": 158.60, "unit": item_unit, "asOf": "2026-10-13T15:00:00+09:00",
+                                        "sourceSeriesId": "new-series", "verificationStatus": "reference_only"}}}
+        lineage = {symbol: {"symbol": symbol, "unit": item_unit, "valueDate": "2026-10-13",
+                            "sourceSeriesId": "old-series", "storedValue": "158.60"}}
+        result = close_sync.build_asof_close_dry_run(payload, headers, 27, existing, [], 1, lineage)
+        item = next(item for item in result["items"] if item["symbol"] == symbol)
+        self.assertEqual(item["diagnosticStatus"], "NOT_COMPARABLE")
+
+    def test_read_only_dry_run_uses_get_only_and_never_calls_write_paths(self):
+        headers = ["日付"] + list(dict.fromkeys(
+            header for header in close_sync.ASOF_CLOSE_HEADERS.values() if header
+        ))
+        width = len(headers)
+        row = [""] * width
+        row[0] = "2026/10/13"
+
+        class ReadOnlyClient:
+            base_url = "https://fake/sheets"
+            spreadsheet_id = "test-id"
+            def sheet_map(self):
+                return {"終値一覧": 1, "WEB_Data_Update_Log": 2}
+
+            def __init__(self):
+                self.methods = []
+
+            def _range(self, sheet, cells):
+                return f"'{sheet}'!{cells}"
+
+            def _request(self, method, url, **kwargs):
+                self.methods.append(method)
+                if method != "GET":
+                    raise AssertionError(f"write HTTP method used: {method}")
+                path = unquote(urlparse(url).path)
+                option = parse_qs(urlparse(url).query).get("valueRenderOption", ["FORMATTED_VALUE"])[0]
+                if "WEB_Data_Update_Log" in path:
+                    return {"values": [list(close_sync.LOG_HEADERS)]}
+                if "A1:GF1" in path:
+                    return {"values": [headers]}
+                if "A:A" in path:
+                    return {"values": [["日付"], ["2026/10/13"]]}
+                if "!A2:" in path:
+                    return {"values": [row if option != "FORMULA" else [""] * width]}
+                raise AssertionError(f"unexpected dry-run read: {path}")
+
+        client = ReadOnlyClient()
+        payload = {"targetAsOf": "2026-10-12T15:00:00Z", "productionEligible": False,
+                   "markets": {}}
+        with patch.object(close_sync, "batch_write_values", side_effect=AssertionError("batch write called")), \
+             patch.object(close_sync, "insert_formatted_row", side_effect=AssertionError("row insertion called")), \
+             patch.object(close_sync, "append_update_log", side_effect=AssertionError("audit append called")):
+            result = close_sync.close_row_read_only_dry_run(client, payload)
+        self.assertEqual(result["status"], "DRY_RUN_COMPLETE")
+        self.assertTrue(client.methods)
+        self.assertEqual(set(client.methods), {"GET"})
+
+    def test_read_only_dry_run_rejects_two_or_more_duplicate_target_dates(self):
+        class ReadOnlyClient:
+            base_url = "https://fake/sheets"
+            spreadsheet_id = "test-id"
+            def sheet_map(self):
+                return {"終値一覧": 1}
+
+            def _range(self, sheet, cells):
+                return f"'{sheet}'!{cells}"
+
+            def _request(self, method, url, **kwargs):
+                path = unquote(urlparse(url).path)
+                if "A1:GF1" in path:
+                    return {"values": [["日付", "Dow終値"]]}
+                if "A:A" in path:
+                    return {"values": [["日付"], ["2026/10/13"], ["2026/10/13"]]}
+                raise AssertionError(f"must fail before reading row values: {path}")
+
+        with self.assertRaises(close_sync.CloseSyncError):
+            close_sync.close_row_read_only_dry_run(
+                ReadOnlyClient(), {"targetAsOf": "2026-10-12T15:00:00Z", "markets": {}}
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
+
 
 
