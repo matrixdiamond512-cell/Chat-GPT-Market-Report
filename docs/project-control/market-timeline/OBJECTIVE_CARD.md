@@ -12,6 +12,6 @@ OPEN OUTCOMES:
 - O-001 Inspect dashboard/report source contract and 2026-10-15 archived amendments. COMPLETE (source identity and archived amendments reviewed).
 - O-002 Implement source-bound timeline data and rendering for four slots. COMPLETE IN WORKTREE.
 - O-003 Test slot selection, report identity, historical amendment labeling, empty state, and mobile layout. PARTIAL (12 automated acceptance checks + publication-policy regression pass; browser visual verification unavailable because local loopback access is blocked in this environment).
-- O-004 Create a draft PR with changed files and evidence; do not merge or deploy. OPEN.
+- O-004 Create a draft PR with changed files and evidence; do not merge or deploy. COMPLETE (Draft PR #150 created; not merged/deployed).
 
-NEXT NECESSARY ACTION: Record validation evidence, create the draft PR, and verify that the PR contains only this isolated feature. No merge or deployment.
+NEXT NECESSARY ACTION: Have the Draft PR receive its required browser/mobile visual verification and CI run before review. Do not merge or deploy.
