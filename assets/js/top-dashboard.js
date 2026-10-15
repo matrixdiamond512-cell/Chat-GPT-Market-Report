@@ -1142,7 +1142,13 @@ function renderHeader(report) {
   const generated = dashboardMeta && dashboardMeta.generatedAt
     ? dashboardMeta.generatedAt.replace("T", " ").replace("+09:00", "")
     : report.time || "取得不能";
-  $("reportStatus").textContent = `作成日時：${created}　更新：${generated}`;
+  const status = $("reportStatus");
+  status.dataset.stale = dashboardMeta?.isStale ? "true" : "false";
+  const dataAsOf = String(dashboardMeta?.dataAsOf || "").replace("T", " ").replace(":00+09:00", "");
+  const freshness = dashboardMeta?.isStale
+    ? `　⚠ 最新公開レポートは${dataAsOf || "過去時点"}のままです。後続レポートの証跡を確認中です。`
+    : "";
+  status.textContent = `作成日時：${created}　更新：${generated}${freshness}`;
   document.title = `WEBマーケットレポート｜${created}`;
 }
 
@@ -2244,6 +2250,8 @@ async function loadDashboardReports() {
       generatedAt: dashboardPayload?.generatedAt || "",
       dataAsOf: dashboardPayload?.dataAsOf || "",
       status: dashboardPayload?.status || (historyReports.length ? "fallback-reports-json" : ""),
+      isStale: dashboardPayload?.isStale === true,
+      staleReason: dashboardPayload?.staleReason || "",
       marketData,
       marketDataUpdatedAt: dashboardPayload?.marketDataUpdatedAt || marketData?.generatedAt || ""
     }
