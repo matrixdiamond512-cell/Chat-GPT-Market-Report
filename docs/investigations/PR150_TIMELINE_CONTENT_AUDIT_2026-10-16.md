@@ -32,9 +32,12 @@
 | Python timeline ingestion | PASS 5/5 | 事後追補の本文ハッシュ束縛、未確認時刻の非補作、品質欠損表示 |
 | Node publication policy | PASS | 8 eligibility states、blocked/archive・legacy/projection保護 |
 | Node構文検査 | PASS | `market-timeline.js`、`build_market_timeline_archive.js` |
+| GitHub Actions（current PR head） | PASS 7/7 | timeline contract、publication eligibility、Apps Script prepublish、delivery health、dashboard health、Drive recovery、Saved Docs dispatch contract |
 | ローカルブラウザー操作 | PASS（E3、localhost preview） | 10/15の08/12/16/21を切替。追補スロット選択も同期。21:00の本文不一致拒否と追補閲覧、10/14・10/13過去日選択、10/13に時系列なし状態を確認 |
 | スマートフォン相当幅 | PASS（先行確認） | 390x844で横はみ出しなし。今回CSS変更なし。localhost previewのみ |
 | 実図解数値照合 | NOT_RUN | 図解ファイルがない |
 | Pages本番実描画 | NOT_RUN | 本変更の本番公開は未実施 |
+
+GitHub Actions run IDs（commit `82efbac7ce0b0b8fec1983ef68d18e8b4e96af12`）：`38803653277` Apps Script Pre-Publish Validation、`38803653299` Saved Docs Pages dispatch contract、`38803653300` Market timeline contract and dashboard checks、`38803653308` Report dashboard publication health regression、`38803653324` Dashboard report publication eligibility、`38803653356` Market report synchronization recovery CI、`38803653441` Delivery health regression CI。全runがcompleted/success。
 
 この監査はコード・保存ファイル・ブラウザで観察できた範囲の記録であり、マーケットデータ全件の独立監査や本番配信成功を証明しない。

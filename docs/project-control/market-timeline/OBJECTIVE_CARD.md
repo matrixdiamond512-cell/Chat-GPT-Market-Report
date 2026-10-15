@@ -14,7 +14,7 @@ OPEN OUTCOMES:
 - O-003 Test slot selection, report identity, historical amendment labeling, empty state, and mobile layout. PARTIAL: current localhost browser smoke verified 10/15 four-slot switching, retrospective archive slot synchronization, 21:00 exact-body mismatch guard, and 10/14 + 10/13 historical empty timeline. Prior 390x844 mobile check remains applicable because CSS did not change. All 10/15 content quality outcomes remain INCOMPLETE; Pages production rendering is not tested.
 - O-004 Create a draft PR with changed files and evidence; do not merge or deploy. COMPLETE (Draft PR #150 created; not merged/deployed).
 
-NEXT NECESSARY ACTION: Commit and push the current content-evidence amendment and slot-sync fix to PR #150, then inspect CI for that exact head. Do not merge or deploy.
+NEXT NECESSARY ACTION: Keep Draft and unmerged. Source/code commit `82efbac7` has 7/7 hosted CI runs PASS; obtain missing contemporaneous/source-revision and infographic evidence before treating 10/15 content as complete. ChatGPT body delivery remains a separate unresolved system issue. Do not merge or deploy.
 
 ## Sync and evidence audit continuation — 2026-10-16 (ADD)
 
@@ -28,8 +28,8 @@ OPEN OUTCOMES:
 - O-005 Google Drive/Actions/Pages production end-to-end sync after the Draft PR is reviewed and merged: NOT_RUN. Current main remains stale because the October 15 source reports are archived or evidence-blocked.
 - O-006 Actual numeric equality of October 15 infographics and report bodies: UNKNOWN / NOT_VERIFIED; the four source records declare `infographic_status=NOT_VERIFIED` and no corresponding verified manifest/image evidence was observed.
 - O-007 Automated ChatGPT full-body generation/delivery and failure alerting: NOT_IMPLEMENTED in the inspected scheduled path; it builds ChatGPT input files and uses a manual paste-to-Sidebar flow. One-time OpenAI workflows exist, but no run/result was observed in the accessible action history.
-- O-008 Draft PR active CI, browser/mobile visual verification, final source-to-Pages readback: OPEN.
+- O-008 Draft PR active CI, browser/mobile visual verification, final source-to-Pages readback: PARTIAL (source/code commit `82efbac7` CI 7/7 PASS; local browser/date-time and historical empty-state smoke PASS; prior 390x844 same-CSS check PASS; live Pages readback NOT_RUN).
 
 CONSTRAINTS: Draft PR only. Do not merge, deploy Pages, write Google Drive/Docs, configure secrets, or fabricate missing historical evidence.
 
-NEXT NECESSARY ACTION: Push the reviewed code and stale-state correction to Draft PR #150, inspect its active CI results, and leave browser/mobile and external service acceptance open where the environment cannot observe them.
+NEXT NECESSARY ACTION: Keep PR #150 Draft. Preserve the held 10/15 source states until contemporaneous snapshot/receipt and source revision evidence exists; obtain actual infographic artifacts for numeric equality; run nonproduction Drive and live Pages readback only after those records are available. ChatGPT task run history must be inspected separately in Scheduled.
