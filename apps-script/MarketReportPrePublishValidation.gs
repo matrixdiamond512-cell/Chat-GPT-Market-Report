@@ -418,9 +418,10 @@ function marketReportPrePublishTimelineIssues_(source, timeText) {
       timePattern.lastIndex = 0;
       while ((match = timePattern.exec(timedText)) !== null) {
         var parts = match[0].split(':').map(Number);
-        var before = timedText.slice(Math.max(0, match.index - 16), match.index);
-        var after = timedText.slice(match.index + match[0].length, match.index + match[0].length + 16);
-        if (parts[0] * 60 + parts[1] > 1260 && /(?:発生|発表|報道|観測)時刻/.test(before) && !/(?:予定|未発表|予想)/.test(after)) {
+        var aroundTime = timedText.slice(Math.max(0, match.index - 22), match.index + match[0].length + 28);
+        var planned = /(?:予定|予想|未発表|今後|これから|控え|待機|見込み|翌日|明日)/.test(aroundTime);
+        var historical = /(?:前日|昨日|昨夜|先週|過去)/.test(aroundTime);
+        if (parts[0] * 60 + parts[1] > 1260 && !planned && !historical) {
           issues.push('21:00時点より後の出来事を発生済みとして記載しています');
         }
       }
