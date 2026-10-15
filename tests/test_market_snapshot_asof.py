@@ -72,7 +72,7 @@ class SnapshotCutoffTests(unittest.TestCase):
         output = project_snapshot_asof(source, CUTOFF)
         self.assertIsNone(output["markets"]["nikkei225_per"]["value"])
         self.assertEqual(output["markets"]["nikkei225_pbr"]["value"], 1.89)
-        self.assertTrue(output["markets"]["nikkei225_pbr"]["productionEligible"])
+        self.assertFalse(output["markets"]["nikkei225_pbr"]["productionEligible"])
         self.assertIsNone(output["markets"]["tse_prime_advancers"]["value"])
 
     def test_old_later_retrieval_requires_dated_publication_proof(self):
@@ -94,6 +94,17 @@ class SnapshotCutoffTests(unittest.TestCase):
         self.assertIsNone(result["markets"]["dow"]["value"])
         with self.assertRaises(AsOfProjectionError):
             project_snapshot_asof(source, "2026-10-13T16:00:00")
+
+    def test_future_timestamp_on_same_calendar_day_is_excluded(self):
+        source = self._payload()
+        source["markets"]["dow"]["asOf"] = "2026-10-13T17:00:00+09:00"
+        result = project_snapshot_asof(source, CUTOFF)
+        self.assertIsNone(result["markets"]["dow"]["value"])
+
+    def test_historical_verified_quotes_are_never_production_candidates(self):
+        result = project_snapshot_asof(self._payload(), CUTOFF)
+        self.assertEqual(result["markets"]["dow"]["verificationStatus"], "verified")
+        self.assertFalse(result["markets"]["dow"]["productionEligible"])
 
     def test_reference_before_cutoff_is_not_production_eligible(self):
         output = project_snapshot_asof(self._payload(), CUTOFF)
