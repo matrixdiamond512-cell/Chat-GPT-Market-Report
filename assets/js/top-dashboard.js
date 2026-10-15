@@ -1150,8 +1150,9 @@ function isDashboardHistoricalArchive(r) {
     && !!r.sourceDocument?.id && !!r.driveRevisionId && r.driveTextLength === r.fullText.length
     && Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length > 0;
   const reconstructed = ["ORIGINAL_NOT_FOUND", "RECONSTRUCTED_UNVERIFIED"].includes(r.originalReportStatus)
+    && ["PARTIAL_ORIGINAL_WITH_RETROSPECTIVE_ADDENDUM", "RECONSTRUCTED_SOURCE", "RETROSPECTIVE_REPORT"].includes(r.archiveType)
     && !r.sourceDocument?.id && typeof r.archiveSource === "string" && r.archiveSource.length > 10
-    && Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length > 0;
+    && r.missingAtSlotEvidence === true;
   return legacyOriginal || sourceDocReadback || reconstructed;
 }
 function isDashboardReconstructedArchive(r) {
@@ -1160,12 +1161,25 @@ function isDashboardReconstructedArchive(r) {
 
 function archiveSectionBody(report, pattern) {
   const lines = String(report.fullText || "").replace(/\r/g, "").split("\n");
-  const at = lines.findIndex(line => /^\d{1,2}(?:補)?[．.]\s*/.test(line) && pattern.test(line));
+  const header = line => {
+    const m=String(line||"").trim().match(/^(?:\d{1,2}(?:補)?[．.]\s*|#{1,4}\s*|【)(.+?)(?:】)?$/);
+    if (m) return m[1].replace(/】$/, "").trim();
+    const bare=String(line||"").trim();
+    if (/^(?:総合判断|主要市場データ|今日の相場テーマ|前回からの変化|市場別価格・見通し.*|クロスアセット資金フロー|需給・ポジション|重要ニュース|材料と値動きの整合性|今日の主導市場|メインシナリオ|代替シナリオ|崩れる条件|次の時間帯への引き継ぎ|NY市場の流れ)$/.test(bare)) return bare;
+    return "";
+  };
+  const at = lines.findIndex(line => {
+    const title=header(line);
+    return title && pattern.test(title);
+  });
   if (at < 0) return "";
-  let end = lines.findIndex((line, i) => i > at && /^\d{1,2}(?:補)?[．.]\s*/.test(line));
+  let end = lines.findIndex((line,i) => i>at && header(line));
   if (end < 0) end = lines.length;
-  return lines.slice(at + 1, end).join("\n").trim();
+  // A '【総合判断】...' paragraph may include its explanation on the heading line.
+  const line=lines[at].trim(),inline=line.match(/^【[^】]+】\s*(.+)$/)?.[1]||"";
+  return [inline,...lines.slice(at+1,end)].filter(Boolean).join("\n").trim();
 }
+
 function archiveDashboardSummary(record) {
   const section = pattern => archiveSectionBody(record, pattern);
   const split = text => String(text || "").split("\n").map(s => s.trim()).filter(Boolean);
@@ -1173,6 +1187,50 @@ function archiveDashboardSummary(record) {
   const timeline = section(/時系列/);
   const mainPrices = section(/前営業日終値・主要市場データ|主要市場データ/);
   const outlook = section(/主要6市場の短期見通し|6市場の個別見通し|主要6市場の|主要6市場の短期|個別6市場の/);
+  const wholeText=String(record.fullText||"").replace(/\r/g,"");
+  const blockByAsset = label => {
+    const lines=wholeText.split("\n");
+    const i=lines.findIndex(v=>v.trim()==="【"+label+"】");
+    if(i<0)return "";
+    let end=lines.findIndex((v,j)=>j>i && (/^【[^】]+】/.test(v.trim())||v.trim()==="主要市場データ"));
+    return lines.slice(i+1,end<0?lines.length:end).join("\n");
+  };
+  const specificBlockLabels={gold:"金",oil:"原油",nikkei:"日経225先物",usdjpy:"USD/JPY",eurusd:"EUR/USD",btc:"BTCUSD"};
+  const extractBlockPrice = (block,label) => {
+    const p=block.match(/^価格[：:]\s*(.+)$/m)?.[1]||"";
+    const m=p.match(/([\d,]+(?:\.\d+)?)(?=\s*(?:USD|円|ドル|（|\())/);
+    if(!m)return null;
+    const prev=block.match(/^前日比[：:]\s*(.+)$/m)?.[1]||"";
+    return {value:m[1],line:label+"： "+p,previous:prev,outlook:block.match(/^メインシナリオ[：:]\s*(.+)$/m)?.[1]||block.match(/^材料[：:]\s*(.+)$/m)?.[1]||""};
+  };
+  const fallbackQuote = (key) => {
+    const patterns={
+      gold:/^(?:金(?:スポット|現物|先物)?|COMEX金先物|ゴールド)[：:]\s*(?:現物金\s*)?(?:約\s*)?([\d,]+(?:\.\d+)?)/m,
+      oil:/^(?:WTI原油(?:先物)?|WTI|原油)[：:]\s*(?:約\s*)?([\d,]+(?:\.\d+)?)/m,
+      nikkei:/^(?:日経225先物(?:（[^）]+）)?|大阪日経225先物(?:12月限)?|日経先物)[：:]\s*(?:約\s*)?([\d,]+(?:\.\d+)?)/m,
+      usdjpy:/^USD\/JPY[：:]\s*(?:約\s*)?([\d,]+(?:\.\d+)?)/m,
+      eurusd:/^EUR\/USD[：:]\s*(?:約\s*)?([\d,]+(?:\.\d+)?)/m,
+      btc:/^BTCUSD[：:]\s*(?:約\s*)?([\d,]+(?:\.\d+)?)/m
+    };
+    const found=patterns[key]?.exec(wholeText);
+    if(found)return {value:found[1],line:wholeText.slice(found.index,found.index+230).split("\n")[0].slice(0,210)};
+    // Numbered five-column morning closes: label on one line, value on next.
+    const re={
+      gold:/^\d{1,2}[.．]\s*(?:COMEX金先物|金現物|金スポット)\s*$/m,
+      oil:/^\d{1,2}[.．]\s*(?:WTI原油|WTI)\s*$/m,
+      nikkei:/^\d{1,2}[.．]\s*日経225先物(?:（[^）]+）)?\s*$/m,
+      usdjpy:/^\d{1,2}[.．]\s*USD\/JPY\s*$/m,
+      eurusd:/^\d{1,2}[.．]\s*EUR\/USD\s*$/m,
+      btc:/^\d{1,2}[.．]\s*BTCUSD\s*$/m
+    };
+    const five=re[key]?.exec(wholeText);
+    if(five){
+      const next=wholeText.slice(five.index+five[0].length).split("\n").map(v=>v.trim()).filter(Boolean)[0]||"";
+      const val=next.match(/^(?:約\s*)?([\d,]+(?:\.\d+)?)/)?.[1];
+      if(val && !/取得不能/.test(next))return {value:val,line:five[0]+"｜"+next};
+    }
+    return null;
+  };
   const marketSpecs = [
     { key: "gold", name: "金", quote: /(?:金スポット|金先物GC=F)\s*[：:]?\s*(?:約\s*)?([\d,]+(?:\.\d+)?)/, outlook: /^(?:金(?:（XAU\/USD）)?)[：:]\s*(.+)$/m },
     { key: "oil", name: "原油", quote: /(?:WTI原油先物CL=F|WTI原油|WTI)\s*[：:]?\s*([\d,]+(?:\.\d+)?)/, outlook: /^WTI(?:原油)?[：:]\s*(.+)$/m },
@@ -1184,16 +1242,22 @@ function archiveDashboardSummary(record) {
   const archiveQuotes = {};
   const markets = [];
   for (const spec of marketSpecs) {
-    const m = spec.quote.exec(mainPrices);
-    const raw = m ? mainPrices.slice(m.index, m.index + 260).split(/[。\n]/)[0].trim() : "";
-    const outlookLine = outlook.match(spec.outlook)?.[1] || "";
+    const blocked=isDashboardReconstructedArchive(record);
+    const m=blocked ? null : spec.quote.exec(mainPrices);
+    const block=blocked ? "" : blockByAsset(specificBlockLabels[spec.key]||"");
+    const fromBlock=blocked ? null : extractBlockPrice(block,spec.name);
+    const direct=blocked ? null : fallbackQuote(spec.key);
+    const raw = blocked ? "原本欠損（事後再分析版：定時の確定価格なし）"
+      : m ? mainPrices.slice(m.index, m.index + 260).split(/[。\n]/)[0].trim()
+      : fromBlock?.line || direct?.line || "";
+    const outlookLine = outlook.match(spec.outlook)?.[1] || fromBlock?.outlook || "";
     const changePair = raw.match(/([+-]\d[\d,.]*)\s*(?:円|ドル|USD)?\s*[,、/]\s*([+-]\d[\d,.]*)\s*%/);
     const pct = changePair ? Number(changePair[2].replace(/,/g, "")) : null;
-    const pctOnly = !changePair && raw.match(/([+-]\d+(?:\.\d+)?)\s*%/);
+    const pctOnly = !changePair && raw.match(/([+-]\d+(?:\.\d+)?)\s*%/) || (!changePair && fromBlock?.previous.match(/([+-]\d+(?:\.\d+)?)\s*%/));
     // Missing current-session quotes remain labeled as historical references.
     const atSource = raw.match(/(?:10\/\d{1,2}[^）]{0,55}|\b\d{1,2}:\d{2}[^）]{0,35})/);
     const observedAt = atSource ? atSource[0].slice(0, 56) : "原本の基準時刻を確認";
-    const value = m ? m[1] : null;
+    const value = blocked ? null : m?.[1] || fromBlock?.value || direct?.value || null;
     const outlookDesc = String(outlookLine).trim();
     archiveQuotes[spec.key] = {
       value, observedAt,
@@ -1227,7 +1291,7 @@ function archiveDashboardSummary(record) {
     archiveQuotes,
     archiveTimelineRows: timelineRows,
     markets,
-    theme: split(summary).slice(0, 3).join(" ").slice(0, 560),
+    theme: (split(summary).slice(0, 3).join(" ") || split(section(/今日の相場テーマ/)).slice(0, 3).join(" ") || split(wholeText).slice(1, 4).filter(v=>!/^(?:作成|復旧作成|対象時点|情報基準|保存復旧|復旧版)/.test(v)).join(" ")).slice(0, 560),
     changes: record.time === "12:00"
       ? split(summary).slice(0, 2)
       : split(section(/版からの変化|からの変化/)).slice(0, 5),
@@ -2131,7 +2195,9 @@ function renderScenarios(report) {
 function renderFootnote(report) {
   if (report?.historicalArchiveDisplayOnly) {
     const foot = $("dataFootnote");
-    foot.textContent = "過去の保存記録（事後改訂版）：正式発行・発行時点の独立照合済みデータとは区別します。表示された市場価格は原本に記録された各観測時刻の参考値です。";
+    foot.textContent = isDashboardReconstructedArchive(report)
+      ? "原本欠損・事後再分析版：当時の定時本文・価格・方向を復元したものではありません。参考情報としてのみ閲覧してください。"
+      : "Google Drive保存本文の閲覧用記録。元の発行時点のsnapshot・receiptとの照合は未完了です。価格は本文の各観測時刻の参考値です。";
     return;
   }
   const missing = MARKET_DEFINITIONS
