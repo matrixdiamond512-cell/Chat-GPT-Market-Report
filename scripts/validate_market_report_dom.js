@@ -11,6 +11,8 @@ const fixturePath = process.env.PORTAL_REPORT_FIXTURE || '';
 function validReports(payload) {
   const rows = Array.isArray(payload) ? payload : (Array.isArray(payload?.reports) ? payload.reports : []);
   return rows.filter(report => report
+    && (!String(report.report_status || '').trim()
+      || ['PUBLISHED', 'DOC_READBACK_PASS'].includes(String(report.report_status).trim().toUpperCase()))
     && /^\d{4}-\d{2}-\d{2}$/.test(String(report.date || ''))
     && /^\d{2}:\d{2}$/.test(String(report.time || ''))
     && String(report.title || '').trim());
@@ -29,7 +31,13 @@ async function main() {
       headers: {'cache-control': 'no-cache', pragma: 'no-cache'}
     });
     if (!response.ok) throw new Error('reports.json HTTP ' + response.status);
-    reports = validReports(await response.json());
+    const payload = await response.json();
+    const rows = Array.isArray(payload) ? payload : (Array.isArray(payload?.reports) ? payload.reports : []);
+    const excluded = rows.filter(report => report && String(report.report_status || '').trim()
+      && !['PUBLISHED', 'DOC_READBACK_PASS'].includes(String(report.report_status).trim().toUpperCase()));
+    if (excluded.length) throw new Error('reports.json contains non-publication-eligible reports: '
+      + excluded.map(report => report.date + ' ' + report.time).join(', '));
+    reports = validReports(payload);
   }
   if (!reports.length) throw new Error('No valid report slots found');
 

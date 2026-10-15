@@ -8,6 +8,7 @@ import json
 import re
 from datetime import date as Date
 from pathlib import Path
+from reporting.publication_eligibility import is_publication_eligible
 
 
 def load(path: Path):
@@ -34,6 +35,11 @@ def main() -> int:
     for i, report in enumerate(index):
         if not isinstance(report, dict):
             raise SystemExit(f"{index_path}[{i}]: expected an object")
+        if not is_publication_eligible(report):
+            raise SystemExit(
+                f"{index_path}[{i}]: report is not publication-eligible: "
+                f"{report.get('date')} {report.get('time')} ({report.get('report_status')})"
+            )
         date, time = str(report.get("date") or ""), str(report.get("time") or "")
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", date) or time not in {"08:00", "12:00", "16:00", "21:00"}:
             raise SystemExit(f"{index_path}[{i}]: invalid report key {date} {time}")

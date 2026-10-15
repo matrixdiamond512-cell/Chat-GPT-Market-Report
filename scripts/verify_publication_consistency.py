@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from report_identity import canonical_path as shared_canonical_path, display_report_datetime, internal_report_key, slot_key as shared_slot_key
+from reporting.publication_eligibility import is_publication_eligible
 
 JST = ZoneInfo("Asia/Tokyo")
 
@@ -62,6 +63,11 @@ def main() -> int:
 
     latest = unwrap(load(Path(args.latest)), args.latest)
     date_text, time_text = key(latest)
+    if not is_publication_eligible(latest):
+        raise SystemExit(
+            f"latest report is not publication-eligible: {date_text} {time_text} "
+            f"({latest.get('report_status')})"
+        )
     expected_internal_key = internal_report_key(latest)
     if args.expected_key and args.expected_key != expected_internal_key:
         raise SystemExit(

@@ -10,6 +10,7 @@ from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin, urlsplit, urlunsplit, parse_qsl, urlencode
 from urllib.request import Request, urlopen
+from reporting.publication_eligibility import is_publication_eligible
 
 
 def fetch(url: str) -> tuple[int, bytes, str]:
@@ -80,6 +81,19 @@ def main() -> int:
             if status != 200 or not content_type.lower().startswith("image/png") or digest != image.get("sha256"):
                 raise SystemExit(f"public infographic does not match its source file: {slot_id} HTTP {status}")
 
+    verified_excluded = []
+    for local_path in Path(args.reports_dir).glob("*.json"):
+        canonical = json.loads(local_path.read_text(encoding="utf-8"))
+        if is_publication_eligible(canonical):
+            continue
+        status, _, _ = fetch(cache_busted(urljoin(base, f"reports/{local_path.name}")))
+        if status != 404:
+            raise SystemExit(
+                f"non-publication-eligible canonical report is publicly served: "
+                f"{local_path.name} HTTP {status}"
+            )
+        verified_excluded.append(local_path.name)
+
     newest = expected[0]
     print(json.dumps({
         "status": "verified",
@@ -87,6 +101,7 @@ def main() -> int:
         "reportCount": len(expected),
         "latestReport": f"{newest['date']} {newest['time']}",
         "verifiedInfographics": sum(bool(item.get("infographic")) for item in expected),
+        "verifiedExcludedCanonicalReports": len(verified_excluded),
     }, ensure_ascii=False))
     return 0
 

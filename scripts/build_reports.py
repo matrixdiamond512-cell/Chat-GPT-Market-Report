@@ -8,6 +8,7 @@ from pathlib import Path
 from reconcile_latest_report_market_data import load_json
 from report_identity import canonical_path as shared_canonical_path, slot_key as shared_slot_key
 from report_source_contract import validate_saved_body
+from reporting.publication_eligibility import is_publication_eligible
 
 REPORTS_DIR = Path("reports")
 OUTPUT_FILE = Path("reports.json")
@@ -266,12 +267,13 @@ def load_canonical_reports(
 
 
 def write_index(reports: list[dict]) -> None:
-    reports.sort(
+    public_reports = [report for report in reports if is_publication_eligible(report)]
+    public_reports.sort(
         key=lambda item: f"{item['date']} {item['time']}",
         reverse=True,
     )
     OUTPUT_FILE.write_text(
-        json.dumps(reports, ensure_ascii=False, indent=2) + "\n",
+        json.dumps(public_reports, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
 
@@ -288,7 +290,10 @@ def verify_no_history_loss(
     rebuilt_keys = {slot_key(report) for report in rebuilt_reports}
 
     canonical_reports = load_canonical_reports(previous_by_slot)
-    canonical_keys = {slot_key(report) for report in canonical_reports}
+    canonical_keys = {
+        slot_key(report) for report in canonical_reports
+        if is_publication_eligible(report)
+    }
 
     if rebuilt_keys != canonical_keys:
         missing_in_index = sorted(canonical_keys - rebuilt_keys)
@@ -299,7 +304,11 @@ def verify_no_history_loss(
             f"missing_in_files={missing_in_files}"
         )
 
-    lost_previous_slots = sorted(previous_keys - rebuilt_keys)
+    canonical_keys_all = {slot_key(report) for report in canonical_reports}
+    lost_previous_slots = sorted(
+        key for key in previous_keys
+        if key not in rebuilt_keys and key not in canonical_keys_all
+    )
     if lost_previous_slots:
         raise SystemExit(
             "refusing to publish reports.json because previous report slots "
@@ -311,6 +320,12 @@ def verify_latest_is_published() -> None:
     latest = load_latest_report()
     if latest is None:
         return
+
+    if not is_publication_eligible(latest):
+        raise SystemExit(
+            f"latest report is explicitly not publication-eligible: "
+            f"{latest['date']} {latest['time']} ({latest.get('report_status')})"
+        )
 
     key = slot_key(latest)
     path = canonical_path(latest)

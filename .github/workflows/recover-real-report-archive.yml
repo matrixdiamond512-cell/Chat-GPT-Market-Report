@@ -1,56 +1,36 @@
-name: Recover actual 2026-10-14 report publication
+name: Audit archived 2026-10-14 report sources
 on:
-  pull_request:
-    paths:
-      - "scripts/recover_embedded_report_archive.py"
-      - ".github/workflows/recover-real-report-archive.yml"
-  push:
-    branches: [main]
-    paths:
-      - "scripts/recover_embedded_report_archive.py"
-      - ".github/workflows/recover-real-report-archive.yml"
+  workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
 concurrency:
   group: recover-2026-10-14-real-report-archive
   cancel-in-progress: false
 jobs:
-  recover:
+  audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
     steps:
-      - name: Checkout pinned branch
+      - name: Check out main
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          ref: main
+          fetch-depth: 1
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Inspect four existing Google Docs-backed report slots
-        run: python scripts/recover_embedded_report_archive.py --date 2026-10-14
-      - name: Restore and verify canonical, index, dashboard in disposable checkout
-        run: python scripts/recover_embedded_report_archive.py --date 2026-10-14 --apply
-      - name: Verify full report history is rebuild-stable
-        shell: bash
+      - name: Verify source archives stay outside public projections
         run: |
-          cp reports.json /tmp/report-index-before.json
-          python scripts/build_reports.py --canonical-only
-          cmp -s reports.json /tmp/report-index-before.json
+          python scripts/validate_report_index.py
           python scripts/verify_publication_consistency.py
-      - name: Persist only if this is a verified main-branch run
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add reports/2026-10-14_08-00.json reports/2026-10-14_12-00.json \
-            reports/2026-10-14_16-00.json reports/2026-10-14_21-00.json \
-            data/latest-report.json data/dashboard.json reports.json
-          if git diff --cached --quiet; then
-            echo 'Already recovered; no publication changes'
-            exit 0
-          fi
-          git commit -m 'Archive four verified 2026-10-14 market reports and synchronize portal index'
-          git pull --rebase origin main
-          git push origin main
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          index = json.loads(Path('reports.json').read_text(encoding='utf-8'))
+          for slot in ('08-00', '12-00', '16-00', '21-00'):
+              path = Path(f'reports/2026-10-14_{slot}.json')
+              report = json.loads(path.read_text(encoding='utf-8'))
+              assert report.get('report_status') == 'SOURCE_ARCHIVED', f'{path}: expected source-only archive'
+              assert not any((item.get('date'), item.get('time')) == (report['date'], report['time']) for item in index), f'{path}: leaked into public index'
+          print('2026-10-14 source originals are retained and excluded from public report index.')
+          PY

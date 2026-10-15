@@ -132,8 +132,8 @@ class SavedDocHeadingCompatibilityTests(unittest.TestCase):
             "11．本日イベント・次の時間帯への引き継ぎ",
             "12．結論",
         ]
-        text = "マーケットレポート｜2026/10/15（木）08:00\\n" + "".join(
-            heading + "\\n" + ("根拠・市場反応・比較基準を整理し監視条件を確認する。"*5) + "\\n"
+        text = "マーケットレポート｜2026/10/15（木）08:00\n" + "".join(
+            heading + "\n" + ("根拠・市場反応・比較基準を整理し監視条件を確認する。"*5) + "\n"
             for heading in headings
         )
         sync_latest_report_publication.validate_sop_body({
