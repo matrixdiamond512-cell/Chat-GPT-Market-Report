@@ -16,6 +16,13 @@ OPEN OUTCOMES: None within the authorized A/B/D/C foundation task. Deferred: liv
 
 NEXT ACTION: Foundation accepted at 0e14412. Phase E dry-run authorized below; prior deferred production outcomes remain open.
 
+## Live Drive-to-Pages publication recovery — 2026-10-16 (ADD)
+PRIMARY OBJECTIVE: Promote only complete, contemporaneous, source-bound scheduled Google Docs reports into GitHub canonical history and the public Pages portal, with verifiable end-to-end readback.
+ACCEPTANCE: A pre-draft immutable snapshot/context matches the slot; Docs body/revision/hash readback matches; importer issues a v2 receipt; canonical/index/latest/dashboard pass consistency gates; Pages deploy and public full-text readback match; original schedule and report text remain untouched.
+CONSTRAINTS: No gate relaxation, no inferred historical snapshot, no report completion or modification, no trigger/schedule change, preserve historical records and fail-closed archives.
+OPEN OUTCOMES: PR hosted checks/merge; future scheduled report live import and Pages E2E; 08/12/16/21 repeated slot observations; formal Drive docs readback after amendment.
+NEXT NECESSARY ACTION: Complete CI on the publication integration PR, then validate the next actual scheduled report through published-page readback. Until then status is PARTIAL.
+
 ## Phase E — 2026-10-06 (ADD)
 
 PRIMARY OBJECTIVE: In an offline fixture, safely bind Docs, PNG, immutable Manifest, Git registration and post-verification Receipt to one transaction, resume durable checkpoints without duplicate effects, and reject identity drift.

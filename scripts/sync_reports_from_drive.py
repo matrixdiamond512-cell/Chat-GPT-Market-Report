@@ -24,7 +24,7 @@ JST = timezone(timedelta(hours=9))
 SLOTS = ("08:00", "12:00", "16:00", "21:00")
 # Monthly report folder is discovered by name, not a fixed October ID.
 SOURCE = re.compile(r"^マーケットレポート_(\d{4}-\d{2}-\d{2})_(08|12|16|21)-00$")
-FIELDS = "nextPageToken,files(id,name,mimeType,parents)"
+FIELDS = "nextPageToken,files(id,name,mimeType,parents,createdTime,modifiedTime,headRevisionId)"
 DRIVE = "https://www.googleapis.com/drive/v3"
 DOCS = "https://docs.googleapis.com/v1"
 
@@ -114,9 +114,20 @@ def build_report(session, date: str, slot: str, item: dict) -> dict:
     from sync_latest_report_publication import validate_sop_body
     docid = item["id"]
     doc = get_json(session, f"{DOCS}/documents/{docid}",
-                   {"fields": "documentId,title,body(content)"})
+                   {"fields": "documentId,title,revisionId,body(content)"})
     if doc.get("documentId") != docid or doc.get("title") != item.get("name"):
         raise RuntimeError(f"Docs identity/title changed: {date} {slot}")
+    drive_after = get_json(session, f"{DRIVE}/files/{docid}", {
+        "fields": "id,name,mimeType,parents,createdTime,modifiedTime,headRevisionId"
+    })
+    if drive_after.get("id") != docid or drive_after.get("name") != item.get("name"):
+        raise RuntimeError(f"Drive identity/title changed during Docs readback: {date} {slot}")
+    for field in ("createdTime", "modifiedTime", "headRevisionId"):
+        before = item.get(field)
+        after = drive_after.get(field)
+        if before and after != before:
+            raise RuntimeError(f"Drive {field} changed during Docs readback: {date} {slot}")
+        item[field] = after
     full_text = paragraph_text(doc)
     result = {
         "date": date,
@@ -132,10 +143,24 @@ def build_report(session, date: str, slot: str, item: dict) -> dict:
         "structuredFromFullText": False,
         "revision": 1,
         "bodyHash": body_hash(full_text),
+        "sourceRevisionId": doc.get("revisionId") or item.get("headRevisionId"),
+        "sourceCreatedAt": item.get("createdTime"),
+        "sourceModifiedAt": item.get("modifiedTime"),
     }
     validate_saved_body(result)
     validate_sop_body(result)
     return result
+
+
+def publication_evidence(root: Path, report: dict, item: dict) -> tuple[dict | None, str | None]:
+    """Return a strict contemporaneous receipt, or a fail-closed hold reason."""
+    from reporting.publication_evidence import verify_slot_evidence
+    evidence_path = root / "data" / "report-evidence" / f"{report['date']}_{report['time'].replace(':', '-')}-r{report['revision']}.json"
+    try:
+        receipt = verify_slot_evidence(report, evidence_path, item, str(report.get("sourceRevisionId") or ""))
+        return receipt, None
+    except (ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
+        return None, str(exc)
 
 def poll(root: Path, *, apply: bool, enforce_slot: bool):
     from report_identity import internal_report_key
@@ -165,6 +190,7 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
               f"{len(source_files)} recent slots; monthly_folder_access={folder_access}; "
               f"authoritative_folder_scoped={folder_access}")
         to_write = {}
+        to_promote = {}
         invalid_sources = {}
         for key, matches in sorted(source_files.items()):
             path = root / "reports" / f"{key[0]}_{key[1].replace(':','-')}.json"
@@ -191,8 +217,38 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                 if len(matches) > 1:
                     print(f"EXISTING_CANONICAL_NAME_DUPLICATE: {key}; "
                           f"anchored source retained, extra_docs={len(matches)-1}")
-                # Preserve already published source text and revision. Never
-                # replace it by a separately parsed version from Google Docs.
+                # Preserve canonical text. A previously archived source can
+                # only move forward after exact readback plus contemporaneous
+                # snapshot evidence is independently verified.
+                if (canonical.get("report_status") == "SOURCE_ARCHIVED" and
+                        anchored[0].get("id") == docid):
+                    try:
+                        rebuilt = build_report(session, *key, anchored[0])
+                        _verified_source_revision(rebuilt)
+                    except (ValueError, SystemExit) as exc:
+                        print(f"SOURCE_READBACK_BLOCKED: {key}: {exc}")
+                        continue
+                    if (rebuilt.get("bodyHash") != canonical.get("bodyHash") or
+                            rebuilt.get("fullText") != canonical.get("fullText") or
+                            rebuilt.get("sourceDocument") != canonical.get("sourceDocument")):
+                        print(f"SOURCE_ARCHIVED_READBACK_CONFLICT: {key}; preserving canonical")
+                        continue
+                    receipt, hold = publication_evidence(root, rebuilt, anchored[0])
+                    if receipt is None:
+                        print(f"PUBLICATION_HELD: {key[0]} {key[1]}: {hold}")
+                        continue
+                    promoted = dict(canonical)
+                    promoted["report_status"] = "DOC_READBACK_PASS"
+                    promoted["publicationEvidence"] = {k: receipt[k] for k in (
+                        "evidenceId", "snapshotId", "contextHash", "snapshotHash", "bodyHash", "documentRevisionId"
+                    )}
+                    receipt_path = root / "publication-receipts" / f"{key[0]}_{key[1].replace(':','-')}.json"
+                    if receipt_path.exists() and read_json(receipt_path) != receipt:
+                        print(f"PUBLICATION_RECEIPT_CONFLICT: {key}; canonical remains archived")
+                        continue
+                    to_promote[key] = (promoted, receipt)
+                    continue
+                # Published/legacy sources remain immutable and unchanged.
                 continue
             if len(matches) != 1:
                 # A new slot has no established document ID; conflicting
@@ -209,7 +265,15 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                 invalid_sources[key] = str(exc)
                 print(f"SOURCE_VALIDATION_BLOCKED: {key[0]} {key[1]}: {exc}")
                 continue
-            to_write[key] = new_report
+            receipt, hold = publication_evidence(root, new_report, item)
+            if receipt is not None:
+                new_report["report_status"] = "DOC_READBACK_PASS"
+                new_report["publicationEvidence"] = {k: receipt[k] for k in (
+                    "evidenceId", "snapshotId", "contextHash", "snapshotHash", "bodyHash", "documentRevisionId"
+                )}
+            else:
+                print(f"PUBLICATION_HELD: {key[0]} {key[1]}: {hold}")
+            to_write[key] = (new_report, receipt)
         if enforce_slot:
             # After a scheduled report's 40-minute completion window, ensure
             # its source exists, rather than silently succeeding with old data.
@@ -231,25 +295,36 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
         print(json.dumps({
             "mode": "APPLY" if apply else "DRY_RUN",
             "new_slots": [f"{date} {slot}" for date,slot in sorted(to_write)],
+            "promotion_slots": [f"{date} {slot}" for date,slot in sorted(to_promote)],
             "folder_access": folder_access,
         }, ensure_ascii=False))
-        if not apply or not to_write:
+        if not apply or (not to_write and not to_promote):
             return
         # Stage append-only canonical files. No overwrite, no older latest.
-        for key, report in sorted(to_write.items()):
+        for key, (report, receipt) in sorted(to_write.items()):
             path = root / "reports" / f"{key[0]}_{key[1].replace(':','-')}.json"
             if path.exists():
                 raise RuntimeError("canonical changed during scan")
             save_json(path, report)
-        # This workflow verifies and archives Google Docs sources. Promotion
-        # to public latest/dashboard is separate and requires a passed
-        # publication gate; SOURCE_ARCHIVED records remain out of those views.
+            if receipt is not None:
+                save_json(root / "publication-receipts" / f"{key[0]}_{key[1].replace(':','-')}.json", receipt)
+        for key, (report, receipt) in sorted(to_promote.items()):
+            save_json(root / "reports" / f"{key[0]}_{key[1].replace(':','-')}.json", report)
+            save_json(root / "publication-receipts" / f"{key[0]}_{key[1].replace(':','-')}.json", receipt)
+        # Import is archive-first. Only reports that passed the pre-draft
+        # snapshot, exact Docs readback, and existing body/SOP gate are eligible
+        # for latest/dashboard; the existing publication selector applies them.
+        subprocess.run([sys.executable, "scripts/sync_latest_report_publication.py"],
+                       cwd=root, check=True)
         subprocess.run([sys.executable, "scripts/build_reports.py", "--canonical-only"],
                        cwd=root, check=True)
         subprocess.run([sys.executable, "scripts/verify_publication_consistency.py"],
                        cwd=root, check=True)
-        print("CANONICAL_REPORT_INGESTION_VERIFIED: "+", ".join(
-            internal_report_key(to_write[x]) for x in sorted(to_write)))
+        print("VERIFIED_REPORT_INGESTION_AND_PUBLICATION: "+", ".join(
+            internal_report_key(to_write[x][0]) for x in sorted(to_write)))
+        if to_promote:
+            print("SOURCE_ARCHIVE_PROMOTION_VERIFIED: "+", ".join(
+                internal_report_key(to_promote[x][0]) for x in sorted(to_promote)))
     finally:
         session.close()
 

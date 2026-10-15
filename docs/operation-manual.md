@@ -122,3 +122,11 @@ GitHub Actionsの `Update economic calendar` は5分ごとに動作する。正�
 6. 取得失敗時に直前値が保持され、`0` に変換されていないことを確認する。
 
 手動修正値やサンプル値で公開画面を埋めない。パーサーを修正した場合は、固定サンプルのテストと実際の最新資料の両方で検証する。
+
+## 2026-10-16 公開同期の復旧確認（PR提出前）
+
+- `SOURCE_ARCHIVED`はDocs原本の保全状態であり、公開成功ではない。snapshot/context証跡がない、Docsが発行後に変更された、本文hashまたはrevisionが一致しない場合は公開しない。
+- importer実行後はActionsログで`PUBLICATION_HELD`または公開処理結果を確認し、mainの正本・`reports.json`・`data/latest-report.json`・`data/dashboard.json`を照合する。
+- receipt v2と公開データの整合ゲートが合格してからPagesへ進む。Pages deploy後に公開URLを再読込し、当該reportId・全文hashを正本と照合する。
+- 2026-10-14の保存済みDocsは発行後変更または発行時本文欠落があるため、復旧テストのために再利用・補完・公開しない。
+- 実定期runと公開URLのE4/E5証拠が得られるまでは`PENDING_LIVE_RUN`とし、システム復旧完了を表示しない。
