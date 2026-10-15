@@ -404,7 +404,7 @@ def main() -> int:
             result["sheets"] = write_test_sheet(report_sheet_row(payload, body))
         print(json.dumps(result, ensure_ascii=False))
         return 0
-    except (OSError, PersonalReportError) as exc:
+    except (OSError, ValueError) as exc:
         print(json.dumps({"status": "failed", "errorCode": type(exc).__name__}), file=sys.stderr)
         return 2
 
