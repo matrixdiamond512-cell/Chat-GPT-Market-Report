@@ -2347,15 +2347,19 @@ async function loadDashboardReports() {
   const driveArchivePaths = [
     "data/dashboard-drive-archive-2026-10-01-05.json",
     "data/dashboard-drive-archive-2026-10-06-07.json",
-    "data/dashboard-drive-archive-2026-10-09-12.json"
+    "data/dashboard-drive-archive-2026-10-09-12.json",
+    "data/dashboard-drive-archive-2026-10-external.json"
   ];
   const drivePayloads = await Promise.all(driveArchivePaths.map(async path => {
     try {
       const response = await fetch(path + "?ts=" + Date.now(), { cache: "no-store" });
       if (!response.ok) throw new Error(path + " HTTP " + response.status);
       const payload = await response.json();
+      const expectedFolder = path.includes("-external.json")
+        ? "CROSS_FOLDER_VERIFIED_GOOGLE_DOCS"
+        : "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz";
       if (payload?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION"
-          || payload?.sourceFolderId !== "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz"
+          || payload?.sourceFolderId !== expectedFolder
           || !Array.isArray(payload.reports)) throw new Error("source archive schema mismatch");
       return payload.reports.filter(isDashboardHistoricalArchive).map(archiveDashboardSummary);
     } catch (error) {
