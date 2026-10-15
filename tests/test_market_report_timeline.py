@@ -68,6 +68,19 @@ class TimelineValidationTests(unittest.TestCase):
         )
         self.assertFalse(any("21:00時点より後" in error for error in validate_timeline(planned, "21:00")))
 
+    def test_2100_unqualified_late_event_is_rejected_but_prior_day_allowed(self):
+        baseline = timeline_text("21:00")
+        source = "市場の状態を確認し、売買材料の変化を整理した。"
+        asserted = baseline.replace(source, "22:30に指標が発表され、市場が反応した。", 1)
+        self.assertTrue(any("21:00時点より後" in error
+                            for error in validate_timeline(asserted, "21:00")))
+        scheduled = baseline.replace(source, "22:30発表予定の指標を控え、市場は待っている。", 1)
+        self.assertFalse(any("21:00時点より後" in error
+                             for error in validate_timeline(scheduled, "21:00")))
+        historical = baseline.replace(source, "前日22:30の指標が発表され、市場が反応した。", 1)
+        self.assertFalse(any("21:00時点より後" in error
+                             for error in validate_timeline(historical, "21:00")))
+
     def test_price_only_legacy_timeline_without_contract_fails(self):
         text = "1．市場の動き（日本時間・時系列）\n08:50 日経先物 68,090円\n11:30 日経平均 67,292円\n2．変化"
         self.assertTrue(validate_timeline(text, "16:00"))
