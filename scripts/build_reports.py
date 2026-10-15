@@ -266,8 +266,22 @@ def load_canonical_reports(
     return reports
 
 
-def write_index(reports: list[dict]) -> None:
-    public_reports = [report for report in reports if is_publication_eligible(report)]
+def write_index(
+    reports: list[dict],
+    previous_reports: list[dict] | None = None,
+) -> None:
+    # Reuse an unchanged indexed object so JSON number spellings such as 66360.0
+    # remain byte-stable when canonical data parses to the same Python value.
+    previous_by_slot = {
+        slot_key(report): report for report in (previous_reports or [])
+    }
+    public_reports = []
+    for report in reports:
+        if not is_publication_eligible(report):
+            continue
+        previous = previous_by_slot.get(slot_key(report))
+        public_reports.append(previous if previous == report else report)
+
     public_reports.sort(
         key=lambda item: f"{item['date']} {item['time']}",
         reverse=True,
@@ -276,7 +290,6 @@ def write_index(reports: list[dict]) -> None:
         json.dumps(public_reports, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
-
 
 def verify_no_history_loss(
     previous_keys: set[tuple[str, str]],
@@ -377,7 +390,7 @@ def main() -> None:
 
     previous_by_slot = {slot_key(report): report for report in previous_index}
     reports = load_canonical_reports(previous_by_slot)
-    write_index(reports)
+    write_index(reports, previous_index)
     verify_no_history_loss(previous_keys, previous_by_slot)
 
     if not args.canonical_only:

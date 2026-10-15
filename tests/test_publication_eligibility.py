@@ -159,5 +159,23 @@ class PublicationEligibilityTests(unittest.TestCase):
             self.assertTrue((source / "reports/2026-10-14_08-00.json").exists())
 
 
+    def test_builder_preserves_existing_json_number_spelling_when_values_match(self):
+        with tempfile.TemporaryDirectory(dir=ROOT.parent) as directory:
+            root = Path(directory)
+            original_output = build_reports.OUTPUT_FILE
+            try:
+                build_reports.OUTPUT_FILE = root / "reports.json"
+                indexed = report("16:00", "PUBLISHED")
+                indexed["marketLevel"] = 66360.0
+                canonical = dict(indexed)
+                canonical["marketLevel"] = 66360
+                build_reports.write_index([canonical], [indexed])
+
+                rendered = build_reports.OUTPUT_FILE.read_text(encoding="utf-8")
+                self.assertIn('"marketLevel": 66360.0', rendered)
+                self.assertEqual(json.loads(rendered), [indexed])
+            finally:
+                build_reports.OUTPUT_FILE = original_output
+
 if __name__ == "__main__":
     unittest.main()
