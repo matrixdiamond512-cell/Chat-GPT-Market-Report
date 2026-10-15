@@ -7,10 +7,12 @@ on:
       - "scripts/market_snapshot_asof.py"
       - "scripts/build_personal_market_report.py"
       - "scripts/sync_market_close_sheet.py"
+      - "scripts/run_market_data_acquisition.py"
       - "tests/test_market_snapshot_asof.py"
       - "tests/test_personal_market_report.py"
       - "tests/test_personal_market_snapshot.py"
       - "tests/test_sync_market_close_sheet.py"
+      - "tests/test_market_timeseries_evidence.py"
       - ".github/workflows/asof-reconstruction-readonly.yml"
   workflow_dispatch:
 
@@ -33,7 +35,7 @@ jobs:
       - name: Install test dependencies
         run: python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
       - name: Compile as-of, report and close-list paths
-        run: python -m py_compile scripts/market_snapshot_asof.py scripts/build_personal_market_report.py scripts/sync_market_close_sheet.py
+        run: python -m py_compile scripts/market_snapshot_asof.py scripts/build_personal_market_report.py scripts/sync_market_close_sheet.py scripts/run_market_data_acquisition.py
       - name: Run as-of, personal report and read-only dry-run regressions
-        run: python -m unittest tests.test_market_snapshot_asof tests.test_personal_market_report tests.test_personal_market_snapshot tests.test_sync_market_close_sheet -v
+        run: python -m unittest tests.test_market_snapshot_asof tests.test_personal_market_report tests.test_personal_market_snapshot tests.test_sync_market_close_sheet tests.test_market_timeseries_evidence -v
 
