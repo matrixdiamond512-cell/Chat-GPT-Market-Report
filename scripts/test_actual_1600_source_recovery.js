@@ -1,9 +1,15 @@
 const fs = require('fs');
 const vm = require('vm');
 const assert = require('assert');
+const crypto = require('node:crypto');
 const source = fs.readFileSync('tests/fixtures/market_report_20261013_1600_original.txt', 'utf8');
 const context = {
-  Utilities: { formatDate: () => '2026-10-13 23:00:00' },
+  Utilities: {
+    DigestAlgorithm: { SHA_256: 'SHA_256' },
+    formatDate: () => '2026-10-13 23:00:00',
+    newBlob: (value) => ({ getBytes: () => Buffer.from(String(value || ''), 'utf8') }),
+    computeDigest: (_algorithm, bytes) => [...crypto.createHash('sha256').update(Buffer.from(bytes)).digest()]
+  },
   DocumentApp: { openById: () => ({ getBody: () => ({ getText: () => source }) }) }
 };
 vm.createContext(context);
