@@ -109,10 +109,26 @@ def completed_times(path: Path, slot: str) -> set[str]:
 def snapshot_is_current(payload: dict[str, Any], slot: str, day: dt.date) -> bool:
     """Return whether GitHub already exposes a usable snapshot for this slot/day."""
     generated = str(payload.get("generatedAt") or "")
+    try:
+        produced_at = dt.datetime.fromisoformat(generated.replace("Z", "+00:00"))
+        if produced_at.tzinfo is None:
+            return False
+        produced_at = produced_at.astimezone(JST)
+        report_cutoff = target_datetime(day, slot)
+    except (ValueError, TypeError):
+        return False
     return bool(
         payload.get("reportSlot") == slot
-        and generated[:10] == day.isoformat()
+        and produced_at.date() == day
+        and produced_at <= report_cutoff
         and payload.get("overallStatus") in {"verified", "degraded"}
+        and all(
+            not m.get("asOf") or (
+                (t := dt.datetime.fromisoformat(str(m["asOf"]).replace("Z", "+00:00"))).tzinfo is not None
+                and t.astimezone(JST) <= report_cutoff
+            )
+            for m in (payload.get("markets") or {}).values()
+        )
     )
 
 
@@ -301,6 +317,14 @@ def main() -> int:
 
         target = target_datetime(day, scheduled_time)
         age_minutes = (now_jst() - target).total_seconds() / 60.0
+        # A Github runner can start an intended 15:50 acquisition at 21:13.
+        # Do not relabel 21h prices as the 16h report even during recovery.
+        if now_jst() > target_datetime(day, args.slot):
+            print(f"Past report cutoff for {args.slot}: no source acquisition", flush=True)
+            record_expired(audit, args.slot, day, scheduled_time,
+                           args.trigger_source, age_minutes)
+            failures.append(scheduled_time)
+            continue
         if age_minutes < 0:
             wait_until(target)
             age_minutes = max(0.0, (now_jst() - target).total_seconds() / 60.0)
@@ -332,7 +356,8 @@ def main() -> int:
 
     recovery_record: dict[str, Any] | None = None
     current_payload = load_json(ROOT / "data" / "market" / "latest.json", {})
-    if args.recover_expired and not snapshot_is_current(current_payload, args.slot, day):
+    if (args.recover_expired and now_jst() <= target_datetime(day, args.slot)
+            and not snapshot_is_current(current_payload, args.slot, day)):
         recovery_time = args.times[-1]
         recovery_lateness = max(
             0.0,
