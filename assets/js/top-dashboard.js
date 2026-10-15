@@ -138,7 +138,7 @@ function marketDataFor(report, definition) {
   const latestData = dashboardMeta?.marketData;
   const generatedDate = String(latestData?.generatedAt || "").slice(0, 10);
   const latestMatchesReport = Boolean(
-    latestData
+    !isDashboardHistoricalArchive(report) && latestData
     && REPORT_TIMES.includes(latestData.reportSlot)
     && latestData.reportSlot === report?.time
     && generatedDate === report?.date
@@ -1134,12 +1134,76 @@ function renderList(id, values, fallback) {
   $(id).innerHTML = rows.map((item) => `<li>${esc(item)}</li>`).join("");
 }
 
+
+/* Historical archive is display-only and never passes formal publication gates. */
+function isDashboardHistoricalArchive(r) {
+  return !!r && r.archiveStatus === "HISTORICAL_ARCHIVE" && r.verifiedAtSlot === false
+    && /^\d{4}-\d{2}-\d{2}$/.test(String(r.date || "")) && REPORT_TIMES.includes(r.time)
+    && String(r.title || "").startsWith("マーケットレポート｜")
+    && typeof r.fullText === "string" && r.fullText.startsWith(r.title)
+    && typeof r.archiveNotice === "string" && r.archiveNotice.length > 10
+    && /^[a-f0-9]{64}$/.test(String(r.originalBodyHash || ""))
+    && !!r.sourceDocument?.id && r.originalReportStatus !== "PUBLISHED";
+}
+function archiveSectionBody(report, pattern) {
+  const lines = String(report.fullText || "").replace(/\r/g, "").split("\n");
+  const at = lines.findIndex(line => /^\d{1,2}(?:補)?[．.]\s*/.test(line) && pattern.test(line));
+  if (at < 0) return "";
+  let end = lines.findIndex((line, i) => i > at && /^\d{1,2}(?:補)?[．.]\s*/.test(line));
+  if (end < 0) end = lines.length;
+  return lines.slice(at + 1, end).join("\n").trim();
+}
+function archiveDashboardSummary(record) {
+  const section = pattern => archiveSectionBody(record, pattern);
+  const split = text => text.split("\n").map(x => x.trim()).filter(Boolean);
+  return {
+    ...record,
+    theme: split(section(/総合判断|今日の相場テーマ/)).slice(0, 2).join(" ").slice(0, 450),
+    changes: split(section(/からの変化/)).slice(0, 5),
+    leadingMarket: split(section(/材料と値動きの整合性・主導市場|今日の主導市場/)).slice(0, 3).join(" "),
+    crossAssetFlow: split(section(/クロスアセット資金フロー|主導市場・クロスアセット/)).slice(0, 5),
+    news: split(section(/重要ニュース|ニュースと影響市場|ニュースと波及/)).slice(0, 6),
+    positioning: split(section(/需給・ポジション/)).slice(0, 5),
+    mainScenario: split(section(/メインシナリオ/)).slice(0, 4).join(" "),
+    alternativeScenario: split(section(/代替シナリオ/)).slice(0, 4).join(" "),
+    breakConditions: split(section(/崩れる条件/)).slice(0, 4).join(" "),
+    handover: split(section(/引き継ぎ/)).slice(0, 4),
+    historicalArchiveDisplayOnly: true
+  };
+}
+function renderDashboardArchive(report) {
+  let node = document.getElementById("historicalArchiveDetails");
+  if (!isDashboardHistoricalArchive(report)) { if (node) node.remove(); return; }
+  if (!node) {
+    node = document.createElement("section");
+    node.id = "historicalArchiveDetails";
+    node.className = "panel";
+    document.querySelector(".control-bar")?.insertAdjacentElement("afterend", node);
+  }
+  node.style.cssText = "background:#fff;border:2px solid #bac9d9;border-radius:10px;padding:16px 20px;margin:14px 0 18px;color:#172b43;line-height:1.7";
+  const timeline = archiveSectionBody(report, /時系列/);
+  const marketData = archiveSectionBody(report, /主要市場データ|前営業日終値・主要市場データ/);
+  const fullReport = "report.html?date=" + encodeURIComponent(report.date) + "&time=" + encodeURIComponent(report.time);
+  const docUrl = String(report.sourceDocument?.url || "");
+  node.innerHTML =
+    '<h2 style="margin:0 0 8px;font-size:20px">過去の保存記録：' + esc(report.date + " " + report.time) + '（事後改訂を含む）</h2>'
+    + '<p style="color:#874b12;font-weight:700">正式発行・当時のデータ照合を証明するものではありません。原本状態：' + esc(report.originalReportStatus || "不明") + '。</p>'
+    + '<p>' + esc(report.archiveNotice) + '</p>'
+    + '<p><a href="' + esc(fullReport) + '">マーケットレポート本文ページ</a>'
+    + (docUrl ? '　｜　<a href="' + esc(docUrl) + '" target="_blank" rel="noopener noreferrer">Google Docs保存原本</a>' : '') + '</p>'
+    + (timeline ? '<h3>出来事と市場反応の時系列</h3><div style="white-space:pre-wrap;background:#f2f7fb;border-left:4px solid #1861a8;padding:10px 12px">' + esc(timeline) + '</div>' : '')
+    + (marketData ? '<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700">当時の市場データ（原本の記載）</summary><div style="white-space:pre-wrap;padding:10px">' + esc(marketData) + '</div></details>' : '')
+    + '<details style="margin-top:12px"><summary style="cursor:pointer;font-weight:700">本文全文をダッシュボード内で読む</summary><div style="white-space:pre-wrap;overflow-wrap:anywhere;padding:12px 0;font-size:14px">' + esc(report.fullText) + '</div></details>';
+}
+
 function renderHeader(report) {
   const created = `${dateToJp(report.date)} ${report.time || ""}`.trim();
   const generated = dashboardMeta && dashboardMeta.generatedAt
     ? dashboardMeta.generatedAt.replace("T", " ").replace("+09:00", "")
     : report.time || "取得不能";
-  $("reportStatus").textContent = `作成日時：${created}　更新：${generated}`;
+  $("reportStatus").textContent = isDashboardHistoricalArchive(report)
+    ? `保存済み本文（正式発行と区別）：${created}　｜　事後改訂あり`
+    : `作成日時：${created}　更新：${generated}`;
   document.title = `WEBマーケットレポート｜${created}`;
 }
 
@@ -2004,6 +2068,7 @@ function render() {
   if (!report) return;
   renderHeader(report);
   renderControls(report);
+  renderDashboardArchive(report);
   renderMarketCards(report);
   renderTemperatureMini(report);
   renderProseList("themeList", proseItems([report.theme], 5, 180), "理由：相場テーマがJSONにありません");
@@ -2022,7 +2087,7 @@ async function init() {
   try {
     const data = await loadDashboardReports();
     reports = asArray(data.reports)
-      .filter((report) => window.MarketReportPublicationPolicy.isEligible(report))
+      .filter((report) => window.MarketReportPublicationPolicy.isEligible(report) || isDashboardHistoricalArchive(report))
       .filter((report) => /^\d{4}-\d{2}-\d{2}$/.test(report.date || ""))
       .sort((a, b) => reportKey(b).localeCompare(reportKey(a)));
     dashboardMeta = data.meta || null;
@@ -2092,7 +2157,24 @@ async function loadDashboardReports() {
     errors.push(error.message);
   }
 
-  const reportList = window.MarketReportPublicationPolicy.merge(historyReports, dashboardReports);
+  const publishedList = window.MarketReportPublicationPolicy.merge(historyReports, dashboardReports);
+  let archives = [];
+  try {
+    const response = await fetch("data/report-recovery-2026-10.json?ts=" + Date.now(), { cache: "no-store" });
+    if (!response.ok) throw new Error("archive HTTP " + response.status);
+    const payload = await response.json();
+    if (payload?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION" || !Array.isArray(payload.reports)) throw new Error("archive schema");
+    archives = payload.reports.filter(isDashboardHistoricalArchive).map(archiveDashboardSummary);
+    if (archives.length !== payload.reports.length) throw new Error("archive entries invalid");
+  } catch (error) {
+    console.warn("[dashboard historical archive] read unavailable", error.message);
+    errors.push("保存記録: " + error.message);
+    archives = [];
+  }
+  const bySlot = new Map(archives.map(r => [r.date + " " + r.time, r]));
+  // Formal verified publication is always authoritative when the same slot exists.
+  publishedList.forEach(r => bySlot.set(r.date + " " + r.time, r));
+  const reportList = [...bySlot.values()];
 
   if (!reportList.length) {
     throw new Error(`ダッシュボードJSONを取得できませんでした。理由：${errors.join(" / ")}`);
@@ -2106,7 +2188,7 @@ async function loadDashboardReports() {
     : "";
   const enrichedReports = reportList.map((report) => {
     const key = `${report.date || ""} ${report.time || ""}`;
-    if (marketData && key === marketDataReportKey && !report.marketData) {
+    if (marketData && !isDashboardHistoricalArchive(report) && key === marketDataReportKey && !report.marketData) {
       return { ...report, marketData };
     }
     return report;
