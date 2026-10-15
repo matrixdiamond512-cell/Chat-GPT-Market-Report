@@ -117,19 +117,24 @@ def snapshot_is_current(payload: dict[str, Any], slot: str, day: dt.date) -> boo
         report_cutoff = target_datetime(day, slot)
     except (ValueError, TypeError):
         return False
-    return bool(
+    if not (
         payload.get("reportSlot") == slot
         and produced_at.date() == day
         and produced_at <= report_cutoff
         and payload.get("overallStatus") in {"verified", "degraded"}
-        and all(
-            not m.get("asOf") or (
-                (t := dt.datetime.fromisoformat(str(m["asOf"]).replace("Z", "+00:00"))).tzinfo is not None
-                and t.astimezone(JST) <= report_cutoff
-            )
-            for m in (payload.get("markets") or {}).values()
-        )
-    )
+    ):
+        return False
+    for market in (payload.get("markets") or {}).values():
+        if not isinstance(market, dict):
+            return False
+        if market.get("asOf"):
+            try:
+                observed_at = dt.datetime.fromisoformat(str(market["asOf"]).replace("Z", "+00:00"))
+                if observed_at.tzinfo is None or observed_at.astimezone(JST) > report_cutoff:
+                    return False
+            except (ValueError, TypeError):
+                return False
+    return True
 
 
 def append_audit(path: Path, record: dict[str, Any]) -> None:
