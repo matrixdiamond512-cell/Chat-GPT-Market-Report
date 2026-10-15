@@ -27,3 +27,22 @@
 - Receipt正式移行には、既存Google Docsの実体ID・保存時刻・発行者を独立に照合し、schema-version付き新Receiptを生成・readbackする統合テストが必要。旧Receiptの欠損値を補作しない。公開の強制ゲートは移行完了・回帰テスト前に有効化しない。
 - Apps Scriptのインストール済みトリガーは、プロジェクトの権限付き実行環境で実トリガー一覧・所有者・直近実行履歴を確認するまで未確認とする。ソース上の定義と実際の定期実行を区別する。
 - 発行設定はmainのconfig/report_schedule.jsonで平日08:00/12:00/16:00/21:00、土日なし。旧時刻はlegacyStoredSlotsで履歴管理。
+
+## 2026-10-15 ADD — 時系列の作成・公開前確認
+1. レポートの対象枠に定められた時間帯をすべて1行ずつ作成し、上記仕様の共通列を埋める。
+2. ニュースを記す場合、確認事実と解釈を分ける。時刻は発生・発表・報道と市場観測を区別し、報道時刻を値動きの発生時刻として転用しない。
+3. 新しいニュースが確認できない区間は、観測した値動き・セクター・需給の状態を書く。市場状態も確認できなければ観測制約を記し、推測で埋めない。
+4. 21:00版では21:00以降の値動きや発表結果を過去形で書かない。予定時刻・予想と発表済み結果を区別する。
+5. `scripts/validate_market_reports.py` とApps Scriptの公開前検査がTIMELINE_CHECKを出したら本文を修正して再検証する。対象時間帯が揃っただけで合格とはしない。
+6. 時系列検査の失敗で本文を公開不可と判定しても、図解の状態は別記録のまま扱う。図解の未完成・不合格だけで本文の公開状態を巻き戻さない。
+
+Draft PR #133のローカル合成fixture群とApps Script pre-publish ActionsはPASS。Python全体検証は最新reports[0]に時系列表がなくFAILする。Google Docs要件・仕様・運用文書の追記自体はrevision-guard付き更新後にreadback済み。Google Docs/ChatGPT/Portalの実レポートreadback、時系列の市場事実検証、main反映は未確認。
+
+
+## 2026-10-15 PR #133 継続修正 — 公開前整合確認
+1. `data/latest-report.json` と `dashboard.latestReport` が同一オブジェクトであることを確認する。
+2. 価格カードの市場データは `dashboard.marketData`（独立snapshot）にあることを確認する。本文正本に自動注入しない。
+3. `python -m unittest discover -s tests -p 'test_market_report_sync_contract.py' -v` と `python scripts/verify_publication_consistency.py` を実行する。
+4. 同期復旧CI PASS（run 38714305014、HEAD 285a18c）のみ確認済み。時系列本文を満たすproducerと他のレポートCIは未解決。公開、マージ、既存レポートの事実推測による改稿は行わない。
+
+- 2026-10-15追記：21:00版で22:30以降のイベントを言及するときは、「予定」「未発表」等または「前日」「昨夜」等の対象日の別を確認する。実際の発表時刻は別途ソース照合する。

@@ -111,3 +111,19 @@ IMPLEMENTATION STATUS: Implementation and local regressions pass on `codex/porta
 OPEN OUTCOMES: PR #76 remains OPEN/DRAFT at head 652118b6a315ba664caa573105c1553d89b56d58, based on main 3cb6171531ed19a6421a6bced3c3d1a1a20aeeec (ahead 9, behind 0). Rebase had no conflicts, latest main data retained, and production data paths are absent from PR diff. Apps Script Pre-Publish on final code head PASS. Hosted strict report check at 3ef4832 records 08:00 FAIL from MorningReportQA and 12:00 PASS; report/index contents are unchanged through final head. Hosted malformed fixture previously PASS on a70261e. A new final-head hosted renderer job has not appeared; keep its latest-head evidence outcome open. Preserve data and QA, keep Draft, do not merge/deploy.
 
 NEXT NECESSARY ACTION: Finish implementation, run all requested local/hosted checks, verify protected production files unchanged, then stop with a Draft PR. Do not merge or deploy.
+
+## 2026-10-15 時系列品質の差分改修 (ADD)
+
+PRIMARY OBJECTIVE: 仕様書第6章の時系列必須内容を平日4枠すべての公開前検査に接続し、時刻/価格だけの一覧を合格扱いしない。
+
+ACTIVE PROFILE: generic-app + data-tool + dashboard.
+
+ACCEPTANCE: 08/12/16/21の枠別必須時間帯、各時間帯の市場状態・反応・意味・時刻/出典・次枠引継ぎをPythonとApps Scriptで検査する。数値羅列、欠落、時刻混同、21:00未来記述のfixtureを拒否し、正常fixtureを通す。独立本文/図解公開契約を保持する。正式三文書へ同じ差分を反映する。
+
+CONSTRAINTS: 2026-10-15仕様書。main最新SHA `b58d636c51f85279607ed1dd111b1e555a144456`。PR #94/#97/#128/#129/#130を未マージと確認し、別Draftの挙動を再実装しない。既存Projects checkoutの未コミット変更は保持。mainへマージ、production deploy、既存レポートの改変はしない。
+
+OUT OF SCOPE: 市場データのライブ取得・数値レジストリ/クロスチェック、ニュース自動逆引き、ChatGPT APIによる再送、PNG内容の視覚検証、Drive/Portal E2E。本タスクは時系列の形式・説明要件ゲートを対象にする。
+
+FORBIDDEN SUBSTITUTE: 合成fixture PASSを、実レポートの因果・出典・全工程配信成功の証拠にしない。図解未完成で本文公開を巻き戻さない。
+
+STATUS: IN_PROGRESS. Draft PR #133 is OPEN/DRAFT at head `994642c43af8aa42b5d1bb1650944595cb3abacd`, based on main `b58d636c51f85279607ed1dd111b1e555a144456`; no merge/deploy. Local changed-path suites PASS. Hosted Apps Script pre-publish, heading compatibility, and morning source-value checks PASS. Hosted strict report validation fails because latest `reports[0]` lacks the timeline table. Sync recovery tests PASS, but the existing dashboard-vs-latest consistency step fails. Formal Google Docs requirement/specification/operations addenda were appended with revision guards and read back. NEXT: producer adopts the table with verified source facts; reconcile the pre-existing dashboard/latest mismatch; rerun strict report and hosted CI; then revisit the Draft. Remaining broader specification outcomes outside Chapter 6 are not claimed complete.

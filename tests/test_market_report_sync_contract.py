@@ -13,9 +13,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import build_reports
+import build_market_json
 import reconcile_latest_report_market_data as market_reconcile
 import report_identity
 import sync_latest_report_publication
+from reporting.timeline import TIMELINE_COLUMNS, TIMELINE_PERIODS
 
 
 SOURCE_TEXT = (ROOT / "tests/fixtures/market_report_20261013_1600_original.txt").read_text(encoding="utf-8")
@@ -116,6 +118,34 @@ class ReconcileIsolationTests(unittest.TestCase):
             self.assertEqual(latest_path.read_bytes(), before)
 
 
+class IndependentMarketProjectionTests(unittest.TestCase):
+    def test_market_refresh_preserves_canonical_report_and_separate_market_data(self):
+        canonical = {
+            "date": "2026-10-15", "time": "08:00", "title": "original",
+            "bodyHash": "original-hash", "fullText": "immutable source report",
+            "revision": 1,
+        }
+        old_snapshot = {"generatedAt": "2026-10-15T08:00:00+09:00", "overallStatus": "partial"}
+        new_snapshot = {"generatedAt": "2026-10-15T08:59:17+09:00",
+                        "overallStatus": "verified", "markets": {"gold": {"value": 100}}}
+        dashboard = {
+            "currentReportKey": "2026-10-15_08-00",
+            "latestReport": {**canonical, "marketData": old_snapshot},
+            "reports": [{**canonical, "marketData": old_snapshot}],
+            "marketData": old_snapshot, "sources": [], "errors": [],
+        }
+        initial = json.loads(json.dumps(dashboard))
+        projection = build_market_json.attach_market_data(dashboard, new_snapshot)
+        self.assertEqual(dashboard, initial)
+        self.assertEqual(projection["latestReport"], canonical)
+        self.assertEqual(projection["reports"][0], canonical)
+        self.assertEqual(projection["marketData"], new_snapshot)
+        self.assertEqual(projection["marketDataUpdatedAt"], new_snapshot["generatedAt"])
+        self.assertEqual(build_market_json.attach_market_data(projection, new_snapshot), projection)
+        import verify_publication_consistency
+        verify_publication_consistency.verify_dashboard_copy(canonical, projection)
+
+
 class SavedDocHeadingCompatibilityTests(unittest.TestCase):
     def test_morning_previous_report_version_heading_is_valid(self):
         headings = [
@@ -132,10 +162,19 @@ class SavedDocHeadingCompatibilityTests(unittest.TestCase):
             "11．本日イベント・次の時間帯への引き継ぎ",
             "12．結論",
         ]
-        text = "マーケットレポート｜2026/10/15（木）08:00\\n" + "".join(
-            heading + "\\n" + ("根拠・市場反応・比較基準を整理し監視条件を確認する。"*5) + "\\n"
-            for heading in headings
-        )
+        lines = ["マーケットレポート｜2026/10/15（木）08:00"]
+        for index, heading in enumerate(headings):
+            lines.extend([heading, "根拠・市場反応・比較基準を整理し監視条件を確認する。"*5])
+            if index == 2:
+                lines.extend(["|"+"|".join(TIMELINE_COLUMNS)+"|", "|---|---|---|---|---|---|---|"])
+                for period_index,(period,_aliases) in enumerate(TIMELINE_PERIODS["08:00"]):
+                    lines.append(
+                        f"|{period}|05:00-06:00|市場の状態を確認し、売買材料の変化を観測しました。"
+                        "|米株先物が下落し、為替は円高方向へ動きました。"
+                        "|金利との連動を示し、東京市場への影響を確認します。"
+                        f"|市場観測時刻 05:30、合成根拠 SYN-{period_index+1}。|次の時間帯は東京株と為替の反応を確認します。|"
+                    )
+        text = "\n".join(lines)
         sync_latest_report_publication.validate_sop_body({
             "date": "2026-10-15", "time": "08:00", "fullText": text
         })

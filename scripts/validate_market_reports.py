@@ -18,6 +18,10 @@ import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
+try:  # The validator runs both as a script and as an imported module in tests.
+    from reporting.timeline import validate_timeline
+except ModuleNotFoundError:
+    from scripts.reporting.timeline import validate_timeline
 
 JST = ZoneInfo("Asia/Tokyo")
 ROOT = Path(__file__).resolve().parents[1]
@@ -204,6 +208,10 @@ def validate_report_content(report: dict, prefix: str, strict: bool, errors: lis
     source = public_full_text(report)
     time_text = str(report.get("time", ""))
     markets = report.get("markets")
+
+    if time_text in {"08:00", "12:00", "16:00", "21:00"} and source:
+        for issue in validate_timeline(source, time_text):
+            target.append(f"{prefix}: TIMELINE_CHECK: {issue}")
 
     # ChatGPT-origin reports are stored as their complete original text. They are
     # intentionally not expanded into guessed structured market values. For the

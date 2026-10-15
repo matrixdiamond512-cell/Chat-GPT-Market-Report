@@ -20,6 +20,7 @@ on:
       - 'scripts/sign_market_report_vision_review.py'
       - 'scripts/test_apps_script_signed_review.js'
       - 'scripts/test_independent_publication.js'
+      - 'scripts/test_market_report_timeline.js'
       - 'scripts/test_portal_deploy_safety.js'
       - 'scripts/reporting/publication_status.py'
       - 'tests/test_independent_publication_status.py'
@@ -48,6 +49,7 @@ on:
       - 'scripts/sign_market_report_vision_review.py'
       - 'scripts/test_apps_script_signed_review.js'
       - 'scripts/test_independent_publication.js'
+      - 'scripts/test_market_report_timeline.js'
       - 'scripts/test_portal_deploy_safety.js'
       - 'scripts/reporting/publication_status.py'
       - 'tests/test_independent_publication_status.py'
@@ -99,6 +101,8 @@ jobs:
 
       - name: Test narrative 21:00 report parsing and validation
         run: node scripts/test_apps_script_narrative_report.js
+      - name: Test all-slot narrative timeline quality gate
+        run: node scripts/test_market_report_timeline.js
 
       - name: Test actual 16:00 original parsing and fail-closed controls
         run: node scripts/test_actual_1600_source_recovery.js
@@ -219,6 +223,26 @@ jobs:
             '21:00': '翌東京時間への引き継ぎ'
           };
 
+          const timelinePeriods = {
+            '08:00': ['開場前','寄り付き','序盤','中盤','終盤','東京への引き継ぎ'],
+            '12:00': ['寄り付き前','寄り付き','前場序盤','前場中盤','前引け'],
+            '16:00': ['寄り付き前','寄り付き','前場序盤','前場中盤','前引け','後場序盤','後場中盤','大引け','欧州への引き継ぎ'],
+            '21:00': ['欧州開場前','欧州寄り付き','欧州序盤','欧州中盤','NY開場前']
+          };
+
+          function buildTimelineLines(time) {
+            const columns = [
+              '時間帯','JST時間範囲/観測制約','出来事・確認可能な市場状態',
+              '市場・業種・銘柄の反応','相場上の意味・主導要因',
+              '時刻・出典・観測制約','次の時間帯への引き継ぎ'
+            ];
+            const lines = ['3．市場時系列', `|${columns.join('|')}|`, '|---|---|---|---|---|---|---|'];
+            timelinePeriods[time].forEach((period, index) => {
+              lines.push(`|${period}|09:00-10:00|市場材料を確認し、売買の変化を観測しました。|日経先物が下落し、半導体株への売りが広がりました。|金利と株価の連動を示し、次の時間帯も確認が必要です。|根拠 F-${index + 1}、市場観測時刻 09:30。|次の時間帯は金利と先物の反応を確認します。|`);
+            });
+            return lines;
+          }
+
           function buildFullText(time) {
             const lines = [
               `マーケットレポート｜2026/08/13（木）${time}`,
@@ -232,6 +256,7 @@ jobs:
             } else {
               lines.push(...coreMarketLines);
             }
+            lines.push(...buildTimelineLines(time));
             lines.push(
               '', '今日の相場テーマ', '市場テーマを整理。',
               '', changeHeading[time], '前回からの変化を整理。',
