@@ -61,6 +61,41 @@ assert(generated.includes('|時間帯|JST時間範囲/観測制約|出来事・�
 assert(generated.includes('市場時系列') && generated.includes('sourceId/asOf'), 'generated evidence table incomplete');
 const validationIssues = context.marketReportPrePublishTimelineIssues_(generated, '16:00');
 assert(validationIssues.length === 0, 'generated seven-column timeline fails the existing publish gate: ' + JSON.stringify(validationIssues));
+for (const [slot, generatedAt, count] of [
+  ['08:00', '2026-10-15T07:59:00+09:00', 6],
+  ['12:00', '2026-10-15T11:59:00+09:00', 5],
+  ['21:00', '2026-10-15T20:59:00+09:00', 5],
+]) {
+  const item = sample(generatedAt, 157.200);
+  item.reportSlot = slot;
+  const archive = {
+    schemaVersion: '1.0', reportDate: '2026-10-15', reportSlot: slot,
+    snapshots: [item],
+  };
+  const output = context.buildMarketTimelineEvidence_(
+    { date: '2026-10-15', time: slot },
+    [{ path: 'data/market/timeseries/test.json', sha: 'sha-' + slot, archive }]
+  );
+  assert(output.rows.length === count, slot + ' slot periods were not generated');
+  const textForSlot = context.renderMarketTimeline_('1．概要\\n本文', output);
+  const issues = context.marketReportPrePublishTimelineIssues_(textForSlot, slot);
+  assert(issues.length === 0, slot + ' generated timeline failed the existing gate: ' + JSON.stringify(issues));
+}
+const lateSnapshot = sample('2026-10-15T20:59:00+09:00', 157.200);
+lateSnapshot.reportSlot = '21:00';
+let futureArchiveRejected = false;
+try {
+  context.buildMarketTimelineEvidence_(
+    { date: '2026-10-15', time: '16:00' },
+    [{ path: 'future.json', sha: 'future', archive: {
+      schemaVersion: '1.0', reportDate: '2026-10-15', reportSlot: '21:00',
+      snapshots: [lateSnapshot],
+    }}]
+  );
+} catch (error) {
+  futureArchiveRejected = /後の時系列アーカイブ/.test(error.message);
+}
+assert(futureArchiveRejected, 'future report-slot archive must be rejected');
 let failed = false;
 try { context.buildMarketTimelineEvidence_(report, []); } catch (error) { failed = /検証済み時系列観測がありません/.test(error.message); }
 assert(failed, 'missing time-series evidence must fail closed');
