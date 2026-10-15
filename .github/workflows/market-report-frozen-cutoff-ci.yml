@@ -1,0 +1,25 @@
+name: Market report frozen-cutoff regression
+on:
+  push:
+    paths:
+      - scripts/run_market_data_window.py
+      - scripts/run_market_data_acquisition.py
+      - scripts/test_run_market_data_window.py
+      - scripts/test_market_acquisition_cutoff.py
+      - .github/workflows/market-report-frozen-cutoff-ci.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  forbid-late-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile acquisition scripts
+        run: python -m compileall -q scripts/run_market_data_window.py scripts/run_market_data_acquisition.py
+      - name: Run strictly offline cutoff regression suite
+        run: python -m unittest scripts.test_run_market_data_window scripts.test_market_acquisition_cutoff -v
