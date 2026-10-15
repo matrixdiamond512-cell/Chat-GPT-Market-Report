@@ -2231,8 +2231,14 @@ async function loadDashboardReports() {
     if (!response.ok) throw new Error("archive HTTP " + response.status);
     const payload = await response.json();
     if (payload?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION" || !Array.isArray(payload.reports)) throw new Error("archive schema");
-    archives = payload.reports.filter(isDashboardHistoricalArchive).map(archiveDashboardSummary);
-    if (archives.length !== payload.reports.length) throw new Error("archive entries invalid");
+    // Reject incomplete entries individually. A bad unrelated October record must
+    // never hide other fully sourced slots (e.g. the four Oct 15 reports).
+    const eligibleRecords = payload.reports.filter(isDashboardHistoricalArchive);
+    if (eligibleRecords.length < payload.reports.length) {
+      console.warn("[dashboard historical archive] skipped unsupported records:",
+        payload.reports.length - eligibleRecords.length);
+    }
+    archives = eligibleRecords.map(archiveDashboardSummary);
   } catch (error) {
     console.warn("[dashboard historical archive] read unavailable", error.message);
     errors.push("保存記録: " + error.message);
