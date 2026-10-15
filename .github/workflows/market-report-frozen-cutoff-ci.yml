@@ -4,22 +4,37 @@ on:
     paths:
       - scripts/run_market_data_window.py
       - scripts/run_market_data_acquisition.py
+      - scripts/persist_report_slot_evidence.py
       - scripts/test_run_market_data_window.py
       - scripts/test_market_acquisition_cutoff.py
+      - tests/test_report_slot_evidence.py
       - .github/workflows/market-report-frozen-cutoff-ci.yml
+      - .github/workflows/freeze-report-slot-evidence.yml
+  pull_request:
+    paths:
+      - scripts/run_market_data_window.py
+      - scripts/run_market_data_acquisition.py
+      - scripts/persist_report_slot_evidence.py
+      - scripts/test_run_market_data_window.py
+      - scripts/test_market_acquisition_cutoff.py
+      - tests/test_report_slot_evidence.py
+      - .github/workflows/market-report-frozen-cutoff-ci.yml
+      - .github/workflows/freeze-report-slot-evidence.yml
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   forbid-late-source:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Compile acquisition scripts
-        run: python -m compileall -q scripts/run_market_data_window.py scripts/run_market_data_acquisition.py
-      - name: Run strictly offline cutoff regression suite
-        run: python -m unittest scripts.test_run_market_data_window scripts.test_market_acquisition_cutoff -v
+      - name: Compile acquisition and snapshot evidence scripts
+        run: python -m compileall -q scripts/run_market_data_window.py scripts/run_market_data_acquisition.py scripts/persist_report_slot_evidence.py
+      - name: Run strictly offline cutoff and immutable-evidence regression suites
+        run: python -m unittest scripts.test_run_market_data_window scripts.test_market_acquisition_cutoff tests.test_report_slot_evidence -v
+      - name: Validate the complete current canonical report history
+        run: python scripts/validate_market_reports.py --file reports.json
