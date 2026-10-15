@@ -82,15 +82,21 @@ def main() -> int:
                 raise SystemExit(f"public infographic does not match its source file: {slot_id} HTTP {status}")
 
     verified_excluded = []
+    excluded_deadline = time.monotonic() + args.timeout_seconds
     for local_path in Path(args.reports_dir).glob("*.json"):
         canonical = json.loads(local_path.read_text(encoding="utf-8"))
         if is_publication_eligible(canonical):
             continue
-        status, _, _ = fetch(cache_busted(urljoin(base, f"reports/{local_path.name}")))
+        status = None
+        while time.monotonic() < excluded_deadline:
+            status, _, _ = fetch(cache_busted(urljoin(base, f"reports/{local_path.name}")))
+            if status == 404:
+                break
+            time.sleep(5)
         if status != 404:
             raise SystemExit(
-                f"non-publication-eligible canonical report is publicly served: "
-                f"{local_path.name} HTTP {status}"
+                f"non-publication-eligible canonical report is publicly served after "
+                f"Pages propagation wait: {local_path.name} HTTP {status}"
             )
         verified_excluded.append(local_path.name)
 
