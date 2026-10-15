@@ -380,7 +380,7 @@ function buildMarketTimelineEvidence_(report, archives) {
         ? '発行時刻より後の時間帯です。市場状態はまだ観測できません。'
         : 'この時間帯の時刻付き市場観測は保存されていません。出来事を補完しません。';
     const reaction = reactions.length
-      ? reactions.join('；') + '。観測値のみを記録し、因果関係は付けません。'
+      ? reactions.join('；') + '。市場反応の観測値のみを記録し、因果関係は付けません。'
       : '時系列証拠がないため、市場反応は確認できず、値動きを記述しません。';
     const meaning = samples.length
       ? '同一系列の観測値の差を記録します。時刻付きニュース原本がないため主導要因は判断しません。'
