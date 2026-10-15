@@ -83,6 +83,9 @@ jobs:
       - name: Verify latest/canonical/index/dashboard consistency
         run: python scripts/verify_publication_consistency.py
 
+      - name: Verify recovered historical archive stays distinct from formal publication
+        run: python scripts/validate_report_recovery.py
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
@@ -165,6 +168,12 @@ jobs:
           NODE_PATH: ${{ runner.temp }}/portal-validation/node_modules
         run: node scripts/validate_market_report_dom.js
 
+      - name: Validate all 15 recovered historical report slots in local DOM
+        env:
+          PORTAL_URL: http://127.0.0.1:8765
+          NODE_PATH: ${{ runner.temp }}/portal-validation/node_modules
+        run: node scripts/validate_report_recovery_dom.js
+
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
@@ -184,3 +193,9 @@ jobs:
           PORTAL_URL: ${{ steps.deployment.outputs.page_url }}
           NODE_PATH: ${{ runner.temp }}/portal-validation/node_modules
         run: node scripts/validate_market_report_dom.js
+
+      - name: Verify all recovered historical slots on live Pages
+        env:
+          PORTAL_URL: ${{ steps.deployment.outputs.page_url }}
+          NODE_PATH: ${{ runner.temp }}/portal-validation/node_modules
+        run: node scripts/validate_report_recovery_dom.js

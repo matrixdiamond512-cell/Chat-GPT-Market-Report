@@ -122,6 +122,8 @@
   async function enrich() {
     const info = currentKey();
     if (!info) return;
+    // Recovered archive source is intentionally not the publication-eligible canonical file.
+    if (window.MarketReportLastRendered?.archiveStatus === "HISTORICAL_ARCHIVE") return;
     if (app.dataset.structuredEnrichedKey === info.key) return;
 
     const article = app.querySelector('.report-body');
