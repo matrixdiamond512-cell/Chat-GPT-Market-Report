@@ -1,4 +1,5 @@
 import hashlib
+from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 import tempfile
@@ -85,6 +86,21 @@ class ReportSlotEvidenceTests(unittest.TestCase):
         self.write_payload()
         with self.assertRaisesRegex(ValueError, "date/slot/cutoff"):
             persist_slot_evidence("2026-10-16", "08:00", self.market_path, self.output)
+
+    def test_live_evidence_must_be_created_strictly_before_slot(self):
+        jst = timezone(timedelta(hours=9))
+        with self.assertRaisesRegex(ValueError, "BLOCKED_LIVE_EVIDENCE_AFTER_SLOT"):
+            persist_slot_evidence(
+                "2026-10-16", "08:00", self.market_path, self.output,
+                require_live_before_slot=True, now=datetime(2026, 10, 16, 8, 0, tzinfo=jst),
+            )
+        self.assertFalse(self.output.exists())
+        path, created = persist_slot_evidence(
+            "2026-10-16", "08:00", self.market_path, self.output,
+            require_live_before_slot=True, now=datetime(2026, 10, 16, 7, 59, tzinfo=jst),
+        )
+        self.assertTrue(created)
+        self.assertTrue(path.exists())
 
     def test_weekend_new_report_is_rejected(self):
         self.payload["generatedAt"] = "2026-10-17T07:50:00+09:00"
