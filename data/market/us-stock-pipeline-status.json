@@ -1,29 +1,11 @@
 {
   "schemaVersion": "1.1.0",
-  "updatedAt": "2026-10-16T09:18:51+09:00",
-  "status": "failed",
-  "fetchOutcome": "failure",
-  "crosscheckOutcome": "skipped",
+  "updatedAt": "2026-10-16T09:30:17+09:00",
+  "status": "ok",
+  "fetchOutcome": "success",
+  "crosscheckOutcome": "success",
   "logTail": [
-    "Traceback (most recent call last):",
-    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/fetch_us_stock_movers_sp500_contributions.py\", line 461, in <module>",
-    "    raise SystemExit(main())",
-    "                     ^^^^^^",
-    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/fetch_us_stock_movers_sp500_contributions.py\", line 447, in main",
-    "    sync_stock_analysis_json(stocks)",
-    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/fetch_us_stock_movers_sp500_contributions.py\", line 391, in sync_stock_analysis_json",
-    "    client.update(\"Stock_Analysis_JSON\", \"B2\", [[json.dumps(payload, ensure_ascii=False)]])",
-    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/write_market_data_to_sheets.py\", line 245, in update",
-    "    self._request(",
-    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/write_market_data_to_sheets.py\", line 210, in _request",
-    "    raise SheetsSyncError(f\"Google Sheets API {method} failed: {response.status_code} {detail}\")",
-    "write_market_data_to_sheets.SheetsSyncError: Google Sheets API PUT failed: 403 {",
-    "  \"error\": {",
-    "    \"code\": 403,",
-    "    \"message\": \"The caller does not have permission\",",
-    "    \"status\": \"PERMISSION_DENIED\"",
-    "  }",
-    "}",
-    ""
+    "{\"status\": \"already-current\", \"marketDate\": \"2026-10-15\", \"validation\": {\"estimatedWeightedReturnPct\": 0.3785, \"verifiedSP500ReturnPct\": null, \"differencePt\": null}}",
+    "{\"status\": \"passed\", \"marketDate\": \"2026-10-15\", \"estimatedWeightedReturnPct\": 0.3785, \"verifiedSP500ReturnPct\": 0.33, \"differencePt\": 0.0485, \"tolerancePt\": 0.2}"
   ]
 }
