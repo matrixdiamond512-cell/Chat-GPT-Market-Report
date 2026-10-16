@@ -1374,7 +1374,13 @@ function archiveDashboardSummary(record) {
   }
   const confirmedSupplementalQuotes = verifiedSupplementalArchiveQuotes(record);
   if (confirmedSupplementalQuotes) Object.assign(archiveQuotes, confirmedSupplementalQuotes);
-  const timelineRows = split(timeline)
+  const explicitRows = Array.isArray(record.archiveTimelineRows) ? record.archiveTimelineRows : [];
+  const timelineRows = explicitRows.length ? explicitRows.filter(row => row && typeof row.text === "string" && row.text.trim())
+    .slice(0, 20).map(row => ({
+      time: String(row.time || "時間帯"), text: String(row.text),
+      reaction: String(row.reaction || ""), region: String(row.region || "当時の市場"),
+      importance: String(row.importance || "出来事"), next: String(row.next || "保存本文の時系列")
+    })) : split(timeline)
     .filter(s => s.includes("｜出来事：") && /株|市場|金利|発表|決算|取引|先物|ニュース/.test(s))
     .slice(0, 12)
     .map(s => ({ time: s.match(/\b[0-2]?\d:[0-5]\d\b/)?.[0] || "時間帯", text: s }));
@@ -2182,7 +2188,7 @@ function renderEvents(report) {
     : "今後の重要イベント（簡易）";
   if (report?.historicalArchiveDisplayOnly) {
     const rows = Array.isArray(report.archiveTimelineRows) ? report.archiveTimelineRows : [];
-    $("eventRows").innerHTML = rows.length ? rows.map(row => `<tr><td>${esc(row.time)}</td><td><span class="event-title">${esc(row.text)}</span></td><td>当時の市場</td><td>出来事</td><td>保存本文の時系列</td></tr>`).join("")
+    $("eventRows").innerHTML = rows.length ? rows.map(row => `<tr><td>${esc(row.time)}</td><td><span class="event-title">${esc(row.text)}</span>${row.reaction ? `<div class="event-detail">市場反応：${esc(row.reaction)}</div>` : ""}</td><td>${esc(row.region || "当時の市場")}</td><td>${esc(row.importance || "出来事")}</td><td>${esc(row.next || "保存本文の時系列")}</td></tr>`).join("")
       : '<tr><td>取得不能</td><td>保存本文に時系列情報なし</td><td>—</td><td>—</td><td>—</td></tr>';
     return;
   }
