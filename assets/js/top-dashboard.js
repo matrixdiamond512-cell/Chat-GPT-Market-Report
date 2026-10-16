@@ -2187,7 +2187,10 @@ function renderEvents(report) {
     ? "当日の市場時系列（実際に起きた出来事と市場反応）"
     : "今後の重要イベント（簡易）";
   if (report?.historicalArchiveDisplayOnly) {
-    const rows = Array.isArray(report.archiveTimelineRows) ? report.archiveTimelineRows : [];
+    const slot = String(report.date || "") + " " + String(report.time || "");
+    const sourceRows = window.MarketReportArchiveTimelineBySlot?.[slot] || [];
+    const rows = sourceRows.length ? sourceRows
+      : (Array.isArray(report.archiveTimelineRows) ? report.archiveTimelineRows : []);
     $("eventRows").innerHTML = rows.length ? rows.map(row => `<tr><td>${esc(row.time)}</td><td><span class="event-title">${esc(row.text)}</span>${row.reaction ? `<div class="event-detail">市場反応：${esc(row.reaction)}</div>` : ""}</td><td>${esc(row.region || "当時の市場")}</td><td>${esc(row.importance || "出来事")}</td><td>${esc(row.next || "保存本文の時系列")}</td></tr>`).join("")
       : '<tr><td>取得不能</td><td>保存本文に時系列情報なし</td><td>—</td><td>—</td><td>—</td></tr>';
     return;
@@ -2422,6 +2425,11 @@ async function loadDashboardReports() {
       console.warn("[dashboard historical archive] skipped unsupported records:",
         payload.reports.length - eligibleRecords.length);
     }
+    // Preserve the original slot-bound chronology independently from the summary adapter.
+    window.MarketReportArchiveTimelineBySlot = Object.fromEntries(
+      eligibleRecords.filter(r => Array.isArray(r.archiveTimelineRows) && r.archiveTimelineRows.length)
+        .map(r => [r.date + " " + r.time, r.archiveTimelineRows])
+    );
     archives = eligibleRecords.map(archiveDashboardSummary);
   } catch (error) {
     console.warn("[dashboard historical archive] read unavailable", error.message);
