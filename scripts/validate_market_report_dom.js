@@ -75,7 +75,29 @@ async function main() {
           && text.includes('選択中レポートを表示')
           && !/本文データを読み込んでいます|マーケットレポートを読み込んでいます/.test(text)
           && !/読み込めません|読込エラー|表示を停止/.test(text);
-      }, {timeout: 60000});
+      }, {timeout: 60000}).catch(async error => {
+        const diagnostic = await page.evaluate(() => {
+          const report = window.MarketDashboardSelectedReport;
+          const app = document.getElementById('app');
+          const status = document.getElementById('reportInlineStatus');
+          return {
+            bodyMode: document.body.dataset.reportInline || '',
+            rendererVersion: window.MarketReportRendererVersion || '',
+            selectedSlot: report ? `${report.date || ''} ${report.time || ''}` : '',
+            selectedHasFullText: typeof report?.fullText === 'string' && report.fullText.length > 0,
+            selectedStatus: report?.report_status || '',
+            publicEligible: report ? window.MarketReportPublicationPolicy?.isEligible(report) : false,
+            archivedRecovery: report ? report.archiveStatus === 'HISTORICAL_ARCHIVE' : false,
+            lastRenderedSlot: window.MarketReportLastRendered
+              ? `${window.MarketReportLastRendered.date || ''} ${window.MarketReportLastRendered.time || ''}` : '',
+            status: status?.textContent || '',
+            appText: (app?.textContent || '').slice(0, 500),
+            iframeCount: document.querySelectorAll('iframe').length
+          };
+        });
+        console.error('same-DOM report render diagnostic:', JSON.stringify(diagnostic));
+        throw error;
+      });
 
       const result = await page.evaluate(() => {
         const app = document.getElementById('app');
