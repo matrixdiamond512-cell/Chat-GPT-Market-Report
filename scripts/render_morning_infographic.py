@@ -23,6 +23,8 @@ def main():
     parser.add_argument('--report', type=Path, required=True)
     parser.add_argument('--view', type=Path, required=True)
     parser.add_argument('--spec', type=Path)
+    parser.add_argument('--docs-readback', type=Path,
+                        help='Required in formal mode; exact Google Docs body and document revision identity')
     parser.add_argument('--fixture', action='store_true')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--node', default='node')
@@ -39,7 +41,9 @@ def main():
     try:
         report, view = read(args.report), read(args.view)
         if not args.fixture:
-            assessment = preflight_check(report, view)
+            docs_readback = read(args.docs_readback) if args.docs_readback else None
+            assessment = preflight_check(report, view, docs_readback=docs_readback,
+                                         require_docs_readback=True)
             if assessment['status'] != 'READY_FOR_CANONICAL_VALIDATION':
                 print(json.dumps({'status': 'BLOCKED', 'stage': 'input_preflight',
                                   'missing_or_unverified': assessment['missing_or_unverified']},

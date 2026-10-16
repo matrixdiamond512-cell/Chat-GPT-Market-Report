@@ -26,6 +26,12 @@ G0/G1/G2全通過の場合だけ `report-g2.json` を排他的に作成する。
 
 `report-g2.json` には `fullText`、`bodyHash`、`context`、`snapshot`、`report_id`、`revision`、`snapshot_id` と `validated_gates` が揃う。図解の表示原稿 `view` は別途原文に結び付けて作成し、preflightと既存のcanonical spec検証を通す必要がある。
 
+正式な図解接続では、これらの識別子に加えて対象slotの `cutoff`、取得元、検証済みspecを同じrun transactionから照合する。図解を作る前に `main_scenario`・`alternative_scenario`・`invalidation_trigger` をそれぞれ1件必須とし、各役の `condition`・`development`・`market_impact` に別々の完全一致本文位置参照を付ける。`invalidation_trigger.condition` は判断変更を起こす具体的トリガーでなければならず、一般的リスク列挙では代用できない。引用範囲外の数値・単位・時刻・方向があれば停止する。人間の意味照合は自動検査と分離し、完了前はPENDINGを維持する。
+
+ChatGPT・Google Docs・GitHubの本文は同じ `fullText` / `bodyHash` を使い、後段のdashboard同期は正本本文を再生成しない。market snapshotは発行本文と別のfeed領域に保持し、異なるslotや時点のmarket dataをcanonical report objectへ混在させない。readbackで本文、hash、identity、snapshot envelopeのいずれかが異なれば、生成・保存・公開を停止して差分を監査ログへ残す。
+
+10/14 16:00の既知監査ではChatGPT→Google Docsの本文差異が最初に確認され、GitHub canonical登録は未実施だった。内部Docs writerの変換内容は不明であり、後日の `SOURCE_ARCHIVED` JSONは元の正規発行の復元ではない。正式rendererの非fixture modeは `--docs-readback` を必須にする。readback JSONには `document_id`、`document_revision_id`、同じ `report_id` と `revision`、読み戻した完全な `fullText` を入れ、rendererが本文文字列とSHA-256を比較する。欠落または不一致なら出力ディレクトリを作らずBLOCKEDにする。これはローカル入力検査であり、readbackデータを外部サービスが発行した証明は別途監査記録で確認する。
+
 ## 未実装の接続と禁止事項
 
 - 08時の定時発行ジョブによる自動呼び出しは未実装。スケジューラが持つ既存の実際の取得結果と原本文を、同じ実行IDに結び付ける必要がある
