@@ -171,3 +171,9 @@ Fetched main advanced to `5797798a2ab41630c88856d2347d20b95a7ccee3` during valid
 ## Latest-main resynchronization 2 — 2026-10-16 (CORRECT)
 
 GitHub main advanced again to `c3dae9fdaea7c05d8006006b6fb052a28e2535f4`; the 2 new commits update economic calendar and USDJPY production data only. Merged without conflicts as `c95ce5810`; branch compares 0 behind / 9 ahead locally. These main-owned data paths remain absent from the PR diff. Push this merge, rerun targeted tests on the final tree, and verify final-head hosted CI and Draft state. Do not merge.
+
+## PR #156 final validation — 2026-10-16 (ADD)
+
+Code head `fa958c370eec2420de21d762630c9c78cfaeacf3` passed both hosted workflows: frozen-cutoff run 38901726328 and delivery-health run 38901726374. Local compileall and 41 targeted tests passed; diff check passed. GitHub confirms PR #156 is OPEN, Draft, mergeable, unmerged, based on current main `c3dae9fdaea7c05d8006006b6fb052a28e2535f4`; compare ahead 10 / behind 0. PR description contains the four changes, evidence, and remaining NOT_RUN/UNKNOWN items.
+
+To make these evidence-record changes rerun both required workflows on the exact final head, frozen-cutoff CI now includes project-control record paths. This trigger-only follow-up must be committed/pushed and both workflows must pass on its resulting head before final stop. Keep Draft; do not merge.
