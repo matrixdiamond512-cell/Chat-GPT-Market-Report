@@ -1,4 +1,11 @@
 # マーケットレポート配信システム 仕様書
+
+## 2026-10-17 本文の同一画面表示（PR #97 Draft）
+- 本文rendererは `index.html` のDOM内で動作し、市場サマリー直後の本文領域に全文を直接描画する。iframeや別の本文ページは作らない。日付・時刻選択はダッシュボードの一組を共用する。
+- ダッシュボードが選択した同一report objectを描画し、公開または明示的な履歴archiveの適格性を再確認する。対象が不明または不適格なら本文表示を停止する。
+- `report.html` は既存ブックマーク向けの互換入口とし、日時を保持して `index.html#report-detail` へ移動する。本文表示は移動先の同じDOMで行う。
+- 既存のmanifest/hash/snapshot/数値検証および公開停止ゲートは維持する。ブラウザー実描画の受入はCI結果を確認するまでPENDINGとする。
+
 2026-10-13 / PRレビュー用。3文書は独立。GitHub mainの静的確認・本番稼働・未マージPRは区別する。
 実装で確認した契約：config/report_schedule.jsonのmainはweekday=08/12/16/21、saturday=なし、sunday=なし（PR #99 mainマージ後）。実ChatGPTタスクも土曜なし。apps-script/MarketReportWebSync.gsは本文PUBLISHED/図解NOT_READYを許容し、図解READY時のmanifest・Drive PNG bytes hashを検査。scripts/verify_morning_report_qa.pyは08:00の28行データQA。scripts/validate_drive_publication_receipt.pyはdate/time/title、publisher=chatgpt、status=saved、driveFileId/URL、savedAtを検査。
 図解manifestはreport_id、revision、snapshot_id、body_hash、manifest_id、drive_file_id、png_filename、png_sha256、manifest_hash、numeric_validation、renderer_status等を照合する。DEBUG_PREVIEWを正式画像として公開しない。

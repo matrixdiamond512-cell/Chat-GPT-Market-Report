@@ -79,3 +79,8 @@ Run ID `pr97-one-page-report-20261017`; source PR head observed as `a702dcb14866
 | Real Chromium UI | CUA could not reach local HTTP server (`ERR_CONNECTION_TIMED_OUT`) under sandbox; regression added to existing `report-21-ui-validation.yml` Chromium server run | E4 | Local NOT_RUN; hosted CI pending | Browser result required |
 
 No snapshot, report body, market data, publication gate or production output changed. No merge, publication or Drive write was performed. Next: submit the one-page correction to the existing Draft PR and inspect its Chromium CI outcome.
+
+
+## 2026-10-17 same-DOM correction (CORRECT)
+
+The iframe implementation did not meet the user's request: it embedded a second HTML document and preserved the conceptual page split. Replaced it with the report renderer mounted directly into `index.html`'s `#app`; dashboard selection and report body now share one DOM and the existing single date/time control. `report.html` remains only a compatibility redirect to the selected slot in `index.html`. Archive provenance and publication eligibility checks remain in the renderer. Local Node contract, JavaScript syntax, deploy-safety and `git diff --check` pass. Browser verification is pending hosted Chromium CI; do not call visual/runtime acceptance PASS before that result. No publication data or gate changed; PR #97 remains Draft and unmerged.

@@ -8,8 +8,8 @@ on:
       - 'report.html'
       - 'assets/css/report-fulltext.css'
       - 'assets/css/report-inline.css'
+      - 'assets/css/report-content-inline.css'
       - 'assets/js/top-dashboard.js'
-      - 'assets/js/report-inline-integration.js'
       - 'assets/js/report-core-v3.js'
       - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
@@ -29,8 +29,8 @@ on:
       - 'report.html'
       - 'assets/css/report-fulltext.css'
       - 'assets/css/report-inline.css'
+      - 'assets/css/report-content-inline.css'
       - 'assets/js/top-dashboard.js'
-      - 'assets/js/report-inline-integration.js'
       - 'assets/js/report-core-v3.js'
       - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
@@ -66,8 +66,9 @@ jobs:
 
       - name: Confirm portal loads active report renderer
         run: |
-          grep -q 'report-core-v3.js' report.html
-          grep -q 'report-markdown-fulltext-fix.js' report.html
+          grep -q 'report-core-v3.js' index.html
+          grep -q 'report-markdown-fulltext-fix.js' index.html
+          grep -q 'report-structured-enrichment.js' index.html
 
       - name: Forbid legacy renderers that overwrite the SOP table
         run: |

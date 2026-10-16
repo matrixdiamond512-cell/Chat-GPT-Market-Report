@@ -4,6 +4,7 @@ let reports = [];
 let selectedReport = null;
 
 const $ = (id) => document.getElementById(id);
+const dashboardInlineMode = () => document.body?.dataset.reportInline === "dashboard";
 const esc = (v = "") => String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
 const clean = (v = "") => String(v ?? "").replace(/\r/g, "").trim();
 const compact = (v = "") => clean(v).replace(/\s+/g, " ");
@@ -78,9 +79,11 @@ function renderControls(report) {
 function fullTextOf(report) { return clean(report?.fullText || report?.rawText || report?.body || "").replace(/^\uFEFF/, ""); }
 function renderMissingReport(date, time) {
   selectedReport = null;
-  renderControls({date, time});
-  $("lastUpdated").textContent = `対象：${dateToJp(date)} ${time || ""}`;
-  $("reportStatus").textContent = "対象データなし";
+  if (!dashboardInlineMode()) renderControls({date, time});
+  if ($("lastUpdated")) $("lastUpdated").textContent = `対象：${dateToJp(date)} ${time || ""}`;
+  if ($("reportStatus")) $("reportStatus").textContent = "対象データなし";
+  const inlineStatus = $("reportInlineStatus");
+  if (inlineStatus) { inlineStatus.dataset.state = "blocked"; inlineStatus.textContent = `${dateToJp(date)} ${time || ""}｜本文データなし`; }
   $("app").className = "empty";
   $("app").textContent = "対象データなし：この日時のレポート本文は登録されていません。";
   window.MarketReportLastRendered = null;
@@ -347,13 +350,15 @@ function renderDocument(report) {
   const fallback = report.title || `マーケットレポート｜${dateToJp(report.date)} ${report.time || ""}`;
   const parsed = parseDocument(source, fallback);
   const sections = ensureMarketSection(report, parsed);
-  $("lastUpdated").textContent = `表示中：${dateToJp(report.date)} ${report.time || ""}`;
-  $("reportStatus").textContent = `本文全文を表示中｜reports.json正本｜統合レンダラー v3`;
+  if ($("lastUpdated")) $("lastUpdated").textContent = `表示中：${dateToJp(report.date)} ${report.time || ""}`;
+  if ($("reportStatus") && !dashboardInlineMode()) $("reportStatus").textContent = `本文全文を表示中｜reports.json正本｜統合レンダラー v3`;
+  const inlineStatus = $("reportInlineStatus");
+  if (inlineStatus) { inlineStatus.dataset.state = "ready"; inlineStatus.textContent = `${dateToJp(report.date)} ${report.time}｜選択中レポートを表示`; }
   $("app").className = "report sop-report-applied";
   const app = $("app");
   app.innerHTML = `<header class="report-head"><h1 class="report-title">${esc(parsed.title || fallback)}</h1><div class="source-badge">reports.json正本</div></header>${renderInfographic(report)}<article class="report-body">${renderPreface(parsed.preface)}${sections.map(s => { const market = isMarketSection(s.title); const title = market ? marketSectionTitle(report, s.title) : s.title; return `<section class="section sop-section" data-sop-title="${esc(title)}"><h2>${s.number ? `${esc(s.number)}．` : ""}${esc(title)}</h2>${market ? renderMarketTable(report, s.lines, s.title) : renderRichText(s.lines)}</section>`; }).join("")}</article>`;
   if (isArchivedRecovery(report)) {
-    $("reportStatus").textContent = "過去の記録を表示中｜保存本文・事後修復版（正式発行とは区別）";
+    if ($("reportStatus") && !dashboardInlineMode()) $("reportStatus").textContent = "過去の記録を表示中｜保存本文・事後修復版（正式発行とは区別）";
     app.classList.add("report-archive-recovery");
     const sourceBadge = app.querySelector(".source-badge");
     if (sourceBadge) sourceBadge.textContent = "過去の保存記録・修復版";
@@ -393,13 +398,33 @@ function notifyEmbeddedReport_(status, report) {
 }
 function render() {
   if (!selectedReport) return;
-  if (new URLSearchParams(location.search).get("embedded") !== "1") renderControls(selectedReport);
+  if (!dashboardInlineMode() && new URLSearchParams(location.search).get("embedded") !== "1") renderControls(selectedReport);
   renderDocument(selectedReport);
   window.MarketReportLastRendered = selectedReport;
   window.dispatchEvent(new CustomEvent("market-report-rendered", { detail: { report: selectedReport } }));
   notifyEmbeddedReport_("ready", selectedReport);
 }
 
+function acceptDashboardReport_(report) {
+  if (!dashboardInlineMode()) return;
+  const validSlot = /^\d{4}-\d{2}-\d{2}$/.test(String(report?.date || ""))
+    && REPORT_TIMES.includes(report?.time)
+    && typeof fullTextOf(report) === "string" && fullTextOf(report).length > 0;
+  if (!validSlot || !(isPublicReport(report) || isArchivedRecovery(report))) {
+    selectedReport = null;
+    const app = $("app");
+    app.className = "empty";
+    app.textContent = "選択中レポートの日時・本文・公開区分を確認できないため、本文表示を停止しました。";
+    window.MarketReportLastRendered = null;
+    const status = $("reportInlineStatus");
+    if (status) { status.dataset.state = "blocked"; status.textContent = "本文確認に失敗したため表示を停止"; }
+    return;
+  }
+  selectedReport = report;
+  reports = [report];
+  render();
+  syncSelectedReportUrl(report);
+}
 function acceptDashboardSelectedReport_(event) {
   if (event.origin !== location.origin || event.source !== window.parent
       || new URLSearchParams(location.search).get("embedded") !== "1"
@@ -462,7 +487,10 @@ async function init() {
   }
 }
 window.MarketReportRendererVersion = "20260925-exact-slot-infographic";
-if (new URLSearchParams(location.search).get("embedded") === "1") {
+if (dashboardInlineMode()) {
+  window.addEventListener("market-dashboard-report-selected", event => acceptDashboardReport_(event.detail?.report));
+  if (window.MarketDashboardSelectedReport) acceptDashboardReport_(window.MarketDashboardSelectedReport);
+} else if (new URLSearchParams(location.search).get("embedded") === "1") {
   window.addEventListener("message", acceptDashboardSelectedReport_);
   if ("ResizeObserver" in window) {
     new ResizeObserver(() => notifyEmbeddedReport_("height", selectedReport))

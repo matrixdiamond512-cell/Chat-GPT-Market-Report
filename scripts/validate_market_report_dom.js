@@ -67,25 +67,23 @@ async function main() {
         + '&time=' + encodeURIComponent(report.time) + '&domverify=' + Date.now();
       await page.goto(url, {waitUntil: 'domcontentloaded', timeout: 60000});
       await page.waitForFunction(() => {
-        const frame = document.getElementById('reportDocumentFrame');
+        const app = document.getElementById('app');
         const status = document.getElementById('reportInlineStatus')?.textContent || '';
-        const app = frame?.contentDocument?.getElementById('app');
-        const title = frame?.contentDocument?.querySelector('.report-title');
+        const title = app?.querySelector('.report-title');
         const text = (app?.textContent || '') + ' ' + status;
-        return frame && !frame.hidden && title && text.includes('同一本文・identityを確認')
+        return document.body.dataset.reportInline === 'dashboard' && app && title
+          && text.includes('選択中レポートを表示')
           && !/本文データを読み込んでいます|マーケットレポートを読み込んでいます/.test(text)
-          && !/読み込めません|読込エラー/.test(text);
+          && !/読み込めません|読込エラー|表示を停止/.test(text);
       }, {timeout: 60000});
 
       const result = await page.evaluate(() => {
-        const frame = document.getElementById('reportDocumentFrame');
-        const reportDocument = frame?.contentDocument;
-        const app = reportDocument?.getElementById('app');
-        const title = reportDocument?.querySelector('.report-title');
-        const body = reportDocument?.querySelector('.report-body');
+        const app = document.getElementById('app');
+        const title = app?.querySelector('.report-title');
+        const body = app?.querySelector('.report-body');
         const picker = document.getElementById('dateInput');
         const activeTab = document.querySelector('.time-tab.is-active');
-        const sections = [...(reportDocument?.querySelectorAll('.sop-section') || [])];
+        const sections = [...(app?.querySelectorAll('.sop-section') || [])];
         const market = sections.find(section => /主要市場データ|主要市場まとめ|市場データ|前営業日終値|終値一覧|主要価格/.test(
           section.querySelector('h2')?.textContent || section.dataset.sopTitle || ''));
         const table = market?.querySelector('table.market-table');
@@ -96,15 +94,15 @@ async function main() {
           titleLength: (title?.textContent || '').trim().length,
           bodyText: body?.textContent || '',
           bodyHidden: Boolean(body && (body.hidden || getComputedStyle(body).display === 'none')),
-          quarantineWarning: reportDocument?.getElementById('unverifiedReportWarning')?.textContent?.trim() || '',
-          morningQaState: reportDocument?.documentElement.dataset.morningReportQa || '',
+          quarantineWarning: app?.querySelector('#unverifiedReportWarning')?.textContent?.trim() || '',
+          morningQaState: document.documentElement.dataset.morningReportQa || '',
           date: picker?.value || '',
           activeTime: activeTab?.textContent?.trim() || '',
           inlineStatus,
-          inlineVisible: Boolean(frame && !frame.hidden),
-          childControlsHidden: Boolean(reportDocument
-            && getComputedStyle(reportDocument.querySelector('.controls')).display === 'none'
-            && getComputedStyle(reportDocument.querySelector('.topbar')).display === 'none'),
+          inlineVisible: Boolean(app && app.querySelector('.report-title') && getComputedStyle(app).display !== 'none'),
+          onePageControls: document.querySelectorAll('#dateInput').length === 1
+            && document.querySelectorAll('#timeTabs').length === 1
+            && document.querySelectorAll('iframe').length === 0,
           marketSectionFound: Boolean(market),
           marketTableFound: Boolean(table),
           marketRowCount: table?.querySelectorAll('tbody tr').length || 0,
@@ -115,8 +113,8 @@ async function main() {
 
       const failures = [];
       if (!result.inlineVisible) failures.push('inline report is not visible');
-      if (!result.inlineStatus.includes('同一本文・identityを確認')) failures.push('dashboard/body identity agreement not shown');
-      if (!result.childControlsHidden) failures.push('embedded report shows a duplicate header or date/time control');
+      if (!result.inlineStatus.includes('選択中レポートを表示')) failures.push('selected report status is missing');
+      if (!result.onePageControls) failures.push('report is nested or the date/time control is duplicated');
       if (result.date !== report.date) failures.push('datePicker mismatch: ' + result.date);
       if (result.activeTime !== report.time) failures.push('active time mismatch: ' + result.activeTime);
       if (result.title !== report.title) failures.push('title mismatch: ' + result.title);
@@ -170,4 +168,3 @@ main().catch(error => {
   console.error(error && error.stack || error);
   process.exit(1);
 });
-

@@ -23,17 +23,18 @@
   <link rel="stylesheet" href="assets/css/position-fulltext-fix.css?v=20260806-0327">
   <link rel="stylesheet" href="assets/css/page-title-unified.css?v=20260813-dashboard2">
   <link rel="stylesheet" href="assets/css/semantic-colors.css?v=20260816-semantic9">
-  <link rel="stylesheet" href="assets/css/report-inline.css?v=20261017-unified-slot1">
+  <link rel="stylesheet" href="assets/css/report-inline.css?v=20261017-single-dom2">
+  <link rel="stylesheet" href="assets/css/report-content-inline.css?v=20261017-single-dom2">
 </head>
-<body>
-  <header class="top-header"><div class="header-inner"><div><h1>マーケット分析ポータル</h1><span class="unified-page-name">マーケットレポート</span><p id="reportStatus">最新レポートを読み込み中</p></div><a class="header-link" href="#report-detail" aria-label="選択中のレポート本文へ">★ 選択中レポートの本文・図解</a></div></header>
-  <nav class="site-nav" aria-label="ページナビゲーション"><a href="index.html" aria-current="page">マーケット分析</a><a href="#report-detail" aria-current="location">選択中レポート本文</a><a href="usdjpy-volume.html">東京市場ドル円出来高</a><a href="events.html">重要イベント</a><a href="rates-bonds.html">金利・債券市場</a><a href="stocks.html">株式市場分析</a><a href="usdjpy-supply-demand.html">USD/JPY需給</a><a href="gold-supply-demand.html">ゴールド需給</a><a href="nikkei225-supply-demand.html">日経225需給</a><a href="nikkei225-arbitrage.html">裁定取引</a></nav>
+<body data-report-inline="dashboard">
+  <header class="top-header"><div class="header-inner"><div><h1>マーケット分析ポータル</h1><span class="unified-page-name">マーケットレポート</span><p id="reportStatus">最新レポートを読み込み中</p></div></div></header>
+  <nav class="site-nav" aria-label="ページナビゲーション"><a href="index.html" aria-current="page">マーケット分析</a><a href="usdjpy-volume.html">東京市場ドル円出来高</a><a href="events.html">重要イベント</a><a href="rates-bonds.html">金利・債券市場</a><a href="stocks.html">株式市場分析</a><a href="usdjpy-supply-demand.html">USD/JPY需給</a><a href="gold-supply-demand.html">ゴールド需給</a><a href="nikkei225-supply-demand.html">日経225需給</a><a href="nikkei225-arbitrage.html">裁定取引</a></nav>
   <main class="page-shell">
     <section class="control-bar" aria-label="表示レポート選択"><div class="time-tabs" id="timeTabs"></div><div class="date-picker"><button type="button" class="icon-button" id="prevDate" aria-label="前の日">‹</button><input type="date" id="dateInput" aria-label="表示日"><button type="button" class="icon-button" id="nextDate" aria-label="次の日">›</button></div></section>
     <section class="market-summary panel" aria-label="6市場サマリー"><h2>6市場サマリー（なぜ買われたか／売られたか）</h2><div class="market-card-grid" id="marketCards"></div></section>
     <section class="report-inline panel" id="report-detail" aria-labelledby="report-inline-title">
-      <div class="report-inline-heading"><div><h2 id="report-inline-title">選択中レポートの本文・図解</h2><p>上の日時選択と連動しています。同じレポートの市場サマリーから本文まで、この画面で続けて確認できます。</p></div><span id="reportInlineStatus" role="status" aria-live="polite">本文を読み込み中</span></div>
-      <iframe id="reportDocumentFrame" title="選択中マーケットレポートの本文と図解" loading="eager"></iframe>
+      <div class="report-inline-heading"><h2 id="report-inline-title">選択中レポートの本文・図解</h2><span id="reportInlineStatus" role="status" aria-live="polite">同じ日時の本文を読み込み中</span></div>
+      <div id="app" class="empty">本文データを読み込んでいます。</div>
     </section>
     <section class="market-environment-section" id="market-environment" aria-label="総合市場環境"><div class="section-title-row"><div><h2>総合市場環境</h2><p>市場温度の要点を、心理指標と株式市場の広がりから確認</p></div><div class="environment-color-key" aria-label="判定色の見方"><span class="key-extreme-fear">強い警戒</span><span class="key-fear">警戒</span><span class="key-neutral">中立</span><span class="key-greed">良好</span><span class="key-extreme-greed">強い良好</span></div></div><div class="environment-summary-grid" id="environmentSummary"></div><div class="temperature-mini-grid" id="temperatureMiniCards"><div class="temperature-mini-loading">総合市場環境を読み込み中です。</div></div></section>
     <section class="dashboard-grid"><div class="left-stack"><article class="panel compact-panel"><h2>今日の相場テーマ（相場への影響）</h2><ul id="themeList"></ul></article><article class="panel compact-panel"><h2>前回からの変化</h2><ul id="changeList"></ul></article><article class="panel compact-panel"><h2>今日の主導市場</h2><div id="leadingMarket" class="prose-block"></div></article></div><article class="panel flow-panel"><h2>クロスアセット資金フロー</h2><div class="flow-card-grid" aria-live="polite"><section class="flow-column flow-column-in"><h3>資金が流入している資産</h3><ul id="flowInItems"></ul></section><section class="flow-column flow-out"><h3>資金が流出している資産</h3><ul id="flowOutItems"></ul></section><section class="flow-column flow-column-feature"><h3>フローの特徴</h3><ul id="flowFeatureItems"></ul></section></div></article><div class="right-stack"><article class="panel news-panel"><h2>主要ニュース（相場への影響）</h2><ul id="newsList"></ul></article><article class="panel position-panel"><h2>需給・ポジション</h2><div class="position-layout"><ul id="positionList"></ul><div class="position-matrix" id="positionMatrix"></div></div><a href="usdjpy-supply-demand.html">需給ページへ</a></article></div></section>
@@ -45,6 +46,7 @@
   <script src="assets/js/dashboard-freeze-guard.js?v=20260809-1722"></script>
   <script src="assets/js/market-report-backfill-2026-09-17.js?v=20260918-restore1"></script>
   <script src="assets/js/report-publication-policy.js?v=20261015-fail-closed1"></script>
+  <script src="assets/js/report-2026-09-18-fulltext-loader.js?v=20260919-close-table-1"></script>
 <script src="assets/js/top-dashboard.js?v=20261016-strict-archive1"></script>
   <script src="assets/js/dashboard-change-fallback-fix.js?v=20260810-2354"></script>
   <script src="assets/js/report-time-08-migration.js?v=20260808-0508"></script>
@@ -64,6 +66,9 @@
   <script src="assets/js/portal-update-controls.js?v=20260811-01"></script>
   <script src="assets/js/dashboard-market-card-normalizer.js?v=20261016-strict-archive1"></script>
   <script src="assets/js/dashboard-market-card-reason-fix.js?v=20260821-reason1"></script>
-  <script src="assets/js/report-inline-integration.js?v=20261017-unified-slot1"></script>
+  <script src="assets/js/report-markdown-fulltext-fix.js?v=20260919-2"></script>
+  <script src="assets/js/report-structured-enrichment.js?v=20261016-history-recovery1"></script>
+  <script src="assets/js/morning-report-qa-gate.js?v=20261016-history-recovery1"></script>
+  <script src="assets/js/report-core-v3.js?v=20261017-single-dom2"></script>
 </body></html>
 
