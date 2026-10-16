@@ -17,6 +17,7 @@ from scripts.reporting.publication_evidence import verify_slot_evidence
 from scripts.run_morning_infographic_staging import (
     canonical_hash, docs_readback_from_verified_import, validate_transaction,
 )
+from scripts.prepare_morning_infographic_inputs import prepare_inputs
 
 
 def _summary_authoring(bound, view):
@@ -130,12 +131,34 @@ class MorningStagingBridgeTests(unittest.TestCase):
         self.report["publicationEvidence"] = {key: self.receipt[key] for key in (
             "evidenceId", "snapshotId", "contextHash", "snapshotHash", "bodyHash", "documentRevisionId")}
         self.bound = assemble(self.report, self.evidence["context"], self.evidence["snapshot"])
+        self.original_body_evidence = {
+            "capturedAt": "2026-10-06T08:01:00+09:00",
+            "evidence_stage": "G2_DRAFT_NOT_SAVED", "validated_gates": ["G0", "G1", "G2"],
+            "date": self.report["date"], "time": self.report["time"],
+            "title": self.report["title"], "report_id": self.bound["report_id"],
+            "revision": self.bound["revision"], "snapshot_id": self.bound["snapshot_id"],
+            "bodyHash": self.report["bodyHash"], "fullText": self.report["fullText"],
+            "context": self.evidence["context"], "snapshot": self.evidence["snapshot"],
+        }
         self.view["report_id"] = self.bound["report_id"]
         self.view["snapshot_id"] = self.bound["snapshot_id"]
         self.view["body_hash"] = self.bound["bodyHash"]
         self.spec = build_spec(self.bound)
-        authoring, self.scenario_fields = _summary_authoring(self.bound, self.view)
-        self.summary = build_summary(self.bound, authoring)
+        self.summary_authoring, self.scenario_fields = _summary_authoring(self.bound, self.view)
+        self.summary = build_summary(self.bound, self.summary_authoring)
+        self.view_authoring = {key: copy.deepcopy(value) for key, value in self.view.items()
+                               if key not in ("facts", "report_id", "revision", "snapshot_id", "body_hash")}
+        anchor_occurrences = {}
+        self.view_authoring["facts"] = []
+        for fact in self.view["facts"]:
+            key = (fact["source_section"], fact["text"])
+            occurrence = anchor_occurrences.get(key, 0)
+            anchor_occurrences[key] = occurrence + 1
+            self.view_authoring["facts"].append(
+                {name: value for name, value in fact.items()
+                 if name not in ("start", "end", "text")}
+                | {"source_anchor": fact["text"],
+                   "source_anchor_occurrence": occurrence})
         self.docs_readback = docs_readback_from_verified_import(self.report, self.receipt)
         self.scenario_review = {
             "status": "PASS", "reviewer": "TEST_ONLY", "reviewed_at": "2026-10-06T09:00:00+09:00",
@@ -158,6 +181,7 @@ class MorningStagingBridgeTests(unittest.TestCase):
                   "view": self.view,
                   "spec": self.spec,
                   "scenario_review": self.scenario_review,
+                  "original_body_evidence": self.original_body_evidence,
                   "report_date": "2026-10-06"}
         values.update(overrides)
         return validate_transaction(**values)
@@ -172,12 +196,57 @@ class MorningStagingBridgeTests(unittest.TestCase):
         for label in ("メインシナリオ", "代替シナリオ", "崩れる条件"):
             self.assertIn(label, html)
 
+    def test_report_compiles_summary_view_and_snapshot_bound_spec(self):
+        bound, summary, view, spec = prepare_inputs(
+            report=self.report, evidence_bytes=canonical_bytes(self.evidence),
+            receipt=self.receipt, original_body_evidence=self.original_body_evidence,
+            summary_authoring=self.summary_authoring, view_authoring=self.view_authoring)
+        self.assertEqual(summary["bodyHash"], bound["bodyHash"])
+        self.assertEqual(view["body_hash"], bound["bodyHash"])
+        self.assertEqual(spec["snapshot_id"], bound["snapshot_id"])
+        self.assertEqual(summary["human_review"], "PENDING")
+        self.assertEqual(validate_transaction(
+            report=self.report, evidence_bytes=canonical_bytes(self.evidence),
+            receipt=self.receipt, docs_readback=self.docs_readback,
+            summary=summary, view=view, spec=spec,
+            scenario_review=self.scenario_review,
+            original_body_evidence=self.original_body_evidence,
+            report_date="2026-10-06")[1]["projection"]["status"], "PASS")
+
     def test_changed_docs_body_fails_before_render(self):
         altered = copy.deepcopy(self.docs_readback)
         altered["fullText"] += "改変"
         with self.assertRaises(ValidationFailure) as error:
             self.validate(docs_readback=altered)
         self.assertEqual(error.exception.reason, "STAGING_DOCS_BODY_OR_IDENTITY_MISMATCH")
+
+    def test_pre_save_body_must_match_independent_docs_readback(self):
+        altered = copy.deepcopy(self.original_body_evidence)
+        altered["fullText"] += "保存前本文への改変"
+        with self.assertRaises(ValidationFailure) as error:
+            self.validate(original_body_evidence=altered)
+        self.assertEqual(error.exception.reason, "STAGING_PRE_SAVE_BODY_HASH_INVALID")
+
+    def test_pre_save_body_hash_is_compared_to_actual_imported_docs_body(self):
+        altered = copy.deepcopy(self.original_body_evidence)
+        altered["fullText"] += "別本文"
+        altered["bodyHash"] = hashlib.sha256(altered["fullText"].encode("utf-8")).hexdigest()
+        with self.assertRaises(ValidationFailure) as error:
+            self.validate(original_body_evidence=altered)
+        self.assertEqual(error.exception.reason, "STAGING_ORIGINAL_BODY_DIFFERS_FROM_DOCS_READBACK")
+
+    def test_pre_save_evidence_captured_after_docs_save_is_rejected(self):
+        altered = copy.deepcopy(self.original_body_evidence)
+        altered["capturedAt"] = "2026-10-06T08:04:00+09:00"
+        with self.assertRaises(ValidationFailure) as error:
+            self.validate(original_body_evidence=altered)
+        self.assertEqual(error.exception.reason, "STAGING_PRE_SAVE_CAPTURE_ORDER_INVALID")
+        with self.assertRaises(ValidationFailure) as error:
+            prepare_inputs(
+                report=self.report, evidence_bytes=canonical_bytes(self.evidence),
+                receipt=self.receipt, original_body_evidence=altered,
+                summary_authoring=self.summary_authoring, view_authoring=self.view_authoring)
+        self.assertEqual(error.exception.reason, "STAGING_PRE_SAVE_CAPTURE_ORDER_INVALID")
 
     def test_changed_snapshot_receipt_link_fails(self):
         altered = copy.deepcopy(self.receipt)

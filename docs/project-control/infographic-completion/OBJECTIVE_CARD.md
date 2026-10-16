@@ -56,3 +56,15 @@ NEXT NECESSARY ACTION: イベント原本を含む新規reportでevent ingestion
 Post-integration evidence: Python 250/250 PASS; three Node publication/Apps Script/source-recovery tests PASS; publication consistency and 164-entry canonical index PASS; `build_reports.py` reports 164 canonical files and leaves the index/history unchanged after the TEST ONLY source was removed from canonical `reports/`. All six hosted checks on `ed781827f9915617146ba4548774f5390d617682` pass. Their annotations are limited to Node.js 20 deprecation and the announced ubuntu-latest image migration. The fresh-report render remains `DEBUG_PREVIEW`, with `publish_allowed=false`, no publication manifest, and no Drive/Portal action.
 
 Visual acceptance remains PENDING after direct comparison: the outputs are 1536×2001–3137 versus the approved 1536×1024 image, with large row gaps, dense small text, and panel 4 illustration differences. Historical originals/snapshots remain unavailable; no later market data was substituted and no withdrawn report was restored. Keep PR #97 OPEN/Draft. Do not merge to main, publish, or write to Drive.
+
+## 2026-10-17 follow-up — original-body comparison and input compiler
+
+CHANGE CLASSIFICATION: ADD/CORRECT. The user clarified that a full report remains immutable and complete, while the infographic is a source-bound summary rather than a full-text reproduction. This supersedes the earlier full-body character coverage check for infographic projection only.
+
+IMPLEMENTED LOCALLY: pre-save G2 artifact now carries capture time and is compared with importer-observed Docs text/hash and receipt save time; source anchor resolution supports explicit occurrence selection for repeated text; same-run summary/view/spec preparation is connected as a local command; panel-12 human semantic review stays independent and PENDING until separately recorded. Main workflow/scheduler was not changed.
+
+OPEN OUTCOMES: finish local full regressions; verify current GitHub PR state and publish the reviewed code to PR branch; await exact-head CI; 2026-10-19 actual normal-slot evidence; human review of actual panel-12 claims; local real-data DRAFT/browser check. Scheduled invocation from default branch remains unimplemented and requires a separately authorized main-side change.
+
+LIMITS: current tests use synthetic TEST_ONLY evidence. `capturedAt` orders local artifacts but is not a cryptographic signature. No real Docs save/readback, actual 08:00 run, formal PNG/manifest, browser test on real report, publication, or Drive write has been observed.
+
+NEXT NECESSARY ACTION: complete local full-suite and diff checks, then update PR #97 without changing its Draft/open/unmerged state. Report the exact first missing actual-slot input if 2026-10-19 evidence is absent. Propose (do not apply) a default-branch TEST_ONLY post-publisher hook.

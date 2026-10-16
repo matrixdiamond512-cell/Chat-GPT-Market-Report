@@ -130,3 +130,14 @@ GitHub Actionsの `Update economic calendar` は5分ごとに動作する。正�
 - receipt v2と公開データの整合ゲートが合格してからPagesへ進む。Pages deploy後に公開URLを再読込し、当該reportId・全文hashを正本と照合する。
 - 2026-10-14の保存済みDocsは発行後変更または発行時本文欠落があるため、復旧テストのために再利用・補完・公開しない。
 - 実定期runと公開URLのE4/E5証拠が得られるまでは`PENDING_LIVE_RUN`とし、システム復旧完了を表示しない。
+
+## PR #97 08:00図解のDraft接続手順
+
+1. 新規通常08:00 runのcontext、同一run acquisition/snapshot、元本文を用意する。補充版・後刻値・撤回済み本文で代用しない。
+2. Google Docs保存前に `capture_morning_creation_evidence.py` でG0/G1/G2を検証し、`G2_DRAFT_NOT_SAVED` artifactを一度だけ排他的に保存する。artifact内の本文をwriterへ渡し、後から作り直さない。
+3. Docs保存後、既存importerによるAPI読戻し本文、Docs revision、bodyHashを確認する。保存前artifactと本文全文・SHA-256・identity・snapshot/contextが一致しなければ停止する。receiptのsavedAtより後のcapturedAtも拒否される。
+4. 同一runのcanonical report/evidence/receipt/G2本文を使い `prepare_morning_infographic_inputs.py` を実行する。summary/viewのauthoringは原文根拠を指定した人手入力が必要で、曖昧なアンカーは出典位置にマップせず停止する。
+5. 生成summary/view/specの数値・方向・時刻・条件を本文およびsnapshotに照合する。パネル12のメイン/代替/崩れる条件について成立条件・展開・市場影響を人が本文と照合し、identity・本文hash・summary hashに結びつけた別レビューを作る。未承認ならrendererを実行しない。
+6. 全証拠が一致した場合だけローカルDRAFT rendererを起動し、異常系も検証する。公開manifest・Drive保存・portal公開はこのDraft接続では行わない。
+
+このPRの変更は未マージのため定時発行から自動では起動しない。次の通常枠で実データE2Eを行う前に、default branchにTEST_ONLY staging workflowを接続する設計・承認が必要である。現状のTEST_ONLY fixture PASSは実データE2Eや本番復旧の証拠ではない。

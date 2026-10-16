@@ -59,11 +59,13 @@ class MorningLayoutTests(unittest.TestCase):
         self.view['facts'][0]['text']+='9'
         self.invalid('MORNING_FACT_SOURCE_MISMATCH')
 
-    def test_omitted_original_content(self):
+    def test_summary_may_omit_detail_while_body_remains_hash_bound(self):
         self.report['fullText']+='未表示の分析内容\n'
         from reporting.infographic import SourceLock
         self.view['body_hash']=SourceLock.create(self.report).sha256
-        self.invalid('MORNING_SOURCE_CONTENT_OMITTED')
+        result=validate_projection(self.report,self.view,fixture=True)
+        self.assertEqual(result['status'],'PASS')
+        self.assertTrue(self.report['fullText'].endswith('未表示の分析内容\n'))
 
     def test_missing_market_field(self):
         self.view['cards'][12]['markets'][0]['rationale']={'ref':'absent'}

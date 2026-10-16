@@ -7,6 +7,9 @@
 - D-C5: v20は保存mainとの差分がイベント追補だけであることを確認。21:30を無条件採用せずBLS/Censusで再照合し、本文は上書きしない。銀行時刻は未確定。追補は原本のas-of時点の証拠ではない。
 - D-C6: v1.8の「PNG必須の公開前順序」と10/09の独立本文/図解レーンには規範上の差異がある。最新ユーザー指示に従い、実装済みの独立状態管理と全既存停止ゲートを保持。今回の文書追補はDRAFT描画に限定し、旧条項・稼働公開順序・配備設定を変更しない。
 - D-C7: 全文を失わず文字サイズを保持するため高さを拡張。承認画像の縦横比・写真調アイコン・図記号密度の再現は未完了として記録。構造チェックや生成成功で視覚受入を代用しない。
+- D-C8 (2026-10-17): User's later explicit instruction that the infographic summarizes the report supersedes earlier full-text character coverage on the PNG. Preserve and hash the full report body; require every declared infographic fact to resolve to exact source offsets and validate all numerical/snapshot bindings. No report text is removed.
+- D-C9 (2026-10-17): G2 capture timestamp plus body/hash/identity snapshot-context are checked against importer readback and receipt save time. This timestamp provides order evidence, not a cryptographic signature. The Google Docs writer is still not wired to pass the single captured artifact as its only body input; this remains an upstream integration outcome.
+- D-C10 (2026-10-17): Do not modify default-branch scheduled workflows or merge PR #97 to activate automatic renderer invocation without separate approval. Proposed minimal future hook: default-branch TEST_ONLY workflow after publisher/readback completion, pass only same-run artifacts into a pinned PR renderer, emit local/staging artifacts with `publish_allowed=false`, and keep human scenario review as a blocking input.
 
 必要な復旧処理:
 

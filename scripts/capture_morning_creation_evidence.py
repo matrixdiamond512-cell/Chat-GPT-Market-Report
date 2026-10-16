@@ -4,6 +4,7 @@ This is an issuance-boundary handoff utility, not a market-data collector,
 Drive writer, or evidence of actual publication. Never alters source inputs.
 """
 import argparse
+from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
@@ -47,6 +48,7 @@ def capture(context_payload, snapshot_payload, *, title, full_text):
     assert tx.passed == ("G0", "G1", "G2")
     digest = hashlib.sha256(full_text.encode("utf-8")).hexdigest()
     return {
+        "capturedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "date": context.report_date,
         "time": context.report_time,
         "title": title,

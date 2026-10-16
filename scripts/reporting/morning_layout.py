@@ -105,7 +105,6 @@ def validate_projection(report, view, *, fixture=False, spec=None):
         else:
             source_ranges.append((position, position + len(line), active))
         position += len(line)
-    covered = set()
     snapshot = report.get('snapshot') or report.get('marketDataSnapshot') or report.get('market_data_snapshot')
     by_market = {m['instrument']: m for m in snapshot['markets']}
     spec_text = _display_text(spec['panels']) if not fixture else ''
@@ -120,7 +119,6 @@ def validate_projection(report, view, *, fixture=False, spec=None):
         is_timestamp = (fact.get('snapshot_field') or {}).get('field') == 'asOf'
         if not fixture and not is_timestamp and fact['text'] not in spec_text:
             fail('MORNING_FACT_OUTSIDE_VALIDATED_SPEC')
-        covered.update(range(start, end))
         if fact.get('snapshot_field'):
             binding = fact['snapshot_field']
             market = by_market.get(binding.get('instrument'))
@@ -134,15 +132,9 @@ def validate_projection(report, view, *, fixture=False, spec=None):
                     fail('MORNING_TIMESTAMP_DRIFT')
             elif list(_numeric_tokens(fact['text'])) != [Decimal(str(raw)).normalize()]:
                 fail('NUMERIC_DRIFT')
-    # Every original non-heading character must be displayed; no arbitrary fact subset.
-    position = 0
-    for line in body.splitlines(keepends=True):
-        clean = re.sub(r'^\s*#{1,6}\s*', '', line).strip(' \r\n【】')
-        clean = re.sub(r'^\d{1,2}[．.、)]\s*', '', clean)
-        if clean not in headings and not canonical_heading(line) and clean != report['title']:
-            if any(position + i not in covered for i, char in enumerate(line) if not char.isspace()):
-                fail('MORNING_SOURCE_CONTENT_OMITTED')
-        position += len(line)
+    # The complete report body is preserved and hash-bound separately. The
+    # infographic is a summary, so it must cover every declared source-bound
+    # fact but is not required to reproduce every character of the report.
     used = list(refs(cards)) + list(refs(view.get('header', {})))
     if set(used) != set(by_id):
         fail('MORNING_FACT_COVERAGE')

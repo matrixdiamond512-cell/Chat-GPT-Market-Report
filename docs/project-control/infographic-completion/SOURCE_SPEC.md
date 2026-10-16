@@ -53,6 +53,14 @@
 
 ## 4. 単一データ契約と来歴
 
+### 2026-10-17 要求修正（本文と図解の責務分離）
+
+旧版の「出力時に16パネルのテキスト・数値・表をすべて描画」「全本文内容を画像へ接続」という要求は、ユーザーの後続指示により修正する。これは本文を削る指示ではない。本文は同じreport identityとSHA-256で完全保持し、図解は重要情報を原文位置付きで要約する。全ての要約factがsource sectionと本文offsetに一致し、必須パネル役割・重要判断・リスク条件・数値/方向/単位/時刻・snapshot参照が検証されることを求める。図解への全文文字被覆は要求しない。図解で省略された分析は検証済み本文に残す。
+
+- 保存前G2原文をDocs保存に渡す本文の唯一の入力とし、保存後にDocs APIから読み戻した完全本文・revision/bodyHashおよびreceiptと比較する。G2 artifactは保存前に作成し、receipt savedAtより後のcapturedAtを認めない。
+- `summary-authoring.json`と`view-authoring.json`からの自動処理は、文の内容を創作せず、原文アンカーを検証済み本文位置へ解決してsummary/view/specを生成する作業に限定する。曖昧なsource anchorは明示された出現番号がない限りFAIL。
+- パネル12のメインシナリオ・代替シナリオ・崩れる条件は、成立条件・想定展開・市場影響を本文位置へ結び、独立した人間意味レビューを必須とする。自動生成済みでも人間reviewがPENDINGならDRAFT描画へ進めない。
+
 - `report_id=YYYY-MM-DD_HH-MM`、`revision`、`snapshot_id`、`bodyHash`（または既存契約の対応フィールド）、`title`、`date`、`time`、`fullText`を照合する。既存レポートがそれらを欠く場合**後付けで架空ID・架空スナップショットを作らない**。追加データの作成手順と不足理由を監査へ記録する。
 - 数値レジストリの1件には最低：`fact_id`、`instrument`、`display_value`、`raw_value`、`unit`、`price_basis`（現物/先物、終値/清算値/遅延参照値、取引所・限月）、`as_of`、`comparison_basis`、`change_value`、`change_pct`、`direction`、`source_name`、`source_url`、`source_timestamp`、`body_excerpt`、`verification_status`を持つ。出典が取得不能なら理由を明示。
 - 別商品のスポット金とCOMEX先物、WTI日足終値と清算値、CMEと大阪先物、USD/BTCとBTC/USDを**同一系列として混用禁止**。
