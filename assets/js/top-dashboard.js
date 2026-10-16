@@ -1249,8 +1249,13 @@ function verifiedSupplementalArchiveQuotes(record) {
     const changePct = key === "nikkei" ? Number(line[3]) : null;
     const clauses = outlook.replace(/^[^：:]+[：:]/, "").split("。").map(s=>s.trim()).filter(Boolean);
     const reason = clauses.find(s=>/短期は|上昇警戒|自律反発|金利|ドル安|買い材料|反発は確認/.test(s) && !/強気条件|弱気条件/.test(s)) || "";
-    const strong = clauses.find(s=>/強気条件|ドル高条件/.test(s)) || "";
-    const weak = clauses.find(s=>/弱気条件|ドル安条件/.test(s)) || "";
+    // A saved sentence may contain both "強気条件＝..." and "弱気条件＝..."
+    // separated only by a Japanese comma (BTC has this format).
+    const conditions = outlook
+      .replace(/、(?=(?:強気条件|弱気条件|ドル高条件|ドル安条件)＝)/g, "。")
+      .split("。").map(s=>s.trim()).filter(Boolean);
+    const strong = conditions.find(s=>/^(?:強気条件|ドル高条件)＝/.test(s)) || "";
+    const weak = conditions.find(s=>/^(?:弱気条件|ドル安条件)＝/.test(s)) || "";
     quotes[key] = {
       value: line[1],
       change, changePct: Number.isFinite(changePct) ? changePct : null,
