@@ -20,6 +20,8 @@ on:
       - 'scripts/report_identity.py'
       - 'scripts/verify_publication_consistency.py'
       - 'scripts/build_reports.py'
+      - 'scripts/reporting/publication_eligibility.py'
+      - 'scripts/prepare_pages_site.py'
       - 'scripts/verify_public_report_deployment.py'
       - 'scripts/validate_market_report_dom.js'
       - '.github/workflows/deploy-pages.yml'
@@ -81,6 +83,9 @@ jobs:
       - name: Verify latest/canonical/index/dashboard consistency
         run: python scripts/verify_publication_consistency.py
 
+      - name: Verify recovered historical archive stays distinct from formal publication
+        run: python scripts/validate_report_recovery.py
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
@@ -122,6 +127,11 @@ jobs:
           stocks_path.write_text(stocks_text, encoding='utf-8')
           PY
 
+      - name: Stage Pages artifact without non-public canonical source files
+        env:
+          PAGES_SITE_DIR: ${{ runner.temp }}/market-report-pages-site
+        run: python scripts/prepare_pages_site.py --output "$PAGES_SITE_DIR"
+
       - name: Set up Node.js for local Portal DOM validation
         uses: actions/setup-node@v4
         with:
@@ -134,7 +144,7 @@ jobs:
 
       - name: Start local static site for pre-deploy DOM validation
         run: |
-          python -m http.server 8765 --bind 127.0.0.1 > /tmp/market-report-portal-http.log 2>&1 &
+          python -m http.server 8765 --bind 127.0.0.1 --directory "$RUNNER_TEMP/market-report-pages-site" > /tmp/market-report-portal-http.log 2>&1 &
           echo $! > /tmp/market-report-portal-http.pid
           for attempt in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:8765/reports.json -o /dev/null; then
@@ -158,10 +168,16 @@ jobs:
           NODE_PATH: ${{ runner.temp }}/portal-validation/node_modules
         run: node scripts/validate_market_report_dom.js
 
+      - name: Validate recovered historical report slots in local DOM
+        env:
+          PORTAL_URL: http://127.0.0.1:8765
+          NODE_PATH: ${{ runner.temp }}/portal-validation/node_modules
+        run: node scripts/validate_report_recovery_dom.js
+
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: ${{ runner.temp }}/market-report-pages-site
 
       - name: Deploy to GitHub Pages
         id: deployment
@@ -177,3 +193,9 @@ jobs:
           PORTAL_URL: ${{ steps.deployment.outputs.page_url }}
           NODE_PATH: ${{ runner.temp }}/portal-validation/node_modules
         run: node scripts/validate_market_report_dom.js
+
+      - name: Verify all recovered historical slots on live Pages
+        env:
+          PORTAL_URL: ${{ steps.deployment.outputs.page_url }}
+          NODE_PATH: ${{ runner.temp }}/portal-validation/node_modules
+        run: node scripts/validate_report_recovery_dom.js

@@ -1,0 +1,36 @@
+name: Audit archived 2026-10-14 report sources
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: recover-2026-10-14-real-report-archive
+  cancel-in-progress: false
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify source archives stay outside public projections
+        run: |
+          python scripts/validate_report_index.py
+          python scripts/verify_publication_consistency.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          index = json.loads(Path('reports.json').read_text(encoding='utf-8'))
+          for slot in ('08-00', '12-00', '16-00', '21-00'):
+              path = Path(f'reports/2026-10-14_{slot}.json')
+              report = json.loads(path.read_text(encoding='utf-8'))
+              assert report.get('report_status') == 'SOURCE_ARCHIVED', f'{path}: expected source-only archive'
+              assert not any((item.get('date'), item.get('time')) == (report['date'], report['time']) for item in index), f'{path}: leaked into public index'
+          print('2026-10-14 source originals are retained and excluded from public report index.')
+          PY

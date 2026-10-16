@@ -1,4 +1,4 @@
-const REPORT_TIMES = ["07:00", "12:00", "16:00", "21:00"];
+const REPORT_TIMES = ["08:00", "12:00", "16:00", "21:00"];
 
 const MARKET_DEFINITIONS = [
   {
@@ -138,7 +138,7 @@ function marketDataFor(report, definition) {
   const latestData = dashboardMeta?.marketData;
   const generatedDate = String(latestData?.generatedAt || "").slice(0, 10);
   const latestMatchesReport = Boolean(
-    latestData
+    !isDashboardHistoricalArchive(report) && latestData
     && REPORT_TIMES.includes(latestData.reportSlot)
     && latestData.reportSlot === report?.time
     && generatedDate === report?.date
@@ -1134,12 +1134,292 @@ function renderList(id, values, fallback) {
   $(id).innerHTML = rows.map((item) => `<li>${esc(item)}</li>`).join("");
 }
 
+
+/* Historical archive is display-only and never passes formal publication gates. */
+function isDashboardHistoricalArchive(r) {
+  if (!r || r.archiveStatus !== "HISTORICAL_ARCHIVE" || r.verifiedAtSlot !== false) return false;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(r.date || "")) || !REPORT_TIMES.includes(r.time)) return false;
+  if (typeof r.fullText !== "string" || r.fullText.length < 250) return false;
+  if (!String(r.title || "").startsWith("マーケットレポート｜") || !r.fullText.startsWith(r.title)) return false;
+  if (!r.title.includes(r.date.replace(/-/g, "/")) || !r.title.endsWith(r.time)) return false;
+  if (typeof r.archiveNotice !== "string" || r.archiveNotice.length < 15) return false;
+  if (r.originalReportStatus === "PUBLISHED" || r.report_status === "PUBLISHED") return false;
+  const legacyOriginal = /^[a-f0-9]{64}$/.test(String(r.originalBodyHash || "")) && !!r.sourceDocument?.id;
+  const sourceDocReadback = ["DRIVE_SAVED_DOCUMENT", "DRIVE_RECOVERY_DOCUMENT"].includes(r.archiveType)
+    && r.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED"
+    && !!r.sourceDocument?.id && !!r.driveRevisionId && r.driveTextLength === r.fullText.length
+    && Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length > 0;
+  const reconstructed = ["ORIGINAL_NOT_FOUND", "RECONSTRUCTED_UNVERIFIED"].includes(r.originalReportStatus)
+    && ["PARTIAL_ORIGINAL_WITH_RETROSPECTIVE_ADDENDUM", "RECONSTRUCTED_SOURCE", "RETROSPECTIVE_REPORT"].includes(r.archiveType)
+    && !r.sourceDocument?.id && typeof r.archiveSource === "string" && r.archiveSource.length > 10
+    && r.missingAtSlotEvidence === true;
+  return legacyOriginal || sourceDocReadback || reconstructed;
+}
+function isDashboardReconstructedArchive(r) {
+  return ["ORIGINAL_NOT_FOUND", "RECONSTRUCTED_UNVERIFIED"].includes(r?.originalReportStatus);
+}
+
+function archiveSectionBody(report, pattern) {
+  const lines = String(report.fullText || "").replace(/\r/g, "").split("\n");
+  const header = line => {
+    const m=String(line||"").trim().match(/^(?:\d{1,2}(?:補)?[．.]\s*|#{1,4}\s*|【)(.+?)(?:】)?$/);
+    if (m) {
+      const title=m[1].replace(/】$/, "").trim();
+      // Bracketed column headers inside a numbered market-data section are data,
+      // not new sections. Do not truncate the 08:00 previous-close table.
+      if (/^【/.test(String(line||"").trim())
+          && !/^(?:総合判断|今日の相場テーマ|前回からの変化|主要市場データ|主要市場の現状|材料と値動きの整合性|今日の主導市場|重要ニュース|重要ニュース・材料|クロスアセット資金フロー|需給・ポジション|今後のイベント|主要6市場の短期見通し|6市場の短期見通し|メインシナリオ|代替シナリオ|シナリオが崩れる条件|次の時間帯への引き継ぎ|08:00からの変化|16:00からの変化)$/.test(title)) return "";
+      return title;
+    }
+    const bare=String(line||"").trim();
+    if (/^(?:総合判断|主要市場データ|今日の相場テーマ|前回からの変化|市場別価格・見通し.*|クロスアセット資金フロー|需給・ポジション|重要ニュース|材料と値動きの整合性|今日の主導市場|メインシナリオ|代替シナリオ|崩れる条件|次の時間帯への引き継ぎ|NY市場の流れ)$/.test(bare)) return bare;
+    return "";
+  };
+  const at = lines.findIndex(line => {
+    const title=header(line);
+    return title && pattern.test(title);
+  });
+  if (at < 0) return "";
+  let end = lines.findIndex((line,i) => i>at && header(line));
+  if (end < 0) end = lines.length;
+  // A '【総合判断】...' paragraph may include its explanation on the heading line.
+  const line=lines[at].trim(),inline=line.match(/^【[^】]+】\s*(.+)$/)?.[1]||"";
+  return [inline,...lines.slice(at+1,end)].filter(Boolean).join("\n").trim();
+}
+
+
+/*
+ * Strict per-asset extraction from a late-saved, read-back morning report.
+ * Not a publication gate: values remain historical references, NEVER live
+ * snapshots. Scope to the exact supplemental document to avoid changing
+ * the existing archives' different (often incomplete) source formats.
+ */
+function verifiedSupplementalArchiveQuotes(record) {
+  if (record?.date !== "2026-10-16" || record?.time !== "08:00"
+      || record?.archiveType !== "DRIVE_SAVED_DOCUMENT"
+      || record?.originalReportStatus !== "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED"
+      || record?.verifiedAtSlot !== false
+      || record?.sourceDocument?.id !== "1JBfE0AsvW5Ob_nA2lKDTLFAlYMhc8XbhasqwQ4oixdw") return null;
+  const body = String(record.fullText || "").replace(/\r/g, "");
+  const priceSection = body.match(/【2[.．]\s*前営業日終値・市場データ】([\s\S]*?)(?=\n【3[.．]|$)/)?.[1] || "";
+  const outlookSection = body.match(/【6[.．]\s*主要6市場の短期見通し[^】]*】([\s\S]*?)(?=\n【7[.．]|$)/)?.[1] || "";
+  if (!priceSection || !outlookSection) return null;
+  const config = {
+    gold: {
+      line: /^商品（10\/15NY終値）：COMEX金12月限([\d,]+(?:\.\d+)?)ドル（([+-][\d,]+(?:\.\d+)?)ドル）[^\n]*$/m,
+      marketName: "金先物（COMEX 12月限）", sourceLabel: "10/15 NY終値・COMEX金12月限",
+      outlook: /^金：[^\n]+$/m, low: 2500, high: 10000
+    },
+    oil: {
+      line: /^商品（10\/15NY終値）：[^\n]*WTI11月限([\d,]+(?:\.\d+)?)ドル（([+-][\d,]+(?:\.\d+)?)ドル）[^\n]*$/m,
+      marketName: "WTI原油先物（11月限）", sourceLabel: "10/15 NY終値・WTI11月限",
+      outlook: /^WTI：[^\n]+$/m, low: 30, high: 300
+    },
+    nikkei: {
+      line: /^大阪日経225先物（2026年12月限）：[^\n]*10\/16 06:00夜間終値([\d,]+)円（前日清算値比([+-][\d,]+)円、([+-][\d.]+)%）[^\n]*$/m,
+      marketName: "日経225先物（大阪・夜間）", sourceLabel: "10/16 06:00夜間終値・OSE12月限",
+      outlook: /^大阪日経225先物：[^\n]+$/m, low: 30000, high: 120000
+    },
+    usdjpy: {
+      line: /^為替（10\/15NY終値）：USD\/JPY\s*([\d,]+(?:\.\d+)?)円（([+-][\d,]+(?:\.\d+)?)円）[^\n]*$/m,
+      marketName: "USD/JPY", sourceLabel: "10/15 NY終値・USD/JPY",
+      outlook: /^USD\/JPY：[^\n]+$/m, low: 90, high: 220
+    },
+    eurusd: {
+      line: /^為替（10\/15NY終値）：[^\n]*EUR\/USD\s*([\d,]+(?:\.\d+)?)ドル（([+-][\d,]+(?:\.\d+)?)）[^\n]*$/m,
+      marketName: "EUR/USD", sourceLabel: "10/15 NY終値・EUR/USD",
+      outlook: /^EUR\/USD：[^\n]+$/m, low: 0.7, high: 1.8
+    },
+    btc: {
+      line: /^BTC\/USD：10\/16 07:33頃の参考値([\d,]+(?:\.\d+)?)ドル[^\n]*$/m,
+      marketName: "BTC/USD（07:33参考）", sourceLabel: "10/16 07:33頃の参考値・BTC/USD（終値ではない）",
+      outlook: /^BTC\/USD：[^\n]+$/m, low: 15000, high: 300000
+    }
+  };
+  const quotes = {};
+  for (const [key, spec] of Object.entries(config)) {
+    const line = priceSection.match(spec.line);
+    const outlook = outlookSection.match(spec.outlook)?.[0] || "";
+    if (!line || !outlook) continue;
+    const price = Number(line[1].replace(/,/g, ""));
+    const change = line[2] === undefined ? null : Number(line[2].replace(/,/g, ""));
+    if (!Number.isFinite(price) || price < spec.low || price > spec.high
+        || (change !== null && (!Number.isFinite(change) || Math.abs(change) > price * 0.5))) continue;
+    // Direction is driven exclusively by measured change, not a forecast.
+    const changePct = key === "nikkei" ? Number(line[3]) : null;
+    const clauses = outlook.replace(/^[^：:]+[：:]/, "").split("。").map(s=>s.trim()).filter(Boolean);
+    const reason = clauses.find(s=>/短期は|上昇警戒|自律反発|金利|ドル安|買い材料|反発は確認/.test(s) && !/強気条件|弱気条件/.test(s)) || "";
+    // A saved sentence may contain both "強気条件＝..." and "弱気条件＝..."
+    // separated only by a Japanese comma (BTC has this format).
+    const conditions = outlook
+      .replace(/、(?=(?:強気条件|弱気条件|ドル高条件|ドル安条件)＝)/g, "。")
+      .split("。").map(s=>s.trim()).filter(Boolean);
+    const strong = conditions.find(s=>/^(?:強気条件|ドル高条件)＝/.test(s)) || "";
+    const weak = conditions.find(s=>/^(?:弱気条件|ドル安条件)＝/.test(s)) || "";
+    quotes[key] = {
+      value: line[1],
+      change, changePct: Number.isFinite(changePct) ? changePct : null,
+      originalLine: line[0], sourceLabel: spec.sourceLabel,
+      marketName: spec.marketName, sourceKind: "SUPPLEMENTAL_DOC_LINE",
+      observedAt: spec.sourceLabel, reason, keyPoint: strong,
+      risk: weak, outlook,
+      direction: change === null ? "比較基準未確認" : change > 0 ? "前日比上昇" : change < 0 ? "前日比下落" : "前日比横ばい"
+    };
+  }
+  return quotes;
+}
+
+function archiveDashboardSummary(record) {
+  const section = pattern => archiveSectionBody(record, pattern);
+  const split = text => String(text || "").split("\n").map(s => s.trim()).filter(Boolean);
+  const summary = section(/総合判断|今日の相場テーマ/);
+  const timeline = section(/時系列/);
+  const mainPrices = section(/前営業日終値・主要市場データ|主要市場データ/);
+  const outlook = section(/主要6市場の短期見通し|6市場の個別見通し|主要6市場の|主要6市場の短期|個別6市場の/);
+  const wholeText=String(record.fullText||"").replace(/\r/g,"");
+  const blockByAsset = label => {
+    const lines=wholeText.split("\n");
+    const i=lines.findIndex(v=>v.trim()==="【"+label+"】");
+    if(i<0)return "";
+    let end=lines.findIndex((v,j)=>j>i && (/^【[^】]+】/.test(v.trim())||v.trim()==="主要市場データ"));
+    return lines.slice(i+1,end<0?lines.length:end).join("\n");
+  };
+  const specificBlockLabels={gold:"金",oil:"原油",nikkei:"日経225先物",usdjpy:"USD/JPY",eurusd:"EUR/USD",btc:"BTCUSD"};
+  const extractBlockPrice = (block,label) => {
+    const p=block.match(/^価格[：:]\s*(.+)$/m)?.[1]||"";
+    const m=p.match(/([\d,]+(?:\.\d+)?)(?=\s*(?:USD|円|ドル|（|\())/);
+    if(!m)return null;
+    const prev=block.match(/^前日比[：:]\s*(.+)$/m)?.[1]||"";
+    return {value:m[1],line:label+"： "+p,previous:prev,outlook:block.match(/^メインシナリオ[：:]\s*(.+)$/m)?.[1]||block.match(/^材料[：:]\s*(.+)$/m)?.[1]||""};
+  };
+  const fallbackQuote = (key) => {
+    const patterns={
+      gold:/^(?:金(?:スポット|現物|先物)?|COMEX金先物|ゴールド)[：:]\s*(?:現物金\s*)?(?:約\s*)?([\d,]+(?:\.\d+)?)/m,
+      oil:/^(?:WTI原油(?:先物)?|WTI|原油)[：:]\s*(?:約\s*)?([\d,]+(?:\.\d+)?)/m,
+      nikkei:/^(?:日経225先物(?:（[^）]+）)?|大阪日経225先物(?:12月限)?|日経先物)[：:]\s*(?:約\s*)?([\d,]+(?:\.\d+)?)/m,
+      usdjpy:/^USD\/JPY[：:]\s*(?:約\s*)?([\d,]+(?:\.\d+)?)/m,
+      eurusd:/^EUR\/USD[：:]\s*(?:約\s*)?([\d,]+(?:\.\d+)?)/m,
+      btc:/^BTCUSD[：:]\s*(?:約\s*)?([\d,]+(?:\.\d+)?)/m
+    };
+    const found=patterns[key]?.exec(wholeText);
+    if(found)return {value:found[1],line:wholeText.slice(found.index,found.index+230).split("\n")[0].slice(0,210)};
+    // Numbered five-column morning closes: label on one line, value on next.
+    const re={
+      gold:/^\d{1,2}[.．]\s*(?:COMEX金先物|金現物|金スポット)\s*$/m,
+      oil:/^\d{1,2}[.．]\s*(?:WTI原油|WTI)\s*$/m,
+      nikkei:/^\d{1,2}[.．]\s*日経225先物(?:（[^）]+）)?\s*$/m,
+      usdjpy:/^\d{1,2}[.．]\s*USD\/JPY\s*$/m,
+      eurusd:/^\d{1,2}[.．]\s*EUR\/USD\s*$/m,
+      btc:/^\d{1,2}[.．]\s*BTCUSD\s*$/m
+    };
+    const five=re[key]?.exec(wholeText);
+    if(five){
+      const next=wholeText.slice(five.index+five[0].length).split("\n").map(v=>v.trim()).filter(Boolean)[0]||"";
+      const val=next.match(/^(?:約\s*)?([\d,]+(?:\.\d+)?)/)?.[1];
+      if(val && !/取得不能/.test(next))return {value:val,line:five[0]+"｜"+next};
+    }
+    return null;
+  };
+  const marketSpecs = [
+    { key: "gold", name: "金", quote: /(?:金スポット|金先物GC=F)\s*[：:]?\s*(?:約\s*)?([\d,]+(?:\.\d+)?)/, outlook: /^(?:金(?:（XAU\/USD）)?)[：:]\s*(.+)$/m },
+    { key: "oil", name: "原油", quote: /(?:WTI原油先物CL=F|WTI原油|WTI)\s*[：:]?\s*([\d,]+(?:\.\d+)?)/, outlook: /^WTI(?:原油)?[：:]\s*(.+)$/m },
+    { key: "nikkei", name: "日経225先物", quote: /(?:大阪日経225先物12月限(?:・夜間終値)?|日経225先物（大阪取引所(?:・12月限)?）)\s*[：:]?\s*([\d,]+(?:\.\d+)?)/, outlook: /^日経225先物（大阪(?:取引所)?）[：:]\s*(.+)$/m },
+    { key: "usdjpy", name: "USD/JPY", quote: /USD\/JPY\s*[：:]?\s*([\d,]+(?:\.\d+)?)/, outlook: /^USD\/JPY[：:]\s*(.+)$/m },
+    { key: "eurusd", name: "EUR/USD", quote: /EUR\/USD\s*[：:]?\s*([\d,]+(?:\.\d+)?)/, outlook: /^EUR\/USD[：:]\s*(.+)$/m },
+    { key: "btc", name: "BTCUSD", quote: /BTCUSD\s*[：:]?\s*(?:約\s*)?([\d,]+(?:\.\d+)?)/, outlook: /^BTCUSD[：:]\s*(.+)$/m }
+  ];
+  const archiveQuotes = {};
+  const markets = [];
+  for (const spec of marketSpecs) {
+    const blocked=isDashboardReconstructedArchive(record);
+    const m=blocked ? null : spec.quote.exec(mainPrices);
+    const block=blocked ? "" : blockByAsset(specificBlockLabels[spec.key]||"");
+    const fromBlock=blocked ? null : extractBlockPrice(block,spec.name);
+    const direct=blocked ? null : fallbackQuote(spec.key);
+    const raw = blocked ? "原本欠損（事後再分析版：定時の確定価格なし）"
+      : m ? mainPrices.slice(m.index, m.index + 260).split(/[。\n]/)[0].trim()
+      : fromBlock?.line || direct?.line || "";
+    const outlookLine = outlook.match(spec.outlook)?.[1] || fromBlock?.outlook || "";
+    const changePair = raw.match(/([+-]\d[\d,.]*)\s*(?:円|ドル|USD)?\s*[,、/]\s*([+-]\d[\d,.]*)\s*%/);
+    const pct = changePair ? Number(changePair[2].replace(/,/g, "")) : null;
+    const pctOnly = !changePair && raw.match(/([+-]\d+(?:\.\d+)?)\s*%/) || (!changePair && fromBlock?.previous.match(/([+-]\d+(?:\.\d+)?)\s*%/));
+    // Missing current-session quotes remain labeled as historical references.
+    const atSource = raw.match(/(?:10\/\d{1,2}[^）]{0,55}|\b\d{1,2}:\d{2}[^）]{0,35})/);
+    const observedAt = atSource ? atSource[0].slice(0, 56) : "原本の基準時刻を確認";
+    const candidate = blocked ? null : m?.[1] || fromBlock?.value || direct?.value || null;
+    const numeric = candidate === null ? null : Number(String(candidate).replace(/,/g, ""));
+    const allowed = {
+      gold: [2500, 10000], oil: [30, 300], nikkei: [30000, 120000],
+      usdjpy: [90, 220], eurusd: [0.7, 1.8], btc: [15000, 300000]
+    }[spec.key];
+    // Reject numbers from clock times, dates, ordinal headings, or a different asset.
+    const value = Number.isFinite(numeric) && allowed && numeric >= allowed[0] && numeric <= allowed[1]
+      ? candidate : null;
+    const outlookDesc = String(outlookLine).trim();
+    archiveQuotes[spec.key] = {
+      value, observedAt,
+      originalLine: value ? raw : "取得不能（原本に対応する市場の価格がないか、数値形式を安全に解釈できないため）",
+      change: value && changePair ? Number(changePair[1].replace(/,/g, "")) : null,
+      changePct: !value ? null : pct !== null ? pct : pctOnly ? Number(pctOnly[1]) : null,
+      outlook: outlookDesc
+    };
+    markets.push({
+      name: spec.name,
+      price: raw || "取得不能（当該資料に価格欄なし）",
+      direction: outlookDesc.split("。")[0] || "方向判断は保存原本参照",
+      outlook: outlookDesc,
+      material: outlookDesc,
+      risk: outlookDesc
+    });
+  }
+  const confirmedSupplementalQuotes = verifiedSupplementalArchiveQuotes(record);
+  if (confirmedSupplementalQuotes) Object.assign(archiveQuotes, confirmedSupplementalQuotes);
+  const timelineRows = split(timeline)
+    .filter(s => s.includes("｜出来事：") && /株|市場|金利|発表|決算|取引|先物|ニュース/.test(s))
+    .slice(0, 12)
+    .map(s => ({ time: s.match(/\b[0-2]?\d:[0-5]\d\b/)?.[0] || "時間帯", text: s }));
+  const originalNews = split(section(/重要ニュース|ニュースと影響市場|ニュースと波及/));
+  const news = originalNews.length ? originalNews : timelineRows.slice(0, 4).map(r => r.text);
+  const main = section(/メインシナリオ/);
+  const scenarios = section(/メイン・代替シナリオ/);
+  return {
+    ...record,
+    // A record in this state is NEVER treated as officially published.
+    report_status: "HISTORICAL_ARCHIVE_DISPLAY_ONLY",
+    historicalArchiveDisplayOnly: true,
+    archiveQuotes,
+    archiveTimelineRows: timelineRows,
+    markets,
+    theme: (split(summary).slice(0, 3).join(" ") || split(section(/今日の相場テーマ/)).slice(0, 3).join(" ") || split(wholeText).slice(1, 4).filter(v=>!/^(?:作成|復旧作成|対象時点|情報基準|保存復旧|復旧版)/.test(v)).join(" ")).slice(0, 560),
+    changes: record.time === "12:00"
+      ? split(summary).slice(0, 2)
+      : split(section(/版からの変化|からの変化/)).slice(0, 5),
+    consistency: split(section(/材料と値動きの整合性/)).slice(0, 5),
+    leadingMarket: split(section(/主導市場・クロスアセット|材料と値動きの整合性・主導市場|今日の主導市場/)).slice(0, 3).join(" ") || split(summary)[0] || "",
+    crossAssetFlow: split(section(/クロスアセット資金フロー|主導市場・クロスアセット/)).slice(0, 6),
+    news,
+    positioning: split(section(/需給・ポジション/)).slice(0, 6),
+    mainScenario: split(main || scenarios).slice(0, 5).join(" "),
+    alternativeScenario: split(section(/代替シナリオ/) || scenarios).slice(0, 5).join(" "),
+    breakConditions: split(section(/崩れる条件/)).slice(0, 5).join(" "),
+    riskManagement: split(section(/リスク管理|崩れる条件/)).slice(0, 5),
+    handover: split(section(/引き継ぎ/)).slice(0, 5)
+  };
+}
+function renderDashboardArchive(report) {
+  // No extra box: historical report contents are presented in the normal
+  // dashboard cards, news/event table, flows, positioning and scenarios.
+  document.getElementById("historicalArchiveDetails")?.remove();
+}
+
 function renderHeader(report) {
   const created = `${dateToJp(report.date)} ${report.time || ""}`.trim();
   const generated = dashboardMeta && dashboardMeta.generatedAt
     ? dashboardMeta.generatedAt.replace("T", " ").replace("+09:00", "")
     : report.time || "取得不能";
-  $("reportStatus").textContent = `作成日時：${created}　更新：${generated}`;
+  $("reportStatus").textContent = isDashboardHistoricalArchive(report)
+    ? `保存済み本文（正式発行と区別）：${created}　｜　事後改訂あり`
+    : `作成日時：${created}　更新：${generated}`;
   document.title = `WEBマーケットレポート｜${created}`;
 }
 
@@ -1896,6 +2176,16 @@ function reportEventNextText(row, report) {
 }
 
 function renderEvents(report) {
+  const eventPanelHeading = document.querySelector(".event-panel .section-title-row h2");
+  if (eventPanelHeading) eventPanelHeading.textContent = report?.historicalArchiveDisplayOnly
+    ? "当日の市場時系列（実際に起きた出来事と市場反応）"
+    : "今後の重要イベント（簡易）";
+  if (report?.historicalArchiveDisplayOnly) {
+    const rows = Array.isArray(report.archiveTimelineRows) ? report.archiveTimelineRows : [];
+    $("eventRows").innerHTML = rows.length ? rows.map(row => `<tr><td>${esc(row.time)}</td><td><span class="event-title">${esc(row.text)}</span></td><td>当時の市場</td><td>出来事</td><td>保存本文の時系列</td></tr>`).join("")
+      : '<tr><td>取得不能</td><td>保存本文に時系列情報なし</td><td>—</td><td>—</td><td>—</td></tr>';
+    return;
+  }
   const calendarRows = calendarRowsForReport(report);
   if (calendarRows.length) {
     $("eventRows").innerHTML = calendarRows.map((row) => `<tr>
@@ -1937,6 +2227,18 @@ function renderEvents(report) {
 }
 
 function lensItems(report) {
+  if (report?.historicalArchiveDisplayOnly) {
+    const li = (pattern, fallback) => String(archiveSectionBody(report, pattern) || fallback).split("。").slice(0, 3);
+    const quote = key => report.archiveQuotes?.[key]?.originalLine || "保存原本の記載なし";
+    return [
+      ["金利・債券市場", "%", li(/金利・為替・債券|金利・為替・株式/, "同時刻の金利観測値なし")],
+      ["株式市場", "株", li(/市場内部|市場の広がり|材料と値動きの整合性/, "株式の値動きは原本参照")],
+      ["商品市場（原油・金）", "CL", [quote("gold"), quote("oil")]],
+      ["為替市場", "FX", [quote("usdjpy"), quote("eurusd")]],
+      ["暗号資産市場", "BTC", [quote("btc")]],
+      ["今日の注目ポイント", "P", report.handover?.slice(0, 3).length ? report.handover.slice(0, 3) : ["次時間帯への引き継ぎは保存本文参照"]]
+    ];
+  }
   const text = allText(report);
   const metricLine = (pattern) => sourceLines(report).find((line) => pattern.test(line));
   const usRate = metricLine(/米10年債利回り/);
@@ -1990,6 +2292,13 @@ function renderScenarios(report) {
 }
 
 function renderFootnote(report) {
+  if (report?.historicalArchiveDisplayOnly) {
+    const foot = $("dataFootnote");
+    foot.textContent = isDashboardReconstructedArchive(report)
+      ? "原本欠損・事後再分析版：当時の定時本文・価格・方向を復元したものではありません。参考情報としてのみ閲覧してください。"
+      : "Google Drive保存本文の閲覧用記録。元の発行時点のsnapshot・receiptとの照合は未完了です。価格は本文の各観測時刻の参考値です。";
+    return;
+  }
   const missing = MARKET_DEFINITIONS
     .map((definition) => [definition.display, parseMetric(report, definition)])
     .filter(([, metric]) => metric.value === "取得不能")
@@ -2004,6 +2313,7 @@ function render() {
   if (!report) return;
   renderHeader(report);
   renderControls(report);
+  renderDashboardArchive(report);
   renderMarketCards(report);
   renderTemperatureMini(report);
   renderProseList("themeList", proseItems([report.theme], 5, 180), "理由：相場テーマがJSONにありません");
@@ -2022,6 +2332,7 @@ async function init() {
   try {
     const data = await loadDashboardReports();
     reports = asArray(data.reports)
+      .filter((report) => window.MarketReportPublicationPolicy.isEligible(report) || isDashboardHistoricalArchive(report))
       .filter((report) => /^\d{4}-\d{2}-\d{2}$/.test(report.date || ""))
       .sort((a, b) => reportKey(b).localeCompare(reportKey(a)));
     dashboardMeta = data.meta || null;
@@ -2035,7 +2346,14 @@ async function init() {
     const params = new URLSearchParams(window.location.search);
     const date = params.get("date");
     const time = params.get("time");
-    selectedReport = reports.find((report) => report.date === date && report.time === time) || reports[0];
+    const exactRequestedReport = reports.find((report) => report.date === date && report.time === time);
+    selectedReport = exactRequestedReport || reports[0];
+    if (!exactRequestedReport && date && time && selectedReport) {
+      const canonicalUrl = new URL(window.location.href);
+      canonicalUrl.searchParams.set("date", selectedReport.date);
+      canonicalUrl.searchParams.set("time", selectedReport.time);
+      window.history.replaceState({}, "", canonicalUrl);
+    }
     render();
   } catch (error) {
     $("reportStatus").textContent = "データ取得エラー";
@@ -2084,23 +2402,59 @@ async function loadDashboardReports() {
     errors.push(error.message);
   }
 
-  const mergedByKey = new Map();
-  historyReports.forEach((report) => {
-    mergedByKey.set(reportKey(report), report);
-  });
-  dashboardReports.forEach((report) => {
-    const key = reportKey(report);
-    const history = mergedByKey.get(key) || {};
-    mergedByKey.set(key, {
-      ...history,
-      ...report,
-      fullText: report.fullText || history.fullText || ""
-    });
-  });
-
-  const reportList = [...mergedByKey.values()]
-    .filter((report) => /^\d{4}-\d{2}-\d{2}$/.test(report?.date || ""))
-    .sort((a, b) => reportKey(b).localeCompare(reportKey(a)));
+  const publishedList = window.MarketReportPublicationPolicy.merge(historyReports, dashboardReports);
+  let archives = [];
+  try {
+    const response = await fetch("data/report-recovery-2026-10.json?ts=" + Date.now(), { cache: "no-store" });
+    if (!response.ok) throw new Error("archive HTTP " + response.status);
+    const payload = await response.json();
+    if (payload?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION" || !Array.isArray(payload.reports)) throw new Error("archive schema");
+    // Reject incomplete entries individually. A bad unrelated October record must
+    // never hide other fully sourced slots (e.g. the four Oct 15 reports).
+    const eligibleRecords = payload.reports.filter(isDashboardHistoricalArchive);
+    if (eligibleRecords.length < payload.reports.length) {
+      console.warn("[dashboard historical archive] skipped unsupported records:",
+        payload.reports.length - eligibleRecords.length);
+    }
+    archives = eligibleRecords.map(archiveDashboardSummary);
+  } catch (error) {
+    console.warn("[dashboard historical archive] read unavailable", error.message);
+    errors.push("保存記録: " + error.message);
+    archives = [];
+  }
+  const bySlot = new Map(archives.map(r => [r.date + " " + r.time, r]));
+  // Formal verified publication is always authoritative when the same slot exists.
+  publishedList.forEach(r => bySlot.set(r.date + " " + r.time, r));
+  const reportList = [...bySlot.values()];
+  // User-owned Google Docs kept in the canonical monthly folder, read back at
+  // the revision recorded in each archive file. Never grant formal-publication status.
+  const driveArchivePaths = [
+    "data/dashboard-drive-archive-2026-10-01-05.json",
+    "data/dashboard-drive-archive-2026-10-06-07.json",
+    "data/dashboard-drive-archive-2026-10-09-12.json",
+    "data/dashboard-drive-archive-2026-10-external.json"
+  ];
+  const drivePayloads = await Promise.all(driveArchivePaths.map(async path => {
+    try {
+      const response = await fetch(path + "?ts=" + Date.now(), { cache: "no-store" });
+      if (!response.ok) throw new Error(path + " HTTP " + response.status);
+      const payload = await response.json();
+      const expectedFolder = path.includes("-external.json")
+        ? "CROSS_FOLDER_VERIFIED_GOOGLE_DOCS"
+        : "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz";
+      if (payload?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION"
+          || payload?.sourceFolderId !== expectedFolder
+          || !Array.isArray(payload.reports)) throw new Error("source archive schema mismatch");
+      return payload.reports.filter(isDashboardHistoricalArchive).map(archiveDashboardSummary);
+    } catch (error) {
+      console.warn("[dashboard Drive archive] unavailable", path, error.message);
+      return [];
+    }
+  }));
+  const bySlotDrive = new Map(drivePayloads.flat().map(r => [r.date + " " + r.time, r]));
+  // Owner-folder archives may not replace formal, validated publication.
+  reportList.forEach(r => bySlotDrive.set(r.date + " " + r.time, r));
+  const combinedReportList = [...bySlotDrive.values()];
 
   if (!reportList.length) {
     throw new Error(`ダッシュボードJSONを取得できませんでした。理由：${errors.join(" / ")}`);
@@ -2112,9 +2466,9 @@ async function loadDashboardReports() {
   const marketDataReportKey = REPORT_TIMES.includes(marketData?.reportSlot)
     ? `${String(marketData?.generatedAt || "").slice(0, 10)} ${marketData.reportSlot}`
     : "";
-  const enrichedReports = reportList.map((report) => {
+  const enrichedReports = combinedReportList.map((report) => {
     const key = `${report.date || ""} ${report.time || ""}`;
-    if (marketData && key === marketDataReportKey && !report.marketData) {
+    if (marketData && !isDashboardHistoricalArchive(report) && key === marketDataReportKey && !report.marketData) {
       return { ...report, marketData };
     }
     return report;

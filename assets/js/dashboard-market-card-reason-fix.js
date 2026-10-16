@@ -89,6 +89,9 @@
     return null;
   }
   function patchCards(report) {
+    // Historical readback cards already carry scoped reasons and lack the
+    // slot-time snapshot needed to assert numeric causation. No badge promotion.
+    if (report?.historicalArchiveDisplayOnly) return;
     const cards = document.querySelectorAll("#marketCards .market-card");
     if (!cards.length || !report) return;
     cards.forEach((card) => {

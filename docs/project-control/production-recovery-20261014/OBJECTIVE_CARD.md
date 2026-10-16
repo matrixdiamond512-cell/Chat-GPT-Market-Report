@@ -20,3 +20,11 @@ BASELINE: GitHub `main` `3ec46ff65b76af29ebd211239cf155a9a7e05e29` (verified lat
 OPEN OUTCOMES: Apply repairs; preserve/compare all report IDs; run regressions and relevant workflows; prepare PR; independently verify whether the next scheduled production run happens. Apps Script live E2E remains `PENDING_LIVE_RUN` until observed. GitHub Actions OAuth secrets remain a separate configuration item; do not repeat Apps Script approval.
 
 NEXT NECESSARY ACTION: Implement shared report identity and canonical publication rules in the isolated feature branch, then test against the pinned baseline and current history.
+
+## 2026-10-15 source-only public listing leak (ADD)
+
+PRIMARY OBJECTIVE: Prevent Drive-backed source archives that have not passed publication promotion from appearing in public report listings or Pages while preserving canonical source history.
+
+IMPLEMENTED LOCALLY: Shared fail-closed eligibility, source archive separation from latest/dashboard, sanitized Pages staging, public URL 404 verifier, and removal of main-push behavior from the 2026-10-14 archive workflow. Nine ineligible canonical files remain preserved; local `reports.json` now contains 162 eligible slots.
+
+OPEN OUTCOMES: PR #134 is open. The first hosted run found the archive-preservation mismatch in the structured-report workflow and an existing heading test fixture using literal newline escapes; both are corrected locally and await hosted rerun. Merge only after latest-base CI passes. Pages deployment and external readback, ChatGPT scheduled task E2E, and all-slot acceptance remain open.

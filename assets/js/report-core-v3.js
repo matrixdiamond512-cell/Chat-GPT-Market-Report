@@ -17,7 +17,23 @@ function dateToJp(dateText) {
   return `${m[1]}/${m[2]}/${m[3]}（${days[dow]}）`;
 }
 function reportKey(r) { return `${r?.date || ""} ${r?.time || ""}`; }
-function sortReports(list) { return list.filter(r => r && /^\d{4}-\d{2}-\d{2}$/.test(r.date || "")).sort((a,b) => reportKey(b).localeCompare(reportKey(a))); }
+function isPublicReport(r) {
+  return window.MarketReportPublicationPolicy.isEligible(r);
+}
+function isArchivedRecovery(r) {
+  // Historical recovery records are readable, but are never formal publication.
+  return !!r && r.archiveStatus === "HISTORICAL_ARCHIVE"
+    && r.verifiedAtSlot === false
+    && /^\d{4}-\d{2}-\d{2}$/.test(String(r.date || ""))
+    && REPORT_TIMES.includes(r.time)
+    && typeof r.fullText === "string" && r.fullText.startsWith(String(r.title || ""))
+    && String(r.archiveNotice || "").length > 10;
+}
+function sortReports(list) {
+  return list.filter(r => r && (isPublicReport(r) || isArchivedRecovery(r))
+      && /^\d{4}-\d{2}-\d{2}$/.test(r.date || ""))
+    .sort((a,b) => reportKey(b).localeCompare(reportKey(a)));
+}
 function uniqueDates() { return [...new Set(reports.map(r => r.date))].sort().reverse(); }
 function reportsForDate(d) { return reports.filter(r => r.date === d).sort((a,b) => REPORT_TIMES.indexOf(a.time) - REPORT_TIMES.indexOf(b.time)); }
 function resolveAvailableDate(d) {
@@ -70,6 +86,7 @@ function renderMissingReport(date, time) {
   window.MarketReportLastRendered = null;
 }
 function renderInfographic(report) {
+  if (typeof isArchivedRecovery === "function" && isArchivedRecovery(report)) return "";
   const image = report.infographic;
   if (!image || report.infographic_status !== "READY") return "";
   if (image.artifact_type !== "FORMAL_INFOGRAPHIC" || image.debug_preview === true) return "";
@@ -260,10 +277,27 @@ function marketSectionTitle(report, title) {
   const dataDate = previousCloseDataDate(report);
   return dataDate ? `主要市場データ（前営業日終値：${dataDate}）` : "主要市場データ（前営業日終値）";
 }
+function marketRowsFromSectionLines(lines) {
+  const rows = [];
+  for (const raw of lines || []) {
+    const line = clean(raw);
+    if (!line || /^【.*】$/.test(line) || /^(項目|市場・指標)[｜|]/.test(line)) continue;
+    // Morning report prose uses "label value / change / rate", not a Markdown table.
+    const m = line.match(/^(.+?)\s+([+−-]?(?:約\s*)?[\d,]+(?:\.\d+)?\s*(?:円|ドル|%|％|倍|銘柄|ポイント|pt|bp)?)(?:\s*\/\s*([^\/\n（]+))?(?:\s*\/\s*([^\/\n（]+))?(.*)$/);
+    if (!m || m[1].length > 58 || !/[0-9]/.test(m[2])) continue;
+    const label = m[1].trim();
+    if (/^(?:作成基準|注|出典)/.test(label)) continue;
+    const remainder = [m[3], m[4], m[5]].filter(Boolean).join(" ").trim();
+    const percent = remainder.match(/[+−-]?\d+(?:\.\d+)?\s*[%％]/);
+    rows.push({label, value:m[2].trim(), change:(m[3] || "").trim() || "—", rate:percent ? percent[0] : "—", direction:"—"});
+  }
+  return rows;
+}
 function renderMarketTable(report, lines, sectionTitle = "") {
   const previousClose = isPreviousCloseTable(report, sectionTitle);
   const hasStructuredRows = Array.isArray(report?.marketDataTable?.rows) && report.marketDataTable.rows.length > 0;
   let rows = marketRows(report);
+  if (!rows.length) rows = marketRowsFromSectionLines(lines || []);
   if (!rows.length) rows = legacyMarketRowsFromFullText(report);
   // A structured 08:00 table is the canonical 28-row contract. Do not append
   // guesses extracted from prose, which can reintroduce current-value rows.
@@ -317,6 +351,29 @@ function renderDocument(report) {
   $("app").className = "report sop-report-applied";
   const app = $("app");
   app.innerHTML = `<header class="report-head"><h1 class="report-title">${esc(parsed.title || fallback)}</h1><div class="source-badge">reports.json正本</div></header>${renderInfographic(report)}<article class="report-body">${renderPreface(parsed.preface)}${sections.map(s => { const market = isMarketSection(s.title); const title = market ? marketSectionTitle(report, s.title) : s.title; return `<section class="section sop-section" data-sop-title="${esc(title)}"><h2>${s.number ? `${esc(s.number)}．` : ""}${esc(title)}</h2>${market ? renderMarketTable(report, s.lines, s.title) : renderRichText(s.lines)}</section>`; }).join("")}</article>`;
+  if (isArchivedRecovery(report)) {
+    $("reportStatus").textContent = "過去の記録を表示中｜保存本文・事後修復版（正式発行とは区別）";
+    app.classList.add("report-archive-recovery");
+    const sourceBadge = app.querySelector(".source-badge");
+    if (sourceBadge) sourceBadge.textContent = "過去の保存記録・修復版";
+    const notice = document.createElement("div");
+    notice.className = "archive-provenance";
+    notice.setAttribute("role", "note");
+    const strong = document.createElement("strong");
+    strong.textContent = "記録復元版（正式な発行原本とは区別・公開承認とは別）";
+    notice.appendChild(strong);
+    for (const line of [
+      report.archiveNotice,
+      "原本状態：" + report.originalReportStatus + "／復元区分：" + report.archiveType,
+      "修復記録：" + report.recoveryRecordedAt + "。後日確認したデータは発行時点の情報として扱いません。"
+    ]) {
+      const p = document.createElement("p");
+      p.textContent = line;
+      notice.appendChild(p);
+    }
+    const head = app.querySelector(".report-head");
+    if (head) head.insertAdjacentElement("afterend", notice);
+  }
   void verifyAndLoadInfographicHash_(app);
 }
 function render() { if (!selectedReport) return; renderControls(selectedReport); renderDocument(selectedReport); window.MarketReportLastRendered = selectedReport; window.dispatchEvent(new CustomEvent("market-report-rendered", { detail: { report: selectedReport } })); }
@@ -326,7 +383,23 @@ async function init() {
     const response = await fetch(`reports.json?ts=${Date.now()}`, {cache:"no-store"});
     if (!response.ok) throw new Error(`reports.json HTTP ${response.status}`);
     const payload = await response.json();
-    reports = sortReports(Array.isArray(payload) ? payload : (Array.isArray(payload?.reports) ? payload.reports : []));
+    const formallyPublished = sortReports(Array.isArray(payload) ? payload : (Array.isArray(payload?.reports) ? payload.reports : [])).filter(isPublicReport);
+    let recovered = [];
+    try {
+      const archiveResponse = await fetch("data/report-recovery-2026-10.json?ts=" + Date.now(), {cache:"no-store"});
+      if (!archiveResponse.ok) throw new Error("archive HTTP " + archiveResponse.status);
+      const archivePayload = await archiveResponse.json();
+      if (archivePayload?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION"
+          || !Array.isArray(archivePayload.reports)) throw new Error("archive schema mismatch");
+      recovered = archivePayload.reports.filter(isArchivedRecovery);
+      if (recovered.length !== archivePayload.reports.length) throw new Error("archive entries invalid");
+    } catch (error) {
+      console.warn("[market report recovery] archive read unavailable", error.message);
+    }
+    const bySlot = new Map(recovered.map(r => [reportKey(r), r]));
+    formallyPublished.forEach(r => bySlot.set(reportKey(r), r)); // formal takes precedence
+    reports = sortReports([...bySlot.values()]);
+    window.MarketReportArchiveInfo = {count: recovered.length, publishedCount: formallyPublished.length};
     if (!reports.length) throw new Error("reports.jsonに表示できる本文データがありません");
     const params = new URLSearchParams(location.search);
     const date = params.get("date"), time = params.get("time");

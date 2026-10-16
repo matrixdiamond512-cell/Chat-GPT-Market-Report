@@ -10,7 +10,7 @@ from scripts.run_market_data_window import completed_times, snapshot_is_current
 class SnapshotCurrentTests(unittest.TestCase):
     def test_accepts_usable_snapshot_for_requested_slot_and_day(self):
         payload = {
-            "generatedAt": "2026-08-10T19:49:30+09:00",
+            "generatedAt": "2026-08-10T15:49:30+09:00",
             "reportSlot": "16:00",
             "overallStatus": "verified",
         }
@@ -29,6 +29,32 @@ class SnapshotCurrentTests(unittest.TestCase):
             "generatedAt": "2026-08-10T19:49:30+09:00",
             "reportSlot": "16:00",
             "overallStatus": "blocked",
+        }
+        self.assertFalse(snapshot_is_current(payload, "16:00", dt.date(2026, 8, 10)))
+
+    def test_rejects_late_snapshot_even_if_wrongly_marked_verified(self):
+        payload = {
+            "generatedAt": "2026-08-10T19:49:30+09:00",
+            "reportSlot": "16:00",
+            "overallStatus": "verified",
+        }
+        self.assertFalse(snapshot_is_current(payload, "16:00", dt.date(2026, 8, 10)))
+
+    def test_rejects_price_observed_after_slot(self):
+        payload = {
+            "generatedAt": "2026-08-10T15:49:30+09:00",
+            "reportSlot": "16:00",
+            "overallStatus": "verified",
+            "markets": {"gold": {"asOf":"2026-08-10T16:03:00+09:00"}},
+        }
+        self.assertFalse(snapshot_is_current(payload, "16:00", dt.date(2026, 8, 10)))
+
+    def test_rejects_unparseable_asof_without_crashing(self):
+        payload = {
+            "generatedAt": "2026-08-10T15:49:30+09:00",
+            "reportSlot": "16:00",
+            "overallStatus": "verified",
+            "markets": {"gold": {"asOf":"N/A"}},
         }
         self.assertFalse(snapshot_is_current(payload, "16:00", dt.date(2026, 8, 10)))
 

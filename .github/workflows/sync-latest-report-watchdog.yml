@@ -87,6 +87,9 @@ jobs:
           import os
           from datetime import datetime, timedelta, timezone
           from pathlib import Path
+          import sys
+          sys.path.insert(0, 'scripts')
+          from report_identity import canonical_path, internal_report_key
 
           schedule = os.environ.get('TRIGGER_SCHEDULE', '')
           slots = {

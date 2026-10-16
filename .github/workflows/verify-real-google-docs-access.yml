@@ -1,0 +1,64 @@
+name: Verify real Google service account Docs access
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/verify-real-google-docs-access.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --disable-pip-version-check -q google-auth requests
+      - name: Check 4 saved market reports and market-data spreadsheet with the real SA
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          python - <<'PY'
+          import json,os,sys
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import AuthorizedSession
+          raw=os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON","")
+          if not raw:
+              sys.exit("FAILED: configured Google service-account secret missing")
+          info=json.loads(raw)
+          creds=service_account.Credentials.from_service_account_info(info,scopes=[
+              "https://www.googleapis.com/auth/drive.readonly",
+              "https://www.googleapis.com/auth/documents.readonly"])
+          sa=AuthorizedSession(creds)
+          sources={
+              "08:00":"1Uay4NSMLVkYjgr-SZUYacUH9yuJ_dFWQ27cvQChhqt0",
+              "12:00":"1o9XpixvwL9ZIyAHD-Jn8tfRf8VsjJMa8Jn13-Y85bzE",
+              "16:00":"1ZVJa8uk0gJP6DM7sQHgc6M5xWcB185lUMx8L6P2-vrU",
+              "21:00":"1lWs4U-tg4T-8ZEN86JU6OxcUqx9uAJkJRZv_b952ojs"
+          }
+          errors=[]
+          for slot,docid in sources.items():
+              u=f"https://docs.googleapis.com/v1/documents/{docid}"
+              r=sa.get(u,params={"fields":"documentId,title,body(content)"},timeout=25)
+              if r.status_code!=200:
+                  e=r.json().get("error",{})
+                  errors.append(f"{slot}: HTTP {r.status_code} {e.get('status','')}; "+",".join(x.get("reason","") for x in e.get("errors",[])))
+                  continue
+              body=r.json().get("body",{}).get("content",[])
+              text="".join(z.get("textRun",{}).get("content","") for p in body for z in p.get("paragraph",{}).get("elements",[]))
+              if len(text)<500 or "マーケットレポート" not in text:
+                  errors.append(f"{slot}: short or irrelevant source");continue
+              print(f"Verified saved Google Doc {slot}, characters={len(text)}")
+          d=sa.get("https://www.googleapis.com/drive/v3/files/1n2ACInX4pmK0TdijC8xaur2RIiNZyVa6GFTZAyofcuE",params={"fields":"id,name,mimeType"},timeout=20)
+          if d.status_code!=200:
+              e=d.json().get("error",{})
+              errors.append(f"market data sheet: HTTP {d.status_code} {e.get('status','')}; "+",".join(x.get("reason","") for x in e.get("errors",[])))
+          else: print("Verified existing market-data spreadsheet access")
+          if errors:
+              print("GOOGLE_AUTH_CHECK_FAILED: "+" | ".join(errors))
+              sys.exit(1)
+          print("GOOGLE_AUTH_CHECK_PASS: four real report bodies and market-data spreadsheet accessible")
+          PY

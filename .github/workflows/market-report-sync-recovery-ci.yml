@@ -18,6 +18,7 @@ on:
       - "tests/test_report_contract.py"
       - "tests/test_dashboard_publication_health.py"
       - "tests/test_scheduled_report_delivery.py"
+      - "tests/test_publication_eligibility.py"
       - "docs/マーケットレポート配信システム_*.md"
       - "docs/project-control/production-recovery-*/**"
       - ".github/workflows/market-report-sync-recovery-ci.yml"
@@ -38,7 +39,8 @@ jobs:
           python -m unittest discover -s tests -p 'test_market_report_sync_contract.py' -v
           python -m unittest discover -s tests -p 'test_dashboard_publication_health.py' -v
           python -m unittest discover -s tests -p 'test_scheduled_report_delivery.py' -v
-          python -m unittest discover -s tests -p 'test_report_contract.py' -k publication_consistency -v
+          python -m unittest discover -s tests -p 'test_publication_eligibility.py' -v
+          python -m unittest discover -s tests -p 'test_report_contract.py' -v
           python scripts/test_reconcile_latest_report_market_data.py
           node scripts/test_dashboard_json_contract.js
       - name: Verify publication and history

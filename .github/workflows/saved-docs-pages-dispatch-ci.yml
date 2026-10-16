@@ -1,0 +1,19 @@
+name: Saved Docs Pages dispatch contract
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/publish-saved-google-docs-reports.yml"
+      - ".github/workflows/saved-docs-pages-dispatch-ci.yml"
+      - "tests/test_saved_docs_pages_dispatch_workflow.py"
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify workflow dispatch and no-op contract
+        run: python -m unittest discover -s tests -p "test_saved_docs_pages_dispatch_workflow.py" -v

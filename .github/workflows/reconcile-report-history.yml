@@ -35,7 +35,11 @@ jobs:
         run: |
           python - <<'PY'
           import json
+          import sys
           from pathlib import Path
+
+          sys.path.insert(0, str(Path.cwd() / 'scripts'))
+          from reporting.publication_eligibility import is_publication_eligible
 
           index_path = Path('reports.json')
           index = json.loads(index_path.read_text(encoding='utf-8'))
@@ -52,10 +56,14 @@ jobs:
                   raise SystemExit(f'invalid index item identity: {item!r}')
               if key in by_key:
                   raise SystemExit(f'duplicate report slot in index: {key}')
+              if not is_publication_eligible(item):
+                  raise SystemExit(f'non-public report in reports.json: {key}')
               index_keys.append(key)
               by_key[key] = item
 
           file_keys = set()
+          public_file_keys = set()
+          archived_file_count = 0
           for path in Path('reports').glob('*.json'):
               if path.name.startswith('_'):
                   continue
@@ -70,19 +78,26 @@ jobs:
               if key in file_keys:
                   raise SystemExit(f'duplicate canonical slot: {key}')
               file_keys.add(key)
+              if not is_publication_eligible(report):
+                  archived_file_count += 1
+                  continue
+              public_file_keys.add(key)
               indexed = by_key.get(key)
               if indexed is None:
-                  raise SystemExit(f'canonical report missing from index: {path}')
+                  raise SystemExit(f'eligible canonical report missing from index: {path}')
               if indexed != report:
                   raise SystemExit(f'index/canonical mismatch: {path}')
 
-          if set(index_keys) != file_keys:
+          if set(index_keys) != public_file_keys:
               raise SystemExit(
-                  f'history mismatch: index_only={sorted(set(index_keys)-file_keys)}, '
-                  f'file_only={sorted(file_keys-set(index_keys))}'
+                  f'public history mismatch: index_only={sorted(set(index_keys)-public_file_keys)}, '
+                  f'canonical_only={sorted(public_file_keys-set(index_keys))}'
               )
 
-          print(f'Read-only history verification PASS: {len(file_keys)} slots')
+          print(
+              f'Read-only history verification PASS: {len(public_file_keys)} public slots, '
+              f'{archived_file_count} retained non-public canonical slots'
+          )
           PY
 
       - name: Confirm workflow produced no report mutations

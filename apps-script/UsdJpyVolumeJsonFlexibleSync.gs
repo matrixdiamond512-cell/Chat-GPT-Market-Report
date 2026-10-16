@@ -25,8 +25,12 @@ function syncUsdJpyVolumeJsonToGitHubFlexible() {
  */
 function syncUsdJpyVolumeJsonToGitHubFlexibleUnlocked_(options) {
   const settings = options || {};
-  const json = buildUsdJpyVolumeJsonFlexible_();
-  const payload = JSON.parse(json);
+  // This publisher is volume-first. Preserve confirmed OHLC already on GitHub
+  // when the USDJPY_Volume sheet has no prices for the same BOJ target date.
+  const current = getGitHubJsonFile_(USDJPY_VOLUME_JSON_CONFIG.targetPath);
+  const payload = buildUsdJpyVolumePayloadFlexible_();
+  const preserved = usdJpyVolumeFlexiblePreservePublishedPrices_(payload, current.data);
+  const json = JSON.stringify(payload) + '\n';
   const latestPublicationDate = payload.components.bojSpotVolume.latestPublicationDate;
 
   if (settings.expectedPublicationDate && latestPublicationDate !== settings.expectedPublicationDate) {
@@ -37,7 +41,6 @@ function syncUsdJpyVolumeJsonToGitHubFlexibleUnlocked_(options) {
     );
   }
 
-  const current = getGitHubJsonFile_(USDJPY_VOLUME_JSON_CONFIG.targetPath);
   const result = putGitHubJsonFile_(
     USDJPY_VOLUME_JSON_CONFIG.targetPath,
     json,
@@ -50,6 +53,7 @@ function syncUsdJpyVolumeJsonToGitHubFlexibleUnlocked_(options) {
     latestTargetDate: payload.components.bojSpotVolume.latestTargetDate,
     latestPublicationDate: latestPublicationDate,
     priceStatus: payload.components.usdjpyOhlc.status,
+    preservedPriceDates: preserved,
     recordCount: payload.data.records.length,
     commitSha: result.commit.sha
   };
@@ -69,6 +73,91 @@ function syncUsdJpyVolumeJsonToGitHubFlexibleUnlocked_(options) {
     );
   }
   return summary;
+}
+
+/**
+ * Treat the sheet as authoritative for spot volume, but not for erasing
+ * independently verified FX prices. GitHub is read immediately before PUT;
+ * GitHub's contents SHA prevents stale concurrent writers from succeeding.
+ */
+function usdJpyVolumeFlexiblePreservePublishedPrices_(next, published) {
+  const previous = published && published.data;
+  if (!previous || !Array.isArray(previous.records)) return 0;
+  const fields = ['open', 'high', 'low', 'close'];
+  const valid = value => typeof value === 'number' && isFinite(value) && value >= 50 && value <= 300;
+  const complete = row => row && fields.every(key => valid(row[key]));
+  const prices = {};
+  // Prefer the published canonical row; priceRecords is a backup when needed.
+  (previous.priceRecords || []).forEach(row => {
+    if (complete(row) && row.date) prices[row.date] = row;
+  });
+  previous.records.forEach(row => {
+    if (complete(row) && row.targetDate) prices[row.targetDate] = row;
+  });
+
+  let preserved = 0;
+  next.data.records.forEach(row => {
+    if (complete(row)) return; // Never overwrite newly acquired complete OHLC.
+    const prior = prices[row.targetDate];
+    if (!prior) return;
+    // Replace the WHOLE OHLC candle; do not combine vendors within one candle.
+    fields.forEach(key => { row[key] = prior[key]; });
+    row.priceChangePct = typeof prior.priceChangePct === 'number' && isFinite(prior.priceChangePct)
+      ? prior.priceChangePct : null;
+    if (prior.priceSourceId) row.priceSourceId = prior.priceSourceId;
+    preserved++;
+  });
+
+  const priceRecords = next.data.records.filter(complete).map(row => ({
+    date: row.targetDate, open: row.open, high: row.high,
+    low: row.low, close: row.close,
+    priceChangePct: row.priceChangePct,
+    ...(row.priceSourceId ? { priceSourceId: row.priceSourceId } : {})
+  }));
+  next.data.priceRecords = priceRecords;
+  next.data.priceRange = {
+    startDate: priceRecords.length ? priceRecords[priceRecords.length - 1].date : null,
+    endDate: priceRecords.length ? priceRecords[0].date : null,
+    count: priceRecords.length
+  };
+  if (preserved && previous.priceSourceName) {
+    next.data.priceSourceName = previous.priceSourceName;
+  }
+  const missing = next.data.records.slice(0, 20).filter(row =>
+    !complete(row) || typeof row.priceChangePct !== 'number' || !isFinite(row.priceChangePct)
+  ).map(row => row.targetDate);
+  const component = next.components.usdjpyOhlc;
+  component.status = missing.length ? 'partial' : 'ok';
+  component.latestDate = next.data.priceRange.endDate || '';
+  component.missingLast20Dates = missing;
+  if (preserved && published.components && published.components.usdjpyOhlc) {
+    component.sourceId = published.components.usdjpyOhlc.sourceId || component.sourceId;
+  }
+  if (preserved && Array.isArray(published.sources)) {
+    const ids = new Set(next.sources.map(source => source.id));
+    published.sources.filter(source => source.id !== 'BOJ_FX_DAILY' && !ids.has(source.id))
+      .forEach(source => { next.sources.push(source); ids.add(source.id); });
+  }
+  const priceSource = next.sources.find(source => source.id === component.sourceId);
+  if (priceSource) {
+    priceSource.asOf = component.latestDate;
+    priceSource.status = component.status;
+  }
+
+  // A previously complete latest-20 candle must NEVER disappear during publish.
+  const nextByDate = {};
+  next.data.records.forEach(row => { nextByDate[row.targetDate] = row; });
+  previous.records.slice(0, 20).forEach(row => {
+    const updated = nextByDate[row.targetDate];
+    if (complete(row) && updated && !complete(updated)) {
+      throw new Error('価格データの消失を検出したためGitHub公開を中止: ' + row.targetDate);
+    }
+  });
+  next.data.priceAcquisition = Object.assign({}, previous.priceAcquisition || {}, {
+    preservedFromPublishedGitHub: preserved,
+    missingLast20Dates: missing
+  });
+  return preserved;
 }
 
 function importUsdJpySpotVolumeFromBojAndSyncJsonFlexible() {

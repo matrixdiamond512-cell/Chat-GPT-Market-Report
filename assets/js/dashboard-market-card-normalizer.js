@@ -556,6 +556,44 @@
     container.innerHTML = definitions.map((definition) => {
       const sources = normalizeSources(definition.key, report?.time, { report, latestReport: report });
       const card = buildMarketCard(definition.key, report?.time, sources);
+      if (report?.historicalArchiveDisplayOnly) {
+        // Historical records never inherit a different slot's price or a current
+        // snapshot, and the source note cannot claim an official quote.
+        const archived = report.archiveQuotes?.[definition.key] || null;
+        const numberText = String(archived?.value || "").replace(/,/g, "");
+        const numeric = archived?.value && Number.isFinite(Number(numberText)) ? Number(numberText) : null;
+        const original = String(archived?.originalLine || "取得不能（保存記録に価格の記載なし）");
+        const outlook = String(archived?.outlook || "");
+        const isReference = /(?:前日|前営業日|10\/14|同時刻値は取得不能|同時刻の|参考|前回|09:00)/.test(original);
+        card.price = numeric;
+        card.priceText = archived?.value || null;
+        card.priceStatus = numeric === null ? "missing" : "fallback";
+        card.change = Number.isFinite(archived?.change) ? archived.change : null;
+        // 24-hour crypto change and daily-close change use different benchmarks.
+        card.changePct = /24時間比/.test(original) ? null : Number.isFinite(archived?.changePct) ? archived.changePct : null;
+        card.changeStatus = card.change === null && card.changePct === null ? "missing" : "fallback";
+        card.priceSourceType = isReference ? "previous_confirmed" : "latest_report";
+        card.changeSourceType = "latest_report";
+        // The source readback distinguishes factual session change, forward
+        // scenario, monitoring levels and downside risks. Never reuse the
+        // same outlook paragraph for every market-card field.
+        const strict = archived?.sourceKind === "SUPPLEMENTAL_DOC_LINE";
+        card.basisLabel = strict
+          ? "補充保存本文の参考値：" + archived.sourceLabel
+          : "事後改訂の保存原本：" + original.slice(0, 150);
+        card.reasoningText = strict ? (archived.reason || "材料は保存本文参照") : outlook || original;
+        card.keyPoint = strict ? (archived.keyPoint || "監視水準は保存本文参照") : outlook || original;
+        card.riskText = strict ? (archived.risk || "具体的なリスク条件は保存本文参照") : outlook || "具体的なリスク条件は保存原本参照";
+        card.directionLabel = strict ? archived.direction : outlook.split("。")[0] || "取得不能（方向感の原本記載なし）";
+        card.directionConfidence = strict && card.change !== null ? "numeric" : strict ? "insufficient" : "textual";
+        card.trend = strict
+          ? card.change === null ? "flat" : card.change > 0 ? "up" : card.change < 0 ? "down" : "flat"
+          : card.changePct > 0 ? "up" : card.changePct < 0 ? "down" : "flat";
+        card.consistencyStatus = "判定保留";
+        card.consistencyReason = strict
+          ? "価格と材料は補充保存本文から抽出。発行当時の事前snapshotは未照合で、因果関係は推定です。"
+          : "発行当時の数値snapshot未照合。参考値と各時間帯の観測時刻を区別してください。";
+      }
       const trend = card.trend;
       const trendClass = trend === "up" ? "up" : trend === "down" ? "down" : trend === "missing" ? "missing" : "flat";
       const reasonLabel = trend === "down" ? "なぜ売られたか" : trend === "up" ? "なぜ買われたか" : "なぜ動いたか";
@@ -569,15 +607,25 @@
       const href = definition.route ? ` href="${definition.route}"` : "";
       const aria = definition.route ? ` aria-label="${esc(definition.display)}の詳細へ"` : "";
       const price = card.priceText || "取得不能";
+      const changeLabel = report?.historicalArchiveDisplayOnly
+        && report.archiveQuotes?.[definition.key]?.sourceKind === "SUPPLEMENTAL_DOC_LINE"
+        && card.change === null && card.changePct === null
+        ? "前日比：比較対象なし（当時の観測参考値）"
+        : changeDisplay(card);
+      const strictArchive = report?.historicalArchiveDisplayOnly && report.archiveQuotes?.[definition.key]?.sourceKind === "SUPPLEMENTAL_DOC_LINE";
+      const name = strictArchive ? report.archiveQuotes[definition.key].marketName
+        : report?.historicalArchiveDisplayOnly && definition.key === "gold"
+        ? (/^金先物/.test(report.archiveQuotes?.gold?.originalLine || "") ? "金先物（GC=F）" : "金スポット（参考値）")
+        : definition.display;
       const consistencyClass = card.consistencyStatus === "整合" ? "match"
         : card.consistencyStatus === "不整合" ? "conflict"
           : card.consistencyStatus === "判定保留" ? "pending" : "partial";
       return `<${tag} class="market-card"${href}${aria}>
         <span class="asset-icon ${esc(definition.iconClass || "")}">${esc(definition.icon || "")}</span>
         <span>
-          <h3>${esc(definition.display)}</h3>
+          <h3>${esc(name)}</h3>
           <p class="market-value">${esc(price)}${definition.unit ? `<small>${esc(definition.unit)}</small>` : ""}</p>
-          <p class="change-line ${trendClass}">${esc(changeDisplay(card))}</p>
+          <p class="change-line ${trendClass}">${esc(changeLabel)}</p>
           <p class="market-direction-line ${trendClass}">方向感：${esc(directionText)}</p>
           <p class="market-basis-line">表示基準：${esc(card.basisLabel)}</p>
           <dl>

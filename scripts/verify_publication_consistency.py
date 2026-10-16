@@ -8,8 +8,13 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 from report_identity import canonical_path as shared_canonical_path, display_report_datetime, internal_report_key, slot_key as shared_slot_key
+from reporting.publication_eligibility import is_publication_eligible
+from reporting.publication_evidence import validate_receipt
 
 JST = ZoneInfo("Asia/Tokyo")
+# Existing published history predates the v2 snapshot/readback receipt contract.
+# From this explicit policy epoch onward, DOC_READBACK_PASS requires a v2 receipt.
+STRICT_RECEIPT_POLICY_FROM = "2026-10-16"
 
 
 def load(path: Path):
@@ -50,6 +55,13 @@ def verify_dashboard_copy(latest: dict, dashboard: dict) -> None:
         raise SystemExit("dashboard.latestReport does not match complete latest report")
 
 
+def requires_strict_receipt(report: dict) -> bool:
+    return (
+        str(report.get("report_status", "")).upper() == "DOC_READBACK_PASS"
+        and str(report.get("date", "")) >= STRICT_RECEIPT_POLICY_FROM
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--latest", default="data/latest-report.json")
@@ -62,6 +74,11 @@ def main() -> int:
 
     latest = unwrap(load(Path(args.latest)), args.latest)
     date_text, time_text = key(latest)
+    if not is_publication_eligible(latest):
+        raise SystemExit(
+            f"latest report is not publication-eligible: {date_text} {time_text} "
+            f"({latest.get('report_status')})"
+        )
     expected_internal_key = internal_report_key(latest)
     if args.expected_key and args.expected_key != expected_internal_key:
         raise SystemExit(
@@ -78,6 +95,15 @@ def main() -> int:
     if canonical != latest:
         raise SystemExit(f"latest/canonical mismatch: {canonical_path}")
 
+    if requires_strict_receipt(latest):
+        receipt_path = Path("publication-receipts") / f"{date_text}_{time_text.replace(':', '-')}.json"
+        if not receipt_path.exists():
+            raise SystemExit(f"published Docs report has no readback receipt: {receipt_path}")
+        try:
+            validate_receipt(load(receipt_path), latest)
+        except (ValueError, KeyError, TypeError) as exc:
+            raise SystemExit(f"publication receipt mismatch: {receipt_path}: {exc}") from exc
+
     index = load(Path(args.index))
     if not isinstance(index, list):
         raise SystemExit(f"{args.index}: expected a JSON array")
@@ -86,6 +112,17 @@ def main() -> int:
         raise SystemExit(
             f"latest/index mismatch for {date_text} {time_text}: matches={len(matches)}"
         )
+    for item in index:
+        if not isinstance(item, dict) or not requires_strict_receipt(item):
+            continue
+        item_date, item_time = key(item)
+        item_receipt_path = Path("publication-receipts") / f"{item_date}_{item_time.replace(':', '-')}.json"
+        if not item_receipt_path.exists():
+            raise SystemExit(f"published Docs report has no readback receipt: {item_receipt_path}")
+        try:
+            validate_receipt(load(item_receipt_path), item)
+        except (ValueError, KeyError, TypeError) as exc:
+            raise SystemExit(f"publication receipt mismatch: {item_receipt_path}: {exc}") from exc
 
     dashboard = load(Path(args.dashboard))
     if not isinstance(dashboard, dict):

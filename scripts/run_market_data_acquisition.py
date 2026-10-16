@@ -279,6 +279,30 @@ def build_staged_payload(slot: str, mode: str = "auto") -> dict[str, Any]:
     }
 
 
+def within_report_cutoff(payload: dict[str, Any]) -> bool:
+    """Refuse saving an observation or generated snapshot after its report slot.
+
+    Late acquisitions belong to an explicitly named live-market channel, not
+    a historical frozen report. In particular, never write 21h observations
+    into a 16h source file or the ChatGPT import data with a false slot.
+    """
+    generated = parse_time(payload.get("generatedAt"))
+    slot = str(payload.get("reportSlot") or "")
+    if generated is None or slot not in {"08:00", "12:00", "16:00", "21:00"}:
+        return False
+    hour, minute = (int(x) for x in slot.split(":"))
+    cutoff = dt.datetime.combine(generated.date(), dt.time(hour, minute), tzinfo=JST)
+    if generated > cutoff:
+        return False
+    for market in (payload.get("markets") or {}).values():
+        if not isinstance(market, dict):
+            return False
+        observed = parse_time(market.get("asOf"))
+        if market.get("verificationStatus") == "verified" and (observed is None or observed > cutoff):
+            return False
+    return True
+
+
 def write_acquisition_status(payload: dict[str, Any]) -> None:
     acquisition = payload.get("acquisition") or {}
     status = {
@@ -305,6 +329,16 @@ def main() -> int:
         raise SystemExit(f"Unsupported report slot: {slot!r}")
 
     payload = build_staged_payload(slot, args.mode)
+    if not within_report_cutoff(payload):
+        print(json.dumps({
+            "status": "BLOCKED_REPORT_CUTOFF",
+            "reportSlot": slot,
+            "generatedAt": payload.get("generatedAt"),
+            "reason": "acquisition or market observation arrived after frozen report time",
+        }, ensure_ascii=False), file=sys.stderr, flush=True)
+        # Never modify latest/history/dashboard/ChatGPT data when the
+        # acquisition time is inconsistent with the requested report slot.
+        return 5
     market_data.write_outputs(payload)
     # Reset the ChatGPT input to the current independent acquisition while the
     # report is still being assembled. Publication of the 08:00 report later

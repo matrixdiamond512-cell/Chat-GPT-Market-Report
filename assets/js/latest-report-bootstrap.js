@@ -42,6 +42,12 @@
   function shouldKeepHistoricalSelection(latest) {
     const params = new URLSearchParams(location.search);
     const requestedDate = params.get("date");
+    const requestedTime = params.get("time");
+    // Respect an explicit archived or published slot, including a time on the latest date.
+    try {
+      if (requestedDate && requestedTime && Array.isArray(reports)
+          && reports.some(item => item?.date === requestedDate && item?.time === requestedTime)) return true;
+    } catch (error) { /* proceed using the date-only guard */ }
     return Boolean(requestedDate && requestedDate < latest.date);
   }
 
@@ -151,6 +157,8 @@
     }
 
     const latest = latestReport(list);
+    // Historical archive view is a user-visible record, not an eligible latest report override.
+    try { if (selectedReport?.archiveStatus === "HISTORICAL_ARCHIVE") return; } catch (error) { /* no selection */ }
     if (!latest || shouldKeepHistoricalSelection(latest)) return;
 
     let current = null;

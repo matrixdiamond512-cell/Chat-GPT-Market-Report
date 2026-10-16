@@ -16,6 +16,13 @@ OPEN OUTCOMES: None within the authorized A/B/D/C foundation task. Deferred: liv
 
 NEXT ACTION: Foundation accepted at 0e14412. Phase E dry-run authorized below; prior deferred production outcomes remain open.
 
+## Live Drive-to-Pages publication recovery — 2026-10-16 (ADD)
+PRIMARY OBJECTIVE: Promote only complete, contemporaneous, source-bound scheduled Google Docs reports into GitHub canonical history and the public Pages portal, with verifiable end-to-end readback.
+ACCEPTANCE: A pre-draft immutable snapshot/context matches the slot; Docs body/revision/hash readback matches; importer issues a v2 receipt; canonical/index/latest/dashboard pass consistency gates; Pages deploy and public full-text readback match; original schedule and report text remain untouched.
+CONSTRAINTS: No gate relaxation, no inferred historical snapshot, no report completion or modification, no trigger/schedule change, preserve historical records and fail-closed archives.
+OPEN OUTCOMES: PR hosted checks/merge; future scheduled report live import and Pages E2E; 08/12/16/21 repeated slot observations; formal Drive docs readback after amendment.
+NEXT NECESSARY ACTION: Complete CI on the publication integration PR, then validate the next actual scheduled report through published-page readback. Until then status is PARTIAL.
+
 ## Phase E — 2026-10-06 (ADD)
 
 PRIMARY OBJECTIVE: In an offline fixture, safely bind Docs, PNG, immutable Manifest, Git registration and post-verification Receipt to one transaction, resume durable checkpoints without duplicate effects, and reject identity drift.
@@ -111,3 +118,72 @@ IMPLEMENTATION STATUS: Implementation and local regressions pass on `codex/porta
 OPEN OUTCOMES: PR #76 remains OPEN/DRAFT at head 652118b6a315ba664caa573105c1553d89b56d58, based on main 3cb6171531ed19a6421a6bced3c3d1a1a20aeeec (ahead 9, behind 0). Rebase had no conflicts, latest main data retained, and production data paths are absent from PR diff. Apps Script Pre-Publish on final code head PASS. Hosted strict report check at 3ef4832 records 08:00 FAIL from MorningReportQA and 12:00 PASS; report/index contents are unchanged through final head. Hosted malformed fixture previously PASS on a70261e. A new final-head hosted renderer job has not appeared; keep its latest-head evidence outcome open. Preserve data and QA, keep Draft, do not merge/deploy.
 
 NEXT NECESSARY ACTION: Finish implementation, run all requested local/hosted checks, verify protected production files unchanged, then stop with a Draft PR. Do not merge or deploy.
+
+## Market acquisition-to-evidence recovery — 2026-10-16 (ADD)
+
+PRIMARY OBJECTIVE: For future 08:00/12:00/16:00/21:00 report slots, bind a verified market acquisition to immutable pre-draft evidence and confirm that evidence is present byte-for-byte on GitHub main before the report pipeline proceeds.
+
+ACTIVE PROFILE: data-tool + generic-app. Base: 4efdc2db068db7cd1e1cc2e5a05ef09414dc2e6b.
+
+ACCEPTANCE: Keep acquisition cutoff and evidence schema/hash guards fail-closed; connect the acquisition window and pre-slot recovery to the existing evidence writer; commit market data and evidence; read back evidence from origin/main; record JST/UTC timing, stage status and Actions URL; add targeted tests and hosted CI; submit Draft PR only.
+
+CONSTRAINTS: Do not create evidence after the slot, rewrite historical evidence, overwrite same-ID evidence, relax publication/timeline gates, merge, or claim live recovery from local/hosted tests. Preserve user's dirty primary checkout.
+
+OUT OF SCOPE: Report generation, Google Docs, receipts, projections, Pages and real scheduled-slot acceptance.
+
+IMPLEMENTATION STATUS: Targeted local regression tests PASS. Branch codex/market-data-evidence-recovery-20261016; hosted checks and Draft PR remain open outcomes. No production Actions run, merge, or deployment has been performed from this branch.
+
+OPEN OUTCOMES: Hosted CI on final PR head; reviewable Draft PR; live future-slot evidence and downstream report/Docs/receipt/Pages acceptance remain NOT_RUN. The scheduler/queue cause behind the observed multi-hour trigger delay is UNKNOWN.
+
+NEXT NECESSARY ACTION: Finish code review and CI, create the Draft PR, then wait for an authorized future pre-slot run to verify production evidence readback. Keep the PR unmerged.
+
+
+## Recovery PR validation — 2026-10-16 (CORRECT)
+
+PR #156 was created OPEN / Draft on base 4efdc2db068db7cd1e1cc2e5a05ef09414dc2e6b, head d3105dd0ff44a86940e02db6fa1d51dd0828abe2. Hosted PR checks both passed on that exact head: Market report frozen-cutoff regression CI run 38885680439, including Python compile and offline cutoff/evidence suites; Delivery health regression CI run 38885680536, including all 16 targeted delivery/evidence tests. PR #156 remains OPEN / Draft and unmerged. Local evidence stays E1/E2; live acquisition, future-slot evidence, and report/Docs/receipt/Pages acceptance remain NOT_RUN.
+
+NEXT NECESSARY ACTION: Keep PR #156 Draft and unmerged pending review. Verify live outcome only on a future scheduled slot after authorized merge.
+
+## Final-head review correction — 2026-10-16 (ADD)
+
+Code review found that the evidence writer reused a caller-supplied pre-write clock for its post-write cutoff guard. Fixed in commit 375c3e71741b5df3fe1e7271e1b6578d845a1e21 by re-reading the live clock after writing and deleting the new file if the slot cutoff has passed. Local targeted suite: 17/17 PASS. Hosted checks on that code head: frozen-cutoff run 38898453782 PASS and delivery health run 38898453962 PASS. PR #156 remains OPEN / Draft and unmerged. E1/E2 only; live scheduled recovery and downstream publication remain NOT_RUN; scheduler/queue cause remains UNKNOWN.
+
+NEXT NECESSARY ACTION: Review PR #156 and, if authorized, merge before observing a future scheduled slot. Do not claim live recovery from these checks.
+
+## PR #156 review follow-up — 2026-10-16 (ADD)
+
+PRIMARY OBJECTIVE: Address every finding in review comment #6215245578 and leave PR #156 updated, validated on its final head, OPEN / Draft, and unmerged.
+
+ACCEPTANCE: (1) freeze/readback failure keeps report readiness blocked while acquisition outcome remains independently auditable; (2) freeze each eligible verified/degraded acquisition before cutoff, reuse same-ID candidate bytes rather than rebuild, and never overwrite; (3) integrate current main and reconcile its workflows/contracts; (4) cover freeze, push, evidence/audit readback, cutoff crossings, audit state transitions, and other-actor cleanup with regression tests. Run targeted tests and both relevant hosted CI workflows on the exact final head.
+
+CONSTRAINTS: Preserve publication gates and cutoff; no historical evidence reconstruction/backfill; no merge, deployment, or production publication. Report all NOT_RUN outcomes accurately.
+
+IMPLEMENTATION STATUS: Latest fetched main `9b400545288f9c199bef86b3b9e33e830b1a9edc` merged locally without conflicts in `9173105d7`; compare was ahead 6 / behind 0 before this follow-up. Code and regression changes are being validated; final hosted CI is still open.
+
+OPEN OUTCOMES: Commit/push the reviewed changes without force, confirm branch remains ahead 0 / behind 0 (or report exact counts), run final-head hosted CI, update PR description with results, verify OPEN / Draft / unmerged, and stop. Live scheduled acquisition and downstream Docs/GitHub publication remain NOT_RUN.
+
+NEXT NECESSARY ACTION: Complete local tests and diff review, append the final evidence record, then commit/push and wait for final-head CI. Do not merge.
+
+## Latest-main resynchronization — 2026-10-16 (CORRECT)
+
+Fetched main advanced to `5797798a2ab41630c88856d2347d20b95a7ccee3` during validation. Merged without conflicts as `e3cdbff2e`; branch now compares 0 behind / 7 ahead. The new main commits changed only production data files; those files are in the merge ancestry and absent from `origin/main...HEAD` PR file diff. Re-run the final local suites after this merge, then push and verify hosted checks on the resulting PR head. Keep Draft; do not merge.
+
+## Latest-main resynchronization 2 — 2026-10-16 (CORRECT)
+
+GitHub main advanced again to `c3dae9fdaea7c05d8006006b6fb052a28e2535f4`; the 2 new commits update economic calendar and USDJPY production data only. Merged without conflicts as `c95ce5810`; branch compares 0 behind / 9 ahead locally. These main-owned data paths remain absent from the PR diff. Push this merge, rerun targeted tests on the final tree, and verify final-head hosted CI and Draft state. Do not merge.
+
+## PR #156 final validation — 2026-10-16 (ADD)
+
+Code head `fa958c370eec2420de21d762630c9c78cfaeacf3` passed both hosted workflows: frozen-cutoff run 38901726328 and delivery-health run 38901726374. Local compileall and 41 targeted tests passed; diff check passed. GitHub confirms PR #156 is OPEN, Draft, mergeable, unmerged, based on current main `c3dae9fdaea7c05d8006006b6fb052a28e2535f4`; compare ahead 10 / behind 0. PR description contains the four changes, evidence, and remaining NOT_RUN/UNKNOWN items.
+
+To make these evidence-record changes rerun both required workflows on the exact final head, frozen-cutoff CI now includes project-control record paths. This trigger-only follow-up must be committed/pushed and both workflows must pass on its resulting head before final stop. Keep Draft; do not merge.
+
+## PR #156 main drift recheck — 2026-10-16 (CORRECT)
+
+GitHub main advanced from `c3dae9fdaea7c05d8006006b6fb052a28e2535f4` to `9615882cf018479bf3cb2eeeb6f6b73367ea764b` in two commits. Inspected the actual main range: only seven production data paths changed (Japan stock archive, close reference, Tokyo stock table, Nikkei metrics, stocks); no acquisition/evidence implementation, contract, workflow, or test files changed. Merged without conflicts as `733fd3821`; local compare 0 behind / 12 ahead. Re-run local tests and both hosted CIs against the synced head. If clean, make PR a merge candidate by marking ready for review; do not merge.
+
+## PR #156 final main and outage recheck — 2026-10-16 (CORRECT)
+
+Main advanced four commits from `9615882cf018479bf3cb2eeeb6f6b73367ea764b` to `d6420e2c3d53a16304bb8d301677e2db4c41da0c`. The actual range changes 15 production data files only (Japan stocks, Nikkei/US dollar-yen supply-demand and market references); no acquisition/evidence code, workflow, or tests changed. Merged without conflicts as `415c28c6d`; local compare 0 behind / 14 ahead before this record commit.
+
+Verified on the synced tree: `data/market/latest.json` is `2026-10-16T20:16:17+09:00`, slot `21:00`, `verified`, with no required-field gaps; `data/report-evidence/2026-10-16_21-00-r1.json` and `reports/2026-10-16_21-00.json` are absent; `reports.json` latest is 2026-10-13 16:00. Do not reconstruct or publish the missed 21:00 slot. The recovery PR applies to future eligible acquisitions. Following local/final-head CI, the user has now directed PR #156 to be reviewed and merged; verify head/base once more, mark ready, and merge the exact approved head. Then observe future-slot production acceptance separately.
