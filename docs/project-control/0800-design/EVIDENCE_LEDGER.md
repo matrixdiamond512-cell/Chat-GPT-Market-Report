@@ -365,7 +365,63 @@ NEXT: user reviews the 1536×1024 full candidate and native-scale target-panel c
 | Responsive QA is fail-closed and regression-tested | `tests/test_mobile_design_fixture_0800.py`: 4/4 PASS; `scripts/check_svg_text_layout_0800.js --self-test`: desktop/mobile valid layout PASS and overlap/clipping/border negatives rejected | E1/E3 / PASS | Full repository test suite not rerun in this continuation |
 | No external data/publication path was opened | r8 contract/receipt: market/snapshot/summary connection false, manifest absent, publish false, Drive NOT_RUN; other slots untouched | E2 / PASS | Real-data generation intentionally waits for visual review and a new same-run verified 08:00 source |
 | Existing review-final mobile PNG was not reused | Historical artifact source lock labels its source withdrawn and it does not have the r22 fixture binding; this turn created a same-fixture mobile image instead | E0 / disposition KEEP SEPARATE | No historical report was restored |
-| PR state | GitHub readback: PR #97 OPEN, Dra…2170 tokens truncated…ls-13-15-16-before-after-native.png` and `panels-13-15-16-before-after-2x.png`. | E4 / generated | Enlarged views aid review but do not prove browser rendering |
+| PR state | GitHub readback: PR #97 OPEN, Draft, unmerged, remote head `b536b911118fc10b71c9bc0829c2c78b98d0d316` | E5 / observed | New responsive files/candidates are local and unpushed; working tree includes earlier unrelated local changes |
+
+Human visual acceptance remains PENDING for both PNGs. Static values are design fixture values, not verified market data. Browser rendering remains NOT_RUN. No push, merge, production publication, Drive write, or edits to 12:00/16:00/21:00 were made.
+
+## 2026-10-15 — PC-only continuation; mobile paused
+
+| Claim | Evidence | Level / result | Limit |
+|---|---|---|---|
+| PC design candidate remains intact | `validation/formal-html-svg-0800-hybrid-review9-full16-r22-readable-event-cards/08-00-formal-html-svg.png`; r22 receipt records 1536×1024, fixed approved 16-panel geometry, 284 measured text elements, 0 measured layout issues | E4 / PASS for sharp/libvips candidate | Design fixture only; human visual acceptance remains PENDING |
+| PC regression suite is green | Workspace Python: `unittest discover -s tests -q` (279/279); `node --check scripts/render_reference_replica_png.js`; `node scripts/check_svg_text_layout_0800.js --self-test`; `git diff --check` | E1–E4 / PASS | Checker self-test validates geometry/QC behavior, not an actual browser render or market-data report |
+| Browser behavior | Prior local HTML browser URL was rejected by the environment's URL policy; no browser-safe route was used in this continuation | NOT_RUN / policy limitation | The sharp/libvips PNG cannot prove browser font shaping or viewport behavior |
+| Genuine new 08:00 report data | No new verified same-run report/snapshot package is present in the current local report inputs; historical withdrawn material remains excluded | BLOCKED | Do not use the withdrawn report, a later snapshot, or `DESIGN_REFERENCE_ONLY` fixture as a substitute |
+| Data and publication boundary | r22 render contract/receipt: report/summary/snapshot false, manifest absent, `publish_allowed=false`; mobile work now paused | E2 / PASS for isolation | Formal data-connected generation is still NOT_RUN |
+| PR state | GitHub `get_pr_info`: #97 OPEN, Draft, unmerged; head `b536b911118fc10b71c9bc0829c2c78b98d0d316` | E5 / observed | No push, merge, production publication, Drive write, or other-slot change in this continuation |
+
+The first rerun of the text-layout self-test did not find the bundled `sharp` module because `NODE_PATH` was unset. After setting it to the bundled workspace dependency directory, `node --check`, the self-test (including overlap/clipping/border negative cases), and `git diff --check` all passed. Mobile candidate work is paused by the latest user direction; it is not part of PC completion evidence.
+
+NEXT: complete PC-only browser and verified-source steps when their authorized inputs are available. Keep visual acceptance PENDING and all publication stops active.
+
+## 2026-10-15 — PC readability candidate r36
+
+| Claim | Evidence | Level / result | Limit |
+|---|---|---|---|
+| Readability revision keeps approved canvas/panel geometry | r36 `render-contract.json`; renderer validates 1536×1024 and exact approved 16 rectangles/order | E0/E4 / PASS | Outer geometry only |
+| Candidate improves panel 13/15/16 text arrangement | r36 full PNG and unscaled `readability-before-after-panels-13-15-16.png`; manually inspected at native image resolution | E4 / candidate improvement | Visual acceptance remains PENDING; tight panel 13 levels and smaller panel 16 status text remain review points |
+| All measured SVG glyphs fit | r36 `text-layout-report.json`: 270 text nodes, 16 panels, 0 findings | E4 / PASS | sharp/libvips only; browser is NOT_RUN |
+| Regressions | Targeted suite 13/13 and full Python suite 280/280; py_compile, Node syntax, checker self-test, `git diff --check` | E1–E3 / PASS | No external runtime claim |
+| Source/publication boundary | r36 receipt: design fixture, report/summary/snapshot false, manifest not created, publish false | E2 / PASS for isolation | No verified new 08:00 data-connected render |
+| Browser/real source | Browser NOT_RUN after prior local URL policy rejection; new same-run report/snapshot not available | NOT_RUN / BLOCKED | sharp output cannot substitute for browser; do not use withdrawn/hindsight data |
+| PR state | GitHub `get_pr_info`: #97 OPEN, Draft, unmerged, head `b536b911118fc10b71c9bc0829c2c78b98d0d316` | E5 / PASS observed | Local changes remain unpushed |
+
+No push, merge, publication, Drive write, mobile-layout changes, or other-slot rollout occurred. Human visual acceptance remains PENDING.
+
+## 2026-10-15 — final PC readability candidate r38
+
+| Claim | Evidence | Level / result | Limit |
+|---|---|---|---|
+| r38 retains approved canvas and outer panel geometry | r38 render contract + PNG: 1536×1024 and exact approved 16 rectangles/order | E0/E4 / PASS | Internal panel 13 title band is 24px; panel outer rectangle unchanged |
+| Text QA is clean | r38 `text-layout-report.json`: 270 text nodes, 16 panels, 0 findings | E4 / PASS | sharp/libvips only; browser NOT_RUN |
+| Panel 13/15/16 readability advanced from r22 | Unscaled native panel crops, side by side in `readability-before-after-panels-13-15-16.png`; r38 manually inspected | E4 / candidate | Some secondary copy is still dense; visual acceptance PENDING |
+| Regressions | Targeted design 13/13, full suite 280/280, py_compile, Node syntax, checker negative-case self-test, `git diff --check` | E1–E3 / PASS | Local checks do not prove browser or real-data acceptance |
+| Data gate | r38 receipt remains DESIGN_REFERENCE_ONLY; report/summary/snapshot false; manifest absent; publish false | E2 / PASS for isolation | No genuine new 08:00 source connected |
+| Browser and PR | Browser NOT_RUN after existing policy block; fresh GitHub read shows #97 OPEN/Draft/unmerged at b536b911118fc10b71c9bc0829c2c78b98d0d316 | E5 / observed | Changes are local/unpushed |
+
+No push, merge, publication, Drive write, mobile changes, or other-time rollout occurred. Human visual acceptance remains PENDING.
+
+## 2026-10-15 — PC readability candidate r39d
+
+| Claim | Evidence | Level / result | Limit |
+|---|---|---|---|
+| Approved outer geometry and the requested panel-only scope remain intact | r39d render contract + PNG: 1536×1024; panel rectangles/order match all 16 approved rectangles. Renderer changes target panels 13/15/16 only; no fixture JSON or market-data source changed. | E0/E4 / PASS | Static design specimen only |
+| Panel 13 follows the approved six-market row | r39d panel crop: six cards in reference order; each displays icon/price-direction arrow, current value (18px), bias, strong/weak pair (13px). QA receipt records panel 13 PASS and zero measured glyph overlap/overflow. | E4 / PASS | Human visual acceptance remains PENDING |
+| Panel 15 uses a comparison table and preserves seven fields for four events | r39d SVG has 7 named header cells and 28 event cells, alternating row fills and grid lines. Dates/times, event names, estimate, previous, importance, impacted markets and focus are retained in concise wording. | E0/E4 / structure PASS; text QA FAIL | 10 pixel-level text-glyph intersections across header/data rows; not accepted |
+| Panel 15 fixed geometry plus 13px review floor cannot satisfy zero overlap | `panel-15-fit-analysis.json`: body 666×67px; five baselines; measured glyph ink height 14px; zero-overlap minimum span 70px; deficit 3px. QA's 10 findings are all panel 15; no font floor/checker relaxation was made. | E4 / FAIL with measured constraint | Requires a permitted internal table redesign, more vertical space, or an explicitly authorized typography target; none was assumed |
+| Panel 16 conclusion and verification remain separate with adjusted support spacing | r39d render: 12px minimum; panel 16 has zero measured issues. Three supporting baselines move up 2px, preserving the line spacing. | E4 / PASS | Human visual review pending |
+| Existing regression and fail-closed checks remain active | Python full suite 281/281 PASS; focused design suite 14/14 PASS; py_compile; Node syntax checks for both render scripts; text-layout self-test PASS (overlap/clipping/border negatives rejected); `git diff --check` PASS. Actual candidate QA remains FAIL. | E1–E4 / PASS for checks; candidate overall FAIL | Test success does not override text-QA failure or visual acceptance |
+| Reference comparisons are available | `approved-reference-vs-r39-native.png` and `approved-reference-vs-r39-2x.png`; prior→current `panels-13-15-16-before-after-native.png` and `panels-13-15-16-before-after-2x.png`. | E4 / generated | Enlarged views aid review but do not prove browser rendering |
 | Browser/data/publication boundary holds | Contract: `DESIGN_REFERENCE_ONLY`, body/summary/snapshot disconnected, manifest `NOT_CREATED`, `publish_allowed=false`; browser `NOT_RUN`. | E2/E4 / PASS for isolation; browser NOT_RUN | No new verified same-run report/snapshot was connected; no historical/hindsight substitution |
 | PR state | Fresh GitHub `get_pr_info`: PR #97 OPEN, Draft, unmerged, head `b536b911118fc10b71c9bc0829c2c78b98d0d316`. | E5 / observed | Work remains local; no push/merge/publication/Drive write |
 
