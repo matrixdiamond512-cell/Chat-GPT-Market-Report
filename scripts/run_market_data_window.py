@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import os
 import subprocess
@@ -38,6 +39,18 @@ def now_jst() -> dt.datetime:
 
 def iso(value: dt.datetime | None = None) -> str:
     return (value or now_jst()).astimezone(JST).isoformat()
+
+
+def iso_utc(value: dt.datetime | None = None) -> str:
+    return (value or dt.datetime.now(dt.timezone.utc)).astimezone(dt.timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def workflow_run_url() -> str | None:
+    run_id = os.environ.get("GITHUB_RUN_ID")
+    repository = os.environ.get("GITHUB_REPOSITORY")
+    if not run_id or not repository:
+        return None
+    return f"{os.environ.get('GITHUB_SERVER_URL', 'https://github.com').rstrip('/')}/{repository}/actions/runs/{run_id}"
 
 
 def run(command: list[str], *, check: bool = True, capture: bool = False) -> subprocess.CompletedProcess[str]:
@@ -159,7 +172,10 @@ def git_sync() -> None:
 
 
 def git_commit_push(message: str) -> bool:
-    run(["git", "add", "data/market", "data/dashboard.json"], check=True)
+    paths = ["data/market", "data/dashboard.json"]
+    if (ROOT / "data" / "report-evidence").exists():
+        paths.append("data/report-evidence")
+    run(["git", "add", *paths], check=True)
     staged = subprocess.run(
         ["git", "diff", "--cached", "--quiet"],
         cwd=ROOT,
@@ -173,6 +189,71 @@ def git_commit_push(message: str) -> bool:
     run(["git", "pull", "--rebase"], check=True)
     run(["git", "push"], check=True)
     return True
+
+
+def freeze_slot_evidence(day: dt.date, slot: str) -> Path:
+    """Freeze the just-acquired slot while still before its publication cutoff."""
+    if __package__:
+        from .persist_report_slot_evidence import persist_slot_evidence
+    else:
+        from persist_report_slot_evidence import persist_slot_evidence
+
+    path, created = persist_slot_evidence(
+        day.isoformat(),
+        slot,
+        ROOT / "data" / "market" / "latest.json",
+        ROOT / "data" / "report-evidence",
+        max_age_minutes=15,
+        require_live_before_slot=True,
+    )
+    print(f"PRE_DRAFT_EVIDENCE_{'CREATED' if created else 'NO_OP'}={path.as_posix()}", flush=True)
+    return path
+
+
+def verify_main_evidence(path: Path) -> bool:
+    """Verify the exact evidence bytes through a fresh read of origin/main."""
+    relative = path.relative_to(ROOT).as_posix()
+    run(["git", "fetch", "origin", "main"], check=True)
+    result = subprocess.run(
+        ["git", "show", f"origin/main:{relative}"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        env=os.environ.copy(),
+    )
+    local_bytes = path.read_bytes()
+    if result.stdout != local_bytes:
+        raise RuntimeError(f"BLOCKED_MAIN_EVIDENCE_READBACK_MISMATCH: {relative}")
+    print(f"PRE_DRAFT_EVIDENCE_MAIN_READBACK=PASS sha256={hashlib.sha256(local_bytes).hexdigest()}", flush=True)
+    return True
+
+
+def record_evidence_readback(audit: Path, day: dt.date, slot: str, path: Path, status: str, reason: str | None = None) -> None:
+    data = path.read_bytes() if path.is_file() else b""
+    evidence_hash = hashlib.sha256(data).hexdigest() if data else None
+    if any(
+        item.get("auditEvent") == "pre_draft_evidence_main_readback"
+        and item.get("evidenceHash") == evidence_hash
+        and item.get("evidenceStatus") == status
+        for item in read_audit(audit)
+    ):
+        print(f"PRE_DRAFT_EVIDENCE_READBACK_AUDIT_NO_OP={status}", flush=True)
+        return
+    record = {
+        "auditEvent": "pre_draft_evidence_main_readback",
+        "scheduledDate": day.isoformat(),
+        "reportSlot": slot,
+        "recordedAtJST": iso(),
+        "recordedAtUTC": iso_utc(),
+        "workflowRunId": os.environ.get("GITHUB_RUN_ID", ""),
+        "actionsUrl": workflow_run_url(),
+        "evidencePath": path.relative_to(ROOT).as_posix(),
+        "evidenceHash": evidence_hash,
+        "evidenceStatus": status,
+        "reason": reason,
+    }
+    append_audit(audit, record)
+    git_commit_push(f"Record pre-draft evidence readback {day.isoformat()} {slot}")
 
 
 def sheets_pull_status(status: str) -> tuple[str, str]:
@@ -202,6 +283,7 @@ def perform_attempt(
     mode: str,
     late_minutes: float,
     recovery_after_expiry: bool = False,
+    freeze_evidence: bool = False,
 ) -> dict[str, Any]:
     started = now_jst()
     os.environ["ACQUISITION_TRIGGER_SOURCE"] = trigger_source
@@ -229,6 +311,14 @@ def perform_attempt(
     payload = load_json(ROOT / "data" / "market" / "latest.json", {})
     status = str(payload.get("overallStatus") or "blocked")
     sheets_outcome, sheets_message = sheets_pull_status(status)
+    evidence_path: Path | None = None
+    evidence_error: str | None = None
+    if freeze_evidence and status in {"verified", "degraded"}:
+        try:
+            evidence_path = freeze_slot_evidence(scheduled_day, slot)
+        except (OSError, ValueError, KeyError, TypeError, FileExistsError) as exc:
+            evidence_error = f"{type(exc).__name__}: {exc}"
+            print(f"PRE_DRAFT_EVIDENCE_BLOCKED={evidence_error}", file=sys.stderr, flush=True)
     completed = now_jst()
     acquisition = payload.get("acquisition") or {}
     targeted = acquisition.get("targetedSymbols") or []
@@ -239,8 +329,13 @@ def perform_attempt(
         "triggerSource": trigger_source,
         "workflowRunId": os.environ.get("GITHUB_RUN_ID", ""),
         "workflowRunAttempt": os.environ.get("GITHUB_RUN_ATTEMPT", ""),
+        "actionsUrl": workflow_run_url(),
         "startedAt": iso(started),
         "completedAt": iso(completed),
+        "startedAtUTC": iso_utc(started),
+        "completedAtUTC": iso_utc(completed),
+        "scheduledAtJST": target_datetime(scheduled_day, scheduled_time).isoformat(),
+        "scheduledAtUTC": target_datetime(scheduled_day, scheduled_time).astimezone(dt.timezone.utc).isoformat().replace("+00:00", "Z"),
         "lateMinutes": round(max(0.0, late_minutes), 1),
         "recoveryAfterExpiry": recovery_after_expiry,
         "outcome": status,
@@ -257,9 +352,21 @@ def perform_attempt(
         "sheetsMessage": sheets_message,
         "reportDataSource": "ChatGPT_Market_Input via GitHub_Market_Import/IMPORTDATA",
         "reportDataFallback": "data/market/latest.json",
+        "evidenceStatus": "LOCAL_FROZEN" if evidence_path else ("BLOCKED" if evidence_error else "NOT_ATTEMPTED"),
+        "evidenceFailure": evidence_error,
     }
     append_audit(audit, record)
     git_commit_push(f"Record {slot} market data attempt {scheduled_time}")
+    if evidence_path:
+        try:
+            verify_main_evidence(evidence_path)
+        except (OSError, subprocess.CalledProcessError, RuntimeError) as exc:
+            record_evidence_readback(audit, scheduled_day, slot, evidence_path, "BLOCKED", str(exc))
+            raise
+        record["evidenceReadback"] = "PASS"
+        record_evidence_readback(audit, scheduled_day, slot, evidence_path, "VERIFIED_ON_MAIN")
+    elif evidence_error:
+        record["evidenceReadback"] = "BLOCKED"
     return record
 
 
@@ -278,8 +385,13 @@ def record_expired(
         "triggerSource": trigger_source,
         "workflowRunId": os.environ.get("GITHUB_RUN_ID", ""),
         "workflowRunAttempt": os.environ.get("GITHUB_RUN_ATTEMPT", ""),
+        "actionsUrl": workflow_run_url(),
         "startedAt": iso(),
         "completedAt": iso(),
+        "startedAtUTC": iso_utc(),
+        "completedAtUTC": iso_utc(),
+        "scheduledAtJST": target_datetime(day, scheduled_time).isoformat(),
+        "scheduledAtUTC": target_datetime(day, scheduled_time).astimezone(dt.timezone.utc).isoformat().replace("+00:00", "Z"),
         "lateMinutes": round(max(0.0, late_minutes), 1),
         "outcome": "expired",
         "effectiveFetch": False,
@@ -312,6 +424,15 @@ def main() -> int:
     day = now_jst().date()
     audit = audit_path(day, args.slot)
     failures: list[str] = []
+    evidence_path = ROOT / "data" / "report-evidence" / f"{day.isoformat()}_{args.slot.replace(':', '-')}-r1.json"
+    evidence_main_ready = False
+    if evidence_path.is_file():
+        try:
+            evidence_main_ready = verify_main_evidence(evidence_path)
+            if evidence_main_ready:
+                record_evidence_readback(audit, day, args.slot, evidence_path, "VERIFIED_ON_MAIN")
+        except (OSError, subprocess.CalledProcessError, RuntimeError) as exc:
+            print(f"EXISTING_EVIDENCE_READBACK_BLOCKED={exc}", file=sys.stderr, flush=True)
 
     for scheduled_time in args.times:
         git_sync()
@@ -324,7 +445,7 @@ def main() -> int:
         age_minutes = (now_jst() - target).total_seconds() / 60.0
         # A Github runner can start an intended 15:50 acquisition at 21:13.
         # Do not relabel 21h prices as the 16h report even during recovery.
-        if now_jst() > target_datetime(day, args.slot):
+        if now_jst() >= target_datetime(day, args.slot):
             print(f"Past report cutoff for {args.slot}: no source acquisition", flush=True)
             record_expired(audit, args.slot, day, scheduled_time,
                            args.trigger_source, age_minutes)
@@ -350,7 +471,9 @@ def main() -> int:
                 audit,
                 args.mode,
                 age_minutes,
+                freeze_evidence=(scheduled_time == args.times[-1]),
             )
+            evidence_main_ready = evidence_main_ready or record.get("evidenceReadback") == "PASS"
             if record.get("outcome") not in {"verified", "degraded"}:
                 failures.append(scheduled_time)
         except Exception as exc:
@@ -383,11 +506,25 @@ def main() -> int:
                 "full",
                 recovery_lateness,
                 recovery_after_expiry=True,
+                freeze_evidence=True,
             )
+            evidence_main_ready = evidence_main_ready or recovery_record.get("evidenceReadback") == "PASS"
         except Exception as exc:
             print(f"Late recovery failed: {exc}", file=sys.stderr, flush=True)
 
     git_sync()
+    # If the window was already acquired by a sibling attempt, let this run
+    # freeze that verified input itself instead of waiting for the freeze cron.
+    if (not evidence_main_ready and now_jst() < target_datetime(day, args.slot)
+            and snapshot_is_current(load_json(ROOT / "data" / "market" / "latest.json", {}), args.slot, day)):
+        try:
+            evidence_path = freeze_slot_evidence(day, args.slot)
+            git_commit_push(f"Freeze pre-draft evidence for {day.isoformat()} {args.slot}")
+            evidence_main_ready = verify_main_evidence(evidence_path)
+            if evidence_main_ready:
+                record_evidence_readback(audit, day, args.slot, evidence_path, "VERIFIED_ON_MAIN")
+        except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError, RuntimeError) as exc:
+            print(f"PRE_DRAFT_EVIDENCE_BLOCKED={type(exc).__name__}: {exc}", file=sys.stderr, flush=True)
     final_done = completed_times(audit, args.slot)
     missing = [item for item in args.times if item not in final_done]
     final_payload = load_json(ROOT / "data" / "market" / "latest.json", {})
@@ -402,10 +539,11 @@ def main() -> int:
         "mode": args.mode,
         "recoveryAfterExpiry": recovery_record,
         "currentSnapshotReady": current_snapshot_ready,
+        "preDraftEvidenceOnMain": evidence_main_ready,
         "sheetsSyncMode": "pull_importdata",
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2), flush=True)
-    return 1 if missing and not current_snapshot_ready else 0
+    return 1 if (missing and not current_snapshot_ready) or not evidence_main_ready else 0
 
 
 if __name__ == "__main__":

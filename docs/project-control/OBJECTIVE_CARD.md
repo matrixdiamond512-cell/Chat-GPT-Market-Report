@@ -118,3 +118,21 @@ IMPLEMENTATION STATUS: Implementation and local regressions pass on `codex/porta
 OPEN OUTCOMES: PR #76 remains OPEN/DRAFT at head 652118b6a315ba664caa573105c1553d89b56d58, based on main 3cb6171531ed19a6421a6bced3c3d1a1a20aeeec (ahead 9, behind 0). Rebase had no conflicts, latest main data retained, and production data paths are absent from PR diff. Apps Script Pre-Publish on final code head PASS. Hosted strict report check at 3ef4832 records 08:00 FAIL from MorningReportQA and 12:00 PASS; report/index contents are unchanged through final head. Hosted malformed fixture previously PASS on a70261e. A new final-head hosted renderer job has not appeared; keep its latest-head evidence outcome open. Preserve data and QA, keep Draft, do not merge/deploy.
 
 NEXT NECESSARY ACTION: Finish implementation, run all requested local/hosted checks, verify protected production files unchanged, then stop with a Draft PR. Do not merge or deploy.
+
+## Market acquisition-to-evidence recovery — 2026-10-16 (ADD)
+
+PRIMARY OBJECTIVE: For future 08:00/12:00/16:00/21:00 report slots, bind a verified market acquisition to immutable pre-draft evidence and confirm that evidence is present byte-for-byte on GitHub main before the report pipeline proceeds.
+
+ACTIVE PROFILE: data-tool + generic-app. Base: 4efdc2db068db7cd1e1cc2e5a05ef09414dc2e6b.
+
+ACCEPTANCE: Keep acquisition cutoff and evidence schema/hash guards fail-closed; connect the acquisition window and pre-slot recovery to the existing evidence writer; commit market data and evidence; read back evidence from origin/main; record JST/UTC timing, stage status and Actions URL; add targeted tests and hosted CI; submit Draft PR only.
+
+CONSTRAINTS: Do not create evidence after the slot, rewrite historical evidence, overwrite same-ID evidence, relax publication/timeline gates, merge, or claim live recovery from local/hosted tests. Preserve user's dirty primary checkout.
+
+OUT OF SCOPE: Report generation, Google Docs, receipts, projections, Pages and real scheduled-slot acceptance.
+
+IMPLEMENTATION STATUS: Targeted local regression tests PASS. Branch codex/market-data-evidence-recovery-20261016; hosted checks and Draft PR remain open outcomes. No production Actions run, merge, or deployment has been performed from this branch.
+
+OPEN OUTCOMES: Hosted CI on final PR head; reviewable Draft PR; live future-slot evidence and downstream report/Docs/receipt/Pages acceptance remain NOT_RUN. The scheduler/queue cause behind the observed multi-hour trigger delay is UNKNOWN.
+
+NEXT NECESSARY ACTION: Finish code review and CI, create the Draft PR, then wait for an authorized future pre-slot run to verify production evidence readback. Keep the PR unmerged.

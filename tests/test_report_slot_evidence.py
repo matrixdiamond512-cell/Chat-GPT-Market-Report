@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
 from scripts.persist_report_slot_evidence import persist_slot_evidence
 from scripts.reporting.snapshot import digest
@@ -94,13 +95,25 @@ class ReportSlotEvidenceTests(unittest.TestCase):
                 "2026-10-16", "08:00", self.market_path, self.output,
                 require_live_before_slot=True, now=datetime(2026, 10, 16, 8, 0, tzinfo=jst),
             )
-        self.assertFalse(self.output.exists())
+        self.assertFalse(list(self.output.glob("*.json")))
         path, created = persist_slot_evidence(
             "2026-10-16", "08:00", self.market_path, self.output,
             require_live_before_slot=True, now=datetime(2026, 10, 16, 7, 59, tzinfo=jst),
         )
         self.assertTrue(created)
         self.assertTrue(path.exists())
+
+    def test_live_evidence_is_removed_if_write_crosses_slot_cutoff(self):
+        with mock.patch(
+            "scripts.persist_report_slot_evidence.require_before_slot",
+            side_effect=[None, None, ValueError("BLOCKED_LIVE_EVIDENCE_AFTER_SLOT")],
+        ):
+            with self.assertRaisesRegex(ValueError, "BLOCKED_LIVE_EVIDENCE_AFTER_SLOT"):
+                persist_slot_evidence(
+                    "2026-10-16", "08:00", self.market_path, self.output,
+                    require_live_before_slot=True,
+                )
+        self.assertFalse(list(self.output.glob("*.json")))
 
     def test_weekend_new_report_is_rejected(self):
         self.payload["generatedAt"] = "2026-10-17T07:50:00+09:00"

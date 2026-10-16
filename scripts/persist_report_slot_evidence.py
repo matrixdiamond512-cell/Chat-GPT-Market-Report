@@ -95,7 +95,22 @@ def persist_slot_evidence(report_date: str, report_time: str, market_data_path: 
     if require_live_before_slot:
         require_before_slot(report_date, report_time, now=now)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_bytes(encoded)
+    try:
+        # Exclusive creation prevents two independent workflows from silently
+        # replacing one another's evidence between the existence check and write.
+        with out_path.open("xb") as handle:
+            handle.write(encoded)
+    except FileExistsError:
+        existing = out_path.read_bytes()
+        if existing == encoded:
+            return out_path, False
+        raise FileExistsError(f"immutable report evidence already exists with different content: {out_path}")
+    if require_live_before_slot:
+        try:
+            require_before_slot(report_date, report_time, now=now)
+        except ValueError:
+            out_path.unlink(missing_ok=True)
+            raise
     # Read back and verify both exact bytes and calculated identity before success.
     readback = out_path.read_bytes()
     if readback != encoded:
