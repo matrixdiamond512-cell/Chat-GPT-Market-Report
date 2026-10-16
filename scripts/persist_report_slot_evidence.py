@@ -107,7 +107,9 @@ def persist_slot_evidence(report_date: str, report_time: str, market_data_path: 
         raise FileExistsError(f"immutable report evidence already exists with different content: {out_path}")
     if require_live_before_slot:
         try:
-            require_before_slot(report_date, report_time, now=now)
+            # Re-read the clock after the write; `now` may be a caller-supplied
+            # snapshot from before serialization and file I/O.
+            require_before_slot(report_date, report_time)
         except ValueError:
             out_path.unlink(missing_ok=True)
             raise
