@@ -168,7 +168,7 @@ jobs:
           NODE_PATH: ${{ runner.temp }}/portal-validation/node_modules
         run: node scripts/validate_market_report_dom.js
 
-      - name: Validate all 15 recovered historical report slots in local DOM
+      - name: Validate recovered historical report slots in local DOM
         env:
           PORTAL_URL: http://127.0.0.1:8765
           NODE_PATH: ${{ runner.temp }}/portal-validation/node_modules
