@@ -181,3 +181,9 @@ To make these evidence-record changes rerun both required workflows on the exact
 ## PR #156 main drift recheck — 2026-10-16 (CORRECT)
 
 GitHub main advanced from `c3dae9fdaea7c05d8006006b6fb052a28e2535f4` to `9615882cf018479bf3cb2eeeb6f6b73367ea764b` in two commits. Inspected the actual main range: only seven production data paths changed (Japan stock archive, close reference, Tokyo stock table, Nikkei metrics, stocks); no acquisition/evidence implementation, contract, workflow, or test files changed. Merged without conflicts as `733fd3821`; local compare 0 behind / 12 ahead. Re-run local tests and both hosted CIs against the synced head. If clean, make PR a merge candidate by marking ready for review; do not merge.
+
+## PR #156 final main and outage recheck — 2026-10-16 (CORRECT)
+
+Main advanced four commits from `9615882cf018479bf3cb2eeeb6f6b73367ea764b` to `d6420e2c3d53a16304bb8d301677e2db4c41da0c`. The actual range changes 15 production data files only (Japan stocks, Nikkei/US dollar-yen supply-demand and market references); no acquisition/evidence code, workflow, or tests changed. Merged without conflicts as `415c28c6d`; local compare 0 behind / 14 ahead before this record commit.
+
+Verified on the synced tree: `data/market/latest.json` is `2026-10-16T20:16:17+09:00`, slot `21:00`, `verified`, with no required-field gaps; `data/report-evidence/2026-10-16_21-00-r1.json` and `reports/2026-10-16_21-00.json` are absent; `reports.json` latest is 2026-10-13 16:00. Do not reconstruct or publish the missed 21:00 slot. The recovery PR applies to future eligible acquisitions. Following local/final-head CI, the user has now directed PR #156 to be reviewed and merged; verify head/base once more, mark ready, and merge the exact approved head. Then observe future-slot production acceptance separately.
