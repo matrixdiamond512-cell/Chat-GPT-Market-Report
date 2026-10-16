@@ -18,8 +18,10 @@ REQUIRED = {
     "2026-10-14_16-00", "2026-10-14_21-00",
     "2026-10-15_08-00", "2026-10-15_12-00",
     "2026-10-15_16-00", "2026-10-15_21-00",
+    "2026-10-16_08-00",
 }
 RETROSPECTIVE = {"2026-10-06_12-00", "2026-10-06_16-00", "2026-10-13_12-00"}
+DRIVE_READBACK_SUPPLEMENTS = {"2026-10-16_08-00"}
 
 
 def fail(message: str) -> None:
@@ -32,7 +34,7 @@ def main() -> int:
         fail("schema and non-publication identity")
     items = data.get("reports")
     if not isinstance(items, list) or len(items) != len(REQUIRED):
-        fail("expected exactly fifteen source/retrospective entries")
+        fail(f"expected exactly {len(REQUIRED)} source/retrospective entries")
     found: set[str] = set()
     indexed = json.loads(FORMAL_INDEX.read_text(encoding="utf-8"))
     public_ids = {f"{r['date']}_{r['time'].replace(':', '-')}" for r in indexed}
@@ -55,8 +57,17 @@ def main() -> int:
             fail("archive may not claim original verified publication " + key)
         if report.get("infographic_status") == "READY":
             fail("unverified infographic must not be shown " + key)
-        if report.get("recoveryRecordedAt") != data["generatedAt"]:
-            fail("recovery timestamp missing " + key)
+        if key in DRIVE_READBACK_SUPPLEMENTS:
+            from datetime import datetime
+            try:
+                recorded = datetime.fromisoformat(report["recoveryRecordedAt"].replace("Z", "+00:00"))
+                cutoff = datetime.fromisoformat("2026-10-16T08:40:00+09:00")
+                if recorded.tzinfo is None or recorded < cutoff:
+                    fail("invalid supplemental recovery timestamp " + key)
+            except (ValueError, KeyError, TypeError):
+                fail("missing supplemental recovery timestamp " + key)
+        elif report.get("recoveryRecordedAt") != data["generatedAt"]:
+            fail("original recovery timestamp altered " + key)
         canonical = ROOT / "reports" / (key + ".json")
         if key in RETROSPECTIVE:
             if key == "2026-10-13_12-00":
@@ -66,6 +77,22 @@ def main() -> int:
                 fail("undisclosed retrospective " + key)
             if canonical.exists():
                 fail("retrospective must not overwrite official canonical slot " + key)
+        elif key in DRIVE_READBACK_SUPPLEMENTS:
+            if canonical.exists():
+                fail("supplemental readback must not overwrite canonical slot " + key)
+            doc = report.get("sourceDocument") or {}
+            doc_id = "1JBfE0AsvW5Ob_nA2lKDTLFAlYMhc8XbhasqwQ4oixdw"
+            if (report.get("archiveType") != "DRIVE_SAVED_DOCUMENT"
+                or report.get("originalReportStatus") != "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED"
+                or doc.get("id") != doc_id
+                or doc.get("url") != f"https://docs.google.com/document/d/{doc_id}/edit"
+                or not report.get("driveRevisionId")
+                or report.get("driveTextLength") != len(full)
+                or not isinstance(report.get("missingAtSlotEvidence"), list)
+                or not report.get("missingAtSlotEvidence")):
+                fail("unverified supplemental document identity/readback " + key)
+            if "補充発行版" not in full or "定時自動発行" not in full:
+                fail("supplemental document must disclose late creation " + key)
         else:
             if not canonical.exists():
                 fail("archived canonical source missing " + key)

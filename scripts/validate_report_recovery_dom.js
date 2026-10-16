@@ -31,7 +31,7 @@ const records = JSON.parse(fs.readFileSync('data/report-recovery-2026-10.json','
         time:document.querySelector('.time-tab.is-active')?.textContent.trim()||'',
         date:document.getElementById('datePicker')?.value||''
       }));
-      if(result.archiveCount!==15)failures.push('archive count not 15');
+      if(result.archiveCount!==records.length)failures.push('archive count mismatch: '+result.archiveCount+' vs '+records.length);
       if(result.title!==source.title)failures.push('title mismatch');
       if(result.time!==source.time||result.date!==source.date)failures.push('selection mismatch');
       if(!result.recovered||!result.archiveNotice.includes('正式')||!result.formalFlag.includes('修復'))failures.push('archive provenance not visible');
@@ -43,5 +43,5 @@ const records = JSON.parse(fs.readFileSync('data/report-recovery-2026-10.json','
       if(failures.length)throw Error(source.date+' '+source.time+': '+failures.join(' | '));
     }
   }finally{await browser.close();}
-  console.log('PASS: all 15 historical archive reports visible, labeled and not presented as formally published.');
+  console.log('PASS: all '+records.length+' historical archive reports visible, labeled and not presented as formally published.');
 })().catch(e=>{console.error(e.stack||String(e));process.exit(1);});
