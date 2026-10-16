@@ -1,0 +1,51 @@
+name: Scoped USDJPY Apps Script production sync
+on:
+  push:
+    branches: [main]
+    paths:
+      - "config/usdjpy-volume-appsscript-deploy.json"
+      - ".github/workflows/sync-usdjpy-volume-apps-script.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: scoped-usdjpy-volume-appsscript
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    environment: apps-script-production
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify scoped sync code
+        run: |
+          python -m unittest discover -s tests -p test_safe_apps_script_deploy.py -v
+          python -m unittest discover -s tests -p test_usdjpy_scoped_apps_script_deploy.py -v
+          python -m py_compile scripts/deploy_usdjpy_volume_apps_script.py
+          test -f apps-script/UsdJpyVolumeJsonFlexibleSync.gs
+      - name: Inspect or safely apply to existing Apps Script project
+        env:
+          APPS_SCRIPT_ID: ${{ secrets.APPS_SCRIPT_ID }}
+          APPS_SCRIPT_OAUTH_JSON: ${{ secrets.APPS_SCRIPT_OAUTH_JSON }}
+        run: |
+          python - <<'PY'
+          import json, re, subprocess
+          from pathlib import Path
+          config=json.loads(Path("config/usdjpy-volume-appsscript-deploy.json").read_text(encoding="utf-8"))
+          if set(config) != {"apply","expected_project_sha256"} or type(config["apply"]) is not bool:
+              raise SystemExit("Invalid reviewed deployment control; no changes made")
+          cmd=["python","scripts/deploy_usdjpy_volume_apps_script.py"]
+          if config["apply"]:
+              expected=config["expected_project_sha256"]
+              if not isinstance(expected,str) or not re.fullmatch("[a-f0-9]{64}",expected):
+                  raise SystemExit("Apply requires SHA-256 from successful earlier dry-run")
+              cmd += ["--apply","--expected-project-sha256",expected]
+          else:
+              if config["expected_project_sha256"] != "":
+                  raise SystemExit("Dry-run must have blank expected digest")
+          subprocess.run(cmd,check=True)
+          PY
