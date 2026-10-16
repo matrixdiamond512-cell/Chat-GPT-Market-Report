@@ -1187,6 +1187,88 @@ function archiveSectionBody(report, pattern) {
   return [inline,...lines.slice(at+1,end)].filter(Boolean).join("\n").trim();
 }
 
+
+/*
+ * Strict per-asset extraction from a late-saved, read-back morning report.
+ * Not a publication gate: values remain historical references, NEVER live
+ * snapshots. Scope to the exact supplemental document to avoid changing
+ * the existing archives' different (often incomplete) source formats.
+ */
+function verifiedSupplementalArchiveQuotes(record) {
+  if (record?.date !== "2026-10-16" || record?.time !== "08:00"
+      || record?.archiveType !== "DRIVE_SAVED_DOCUMENT"
+      || record?.originalReportStatus !== "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED"
+      || record?.verifiedAtSlot !== false
+      || record?.sourceDocument?.id !== "1JBfE0AsvW5Ob_nA2lKDTLFAlYMhc8XbhasqwQ4oixdw") return null;
+  const body = String(record.fullText || "").replace(/\r/g, "");
+  const priceSection = body.match(/【2[.．]\s*前営業日終値・市場データ】([\s\S]*?)(?=\n【3[.．]|$)/)?.[1] || "";
+  const outlookSection = body.match(/【6[.．]\s*主要6市場の短期見通し[^】]*】([\s\S]*?)(?=\n【7[.．]|$)/)?.[1] || "";
+  if (!priceSection || !outlookSection) return null;
+  const config = {
+    gold: {
+      line: /^商品（10\/15NY終値）：COMEX金12月限([\d,]+(?:\.\d+)?)ドル（([+-][\d,]+(?:\.\d+)?)ドル）[^\n]*$/m,
+      marketName: "金先物（COMEX 12月限）", sourceLabel: "10/15 NY終値・COMEX金12月限",
+      outlook: /^金：[^\n]+$/m, low: 2500, high: 10000
+    },
+    oil: {
+      line: /^商品（10\/15NY終値）：[^\n]*WTI11月限([\d,]+(?:\.\d+)?)ドル（([+-][\d,]+(?:\.\d+)?)ドル）[^\n]*$/m,
+      marketName: "WTI原油先物（11月限）", sourceLabel: "10/15 NY終値・WTI11月限",
+      outlook: /^WTI：[^\n]+$/m, low: 30, high: 300
+    },
+    nikkei: {
+      line: /^大阪日経225先物（2026年12月限）：[^\n]*10\/16 06:00夜間終値([\d,]+)円（前日清算値比([+-][\d,]+)円、([+-][\d.]+)%）[^\n]*$/m,
+      marketName: "日経225先物（大阪・夜間）", sourceLabel: "10/16 06:00夜間終値・OSE12月限",
+      outlook: /^大阪日経225先物：[^\n]+$/m, low: 30000, high: 120000
+    },
+    usdjpy: {
+      line: /^為替（10\/15NY終値）：USD\/JPY\s*([\d,]+(?:\.\d+)?)円（([+-][\d,]+(?:\.\d+)?)円）[^\n]*$/m,
+      marketName: "USD/JPY", sourceLabel: "10/15 NY終値・USD/JPY",
+      outlook: /^USD\/JPY：[^\n]+$/m, low: 90, high: 220
+    },
+    eurusd: {
+      line: /^為替（10\/15NY終値）：[^\n]*EUR\/USD\s*([\d,]+(?:\.\d+)?)ドル（([+-][\d,]+(?:\.\d+)?)）[^\n]*$/m,
+      marketName: "EUR/USD", sourceLabel: "10/15 NY終値・EUR/USD",
+      outlook: /^EUR\/USD：[^\n]+$/m, low: 0.7, high: 1.8
+    },
+    btc: {
+      line: /^BTC\/USD：10\/16 07:33頃の参考値([\d,]+(?:\.\d+)?)ドル[^\n]*$/m,
+      marketName: "BTC/USD（07:33参考）", sourceLabel: "10/16 07:33頃の参考値・BTC/USD（終値ではない）",
+      outlook: /^BTC\/USD：[^\n]+$/m, low: 15000, high: 300000
+    }
+  };
+  const quotes = {};
+  for (const [key, spec] of Object.entries(config)) {
+    const line = priceSection.match(spec.line);
+    const outlook = outlookSection.match(spec.outlook)?.[0] || "";
+    if (!line || !outlook) continue;
+    const price = Number(line[1].replace(/,/g, ""));
+    const change = line[2] === undefined ? null : Number(line[2].replace(/,/g, ""));
+    if (!Number.isFinite(price) || price < spec.low || price > spec.high
+        || (change !== null && (!Number.isFinite(change) || Math.abs(change) > price * 0.5))) continue;
+    // Direction is driven exclusively by measured change, not a forecast.
+    const changePct = key === "nikkei" ? Number(line[3]) : null;
+    const clauses = outlook.replace(/^[^：:]+[：:]/, "").split("。").map(s=>s.trim()).filter(Boolean);
+    const reason = clauses.find(s=>/短期は|上昇警戒|自律反発|金利|ドル安|買い材料|反発は確認/.test(s) && !/強気条件|弱気条件/.test(s)) || "";
+    // A saved sentence may contain both "強気条件＝..." and "弱気条件＝..."
+    // separated only by a Japanese comma (BTC has this format).
+    const conditions = outlook
+      .replace(/、(?=(?:強気条件|弱気条件|ドル高条件|ドル安条件)＝)/g, "。")
+      .split("。").map(s=>s.trim()).filter(Boolean);
+    const strong = conditions.find(s=>/^(?:強気条件|ドル高条件)＝/.test(s)) || "";
+    const weak = conditions.find(s=>/^(?:弱気条件|ドル安条件)＝/.test(s)) || "";
+    quotes[key] = {
+      value: line[1],
+      change, changePct: Number.isFinite(changePct) ? changePct : null,
+      originalLine: line[0], sourceLabel: spec.sourceLabel,
+      marketName: spec.marketName, sourceKind: "SUPPLEMENTAL_DOC_LINE",
+      observedAt: spec.sourceLabel, reason, keyPoint: strong,
+      risk: weak, outlook,
+      direction: change === null ? "比較基準未確認" : change > 0 ? "前日比上昇" : change < 0 ? "前日比下落" : "前日比横ばい"
+    };
+  }
+  return quotes;
+}
+
 function archiveDashboardSummary(record) {
   const section = pattern => archiveSectionBody(record, pattern);
   const split = text => String(text || "").split("\n").map(s => s.trim()).filter(Boolean);
@@ -1290,6 +1372,8 @@ function archiveDashboardSummary(record) {
       risk: outlookDesc
     });
   }
+  const confirmedSupplementalQuotes = verifiedSupplementalArchiveQuotes(record);
+  if (confirmedSupplementalQuotes) Object.assign(archiveQuotes, confirmedSupplementalQuotes);
   const timelineRows = split(timeline)
     .filter(s => s.includes("｜出来事：") && /株|市場|金利|発表|決算|取引|先物|ニュース/.test(s))
     .slice(0, 12)
