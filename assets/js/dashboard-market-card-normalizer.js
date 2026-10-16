@@ -607,6 +607,11 @@
       const href = definition.route ? ` href="${definition.route}"` : "";
       const aria = definition.route ? ` aria-label="${esc(definition.display)}の詳細へ"` : "";
       const price = card.priceText || "取得不能";
+      const changeLabel = report?.historicalArchiveDisplayOnly
+        && report.archiveQuotes?.[definition.key]?.sourceKind === "SUPPLEMENTAL_DOC_LINE"
+        && card.change === null && card.changePct === null
+        ? "前日比：比較対象なし（当時の観測参考値）"
+        : changeDisplay(card);
       const strictArchive = report?.historicalArchiveDisplayOnly && report.archiveQuotes?.[definition.key]?.sourceKind === "SUPPLEMENTAL_DOC_LINE";
       const name = strictArchive ? report.archiveQuotes[definition.key].marketName
         : report?.historicalArchiveDisplayOnly && definition.key === "gold"
@@ -620,7 +625,7 @@
         <span>
           <h3>${esc(name)}</h3>
           <p class="market-value">${esc(price)}${definition.unit ? `<small>${esc(definition.unit)}</small>` : ""}</p>
-          <p class="change-line ${trendClass}">${esc(changeDisplay(card))}</p>
+          <p class="change-line ${trendClass}">${esc(changeLabel)}</p>
           <p class="market-direction-line ${trendClass}">方向感：${esc(directionText)}</p>
           <p class="market-basis-line">表示基準：${esc(card.basisLabel)}</p>
           <dl>
