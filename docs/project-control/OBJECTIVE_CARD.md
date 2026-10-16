@@ -143,3 +143,9 @@ NEXT NECESSARY ACTION: Finish code review and CI, create the Draft PR, then wait
 PR #156 was created OPEN / Draft on base 4efdc2db068db7cd1e1cc2e5a05ef09414dc2e6b, head d3105dd0ff44a86940e02db6fa1d51dd0828abe2. Hosted PR checks both passed on that exact head: Market report frozen-cutoff regression CI run 38885680439, including Python compile and offline cutoff/evidence suites; Delivery health regression CI run 38885680536, including all 16 targeted delivery/evidence tests. PR #156 remains OPEN / Draft and unmerged. Local evidence stays E1/E2; live acquisition, future-slot evidence, and report/Docs/receipt/Pages acceptance remain NOT_RUN.
 
 NEXT NECESSARY ACTION: Keep PR #156 Draft and unmerged pending review. Verify live outcome only on a future scheduled slot after authorized merge.
+
+## Final-head review correction — 2026-10-16 (ADD)
+
+Code review found that the evidence writer reused a caller-supplied pre-write clock for its post-write cutoff guard. Fixed in commit 375c3e71741b5df3fe1e7271e1b6578d845a1e21 by re-reading the live clock after writing and deleting the new file if the slot cutoff has passed. Local targeted suite: 17/17 PASS. Hosted checks on that code head: frozen-cutoff run 38898453782 PASS and delivery health run 38898453962 PASS. PR #156 remains OPEN / Draft and unmerged. E1/E2 only; live scheduled recovery and downstream publication remain NOT_RUN; scheduler/queue cause remains UNKNOWN.
+
+NEXT NECESSARY ACTION: Review PR #156 and, if authorized, merge before observing a future scheduled slot. Do not claim live recovery from these checks.
