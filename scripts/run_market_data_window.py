@@ -529,6 +529,22 @@ def main() -> int:
     missing = [item for item in args.times if item not in final_done]
     final_payload = load_json(ROOT / "data" / "market" / "latest.json", {})
     current_snapshot_ready = snapshot_is_current(final_payload, args.slot, day)
+    evidence_failure_stage: str | None = None
+    if not evidence_main_ready:
+        evidence_failure_stage = "pre_draft_evidence"
+        evidence_status = (
+            "BLOCKED_MAIN_EVIDENCE_READBACK"
+            if evidence_path.is_file()
+            else "BLOCKED_PRE_DRAFT_EVIDENCE_MISSING"
+        )
+        record_evidence_readback(
+            audit,
+            day,
+            args.slot,
+            evidence_path,
+            evidence_status,
+            "No immutable pre-draft evidence was verified on GitHub main before the report cutoff.",
+        )
     summary = {
         "date": day.isoformat(),
         "reportSlot": args.slot,
@@ -540,6 +556,8 @@ def main() -> int:
         "recoveryAfterExpiry": recovery_record,
         "currentSnapshotReady": current_snapshot_ready,
         "preDraftEvidenceOnMain": evidence_main_ready,
+        "evidenceFailureStage": evidence_failure_stage,
+        "actionsUrl": workflow_run_url(),
         "sheetsSyncMode": "pull_importdata",
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2), flush=True)

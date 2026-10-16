@@ -59,6 +59,30 @@ class MarketDataWindowEvidenceTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "BLOCKED_MAIN_EVIDENCE_READBACK_MISMATCH"):
                 window.verify_main_evidence(self.evidence)
 
+    def test_missing_main_evidence_is_recorded_as_a_machine_readable_block(self):
+        audit = self.root / "acquisition.jsonl"
+        missing = self.root / "data" / "report-evidence" / "2026-10-16_12-00-r1.json"
+        with mock.patch.object(window, "ROOT", self.root), mock.patch.object(window, "git_commit_push") as commit, mock.patch.dict(
+            window.os.environ,
+            {"GITHUB_RUN_ID": "123", "GITHUB_REPOSITORY": "owner/repo", "GITHUB_SERVER_URL": "https://github.com"},
+            clear=False,
+        ):
+            window.record_evidence_readback(
+                audit,
+                date(2026, 10, 16),
+                "12:00",
+                missing,
+                "BLOCKED_PRE_DRAFT_EVIDENCE_MISSING",
+                "No eligible acquisition before cutoff.",
+            )
+
+        rows = window.read_audit(audit)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["evidenceStatus"], "BLOCKED_PRE_DRAFT_EVIDENCE_MISSING")
+        self.assertEqual(rows[0]["reason"], "No eligible acquisition before cutoff.")
+        self.assertEqual(rows[0]["actionsUrl"], "https://github.com/owner/repo/actions/runs/123")
+        commit.assert_called_once()
+
     def test_commit_stages_evidence_without_assuming_directory_exists(self):
         with mock.patch.object(window, "ROOT", self.root), mock.patch.object(window, "run") as run, mock.patch.object(
             window.subprocess, "run", return_value=SimpleNamespace(returncode=0)
