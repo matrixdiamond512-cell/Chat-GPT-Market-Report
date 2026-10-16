@@ -4,7 +4,7 @@
 
 ## 実装と入力契約
 
-入口は`python scripts/render_morning_infographic.py render`。Pythonで検証済み本文と表示投影を照合してHTMLを構築し、PlaywrightでローカルHTML/SVGをPNGにする。画像生成AI、ニュース取得、市場データ取得、外部保存、自動公開は実行しない。
+基本入口は`python scripts/render_morning_infographic.py render`。fixture以外の正式モードは、readbackのpreflightに加えて不変slot evidence、Docs importerのpublication receipt、source-bound summary、scenario review、同一仕様specを必須にする。実データを使う場合は`python scripts/run_morning_infographic_staging.py`がこれらを一つのtransactionとして検証した後、既存Python/HTML/SVG/Playwright rendererを呼ぶ。Google Docsを新たに読みに行く機能ではなく、検証済みimporter receiptのsourceを明示的に引き継ぐ。画像生成AI、ニュース取得、市場データ取得、外部保存、自動公開は実行しない。
 
 - `--report`: 既存report/context/immutable snapshot。正式入力にはrevision、snapshot_id（またはsnapshotId）、bodyHashも必要。
 - `--view`: `time=08:00`、同じreport_id/revision/snapshot_id/body_hash、facts、header、順序固定cards。
@@ -12,6 +12,7 @@
 - 6市場の価格・時刻は`snapshot_field = {instrument,field}`でsnapshotに結び付ける。価格/前日比/率はDecimalで比較し、時刻はasOfを完全一致させる。
 - 6市場は金、WTI、OSE日経225先物、USD/JPY、EUR/USD、BTCUSDの順序固定。価格・asOf・方向・根拠・強気/弱気条件は必須。
 - 正式モードは`--spec`も必須。既存`validate_market_data`、`validate_report`、`validate_spec`を変更せず実行する。表示投影はそのspecの検証済み表示文字列の範囲を超えて追加できない。時刻だけは検証済みsnapshotのasOfをそのまま表示する。
+- 正式モードでは`--slot-evidence`、`--publication-receipt`、`--summary`、`--scenario-review`も必須。単独renderer呼び出しでもこの契約を検査し、どれか不足ならPNG作成前に停止する。scenario reviewは人間が原文と3役割の条件/展開/市場影響を照合した記録であり、summaryの構造検査だけでは代替できない。
 - `--fixture`にはreportとview双方の`synthetic_fixture=true`が必要。既存market/body検査と新しいsource/数値/構成検査は実行するが、正式spec判定の代用にはしない。出力は常にDRAFT/DEBUG_PREVIEW。正式モードとの混用は拒否する。
 
 現在の旧specゲートはtyped numberをsnapshot価格と照合するため、全ての閾値・バリュエーション・騰落率を含む任意の実本文がそのまま通るとは限らない。このゲートは緩和していない。入力が通らなければ正式生成を停止する。mock用正式契約テストは価格だけを扱う互換入力で、実レポートの合格証拠ではない。

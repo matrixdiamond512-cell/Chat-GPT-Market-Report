@@ -277,8 +277,10 @@ def validate_summary(report: dict, summary: dict):
             field_refs = claim.get("field_source_refs")
             if not isinstance(field_refs, dict):
                 fail("SUMMARY_SCENARIO_FIELD_PROVENANCE_MISSING", claim["id"])
+            scenario_source_excerpts = []
             for field in SCENARIO_FIELDS:
                 field_source_text = " ".join(source_excerpts(field_refs.get(field), field))
+                scenario_source_excerpts.append(field_source_text)
                 field_text = claim[field]
                 source_numbers_for_field = {_normal_number(n) for n in NUMBER.findall(field_source_text)}
                 source_units_for_field = {_normal_number(n) for n in NUMBER_WITH_UNIT.findall(field_source_text)}
@@ -300,6 +302,13 @@ def validate_summary(report: dict, summary: dict):
                     fail("SUMMARY_SCENARIO_FIELD_DIRECTION_NOT_IN_SOURCE", {
                         "claim": claim["id"], "field": field, "terms": unbound_directions,
                     })
+            # The generic number/direction checks below must use every source
+            # range that supports a displayed scenario field, not only the
+            # claim's separate summary_refs. Field-level validation above is
+            # intentionally stricter and remains in force.
+            source_text += " " + " ".join(scenario_source_excerpts)
+            source_numbers = {_normal_number(n) for n in NUMBER.findall(source_text)}
+            source_numbers_with_units = {_normal_number(n) for n in NUMBER_WITH_UNIT.findall(source_text)}
             display += " " + " ".join(claim[field] for field in SCENARIO_FIELDS)
         display_numbers = NUMBER.findall(display)
         display_numbers_with_units = NUMBER_WITH_UNIT.findall(display)

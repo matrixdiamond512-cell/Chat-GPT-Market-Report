@@ -25,6 +25,14 @@ def main():
     parser.add_argument('--spec', type=Path)
     parser.add_argument('--docs-readback', type=Path,
                         help='Required in formal mode; exact Google Docs body and document revision identity')
+    parser.add_argument('--slot-evidence', type=Path,
+                        help='Required in formal mode; immutable same-slot acquisition evidence')
+    parser.add_argument('--publication-receipt', type=Path,
+                        help='Required in formal mode; importer-issued exact Docs readback receipt')
+    parser.add_argument('--summary', type=Path,
+                        help='Required in formal mode; source-bound infographic summary')
+    parser.add_argument('--scenario-review', type=Path,
+                        help='Required in formal mode; human panel-12 review attestation')
     parser.add_argument('--fixture', action='store_true')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--node', default='node')
@@ -49,6 +57,41 @@ def main():
                                   'missing_or_unverified': assessment['missing_or_unverified']},
                                  ensure_ascii=False))
                 return 1
+            required_evidence = {
+                '--spec': args.spec,
+                '--docs-readback': args.docs_readback,
+                '--slot-evidence': args.slot_evidence,
+                '--publication-receipt': args.publication_receipt,
+                '--summary': args.summary,
+                '--scenario-review': args.scenario_review,
+            }
+            missing = [name for name, path in required_evidence.items() if path is None]
+            if missing:
+                print(json.dumps({'status': 'BLOCKED', 'stage': 'formal_evidence_contract',
+                                  'reason': 'FORMAL_EVIDENCE_INPUTS_REQUIRED', 'missing': missing},
+                                 ensure_ascii=False))
+                return 1
+            # The receipt is created by the canonical Google Docs importer after
+            # its actual API readback. The local adapter binds that receipt to
+            # the exact canonical body; it does not claim a new Docs API call.
+            from run_morning_infographic_staging import validate_transaction
+            try:
+                transaction = validate_transaction(
+                    report=report,
+                    evidence_bytes=args.slot_evidence.read_bytes(),
+                    receipt=read(args.publication_receipt),
+                    docs_readback=read(args.docs_readback),
+                    summary=read(args.summary),
+                    view=view,
+                    spec=read(args.spec),
+                    scenario_review=read(args.scenario_review),
+                    report_date=report.get('date'),
+                )
+            except (ValidationFailure, ValueError, OSError, KeyError, TypeError) as exc:
+                print(json.dumps({'status': 'BLOCKED', 'stage': 'formal_evidence_contract',
+                                  'reason': getattr(exc, 'reason', str(exc))}, ensure_ascii=False))
+                return 1
+            report = transaction[0]
         spec = read(args.spec) if args.spec else None
         if args.command == 'render':
             document, contract = render_html(report, view, fixture=args.fixture, spec=spec)

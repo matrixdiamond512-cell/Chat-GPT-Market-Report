@@ -1,6 +1,6 @@
 # 08:00 発行時の原本・市場データ固定（Draft手順）
 
-この手順はPR #97の**ローカルでの発行時証拠固定**を説明するものです。既存の配信タスクへの自動接続、Google Drive保存・読み戻し、ポータル公開は実装・検証済みではありません。
+この手順はPR #97の**発行時証拠の読戻しからローカルDRAFT描画までの接続**を説明します。上流の市場データ証拠固定と保存済みDocs取込は既存GitHub Actionsが行います。PR #97のstaging bridgeはそのcanonical出力を受け取り、同一identity/evidence/Docs receipt/summary/specを検証してからローカルHTML/SVG描画へ渡します。Drive書込・ポータル公開は行いません。
 
 ## 入力元
 
@@ -34,7 +34,28 @@ ChatGPT・Google Docs・GitHubの本文は同じ `fullText` / `bodyHash` を使�
 
 ## 未実装の接続と禁止事項
 
-- 08時の定時発行ジョブによる自動呼び出しは未実装。スケジューラが持つ既存の実際の取得結果と原本文を、同じ実行IDに結び付ける必要がある
+- `scripts/run_morning_infographic_staging.py` は、canonical report、`data/report-evidence/` の不変証拠、`publication-receipts/` のDocs実読戻しreceipt、summary/view/spec、人間のpanel-12 reviewを入力に取るローカル接続口である。TEST_ONLY fixtureは `tests/test_morning_staging_bridge.py` のみで扱い、正式レポート入力として使わない。
+- 正式コマンド例（2026-10-19は上流Actions完了後、GitHub mainを読戻したローカルcheckoutで実行する。`summary.json`、`view.json`、`spec.json`、`scenario-review.json` は当該report identityに結び付ける。シナリオ確認前に描画しない）：
+
+```powershell
+$date = '2026-10-19'
+$slot = '08-00'
+python scripts/run_morning_infographic_staging.py `
+  --date $date `
+  --report "reports/$date`_$slot.json" `
+  --evidence "data/report-evidence/$date`_$slot-r1.json" `
+  --receipt "publication-receipts/$date`_$slot.json" `
+  --summary "review-input/$date`_$slot/summary.json" `
+  --view "review-input/$date`_$slot/view.json" `
+  --spec "review-input/$date`_$slot/spec.json" `
+  --scenario-review "review-input/$date`_$slot/scenario-review.json" `
+  --output "validation/$date`_$slot-local-draft"
+```
+
+Bridgeはreceipt発行元のDocs読み戻し結果を検証し、そのcanonical本文からローカルreadback adapterを作る。Google Docsへ新たにアクセスしたり、本文を再保存したりしたとは主張しない。検証bundleには入力evidence、receipt、report、readback、summary、view、spec、review、PNG hashと `publish_allowed=false` のvalidation manifestを保存する。入力不一致・不足時は出力ディレクトリを作らずBLOCKEDにする。
+
+- **定時ジョブからPR rendererへの自動起動は未稼働**。このbridgeはPR #97の未マージコードであり、mainのpublisher/freeze workflowからは呼び出されない。`workflow_run`/`workflow_dispatch`定義はdefault branchに存在するworkflowが対象となるため、Draft PR内だけで10/19のActions自動起動を有効にはできない。mainマージまたはdefault branch側変更は依頼制約で禁止されているため、今回は有効化・外部Actions dispatchを行わない。
+- 既存publisherはGoogle Docsを読み、receiptを発行してcanonicalへ登録するが、本文からの図解summary/view/specとpanel-12の人間による意味照合は自動作成しない。これらが同一identityで用意されない限り、10/19でもbridgeはfail-closedする。これは正式E2Eの未完了事項であり、合成テストで埋めない。
 - 既に公開済みの10月9日・12日レポートに、後からsnapshotやbodyHashを捏造・埋め戻ししない
 - `READY_FOR_CANONICAL_VALIDATION` はPNG正式公開の許可ではない
 - Google Docs原本のDrive読み戻し一致（G3）、PNG（G4）、manifest（G5以降）が成功するまで、公開済み・保存完了と宣言しない

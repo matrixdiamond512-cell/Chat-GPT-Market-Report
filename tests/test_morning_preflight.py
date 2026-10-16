@@ -104,6 +104,32 @@ class PreflightTests(unittest.TestCase):
             self.assertIn("docs_readback.not_provided", result["missing_or_unverified"])
             self.assertFalse(output.exists())
 
+    def test_formal_renderer_requires_same_run_evidence_contract_after_readback(self):
+        import tempfile
+        root = Path(__file__).resolve().parents[1]
+        report, view = self.complete()
+        readback = self.docs_readback(report)
+        with tempfile.TemporaryDirectory() as directory:
+            report_path = Path(directory) / "report.json"
+            view_path = Path(directory) / "view.json"
+            readback_path = Path(directory) / "docs-readback.json"
+            output = Path(directory) / "render"
+            report_path.write_text(json.dumps(report), encoding="utf-8")
+            view_path.write_text(json.dumps(view), encoding="utf-8")
+            readback_path.write_text(json.dumps(readback), encoding="utf-8")
+            outcome = subprocess.run(
+                [sys.executable, str(root / "scripts" / "render_morning_infographic.py"),
+                 "render", "--report", str(report_path), "--view", str(view_path),
+                 "--docs-readback", str(readback_path), "--output", str(output)],
+                capture_output=True, text=True, encoding="utf-8")
+            self.assertEqual(outcome.returncode, 1)
+            result = json.loads(outcome.stdout)
+            self.assertEqual(result["stage"], "formal_evidence_contract")
+            self.assertIn("--slot-evidence", result["missing"])
+            self.assertIn("--publication-receipt", result["missing"])
+            self.assertIn("--scenario-review", result["missing"])
+            self.assertFalse(output.exists())
+
     def test_cli_oct12_blocked_without_view(self):
         root = Path(__file__).resolve().parents[1]
         outcome = subprocess.run(

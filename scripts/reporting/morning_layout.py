@@ -284,7 +284,13 @@ def render_html(report, view, *, fixture=False, spec=None):
             content += '<div class="flow"><div class="inflow"><h3>資金流入が示唆される資産</h3>'+''.join(flow_item(r) for r in flow['inflow'])+'</div><div class="transfer '+flow['basis']+'"><b>'+flow_label+'</b><span class="flow-arrows"><i>→</i><i>←</i></span></div><div class="outflow"><h3>資金の重石・流出候補</h3>'+''.join(flow_item(r) for r in flow['outflow'])+'</div></div><p class="evidence">'+display(flow['evidence'])+'</p>'
         for chain in card.get('chains', []):
             if chain.get('scenario'):
-                content += '<h3>'+{'main':'メイン','upside':'上振れ','downside':'下振れ'}[chain['scenario']]+'</h3>'
+                label = {
+                    'main_scenario': 'メインシナリオ',
+                    'alternative_scenario': '代替シナリオ',
+                    'invalidation_trigger': '崩れる条件',
+                }.get(chain.get('scenario_role'))
+                label = label or {'main':'メイン','upside':'上振れ','downside':'下振れ'}[chain['scenario']]
+                content += '<h3>'+label+'</h3>'
             content += '<div class="chain '+chain['basis']+'">'+('<span class="causal-arrow">→</span>'.join('<div class="'+('long' if len(text(ref)) > 40 else '')+'">'+display(ref)+'</div>' for ref in chain['nodes']))+'</div><p class="evidence">'+display(chain['evidence'])+'</p>'
         if card.get('markets'):
             content += '<div class="market-grid">'
