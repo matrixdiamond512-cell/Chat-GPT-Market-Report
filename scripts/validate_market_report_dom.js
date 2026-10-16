@@ -63,48 +63,60 @@ async function main() {
         }));
       }
 
-      const url = base + 'report.html?date=' + encodeURIComponent(report.date)
+      const url = base + 'index.html?date=' + encodeURIComponent(report.date)
         + '&time=' + encodeURIComponent(report.time) + '&domverify=' + Date.now();
       await page.goto(url, {waitUntil: 'domcontentloaded', timeout: 60000});
       await page.waitForFunction(() => {
-        const app = document.getElementById('app');
-        const status = document.getElementById('reportStatus');
-        if (!app || !status) return false;
-        const text = (app.textContent || '') + ' ' + (status.textContent || '');
-        return text.trim()
+        const frame = document.getElementById('reportDocumentFrame');
+        const status = document.getElementById('reportInlineStatus')?.textContent || '';
+        const app = frame?.contentDocument?.getElementById('app');
+        const title = frame?.contentDocument?.querySelector('.report-title');
+        const text = (app?.textContent || '') + ' ' + status;
+        return frame && !frame.hidden && title && text.includes('同一本文・identityを確認')
           && !/本文データを読み込んでいます|マーケットレポートを読み込んでいます/.test(text)
           && !/読み込めません|読込エラー/.test(text);
       }, {timeout: 60000});
 
       const result = await page.evaluate(() => {
-        const app = document.getElementById('app');
-        const title = document.querySelector('.report-title');
-        const body = document.querySelector('.report-body');
-        const picker = document.getElementById('datePicker');
+        const frame = document.getElementById('reportDocumentFrame');
+        const reportDocument = frame?.contentDocument;
+        const app = reportDocument?.getElementById('app');
+        const title = reportDocument?.querySelector('.report-title');
+        const body = reportDocument?.querySelector('.report-body');
+        const picker = document.getElementById('dateInput');
         const activeTab = document.querySelector('.time-tab.is-active');
-        const sections = [...document.querySelectorAll('.sop-section')];
+        const sections = [...(reportDocument?.querySelectorAll('.sop-section') || [])];
         const market = sections.find(section => /主要市場データ|主要市場まとめ|市場データ|前営業日終値|終値一覧|主要価格/.test(
           section.querySelector('h2')?.textContent || section.dataset.sopTitle || ''));
         const table = market?.querySelector('table.market-table');
+        const inlineStatus = document.getElementById('reportInlineStatus')?.textContent || '';
         return {
           appText: app?.textContent || '',
           title: title?.textContent?.trim() || '',
           titleLength: (title?.textContent || '').trim().length,
           bodyText: body?.textContent || '',
           bodyHidden: Boolean(body && (body.hidden || getComputedStyle(body).display === 'none')),
-          quarantineWarning: document.getElementById('unverifiedReportWarning')?.textContent?.trim() || '',
-          morningQaState: document.documentElement.dataset.morningReportQa || '',
+          quarantineWarning: reportDocument?.getElementById('unverifiedReportWarning')?.textContent?.trim() || '',
+          morningQaState: reportDocument?.documentElement.dataset.morningReportQa || '',
           date: picker?.value || '',
           activeTime: activeTab?.textContent?.trim() || '',
+          inlineStatus,
+          inlineVisible: Boolean(frame && !frame.hidden),
+          childControlsHidden: Boolean(reportDocument
+            && getComputedStyle(reportDocument.querySelector('.controls')).display === 'none'
+            && getComputedStyle(reportDocument.querySelector('.topbar')).display === 'none'),
           marketSectionFound: Boolean(market),
           marketTableFound: Boolean(table),
           marketRowCount: table?.querySelectorAll('tbody tr').length || 0,
           loadingTextPresent: /本文データを読み込んでいます|マーケットレポートを読み込んでいます/.test(
-            (app?.textContent || '') + ' ' + (document.getElementById('reportStatus')?.textContent || ''))
+            (app?.textContent || '') + ' ' + inlineStatus)
         };
       });
 
       const failures = [];
+      if (!result.inlineVisible) failures.push('inline report is not visible');
+      if (!result.inlineStatus.includes('同一本文・identityを確認')) failures.push('dashboard/body identity agreement not shown');
+      if (!result.childControlsHidden) failures.push('embedded report shows a duplicate header or date/time control');
       if (result.date !== report.date) failures.push('datePicker mismatch: ' + result.date);
       if (result.activeTime !== report.time) failures.push('active time mismatch: ' + result.activeTime);
       if (result.title !== report.title) failures.push('title mismatch: ' + result.title);
@@ -158,3 +170,4 @@ main().catch(error => {
   console.error(error && error.stack || error);
   process.exit(1);
 });
+
