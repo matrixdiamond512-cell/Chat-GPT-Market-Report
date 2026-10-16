@@ -150,6 +150,11 @@ def snapshot_is_current(payload: dict[str, Any], slot: str, day: dt.date) -> boo
     return True
 
 
+def report_ready(snapshot_ready: bool, evidence_main_ready: bool) -> bool:
+    """The report gate requires both current acquisition and immutable main evidence."""
+    return snapshot_ready and evidence_main_ready
+
+
 def append_audit(path: Path, record: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("a", encoding="utf-8", newline="\n") as handle:
@@ -171,10 +176,10 @@ def git_sync() -> None:
     run(["git", "pull", "--rebase"], check=True)
 
 
-def git_commit_push(message: str) -> bool:
+def git_commit_push(message: str, *, evidence_path: Path | None = None) -> bool:
     paths = ["data/market", "data/dashboard.json"]
-    if (ROOT / "data" / "report-evidence").exists():
-        paths.append("data/report-evidence")
+    if evidence_path is not None and evidence_path.is_file():
+        paths.append(evidence_path.relative_to(ROOT).as_posix())
     run(["git", "add", *paths], check=True)
     staged = subprocess.run(
         ["git", "diff", "--cached", "--quiet"],
@@ -184,6 +189,7 @@ def git_commit_push(message: str) -> bool:
     )
     if staged.returncode == 0:
         print("No staged market-data changes to commit.", flush=True)
+        run(["git", "push"], check=True)
         return False
     run(["git", "commit", "-m", message], check=True)
     run(["git", "pull", "--rebase"], check=True)
@@ -210,8 +216,7 @@ def freeze_slot_evidence(day: dt.date, slot: str) -> Path:
     return path
 
 
-def verify_main_evidence(path: Path) -> bool:
-    """Verify the exact evidence bytes through a fresh read of origin/main."""
+def verify_main_file(path: Path) -> bytes:
     relative = path.relative_to(ROOT).as_posix()
     run(["git", "fetch", "origin", "main"], check=True)
     result = subprocess.run(
@@ -221,39 +226,89 @@ def verify_main_evidence(path: Path) -> bool:
         capture_output=True,
         env=os.environ.copy(),
     )
+    return result.stdout
+
+
+def verify_main_evidence(
+    path: Path,
+    day: dt.date | None = None,
+    slot: str | None = None,
+) -> bool:
+    """Verify the exact evidence bytes through a fresh read of origin/main."""
+    relative = path.relative_to(ROOT).as_posix()
+    if day is not None and slot is not None:
+        if __package__:
+            from .persist_report_slot_evidence import require_before_slot, validate_stored_slot_evidence
+        else:
+            from persist_report_slot_evidence import require_before_slot, validate_stored_slot_evidence
+        require_before_slot(day.isoformat(), slot)
+    remote_bytes = verify_main_file(path)
+    if day is not None and slot is not None:
+        require_before_slot(day.isoformat(), slot)
     local_bytes = path.read_bytes()
-    if result.stdout != local_bytes:
+    if remote_bytes != local_bytes:
         raise RuntimeError(f"BLOCKED_MAIN_EVIDENCE_READBACK_MISMATCH: {relative}")
+    if day is not None and slot is not None:
+        validate_stored_slot_evidence(local_bytes, day.isoformat(), slot)
+        require_before_slot(day.isoformat(), slot)
     print(f"PRE_DRAFT_EVIDENCE_MAIN_READBACK=PASS sha256={hashlib.sha256(local_bytes).hexdigest()}", flush=True)
     return True
 
 
-def record_evidence_readback(audit: Path, day: dt.date, slot: str, path: Path, status: str, reason: str | None = None) -> None:
+def verify_main_audit_record(
+    audit: Path,
+    record: dict[str, Any],
+    day: dt.date | None = None,
+    slot: str | None = None,
+) -> bool:
+    if day is not None and slot is not None:
+        if __package__:
+            from .persist_report_slot_evidence import require_before_slot
+        else:
+            from persist_report_slot_evidence import require_before_slot
+        require_before_slot(day.isoformat(), slot)
+    expected_line = json.dumps(record, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    remote_lines = verify_main_file(audit).splitlines()
+    if day is not None and slot is not None:
+        require_before_slot(day.isoformat(), slot)
+    if expected_line not in remote_lines:
+        raise RuntimeError("BLOCKED_MAIN_AUDIT_READBACK_MISMATCH")
+    return True
+
+
+def record_evidence_readback(audit: Path, day: dt.date, slot: str, path: Path, status: str, reason: str | None = None) -> bool:
     data = path.read_bytes() if path.is_file() else b""
     evidence_hash = hashlib.sha256(data).hexdigest() if data else None
-    if any(
-        item.get("auditEvent") == "pre_draft_evidence_main_readback"
-        and item.get("evidenceHash") == evidence_hash
-        and item.get("evidenceStatus") == status
+    prior = [
+        item
         for item in read_audit(audit)
-    ):
+        if item.get("auditEvent") == "pre_draft_evidence_main_readback"
+        and item.get("evidenceHash") == evidence_hash
+    ]
+    if prior and prior[-1].get("evidenceStatus") == status:
+        record = prior[-1]
         print(f"PRE_DRAFT_EVIDENCE_READBACK_AUDIT_NO_OP={status}", flush=True)
-        return
-    record = {
-        "auditEvent": "pre_draft_evidence_main_readback",
-        "scheduledDate": day.isoformat(),
-        "reportSlot": slot,
-        "recordedAtJST": iso(),
-        "recordedAtUTC": iso_utc(),
-        "workflowRunId": os.environ.get("GITHUB_RUN_ID", ""),
-        "actionsUrl": workflow_run_url(),
-        "evidencePath": path.relative_to(ROOT).as_posix(),
-        "evidenceHash": evidence_hash,
-        "evidenceStatus": status,
-        "reason": reason,
-    }
-    append_audit(audit, record)
+    else:
+        record = {
+            "auditEvent": "pre_draft_evidence_main_readback",
+            "scheduledDate": day.isoformat(),
+            "reportSlot": slot,
+            "recordedAtJST": iso(),
+            "recordedAtUTC": iso_utc(),
+            "workflowRunId": os.environ.get("GITHUB_RUN_ID", ""),
+            "actionsUrl": workflow_run_url(),
+            "evidencePath": path.relative_to(ROOT).as_posix(),
+            "evidenceHash": evidence_hash,
+            "evidenceStatus": status,
+            "reason": reason,
+        }
+        append_audit(audit, record)
     git_commit_push(f"Record pre-draft evidence readback {day.isoformat()} {slot}")
+    if status == "VERIFIED_ON_MAIN":
+        verify_main_audit_record(audit, record, day, slot)
+    else:
+        verify_main_audit_record(audit, record)
+    return True
 
 
 def sheets_pull_status(status: str) -> tuple[str, str]:
@@ -313,12 +368,24 @@ def perform_attempt(
     sheets_outcome, sheets_message = sheets_pull_status(status)
     evidence_path: Path | None = None
     evidence_error: str | None = None
+    evidence_status = "NOT_ATTEMPTED"
     if freeze_evidence and status in {"verified", "degraded"}:
         try:
-            evidence_path = freeze_slot_evidence(scheduled_day, slot)
-        except (OSError, ValueError, KeyError, TypeError, FileExistsError) as exc:
+            expected_evidence = ROOT / "data" / "report-evidence" / f"{scheduled_day.isoformat()}_{slot.replace(':', '-')}-r1.json"
+            if expected_evidence.is_file():
+                # Retry the exact immutable candidate after a prior push/readback
+                # failure. Never rebuild this report ID from newer market data.
+                evidence_path = expected_evidence
+                evidence_status = "LOCAL_EXISTING"
+            else:
+                evidence_path = freeze_slot_evidence(scheduled_day, slot)
+                evidence_status = "LOCAL_FROZEN"
+        except Exception as exc:
             evidence_error = f"{type(exc).__name__}: {exc}"
+            evidence_status = "BLOCKED_FREEZE"
             print(f"PRE_DRAFT_EVIDENCE_BLOCKED={evidence_error}", file=sys.stderr, flush=True)
+    elif not freeze_evidence and status in {"verified", "degraded"}:
+        evidence_status = "ALREADY_VERIFIED_ON_MAIN"
     completed = now_jst()
     acquisition = payload.get("acquisition") or {}
     targeted = acquisition.get("targetedSymbols") or []
@@ -339,6 +406,7 @@ def perform_attempt(
         "lateMinutes": round(max(0.0, late_minutes), 1),
         "recoveryAfterExpiry": recovery_after_expiry,
         "outcome": status,
+        "acquisitionStatus": status,
         "missingRequired": payload.get("missingRequired") or [],
         "fallbackCount": payload.get("fallbackCount", 0),
         "runCount": acquisition.get("runCount", 0),
@@ -352,19 +420,58 @@ def perform_attempt(
         "sheetsMessage": sheets_message,
         "reportDataSource": "ChatGPT_Market_Input via GitHub_Market_Import/IMPORTDATA",
         "reportDataFallback": "data/market/latest.json",
-        "evidenceStatus": "LOCAL_FROZEN" if evidence_path else ("BLOCKED" if evidence_error else "NOT_ATTEMPTED"),
+        "evidenceStatus": evidence_status,
         "evidenceFailure": evidence_error,
     }
     append_audit(audit, record)
-    git_commit_push(f"Record {slot} market data attempt {scheduled_time}")
-    if evidence_path:
+    try:
+        git_commit_push(
+            f"Record {slot} market data attempt {scheduled_time}",
+            evidence_path=evidence_path,
+        )
+    except Exception as exc:
+        persistence_failure = f"{type(exc).__name__}: {exc}"
+        if evidence_path is not None:
+            record["evidenceStatus"] = "BLOCKED_GIT_PUSH"
+            record["evidenceFailure"] = persistence_failure
+            record["evidenceReadback"] = "BLOCKED"
+        else:
+            # The immutable evidence may already have been verified on main;
+            # a later acquisition-audit push failure must not rewrite that fact.
+            record["auditStatus"] = "BLOCKED_GIT_PUSH"
+        append_audit(audit, {
+            "auditEvent": "market_attempt_persistence_failure",
+            "scheduledDate": scheduled_day.isoformat(),
+            "scheduledTime": scheduled_time,
+            "reportSlot": slot,
+            "recordedAtJST": iso(),
+            "recordedAtUTC": iso_utc(),
+            "workflowRunId": os.environ.get("GITHUB_RUN_ID", ""),
+            "actionsUrl": workflow_run_url(),
+            "acquisitionStatus": status,
+            "evidenceStatus": record["evidenceStatus"],
+            "auditStatus": "BLOCKED_GIT_PUSH",
+            "reason": persistence_failure,
+        })
+        print(f"ACQUISITION_AUDIT_PUSH_BLOCKED={persistence_failure}", file=sys.stderr, flush=True)
+        return record
+    if evidence_path is not None:
         try:
-            verify_main_evidence(evidence_path)
-        except (OSError, subprocess.CalledProcessError, RuntimeError) as exc:
-            record_evidence_readback(audit, scheduled_day, slot, evidence_path, "BLOCKED", str(exc))
-            raise
+            verify_main_evidence(evidence_path, scheduled_day, slot)
+            record_evidence_readback(audit, scheduled_day, slot, evidence_path, "VERIFIED_ON_MAIN")
+        except Exception as exc:
+            evidence_error = f"{type(exc).__name__}: {exc}"
+            record["evidenceStatus"] = "BLOCKED_MAIN_READBACK"
+            record["evidenceFailure"] = evidence_error
+            record["evidenceReadback"] = "BLOCKED"
+            print(f"PRE_DRAFT_EVIDENCE_READBACK_BLOCKED={evidence_error}", file=sys.stderr, flush=True)
+            try:
+                record_evidence_readback(audit, scheduled_day, slot, evidence_path, "BLOCKED", evidence_error)
+            except Exception as audit_exc:
+                print(f"PRE_DRAFT_EVIDENCE_BLOCK_AUDIT_PUSH_BLOCKED={audit_exc}", file=sys.stderr, flush=True)
+            return record
+        record["evidenceStatus"] = "VERIFIED_ON_MAIN"
         record["evidenceReadback"] = "PASS"
-        record_evidence_readback(audit, scheduled_day, slot, evidence_path, "VERIFIED_ON_MAIN")
     elif evidence_error:
         record["evidenceReadback"] = "BLOCKED"
     return record
@@ -428,11 +535,12 @@ def main() -> int:
     evidence_main_ready = False
     if evidence_path.is_file():
         try:
-            evidence_main_ready = verify_main_evidence(evidence_path)
-            if evidence_main_ready:
+            if verify_main_evidence(evidence_path, day, args.slot):
                 record_evidence_readback(audit, day, args.slot, evidence_path, "VERIFIED_ON_MAIN")
-        except (OSError, subprocess.CalledProcessError, RuntimeError) as exc:
+                evidence_main_ready = True
+        except Exception as exc:
             print(f"EXISTING_EVIDENCE_READBACK_BLOCKED={exc}", file=sys.stderr, flush=True)
+            evidence_main_ready = False
 
     for scheduled_time in args.times:
         git_sync()
@@ -471,9 +579,10 @@ def main() -> int:
                 audit,
                 args.mode,
                 age_minutes,
-                freeze_evidence=(scheduled_time == args.times[-1]),
+                freeze_evidence=not evidence_main_ready,
             )
-            evidence_main_ready = evidence_main_ready or record.get("evidenceReadback") == "PASS"
+            if record.get("evidenceStatus") == "VERIFIED_ON_MAIN" and record.get("evidenceReadback") == "PASS":
+                evidence_main_ready = True
             if record.get("outcome") not in {"verified", "degraded"}:
                 failures.append(scheduled_time)
         except Exception as exc:
@@ -506,9 +615,10 @@ def main() -> int:
                 "full",
                 recovery_lateness,
                 recovery_after_expiry=True,
-                freeze_evidence=True,
+                freeze_evidence=not evidence_main_ready,
             )
-            evidence_main_ready = evidence_main_ready or recovery_record.get("evidenceReadback") == "PASS"
+            if recovery_record.get("evidenceStatus") == "VERIFIED_ON_MAIN" and recovery_record.get("evidenceReadback") == "PASS":
+                evidence_main_ready = True
         except Exception as exc:
             print(f"Late recovery failed: {exc}", file=sys.stderr, flush=True)
 
@@ -518,33 +628,46 @@ def main() -> int:
     if (not evidence_main_ready and now_jst() < target_datetime(day, args.slot)
             and snapshot_is_current(load_json(ROOT / "data" / "market" / "latest.json", {}), args.slot, day)):
         try:
-            evidence_path = freeze_slot_evidence(day, args.slot)
-            git_commit_push(f"Freeze pre-draft evidence for {day.isoformat()} {args.slot}")
-            evidence_main_ready = verify_main_evidence(evidence_path)
-            if evidence_main_ready:
+            candidate = ROOT / "data" / "report-evidence" / f"{day.isoformat()}_{args.slot.replace(':', '-')}-r1.json"
+            evidence_path = candidate if candidate.is_file() else freeze_slot_evidence(day, args.slot)
+            git_commit_push(f"Freeze pre-draft evidence for {day.isoformat()} {args.slot}", evidence_path=evidence_path)
+            if verify_main_evidence(evidence_path, day, args.slot):
                 record_evidence_readback(audit, day, args.slot, evidence_path, "VERIFIED_ON_MAIN")
+                evidence_main_ready = True
         except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError, RuntimeError) as exc:
             print(f"PRE_DRAFT_EVIDENCE_BLOCKED={type(exc).__name__}: {exc}", file=sys.stderr, flush=True)
     final_done = completed_times(audit, args.slot)
     missing = [item for item in args.times if item not in final_done]
     final_payload = load_json(ROOT / "data" / "market" / "latest.json", {})
     current_snapshot_ready = snapshot_is_current(final_payload, args.slot, day)
+    report_is_ready = report_ready(current_snapshot_ready, evidence_main_ready)
     evidence_failure_stage: str | None = None
+    evidence_status = "VERIFIED_ON_MAIN" if evidence_main_ready else "BLOCKED"
     if not evidence_main_ready:
         evidence_failure_stage = "pre_draft_evidence"
+        relevant_audit = [
+            item for item in read_audit(audit)
+            if item.get("evidenceStatus") in {
+                "BLOCKED_FREEZE", "BLOCKED_GIT_PUSH", "BLOCKED_MAIN_READBACK",
+                "BLOCKED_MAIN_EVIDENCE_READBACK", "BLOCKED_PRE_DRAFT_EVIDENCE_MISSING",
+            }
+        ]
         evidence_status = (
-            "BLOCKED_MAIN_EVIDENCE_READBACK"
-            if evidence_path.is_file()
-            else "BLOCKED_PRE_DRAFT_EVIDENCE_MISSING"
+            str(relevant_audit[-1]["evidenceStatus"])
+            if relevant_audit
+            else ("BLOCKED_MAIN_EVIDENCE_READBACK" if evidence_path.is_file() else "BLOCKED_PRE_DRAFT_EVIDENCE_MISSING")
         )
-        record_evidence_readback(
-            audit,
-            day,
-            args.slot,
-            evidence_path,
-            evidence_status,
-            "No immutable pre-draft evidence was verified on GitHub main before the report cutoff.",
-        )
+        try:
+            record_evidence_readback(
+                audit,
+                day,
+                args.slot,
+                evidence_path,
+                evidence_status,
+                "No immutable pre-draft evidence was verified on GitHub main before the report cutoff.",
+            )
+        except Exception as exc:
+            print(f"PRE_DRAFT_EVIDENCE_BLOCK_AUDIT_PERSISTENCE_FAILED={exc}", file=sys.stderr, flush=True)
     summary = {
         "date": day.isoformat(),
         "reportSlot": args.slot,
@@ -555,13 +678,17 @@ def main() -> int:
         "mode": args.mode,
         "recoveryAfterExpiry": recovery_record,
         "currentSnapshotReady": current_snapshot_ready,
+        "acquisitionStatus": "READY" if current_snapshot_ready else "BLOCKED",
         "preDraftEvidenceOnMain": evidence_main_ready,
+        "evidenceStatus": evidence_status,
+        "reportReady": report_is_ready,
+        "reportStatus": "READY" if report_is_ready else "BLOCKED",
         "evidenceFailureStage": evidence_failure_stage,
         "actionsUrl": workflow_run_url(),
         "sheetsSyncMode": "pull_importdata",
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2), flush=True)
-    return 1 if (missing and not current_snapshot_ready) or not evidence_main_ready else 0
+    return 0 if report_is_ready else 1
 
 
 if __name__ == "__main__":

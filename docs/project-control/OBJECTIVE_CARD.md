@@ -149,3 +149,21 @@ NEXT NECESSARY ACTION: Keep PR #156 Draft and unmerged pending review. Verify li
 Code review found that the evidence writer reused a caller-supplied pre-write clock for its post-write cutoff guard. Fixed in commit 375c3e71741b5df3fe1e7271e1b6578d845a1e21 by re-reading the live clock after writing and deleting the new file if the slot cutoff has passed. Local targeted suite: 17/17 PASS. Hosted checks on that code head: frozen-cutoff run 38898453782 PASS and delivery health run 38898453962 PASS. PR #156 remains OPEN / Draft and unmerged. E1/E2 only; live scheduled recovery and downstream publication remain NOT_RUN; scheduler/queue cause remains UNKNOWN.
 
 NEXT NECESSARY ACTION: Review PR #156 and, if authorized, merge before observing a future scheduled slot. Do not claim live recovery from these checks.
+
+## PR #156 review follow-up — 2026-10-16 (ADD)
+
+PRIMARY OBJECTIVE: Address every finding in review comment #6215245578 and leave PR #156 updated, validated on its final head, OPEN / Draft, and unmerged.
+
+ACCEPTANCE: (1) freeze/readback failure keeps report readiness blocked while acquisition outcome remains independently auditable; (2) freeze each eligible verified/degraded acquisition before cutoff, reuse same-ID candidate bytes rather than rebuild, and never overwrite; (3) integrate current main and reconcile its workflows/contracts; (4) cover freeze, push, evidence/audit readback, cutoff crossings, audit state transitions, and other-actor cleanup with regression tests. Run targeted tests and both relevant hosted CI workflows on the exact final head.
+
+CONSTRAINTS: Preserve publication gates and cutoff; no historical evidence reconstruction/backfill; no merge, deployment, or production publication. Report all NOT_RUN outcomes accurately.
+
+IMPLEMENTATION STATUS: Latest fetched main `9b400545288f9c199bef86b3b9e33e830b1a9edc` merged locally without conflicts in `9173105d7`; compare was ahead 6 / behind 0 before this follow-up. Code and regression changes are being validated; final hosted CI is still open.
+
+OPEN OUTCOMES: Commit/push the reviewed changes without force, confirm branch remains ahead 0 / behind 0 (or report exact counts), run final-head hosted CI, update PR description with results, verify OPEN / Draft / unmerged, and stop. Live scheduled acquisition and downstream Docs/GitHub publication remain NOT_RUN.
+
+NEXT NECESSARY ACTION: Complete local tests and diff review, append the final evidence record, then commit/push and wait for final-head CI. Do not merge.
+
+## Latest-main resynchronization — 2026-10-16 (CORRECT)
+
+Fetched main advanced to `5797798a2ab41630c88856d2347d20b95a7ccee3` during validation. Merged without conflicts as `e3cdbff2e`; branch now compares 0 behind / 7 ahead. The new main commits changed only production data files; those files are in the merge ancestry and absent from `origin/main...HEAD` PR file diff. Re-run the final local suites after this merge, then push and verify hosted checks on the resulting PR head. Keep Draft; do not merge.

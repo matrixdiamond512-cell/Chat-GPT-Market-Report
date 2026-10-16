@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import call, patch
 
-from scripts.persist_report_slot_evidence import persist_slot_evidence
+from scripts.persist_report_slot_evidence import persist_slot_evidence, validate_stored_slot_evidence
 from scripts.reporting.snapshot import digest
 
 
@@ -66,6 +66,17 @@ class ReportSlotEvidenceTests(unittest.TestCase):
         self.assertFalse(second_created)
         self.assertEqual(first_path, second_path)
 
+    def test_existing_immutable_evidence_can_be_validated_without_latest_data(self):
+        path, _ = persist_slot_evidence("2026-10-16", "08:00", self.market_path, self.output)
+        original = path.read_bytes()
+        validated = validate_stored_slot_evidence(original, "2026-10-16", "08:00")
+        self.assertEqual(validated["reportId"], "2026-10-16_08-00")
+        self.assertEqual(validated["evidenceId"], json.loads(original)["evidenceId"])
+        with self.assertRaisesRegex(ValueError, "SNAPSHOT_HASH_MISMATCH"):
+            tampered = json.loads(original)
+            tampered["snapshot"]["captured_at"] = "2026-10-16T07:59:00+09:00"
+            validate_stored_slot_evidence(json.dumps(tampered).encode("utf-8"), "2026-10-16", "08:00")
+
     def test_changed_acquisition_cannot_overwrite_same_revision(self):
         path, _ = persist_slot_evidence("2026-10-16", "08:00", self.market_path, self.output)
         original = path.read_bytes()
@@ -122,6 +133,29 @@ class ReportSlotEvidenceTests(unittest.TestCase):
                 )
         self.assertEqual(cutoff_check.call_args_list[-1], call("2026-10-16", "08:00"))
         self.assertFalse(list(self.output.glob("*.json")))
+
+    def test_cutoff_cleanup_preserves_a_replacement_written_by_another_actor(self):
+        evidence_path = self.output / "2026-10-16_08-00-r1.json"
+        calls = 0
+
+        def replace_then_cross_cutoff(report_date, report_time, *, now=None):
+            nonlocal calls
+            calls += 1
+            if calls == 3:
+                evidence_path.rename(evidence_path.with_suffix(".owned"))
+                evidence_path.write_bytes(b"other actor's evidence")
+                raise ValueError("BLOCKED_LIVE_EVIDENCE_AFTER_SLOT")
+
+        with patch(
+            "scripts.persist_report_slot_evidence.require_before_slot",
+            side_effect=replace_then_cross_cutoff,
+        ):
+            with self.assertRaisesRegex(ValueError, "BLOCKED_LIVE_EVIDENCE_AFTER_SLOT"):
+                persist_slot_evidence(
+                    "2026-10-16", "08:00", self.market_path, self.output,
+                    require_live_before_slot=True,
+                )
+        self.assertEqual(evidence_path.read_bytes(), b"other actor's evidence")
 
     def test_weekend_new_report_is_rejected(self):
         self.payload["generatedAt"] = "2026-10-17T07:50:00+09:00"
