@@ -8,6 +8,9 @@ on:
       - scripts/run_usdjpy_volume_price_backfill.py
       - scripts/yahoo_jp_usdjpy_ohlc.py
       - scripts/fix_usdjpy_volume_price_labels.py
+      # Apps Script publishes BOJ turnover under the user's token.
+      # Re-attach verified OHLC immediately after that volume-only write.
+      - data/usdjpy-volume.json
   workflow_dispatch:
   schedule:
     - cron: "10 14 * * 1-5"
