@@ -37,3 +37,10 @@
 - 非正式アーカイブ：data/report-recovery-2026-10.jsonにHISTORICAL_ARCHIVE／DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED／verifiedAtSlot=falseとDoc ID・revision・fullTextを保管。通常のreports.json/latest/dashboard.latestReport、receiptは更新しない。
 - 6市場表示：assets/js/top-dashboard.jsとdashboard-market-card-normalizer.js等で補充本文の銘柄別価格と見通しを固有スコープで抽出。COMEX金先物と金スポット、OSE夜間・日中、BTC時刻参考と日足確定を分け、原因・注目点・リスクを別表示。DOM回帰テスト scripts/validate_supplemental_oct16_dashboard.js。
 - PR #152/#153/#154はmain反映済み。CI成功は、通常定時4枠の発行、通知、正本receiptのE2E成功を証明しない。旧来のPNG必須ゲートと現行独立状態の差は別途設計整合性確認の対象に留める。
+
+## 2026-10-17 市場サマリーと本文の一画面統合（PR #97 Draft）
+- `index.html` をレポート閲覧の単一画面とし、市場サマリー直後に選択中スロットの全文・正式条件を満たした図解を連続表示する。日付・時刻コントロールはダッシュボードの一組だけを使う。
+- ダッシュボードが選択したreport objectを同一origin内で本文rendererへ渡す。本文renderer側で公開対象または明示的な履歴archiveかを再確認し、日時・全文・存在するreport_id/revision/bodyHash/snapshot_idの一致を親画面で照合できた場合のみ本文を表示する。不一致時はfail-closedで隠し、理由を表示する。
+- `report.html` は既存リンクとの互換入口とし、`embedded=1`以外は同じ日時を保持して `index.html#report-detail` へ移動する。埋込み表示では本文renderer側のheader・navigation・日付/時刻選択を隠し、archive provenanceは表示したままにする。
+- 正式図解の既存manifest/hash/slot/readiness条件、公開停止、snapshot・数値検証は変更しない。歴史archiveは正式発行・当時snapshot・公開承認済みと表示しない。
+- 回帰はNode identity/mismatchテストと既存report-21-ui-validation Chromium workflowを使う。Chromium UI検査がNOT_RUNの間は実ブラウザー表示をPASSと報告しない。

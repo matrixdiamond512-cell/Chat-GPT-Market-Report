@@ -84,6 +84,7 @@ function renderMissingReport(date, time) {
   $("app").className = "empty";
   $("app").textContent = "対象データなし：この日時のレポート本文は登録されていません。";
   window.MarketReportLastRendered = null;
+  notifyEmbeddedReport_("missing", { date, time });
 }
 function renderInfographic(report) {
   if (typeof isArchivedRecovery === "function" && isArchivedRecovery(report)) return "";
@@ -376,7 +377,50 @@ function renderDocument(report) {
   }
   void verifyAndLoadInfographicHash_(app);
 }
-function render() { if (!selectedReport) return; renderControls(selectedReport); renderDocument(selectedReport); window.MarketReportLastRendered = selectedReport; window.dispatchEvent(new CustomEvent("market-report-rendered", { detail: { report: selectedReport } })); }
+function notifyEmbeddedReport_(status, report) {
+  if (window.parent === window || new URLSearchParams(location.search).get("embedded") !== "1") return;
+  const message = {
+    type: "market-report-inline-rendered",
+    status,
+    date: report?.date || "",
+    time: report?.time || ""
+  };
+  const send = () => {
+    message.height = Math.max(document.documentElement.scrollHeight, document.body?.scrollHeight || 0);
+    window.parent.postMessage(message, location.origin);
+  };
+  requestAnimationFrame(() => { send(); setTimeout(send, 80); });
+}
+function render() {
+  if (!selectedReport) return;
+  if (new URLSearchParams(location.search).get("embedded") !== "1") renderControls(selectedReport);
+  renderDocument(selectedReport);
+  window.MarketReportLastRendered = selectedReport;
+  window.dispatchEvent(new CustomEvent("market-report-rendered", { detail: { report: selectedReport } }));
+  notifyEmbeddedReport_("ready", selectedReport);
+}
+
+function acceptDashboardSelectedReport_(event) {
+  if (event.origin !== location.origin || event.source !== window.parent
+      || new URLSearchParams(location.search).get("embedded") !== "1"
+      || event.data?.type !== "market-dashboard-selected-report") return;
+  const report = event.data.report;
+  const validSlot = /^\d{4}-\d{2}-\d{2}$/.test(String(report?.date || ""))
+    && REPORT_TIMES.includes(report?.time)
+    && typeof fullTextOf(report) === "string" && fullTextOf(report).length > 0;
+  if (!validSlot || !(isPublicReport(report) || isArchivedRecovery(report))) {
+    selectedReport = null;
+    $("app").className = "empty";
+    $("app").textContent = "対象レポートのidentityまたは公開区分を確認できないため、本文表示を停止しました。";
+    window.MarketReportLastRendered = null;
+    notifyEmbeddedReport_("error", report);
+    return;
+  }
+  selectedReport = report;
+  reports = [report];
+  render();
+  syncSelectedReportUrl(selectedReport);
+}
 
 async function init() {
   try {
@@ -414,8 +458,18 @@ async function init() {
     $("reportStatus").textContent = "マーケットレポート本文を読み込めませんでした";
     $("app").className = "empty";
     $("app").innerHTML = `マーケットレポート本文を表示できません。理由：${esc(error.message)}`;
+    notifyEmbeddedReport_("error", null);
   }
 }
 window.MarketReportRendererVersion = "20260925-exact-slot-infographic";
-init();
+if (new URLSearchParams(location.search).get("embedded") === "1") {
+  window.addEventListener("message", acceptDashboardSelectedReport_);
+  if ("ResizeObserver" in window) {
+    new ResizeObserver(() => notifyEmbeddedReport_("height", selectedReport))
+      .observe(document.documentElement);
+  }
+} else {
+  init();
+}
+
 

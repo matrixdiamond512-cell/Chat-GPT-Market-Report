@@ -65,3 +65,17 @@ GitHub PR #97 head `251915b633ff096d6a6e801fc2642b749485b9ba`, OPEN/Draft/unmerg
 ## 2026-10-17 CLI manifest regression
 
 Code review found `prepare_morning_infographic_inputs.py` referenced `captured_at` and `saved_at` in `main()` although they were local to `prepare_inputs()`. The CLI success path therefore raised `NameError` after validating its inputs. `main()` now takes those fields from the original-body evidence and receipt after `prepare_inputs()` has validated the pair. Added subprocess coverage for exit code 0, all four output files, exact identity/hash/snapshot links, and rejection of missing capture time, modified original body, or capture later than Docs `savedAt` with no output directory. Local test outcome: full Python discovery 374/374 PASS (four new CLI subprocess cases included), compileall and `git diff --check` PASS. Hosted Actions on code commit `352088c6ac691331ae2c265d39e37dfea18a8851`: 6/6 PASS (Apps Script 38949644936; synchronization recovery 38949645178; frozen-cutoff 38949644922; morning preflight 38949645175; approved design review 38949644947; delivery health 38949645140). Real issuer/Docs/snapshot inputs are absent before the next scheduled slot, so this is TEST_ONLY E1/E2 evidence and does not establish production E2E. PR remains OPEN/Draft/unmerged; no main change, publication, or Drive write.
+
+## 2026-10-17 one-page report reading correction
+
+Run ID `pr97-one-page-report-20261017`; source PR head observed as `a702dcb14866633994fba550d28d62b6481e5ef1`, OPEN/Draft/unmerged. The supplied screenshots showed dashboard summary and selected full report on separate browser pages; previous work had not addressed that user-visible split.
+
+| Claim | Evidence | Level | Result | Limit |
+|---|---|---|---|---|
+| One page shares one selected slot | `index.html` places the inline full-report region after the 6-market summary; one parent date/time control; legacy `report.html` route redirects to the report anchor | E0/E1 | Implemented locally | Not deployed |
+| Summary and full text use the same report | Parent passes its selected report object to the body renderer. Child retains publication/archive eligibility checks; parent verifies exact date/time/fullText and matching available identity fields before reveal | E1/E2 | Node contract PASS, including altered-body rejection | Browser runtime not yet observed |
+| Historical records remain distinguished | Renderer archive provenance remains visible; formal infographic renderer retains existing eligibility/hash checks | E0/E1 | Preserved by code review | No live source/report changed |
+| Regressions | Node integration contract; JS syntax checks; `python -m unittest discover -s tests -q` | E1/E2 | PASS: Node contract; Python 374/374; `git diff --check` clean | Fixture/test scope only |
+| Real Chromium UI | CUA could not reach local HTTP server (`ERR_CONNECTION_TIMED_OUT`) under sandbox; regression added to existing `report-21-ui-validation.yml` Chromium server run | E4 | Local NOT_RUN; hosted CI pending | Browser result required |
+
+No snapshot, report body, market data, publication gate or production output changed. No merge, publication or Drive write was performed. Next: submit the one-page correction to the existing Draft PR and inspect its Chromium CI outcome.

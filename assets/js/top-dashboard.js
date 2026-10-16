@@ -2326,6 +2326,8 @@ function render() {
   renderMarketLens(report);
   renderScenarios(report);
   renderFootnote(report);
+  window.MarketDashboardSelectedReport = report;
+  window.dispatchEvent(new CustomEvent("market-dashboard-report-selected", { detail: { report } }));
 }
 
 async function init() {
@@ -2527,3 +2529,4 @@ function normalizeDashboardReports(payload) {
 }
 
 init();
+

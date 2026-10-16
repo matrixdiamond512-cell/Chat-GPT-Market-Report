@@ -142,3 +142,9 @@ GitHub Actionsの `Update economic calendar` は5分ごとに動作する。正�
 6. 全証拠が一致した場合だけローカルDRAFT rendererを起動し、異常系も検証する。公開manifest・Drive保存・portal公開はこのDraft接続では行わない。
 
 このPRの変更は未マージのため定時発行から自動では起動しない。次の通常枠で実データE2Eを行う前に、default branchにTEST_ONLY staging workflowを接続する設計・承認が必要である。現状のTEST_ONLY fixture PASSは実データE2Eや本番復旧の証拠ではない。
+
+## 選択レポートの閲覧
+- `index.html` で日付と時刻を一度選ぶ。6市場サマリーの直後に、同じ選択スロットの本文と条件を満たす正式図解が続けて表示される。
+- 本文欄の状態が「市場サマリーと同一本文・identityを確認」となり、表示日時が上の選択値と一致することを確認する。不一致時は本文を表示せず、欄に停止理由を示す。
+- 過去の保存・修復記録には履歴archiveの注意書きが表示される。後日作成の文章や市場値を正式な発行原本として扱わない。
+- 旧ブックマークの `report.html?date=...&time=...` は同じ日時を保持して `index.html#report-detail` に移動する。本文欄側に別の日時コントロールはない。

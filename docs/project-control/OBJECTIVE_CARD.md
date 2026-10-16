@@ -201,3 +201,10 @@ GitHub main advanced from `c3dae9fdaea7c05d8006006b6fb052a28e2535f4` to `9615882
 Main advanced four commits from `9615882cf018479bf3cb2eeeb6f6b73367ea764b` to `d6420e2c3d53a16304bb8d301677e2db4c41da0c`. The actual range changes 15 production data files only (Japan stocks, Nikkei/US dollar-yen supply-demand and market references); no acquisition/evidence code, workflow, or tests changed. Merged without conflicts as `415c28c6d`; local compare 0 behind / 14 ahead before this record commit.
 
 Verified on the synced tree: `data/market/latest.json` is `2026-10-16T20:16:17+09:00`, slot `21:00`, `verified`, with no required-field gaps; `data/report-evidence/2026-10-16_21-00-r1.json` and `reports/2026-10-16_21-00.json` are absent; `reports.json` latest is 2026-10-13 16:00. Do not reconstruct or publish the missed 21:00 slot. The recovery PR applies to future eligible acquisitions. Following local/final-head CI, the user has now directed PR #156 to be reviewed and merged; verify head/base once more, mark ready, and merge the exact approved head. Then observe future-slot production acceptance separately.
+
+## One-page report reading — 2026-10-17 (ADD)
+PRIMARY OBJECTIVE: Keep the selected market summary, full report text and eligible infographic together in one user-facing page under one shared date/time selection.
+ACCEPTANCE: `index.html` shows the selected report after the 6-market summary; the renderer receives the exact dashboard-selected report object; full body and available identity fields are compared before reveal; mismatch fails closed; historical archive notice remains visible; direct legacy `report.html` links return to the same in-page report anchor.
+CONSTRAINTS: Preserve 16-panel renderer, report eligibility, snapshot/numeric gates and publication stop; no market data changes, publication, Drive writes or merge.
+OPEN OUTCOMES: Chromium browser rendering on CI; final PR head / Actions readback. Local browser could not reach the sandboxed HTTP server, so visual runtime is NOT_RUN.
+NEXT NECESSARY ACTION: Validate through the existing report-21-ui-validation Chromium workflow; keep PR #97 OPEN/Draft/unmerged.

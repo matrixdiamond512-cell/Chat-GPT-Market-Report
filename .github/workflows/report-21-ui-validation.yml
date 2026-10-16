@@ -4,26 +4,40 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - 'index.html'
       - 'report.html'
+      - 'assets/css/report-fulltext.css'
+      - 'assets/css/report-inline.css'
+      - 'assets/js/top-dashboard.js'
+      - 'assets/js/report-inline-integration.js'
       - 'assets/js/report-core-v3.js'
       - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
       - 'scripts/validate_market_report_dom.js'
       - 'scripts/test_market_report_title_boundary.js'
       - 'scripts/test_portal_deploy_safety.js'
+      - 'scripts/test_report_single_page_ui.js'
+      - 'tests/test_report_inline_integration.js'
       - 'tests/fixtures/report_title_boundary_malformed.json'
       - '.github/workflows/report-21-ui-validation.yml'
   push:
     branches:
       - main
     paths:
+      - 'index.html'
       - 'report.html'
+      - 'assets/css/report-fulltext.css'
+      - 'assets/css/report-inline.css'
+      - 'assets/js/top-dashboard.js'
+      - 'assets/js/report-inline-integration.js'
       - 'assets/js/report-core-v3.js'
       - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
       - 'scripts/validate_market_report_dom.js'
       - 'scripts/test_market_report_title_boundary.js'
       - 'scripts/test_portal_deploy_safety.js'
+      - 'scripts/test_report_single_page_ui.js'
+      - 'tests/test_report_inline_integration.js'
       - 'tests/fixtures/report_title_boundary_malformed.json'
       - '.github/workflows/report-21-ui-validation.yml'
 
@@ -119,6 +133,18 @@ jobs:
           NODE_PATH: ${{ runner.temp }}/renderer-regression/node_modules
         run: node scripts/validate_market_report_dom.js
 
+      - name: Verify the selected report stays on the dashboard page
+        env:
+          PORTAL_URL: http://127.0.0.1:8766
+          NODE_PATH: ${{ runner.temp }}/renderer-regression/node_modules
+          REPORT_UI_OUTPUT: validation/report-single-page-ui
+        run: node scripts/test_report_single_page_ui.js
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: report-single-page-browser-review
+          path: validation/report-single-page-ui/
+
   strict-current-report:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -151,3 +177,4 @@ jobs:
           PORTAL_URL: http://127.0.0.1:8765
           NODE_PATH: ${{ runner.temp }}/current-report-validation/node_modules
         run: node scripts/validate_market_report_dom.js
+
