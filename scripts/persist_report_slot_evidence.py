@@ -9,7 +9,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from datetime import date
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 if __package__:
@@ -68,7 +68,19 @@ def build_slot_evidence(report_date: str, report_time: str, market_payload: dict
     }
 
 
-def persist_slot_evidence(report_date: str, report_time: str, market_data_path: Path, output_dir: Path, *, max_age_minutes: int = 15) -> tuple[Path, bool]:
+def require_before_slot(report_date: str, report_time: str, *, now: datetime | None = None) -> None:
+    """Fail closed if the live producer tries to backfill after the slot cutoff."""
+    current = now if now is not None else datetime.now(timezone.utc)
+    if current.tzinfo is None:
+        raise ValueError("BLOCKED_LIVE_EVIDENCE_NAIVE_CLOCK")
+    target = aware(f"{report_date}T{report_time}:00+09:00")
+    if current >= target:
+        raise ValueError("BLOCKED_LIVE_EVIDENCE_AFTER_SLOT")
+
+
+def persist_slot_evidence(report_date: str, report_time: str, market_data_path: Path, output_dir: Path, *, max_age_minutes: int = 15, require_live_before_slot: bool = False, now: datetime | None = None) -> tuple[Path, bool]:
+    if require_live_before_slot:
+        require_before_slot(report_date, report_time, now=now)
     raw = market_data_path.read_bytes()
     payload = json.loads(raw.decode("utf-8"))
     if not isinstance(payload, dict):
@@ -80,6 +92,8 @@ def persist_slot_evidence(report_date: str, report_time: str, market_data_path: 
         if out_path.read_bytes() == encoded:
             return out_path, False
         raise FileExistsError(f"immutable report evidence already exists with different content: {out_path}")
+    if require_live_before_slot:
+        require_before_slot(report_date, report_time, now=now)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_bytes(encoded)
     # Read back and verify both exact bytes and calculated identity before success.
@@ -101,8 +115,9 @@ def main() -> None:
     parser.add_argument("--market-data", default="data/market/latest.json")
     parser.add_argument("--output-dir", default="data/report-evidence")
     parser.add_argument("--max-age-minutes", type=int, default=15)
+    parser.add_argument("--require-live-before-slot", action="store_true", help="never create a live report-slot evidence after its cutoff")
     args = parser.parse_args()
-    path, created = persist_slot_evidence(args.date, args.slot, Path(args.market_data), Path(args.output_dir), max_age_minutes=args.max_age_minutes)
+    path, created = persist_slot_evidence(args.date, args.slot, Path(args.market_data), Path(args.output_dir), max_age_minutes=args.max_age_minutes, require_live_before_slot=args.require_live_before_slot)
     print(f"{'CREATED' if created else 'NO_OP'} pre-draft evidence: {path.as_posix()}")
 
 
