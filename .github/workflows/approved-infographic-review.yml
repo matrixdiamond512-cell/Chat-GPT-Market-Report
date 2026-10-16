@@ -1,0 +1,59 @@
+name: Approved infographic design review
+on:
+  pull_request:
+    paths:
+      - 'scripts/reporting/approved_layout.py'
+      - 'scripts/market_report.py'
+      - 'scripts/render_morning_png.js'
+      - 'templates/infographic/approved/**'
+      - 'tests/test_approved*'
+      - 'tests/test_infographic_validation.py'
+      - 'tests/test_independent_publication_status.py'
+      - 'scripts/test_independent_publication.js'
+      - 'docs/examples/approved-infographic/**'
+      - '.github/workflows/approved-infographic-review.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  approved-layout-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install rendering dependencies
+        run: |
+          python -m pip install pillow tzdata
+          npm install --prefix "$RUNNER_TEMP/approved-renderer" --no-save playwright@1.62.1
+          "$RUNNER_TEMP/approved-renderer/node_modules/.bin/playwright" install --with-deps chromium
+          sudo apt-get install -y fonts-noto-cjk
+      - name: Preserve report and publication regression gates
+        run: |
+          python -m unittest discover -s tests -p test_infographic_validation.py -v
+          python -m unittest discover -s tests -p test_independent_publication_status.py -v
+          node scripts/test_independent_publication.js
+      - name: Build four source-bound DRAFT previews and run browser rejection cases
+        env:
+          NODE_PATH: ${{ runner.temp }}/approved-renderer/node_modules
+        run: |
+          python -m unittest discover -s tests -p test_approved_layout.py -v
+          for slot in 08-00 12-00 16-00 21-00; do
+            python scripts/market_report.py render-infographic \
+              --report "docs/examples/approved-infographic/review-20261014-withdrawal-aware/2026-10-13_${slot}/source-report.json" \
+              --reference docs/examples/approved-infographic/approved-reference.png \
+              --events templates/infographic/approved/events-2026-10-13.json \
+              --draft --source-ref a47ca3e9c2010d4c5d1eaaa4510bdb2961b2645a \
+              --source-path "reports/2026-10-13_${slot}.json" --output "validation/approved-ci/${slot}"
+          done
+          node tests/test_approved_renderer.js validation/approved-ci/08-00 validation/approved-ci/negative-cases
+      - uses: actions/upload-artifact@v4
+        with:
+          name: approved-four-slot-DRAFT-review
+          path: validation/approved-ci/

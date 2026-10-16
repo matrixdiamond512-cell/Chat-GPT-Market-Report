@@ -1,9 +1,30 @@
 """Read-only preflight for 08:00 infographic inputs. Never backfills evidence."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
-def check(report, view=None):
+def docs_readback_errors(report, docs_readback):
+    errors = []
+    if not isinstance(docs_readback, dict):
+        return ["docs_readback.not_provided"]
+    for key in ("document_id", "document_revision_id", "report_id", "revision", "fullText"):
+        if docs_readback.get(key) in (None, ""):
+            errors.append("docs_readback." + key)
+    for key in ("report_id", "revision"):
+        if docs_readback.get(key) is not None and docs_readback.get(key) != report.get(key):
+            errors.append("docs_readback.identity_mismatch." + key)
+    body = docs_readback.get("fullText")
+    if isinstance(body, str):
+        digest = hashlib.sha256(body.encode("utf-8")).hexdigest()
+        if body != report.get("fullText"):
+            errors.append("docs_readback.body_mismatch")
+        if digest != report.get("bodyHash"):
+            errors.append("docs_readback.bodyHash_mismatch")
+    return errors
+
+
+def check(report, view=None, *, docs_readback=None, require_docs_readback=False):
     missing = []
     for key in ("report_id", "revision", "bodyHash", "fullText"):
         if not report.get(key):
@@ -45,6 +66,8 @@ def check(report, view=None):
             missing.append("identity_mismatch.data_cutoff")
     if report.get("source_note") or report.get("report_status") in ("RECONSTRUCTED_UNVERIFIED", "UNVERIFIED"):
         missing.append("report.original_source_verification")
+    if require_docs_readback or docs_readback is not None:
+        missing.extend(docs_readback_errors(report, docs_readback))
     return {"status": "BLOCKED" if missing else "READY_FOR_CANONICAL_VALIDATION",
             "missing_or_unverified": missing,
             "note": "Preflight is not canonical spec, price, PNG, Drive or publication validation."}
@@ -53,10 +76,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", type=Path, required=True)
     parser.add_argument("--view", type=Path)
+    parser.add_argument("--docs-readback", type=Path,
+                        help="Exact readback JSON: document_id, document_revision_id, report_id, revision, fullText")
     args = parser.parse_args()
     report = json.loads(args.report.read_text(encoding="utf-8-sig"))
     view = json.loads(args.view.read_text(encoding="utf-8-sig")) if args.view else None
-    result = check(report, view)
+    docs_readback = json.loads(args.docs_readback.read_text(encoding="utf-8-sig")) if args.docs_readback else None
+    result = check(report, view, docs_readback=docs_readback)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 1 if result["status"] == "BLOCKED" else 0
 

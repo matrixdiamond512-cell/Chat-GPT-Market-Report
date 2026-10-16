@@ -15,7 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'scripts'))
 from reporting.infographic import (  # noqa: E402
     SourceLock, TIMELINES, ValidationFailure, build_spec, completion_gate,
     validate_image, validate_market_data, validate_publication_evidence, validate_report, validate_spec,
-    vision_attestation_payload,
+    vision_attestation_payload, _numeric_tokens, _report_sections,
 )
 from reporting.context import ReportContext  # noqa: E402
 from reporting.snapshot import Market, MarketDataSnapshot  # noqa: E402
@@ -97,6 +97,15 @@ def spec(report=None, slot='12:00'):
     panels.append({'title': 'Nikkei225', 'type': 'numeric_card', 'text': '',
             'numbers': [{'instrument': source_market['instrument'], 'value': '70,683.98', 'unit': source_market['priceUnit'],
                                 'timestamp': source_market['asOf'], 'source_section': '前回からの変化'}]})
+    for section in _report_sections(report['fullText']):
+        target = next((panel for panel in panels if panel['title'] == section['heading']), None)
+        if target is None:
+            continue
+        for line in section['lines']:
+            for token in _numeric_tokens(line):
+                target['numbers'].append({'source_field': 'report_text', 'value': format(token, 'f'),
+                                          'source_section': section['heading'],
+                                          'line_sha256': hashlib.sha256(line.encode('utf-8')).hexdigest()})
     return {'report_id': rid, 'title': report['title'], 'date': report['date'], 'time': report['time'], 'snapshot_id': report['snapshot']['snapshot_id'],
             'source_sha256': SourceLock.create(report).sha256, 'source_locked': True,
             'timeline': list(TIMELINES[report['time']]), 'allow_charts': False, 'allow_gauges': False, 'allow_people': False,
@@ -152,6 +161,37 @@ class InfographicRegressionTests(unittest.TestCase):
         titles = [panel['title'] for panel in build_spec(sample())['panels']]
         self.assertIn('メインシナリオ', titles)
         self.assertIn('代替シナリオ', titles)
+
+    def test_spec_builder_binds_narrative_numbers_to_locked_source_lines(self):
+        report = sample(); candidate = build_spec(report)
+        result = validate_spec(report, candidate, SourceLock.create(report).__dict__)
+        self.assertEqual(result['status'], 'PASS')
+        narrative = [number for panel in candidate['panels'] for number in panel.get('numbers', [])
+                     if number.get('source_field') == 'report_text']
+        self.assertTrue(any(number['value'] == '70000' for number in narrative))
+        number = next(item for item in narrative if item['value'] == '70000')
+        number['line_sha256'] = '0' * 64
+        self.fails('NUMERIC_DRIFT', lambda: validate_spec(report, candidate))
+
+    def test_spec_builder_distinguishes_price_change_and_percent_snapshot_fields(self):
+        report = sample()
+        report['fullText'] = report['fullText'].replace(
+            '日経225は70,683.98。', '日経225先物：70,683.98円、前日比+683.98円（+0.97%）。')
+        snapshot = MarketDataSnapshot.restore(report['snapshot'])
+        markets = []
+        for market in snapshot.markets:
+            if market.instrument == 'nikkei225_futures_ose':
+                market = dataclasses.replace(market, changeValue=683.98, changePct=0.97,
+                                             direction='UP', comparisonBasis='previous_close')
+            markets.append(market)
+        report['snapshot'] = MarketDataSnapshot.capture(ReportContext(**report['context']), markets,
+                                                         snapshot.captured_at).to_dict()
+        candidate = build_spec(report)
+        result = validate_spec(report, candidate, SourceLock.create(report).__dict__)
+        self.assertEqual(result['status'], 'PASS')
+        numeric = next(panel for panel in candidate['panels'] if panel['title'] == 'nikkei225_futures_ose')['numbers']
+        self.assertEqual({item.get('source_field') for item in numeric}, {'priceValue', 'changeValue', 'changePct'})
+        self.assertEqual(next(item for item in numeric if item['source_field'] == 'changePct')['unit'], '%')
 
     def test_06_empty_docs_readback_fails_existing_gate(self):
         from tests.test_validation_gates import docs, objects
@@ -245,6 +285,9 @@ class InfographicRegressionTests(unittest.TestCase):
         validated = validate_publication_evidence(report, evidence, image_sha256=image_sha)
         self.assertEqual(validated['status'], 'STRUCTURE_PASS')
         self.assertFalse(validated['external_observation_verified'])
+        evidence['drive_image']['read_file_id'] = 'different-png'
+        self.fails('DRIVE_IMAGE_READBACK_FAILED', lambda: validate_publication_evidence(report, evidence, image_sha256=image_sha))
+        evidence['drive_image']['read_file_id'] = 'png1'
         evidence['portal']['latest_report_id'] = '2026-10-06_16-00'
         self.fails('PORTAL_READBACK_FAILED', lambda: validate_publication_evidence(report, evidence, image_sha256=image_sha))
 

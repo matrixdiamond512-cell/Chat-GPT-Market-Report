@@ -16,9 +16,8 @@ import sync_latest_report_publication
 
 
 class ReportContractTests(unittest.TestCase):
-    def test_schedule_has_one_authoritative_saturday_slot(self):
-        # Saturdays have no new publication slots; saved 07:00/08:00/09:00
-        # reports remain valid as legacy history.
+    def test_schedule_has_no_new_weekend_publication_and_retains_historical_slots(self):
+        # New Saturday/Sunday publications are disabled; legacy slots remain valid history.
         self.assertEqual(validate_market_reports.publication_slots("2026-09-19"), set())
         self.assertEqual(validate_market_reports.publication_slots("2026-09-20"), set())
         self.assertEqual(validate_market_reports.expected_slots("2026-09-19"), {"07:00", "08:00", "09:00"})
@@ -159,7 +158,6 @@ BTCUSD：84,000ドル
         errors, warnings = [], []
         validate_market_reports.validate_report_content(report, "report", True, errors, warnings)
         self.assertFalse(any("必須市場不足" in error for error in errors))
-
 
     def test_slot_transition_heading_requires_substantive_body(self):
         section_body = (

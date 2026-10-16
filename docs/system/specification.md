@@ -12,6 +12,13 @@
 - importerは正本保存後、既存latest選択器、canonical-only index再構築、publication consistency verifierを実行する。PASSしたデータ差分がある場合だけPages deployを要求する。
 - 本追補は未マージPRの実装仕様であり、Actions/Pagesの本番成功を意味しない。
 
+## 2026-10-17 PR #97 08:00 図解接続（Draft仕様）
+- `capture_morning_creation_evidence.py` がG0/G1/G2を通過した保存前本文を固定し、全文UTF-8 SHA-256、日時、report_id/revision、snapshot_id、context/snapshotとUTC `capturedAt` を記録する。成果物はDocs writerへ本文を渡す前に排他的に保存する。capture timestampは保存順の追加検査であり、単独で署名済み証明を意味しない。
+- Docs保存後は既存Drive importerがDocs API本文を読み戻してcanonical reportを作り、receipt v2が同じdocument revision/bodyHashを示す。staging bridgeは保存前G2 artifact、importer本文、receiptを照合する。読み戻し本文はAPIアクセスしたと誤認させず、importerが観測した本文として記録する。
+- `prepare_morning_infographic_inputs.py` は同一report/evidence/receipt/G2本文と、レビュー済みの `summary-authoring.json` / `view-authoring.json` を入力にsummary/view/specを組み立てる。source anchorの重複は明示された0始まりoccurrenceのみで解決し、パネル12三役の人間レビューは常に別のPENDING承認記録を要する。CLI manifestの時刻は、入力検証後にG2証跡とDocs receiptから取得する。正常系CLIが4成果物を生成しidentity/hashを一致させる回帰テストと、欠損・改変・時刻逆転で出力前に停止する異常系テストを必須とする。描画・公開・Drive書込みはこの準備コマンドの責務外。
+- 全文本文はhash-boundで保存し続けるが、図解には全文章の転載を要求しない。必須source factの網羅、原文位置、snapshot結合、数値・方向・単位・時刻の検証で要約を受け入れる。
+- 定時publisherからPR rendererへのhookは未実装。実装にはdefault branch側の段階的なTEST_ONLY workflow接続が必要。現在の制約によりmain、schedule、既存publish workflowは未変更。E2Eは同一runの実データと独立シナリオレビューがそろうまでNOT_RUN。
+
 ## 2026-10-13 実検証で確定した事実
 - 実ChatGPTタスクは平日4枠のみ有効。土曜日旧タスクは無効。Apps Script実トリガーは接続元から照会不可。
 - PR #95/#96はマージ済み。PR #94/#97/#98はDraft・未マージ。

@@ -49,8 +49,8 @@ def numeric(value: Any) -> float | None:
     source = str(value if value is not None else "").strip()
     if not source or any(word in source for word in ("取得不能", "未公表", "未取得", "検証不能")):
         return None
-    source = re.sub(r"^(?:約\\s*|\\$\\s*)", "", source)
-    source = re.sub(r"\\s*(?:ドル|USD|米ドル)\\s*$", "", source).strip()
+    source = re.sub(r"^(?:約\s*|\$\s*)", "", source)
+    source = re.sub(r"\s*(?:ドル|USD|米ドル)\s*$", "", source).strip()
     if not NUM_RE.fullmatch(source):
         return None
     try:

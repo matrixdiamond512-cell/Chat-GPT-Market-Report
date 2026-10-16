@@ -164,6 +164,20 @@ OPEN OUTCOMES: Commit/push the reviewed changes without force, confirm branch re
 
 NEXT NECESSARY ACTION: Complete local tests and diff review, append the final evidence record, then commit/push and wait for final-head CI. Do not merge.
 
+## 2026-10-17 active continuation — staging bridge
+
+PRIMARY OBJECTIVE: For a new normal 08:00 publication, prove one same-run source chain from frozen acquisition through canonical Docs readback to a local DRAFT infographic, while preserving all publication gates.
+
+ACTIVE PROFILE: dashboard + data-tool.
+
+OPEN OUTCOMES: (1) PR code-level renderer bridge and panel-12 role contract; (2) actual producer-to-renderer automatic invocation; (3) next eligible report's identity/bodyHash/evidence/receipt/spec; (4) human panel-12 source/meaning review; (5) local real-data DRAFT/browser verification. Outcome (2) cannot be activated by an unmerged PR, and the upstream system does not emit summary/view/spec or a human review attestation.
+
+STATUS: PR #97 re-read OPEN/Draft/unmerged at `f341c5c805caee1af788dcdf9e1004d5472be6e0`. The next repository-contract slot is 2026-10-19 08:00 JST. No same-run report/evidence/receipt exists yet. Local TEST_ONLY integration does not satisfy live E2E.
+
+CONSTRAINTS: Do not merge, publish, write Drive, use supplemental/historical or later data, or expand to other slots. Fail closed. Keep `publish_allowed=false`.
+
+NEXT NECESSARY ACTION: Finish the guarded staging bridge, run offline tests, document the precise main-branch activation blocker, and after the next valid slot inspect its real artifacts before any DRAFT render.
+
 ## Latest-main resynchronization — 2026-10-16 (CORRECT)
 
 Fetched main advanced to `5797798a2ab41630c88856d2347d20b95a7ccee3` during validation. Merged without conflicts as `e3cdbff2e`; branch now compares 0 behind / 7 ahead. The new main commits changed only production data files; those files are in the merge ancestry and absent from `origin/main...HEAD` PR file diff. Re-run the final local suites after this merge, then push and verify hosted checks on the resulting PR head. Keep Draft; do not merge.

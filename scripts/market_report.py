@@ -70,8 +70,25 @@ def main(argv=None):
     p.add_argument('--force', action='store_true')
     p.add_argument('--output', type=Path)
 
+    p = commands.add_parser('render-infographic', help='approved 16-panel source-bound DRAFT PNG; no publication')
+    p.add_argument('--report', required=True, type=Path)
+    p.add_argument('--reference', required=True, type=Path)
+    p.add_argument('--output', required=True, type=Path, help='new review directory')
+    p.add_argument('--events', type=Path, help='reviewed primary-source schedule evidence, separate from body')
+    p.add_argument('--spec', type=Path)
+    p.add_argument('--draft', action='store_true')
+    p.add_argument('--source-ref', default='HEAD', help='pinned Git commit containing the input report')
+    p.add_argument('--source-path', help='canonical reports/<date>_<slot>.json path when reading an archived review copy')
+    p.add_argument('--node', default='node')
+    p.add_argument('--browser')
+
     args = parser.parse_args(argv)
     try:
+        if args.command == 'render-infographic':
+            from reporting.approved_layout import render_command
+            value = render_command(args)
+            emit(value)
+            return 0
         report = read_json(args.report) if getattr(args, 'report', None) else None
         if args.command == 'validate-report':
             value = {'report_id': None}
@@ -215,7 +232,8 @@ def main(argv=None):
     except (ValidationFailure, ValueError, KeyError, TypeError, OSError, json.JSONDecodeError) as exc:
         reason = exc.reason if isinstance(exc, ValidationFailure) else 'INPUT_INVALID'
         value = result('FAIL', reason, getattr(exc, 'details', str(exc)))
-        emit(value, getattr(args, 'output', None))
+        # Renderer output is a directory, and failed preflight must not create it.
+        emit(value, None if args.command == 'render-infographic' else getattr(args, 'output', None))
         return 1
 
 
