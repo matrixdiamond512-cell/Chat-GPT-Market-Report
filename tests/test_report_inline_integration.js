@@ -6,6 +6,7 @@ const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const dashboard = fs.readFileSync(path.join(root, 'assets/js/top-dashboard.js'), 'utf8');
 const reportCore = fs.readFileSync(path.join(root, 'assets/js/report-core-v3.js'), 'utf8');
+const markdownFix = fs.readFileSync(path.join(root, 'assets/js/report-markdown-fulltext-fix.js'), 'utf8');
 const contentCss = fs.readFileSync(path.join(root, 'assets/css/report-content-inline.css'), 'utf8');
 
 assert.match(index, /<body data-report-inline="dashboard">/);
@@ -17,11 +18,15 @@ assert.equal((index.match(/id="timeTabs"/g) || []).length, 1, 'there is one time
 assert.match(dashboard, /MarketDashboardSelectedReport = report/);
 assert.match(dashboard, /market-dashboard-report-selected/);
 assert.match(reportCore, /dashboardInlineMode\(\)/);
+assert.match(reportCore, /^\/\* Market report single-source renderer v3[\s\S]*?\(\(\) => \{/,
+  'renderer globals are isolated from dashboard globals');
 assert.match(reportCore, /acceptDashboardReport_\(window\.MarketDashboardSelectedReport\)/);
 assert.match(reportCore, /isPublicReport\(report\) \|\| isArchivedRecovery\(report\)/,
   'inline rendering retains the existing publication/archive eligibility gate');
 assert.match(contentCss, /\.report-inline \.report-body/);
 assert.match(contentCss, /\.report-inline \.archive-provenance/,
   'archival recovery provenance stays visible in the same page');
+assert.match(markdownFix, /MarketReportRenderer\?\.setRichTextRenderer/,
+  'Markdown renderer connects through the isolated renderer API');
 
 process.stdout.write('report same-DOM integration contract: PASS\n');

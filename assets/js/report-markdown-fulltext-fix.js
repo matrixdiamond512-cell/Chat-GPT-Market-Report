@@ -21,6 +21,6 @@
     flushParagraph(); flushBullets();
     return output.join('');
   }
-  if (typeof renderRichText === 'function') renderRichText = markdownLines;
-  if (typeof renderPreface === 'function') renderPreface = markdownLines;
+  window.MarketReportMarkdownRenderer = markdownLines;
+  window.MarketReportRenderer?.setRichTextRenderer(markdownLines);
 })();

@@ -1,4 +1,5 @@
 /* Market report single-source renderer v3. 2026-08-17 18:45 JST */
+(() => {
 const REPORT_TIMES = ["08:00", "12:00", "16:00", "21:00"];
 let reports = [];
 let selectedReport = null;
@@ -486,10 +487,22 @@ async function init() {
     notifyEmbeddedReport_("error", null);
   }
 }
+window.MarketReportRenderer = Object.freeze({
+  setRichTextRenderer(renderer) {
+    if (typeof renderer !== "function") throw new TypeError("renderer must be a function");
+    renderRichText = renderer;
+    renderPreface = renderer;
+  }
+});
+if (typeof window.MarketReportMarkdownRenderer === "function") {
+  window.MarketReportRenderer.setRichTextRenderer(window.MarketReportMarkdownRenderer);
+}
 window.MarketReportRendererVersion = "20260925-exact-slot-infographic";
 if (dashboardInlineMode()) {
   window.addEventListener("market-dashboard-report-selected", event => acceptDashboardReport_(event.detail?.report));
-  if (window.MarketDashboardSelectedReport) acceptDashboardReport_(window.MarketDashboardSelectedReport);
+  if (window.MarketDashboardSelectedReport) {
+    setTimeout(() => acceptDashboardReport_(window.MarketDashboardSelectedReport), 0);
+  }
 } else if (new URLSearchParams(location.search).get("embedded") === "1") {
   window.addEventListener("message", acceptDashboardSelectedReport_);
   if ("ResizeObserver" in window) {
@@ -499,5 +512,4 @@ if (dashboardInlineMode()) {
 } else {
   init();
 }
-
-
+})();
