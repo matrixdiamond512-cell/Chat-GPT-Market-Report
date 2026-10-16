@@ -68,3 +68,9 @@ OPEN OUTCOMES: finish local full regressions; verify current GitHub PR state and
 LIMITS: current tests use synthetic TEST_ONLY evidence. `capturedAt` orders local artifacts but is not a cryptographic signature. No real Docs save/readback, actual 08:00 run, formal PNG/manifest, browser test on real report, publication, or Drive write has been observed.
 
 NEXT NECESSARY ACTION: complete local full-suite and diff checks, then update PR #97 without changing its Draft/open/unmerged state. Report the exact first missing actual-slot input if 2026-10-19 evidence is absent. Propose (do not apply) a default-branch TEST_ONLY post-publisher hook.
+
+## 2026-10-17 final continuation state
+
+PR #97 is OPEN/Draft/unmerged at `251915b633ff096d6a6e801fc2642b749485b9ba`, based on latest main `c03f562ae1ade94283c82af2159eb2db3abee095` (0 commits behind). The commit has latest main as its second parent and carries main's `data/usdjpy-volume.json` blob unchanged; GitHub reports mergeable. Hosted Actions: 6/6 PASS (run IDs 38947617898, 38947617994, 38947618026, 38947617947, 38947618009, 38947618097). Local compileall and 370/370 Python tests PASS. Actual 2026-10-19 report/evidence/Docs readback, human panel-12 review and real-data DRAFT render remain NOT_RUN because that normal slot is future. Producer auto-invocation remains unimplemented; no main workflow/schedule, publication or Drive change was made.
+
+NEXT NECESSARY ACTION: after the 2026-10-19 normal slot, first verify same-run G2 original body, acquisition/snapshot, canonical Docs importer readback and receipt. Then prepare authored summary/view/spec, conduct independent panel-12 review, and only then run local DRAFT E2E. If any item is missing, report the first missing stage and stop.
