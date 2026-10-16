@@ -136,3 +136,10 @@ IMPLEMENTATION STATUS: Targeted local regression tests PASS. Branch codex/market
 OPEN OUTCOMES: Hosted CI on final PR head; reviewable Draft PR; live future-slot evidence and downstream report/Docs/receipt/Pages acceptance remain NOT_RUN. The scheduler/queue cause behind the observed multi-hour trigger delay is UNKNOWN.
 
 NEXT NECESSARY ACTION: Finish code review and CI, create the Draft PR, then wait for an authorized future pre-slot run to verify production evidence readback. Keep the PR unmerged.
+
+
+## Recovery PR validation — 2026-10-16 (CORRECT)
+
+PR #156 was created OPEN / Draft on base 4efdc2db068db7cd1e1cc2e5a05ef09414dc2e6b, head d3105dd0ff44a86940e02db6fa1d51dd0828abe2. Hosted PR checks both passed on that exact head: Market report frozen-cutoff regression CI run 38885680439, including Python compile and offline cutoff/evidence suites; Delivery health regression CI run 38885680536, including all 16 targeted delivery/evidence tests. PR #156 remains OPEN / Draft and unmerged. Local evidence stays E1/E2; live acquisition, future-slot evidence, and report/Docs/receipt/Pages acceptance remain NOT_RUN.
+
+NEXT NECESSARY ACTION: Keep PR #156 Draft and unmerged pending review. Verify live outcome only on a future scheduled slot after authorized merge.
