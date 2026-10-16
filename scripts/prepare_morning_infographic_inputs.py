@@ -139,6 +139,11 @@ def main() -> int:
             report=report, evidence_bytes=args.evidence.read_bytes(), receipt=receipt,
             original_body_evidence=original, summary_authoring=summary_authoring,
             view_authoring=view_authoring)
+        # prepare_inputs has already validated the complete pre-save evidence,
+        # including its capture-before-save ordering. Read the timestamps from
+        # those validated CLI inputs here; they are not locals of prepare_inputs.
+        captured_at = original["capturedAt"]
+        saved_at = receipt["savedAt"]
         output.mkdir(parents=True)
         artifacts = {"summary.json": summary, "view.json": view, "spec.json": spec}
         for filename, payload in artifacts.items():

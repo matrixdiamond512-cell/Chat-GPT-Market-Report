@@ -36,6 +36,7 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 
 ## 2026-10-17 追補（PR #97 08:00 接続）
 - REQ-12：本文は発行前に `G2_DRAFT_NOT_SAVED` の全文・SHA-256・report identity・snapshot/contextとともに固定し、その本文をDocs writerへ渡す。Docs保存後、Drive importerがGoogle Docs APIから読み戻した本文、revision、SHA-256と保存前artifactを照合し、本文またはidentity不一致なら図解描画と公開を停止する。保存前artifactの `capturedAt` はreceiptの `savedAt` 以下でなければならない。
+- REQ-12a：図解入力準備CLIは検証済みG2証跡とDocs receiptの時刻をinput-manifestへ記録し、正常経路ではsummary/view/spec/input-manifestをすべて生成して終了コード0を返す。必須入力欠損、原文改変、保存時刻より後のG2 captureであれば非0終了し、出力ディレクトリを作成しない。CLIプロセス末端までを確認する回帰テストを必須とする。
 - REQ-13：本文全文の保持と図解の情報量を分離する。全文hashは本文側で検証し、図解側は出典位置・snapshot参照付きの宣言済み要約factを検証する。16パネル全ての必須役割、snapshot数値、方向、単位、時刻、specとの一致を確認する。要約により図解に載らない説明は本文に完全保持する。
 - REQ-14：パネル12はメインシナリオ・代替シナリオ・崩れる条件を必須とし、成立条件・想定展開・市場影響を出典位置に結ぶ。自動生成とは独立した人間の意味確認を必須とし、未承認は公開停止する。
 - REQ-15：summary/view/specの生成は同一report identity/bodyHash/snapshotの入力から行う。要約文章と意味解釈をデータ欠落から自動捏造しない。未整備の人間入力や原文位置の曖昧さは停止理由として報告する。

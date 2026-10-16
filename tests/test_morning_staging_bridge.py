@@ -2,7 +2,10 @@
 import copy
 import hashlib
 import json
+import os
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -212,6 +215,92 @@ class MorningStagingBridgeTests(unittest.TestCase):
             scenario_review=self.scenario_review,
             original_body_evidence=self.original_body_evidence,
             report_date="2026-10-06")[1]["projection"]["status"], "PASS")
+
+    def _run_input_preparation_cli(self, *, original=None, receipt=None):
+        inputs = self.root / "cli-inputs"
+        inputs.mkdir(exist_ok=True)
+        output = self.root / "cli-output"
+        values = {
+            "report.json": self.report,
+            "receipt.json": self.receipt if receipt is None else receipt,
+            "original-body-evidence.json": (self.original_body_evidence
+                                            if original is None else original),
+            "summary-authoring.json": self.summary_authoring,
+            "view-authoring.json": self.view_authoring,
+        }
+        paths = {}
+        for filename, payload in values.items():
+            path = inputs / filename
+            path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+            paths[filename] = path
+        evidence_path = inputs / "evidence.json"
+        evidence_path.write_bytes(canonical_bytes(self.evidence))
+        command = [sys.executable, str(Path(__file__).resolve().parents[1] /
+                                       "scripts/prepare_morning_infographic_inputs.py")]
+        cli_args = {
+            "--report": paths["report.json"],
+            "--evidence": evidence_path,
+            "--receipt": paths["receipt.json"],
+            "--original-body-evidence": paths["original-body-evidence.json"],
+            "--summary-authoring": paths["summary-authoring.json"],
+            "--view-authoring": paths["view-authoring.json"],
+            "--output": output,
+        }
+        for flag, path in cli_args.items():
+            command.extend((flag, str(path)))
+        env = os.environ.copy()
+        scripts_path = str(Path(__file__).resolve().parents[1] / "scripts")
+        env["PYTHONPATH"] = scripts_path + os.pathsep + env.get("PYTHONPATH", "")
+        completed = subprocess.run(command, cwd=Path(__file__).resolve().parents[1],
+                                   env=env, capture_output=True, text=True, check=False)
+        return completed, output
+
+    def test_input_preparation_cli_writes_manifest_and_bound_inputs(self):
+        completed, output = self._run_input_preparation_cli()
+        self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+        expected = {"summary.json", "view.json", "spec.json", "input-manifest.json"}
+        self.assertEqual({path.name for path in output.iterdir()}, expected)
+        manifest = json.loads((output / "input-manifest.json").read_text(encoding="utf-8"))
+        summary = json.loads((output / "summary.json").read_text(encoding="utf-8"))
+        view = json.loads((output / "view.json").read_text(encoding="utf-8"))
+        spec = json.loads((output / "spec.json").read_text(encoding="utf-8"))
+        self.assertEqual(manifest["status"], "READY_FOR_HUMAN_SCENARIO_REVIEW")
+        self.assertEqual(manifest["original_body_captured_at"],
+                         self.original_body_evidence["capturedAt"])
+        self.assertEqual(manifest["docs_saved_at"], self.receipt["savedAt"])
+        self.assertEqual(manifest["report_id"], self.bound["report_id"])
+        self.assertEqual(manifest["revision"], self.bound["revision"])
+        self.assertEqual(manifest["bodyHash"], self.bound["bodyHash"])
+        self.assertEqual(manifest["snapshot_id"], self.bound["snapshot_id"])
+        self.assertEqual(summary["bodyHash"], manifest["bodyHash"])
+        self.assertEqual(view["body_hash"], manifest["bodyHash"])
+        self.assertEqual(spec["snapshot_id"], manifest["snapshot_id"])
+        self.assertEqual(manifest["scenario_review"], "PENDING")
+        self.assertFalse(manifest["publish_allowed"])
+
+    def test_input_preparation_cli_fails_closed_for_missing_capture_time(self):
+        original = copy.deepcopy(self.original_body_evidence)
+        original.pop("capturedAt")
+        completed, output = self._run_input_preparation_cli(original=original)
+        self.assertEqual(completed.returncode, 1, completed.stdout + completed.stderr)
+        self.assertIn("STAGING_PRE_SAVE_CAPTURE_TIME_INVALID", completed.stdout)
+        self.assertFalse(output.exists())
+
+    def test_input_preparation_cli_fails_closed_for_tampered_original_body(self):
+        original = copy.deepcopy(self.original_body_evidence)
+        original["fullText"] += "改変"
+        completed, output = self._run_input_preparation_cli(original=original)
+        self.assertEqual(completed.returncode, 1, completed.stdout + completed.stderr)
+        self.assertIn("STAGING_PRE_SAVE_BODY_HASH_INVALID", completed.stdout)
+        self.assertFalse(output.exists())
+
+    def test_input_preparation_cli_fails_closed_when_capture_follows_docs_save(self):
+        original = copy.deepcopy(self.original_body_evidence)
+        original["capturedAt"] = "2026-10-06T08:04:00+09:00"
+        completed, output = self._run_input_preparation_cli(original=original)
+        self.assertEqual(completed.returncode, 1, completed.stdout + completed.stderr)
+        self.assertIn("STAGING_PRE_SAVE_CAPTURE_ORDER_INVALID", completed.stdout)
+        self.assertFalse(output.exists())
 
     def test_changed_docs_body_fails_before_render(self):
         altered = copy.deepcopy(self.docs_readback)

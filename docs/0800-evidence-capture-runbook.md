@@ -36,6 +36,7 @@ ChatGPT・Google Docs・GitHubの本文は同じ `fullText` / `bodyHash` を使�
 
 - 保存前に作成したG2原文証跡、canonical report、`data/report-evidence/` の不変証拠、`publication-receipts/` のDocs実読戻しreceiptを三者照合する。G2原文証跡はDocs writerへ渡す前に排他的に保存し、同一本文を保存した後に上書き・再作成しない。
 - `scripts/prepare_morning_infographic_inputs.py` は、上記の同一report/evidence/receipt/G2原文と、原文アンカーを含む `summary-authoring.json`・`view-authoring.json` から、原文位置付きsummary/viewとsnapshot固定specを生成する。文の要約・意味判断を自動捏造せず、作成者が根拠を指定する。summaryの本文数値・方向・出典位置とviewの全16パネル被覆が検証される。パネル12のレビュー記録はこのコマンドでは作成しない。
+- CLIは4ファイル（`summary.json`、`view.json`、`spec.json`、`input-manifest.json`）を生成し、manifestの `original_body_captured_at` と `docs_saved_at` は、同じ実行で検証済みのG2証跡とDocs receiptから記録する。正常入力でCLI終了コード0・4成果物・report_id/revision/bodyHash/snapshot_idの一致を確認する回帰テストを維持する。本文・時刻の欠損、改変、G2取得時刻がDocs保存より後の場合は非0終了で停止し、出力ディレクトリを作成しない。
 - 正式な入力準備例：
 
 ```powershell

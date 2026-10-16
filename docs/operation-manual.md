@@ -137,6 +137,7 @@ GitHub Actionsの `Update economic calendar` は5分ごとに動作する。正�
 2. Google Docs保存前に `capture_morning_creation_evidence.py` でG0/G1/G2を検証し、`G2_DRAFT_NOT_SAVED` artifactを一度だけ排他的に保存する。artifact内の本文をwriterへ渡し、後から作り直さない。
 3. Docs保存後、既存importerによるAPI読戻し本文、Docs revision、bodyHashを確認する。保存前artifactと本文全文・SHA-256・identity・snapshot/contextが一致しなければ停止する。receiptのsavedAtより後のcapturedAtも拒否される。
 4. 同一runのcanonical report/evidence/receipt/G2本文を使い `prepare_morning_infographic_inputs.py` を実行する。summary/viewのauthoringは原文根拠を指定した人手入力が必要で、曖昧なアンカーは出典位置にマップせず停止する。
+   CLIが終了コード0を返し、`summary.json`・`view.json`・`spec.json`・`input-manifest.json`の4点ができたことを確認する。manifestのcapture/save時刻とreport_id・revision・bodyHash・snapshot_idを入力receipt/G2 artifactと照合する。異常終了時に出力先が作られていないことも確認し、fixture成功を実データE2Eと混同しない。
 5. 生成summary/view/specの数値・方向・時刻・条件を本文およびsnapshotに照合する。パネル12のメイン/代替/崩れる条件について成立条件・展開・市場影響を人が本文と照合し、identity・本文hash・summary hashに結びつけた別レビューを作る。未承認ならrendererを実行しない。
 6. 全証拠が一致した場合だけローカルDRAFT rendererを起動し、異常系も検証する。公開manifest・Drive保存・portal公開はこのDraft接続では行わない。
 
