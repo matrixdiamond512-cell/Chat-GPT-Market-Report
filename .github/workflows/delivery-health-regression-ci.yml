@@ -4,8 +4,19 @@ on:
     branches: [fix/production-report-slot-health-20261013]
   pull_request:
     paths:
+      - scripts/run_market_data_window.py
+      - scripts/persist_report_slot_evidence.py
       - scripts/verify_scheduled_report_delivery.py
+      - tests/test_market_data_window_evidence.py
+      - tests/test_report_slot_evidence.py
       - tests/test_scheduled_report_delivery.py
+      - docs/project-control/OBJECTIVE_CARD.md
+      - docs/project-control/EVIDENCE_LEDGER.md
+      - .github/workflows/market-data-intraday-anchor.yml
+      - .github/workflows/market-data-intraday-health.yml
+      - .github/workflows/market-data-intraday-fallback.yml
+      - .github/workflows/freeze-report-slot-evidence.yml
+      - .github/workflows/delivery-health-regression-ci.yml
       - .github/workflows/check-scheduled-report-delivery.yml
 permissions:
   contents: read
@@ -17,4 +28,4 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m unittest discover -s tests -p 'test_scheduled_report_delivery.py' -v
+      - run: python -m unittest tests.test_scheduled_report_delivery tests.test_report_slot_evidence tests.test_market_data_window_evidence -v
