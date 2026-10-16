@@ -167,3 +167,7 @@ NEXT NECESSARY ACTION: Complete local tests and diff review, append the final ev
 ## Latest-main resynchronization — 2026-10-16 (CORRECT)
 
 Fetched main advanced to `5797798a2ab41630c88856d2347d20b95a7ccee3` during validation. Merged without conflicts as `e3cdbff2e`; branch now compares 0 behind / 7 ahead. The new main commits changed only production data files; those files are in the merge ancestry and absent from `origin/main...HEAD` PR file diff. Re-run the final local suites after this merge, then push and verify hosted checks on the resulting PR head. Keep Draft; do not merge.
+
+## Latest-main resynchronization 2 — 2026-10-16 (CORRECT)
+
+GitHub main advanced again to `c3dae9fdaea7c05d8006006b6fb052a28e2535f4`; the 2 new commits update economic calendar and USDJPY production data only. Merged without conflicts as `c95ce5810`; branch compares 0 behind / 9 ahead locally. These main-owned data paths remain absent from the PR diff. Push this merge, rerun targeted tests on the final tree, and verify final-head hosted CI and Draft state. Do not merge.
