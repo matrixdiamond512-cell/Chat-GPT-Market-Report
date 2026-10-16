@@ -479,4 +479,16 @@ NEXT NECESSARY ACTION: after the eligible new report exists, require all three s
 
 **Next necessary action:** after 08:00 JST, read the new run and immutable evidence from GitHub/audit storage; stop with the exact missing proof if incomplete. Render and test only after transaction identity and all three source-bound scenario roles pass.
 
+## Dashboard projection and schedule follow-up — 2026-10-17
+
+**Current task addition:** repair PR #97 synchronization CI without changing the canonical report, verify the repository and external ChatGPT issuance schedules independently, and run formal E2E only from complete new same-run evidence.
+
+**Observed:** GitHub PR #97 is OPEN/Draft/unmerged at `c625f6367dc5ea4bda2085666869448bf85ca101`; base main is `fd268a06e0a1dc6d76d73491bec5d87e14338042`. Run `38932003887` passed sync regression tests and failed the publication verifier. PR `latest-report.json`, canonical report, and report index identify the same report/revision/body; only dashboard.latestReport held older revision/sourceDocument.updatedAt. Main's latest, dashboard, and canonical objects match. The dashboard projection was repaired locally from the exact latest report using `sync_dashboard`; latest, canonical report, and index remained byte-identical, and independent marketData was retained.
+
+**Schedule:** repository contract is weekdays 08:00/12:00/16:00/21:00 JST; Saturday/Sunday have no new publication slots. 2026-10-17 is Saturday, so next normal 08:00 by this contract is Monday 2026-10-19. The ChatGPT settings page was inaccessible in the read-only browser check, so actual task settings were not read back; cross-system agreement remains UNKNOWN. No schedule setting was changed.
+
+**Open outcomes:** push reviewed projection/docs/evidence changes; obtain hosted CI on resulting head; read back the ChatGPT task schedule through an authorized available surface. New report/acquisition/snapshot/spec/Docs readback and panel-12 human source review remain prerequisites to real-data E2E.
+
+**Next necessary action:** validate the scoped tracked diff, commit/push to the existing PR head, inspect exact-head Actions, and keep formal E2E NOT_RUN until a normal slot has complete same-run evidence and Docs readback.
+
 **Post-push update — 2026-10-17 01:26 JST:** commit `ed5ee2a71c9a2e4225579f687dced4570587d619` is on the existing PR branch. GitHub confirms PR #97 OPEN/Draft/unmerged, mergeable, base latest fetched main `fd268a06e0a1dc6d76d73491bec5d87e14338042`, compare 85 ahead/0 behind. PR body reflects the 360 local tests and clearly labels real-data E2E as NOT_RUN. Hosted Actions remains unconfirmed (the current-head queries returned no runs/statuses). No report was generated; the 08:00 slot is upcoming.
