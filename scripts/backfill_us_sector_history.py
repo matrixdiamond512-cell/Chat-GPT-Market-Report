@@ -22,6 +22,7 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 from fetch_sector_performance import US_SECTORS, request_bytes, request_json  # noqa: E402
+from sheet_date_utils import parse_sheet_market_date  # noqa: E402
 from write_market_data_to_sheets import SheetsClient, create_authorized_session, load_service_account_info  # noqa: E402
 
 SHEET = "終値一覧"
@@ -112,7 +113,9 @@ def make_plan(values: list[list[object]], markets: dict[str, list[tuple[str, flo
     result = []
     seen = set()
     for row_number, row in enumerate(values[1:], start=2):
-        date = str(row[0] if row else "").replace("/", "-")[:10]
+        date = parse_sheet_market_date(row[0]) if row else None
+        if date is None:
+            continue
         if date in seen:
             raise ValueError("終値一覧の日付が重複: " + date)
         seen.add(date)
