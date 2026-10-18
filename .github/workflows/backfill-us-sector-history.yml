@@ -8,12 +8,14 @@ on:
     branches: [main]
     paths:
       - "scripts/backfill_us_sector_history.py"
+      - "scripts/sheet_date_utils.py"
       - "scripts/test_backfill_us_sector_history.py"
       - ".github/workflows/backfill-us-sector-history.yml"
   pull_request:
     branches: [main]
     paths:
       - "scripts/backfill_us_sector_history.py"
+      - "scripts/sheet_date_utils.py"
       - "scripts/test_backfill_us_sector_history.py"
       - ".github/workflows/backfill-us-sector-history.yml"
 

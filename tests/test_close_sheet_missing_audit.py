@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from audit_close_sheet_missing import audit_rows, state
 from backfill_verified_close_archives import contribution_values, sector_values, plan_blank_only_updates
+from sheet_date_utils import parse_sheet_market_date
 
 
 class AuditCloseSheetMissingTests(unittest.TestCase):
@@ -105,6 +106,17 @@ class StockHistoryBackfillTests(unittest.TestCase):
         self.assertEqual(planned[0]["col"], 3)
         self.assertEqual(planned[0]["value"], "東エレク")
 
+
+    def test_historical_backfill_resolves_google_date_serial(self):
+        headers = ["日付", "日経225寄与度上位1コード"]
+        serial = ( __import__("datetime").date(2026,9,24)-__import__("datetime").date(1899,12,30)).days
+        candidates = {("contributions", "2026-09-24"): {
+            "sourcePath": "data/history/stocks/2026-09-24.json",
+            "values": {"日経225寄与度上位1コード": "6857"},
+        }}
+        plan = plan_blank_only_updates([headers, [serial]], candidates)
+        self.assertEqual(len(plan), 1)
+        self.assertEqual(plan[0]["marketDate"], "2026-09-24")
 
 if __name__ == "__main__":
     unittest.main()
