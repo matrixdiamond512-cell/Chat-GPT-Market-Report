@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from backfill_us_sector_history import (
     US_SECTORS, complete_market_days, make_plan, returns_from_closes,
 )
+from sheet_date_utils import parse_sheet_market_date
 
 
 class UsSectorHistoryBackfillTests(unittest.TestCase):
@@ -70,6 +71,24 @@ class UsSectorHistoryBackfillTests(unittest.TestCase):
         ]
         self.assertEqual(make_plan([headers, ["2026/10/15"]], market), [])
 
+
+    def test_numeric_serial_and_string_dates_match(self):
+        self.assertEqual(parse_sheet_market_date(46239), "2026-08-05")
+        self.assertEqual(parse_sheet_market_date("46239"), "2026-08-05")
+        self.assertEqual(parse_sheet_market_date("2026/08/05"), "2026-08-05")
+        self.assertIsNone(parse_sheet_market_date(True))
+        self.assertIsNone(parse_sheet_market_date("bad"))
+        market = complete_market_days(self.market())
+        header = ["日付"] + [
+            f"米国セクター{direction}{i}{suffix}"
+            for direction in ("上昇", "下落")
+            for i in range(1, 6)
+            for suffix in ("業種", "騰落率")
+        ]
+        serial = ( __import__("datetime").date(2026,10,13)-__import__("datetime").date(1899,12,30)).days
+        plan = make_plan([header, [serial]], market)
+        self.assertEqual(len(plan), 20)
+        self.assertTrue(all(x["date"]=="2026-10-13" for x in plan))
 
 if __name__ == "__main__":
     unittest.main()
