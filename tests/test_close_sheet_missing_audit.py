@@ -52,6 +52,7 @@ class StockHistoryBackfillTests(unittest.TestCase):
     def test_only_verified_five_by_five_contributions(self):
         section = {
             "status": "verified", "freshness": "fresh", "asOf": "2026-09-24",
+            "sourceAt": {"top": "2026-09-24T16:00:00+09:00", "bottom": "2026-09-24T16:00:00+09:00"},
             "top": [
                 {"code": f"{2000 + n}", "shortName": f"Positive{n}", "contribution": str(10.0 - n)}
                 for n in range(5)
