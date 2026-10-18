@@ -297,12 +297,12 @@ def merge_stock_analysis_json(workbook: Any, payload: dict[str, Any]) -> None:
     worksheet.update("B2", [[json.dumps(data, ensure_ascii=False)]], value_input_option="RAW")
 
 
-def sync_google_sheets(payload: dict[str, Any]) -> None:
+def sync_google_sheets(payload: dict[str, Any]) -> bool:
     spreadsheet_id = os.environ.get("MARKET_DATA_SPREADSHEET_ID", "").strip()
     credentials_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
     if not spreadsheet_id or not credentials_json:
         print("Google Sheets sync skipped: credentials are not configured")
-        return
+        return False
 
     import gspread  # type: ignore
     from google.oauth2.service_account import Credentials  # type: ignore
@@ -344,6 +344,7 @@ def sync_google_sheets(payload: dict[str, Any]) -> None:
     worksheet.update(f"A{row_number}:{column_letter(len(headers))}{row_number}", [row], value_input_option="RAW")
     merge_stock_analysis_json(workbook, payload)
     print(f"Google Sheets sync succeeded: row={row_number}, date={target_date}")
+    return True
 
 
 def main() -> int:
@@ -366,7 +367,27 @@ def main() -> int:
         )
         OUTPUT_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         merge_into_stocks(payload)
-        sync_google_sheets(payload)
+        # Persistence is not acquisition: 403/timeout must NEVER relabel verified
+        # source data as unavailable or erase a successfully fetched ranking.
+        try:
+            synced = sync_google_sheets(payload)
+            payload["sheetSync"] = {
+                "status": "SUCCESS" if synced else "SKIPPED",
+                "asOf": payload["asOf"],
+                "checkedAt": now_jst().isoformat(),
+            }
+        except Exception as sync_error:  # noqa: BLE001
+            payload["sheetSync"] = {
+                "status": "FAILED",
+                "asOf": payload["asOf"],
+                "checkedAt": now_jst().isoformat(),
+                "error": str(sync_error),
+            }
+            print("SHEET_SYNC_FAILED (source still verified): " + str(sync_error))
+        OUTPUT_PATH.write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
         print(json.dumps({
             "status": "verified",
             "asOf": payload["asOf"],
