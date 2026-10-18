@@ -482,6 +482,8 @@ def merge_stock_analysis_json(workbook: Any, payload: dict[str, Any]) -> None:
         data.setdefault("sectors", {})
         for key in ("us", "japan"):
             market = payload["markets"][key]
+            if market.get("status") != "verified" or market.get("freshness") != "fresh":
+                continue  # Do not clear a prior dated projection on fetch failure.
             current = dict(data["sectors"].get(key) or {})
             current["title"] = market["title"]
             current["flag"] = market["flag"]
@@ -613,7 +615,18 @@ def sync_google_sheets(payload: dict[str, Any]) -> bool:
 def main() -> int:
     payload = build_payload()
     write_output(payload)
-    sync_google_sheets(payload)
+    # A Google Sheets 403 is a persistence failure, not market-data failure.
+    # Save it explicitly and continue publishing source-verified JSON.
+    try:
+        synced = sync_google_sheets(payload)
+        payload["sheetSync"] = {"status": "SUCCESS" if synced else "SKIPPED",
+                                "checkedAt": now_jst().isoformat()}
+    except Exception as error:  # noqa: BLE001
+        payload["sheetSync"] = {"status": "FAILED",
+                                "checkedAt": now_jst().isoformat(),
+                                "error": str(error)}
+        print("SHEET_SYNC_FAILED (source acquisition retained): " + str(error))
+    write_output(payload)
     print(
         json.dumps(
             {
