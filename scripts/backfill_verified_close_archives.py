@@ -42,6 +42,19 @@ def contribution_values(section: dict[str, Any]) -> dict[str, Any]:
     top, bottom = section.get("top") or [], section.get("bottom") or []
     if len(top) != 5 or len(bottom) != 5:
         return {}
+    # Index contributions must be end-of-day, never a 09:00 snapshot.
+    timestamps = section.get("sourceAt") or {}
+    for side in ("top", "bottom"):
+        raw = str(timestamps.get(side) or "")
+        try:
+            timestamp = dt.datetime.fromisoformat(raw)
+        except ValueError:
+            return {}
+        if timestamp.tzinfo is None:
+            return {}
+        local = timestamp.astimezone(JST)
+        if local.date().isoformat() != date or (local.hour, local.minute) < (15, 30):
+            return {}
     values: dict[str, Any] = {}
     seen: set[str] = set()
     for direction, items, sign in (("上位", top, 1), ("下位", bottom, -1)):
@@ -110,12 +123,18 @@ def history_candidates(history_dir: Path) -> tuple[dict[tuple[str, str], dict[st
             if date and values:
                 candidates.append((("sectors-" + market, date), values))
         for key, vals in candidates:
-            signature = json.dumps(vals, sort_keys=True, ensure_ascii=False)
+            # Acquisition timestamps and source labels may change across
+            # snapshots of the *same* close. They are not price conflicts.
+            core = {k: v for k, v in vals.items()
+                    if not k.endswith("取得日時") and not k.endswith("取得元")}
             old = found.get(key)
-            if old and json.dumps(old[1], sort_keys=True, ensure_ascii=False) != signature:
-                conflicts.add(key)
-            else:
-                found[key] = (str(path.relative_to(ROOT)), vals)
+            if old:
+                old_core = {k: v for k, v in old[1].items()
+                            if not k.endswith("取得日時") and not k.endswith("取得元")}
+                if old_core != core:
+                    conflicts.add(key)
+                    continue
+            found[key] = (str(path.relative_to(ROOT)), vals)
     return {key: {"sourcePath": path, "values": vals}
             for key, (path, vals) in found.items() if key not in conflicts}, ["/".join(key) for key in sorted(conflicts)]
 
