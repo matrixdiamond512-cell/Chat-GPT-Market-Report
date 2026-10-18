@@ -17,8 +17,10 @@ from typing import Any
 
 try:
     from write_market_data_to_sheets import SheetsClient, create_authorized_session, load_service_account_info
+    from sheet_date_utils import parse_sheet_market_date
 except ModuleNotFoundError:
     from scripts.write_market_data_to_sheets import SheetsClient, create_authorized_session, load_service_account_info
+    from scripts.sheet_date_utils import parse_sheet_market_date
 
 ROOT = Path(__file__).resolve().parents[1]
 ARCHIVE = ROOT / "data" / "history" / "stocks"
@@ -147,7 +149,7 @@ def plan_blank_only_updates(
     headers = {h: j for j, h in enumerate(rows[0]) if h}
     dates = {}
     for i, row in enumerate(rows[1:], start=2):
-        d = normal_date(str(row[0]).replace("/", "-")) if row else None
+        d = parse_sheet_market_date(row[0]) if row else None
         if d:
             if d in dates:
                 raise ValueError(f"Duplicate date {d} in Sheet rows {dates[d][0]} and {i}")
