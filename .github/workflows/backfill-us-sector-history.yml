@@ -1,0 +1,73 @@
+name: Backfill verified US sector history into closing sheet
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "15 22 * * 0" # Monday 07:15 JST
+  push:
+    branches: [main]
+    paths:
+      - "scripts/backfill_us_sector_history.py"
+      - "scripts/test_backfill_us_sector_history.py"
+      - ".github/workflows/backfill-us-sector-history.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/backfill_us_sector_history.py"
+      - "scripts/test_backfill_us_sector_history.py"
+      - ".github/workflows/backfill-us-sector-history.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: verified-us-sector-history-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  regress:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test safe date alignment, coverage and no overwrites
+        run: python -m unittest discover -s scripts -p 'test_backfill_us_sector_history.py' -v
+
+  live-backfill:
+    if: github.event_name != 'pull_request'
+    needs: regress
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Google API dependencies
+        run: python -m pip install --disable-pip-version-check requests google-auth
+      - name: Retrieve 11 ETF source histories and fill blank rows only
+        id: backfill
+        continue-on-error: true
+        env:
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python scripts/backfill_us_sector_history.py --apply
+      - name: Commit durable backfill receipt
+        shell: bash
+        run: bash scripts/publish_stock_update.sh "Record US sector historical blank-only backfill" data/market/us-sector-history-backfill.json
+      - name: Verify readback and no silent source failures
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          x = json.loads(Path('data/market/us-sector-history-backfill.json').read_text(encoding='utf-8'))
+          print({k: x.get(k) for k in ('status', 'sourceSymbols', 'candidateDates', 'planned', 'written', 'readBack')})
+          if x.get('status') not in ('APPLIED', 'NO_NEW_DATA'):
+              raise SystemExit('US_SECTOR_BACKFILL_FAILED: ' + str(x.get('reason') or x.get('status')))
+          if x.get('status') == 'APPLIED' and (x.get('readBack') != x.get('written') or x.get('sourceSymbols') != 11):
+              raise SystemExit('US_SECTOR_BACKFILL_READBACK_MISMATCH')
+          PY
