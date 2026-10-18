@@ -498,12 +498,55 @@ def merge_stock_analysis_json(workbook: Any, payload: dict[str, Any]) -> None:
         print(f"Stock_Analysis_JSON merge warning: {error}")
 
 
-def sync_google_sheets(payload: dict[str, Any]) -> None:
+def plan_sector_date_updates(payload: dict[str, Any]) -> list[tuple[str, dict[str, str]]]:
+    """Plan verified market data per its own trading date, not max(US, JP)."""
+    planned: list[tuple[str, dict[str, str]]] = []
+    groups = (
+        ("us", "米国セクター上昇", "米国セクター下落", "米国セクター取得元",
+         "Yahoo Finance Chart API（Select Sector SPDR ETF、Stooq予備）"),
+        ("japan", "東京業種上昇", "東京業種下落", "東京業種取得元",
+         "トレーダーズ・ウェブ／株探 東証33業種"),
+    )
+    for key, up, down, source_header, source_label in groups:
+        market = (payload.get("markets") or {}).get(key) or {}
+        if market.get("status") != "verified" or market.get("freshness") != "fresh":
+            continue
+        date = str(market.get("asOf") or "")[:10]
+        try:
+            if dt.date.fromisoformat(date).isoformat() != date:
+                continue
+        except ValueError:
+            continue
+        gainers, losers = market.get("gainers") or [], market.get("losers") or []
+        if len(gainers) != 5 or len(losers) != 5:
+            continue
+        if any(str(item.get("asOf") or "")[:10] != date for item in gainers + losers):
+            continue
+        values: dict[str, str] = {}
+        for prefix, items in ((up, gainers), (down, losers)):
+            for index, item in enumerate(items, 1):
+                values[f"{prefix}{index}業種"] = str(item.get("name") or "")
+                values[f"{prefix}{index}騰落率"] = str(item.get("change") or "")
+        if any(not value for value in values.values()):
+            continue
+        values["セクター取得基準日"] = date
+        values["セクター取得日時"] = str(payload.get("generatedAt") or "")
+        values[source_header] = source_label
+        planned.append((date, values))
+    return planned
+
+
+def sync_google_sheets(payload: dict[str, Any]) -> bool:
     spreadsheet_id = os.environ.get("MARKET_DATA_SPREADSHEET_ID", "").strip()
     credentials_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
     if not spreadsheet_id or not credentials_json:
         print("Google Sheets sync skipped: credentials are not configured.")
-        return
+        return False
+
+    planned = plan_sector_date_updates(payload)
+    if not planned:
+        print("Google Sheets sync skipped: no verified, same-session sector groups.")
+        return False
 
     import gspread  # type: ignore
     from google.oauth2.service_account import Credentials  # type: ignore
@@ -523,44 +566,48 @@ def sync_google_sheets(payload: dict[str, Any]) -> None:
     if not table:
         raise RuntimeError("終値一覧 sheet is empty")
     headers = list(table[0])
-    missing = [header for header in SHEET_HEADERS if header not in headers]
+    needed = [header for _, values in planned for header in values]
+    missing = [header for header in dict.fromkeys(needed) if header not in headers]
     if missing:
         headers.extend(missing)
         worksheet.update(
-            f"A1:{column_letter(len(headers))}1",
-            [headers],
+            f"A1:{column_letter(len(headers))}1", [headers],
             value_input_option="RAW",
         )
-        table[0] = headers
 
-    values = row_value_map(payload)
-    target_date = values["セクター取得基準日"].replace("-", "/")
-    date_column = headers.index("日付")
-    row_number = next(
-        (
-            index + 1
-            for index, row in enumerate(table[1:], start=1)
-            if len(row) > date_column and str(row[date_column]).strip().replace("-", "/") == target_date
-        ),
-        0,
-    )
-    if not row_number:
-        row_number = len(table) + 1
-        row = [""] * len(headers)
-        row[date_column] = target_date
-    else:
-        existing_row = table[row_number - 1]
-        row = existing_row + [""] * (len(headers) - len(existing_row))
+    date_col = headers.index("日付")
+    row_by_date: dict[str, int] = {}
+    for row_number, old_row in enumerate(table[1:], start=2):
+        if len(old_row) <= date_col or not str(old_row[date_col]).strip():
+            continue
+        date = str(old_row[date_col]).strip().replace("/", "-")
+        if date in row_by_date:
+            raise ValueError(f"終値一覧 contains duplicate date {date}: rows {row_by_date[date]} and {row_number}")
+        row_by_date[date] = row_number
 
-    for header, value in values.items():
-        row[headers.index(header)] = value
-    worksheet.update(
-        f"A{row_number}:{column_letter(len(headers))}{row_number}",
-        [row],
-        value_input_option="RAW",
-    )
+    next_row = len(table) + 1
+    for date, values in planned:
+        row_number = row_by_date.get(date)
+        if row_number is None:
+            row_number = next_row
+            next_row += 1
+            row_by_date[date] = row_number
+            worksheet.update(
+                f"{column_letter(date_col + 1)}{row_number}",
+                [[date.replace("-", "/")]], value_input_option="RAW",
+            )
+        # Write only verified market fields. Never rewrite an entire 186-col row.
+        requests = [
+            {"range": f"{column_letter(headers.index(header) + 1)}{row_number}",
+             "values": [[value]]}
+            for header, value in values.items()
+        ]
+        worksheet.batch_update(requests, value_input_option="RAW")
+        print(f"Verified {date} sector group written to 終値一覧 row {row_number}")
+
     merge_stock_analysis_json(workbook, payload)
-    print(f"Google Sheets sync succeeded: 終値一覧 row {row_number}, date {target_date}")
+    return True
+
 
 
 def main() -> int:
