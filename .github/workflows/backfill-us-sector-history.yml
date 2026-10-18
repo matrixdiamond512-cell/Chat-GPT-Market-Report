@@ -68,6 +68,8 @@ jobs:
           print({k: x.get(k) for k in ('status', 'sourceSymbols', 'candidateDates', 'planned', 'written', 'readBack')})
           if x.get('status') not in ('APPLIED', 'NO_NEW_DATA'):
               raise SystemExit('US_SECTOR_BACKFILL_FAILED: ' + str(x.get('reason') or x.get('status')))
+          if x.get('sourceWindowStatus') != 'CURRENT':
+              raise SystemExit('US_SECTOR_SOURCE_HISTORY_STALE: latest=' + str(x.get('latestCompleteDate')))
           if x.get('status') == 'APPLIED' and (x.get('readBack') != x.get('written') or x.get('sourceSymbols') != 11):
               raise SystemExit('US_SECTOR_BACKFILL_READBACK_MISMATCH')
           PY

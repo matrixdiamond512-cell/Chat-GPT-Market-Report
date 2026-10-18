@@ -163,23 +163,48 @@ def main() -> int:
     try:
         series = {}
         sources = {}
+        source_dates = {}
         errors = {}
+        stale_cutoff = (dt.datetime.now(JST).date() - dt.timedelta(days=9)).isoformat()
         for symbol in US_SECTORS:
+            prices = {}
+            url = ""
+            yahoo_error = ""
             try:
                 prices, url = yahoo_closes(symbol)
             except Exception as e:
+                yahoo_error = str(e)[:130]
+            # Yahoo can return a valid but months-old 6mo window. A successful
+            # HTTP 200 is not evidence that its latest session is current.
+            if not prices or max(prices) < stale_cutoff:
                 try:
-                    prices, url = stooq_closes(symbol)
-                except Exception as other:
-                    errors[symbol] = f"Yahoo {str(e)[:130]}; Stooq {str(other)[:130]}"
-                    continue
+                    alternate, alternate_url = stooq_closes(symbol)
+                    if alternate and (not prices or max(alternate) > max(prices)):
+                        prices, url = alternate, alternate_url
+                except Exception as fallback_error:
+                    errors[symbol] = (
+                        f"Yahoo={yahoo_error or 'stale historical window'}; "
+                        f"Stooq={str(fallback_error)[:130]}"
+                    )
+            if not prices:
+                continue
             series[symbol] = returns_from_closes(prices)
             sources[symbol] = url
+            source_dates[symbol] = {
+                "first": min(prices), "last": max(prices), "sessions": len(prices),
+            }
         receipt["sourceSymbols"] = len(series)
         receipt["sources"] = sources
+        receipt["sourceDates"] = source_dates
         receipt["errors"] = errors
         days = complete_market_days(series)
         receipt["candidateDates"] = len(days)
+        if days:
+            receipt["earliestCompleteDate"] = min(days)
+            receipt["latestCompleteDate"] = max(days)
+            receipt["sourceWindowStatus"] = (
+                "CURRENT" if max(days) >= stale_cutoff else "STALE"
+            )
         if not days:
             raise ValueError("11銘柄の日付一致・有効な過去騰落率を取得できません")
         account = os.environ["GOOGLE_SERVICE_ACCOUNT_JSON"]
