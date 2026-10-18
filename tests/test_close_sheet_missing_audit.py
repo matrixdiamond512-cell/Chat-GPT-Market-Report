@@ -116,7 +116,7 @@ class StockHistoryBackfillTests(unittest.TestCase):
         }}
         plan = plan_blank_only_updates([headers, [serial]], candidates)
         self.assertEqual(len(plan), 1)
-        self.assertEqual(plan[0]["date"], "2026-09-24")
+        self.assertEqual(plan[0]["marketDate"], "2026-09-24")
 
 if __name__ == "__main__":
     unittest.main()
