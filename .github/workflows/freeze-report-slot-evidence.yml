@@ -166,7 +166,9 @@ jobs:
         run: |
           set -euo pipefail
           if [ "${{ steps.existing.outputs.ready }}" != "true" ]; then
-            git add "data/report-evidence/${{ steps.slot.outputs.date }}_${{ steps.slot.outputs.slot == '08:00' && '08-00' || steps.slot.outputs.slot == '12:00' && '12-00' || steps.slot.outputs.slot == '16:00' && '16-00' || '21-00' }}-r1.json"
+            SLOT_FILE="${{ steps.slot.outputs.slot }}"
+            SLOT_FILE="${SLOT_FILE/:/-}"
+            git add "data/report-evidence/${{ steps.slot.outputs.date }}_${SLOT_FILE}-r1.json"
           fi
           if git diff --cached --quiet; then
             echo "NO_OP: identical evidence already exists."
