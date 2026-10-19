@@ -164,6 +164,30 @@ def signed_change(text: str) -> float | None:
     return None
 
 
+def parse_wgc_global_monthly_flow_usd_billion(text: str) -> float | None:
+    """Only accept WGC *global* USD flow, never a regional flow.
+
+    The September 2026 report says global +US$10bn, but also contains
+    European +US$3.6bn. A generic "inflows of US$...bn" regex silently
+    matched the regional number first and corrupted the global field.
+    Ambiguous text returns None rather than assigning a regional figure.
+    """
+    patterns = (
+        (r"\bglobal\s+gold\s+ETFs?\s+(?:attracted|received|drew|added)\s+US\$([\d,.]+)\s*bn\b", 1),
+        (r"\bglobal\s+gold\s+ETFs?\s+(?:recorded|saw|posted)\s+(?:net\s+)?(inflows|outflows)\s+of\s+US\$([\d,.]+)\s*bn\b", 0),
+        (r"\bworldwide\s+gold\s+ETFs?\s+(?:recorded|saw|posted)\s+(?:net\s+)?(inflows|outflows)\s+of\s+US\$([\d,.]+)\s*bn\b", 0),
+    )
+    for pattern, mode in patterns:
+        m = re.search(pattern, text, re.I)
+        if not m:
+            continue
+        if mode == 1:
+            return num(m.group(1))
+        value = num(m.group(2))
+        return (-value if m.group(1).lower().startswith("out") else value) if value is not None else None
+    return None
+
+
 def fetch_wgc_global(previous: dict[str, Any] | None) -> dict[str, Any]:
     errors = []
     today = datetime.now(JST).date()
@@ -202,12 +226,7 @@ def fetch_wgc_global(previous: dict[str, Any] | None) -> dict[str, Any]:
             if ym:
                 ytd_change = num(ym.group(1))
 
-            flow_usd = None
-            fm = re.search(r"(?:recorded|saw|posted)?\s*(?:modest\s+)?(inflows|outflows)\s+of\s+US\$([\d,.]+)\s*bn", text, re.I)
-            if fm:
-                flow_usd = num(fm.group(2))
-                if flow_usd is not None and fm.group(1).lower().startswith("out"):
-                    flow_usd *= -1
+            flow_usd = parse_wgc_global_monthly_flow_usd_billion(text)
 
             return {
                 "status": "verified",
