@@ -1,3 +1,6 @@
+> **正式文書管理（2026-10-19、DOCCTRL-20261019-01）**
+> Google Driveの固定名・固定IDの4文書と文書管理台帳へ統一した。正本ID・改訂手順は [DOCUMENT_CONTROL.md](./DOCUMENT_CONTROL.md) を参照。旧記録中の「統合ドラフトで正式正本ではない」は当時の状態であり、現行の文書指定に優先しない。GitHub mainのコード適用と定時実行の成功は別途検証する。
+>
 # 配信システムの正本識別と更新先
 2026-10-13 / PRレビュー用。3文書は独立。GitHub mainの静的確認・本番稼働・未マージPRは区別する。
 要件定義書: docs/system/requirements.md / Google Docs 102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA
