@@ -168,13 +168,13 @@ jobs:
           git add data/report-evidence/
           if git diff --cached --quiet; then
             echo "NO_OP: identical evidence already exists."
-            exit 0
-          fi
+          else
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Freeze pre-draft evidence for ${{ steps.slot.outputs.date }} ${{ steps.slot.outputs.slot }}"
           git pull --rebase origin main
           git push origin HEAD:main
+          fi
           python - <<'PY'
           import subprocess
           from pathlib import Path
