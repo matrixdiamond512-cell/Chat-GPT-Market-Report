@@ -1388,7 +1388,7 @@ function archiveDashboardSummary(record) {
   const news = originalNews.length ? originalNews : timelineRows.slice(0, 4).map(r => r.text);
   const main = section(/メインシナリオ/);
   const scenarios = section(/メイン・代替シナリオ/);
-  return {
+  const adapted = {
     ...record,
     // A record in this state is NEVER treated as officially published.
     report_status: "HISTORICAL_ARCHIVE_DISPLAY_ONLY",
@@ -1411,6 +1411,68 @@ function archiveDashboardSummary(record) {
     riskManagement: split(section(/リスク管理|崩れる条件/)).slice(0, 5),
     handover: split(section(/引き継ぎ/)).slice(0, 5)
   };
+
+  // The Oct 19 documents were read back from the owner's October Drive folder.
+  // Render their contents in existing dashboard cards/date slots, never as formal
+  // publication and never by inheriting current-day or different-slot quotes.
+  if (record.date === "2026-10-19" &&
+      record.archiveType === "DRIVE_SAVED_DOCUMENT" &&
+      record.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED" &&
+      record.sourceDocument?.id &&
+      record.verifiedAtSlot === false &&
+      record.archiveDashboardFields &&
+      typeof record.archiveDashboardFields === "object") {
+    const details = record.archiveDashboardFields;
+    const summaryStrings = ["theme", "leadingMarket", "mainScenario", "alternativeScenario", "breakConditions"];
+    const summaryArrays = ["changes", "consistency", "crossAssetFlow", "news", "positioning", "handover"];
+    for (const key of summaryStrings) {
+      if (typeof details[key] === "string" && details[key].trim()) adapted[key] = details[key];
+    }
+    for (const key of summaryArrays) {
+      if (Array.isArray(details[key]) && details[key].every(v => typeof v === "string"))
+        adapted[key] = details[key].filter(Boolean).slice(0, 12);
+    }
+    // A per-asset reference is displayable only if the corresponding market
+    // statement is actually present in the saved Google Doc, or is explicitly
+    // a missing value. Never derive sign from the forecast/outlook text.
+    const specs = [
+      ["gold", "金"], ["oil", "原油"], ["nikkei", "日経225先物"],
+      ["usdjpy", "USD/JPY"], ["eurusd", "EUR/USD"], ["btc", "BTCUSD"]
+    ];
+    const marketRecords = [];
+    for (const [key, name] of specs) {
+      const quote = details.archiveReferenceQuotes?.[key];
+      if (!quote || typeof quote !== "object") continue;
+      const referenceLine = String(quote.originalLine || "").trim();
+      const numeric = quote.value == null ? null : Number(String(quote.value).replace(/,/g, ""));
+      if (!referenceLine || (numeric !== null && !Number.isFinite(numeric))) continue;
+      if (numeric !== null && !record.fullText.includes(referenceLine)) continue;
+      // For a missing value, display the missing status, never a numeric estimate.
+      const safeQuote = {
+        ...quote,
+        value: numeric === null ? null : quote.value,
+        change: Number.isFinite(quote.change) ? quote.change : null,
+        changePct: Number.isFinite(quote.changePct) ? quote.changePct : null,
+        originalLine: numeric === null && !record.fullText.includes(referenceLine)
+          ? "取得不能（保存した本文に当該時刻の確定値なし）" : referenceLine,
+        sourceKind: "SUPPLEMENTAL_DOC_LINE",
+        sourceLabel: String(quote.sourceLabel || "保存本文の時刻付き参考値"),
+        marketName: String(quote.marketName || name)
+      };
+      adapted.archiveQuotes[key] = safeQuote;
+      marketRecords.push({
+        name,
+        price: safeQuote.originalLine,
+        direction: String(safeQuote.direction || "方向確認できず"),
+        outlook: String(safeQuote.outlook || ""),
+        material: String(safeQuote.reason || ""),
+        levels: String(safeQuote.keyPoint || ""),
+        risk: String(safeQuote.risk || "")
+      });
+    }
+    if (marketRecords.length === 6) adapted.markets = marketRecords;
+  }
+  return adapted;
 }
 function renderDashboardArchive(report) {
   // No extra box: historical report contents are presented in the normal
@@ -2446,7 +2508,8 @@ async function loadDashboardReports() {
     "data/dashboard-drive-archive-2026-10-01-05.json",
     "data/dashboard-drive-archive-2026-10-06-07.json",
     "data/dashboard-drive-archive-2026-10-09-12.json",
-    "data/dashboard-drive-archive-2026-10-external.json"
+    "data/dashboard-drive-archive-2026-10-external.json",
+    "data/dashboard-drive-archive-2026-10-19.json"
   ];
   const drivePayloads = await Promise.all(driveArchivePaths.map(async path => {
     try {
