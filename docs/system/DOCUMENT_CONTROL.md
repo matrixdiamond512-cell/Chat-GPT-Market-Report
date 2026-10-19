@@ -31,3 +31,9 @@ Google Drive 親フォルダー: https://drive.google.com/drive/folders/16tITmW9
 - 10/17以後の実装・運用の全件差分監査。
 - 定時4枠の本文、図解、Docs、receipt、Pages、通知到達のE2E確認。
 - 旧文書の全件条項照合（長文3冊と2.x〜3.x群）。これらは履歴として保存する。
+
+## 変更記録 MRFOLDER-20261019-01（2026-10-19 JST）
+対象：GitHub `docs/system/requirements.md`、`specification.md`、`operations.md`、固定IDのGoogle Docs要件定義書・システム仕様書・本文作成マニュアル・運用マニュアル・文書管理台帳。
+理由：My Drive直下に本文41件/PNG6件と本文フォルダー混在PNG3件があり、月別直接保存および結果の独立読戻しが必要。
+実施：月別整理と重複保留フォルダーへの退避、稼働中ChatGPT定期タスクプロンプトへのフォルダー・重複防止・metadata読戻し指示追加。
+未実証：次回の定時レポートでDocs/PNGが作成時から適切な月別親フォルダーを持つこと、完全本文読戻し・図解実体検証、GitHub/Pages等の一気通貫確認。実証できるまでE2E=UNKNOWNとする。
