@@ -60,3 +60,27 @@ Google Docs固定ID `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg` に対応す�
 8. Google Driveには本文は`マーケットレポートYYYY年M月`、画像は`マーケットレポート図解YYYY年M月`へ直接保存。親フォルダー重複は停止、DocID/版/全文・PNG実体/parentIds・公開URLを別々に読戻す。My Drive直下への保存を成功と呼ばない。
 9. ChatGPTタスクプロンプトのフォルダー指示更新は実施履歴、定時E2E/通知は未証明。別々の結果として報告。
 10. 要件・仕様・本文作成・運用・文書管理台帳に影響する変更は同一変更IDで整合。影響先のポータルデータ取得や専門モジュールを「配信と無関係」として除外しない。
+
+
+## ARCH-20261020-REPORT-CONTINUITY｜新アーキテクチャ設計変更案（2026-10-20 JST、未承認・未実装）
+本章は設計提案であり、現行v2.1の実行・正式公開・履歴・証拠ゲートを変更する発効規程ではない。Google Cloud・OpenAI APIのプロビジョニング、ChatGPTタスク設定変更、PR #165マージ、過去枠の証拠生成・正式昇格は未承認。段階的な受入・明示的な切替承認までは現行運用と発行条件を維持する。
+### 設計案の運用手順（切替承認前は実行しない）
+1. 準備: 運用者がGoogle Cloudのプロジェクト/課金予算/最小権限/Secret Manager・Cloud Scheduler・Cloud Run・Cloud Storage利用条件を確認。指定ChatGPT会話への投稿可否と代替閲覧経路を明示的に判定する。未解決事項を実装可能と表示しない。
+2. 定時枠固定: 予定枠日時（Asia/Tokyo）、schedule event ID、sourceScheduleTime、reportIdを記録。遅延時は元のscheduledAtを保持し、nowからreportIdを再決定しない。
+3. 事前取得: 市場データの出典、単位、限月、値・前日比・騰落率・方向・asOf、15分鮮度を照合。T以前の値だけをslot evidence候補にする。欠損を未確認ではなく取得不能（理由）で記録し、推測値に置換しない。
+4. 証拠の固定: immutable storeにcreate-only保存。server createdAtとgeneration、bytes SHA、原本contextHash/snapshotHash/sourceHashを読戻し確認し、T後取得・T後新規固定なら非適格。GitHub main事前読戻しを別方式に置き換える判断は、正式に改訂された受入要件に従う。
+5. 原稿作成: 証拠eligibleなら正式候補の原稿を生成。証拠未取得でも独立検証可能なデータがあれば閲覧専用draftを生成し、対象枠・実作成時刻・非正式状態と情報欠損を明記する。正式発行へ自動昇格禁止。生成不可のときはfailureStageを記録して再試行対象とする。
+6. 保存と配信: Google Docs/PNGを対象月の正しい親へ保存し、ID/metadata/revision/全文及びPNG byte/hashを再検証。指定ChatGPT会話への本文/図解表示と通知到達を独立に確認する。Docsやポータルを閲覧可能にしても「指定チャットへの配信済み」とは報告しない。
+7. 正式公開: 発行時evidence・Docs原本全文・revision・図解・receipt・canonical・reports.json/latest/dashboard・Pages live DOMを現行受入ゲートで検証。SOURCE_ARCHIVED等を自動昇格せず、公開の成功は必ずlive readbackで判定。
+8. 障害処理: GitHub Actions遅延、T跨ぎ、外部スケジューラ重複、競合、欠損、Docs権限不足、PNG不整合、Pages失敗に応じてステータスのみを記録。以前成功した成果物を不必要に作り直さず、同一IDと同一ハッシュで安全に再開する。
+9. 異常報告: 対象枠ごとにscheduledAt、actualStartedAt、取得、evidence、draft、chat、Docs、PNG、canonical、receipt、Pages、notificationの各SUCCESS/FAIL/UNKNOWN、URL、失敗理由をユーザーへ表示。「作成した」「保存した」「公開した」を混同しない。
+10. 本番切替: 認証・課金条件、5営業日×4枠のE2E、障害注入、旧新重複公開防止、ロールバックを記録。正式な承認が出るまではCloud側の本番スケジュールを稼働させず、現在のChatGPTタスク・Apps Scriptトリガー・GitHub workflowを変更しない。
+### 事故時の判定表
+証拠だけ欠落→閲覧用draft作成可能（検証できた事実のみ）、公式公開BLOCKED。
+ChatGPTタスク未起動→独立原稿/Docs/ポータル閲覧経路を検証、指定会話はUNKNOWN/FAIL、全工程VERIFIED不可。
+Docs失敗→原稿保持・保存再試行、公式公開BLOCKED。
+図解失敗→本文と画像を独立記録、全工程VERIFIED不可・正式公開は承認済みゲートを維持。
+実枠T超過→T後新規証拠の後付け禁止、日時明記の非正式補充に限定。
+GitHub push失敗→immutable evidenceを保持し、main読戻しによる照合後に安全に再試行。
+### 未決・禁止
+採用までの未決: 実行基盤の料金/権限、既存ChatGPT会話への自動配信API、正式保管先変更の承認、現行PNG必須ゲートと状態分離の競合解消。設計提案段階で、旧定期タスク、原本、履歴、正式公開ゲート、PR #165のマージ状態を変更してはならない。
