@@ -166,15 +166,23 @@ jobs:
         run: |
           set -euo pipefail
           if [ "${{ steps.existing.outputs.ready }}" != "true" ]; then
-            git add data/report-evidence/
+            git add "data/report-evidence/${{ steps.slot.outputs.date }}_${{ steps.slot.outputs.slot == '08:00' && '08-00' || steps.slot.outputs.slot == '12:00' && '12-00' || steps.slot.outputs.slot == '16:00' && '16-00' || '21-00' }}-r1.json"
           fi
           if git diff --cached --quiet; then
             echo "NO_OP: identical evidence already exists."
           else
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python - <<'PY'
+          from scripts.persist_report_slot_evidence import require_before_slot
+          require_before_slot("${{ steps.slot.outputs.date }}", "${{ steps.slot.outputs.slot }}")
+          PY
           git commit -m "Freeze pre-draft evidence for ${{ steps.slot.outputs.date }} ${{ steps.slot.outputs.slot }}"
           git pull --rebase origin main
+          python - <<'PY'
+          from scripts.persist_report_slot_evidence import require_before_slot
+          require_before_slot("${{ steps.slot.outputs.date }}", "${{ steps.slot.outputs.slot }}")
+          PY
           git push origin HEAD:main
           fi
           python - <<'PY'
