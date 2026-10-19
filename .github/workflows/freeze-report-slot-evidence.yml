@@ -175,4 +175,21 @@ jobs:
           git commit -m "Freeze pre-draft evidence for ${{ steps.slot.outputs.date }} ${{ steps.slot.outputs.slot }}"
           git pull --rebase origin main
           git push origin HEAD:main
+          python - <<'PY'
+          import subprocess
+          from pathlib import Path
+          from scripts.persist_report_slot_evidence import validate_stored_slot_evidence, require_before_slot
+          day = "${{ steps.slot.outputs.date }}"
+          slot = "${{ steps.slot.outputs.slot }}"
+          require_before_slot(day, slot)
+          path = Path("data/report-evidence") / f"{day}_{slot.replace(':', '-')}-r1.json"
+          local = path.read_bytes()
+          subprocess.run(["git", "fetch", "origin", "main"], check=True)
+          remote = subprocess.run(["git", "show", f"origin/main:{path.as_posix()}"], check=True, capture_output=True).stdout
+          if local != remote:
+              raise RuntimeError("BLOCKED_MAIN_EVIDENCE_READBACK_MISMATCH")
+          validate_stored_slot_evidence(remote, day, slot)
+          require_before_slot(day, slot)
+          print("PRE_DRAFT_EVIDENCE_MAIN_READBACK=PASS")
+          PY
           echo "PRE_DRAFT_EVIDENCE_PERSISTED: publication remains separately gated."
