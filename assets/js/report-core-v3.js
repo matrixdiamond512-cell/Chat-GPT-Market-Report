@@ -343,8 +343,13 @@ function renderPreface(lines) {
 }
 const supplementalChronology20261016 = {"08:00":[["10/15 21:30","米9月PPI・小売売上高等が発表","インフレ警戒が残る一方、消費指標の評価が分かれる","米国","高","NY市場の反応"],["10/15 22:30","NY株式市場開場。AI資金調達・採算懸念","半導体・ハイテクに売り圧力","米国","高","主要指数の推移"],["10/16 00:05","Dow 52,146.08、Nasdaq 26,614.79を観測","Dow上昇・Nasdaq下落、業種格差","米国","高","米金利・AI株"],["10/16 04:12","Dow 52,183.86、Nasdaq 26,701.01を観測","Nasdaqがプラス圏回復","米国","中","NY終値"],["10/16 05:00頃","NY主要指数が反発して引ける","SOXは弱さを残す","米国","高","大阪先物夜間"],["10/16 06:00","大阪先物夜間引け65,520円","前日清算値比+720円","日本","高","東京寄り付き"]],"12:00":[["09:00","東京寄り付き、日経平均64,925.29円","前日比+499.34円で反発","日本","高","半導体株"],["09:30～10:30","半導体中心に買い戻し、10:16頃65,688円","急落後の反発が拡大","日本","高","買いの広がり"],["11:30","日経平均65,550.68円で前場終了","前日比+1,124.73円","日本","高","後場開始"],["12:00","大阪先物約65,600円","東京現物の反発を引き継ぐ","日本","中","65,000円維持"]],"16:00":[["09:00～11:30","日経平均が64,925.29円で寄り付き、65,550.68円で前引け","急落後の買い戻し拡大","日本","高","後場反応"],["12:30","後場寄り付き65,421.10円","前引け比約130円安、利益確定が交錯","日本","高","売り圧力"],["14:42","日経平均65,612.47円まで再上昇","午後も買い戻しが続く場面","日本","中","大引け"],["15:30","日経平均65,324.29円で大引け","前引け比226.39円下落、前日比+898.34円","日本","高","夜間先物"],["15:45","大阪先物清算値65,520円","前日比+720円","日本","高","NY市場"]],"21:00":[["12:00～13:00頃","東京後場の買い戻しと利益確定が交錯","時間帯概況。個別時刻の価格取得なし","日本","中","引け値"],["14:00～15:30","日経平均65,324.29円で大引け","前引け65,550.68円より伸び悩む","日本","高","欧州市場"],["16:00～18:00頃","欧州でAI信用懸念と金利低下を評価","時間帯概況。定量的な反応は未取得","欧州","中","NY市場"],["18:00～21:00頃","米株開場前、AI関連株と米金利に注目","21:00同時点の市場反応は未取得","米国・欧州","中","米鉱工業生産"],["22:15（予定）","米鉱工業生産・設備稼働率発表予定","21時時点では未発表","米国","高","指標結果"],["22:30（予定）","米株式市場開場予定","21時時点では未開始","米国","高","AI関連株"]]};
 function renderSupplementalChronology(report) {
-  if (report.date !== "2026-10-16" || !isArchivedRecovery(report)) return "";
-  const rows = supplementalChronology20261016[report.time] || [];
+  if (!isArchivedRecovery(report)) return "";
+  const legacyRows = report.date === "2026-10-16" ? supplementalChronology20261016[report.time] || [] : [];
+  const storedRows = Array.isArray(report.archiveTimelineRows)
+    ? report.archiveTimelineRows.filter(row => row && row.text && row.time).slice(0, 20)
+        .map(row => [row.time, row.text, row.reaction || "", row.region || "対象市場", row.importance || "中", row.next || "確認待ち"])
+    : [];
+  const rows = storedRows.length ? storedRows : legacyRows;
   if (!rows.length) return "";
   const headers = ["日時（日本時間）","イベント","市場反応","国・地域","重要度","次のイベントまで"];
   return '<section class="section sop-section" data-sop-title="当日の市場時系列（実際に起きた出来事と市場反応）"><h2>当日の市場時系列（実際に起きた出来事と市場反応）</h2><p>保存本文に基づく補充・再構成データ。概況・予定は区別して表示。</p><div style="overflow-x:auto"><table class="market-table"><thead><tr>' + headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(cell=>'<td>'+esc(cell)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div></section>';
@@ -373,7 +378,7 @@ function renderDocument(report) {
     for (const line of [
       report.archiveNotice,
       "原本状態：" + report.originalReportStatus + "／復元区分：" + report.archiveType,
-      "修復記録：" + report.recoveryRecordedAt + "。後日確認したデータは発行時点の情報として扱いません。"
+      "後日確認したデータは発行時点の情報として扱いません。"
     ]) {
       const p = document.createElement("p");
       p.textContent = line;
@@ -404,7 +409,30 @@ async function init() {
     } catch (error) {
       console.warn("[market report recovery] archive read unavailable", error.message);
     }
+    // Read-back owner-folder docs are display-only history, not canonical publication.
+    // This provides all four 2026-10-19 slots through the normal date/time controls.
+    let driveArchive = [];
+    try {
+      const path = "data/dashboard-drive-archive-2026-10-19.json";
+      const response = await fetch(path + "?ts=" + Date.now(), {cache:"no-store"});
+      if (!response.ok) throw new Error(path + " HTTP " + response.status);
+      const data = await response.json();
+      if (data?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION" ||
+          data?.sourceFolderId !== "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz" ||
+          !Array.isArray(data.reports)) throw new Error("Drive archive schema invalid");
+      driveArchive = data.reports.filter(r => isArchivedRecovery(r) &&
+        r.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED" &&
+        r.archiveType === "DRIVE_SAVED_DOCUMENT" && r.sourceDocument?.id &&
+        typeof r.driveRevisionId === "string" && r.driveRevisionId &&
+        r.driveTextLength === r.fullText.length &&
+        Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length);
+    } catch (error) {
+      console.warn("[market report Drive readback] unavailable", error.message);
+    }
     const bySlot = new Map(recovered.map(r => [reportKey(r), r]));
+    driveArchive.forEach(r => {
+      if (!bySlot.has(reportKey(r))) bySlot.set(reportKey(r), r);
+    });
     formallyPublished.forEach(r => bySlot.set(reportKey(r), r)); // formal takes precedence
     reports = sortReports([...bySlot.values()]);
     window.MarketReportArchiveInfo = {count: recovered.length, publishedCount: formallyPublished.length};
