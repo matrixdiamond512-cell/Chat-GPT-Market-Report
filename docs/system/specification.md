@@ -53,3 +53,28 @@ Google Docs固定ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` へ対応す�
 - 終値一覧：`scripts/audit_close_sheet_missing.py` のblank/unavailable/closed/filled区分、`scripts/backfill_verified_close_archives.py` の同日検証済み履歴からの空セルのみ補完、`close-sheet-integrity.yml` の18:25 JST検査。JP33業種とUS11セクターETFは独立の基準日管理。
 - 金ETFはGLD/SPDR履歴、IAU履歴、WGC世界月次を対象範囲で区別。BOJ東京USDJPY spot volumeと為替OHLCは別ソース・基準日で表示。出典の異なる値を機械的に合算しない。
 - 文書上のD2/Responses API shadow・draft PR・offline contractは本番課金や自動公開の承認ではない。
+
+
+## ARCH-20261020-REPORT-CONTINUITY｜新アーキテクチャ設計変更案（2026-10-20 JST、未承認・未実装）
+本章は設計提案であり、現行v2.1の実行・正式公開・履歴・証拠ゲートを変更する発効規程ではない。Google Cloud・OpenAI APIのプロビジョニング、ChatGPTタスク設定変更、PR #165マージ、過去枠の証拠生成・正式昇格は未承認。段階的な受入・明示的な切替承認までは現行運用と発行条件を維持する。
+### モジュール境界（目標構成、すべて未実装）
+(1) SlotPlanner: config/report_schedule.jsonを唯一のスロット定義とする。Cloud Schedulerの「予定実行日時」(X-CloudScheduler-ScheduleTime)又は明示入力からAsia/Tokyoのreport_date/report_slotを確定。スケジュールID→対象枠の固定写像で解決し、now_jst().date()による再計算を禁止。検証不能なcronは拒否。
+(2) JobCoordinator: reportId単位の永続台帳、冪等キー、工程別状態、lease/CASを管理。異なる枠をグローバルconcurrency groupで不必要に直列化しない。リトライはジョブの同一IDを再利用。
+(3) MarketDataAdapter: 現行の市場取得・CSV/JSON・対象銘柄・出典を再利用。source eventTime/asOf、取得時刻、営業日、価格単位、限月、verified/degraded/blockedを分離し、クロスチェックする。
+(4) ImmutableEvidenceStore: Cloud Storage等の保管先へcreate-only（例: ifGenerationMatch=0）、記録されたgenerationで再読戻し、内容SHA-256一致・サーバ確定時刻<T・snapshot/context/source hash・15分鮮度を検証。タイムアウトやアップロード遅延でTを跨いだ保存は公式証拠にしない。旧GitHub mainの事前読戻し要件の廃止は移行承認があるまで禁止。
+(5) DraftGenerator: 証拠statusと本文生成可否を分離。検証済み情報があれば一意のdraftRevision/bodyHash付き非正式原稿を作成可能。データを補作せず、出典・観測日時・「取得不能（理由）」を記録。ChatGPTタスク障害時の独立生成にはAPI契約・費用上限・実テストが必要。
+(6) DocsWriter/ImageWriter: 原稿/PNGの保存先月フォルダーID、名前、fileId、parents、revision、全本文/bytes hashを独立で再取得。同一名前の別ID競合はBLOCKED_FOLDER_AMBIGUOUS又はBLOCKED_SOURCE_CONFLICT等で停止。図解はその本文だけを用いる。
+(7) PublicationGate: 正式公開に必要な現行証拠集合を検証し、成功した原稿revisionのみcanonical→receipt→Pagesへ投影。原稿保存済みとpublishedを別集計。旧SOURCE_ARCHIVED/HISTORICAL_ARCHIVEやfixtureを公開一覧に混入させない。
+(8) DeliveryAdapter: 指定ChatGPT会話への投稿/図解表示・通知は独立な観測対象。外部APIから指定会話へ投稿する能力はUNKNOWNのため「実装済み」としない。Docs/別ポータルの閲覧経路は指定チャット送信の達成と混同しない。
+### 台帳スキーマ（設計案）
+reportId, scheduledAtJST, sourceScheduleTimeUTC, reportDate, reportSlot, statusVersion, leaseOwner/leaseExpiry, snapshotHash, contextHash, evidenceRef, evidenceGeneration, evidenceCreatedAtServer, evidenceHash, evidenceStatus, draftRevision, draftBodyHash, draftCreatedAt, draftStatus, chatStatus, docsFileId, docsRevision, docsReadbackHash, docsStatus, imageFileId, pngHash, imageStatus, receiptId, publicationStatus, publicUrl, publicReadbackHash, notificationStatus, failureStage, lastAttemptAt, actualCreatedAt.
+各stageはNOT_STARTED/RUNNING/SUCCESS/FAIL/UNKNOWN/BLOCKED（適宜より細かいerrorCode）を持つ。暫定原稿は公開状態と別フィールドでDRAFT_VIEW_ONLY。canonical statusや正式receiptを代用しない。
+### ガード・再試行契約
+- 08:00・12:00・16:00・21:00のT-30以前に事前準備を開始可能とし、T-13/T-7/T-3の候補取得を維持。T以前の最終確定のみ正式証拠として扱う。scheduler deliveryは少なくとも1回で重複があり得るので冪等処理必須。
+- スロットのUTC/JST変換はZoneInfo(Asia/Tokyo)とScheduleTimeを使用。取得スクリプトに--report-date/--slotを明示し、環境変数からの上書きも禁止。予定時刻、取得基準時刻、実行時刻を混同しない。
+- 書込元が異なる二つのジョブで同一reportIdの生成物が衝突したら、最初の証拠を保持し内容差分はCONFLICTへ。遅延開始で現在日付に繰り越すことは絶対にしない。
+- 原稿生成に失敗してもevidenceを破棄しない。Docs保存に失敗しても原稿のバイト列を再生成せず保持。GitHub push/Pages dispatchの曖昧な結果はremote readbackで照合してから再試行。
+- 既存ワークフローとの二重公開を避けるため、shadow段階では新系統の公開書込みを禁止。段階的に旧publish writerを停止する切替はE2E承認後のみ。
+### 実装順序と回帰試験
+P0: スケジュール・日付跨ぎ・concurrency問題の回帰テスト（PR #165はこれを満たさない）。P1: 独立スケジューラと不変証拠保存のshadow実装。P2: Stage台帳/原稿のview-only生成・Docs保存試験。P3: 既存原本照合・receipt・正式公開へのゲート接続。P4: 4枠×5営業日E2E、遅延/重複/過去遡及/Docs喪失/PNG不一致/通知失敗/トリガー停止の注入試験と撤回試験。
+受入前のGCP/OpenAI認証鍵や本番権限は追加せず、テストは原則fixture/shadowで実施。発行前証拠の基準・Docs/PNG公開ゲート・旧履歴は無断変更しない。
