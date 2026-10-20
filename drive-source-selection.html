@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>マーケットレポート保存版照合｜マーケット分析ポータル</title>
+<link rel="stylesheet" href="assets/css/site-common.css">
+<style>
+body{margin:0;background:#fff;color:#152238;font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif}
+main{max-width:1150px;margin:26px auto;padding:0 20px 50px}
+h1{font-size:1.45rem} p{line-height:1.65}
+table{width:100%;border-collapse:collapse;font-size:.91rem;min-width:780px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #d6dce6;vertical-align:top}
+th{background:#f1f5f9;position:sticky;top:0}
+a{color:#135a9e} .scroll{overflow-x:auto}
+.note{color:#475569;font-size:.9rem}
+</style>
+</head>
+<body>
+<main>
+<p><a href="report.html">← マーケットレポートへ戻る</a></p>
+<h1>Google Drive保存版の照合一覧</h1>
+<p>同じ日時・同じファイル名の中から、Google Driveの作成日時（保存日時）が最も遅いファイルを選定しています。公開用本文・図解としての検証とは区別しています。</p>
+<p class="note">本文が不完全な保存版や発行前証拠が確認できない版は、GitHubの正式公開原本へ自動的に置き換えません。古いファイルも削除していません。</p>
+<div class="scroll"><table><thead><tr><th>対象日時（JST）</th><th>種別</th><th>保存日時（JST）</th><th>重複候補</th><th>本文/図解の状態</th><th>最新保存版</th></tr></thead><tbody id="records"></tbody></table></div>
+<p id="loadStatus" role="status"></p>
+</main>
+<script>
+"use strict";
+const status=document.getElementById("loadStatus"),tbody=document.getElementById("records");
+fetch("data/drive-source-selection.json?ts="+Date.now(),{cache:"no-store"})
+.then(r=>{if(!r.ok)throw Error("保存版一覧を取得できません");return r.json()})
+.then(data=>{
+ if(data.schemaVersion!==1||!Array.isArray(data.items))throw Error("一覧データ形式が不正です");
+ const entries=[...data.items].sort((a,b)=>b.slotKey.localeCompare(a.slotKey)||a.kind.localeCompare(b.kind));
+ const allowed=/^https:\/\/(?:docs\.google\.com\/document\/d\/|drive\.google\.com\/file\/d\/)[-\w]+\//;
+ for(const x of entries){
+  const tr=document.createElement("tr");
+  const d=new Date(x.driveCreatedAt);const local=Number.isNaN(d.getTime())?"取得不能":new Intl.DateTimeFormat("ja-JP",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(d);
+  const label=x.kind==="document"?(x.bodyCheck==="STRUCTURE_CHECK_PASSED"?"本文の形を確認":"本文不足・未公開"):"PNG保存済／公開hash未検証";
+  for(const v of [x.slotKey.replace("_"," "),x.kind==="document"?"本文":"図解",local,String(x.candidateCount)+"件",label]){
+   const td=document.createElement("td");td.textContent=v;tr.append(td);
+  }
+  const td=document.createElement("td");if(allowed.test(x.driveUrl)){
+   const a=document.createElement("a");a.href=x.driveUrl;a.target="_blank";a.rel="noopener noreferrer";a.textContent="Google Driveで開く";td.append(a);
+  }else td.textContent="URL確認不可";
+  tr.append(td);tbody.append(tr);
+ }
+ status.textContent="照合結果："+entries.length+"ファイル（正式公開の承認件数とは異なります）。";
+}).catch(e=>{status.textContent="取得不能："+e.message});
+</script>
+</body></html>
