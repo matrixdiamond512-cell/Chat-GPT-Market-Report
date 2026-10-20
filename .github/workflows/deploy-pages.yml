@@ -80,6 +80,11 @@ jobs:
       - name: Verify report body and infographic slot integrity
         run: python scripts/validate_report_index.py
 
+      - name: Verify latest saved Drive source selection without changing publication
+        run: |
+          python scripts/validate_drive_source_selection.py
+          node --check assets/js/report-drive-source-reference.js
+
       - name: Verify latest/canonical/index/dashboard consistency
         run: python scripts/verify_publication_consistency.py
 
