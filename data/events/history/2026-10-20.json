@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-10-20T16:26:51+09:00",
-  "publishedAt": "2026-10-20T16:26:51+09:00",
-  "dataAsOf": "2026-10-20T16:26:51+09:00",
+  "generatedAt": "2026-10-20T21:54:01+09:00",
+  "publishedAt": "2026-10-20T21:54:01+09:00",
+  "dataAsOf": "2026-10-20T21:54:01+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -37,7 +37,7 @@
       "id": "event_result_repair",
       "name": "重要イベント実績値の補完取得",
       "status": "ok",
-      "note": "代替カレンダー照合 0件、公式PDF補完 0件、取得不能理由明記 0件。"
+      "note": "代替カレンダー照合 1件、公式PDF補完 0件、取得不能理由明記 0件。"
     },
     {
       "id": "weekly_claims_validation",
@@ -294,22 +294,22 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-18T14:19:24+09:00",
-      "updatedAt": "2026-10-20T16:26:51+09:00",
+      "updatedAt": "2026-10-20T21:54:01+09:00",
+      "resultSavedAt": "2026-10-20T21:54:01+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Office for National Statistics",
         "url": "http://www.ons.gov.uk/"
-      },
-      "resultSavedAt": "2026-10-20T16:26:51+09:00"
+      }
     },
     {
-      "id": "event-980aeeefc7c27b",
-      "sourceKey": "2026-10-20|18:33|GBP|10-y bond auction",
+      "id": "event-a782a38ca1f829",
+      "sourceKey": "2026-10-20|18:03|GBP|10-y bond auction",
       "date": "2026-10-20",
-      "time": "18:33",
-      "datetimeJst": "2026-10-20T18:33:00+09:00",
-      "scheduledAtSource": "2026-10-20T05:33:00-04:00",
-      "scheduledAtUtc": "2026-10-20T09:33:00Z",
+      "time": "18:03",
+      "datetimeJst": "2026-10-20T18:03:00+09:00",
+      "scheduledAtSource": "2026-10-20T05:03:00-04:00",
+      "scheduledAtUtc": "2026-10-20T09:03:00Z",
       "country": "英国",
       "currency": "GBP",
       "title": "英国 10-y 国債入札",
@@ -321,11 +321,11 @@
       "importanceLabel": "中",
       "forecast": "",
       "previous": "5.38|3.3",
-      "actual": "",
+      "actual": "5.418%",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "実績 5.418% は予想 なし に対して比較保留。名称差・国コード差を補正してTradingView実績データから照合しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -527,8 +527,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -545,8 +545,16 @@
       "sourceType": "forex_factory_weekly",
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
-      "createdAt": "2026-10-18T14:19:24+09:00",
-      "updatedAt": "2026-10-20T16:26:51+09:00"
+      "createdAt": "2026-10-20T21:54:01+09:00",
+      "updatedAt": "2026-10-20T21:54:03+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "tradingview_repair",
+        "name": "Department of Treasury",
+        "url": "https://www.dmo.gov.uk/"
+      },
+      "resultSavedAt": "2026-10-20T21:54:03+09:00"
     }
   ]
 }
