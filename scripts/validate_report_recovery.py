@@ -18,9 +18,12 @@ REQUIRED = {
     "2026-10-14_16-00", "2026-10-14_21-00",
     "2026-10-15_08-00", "2026-10-15_12-00",
     "2026-10-15_16-00", "2026-10-15_21-00",
-    "2026-10-16_08-00",
+    "2026-10-16_08-00", "2026-10-16_12-00",
+    "2026-10-16_16-00", "2026-10-16_21-00",
 }
-RETROSPECTIVE = {"2026-10-06_12-00", "2026-10-06_16-00", "2026-10-13_12-00"}
+RETROSPECTIVE = {"2026-10-06_12-00", "2026-10-06_16-00", "2026-10-13_12-00", "2026-10-16_12-00", "2026-10-16_16-00", "2026-10-16_21-00"}
+POSTHOC_RETROSPECTIVES = {"2026-10-16_12-00", "2026-10-16_16-00", "2026-10-16_21-00"}
+POSTHOC_RECORDED_AT = "2026-10-17T04:22:00+09:00"
 DRIVE_READBACK_SUPPLEMENTS = {"2026-10-16_08-00"}
 
 
@@ -66,6 +69,11 @@ def main() -> int:
                     fail("invalid supplemental recovery timestamp " + key)
             except (ValueError, KeyError, TypeError):
                 fail("missing supplemental recovery timestamp " + key)
+        elif key in POSTHOC_RETROSPECTIVES:
+            if (report.get("recoveryRecordedAt") != POSTHOC_RECORDED_AT
+                or report.get("originalReportStatus") != "ORIGINAL_NOT_FOUND"
+                or report.get("archiveType") != "RETROSPECTIVE_REPORT"):
+                fail("posthoc retrospective identity/timestamp altered " + key)
         elif report.get("recoveryRecordedAt") != data["generatedAt"]:
             fail("original recovery timestamp altered " + key)
         canonical = ROOT / "reports" / (key + ".json")
