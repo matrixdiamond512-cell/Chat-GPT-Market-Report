@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 import argparse
 import datetime as dt
 import json
@@ -130,6 +131,52 @@ def resolve_slot(
         # acquisition window instead.
         return slot_for_time(now or dt.datetime.now(JST))
     return slot_for_time(now or dt.datetime.now(JST))
+
+
+@dataclass(frozen=True)
+class ReportIdentity:
+    report_id: str
+    target: dt.datetime
+    status: str
+
+
+def resolve_report_identity(*, schedule_time_utc: str | None = None,
+                            report_date: str | None = None,
+                            report_slot: str | None = None,
+                            attempt_minutes: int = 0,
+                            now: dt.datetime) -> ReportIdentity:
+    """Resolve once from trusted scheduled time or an explicit date/slot pair.
+
+    EXPIRED preserves identity for audit/drafting but forbids new evidence.
+    A future target is valid only after its scheduled acquisition attempt starts.
+    Scheduler timestamp authentication belongs to the ingress adapter.
+    """
+    if now.tzinfo is None:
+        raise ValueError("INVALID_CLOCK")
+    if schedule_time_utc is not None:
+        if report_date is not None or report_slot is not None or attempt_minutes not in (0, 3, 7, 13):
+            raise ValueError("AMBIGUOUS_IDENTITY")
+        scheduled = dt.datetime.fromisoformat(schedule_time_utc.replace("Z", "+00:00"))
+        if scheduled.tzinfo is None or scheduled.utcoffset() != dt.timedelta(0):
+            raise ValueError("INVALID_UTC_SCHEDULE")
+        target = (scheduled + dt.timedelta(minutes=attempt_minutes)).astimezone(JST)
+        if target.second or target.microsecond:
+            raise ValueError("INVALID_SLOT")
+    else:
+        if not report_date or not report_slot or attempt_minutes:
+            raise ValueError("EXPLICIT_DATE_AND_SLOT_REQUIRED")
+        target = dt.datetime.fromisoformat(f"{report_date}T{report_slot}:00").replace(tzinfo=JST)
+        if target.date().isoformat() != report_date or target.strftime("%H:%M") != report_slot:
+            raise ValueError("INVALID_SLOT")
+        scheduled = target
+    schedule = json.loads(SCHEDULE_FILE.read_text(encoding="utf-8"))
+    group = "weekday" if target.weekday() < 5 else ("saturday" if target.weekday() == 5 else "sunday")
+    if target.strftime("%H:%M") not in schedule[group]["publicationSlots"]:
+        raise ValueError("INVALID_PUBLICATION_SLOT")
+    if scheduled > now:
+        raise ValueError("FUTURE_SCHEDULE")
+    return ReportIdentity(target.strftime("%Y-%m-%d_%H-%M"), target,
+                          "EXPIRED" if now >= target else "ACTIVE")
 
 
 def main() -> int:
