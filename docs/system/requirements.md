@@ -45,3 +45,7 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 
 ## 2026-10-17 一画面レポート閲覧要件（PR #97 Draft）
 REQ-08: 選択中の市場サマリーと同じレポート本文・図解を一つの画面内に連続表示し、日付・時刻選択を一つに統一する。別取得の本文が日時・全文・利用可能なidentityのいずれかで不一致なら本文表示を停止する。
+
+## PR97-CLI-20261021-01（2026-10-21 JST）
+関連PR: #97。基準revision: 08c2883420f580e23404a59612fec24a06a28049、既存修正: 352088c6ac691331ae2c265d39e37dfea18a8851。検証対象: prepare_morning_infographic_inputs.py のプロセス正常終了、summary/view/spec/input-manifest、検証済みG2 capturedAt/receipt savedAt、identity/bodyHash/snapshot_id/summary_sha256。回帰テストとTEST_ONLY成果物出力をCIで実行し、4成果物を保存する。summary hashはcanonical JSONのSHA-256で、ファイルbyte hashと区別する。
+未完了: 2026-10-19 08:00同一runの保存前固定本文・snapshot・Docs API読戻し・receiptの実体確認、Docs writerが固定本文のみを入力にする実行証拠、summary/view生成から独立したパネル12人間レビューへの接続。欠落証拠の遡及作成は禁止。実データE2Eはこれらの確認までBLOCKED。PRはDraft維持、マージ・公開・Drive追加書込みは行わない。Google Docs固定ID側の同期はNOT_RUN（今回の書込み対象外）。検証結果と未解決項目は docs/project-control/infographic-completion/EVIDENCE_LEDGER.md に記録する。

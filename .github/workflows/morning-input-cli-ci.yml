@@ -1,0 +1,30 @@
+name: Morning input CLI regression evidence
+on:
+  pull_request:
+    paths:
+      - 'scripts/**'
+      - 'tests/**'
+      - '.github/workflows/morning-input-cli-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cli-evidence:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .:scripts:tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install pillow jpholiday tzdata
+      - name: Full Python regression suite
+        run: python -m unittest discover -s tests -q
+      - name: Run real CLI subprocesses and retain four generated artifacts
+        run: python tests/export_morning_input_cli_evidence.py --output "$RUNNER_TEMP/morning-cli-evidence"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: morning-input-cli-TEST_ONLY-evidence
+          path: ${{ runner.temp }}/morning-cli-evidence/
+          if-no-files-found: error

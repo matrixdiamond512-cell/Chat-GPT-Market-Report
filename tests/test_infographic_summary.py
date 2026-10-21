@@ -182,7 +182,7 @@ class InfographicSummaryTests(unittest.TestCase):
         self.assertEqual(result["human_semantic_review"],"PENDING")
 
     def test_panel12_html_has_three_named_independent_regions(self):
-        reference=ROOT/"validation/formal-html-svg-0800-pc-readable-r50c-bottom-row-legibility/08-00-formal-html-svg.png"
+        reference=ROOT/"docs/examples/approved-infographic/approved-reference.png"
         layout=json.loads((ROOT/"templates/infographic/approved/layout.json").read_text(encoding="utf-8"))
         with patch("reporting.infographic_summary.layout_config",return_value=layout):
             html,_=render_summary_html(self.report,self.view,reference)

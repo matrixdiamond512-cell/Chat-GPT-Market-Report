@@ -35,3 +35,7 @@
 4. 補充版は実作成時刻と対象枠を区別して利用者へ本文先出し→Doc保存→読戻し。HISTORICAL_ARCHIVEで非正式閲覧可能だが、snapshot/receipt欠落を隠さず正式PUBLISHEDへ昇格させない。
 5. ポータル6市場の「取得不能」は最初にDocs本文と照合する。値があればparser/表示UI/キャッシュを調査し、価格・時刻・市場・限月・条件分離を回帰テストする。図解には別日数値や未検証値を加えない。
 6. PR #152/#153/#154の改修はmain導入済み。4枠ライブE2E・通知・ドキュメント/図解保存の全成功までは復旧完了としない。
+
+## PR97-CLI-20261021-01（2026-10-21 JST）
+関連PR: #97。基準revision: 08c2883420f580e23404a59612fec24a06a28049、既存修正: 352088c6ac691331ae2c265d39e37dfea18a8851。検証対象: prepare_morning_infographic_inputs.py のプロセス正常終了、summary/view/spec/input-manifest、検証済みG2 capturedAt/receipt savedAt、identity/bodyHash/snapshot_id/summary_sha256。回帰テストとTEST_ONLY成果物出力をCIで実行し、4成果物を保存する。summary hashはcanonical JSONのSHA-256で、ファイルbyte hashと区別する。
+未完了: 2026-10-19 08:00同一runの保存前固定本文・snapshot・Docs API読戻し・receiptの実体確認、Docs writerが固定本文のみを入力にする実行証拠、summary/view生成から独立したパネル12人間レビューへの接続。欠落証拠の遡及作成は禁止。実データE2Eはこれらの確認までBLOCKED。PRはDraft維持、マージ・公開・Drive追加書込みは行わない。Google Docs固定ID側の同期はNOT_RUN（今回の書込み対象外）。検証結果と未解決項目は docs/project-control/infographic-completion/EVIDENCE_LEDGER.md に記録する。

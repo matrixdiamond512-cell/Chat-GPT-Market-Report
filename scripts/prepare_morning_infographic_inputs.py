@@ -108,8 +108,6 @@ def prepare_inputs(*, report: dict, evidence_bytes: bytes, receipt: dict,
     validate_original_body_evidence(original_body_evidence, report, evidence, receipt)
     if receipt.get("bodyHash") != original_body_evidence.get("bodyHash"):
         raise ValidationFailure("MORNING_INPUT_DOCS_HASH_DIFFERS_FROM_PRE_SAVE_BODY")
-    captured_at = original_body_evidence.get("capturedAt")
-    saved_at = receipt.get("savedAt")
     bound = assemble(report, evidence["context"], evidence["snapshot"])
     spec = build_spec(bound)
     validate_spec(bound, spec)

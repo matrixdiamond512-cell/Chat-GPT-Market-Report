@@ -272,6 +272,11 @@ class MorningStagingBridgeTests(unittest.TestCase):
         self.assertEqual(manifest["revision"], self.bound["revision"])
         self.assertEqual(manifest["bodyHash"], self.bound["bodyHash"])
         self.assertEqual(manifest["snapshot_id"], self.bound["snapshot_id"])
+        self.assertEqual(json.loads(completed.stdout), manifest)
+        self.assertEqual(manifest["summary_sha256"], canonical_hash(summary))
+        for payload in (summary, view):
+            for key in ("report_id", "revision", "snapshot_id"):
+                self.assertEqual(payload[key], manifest[key])
         self.assertEqual(summary["bodyHash"], manifest["bodyHash"])
         self.assertEqual(view["body_hash"], manifest["bodyHash"])
         self.assertEqual(spec["snapshot_id"], manifest["snapshot_id"])

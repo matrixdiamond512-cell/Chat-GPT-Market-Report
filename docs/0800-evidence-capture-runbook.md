@@ -80,3 +80,7 @@ Bridgeはreceiptが示すDocs実読戻し、canonical report、Docs保存前の�
 - `READY_FOR_CANONICAL_VALIDATION` はPNG正式公開の許可ではない
 - Google Docs原本のDrive読み戻し一致（G3）、PNG（G4）、manifest（G5以降）が成功するまで、公開済み・保存完了と宣言しない
 - 合成fixtureは本番データでも実運用の成功証拠でもない
+
+## PR97-CLI-20261021-01（2026-10-21 JST）
+関連PR: #97。基準revision: 08c2883420f580e23404a59612fec24a06a28049、既存修正: 352088c6ac691331ae2c265d39e37dfea18a8851。検証対象: prepare_morning_infographic_inputs.py のプロセス正常終了、summary/view/spec/input-manifest、検証済みG2 capturedAt/receipt savedAt、identity/bodyHash/snapshot_id/summary_sha256。回帰テストとTEST_ONLY成果物出力をCIで実行し、4成果物を保存する。summary hashはcanonical JSONのSHA-256で、ファイルbyte hashと区別する。
+未完了: 2026-10-19 08:00同一runの保存前固定本文・snapshot・Docs API読戻し・receiptの実体確認、Docs writerが固定本文のみを入力にする実行証拠、summary/view生成から独立したパネル12人間レビューへの接続。欠落証拠の遡及作成は禁止。実データE2Eはこれらの確認までBLOCKED。PRはDraft維持、マージ・公開・Drive追加書込みは行わない。Google Docs固定ID側の同期はNOT_RUN（今回の書込み対象外）。検証結果と未解決項目は docs/project-control/infographic-completion/EVIDENCE_LEDGER.md に記録する。
