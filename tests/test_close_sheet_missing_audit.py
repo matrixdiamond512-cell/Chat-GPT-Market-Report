@@ -7,7 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
 from audit_close_sheet_missing import audit_rows, state
-from backfill_verified_close_archives import contribution_values, sector_values, plan_blank_only_updates
+from backfill_verified_close_archives import contribution_values, sector_values, plan_blank_only_updates, literal_a1_range
 from sheet_date_utils import parse_sheet_market_date
 
 
@@ -50,6 +50,25 @@ class AuditCloseSheetMissingTests(unittest.TestCase):
 
 
 class StockHistoryBackfillTests(unittest.TestCase):
+
+    def test_literal_a1_batch_body_never_uses_url_encoding(self):
+        self.assertEqual(literal_a1_range("終値一覧", 154, 44), "'終値一覧'!EX44")
+        self.assertEqual(literal_a1_range("John's Sheet", 2, 3), "'John''s Sheet'!B3")
+
+    def test_reject_weekend_rankings_even_with_verified_label(self):
+        section = {
+            "status": "verified", "freshness": "fresh", "asOf": "2026-09-06",
+            "sourceAt": {"top": "2026-09-06T16:00:00+09:00", "bottom": "2026-09-06T16:00:00+09:00"},
+            "top": [{"code": str(2000 + i), "shortName": str(i), "contribution": "+1"} for i in range(5)],
+            "bottom": [{"code": str(3000 + i), "shortName": str(i), "contribution": "-1"} for i in range(5)]
+        }
+        self.assertEqual(contribution_values(section), {})
+        self.assertEqual(sector_values({
+            "status": "verified", "freshness": "fresh", "asOf": "2026-09-06",
+            "gainers": [{"name": str(i), "change": "+1%", "asOf": "2026-09-06"} for i in range(5)],
+            "losers": [{"name": str(i), "change": "-1%", "asOf": "2026-09-06"} for i in range(5)]
+        }, market="japan"), (None, {}))
+
     def test_only_verified_five_by_five_contributions(self):
         section = {
             "status": "verified", "freshness": "fresh", "asOf": "2026-09-24",
