@@ -97,14 +97,24 @@ class JobCoordinator:
 
     def run(self, identity: ReportIdentity, data: bytes) -> dict:
         if not self.enabled:
-            return {"status": "DISABLED", "publicationEligible": False}
+            return {"status": "DISABLED", "publicationEligible": False, "chatStatus": "UNKNOWN"}
         result = self.writer.write(identity, data)
         # Stage records are create-only too. On retry, reconcile evidence first.
         if result["status"] in {"CREATED", "NO_OP"}:
             key = f"shadow/{identity.report_id}/stages/evidence-readback/{result['sha256']}"
+            expected = result["sha256"].encode("ascii")
+            if self.writer.clock() >= identity.target:
+                return {"status": "BLOCKED", "reason": "STAGE_CUTOFF_CROSSED",
+                        "publicationEligible": False, "chatStatus": "UNKNOWN"}
             try:
-                self.writer.store.create(key, result["sha256"].encode("ascii"))
+                stage = self.writer.store.create(key, expected)
             except FileExistsError:
-                if self.writer.store.read(key).data != result["sha256"].encode("ascii"):
-                    return {"status": "CONFLICT", "publicationEligible": False}
+                stage = self.writer.store.read(key)
+            readback = self.writer.store.read(key)
+            if readback != stage or readback.data != expected or readback.generation <= 0:
+                return {"status": "CONFLICT", "publicationEligible": False,
+                        "chatStatus": "UNKNOWN"}
+            if readback.committed_at >= identity.target or self.writer.clock() >= identity.target:
+                return {"status": "BLOCKED", "reason": "STAGE_CUTOFF_CROSSED",
+                        "publicationEligible": False, "chatStatus": "UNKNOWN"}
         return {**result, "publicationEligible": False, "chatStatus": "UNKNOWN"}

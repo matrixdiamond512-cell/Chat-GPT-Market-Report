@@ -69,7 +69,6 @@ class ContinuityTests(unittest.TestCase):
     def test_corrupt_readback_and_retry_after_transient_failure(self):
         store = FakeStorage(lambda: instant("2026-10-16T20:50"))
         writer = EvidenceWriter(store, store.clock)
-        original = store.read
         with patch.object(store, 'read', side_effect=OSError('readback unavailable')):
             with self.assertRaises(OSError):
                 writer.write(self.identity(), b'a')
@@ -101,6 +100,75 @@ class ContinuityTests(unittest.TestCase):
         clock_values = iter([target-timedelta(seconds=1), target])
         store = FakeStorage(lambda: target-timedelta(seconds=1))
         self.assertEqual(EvidenceWriter(store, lambda: next(clock_values)).write(self.identity(), b'a')["reason"], "CUTOFF_CROSSED")
+
+    def test_legacy_and_identity_paths_are_independent(self):
+        from pathlib import Path
+        from scripts import resolve_market_report_slot as resolver
+        delayed = instant("2026-10-17T00:33")
+        with patch.object(resolver, 'slot_for_time', side_effect=AssertionError('legacy fallback')):
+            self.assertEqual(self.identity(delayed).report_id, '2026-10-16_21-00')
+            with self.assertRaises(ValueError):
+                resolver.resolve_report_identity(schedule_time_utc='invalid', now=delayed)
+        with patch.object(resolver, 'resolve_report_identity', side_effect=AssertionError('new path')):
+            self.assertEqual(resolver.resolve_slot('push', '', 'auto', Path('missing'), delayed), '08:00')
+            self.assertEqual(resolver.resolve_slot('schedule', '30,35,40,45,50,55 11 * * 1-5',
+                                                   'auto', Path('missing'), delayed), '21:00')
+
+    def test_explicit_date_identity_matches_scheduler_identity(self):
+        identity = self.identity(instant('2026-10-17T00:33'))
+        explicit = resolve_report_identity(report_date='2026-10-16', report_slot='21:00',
+                                           now=instant('2026-10-17T00:33'))
+        self.assertEqual(identity, explicit)
+
+    def test_stage_storage_crossing_cutoff_is_blocked(self):
+        from scripts.report_continuity_shadow import StoredObject
+        target = self.identity().target
+        store = FakeStorage(lambda: target-timedelta(seconds=1))
+        original_create = store.create
+        def create(key, data):
+            obj = original_create(key, data)
+            if '/stages/' in key:
+                late = StoredObject(obj.data, obj.generation, target)
+                store._objects[key] = late
+                return late
+            return obj
+        with patch.object(store, 'create', side_effect=create):
+            result = JobCoordinator(EvidenceWriter(store, store.clock), enabled=True).run(self.identity(), b'a')
+        self.assertEqual(result['reason'], 'STAGE_CUTOFF_CROSSED')
+        self.assertFalse(result['publicationEligible'])
+
+    def test_stage_readback_detects_corruption_and_retry_recovers(self):
+        from scripts.report_continuity_shadow import StoredObject
+        store = FakeStorage(lambda: instant('2026-10-16T20:50'))
+        original_read = store.read
+        def read(key):
+            obj = original_read(key)
+            return StoredObject(b'corrupt', obj.generation, obj.committed_at) if '/stages/' in key else obj
+        coordinator = JobCoordinator(EvidenceWriter(store, store.clock), enabled=True)
+        with patch.object(store, 'read', side_effect=read):
+            self.assertEqual(coordinator.run(self.identity(), b'a')['status'], 'CONFLICT')
+        self.assertEqual(coordinator.run(self.identity(), b'a')['status'], 'NO_OP')
+
+    def test_stage_clock_crossing_before_or_after_io(self):
+        target = self.identity().target
+        before = target-timedelta(seconds=1)
+        for clocks in ([before, before, target], [before, before, before, target]):
+            values = iter(clocks)
+            store = FakeStorage(lambda: before)
+            coordinator = JobCoordinator(EvidenceWriter(store, lambda: next(values)), enabled=True)
+            self.assertEqual(coordinator.run(self.identity(), b'a')['reason'], 'STAGE_CUTOFF_CROSSED')
+
+    def test_stage_readback_failure_is_retriable(self):
+        store = FakeStorage(lambda: instant('2026-10-16T20:50'))
+        original_read = store.read
+        def read(key):
+            if '/stages/' in key:
+                raise OSError('stage readback unavailable')
+            return original_read(key)
+        coordinator = JobCoordinator(EvidenceWriter(store, store.clock), enabled=True)
+        with patch.object(store, 'read', side_effect=read), self.assertRaises(OSError):
+            coordinator.run(self.identity(), b'a')
+        self.assertEqual(coordinator.run(self.identity(), b'a')['status'], 'NO_OP')
 
     def test_window_explicit_previous_day_and_legacy(self):
         # Stop at audit_path: verify date selection without production I/O.
