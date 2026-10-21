@@ -222,7 +222,7 @@ def main() -> int:
                     # BatchUpdateValuesRequest.data[].range requires *literal A1*.
                     # SheetsClient._range() is URL percent-encoded for the GET
                     # path; putting it inside JSON caused HTTP 400.
-                    "data": [{"range": f"'{SHEET}'!{column_letter(u['col'])}{u['row']}",
+                    "data": [{"range": literal_a1_range(SHEET, u["col"], u["row"]),
                               "values": [[u["value"]]]} for u in batch],
                 })
                 if int(response.get("totalUpdatedCells") or 0) != len(batch):
@@ -245,6 +245,12 @@ def main() -> int:
     OUT.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({k: result.get(k) for k in ("status", "candidateGroups", "planned", "written", "verifiedReadback", "reason")}, ensure_ascii=False))
     return 2 if result["status"] == "BLOCKED" else 0
+
+
+def literal_a1_range(sheet_name: str, col: int, row: int) -> str:
+    """A1 JSON body string, *not* URL-encoded like SheetsClient._range()."""
+    escaped = sheet_name.replace("'", "''")
+    return f"'{escaped}'!{column_letter(col)}{row}"
 
 
 def column_letter(n: int) -> str:
