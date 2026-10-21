@@ -84,3 +84,12 @@ Bridgeはreceiptが示すDocs実読戻し、canonical report、Docs保存前の�
 ## PR97-CLI-20261021-01（2026-10-21 JST）
 関連PR: #97。基準revision: 08c2883420f580e23404a59612fec24a06a28049、既存修正: 352088c6ac691331ae2c265d39e37dfea18a8851。検証対象: prepare_morning_infographic_inputs.py のプロセス正常終了、summary/view/spec/input-manifest、検証済みG2 capturedAt/receipt savedAt、identity/bodyHash/snapshot_id/summary_sha256。回帰テストとTEST_ONLY成果物出力をCIで実行し、4成果物を保存する。summary hashはcanonical JSONのSHA-256で、ファイルbyte hashと区別する。
 未完了: 2026-10-19 08:00同一runの保存前固定本文・snapshot・Docs API読戻し・receiptの実体確認、Docs writerが固定本文のみを入力にする実行証拠、summary/view生成から独立したパネル12人間レビューへの接続。欠落証拠の遡及作成は禁止。実データE2Eはこれらの確認までBLOCKED。PRはDraft維持、マージ・公開・Drive追加書込みは行わない。Google Docs固定ID側の同期はNOT_RUN（今回の書込み対象外）。検証結果と未解決項目は docs/project-control/infographic-completion/EVIDENCE_LEDGER.md に記録する。
+## 10/19–21実行監査と10/22の停止条件（PR97-REALE2E-20261021-01、2026-10-21 JST）
+
+受入済みCLI head d08da8ae9を再修正する前に上流を監査した。各日08時の取得11件は全てexpired/effectiveFetch=false。freeze run 39181213424 / 39352662260 / 39524769588は09:32 / 10:18 / 10:00 JSTに作成され、枠後ゲートで停止し、freeze/commit stepへ未到達。対象slotのhistory/evidence/receipt/reportは監査main 1120e7437に存在せず、main到達履歴もない。
+
+Docsは3日とも後続runから取得できたが本文適格性FAIL（19日・21日は必須節/結論不足、20日は134文字→後続964文字）。最初のREPORT_SOURCE_MISSINGを未保存の断定に使わない。拒否されたDocs API全文・revision/metadataは現在artifactに保存されず、G2との全文比較はNOT_RUN。mainのproducer→G2接続は存在せず、外部writerが唯一の原文入力を使ったことはUNKNOWN。詳細とrun URLは同じ変更IDのEVIDENCE_LEDGERを参照。
+
+新規E2E対象は2026-10-22 08:00 JST。枠前の適格取得とslot evidence、保存前に排他的保存した実G2、writer入力artifact hash、Doc ID/revision・独立全文readback・receiptが同一transactionに結ばれるまでsummary/viewの実原文著者入力とDRAFT描画へ進まない。人間reviewerはパネル12のメイン/代替/崩れる条件の各「成立条件・展開・影響」を確認し、実レビュー時刻とsummary hashを残す。AIの自動判定やfixtureを人間PASSに置換しない。未取得G2を保存済みDocsから後付け生成しない。
+
+main側に必要な候補は、既存cutoffを守る枠前起動、producer→G2→writer唯一入力接続、拒否時も残るread-only Docs診断bundle/取得・凍結diagnosticsのartifact保存。現段階は提案のみで、本依頼からmain・trigger・writer・Driveは変更しない。正式slot、既存receipt/公開ゲートも変更しない。人間レビューと全証拠一致後のみPR #97の既存bridgeでローカルDRAFT PNG/検証manifestを生成し、実ブラウザーで表示確認する。
