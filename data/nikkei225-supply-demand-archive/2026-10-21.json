@@ -2,12 +2,12 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-supply-demand",
   "reportDate": "2026-10-21",
-  "generatedAt": "2026-10-21T21:55:48+09:00",
+  "generatedAt": "2026-10-21T23:29:03+09:00",
   "nikkei": {
     "schemaVersion": "2.1.0",
     "pageId": "nikkei225-supply-demand",
     "pageTitle": "日経225需給分析",
-    "generatedAt": "2026-10-21T21:55:48+09:00",
+    "generatedAt": "2026-10-21T23:29:03+09:00",
     "spot": {
       "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
@@ -16,7 +16,7 @@
       "value": 64621.24,
       "asOfDate": "2026-10-21",
       "status": "verified",
-      "fetchedAt": "2026-10-21T21:55:48+09:00"
+      "fetchedAt": "2026-10-21T23:29:03+09:00"
     },
     "futures": {
       "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -32,10 +32,10 @@
       "miniOpenInterest": 266837,
       "openInterestChange": 1476,
       "miniOpenInterestChange": -1866,
-      "volumeChangePercent": 0.0,
-      "miniVolumeChangePercent": 0.0,
+      "volumeChangePercent": null,
+      "miniVolumeChangePercent": null,
       "status": "verified",
-      "fetchedAt": "2026-10-21T21:54:29+09:00",
+      "fetchedAt": "2026-10-21T23:27:48+09:00",
       "previousOpenInterest": 167992,
       "miniPreviousOpenInterest": 268703,
       "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261021open_interest.xlsx"
@@ -55,7 +55,7 @@
       "asOfDate": "2026-09-30",
       "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260930_derivatives_market_data_night.xlsx",
       "status": "stale",
-      "fetchedAt": "2026-10-21T21:55:40+09:00",
+      "fetchedAt": "2026-10-21T23:28:56+09:00",
       "error": "JPXセッション別出来高取得失敗: ValueError: night-session workbook link not found"
     },
     "arbitrage": {
@@ -70,9 +70,9 @@
       "buyChange": -35632,
       "status": "verified",
       "frequency": "daily",
-      "lastAttemptAt": "2026-10-21T21:54:25+09:00",
-      "lastSuccessAt": "2026-10-21T21:54:25+09:00",
-      "fetchedAt": "2026-10-21T21:54:25+09:00",
+      "lastAttemptAt": "2026-10-21T23:27:44+09:00",
+      "lastSuccessAt": "2026-10-21T23:27:44+09:00",
+      "fetchedAt": "2026-10-21T23:27:44+09:00",
       "error": null
     },
     "options": {
@@ -87,7 +87,7 @@
       "asOfDate": "2026-10-21",
       "status": "calculated",
       "error": "Put/Call・IVはJPX列構造を確認できるまで推測せず空欄",
-      "fetchedAt": "2026-10-21T21:55:48+09:00",
+      "fetchedAt": "2026-10-21T23:29:03+09:00",
       "putVolume": null,
       "callVolume": null,
       "putCallStatus": "unavailable",
@@ -163,7 +163,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202610/20261021_volume_by_participant_whole_day.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-10-21T21:55:42+09:00"
+      "fetchedAt": "2026-10-21T23:28:57+09:00"
     },
     "foreignInvestors": {
       "sourceName": "JPX 投資部門別売買状況",
@@ -776,7 +776,7 @@
         ]
       },
       "status": "verified",
-      "fetchedAt": "2026-10-21T21:55:40+09:00"
+      "fetchedAt": "2026-10-21T23:28:55+09:00"
     },
     "participantOpenInterest": {
       "sourceName": "JPX 取引参加者別建玉残高",
@@ -890,7 +890,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20261016_indexfut_oi_by_tp.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-10-21T21:55:43+09:00"
+      "fetchedAt": "2026-10-21T23:28:58+09:00"
     },
     "shortSelling": {
       "sourceName": "JPX 空売り集計",
@@ -975,7 +975,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-10-21T21:54:28+09:00"
+      "fetchedAt": "2026-10-21T23:27:47+09:00"
     },
     "margin": {
       "sourceName": "JPX 信用取引現在高",
@@ -1036,7 +1036,7 @@
         }
       ],
       "status": "stale",
-      "fetchedAt": "2026-10-21T21:54:29+09:00",
+      "fetchedAt": "2026-10-21T23:27:48+09:00",
       "error": "JPX信用需給取得失敗: ValueError: weekly margin total monetary row not found"
     },
     "assessment": {
@@ -1332,7 +1332,7 @@
       "market": null,
       "status": "partial",
       "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202610.xlsx",
-      "fetchedAt": "2026-10-21T21:55:45+09:00",
+      "fetchedAt": "2026-10-21T23:29:01+09:00",
       "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
     },
     "nikkeiFuturesDailyHistory": [
@@ -1344,7 +1344,7 @@
         "sourceName": "JPX / 大阪取引所 日経225先物",
         "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
         "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261021open_interest.xlsx",
-        "capturedAt": "2026-10-21T21:55:45+09:00",
+        "capturedAt": "2026-10-21T23:29:00+09:00",
         "status": "verified"
       }
     ],
@@ -1361,7 +1361,7 @@
       "status": "verified",
       "releaseFrequency": "weekly",
       "lookbackWeeks": 52,
-      "fetchedAt": "2026-10-21T21:55:50+09:00",
+      "fetchedAt": "2026-10-21T23:29:04+09:00",
       "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
       "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
       "priceStatus": "available",
@@ -2397,7 +2397,7 @@
       {
         "title": "需給・ポジション",
         "items": [
-          "日本：値上がり/値下がり 335 / 1181、東証プライム売買代金 6.79 兆円。",
+          "日本：値上がり/値下がり 982 / 521、東証プライム売買代金 6.92 兆円。",
           "海外投資家動向（週次）：-2,749.34億円。",
           "米国：NYSE 1,429 / 628、NASDAQ 2,110 / 1,060で下落優勢。"
         ]
@@ -2405,7 +2405,7 @@
       {
         "title": "フロー判断",
         "items": [
-          "日本：TOPIX -58.27（-1.43%）に対し、グロース250 -21.00（-2.74%）。指数間の強弱が残る。",
+          "日本：TOPIX +34.52（+0.86%）に対し、グロース250 +20.78（+2.79%）。指数間の強弱が残る。",
           "日本の上位セクター：電気機器 +1.72%、情報・通信業 +1.34%、輸送用機器 +1.05%。米国の上位セクター：コミュニケーション・サービス +1.78%、ヘルスケア +1.33%、一般消費財・サービス +1.07%。",
           "米国：SOX -32.53（-0.29%）、Russell2000 +45.12（+1.65%）。資金の広がりは未確認。"
         ]
@@ -2413,24 +2413,24 @@
       {
         "title": "メインシナリオ",
         "items": [
-          "TOPIX -58.27（-1.43%）の相対優位が続くか、グロース250 -21.00（-2.74%）の下落が縮小するかを確認。",
+          "TOPIX +34.52（+0.86%）の相対優位が続くか、グロース250 +20.78（+2.79%）の下落が縮小するかを確認。",
           "米国はSOX -32.53（-0.29%）の底堅さが、S&P500 +21.84（+0.28%）・Nasdaq -6.07（-0.02%）の下落を吸収できるかが分岐。",
-          "寄り付き確認：TOPIX 4,016.37 -1.26%。"
+          "寄り付き確認：TOPIX 4,049.52 +1.01%。"
         ]
       },
       {
         "title": "崩れる条件",
         "items": [
           "米国でS&P500/Nasdaqの下落とVIX -1.13（-6.13%）の上昇が同時に続く場合。",
-          "日本でTOPIXの上昇が広がりを伴わず、グロース250 -21.00（-2.74%）の下落が拡大する場合。",
-          "個別株の下落が拡大：トーメンデバ（2737） -11.84%、レゾナックＨＤ（4004） -10.80%、ツガミ（6101） -9.51%。"
+          "日本でTOPIXの上昇が広がりを伴わず、グロース250 +20.78（+2.79%）の下落が拡大する場合。",
+          "個別株の下落が拡大：チェンジＨＤ（3962） -6.19%、クオールＨＤ（3034） -4.15%、ディップ（2379） -3.88%。"
         ]
       },
       {
         "title": "監視ポイント",
         "items": [
-          "日本の上昇率上位：東 宝（9602） +4.93%、アサヒインテック（7747） +4.72%、ＪＩＮＳＨＤ（3046） +4.33%。",
-          "日本の下落率上位：トーメンデバ（2737） -11.84%、レゾナックＨＤ（4004） -10.80%、ツガミ（6101） -9.51%。",
+          "日本の上昇率上位：ネクセラファーマ（4565） +9.78%、ＧＭＯＧＳＨＤ（3788） +9.07%、アステリア（3853） +6.87%。",
+          "日本の下落率上位：チェンジＨＤ（3962） -6.19%、クオールＨＤ（3034） -4.15%、ディップ（2379） -3.88%。",
           "米国の主要指数：S&P500 +21.84（+0.28%）、Nasdaq -6.07（-0.02%）、SOX -32.53（-0.29%）。"
         ]
       }
@@ -2441,112 +2441,112 @@
         "flag": "JP",
         "status": "verified",
         "freshness": "fresh",
-        "dataDate": "2026-10-20",
-        "asOf": "2026-10-20",
-        "updatedAt": "2026-10-20T21:41:31+09:00",
+        "dataDate": "2026-10-21",
+        "asOf": "2026-10-21",
+        "updatedAt": "2026-10-21T21:54:19+09:00",
         "source": {
           "name": "株探 日経平均の寄与度ランキング",
           "topUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=desc&market=all&order=contrib_price",
           "bottomUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=asc&market=all&order=contrib_price"
         },
         "error": null,
-        "generatedAt": "2026-10-20T21:41:31+09:00",
+        "generatedAt": "2026-10-21T21:54:19+09:00",
         "sourceAt": {
-          "top": "2026-10-20T16:00:00+09:00",
-          "bottom": "2026-10-20T16:00:00+09:00"
+          "top": "2026-10-21T16:00:00+09:00",
+          "bottom": "2026-10-21T16:00:00+09:00"
         },
         "top": [
           {
             "rank": 1,
-            "code": "9983",
-            "name": "ファストリ（9983）",
-            "shortName": "ファストリ",
-            "close": "75,360",
-            "contribution": "+122.17",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
+            "code": "6857",
+            "name": "アドテスト（6857）",
+            "shortName": "アドテスト",
+            "close": "34,440",
+            "contribution": "+122.98",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-21"
           },
           {
             "rank": 2,
-            "code": "4543",
-            "name": "テルモ（4543）",
-            "shortName": "テルモ",
-            "close": "2,406.5",
-            "contribution": "+17.93",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
+            "code": "9984",
+            "name": "ＳＢＧ（9984）",
+            "shortName": "ＳＢＧ",
+            "close": "4,622",
+            "contribution": "+55.02",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-21"
           },
           {
             "rank": 3,
-            "code": "9766",
-            "name": "コナミＧ（9766）",
-            "shortName": "コナミＧ",
-            "close": "25,225",
-            "contribution": "+13.15",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
+            "code": "4062",
+            "name": "イビデン（4062）",
+            "shortName": "イビデン",
+            "close": "9,500",
+            "contribution": "+44.90",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-21"
           },
           {
             "rank": 4,
-            "code": "7832",
-            "name": "バンナムＨＤ（7832）",
-            "shortName": "バンナムＨＤ",
-            "close": "6,382",
-            "contribution": "+11.33",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
+            "code": "8035",
+            "name": "東エレク（8035）",
+            "shortName": "東エレク",
+            "close": "10,160",
+            "contribution": "+37.92",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-21"
           },
           {
             "rank": 5,
-            "code": "4519",
-            "name": "中外薬（4519）",
-            "shortName": "中外薬",
-            "close": "6,430",
-            "contribution": "+9.71",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
+            "code": "6762",
+            "name": "ＴＤＫ（6762）",
+            "shortName": "ＴＤＫ",
+            "close": "2,902.5",
+            "contribution": "+34.64",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-21"
           }
         ],
         "bottom": [
           {
             "rank": 1,
-            "code": "9984",
-            "name": "ＳＢＧ（9984）",
-            "shortName": "ＳＢＧ",
-            "close": "4,554",
-            "contribution": "-235.43",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
+            "code": "9433",
+            "name": "ＫＤＤＩ（9433）",
+            "shortName": "ＫＤＤＩ",
+            "close": "2,910.0",
+            "contribution": "-12.74",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-21"
           },
           {
             "rank": 2,
-            "code": "8035",
-            "name": "東エレク（8035）",
-            "shortName": "東エレク",
-            "close": "10,085",
-            "contribution": "-134.00",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
+            "code": "9983",
+            "name": "ファストリ（9983）",
+            "shortName": "ファストリ",
+            "close": "75,210",
+            "contribution": "-12.14",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-21"
           },
           {
             "rank": 3,
-            "code": "6857",
-            "name": "アドテスト（6857）",
-            "shortName": "アドテスト",
-            "close": "33,870",
-            "contribution": "-125.13",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
+            "code": "9843",
+            "name": "ニトリＨＤ（9843）",
+            "shortName": "ニトリＨＤ",
+            "close": "3,289.0",
+            "contribution": "-4.97",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-21"
           },
           {
             "rank": 4,
-            "code": "5803",
-            "name": "フジクラ（5803）",
-            "shortName": "フジクラ",
-            "close": "4,192",
-            "contribution": "-58.66",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
+            "code": "4452",
+            "name": "花王（4452）",
+            "shortName": "花王",
+            "close": "3,725",
+            "contribution": "-4.31",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-21"
           },
           {
             "rank": 5,
-            "code": "4062",
-            "name": "イビデン（4062）",
-            "shortName": "イビデン",
-            "close": "9,167",
-            "contribution": "-45.71",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
+            "code": "7733",
+            "name": "オリンパス（7733）",
+            "shortName": "オリンパス",
+            "close": "1,698.5",
+            "contribution": "-4.25",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-21"
           }
         ],
         "lastGood": {
@@ -2554,228 +2554,342 @@
           "flag": "JP",
           "status": "verified",
           "freshness": "stale",
-          "dataDate": "2026-10-19",
-          "asOf": "2026-10-19",
-          "updatedAt": "2026-10-19T23:37:54+09:00",
+          "dataDate": "2026-10-20",
+          "asOf": "2026-10-20",
+          "updatedAt": "2026-10-20T21:41:31+09:00",
           "source": {
             "name": "株探 日経平均の寄与度ランキング",
             "topUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=desc&market=all&order=contrib_price",
             "bottomUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=asc&market=all&order=contrib_price"
           },
           "error": null,
-          "generatedAt": "2026-10-19T23:37:54+09:00",
+          "generatedAt": "2026-10-20T21:41:31+09:00",
           "sourceAt": {
-            "top": "2026-10-19T16:00:00+09:00",
-            "bottom": "2026-10-19T16:00:00+09:00"
+            "top": "2026-10-20T16:00:00+09:00",
+            "bottom": "2026-10-20T16:00:00+09:00"
           },
           "top": [
             {
               "rank": 1,
-              "code": "6098",
-              "name": "リクルート（6098）",
-              "shortName": "リクルート",
-              "close": "18,775",
-              "contribution": "+35.90",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
+              "code": "9983",
+              "name": "ファストリ（9983）",
+              "shortName": "ファストリ",
+              "close": "75,360",
+              "contribution": "+122.17",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
             },
             {
               "rank": 2,
-              "code": "6532",
-              "name": "ベイカレント（6532）",
-              "shortName": "ベイカレント",
-              "close": "10,740",
-              "contribution": "+18.37",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
+              "code": "4543",
+              "name": "テルモ（4543）",
+              "shortName": "テルモ",
+              "close": "2,406.5",
+              "contribution": "+17.93",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
             },
             {
               "rank": 3,
-              "code": "285A",
-              "name": "キオクシア（285A）",
-              "shortName": "キオクシア",
-              "close": "13,600",
-              "contribution": "+15.93",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
+              "code": "9766",
+              "name": "コナミＧ（9766）",
+              "shortName": "コナミＧ",
+              "close": "25,225",
+              "contribution": "+13.15",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
             },
             {
               "rank": 4,
-              "code": "9433",
-              "name": "ＫＤＤＩ（9433）",
-              "shortName": "ＫＤＤＩ",
-              "close": "2,944.0",
-              "contribution": "+13.75",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
+              "code": "7832",
+              "name": "バンナムＨＤ（7832）",
+              "shortName": "バンナムＨＤ",
+              "close": "6,382",
+              "contribution": "+11.33",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
             },
             {
               "rank": 5,
-              "code": "8015",
-              "name": "豊田通商（8015）",
-              "shortName": "豊田通商",
-              "close": "7,539",
+              "code": "4519",
+              "name": "中外薬（4519）",
+              "shortName": "中外薬",
+              "close": "6,430",
               "contribution": "+9.71",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
             }
           ],
           "bottom": [
             {
               "rank": 1,
-              "code": "8035",
-              "name": "東エレク（8035）",
-              "shortName": "東エレク",
-              "close": "10,350",
-              "contribution": "-141.58",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
-            },
-            {
-              "rank": 2,
-              "code": "9983",
-              "name": "ファストリ（9983）",
-              "shortName": "ファストリ",
-              "close": "73,850",
-              "contribution": "-139.97",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
-            },
-            {
-              "rank": 3,
               "code": "9984",
               "name": "ＳＢＧ（9984）",
               "shortName": "ＳＢＧ",
-              "close": "4,845",
-              "contribution": "-80.10",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
+              "close": "4,554",
+              "contribution": "-235.43",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
+            },
+            {
+              "rank": 2,
+              "code": "8035",
+              "name": "東エレク（8035）",
+              "shortName": "東エレク",
+              "close": "10,085",
+              "contribution": "-134.00",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
+            },
+            {
+              "rank": 3,
+              "code": "6857",
+              "name": "アドテスト（6857）",
+              "shortName": "アドテスト",
+              "close": "33,870",
+              "contribution": "-125.13",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
             },
             {
               "rank": 4,
-              "code": "4062",
-              "name": "イビデン（4062）",
-              "shortName": "イビデン",
-              "close": "9,506",
-              "contribution": "-34.79",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
+              "code": "5803",
+              "name": "フジクラ（5803）",
+              "shortName": "フジクラ",
+              "close": "4,192",
+              "contribution": "-58.66",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
             },
             {
               "rank": 5,
-              "code": "6920",
-              "name": "レーザーテク（6920）",
-              "shortName": "レーザーテク",
-              "close": "39,590",
-              "contribution": "-21.71",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
+              "code": "4062",
+              "name": "イビデン（4062）",
+              "shortName": "イビデン",
+              "close": "9,167",
+              "contribution": "-45.71",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-20"
             }
           ],
           "lastGood": {
-            "asOf": "2026-10-16",
-            "bottom": [
-              {
-                "rank": 1,
-                "code": "9983",
-                "name": "ファストリ（9983）",
-                "shortName": "ファストリ",
-                "close": "75,580",
-                "contribution": "-66.34",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
-              },
-              {
-                "rank": 2,
-                "code": "5803",
-                "name": "フジクラ（5803）",
-                "shortName": "フジクラ",
-                "close": "4,503",
-                "contribution": "-7.48",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
-              },
-              {
-                "rank": 3,
-                "code": "7453",
-                "name": "良品計画（7453）",
-                "shortName": "良品計画",
-                "close": "4,709",
-                "contribution": "-6.40",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
-              },
-              {
-                "rank": 4,
-                "code": "7733",
-                "name": "オリンパス（7733）",
-                "shortName": "オリンパス",
-                "close": "1,690.0",
-                "contribution": "-4.18",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
-              },
-              {
-                "rank": 5,
-                "code": "6971",
-                "name": "京セラ（6971）",
-                "shortName": "京セラ",
-                "close": "3,629.0",
-                "contribution": "-3.24",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
-              }
-            ],
-            "dataDate": "2026-10-16",
-            "error": null,
+            "title": "日本市場（日経225寄与度 上位・下位）",
             "flag": "JP",
+            "status": "verified",
             "freshness": "stale",
-            "generatedAt": "2026-10-18T13:59:29+09:00",
-            "lastGood": null,
+            "dataDate": "2026-10-19",
+            "asOf": "2026-10-19",
+            "updatedAt": "2026-10-19T23:37:54+09:00",
             "source": {
               "name": "株探 日経平均の寄与度ランキング",
               "topUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=desc&market=all&order=contrib_price",
               "bottomUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=asc&market=all&order=contrib_price"
             },
+            "error": null,
+            "generatedAt": "2026-10-19T23:37:54+09:00",
             "sourceAt": {
-              "top": "2026-10-16T16:00:00+09:00",
-              "bottom": "2026-10-16T16:00:00+09:00"
+              "top": "2026-10-19T16:00:00+09:00",
+              "bottom": "2026-10-19T16:00:00+09:00"
             },
-            "status": "verified",
-            "title": "日本市場（日経225寄与度 上位・下位）",
             "top": [
+              {
+                "rank": 1,
+                "code": "6098",
+                "name": "リクルート（6098）",
+                "shortName": "リクルート",
+                "close": "18,775",
+                "contribution": "+35.90",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
+              },
+              {
+                "rank": 2,
+                "code": "6532",
+                "name": "ベイカレント（6532）",
+                "shortName": "ベイカレント",
+                "close": "10,740",
+                "contribution": "+18.37",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
+              },
+              {
+                "rank": 3,
+                "code": "285A",
+                "name": "キオクシア（285A）",
+                "shortName": "キオクシア",
+                "close": "13,600",
+                "contribution": "+15.93",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
+              },
+              {
+                "rank": 4,
+                "code": "9433",
+                "name": "ＫＤＤＩ（9433）",
+                "shortName": "ＫＤＤＩ",
+                "close": "2,944.0",
+                "contribution": "+13.75",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
+              },
+              {
+                "rank": 5,
+                "code": "8015",
+                "name": "豊田通商（8015）",
+                "shortName": "豊田通商",
+                "close": "7,539",
+                "contribution": "+9.71",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
+              }
+            ],
+            "bottom": [
               {
                 "rank": 1,
                 "code": "8035",
                 "name": "東エレク（8035）",
                 "shortName": "東エレク",
-                "close": "10,630",
-                "contribution": "+134.00",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
+                "close": "10,350",
+                "contribution": "-141.58",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
               },
               {
                 "rank": 2,
-                "code": "9984",
-                "name": "ＳＢＧ（9984）",
-                "shortName": "ＳＢＧ",
-                "close": "4,944",
-                "contribution": "+74.43",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
+                "code": "9983",
+                "name": "ファストリ（9983）",
+                "shortName": "ファストリ",
+                "close": "73,850",
+                "contribution": "-139.97",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
               },
               {
                 "rank": 3,
-                "code": "4062",
-                "name": "イビデン（4062）",
-                "shortName": "イビデン",
-                "close": "9,764",
-                "contribution": "+74.30",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
+                "code": "9984",
+                "name": "ＳＢＧ（9984）",
+                "shortName": "ＳＢＧ",
+                "close": "4,845",
+                "contribution": "-80.10",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
               },
               {
                 "rank": 4,
-                "code": "6532",
-                "name": "ベイカレント（6532）",
-                "shortName": "ベイカレント",
-                "close": "10,195",
-                "contribution": "+50.57",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
+                "code": "4062",
+                "name": "イビデン（4062）",
+                "shortName": "イビデン",
+                "close": "9,506",
+                "contribution": "-34.79",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
               },
               {
                 "rank": 5,
-                "code": "6857",
-                "name": "アドテスト（6857）",
-                "shortName": "アドテスト",
-                "close": "34,530",
-                "contribution": "+40.99",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
+                "code": "6920",
+                "name": "レーザーテク（6920）",
+                "shortName": "レーザーテク",
+                "close": "39,590",
+                "contribution": "-21.71",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-19"
               }
             ],
-            "updatedAt": "2026-10-18T13:59:29+09:00"
+            "lastGood": {
+              "asOf": "2026-10-16",
+              "bottom": [
+                {
+                  "rank": 1,
+                  "code": "9983",
+                  "name": "ファストリ（9983）",
+                  "shortName": "ファストリ",
+                  "close": "75,580",
+                  "contribution": "-66.34",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
+                },
+                {
+                  "rank": 2,
+                  "code": "5803",
+                  "name": "フジクラ（5803）",
+                  "shortName": "フジクラ",
+                  "close": "4,503",
+                  "contribution": "-7.48",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
+                },
+                {
+                  "rank": 3,
+                  "code": "7453",
+                  "name": "良品計画（7453）",
+                  "shortName": "良品計画",
+                  "close": "4,709",
+                  "contribution": "-6.40",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
+                },
+                {
+                  "rank": 4,
+                  "code": "7733",
+                  "name": "オリンパス（7733）",
+                  "shortName": "オリンパス",
+                  "close": "1,690.0",
+                  "contribution": "-4.18",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
+                },
+                {
+                  "rank": 5,
+                  "code": "6971",
+                  "name": "京セラ（6971）",
+                  "shortName": "京セラ",
+                  "close": "3,629.0",
+                  "contribution": "-3.24",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
+                }
+              ],
+              "dataDate": "2026-10-16",
+              "error": null,
+              "flag": "JP",
+              "freshness": "stale",
+              "generatedAt": "2026-10-18T13:59:29+09:00",
+              "lastGood": null,
+              "source": {
+                "name": "株探 日経平均の寄与度ランキング",
+                "topUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=desc&market=all&order=contrib_price",
+                "bottomUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=asc&market=all&order=contrib_price"
+              },
+              "sourceAt": {
+                "top": "2026-10-16T16:00:00+09:00",
+                "bottom": "2026-10-16T16:00:00+09:00"
+              },
+              "status": "verified",
+              "title": "日本市場（日経225寄与度 上位・下位）",
+              "top": [
+                {
+                  "rank": 1,
+                  "code": "8035",
+                  "name": "東エレク（8035）",
+                  "shortName": "東エレク",
+                  "close": "10,630",
+                  "contribution": "+134.00",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
+                },
+                {
+                  "rank": 2,
+                  "code": "9984",
+                  "name": "ＳＢＧ（9984）",
+                  "shortName": "ＳＢＧ",
+                  "close": "4,944",
+                  "contribution": "+74.43",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
+                },
+                {
+                  "rank": 3,
+                  "code": "4062",
+                  "name": "イビデン（4062）",
+                  "shortName": "イビデン",
+                  "close": "9,764",
+                  "contribution": "+74.30",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
+                },
+                {
+                  "rank": 4,
+                  "code": "6532",
+                  "name": "ベイカレント（6532）",
+                  "shortName": "ベイカレント",
+                  "close": "10,195",
+                  "contribution": "+50.57",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
+                },
+                {
+                  "rank": 5,
+                  "code": "6857",
+                  "name": "アドテスト（6857）",
+                  "shortName": "アドテスト",
+                  "close": "34,530",
+                  "contribution": "+40.99",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-10-16"
+                }
+              ],
+              "updatedAt": "2026-10-18T13:59:29+09:00"
+            }
           }
         }
       },
@@ -5477,30 +5591,30 @@
       "conclusion": {
         "title": "今日の結論",
         "main": "米国主要指数は下落、日本はTOPIXが小幅高だがグロース250は下落。大型株・半導体を軸に強弱が分かれる株式市場。",
-        "sub": "日経225 64,075.42 / TOPIX 4,009.21 / S&P500 7,712.57 / Nasdaq 26,424.82。"
+        "sub": "日経225 64,621.24 / TOPIX 4,043.73 / S&P500 7,712.57 / Nasdaq 26,424.82。"
       },
       "reason": {
         "title": "なぜ買われたか／売られたか",
         "items": [
-          "日本：TOPIX -58.27（-1.43%）、値上がり/値下がり 335 / 1181。",
+          "日本：TOPIX +34.52（+0.86%）、値上がり/値下がり 982 / 521。",
           "米国：SOX -32.53（-0.29%）に対し、S&P500 +21.84（+0.28%）、Nasdaq -6.07（-0.02%）。",
-          "日本の強いセクター：電気機器 +1.72%、情報・通信業 +1.34%。個別では東 宝（9602） +4.93%、アサヒインテック（7747） +4.72%。"
+          "日本の強いセクター：電気機器 +1.72%、情報・通信業 +1.34%。個別ではネクセラファーマ（4565） +9.78%、ＧＭＯＧＳＨＤ（3788） +9.07%。"
         ]
       },
       "risk": {
         "title": "リスク",
         "items": [
           "米国はVIX -1.13（-6.13%）、NYSE値上がり/値下がり 1,429 / 628で内部下落が優勢。",
-          "日本はグロース250 -21.00（-2.74%）で、TOPIXとの乖離に注意。",
-          "日本の下落率上位：トーメンデバ（2737） -11.84%、レゾナックＨＤ（4004） -10.80%。"
+          "日本はグロース250 +20.78（+2.79%）で、TOPIXとの乖離に注意。",
+          "日本の下落率上位：チェンジＨＤ（3962） -6.19%、クオールＨＤ（3034） -4.15%。"
         ]
       },
       "watch": {
         "title": "次の注目点",
         "items": [
           "S&P500 +21.84（+0.28%）・Nasdaq -6.07（-0.02%）の下落が続くか、SOX -32.53（-0.29%）が下支えを維持するか。",
-          "日経225 / TOPIX / グロース250の方向と、値上がり・値下がり 335 / 1181の広がり。",
-          "次回寄り付き：TOPIX 4,016.37 -1.26%、日経225先物（CME参考） 64,320.00 -0.60%。"
+          "日経225 / TOPIX / グロース250の方向と、値上がり・値下がり 982 / 521の広がり。",
+          "次回寄り付き：TOPIX 4,049.52 +1.01%、日経225先物（CME参考） 64,785.00 -0.24%。"
         ]
       }
     },
@@ -5682,7 +5796,7 @@
           ]
         ],
         "dataDate": "2026-10-21",
-        "updatedAt": "2026-10-21T21:52:45+09:00",
+        "updatedAt": "2026-10-21T22:14:24+09:00",
         "source": {
           "name": "東京市場確定値統合（複数ソース・項目別基準日）",
           "sheet": "終値一覧",
@@ -5707,7 +5821,7 @@
       }
     },
     "marketUpdatedAt": {
-      "japan": "2026-10-21T21:52:45+09:00",
+      "japan": "2026-10-21T22:14:24+09:00",
       "us": "2026-10-21T09:02:21+09:00"
     },
     "movers": {
@@ -8047,9 +8161,9 @@
         "flag": "JP",
         "status": "verified",
         "freshness": "fresh",
-        "dataDate": "2026-10-20",
-        "asOf": "2026-10-20T15:45:00+09:00",
-        "updatedAt": "2026-10-20T21:49:26+09:00",
+        "dataDate": "2026-10-21",
+        "asOf": "2026-10-21T15:45:00+09:00",
+        "updatedAt": "2026-10-21T22:02:48+09:00",
         "source": {
           "name": "トレーダーズ・ウェブ 国内市場ランキング（東証プライム・前日比）",
           "gainersUrl": "https://www.traders.co.jp/market_jp/stock_ranking/price_up/day/tp/all",
@@ -8057,109 +8171,109 @@
         },
         "error": null,
         "sourceAt": {
-          "gainers": "2026-10-20T15:45:00+09:00",
-          "losers": "2026-10-20T15:45:00+09:00"
+          "gainers": "2026-10-21T15:45:00+09:00",
+          "losers": "2026-10-21T15:45:00+09:00"
         },
         "gainers": [
           {
             "rank": 1,
-            "code": "9602",
-            "name": "東　宝（9602）",
-            "close": "1,714",
-            "change": "+4.93%",
-            "dayChange": "+80.5",
-            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+            "code": "4565",
+            "name": "ネクセラファーマ（4565）",
+            "close": "1,313",
+            "change": "+9.78%",
+            "dayChange": "+117",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
           },
           {
             "rank": 2,
-            "code": "7747",
-            "name": "アサヒインテック（7747）",
-            "close": "3,640",
-            "change": "+4.72%",
-            "dayChange": "+164",
-            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+            "code": "3788",
+            "name": "ＧＭＯＧＳＨＤ（3788）",
+            "close": "2,645",
+            "change": "+9.07%",
+            "dayChange": "+220",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
           },
           {
             "rank": 3,
-            "code": "3046",
-            "name": "ＪＩＮＳＨＤ（3046）",
-            "close": "6,260",
-            "change": "+4.33%",
-            "dayChange": "+260",
-            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+            "code": "3853",
+            "name": "アステリア（3853）",
+            "close": "1,027",
+            "change": "+6.87%",
+            "dayChange": "+66",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
           },
           {
             "rank": 4,
-            "code": "9229",
-            "name": "サンウェルズ（9229）",
-            "close": "121",
-            "change": "+4.31%",
-            "dayChange": "+5",
-            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+            "code": "6740",
+            "name": "ＪＤＩ（6740）",
+            "close": "33",
+            "change": "+6.45%",
+            "dayChange": "+2",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
           },
           {
             "rank": 5,
-            "code": "9861",
-            "name": "吉野家ＨＤ（9861）",
-            "close": "4,464",
-            "change": "+4.23%",
-            "dayChange": "+181",
-            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+            "code": "8237",
+            "name": "松　屋（8237）",
+            "close": "2,510",
+            "change": "+6.36%",
+            "dayChange": "+150",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
           }
         ],
         "losers": [
           {
             "rank": 1,
-            "code": "2737",
-            "name": "トーメンデバ（2737）",
-            "close": "32,750",
-            "change": "-11.84%",
-            "dayChange": "-4,400",
-            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+            "code": "3962",
+            "name": "チェンジＨＤ（3962）",
+            "close": "924",
+            "change": "-6.19%",
+            "dayChange": "-61",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
           },
           {
             "rank": 2,
-            "code": "4004",
-            "name": "レゾナックＨＤ（4004）",
-            "close": "13,875",
-            "change": "-10.80%",
-            "dayChange": "-1,680",
-            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+            "code": "3034",
+            "name": "クオールＨＤ（3034）",
+            "close": "2,331",
+            "change": "-4.15%",
+            "dayChange": "-101",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
           },
           {
             "rank": 3,
-            "code": "6101",
-            "name": "ツガミ（6101）",
-            "close": "4,660",
-            "change": "-9.51%",
-            "dayChange": "-490",
-            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+            "code": "2379",
+            "name": "ディップ（2379）",
+            "close": "1,462",
+            "change": "-3.88%",
+            "dayChange": "-59",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
           },
           {
             "rank": 4,
-            "code": "3132",
-            "name": "マクニカＨＤ（3132）",
-            "close": "4,078",
-            "change": "-9.38%",
-            "dayChange": "-422",
-            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+            "code": "9628",
+            "name": "燦ＨＤ（9628）",
+            "close": "1,234",
+            "change": "-3.59%",
+            "dayChange": "-46",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
           },
           {
             "rank": 5,
-            "code": "6508",
-            "name": "明電舎（6508）",
-            "close": "10,440",
-            "change": "-9.22%",
-            "dayChange": "-1,060",
-            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+            "code": "3697",
+            "name": "ＳＨＩＦＴ（3697）",
+            "close": "1,056.5",
+            "change": "-3.52%",
+            "dayChange": "-38.5",
+            "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
           }
         ],
         "lastGood": {
           "status": "verified",
           "freshness": "stale",
-          "dataDate": "2026-10-20",
-          "asOf": "2026-10-20T15:45:00+09:00",
-          "updatedAt": "2026-10-20T21:49:26+09:00",
+          "dataDate": "2026-10-21",
+          "asOf": "2026-10-21T15:45:00+09:00",
+          "updatedAt": "2026-10-21T22:02:48+09:00",
           "source": {
             "name": "トレーダーズ・ウェブ 国内市場ランキング（東証プライム・前日比）",
             "gainersUrl": "https://www.traders.co.jp/market_jp/stock_ranking/price_up/day/tp/all",
@@ -8167,101 +8281,101 @@
           },
           "error": null,
           "sourceAt": {
-            "gainers": "2026-10-20T15:45:00+09:00",
-            "losers": "2026-10-20T15:45:00+09:00"
+            "gainers": "2026-10-21T15:45:00+09:00",
+            "losers": "2026-10-21T15:45:00+09:00"
           },
           "gainers": [
             {
               "rank": 1,
-              "code": "9602",
-              "name": "東　宝（9602）",
-              "close": "1,714",
-              "change": "+4.93%",
-              "dayChange": "+80.5",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+              "code": "4565",
+              "name": "ネクセラファーマ（4565）",
+              "close": "1,313",
+              "change": "+9.78%",
+              "dayChange": "+117",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 2,
-              "code": "7747",
-              "name": "アサヒインテック（7747）",
-              "close": "3,640",
-              "change": "+4.72%",
-              "dayChange": "+164",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+              "code": "3788",
+              "name": "ＧＭＯＧＳＨＤ（3788）",
+              "close": "2,645",
+              "change": "+9.07%",
+              "dayChange": "+220",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 3,
-              "code": "3046",
-              "name": "ＪＩＮＳＨＤ（3046）",
-              "close": "6,260",
-              "change": "+4.33%",
-              "dayChange": "+260",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+              "code": "3853",
+              "name": "アステリア（3853）",
+              "close": "1,027",
+              "change": "+6.87%",
+              "dayChange": "+66",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 4,
-              "code": "9229",
-              "name": "サンウェルズ（9229）",
-              "close": "121",
-              "change": "+4.31%",
-              "dayChange": "+5",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+              "code": "6740",
+              "name": "ＪＤＩ（6740）",
+              "close": "33",
+              "change": "+6.45%",
+              "dayChange": "+2",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 5,
-              "code": "9861",
-              "name": "吉野家ＨＤ（9861）",
-              "close": "4,464",
-              "change": "+4.23%",
-              "dayChange": "+181",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+              "code": "8237",
+              "name": "松　屋（8237）",
+              "close": "2,510",
+              "change": "+6.36%",
+              "dayChange": "+150",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
             }
           ],
           "losers": [
             {
               "rank": 1,
-              "code": "2737",
-              "name": "トーメンデバ（2737）",
-              "close": "32,750",
-              "change": "-11.84%",
-              "dayChange": "-4,400",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+              "code": "3962",
+              "name": "チェンジＨＤ（3962）",
+              "close": "924",
+              "change": "-6.19%",
+              "dayChange": "-61",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 2,
-              "code": "4004",
-              "name": "レゾナックＨＤ（4004）",
-              "close": "13,875",
-              "change": "-10.80%",
-              "dayChange": "-1,680",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+              "code": "3034",
+              "name": "クオールＨＤ（3034）",
+              "close": "2,331",
+              "change": "-4.15%",
+              "dayChange": "-101",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 3,
-              "code": "6101",
-              "name": "ツガミ（6101）",
-              "close": "4,660",
-              "change": "-9.51%",
-              "dayChange": "-490",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+              "code": "2379",
+              "name": "ディップ（2379）",
+              "close": "1,462",
+              "change": "-3.88%",
+              "dayChange": "-59",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 4,
-              "code": "3132",
-              "name": "マクニカＨＤ（3132）",
-              "close": "4,078",
-              "change": "-9.38%",
-              "dayChange": "-422",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+              "code": "9628",
+              "name": "燦ＨＤ（9628）",
+              "close": "1,234",
+              "change": "-3.59%",
+              "dayChange": "-46",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
             },
             {
               "rank": 5,
-              "code": "6508",
-              "name": "明電舎（6508）",
-              "close": "10,440",
-              "change": "-9.22%",
-              "dayChange": "-1,060",
-              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-20。材料要因は別途ニュース確認。"
+              "code": "3697",
+              "name": "ＳＨＩＦＴ（3697）",
+              "close": "1,056.5",
+              "change": "-3.52%",
+              "dayChange": "-38.5",
+              "reason": "東証プライム前日比騰落率ランキング。基準日 2026-10-21。材料要因は別途ニュース確認。"
             }
           ]
         }
