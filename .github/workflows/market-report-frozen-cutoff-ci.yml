@@ -3,6 +3,8 @@ on:
   push:
     paths:
       - config/report_schedule.json
+      - scripts/report_continuity_gcs.py
+      - tests/test_report_continuity_gcs.py
       - scripts/report_continuity_shadow.py
       - scripts/resolve_market_report_slot.py
       - scripts/test_resolve_market_report_slot.py
@@ -27,6 +29,8 @@ on:
   pull_request:
     paths:
       - config/report_schedule.json
+      - scripts/report_continuity_gcs.py
+      - tests/test_report_continuity_gcs.py
       - scripts/report_continuity_shadow.py
       - scripts/resolve_market_report_slot.py
       - scripts/test_resolve_market_report_slot.py
@@ -65,7 +69,7 @@ jobs:
       - name: Run strictly offline cutoff and immutable-evidence regression suites
         run: python -m unittest scripts.test_run_market_data_window scripts.test_market_acquisition_cutoff tests.test_report_slot_evidence -v
       - name: Run offline report continuity and publication policy tests
-        run: python -m unittest tests.test_report_continuity_shadow tests.test_market_data_window_evidence tests.test_report_slot_evidence tests.test_policy_expectations tests.test_publication_eligibility tests.test_publication_evidence scripts.test_resolve_market_report_slot scripts.test_market_acquisition_cutoff tests.test_historical_saturday_slots -v
+        run: python -m unittest tests.test_report_continuity_gcs tests.test_report_continuity_shadow tests.test_market_data_window_evidence tests.test_report_slot_evidence tests.test_policy_expectations tests.test_publication_eligibility tests.test_publication_evidence scripts.test_resolve_market_report_slot scripts.test_market_acquisition_cutoff tests.test_historical_saturday_slots -v
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
