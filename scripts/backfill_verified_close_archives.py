@@ -41,6 +41,8 @@ def contribution_values(section: dict[str, Any]) -> dict[str, Any]:
     date = normal_date(section.get("asOf"))
     if not date or section.get("status") != "verified" or section.get("freshness") not in ("fresh", None):
         return {}
+    if dt.date.fromisoformat(date).weekday() >= 5:
+        return {}  # Tokyo market closed; never backfill Sunday as a trading day.
     top, bottom = section.get("top") or [], section.get("bottom") or []
     if len(top) != 5 or len(bottom) != 5:
         return {}
@@ -87,6 +89,8 @@ def sector_values(section: dict[str, Any], *, market: str) -> tuple[str | None, 
     date = normal_date(section.get("asOf") or section.get("dataAsOf"))
     if not date or section.get("status") != "verified" or section.get("freshness") not in ("fresh", None):
         return None, {}
+    if dt.date.fromisoformat(date).weekday() >= 5:
+        return None, {}  # no US/Japan ordinary cash-stock sessions on weekends
     gainers, losers = section.get("gainers") or [], section.get("losers") or []
     if len(gainers) != 5 or len(losers) != 5:
         return None, {}
@@ -203,9 +207,22 @@ def main() -> int:
             # Sparse range writes, not row rewrites. Re-read for receipt.
             for i in range(0, len(plan), 80):
                 batch = plan[i:i + 80]
+                # Re-read before writing to avoid clobbering values that were
+                # filled by another collector after the initial audit.
+                current = client._request("GET", url).get("values") or []
+                for u in batch:
+                    r, c = u["row"] - 1, u["col"] - 1
+                    if r >= len(current):
+                        raise RuntimeError(f"Row disappeared before write: {u['marketDate']}")
+                    cell = current[r][c] if c < len(current[r]) else ""
+                    if str(cell).strip():
+                        raise RuntimeError(f"Target no longer blank: {u['header']} {u['marketDate']}")
                 response = client._request("POST", client.base_url + "/values:batchUpdate", json={
                     "valueInputOption": "RAW",
-                    "data": [{"range": client._range(SHEET, f"{column_letter(u['col'])}{u['row']}"),
+                    # BatchUpdateValuesRequest.data[].range requires *literal A1*.
+                    # SheetsClient._range() is URL percent-encoded for the GET
+                    # path; putting it inside JSON caused HTTP 400.
+                    "data": [{"range": f"'{SHEET}'!{column_letter(u['col'])}{u['row']}",
                               "values": [[u["value"]]]} for u in batch],
                 })
                 if int(response.get("totalUpdatedCells") or 0) != len(batch):
@@ -223,7 +240,7 @@ def main() -> int:
             result["status"] = "NO_NEW_DATA"
     except Exception as exc:  # noqa: BLE001
         result["status"] = "BLOCKED"
-        result["reason"] = str(exc).splitlines()[0][:240]
+        result["reason"] = str(exc).replace("\n", " ")[:800]
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({k: result.get(k) for k in ("status", "candidateGroups", "planned", "written", "verifiedReadback", "reason")}, ensure_ascii=False))
