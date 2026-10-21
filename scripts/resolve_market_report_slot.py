@@ -13,6 +13,7 @@ from typing import Any
 
 JST = dt.timezone(dt.timedelta(hours=9))
 SCHEDULE_FILE = Path(__file__).resolve().parents[1] / "config" / "report_schedule.json"
+SCHEDULER_ATTEMPT_MINUTES = (0, 3, 7, 13)
 
 
 def configured_publication_slots() -> tuple[str, ...]:
@@ -148,13 +149,14 @@ def resolve_report_identity(*, schedule_time_utc: str | None = None,
     """Resolve once from trusted scheduled time or an explicit date/slot pair.
 
     EXPIRED preserves identity for audit/drafting but forbids new evidence.
-    A future target is valid only after its scheduled acquisition attempt starts.
+    Scheduled events must have started. Explicit targets open at the earliest
+    acquisition attempt (T-13); requests before that boundary remain future input.
     Scheduler timestamp authentication belongs to the ingress adapter.
     """
     if now.tzinfo is None:
         raise ValueError("INVALID_CLOCK")
     if schedule_time_utc is not None:
-        if report_date is not None or report_slot is not None or attempt_minutes not in (0, 3, 7, 13):
+        if report_date is not None or report_slot is not None or attempt_minutes not in SCHEDULER_ATTEMPT_MINUTES:
             raise ValueError("AMBIGUOUS_IDENTITY")
         scheduled = dt.datetime.fromisoformat(schedule_time_utc.replace("Z", "+00:00"))
         if scheduled.tzinfo is None or scheduled.utcoffset() != dt.timedelta(0):
@@ -168,7 +170,9 @@ def resolve_report_identity(*, schedule_time_utc: str | None = None,
         target = dt.datetime.fromisoformat(f"{report_date}T{report_slot}:00").replace(tzinfo=JST)
         if target.date().isoformat() != report_date or target.strftime("%H:%M") != report_slot:
             raise ValueError("INVALID_SLOT")
-        scheduled = target
+        # This is an admission boundary, not an inferred scheduler event time.
+        # Target identity always comes from the explicit date/slot above.
+        scheduled = target - dt.timedelta(minutes=max(SCHEDULER_ATTEMPT_MINUTES))
     schedule = json.loads(SCHEDULE_FILE.read_text(encoding="utf-8"))
     group = "weekday" if target.weekday() < 5 else ("saturday" if target.weekday() == 5 else "sunday")
     if target.strftime("%H:%M") not in schedule[group]["publicationSlots"]:

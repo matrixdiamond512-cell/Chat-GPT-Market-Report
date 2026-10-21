@@ -120,6 +120,68 @@ class ContinuityTests(unittest.TestCase):
                                            now=instant('2026-10-17T00:33'))
         self.assertEqual(identity, explicit)
 
+    def test_explicit_pre_slot_window_matches_scheduler_for_all_slots(self):
+        from datetime import timezone
+        for slot in ('08:00', '12:00', '16:00', '21:00'):
+            target = instant(f'2026-10-16T{slot}')
+            scheduled = target - timedelta(minutes=13)
+            for before in (timedelta(minutes=13), timedelta(minutes=10),
+                           timedelta(minutes=7), timedelta(minutes=3),
+                           timedelta(microseconds=1)):
+                now = target - before
+                with self.subTest(slot=slot, before=before):
+                    expected = resolve_report_identity(
+                        schedule_time_utc=scheduled.astimezone(timezone.utc).isoformat(),
+                        attempt_minutes=13, now=now)
+                    for clock in (now, now.astimezone(timezone.utc)):
+                        actual = resolve_report_identity(
+                            report_date='2026-10-16', report_slot=slot, now=clock)
+                        self.assertEqual(actual, expected)
+                        self.assertEqual(actual.status, 'ACTIVE')
+
+    def test_explicit_active_identity_reuses_scheduler_shadow_evidence(self):
+        now = instant('2026-10-16T20:50')
+        explicit = resolve_report_identity(
+            report_date='2026-10-16', report_slot='21:00', now=now)
+        store = FakeStorage(lambda: now)
+        coordinator = JobCoordinator(EvidenceWriter(store, store.clock), enabled=True)
+        first = coordinator.run(self.identity(now), b'same-fixture')
+        retry = coordinator.run(explicit, b'same-fixture')
+        self.assertEqual(first['status'], 'CREATED')
+        self.assertEqual(retry['status'], 'NO_OP')
+        self.assertEqual(len(store._objects), 2)  # One evidence and one stage.
+        self.assertFalse(retry['publicationEligible'])
+        self.assertEqual(retry['chatStatus'], 'UNKNOWN')
+
+    def test_explicit_target_before_acquisition_window_is_rejected(self):
+        earliest = instant('2026-10-16T20:47')
+        with self.assertRaisesRegex(ValueError, 'FUTURE_SCHEDULE'):
+            resolve_report_identity(report_date='2026-10-16', report_slot='21:00',
+                                    now=earliest - timedelta(microseconds=1))
+        with self.assertRaisesRegex(ValueError, 'FUTURE_SCHEDULE'):
+            resolve_report_identity(report_date='2026-10-19', report_slot='08:00',
+                                    now=instant('2026-10-16T20:50'))
+
+    def test_explicit_cutoff_never_allows_new_shadow_evidence(self):
+        for now in (instant('2026-10-16T21:00'), instant('2026-10-16T21:00:01'),
+                    instant('2026-10-17T00:33')):
+            with self.subTest(now=now):
+                identity = resolve_report_identity(
+                    report_date='2026-10-16', report_slot='21:00', now=now)
+                self.assertEqual(identity.report_id, '2026-10-16_21-00')
+                self.assertEqual(identity.status, 'EXPIRED')
+                store = FakeStorage(lambda: now)
+                result = JobCoordinator(EvidenceWriter(store, store.clock), enabled=True).run(
+                    identity, b'never-written')
+                self.assertEqual(result['status'], 'BLOCKED')
+                self.assertFalse(result['publicationEligible'])
+                self.assertEqual(store._objects, {})
+
+    def test_future_scheduler_event_remains_rejected_inside_explicit_window(self):
+        with self.assertRaisesRegex(ValueError, 'FUTURE_SCHEDULE'):
+            resolve_report_identity(schedule_time_utc='2026-10-16T11:53:00Z',
+                                    attempt_minutes=7, now=instant('2026-10-16T20:50'))
+
     def test_stage_storage_crossing_cutoff_is_blocked(self):
         from scripts.report_continuity_shadow import StoredObject
         target = self.identity().target
