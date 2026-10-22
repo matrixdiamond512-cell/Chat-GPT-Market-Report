@@ -2,21 +2,21 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-supply-demand",
   "reportDate": "2026-10-22",
-  "generatedAt": "2026-10-22T09:19:02+09:00",
+  "generatedAt": "2026-10-22T17:01:41+09:00",
   "nikkei": {
     "schemaVersion": "2.1.0",
     "pageId": "nikkei225-supply-demand",
     "pageTitle": "日経225需給分析",
-    "generatedAt": "2026-10-22T09:19:02+09:00",
+    "generatedAt": "2026-10-22T17:01:41+09:00",
     "spot": {
       "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
-      "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261021tp.csv",
+      "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261022tp.csv",
       "comment": "NK225E理論価格ファイルの原資産終値。先物とは同一取引日でも時刻が異なるため、表示差は理論ベーシスではなく単純な現物終値対比。",
-      "value": 64621.24,
-      "asOfDate": "2026-10-21",
+      "value": 62907.84,
+      "asOfDate": "2026-10-22",
       "status": "verified",
-      "fetchedAt": "2026-10-22T09:19:02+09:00"
+      "fetchedAt": "2026-10-22T17:01:41+09:00"
     },
     "futures": {
       "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -35,7 +35,7 @@
       "volumeChangePercent": null,
       "miniVolumeChangePercent": null,
       "status": "verified",
-      "fetchedAt": "2026-10-22T09:17:24+09:00",
+      "fetchedAt": "2026-10-22T17:00:05+09:00",
       "previousOpenInterest": 167992,
       "miniPreviousOpenInterest": 268703,
       "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261021open_interest.xlsx"
@@ -55,24 +55,24 @@
       "asOfDate": "2026-09-30",
       "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260930_derivatives_market_data_night.xlsx",
       "status": "stale",
-      "fetchedAt": "2026-10-22T09:18:53+09:00",
+      "fetchedAt": "2026-10-22T17:01:32+09:00",
       "error": "JPXセッション別出来高取得失敗: ValueError: night-session workbook link not found"
     },
     "arbitrage": {
       "sourceName": "JPX 裁定取引の状況",
       "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/",
       "comment": "裁定買い・売りポジションはJPXの全取引参加者報告合計。前々営業日データとして鮮度を分離表示。",
-      "asOfDate": "2026-10-19",
-      "sellBalance": 12223,
-      "buyBalance": 857619,
-      "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt000002h9ha-att/261019.pdf",
-      "sellChange": 37,
-      "buyChange": -35632,
+      "asOfDate": "2026-10-20",
+      "sellBalance": 12695,
+      "buyBalance": 808682,
+      "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt000002hbu0-att/261020.pdf",
+      "sellChange": 472,
+      "buyChange": -48937,
       "status": "verified",
       "frequency": "daily",
-      "lastAttemptAt": "2026-10-22T09:17:14+09:00",
-      "lastSuccessAt": "2026-10-22T09:17:14+09:00",
-      "fetchedAt": "2026-10-22T09:17:14+09:00",
+      "lastAttemptAt": "2026-10-22T16:59:54+09:00",
+      "lastSuccessAt": "2026-10-22T16:59:54+09:00",
+      "fetchedAt": "2026-10-22T16:59:54+09:00",
       "error": null
     },
     "options": {
@@ -82,26 +82,26 @@
       "nextSqDate": "2026-11-13",
       "businessDaysToSq": 15,
       "putCallRatio": null,
-      "iv": 31.119999999999997,
+      "iv": 34.23,
       "ivChange": null,
       "asOfDate": "2026-10-22",
       "status": "calculated",
       "error": "Put/Call・IVはJPX列構造を確認できるまで推測せず空欄",
-      "fetchedAt": "2026-10-22T09:19:02+09:00",
+      "fetchedAt": "2026-10-22T17:01:41+09:00",
       "putVolume": null,
       "callVolume": null,
       "putCallStatus": "unavailable",
       "putCallReason": "取得不能（ValueError: JPX当日取引総括CSVが見つかりません）",
       "ivStatus": "verified",
       "ivDefinition": "JPX基準ボラティリティ（NK225E・期近限月）",
-      "baseVolatility": 31.119999999999997,
-      "referenceStrikePrice": 64625.0,
-      "referencePutSettlementVolatility": 31.027900000000002,
-      "referenceCallSettlementVolatility": 31.2061,
+      "baseVolatility": 34.23,
+      "referenceStrikePrice": 62875.0,
+      "referencePutSettlementVolatility": 32.9422,
+      "referenceCallSettlementVolatility": 35.525400000000005,
       "ivContractMonth": "202611",
-      "ivUnderlyingClose": 64621.24,
-      "ivSourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261021tp.csv",
-      "ivAsOfDate": "2026-10-21"
+      "ivUnderlyingClose": 62907.84,
+      "ivSourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261022tp.csv",
+      "ivAsOfDate": "2026-10-22"
     },
     "participantFlow": {
       "sourceName": "JPX 取引参加者別取引高（手口上位一覧）",
@@ -163,7 +163,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202610/20261021_volume_by_participant_whole_day.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-10-22T09:18:55+09:00"
+      "fetchedAt": "2026-10-22T17:01:34+09:00"
     },
     "foreignInvestors": {
       "sourceName": "JPX 投資部門別売買状況",
@@ -776,7 +776,7 @@
         ]
       },
       "status": "verified",
-      "fetchedAt": "2026-10-22T09:18:52+09:00"
+      "fetchedAt": "2026-10-22T17:01:31+09:00"
     },
     "participantOpenInterest": {
       "sourceName": "JPX 取引参加者別建玉残高",
@@ -890,18 +890,18 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20261016_indexfut_oi_by_tp.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-10-22T09:18:56+09:00"
+      "fetchedAt": "2026-10-22T17:01:35+09:00"
     },
     "shortSelling": {
       "sourceName": "JPX 空売り集計",
       "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/",
       "comment": "空売り比率は価格規制あり・なしの合計。5日・20日平均と比較し、単独で弱気判定しません。",
-      "asOfDate": "2026-10-21",
-      "ratio": 39.9,
-      "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002ha9t-att/261021-m.pdf",
-      "avg5": 38.56,
+      "asOfDate": "2026-10-22",
+      "ratio": 43.2,
+      "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002he8c-att/261022-m.pdf",
+      "avg5": 39.32,
       "avg20": null,
-      "sampleCount": 14,
+      "sampleCount": 15,
       "series": [
         {
           "asOfDate": "2026-10-01",
@@ -972,10 +972,15 @@
           "asOfDate": "2026-10-21",
           "ratio": 39.9,
           "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002ha9t-att/261021-m.pdf"
+        },
+        {
+          "asOfDate": "2026-10-22",
+          "ratio": 43.2,
+          "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002he8c-att/261022-m.pdf"
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-10-22T09:17:23+09:00"
+      "fetchedAt": "2026-10-22T17:00:04+09:00"
     },
     "margin": {
       "sourceName": "JPX 信用取引現在高",
@@ -1036,7 +1041,7 @@
         }
       ],
       "status": "stale",
-      "fetchedAt": "2026-10-22T09:17:25+09:00",
+      "fetchedAt": "2026-10-22T17:00:05+09:00",
       "error": "JPX信用需給取得失敗: ValueError: weekly margin total monetary row not found"
     },
     "assessment": {
@@ -1081,7 +1086,7 @@
         "cashParsedWeeks": 80,
         "cashFailureCount": 0,
         "cashFailureFiles": [],
-        "derivativesParsedWeeks": 92,
+        "derivativesParsedWeeks": 93,
         "matchedWeeks": 80,
         "missingDerivativeDatesWithinLatest52CashWeeks": [],
         "missingPriceDates": []
@@ -1332,7 +1337,7 @@
       "market": null,
       "status": "partial",
       "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202610.xlsx",
-      "fetchedAt": "2026-10-22T09:18:59+09:00",
+      "fetchedAt": "2026-10-22T17:01:39+09:00",
       "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
     },
     "nikkeiFuturesDailyHistory": [
@@ -1344,7 +1349,7 @@
         "sourceName": "JPX / 大阪取引所 日経225先物",
         "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
         "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261021open_interest.xlsx",
-        "capturedAt": "2026-10-22T09:18:59+09:00",
+        "capturedAt": "2026-10-22T17:01:38+09:00",
         "status": "verified"
       }
     ],
@@ -1361,7 +1366,7 @@
       "status": "verified",
       "releaseFrequency": "weekly",
       "lookbackWeeks": 52,
-      "fetchedAt": "2026-10-22T09:19:03+09:00",
+      "fetchedAt": "2026-10-22T17:01:42+09:00",
       "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
       "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
       "priceStatus": "available",
@@ -2422,7 +2427,7 @@
         "items": [
           "日本：値上がり/値下がり 982 / 521、東証プライム売買代金 6.92 兆円。",
           "海外投資家動向（週次）：-2,749.34億円。",
-          "米国：NYSE 1,429 / 628、NASDAQ 2,110 / 1,060で下落優勢。"
+          "米国：NYSE 1,031 / 1,024、NASDAQ 1,639 / 1,527で下落優勢。"
         ]
       },
       {
@@ -2430,21 +2435,21 @@
         "items": [
           "日本：TOPIX +34.52（+0.86%）に対し、グロース250 +20.78（+2.79%）。指数間の強弱が残る。",
           "日本の上位セクター：電気機器 +1.72%、情報・通信業 +1.34%、輸送用機器 +1.05%。米国の上位セクター：コミュニケーション・サービス +1.78%、ヘルスケア +1.33%、一般消費財・サービス +1.07%。",
-          "米国：SOX -32.53（-0.29%）、Russell2000 +45.12（+1.65%）。資金の広がりは未確認。"
+          "米国：SOX +221.75（+1.97%）、Russell2000 +7.60（+0.27%）。資金の広がりは未確認。"
         ]
       },
       {
         "title": "メインシナリオ",
         "items": [
           "TOPIX +34.52（+0.86%）の相対優位が続くか、グロース250 +20.78（+2.79%）の下落が縮小するかを確認。",
-          "米国はSOX -32.53（-0.29%）の底堅さが、S&P500 +21.84（+0.28%）・Nasdaq -6.07（-0.02%）の下落を吸収できるかが分岐。",
+          "米国はSOX +221.75（+1.97%）の底堅さが、S&P500 +44.60（+0.58%）・Nasdaq +278.04（+1.05%）の下落を吸収できるかが分岐。",
           "寄り付き確認：TOPIX 4,049.52 +1.01%。"
         ]
       },
       {
         "title": "崩れる条件",
         "items": [
-          "米国でS&P500/Nasdaqの下落とVIX -1.13（-6.13%）の上昇が同時に続く場合。",
+          "米国でS&P500/Nasdaqの下落とVIX -0.63（-3.64%）の上昇が同時に続く場合。",
           "日本でTOPIXの上昇が広がりを伴わず、グロース250 +20.78（+2.79%）の下落が拡大する場合。",
           "個別株の下落が拡大：チェンジＨＤ（3962） -6.19%、クオールＨＤ（3034） -4.15%、ディップ（2379） -3.88%。"
         ]
@@ -2454,7 +2459,7 @@
         "items": [
           "日本の上昇率上位：ネクセラファーマ（4565） +9.78%、ＧＭＯＧＳＨＤ（3788） +9.07%、アステリア（3853） +6.87%。",
           "日本の下落率上位：チェンジＨＤ（3962） -6.19%、クオールＨＤ（3034） -4.15%、ディップ（2379） -3.88%。",
-          "米国の主要指数：S&P500 +21.84（+0.28%）、Nasdaq -6.07（-0.02%）、SOX -32.53（-0.29%）。"
+          "米国の主要指数：S&P500 +44.60（+0.58%）、Nasdaq +278.04（+1.05%）、SOX +221.75（+1.97%）。"
         ]
       }
     ],
@@ -2931,8 +2936,10 @@
         "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
         "validation": {
           "estimatedWeightedReturnPct": 0.6047,
-          "verifiedSP500ReturnPct": null,
-          "differencePt": null
+          "verifiedSP500ReturnPct": 0.58,
+          "differencePt": 0.0247,
+          "tolerancePt": 0.2,
+          "status": "passed"
         },
         "top": [
           {
@@ -5747,20 +5754,20 @@
       "conclusion": {
         "title": "今日の結論",
         "main": "米国主要指数は下落、日本はTOPIXが小幅高だがグロース250は下落。大型株・半導体を軸に強弱が分かれる株式市場。",
-        "sub": "日経225 64,621.24 / TOPIX 4,043.73 / S&P500 7,712.57 / Nasdaq 26,424.82。"
+        "sub": "日経225 64,621.24 / TOPIX 4,043.73 / S&P500 7,757.17 / Nasdaq 26,702.86。"
       },
       "reason": {
         "title": "なぜ買われたか／売られたか",
         "items": [
           "日本：TOPIX +34.52（+0.86%）、値上がり/値下がり 982 / 521。",
-          "米国：SOX -32.53（-0.29%）に対し、S&P500 +21.84（+0.28%）、Nasdaq -6.07（-0.02%）。",
+          "米国：SOX +221.75（+1.97%）に対し、S&P500 +44.60（+0.58%）、Nasdaq +278.04（+1.05%）。",
           "日本の強いセクター：電気機器 +1.72%、情報・通信業 +1.34%。個別ではネクセラファーマ（4565） +9.78%、ＧＭＯＧＳＨＤ（3788） +9.07%。"
         ]
       },
       "risk": {
         "title": "リスク",
         "items": [
-          "米国はVIX -1.13（-6.13%）、NYSE値上がり/値下がり 1,429 / 628で内部下落が優勢。",
+          "米国はVIX -0.63（-3.64%）、NYSE値上がり/値下がり 1,031 / 1,024で内部下落が優勢。",
           "日本はグロース250 +20.78（+2.79%）で、TOPIXとの乖離に注意。",
           "日本の下落率上位：チェンジＨＤ（3962） -6.19%、クオールＨＤ（3034） -4.15%。"
         ]
@@ -5768,7 +5775,7 @@
       "watch": {
         "title": "次の注目点",
         "items": [
-          "S&P500 +21.84（+0.28%）・Nasdaq -6.07（-0.02%）の下落が続くか、SOX -32.53（-0.29%）が下支えを維持するか。",
+          "S&P500 +44.60（+0.58%）・Nasdaq +278.04（+1.05%）の下落が続くか、SOX +221.75（+1.97%）が下支えを維持するか。",
           "日経225 / TOPIX / グロース250の方向と、値上がり・値下がり 982 / 521の広がり。",
           "次回寄り付き：TOPIX 4,049.52 +1.01%、日経225先物（CME参考） 64,785.00 -0.24%。"
         ]
@@ -5998,8 +6005,10 @@
         "universe": "S&P 500 constituents",
         "validation": {
           "estimatedWeightedReturnPct": 0.6047,
-          "verifiedSP500ReturnPct": null,
-          "differencePt": null
+          "verifiedSP500ReturnPct": 0.58,
+          "differencePt": 0.0247,
+          "tolerancePt": 0.2,
+          "status": "passed"
         },
         "gainers": [
           {
@@ -8662,7 +8671,7 @@
       "freshness": "unavailable",
       "dataDate": null,
       "asOf": null,
-      "updatedAt": "2026-10-21T12:38:29+09:00",
+      "updatedAt": "2026-10-22T12:38:07+09:00",
       "source": {
         "tradersWeb": {
           "name": "トレーダーズ・ウェブ Market Flash",
@@ -8673,7 +8682,7 @@
           "url": "https://s.kabutan.jp/news/"
         }
       },
-      "error": "当日の寄り前データを取得できませんでした: 当日の記事が見つかりません: index=https://www.traders.co.jp/market_jp/wadai, expected=2026-10-21",
+      "error": "当日の寄り前データを取得できませんでした: 当日の記事が見つかりません: index=https://www.traders.co.jp/market_jp/wadai, expected=2026-10-22",
       "summary": {},
       "tradersWebHighlights": [],
       "gainers": [],
@@ -8762,39 +8771,38 @@
         "title": "東京市場 朝の寄り付き分析",
         "flag": "JP",
         "status": "東京寄り付きデータ取得済み",
-        "dataDate": "2026-10-21",
-        "updatedAt": "2026-10-21T13:33:49+09:00",
+        "dataDate": "2026-10-22",
+        "updatedAt": "2026-10-22T13:32:11+09:00",
         "source": "Yahoo Finance chart API（日経225・FX・CME参考先物） / Google Finance（TOPIX）",
         "metrics": [
           {
             "label": "日経225",
-            "value": "64,656.13",
-            "change": "+0.91%",
-            "note": "寄り値 64,885.95 / ギャップ +1.26% / 寄り後 -0.35%"
+            "value": "63,341.36",
+            "change": "-1.98%",
+            "note": "寄り値 64,539.36 / ギャップ -0.13% / 寄り後 -1.86%"
           },
           {
             "label": "TOPIX",
-            "value": "4,049.52",
-            "change": "+1.01%",
-            "note": "寄り値 4,051.99 / ギャップ +1.07% / 寄り後 -0.06%"
+            "value": "4,013.00",
+            "change": "-0.76%",
+            "note": "寄り値 4,047.39 / ギャップ +0.09% / 寄り後 -0.85%"
           },
           {
             "label": "USD/JPY",
-            "value": "158.121",
-            "change": "-0.11%",
-            "note": "08:55以降の変化 / 08:55近辺 158.292"
+            "value": "157.717",
+            "change": "-0.27%",
+            "note": "08:55以降の変化 / 08:55近辺 158.139"
           },
           {
             "label": "日経225先物（CME参考）",
-            "value": "64,785.00",
-            "change": "-0.24%",
+            "value": "63,450.00",
+            "change": "-2.41%",
             "note": "CME参考値。大阪取引所先物とは別銘柄として表示"
           }
         ],
         "insights": [
-          "日経225は高寄り後に失速。寄り天リスクを優先して確認します。",
-          "日経225とTOPIXが同方向で、市場全体の方向は比較的整合的です。",
-          "USD/JPYは08:55以降 -0.11%。日本株の外需・先物方向との整合性を確認します。"
+          "日経225はギャップダウン後も売りが継続。リスクオフの持続を確認します。",
+          "USD/JPYは08:55以降 -0.27%。日本株の外需・先物方向との整合性を確認します。"
         ],
         "judgement": "寄り後は売り優勢。高寄りでも上昇継続とは見なさず、寄り天警戒を優先します。",
         "errors": []
@@ -8919,7 +8927,7 @@
         "steps": [
           {
             "label": "東京市場",
-            "text": "2026-10-21 / 日経225 64,656.13 +0.91% / TOPIX 4,049.52 +1.01%"
+            "text": "2026-10-22 / 日経225 63,341.36 -1.98% / TOPIX 4,013.00 -0.76%"
           },
           {
             "label": "米国プレマーケット",
@@ -8927,13 +8935,13 @@
           },
           {
             "label": "米国通常市場（直近終値）",
-            "text": "S&P500 +21.84（+0.28%） / Nasdaq -6.07（-0.02%）"
+            "text": "S&P500 +44.60（+0.58%） / Nasdaq +278.04（+1.05%）"
           }
         ],
-        "conclusion": "東京市場と米国株先物の方向が一致。日米で同じリスク選好が引き継がれている可能性が高まっています。"
+        "conclusion": "東京市場と米国株先物の方向が逆転。欧州時間の金利・為替・ニュースで市場テーマが変化した可能性を優先して確認します。"
       }
     },
-    "sessionDataUpdatedAt": "2026-10-22T01:03:06+09:00",
+    "sessionDataUpdatedAt": "2026-10-22T13:32:12+09:00",
     "sourceStatus": "Google Sheetsから更新＋日経VI・日経バリュエーション自動連携",
     "sources": [
       {
@@ -27200,28 +27208,56 @@
     "sourceName": "JPX公表データ集計（公開サイト経由）",
     "sourceUrl": "https://matsutoushi.github.io/nk225-option-site/",
     "officialSourceUrl": "https://www.jpx.co.jp/markets/statistics-derivatives/daily/index.html",
-    "asOfDate": "2026-10-20",
-    "fetchedAt": "2026-10-21T15:05:45+09:00",
+    "asOfDate": "2026-10-21",
+    "fetchedAt": "2026-10-22T15:09:12+09:00",
     "optionContractMonth": "202610",
     "strikeOiCoverage": "10月限・前営業日終値の上下3,000円範囲",
     "strikeOpenInterest": [
       {
-        "strike": 67000,
-        "callOi": 1785,
-        "putOi": 1337,
+        "strike": 67500,
+        "callOi": 994,
+        "putOi": 31,
         "callOiChange": 26,
         "putOiChange": 26
+      },
+      {
+        "strike": 67375,
+        "callOi": 1,
+        "putOi": 2,
+        "callOiChange": 67500,
+        "putOiChange": 0
+      },
+      {
+        "strike": 67250,
+        "callOi": 2,
+        "putOi": 35,
+        "callOiChange": 67375,
+        "putOiChange": null
+      },
+      {
+        "strike": 67125,
+        "callOi": 1,
+        "putOi": 0,
+        "callOiChange": 67250,
+        "putOiChange": null
+      },
+      {
+        "strike": 67000,
+        "callOi": 1836,
+        "putOi": 1337,
+        "callOiChange": 67125,
+        "putOiChange": null
       },
       {
         "strike": 66875,
         "callOi": 6,
         "putOi": 17,
         "callOiChange": 67000,
-        "putOiChange": 100
+        "putOiChange": 0
       },
       {
         "strike": 66750,
-        "callOi": 6,
+        "callOi": 16,
         "putOi": 1,
         "callOiChange": 66875,
         "putOiChange": null
@@ -27235,14 +27271,14 @@
       },
       {
         "strike": 66500,
-        "callOi": 191,
+        "callOi": 203,
         "putOi": 473,
         "callOiChange": 66625,
         "putOiChange": null
       },
       {
         "strike": 66375,
-        "callOi": 0,
+        "callOi": 6,
         "putOi": 10,
         "callOiChange": 66500,
         "putOiChange": null
@@ -27256,15 +27292,15 @@
       },
       {
         "strike": 66125,
-        "callOi": 6,
+        "callOi": 8,
         "putOi": 30,
         "callOiChange": 66250,
         "putOiChange": null
       },
       {
         "strike": 66000,
-        "callOi": 792,
-        "putOi": 1823,
+        "callOi": 802,
+        "putOi": 1822,
         "callOiChange": 66125,
         "putOiChange": null
       },
@@ -27291,8 +27327,8 @@
       },
       {
         "strike": 65500,
-        "callOi": 223,
-        "putOi": 1043,
+        "callOi": 373,
+        "putOi": 1033,
         "callOiChange": 65625,
         "putOiChange": null
       },
@@ -27319,8 +27355,8 @@
       },
       {
         "strike": 65000,
-        "callOi": 793,
-        "putOi": 1713,
+        "callOi": 801,
+        "putOi": 1720,
         "callOiChange": 65125,
         "putOiChange": null
       },
@@ -27333,7 +27369,7 @@
       },
       {
         "strike": 64750,
-        "callOi": 2,
+        "callOi": 3,
         "putOi": 105,
         "callOiChange": 64875,
         "putOiChange": null
@@ -27361,7 +27397,7 @@
       },
       {
         "strike": 64250,
-        "callOi": 1,
+        "callOi": 2,
         "putOi": 75,
         "callOiChange": 64375,
         "putOiChange": null
@@ -27369,14 +27405,14 @@
       {
         "strike": 64125,
         "callOi": 0,
-        "putOi": 0,
+        "putOi": 6,
         "callOiChange": 64250,
         "putOiChange": null
       },
       {
         "strike": 64000,
         "callOi": 151,
-        "putOi": 3853,
+        "putOi": 3894,
         "callOiChange": 64125,
         "putOiChange": null
       },
@@ -27404,7 +27440,7 @@
       {
         "strike": 63500,
         "callOi": 11,
-        "putOi": 180,
+        "putOi": 185,
         "callOiChange": 63625,
         "putOiChange": null
       },
@@ -27418,7 +27454,7 @@
       {
         "strike": 63250,
         "callOi": 0,
-        "putOi": 50,
+        "putOi": 57,
         "callOiChange": 63375,
         "putOiChange": null
       },
@@ -27432,7 +27468,7 @@
       {
         "strike": 63000,
         "callOi": 4,
-        "putOi": 1926,
+        "putOi": 2016,
         "callOiChange": 63125,
         "putOiChange": null
       },
@@ -27460,7 +27496,7 @@
       {
         "strike": 62500,
         "callOi": 1,
-        "putOi": 1043,
+        "putOi": 1042,
         "callOiChange": 62625,
         "putOiChange": null
       },
@@ -27488,21 +27524,21 @@
       {
         "strike": 62000,
         "callOi": 0,
-        "putOi": 2670,
+        "putOi": 2728,
         "callOiChange": 62125,
         "putOiChange": null
       },
       {
         "strike": 61875,
         "callOi": 0,
-        "putOi": 1,
+        "putOi": 6,
         "callOiChange": 62000,
         "putOiChange": 0
       },
       {
         "strike": 61750,
         "callOi": 0,
-        "putOi": 2,
+        "putOi": 9,
         "callOiChange": 61875,
         "putOiChange": null
       },
@@ -27512,47 +27548,19 @@
         "putOi": 22,
         "callOiChange": 61750,
         "putOiChange": null
-      },
-      {
-        "strike": 61500,
-        "callOi": 0,
-        "putOi": 825,
-        "callOiChange": 61625,
-        "putOiChange": null
-      },
-      {
-        "strike": 61375,
-        "callOi": 0,
-        "putOi": 133,
-        "callOiChange": 61500,
-        "putOiChange": null
-      },
-      {
-        "strike": 61250,
-        "callOi": 0,
-        "putOi": 168,
-        "callOiChange": 61375,
-        "putOiChange": null
-      },
-      {
-        "strike": 61125,
-        "callOi": 0,
-        "putOi": 55,
-        "callOiChange": 61250,
-        "putOiChange": null
       }
     ],
-    "putCallRatio": 4.490016443504816,
+    "putCallRatio": 3.308209226298583,
     "putCallDefinition": "表示範囲の建玉残高ベース（Put OI / Call OI）",
-    "putVolume": 20382,
-    "callVolume": 10146,
-    "publishedPutCallVolumeRatio": 2.009,
-    "publishedPutCallVolumeRatioPrevious": 1.844,
+    "putVolume": 14285,
+    "callVolume": 9260,
+    "publishedPutCallVolumeRatio": 1.543,
+    "publishedPutCallVolumeRatioPrevious": 2.009,
     "publishedPutCallDefinition": "出来高ベース（Put出来高 / Call出来高）",
     "upperCallConcentrationStrike": null,
     "lowerPutConcentrationStrike": null,
     "nextSqDate": "2026-11-13",
-    "businessDaysToSq": 24,
+    "businessDaysToSq": 22,
     "comment": "JPX公表データを基礎にした公開集計をフォールバック利用。権利行使価格別建玉・前日比・出来高PCRを取得し、方向予想ではなくヘッジ圧力が変わりやすい価格帯の確認に使用する。"
   }
 }
