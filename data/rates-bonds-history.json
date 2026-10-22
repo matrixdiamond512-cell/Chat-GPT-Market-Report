@@ -8415,12 +8415,12 @@
     },
     {
       "asOf": "2026-10-21",
-      "generatedAt": "2026-10-22T01:08:30+09:00",
+      "generatedAt": "2026-10-22T09:15:16+09:00",
       "rates": {
-        "日本2年国債利回り": 1.918,
-        "日本5年国債利回り": 2.318,
-        "日本10年国債利回り": 2.894,
-        "日本30年国債利回り": 3.936,
+        "日本2年国債利回り": 1.902,
+        "日本5年国債利回り": 2.291,
+        "日本10年国債利回り": 2.881,
+        "日本30年国債利回り": 3.911,
         "ドイツ10年国債利回り": 3.41
       },
       "policyExpectations": {
@@ -8438,8 +8438,8 @@
         "us10y": null,
         "us10yChangeBp": null,
         "us10yAsOf": null,
-        "curve2s10sBp": 97.6,
-        "curveChangeBp": -4.2,
+        "curve2s10sBp": 97.9,
+        "curveChangeBp": -3.9,
         "us2yVsFedMidBp": null,
         "us2yVsFedMidPreviousBp": null,
         "directionScore": 0,
@@ -8453,10 +8453,10 @@
       "analysis": {
         "topLines": [
           "米国：判定保留｜判定保留",
-          "日本：ツイスト｜年限ごとに方向が分かれる",
+          "日本：ブル・フラットニング｜全面的な金利低下",
           "クロスアセット：USD/JPYは混合、金は判定保留、BTCUSDは判定保留"
         ],
-        "theme": "米国は判定保留、日本はツイスト。日米金利差は方向混在。",
+        "theme": "米国は判定保留、日本はブル・フラットニング。日米金利差は方向混在。",
         "usRates": {
           "structure": "判定保留",
           "direction": "判定保留",
@@ -8465,23 +8465,23 @@
           "risk": "欠損データを推測しない"
         },
         "jpRates": {
-          "structure": "ツイスト",
-          "direction": "年限ごとに方向が分かれる",
-          "interpretation": "日本国債は年限ごとに方向が分かれる。30年が前日 -5.6bp、週間 -13.6bpで変化を主導。",
+          "structure": "ブル・フラットニング",
+          "direction": "全面的な金利低下",
+          "interpretation": "日本国債は全面的な金利低下。30年が前日 -8.1bp、週間 -16.1bpで変化を主導。",
           "leadingTenor": "30年",
-          "risk": "順イールド。短期と長期が逆方向。政策期待と長期プレミアムを分けて確認。"
+          "risk": "順イールド。前日では長期側主導の金利低下。景気・インフレ期待や安全資産需要を確認。"
         },
         "usCurveAnalysis": {
           "type": "判定保留",
           "interpretation": "米国カーブは比較可能な年限が不足。"
         },
         "jpCurveAnalysis": {
-          "type": "ツイスト",
-          "interpretation": "順イールド。短期と長期が逆方向。政策期待と長期プレミアムを分けて確認。"
+          "type": "ブル・フラットニング",
+          "interpretation": "順イールド。前日では長期側主導の金利低下。景気・インフレ期待や安全資産需要を確認。"
         },
         "usJapanComparison": {
           "usDirection": "判定保留",
-          "jpDirection": "年限ごとに方向が分かれる",
+          "jpDirection": "全面的な金利低下",
           "rateGapDirection": "方向混在",
           "usdJpyImplication": "中立",
           "actualUsdJpy": "下落",
@@ -8494,18 +8494,18 @@
               "usValue": null,
               "usChangeBp": null,
               "usWeekChangeBp": null,
-              "jpValue": 1.918,
-              "jpChangeBp": 0.8999999999999897,
-              "jpWeekChangeBp": -1.100000000000012
+              "jpValue": 1.902,
+              "jpChangeBp": -0.7000000000000117,
+              "jpWeekChangeBp": -2.7000000000000135
             },
             {
               "tenor": "10年",
               "usValue": null,
               "usChangeBp": null,
               "usWeekChangeBp": null,
-              "jpValue": 2.894,
-              "jpChangeBp": -3.299999999999992,
-              "jpWeekChangeBp": -12.1
+              "jpValue": 2.881,
+              "jpChangeBp": -4.600000000000026,
+              "jpWeekChangeBp": -13.400000000000034
             }
           ]
         },
@@ -8567,7 +8567,7 @@
             "timingNote": "基準日時が不足しているため方向比較に限定。"
           }
         ],
-        "marketConclusion": "米国は判定保留、日本はツイスト。日米金利差は方向混在。比較可能な金利データが不足。日本国債は年限ごとに方向が分かれる。30年が前日 -5.6bp、週間 -13.6bpで変化を主導。",
+        "marketConclusion": "米国は判定保留、日本はブル・フラットニング。日米金利差は方向混在。比較可能な金利データが不足。日本国債は全面的な金利低下。30年が前日 -8.1bp、週間 -16.1bpで変化を主導。",
         "mainScenario": "—の方向が続く間は判定保留を基本シナリオとし、ドルは中立、金は判定保留方向を確認。",
         "alternativeScenario": "米2年が反転しカーブ分類が変わる場合、政策期待の巻き戻しとクロスアセットの再連動を確認。",
         "breakConditions": [
