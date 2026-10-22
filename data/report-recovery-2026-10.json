@@ -689,6 +689,21 @@
         "DOC_READBACK_RECEIPT_MISSING"
       ],
       "report_status": "HISTORICAL_ARCHIVE_DISPLAY_ONLY"
+    },
+    {
+      "date": "2026-10-22",
+      "time": "12:00",
+      "title": "マーケットレポート｜2026/10/22（木）12:00",
+      "fullText": "マーケットレポート｜2026/10/22（木）12:00\n\n### 13:00 復旧確認結果\n\n**結論：12:00の分析版本文はチャットに表示済みですが、Google Drive保存と正式公開は未完了です。**\n\n対象枠ID：`2026-10-22_12-00`\n\n今回は復旧確認のみを実施しました。新規レポートや重複ファイルは作成していません。\n\n## 1．Google Drive保存状況\n\n指定フォルダーとGoogle Drive全体を検索しました。\n\n| 確認項目                  | 結果                           |\n| --------------------- | ---------------------------- |\n| 対象ファイル                | `マーケットレポート_2026-10-22_12-00` |\n| 指定フォルダー               | マーケットレポート2026年10月            |\n| 同名Google Docs         | **0件**                       |\n| Google Drive全体の同名ファイル | **0件**                       |\n| 本文読戻し                 | 取得不能（保存ファイルなし）               |\n| revision照合            | 取得不能（保存ファイルなし）               |\n| 重複ファイル選定              | 対象なし                         |\n\n保存先：[マーケットレポート2026年10月](https://drive.google.com/drive/folders/1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz?utm_source=chatgpt.com)\n\n**こちらから直接保存はできませんでした。** 今回は既存ファイルの復旧確認に限定しており、新規Google Docsは作成していません。\n\n## 2．正式原本の証拠確認\n\nGitHub mainで以下を再取得しました。\n\n`data/report-evidence/2026-10-22_12-00-r1.json`\n\n**結果：404（ファイルなし）**\n\n正式公開判定：\n\n`BLOCKED_PRE_DRAFT_EVIDENCE_MISSING`\n\n発行前snapshot/contextが存在しないため、後付けで正式原本認定することはできません。\n\n## 3．工程別の検証結果\n\n| 工程                  | 状態           |\n| ------------------- | ------------ |\n| 12:00本文のチャット表示      | 検証成功（前回出力）   |\n| 時系列・出典の追加検証         | 未実行          |\n| 発行前snapshot/context | BLOCKED      |\n| Google Docs保存       | 取得不能（ファイルなし） |\n| Google Docs全文読戻し    | 取得不能（ファイルなし） |\n| 図解PNG保存             | 未実行          |\n| 正式receipt           | BLOCKED      |\n| canonical/index     | BLOCKED      |\n| latest/dashboard    | BLOCKED      |\n| GitHub Actions      | 未実行          |\n| Pages DOM           | 未実行          |\n| 通知                  | 未実行          |\n\n### 最終判断\n\n12:00の分析版はチャットで閲覧できますが、保存先には存在しません。\n\n正式公開の証拠ゲートは維持しています。16:00枠の新規レポートとは区別し、12:00の正式公開状態を変更していません。\n\n**次に必要なのは、分析版本文の保存経路の復旧と、今後の発行前証拠を確実に作成する仕組みの修正です。**\n\n追加で実施できる作業：\n\n- 12時の分析版本文をGoogle Driveに保存する\n- 発行前証拠が欠落する原因を調査する",
+      "archiveStatus": "HISTORICAL_ARCHIVE",
+      "originalReportStatus": "ORIGINAL_NOT_FOUND",
+      "archiveType": "RECONSTRUCTED_SOURCE",
+      "archiveNotice": "10/22 12:00枠について、ユーザー提示の13:00復旧確認記録を閲覧用に掲載しています。これは12:00の相場分析本文全文ではありません。正式発行・分析本文原文の確認は未了です。",
+      "archiveSource": "2026-10-22 13:00復旧確認記録（ユーザーがチャットへ提示したMarkdownからそのまま転記）",
+      "verifiedAtSlot": false,
+      "missingAtSlotEvidence": true,
+      "infographic_status": "NOT_READY",
+      "report_status": "HISTORICAL_ARCHIVE_DISPLAY_ONLY"
     }
   ],
   "lastSupplementalReadbackAt": "2026-10-16T00:08:36.549Z"
