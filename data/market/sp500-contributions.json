@@ -2,9 +2,9 @@
   "schemaVersion": "1.0.0",
   "status": "verified-estimate",
   "freshness": "fresh",
-  "dataDate": "2026-10-21",
-  "asOf": "2026-10-21T16:00:00-04:00",
-  "updatedAt": "2026-10-22T09:14:43+09:00",
+  "dataDate": "2026-10-22",
+  "asOf": "2026-10-22T16:00:00-04:00",
+  "updatedAt": "2026-10-23T09:10:41+09:00",
   "source": {
     "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
     "url": "https://www.slickcharts.com/sp500",
@@ -14,6 +14,141 @@
   "current": {
     "status": "verified-estimate",
     "freshness": "fresh",
+    "dataDate": "2026-10-22",
+    "asOf": "2026-10-22T16:00:00-04:00",
+    "updatedAt": "2026-10-23T09:10:41+09:00",
+    "source": {
+      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
+      "url": "https://www.slickcharts.com/sp500",
+      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
+    },
+    "error": null,
+    "unit": "bp",
+    "official": false,
+    "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
+    "validation": {
+      "estimatedWeightedReturnPct": -1.0698,
+      "verifiedSP500ReturnPct": null,
+      "differencePt": null
+    },
+    "top": [
+      {
+        "rank": 1,
+        "symbol": "AAPL",
+        "name": "Apple Inc.（AAPL）",
+        "close": "348.22",
+        "change": "+1.23%",
+        "weight": "7.28%",
+        "contribution": "+8.95bp",
+        "contributionBps": 8.9544,
+        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
+      },
+      {
+        "rank": 2,
+        "symbol": "LLY",
+        "name": "Eli Lilly & Co.（LLY）",
+        "close": "1,306.69",
+        "change": "+2.83%",
+        "weight": "1.67%",
+        "contribution": "+4.73bp",
+        "contributionBps": 4.7261,
+        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
+      },
+      {
+        "rank": 3,
+        "symbol": "WMT",
+        "name": "Walmart Inc. Common Stock（WMT）",
+        "close": "121.12",
+        "change": "+2.82%",
+        "weight": "1.38%",
+        "contribution": "+3.89bp",
+        "contributionBps": 3.8916,
+        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
+      },
+      {
+        "rank": 4,
+        "symbol": "JNJ",
+        "name": "Johnson & Johnson（JNJ）",
+        "close": "267.61",
+        "change": "+3.81%",
+        "weight": "0.92%",
+        "contribution": "+3.51bp",
+        "contributionBps": 3.5052,
+        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
+      },
+      {
+        "rank": 5,
+        "symbol": "PG",
+        "name": "Procter & Gamble Company（PG）",
+        "close": "165.59",
+        "change": "+5.58%",
+        "weight": "0.55%",
+        "contribution": "+3.07bp",
+        "contributionBps": 3.069,
+        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
+      }
+    ],
+    "bottom": [
+      {
+        "rank": 1,
+        "symbol": "NVDA",
+        "name": "Nvidia Corp（NVDA）",
+        "close": "212.21",
+        "change": "-4.40%",
+        "weight": "7.34%",
+        "contribution": "-32.30bp",
+        "contributionBps": -32.296,
+        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
+      },
+      {
+        "rank": 2,
+        "symbol": "AMZN",
+        "name": "Amazon.Com Inc（AMZN）",
+        "close": "250.38",
+        "change": "-4.57%",
+        "weight": "3.87%",
+        "contribution": "-17.69bp",
+        "contributionBps": -17.6859,
+        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
+      },
+      {
+        "rank": 3,
+        "symbol": "META",
+        "name": "Meta Platforms, Inc. Class A Common Stock（META）",
+        "close": "648.85",
+        "change": "-6.98%",
+        "weight": "2.37%",
+        "contribution": "-16.54bp",
+        "contributionBps": -16.5426,
+        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
+      },
+      {
+        "rank": 4,
+        "symbol": "MSFT",
+        "name": "Microsoft Corp（MSFT）",
+        "close": "521.08",
+        "change": "-2.23%",
+        "weight": "5.54%",
+        "contribution": "-12.35bp",
+        "contributionBps": -12.3542,
+        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
+      },
+      {
+        "rank": 5,
+        "symbol": "AMD",
+        "name": "Advanced Micro Devices（AMD）",
+        "close": "507.93",
+        "change": "-8.10%",
+        "weight": "1.19%",
+        "contribution": "-9.64bp",
+        "contributionBps": -9.639,
+        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
+      }
+    ]
+  },
+  "lastGood": {
+    "status": "verified-estimate",
+    "freshness": "stale",
     "dataDate": "2026-10-21",
     "asOf": "2026-10-21T16:00:00-04:00",
     "updatedAt": "2026-10-22T09:14:43+09:00",
@@ -146,263 +281,126 @@
       }
     ]
   },
-  "lastGood": {
-    "status": "verified-estimate",
-    "freshness": "stale",
-    "dataDate": "2026-10-20",
-    "asOf": "2026-10-20T16:00:00-04:00",
-    "updatedAt": "2026-10-21T09:08:17+09:00",
-    "source": {
-      "name": "Slickcharts S&P 500 Companies by Weight (SPY holdings based)",
-      "url": "https://www.slickcharts.com/sp500",
-      "basisDateUrl": "https://www.slickcharts.com/sp500/returns/details"
-    },
-    "error": null,
-    "unit": "bp",
-    "official": false,
-    "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
-    "validation": {
-      "estimatedWeightedReturnPct": 0.3167,
-      "verifiedSP500ReturnPct": null,
-      "differencePt": null
-    },
-    "top": [
-      {
-        "rank": 1,
-        "symbol": "LLY",
-        "name": "Eli Lilly & Co.（LLY）",
-        "close": "1,283.66",
-        "change": "+3.49%",
-        "weight": "1.63%",
-        "contribution": "+5.69bp",
-        "contributionBps": 5.6887,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-20。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 2,
-        "symbol": "TSLA",
-        "name": "Tesla, Inc. Common Stock（TSLA）",
-        "close": "373.71",
-        "change": "+1.54%",
-        "weight": "2.10%",
-        "contribution": "+3.23bp",
-        "contributionBps": 3.234,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-20。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 3,
-        "symbol": "BRK.B",
-        "name": "BERKSHIRE HATHAWAY Class B（BRK.B）",
-        "close": "539.82",
-        "change": "+1.43%",
-        "weight": "1.64%",
-        "contribution": "+2.35bp",
-        "contributionBps": 2.3452,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-20。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 4,
-        "symbol": "JNJ",
-        "name": "Johnson & Johnson（JNJ）",
-        "close": "259.36",
-        "change": "+2.19%",
-        "weight": "0.89%",
-        "contribution": "+1.95bp",
-        "contributionBps": 1.9491,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-20。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 5,
-        "symbol": "MRK",
-        "name": "Merck & Co., Inc.（MRK）",
-        "close": "148.3",
-        "change": "+3.25%",
-        "weight": "0.52%",
-        "contribution": "+1.69bp",
-        "contributionBps": 1.69,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-20。公式S&P寄与度ではない。"
-      }
-    ],
-    "bottom": [
-      {
-        "rank": 1,
-        "symbol": "AAPL",
-        "name": "Apple Inc.（AAPL）",
-        "close": "339.5",
-        "change": "-1.00%",
-        "weight": "7.05%",
-        "contribution": "-7.05bp",
-        "contributionBps": -7.05,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-20。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 2,
-        "symbol": "META",
-        "name": "Meta Platforms, Inc. Class A Common Stock（META）",
-        "close": "694.25",
-        "change": "-1.59%",
-        "weight": "2.52%",
-        "contribution": "-4.01bp",
-        "contributionBps": -4.0068,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-20。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 3,
-        "symbol": "GOOGL",
-        "name": "Alphabet Inc. Class A Common Stock（GOOGL）",
-        "close": "340.27",
-        "change": "-1.13%",
-        "weight": "3.05%",
-        "contribution": "-3.45bp",
-        "contributionBps": -3.4465,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-20。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 4,
-        "symbol": "GOOG",
-        "name": "Alphabet Inc. Class C Capital Stock（GOOG）",
-        "close": "336.4",
-        "change": "-1.11%",
-        "weight": "2.84%",
-        "contribution": "-3.15bp",
-        "contributionBps": -3.1524,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-20。公式S&P寄与度ではない。"
-      },
-      {
-        "rank": 5,
-        "symbol": "NVDA",
-        "name": "Nvidia Corp（NVDA）",
-        "close": "216.47",
-        "change": "-0.29%",
-        "weight": "7.44%",
-        "contribution": "-2.16bp",
-        "contributionBps": -2.1576,
-        "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-20。公式S&P寄与度ではない。"
-      }
-    ]
-  },
   "unit": "bp",
   "official": false,
   "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
   "validation": {
-    "estimatedWeightedReturnPct": 0.6047,
-    "verifiedSP500ReturnPct": 0.58,
-    "differencePt": 0.0247,
-    "tolerancePt": 0.2,
-    "status": "passed"
+    "estimatedWeightedReturnPct": -1.0698,
+    "verifiedSP500ReturnPct": null,
+    "differencePt": null
   },
   "top": [
     {
       "rank": 1,
-      "symbol": "NVDA",
-      "name": "Nvidia Corp（NVDA）",
-      "close": "221.97",
-      "change": "+2.54%",
-      "weight": "7.59%",
-      "contribution": "+19.28bp",
-      "contributionBps": 19.2786,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-21。公式S&P寄与度ではない。"
+      "symbol": "AAPL",
+      "name": "Apple Inc.（AAPL）",
+      "close": "348.22",
+      "change": "+1.23%",
+      "weight": "7.28%",
+      "contribution": "+8.95bp",
+      "contributionBps": 8.9544,
+      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
     },
     {
       "rank": 2,
-      "symbol": "AAPL",
-      "name": "Apple Inc.（AAPL）",
-      "close": "343.99",
-      "change": "+1.32%",
-      "weight": "7.11%",
-      "contribution": "+9.39bp",
-      "contributionBps": 9.3852,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-21。公式S&P寄与度ではない。"
+      "symbol": "LLY",
+      "name": "Eli Lilly & Co.（LLY）",
+      "close": "1,306.69",
+      "change": "+2.83%",
+      "weight": "1.67%",
+      "contribution": "+4.73bp",
+      "contributionBps": 4.7261,
+      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
     },
     {
       "rank": 3,
-      "symbol": "TSLA",
-      "name": "Tesla, Inc. Common Stock（TSLA）",
-      "close": "386.47",
-      "change": "+3.41%",
-      "weight": "2.16%",
-      "contribution": "+7.37bp",
-      "contributionBps": 7.3656,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-21。公式S&P寄与度ではない。"
+      "symbol": "WMT",
+      "name": "Walmart Inc. Common Stock（WMT）",
+      "close": "121.12",
+      "change": "+2.82%",
+      "weight": "1.38%",
+      "contribution": "+3.89bp",
+      "contributionBps": 3.8916,
+      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
     },
     {
       "rank": 4,
-      "symbol": "AMD",
-      "name": "Advanced Micro Devices（AMD）",
-      "close": "552.72",
-      "change": "+3.36%",
-      "weight": "1.28%",
-      "contribution": "+4.30bp",
-      "contributionBps": 4.3008,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-21。公式S&P寄与度ではない。"
+      "symbol": "JNJ",
+      "name": "Johnson & Johnson（JNJ）",
+      "close": "267.61",
+      "change": "+3.81%",
+      "weight": "0.92%",
+      "contribution": "+3.51bp",
+      "contributionBps": 3.5052,
+      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
     },
     {
       "rank": 5,
-      "symbol": "PLTR",
-      "name": "Palantir Technologies Inc. Class A Common Stock（PLTR）",
-      "close": "201.72",
-      "change": "+4.74%",
-      "weight": "0.69%",
-      "contribution": "+3.27bp",
-      "contributionBps": 3.2706,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-21。公式S&P寄与度ではない。"
+      "symbol": "PG",
+      "name": "Procter & Gamble Company（PG）",
+      "close": "165.59",
+      "change": "+5.58%",
+      "weight": "0.55%",
+      "contribution": "+3.07bp",
+      "contributionBps": 3.069,
+      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
     }
   ],
   "bottom": [
     {
       "rank": 1,
-      "symbol": "GOOGL",
-      "name": "Alphabet Inc. Class A Common Stock（GOOGL）",
-      "close": "334.76",
-      "change": "-1.62%",
-      "weight": "2.98%",
-      "contribution": "-4.83bp",
-      "contributionBps": -4.8276,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-21。公式S&P寄与度ではない。"
+      "symbol": "NVDA",
+      "name": "Nvidia Corp（NVDA）",
+      "close": "212.21",
+      "change": "-4.40%",
+      "weight": "7.34%",
+      "contribution": "-32.30bp",
+      "contributionBps": -32.296,
+      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
     },
     {
       "rank": 2,
-      "symbol": "GOOG",
-      "name": "Alphabet Inc. Class C Capital Stock（GOOG）",
-      "close": "330.95",
-      "change": "-1.62%",
-      "weight": "2.78%",
-      "contribution": "-4.50bp",
-      "contributionBps": -4.5036,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-21。公式S&P寄与度ではない。"
+      "symbol": "AMZN",
+      "name": "Amazon.Com Inc（AMZN）",
+      "close": "250.38",
+      "change": "-4.57%",
+      "weight": "3.87%",
+      "contribution": "-17.69bp",
+      "contributionBps": -17.6859,
+      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
     },
     {
       "rank": 3,
-      "symbol": "NFLX",
-      "name": "NetFlix Inc（NFLX）",
-      "close": "65.04",
-      "change": "-5.31%",
-      "weight": "0.38%",
-      "contribution": "-2.02bp",
-      "contributionBps": -2.0178,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-21。公式S&P寄与度ではない。"
+      "symbol": "META",
+      "name": "Meta Platforms, Inc. Class A Common Stock（META）",
+      "close": "648.85",
+      "change": "-6.98%",
+      "weight": "2.37%",
+      "contribution": "-16.54bp",
+      "contributionBps": -16.5426,
+      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
     },
     {
       "rank": 4,
-      "symbol": "LLY",
-      "name": "Eli Lilly & Co.（LLY）",
-      "close": "1,270.75",
-      "change": "-1.01%",
-      "weight": "1.60%",
-      "contribution": "-1.62bp",
-      "contributionBps": -1.616,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-21。公式S&P寄与度ではない。"
+      "symbol": "MSFT",
+      "name": "Microsoft Corp（MSFT）",
+      "close": "521.08",
+      "change": "-2.23%",
+      "weight": "5.54%",
+      "contribution": "-12.35bp",
+      "contributionBps": -12.3542,
+      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
     },
     {
       "rank": 5,
-      "symbol": "T",
-      "name": "AT&T Inc.（T）",
-      "close": "21.91",
-      "change": "-6.45%",
-      "weight": "0.21%",
-      "contribution": "-1.35bp",
-      "contributionBps": -1.3545,
-      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-21。公式S&P寄与度ではない。"
+      "symbol": "AMD",
+      "name": "Advanced Micro Devices（AMD）",
+      "close": "507.93",
+      "change": "-8.10%",
+      "weight": "1.19%",
+      "contribution": "-9.64bp",
+      "contributionBps": -9.639,
+      "reason": "Slickcharts構成比×当日騰落率による推計。基準日 2026-10-22。公式S&P寄与度ではない。"
     }
   ]
 }
