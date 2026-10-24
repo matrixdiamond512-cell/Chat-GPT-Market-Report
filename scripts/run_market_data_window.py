@@ -508,9 +508,21 @@ def record_expired(
     git_commit_push(f"Record expired {slot} market data attempt {scheduled_time}")
 
 
+def resolve_window_day(report_date: dt.date | None, current: dt.datetime) -> dt.date:
+    """An explicit identity cannot silently roll over or schedule a future day."""
+    if report_date is None:
+        return current.astimezone(JST).date()
+    if report_date > current.astimezone(JST).date():
+        raise ValueError("FUTURE_REPORT_DATE")
+    if report_date.weekday() >= 5:
+        raise ValueError("INVALID_PUBLICATION_DAY")
+    return report_date
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--slot", required=True, choices=("08:00", "12:00", "16:00", "21:00"))
+    parser.add_argument("--report-date", type=dt.date.fromisoformat, help="Fixed target JST date; omitted retains legacy current-day behavior")
     parser.add_argument("--times", required=True, type=parse_times)
     parser.add_argument("--trigger-source", default=os.environ.get("ACQUISITION_TRIGGER_SOURCE", "window"))
     parser.add_argument("--max-catchup-minutes", type=int, default=30)
@@ -525,10 +537,11 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    day = resolve_window_day(args.report_date, now_jst())
+
     run(["git", "config", "user.name", "github-actions[bot]"])
     run(["git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"])
 
-    day = now_jst().date()
     audit = audit_path(day, args.slot)
     failures: list[str] = []
     evidence_path = ROOT / "data" / "report-evidence" / f"{day.isoformat()}_{args.slot.replace(':', '-')}-r1.json"
