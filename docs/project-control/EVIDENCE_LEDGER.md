@@ -163,3 +163,12 @@ Scope kept to P1 preparation. Added the exact fixed Scheduler trigger contract, 
 The deterministic fixture provider is not a market-data source. `publicationEligible=false` remains mandatory; no formal three-document, production, report-original or P2 changes were made.
 
 Open outcomes: obtain a usable authenticated read-only Cloud inventory; recheck existing project/billing/API/IAM/resources and existing budgets to avoid duplicates; compute a protected-file SHA-256 comparison; then, after separate approval, carry out the ¥800 budget and isolated-resource changes. Live GCS save/readback, deployed OIDC, Cloud Run, Scheduler, deadlines/retries under real time, restart/concurrency/network-failure tests remain NOT_RUN. PR #170/#175/#180/#181/#182 remain Draft/unmerged. Next necessary action: complete the read-only cloud inventory, then present the exact resource/cost approval package before any cloud change.
+
+
+## Owner-reported budget creation and cloud inventory gate — ARCH-20261020-REPORT-CONTINUITY — 2026-10-26 JST (ADD)
+
+- The owner reports that the monthly JPY 800 budget alert displayed a successful creation message. Classify as `USER_REPORTED_SUCCESS / READBACK NOT_VERIFIED`; do not retry, create, or duplicate this budget. Its resource ID, scope, period, currency and thresholds require read-only console readback before any subsequent change.
+- The owner also confirms the existing project is to be reused. Current project ID, billing link/status, APIs, IAM, service accounts, buckets, Cloud Run services and Scheduler jobs remain NOT_VERIFIED in this turn.
+- Read-only Console inspection could not proceed because Computer Use stopped when it could not determine the current browser URL safely. No authenticated cloud connector or `gcloud` CLI was available. No Cloud API, resource, IAM, budget or deployment action was performed.
+- PR #182 configuration now marks the budget `USER_REPORTED_SUCCESS_READBACK_PENDING`, `createIfMissing=false`, and budget creation count zero. Candidate infrastructure counts remain conditional on a future read-only inventory; only confirmed-missing resources may be proposed for separate approval.
+- Open outcomes: authenticated read-only inventory; exact existing budget readback; current API/IAM/resource map; full protected-file SHA-256 recomputation. Live GCS/Run/Scheduler acceptance, API enablement and all resource creation remain NOT_RUN pending separate approval. PR #170/#175/#180/#181/#182 stay Draft and unmerged.
