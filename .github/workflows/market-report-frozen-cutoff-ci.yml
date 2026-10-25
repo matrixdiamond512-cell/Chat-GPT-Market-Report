@@ -102,7 +102,7 @@ jobs:
                       print("container started; WSGI app returned expected 405 for GET")
                       break
                   raise
-              except URLError:
+              except (URLError, ConnectionResetError, TimeoutError):
                   time.sleep(1)
               else:
                   raise AssertionError("GET unexpectedly accepted")
