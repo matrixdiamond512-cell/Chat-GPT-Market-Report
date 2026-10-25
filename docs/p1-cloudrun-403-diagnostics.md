@@ -43,3 +43,16 @@ gcloud logging read \
 - `allUsers`、`allAuthenticatedUsers` にInvokerを付与しない。
 - IDトークン、アクセス権、秘密鍵、本人情報をデバッグ出力しない。
 - まだ認証成功、HTTP200、GCS書込みの成功を宣言しない。
+
+## 2026-10-26 実機試験：拒否点の確定
+
+Cloud Runリビジョン `p1-report-shadow-ingress-00004-2wv` の単発試験で、アプリケーション固有の診断 `P1_INGRESS_RESULT` が `403 / JOB_NOT_ALLOWLISTED` を記録した。したがってこの試行ではCloud Run IAM入口でなく、**WSGI内のジョブ許可リスト照合**により拒否された。トークン署名検証はこの分岐より後にあるため、OIDCのアプリ内検証成功は**未確認**。
+
+Google Cloud Scheduler公式仕様ではHTTP呼出し時に `X-CloudScheduler-JobName` と `X-CloudScheduler-ScheduleTime` のヘッダーを追加する。ただし実機での受信文字列の形式は未確定。ジョブ名がない・短縮名・別のフルリソース名・別形式のいずれかを、秘密値を記録せず分類する `P1_JOB_HEADER_DIAGNOSTIC` を追加した。
+
+- `jobHeaderForm`: `MISSING` / `SHORT_EXPECTED_ID` / `OTHER_FULL_RESOURCE` / `OTHER_SHORT` / `OTHER_FORMAT`
+- `schedulerMarkerPresent`: Cloud Schedulerマーカーの有無（真偽値）
+- `scheduleHeaderPresent`: 予定時刻ヘッダーの有無（真偽値）
+- `alternateJobHeaderPresent`: 既知の別キー形の存在（真偽値）
+
+この診断は**どのジョブ名も受け入れる規則に変更しない**。OIDC検証前のジョブ照合・日付上限・Storage無効状態を維持する。根本原因が判明する前にヘッダー制約を緩和しない。通常のScheduler実行での403修正は未完了。
