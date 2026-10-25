@@ -93,6 +93,29 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
         job_name = environ.get("HTTP_X_CLOUDSCHEDULER_JOBNAME", "")
         binding = bindings.get(job_name)
         if binding is None:
+            # Never log the untrusted job header value. Classify it against the
+            # *existing* allowlist without treating shorter names as trusted.
+            if not job_name:
+                job_form = "MISSING"
+            elif any(job_name == allowed.rsplit("/", 1)[-1] for allowed in bindings):
+                job_form = "SHORT_EXPECTED_ID"
+            elif re.fullmatch(r"projects/[^/]+/locations/[^/]+/jobs/[^/]+", job_name):
+                job_form = "OTHER_FULL_RESOURCE"
+            elif "/" not in job_name:
+                job_form = "OTHER_SHORT"
+            else:
+                job_form = "OTHER_FORMAT"
+            print(json.dumps({
+                "event": "P1_JOB_HEADER_DIAGNOSTIC",
+                "severity": "WARNING",
+                "jobHeaderForm": job_form,
+                "schedulerMarkerPresent": bool(environ.get("HTTP_X_CLOUDSCHEDULER")),
+                "scheduleHeaderPresent": bool(environ.get("HTTP_X_CLOUDSCHEDULER_SCHEDULETIME")),
+                "alternateJobHeaderPresent": bool(
+                    environ.get("HTTP_X_CLOUDSCHEDULER_JOB_NAME")
+                    or environ.get("HTTP_X_CLOUD_SCHEDULER_JOB_NAME")
+                ),
+            }, separators=(",", ":"), sort_keys=True), file=sys.stderr, flush=True)
             return respond(start_response, "403 Forbidden", {"error": "JOB_NOT_ALLOWLISTED"})
         try:
             claims = verifier(match.group(1), audience)
