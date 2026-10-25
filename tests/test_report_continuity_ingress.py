@@ -138,7 +138,8 @@ class CloudRunIngressTests(unittest.TestCase):
                 self.assertNotIn(secret_token, captured.getvalue())
                 self.assertNotIn(CALLER, captured.getvalue())
                 self.assertNotIn(JOB, captured.getvalue())
-                self.assertNotIn(supplied, captured.getvalue())
+                if supplied:
+                    self.assertNotIn(supplied, captured.getvalue())
 
     def test_diagnostic_log_discriminates_caller_and_expired_slot(self):
         self.verifier.return_value = {
