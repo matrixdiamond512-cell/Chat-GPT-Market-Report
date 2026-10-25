@@ -135,15 +135,18 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
 
 def single_binding_map(entries: list[dict[str, object]]) -> dict[str, SchedulerBinding]:
     """Validate env-derived, deployment-reviewed allowlist data."""
+    if not isinstance(entries, list):
+        raise ValueError("INVALID_SCHEDULER_BINDINGS")
     result = {}
     for item in entries:
+        if not isinstance(item, dict):
+            raise ValueError("INVALID_SCHEDULER_BINDING")
         job = item.get("job_name")
         email = item.get("service_account_email")
         offset = item.get("attempt_minutes")
         slot = item.get("target_slot")
         weekdays_only = item.get("weekdays_only", True)
-        if (not isinstance(job, str) or not job.startswith("projects/")
-                or "/locations/" not in job or "/jobs/" not in job
+        if (not isinstance(job, str) or not re.fullmatch(r"projects/[^/]+/locations/[^/]+/jobs/[^/]+", job)
                 or not isinstance(email, str) or not email.endswith(".iam.gserviceaccount.com")
                 or type(offset) is not int or offset not in (0, 3, 7, 13)
                 or not isinstance(slot, str) or slot not in REPORT_SLOTS
