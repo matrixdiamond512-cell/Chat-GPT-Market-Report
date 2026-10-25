@@ -1,7 +1,8 @@
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    GUNICORN_CMD_ARGS=--no-control-socket
 WORKDIR /app
 
 COPY requirements-p1-cloudrun.txt ./
