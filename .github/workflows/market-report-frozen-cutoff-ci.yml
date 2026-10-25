@@ -12,6 +12,7 @@ on:
       - scripts/report_continuity_ingress.py
       - scripts/run_report_continuity_service.py
       - docs/p1-cloud-trial-plan.md
+      - docs/p1-cloud-trial-config.json
       - tests/test_report_continuity_gcs.py
       - requirements-p1-gcs-test.txt
       - scripts/resolve_market_report_slot.py
@@ -46,6 +47,7 @@ on:
       - scripts/report_continuity_ingress.py
       - scripts/run_report_continuity_service.py
       - docs/p1-cloud-trial-plan.md
+      - docs/p1-cloud-trial-config.json
       - tests/test_report_continuity_gcs.py
       - requirements-p1-gcs-test.txt
       - scripts/resolve_market_report_slot.py
@@ -83,7 +85,9 @@ jobs:
       - name: Install pinned GCS SDK compatibility dependency
         run: python -m pip install --disable-pip-version-check -r requirements-p1-gcs-test.txt
       - name: Compile acquisition and snapshot evidence scripts
-        run: python -m compileall -q scripts/run_market_data_window.py scripts/run_market_data_acquisition.py scripts/persist_report_slot_evidence.py scripts/report_continuity_gcs.py scripts/report_continuity_ingress.py scripts/run_report_continuity_service.py
+        run: python -m compileall -q scripts/run_market_data_window.py scripts/run_market_data_acquisition.py scripts/persist_report_slot_evidence.py scripts/report_continuity_gcs.py scripts/report_continuity_ingress.py scripts/run_report_continuity_service.py scripts/p1_trial_fixture_provider.py
+      - name: Validate preparation-only Cloud config JSON
+        run: python -m json.tool docs/p1-cloud-trial-config.json > /dev/null
       - name: Build Cloud Run container image
         run: docker build --tag p1-cloudrun-smoke:ci .
       - name: Smoke test Cloud Run container startup and PORT binding
