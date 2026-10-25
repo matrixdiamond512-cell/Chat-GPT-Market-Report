@@ -1,8 +1,4 @@
-"""Offline-only report continuity contracts; no production adapters or CLI.
-
-A real ingress must verify OIDC issuer, audience and authorized service account
-before trusting the scheduler header. A timestamp alone is never authentication.
-"""
+"""Immutable report continuity contracts for isolated shadow evidence."""
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from hashlib import sha256
@@ -10,6 +6,8 @@ from threading import Lock
 from typing import Callable, Protocol
 
 from scripts.resolve_market_report_slot import ReportIdentity
+
+SCHEDULER_ATTEMPTS = (3, 7, 13)
 
 
 @dataclass(frozen=True)
@@ -21,11 +19,7 @@ class StoredObject:
 
 class EvidenceStore(Protocol):
     def create(self, key: str, data: bytes) -> StoredObject:
-        """Atomic create-only: production contract is ifGenerationMatch=0.
-
-        Raise FileExistsError on existing key, including races. The timestamp
-        must be storage-server metadata, never a client supplied clock.
-        """
+        """Atomic create-only (GCS ifGenerationMatch=0), including races."""
         ...
 
     def read(self, key: str) -> StoredObject: ...
@@ -51,6 +45,14 @@ class FakeStorage:
             return self._objects[key]
 
 
+def evidence_key(identity: ReportIdentity, attempt_minutes: int | None = None) -> str:
+    if attempt_minutes is None:
+        return f"shadow/{identity.report_id}/evidence"
+    if type(attempt_minutes) is not int or attempt_minutes not in SCHEDULER_ATTEMPTS:
+        raise ValueError("INVALID_SCHEDULER_ATTEMPT")
+    return f"shadow/{identity.report_id}/attempts/t-{attempt_minutes}/evidence"
+
+
 def readiness(identity: ReportIdentity, *, now: datetime,
               snapshot_at: datetime | None, acquisition_valid: bool,
               evidence_valid: bool, draft_input_valid: bool) -> dict:
@@ -69,8 +71,9 @@ class EvidenceWriter:
     def __init__(self, store: EvidenceStore, clock: Callable[[], datetime]):
         self.store, self.clock = store, clock
 
-    def write(self, identity: ReportIdentity, data: bytes) -> dict:
-        key = f"shadow/{identity.report_id}/evidence"
+    def write(self, identity: ReportIdentity, data: bytes,
+              *, attempt_minutes: int | None = None) -> dict:
+        key = evidence_key(identity, attempt_minutes)
         digest = sha256(data).hexdigest()
         if self.clock() >= identity.target:
             return {"status": "BLOCKED", "reason": "EXPIRED"}
@@ -86,22 +89,31 @@ class EvidenceWriter:
             return {"status": "CONFLICT"}
         if readback.committed_at >= identity.target or self.clock() >= identity.target:
             return {"status": "BLOCKED", "reason": "CUTOFF_CROSSED"}
-        return {"status": status, "generation": readback.generation,
-                "sha256": digest, "committedAt": readback.committed_at.isoformat()}
+        result = {"status": status, "generation": readback.generation,
+                  "sha256": digest, "committedAt": readback.committed_at.isoformat()}
+        if attempt_minutes is not None:
+            result["attemptMinutes"] = attempt_minutes
+        return result
 
 
 class JobCoordinator:
-    """Retry from immutable persisted stages; no production writes supported."""
+    """Reconcile per-attempt immutable evidence and readback stages."""
     def __init__(self, writer: EvidenceWriter, *, enabled: bool = False):
         self.writer, self.enabled = writer, enabled
 
-    def run(self, identity: ReportIdentity, data: bytes) -> dict:
+    def run(self, identity: ReportIdentity, data: bytes,
+            *, attempt_minutes: int | None = None) -> dict:
         if not self.enabled:
             return {"status": "DISABLED", "publicationEligible": False, "chatStatus": "UNKNOWN"}
-        result = self.writer.write(identity, data)
-        # Stage records are create-only too. On retry, reconcile evidence first.
+        result = self.writer.write(identity, data, attempt_minutes=attempt_minutes)
+        # A distinct allowed attempt has its own create-only evidence key. Retries
+        # of one attempt reconcile only that key and never replace another attempt.
         if result["status"] in {"CREATED", "NO_OP"}:
-            key = f"shadow/{identity.report_id}/stages/evidence-readback/{result['sha256']}"
+            if attempt_minutes is None:
+                stage_prefix = f"shadow/{identity.report_id}/"
+            else:
+                stage_prefix = f"shadow/{identity.report_id}/attempts/t-{attempt_minutes}/"
+            key = f"{stage_prefix}stages/evidence-readback/{result['sha256']}"
             expected = result["sha256"].encode("ascii")
             if self.writer.clock() >= identity.target:
                 return {"status": "BLOCKED", "reason": "STAGE_CUTOFF_CROSSED",
