@@ -5,7 +5,10 @@
   "apply": false,
   "project": {
     "id": "<RECONFIRM_EXISTING_PROJECT_ID_READ_ONLY>",
-    "createNewProject": false
+    "createNewProject": false,
+    "inventoryStatus": "NOT_VERIFIED_THIS_TURN",
+    "reuseIfCompatible": true,
+    "status": "USER_REPORTED_EXISTING_NOT_VERIFIED"
   },
   "billingBudget": {
     "scope": "project",
@@ -28,7 +31,11 @@
     ],
     "notificationRecipient": "<OWNER_EMAIL_CONFIRM_AT_APPROVED_SETUP>",
     "checkExistingBeforeCreate": true,
-    "createOnlyAfterExplicitApproval": true
+    "status": "USER_REPORTED_SUCCESS_READBACK_PENDING",
+    "createIfMissing": false,
+    "duplicateCreationProhibited": true,
+    "readbackRequired": true,
+    "scopeStatus": "NOT_VERIFIED"
   },
   "cloudRun": {
     "name": "p1-report-shadow-ingress",
@@ -333,15 +340,36 @@
       "monitoring.googleapis.com"
     ],
     "optional": [
-      "cloudbuild.googleapis.com",
-      "billingbudgets.googleapis.com"
+      "cloudbuild.googleapis.com"
     ],
-    "noEnablementBeforeApproval": true
+    "noEnablementBeforeApproval": true,
+    "budgetBudgetsApiNeededForConsoleReadback": false
   },
   "preflight": {
-    "projectIdBillingStateExistingBudgetApiIamResources": "READ_ONLY_RECONFIRM_REQUIRED",
+    "projectIdBillingStateExistingBudgetApiIamResources": "NOT_VERIFIED_READ_ONLY_INVENTORY_REQUIRED",
     "createResources": false,
     "enableApis": false,
-    "deploy": false
+    "deploy": false,
+    "budgetStatus": "USER_REPORTED_CREATED_DO_NOT_DUPLICATE",
+    "existingBudgetReadback": "NOT_VERIFIED",
+    "budgetCreateAllowed": false
+  },
+  "resourcePlan": {
+    "existingProjectOnly": true,
+    "createNewProject": false,
+    "budgetCreateCount": 0,
+    "ifMissing": {
+      "artifactRegistryRepositories": 1,
+      "cloudRunServices": 1,
+      "storageBuckets": 1,
+      "runtimeServiceAccounts": 1,
+      "schedulerCallerServiceAccounts": 12,
+      "schedulerJobs": 12
+    },
+    "reuseCompatibleExisting": true,
+    "enableOnlyApprovedSchedulerJobsInitially": 1,
+    "allCreationRequiresSeparateApproval": true,
+    "createIfMissingOnly": true,
+    "existingInventoryStatus": "NOT_VERIFIED"
   }
 }
