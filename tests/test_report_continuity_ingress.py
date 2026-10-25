@@ -1,6 +1,7 @@
 import io
 import json
 import unittest
+from contextlib import redirect_stderr
 from datetime import datetime, timedelta, timezone
 from unittest.mock import Mock
 
@@ -84,6 +85,65 @@ class CloudRunIngressTests(unittest.TestCase):
         self.assertEqual(self.processor.call_args.args[0].report_id, "2026-10-27_08-00")
         self.assertEqual(self.processor.call_args.args[2], self.binding)
         self.verifier.assert_called_once_with("valid", AUDIENCE)
+
+    def test_diagnostic_log_distinguishes_app_403_without_leaking_secrets(self):
+        captured = io.StringIO()
+        secret_token = "private.jwt.test-value"
+        with redirect_stderr(captured):
+            status, result = run_request(
+                self.app, token=secret_token, job=JOB + "-unknown"
+            )
+        self.assertEqual(status, "403 Forbidden")
+        self.assertEqual(result["error"], "JOB_NOT_ALLOWLISTED")
+        entry = json.loads(captured.getvalue().strip())
+        self.assertEqual(entry, {
+            "event": "P1_INGRESS_RESULT",
+            "severity": "WARNING",
+            "httpStatus": 403,
+            "reason": "JOB_NOT_ALLOWLISTED",
+        })
+        self.assertNotIn(secret_token, captured.getvalue())
+        self.assertNotIn(CALLER, captured.getvalue())
+        self.assertNotIn(JOB, captured.getvalue())
+
+    def test_diagnostic_log_discriminates_caller_and_expired_slot(self):
+        self.verifier.return_value = {
+            **self.verifier.return_value,
+            "email": "different@test-project.iam.gserviceaccount.com",
+        }
+        captured = io.StringIO()
+        with redirect_stderr(captured):
+            status, _ = run_request(self.app)
+        self.assertEqual(status, "403 Forbidden")
+        self.assertEqual(json.loads(captured.getvalue())["reason"], "CALLER_NOT_AUTHORIZED")
+
+        self.verifier.return_value = {
+            **self.verifier.return_value, "email": CALLER,
+        }
+        expired = create_app(
+            bindings={JOB: self.binding}, audience=AUDIENCE,
+            processor=self.processor, verifier=self.verifier,
+            clock=lambda: datetime(2026, 10, 27, 23, 0, tzinfo=timezone.utc),
+        )
+        captured = io.StringIO()
+        with redirect_stderr(captured):
+            status, _ = run_request(expired)
+        self.assertEqual(status, "409 Conflict")
+        entry = json.loads(captured.getvalue())
+        self.assertEqual((entry["httpStatus"], entry["reason"]),
+                         (409, "SCHEDULE_EXPIRED"))
+        self.processor.assert_not_called()
+
+    def test_diagnostic_log_marks_success_without_echoing_processor_payload(self):
+        secret = "do-not-emit-acquisition-payload"
+        self.processor.return_value = {"status": "CREATED", "secret": secret}
+        captured = io.StringIO()
+        with redirect_stderr(captured):
+            status, _ = run_request(self.app)
+        self.assertEqual(status, "200 OK")
+        entry = json.loads(captured.getvalue())
+        self.assertEqual((entry["httpStatus"], entry["reason"]), (200, "ACCEPTED"))
+        self.assertNotIn(secret, captured.getvalue())
 
     def test_missing_or_malformed_bearer_is_rejected(self):
         for token in ("", "bad token"):
