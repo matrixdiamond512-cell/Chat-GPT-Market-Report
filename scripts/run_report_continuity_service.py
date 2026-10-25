@@ -10,12 +10,13 @@ import json
 import os
 from typing import Callable, Mapping
 
-from scripts.report_continuity_ingress import create_app, single_binding_map
+from scripts.report_continuity_ingress import create_app, single_binding_map, verify_google_oidc
 
 
 def build_app(environ: Mapping[str, str] | None = None, *,
               storage_client_factory: Callable[[], object] | None = None,
-              clock: Callable[[], datetime] | None = None):
+              clock: Callable[[], datetime] | None = None,
+              verifier=None):
     env = os.environ if environ is None else environ
     audience = env.get("P1_OIDC_AUDIENCE", "")
     bindings_json = env.get("P1_SCHEDULER_BINDINGS_JSON", "")
@@ -45,7 +46,8 @@ def build_app(environ: Mapping[str, str] | None = None, *,
             EvidenceWriter(store, lambda: datetime.now(timezone.utc)), enabled=True)
         processor = lambda identity, body: coordinator.run(identity, body)
 
-    return create_app(bindings=bindings, audience=audience, processor=processor, clock=clock)
+    return create_app(bindings=bindings, audience=audience, processor=processor, clock=clock,
+                       verifier=verifier or verify_google_oidc)
 
 
 _cached_app = None
