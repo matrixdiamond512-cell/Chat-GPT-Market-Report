@@ -4,6 +4,9 @@ on:
     paths:
       - config/report_schedule.json
       - scripts/report_continuity_shadow.py
+      - scripts/report_continuity_gcs.py
+      - tests/test_report_continuity_gcs.py
+      - requirements-p1-gcs-test.txt
       - scripts/resolve_market_report_slot.py
       - scripts/test_resolve_market_report_slot.py
       - tests/test_report_continuity_shadow.py
@@ -28,6 +31,9 @@ on:
     paths:
       - config/report_schedule.json
       - scripts/report_continuity_shadow.py
+      - scripts/report_continuity_gcs.py
+      - tests/test_report_continuity_gcs.py
+      - requirements-p1-gcs-test.txt
       - scripts/resolve_market_report_slot.py
       - scripts/test_resolve_market_report_slot.py
       - tests/test_report_continuity_shadow.py
@@ -60,12 +66,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install pinned GCS SDK compatibility dependency
+        run: python -m pip install --disable-pip-version-check -r requirements-p1-gcs-test.txt
       - name: Compile acquisition and snapshot evidence scripts
-        run: python -m compileall -q scripts/run_market_data_window.py scripts/run_market_data_acquisition.py scripts/persist_report_slot_evidence.py
+        run: python -m compileall -q scripts/run_market_data_window.py scripts/run_market_data_acquisition.py scripts/persist_report_slot_evidence.py scripts/report_continuity_gcs.py
       - name: Run strictly offline cutoff and immutable-evidence regression suites
         run: python -m unittest scripts.test_run_market_data_window scripts.test_market_acquisition_cutoff tests.test_report_slot_evidence -v
       - name: Run offline report continuity and publication policy tests
-        run: python -m unittest tests.test_report_continuity_shadow tests.test_market_data_window_evidence tests.test_report_slot_evidence tests.test_policy_expectations tests.test_publication_eligibility tests.test_publication_evidence scripts.test_resolve_market_report_slot scripts.test_market_acquisition_cutoff tests.test_historical_saturday_slots -v
+        run: python -m unittest tests.test_report_continuity_shadow tests.test_report_continuity_gcs tests.test_market_data_window_evidence tests.test_report_slot_evidence tests.test_policy_expectations tests.test_publication_eligibility tests.test_publication_evidence scripts.test_resolve_market_report_slot scripts.test_market_acquisition_cutoff tests.test_historical_saturday_slots -v
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
