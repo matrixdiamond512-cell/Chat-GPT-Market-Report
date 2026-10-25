@@ -7,8 +7,8 @@ adapters.
 """
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta, timezone
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 import hashlib
 import hmac
 import json
@@ -90,6 +90,8 @@ def verify_pre_slot_trigger(
     """
     if len(secret) < 32:
         raise ContractError("TRIGGER_SECRET_TOO_SHORT")
+    if isinstance(max_delay_seconds, bool) or not isinstance(max_delay_seconds, int) or not 0 <= max_delay_seconds <= MAX_TRIGGER_DELAY_SECONDS:
+        raise ContractError("TRIGGER_DELAY_POLICY_INVALID")
     if not isinstance(payload, Mapping):
         raise ContractError("TRIGGER_PAYLOAD_INVALID")
     expected_sig = hmac.new(secret, canonical_json_bytes(payload), hashlib.sha256).hexdigest()
@@ -237,8 +239,14 @@ def freeze_g2_writer_input(
         raise ContractError("G2_INPUT_FIELDS_MISSING")
     if report_slot != "08:00" or report_id != f"{report_date}_08-00":
         raise ContractError("G2_REPORT_IDENTITY_MISMATCH")
-    if revision < 1:
+    if isinstance(revision, bool) or not isinstance(revision, int) or revision < 1:
         raise ContractError("G2_REVISION_INVALID")
+    try:
+        parsed_date = datetime.strptime(report_date, "%Y-%m-%d").date()
+    except ValueError as exc:
+        raise ContractError("G2_REPORT_DATE_INVALID") from exc
+    if parsed_date.isoformat() != report_date or parsed_date.weekday() > 4:
+        raise ContractError("G2_REPORT_DATE_NOT_SCHEDULED")
     if source != "producer_fixed_before_save":
         raise ContractError("G2_SOURCE_NOT_PINNED_PRODUCER")
     if execution_mode not in {"TEST_ONLY", "LIVE"}:

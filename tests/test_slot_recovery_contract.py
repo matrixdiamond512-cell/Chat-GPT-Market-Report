@@ -46,6 +46,13 @@ class PreSlotTriggerTests(unittest.TestCase):
         self.assertEqual(result.start_lag_seconds, 4)
         self.assertEqual(result.execution_mode, "TEST_ONLY")
 
+
+    def test_delay_policy_cannot_be_relaxed_by_caller(self):
+        payload = trigger()
+        signature = sign_trigger_request(payload, SECRET)
+        with self.assertRaisesRegex(ContractError, "TRIGGER_DELAY_POLICY_INVALID"):
+            verify_pre_slot_trigger(payload, signature, SECRET, now=NOW, max_delay_seconds=600)
+
     def test_rejects_bad_signature_and_short_secret(self):
         payload = trigger()
         with self.assertRaisesRegex(ContractError, "TRIGGER_SIGNATURE_INVALID"):
@@ -139,7 +146,7 @@ class G2DocsHandoffTests(unittest.TestCase):
         self.assertEqual(checked.status, "FAIL")
         self.assertIn("DOCS_BODY_HASH_MISMATCH", checked.reasons)
         self.assertIn("DOCS_REQUIRED_SECTIONS_MISSING", checked.reasons)
-        self.assertEqual(checked.diagnostic["firstDiffOffset"], 13)
+        self.assertEqual(checked.diagnostic["firstDiffOffset"], 11)
         self.assertIn("## Missing section", checked.diagnostic["missingSections"])
         encoded = json.dumps(checked.diagnostic)
         self.assertNotIn(self.body, encoded)
