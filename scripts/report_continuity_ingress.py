@@ -1,9 +1,9 @@
-"""Authenticated, shadow-only Cloud Scheduler HTTP ingress for P1.
+"""Authenticated Cloud Scheduler ingress for isolated P1 shadow acquisition.
 
-Cloud Run IAM should remain enabled. This layer independently verifies the
-Google-signed OIDC token before considering Scheduler metadata. The token does
-not sign the Scheduler headers; bindings therefore pin the expected full job
-name, unique service-account email, and attempt offset.
+Cloud Run IAM must remain enabled. Google OIDC authenticates the caller, while
+the exact job/time/slot binding validates the Scheduler metadata headers, which
+the OIDC token does not cryptographically sign. The HTTP body is a fixed trigger;
+report identity is always derived from the authenticated Scheduler time.
 """
 from __future__ import annotations
 
@@ -16,7 +16,9 @@ from typing import Callable, Mapping
 from scripts.resolve_market_report_slot import REPORT_SLOTS, ReportIdentity, resolve_report_identity
 
 MAX_BODY_BYTES = 1024 * 1024
+SCHEDULER_TRIGGER_BODY = b'{"schemaVersion":1,"trigger":"P1_SHADOW"}'
 _BEARER = re.compile(r"Bearer ([A-Za-z0-9._~-]+)\Z")
+SCHEDULER_ATTEMPTS = (3, 7, 13)
 
 
 @dataclass(frozen=True)
@@ -48,10 +50,10 @@ def _utc_schedule(value: str) -> datetime:
 
 
 def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
-               processor: Callable[[ReportIdentity, bytes], Mapping[str, object]],
+               processor: Callable[[ReportIdentity, bytes, SchedulerBinding], Mapping[str, object]],
                verifier: Callable[[str, str], Mapping[str, object]] = verify_google_oidc,
                clock: Callable[[], datetime] | None = None):
-    """Return a small WSGI app. No default processor or storage is constructed."""
+    """Return a WSGI app; no data provider or Storage client is constructed here."""
     if not audience or not bindings:
         raise ValueError("OIDC audience and Scheduler bindings are required")
     now = clock or (lambda: datetime.now(timezone.utc))
@@ -66,8 +68,7 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
     def app(environ, start_response):
         if environ.get("REQUEST_METHOD") != "POST":
             return respond(start_response, "405 Method Not Allowed", {"error": "METHOD_NOT_ALLOWED"})
-        auth = environ.get("HTTP_AUTHORIZATION", "")
-        match = _BEARER.fullmatch(auth)
+        match = _BEARER.fullmatch(environ.get("HTTP_AUTHORIZATION", ""))
         if not match:
             return respond(start_response, "401 Unauthorized", {"error": "UNAUTHENTICATED"})
         job_name = environ.get("HTTP_X_CLOUDSCHEDULER_JOBNAME", "")
@@ -86,9 +87,9 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
                 or not isinstance(email, str)
                 or email.lower() != binding.service_account_email.lower()):
             return respond(start_response, "403 Forbidden", {"error": "CALLER_NOT_AUTHORIZED"})
-        schedule_value = environ.get("HTTP_X_CLOUDSCHEDULER_SCHEDULETIME", "")
+
         try:
-            scheduled = _utc_schedule(schedule_value)
+            scheduled = _utc_schedule(environ.get("HTTP_X_CLOUDSCHEDULER_SCHEDULETIME", ""))
             current = now()
             if current.tzinfo is None:
                 raise ValueError("INVALID_CLOCK")
@@ -104,6 +105,7 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
             return respond(start_response, "400 Bad Request", {"error": "SCHEDULE_NOT_ALLOWED"})
         if identity.status != "ACTIVE":
             return respond(start_response, "409 Conflict", {"error": "SCHEDULE_EXPIRED"})
+
         try:
             length_text = environ.get("CONTENT_LENGTH", "")
             if not length_text or not length_text.isdecimal():
@@ -115,17 +117,16 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
                 return respond(start_response, "413 Payload Too Large", {"error": "PAYLOAD_TOO_LARGE"})
             if environ.get("CONTENT_TYPE", "").split(";", 1)[0].strip().lower() != "application/json":
                 raise ValueError("CONTENT_TYPE_REQUIRED")
-            stream = environ["wsgi.input"]
-            body = stream.read(length)
+            body = environ["wsgi.input"].read(length)
             if len(body) != length:
                 raise ValueError("CONTENT_LENGTH_MISMATCH")
-            envelope = json.loads(body)
-            if not isinstance(envelope, dict) or envelope.get("reportId") != identity.report_id:
-                raise ValueError("REPORT_ID_MISMATCH")
-        except (KeyError, ValueError, UnicodeDecodeError, json.JSONDecodeError):
-            return respond(start_response, "400 Bad Request", {"error": "INVALID_ENVELOPE"})
+            # Scheduler's request body is immutable configuration, not report data.
+            if body != SCHEDULER_TRIGGER_BODY:
+                raise ValueError("UNEXPECTED_TRIGGER_BODY")
+        except (KeyError, ValueError):
+            return respond(start_response, "400 Bad Request", {"error": "INVALID_TRIGGER"})
         try:
-            result = processor(identity, body)
+            result = processor(identity, body, binding)
         except Exception:
             return respond(start_response, "500 Internal Server Error", {"error": "PROCESSING_FAILED"})
         return respond(start_response, "200 OK", result)
@@ -146,9 +147,10 @@ def single_binding_map(entries: list[dict[str, object]]) -> dict[str, SchedulerB
         offset = item.get("attempt_minutes")
         slot = item.get("target_slot")
         weekdays_only = item.get("weekdays_only", True)
-        if (not isinstance(job, str) or not re.fullmatch(r"projects/[^/]+/locations/[^/]+/jobs/[^/]+", job)
+        if (not isinstance(job, str)
+                or not re.fullmatch(r"projects/[^/]+/locations/[^/]+/jobs/[^/]+", job)
                 or not isinstance(email, str) or not email.endswith(".iam.gserviceaccount.com")
-                or type(offset) is not int or offset not in (0, 3, 7, 13)
+                or type(offset) is not int or offset not in SCHEDULER_ATTEMPTS
                 or not isinstance(slot, str) or slot not in REPORT_SLOTS
                 or type(weekdays_only) is not bool
                 or job in result):
