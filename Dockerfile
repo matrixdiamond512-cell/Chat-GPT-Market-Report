@@ -14,6 +14,7 @@ COPY scripts/report_continuity_shadow.py ./scripts/
 COPY scripts/report_continuity_gcs.py ./scripts/
 COPY scripts/report_continuity_ingress.py ./scripts/
 COPY scripts/run_report_continuity_service.py ./scripts/
+COPY scripts/p1_trial_fixture_provider.py ./scripts/
 
 USER 65532:65532
 CMD ["sh", "-c", "exec gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 1 --threads 1 --timeout 120 scripts.run_report_continuity_service:app"]
