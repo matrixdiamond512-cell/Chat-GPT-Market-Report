@@ -12,12 +12,11 @@ from datetime import datetime, timedelta, timezone
 import json
 import re
 from typing import Callable, Mapping
-from wsgiref.util import setup_testing_defaults
 
 from scripts.resolve_market_report_slot import REPORT_SLOTS, ReportIdentity, resolve_report_identity
 
 MAX_BODY_BYTES = 1024 * 1024
-_BEARER = re.compile(r"Bearer ([A-Za-z0-9._~-]+)\\Z")
+_BEARER = re.compile(r"Bearer ([A-Za-z0-9._~-]+)\Z")
 
 
 @dataclass(frozen=True)
