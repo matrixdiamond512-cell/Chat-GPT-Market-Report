@@ -7,11 +7,12 @@ from unittest.mock import Mock
 from scripts.report_continuity_ingress import (
     SchedulerBinding, create_app, single_binding_map,
 )
+from scripts.run_report_continuity_service import build_app
 
 AUDIENCE = "https://p1-shadow-test.run.app"
 JOB = "projects/test-project/locations/asia-northeast1/jobs/slot-0800-t13"
 CALLER = "p1-scheduler-0800-t13@test-project.iam.gserviceaccount.com"
-NOW = datetime(2026, 10, 26, 22, 48, tzinfo=timezone.utc)  # Monday 07:48 JST
+NOW = datetime(2026, 10, 26, 22, 48, tzinfo=timezone.utc)  # Tuesday 07:48 JST
 SCHEDULE = "2026-10-26T22:47:00Z"  # T-13 for Tuesday 08:00 JST
 
 
@@ -137,6 +138,33 @@ class CloudRunIngressTests(unittest.TestCase):
         status, result = run_request(self.app)
         self.assertEqual(status, "500 Internal Server Error")
         self.assertEqual(result, {"error": "PROCESSING_FAILED"})
+
+    def test_service_factory_defaults_storage_off_and_never_constructs_client(self):
+        env = {
+            "P1_OIDC_AUDIENCE": AUDIENCE,
+            "P1_SCHEDULER_BINDINGS_JSON": json.dumps([{
+                "job_name": JOB, "service_account_email": CALLER,
+                "attempt_minutes": 13, "target_slot": "08:00",
+            }]),
+        }
+        factory = Mock(side_effect=AssertionError("storage client must remain lazy and OFF"))
+        app = build_app(env, storage_client_factory=factory, clock=lambda: NOW)
+        status, result = run_request(app, body={"reportId": "2026-10-27_08-00"})
+        self.assertEqual(status, "200 OK")
+        self.assertEqual(result["status"], "DISABLED")
+        factory.assert_not_called()
+
+    def test_enabled_service_requires_bucket_name(self):
+        env = {
+            "P1_OIDC_AUDIENCE": AUDIENCE,
+            "P1_SCHEDULER_BINDINGS_JSON": json.dumps([{
+                "job_name": JOB, "service_account_email": CALLER,
+                "attempt_minutes": 13, "target_slot": "08:00",
+            }]),
+            "SHADOW_STORAGE_ENABLED": "true",
+        }
+        with self.assertRaisesRegex(RuntimeError, "P1_GCS_BUCKET"):
+            build_app(env, storage_client_factory=Mock())
 
     def test_binding_config_requires_unique_callers_and_known_attempts(self):
         entries = [
