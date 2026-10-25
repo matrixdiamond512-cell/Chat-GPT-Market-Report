@@ -12,10 +12,12 @@ from datetime import datetime, timedelta, timezone
 import json
 import re
 from typing import Callable, Mapping
-from scripts.resolve_market_report_slot import ReportIdentity, resolve_report_identity
+from wsgiref.util import setup_testing_defaults
+
+from scripts.resolve_market_report_slot import REPORT_SLOTS, ReportIdentity, resolve_report_identity
 
 MAX_BODY_BYTES = 1024 * 1024
-_BEARER = re.compile(r"Bearer ([A-Za-z0-9._~-]+)\Z")
+_BEARER = re.compile(r"Bearer ([A-Za-z0-9._~-]+)\\Z")
 
 
 @dataclass(frozen=True)
@@ -23,6 +25,8 @@ class SchedulerBinding:
     job_name: str
     service_account_email: str
     attempt_minutes: int
+    target_slot: str
+    weekdays_only: bool = True
 
 
 def verify_google_oidc(token: str, audience: str) -> Mapping[str, object]:
@@ -96,6 +100,9 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
             )
         except (ValueError, TypeError, OverflowError):
             return respond(start_response, "400 Bad Request", {"error": "SCHEDULE_NOT_ALLOWED"})
+        if (identity.target.strftime("%H:%M") != binding.target_slot
+                or (binding.weekdays_only and identity.target.weekday() >= 5)):
+            return respond(start_response, "400 Bad Request", {"error": "SCHEDULE_NOT_ALLOWED"})
         if identity.status != "ACTIVE":
             return respond(start_response, "409 Conflict", {"error": "SCHEDULE_EXPIRED"})
         try:
@@ -110,7 +117,7 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
             if environ.get("CONTENT_TYPE", "").split(";", 1)[0].strip().lower() != "application/json":
                 raise ValueError("CONTENT_TYPE_REQUIRED")
             stream = environ["wsgi.input"]
-            body = stream.read(length + 1)
+            body = stream.read(length)
             if len(body) != length:
                 raise ValueError("CONTENT_LENGTH_MISMATCH")
             envelope = json.loads(body)
@@ -134,13 +141,17 @@ def single_binding_map(entries: list[dict[str, object]]) -> dict[str, SchedulerB
         job = item.get("job_name")
         email = item.get("service_account_email")
         offset = item.get("attempt_minutes")
+        slot = item.get("target_slot")
+        weekdays_only = item.get("weekdays_only", True)
         if (not isinstance(job, str) or not job.startswith("projects/")
                 or "/locations/" not in job or "/jobs/" not in job
                 or not isinstance(email, str) or not email.endswith(".iam.gserviceaccount.com")
                 or type(offset) is not int or offset not in (0, 3, 7, 13)
+                or not isinstance(slot, str) or slot not in REPORT_SLOTS
+                or type(weekdays_only) is not bool
                 or job in result):
             raise ValueError("INVALID_SCHEDULER_BINDING")
-        result[job] = SchedulerBinding(job, email, offset)
+        result[job] = SchedulerBinding(job, email, offset, slot, weekdays_only)
     if len({binding.service_account_email.lower() for binding in result.values()}) != len(result):
         raise ValueError("SCHEDULER_SERVICE_ACCOUNTS_MUST_BE_UNIQUE")
     return result
