@@ -246,6 +246,26 @@ class SchedulerAttemptEvidenceTests(unittest.TestCase):
         self.assertEqual(set(store._objects), before_conflict)
         self.assertEqual(len(store._objects), 6)
 
+class FixtureProviderTests(unittest.TestCase):
+    def test_fixture_provider_is_identity_bound_and_not_scheduler_payload(self):
+        from scripts.p1_trial_fixture_provider import acquire
+        identity = ReportIdentity(
+            "2026-10-27_08-00",
+            datetime.fromisoformat("2026-10-27T08:00:00+09:00"),
+            "ACTIVE",
+        )
+        binding = SchedulerBinding(JOB, CALLER, 13, "08:00")
+        first = acquire(identity, binding, SCHEDULER_TRIGGER_BODY)
+        second = acquire(identity, binding, SCHEDULER_TRIGGER_BODY)
+        self.assertEqual(first, second)
+        self.assertNotEqual(first, SCHEDULER_TRIGGER_BODY)
+        self.assertIn(b'"kind":"P1_TEST_FIXTURE"', first)
+        self.assertIn(b'"source":"fixture-not-market-data"', first)
+        self.assertIn(identity.report_id.encode(), first)
+        self.assertIn(b'"attemptMinutes":13', first)
+        with self.assertRaisesRegex(ValueError, "INVALID_SCHEDULER_TRIGGER"):
+            acquire(identity, binding, b'{"market":"payload"}')
+
 
 if __name__ == "__main__":
     unittest.main()
