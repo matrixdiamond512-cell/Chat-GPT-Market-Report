@@ -73,13 +73,14 @@ class CloudRunIngressTests(unittest.TestCase):
         self.processor.assert_not_called()
 
     def test_wrong_issuer_audience_or_email_claim_is_rejected(self):
+        valid_claims = dict(self.verifier.return_value)
         for key, value in (
             ("iss", "https://attacker.example"),
             ("aud", "https://other.run.app"),
             ("email", "other@test-project.iam.gserviceaccount.com"),
             ("email_verified", False),
         ):
-            claims = dict(self.verifier.return_value)
+            claims = dict(valid_claims)
             claims[key] = value
             self.verifier.return_value = claims
             with self.subTest(claim=key):
@@ -148,7 +149,7 @@ class CloudRunIngressTests(unittest.TestCase):
             }]),
         }
         factory = Mock(side_effect=AssertionError("storage client must remain lazy and OFF"))
-        app = build_app(env, storage_client_factory=factory, clock=lambda: NOW)
+        app = build_app(env, storage_client_factory=factory, clock=lambda: NOW, verifier=self.verifier)
         status, result = run_request(app, body={"reportId": "2026-10-27_08-00"})
         self.assertEqual(status, "200 OK")
         self.assertEqual(result["status"], "DISABLED")
@@ -168,10 +169,10 @@ class CloudRunIngressTests(unittest.TestCase):
 
     def test_binding_config_requires_unique_callers_and_known_attempts(self):
         entries = [
-            {"job_name": JOB, "service_account_email": CALLER, "attempt_minutes": 13},
+            {"job_name": JOB, "service_account_email": CALLER, "attempt_minutes": 13, "target_slot": "08:00"},
             {"job_name": JOB + "-2",
              "service_account_email": "p1-scheduler-2@test-project.iam.gserviceaccount.com",
-             "attempt_minutes": 7},
+             "attempt_minutes": 7, "target_slot": "08:00"},
         ]
         self.assertEqual(len(single_binding_map(entries)), 2)
         entries[1]["service_account_email"] = CALLER
