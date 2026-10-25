@@ -208,6 +208,15 @@ class G2DocsHandoffTests(unittest.TestCase):
             DocsReadback("doc-1", "rev-8", self.body),
             checked_at="2026-10-19T08:01:00+09:00")
         self.assertIn("DOCS_REVISION_DOES_NOT_MATCH_SAVE", wrong_rev.reasons)
+        wrong_run = DocsSaveEvidence(
+            run_id="TEST_ONLY:other-run", report_id=self.pinned.report_id,
+            revision=self.pinned.revision, document_id="doc-1",
+            document_revision_id="rev-7", body_hash=self.pinned.body_hash,
+            saved_at="2026-10-19T07:51:00+09:00")
+        rejected_run = verify_docs_readback(self.pinned, wrong_run,
+            DocsReadback("doc-1", "rev-7", self.body),
+            checked_at="2026-10-19T08:01:00+09:00")
+        self.assertIn("DOCS_SAVE_EVIDENCE_RUN_IDENTITY_MISMATCH", rejected_run.reasons)
 
     def test_frozen_body_is_only_writer_input_and_precedes_save(self):
         class FakeDocsWriter:

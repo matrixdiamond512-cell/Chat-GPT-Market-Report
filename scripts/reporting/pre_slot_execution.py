@@ -50,9 +50,10 @@ class PrivateFileEvidenceStore:
 
     def put_if_absent(self, evidence_id: str, encoded: bytes) -> None:
         path = self._path(evidence_id)
-        path.parent.mkdir(parents=True, exist_ok=True)
+        path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         try:
-            with path.open("xb") as handle:
+            fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            with os.fdopen(fd, "wb") as handle:
                 handle.write(encoded)
                 handle.flush()
                 os.fsync(handle.fileno())

@@ -38,7 +38,7 @@ def main() -> int:
         )
         print(json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2))
         return 0
-    except (ContractError, ValueError, OSError, KeyError) as exc:
+    except (ContractError, ValueError, OSError, KeyError, TypeError, AttributeError) as exc:
         print(json.dumps({"status": "BLOCKED", "reason": str(exc)}, ensure_ascii=False), file=sys.stderr)
         return 2
 
