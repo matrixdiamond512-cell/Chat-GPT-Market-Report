@@ -71,3 +71,12 @@ ARCH-20261020-REPORT-CONTINUITY / PR #175, source HEAD `da0493a0aa943d7a4a8196b3
 - The explicit boundary is an admission rule, not an invented Scheduler event timestamp or authentication proof. Actual Scheduler timestamps must still be UTC, already started, allowlisted and bound to their configured offset; mixed inputs and legacy fallback remain forbidden. The shared allowed offsets remain 0/3/7/13 minutes.
 - Before/after-deadline evidence and stage guards, the 15-minute snapshot checks, default OFF, `publicationEligible=False`, `chatStatus=UNKNOWN`, and production workflow routing remain unchanged. This corrects the candidate manual shadow path; it does not authorize a production cutover.
 - Regression covers all four configured slots, JST/UTC clock equivalence, exact T-13 admission, rejection one microsecond earlier, same-byte Scheduler/explicit NO_OP, T/late/midnight blocking with zero writes, and future Scheduler events. Formal three-document revision, P2, cloud provisioning and publication stay deferred. Rollback only this correction's code/test/development-record changes.
+
+
+## P1-CONNECTION / GCS SDK adapter integration — 2026-10-26 JST
+
+- ADD: integrate the already-prepared GCS storage adapter on top of PR #175's verified HEAD `4460c2e5c20de7edaf6ef69d6118929cc58a1565`; do not rewrite PR #175 or its base branch.
+- Keep the adapter default-disabled, limited to `shadow/<reportId>/...`, create-only (`if_generation_match=0`), generation-pinned on read, and without credential discovery or network I/O at import.
+- Pin `google-cloud-storage==3.17.1` for reproducible SDK contract checks. Add explicit reflection checks for the four public SDK methods used by the adapter. Mock tests continue to prove request arguments and conflict/retry handling; these checks do not prove cloud behavior.
+- Do not treat GCP project metadata as source code or commit it to GitHub. Keep cloud resource creation, API enablement, service identities, deployment and live storage acceptance outside this branch until separately approved.
+- Rollback: revert this branch's adapter, SDK test requirement, CI filter/step and development-record changes only. No report originals, evidence, receipts, formal documents or cloud resources are part of rollback.
