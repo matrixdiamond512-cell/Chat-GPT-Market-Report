@@ -195,3 +195,10 @@ ACCEPTANCE: signed external direct-run trigger contract and delay/cutoff rejecti
 CONSTRAINTS: no main merge, deployment, scheduled-workflow production application, Drive writes, other-slot behavior, or PR #97 edits. No fixture PASS reported as live E2E.
 OPEN OUTCOMES: real scheduler/runner/secrets/IAM; acquisition and immutable evidence transaction through main readback; actual G2 producer/writer/readback adapters; private diagnostic store; weekday 08:00 live E2E; fixed Google Docs document readback.
 NEXT NECESSARY ACTION: review Draft PR and configure separately approved nonproduction external resources before a TEST_ONLY runtime observation.
+
+
+## ISSUE-176 review follow-up (2026-10-26)
+PRIMARY OBJECTIVE: Safely connect pre-slot acquisition and G2-to-Docs verification without changing PR #97, main, or production.
+ACCEPTANCE: timezone-safe default clock; same-run save-receipt bound Docs readback; frozen G2 body is writer's sole text input and timestamp precedes save; fixed 14-day diagnostic deletion exercised at actual TEST_ONLY store; explicit direct-runner path and scheduler choice documented; 07:47/07:53/07:57 TEST_ONLY acquisition/evidence/readback suite; existing cutoff and freshness gates unchanged.
+OPEN OUTCOMES: hosted CI exact head; Cloud Scheduler/Run/GCS/Secret Manager/IAM configuration; real market source invocation; main write/readback staging approval; Google Docs writer and independent readback adapter; live weekday acceptance.
+NEXT: check exact-head Actions, repair failures, and report synthetic TEST_ONLY separately from external E2E. No main merge/deploy/Drive write or PR #97 changes.

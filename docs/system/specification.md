@@ -69,3 +69,10 @@ Google Docs固定ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` へ対応す�
 G2WriteInputはproducerがDocs保存前に凍結したfullText/bodyHash/reportId/revision/runIdを保持する。Docs writerのbody引数はこのfullTextだけとする。独立readbackはdocumentId、documentRevisionId、fullTextを返し、完全一致とSHA-256を両方検査する。
 本文不一致診断は本文を持たず、hash、文字数、firstDiffOffset、missingSections、writerStage、reasonCodes、run/slot identityを記録する。private durable sinkに限定し、14日で消去する。OSファイルmodeだけをクラウドACLの証明として扱わない。
 本契約は接続可能性の型・検証ルールであり、外部scheduler/secret、market-data acquisition adapter、Docs create/update/readback adapterの稼働を意味しない。これらの外部要件が満たされるまでproduction E2E=BLOCKED。
+
+
+## ISSUE-176｜runner・G2→Docs強化仕様（2026-10-26 JST）
+TriggerはHMAC署名済みcanonical JSONを検証し、direct-runnerの起動遅延60秒以下、weekday 08:00枠、締切前開始を要求する。TEST_ONLY orchestrationは署名検証→acquisition bytes provider→既存build_slot_evidence（15分鮮度/slot/cutoff/context/snapshot/source/evidence hash検証）→private create-only sink→exact bytes readback→validate_stored_slot_evidenceを一transactionで実行する。07:47/07:53/07:57個別runをfixture acquisitionで回す。これはCloud Schedulerや実市場データの観測証拠ではない。
+LIVE adapterは明示許可された場合だけ既存scripts.run_market_data_window.perform_attemptを呼び、従来の市場取得、snapshot freeze、GitHub mainへのcommit後のverify_main_evidence readbackを再利用する。allow_main_evidence_writeの既定値はfalse。TEST_ONLY、レビュー、CIからLIVE関数を呼ばない。15分freshnessやstrict cutoffは既存関数のまま維持。
+DocsSaveEvidenceはrunId/reportId/revision/documentId/documentRevisionId/bodyHash/savedAtを保持し、G2 frozen_at < savedAt <= checkedAtを検査。Docs readerのdocument ID/revisionはこのreceiptと完全一致し、全文・SHA-256もpinned G2へ一致すること。writer adapter APIは save(pinned.full_text, body_hash, run_id, report_id, revision) のみを受け、別の本文生成値を受け付けない。現在はプロトコル/contractで、実Google Docs writer/APIは未構成。
+診断保持期間は14日固定。filesystem TEST_ONLY purgeは実ファイルを期限境界で削除して検証する。Cloud storeではprivate IAMおよび14日lifecycle設定・期限後の実readbackが別途必要で、filesystem検査をクラウド削除証明に使わない。

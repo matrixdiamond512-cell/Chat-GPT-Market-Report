@@ -8,7 +8,7 @@ adapters.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import hashlib
 import hmac
 import json
@@ -285,33 +285,72 @@ def _first_difference(left: str, right: str) -> int | None:
     return None if len(left) == len(right) else limit
 
 
+@dataclass(frozen=True)
+class DocsSaveEvidence:
+    run_id: str
+    report_id: str
+    revision: int
+    document_id: str
+    document_revision_id: str
+    body_hash: str
+    saved_at: str
+
+
 def verify_docs_readback(
     pinned: G2WriteInput,
+    save_evidence: DocsSaveEvidence | None,
     readback: DocsReadback | None,
     *,
     required_sections: tuple[str, ...] = (),
     writer_stage: str = "DOCS_VERIFY",
     checked_at: str,
 ) -> DocsVerification:
-    """Independently compare exact Docs API readback with pinned G2 body."""
+    """Bind an independent Docs readback to the exact same-run save receipt."""
     if writer_stage not in ALLOWED_WRITER_STAGES:
         raise ContractError("WRITER_STAGE_INVALID")
-    _instant(checked_at, "CHECKED_AT")
+    checked = _instant(checked_at, "CHECKED_AT")
+    frozen = _instant(pinned.frozen_at, "G2_FROZEN_AT")
     reasons: list[str] = []
     missing: list[str] = []
     document_id = ""
     document_revision_id = ""
     read_text = ""
+
+    if save_evidence is None:
+        reasons.append("DOCS_SAVE_EVIDENCE_MISSING")
+    else:
+        document_id = save_evidence.document_id or ""
+        document_revision_id = save_evidence.document_revision_id or ""
+        if not all((document_id, document_revision_id)):
+            reasons.append("DOCS_SAVE_EVIDENCE_IDENTITY_MISSING")
+        if (save_evidence.run_id != pinned.run_id
+                or save_evidence.report_id != pinned.report_id
+                or save_evidence.revision != pinned.revision):
+            reasons.append("DOCS_SAVE_EVIDENCE_RUN_IDENTITY_MISMATCH")
+        if save_evidence.body_hash != pinned.body_hash:
+            reasons.append("DOCS_SAVE_EVIDENCE_BODY_HASH_MISMATCH")
+        try:
+            saved = _instant(save_evidence.saved_at, "DOCS_SAVED_AT")
+            if not frozen < saved:
+                reasons.append("G2_NOT_FROZEN_BEFORE_DOCS_SAVE")
+            if saved > checked:
+                reasons.append("DOCS_READBACK_PRECEDES_SAVE")
+        except ContractError:
+            reasons.append("DOCS_SAVED_AT_INVALID")
+
     if readback is None:
         reasons.append("DOCS_READBACK_MISSING")
     else:
-        document_id = readback.document_id or ""
-        document_revision_id = readback.document_revision_id or ""
         read_text = readback.full_text
-        if not document_id:
+        if not readback.document_id:
             reasons.append("DOCS_DOCUMENT_ID_MISSING")
-        if not document_revision_id:
+        if not readback.document_revision_id:
             reasons.append("DOCS_REVISION_ID_MISSING")
+        if save_evidence is not None:
+            if readback.document_id != save_evidence.document_id:
+                reasons.append("DOCS_DOCUMENT_ID_DOES_NOT_MATCH_SAVE")
+            if readback.document_revision_id != save_evidence.document_revision_id:
+                reasons.append("DOCS_REVISION_DOES_NOT_MATCH_SAVE")
         if not isinstance(read_text, str):
             reasons.append("DOCS_FULL_TEXT_INVALID")
             read_text = ""
@@ -323,6 +362,7 @@ def verify_docs_readback(
             missing = [section for section in required_sections if section not in read_text]
             if missing:
                 reasons.append("DOCS_REQUIRED_SECTIONS_MISSING")
+
     diagnostic = {
         "schemaVersion": DIAGNOSTIC_SCHEMA,
         "verificationStatus": "PASS" if not reasons else "FAIL",
@@ -335,7 +375,7 @@ def verify_docs_readback(
         "documentId": document_id,
         "documentRevisionId": document_revision_id,
         "sourceBodyHash": pinned.body_hash,
-        "readbackBodyHash": _sha256_text(read_text) if readback is not None and isinstance(readback.full_text, str) else None,
+        "readbackBodyHash": _sha256_text(read_text) if readback is not None and isinstance(read_text, str) else None,
         "sourceCharCount": len(pinned.full_text),
         "readbackCharCount": len(read_text) if readback is not None else None,
         "firstDiffOffset": _first_difference(pinned.full_text, read_text) if readback is not None else None,
@@ -347,12 +387,36 @@ def verify_docs_readback(
     return DocsVerification(status=diagnostic["verificationStatus"], reasons=tuple(reasons), diagnostic=diagnostic)
 
 
+def save_frozen_g2_and_readback(
+    pinned: G2WriteInput,
+    writer: Any,
+    *,
+    required_sections: tuple[str, ...] = (),
+    checked_at: str,
+) -> tuple[DocsSaveEvidence, DocsReadback, DocsVerification]:
+    """Only the frozen fullText is passed to the writer; receipt and readback are bound."""
+    receipt = writer.save(
+        full_text=pinned.full_text,
+        body_hash=pinned.body_hash,
+        run_id=pinned.run_id,
+        report_id=pinned.report_id,
+        revision=pinned.revision,
+    )
+    if not isinstance(receipt, DocsSaveEvidence):
+        raise ContractError("DOCS_SAVE_RECEIPT_INVALID")
+    readback = writer.readback(document_id=receipt.document_id)
+    result = verify_docs_readback(
+        pinned, receipt, readback, required_sections=required_sections, checked_at=checked_at
+    )
+    return receipt, readback, result
+
+
 def write_private_diagnostic(
     path: Path,
     diagnostic: Mapping[str, Any],
     *,
     repository_root: Path,
-    retention_days: int = 30,
+    retention_days: int = 14,
 ) -> Path:
     """Create a redacted diagnostic outside the repository, without overwriting.
 
@@ -367,8 +431,8 @@ def write_private_diagnostic(
         pass
     else:
         raise ContractError("DIAGNOSTIC_PATH_MUST_BE_PRIVATE")
-    if not 1 <= retention_days <= 30:
-        raise ContractError("DIAGNOSTIC_RETENTION_OUT_OF_RANGE")
+    if retention_days != 14:
+        raise ContractError("DIAGNOSTIC_RETENTION_MUST_BE_14_DAYS")
     allowed = {
         "schemaVersion", "verificationStatus", "mode", "runId", "reportDate",
         "reportSlot", "reportId", "revision", "documentId", "documentRevisionId",
@@ -401,3 +465,40 @@ def write_private_diagnostic(
             pass
         raise
     return target
+
+def purge_expired_private_diagnostics(
+    directory: Path,
+    *,
+    repository_root: Path,
+    now: datetime | None = None,
+) -> tuple[str, ...]:
+    """Delete expired redacted diagnostics from the TEST_ONLY/file-backed sink.
+
+    Cloud object stores must also have a 14-day lifecycle policy and independently
+    verify that policy; this function proves deletion only for this filesystem sink.
+    """
+    target = directory.resolve()
+    root = repository_root.resolve()
+    try:
+        target.relative_to(root)
+    except ValueError:
+        pass
+    else:
+        raise ContractError("DIAGNOSTIC_PATH_MUST_BE_PRIVATE")
+    current = now or datetime.now(timezone.utc)
+    if current.tzinfo is None:
+        raise ContractError("DIAGNOSTIC_PURGE_CLOCK_NAIVE")
+    current = current.astimezone(JST)
+    deleted: list[str] = []
+    if not target.exists():
+        return ()
+    for path in sorted(target.glob("*.json")):
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+            expires = _instant(record.get("expiresAt"), "DIAGNOSTIC_EXPIRES_AT")
+        except (OSError, json.JSONDecodeError, AttributeError) as exc:
+            raise ContractError("DIAGNOSTIC_EXPIRY_RECORD_INVALID") from exc
+        if expires <= current:
+            path.unlink()
+            deleted.append(path.name)
+    return tuple(deleted)
