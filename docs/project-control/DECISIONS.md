@@ -38,3 +38,6 @@
 - 2026-10-26 / ISSUE-176: Keep this work isolated from PR #97 and main. Do not adjust GitHub production cron; it cannot guarantee runner start time. Add a signed direct-runner contract and explicit unconfigured TEST_ONLY example; deployment stays blocked until an external scheduler/runtime and secret/IAM are separately configured.
 - 2026-10-26 / ISSUE-176: Freeze exact G2 producer text/hash before Docs write and require independent Docs API readback of ID/revision/fullText. Diagnostics exclude bodies and secrets; private storage requires service-only IAM and 14-day retention. No Docs writer adapter exists in main; contracts/tests do not claim it is connected.
 - 2026-10-26 / ISSUE-176: Local Python runtime unavailable (Windows Store aliases denied); require PR CI to execute tests. Synthetic fixtures remain TEST_ONLY.
+
+
+- 2026-10-26 / ISSUE-176 verification update: First hosted test run exposed the test’s incorrect firstDiffOffset expectation (13 vs actual 11); implementation returned the correct index. Fixed the assertion and added a maximum-lag policy bound so callers cannot relax the 60-second cutoff. The exact updated head passed frozen-cutoff and delivery-health workflows. Do not interpret synthetic or hosted unit/integration tests as live 08:00 recovery.
