@@ -3,6 +3,14 @@ on:
   push:
     paths:
       - config/report_schedule.json
+      - Dockerfile
+      - .dockerignore
+      - requirements-p1-cloudrun.txt
+      - tests/test_report_continuity_ingress.py
+      - Dockerfile
+      - .dockerignore
+      - requirements-p1-cloudrun.txt
+      - tests/test_report_continuity_ingress.py
       - scripts/report_continuity_shadow.py
       - scripts/report_continuity_gcs.py
       - scripts/report_continuity_ingress.py
@@ -78,6 +86,31 @@ jobs:
         run: python -m pip install --disable-pip-version-check -r requirements-p1-gcs-test.txt
       - name: Compile acquisition and snapshot evidence scripts
         run: python -m compileall -q scripts/run_market_data_window.py scripts/run_market_data_acquisition.py scripts/persist_report_slot_evidence.py scripts/report_continuity_gcs.py scripts/report_continuity_ingress.py scripts/run_report_continuity_service.py
+      - name: Build Cloud Run container image
+        run: docker build --tag p1-cloudrun-smoke:ci .
+      - name: Smoke test Cloud Run container startup and PORT binding
+        run: |
+          docker run --detach --name p1-cloudrun-smoke --publish 8080:8080 --env PORT=8080 --env P1_OIDC_AUDIENCE=https://p1-shadow-test.run.app --env 'P1_SCHEDULER_BINDINGS_JSON=[{"job_name":"projects/test-project/locations/asia-northeast1/jobs/slot-0800-t13","service_account_email":"p1-scheduler-0800-t13@test-project.iam.gserviceaccount.com","attempt_minutes":13,"target_slot":"08:00"}]' p1-cloudrun-smoke:ci
+          trap 'docker rm --force p1-cloudrun-smoke >/dev/null 2>&1 || true' EXIT
+          python - <<'PY'
+          import time
+          from urllib.error import HTTPError, URLError
+          from urllib.request import Request, urlopen
+          for attempt in range(30):
+              try:
+                  urlopen(Request("http://127.0.0.1:8080/", method="GET"), timeout=2)
+              except HTTPError as error:
+                  if error.code == 405:
+                      print("container started; WSGI app returned expected 405 for GET")
+                      break
+                  raise
+              except URLError:
+                  time.sleep(1)
+              else:
+                  raise AssertionError("GET unexpectedly accepted")
+          else:
+              raise AssertionError("container did not become ready")
+          PY
       - name: Run strictly offline cutoff and immutable-evidence regression suites
         run: python -m unittest scripts.test_run_market_data_window scripts.test_market_acquisition_cutoff tests.test_report_slot_evidence -v
       - name: Run offline report continuity and publication policy tests
