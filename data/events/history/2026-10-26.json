@@ -1,0 +1,302 @@
+{
+  "schemaVersion": "2.0.0",
+  "pageId": "events",
+  "generatedAt": "2026-10-25T16:00:10+09:00",
+  "publishedAt": "2026-10-25T16:00:10+09:00",
+  "dataAsOf": "2026-10-25T16:00:10+09:00",
+  "timezone": "Asia/Tokyo",
+  "status": "ok",
+  "isStale": false,
+  "sources": [
+    {
+      "id": "forex_factory_weekly",
+      "name": "Forex Factory weekly calendar",
+      "url": "https://www.forexfactory.com/calendar",
+      "status": "ok",
+      "note": "時刻・通貨・重要度・予想・前回値を取得。元JSONは公開保存しません。"
+    },
+    {
+      "id": "tradingview_economic_calendar",
+      "name": "TradingView Economic Calendar",
+      "url": "https://www.tradingview.com/economic-calendar/",
+      "status": "ok",
+      "note": "実績値を0件照合。生データは公開保存しません。"
+    },
+    {
+      "id": "official_source_map",
+      "name": "主要イベント公式照合先",
+      "status": "available"
+    },
+    {
+      "id": "legacy_event_cleanup",
+      "name": "旧マーケットレポート由来イベントの除外",
+      "status": "ok",
+      "note": "正規カレンダー以外の旧レコードを0件除外。"
+    },
+    {
+      "id": "event_result_repair",
+      "name": "重要イベント実績値の補完取得",
+      "status": "ok",
+      "note": "代替カレンダー照合 0件、公式PDF補完 0件、取得不能理由明記 0件。"
+    },
+    {
+      "id": "weekly_claims_validation",
+      "name": "米新規失業保険申請件数の公式検証",
+      "status": "ok",
+      "note": "公式PDFで訂正・検証 0件、誤照合値を除外 0件。"
+    }
+  ],
+  "errors": [],
+  "date": "2026-10-26",
+  "events": [
+    {
+      "id": "event-4b1e5c30f95591",
+      "sourceKey": "2026-10-26|04:00|NZD|bank holiday",
+      "date": "2026-10-26",
+      "time": "04:00",
+      "datetimeJst": "2026-10-26T04:00:00+09:00",
+      "scheduledAtSource": "2026-10-25T15:00:00-04:00",
+      "scheduledAtUtc": "2026-10-25T19:00:00Z",
+      "country": "ニュージーランド",
+      "currency": "NZD",
+      "title": "休場",
+      "eventNameOriginal": "Bank Holiday",
+      "category": "holiday",
+      "impactOriginal": "Holiday",
+      "ffImportance": 0,
+      "importance": 0,
+      "importanceLabel": "休場",
+      "forecast": "",
+      "previous": "",
+      "actual": "",
+      "revised": "",
+      "resultComparison": "",
+      "resultExplanation": "発表後に実績値と市場反応を更新します。",
+      "status": "scheduled",
+      "isTimed": true,
+      "isImportantEvent": true,
+      "affectedMarkets": [
+        "米2年債",
+        "米10年債",
+        "USD/JPY",
+        "ダウ先物",
+        "ナスダック先物",
+        "日経225先物",
+        "金"
+      ],
+      "focusMarkets": [
+        "米2年債",
+        "米10年債",
+        "USD/JPY",
+        "ダウ先物",
+        "ナスダック先物"
+      ],
+      "pricedIn": [
+        "市場予想：予想なし",
+        "前回値：前回値なし",
+        "発表直後は米2年債、米10年債、株価指数先物、為替の順に確認"
+      ],
+      "scenarios": [
+        [
+          "米2年債",
+          "上昇しやすい",
+          "小動き",
+          "低下しやすい"
+        ],
+        [
+          "米10年債",
+          "上昇しやすい",
+          "小動き",
+          "低下しやすい"
+        ],
+        [
+          "ダウ先物",
+          "金利上昇なら重い",
+          "小動き",
+          "金利低下なら支え"
+        ],
+        [
+          "ナスダック先物",
+          "高金利なら重い",
+          "小動き",
+          "金利低下なら支え"
+        ],
+        [
+          "日経225先物",
+          "米株安・円高なら重い",
+          "小動き",
+          "米株高・円安なら支え"
+        ],
+        [
+          "USD/JPY",
+          "ドル高で上昇しやすい",
+          "小動き",
+          "ドル安で下落しやすい"
+        ],
+        [
+          "EUR/USD",
+          "ドル高で下落しやすい",
+          "小動き",
+          "ドル安で上昇しやすい"
+        ],
+        [
+          "金",
+          "実質金利上昇なら重い",
+          "小動き",
+          "実質金利低下なら支え"
+        ],
+        [
+          "原油",
+          "景気上振れなら支え",
+          "小動き",
+          "景気減速なら重い"
+        ]
+      ],
+      "outlook": [
+        [
+          "米2年債",
+          "流動性低下に注意",
+          "スプレッド拡大と値飛びを確認",
+          "薄商いの急変",
+          "通常取引再開"
+        ],
+        [
+          "米10年債",
+          "流動性低下に注意",
+          "スプレッド拡大と値飛びを確認",
+          "薄商いの急変",
+          "通常取引再開"
+        ],
+        [
+          "ダウ先物",
+          "流動性低下に注意",
+          "スプレッド拡大と値飛びを確認",
+          "薄商いの急変",
+          "通常取引再開"
+        ],
+        [
+          "ナスダック先物",
+          "流動性低下に注意",
+          "スプレッド拡大と値飛びを確認",
+          "薄商いの急変",
+          "通常取引再開"
+        ],
+        [
+          "日経225先物",
+          "流動性低下に注意",
+          "スプレッド拡大と値飛びを確認",
+          "薄商いの急変",
+          "通常取引再開"
+        ],
+        [
+          "USD/JPY",
+          "流動性低下に注意",
+          "スプレッド拡大と値飛びを確認",
+          "薄商いの急変",
+          "通常取引再開"
+        ],
+        [
+          "EUR/USD",
+          "流動性低下に注意",
+          "スプレッド拡大と値飛びを確認",
+          "薄商いの急変",
+          "通常取引再開"
+        ],
+        [
+          "金",
+          "流動性低下に注意",
+          "スプレッド拡大と値飛びを確認",
+          "薄商いの急変",
+          "通常取引再開"
+        ],
+        [
+          "原油",
+          "流動性低下に注意",
+          "スプレッド拡大と値飛びを確認",
+          "薄商いの急変",
+          "通常取引再開"
+        ]
+      ],
+      "postReleaseReactions": [],
+      "comparison": [
+        [
+          "米2年債",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "米10年債",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "ダウ先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "ナスダック先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "日経225先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "USD/JPY",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "EUR/USD",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "金",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "原油",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ]
+      ],
+      "conclusion": {
+        "narrative": "発表前",
+        "reaction": "結果待ち",
+        "watch": [
+          "米2年債の初動",
+          "米10年債への波及",
+          "ダウ・ナスダック先物",
+          "USD/JPYとEUR/USD",
+          "日経225先物・金・原油"
+        ]
+      },
+      "officialSource": {
+        "id": "forex_factory",
+        "name": "Forex Factory Economic Calendar",
+        "url": "https://www.forexfactory.com/calendar"
+      },
+      "sourceType": "forex_factory_weekly",
+      "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+      "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
+      "createdAt": "2026-10-25T16:00:10+09:00",
+      "updatedAt": "2026-10-25T16:00:10+09:00",
+      "resultExpected": false,
+      "resultType": "qualitative"
+    }
+  ]
+}
