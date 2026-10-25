@@ -95,8 +95,10 @@ class CloudRunIngressTests(unittest.TestCase):
             )
         self.assertEqual(status, "403 Forbidden")
         self.assertEqual(result["error"], "JOB_NOT_ALLOWLISTED")
-        entry = json.loads(captured.getvalue().strip())
-        self.assertEqual(entry, {
+        logs = [json.loads(line) for line in captured.getvalue().splitlines()]
+        self.assertEqual(logs[0]["event"], "P1_JOB_HEADER_DIAGNOSTIC")
+        self.assertEqual(logs[0]["jobHeaderForm"], "OTHER_FULL_RESOURCE")
+        self.assertEqual(logs[1], {
             "event": "P1_INGRESS_RESULT",
             "severity": "WARNING",
             "httpStatus": 403,
@@ -105,6 +107,38 @@ class CloudRunIngressTests(unittest.TestCase):
         self.assertNotIn(secret_token, captured.getvalue())
         self.assertNotIn(CALLER, captured.getvalue())
         self.assertNotIn(JOB, captured.getvalue())
+
+    def test_job_header_diagnostic_is_classified_without_leaking_values(self):
+        cases = [
+            ("", "MISSING"),
+            (JOB.rsplit("/", 1)[-1], "SHORT_EXPECTED_ID"),
+            (JOB + "-unexpected", "OTHER_FULL_RESOURCE"),
+            ("other-job", "OTHER_SHORT"),
+            ("/not/a/job", "OTHER_FORMAT"),
+        ]
+        for supplied, expected in cases:
+            with self.subTest(expected=expected):
+                secret_token = "sensitive.jwt.payload"
+                captured = io.StringIO()
+                with redirect_stderr(captured):
+                    status, response = run_request(
+                        self.app, token=secret_token, job=supplied,
+                        extra_headers={"HTTP_X_CLOUDSCHEDULER": "true"}
+                    )
+                self.assertEqual(status, "403 Forbidden")
+                self.assertEqual(response, {"error": "JOB_NOT_ALLOWLISTED"})
+                logs = [json.loads(line) for line in captured.getvalue().splitlines()]
+                self.assertEqual(len(logs), 2)
+                self.assertEqual(logs[0]["event"], "P1_JOB_HEADER_DIAGNOSTIC")
+                self.assertEqual(logs[0]["jobHeaderForm"], expected)
+                self.assertTrue(logs[0]["schedulerMarkerPresent"])
+                self.assertTrue(logs[0]["scheduleHeaderPresent"])
+                self.assertFalse(logs[0]["alternateJobHeaderPresent"])
+                self.assertEqual(logs[1]["reason"], "JOB_NOT_ALLOWLISTED")
+                self.assertNotIn(secret_token, captured.getvalue())
+                self.assertNotIn(CALLER, captured.getvalue())
+                self.assertNotIn(JOB, captured.getvalue())
+                self.assertNotIn(supplied, captured.getvalue())
 
     def test_diagnostic_log_discriminates_caller_and_expired_slot(self):
         self.verifier.return_value = {
