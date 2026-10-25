@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import json
 import re
+import sys
 from typing import Callable, Mapping
 
 from scripts.resolve_market_report_slot import REPORT_SLOTS, ReportIdentity, resolve_report_identity
@@ -59,6 +60,24 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
     now = clock or (lambda: datetime.now(timezone.utc))
 
     def respond(start_response, status: str, result: Mapping[str, object]):
+        # Cloud Run platform/IAM rejection happens before this WSGI function.
+        # Fixed, non-sensitive reason codes prove the request reached the app;
+        # never log headers, JWTs, claims, principal emails or request bodies.
+        code = int(status.split(" ", 1)[0])
+        allowed_reasons = {
+            "METHOD_NOT_ALLOWED", "UNAUTHENTICATED", "JOB_NOT_ALLOWLISTED",
+            "CALLER_NOT_AUTHORIZED", "SCHEDULE_NOT_ALLOWED", "SCHEDULE_EXPIRED",
+            "PAYLOAD_TOO_LARGE", "INVALID_TRIGGER", "PROCESSING_FAILED",
+        }
+        reason = "ACCEPTED" if code < 400 else result.get("error")
+        if reason not in allowed_reasons and reason != "ACCEPTED":
+            reason = "OTHER_REJECTION"
+        print(json.dumps({
+            "event": "P1_INGRESS_RESULT",
+            "severity": "WARNING" if code >= 400 else "INFO",
+            "httpStatus": code,
+            "reason": reason,
+        }, separators=(",", ":"), sort_keys=True), file=sys.stderr, flush=True)
         payload = json.dumps(dict(result), separators=(",", ":")).encode("utf-8")
         start_response(status, [("Content-Type", "application/json"),
                                 ("Content-Length", str(len(payload))),
