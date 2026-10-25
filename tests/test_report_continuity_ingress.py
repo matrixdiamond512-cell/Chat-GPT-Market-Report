@@ -11,7 +11,7 @@ from scripts.report_continuity_ingress import (
 AUDIENCE = "https://p1-shadow-test.run.app"
 JOB = "projects/test-project/locations/asia-northeast1/jobs/slot-0800-t13"
 CALLER = "p1-scheduler-0800-t13@test-project.iam.gserviceaccount.com"
-NOW = datetime(2026, 10, 26, 22, 48, tzinfo=timezone.utc)  # Tuesday 07:48 JST
+NOW = datetime(2026, 10, 26, 22, 48, tzinfo=timezone.utc)  # Monday 07:48 JST
 SCHEDULE = "2026-10-26T22:47:00Z"  # T-13 for Tuesday 08:00 JST
 
 
@@ -19,6 +19,7 @@ def run_request(app, *, token="valid", job=JOB, schedule=SCHEDULE, body=None,
                 method="POST", content_type="application/json", extra_headers=None):
     raw = json.dumps(body if body is not None else {"reportId": "2026-10-27_08-00"}).encode()
     environ = {}
+    from wsgiref.util import setup_testing_defaults
     setup_testing_defaults(environ)
     environ.update({
         "REQUEST_METHOD": method,
@@ -45,7 +46,7 @@ class CloudRunIngressTests(unittest.TestCase):
             "email": CALLER, "email_verified": True,
         })
         self.app = create_app(
-            bindings={JOB: SchedulerBinding(JOB, CALLER, 13)},
+            bindings={JOB: SchedulerBinding(JOB, CALLER, 13, "08:00")},
             audience=AUDIENCE, processor=self.processor, verifier=self.verifier,
             clock=lambda: NOW,
         )
@@ -95,6 +96,7 @@ class CloudRunIngressTests(unittest.TestCase):
             "2026-10-26T22:53:00Z",  # maps to 08:06, invalid target slot
             "2026-10-23T22:47:00Z",  # Saturday 08:00 is outside this weekday binding
             "2026-10-27T22:47:00Z",  # future scheduled event
+            "2026-10-26T02:47:00Z",  # valid 12:00 schedule for the wrong job name
             "2026-10-26T22:47:01Z",  # seconds are not allowed
         )
         for schedule in cases:
@@ -105,7 +107,7 @@ class CloudRunIngressTests(unittest.TestCase):
 
     def test_expired_slot_does_not_write(self):
         app = create_app(
-            bindings={JOB: SchedulerBinding(JOB, CALLER, 13)},
+            bindings={JOB: SchedulerBinding(JOB, CALLER, 13, "08:00")},
             audience=AUDIENCE, processor=self.processor, verifier=self.verifier,
             clock=lambda: datetime(2026, 10, 27, 23, 00, tzinfo=timezone.utc),
         )
