@@ -1,0 +1,36 @@
+# P1 isolated Cloud Run / Scheduler / Storage trial plan
+
+Status: preparation only. Do not enable APIs or create cloud resources until the user separately approves the exact resource list and cost below. Use the existing project selected by the owner; do not create a project. Keep this service, bucket, evidence and identities separate from production.
+
+## Authentication and schedule contract
+
+- Cloud Run must require IAM authentication; do not grant `allUsers`. Set one explicit audience to the canonical service URL.
+- Create 12 dedicated Scheduler caller service accounts, one for each weekday publication slot (08:00, 12:00, 16:00, 21:00 JST) and attempt (T-13, T-7, T-3). Each account gets only `roles/run.invoker` on the isolated service. Configure no user-managed keys and grant no unrelated principal `iam.serviceAccounts.actAs` or Token Creator.
+- Set each job's `X-CloudScheduler-JobName` expected full resource name, unique caller identity, and exact `X-CloudScheduler-ScheduleTime` mapping in the service allowlist. The OIDC JWT proves Google signature, issuer, expiry, audience and caller email; the job name/time headers are not signed by that JWT. The service therefore checks them against the allowlist after authentication. Cloud Run IAM is a second gate.
+- Tokyo Cloud Scheduler region `asia-northeast1`, timezone `Asia/Tokyo`. For weekdays: 07:47/07:53/07:57 → 08:00; 11:47/11:53/11:57 → 12:00; 15:47/15:53/15:57 → 16:00; 20:47/20:53/20:57 → 21:00. For each slot, those are offsets 13/7/3 minutes. No Saturday or Sunday jobs in this isolated trial.
+
+## Minimal runtime limits
+
+- Cloud Run service `p1-report-shadow-ingress`, region `asia-northeast1`, IAM required, 1 vCPU, 512 MiB, min instances 0, max instances 2, concurrency 1, request timeout 120 seconds, request max 1 MiB. Use a small pinned Python image; no outbound market/API acquisition or production writer.
+- Runtime service account: only bucket-scoped `roles/storage.objectCreator` + `roles/storage.objectViewer` on the trial bucket (the current adapter's read-after-write and retry reconciliation require both); no bucket admin, object delete/update, project Editor/Owner or key.
+- Deploy operator permissions remain separate. Cloud Build/deploy identity may write a pinned image to one Artifact Registry repository and deploy only this Run service; do not reuse runtime identity.
+- Daily 3-minute invocation window per weekday slot means 12 invocations/business day, 276 in a 23-day month. Scheduler retries capped to 1 retry with short backoff, deadlines before the report target, plus max 2 Run instances; idempotency uses create-only objects and generation-pinned readback.
+- Log only reportId, slot, stage, response class and object generation/hash. Exclude tokens, full payloads, account emails and credentials. Keep logs 30 days; default project log ingestion allowance is shared across services.
+
+## Isolated Storage and real SDK verification procedure
+
+- Private regional bucket `p1-report-shadow-<unique-suffix>`, location `asia-northeast1`, Standard, uniform bucket-level access, public access prevention enforced, soft delete 7 days. No website hosting, replication, retention lock, or lifecycle prefix overlap with production.
+- Store only `shadow/<reportId>/evidence` and its immutable readback-stage object. Keep evidence for 30 days using a lifecycle delete rule scoped to `shadow/`; retain stage objects on the same 30-day rule. Do not set a locked retention policy. Soft-delete permits recovery through day 7 after lifecycle deletion; review cost effect. Unresolved conflicts/late evidence must be exported with hash/generation and retained for manual reconciliation before cleanup.
+- With a separately approved bucket and an authorized ADC identity, run the SDK path via `google.cloud.storage.Client().bucket(BUCKET)`, `GcsShadowStorage(..., enabled=True)`, then create a unique fixture key under `shadow/<fixture-report-id>/evidence`. Read it back through the adapter and compare exact bytes, SHA-256, positive generation and server `time_created`; repeat same key+bytes and confirm the coordinator reports NO_OP, then use different bytes only in a disposable second fixture key and confirm CONFLICT. Confirm a non-shadow key is rejected before any SDK request.
+- Record run ID, project/region, image digest, SDK pins, key suffix, hashes, generations, UTC server times and result. Delete only the uniquely named fixture after recording, using a separately scoped cleanup identity; never delete a conflict or production object. Do not claim a real SDK/storage pass until this procedure is run against GCS and independently read back.
+
+## Cost ceiling and alerts
+
+- Create a monthly budget for the existing project or a P1-specific budget if budget scopes allow it: USD $5, alerts at 50% ($2.50), 80% ($4.00), 100% ($5.00), with email to the owner. Budgets alert; they do not cap or stop charges. Add a $5/month cost-monitoring review and disable Scheduler jobs after the approved trial window.
+- Estimated trial spend: Scheduler 12 jobs × $0.10/job-month after the account's first 3 free jobs = $0.90/month (or $1.20 without those free jobs); Cloud Run request-billed at 276 calls × 120 sec × 1 vCPU/0.5 GiB is below current monthly request-billing free quotas in aggregate, estimated $0 incremental if quotas available; otherwise about $0.84; Storage 80–92 × 1 MiB objects retained 30 days is under $0.01 for capacity + operations. Plan total $0.90–$1.22/month with free allowances, or about $1.25–$2.10 without them, before tax, excess logs/build/image storage, egress, retries or other project activity.
+- $5 is a notification threshold, not a hard spending limit. Keep one daily test window, max 12 normal requests/day, max 2 Run instances and 120-second request timeout. Set no minimum instances.
+- APIs required only after approval: Cloud Run Admin, Cloud Scheduler, Cloud Build, Artifact Registry, IAM Service Account Credentials (OIDC token minting path), Cloud Storage, Cloud Monitoring/Billing Budgets, and logging APIs if not already enabled. Activation may make billable resources available and can affect billing.
+
+## Rollback and evidence boundary
+
+Disable/delete the 12 Scheduler jobs first, then the Run service and image repository version, then the bucket only after unresolved items and soft-deleted recovery window are cleared; remove only P1-specific IAM bindings and service accounts last. Keep a sanitized audit record. The code and CI prove component contracts only; they do not prove live OIDC, GCS persistence, billing alert delivery or production safety.
