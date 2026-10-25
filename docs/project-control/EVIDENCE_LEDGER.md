@@ -86,3 +86,8 @@ Local implementation evidence E1/E2 (candidate only): connected the last eligibl
 - Scope: development onboarding and documentation only. Unchanged by this task: `docs/system/requirements.md`, `docs/system/specification.md`, `docs/system/operations.md`, fixed-ID Google Docs, Apps Script runtime settings, market data, reports, images, publication receipts, Pages deploy scripts, schedules, paid API credentials.
 - GitHub connector returned file commit SHA values; final PR diff/readback and CI evidence must be checked after the PR is created. Local application regression tests = NOT_RUN; second-PC Codex sign-in/clone = NOT_RUN; production E2E = NOT_RUN; Google Drive formal document write/readback = NOT_RUN because no formal functional specification change is made.
 - Unresolved: GitHub PR review/merge, exact-head CI check, partner-PC permissions and test (#173), existing 2026-10-20 publication failures and other production audit findings (#103), existing PR #172 and #170.
+
+
+## ISSUE-176-20261026 — evidence ledger
+Claim: branch changes implement offline contracts for independent pre-slot direct trigger and G2→Docs readback/diagnostics. Run: PR CI (pending until workflow executes). Level: E0/E1 pending hosted run. Local test execution NOT_RUN because Windows Store Python aliases cannot start in this environment. Test fixtures are synthetic and do not establish real data or service behavior.
+Scope limit: no external scheduler, HMAC secret, market-data fetch, immutable main readback, Docs writer/API readback, private sink/IAM, Drive, publish, or deployment observed. These remain BLOCKED/NOT_RUN. CI results must be appended with exact workflow run URL/head after execution; no inferred PASS.

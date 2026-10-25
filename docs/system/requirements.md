@@ -66,3 +66,11 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - 図解3件はDrive上の最新保存日時・PNG MIMEを確認。GitHub Pagesでの画像実体、SHA-256、manifest、snapshot/本文との対応が未検証のため図解正式READYへ昇格させない。旧ファイルは削除しない。
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
+
+
+## ISSUE-176-20261026｜08:00枠前起動・G2本文固定・Docs読戻し診断（Draft）
+- 08:00取得開始はGitHub Actionsのschedule実行時刻を保証とみなさない。外部実行基盤から同一slotの署名付き要求を直接runnerへ渡し、GitHub workflow_dispatch待ちを経由しない。例示設定は `config/pre_slot_runner.example.json`。この設定は準備用で、本番scheduler/Secret Managerは未構成。
+- `scripts/reporting/slot_recovery_contract.py` は要求HMAC、平日08:00 identity、scheduledAt/triggeredAt、cutoff前開始、最大60秒の起動遅延、重複attemptを検証する。起動がcutoff以後、遅延・再送の期限外、署名/identity不一致なら停止する。既存の取得・15分鮮度・source/context/snapshot/evidence hash・main readback gateは変更しない。
+- G2で固定したproducer本文のUTF-8全文とSHA-256のみをDocs writerへ渡す。正規化・再生成・代替本文への切替は禁止。保存後に実Docs APIからdocument ID/revision/fullTextを独立読戻しし、本文全文・SHA-256・必須節を照合する。
+- 不一致時の診断はrun/slot/report identity、source/readback hash、文字数、最初の差異offset、不足節、writer stage、理由コードに限定し本文全文/例外文/資格情報を含めない。診断・重複ledgerはpublic repository外のprivate storageに保存し、IAM/ACLはrunner専用、保持期限は14日（上限30日）の設定が必要。
+- このPRの契約テストはTEST_ONLY。外部scheduler、market-data adapter、G2 producer、Docs writer/readback adapterは未接続で、実発行E2E・Drive操作・本番証拠はNOT_RUN。TEST_ONLY PASSを本番復旧として扱わない。

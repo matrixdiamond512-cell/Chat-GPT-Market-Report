@@ -62,3 +62,10 @@ Google Docs固定ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` へ対応す�
 - 図解3件はDrive上の最新保存日時・PNG MIMEを確認。GitHub Pagesでの画像実体、SHA-256、manifest、snapshot/本文との対応が未検証のため図解正式READYへ昇格させない。旧ファイルは削除しない。
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
+
+
+## ISSUE-176-20261026｜08:00 recovery contract（Draft / TEST_ONLY）
+`scripts/reporting/slot_recovery_contract.py` は外部連携境界をfail-closedで定義する。Trigger requestはcanonical JSONへのHMAC-SHA256署名、attempt ID、Asia/TokyoのreportDate/08:00 slot、scheduledAt、triggeredAt、direct-runner source、executionModeを持つ。対象は平日08:00だけで、開始時刻が08:00以後、起動遅延60秒超、署名・時刻・identity不正は拒否する。GitHub Actions dispatchを外部scheduler成功の代替証拠にしない。
+G2WriteInputはproducerがDocs保存前に凍結したfullText/bodyHash/reportId/revision/runIdを保持する。Docs writerのbody引数はこのfullTextだけとする。独立readbackはdocumentId、documentRevisionId、fullTextを返し、完全一致とSHA-256を両方検査する。
+本文不一致診断は本文を持たず、hash、文字数、firstDiffOffset、missingSections、writerStage、reasonCodes、run/slot identityを記録する。private durable sinkに限定し、14日で消去する。OSファイルmodeだけをクラウドACLの証明として扱わない。
+本契約は接続可能性の型・検証ルールであり、外部scheduler/secret、market-data acquisition adapter、Docs create/update/readback adapterの稼働を意味しない。これらの外部要件が満たされるまでproduction E2E=BLOCKED。

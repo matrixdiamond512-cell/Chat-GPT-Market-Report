@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "market-report-pre-slot-trigger/v1",
+  "status": "PREPARATION_ONLY",
+  "timezone": "Asia/Tokyo",
+  "reportSlot": "08:00",
+  "weekdays": ["MON", "TUE", "WED", "THU", "FRI"],
+  "scheduledTimesJST": ["07:47", "07:53", "07:57"],
+  "executionMode": "TEST_ONLY",
+  "triggerSource": "external_direct_runner",
+  "maxTriggerDelaySeconds": 60,
+  "githubWorkflowDispatch": false,
+  "secretReference": "PRE_SLOT_TRIGGER_HMAC_KEY",
+  "privateAttemptLedgerRequired": true,
+  "productionEnabled": false
+}
