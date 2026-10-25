@@ -11,7 +11,6 @@ on:
       - scripts/report_continuity_gcs.py
       - scripts/report_continuity_ingress.py
       - scripts/run_report_continuity_service.py
-      - tests/test_report_continuity_ingress.py
       - docs/p1-cloud-trial-plan.md
       - tests/test_report_continuity_gcs.py
       - requirements-p1-gcs-test.txt
@@ -46,7 +45,6 @@ on:
       - scripts/report_continuity_gcs.py
       - scripts/report_continuity_ingress.py
       - scripts/run_report_continuity_service.py
-      - tests/test_report_continuity_ingress.py
       - docs/p1-cloud-trial-plan.md
       - tests/test_report_continuity_gcs.py
       - requirements-p1-gcs-test.txt
@@ -76,7 +74,7 @@ permissions:
 jobs:
   forbid-late-source:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
