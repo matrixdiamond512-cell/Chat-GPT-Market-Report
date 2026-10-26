@@ -348,7 +348,18 @@
       "storage.objects.delete",
       "storage.buckets.*"
     ],
-    "inventoryDescribe": "NOT_RUN: placeholder bucket name was passed literally; bucket exists per prior list output"
+    "inventoryDescribe": "OWNER_SUPPLIED_BUCKET_DESCRIBE_CONFIRMS_PLAN_SETTINGS",
+    "existingBucketPolicyReadback": {
+      "location": "ASIA-NORTHEAST1",
+      "class": "STANDARD",
+      "uniformBucketLevelAccess": true,
+      "publicAccessPrevention": "enforced",
+      "softDeleteSeconds": 604800,
+      "lifecycleDeleteAgeDays": 30,
+      "lifecyclePrefix": "shadow/",
+      "iam": "NOT_VERIFIED",
+      "retentionPolicy": "NOT_SHOWN"
+    }
   },
   "identities": {
     "schedulerCallerServiceAccounts": 12,
@@ -432,7 +443,7 @@
     "defaultComputeIdentityListed": true,
     "tokyoBucketCount": 1,
     "bucketLocation": "ASIA-NORTHEAST1",
-    "bucketStorageClass": "NOT_VERIFIED",
+    "bucketStorageClass": "STANDARD",
     "tokyoCloudRunServiceCount": 1,
     "cloudRunConfiguration": "NOT_VERIFIED",
     "tokyoSchedulerJobCount": 1,
@@ -447,6 +458,13 @@
     "storageWriteReached": "NOT_DIRECTLY_OBSERVED",
     "inventoryLimit": "Owner output not independently re-read; IAM bindings and detailed resource configuration unverified",
     "storageAudit": "NOT_RUN",
-    "processorReached": "NO_BY_INGRESS_CONTROL_FLOW"
+    "processorReached": "NO_BY_INGRESS_CONTROL_FLOW",
+    "bucketUniformAccess": true,
+    "bucketPublicAccessPrevention": "ENFORCED",
+    "bucketSoftDeleteSeconds": 604800,
+    "bucketLifecycleDeleteAgeDays": 30,
+    "bucketLifecyclePrefix": "shadow/",
+    "bucketIam": "NOT_VERIFIED",
+    "bucketRetentionPolicy": "NOT_SHOWN_IN_OWNER_OUTPUT"
   }
 }
