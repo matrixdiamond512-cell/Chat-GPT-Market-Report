@@ -142,3 +142,79 @@ Environment note: the first combined test invocation failed with Windows sandbox
 Diagnostic disposition: KEEP local ignored test-result records for reproducibility; exclude test dependencies, temporary directories and the local verification runner from the PR. Rollback is limited to these four tracked correction files. Hosted checks for the forthcoming correction commit are pending at this record; exact-head run IDs/results belong in PR #175 after readback.
 
 Open outcomes / NOT_RUN: real OIDC ingress, durable cloud adapter and cross-process acceptance, provisioning/billing authorization, production scheduling, new report/Docs/PNG/receipt/Pages/chat/notification E2E. PR #175/#170 remain Draft/unmerged. Formal three-document revision and P2 remain deferred. FORBIDDEN SUBSTITUTE: passing these fixtures or CI does not establish production recovery. NEXT NECESSARY ACTION: publish this narrow correction to the existing Draft PR, confirm exact-head CI, then resolve the already recorded P1 environment inputs before separately authorized nonproduction connection work.
+
+
+## P1 isolated Cloud trial preparation — ARCH-20261020-REPORT-CONTINUITY — 2026-10-26 JST (ADD)
+
+Run ID: `ARCH-20261020-REPORT-CONTINUITY-p1-cloud-preparation-20261026`. PR #182 remains Draft and unmerged, stacked on PR #181 HEAD `45dea9c661859562b6de427e9d116fab6af7bb69`.
+
+Scope kept to P1 preparation. Added the exact fixed Scheduler trigger contract, reportId derivation from allowlisted scheduled time/job/slot/attempt, distinct immutable T-13/T-7/T-3 evidence keys, deterministic non-market fixture provider, minimal Cloud Run container/dependency pins, a preparation-only resource template, and JPY 800 monthly budget proposal with 400/640/800 alerts. No billing account/project identifiers, notification address, IAM principal list, credentials or trial-credit values are recorded.
+
+| Claim | Evidence / result | Level / limit |
+|---|---|---|
+| Fixed-body request derives report IDs over multiple business days while retaining OIDC/job checks | `test_fixed_scheduler_body_derives_identity_for_two_business_days` PASS; ingress suite in final CI | E2 component behavior; verifier fixture, not live OIDC |
+| Three acquisition attempts and duplicate/conflict semantics preserve evidence | `test_three_attempts_and_duplicate_or_conflicting_redelivery` PASS; T-13 duplicate is NO_OP, T-7/T-3 create separate objects, altered T-7 redelivery is CONFLICT, original bytes remain | E2/E3 fixture behavior; not distributed GCS |
+| Fixture cannot be mistaken for market payload | `test_fixture_provider_is_identity_bound_and_not_scheduler_payload` PASS; deterministic JSON carries `P1_TEST_FIXTURE` and `fixture-not-market-data` | E1/E2; no source freshness/provenance |
+| Runtime container and dependencies start correctly | GitHub Actions run [40214366014](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40214366014) SUCCESS at exact HEAD `f76251d7a7ecfc5de133620b257ca21422027fdf`; Docker build and local container/PORT smoke returned expected GET 405; pinned Cloud Storage SDK/auth/Gunicorn installed | E3 local-container acceptance; not a deployed Cloud Run service |
+| Offline regression and config validation pass | Exact-head CI: 22 cutoff tests and 106 continuity/GCS/ingress/publication tests PASS (overlap; counts not additive), preparation JSON parses, publication policy JS passes | E1/E2 offline only |
+| Protected artifacts remain out of this PR diff | The 12 changed paths are P1 code, tests, Docker files, P1 plan/config and this evidence ledger; no `reports/`, `data/`, receipts, production workflow or `docs/system/` path is listed | E0 path/diff scope only; full protected-file SHA-256 recomputation is NOT_RUN |
+| Cloud inventory and live acceptance | Project ID, billing linkage/status, existing budget/resources, enabled APIs and IAM were NOT_VERIFIED this turn. Cloud Console inspection stopped because Computer Use could not determine the current browser URL safely; no `gcloud` command or dedicated GCP connector was available. No API activation, budget/resource creation, deployment, or live GCS/OIDC test occurred | BLOCKED / NOT_RUN; user-supplied JPY budget currency is reflected as a proposal only |
+
+The deterministic fixture provider is not a market-data source. `publicationEligible=false` remains mandatory; no formal three-document, production, report-original or P2 changes were made.
+
+Open outcomes: obtain a usable authenticated read-only Cloud inventory; recheck existing project/billing/API/IAM/resources and existing budgets to avoid duplicates; compute a protected-file SHA-256 comparison; then, after separate approval, carry out the ¥800 budget and isolated-resource changes. Live GCS save/readback, deployed OIDC, Cloud Run, Scheduler, deadlines/retries under real time, restart/concurrency/network-failure tests remain NOT_RUN. PR #170/#175/#180/#181/#182 remain Draft/unmerged. Next necessary action: complete the read-only cloud inventory, then present the exact resource/cost approval package before any cloud change.
+
+
+## Owner-reported budget creation and cloud inventory gate — ARCH-20261020-REPORT-CONTINUITY — 2026-10-26 JST (ADD)
+
+- The owner reports that the monthly JPY 800 budget alert displayed a successful creation message. Classify as `USER_REPORTED_SUCCESS / READBACK NOT_VERIFIED`; do not retry, create, or duplicate this budget. Its resource ID, scope, period, currency and thresholds require read-only console readback before any subsequent change.
+- The owner also confirms the existing project is to be reused. Current project ID, billing link/status, APIs, IAM, service accounts, buckets, Cloud Run services and Scheduler jobs remain NOT_VERIFIED in this turn.
+- Read-only Console inspection could not proceed because Computer Use stopped when it could not determine the current browser URL safely. No authenticated cloud connector or `gcloud` CLI was available. No Cloud API, resource, IAM, budget or deployment action was performed.
+- PR #182 configuration now marks the budget `USER_REPORTED_SUCCESS_READBACK_PENDING`, `createIfMissing=false`, and budget creation count zero. Candidate infrastructure counts remain conditional on a future read-only inventory; only confirmed-missing resources may be proposed for separate approval.
+- Open outcomes: authenticated read-only inventory; exact existing budget readback; current API/IAM/resource map; full protected-file SHA-256 recomputation. Live GCS/Run/Scheduler acceptance, API enablement and all resource creation remain NOT_RUN pending separate approval. PR #170/#175/#180/#181/#182 stay Draft and unmerged.
+
+
+## P1 Cloud Shell inventory and Scheduler timestamp precision — ARCH-20261020-REPORT-CONTINUITY — 2026-10-27 JST (ADD)
+
+Source: owner-pasted Cloud Shell output for the existing project and ingress diagnostics. Project/resource identifiers, URLs and service-account emails are omitted from this record.
+
+| Claim | Evidence / result | Level / limit |
+|---|---|---|
+| Existing project is active and required APIs are enabled | Owner-pasted `gcloud projects list` showed one matching project in ACTIVE state. The supplied enabled-API list contains Run, Scheduler, Storage, Artifact Registry, IAM Credentials, Logging, Monitoring, Service Usage and Cloud Build | E5 owner-supplied external CLI output; not independently read by agent |
+| Existing P1 assets are present | Supplied listing showed three service accounts (P1 runtime, one Scheduler caller, default Compute identity), one Tokyo bucket, one Tokyo Cloud Run service and one Tokyo Scheduler job | E5 owner-supplied external CLI output; configuration, IAM bindings, bucket policies, image and Run authentication not checked |
+| Scheduler attempt was rejected before processing | Owner diagnostic: one request returned app HTTP 400 `SCHEDULE_NOT_ALLOWED`; Scheduler is PAUSED. Current ingress calls the processor only after all schedule checks, so this request did not reach the acquisition/Storage adapter | E5 diagnostic plus source-path inspection; no direct GCS audit read |
+| The attempt was off the listed cron time | Job is `47 7 * * 1-5` in `Asia/Tokyo`; last attempt was 2026-10-26 17:38:12.948296Z, while next schedule was reported as 2026-10-26 22:47:00.270272Z. This suggests an off-schedule/manual trigger, but the exact request header was not captured | E5 owner output; inference only |
+| Fractional Scheduler timestamps are accepted without changing minute identity | Prior parser rejected all microseconds. Updated ingress now accepts only timestamps with whole-second field zero and normalizes fractional precision to the minute; added a regression using `2026-10-26T22:47:00.270272Z` and asserting the expected next-day 08:00 identity | E3 offline regression and local-container evidence: exact HEAD `7b36cb9d1211d9b75f98d3c6b630fd17b7a7c7cf` CI run [40374177124](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40374177124) passed; 115 continuity/GCS/ingress/publication-related tests passed (overlapping with cutoff suites; not additive), 22 cutoff tests passed, JSON validation, Docker build/start/PORT smoke and JS policy passed. Test output includes `test_fractional_scheduler_timestamp_normalizes_to_cron_minute`. This is not live Cloud acceptance. |
+| Cloud changes and budget changes | No API enablement, resource/IAM mutation, deployment, job resume/run, budget readback or budget creation was performed. The JPY 800 budget remains owner-reported created; do not duplicate | E5 action boundary |
+
+Open outcomes: inspect the existing bucket, Cloud Run configuration, Scheduler job target/audience/caller and IAM bindings read-only; capture the exact failed attempt's Scheduler execution logs; verify that the configured caller maps to the current allowlist. Keep the job PAUSED and do not deploy/retry until code CI is green and the user separately approves any live execution. Existing project only; new project and duplicate budget remain forbidden. PRs #170/#175/#180/#181/#182 remain unmerged; production, protected originals, formal three documents and P2+ remain untouched.
+
+## P1 Scheduler and Cloud Run IAM readback — ARCH-20261020-REPORT-CONTINUITY — 2026-10-27 JST (ADD)
+
+Source: owner-pasted Cloud Shell `jobs describe` and Cloud Run `get-iam-policy` output. Identifiers and principal emails are omitted.
+
+| Claim | Evidence / result | Level / limit |
+|---|---|---|
+| Scheduler target and OIDC configuration are present | Job points to the existing Cloud Run URL; its OIDC audience is the service URL and the caller is the dedicated 08:00/T−13 identity | E5 owner-supplied CLI output; not independently read and not reconciled against the deployed environment allowlist |
+| Cloud Run invocation IAM is narrow in the reported policy | The returned service IAM policy lists only the dedicated Scheduler caller with `roles/run.invoker`; no `allUsers` binding appears | E5 owner-supplied CLI output; the service-level auth annotation and complete effective IAM are not independently verified |
+| Failed-attempt timing is not in the job's current scheduleTime field | Job lastAttemptTime is 17:38:12Z while current next scheduleTime is 22:47:00Z with fractional precision. The API field is the next scheduled time, so it is not the exact failed-request header. Manual/off-schedule execution remains an inference | E5 owner output + official API semantics; exact failed header/attempt logs NOT_RUN |
+| Retry policy currently does not retry the failure | RetryConfig omits retryCount (default 0), lists maxRetryDuration 0, min backoff 5s and max backoff 3600s. With retryCount 0 and maxRetryDuration 0, the failed attempt is not retried | E5 owner output and official [Cloud Scheduler retry defaults](https://docs.cloud.google.com/scheduler/docs/configuring/retry-jobs) |
+| Bucket policy remains unknown | Bucket describe failed because the literal Japanese placeholder was passed as the bucket name. Existing bucket presence/location came from the prior list output; class and policies remain NOT_VERIFIED | E5 command error; no bucket mutation |
+| Cloud changes | No resource/API/IAM changes, budget creation, deployment, job resume or live retry was performed | Action record |
+
+Open outcomes: rerun bucket describe using the actual bucket name; inspect Cloud Run auth annotation, runtime account, image and environment allowlist; compare the Scheduler caller/job mapping to that allowlist; inspect Scheduler AttemptStarted/AttemptFinished entries for the exact request. Keep the job PAUSED. Budget remains owner-reported created and must not be duplicated. PR #182 remains Draft/unmerged; production, protected originals, formal three documents and P2+ remain untouched.
+
+
+## P1 existing bucket policy readback — ARCH-20261020-REPORT-CONTINUITY — 2026-10-27 JST (ADD)
+
+Source: owner-pasted Cloud Shell `gcloud storage buckets describe` output. Bucket name is omitted.
+
+| Claim | Evidence / result | Level / limit |
+|---|---|---|
+| Existing bucket location and class match the trial plan | `ASIA-NORTHEAST1`, `STANDARD`, regional | E5 owner-supplied external CLI output; not independently re-read by agent |
+| Public exposure controls match the trial plan | Uniform bucket-level access enabled; public access prevention enforced | E5 owner-supplied output; effective IAM bindings not included |
+| Retention and cleanup match the candidate plan | Soft delete retention is 604800 seconds (7 days); lifecycle Delete rule has age 30 and only the `shadow/` prefix | E5 owner-supplied output; object-level inventory and actual billing effect not read |
+| Retention lock and bucket IAM | No retentionPolicy was shown in the output; bucket IAM was not queried | NOT_VERIFIED |
+| Cloud changes | No bucket/resource/IAM/API changes, Storage write, deployment or Scheduler execution was performed | Action record |
+
+This existing bucket matches the observed Tokyo Standard, uniform-access, public-access-prevention, soft-delete and lifecycle settings, so do not create another bucket. Open outcome: inspect bucket IAM policy and verify runtime-only create/get scope before any separately approved live Storage test. Scheduler stays PAUSED; budget alert is already reported created and must not be duplicated.

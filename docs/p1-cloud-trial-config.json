@@ -1,0 +1,470 @@
+{
+  "schemaVersion": 1,
+  "changeRequest": "ARCH-20261020-REPORT-CONTINUITY",
+  "status": "PREPARATION_ONLY",
+  "apply": false,
+  "project": {
+    "id": "<RECONFIRM_EXISTING_PROJECT_ID_READ_ONLY>",
+    "createNewProject": false,
+    "inventoryStatus": "OWNER_SUPPLIED_CLOUD_SHELL_PARTIAL_READBACK_2026-10-27",
+    "reuseIfCompatible": true,
+    "status": "OWNER_SUPPLIED_EXISTING_PROJECT_ACTIVE_ID_OMITTED"
+  },
+  "billingBudget": {
+    "scope": "project",
+    "period": "monthly",
+    "currency": "JPY",
+    "amount": 800,
+    "thresholds": [
+      {
+        "percent": 50,
+        "amount": 400
+      },
+      {
+        "percent": 80,
+        "amount": 640
+      },
+      {
+        "percent": 100,
+        "amount": 800
+      }
+    ],
+    "notificationRecipient": "<OWNER_EMAIL_CONFIRM_AT_APPROVED_SETUP>",
+    "checkExistingBeforeCreate": true,
+    "status": "USER_REPORTED_SUCCESS_READBACK_PENDING",
+    "createIfMissing": false,
+    "duplicateCreationProhibited": true,
+    "readbackRequired": true,
+    "scopeStatus": "NOT_VERIFIED"
+  },
+  "cloudRun": {
+    "name": "p1-report-shadow-ingress",
+    "region": "asia-northeast1",
+    "image": "asia-northeast1-docker.pkg.dev/<PROJECT_ID>/<REPOSITORY>/p1-report-shadow-ingress:<DIGEST>",
+    "runtimeServiceAccount": "<DEDICATED_RUNTIME_SA>",
+    "authentication": "required",
+    "allowUnauthenticated": false,
+    "ingress": "all",
+    "cpu": 1,
+    "memoryMiB": 512,
+    "minInstances": 0,
+    "maxInstances": 2,
+    "concurrency": 1,
+    "timeoutSeconds": 120,
+    "maxRequestBytes": 1048576,
+    "port": "$PORT",
+    "bind": "0.0.0.0",
+    "acquisitionProvider": "scripts.p1_trial_fixture_provider:acquire",
+    "publicationEligible": false,
+    "storageEnabled": "false until separately approved trial deployment",
+    "cutoffRule": "No evidence write at or after report target T",
+    "iamPolicyReadback": {
+      "listedBinding": "roles/run.invoker for the dedicated Scheduler caller only",
+      "allUsersListed": false,
+      "serviceAuthenticationConfiguration": "NOT_VERIFIED",
+      "deployedSchedulerAllowlist": "NOT_VERIFIED"
+    }
+  },
+  "scheduler": {
+    "region": "asia-northeast1",
+    "timeZone": "Asia/Tokyo",
+    "normalRequestsPerBusinessDay": 12,
+    "maxRequestsPerBusinessDayIncludingRetry": 24,
+    "jobs": [
+      {
+        "jobId": "slot-0800-t13",
+        "schedule": "47 7 * * 1-5",
+        "timeZone": "Asia/Tokyo",
+        "targetSlot": "08:00",
+        "attemptMinutes": 13,
+        "callerServiceAccount": "<UNIQUE_CALLER_SA_FOR_THIS_JOB>",
+        "targetUri": "<CANONICAL_CLOUD_RUN_URL>",
+        "oidcAudience": "<CANONICAL_CLOUD_RUN_URL>",
+        "httpMethod": "POST",
+        "body": "{\"schemaVersion\":1,\"trigger\":\"P1_SHADOW\"}",
+        "retry": {
+          "retryCount": 1,
+          "minBackoffSeconds": 5,
+          "maxBackoffSeconds": 10,
+          "maxRetryDurationSeconds": 120
+        },
+        "enabled": "false until individually approved"
+      },
+      {
+        "jobId": "slot-0800-t7",
+        "schedule": "53 7 * * 1-5",
+        "timeZone": "Asia/Tokyo",
+        "targetSlot": "08:00",
+        "attemptMinutes": 7,
+        "callerServiceAccount": "<UNIQUE_CALLER_SA_FOR_THIS_JOB>",
+        "targetUri": "<CANONICAL_CLOUD_RUN_URL>",
+        "oidcAudience": "<CANONICAL_CLOUD_RUN_URL>",
+        "httpMethod": "POST",
+        "body": "{\"schemaVersion\":1,\"trigger\":\"P1_SHADOW\"}",
+        "retry": {
+          "retryCount": 1,
+          "minBackoffSeconds": 5,
+          "maxBackoffSeconds": 10,
+          "maxRetryDurationSeconds": 120
+        },
+        "enabled": "false until individually approved"
+      },
+      {
+        "jobId": "slot-0800-t3",
+        "schedule": "57 7 * * 1-5",
+        "timeZone": "Asia/Tokyo",
+        "targetSlot": "08:00",
+        "attemptMinutes": 3,
+        "callerServiceAccount": "<UNIQUE_CALLER_SA_FOR_THIS_JOB>",
+        "targetUri": "<CANONICAL_CLOUD_RUN_URL>",
+        "oidcAudience": "<CANONICAL_CLOUD_RUN_URL>",
+        "httpMethod": "POST",
+        "body": "{\"schemaVersion\":1,\"trigger\":\"P1_SHADOW\"}",
+        "retry": {
+          "retryCount": 1,
+          "minBackoffSeconds": 5,
+          "maxBackoffSeconds": 10,
+          "maxRetryDurationSeconds": 120
+        },
+        "enabled": "false until individually approved"
+      },
+      {
+        "jobId": "slot-1200-t13",
+        "schedule": "47 11 * * 1-5",
+        "timeZone": "Asia/Tokyo",
+        "targetSlot": "12:00",
+        "attemptMinutes": 13,
+        "callerServiceAccount": "<UNIQUE_CALLER_SA_FOR_THIS_JOB>",
+        "targetUri": "<CANONICAL_CLOUD_RUN_URL>",
+        "oidcAudience": "<CANONICAL_CLOUD_RUN_URL>",
+        "httpMethod": "POST",
+        "body": "{\"schemaVersion\":1,\"trigger\":\"P1_SHADOW\"}",
+        "retry": {
+          "retryCount": 1,
+          "minBackoffSeconds": 5,
+          "maxBackoffSeconds": 10,
+          "maxRetryDurationSeconds": 120
+        },
+        "enabled": "false until individually approved"
+      },
+      {
+        "jobId": "slot-1200-t7",
+        "schedule": "53 11 * * 1-5",
+        "timeZone": "Asia/Tokyo",
+        "targetSlot": "12:00",
+        "attemptMinutes": 7,
+        "callerServiceAccount": "<UNIQUE_CALLER_SA_FOR_THIS_JOB>",
+        "targetUri": "<CANONICAL_CLOUD_RUN_URL>",
+        "oidcAudience": "<CANONICAL_CLOUD_RUN_URL>",
+        "httpMethod": "POST",
+        "body": "{\"schemaVersion\":1,\"trigger\":\"P1_SHADOW\"}",
+        "retry": {
+          "retryCount": 1,
+          "minBackoffSeconds": 5,
+          "maxBackoffSeconds": 10,
+          "maxRetryDurationSeconds": 120
+        },
+        "enabled": "false until individually approved"
+      },
+      {
+        "jobId": "slot-1200-t3",
+        "schedule": "57 11 * * 1-5",
+        "timeZone": "Asia/Tokyo",
+        "targetSlot": "12:00",
+        "attemptMinutes": 3,
+        "callerServiceAccount": "<UNIQUE_CALLER_SA_FOR_THIS_JOB>",
+        "targetUri": "<CANONICAL_CLOUD_RUN_URL>",
+        "oidcAudience": "<CANONICAL_CLOUD_RUN_URL>",
+        "httpMethod": "POST",
+        "body": "{\"schemaVersion\":1,\"trigger\":\"P1_SHADOW\"}",
+        "retry": {
+          "retryCount": 1,
+          "minBackoffSeconds": 5,
+          "maxBackoffSeconds": 10,
+          "maxRetryDurationSeconds": 120
+        },
+        "enabled": "false until individually approved"
+      },
+      {
+        "jobId": "slot-1600-t13",
+        "schedule": "47 15 * * 1-5",
+        "timeZone": "Asia/Tokyo",
+        "targetSlot": "16:00",
+        "attemptMinutes": 13,
+        "callerServiceAccount": "<UNIQUE_CALLER_SA_FOR_THIS_JOB>",
+        "targetUri": "<CANONICAL_CLOUD_RUN_URL>",
+        "oidcAudience": "<CANONICAL_CLOUD_RUN_URL>",
+        "httpMethod": "POST",
+        "body": "{\"schemaVersion\":1,\"trigger\":\"P1_SHADOW\"}",
+        "retry": {
+          "retryCount": 1,
+          "minBackoffSeconds": 5,
+          "maxBackoffSeconds": 10,
+          "maxRetryDurationSeconds": 120
+        },
+        "enabled": "false until individually approved"
+      },
+      {
+        "jobId": "slot-1600-t7",
+        "schedule": "53 15 * * 1-5",
+        "timeZone": "Asia/Tokyo",
+        "targetSlot": "16:00",
+        "attemptMinutes": 7,
+        "callerServiceAccount": "<UNIQUE_CALLER_SA_FOR_THIS_JOB>",
+        "targetUri": "<CANONICAL_CLOUD_RUN_URL>",
+        "oidcAudience": "<CANONICAL_CLOUD_RUN_URL>",
+        "httpMethod": "POST",
+        "body": "{\"schemaVersion\":1,\"trigger\":\"P1_SHADOW\"}",
+        "retry": {
+          "retryCount": 1,
+          "minBackoffSeconds": 5,
+          "maxBackoffSeconds": 10,
+          "maxRetryDurationSeconds": 120
+        },
+        "enabled": "false until individually approved"
+      },
+      {
+        "jobId": "slot-1600-t3",
+        "schedule": "57 15 * * 1-5",
+        "timeZone": "Asia/Tokyo",
+        "targetSlot": "16:00",
+        "attemptMinutes": 3,
+        "callerServiceAccount": "<UNIQUE_CALLER_SA_FOR_THIS_JOB>",
+        "targetUri": "<CANONICAL_CLOUD_RUN_URL>",
+        "oidcAudience": "<CANONICAL_CLOUD_RUN_URL>",
+        "httpMethod": "POST",
+        "body": "{\"schemaVersion\":1,\"trigger\":\"P1_SHADOW\"}",
+        "retry": {
+          "retryCount": 1,
+          "minBackoffSeconds": 5,
+          "maxBackoffSeconds": 10,
+          "maxRetryDurationSeconds": 120
+        },
+        "enabled": "false until individually approved"
+      },
+      {
+        "jobId": "slot-2100-t13",
+        "schedule": "47 20 * * 1-5",
+        "timeZone": "Asia/Tokyo",
+        "targetSlot": "21:00",
+        "attemptMinutes": 13,
+        "callerServiceAccount": "<UNIQUE_CALLER_SA_FOR_THIS_JOB>",
+        "targetUri": "<CANONICAL_CLOUD_RUN_URL>",
+        "oidcAudience": "<CANONICAL_CLOUD_RUN_URL>",
+        "httpMethod": "POST",
+        "body": "{\"schemaVersion\":1,\"trigger\":\"P1_SHADOW\"}",
+        "retry": {
+          "retryCount": 1,
+          "minBackoffSeconds": 5,
+          "maxBackoffSeconds": 10,
+          "maxRetryDurationSeconds": 120
+        },
+        "enabled": "false until individually approved"
+      },
+      {
+        "jobId": "slot-2100-t7",
+        "schedule": "53 20 * * 1-5",
+        "timeZone": "Asia/Tokyo",
+        "targetSlot": "21:00",
+        "attemptMinutes": 7,
+        "callerServiceAccount": "<UNIQUE_CALLER_SA_FOR_THIS_JOB>",
+        "targetUri": "<CANONICAL_CLOUD_RUN_URL>",
+        "oidcAudience": "<CANONICAL_CLOUD_RUN_URL>",
+        "httpMethod": "POST",
+        "body": "{\"schemaVersion\":1,\"trigger\":\"P1_SHADOW\"}",
+        "retry": {
+          "retryCount": 1,
+          "minBackoffSeconds": 5,
+          "maxBackoffSeconds": 10,
+          "maxRetryDurationSeconds": 120
+        },
+        "enabled": "false until individually approved"
+      },
+      {
+        "jobId": "slot-2100-t3",
+        "schedule": "57 20 * * 1-5",
+        "timeZone": "Asia/Tokyo",
+        "targetSlot": "21:00",
+        "attemptMinutes": 3,
+        "callerServiceAccount": "<UNIQUE_CALLER_SA_FOR_THIS_JOB>",
+        "targetUri": "<CANONICAL_CLOUD_RUN_URL>",
+        "oidcAudience": "<CANONICAL_CLOUD_RUN_URL>",
+        "httpMethod": "POST",
+        "body": "{\"schemaVersion\":1,\"trigger\":\"P1_SHADOW\"}",
+        "retry": {
+          "retryCount": 1,
+          "minBackoffSeconds": 5,
+          "maxBackoffSeconds": 10,
+          "maxRetryDurationSeconds": 120
+        },
+        "enabled": "false until individually approved"
+      }
+    ],
+    "currentInventory": {
+      "observedJobCount": 1,
+      "observedState": "PAUSED",
+      "observedCron": "47 7 * * 1-5",
+      "observedTimeZone": "Asia/Tokyo",
+      "observedLastAttemptTime": "2026-10-26T17:38:12.948296Z",
+      "observedNextScheduleTime": "2026-10-26T22:47:00.270272Z",
+      "exactHeaderCaptured": false,
+      "keepPaused": true,
+      "manualRunAllowed": false,
+      "jobDescribe": {
+        "targetAndAudienceReferToSameCloudRunService": true,
+        "callerHasRunInvokerBinding": true,
+        "retryCount": "OMITTED_DEFAULT_0",
+        "minBackoffSeconds": 5,
+        "maxBackoffSeconds": 3600,
+        "maxDoublings": 5,
+        "maxRetryDurationSeconds": 0,
+        "statusCode": -1,
+        "failedRequestScheduleHeader": "NOT_CAPTURED",
+        "scheduleTimeFieldMeaning": "NEXT_SCHEDULED_TIME_NOT_FAILED_REQUEST_HEADER"
+      }
+    }
+  },
+  "storage": {
+    "bucket": "p1-report-shadow-<unique-suffix>",
+    "region": "asia-northeast1",
+    "class": "STANDARD",
+    "uniformBucketLevelAccess": true,
+    "publicAccessPrevention": "enforced",
+    "prefix": "shadow/",
+    "createOnly": "if_generation_match=0",
+    "readback": "pin generation and verify exact bytes, SHA-256, server time_created",
+    "softDeleteDays": 7,
+    "lifecycleDeleteAfterDays": 30,
+    "lifecyclePrefix": "shadow/",
+    "retentionLock": false,
+    "conflictHandling": "Never overwrite; export/reconcile before day 30; at day 25 defer lifecycle deletion by separately approved retention update if unresolved",
+    "runtimePermissions": [
+      "storage.objects.create",
+      "storage.objects.get"
+    ],
+    "runtimeProhibitedPermissions": [
+      "storage.objects.list",
+      "storage.objects.update",
+      "storage.objects.delete",
+      "storage.buckets.*"
+    ],
+    "inventoryDescribe": "OWNER_SUPPLIED_BUCKET_DESCRIBE_CONFIRMS_PLAN_SETTINGS",
+    "existingBucketPolicyReadback": {
+      "location": "ASIA-NORTHEAST1",
+      "class": "STANDARD",
+      "uniformBucketLevelAccess": true,
+      "publicAccessPrevention": "enforced",
+      "softDeleteSeconds": 604800,
+      "lifecycleDeleteAgeDays": 30,
+      "lifecyclePrefix": "shadow/",
+      "iam": "NOT_VERIFIED",
+      "retentionPolicy": "NOT_SHOWN"
+    }
+  },
+  "identities": {
+    "schedulerCallerServiceAccounts": 12,
+    "uniquePerJob": true,
+    "schedulerRole": "roles/run.invoker on this Cloud Run service only",
+    "runtimeServiceAccounts": 1,
+    "deployPrincipalSeparate": true,
+    "noUserManagedKeys": true,
+    "noProductionAccess": true
+  },
+  "apiPlan": {
+    "requiredAfterApproval": [
+      "run.googleapis.com",
+      "cloudscheduler.googleapis.com",
+      "storage.googleapis.com",
+      "artifactregistry.googleapis.com",
+      "iamcredentials.googleapis.com",
+      "logging.googleapis.com",
+      "monitoring.googleapis.com"
+    ],
+    "optional": [
+      "cloudbuild.googleapis.com"
+    ],
+    "noEnablementBeforeApproval": true,
+    "budgetBudgetsApiNeededForConsoleReadback": false,
+    "observedEnabledRequiredApis": [
+      "run.googleapis.com",
+      "cloudscheduler.googleapis.com",
+      "storage.googleapis.com",
+      "artifactregistry.googleapis.com",
+      "iamcredentials.googleapis.com",
+      "logging.googleapis.com",
+      "monitoring.googleapis.com",
+      "serviceusage.googleapis.com",
+      "cloudbuild.googleapis.com"
+    ],
+    "inventorySource": "Owner-provided Cloud Shell output; not independently read by agent"
+  },
+  "preflight": {
+    "projectIdBillingStateExistingBudgetApiIamResources": "PARTIAL_OWNER_SUPPLIED_READ_ONLY_INVENTORY",
+    "createResources": false,
+    "enableApis": false,
+    "deploy": false,
+    "budgetStatus": "USER_REPORTED_CREATED_DO_NOT_DUPLICATE",
+    "existingBudgetReadback": "NOT_VERIFIED",
+    "budgetCreateAllowed": false
+  },
+  "resourcePlan": {
+    "existingProjectOnly": true,
+    "createNewProject": false,
+    "budgetCreateCount": 0,
+    "ifMissing": {
+      "artifactRegistryRepositories": 1,
+      "cloudRunServices": 0,
+      "storageBuckets": 0,
+      "runtimeServiceAccounts": 0,
+      "schedulerCallerServiceAccounts": 11,
+      "schedulerJobs": 11
+    },
+    "reuseCompatibleExisting": true,
+    "enableOnlyApprovedSchedulerJobsInitially": 1,
+    "allCreationRequiresSeparateApproval": true,
+    "createIfMissingOnly": true,
+    "existingInventoryStatus": "PARTIAL_OWNER_SUPPLIED_READBACK",
+    "existingProjectStatus": "ACTIVE",
+    "existingCloudRunServicesObserved": 1,
+    "existingTokyoBucketsObserved": 1,
+    "existingSchedulerJobsObserved": 1,
+    "existingP1RuntimeAndCallerAccountsObserved": 2,
+    "defaultComputeAccountObserved": true,
+    "allObservedResourcesRequireConfigurationReadback": true
+  },
+  "readOnlyInventory": {
+    "source": "Owner-pasted Cloud Shell CLI output; identifiers omitted from repository",
+    "observedAt": "2026-10-26T17:38:14Z",
+    "projectLifecycleState": "ACTIVE",
+    "requiredP1Apis": "LISTED_ENABLED",
+    "serviceAccountCount": 3,
+    "p1RuntimeIdentityListed": true,
+    "p1SchedulerCallerListed": true,
+    "defaultComputeIdentityListed": true,
+    "tokyoBucketCount": 1,
+    "bucketLocation": "ASIA-NORTHEAST1",
+    "bucketStorageClass": "STANDARD",
+    "tokyoCloudRunServiceCount": 1,
+    "cloudRunConfiguration": "NOT_VERIFIED",
+    "tokyoSchedulerJobCount": 1,
+    "schedulerState": "PAUSED",
+    "schedulerCron": "47 7 * * 1-5",
+    "schedulerTimeZone": "Asia/Tokyo",
+    "schedulerLastAttemptTime": "2026-10-26T17:38:12.948296Z",
+    "schedulerNextScheduleTime": "2026-10-26T22:47:00.270272Z",
+    "schedulerStatusCode": -1,
+    "appAttemptResponse": "HTTP 400 SCHEDULE_NOT_ALLOWED (owner-supplied diagnostic)",
+    "exactScheduleHeaderCaptured": false,
+    "storageWriteReached": "NOT_DIRECTLY_OBSERVED",
+    "inventoryLimit": "Owner output not independently re-read; IAM bindings and detailed resource configuration unverified",
+    "storageAudit": "NOT_RUN",
+    "processorReached": "NO_BY_INGRESS_CONTROL_FLOW",
+    "bucketUniformAccess": true,
+    "bucketPublicAccessPrevention": "ENFORCED",
+    "bucketSoftDeleteSeconds": 604800,
+    "bucketLifecycleDeleteAgeDays": 30,
+    "bucketLifecyclePrefix": "shadow/",
+    "bucketIam": "NOT_VERIFIED",
+    "bucketRetentionPolicy": "NOT_SHOWN_IN_OWNER_OUTPUT"
+  }
+}

@@ -1,9 +1,9 @@
-"""Authenticated, shadow-only Cloud Scheduler HTTP ingress for P1.
+"""Authenticated Cloud Scheduler ingress for isolated P1 shadow acquisition.
 
-Cloud Run IAM should remain enabled. This layer independently verifies the
-Google-signed OIDC token before considering Scheduler metadata. The token does
-not sign the Scheduler headers; bindings therefore pin the expected full job
-name, unique service-account email, and attempt offset.
+Cloud Run IAM must remain enabled. Google OIDC authenticates the caller, while
+the exact job/time/slot binding validates the Scheduler metadata headers, which
+the OIDC token does not cryptographically sign. The HTTP body is a fixed trigger;
+report identity is always derived from the authenticated Scheduler time.
 """
 from __future__ import annotations
 
@@ -11,12 +11,15 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 import json
 import re
+import sys
 from typing import Callable, Mapping
 
 from scripts.resolve_market_report_slot import REPORT_SLOTS, ReportIdentity, resolve_report_identity
 
 MAX_BODY_BYTES = 1024 * 1024
+SCHEDULER_TRIGGER_BODY = b'{"schemaVersion":1,"trigger":"P1_SHADOW"}'
 _BEARER = re.compile(r"Bearer ([A-Za-z0-9._~-]+)\Z")
+SCHEDULER_ATTEMPTS = (3, 7, 13)
 
 
 @dataclass(frozen=True)
@@ -42,21 +45,49 @@ def _utc_schedule(value: str) -> datetime:
     except ValueError as exc:
         raise ValueError("INVALID_SCHEDULE_TIME") from exc
     if (scheduled.tzinfo is None or scheduled.utcoffset() != timedelta(0)
-            or scheduled.second or scheduled.microsecond):
+            or scheduled.second):
         raise ValueError("INVALID_SCHEDULE_TIME")
-    return scheduled.astimezone(timezone.utc)
+    # Cloud Scheduler's RFC3339 schedule timestamp can include fractional
+    # seconds. Cron is minute-granular here, so accept only whole-second-zero
+    # timestamps and canonicalize the fraction away before deriving the slot.
+    return scheduled.replace(microsecond=0).astimezone(timezone.utc)
 
 
 def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
-               processor: Callable[[ReportIdentity, bytes], Mapping[str, object]],
+               processor: Callable[[ReportIdentity, bytes, SchedulerBinding], Mapping[str, object]],
                verifier: Callable[[str, str], Mapping[str, object]] = verify_google_oidc,
                clock: Callable[[], datetime] | None = None):
-    """Return a small WSGI app. No default processor or storage is constructed."""
+    """Return a WSGI app; no data provider or Storage client is constructed here."""
     if not audience or not bindings:
         raise ValueError("OIDC audience and Scheduler bindings are required")
+    # Cloud Scheduler sends a short job ID in X-CloudScheduler-JobName
+    # (e.g. slot-0800-t13), while reviewed config uses full resource names.
+    # A unique short ID must select exactly one full, account-bound binding.
+    short_bindings = {full_name.rsplit("/", 1)[-1]: binding
+                      for full_name, binding in bindings.items()}
+    if len(short_bindings) != len(bindings):
+        raise ValueError("SCHEDULER_SHORT_JOB_IDS_MUST_BE_UNIQUE")
     now = clock or (lambda: datetime.now(timezone.utc))
 
     def respond(start_response, status: str, result: Mapping[str, object]):
+        # Cloud Run platform/IAM rejection happens before this WSGI function.
+        # Fixed, non-sensitive reason codes prove the request reached the app;
+        # never log headers, JWTs, claims, principal emails or request bodies.
+        code = int(status.split(" ", 1)[0])
+        allowed_reasons = {
+            "METHOD_NOT_ALLOWED", "UNAUTHENTICATED", "JOB_NOT_ALLOWLISTED",
+            "CALLER_NOT_AUTHORIZED", "SCHEDULE_NOT_ALLOWED", "SCHEDULE_EXPIRED",
+            "PAYLOAD_TOO_LARGE", "INVALID_TRIGGER", "PROCESSING_FAILED",
+        }
+        reason = "ACCEPTED" if code < 400 else result.get("error")
+        if reason not in allowed_reasons and reason != "ACCEPTED":
+            reason = "OTHER_REJECTION"
+        print(json.dumps({
+            "event": "P1_INGRESS_RESULT",
+            "severity": "WARNING" if code >= 400 else "INFO",
+            "httpStatus": code,
+            "reason": reason,
+        }, separators=(",", ":"), sort_keys=True), file=sys.stderr, flush=True)
         payload = json.dumps(dict(result), separators=(",", ":")).encode("utf-8")
         start_response(status, [("Content-Type", "application/json"),
                                 ("Content-Length", str(len(payload))),
@@ -66,13 +97,39 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
     def app(environ, start_response):
         if environ.get("REQUEST_METHOD") != "POST":
             return respond(start_response, "405 Method Not Allowed", {"error": "METHOD_NOT_ALLOWED"})
-        auth = environ.get("HTTP_AUTHORIZATION", "")
-        match = _BEARER.fullmatch(auth)
+        match = _BEARER.fullmatch(environ.get("HTTP_AUTHORIZATION", ""))
         if not match:
             return respond(start_response, "401 Unauthorized", {"error": "UNAUTHENTICATED"})
         job_name = environ.get("HTTP_X_CLOUDSCHEDULER_JOBNAME", "")
+        # Never normalize arbitrary resource paths: exact full-name matches
+        # stay exact, and only unique short IDs may use the short lookup.
         binding = bindings.get(job_name)
+        if binding is None and "/" not in job_name:
+            binding = short_bindings.get(job_name)
         if binding is None:
+            # Never log the untrusted job header value. Classify it against the
+            # *existing* allowlist without treating shorter names as trusted.
+            if not job_name:
+                job_form = "MISSING"
+            elif any(job_name == allowed.rsplit("/", 1)[-1] for allowed in bindings):
+                job_form = "SHORT_EXPECTED_ID"
+            elif re.fullmatch(r"projects/[^/]+/locations/[^/]+/jobs/[^/]+", job_name):
+                job_form = "OTHER_FULL_RESOURCE"
+            elif "/" not in job_name:
+                job_form = "OTHER_SHORT"
+            else:
+                job_form = "OTHER_FORMAT"
+            print(json.dumps({
+                "event": "P1_JOB_HEADER_DIAGNOSTIC",
+                "severity": "WARNING",
+                "jobHeaderForm": job_form,
+                "schedulerMarkerPresent": bool(environ.get("HTTP_X_CLOUDSCHEDULER")),
+                "scheduleHeaderPresent": bool(environ.get("HTTP_X_CLOUDSCHEDULER_SCHEDULETIME")),
+                "alternateJobHeaderPresent": bool(
+                    environ.get("HTTP_X_CLOUDSCHEDULER_JOB_NAME")
+                    or environ.get("HTTP_X_CLOUD_SCHEDULER_JOB_NAME")
+                ),
+            }, separators=(",", ":"), sort_keys=True), file=sys.stderr, flush=True)
             return respond(start_response, "403 Forbidden", {"error": "JOB_NOT_ALLOWLISTED"})
         try:
             claims = verifier(match.group(1), audience)
@@ -86,9 +143,9 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
                 or not isinstance(email, str)
                 or email.lower() != binding.service_account_email.lower()):
             return respond(start_response, "403 Forbidden", {"error": "CALLER_NOT_AUTHORIZED"})
-        schedule_value = environ.get("HTTP_X_CLOUDSCHEDULER_SCHEDULETIME", "")
+
         try:
-            scheduled = _utc_schedule(schedule_value)
+            scheduled = _utc_schedule(environ.get("HTTP_X_CLOUDSCHEDULER_SCHEDULETIME", ""))
             current = now()
             if current.tzinfo is None:
                 raise ValueError("INVALID_CLOCK")
@@ -104,6 +161,7 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
             return respond(start_response, "400 Bad Request", {"error": "SCHEDULE_NOT_ALLOWED"})
         if identity.status != "ACTIVE":
             return respond(start_response, "409 Conflict", {"error": "SCHEDULE_EXPIRED"})
+
         try:
             length_text = environ.get("CONTENT_LENGTH", "")
             if not length_text or not length_text.isdecimal():
@@ -115,17 +173,16 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
                 return respond(start_response, "413 Payload Too Large", {"error": "PAYLOAD_TOO_LARGE"})
             if environ.get("CONTENT_TYPE", "").split(";", 1)[0].strip().lower() != "application/json":
                 raise ValueError("CONTENT_TYPE_REQUIRED")
-            stream = environ["wsgi.input"]
-            body = stream.read(length)
+            body = environ["wsgi.input"].read(length)
             if len(body) != length:
                 raise ValueError("CONTENT_LENGTH_MISMATCH")
-            envelope = json.loads(body)
-            if not isinstance(envelope, dict) or envelope.get("reportId") != identity.report_id:
-                raise ValueError("REPORT_ID_MISMATCH")
-        except (KeyError, ValueError, UnicodeDecodeError, json.JSONDecodeError):
-            return respond(start_response, "400 Bad Request", {"error": "INVALID_ENVELOPE"})
+            # Scheduler's request body is immutable configuration, not report data.
+            if body != SCHEDULER_TRIGGER_BODY:
+                raise ValueError("UNEXPECTED_TRIGGER_BODY")
+        except (KeyError, ValueError):
+            return respond(start_response, "400 Bad Request", {"error": "INVALID_TRIGGER"})
         try:
-            result = processor(identity, body)
+            result = processor(identity, body, binding)
         except Exception:
             return respond(start_response, "500 Internal Server Error", {"error": "PROCESSING_FAILED"})
         return respond(start_response, "200 OK", result)
@@ -146,9 +203,10 @@ def single_binding_map(entries: list[dict[str, object]]) -> dict[str, SchedulerB
         offset = item.get("attempt_minutes")
         slot = item.get("target_slot")
         weekdays_only = item.get("weekdays_only", True)
-        if (not isinstance(job, str) or not re.fullmatch(r"projects/[^/]+/locations/[^/]+/jobs/[^/]+", job)
+        if (not isinstance(job, str)
+                or not re.fullmatch(r"projects/[^/]+/locations/[^/]+/jobs/[^/]+", job)
                 or not isinstance(email, str) or not email.endswith(".iam.gserviceaccount.com")
-                or type(offset) is not int or offset not in (0, 3, 7, 13)
+                or type(offset) is not int or offset not in SCHEDULER_ATTEMPTS
                 or not isinstance(slot, str) or slot not in REPORT_SLOTS
                 or type(weekdays_only) is not bool
                 or job in result):
@@ -156,4 +214,6 @@ def single_binding_map(entries: list[dict[str, object]]) -> dict[str, SchedulerB
         result[job] = SchedulerBinding(job, email, offset, slot, weekdays_only)
     if len({binding.service_account_email.lower() for binding in result.values()}) != len(result):
         raise ValueError("SCHEDULER_SERVICE_ACCOUNTS_MUST_BE_UNIQUE")
+    if len({job.rsplit("/", 1)[-1] for job in result}) != len(result):
+        raise ValueError("SCHEDULER_SHORT_JOB_IDS_MUST_BE_UNIQUE")
     return result
