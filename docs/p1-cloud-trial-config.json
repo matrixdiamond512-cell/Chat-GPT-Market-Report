@@ -6,9 +6,9 @@
   "project": {
     "id": "<RECONFIRM_EXISTING_PROJECT_ID_READ_ONLY>",
     "createNewProject": false,
-    "inventoryStatus": "NOT_VERIFIED_THIS_TURN",
+    "inventoryStatus": "OWNER_SUPPLIED_CLOUD_SHELL_PARTIAL_READBACK_2026-10-27",
     "reuseIfCompatible": true,
-    "status": "USER_REPORTED_EXISTING_NOT_VERIFIED"
+    "status": "OWNER_SUPPLIED_EXISTING_PROJECT_ACTIVE_ID_OMITTED"
   },
   "billingBudget": {
     "scope": "project",
@@ -293,7 +293,18 @@
         },
         "enabled": "false until individually approved"
       }
-    ]
+    ],
+    "currentInventory": {
+      "observedJobCount": 1,
+      "observedState": "PAUSED",
+      "observedCron": "47 7 * * 1-5",
+      "observedTimeZone": "Asia/Tokyo",
+      "observedLastAttemptTime": "2026-10-26T17:38:12.948296Z",
+      "observedNextScheduleTime": "2026-10-26T22:47:00.270272Z",
+      "exactHeaderCaptured": false,
+      "keepPaused": true,
+      "manualRunAllowed": false
+    }
   },
   "storage": {
     "bucket": "p1-report-shadow-<unique-suffix>",
@@ -343,10 +354,22 @@
       "cloudbuild.googleapis.com"
     ],
     "noEnablementBeforeApproval": true,
-    "budgetBudgetsApiNeededForConsoleReadback": false
+    "budgetBudgetsApiNeededForConsoleReadback": false,
+    "observedEnabledRequiredApis": [
+      "run.googleapis.com",
+      "cloudscheduler.googleapis.com",
+      "storage.googleapis.com",
+      "artifactregistry.googleapis.com",
+      "iamcredentials.googleapis.com",
+      "logging.googleapis.com",
+      "monitoring.googleapis.com",
+      "serviceusage.googleapis.com",
+      "cloudbuild.googleapis.com"
+    ],
+    "inventorySource": "Owner-provided Cloud Shell output; not independently read by agent"
   },
   "preflight": {
-    "projectIdBillingStateExistingBudgetApiIamResources": "NOT_VERIFIED_READ_ONLY_INVENTORY_REQUIRED",
+    "projectIdBillingStateExistingBudgetApiIamResources": "PARTIAL_OWNER_SUPPLIED_READ_ONLY_INVENTORY",
     "createResources": false,
     "enableApis": false,
     "deploy": false,
@@ -360,16 +383,49 @@
     "budgetCreateCount": 0,
     "ifMissing": {
       "artifactRegistryRepositories": 1,
-      "cloudRunServices": 1,
-      "storageBuckets": 1,
-      "runtimeServiceAccounts": 1,
-      "schedulerCallerServiceAccounts": 12,
-      "schedulerJobs": 12
+      "cloudRunServices": 0,
+      "storageBuckets": 0,
+      "runtimeServiceAccounts": 0,
+      "schedulerCallerServiceAccounts": 11,
+      "schedulerJobs": 11
     },
     "reuseCompatibleExisting": true,
     "enableOnlyApprovedSchedulerJobsInitially": 1,
     "allCreationRequiresSeparateApproval": true,
     "createIfMissingOnly": true,
-    "existingInventoryStatus": "NOT_VERIFIED"
+    "existingInventoryStatus": "PARTIAL_OWNER_SUPPLIED_READBACK",
+    "existingProjectStatus": "ACTIVE",
+    "existingCloudRunServicesObserved": 1,
+    "existingTokyoBucketsObserved": 1,
+    "existingSchedulerJobsObserved": 1,
+    "existingP1RuntimeAndCallerAccountsObserved": 2,
+    "defaultComputeAccountObserved": true,
+    "allObservedResourcesRequireConfigurationReadback": true
+  },
+  "readOnlyInventory": {
+    "source": "Owner-pasted Cloud Shell CLI output; identifiers omitted from repository",
+    "observedAt": "2026-10-26T17:38:14Z",
+    "projectLifecycleState": "ACTIVE",
+    "requiredP1Apis": "LISTED_ENABLED",
+    "serviceAccountCount": 3,
+    "p1RuntimeIdentityListed": true,
+    "p1SchedulerCallerListed": true,
+    "defaultComputeIdentityListed": true,
+    "tokyoBucketCount": 1,
+    "bucketLocation": "ASIA-NORTHEAST1",
+    "bucketStorageClass": "NOT_VERIFIED",
+    "tokyoCloudRunServiceCount": 1,
+    "cloudRunConfiguration": "NOT_VERIFIED",
+    "tokyoSchedulerJobCount": 1,
+    "schedulerState": "PAUSED",
+    "schedulerCron": "47 7 * * 1-5",
+    "schedulerTimeZone": "Asia/Tokyo",
+    "schedulerLastAttemptTime": "2026-10-26T17:38:12.948296Z",
+    "schedulerNextScheduleTime": "2026-10-26T22:47:00.270272Z",
+    "schedulerStatusCode": -1,
+    "appAttemptResponse": "HTTP 400 SCHEDULE_NOT_ALLOWED (owner-supplied diagnostic)",
+    "exactScheduleHeaderCaptured": false,
+    "storageWriteReached": false,
+    "inventoryLimit": "Owner output not independently re-read; IAM bindings and detailed resource configuration unverified"
   }
 }
