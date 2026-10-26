@@ -89,13 +89,13 @@ class GCSPrivateEvidenceStore:
         self.attempt_id = attempt_id
         self.generations: dict[str, int] = {}
 
-    def _name(self, evidence_id: str) -> str:
+    def object_name(self, evidence_id: str) -> str:
         if len(evidence_id) != 64 or any(ch not in "0123456789abcdef" for ch in evidence_id):
             raise ContractError("EVIDENCE_ID_INVALID")
         return f"{self.prefix}/evidence/{self.attempt_id}/{evidence_id}.json"
 
     def put_if_absent(self, evidence_id: str, encoded: bytes) -> None:
-        name = self._name(evidence_id)
+        name = self.object_name(evidence_id)
         blob = self.bucket.blob(name)
         try:
             blob.upload_from_string(encoded, content_type="application/json", if_generation_match=0)
@@ -112,7 +112,7 @@ class GCSPrivateEvidenceStore:
         generation = self.generations.get(evidence_id)
         if generation is None:
             raise ContractError("GCS_READBACK_GENERATION_MISSING")
-        pinned = self.bucket.blob(self._name(evidence_id), generation=generation)
+        pinned = self.bucket.blob(self.object_name(evidence_id), generation=generation)
         return pinned.download_as_bytes(if_generation_match=generation)
 
     def delete_if_same_generation(self, evidence_id: str) -> bool:
@@ -257,6 +257,10 @@ def process_test_only_request(
         "scheduledAt": trigger.scheduled_at,
         "startLagSeconds": trigger.start_lag_seconds,
         "attemptLedgerObject": ledger_path,
+        "evidenceObject": store.object_name(result["evidenceId"]) if hasattr(store, "object_name") else None,
+        "evidenceGeneration": store.generations.get(result["evidenceId"]) if hasattr(store, "generations") else None,
+        "evidenceBucket": os.environ.get("TEST_ONLY_GCS_BUCKET") or None,
+        "evidenceSha256": result["readbackSha256"],
         "storage": "PRIVATE_GCS_CREATE_ONLY",
         "mainReadback": "NOT_RUN_TEST_ONLY_NO_MAIN_WRITE",
         "docsWrite": "NOT_RUN_TEST_ONLY_NO_DOCS_WRITE",
@@ -278,6 +282,8 @@ def application(environ, start_response):
     # <=60-second gate. Scheduler's scheduled time is never substituted.
     actual_start = datetime.now(JST)
     started_monotonic = time.monotonic()
+    if environ.get("REQUEST_METHOD") == "GET" and environ.get("PATH_INFO") == "/healthz":
+        return _response(start_response, "200 OK", {"status": "READY_TEST_ONLY"})
     if environ.get("REQUEST_METHOD") != "POST" or environ.get("PATH_INFO") != "/capture":
         return _response(start_response, "404 Not Found", {"status": "NOT_FOUND"})
     try:

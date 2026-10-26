@@ -48,6 +48,10 @@ resource "google_storage_bucket" "evidence" {
   public_access_prevention    = "enforced"
   force_destroy               = false
 
+  versioning {
+    enabled = true
+  }
+
   lifecycle_rule {
     action {
       type = "Delete"

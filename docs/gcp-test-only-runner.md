@@ -26,18 +26,96 @@ Each attempt has a deterministic identity from exact Scheduler job name and sche
 
 The bucket has uniform access, enforced public-access prevention and a 14-day lifecycle. Writes use GCS generation-match zero; readback pins the generation. The runner identity has Secret Accessor for only the HMAC secret and a project custom role bound to only the dedicated bucket with object create/get/delete (no object update permission). It has no Docs, GitHub, Drive, or publication credentials. Scheduler identities have only Cloud Run Invoker. The runner's one-instance/concurrency configuration plus durable per-attempt ledger prevents duplicate acquisition.
 
-## Build / Cloud Shell setup
+## Cloud Shell setup, TEST_ONLY execution and readback
 
-Use a new or explicitly TEST_ONLY existing project with billing enabled; never select the production project. Required human actions:
-1. Select a project and region `asia-northeast1`; enable billing and verify no production Drive/GitHub credentials are present.
-2. Install/authorize `gcloud` and Terraform >=1.6 in Google Cloud Shell. The operator needs Service Usage Admin, Cloud Run Admin, Cloud Scheduler Admin, Service Account Admin, Service Account User on the runtime and caller identities, Project IAM Admin for bindings, IAM Role Admin to create the project custom role, Logging Config Writer for the 14-day log bucket, Secret Manager Admin, Storage Admin, Artifact Registry Admin, and Cloud Build Editor. The Cloud Build service agent needs Artifact Registry Writer on the image repository. Prefer a temporary setup operator; runtime identities remain narrowly scoped.
-3. Clone this PR branch in Cloud Shell. Run `scripts/gcp/build_test_image.sh` with `PROJECT_ID`. Pin the published image by digest (not mutable tag) into a private `terraform.tfvars`.
-4. Run `scripts/gcp/deploy_test_only.sh plan`; inspect all resources and the target project. Only after explicit human review run `apply`.
-5. Add a random HMAC secret of at least 32 bytes to the Secret Manager secret Terraform created. Do not put it in Git, shell history, Terraform variables/state, output, or this chat. Example using an ephemeral local file in Cloud Shell: `umask 077; head -c 48 /dev/urandom > /tmp/market-report-hmac; gcloud secrets versions add market-report-test-only-trigger-hmac --data-file=/tmp/market-report-hmac; shred -u /tmp/market-report-hmac`.
-6. Confirm the service has no unauthenticated invoker, the bucket is private, APIs/IAM/job names match outputs, and the project has no production access. Confirm one Scheduler execution at a time and billing alert.
-7. Terraform sets the isolated project's Cloud Logging `_Default` bucket retention to 14 days; this applies to every default-bucket log in that project, so do not use a project with unrelated workloads. At the first approved weekday, inspect Cloud Scheduler attempt logs, Cloud Run structured logs, GCS object generation and pinned readback. Record scheduled time, actual handler start, lag seconds, generatedAt, reportId/revision, sourceHash, snapshotHash, object generation, and readback result. Run each abnormal test using a separate TEST_ONLY fixture/endpoint in the isolated project; do not edit production identities.
+### Responsibility boundary
 
-`deploy_test_only.sh plan` is the default and creates no cloud resources. `apply` requires the operator to choose it explicitly. Terraform creates Secret Manager metadata only; secret payload remains an external human operation. It creates no Docs, Drive, GitHub or publication integration.
+- **Codex/CI can do now:** edit this PR branch; build and start the Docker image in GitHub Actions; run offline contract tests; run Terraform fmt/init-without-backend/validate; inspect the Terraform source for IAM and storage invariants. This does not create cloud resources or prove a real plan.
+- **Human must do in Google Cloud:** create and select a dedicated TEST_ONLY project, attach billing and a budget alert, authorize Cloud Shell, bootstrap the state bucket, review the real plan, and separately approve any apply. Human also adds the secret value and observes the scheduled execution. Codex has no connected GCP account/Cloud Shell credential in this task.
+- Never use the production project. No apply, production deployment, Docs/GitHub/Drive writes, or main changes are performed by this PR task.
+
+### Architecture and state
+
+Cloud Scheduler → authenticated Cloud Run **Service** → existing acquisition/evidence path → private GCS. A synchronous authenticated Service lets the handler record its actual first-instruction start time and return a result; a Cloud Run Job would need asynchronous execution polling/correlation before it could prove the <=60-second start gate. Neither choice guarantees Scheduler latency, so late starts still fail closed. GitHub Actions cron is not a timing substitute.
+
+Terraform remote state uses a separate GCS bucket in the dedicated TEST_ONLY project, with uniform bucket-level access, public access prevention, and object versioning. The state bucket is bootstrapped separately before Terraform init and is not the evidence bucket. Grant state access only to the human/operator identity; the Cloud Run and Scheduler identities receive no state access. Do not put secret payloads in tfvars or Terraform: Terraform creates Secret Manager metadata only. .gitignore excludes tfvars, plans, state and .terraform/.
+
+### Ordered setup and first scheduled readback
+
+Replace the example values with the dedicated TEST_ONLY project and unique bucket name. Do not copy secret values into commands or logs.
+
+1. **Human — project and billing.** In Google Cloud Console create/select a dedicated project whose ID is not production; attach billing; create a budget alert; confirm the project contains no unrelated workloads. The 14-day _Default log retention setting is project-wide.
+2. **Human — Cloud Shell identity and checkout.**
+   ~~~~sh
+   gcloud auth login
+   export PROJECT_ID='your-dedicated-test-only-project'
+   export REGION='asia-northeast1'
+   export TF_STATE_BUCKET='your-globally-unique-test-only-tfstate-bucket'
+   gcloud config set project "$PROJECT_ID"
+   test "$(gcloud config get-value project)" = "$PROJECT_ID"
+   git clone --branch codex/issue-176-0800-upstream-recovery https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report.git
+   cd Chat-GPT-Market-Report
+   ~~~~
+   **Codex can prepare the branch and CI; only a human with project access can authenticate Cloud Shell.**
+3. **Human — bootstrap remote Terraform state.**
+   ~~~~sh
+   scripts/gcp/bootstrap_state_bucket.sh
+   gcloud storage buckets describe "gs://$TF_STATE_BUCKET" --format='yaml(name,location,iamConfiguration,versioning)'
+   ~~~~
+   Check public access prevention, uniform access, versioning, and bucket IAM (intended operator/state administrators only). Do not grant the runner or Scheduler access to this bucket.
+4. **Human — build and pin the image.** Ensure the operator has Cloud Build and Artifact Registry permissions in this TEST_ONLY project.
+   ~~~~sh
+   export IMAGE_TAG="pre-slot-$(git rev-parse --short HEAD)"
+   PROJECT_ID="$PROJECT_ID" REGION="$REGION" IMAGE_TAG="$IMAGE_TAG" scripts/gcp/build_test_image.sh
+   export RUNNER_IMAGE='asia-northeast1-docker.pkg.dev/PROJECT/market-report-test-only/runner@sha256:REPLACE_WITH_PRINTED_DIGEST'
+   ~~~~
+   The script submits the repository root (.) as build context. cloudbuild.yaml selects the existing Dockerfile. It never relies on unsupported gcloud builds submit --file.
+5. **Human — generate and review a real plan; no apply yet.**
+   ~~~~sh
+   export TF_STATE_BUCKET
+   PROJECT_ID="$PROJECT_ID" RUNNER_IMAGE="$RUNNER_IMAGE" TF_STATE_BUCKET="$TF_STATE_BUCKET" scripts/gcp/deploy_test_only.sh plan
+   terraform -chdir=infrastructure/gcp/pre-slot-test show -no-color tfplan
+   ~~~~
+   Confirm the plan targets only the dedicated TEST_ONLY project and documented Scheduler, Cloud Run, Secret Manager metadata, private evidence bucket, IAM, APIs and 14-day logging retention. Reject any unrelated/prod target or broad write permission. The script accepts only plan; it cannot apply. A real plan requires the human-provisioned project, credentials, state bucket and provider access, so CI does not fabricate one.
+6. **Human — separate apply approval.** Applying requires a later, explicit approval after the exact plan is reviewed. Only the authorized human operator may then run:
+   ~~~~sh
+   terraform -chdir=infrastructure/gcp/pre-slot-test apply tfplan
+   ~~~~
+   This is a documented future step, not executed by Codex. Re-run and review a fresh plan if the saved plan is stale.
+7. **Human — add the TEST_ONLY HMAC secret after resource creation.**
+   ~~~~sh
+   umask 077
+   head -c 48 /dev/urandom > /tmp/market-report-hmac
+   gcloud secrets versions add market-report-test-only-trigger-hmac --data-file=/tmp/market-report-hmac
+   shred -u /tmp/market-report-hmac
+   ~~~~
+   Do not put the value in Git, shell history, Terraform variables/state, CI output, or this chat. Restrict secret access to the runner service account as defined in Terraform.
+8. **Human — inspect the deployed configuration before waiting for a weekday run.**
+   ~~~~sh
+   gcloud run services describe mr-pre-slot-test --region "$REGION" --project "$PROJECT_ID" --format='yaml(status.url,metadata.annotations,spec.template.spec.serviceAccountName)'
+   gcloud scheduler jobs list --location "$REGION" --project "$PROJECT_ID"
+   gcloud storage buckets describe "gs://$PROJECT_ID-mr-pre-slot-test-evidence" --project "$PROJECT_ID" --format='yaml(iamConfiguration,versioning,lifecycle)'
+   ~~~~
+   Verify no unauthenticated allUsers invoker, each scheduler caller matches the Cloud Run invoker binding and OIDC audience, evidence bucket public prevention/UBLA/versioning/14-day expiry are correct, and runner has no Docs/GitHub/main/Drive/publication or Terraform-state permissions.
+9. **Human — observe a real scheduled TEST_ONLY attempt.** Wait for a weekday 07:47, 07:53, or 07:57 JST job; do not use a later/other-slot snapshot as substitute. Record Scheduler scheduled time and Cloud Run actualStartAt, startLagSeconds, report ID, source/snapshot hashes, evidence bucket/object/generation and exact readback status from the same response/log event. A start delay over 60 seconds, stale source, cutoff breach, duplicate, or mismatch must remain blocked.
+   ~~~~sh
+   gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="mr-pre-slot-test"' --project "$PROJECT_ID" --freshness=2d --limit=30 --format=json
+   ~~~~
+10. **Human — independently re-read the exact object generation.** Copy bucket, object, generation and evidenceSha256 from the same successful runner result; install the pinned GCP runtime dependencies if absent.
+    ~~~~sh
+    python -m pip install -r scripts/gcp/requirements.txt
+    python scripts/gcp/verify_test_only_object.py \
+      --bucket 'TEST_ONLY_BUCKET' \
+      --object 'test-only/08-00/evidence/ATTEMPT_ID/EVIDENCE_ID.json' \
+      --generation 'GENERATION_FROM_RUN' \
+      --sha256 'EVIDENCE_SHA256_FROM_RUN'
+    ~~~~
+    Expected result is PASS_EXACT_GENERATION_READBACK with the same SHA-256. A mismatch is FAIL and must not be retried by overwriting; keep the object quarantined until lifecycle cleanup.
+11. **Codex — review, if requested.** Share only nonsecret plan output, sanitized logs and the readback result. Codex can correlate them against this PR and report observed scope; it cannot claim an external E2E until those records exist.
+
+### Required operator permissions
+
+The temporary setup operator needs project-level Service Usage Admin, Cloud Run Admin, Cloud Scheduler Admin, Service Account Admin/User, Project IAM Admin and IAM Role Admin, Logging Config Writer, Secret Manager Admin, Storage Admin, Artifact Registry Admin and Cloud Build Editor. Narrow these to the TEST_ONLY project and bucket wherever supported. Cloud Build's service agent needs Artifact Registry Writer for the test repository. At runtime, Scheduler identities receive Cloud Run Invoker only; the runner receives access to the one secret and the evidence bucket's custom create/get/delete role. No runtime Docs, GitHub, Drive, publisher or state permissions are granted.
 
 ## Cost estimate (USD, indicative)
 

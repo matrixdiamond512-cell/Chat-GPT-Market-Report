@@ -2,16 +2,20 @@ name: GCP TEST_ONLY infrastructure contracts
 on:
   pull_request:
     paths:
+      - .gitignore
       - scripts/gcp/**
       - infrastructure/gcp/pre-slot-test/**
       - tests/test_gcp_pre_slot_cloud_runner.py
+      - tests/test_gcp_pre_slot_infrastructure.py
       - docs/gcp-test-only-runner.md
       - .github/workflows/gcp-test-only-infrastructure-ci.yml
   push:
     paths:
+      - .gitignore
       - scripts/gcp/**
       - infrastructure/gcp/pre-slot-test/**
       - tests/test_gcp_pre_slot_cloud_runner.py
+      - tests/test_gcp_pre_slot_infrastructure.py
       - docs/gcp-test-only-runner.md
       - .github/workflows/gcp-test-only-infrastructure-ci.yml
   workflow_dispatch:
@@ -20,16 +24,35 @@ permissions:
 jobs:
   contracts:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Compile runner and execute offline normal/abnormal contracts
+      - name: Compile runner and execute offline normal/abnormal and infrastructure contracts
         run: |
-          python -m compileall -q scripts/gcp/pre_slot_cloud_runner.py
-          python -m unittest tests.test_gcp_pre_slot_cloud_runner -v
+          python -m compileall -q scripts/gcp/pre_slot_cloud_runner.py scripts/gcp/verify_test_only_object.py
+          python -m unittest tests.test_gcp_pre_slot_cloud_runner tests.test_gcp_pre_slot_infrastructure -v
+      - name: Build Docker image and smoke-test container startup
+        run: |
+          image="market-report-test-only:ci-$GITHUB_SHA"
+          container="market-report-test-only-smoke"
+          docker build --file infrastructure/gcp/pre-slot-test/Dockerfile --tag "$image" .
+          docker run --detach --name "$container" --publish 127.0.0.1:18080:8080 "$image"
+          cleanup() { docker rm --force "$container" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18080/healthz > /tmp/runner-health.json; then
+              cat /tmp/runner-health.json
+              grep -q 'READY_TEST_ONLY' /tmp/runner-health.json
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs "$container"
+          echo "Container did not become healthy within 60 seconds." >&2
+          exit 1
       - name: Terraform formatting and validation
         uses: hashicorp/setup-terraform@v3
         with:
