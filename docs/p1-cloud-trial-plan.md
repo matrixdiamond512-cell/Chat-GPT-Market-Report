@@ -27,20 +27,23 @@ Status: preparation only. Do not enable APIs or create cloud resources until the
 
 ## Read-only environment inventory and reconciliation gate
 
+The owner supplied Cloud Shell output for the existing project on 2026-10-27 JST. Identifiers are intentionally omitted here. This is owner-supplied external output, not a live read by this agent; detailed settings remain to be reconciled.
+
 | Item | Current observation | Action |
 |---|---|---|
-| Project | Owner says the existing project is already created; project ID and live project status are NOT_VERIFIED in this turn. | Reuse this project; do not create another. Confirm ID and billing link before any approved change. |
-| Billing account and budget | Owner reports active billing, JPY currency, and a success screen for the JPY 800 monthly budget alert. Budget ID, project scope, period and 400/640/800 thresholds are NOT_VERIFIED. | Treat create outcome as already performed; do not retry or create a duplicate. Read back only and reconcile the budget details before approval. |
-| Region | `asia-northeast1` / Tokyo is the P1 trial target. Existing resource regions are NOT_VERIFIED. | Use Tokyo for new isolated resources after approval; inspect for compatible existing resources first. |
-| APIs | Cloud Run, Scheduler, Storage, Artifact Registry, IAM Credentials, Logging, Monitoring, Service Usage are NOT_VERIFIED. | Read-only list first; activate only missing required APIs after separate approval. Billing Budgets API is unnecessary for a Console-created budget unless API management is later chosen. |
-| Service accounts / IAM | Current identities and bindings are NOT_VERIFIED. | Reuse only dedicated identities with exact least-privilege bindings; do not grant broader roles or create keys. |
-| Bucket, Cloud Run, Scheduler | Existing resources and configuration are NOT_VERIFIED. | Inventory read-only; reuse only if isolation and policy match. Create only confirmed-missing resources after separate approval. |
+| Project | Cloud Shell listed one matching project with lifecycle state ACTIVE. The display name is `Market Report P1 Shadow`; project ID is intentionally omitted from this PR. | Reuse this project only. No project creation. |
+| Billing account and budget | Owner reports JPY 800/month alert creation success. The inventory output did not read the billing link or budget object. | Do not create or retry a budget. Budget ID, scope, period and thresholds remain readback-pending. |
+| APIs | The supplied enabled-API listing includes Cloud Run, Cloud Scheduler, Cloud Storage, Artifact Registry, IAM Credentials, Logging, Monitoring, Service Usage, and Cloud Build. | Required P1 APIs appear enabled in the supplied output. Do not activate APIs; verify only if later needed. |
+| Service accounts / IAM | Three service accounts are listed: one P1 runtime identity, one P1 Scheduler caller, and the default Compute identity. IAM bindings and service-account use by the deployed service/job are not verified. | Reconcile the existing identities and exact bindings; do not duplicate the runtime identity or caller. Keep the default Compute identity out of the P1 design. |
+| Bucket | One bucket is listed in `ASIA-NORTHEAST1`; the list output did not confirm storage class, uniform access, public access prevention, soft delete, lifecycle, or IAM. | Inspect the existing bucket and reuse only if it meets isolation and retention requirements. No duplicate bucket. |
+| Cloud Run | One service is listed in `asia-northeast1`; the inventory did not confirm URL, authentication, runtime identity, limits, environment, or image digest. | Inspect its configuration; do not create a duplicate service. |
+| Cloud Scheduler | One job is listed, PAUSED, on `47 7 * * 1-5` in `Asia/Tokyo`. Last attempt was `2026-10-26T17:38:12.948296Z`; next `scheduleTime` shown was `2026-10-26T22:47:00.270272Z`; status code was `-1`. | Keep PAUSED. Inspect the exact job and Cloud Run binding before any further request. Do not use Run now or resume for this schedule contract. |
 
-No account/project identifiers, notification address, user email, IAM principal list or credentials belong in this PR.
+The app returned `SCHEDULE_NOT_ALLOWED` with HTTP 400 for the attempt around 17:38Z. The attempt time is hours before the listed next cron time, suggesting an off-schedule/manual trigger, but the actual `X-CloudScheduler-ScheduleTime` header was not captured, so this is not proven. The ingress returns this error before calling its processor; that request therefore did not reach the acquisition or Storage adapter.
 
-- Owner-reported state: an existing project is available; billing currency JPY; the JPY 800/month budget alert displays creation success. Treat the alert as already created and do not create, retry, or duplicate it. The authenticated Cloud Console/API inventory could not be re-read this turn, so project ID, billing link/status, exact budget scope/period/threshold readback, enabled APIs, IAM and existing services remain `NOT_VERIFIED`.
-- Inventory result table: project existence/name—user-reported, ID not re-read; billing account—user-reported active/JPY, not re-read; JPY 800 budget—user-reported created, resource ID/scope/thresholds not read back; region—Tokyo is the proposal, existing resource regions not checked; Cloud Run/Scheduler/Storage and service accounts—NOT_VERIFIED; API and IAM state—NOT_VERIFIED. Read-only reconcile existing resources before any approval. Reuse a compatible isolated resource and never duplicate it; create only confirmed-missing assets after separate approval. No second project.
-- Keep project ID, billing account ID, invoice/credit details, notification email, IAM principal list, credentials and tokens out of this public plan and PR text. The template uses placeholders for environment-specific values.
+The job's next schedule timestamp contains fractional seconds. Cloud Scheduler documents the schedule header as RFC3339, and its job timestamp uses fractional precision. The prior ingress parser rejected any microseconds. PR #182 now canonicalizes a timestamp to the scheduled minute only when its whole-second field is zero; nonzero whole seconds, non-UTC offsets, wrong slot/attempt, future events, and weekends remain rejected. An offline regression covers the supplied fractional format. This patch does not authorize a live retry or deployment.
+
+No account identifiers, service-account emails, bucket name, Cloud Run URL, credentials, or tokens are stored in this plan.
 
 ## Planned resource reconciliation and least privilege
 
@@ -51,10 +54,10 @@ Plan against the existing project only. Candidate counts below are maximums if t
 |---|---:|---|
 | Monthly budget alert | **0** | JPY 800 alert is user-reported as created. Read it back only; never create a replacement. |
 | Artifact Registry repository | 1 | Dedicated trial image repository in Tokyo; create only if absent and approved. |
-| Cloud Run service | 1 | `p1-report-shadow-ingress`; IAM authentication, no `allUsers`, 1 vCPU/512 MiB, min 0/max 2, concurrency 1, 120s timeout. |
-| Cloud Storage bucket | 1 | Private test bucket, Tokyo Standard, uniform access, public access prevention, `shadow/` prefix, 7-day soft delete, 30-day lifecycle candidate. |
-| Service accounts | 13 | One runtime identity plus 12 distinct Scheduler callers (4 slots × 3 offsets); keys disabled. Reuse only if exclusive and correctly scoped. |
-| Cloud Scheduler jobs | 12 | Four weekday slots × three attempts. Keep disabled until manual ingress and storage fixture tests pass; then enable one approved job at a time. |
+| Cloud Run service | 0 new | One service already appears in the supplied inventory. Inspect and reuse only if IAM authentication, runtime identity, limits, image and environment match. |
+| Cloud Storage bucket | 0 new | One Tokyo bucket already appears in the supplied inventory. Inspect its class, access, lifecycle, soft-delete and IAM before reuse. |
+| Service accounts | 11 additional caller accounts at most | One runtime identity and one Scheduler caller already appear in inventory; up to 11 more callers only if completing the 12-job target. Verify bindings and do not reuse the default Compute identity. |
+| Cloud Scheduler jobs | 11 additional jobs at most | One paused 08:00/T−13 job already appears in inventory; additional jobs only if completing the 12-job target and after separate approval. |
 | New project | **0** | Reuse the user's existing project; no duplicate project. |
 
 Role plan:
