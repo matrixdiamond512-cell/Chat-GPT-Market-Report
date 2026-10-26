@@ -122,6 +122,14 @@ resource "google_cloud_run_v2_service" "runner" {
   deletion_protection = false
   custom_audiences    = [local.runner_audience]
 
+  # Cloud Run API reports service-level default zeros even though this service
+  # only configures revision-level max_instance_count below. Do not rewrite
+  # implicit service-level scaling during Scheduler-only changes.
+  # Any intended service-level scaling change needs a separate reviewed change.
+  lifecycle {
+    ignore_changes = [scaling]
+  }
+
   template {
     service_account                  = google_service_account.runner.email
     timeout                          = "300s"
