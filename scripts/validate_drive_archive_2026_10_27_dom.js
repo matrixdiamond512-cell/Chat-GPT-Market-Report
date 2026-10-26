@@ -45,6 +45,7 @@ const expected=archive.reports.find(x=>x.date==='2026-10-27'&&x.time==='08:00');
    await page.waitForFunction(()=>document.querySelector('#dateInput')?.value==='2026-10-27' && document.querySelector('.time-tab.is-active')?.textContent.trim()==='08:00',null,{timeout:60000});
    const dash=await page.evaluate(()=>({date:document.querySelector('#dateInput')?.value,time:document.querySelector('.time-tab.is-active')?.textContent.trim(),cards:document.querySelectorAll('#marketCards .market-card').length,status:document.querySelector('#reportStatus')?.textContent||''}));
    assert(dash.cards>=6,'Dashboard market cards missing: '+dash.cards);
+   assert(dash.status.includes('2026/10/27（火）'),'JST weekday/date label incorrect: '+dash.status);
    assert(!errors.length,'Dashboard JS errors: '+errors.join(';'));
    console.log('PASS live index.html date/time selector 2026-10-27 08:00; cards='+dash.cards+'; status='+dash.status);
    await page.close();
