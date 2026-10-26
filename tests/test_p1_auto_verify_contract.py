@@ -176,6 +176,36 @@ class OneShotWorkflowDefinitionTests(unittest.TestCase):
         self.assertIn("call: sys.log", definition)
         self.assertIn("return: ${record}", definition)
 
+    def test_pause_retry_loops_stop_after_confirmed_paused_readback(self):
+        """Never call Scheduler jobs.pause repeatedly after a successful stop."""
+        root = Path(__file__).resolve().parents[1]
+        definition = (
+            root / "cloud" / "workflows" / "p1-one-shot-auto-verify.yaml"
+        ).read_text(encoding="utf-8")
+        target_loop = definition.split("    - pause_target:\n", 1)[1].split(
+            "    - target_pause_gate:\n", 1
+        )[0]
+        watchdog_loop = definition.split("    - pause_watchdog:\n", 1)[1].split(
+            "    - format_last_attempt:\n", 1
+        )[0]
+        for fragment, job in ((target_loop, "target"),
+                              (watchdog_loop, "watchdog")):
+            with self.subTest(job=job):
+                self.assertEqual(fragment.count("next: break"), 1)
+                self.assertIn(
+                    f'condition: ${{{job}Readback == "PAUSED"}}', fragment
+                )
+                self.assertIn(
+                    f'${{if({job}Readback == "PAUSED" and '
+                    f'{job}PauseCall == "FAILED", "ALREADY_PAUSED", '
+                    f'{job}PauseCall)}}',
+                    fragment,
+                )
+                self.assertLess(
+                    fragment.index(f"read_{job}_after_pause:"),
+                    fragment.index(f"exit_{job}_retry_if_paused:"),
+                )
+
     def test_config_is_preparation_only_and_does_not_enable_storage_writes(self):
         root = Path(__file__).resolve().parents[1]
         config = json.loads((root / "config" / "p1-one-shot-auto-verify.json").read_text(encoding="utf-8"))
