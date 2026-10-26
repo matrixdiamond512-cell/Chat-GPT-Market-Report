@@ -179,6 +179,12 @@ jobs:
           NODE_PATH: ${{ runner.temp }}/portal-validation/node_modules
         run: node scripts/validate_report_recovery_dom.js
 
+      - name: Verify Oct 27 Drive analytical archive on live Pages
+        env:
+          PORTAL_URL: ${{ steps.deployment.outputs.page_url }}
+          NODE_PATH: ${{ runner.temp }}/portal-validation/node_modules
+        run: node scripts/validate_drive_archive_2026_10_27_dom.js
+
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
