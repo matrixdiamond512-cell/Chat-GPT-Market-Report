@@ -1,0 +1,39 @@
+name: GCP TEST_ONLY infrastructure contracts
+on:
+  pull_request:
+    paths:
+      - scripts/gcp/**
+      - infrastructure/gcp/pre-slot-test/**
+      - tests/test_gcp_pre_slot_cloud_runner.py
+      - docs/gcp-test-only-runner.md
+      - .github/workflows/gcp-test-only-infrastructure-ci.yml
+  push:
+    paths:
+      - scripts/gcp/**
+      - infrastructure/gcp/pre-slot-test/**
+      - tests/test_gcp_pre_slot_cloud_runner.py
+      - docs/gcp-test-only-runner.md
+      - .github/workflows/gcp-test-only-infrastructure-ci.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile runner and execute offline normal/abnormal contracts
+        run: |
+          python -m compileall -q scripts/gcp/pre_slot_cloud_runner.py
+          python -m unittest tests.test_gcp_pre_slot_cloud_runner -v
+      - name: Terraform formatting and validation
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+      - run: terraform -chdir=infrastructure/gcp/pre-slot-test fmt -check
+      - run: terraform -chdir=infrastructure/gcp/pre-slot-test init -backend=false
+      - run: terraform -chdir=infrastructure/gcp/pre-slot-test validate
