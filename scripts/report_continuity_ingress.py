@@ -45,9 +45,12 @@ def _utc_schedule(value: str) -> datetime:
     except ValueError as exc:
         raise ValueError("INVALID_SCHEDULE_TIME") from exc
     if (scheduled.tzinfo is None or scheduled.utcoffset() != timedelta(0)
-            or scheduled.second or scheduled.microsecond):
+            or scheduled.second):
         raise ValueError("INVALID_SCHEDULE_TIME")
-    return scheduled.astimezone(timezone.utc)
+    # Cloud Scheduler's RFC3339 schedule timestamp can include fractional
+    # seconds. Cron is minute-granular here, so accept only whole-second-zero
+    # timestamps and canonicalize the fraction away before deriving the slot.
+    return scheduled.replace(microsecond=0).astimezone(timezone.utc)
 
 
 def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
