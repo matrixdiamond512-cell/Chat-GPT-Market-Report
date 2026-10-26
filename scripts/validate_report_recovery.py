@@ -63,7 +63,7 @@ def main() -> int:
         if key not in REQUIRED:
             if key in public_ids or report.get("report_status") in {"PUBLISHED", "DOC_READBACK_PASS"}:
                 fail("supplemental archive may not override formal publication " + key)
-            if not re.fullmatch(r"2026-10-\\d{2}_(?:08|12|16|21)-00", key):
+            if not re.fullmatch(r"2026-10-\d{2}_(?:08|12|16|21)-00", key):
                 fail("unexpected supplemental month/slot " + key)
             missing = report.get("missingAtSlotEvidence")
             if not missing:
