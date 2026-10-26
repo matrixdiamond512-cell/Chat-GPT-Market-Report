@@ -447,6 +447,24 @@ async function init() {
     } catch (error) {
       console.warn("[market report October 26 Drive readback] unavailable", error.message);
     }
+    // Additional verified folder readback: October 27 analytical text, not formal publication.
+    try {
+      const path = "data/dashboard-drive-archive-2026-10-27.json";
+      const response = await fetch(path + "?ts=" + Date.now(), {cache:"no-store"});
+      if (!response.ok) throw new Error(path + " HTTP " + response.status);
+      const data = await response.json();
+      if (data?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION" ||
+          data?.sourceFolderId !== "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz" ||
+          !Array.isArray(data.reports)) throw new Error("October 27 Drive archive schema invalid");
+      driveArchive.push(...data.reports.filter(r => isArchivedRecovery(r) &&
+        r.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED" &&
+        r.archiveType === "DRIVE_SAVED_DOCUMENT" && r.sourceDocument?.id &&
+        typeof r.driveRevisionId === "string" && r.driveRevisionId &&
+        r.driveTextLength === r.fullText.length &&
+        Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length));
+    } catch (error) {
+      console.warn("[market report October 27 Drive readback] unavailable", error.message);
+    }
     const bySlot = new Map(recovered.map(r => [reportKey(r), r]));
     driveArchive.forEach(r => {
       if (!bySlot.has(reportKey(r))) bySlot.set(reportKey(r), r);
