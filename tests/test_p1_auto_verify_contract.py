@@ -50,6 +50,20 @@ class OneShotVerificationContractTests(unittest.TestCase):
         self.assertEqual(result["checks"]["scheduleTime"], "FAIL")
         self.assertEqual(result["overall"], "FAIL")
 
+    def test_oidc_pass_is_not_misclassified_when_job_header_is_unlisted(self):
+        events = [stage("OIDC", "PASS", jobId="UNLISTED"),
+                  stage("JOB_NAME", "FAIL", jobId="UNLISTED")]
+        result = evaluate_one_shot(
+            expected_date_jst=DATE, expected_job_id=JOB, events=events,
+            http_status=403, scheduler_status_code=0,
+            scheduler_last_attempt_time=ATTEMPT,
+            target_state_after_pause="PAUSED",
+            watchdog_state_after_pause="PAUSED", logs_read=True,
+        )
+        self.assertEqual(result["checks"]["oidc"], "PASS")
+        self.assertEqual(result["checks"]["jobName"], "FAIL")
+        self.assertEqual(result["overall"], "FAIL")
+
     def test_processor_failure_still_requires_and_records_successful_stop(self):
         result = observation(http=500)
         self.assertEqual(result["checks"]["targetPauseReadback"], "PASS")
@@ -110,7 +124,7 @@ class OneShotWorkflowDefinitionTests(unittest.TestCase):
         definition = (root / "cloud" / "workflows" / "p1-one-shot-auto-verify.yaml").read_text(encoding="utf-8")
         self.assertLess(definition.index("pause_target:"), definition.index("read_target:"))
         self.assertLess(definition.index("read_target:"), definition.index("pause_watchdog:"))
-        self.assertLess(definition.index("pause_watchdog:"), definition.index("read_watchdog:"))
+        self.assertLess(definition.index("pause_watchdog:"), definition.index("read_watchdog_after_pause:"))
         self.assertLess(definition.index("read_watchdog:"), definition.index("query_logs:"))
         self.assertIn("targetReadback", definition)
         self.assertIn("watchdogReadback", definition)
