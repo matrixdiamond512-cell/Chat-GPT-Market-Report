@@ -22,6 +22,7 @@ main:
           - watchdogPauseCall: "NOT_RUN"
           - watchdogReadback: "UNKNOWN"
           - logsRead: false
+          - ingressRecordFound: false
           - logEntries: []
           - httpStatus: null
           - oidcResult: "INCOMPLETE"
@@ -190,16 +191,17 @@ main:
                   - candidateHttpStatus: ${map.get(payload, "httpStatus", map.get(httpRequest, "status", null))}
             - collect_http_status:
                 assign:
+                  - ingressRecordFound: ${if(eventName == "P1_INGRESS_RESULT" and (stageJobId == expectedJobId or stageJobId == "UNLISTED"), true, ingressRecordFound)}
                   - httpStatus: ${if(eventName == "P1_INGRESS_RESULT" and stageJobId == expectedJobId, candidateHttpStatus, if(httpStatus == null and candidateHttpStatus != null, candidateHttpStatus, httpStatus))}
             - collect_oidc:
                 assign:
-                  - oidcResult: ${if(eventName == "P1_AUTO_VERIFY_STAGE" and stageName == "OIDC" and (stageJobId == expectedJobId or stageJobId == "UNLISTED"), stageResult, oidcResult)}
+                  - oidcResult: ${if(eventName == "P1_INGRESS_RESULT" and (stageJobId == expectedJobId or stageJobId == "UNLISTED"), map.get(payload, "oidcResult", oidcResult), oidcResult)}
             - collect_job_name:
                 assign:
-                  - jobNameResult: ${if(eventName == "P1_AUTO_VERIFY_STAGE" and stageName == "JOB_NAME" and (stageJobId == expectedJobId or stageJobId == "UNLISTED"), stageResult, jobNameResult)}
+                  - jobNameResult: ${if(eventName == "P1_INGRESS_RESULT" and (stageJobId == expectedJobId or stageJobId == "UNLISTED"), map.get(payload, "jobNameResult", jobNameResult), jobNameResult)}
             - collect_schedule_time:
                 assign:
-                  - scheduleTimeResult: ${if(eventName == "P1_AUTO_VERIFY_STAGE" and stageName == "SCHEDULE_TIME" and stageJobId == expectedJobId, if(stageResult == "FAIL", "FAIL", if(map.get(payload, "schedulerDateJst", "") == runDateJst and map.get(payload, "schedulerTimeJst", "") == expectedTimeJst, "PASS", "FAIL")), scheduleTimeResult)}
+                  - scheduleTimeResult: ${if(eventName == "P1_INGRESS_RESULT" and stageJobId == expectedJobId, if(map.get(payload, "scheduleTimeResult", "INCOMPLETE") == "FAIL", "FAIL", if(map.get(payload, "scheduleTimeResult", "INCOMPLETE") == "PASS", if(map.get(payload, "schedulerDateJst", "") == runDateJst and map.get(payload, "schedulerTimeJst", "") == expectedTimeJst, "PASS", "FAIL"), "INCOMPLETE")), scheduleTimeResult)}
     - classify:
         assign:
           - oidcResult: ${if(oidcResult == "INCOMPLETE" and (httpStatus == 401 or httpStatus == 403), "FAIL", oidcResult)}
@@ -209,7 +211,7 @@ main:
           - schedulerAttemptResult: ${if(schedulerStatusCode == null or schedulerLastAttempt == null, "INCOMPLETE", if(schedulerStatusCode != 0 or not attemptInWindow, "FAIL", "PASS"))}
           - targetStopResult: ${if(targetReadback == "PAUSED", "PASS", "BLOCKED")}
           - watchdogStopResult: ${if(watchdogReadback == "PAUSED", "PASS", "BLOCKED")}
-          - logResult: ${if(logsRead and len(logEntries) > 0, "PASS", "INCOMPLETE")}
+          - logResult: ${if(logsRead and ingressRecordFound, "PASS", "INCOMPLETE")}
           - overall: ${if(targetReadback != "PAUSED" or watchdogReadback != "PAUSED", "BLOCKED", if(httpResult == "FAIL" or oidcResult == "FAIL" or jobNameResult == "FAIL" or scheduleTimeResult == "FAIL" or schedulerAttemptResult == "FAIL", "FAIL", if(httpResult == "PASS" and oidcResult == "PASS" and jobNameResult == "PASS" and scheduleTimeResult == "PASS" and schedulerAttemptResult == "PASS" and logResult == "PASS", "PASS", "INCOMPLETE")))}
           - record:
               schemaVersion: 1
