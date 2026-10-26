@@ -9,13 +9,17 @@ DATE = "2026-10-27"
 ATTEMPT = "2026-10-26T22:47:01Z"
 
 
-def stage(name, result, **extra):
+def ingress_record(*, http=200, oidc="PASS", job="PASS", schedule="PASS",
+                   date=DATE, time="07:47", job_id=JOB):
     return {
-        "event": "P1_AUTO_VERIFY_STAGE",
-        "stage": name,
-        "result": result,
-        "jobId": JOB,
-        **extra,
+        "event": "P1_INGRESS_RESULT",
+        "jobId": job_id,
+        "httpStatus": http,
+        "oidcResult": oidc,
+        "jobNameResult": job,
+        "scheduleTimeResult": schedule,
+        "schedulerDateJst": date,
+        "schedulerTimeJst": time,
     }
 
 
@@ -23,10 +27,8 @@ def observation(*, http=200, oidc="PASS", job="PASS", schedule="PASS",
                 schedule_date=DATE, schedule_time="07:47", code=0,
                 attempt=ATTEMPT, target="PAUSED", watchdog="PAUSED",
                 logs=True):
-    events = [stage("OIDC", oidc), stage("JOB_NAME", job),
-              stage("SCHEDULE_TIME", schedule,
-                    schedulerDateJst=schedule_date,
-                    schedulerTimeJst=schedule_time)]
+    events = [ingress_record(http=http, oidc=oidc, job=job, schedule=schedule,
+                             date=schedule_date, time=schedule_time)]
     return evaluate_one_shot(
         expected_date_jst=DATE, expected_job_id=JOB, events=events,
         http_status=http, scheduler_status_code=code,
@@ -51,8 +53,8 @@ class OneShotVerificationContractTests(unittest.TestCase):
         self.assertEqual(result["overall"], "FAIL")
 
     def test_oidc_pass_is_not_misclassified_when_job_header_is_unlisted(self):
-        events = [stage("OIDC", "PASS", jobId="UNLISTED"),
-                  stage("JOB_NAME", "FAIL", jobId="UNLISTED")]
+        events = [ingress_record(http=403, oidc="PASS", job="FAIL",
+                                 schedule="INCOMPLETE", job_id="UNLISTED")]
         result = evaluate_one_shot(
             expected_date_jst=DATE, expected_job_id=JOB, events=events,
             http_status=403, scheduler_status_code=0,
@@ -85,11 +87,10 @@ class OneShotVerificationContractTests(unittest.TestCase):
         self.assertEqual(result["checks"]["scheduleTime"], "INCOMPLETE")
 
     def test_previous_business_day_cannot_satisfy_todays_run(self):
-        stale = stage("SCHEDULE_TIME", "PASS",
-                      schedulerDateJst="2026-10-26", schedulerTimeJst="07:47")
+        stale = ingress_record(date="2026-10-26", time="07:47")
         result = evaluate_one_shot(
             expected_date_jst=DATE, expected_job_id=JOB,
-            events=[stage("OIDC", "PASS"), stage("JOB_NAME", "PASS"), stale],
+            events=[stale],
             http_status=200, scheduler_status_code=0,
             scheduler_last_attempt_time=ATTEMPT,
             target_state_after_pause="PAUSED",
@@ -102,11 +103,7 @@ class OneShotVerificationContractTests(unittest.TestCase):
         days = ("2026-10-26", "2026-10-27")
         results = []
         for day, attempt in zip(days, ("2026-10-25T22:47:00Z", ATTEMPT)):
-            events = [
-                stage("OIDC", "PASS"), stage("JOB_NAME", "PASS"),
-                stage("SCHEDULE_TIME", "PASS",
-                      schedulerDateJst=day, schedulerTimeJst="07:47"),
-            ]
+            events = [ingress_record(date=day)]
             results.append(evaluate_one_shot(
                 expected_date_jst=day, expected_job_id=JOB, events=events,
                 http_status=200, scheduler_status_code=0,
@@ -122,10 +119,10 @@ class OneShotWorkflowDefinitionTests(unittest.TestCase):
     def test_safety_pauses_both_scheduler_jobs_before_log_collection(self):
         root = Path(__file__).resolve().parents[1]
         definition = (root / "cloud" / "workflows" / "p1-one-shot-auto-verify.yaml").read_text(encoding="utf-8")
-        self.assertLess(definition.index("pause_target:"), definition.index("read_target:"))
+        self.assertLess(definition.index("pause_target:"), definition.index("read_target_after_pause:"))
         self.assertLess(definition.index("read_target:"), definition.index("pause_watchdog:"))
         self.assertLess(definition.index("pause_watchdog:"), definition.index("read_watchdog_after_pause:"))
-        self.assertLess(definition.index("read_watchdog:"), definition.index("query_logs:"))
+        self.assertLess(definition.index("read_watchdog_after_pause:"), definition.index("query_logs:"))
         self.assertIn("targetReadback", definition)
         self.assertIn("watchdogReadback", definition)
         self.assertIn("call: sys.log", definition)
