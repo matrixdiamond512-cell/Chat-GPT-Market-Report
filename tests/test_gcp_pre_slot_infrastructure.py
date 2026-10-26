@@ -123,6 +123,12 @@ esac
             self.assertTrue(any("storage buckets update" in call for call in calls))
             self.assertFalse(any("storage buckets create" in call for call in calls))
 
+    def test_scheduler_only_updates_do_not_rewrite_implicit_service_scaling(self):
+        tf = self.read("infrastructure/gcp/pre-slot-test/main.tf")
+        self.assertIn("ignore_changes = [scaling]", tf)
+        self.assertIn("max_instance_count = 1", tf)
+        self.assertIn("max_instance_request_concurrency = 1", tf)
+
     def test_runtime_iam_and_scheduler_audience_are_narrow_and_aligned(self):
         tf = self.read("infrastructure/gcp/pre-slot-test/main.tf")
         runner = self.read("scripts/gcp/pre_slot_cloud_runner.py")
