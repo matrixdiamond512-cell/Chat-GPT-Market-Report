@@ -152,12 +152,12 @@ class CloudRunIngressTests(unittest.TestCase):
         logs = [json.loads(line) for line in captured.getvalue().splitlines()]
         self.assertEqual(logs[0]["event"], "P1_JOB_HEADER_DIAGNOSTIC")
         self.assertEqual(logs[0]["jobHeaderForm"], "OTHER_FULL_RESOURCE")
-        self.assertEqual(logs[1], {
-            "event": "P1_INGRESS_RESULT",
-            "severity": "WARNING",
-            "httpStatus": 403,
-            "reason": "JOB_NOT_ALLOWLISTED",
-        })
+        self.assertEqual(logs[1]["event"], "P1_INGRESS_RESULT")
+        self.assertEqual(logs[1]["severity"], "WARNING")
+        self.assertEqual(logs[1]["httpStatus"], 403)
+        self.assertEqual(logs[1]["reason"], "JOB_NOT_ALLOWLISTED")
+        self.assertEqual(logs[1]["oidcResult"], "PASS")
+        self.assertEqual(logs[1]["jobNameResult"], "FAIL")
         self.assertNotIn(secret_token, captured.getvalue())
         self.assertNotIn(CALLER, captured.getvalue())
         self.assertNotIn(JOB, captured.getvalue())
