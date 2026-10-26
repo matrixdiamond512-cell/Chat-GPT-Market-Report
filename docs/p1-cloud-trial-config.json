@@ -57,7 +57,13 @@
     "acquisitionProvider": "scripts.p1_trial_fixture_provider:acquire",
     "publicationEligible": false,
     "storageEnabled": "false until separately approved trial deployment",
-    "cutoffRule": "No evidence write at or after report target T"
+    "cutoffRule": "No evidence write at or after report target T",
+    "iamPolicyReadback": {
+      "listedBinding": "roles/run.invoker for the dedicated Scheduler caller only",
+      "allUsersListed": false,
+      "serviceAuthenticationConfiguration": "NOT_VERIFIED",
+      "deployedSchedulerAllowlist": "NOT_VERIFIED"
+    }
   },
   "scheduler": {
     "region": "asia-northeast1",
@@ -303,7 +309,19 @@
       "observedNextScheduleTime": "2026-10-26T22:47:00.270272Z",
       "exactHeaderCaptured": false,
       "keepPaused": true,
-      "manualRunAllowed": false
+      "manualRunAllowed": false,
+      "jobDescribe": {
+        "targetAndAudienceReferToSameCloudRunService": true,
+        "callerHasRunInvokerBinding": true,
+        "retryCount": "OMITTED_DEFAULT_0",
+        "minBackoffSeconds": 5,
+        "maxBackoffSeconds": 3600,
+        "maxDoublings": 5,
+        "maxRetryDurationSeconds": 0,
+        "statusCode": -1,
+        "failedRequestScheduleHeader": "NOT_CAPTURED",
+        "scheduleTimeFieldMeaning": "NEXT_SCHEDULED_TIME_NOT_FAILED_REQUEST_HEADER"
+      }
     }
   },
   "storage": {
@@ -329,7 +347,8 @@
       "storage.objects.update",
       "storage.objects.delete",
       "storage.buckets.*"
-    ]
+    ],
+    "inventoryDescribe": "NOT_RUN: placeholder bucket name was passed literally; bucket exists per prior list output"
   },
   "identities": {
     "schedulerCallerServiceAccounts": 12,
