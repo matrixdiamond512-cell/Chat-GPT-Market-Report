@@ -57,6 +57,13 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
     """Return a WSGI app; no data provider or Storage client is constructed here."""
     if not audience or not bindings:
         raise ValueError("OIDC audience and Scheduler bindings are required")
+    # Cloud Scheduler sends a short job ID in X-CloudScheduler-JobName
+    # (e.g. slot-0800-t13), while reviewed config uses full resource names.
+    # A unique short ID must select exactly one full, account-bound binding.
+    short_bindings = {full_name.rsplit("/", 1)[-1]: binding
+                      for full_name, binding in bindings.items()}
+    if len(short_bindings) != len(bindings):
+        raise ValueError("SCHEDULER_SHORT_JOB_IDS_MUST_BE_UNIQUE")
     now = clock or (lambda: datetime.now(timezone.utc))
 
     def respond(start_response, status: str, result: Mapping[str, object]):
@@ -91,7 +98,11 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
         if not match:
             return respond(start_response, "401 Unauthorized", {"error": "UNAUTHENTICATED"})
         job_name = environ.get("HTTP_X_CLOUDSCHEDULER_JOBNAME", "")
+        # Never normalize arbitrary resource paths: exact full-name matches
+        # stay exact, and only unique short IDs may use the short lookup.
         binding = bindings.get(job_name)
+        if binding is None and "/" not in job_name:
+            binding = short_bindings.get(job_name)
         if binding is None:
             # Never log the untrusted job header value. Classify it against the
             # *existing* allowlist without treating shorter names as trusted.
@@ -200,4 +211,6 @@ def single_binding_map(entries: list[dict[str, object]]) -> dict[str, SchedulerB
         result[job] = SchedulerBinding(job, email, offset, slot, weekdays_only)
     if len({binding.service_account_email.lower() for binding in result.values()}) != len(result):
         raise ValueError("SCHEDULER_SERVICE_ACCOUNTS_MUST_BE_UNIQUE")
+    if len({job.rsplit("/", 1)[-1] for job in result}) != len(result):
+        raise ValueError("SCHEDULER_SHORT_JOB_IDS_MUST_BE_UNIQUE")
     return result
