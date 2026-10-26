@@ -68,7 +68,11 @@ def evaluate_one_shot(*, expected_date_jst: str, expected_job_id: str,
 
     http_result = ("INCOMPLETE" if http_status is None else
                    "PASS" if http_status == 200 else "FAIL")
-    oidc_result = _status_for_stage(job_events, "OIDC")
+    oidc_events = [event for event in event_list
+                   if event.get("event") == "P1_AUTO_VERIFY_STAGE"
+                   and event.get("stage") == "OIDC"
+                   and event.get("jobId") in {expected_job_id, "UNLISTED"}]
+    oidc_result = _status_for_stage(oidc_events, "OIDC")
     if oidc_result == "INCOMPLETE" and http_status in (401, 403):
         oidc_result = "FAIL"
     job_result = _status_for_stage(job_events, "JOB_NAME")
