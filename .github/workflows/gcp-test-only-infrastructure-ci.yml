@@ -34,6 +34,6 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.9.8"
-      - run: terraform -chdir=infrastructure/gcp/pre-slot-test fmt -check
+      - run: terraform -chdir=infrastructure/gcp/pre-slot-test fmt -diff -check
       - run: terraform -chdir=infrastructure/gcp/pre-slot-test init -backend=false
       - run: terraform -chdir=infrastructure/gcp/pre-slot-test validate
