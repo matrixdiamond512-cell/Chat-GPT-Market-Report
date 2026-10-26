@@ -78,6 +78,14 @@ class CloudRunIngressTests(unittest.TestCase):
             self.assertEqual(binding.attempt_minutes, 13)
         self.assertEqual(self.processor.call_count, 2)
 
+    def test_fractional_scheduler_timestamp_normalizes_to_cron_minute(self):
+        # Cloud Scheduler exposes RFC3339 schedule timestamps with subsecond
+        # precision; the report identity remains the minute-granular Cron slot.
+        status, result = run_request(self.app, schedule="2026-10-26T22:47:00.270272Z")
+        self.assertEqual(status, "200 OK")
+        self.assertEqual(result["status"], "CREATED")
+        self.assertEqual(self.processor.call_args.args[0].report_id, "2026-10-27_08-00")
+
     def test_valid_oidc_request_binds_job_slot_time_and_attempt(self):
         status, result = run_request(self.app)
         self.assertEqual(status, "200 OK")
