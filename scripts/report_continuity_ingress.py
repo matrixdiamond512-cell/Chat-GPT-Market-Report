@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, timezone
 import json
 import re
 import sys
+from zoneinfo import ZoneInfo
 from typing import Callable, Mapping
 
 from scripts.resolve_market_report_slot import REPORT_SLOTS, ReportIdentity, resolve_report_identity
@@ -68,6 +69,21 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
     if len(short_bindings) != len(bindings):
         raise ValueError("SCHEDULER_SHORT_JOB_IDS_MUST_BE_UNIQUE")
     now = clock or (lambda: datetime.now(timezone.utc))
+    audit_context: dict[str, object] = {}
+
+    def emit_validation_stage(stage: str, result: str, reason: str | None = None,
+                              **fields: object) -> None:
+        record: dict[str, object] = {
+            "event": "P1_AUTO_VERIFY_STAGE",
+            "stage": stage,
+            "result": result,
+            **audit_context,
+        }
+        if reason:
+            record["reason"] = reason
+        record.update(fields)
+        print(json.dumps(record, separators=(",", ":"), sort_keys=True),
+              file=sys.stderr, flush=True)
 
     def respond(start_response, status: str, result: Mapping[str, object]):
         # Cloud Run platform/IAM rejection happens before this WSGI function.
@@ -87,6 +103,7 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
             "severity": "WARNING" if code >= 400 else "INFO",
             "httpStatus": code,
             "reason": reason,
+            **audit_context,
         }, separators=(",", ":"), sort_keys=True), file=sys.stderr, flush=True)
         payload = json.dumps(dict(result), separators=(",", ":")).encode("utf-8")
         start_response(status, [("Content-Type", "application/json"),
@@ -97,18 +114,39 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
     def app(environ, start_response):
         if environ.get("REQUEST_METHOD") != "POST":
             return respond(start_response, "405 Method Not Allowed", {"error": "METHOD_NOT_ALLOWED"})
-        match = _BEARER.fullmatch(environ.get("HTTP_AUTHORIZATION", ""))
-        if not match:
-            return respond(start_response, "401 Unauthorized", {"error": "UNAUTHENTICATED"})
         job_name = environ.get("HTTP_X_CLOUDSCHEDULER_JOBNAME", "")
-        # Never normalize arbitrary resource paths: exact full-name matches
-        # stay exact, and only unique short IDs may use the short lookup.
         binding = bindings.get(job_name)
         if binding is None and "/" not in job_name:
             binding = short_bindings.get(job_name)
+        # Log only an allowlisted short job id; never copy untrusted header text.
+        audit_context["jobId"] = (
+            binding.job_name.rsplit("/", 1)[-1] if binding else "UNLISTED"
+        )
+
+        match = _BEARER.fullmatch(environ.get("HTTP_AUTHORIZATION", ""))
+        if not match:
+            emit_validation_stage("OIDC", "FAIL", "UNAUTHENTICATED")
+            return respond(start_response, "401 Unauthorized", {"error": "UNAUTHENTICATED"})
+        try:
+            claims = verifier(match.group(1), audience)
+        except Exception:
+            emit_validation_stage("OIDC", "FAIL", "UNAUTHENTICATED")
+            return respond(start_response, "401 Unauthorized", {"error": "UNAUTHENTICATED"})
+        issuer = claims.get("iss")
+        email = claims.get("email")
+        allowed_callers = {item.service_account_email.lower() for item in bindings.values()}
+        if (issuer not in ("https://accounts.google.com", "accounts.google.com")
+                or claims.get("aud") != audience
+                or claims.get("email_verified") is not True
+                or not isinstance(email, str)
+                or email.lower() not in allowed_callers):
+            emit_validation_stage("OIDC", "FAIL", "CALLER_NOT_AUTHORIZED")
+            return respond(start_response, "403 Forbidden", {"error": "CALLER_NOT_AUTHORIZED"})
+        emit_validation_stage("OIDC", "PASS")
+
         if binding is None:
-            # Never log the untrusted job header value. Classify it against the
-            # *existing* allowlist without treating shorter names as trusted.
+            # Never log the untrusted job header value or treat a short name as
+            # trusted unless it selected exactly one configured binding.
             if not job_name:
                 job_form = "MISSING"
             elif any(job_name == allowed.rsplit("/", 1)[-1] for allowed in bindings):
@@ -130,19 +168,12 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
                     or environ.get("HTTP_X_CLOUD_SCHEDULER_JOB_NAME")
                 ),
             }, separators=(",", ":"), sort_keys=True), file=sys.stderr, flush=True)
+            emit_validation_stage("JOB_NAME", "FAIL", "JOB_NOT_ALLOWLISTED")
             return respond(start_response, "403 Forbidden", {"error": "JOB_NOT_ALLOWLISTED"})
-        try:
-            claims = verifier(match.group(1), audience)
-        except Exception:
-            return respond(start_response, "401 Unauthorized", {"error": "UNAUTHENTICATED"})
-        issuer = claims.get("iss")
-        email = claims.get("email")
-        if (issuer not in ("https://accounts.google.com", "accounts.google.com")
-                or claims.get("aud") != audience
-                or claims.get("email_verified") is not True
-                or not isinstance(email, str)
-                or email.lower() != binding.service_account_email.lower()):
+        if email.lower() != binding.service_account_email.lower():
+            emit_validation_stage("JOB_NAME", "FAIL", "CALLER_NOT_AUTHORIZED")
             return respond(start_response, "403 Forbidden", {"error": "CALLER_NOT_AUTHORIZED"})
+        emit_validation_stage("JOB_NAME", "PASS")
 
         try:
             scheduled = _utc_schedule(environ.get("HTTP_X_CLOUDSCHEDULER_SCHEDULETIME", ""))
@@ -155,12 +186,26 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
                 now=current,
             )
         except (ValueError, TypeError, OverflowError):
+            emit_validation_stage("SCHEDULE_TIME", "FAIL", "SCHEDULE_NOT_ALLOWED")
             return respond(start_response, "400 Bad Request", {"error": "SCHEDULE_NOT_ALLOWED"})
+        scheduled_jst = scheduled.astimezone(ZoneInfo("Asia/Tokyo"))
+        schedule_context = {
+            "schedulerDateJst": scheduled_jst.strftime("%Y-%m-%d"),
+            "schedulerTimeJst": scheduled_jst.strftime("%H:%M"),
+            "reportId": identity.report_id,
+        }
+        audit_context.update(schedule_context)
         if (identity.target.strftime("%H:%M") != binding.target_slot
                 or (binding.weekdays_only and identity.target.weekday() >= 5)):
+            emit_validation_stage("SCHEDULE_TIME", "FAIL", "SCHEDULE_NOT_ALLOWED")
             return respond(start_response, "400 Bad Request", {"error": "SCHEDULE_NOT_ALLOWED"})
         if identity.status != "ACTIVE":
+            emit_validation_stage("SCHEDULE_TIME", "FAIL", "SCHEDULE_EXPIRED")
             return respond(start_response, "409 Conflict", {"error": "SCHEDULE_EXPIRED"})
+        emit_validation_stage("SCHEDULE_TIME", "PASS",
+                              schedulerDateJst=schedule_context["schedulerDateJst"],
+                              schedulerTimeJst=schedule_context["schedulerTimeJst"],
+                              reportId=identity.report_id)
 
         try:
             length_text = environ.get("CONTENT_LENGTH", "")
