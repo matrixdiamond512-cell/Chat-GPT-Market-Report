@@ -415,5 +415,63 @@ class FixtureProviderTests(unittest.TestCase):
             acquire(identity, binding, b'{"market":"payload"}')
 
 
+class AutoVerifyIngressLoggingTests(unittest.TestCase):
+    def test_ingress_emits_only_bounded_oidc_job_time_and_http_results(self):
+        app = create_app(
+            bindings={JOB: self._binding()}, audience=AUDIENCE,
+            processor=Mock(return_value={"status": "CREATED"}),
+            verifier=Mock(return_value={
+                "iss": "https://accounts.google.com", "aud": AUDIENCE,
+                "email": CALLER, "email_verified": True,
+            }),
+            clock=lambda: NOW,
+        )
+        output = io.StringIO()
+        with redirect_stderr(output):
+            status, _ = run_request(app)
+        self.assertEqual(status, "200 OK")
+        records = [json.loads(line) for line in output.getvalue().splitlines()]
+        stages = [record for record in records
+                  if record.get("event") == "P1_AUTO_VERIFY_STAGE"]
+        self.assertEqual(
+            [(item["stage"], item["result"]) for item in stages],
+            [("OIDC", "PASS"), ("JOB_NAME", "PASS"), ("SCHEDULE_TIME", "PASS")],
+        )
+        self.assertEqual(stages[-1]["schedulerDateJst"], "2026-10-27")
+        self.assertEqual(stages[-1]["schedulerTimeJst"], "07:47")
+        result = next(record for record in records
+                      if record.get("event") == "P1_INGRESS_RESULT")
+        self.assertEqual(result["httpStatus"], 200)
+        self.assertEqual(result["jobId"], "slot-0800-t13")
+        self.assertNotIn("email", result)
+        self.assertNotIn("authorization", result)
+
+    @staticmethod
+    def _binding():
+        return SchedulerBinding(JOB, CALLER, 13, "08:00")
+
+    def test_off_schedule_request_logs_time_failure_after_auth_and_job_pass(self):
+        app = create_app(
+            bindings={JOB: self._binding()}, audience=AUDIENCE,
+            processor=Mock(return_value={"status": "CREATED"}),
+            verifier=Mock(return_value={
+                "iss": "https://accounts.google.com", "aud": AUDIENCE,
+                "email": CALLER, "email_verified": True,
+            }),
+            clock=lambda: NOW,
+        )
+        output = io.StringIO()
+        with redirect_stderr(output):
+            status, body = run_request(app, schedule="2026-10-26T22:48:00Z")
+        self.assertEqual(status, "400 Bad Request")
+        self.assertEqual(body["error"], "SCHEDULE_NOT_ALLOWED")
+        stages = [json.loads(line) for line in output.getvalue().splitlines()
+                  if json.loads(line).get("event") == "P1_AUTO_VERIFY_STAGE"]
+        self.assertEqual(
+            [(item["stage"], item["result"]) for item in stages],
+            [("OIDC", "PASS"), ("JOB_NAME", "PASS"), ("SCHEDULE_TIME", "FAIL")],
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
