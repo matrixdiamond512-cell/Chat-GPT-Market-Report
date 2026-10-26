@@ -391,11 +391,13 @@ function metricSegments(report, definition) {
 }
 
 function dateToJp(dateText) {
-  const date = new Date(`${dateText}T00:00:00+09:00`);
   const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+  const parts = String(dateText || "").split("-");
+  if (parts.length !== 3 || parts.some(part => !/^\\d+$/.test(part))) return dateText || "日付不明";
+  const [year, month, day] = parts;
+  const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
   if (Number.isNaN(date.getTime())) return dateText || "日付不明";
-  const [year, month, day] = dateText.split("-");
-  return `${year}/${month}/${day}（${weekdays[date.getDay()]}）`;
+  return `${year}/${month}/${day}（${weekdays[date.getUTCDay()]}）`;
 }
 
 function reportKey(report) {
