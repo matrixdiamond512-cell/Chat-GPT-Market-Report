@@ -11,6 +11,8 @@ TF_DIR="${HERE}/infrastructure/gcp/pre-slot-test"
 : "${PROJECT_ID:?Set PROJECT_ID to an existing isolated TEST_ONLY project}"
 : "${RUNNER_IMAGE:?Set RUNNER_IMAGE to the Artifact Registry image digest}"
 : "${TF_STATE_BUCKET:?Set TF_STATE_BUCKET to the private versioned TEST_ONLY state bucket}"
+ENABLE_TEST_SCHEDULER="${ENABLE_TEST_SCHEDULER:-false}"
+case "${ENABLE_TEST_SCHEDULER}" in true|false) ;; *) echo "ENABLE_TEST_SCHEDULER must be true or false" >&2; exit 2;; esac
 
 case "${PROJECT_ID,,}" in *prod*|*production*) echo "Refusing a production-looking project ID." >&2; exit 2;; esac
 if [[ "${RUNNER_IMAGE}" != *@sha256:* ]]; then
@@ -20,7 +22,8 @@ fi
 
 cat > "${TF_DIR}/terraform.tfvars" <<EOF
 project_id   = "${PROJECT_ID}"
-runner_image = "${RUNNER_IMAGE}"
+runner_image          = "${RUNNER_IMAGE}"
+enable_test_scheduler = ${ENABLE_TEST_SCHEDULER}
 EOF
 chmod 600 "${TF_DIR}/terraform.tfvars"
 

@@ -31,7 +31,7 @@ variable "trigger_secret_id" {
 }
 
 variable "enable_test_scheduler" {
-  description = "Create the three TEST_ONLY 07:47/07:53/07:57 JST jobs. No production target."
+  description = "Enable only after base infrastructure review; creates the three TEST_ONLY 07:47/07:53/07:57 JST jobs."
   type        = bool
-  default     = true
+  default     = false
 }

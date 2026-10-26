@@ -60,9 +60,12 @@ Replace the example values with the dedicated TEST_ONLY project and unique bucke
 3. **Human — bootstrap remote Terraform state.**
    ~~~~sh
    scripts/gcp/bootstrap_state_bucket.sh
+   EXPECTED_PROJECT_NUMBER="$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')"
+   BUCKET_PROJECT_NUMBER="$(gcloud storage buckets describe "gs://$TF_STATE_BUCKET" --format='value(projectNumber)')"
+   test "$BUCKET_PROJECT_NUMBER" = "$EXPECTED_PROJECT_NUMBER"
    gcloud storage buckets describe "gs://$TF_STATE_BUCKET" --format='yaml(name,location,iamConfiguration,versioning)'
    ~~~~
-   Check public access prevention, uniform access, versioning, and bucket IAM (intended operator/state administrators only). Do not grant the runner or Scheduler access to this bucket. The separate evidence bucket is not versioned, but every write captures and reads back its live generation.
+   The script checks the existing bucket owner before enabling APIs or changing the bucket. If ownership is missing, unreadable, or differs from the TEST_ONLY project, it stops without mutating the bucket. Check public access prevention, uniform access, versioning, and bucket IAM (intended operator/state administrators only). Do not grant the runner or Scheduler access to this bucket. The separate evidence bucket is not versioned, but every write captures and reads back its live generation.
 4. **Human — build and pin the image.** Ensure the operator has Cloud Build and Artifact Registry permissions in this TEST_ONLY project.
    ~~~~sh
    export IMAGE_TAG="pre-slot-$(git rev-parse --short HEAD)"
@@ -70,38 +73,52 @@ Replace the example values with the dedicated TEST_ONLY project and unique bucke
    export RUNNER_IMAGE='asia-northeast1-docker.pkg.dev/PROJECT/market-report-test-only/runner@sha256:REPLACE_WITH_PRINTED_DIGEST'
    ~~~~
    The script submits the repository root (.) as build context. cloudbuild.yaml selects the existing Dockerfile. It never relies on unsupported gcloud builds submit --file.
-5. **Human — generate and review a real plan; no apply yet.**
+5. **Human — first-stage plan: create base TEST_ONLY resources with Scheduler disabled.**
    ~~~~sh
    export TF_STATE_BUCKET
-   PROJECT_ID="$PROJECT_ID" RUNNER_IMAGE="$RUNNER_IMAGE" TF_STATE_BUCKET="$TF_STATE_BUCKET" scripts/gcp/deploy_test_only.sh plan
+   ENABLE_TEST_SCHEDULER=false PROJECT_ID="$PROJECT_ID" RUNNER_IMAGE="$RUNNER_IMAGE" TF_STATE_BUCKET="$TF_STATE_BUCKET" scripts/gcp/deploy_test_only.sh plan
    terraform -chdir=infrastructure/gcp/pre-slot-test show -no-color tfplan
    ~~~~
-   Confirm the plan targets only the dedicated TEST_ONLY project and documented Scheduler, Cloud Run, Secret Manager metadata, private evidence bucket, IAM, APIs and 14-day logging retention. Reject any unrelated/prod target or broad write permission. The script accepts only plan; it cannot apply. A real plan requires the human-provisioned project, credentials, state bucket and provider access, so CI does not fabricate one.
-6. **Human — separate apply approval.** Applying requires a later, explicit approval after the exact plan is reviewed. Only the authorized human operator may then run:
+   Confirm the plan targets only the dedicated TEST_ONLY project, includes Cloud Run, Secret Manager metadata, IAM, private evidence GCS, APIs and 14-day logging retention, and creates **zero** Cloud Scheduler jobs. Reject unrelated/prod targets or broad write permissions. The script is plan-only.
+6. **Human — separately approve and apply the base infrastructure.** After reviewing the exact saved plan, the authorized operator may apply it. This action is not performed by Codex:
    ~~~~sh
    terraform -chdir=infrastructure/gcp/pre-slot-test apply tfplan
    ~~~~
-   This is a documented future step, not executed by Codex. Re-run and review a fresh plan if the saved plan is stale.
-7. **Human — add the TEST_ONLY HMAC secret after resource creation.**
+   This first apply must keep enable_test_scheduler=false. If the plan is stale, regenerate and review it.
+7. **Human — configure the HMAC secret and verify the base resources before enabling schedules.**
    ~~~~sh
    umask 077
    head -c 48 /dev/urandom > /tmp/market-report-hmac
    gcloud secrets versions add market-report-test-only-trigger-hmac --data-file=/tmp/market-report-hmac
    shred -u /tmp/market-report-hmac
+   gcloud run services describe mr-pre-slot-test --region "$REGION" --project "$PROJECT_ID"
+   gcloud scheduler jobs list --location "$REGION" --project "$PROJECT_ID"
+   gcloud storage buckets describe "gs://$PROJECT_ID-mr-pre-slot-test-evidence" --project "$PROJECT_ID" --format='yaml(iamConfiguration,lifecycle,softDeletePolicy)'
    ~~~~
-   Do not put the value in Git, shell history, Terraform variables/state, CI output, or this chat. Restrict secret access to the runner service account as defined in Terraform.
-8. **Human — inspect the deployed configuration before waiting for a weekday run.**
+   Do not put the secret value in Git, shell history, Terraform variables/state, CI output, or this chat. Confirm the service is IAM authenticated, Secret Manager metadata/access are correct, runtime and invoker IAM are narrowly scoped, the evidence bucket is private with the 14-day lifecycle and soft-delete=0, and the Scheduler job list is empty. Do not enable jobs if any check fails.
+8. **Human — second-stage plan: request explicit schedule activation.**
+   ~~~~sh
+   ENABLE_TEST_SCHEDULER=true PROJECT_ID="$PROJECT_ID" RUNNER_IMAGE="$RUNNER_IMAGE" TF_STATE_BUCKET="$TF_STATE_BUCKET" scripts/gcp/deploy_test_only.sh plan
+   terraform -chdir=infrastructure/gcp/pre-slot-test show -no-color tfplan
+   ~~~~
+   Confirm the only intended additions are exactly three weekday TEST_ONLY jobs at 07:47, 07:53 and 07:57 JST, using the verified service, audience and caller identities. This plan is the explicit review gate.
+9. **Human — separately approve and apply Scheduler activation.** Only after reviewing that second plan and separately authorizing the change:
+   ~~~~sh
+   terraform -chdir=infrastructure/gcp/pre-slot-test apply tfplan
+   ~~~~
+   The apply command is not run by Codex. Re-run and review a fresh plan if the saved plan is stale.
+10. **Human — inspect the deployed configuration before waiting for a weekday run.**
    ~~~~sh
    gcloud run services describe mr-pre-slot-test --region "$REGION" --project "$PROJECT_ID" --format='yaml(status.url,metadata.annotations,spec.template.spec.serviceAccountName)'
    gcloud scheduler jobs list --location "$REGION" --project "$PROJECT_ID"
-   gcloud storage buckets describe "gs://$PROJECT_ID-mr-pre-slot-test-evidence" --project "$PROJECT_ID" --format='yaml(iamConfiguration,versioning,lifecycle)'
+   gcloud storage buckets describe "gs://$PROJECT_ID-mr-pre-slot-test-evidence" --project "$PROJECT_ID" --format='yaml(iamConfiguration,lifecycle,softDeletePolicy)'
    ~~~~
-   Verify no unauthenticated allUsers invoker, each scheduler caller matches the Cloud Run invoker binding and OIDC audience, evidence bucket public prevention/UBLA, 14-day lifecycle and soft-delete=0 are correct, and runner has no Docs/GitHub/main/Drive/publication or Terraform-state permissions.
-9. **Human — observe a real scheduled TEST_ONLY attempt.** Wait for a weekday 07:47, 07:53, or 07:57 JST job; do not use a later/other-slot snapshot as substitute. Record Scheduler scheduled time and Cloud Run actualStartAt, startLagSeconds, report ID, source/snapshot hashes, evidence bucket/object/generation and exact readback status from the same response/log event. A start delay over 60 seconds, stale source, cutoff breach, duplicate, or mismatch must remain blocked.
+   Verify exactly the three approved jobs, no unauthenticated allUsers invoker, each Scheduler caller matches the Cloud Run invoker binding and OIDC audience, and runner has no Docs/GitHub/main/Drive/publication or Terraform-state permissions.
+11. **Human — observe a real scheduled TEST_ONLY attempt.** Wait for a weekday 07:47, 07:53, or 07:57 JST job; do not use a later/other-slot snapshot as substitute. Record Scheduler scheduled time and Cloud Run actualStartAt, startLagSeconds, report ID, source/snapshot hashes, evidence bucket/object/generation and exact readback status from the same response/log event. A start delay over 60 seconds, stale source, cutoff breach, duplicate, or mismatch must remain blocked.
    ~~~~sh
    gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="mr-pre-slot-test"' --project "$PROJECT_ID" --freshness=2d --limit=30 --format=json
    ~~~~
-10. **Human — independently re-read the exact object generation.** Copy bucket, object, generation and evidenceSha256 from the same successful runner result; install the pinned GCP runtime dependencies if absent.
+12. **Human — independently re-read the exact object generation.** Copy bucket, object, generation and evidenceSha256 from the same successful runner result; install the pinned GCP runtime dependencies if absent.
     ~~~~sh
     python -m pip install -r scripts/gcp/requirements.txt
     python scripts/gcp/verify_test_only_object.py \
@@ -111,7 +128,7 @@ Replace the example values with the dedicated TEST_ONLY project and unique bucke
       --sha256 'EVIDENCE_SHA256_FROM_RUN'
     ~~~~
     Expected result is PASS_EXACT_GENERATION_READBACK with the same SHA-256. A mismatch is FAIL and must not be retried by overwriting; keep the object quarantined until lifecycle cleanup.
-11. **Codex — review, if requested.** Share only nonsecret plan output, sanitized logs and the readback result. Codex can correlate them against this PR and report observed scope; it cannot claim an external E2E until those records exist.
+13. **Codex — review, if requested.** Share only nonsecret plan output, sanitized logs and the readback result. Codex can correlate them against this PR and report observed scope; it cannot claim an external E2E until those records exist.
 
 ### Required operator permissions
 
