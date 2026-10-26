@@ -78,6 +78,13 @@ main:
                       - mark_target_unreadable:
                           assign:
                             - targetReadback: "UNREADABLE"
+            - normalize_target_pause_result:
+                assign:
+                  - targetPauseCall: ${if(targetReadback == "PAUSED" and targetPauseCall == "FAILED", "ALREADY_PAUSED", targetPauseCall)}
+            - exit_target_retry_if_paused:
+                switch:
+                  - condition: ${targetReadback == "PAUSED"}
+                    next: break
     - target_pause_gate:
         switch:
           - condition: ${targetReadback == "PAUSED"}
@@ -132,6 +139,13 @@ main:
                     - mark_watchdog_unreadable:
                         assign:
                           - watchdogReadback: "UNREADABLE"
+            - normalize_watchdog_pause_result:
+                assign:
+                  - watchdogPauseCall: ${if(watchdogReadback == "PAUSED" and watchdogPauseCall == "FAILED", "ALREADY_PAUSED", watchdogPauseCall)}
+            - exit_watchdog_retry_if_paused:
+                switch:
+                  - condition: ${watchdogReadback == "PAUSED"}
+                    next: break
     - format_last_attempt:
         switch:
           - condition: ${schedulerLastAttempt != null}
