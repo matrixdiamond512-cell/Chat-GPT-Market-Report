@@ -110,7 +110,7 @@ resource "google_storage_bucket_iam_member" "runner_objects" {
 
 resource "google_cloud_run_v2_service" "runner" {
   project             = var.project_id
-  name                = "${var.resource_prefix}"
+  name                = var.resource_prefix
   location            = var.region
   ingress             = "INGRESS_TRAFFIC_ALL"
   deletion_protection = false
@@ -136,23 +136,23 @@ resource "google_cloud_run_v2_service" "runner" {
         }
       }
       env {
-        name = "RUNNER_AUDIENCE"
+        name  = "RUNNER_AUDIENCE"
         value = local.runner_audience
       }
       env {
-        name = "TEST_ONLY_GCS_BUCKET"
+        name  = "TEST_ONLY_GCS_BUCKET"
         value = google_storage_bucket.evidence.name
       }
       env {
-        name = "TEST_ONLY_OBJECT_PREFIX"
+        name  = "TEST_ONLY_OBJECT_PREFIX"
         value = "test-only/08-00"
       }
       env {
-        name = "ALLOWED_SCHEDULER_CALLERS_JSON"
+        name  = "ALLOWED_SCHEDULER_CALLERS_JSON"
         value = jsonencode(local.job_names)
       }
       env {
-        name = "TRIGGER_SECRET_RESOURCE"
+        name  = "TRIGGER_SECRET_RESOURCE"
         value = "${google_secret_manager_secret.trigger.id}/versions/latest"
       }
     }
