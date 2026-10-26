@@ -47,6 +47,7 @@ class GcpPreSlotInfrastructureContracts(unittest.TestCase):
         self.assertNotIn("--lifecycle-file", script)
         self.assertIn("EXPECTED_PROJECT_NUMBER", script)
         self.assertIn("BUCKET_PROJECT_NUMBER", script)
+        self.assertEqual(script.count("--raw --format=\'value(projectNumber)\'"), 2)
         self.assertIn("does not match TEST_ONLY project", script)
 
     def test_existing_foreign_state_bucket_is_rejected_before_any_mutation(self):
@@ -60,7 +61,9 @@ class GcpPreSlotInfrastructureContracts(unittest.TestCase):
 echo "$*" >> "$GCLOUD_CALL_LOG"
 case "$*" in
   "projects describe "*) echo 123456 ;;
-  "storage buckets describe "*) echo 999999 ;;
+  "storage buckets describe "*)
+    if [[ "$*" != *" --raw "* ]]; then echo "missing --raw" >&2; exit 10; fi
+    echo 999999 ;;
   *) echo "unexpected mutating command: $*" >&2; exit 9 ;;
 esac
 """, encoding="utf-8")
@@ -95,7 +98,9 @@ esac
 echo "$*" >> "$GCLOUD_CALL_LOG"
 case "$*" in
   "projects describe "*) echo 123456 ;;
-  "storage buckets describe "*) echo 123456 ;;
+  "storage buckets describe "*)
+    if [[ "$*" != *" --raw "* ]]; then echo "missing --raw" >&2; exit 10; fi
+    echo 123456 ;;
   "services enable "*|"storage buckets update "*) exit 0 ;;
   *) echo "unexpected command: $*" >&2; exit 9 ;;
 esac
