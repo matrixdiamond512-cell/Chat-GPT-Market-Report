@@ -26,7 +26,7 @@ function isArchivedRecovery(r) {
     && r.verifiedAtSlot === false
     && /^\d{4}-\d{2}-\d{2}$/.test(String(r.date || ""))
     && REPORT_TIMES.includes(r.time)
-    && typeof r.fullText === "string" && r.fullText.startsWith(String(r.title || ""))
+    && typeof r.fullText === "string" && r.fullText.replace(/^#{1,3}\s+/, "").startsWith(String(r.title || ""))
     && String(r.archiveNotice || "").length > 10;
 }
 function sortReports(list) {
