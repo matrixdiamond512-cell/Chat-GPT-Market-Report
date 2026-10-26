@@ -26,7 +26,7 @@ A Terraform plan, unit test, mocked OIDC/GCS adapter, Docker build, or CI succes
 
 ## OPEN OUTCOMES
 
-- O-1: Runner/container/Terraform/Cloud Shell artifacts and CI contracts — implemented; hosted CI pending.
+- O-1: Runner/container/Terraform/Cloud Shell artifacts and CI contracts — implemented; hosted GCP contract, Terraform fmt/init/validate, frozen-cutoff regression, and delivery-health checks PASS on code head f4962796e5ec3bd8f9322044d1074b18512e5ea7.
 - O-2: Human selects isolated billed GCP project, permissions, image build and resource apply — BLOCKED pending external setup.
 - O-3: External 07:47/07:53/07:57 normal and abnormal E2E with actual start-lag and GCS evidence — NOT_RUN pending O-2.
 - O-4: Observe a GCS object through 14-day lifecycle deletion — NOT_RUN.
