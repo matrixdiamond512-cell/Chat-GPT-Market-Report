@@ -7,6 +7,12 @@ on:
       - .dockerignore
       - requirements-p1-cloudrun.txt
       - tests/test_report_continuity_ingress.py
+      - cloud/workflows/p1-one-shot-auto-verify.yaml
+      - config/p1-one-shot-auto-verify.json
+      - scripts/p1_auto_verify_contract.py
+      - tests/test_p1_auto_verify_contract.py
+      - docs/p1-one-shot-auto-verify.md
+      - docs/p1-cloudrun-403-diagnostics.md
       - scripts/report_continuity_shadow.py
       - scripts/report_continuity_gcs.py
       - scripts/report_continuity_ingress.py
@@ -42,6 +48,12 @@ on:
       - .dockerignore
       - requirements-p1-cloudrun.txt
       - tests/test_report_continuity_ingress.py
+      - cloud/workflows/p1-one-shot-auto-verify.yaml
+      - config/p1-one-shot-auto-verify.json
+      - scripts/p1_auto_verify_contract.py
+      - tests/test_p1_auto_verify_contract.py
+      - docs/p1-one-shot-auto-verify.md
+      - docs/p1-cloudrun-403-diagnostics.md
       - scripts/report_continuity_shadow.py
       - scripts/report_continuity_gcs.py
       - scripts/report_continuity_ingress.py
@@ -88,6 +100,8 @@ jobs:
         run: python -m compileall -q scripts/run_market_data_window.py scripts/run_market_data_acquisition.py scripts/persist_report_slot_evidence.py scripts/report_continuity_gcs.py scripts/report_continuity_ingress.py scripts/run_report_continuity_service.py scripts/p1_trial_fixture_provider.py
       - name: Validate preparation-only Cloud config JSON
         run: python -m json.tool docs/p1-cloud-trial-config.json > /dev/null
+      - name: Validate one-shot approval-only config JSON
+        run: python -m json.tool config/p1-one-shot-auto-verify.json > /dev/null
       - name: Build Cloud Run container image
         run: docker build --tag p1-cloudrun-smoke:ci .
       - name: Smoke test Cloud Run container startup and PORT binding
@@ -116,7 +130,7 @@ jobs:
       - name: Run strictly offline cutoff and immutable-evidence regression suites
         run: python -m unittest scripts.test_run_market_data_window scripts.test_market_acquisition_cutoff tests.test_report_slot_evidence -v
       - name: Run offline report continuity and publication policy tests
-        run: python -m unittest tests.test_report_continuity_shadow tests.test_report_continuity_gcs tests.test_report_continuity_ingress tests.test_market_data_window_evidence tests.test_report_slot_evidence tests.test_policy_expectations tests.test_publication_eligibility tests.test_publication_evidence scripts.test_resolve_market_report_slot scripts.test_market_acquisition_cutoff tests.test_historical_saturday_slots -v
+        run: python -m unittest tests.test_report_continuity_shadow tests.test_report_continuity_gcs tests.test_report_continuity_ingress tests.test_market_data_window_evidence tests.test_report_slot_evidence tests.test_policy_expectations tests.test_publication_eligibility tests.test_publication_evidence scripts.test_resolve_market_report_slot scripts.test_market_acquisition_cutoff tests.test_historical_saturday_slots tests.test_p1_auto_verify_contract -v
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
