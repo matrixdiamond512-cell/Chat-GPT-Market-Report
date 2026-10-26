@@ -41,7 +41,8 @@ def evaluate_one_shot(*, expected_date_jst: str, expected_job_id: str,
                if event.get("event") == "P1_INGRESS_RESULT"]
     correlated = [
         event for event in records
-        if event.get("jobId") == expected_job_id
+        if logs_read
+        and event.get("jobId") == expected_job_id
         and event.get("schedulerDateJst") == expected_date_jst
         and event.get("schedulerTimeJst") == "07:47"
         and event.get("reportId") == expected_date_jst + "_08-00"

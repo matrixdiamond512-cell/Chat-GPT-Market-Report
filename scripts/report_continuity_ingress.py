@@ -219,7 +219,7 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
             result = processor(identity, body, binding)
         except Exception:
             return respond(start_response, "500 Internal Server Error", {"error": "PROCESSING_FAILED"}, audit_context)
-        return respond(start_response, "200 OK", result)
+        return respond(start_response, "200 OK", result, audit_context)
 
     return app
 
