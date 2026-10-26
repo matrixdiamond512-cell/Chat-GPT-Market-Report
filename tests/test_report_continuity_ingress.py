@@ -86,6 +86,52 @@ class CloudRunIngressTests(unittest.TestCase):
         self.assertEqual(self.processor.call_args.args[2], self.binding)
         self.verifier.assert_called_once_with("valid", AUDIENCE)
 
+    def test_short_scheduler_job_id_is_accepted_and_uses_exact_binding(self):
+        short_id = JOB.rsplit("/", 1)[-1]
+        status, result = run_request(self.app, job=short_id)
+        self.assertEqual((status, result["status"]), ("200 OK", "CREATED"))
+        self.assertEqual(self.processor.call_args.args[2], self.binding)
+        self.verifier.assert_called_once_with("valid", AUDIENCE)
+
+    def test_short_job_id_requires_matching_verified_caller(self):
+        short_id = JOB.rsplit("/", 1)[-1]
+        self.verifier.return_value = {
+            **self.verifier.return_value,
+            "email": "wrong-caller@test-project.iam.gserviceaccount.com",
+        }
+        status, result = run_request(self.app, job=short_id)
+        self.assertEqual(status, "403 Forbidden")
+        self.assertEqual(result, {"error": "CALLER_NOT_AUTHORIZED"})
+        self.processor.assert_not_called()
+
+    def test_different_full_path_never_matches_via_short_id(self):
+        other_full = "projects/other-project/locations/asia-northeast1/jobs/slot-0800-t13"
+        status, result = run_request(self.app, job=other_full)
+        self.assertEqual(status, "403 Forbidden")
+        self.assertEqual(result, {"error": "JOB_NOT_ALLOWLISTED"})
+        self.processor.assert_not_called()
+
+    def test_short_id_collisions_are_invalid_even_with_distinct_callers(self):
+        other_full = "projects/other-project/locations/asia-northeast1/jobs/slot-0800-t13"
+        another_email = "another@test-project.iam.gserviceaccount.com"
+        entries = [
+            {"job_name": JOB, "service_account_email": CALLER,
+             "attempt_minutes": 13, "target_slot": "08:00"},
+            {"job_name": other_full, "service_account_email": another_email,
+             "attempt_minutes": 13, "target_slot": "08:00"},
+        ]
+        with self.assertRaisesRegex(ValueError, "SHORT_JOB_IDS_MUST_BE_UNIQUE"):
+            single_binding_map(entries)
+        with self.assertRaisesRegex(ValueError, "SHORT_JOB_IDS_MUST_BE_UNIQUE"):
+            create_app(
+                bindings={
+                    JOB: self.binding,
+                    other_full: SchedulerBinding(other_full, another_email, 13, "08:00"),
+                },
+                audience=AUDIENCE, processor=self.processor, verifier=self.verifier,
+                clock=lambda: NOW,
+            )
+
     def test_diagnostic_log_distinguishes_app_403_without_leaking_secrets(self):
         captured = io.StringIO()
         secret_token = "private.jwt.test-value"
@@ -111,7 +157,6 @@ class CloudRunIngressTests(unittest.TestCase):
     def test_job_header_diagnostic_is_classified_without_leaking_values(self):
         cases = [
             ("", "MISSING"),
-            (JOB.rsplit("/", 1)[-1], "SHORT_EXPECTED_ID"),
             (JOB + "-unexpected", "OTHER_FULL_RESOURCE"),
             ("other-job", "OTHER_SHORT"),
             ("/not/a/job", "OTHER_FORMAT"),
