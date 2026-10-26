@@ -13,6 +13,7 @@ main:
           - localNow: ${time.format(sys.now(), "Asia/Tokyo")}
           - runDateJst: ${text.substring(localNow, 0, 10)}
           - expectedTimeJst: "07:47"
+          - expectedReportId: ${runDateJst + "_08-00"}
           - expectedDateTimeJst: ${runDateJst + "T07:47:00+09:00"}
           - expectedEpoch: ${time.parse(expectedDateTimeJst)}
           - logsStart: ${time.format(expectedEpoch - 120)}
@@ -23,6 +24,7 @@ main:
           - watchdogReadback: "UNKNOWN"
           - logsRead: false
           - ingressRecordFound: false
+          - matchedIngressCount: 0
           - logEntries: []
           - httpStatus: null
           - oidcResult: "INCOMPLETE"
@@ -67,9 +69,9 @@ main:
                         result: targetResponse
                     - save_target:
                         assign:
-                          - targetReadback: ${map.get(targetResponse.body, "state", "UNKNOWN")}
-                          - schedulerStatusCode: ${map.get(map.get(targetResponse.body, "status", {}), "code", null)}
-                          - schedulerLastAttempt: ${map.get(map.get(targetResponse.body, "status", {}), "lastAttemptTime", null)}
+                          - targetReadback: ${default(map.get(targetResponse.body, "state"), "UNKNOWN")}
+                          - schedulerStatusCode: ${default(map.get(targetResponse.body, ["status", "code"]), 0)}
+                          - schedulerLastAttempt: ${map.get(targetResponse.body, "lastAttemptTime")}
                   except:
                     as: readTargetError
                     steps:
@@ -123,7 +125,7 @@ main:
                         result: watchdogResponse
                     - save_watchdog:
                         assign:
-                          - watchdogReadback: ${map.get(watchdogResponse.body, "state", "UNKNOWN")}
+                          - watchdogReadback: ${default(map.get(watchdogResponse.body, "state"), "UNKNOWN")}
                 except:
                   as: readWatchdogError
                   steps:
@@ -162,11 +164,11 @@ main:
                       - ${"projects/" + projectId}
                     orderBy: timestamp asc
                     pageSize: 100
-                    filter: ${"resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"" + serviceName + "\" AND timestamp >= \"" + logsStart + "\" AND timestamp <= \"" + logsEnd + "\""}
+                    filter: ${"resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"" + serviceName + "\" AND jsonPayload.event=\"P1_INGRESS_RESULT\" AND timestamp >= \"" + logsStart + "\" AND timestamp <= \"" + logsEnd + "\""}
                 result: logResponse
             - save_log_entries:
                 assign:
-                  - logEntries: ${map.get(logResponse.body, "entries", [])}
+                  - logEntries: ${default(map.get(logResponse.body, "entries"), [])}
                   - logsRead: true
         except:
           as: logError
@@ -182,26 +184,24 @@ main:
           steps:
             - extract_log_fields:
                 assign:
-                  - payload: ${map.get(entry, "jsonPayload", {})}
-                  - httpRequest: ${map.get(entry, "httpRequest", {})}
-                  - eventName: ${map.get(payload, "event", "")}
-                  - stageName: ${map.get(payload, "stage", "")}
-                  - stageJobId: ${map.get(payload, "jobId", "")}
-                  - stageResult: ${map.get(payload, "result", "")}
-                  - candidateHttpStatus: ${map.get(payload, "httpStatus", map.get(httpRequest, "status", null))}
+                  - payload: ${default(map.get(entry, "jsonPayload"), {})}
+                  - eventName: ${default(map.get(payload, "event"), "")}
+                  - stageJobId: ${default(map.get(payload, "jobId"), "")}
+                  - exactIngressMatch: ${eventName == "P1_INGRESS_RESULT" and stageJobId == expectedJobId and map.get(payload, "schedulerDateJst") == runDateJst and map.get(payload, "schedulerTimeJst") == expectedTimeJst and map.get(payload, "reportId") == expectedReportId}
             - collect_http_status:
                 assign:
-                  - ingressRecordFound: ${if(eventName == "P1_INGRESS_RESULT" and (stageJobId == expectedJobId or stageJobId == "UNLISTED"), true, ingressRecordFound)}
-                  - httpStatus: ${if(eventName == "P1_INGRESS_RESULT" and stageJobId == expectedJobId, candidateHttpStatus, if(httpStatus == null and candidateHttpStatus != null, candidateHttpStatus, httpStatus))}
+                  - ingressRecordFound: ${if(exactIngressMatch, true, ingressRecordFound)}
+                  - matchedIngressCount: ${if(exactIngressMatch, matchedIngressCount + 1, matchedIngressCount)}
+                  - httpStatus: ${if(exactIngressMatch, map.get(payload, "httpStatus"), httpStatus)}
             - collect_oidc:
                 assign:
-                  - oidcResult: ${if(eventName == "P1_INGRESS_RESULT" and (stageJobId == expectedJobId or stageJobId == "UNLISTED"), map.get(payload, "oidcResult", oidcResult), oidcResult)}
+                  - oidcResult: ${if(exactIngressMatch, default(map.get(payload, "oidcResult"), oidcResult), oidcResult)}
             - collect_job_name:
                 assign:
-                  - jobNameResult: ${if(eventName == "P1_INGRESS_RESULT" and (stageJobId == expectedJobId or stageJobId == "UNLISTED"), map.get(payload, "jobNameResult", jobNameResult), jobNameResult)}
+                  - jobNameResult: ${if(exactIngressMatch, default(map.get(payload, "jobNameResult"), jobNameResult), jobNameResult)}
             - collect_schedule_time:
                 assign:
-                  - scheduleTimeResult: ${if(eventName == "P1_INGRESS_RESULT" and stageJobId == expectedJobId, if(map.get(payload, "scheduleTimeResult", "INCOMPLETE") == "FAIL", "FAIL", if(map.get(payload, "scheduleTimeResult", "INCOMPLETE") == "PASS", if(map.get(payload, "schedulerDateJst", "") == runDateJst and map.get(payload, "schedulerTimeJst", "") == expectedTimeJst, "PASS", "FAIL"), "INCOMPLETE")), scheduleTimeResult)}
+                  - scheduleTimeResult: ${if(exactIngressMatch, if(default(map.get(payload, "scheduleTimeResult"), "INCOMPLETE") == "FAIL", "FAIL", if(default(map.get(payload, "scheduleTimeResult"), "INCOMPLETE") == "PASS", "PASS", "INCOMPLETE")), scheduleTimeResult)}
     - classify:
         assign:
           - oidcResult: ${if(oidcResult == "INCOMPLETE" and (httpStatus == 401 or httpStatus == 403), "FAIL", oidcResult)}
@@ -211,8 +211,9 @@ main:
           - schedulerAttemptResult: ${if(schedulerStatusCode == null or schedulerLastAttempt == null, "INCOMPLETE", if(schedulerStatusCode != 0 or not attemptInWindow, "FAIL", "PASS"))}
           - targetStopResult: ${if(targetReadback == "PAUSED", "PASS", "BLOCKED")}
           - watchdogStopResult: ${if(watchdogReadback == "PAUSED", "PASS", "BLOCKED")}
-          - logResult: ${if(logsRead and ingressRecordFound, "PASS", "INCOMPLETE")}
-          - overall: ${if(targetReadback != "PAUSED" or watchdogReadback != "PAUSED", "BLOCKED", if(httpResult == "FAIL" or oidcResult == "FAIL" or jobNameResult == "FAIL" or scheduleTimeResult == "FAIL" or schedulerAttemptResult == "FAIL", "FAIL", if(httpResult == "PASS" and oidcResult == "PASS" and jobNameResult == "PASS" and scheduleTimeResult == "PASS" and schedulerAttemptResult == "PASS" and logResult == "PASS", "PASS", "INCOMPLETE")))}
+          - logResult: ${if(not logsRead or not ingressRecordFound, "INCOMPLETE", if(matchedIngressCount == 1, "PASS", "FAIL"))}
+          - logCorrelationResult: ${if(not logsRead or matchedIngressCount == 0, "INCOMPLETE", if(matchedIngressCount == 1, "PASS", "FAIL"))}
+          - overall: ${if(targetReadback != "PAUSED" or watchdogReadback != "PAUSED", "BLOCKED", if(httpResult == "FAIL" or oidcResult == "FAIL" or jobNameResult == "FAIL" or scheduleTimeResult == "FAIL" or schedulerAttemptResult == "FAIL" or logCorrelationResult == "FAIL", "FAIL", if(httpResult == "PASS" and oidcResult == "PASS" and jobNameResult == "PASS" and scheduleTimeResult == "PASS" and schedulerAttemptResult == "PASS" and logResult == "PASS" and logCorrelationResult == "PASS", "PASS", "INCOMPLETE")))}
           - record:
               schemaVersion: 1
               result: ${overall}
@@ -229,9 +230,11 @@ main:
                 targetPauseReadback: ${targetStopResult}
                 watchdogPauseReadback: ${watchdogStopResult}
                 logs: ${logResult}
+                logCorrelation: ${logCorrelationResult}
               targetSchedulerState: ${targetReadback}
               watchdogSchedulerState: ${watchdogReadback}
               targetLastAttemptTime: ${schedulerLastAttempt}
+              matchedIngressCount: ${matchedIngressCount}
               targetSchedulerStatusCode: ${schedulerStatusCode}
               targetPauseCall: ${targetPauseCall}
               watchdogPauseCall: ${watchdogPauseCall}

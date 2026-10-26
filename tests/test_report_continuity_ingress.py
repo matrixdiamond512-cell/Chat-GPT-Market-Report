@@ -222,6 +222,29 @@ class CloudRunIngressTests(unittest.TestCase):
                          (409, "SCHEDULE_EXPIRED"))
         self.processor.assert_not_called()
 
+    def test_request_diagnostics_do_not_leak_between_sequential_requests(self):
+        captured = io.StringIO()
+        with redirect_stderr(captured):
+            first_status, _ = run_request(self.app)
+            second_status, _ = run_request(self.app, schedule="not-a-schedule")
+            third_status, _ = run_request(self.app, method="GET")
+        self.assertEqual(first_status, "200 OK")
+        self.assertEqual(second_status, "400 Bad Request")
+        self.assertEqual(third_status, "405 Method Not Allowed")
+        records = [entry for line in captured.getvalue().splitlines()
+                   if (entry := json.loads(line)).get("event") == "P1_INGRESS_RESULT"]
+        self.assertEqual(len(records), 3)
+        self.assertEqual(records[0]["scheduleTimeResult"], "PASS")
+        self.assertEqual(records[0]["reportId"], "2026-10-27_08-00")
+        self.assertEqual(records[1]["oidcResult"], "PASS")
+        self.assertEqual(records[1]["jobNameResult"], "PASS")
+        self.assertEqual(records[1]["scheduleTimeResult"], "FAIL")
+        self.assertNotIn("reportId", records[1])
+        self.assertEqual(records[2]["oidcResult"], "INCOMPLETE")
+        self.assertEqual(records[2]["jobNameResult"], "INCOMPLETE")
+        self.assertEqual(records[2]["scheduleTimeResult"], "INCOMPLETE")
+        self.assertNotIn("jobId", records[2])
+
     def test_diagnostic_log_marks_success_without_echoing_processor_payload(self):
         secret = "do-not-emit-acquisition-payload"
         self.processor.return_value = {"status": "CREATED", "secret": secret}

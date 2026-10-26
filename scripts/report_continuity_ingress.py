@@ -69,13 +69,8 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
     if len(short_bindings) != len(bindings):
         raise ValueError("SCHEDULER_SHORT_JOB_IDS_MUST_BE_UNIQUE")
     now = clock or (lambda: datetime.now(timezone.utc))
-    audit_context: dict[str, object] = {
-        "oidcResult": "INCOMPLETE",
-        "jobNameResult": "INCOMPLETE",
-        "scheduleTimeResult": "INCOMPLETE",
-    }
-
-    def respond(start_response, status: str, result: Mapping[str, object]):
+    def respond(start_response, status: str, result: Mapping[str, object],
+                audit_context: dict[str, object]):
         # Cloud Run platform/IAM rejection happens before this WSGI function.
         # Fixed, non-sensitive reason codes prove the request reached the app;
         # never log headers, JWTs, claims, principal emails or request bodies.
@@ -102,8 +97,15 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
         return [payload]
 
     def app(environ, start_response):
+        # Request-local state prevents concurrent/serial WSGI requests from
+        # inheriting any prior authentication or schedule result.
+        audit_context: dict[str, object] = {
+            "oidcResult": "INCOMPLETE",
+            "jobNameResult": "INCOMPLETE",
+            "scheduleTimeResult": "INCOMPLETE",
+        }
         if environ.get("REQUEST_METHOD") != "POST":
-            return respond(start_response, "405 Method Not Allowed", {"error": "METHOD_NOT_ALLOWED"})
+            return respond(start_response, "405 Method Not Allowed", {"error": "METHOD_NOT_ALLOWED"}, audit_context)
         job_name = environ.get("HTTP_X_CLOUDSCHEDULER_JOBNAME", "")
         binding = bindings.get(job_name)
         if binding is None and "/" not in job_name:
@@ -116,12 +118,12 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
         match = _BEARER.fullmatch(environ.get("HTTP_AUTHORIZATION", ""))
         if not match:
             audit_context["oidcResult"] = "FAIL"
-            return respond(start_response, "401 Unauthorized", {"error": "UNAUTHENTICATED"})
+            return respond(start_response, "401 Unauthorized", {"error": "UNAUTHENTICATED"}, audit_context)
         try:
             claims = verifier(match.group(1), audience)
         except Exception:
             audit_context["oidcResult"] = "FAIL"
-            return respond(start_response, "401 Unauthorized", {"error": "UNAUTHENTICATED"})
+            return respond(start_response, "401 Unauthorized", {"error": "UNAUTHENTICATED"}, audit_context)
         issuer = claims.get("iss")
         email = claims.get("email")
         allowed_callers = {item.service_account_email.lower() for item in bindings.values()}
@@ -131,7 +133,7 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
                 or not isinstance(email, str)
                 or email.lower() not in allowed_callers):
             audit_context["oidcResult"] = "FAIL"
-            return respond(start_response, "403 Forbidden", {"error": "CALLER_NOT_AUTHORIZED"})
+            return respond(start_response, "403 Forbidden", {"error": "CALLER_NOT_AUTHORIZED"}, audit_context)
         audit_context["oidcResult"] = "PASS"
 
         if binding is None:
@@ -159,10 +161,10 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
                 ),
             }, separators=(",", ":"), sort_keys=True), file=sys.stderr, flush=True)
             audit_context["jobNameResult"] = "FAIL"
-            return respond(start_response, "403 Forbidden", {"error": "JOB_NOT_ALLOWLISTED"})
+            return respond(start_response, "403 Forbidden", {"error": "JOB_NOT_ALLOWLISTED"}, audit_context)
         if email.lower() != binding.service_account_email.lower():
             audit_context["jobNameResult"] = "FAIL"
-            return respond(start_response, "403 Forbidden", {"error": "CALLER_NOT_AUTHORIZED"})
+            return respond(start_response, "403 Forbidden", {"error": "CALLER_NOT_AUTHORIZED"}, audit_context)
         audit_context["jobNameResult"] = "PASS"
 
         try:
@@ -177,7 +179,7 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
             )
         except (ValueError, TypeError, OverflowError):
             audit_context["scheduleTimeResult"] = "FAIL"
-            return respond(start_response, "400 Bad Request", {"error": "SCHEDULE_NOT_ALLOWED"})
+            return respond(start_response, "400 Bad Request", {"error": "SCHEDULE_NOT_ALLOWED"}, audit_context)
         scheduled_jst = scheduled.astimezone(ZoneInfo("Asia/Tokyo"))
         schedule_context = {
             "schedulerDateJst": scheduled_jst.strftime("%Y-%m-%d"),
@@ -188,10 +190,10 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
         if (identity.target.strftime("%H:%M") != binding.target_slot
                 or (binding.weekdays_only and identity.target.weekday() >= 5)):
             audit_context["scheduleTimeResult"] = "FAIL"
-            return respond(start_response, "400 Bad Request", {"error": "SCHEDULE_NOT_ALLOWED"})
+            return respond(start_response, "400 Bad Request", {"error": "SCHEDULE_NOT_ALLOWED"}, audit_context)
         if identity.status != "ACTIVE":
             audit_context["scheduleTimeResult"] = "FAIL"
-            return respond(start_response, "409 Conflict", {"error": "SCHEDULE_EXPIRED"})
+            return respond(start_response, "409 Conflict", {"error": "SCHEDULE_EXPIRED"}, audit_context)
         audit_context["scheduleTimeResult"] = "PASS"
 
         try:
@@ -202,7 +204,7 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
             if length < 1:
                 raise ValueError("EMPTY_BODY")
             if length > MAX_BODY_BYTES:
-                return respond(start_response, "413 Payload Too Large", {"error": "PAYLOAD_TOO_LARGE"})
+                return respond(start_response, "413 Payload Too Large", {"error": "PAYLOAD_TOO_LARGE"}, audit_context)
             if environ.get("CONTENT_TYPE", "").split(";", 1)[0].strip().lower() != "application/json":
                 raise ValueError("CONTENT_TYPE_REQUIRED")
             body = environ["wsgi.input"].read(length)
@@ -212,11 +214,11 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
             if body != SCHEDULER_TRIGGER_BODY:
                 raise ValueError("UNEXPECTED_TRIGGER_BODY")
         except (KeyError, ValueError):
-            return respond(start_response, "400 Bad Request", {"error": "INVALID_TRIGGER"})
+            return respond(start_response, "400 Bad Request", {"error": "INVALID_TRIGGER"}, audit_context)
         try:
             result = processor(identity, body, binding)
         except Exception:
-            return respond(start_response, "500 Internal Server Error", {"error": "PROCESSING_FAILED"})
+            return respond(start_response, "500 Internal Server Error", {"error": "PROCESSING_FAILED"}, audit_context)
         return respond(start_response, "200 OK", result)
 
     return app

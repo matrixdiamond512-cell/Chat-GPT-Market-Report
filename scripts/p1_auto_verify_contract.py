@@ -31,7 +31,6 @@ def _last_attempt_matches(value: str | None, *, date_jst: str) -> bool | None:
 
 def evaluate_one_shot(*, expected_date_jst: str, expected_job_id: str,
                       events: Iterable[dict[str, Any]],
-                      http_status: int | None,
                       scheduler_status_code: int | None,
                       scheduler_last_attempt_time: str | None,
                       target_state_after_pause: str | None,
@@ -40,27 +39,34 @@ def evaluate_one_shot(*, expected_date_jst: str, expected_job_id: str,
     """Classify today's normal 07:47 JST run and independent stop readbacks."""
     records = [event for event in events
                if event.get("event") == "P1_INGRESS_RESULT"]
-    expected = [event for event in records
-                if event.get("jobId") == expected_job_id]
-    unlisted = [event for event in records
-                if event.get("jobId") == "UNLISTED"]
-    record = expected[-1] if expected else (unlisted[-1] if unlisted else {})
-
-    http_result = ("INCOMPLETE" if http_status is None else
-                   "PASS" if http_status == 200 else "FAIL")
+    correlated = [
+        event for event in records
+        if event.get("jobId") == expected_job_id
+        and event.get("schedulerDateJst") == expected_date_jst
+        and event.get("schedulerTimeJst") == "07:47"
+        and event.get("reportId") == expected_date_jst + "_08-00"
+    ]
+    record = correlated[0] if len(correlated) == 1 else {}
+    # The app log carries the status for this exact request. Never borrow a
+    # status from a platform HTTP request log or an unrelated ingress event.
+    correlated_status = record.get("httpStatus") if record else None
+    http_result = ("INCOMPLETE" if correlated_status is None else
+                   "PASS" if correlated_status == 200 else "FAIL")
     oidc_result = record.get("oidcResult", "INCOMPLETE")
     job_result = record.get("jobNameResult", "INCOMPLETE")
     time_result = record.get("scheduleTimeResult", "INCOMPLETE")
+    if len(correlated) > 1:
+        time_result = "FAIL"
     if (time_result == "PASS"
             and (record.get("schedulerDateJst") != expected_date_jst
                  or record.get("schedulerTimeJst") != "07:47")):
         time_result = "FAIL"
-    if oidc_result == "INCOMPLETE" and http_status in (401, 403):
+    if oidc_result == "INCOMPLETE" and correlated_status in (401, 403):
         oidc_result = "FAIL"
-    if not logs_read or not record:
-        log_result = "INCOMPLETE"
-    else:
-        log_result = "PASS"
+    log_result = ("INCOMPLETE" if not logs_read or not correlated
+                  else "PASS" if len(correlated) == 1 else "FAIL")
+    correlation_result = ("INCOMPLETE" if not logs_read or not correlated
+                          else "PASS" if len(correlated) == 1 else "FAIL")
 
     if scheduler_status_code is None or scheduler_last_attempt_time is None:
         scheduler_result = "INCOMPLETE"
@@ -82,6 +88,7 @@ def evaluate_one_shot(*, expected_date_jst: str, expected_job_id: str,
 
     checks = {
         "http": http_result,
+        "logCorrelation": correlation_result,
         "oidc": oidc_result,
         "jobName": job_result,
         "scheduleTime": time_result,

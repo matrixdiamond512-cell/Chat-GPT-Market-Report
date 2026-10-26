@@ -20,6 +20,7 @@ def ingress_record(*, http=200, oidc="PASS", job="PASS", schedule="PASS",
         "scheduleTimeResult": schedule,
         "schedulerDateJst": date,
         "schedulerTimeJst": time,
+        "reportId": f"{date}_08-00",
     }
 
 
@@ -31,7 +32,7 @@ def observation(*, http=200, oidc="PASS", job="PASS", schedule="PASS",
                              date=schedule_date, time=schedule_time)]
     return evaluate_one_shot(
         expected_date_jst=DATE, expected_job_id=JOB, events=events,
-        http_status=http, scheduler_status_code=code,
+        scheduler_status_code=code,
         scheduler_last_attempt_time=attempt,
         target_state_after_pause=target,
         watchdog_state_after_pause=watchdog,
@@ -50,6 +51,7 @@ class OneShotVerificationContractTests(unittest.TestCase):
         self.assertEqual(result["checks"]["oidc"], "PASS")
         self.assertEqual(result["checks"]["jobName"], "PASS")
         self.assertEqual(result["checks"]["scheduleTime"], "FAIL")
+        self.assertEqual(result["checks"]["http"], "FAIL")
         self.assertEqual(result["overall"], "FAIL")
 
     def test_oidc_pass_is_not_misclassified_when_job_header_is_unlisted(self):
@@ -57,14 +59,14 @@ class OneShotVerificationContractTests(unittest.TestCase):
                                  schedule="INCOMPLETE", job_id="UNLISTED")]
         result = evaluate_one_shot(
             expected_date_jst=DATE, expected_job_id=JOB, events=events,
-            http_status=403, scheduler_status_code=0,
+            scheduler_status_code=0,
             scheduler_last_attempt_time=ATTEMPT,
             target_state_after_pause="PAUSED",
             watchdog_state_after_pause="PAUSED", logs_read=True,
         )
-        self.assertEqual(result["checks"]["oidc"], "PASS")
-        self.assertEqual(result["checks"]["jobName"], "FAIL")
-        self.assertEqual(result["overall"], "FAIL")
+        self.assertEqual(result["checks"]["oidc"], "INCOMPLETE")
+        self.assertEqual(result["checks"]["jobName"], "INCOMPLETE")
+        self.assertEqual(result["overall"], "INCOMPLETE")
 
     def test_processor_failure_still_requires_and_records_successful_stop(self):
         result = observation(http=500)
@@ -79,7 +81,7 @@ class OneShotVerificationContractTests(unittest.TestCase):
     def test_missing_run_evidence_is_incomplete_not_pass(self):
         result = evaluate_one_shot(
             expected_date_jst=DATE, expected_job_id=JOB, events=[],
-            http_status=None, scheduler_status_code=None,
+            scheduler_status_code=None,
             scheduler_last_attempt_time=None, target_state_after_pause="PAUSED",
             watchdog_state_after_pause="PAUSED", logs_read=True,
         )
@@ -91,13 +93,49 @@ class OneShotVerificationContractTests(unittest.TestCase):
         result = evaluate_one_shot(
             expected_date_jst=DATE, expected_job_id=JOB,
             events=[stale],
-            http_status=200, scheduler_status_code=0,
+            scheduler_status_code=0,
             scheduler_last_attempt_time=ATTEMPT,
             target_state_after_pause="PAUSED",
             watchdog_state_after_pause="PAUSED", logs_read=True,
         )
-        self.assertEqual(result["checks"]["scheduleTime"], "FAIL")
+        self.assertEqual(result["checks"]["scheduleTime"], "INCOMPLETE")
+        self.assertEqual(result["overall"], "INCOMPLETE")
+
+    def test_unrelated_request_http_status_is_never_borrowed(self):
+        unrelated_job = ingress_record(http=200, date=DATE, time="07:46",
+                                       job_id="other-job")
+        wrong_day = ingress_record(http=200, date="2026-10-26", time="07:47")
+        result = evaluate_one_shot(
+            expected_date_jst=DATE, expected_job_id=JOB,
+            events=[unrelated_job, wrong_day],
+            scheduler_status_code=0,
+            scheduler_last_attempt_time=ATTEMPT,
+            target_state_after_pause="PAUSED",
+            watchdog_state_after_pause="PAUSED", logs_read=True,
+        )
+        self.assertEqual(result["checks"]["http"], "INCOMPLETE")
+        self.assertEqual(result["checks"]["logCorrelation"], "INCOMPLETE")
+        self.assertEqual(result["overall"], "INCOMPLETE")
+
+    def test_duplicate_exact_ingress_records_fail_correlation(self):
+        duplicate = ingress_record(http=200)
+        result = evaluate_one_shot(
+            expected_date_jst=DATE, expected_job_id=JOB,
+            events=[duplicate, duplicate],
+            scheduler_status_code=0,
+            scheduler_last_attempt_time=ATTEMPT,
+            target_state_after_pause="PAUSED",
+            watchdog_state_after_pause="PAUSED", logs_read=True,
+        )
+        self.assertEqual(result["checks"]["http"], "INCOMPLETE")
+        self.assertEqual(result["checks"]["logCorrelation"], "FAIL")
         self.assertEqual(result["overall"], "FAIL")
+
+    def test_log_delay_keeps_result_incomplete(self):
+        result = observation(logs=False)
+        self.assertEqual(result["checks"]["http"], "INCOMPLETE")
+        self.assertEqual(result["checks"]["logs"], "INCOMPLETE")
+        self.assertEqual(result["overall"], "INCOMPLETE")
 
     def test_repeated_identical_fixed_configuration_is_scoped_by_run_date(self):
         days = ("2026-10-26", "2026-10-27")
@@ -106,7 +144,7 @@ class OneShotVerificationContractTests(unittest.TestCase):
             events = [ingress_record(date=day)]
             results.append(evaluate_one_shot(
                 expected_date_jst=day, expected_job_id=JOB, events=events,
-                http_status=200, scheduler_status_code=0,
+                scheduler_status_code=0,
                 scheduler_last_attempt_time=attempt,
                 target_state_after_pause="PAUSED",
                 watchdog_state_after_pause="PAUSED", logs_read=True,
@@ -124,6 +162,16 @@ class OneShotWorkflowDefinitionTests(unittest.TestCase):
         self.assertLess(definition.index("pause_watchdog:"), definition.index("read_watchdog_after_pause:"))
         self.assertLess(definition.index("read_watchdog_after_pause:"), definition.index("query_logs:"))
         self.assertIn("targetReadback", definition)
+        self.assertIn('default(map.get(targetResponse.body, "state"), "UNKNOWN")', definition)
+        self.assertIn('map.get(targetResponse.body, "lastAttemptTime")', definition)
+        self.assertIn('default(map.get(targetResponse.body, ["status", "code"]), 0)', definition)
+        self.assertIn("matchedIngressCount", definition)
+        self.assertIn("expectedReportId", definition)
+        self.assertIn('jsonPayload.event=', definition)
+        self.assertNotIn("httpRequest", definition)
+        self.assertIn('map.get(payload, "schedulerDateJst") == runDateJst', definition)
+        self.assertIn('map.get(payload, "schedulerTimeJst") == expectedTimeJst', definition)
+        self.assertNotIn('map.get(targetResponse.body, "state", "UNKNOWN")', definition)
         self.assertIn("watchdogReadback", definition)
         self.assertIn("call: sys.log", definition)
         self.assertIn("return: ${record}", definition)
