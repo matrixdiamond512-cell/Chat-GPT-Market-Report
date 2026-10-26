@@ -33,8 +33,8 @@ def main() -> int:
     if data.get("schemaVersion") != 1 or data.get("kind") != "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION":
         fail("schema and non-publication identity")
     items = data.get("reports")
-    if not isinstance(items, list) or len(items) != len(REQUIRED):
-        fail(f"expected exactly {len(REQUIRED)} source/retrospective entries")
+    if not isinstance(items, list) or len(items) < len(REQUIRED):
+        fail(f"expected at least {len(REQUIRED)} source/retrospective entries")
     found: set[str] = set()
     indexed = json.loads(FORMAL_INDEX.read_text(encoding="utf-8"))
     public_ids = {f"{r['date']}_{r['time'].replace(':', '-')}" for r in indexed}
@@ -43,8 +43,8 @@ def main() -> int:
 
     for report in items:
         key = str(report.get("date", "")) + "_" + str(report.get("time", "")).replace(":", "-")
-        if key in found or key not in REQUIRED:
-            fail("duplicate or unexpected slot " + key)
+        if key in found:
+            fail("duplicate slot " + key)
         found.add(key)
         parsed = date.fromisoformat(report["date"])
         expected_title = f"マーケットレポート｜{parsed:%Y/%m/%d}（{'月火水木金土日'[parsed.weekday()]}）{report['time']}"
@@ -57,6 +57,30 @@ def main() -> int:
             fail("archive may not claim original verified publication " + key)
         if report.get("infographic_status") == "READY":
             fail("unverified infographic must not be shown " + key)
+        # After the original 16 slots, additional historical reports may be
+        # appended. Validate provenance and non-publication without rewriting
+        # or weakening the original source/canonical checks below.
+        if key not in REQUIRED:
+            if key in public_ids or report.get("report_status") in {"PUBLISHED", "DOC_READBACK_PASS"}:
+                fail("supplemental archive may not override formal publication " + key)
+            if not re.fullmatch(r"2026-10-\\d{2}_(?:08|12|16|21)-00", key):
+                fail("unexpected supplemental month/slot " + key)
+            missing = report.get("missingAtSlotEvidence")
+            if not missing:
+                fail("supplemental archive must record unavailable publication evidence " + key)
+            kind = report.get("archiveType")
+            if kind in {"DRIVE_SAVED_DOCUMENT", "DRIVE_RESTORED_ANALYSIS"}:
+                doc = report.get("sourceDocument") or {}
+                if (not doc.get("id") or not str(doc.get("url", "")).startswith("https://docs.google.com/document/d/")
+                    or not isinstance(missing, list) or not missing):
+                    fail("supplemental saved-Doc provenance missing " + key)
+            elif kind in {"RETROSPECTIVE_REPORT", "RECONSTRUCTED_SOURCE"}:
+                if report.get("originalReportStatus") not in {"ORIGINAL_NOT_FOUND", "RECONSTRUCTED_UNVERIFIED"}:
+                    fail("supplemental reconstruction misclassified " + key)
+            else:
+                fail("unsupported supplemental archive type " + key)
+            continue
+
         if key in DRIVE_READBACK_SUPPLEMENTS:
             from datetime import datetime
             try:
@@ -105,7 +129,7 @@ def main() -> int:
                 fail("source full text altered " + key)
             if source.get("report_status") in {"PUBLISHED", "DOC_READBACK_PASS"}:
                 fail("should not duplicate formally published source " + key)
-    if found != REQUIRED:
+    if not REQUIRED.issubset(found):
         fail("missing slots " + str(sorted(REQUIRED - found)))
     print(f"PASS: {len(items)} recovered report slots; all existing full texts preserved; original publication gate unchanged.")
     return 0
