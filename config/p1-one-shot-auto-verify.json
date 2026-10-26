@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "changeRequest": "ARCH-20261020-REPORT-CONTINUITY",
+  "status": "PREPARATION_ONLY",
+  "apply": false,
+  "existingProjectOnly": true,
+  "existingPrimarySchedulerJob": "slot-0800-t13",
+  "existingCloudRunService": "p1-report-shadow-ingress",
+  "region": "asia-northeast1",
+  "timeZone": "Asia/Tokyo",
+  "oneShotTrial": {
+    "normalSchedulerTimeJst": "07:47",
+    "watchdogTimeJst": "07:50",
+    "weekdaysOnly": true,
+    "targetSlot": "08:00",
+    "targetAttemptMinutes": 13,
+    "fixedTriggerBody": "{\"schemaVersion\":1,\"trigger\":\"P1_SHADOW\"}",
+    "watchdogSchedulerJob": "p1-one-shot-verification-stop",
+    "workflowName": "p1-one-shot-verification",
+    "expectedJobId": "slot-0800-t13",
+    "cloudRunServiceName": "p1-report-shadow-ingress",
+    "maxWatchdogRetries": 3,
+    "storageWriteRequired": false,
+    "pausePrimaryFirst": true,
+    "pauseWatchdogAfterPrimary": true,
+    "requirePauseReadback": true
+  },
+  "result": {
+    "statuses": ["PASS", "FAIL", "BLOCKED", "INCOMPLETE"],
+    "sink": ["Cloud Workflows execution result", "Cloud Logging structured record"],
+    "fields": ["httpStatus", "oidc", "jobName", "scheduleTime", "schedulerAttempt", "targetPauseReadback", "watchdogPauseReadback", "logs"],
+    "retention": "Cloud Logging project retention policy",
+    "noCloudStorageWrite": true
+  },
+  "resourcePlan": [
+    {
+      "kind": "Cloud Workflows workflow",
+      "name": "p1-one-shot-verification",
+      "region": "asia-northeast1",
+      "createOnlyAfterApproval": true
+    },
+    {
+      "kind": "Cloud Scheduler HTTP job",
+      "name": "p1-one-shot-verification-stop",
+      "schedule": "50 7 * * 1-5",
+      "timeZone": "Asia/Tokyo",
+      "auth": "OAuth2 to Workflows executions API",
+      "retryCount": 3,
+      "createOnlyAfterApproval": true
+    },
+    {
+      "kind": "Dedicated workflow service account",
+      "name": "p1-one-shot-supervisor",
+      "createOnlyAfterApproval": true
+    },
+    {
+      "kind": "Dedicated Scheduler caller service account",
+      "name": "p1-one-shot-trigger",
+      "createOnlyAfterApproval": true
+    }
+  ],
+  "iamPlan": {
+    "workflowRuntime": [
+      "cloudscheduler.jobs.pause",
+      "cloudscheduler.jobs.get",
+      "logging.logEntries.list",
+      "logging.logEntries.create"
+    ],
+    "schedulerCaller": ["workflows.executions.create"],
+    "scope": "Custom roles; restrict Scheduler permissions to the primary and watchdog job resources where IAM Conditions support the permission.",
+    "noProjectEditorOrOwnerGrant": true
+  }
+}
