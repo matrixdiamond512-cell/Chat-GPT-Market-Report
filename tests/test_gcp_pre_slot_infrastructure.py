@@ -60,11 +60,11 @@ class GcpPreSlotInfrastructureContracts(unittest.TestCase):
         self.assertNotIn("github_app_private_key", runner.lower())
         self.assertNotIn("google_docs_credentials", runner.lower())
 
-    def test_evidence_bucket_is_private_versioned_and_expires_after_14_days(self):
+    def test_evidence_bucket_is_private_and_expires_after_14_days(self):
         tf = self.read("infrastructure/gcp/pre-slot-test/main.tf")
         self.assertIn("uniform_bucket_level_access = true", tf)
         self.assertIn('public_access_prevention    = "enforced"', tf)
-        self.assertIn("enabled = true", tf)
+        self.assertIn("retention_duration_seconds = 0", tf)
         self.assertIn("age = 14", tf)
         self.assertIn("retention_days = 14", tf)
 

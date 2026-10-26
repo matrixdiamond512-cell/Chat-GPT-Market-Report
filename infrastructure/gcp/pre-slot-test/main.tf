@@ -48,8 +48,10 @@ resource "google_storage_bucket" "evidence" {
   public_access_prevention    = "enforced"
   force_destroy               = false
 
-  versioning {
-    enabled = true
+  # Evidence objects expire at 14 days; disabling soft delete avoids retaining
+  # deleted TEST_ONLY bytes for an additional default recovery window.
+  soft_delete_policy {
+    retention_duration_seconds = 0
   }
 
   lifecycle_rule {

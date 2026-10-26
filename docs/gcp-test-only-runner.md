@@ -38,7 +38,7 @@ The bucket has uniform access, enforced public-access prevention and a 14-day li
 
 Cloud Scheduler → authenticated Cloud Run **Service** → existing acquisition/evidence path → private GCS. A synchronous authenticated Service lets the handler record its actual first-instruction start time and return a result; a Cloud Run Job would need asynchronous execution polling/correlation before it could prove the <=60-second start gate. Neither choice guarantees Scheduler latency, so late starts still fail closed. GitHub Actions cron is not a timing substitute.
 
-Terraform remote state uses a separate GCS bucket in the dedicated TEST_ONLY project, with uniform bucket-level access, public access prevention, and object versioning. The state bucket is bootstrapped separately before Terraform init and is not the evidence bucket. Grant state access only to the human/operator identity; the Cloud Run and Scheduler identities receive no state access. Do not put secret payloads in tfvars or Terraform: Terraform creates Secret Manager metadata only. .gitignore excludes tfvars, plans, state and .terraform/.
+Terraform remote state uses a separate GCS bucket in the dedicated TEST_ONLY project, with uniform bucket-level access, public access prevention, and object versioning. The state bucket is bootstrapped separately before Terraform init and is not the evidence bucket. The evidence bucket itself does not enable Object Versioning: GCS generation numbers still support exact-generation readback for a live object, while avoiding archived generations that could outlast the 14-day cleanup policy. Its soft-delete retention is set to zero and lifecycle deletion is configured at 14 days; lifecycle execution is asynchronous, so actual deletion still needs a separate runtime observation. Grant state access only to the human/operator identity; the Cloud Run and Scheduler identities receive no state access. Do not put secret payloads in tfvars or Terraform: Terraform creates Secret Manager metadata only. .gitignore excludes tfvars, plans, state and .terraform/.
 
 ### Ordered setup and first scheduled readback
 
@@ -62,7 +62,7 @@ Replace the example values with the dedicated TEST_ONLY project and unique bucke
    scripts/gcp/bootstrap_state_bucket.sh
    gcloud storage buckets describe "gs://$TF_STATE_BUCKET" --format='yaml(name,location,iamConfiguration,versioning)'
    ~~~~
-   Check public access prevention, uniform access, versioning, and bucket IAM (intended operator/state administrators only). Do not grant the runner or Scheduler access to this bucket.
+   Check public access prevention, uniform access, versioning, and bucket IAM (intended operator/state administrators only). Do not grant the runner or Scheduler access to this bucket. The separate evidence bucket is not versioned, but every write captures and reads back its live generation.
 4. **Human — build and pin the image.** Ensure the operator has Cloud Build and Artifact Registry permissions in this TEST_ONLY project.
    ~~~~sh
    export IMAGE_TAG="pre-slot-$(git rev-parse --short HEAD)"
@@ -96,7 +96,7 @@ Replace the example values with the dedicated TEST_ONLY project and unique bucke
    gcloud scheduler jobs list --location "$REGION" --project "$PROJECT_ID"
    gcloud storage buckets describe "gs://$PROJECT_ID-mr-pre-slot-test-evidence" --project "$PROJECT_ID" --format='yaml(iamConfiguration,versioning,lifecycle)'
    ~~~~
-   Verify no unauthenticated allUsers invoker, each scheduler caller matches the Cloud Run invoker binding and OIDC audience, evidence bucket public prevention/UBLA/versioning/14-day expiry are correct, and runner has no Docs/GitHub/main/Drive/publication or Terraform-state permissions.
+   Verify no unauthenticated allUsers invoker, each scheduler caller matches the Cloud Run invoker binding and OIDC audience, evidence bucket public prevention/UBLA, 14-day lifecycle and soft-delete=0 are correct, and runner has no Docs/GitHub/main/Drive/publication or Terraform-state permissions.
 9. **Human — observe a real scheduled TEST_ONLY attempt.** Wait for a weekday 07:47, 07:53, or 07:57 JST job; do not use a later/other-slot snapshot as substitute. Record Scheduler scheduled time and Cloud Run actualStartAt, startLagSeconds, report ID, source/snapshot hashes, evidence bucket/object/generation and exact readback status from the same response/log event. A start delay over 60 seconds, stale source, cutoff breach, duplicate, or mismatch must remain blocked.
    ~~~~sh
    gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="mr-pre-slot-test"' --project "$PROJECT_ID" --freshness=2d --limit=30 --format=json
@@ -130,7 +130,7 @@ Prices can change; check the [Cloud Run](https://cloud.google.com/run/pricing), 
 ## Verification boundaries / known limitations
 
 - Unit tests and Terraform static validation do not prove Cloud Scheduler timing, IAM, market source reachability, Secret Manager, GCS generation readback, lifecycle deletion or cost.
-- External E2E is NOT_RUN until the operator provisions the isolated project and records actual execution evidence. GCS's 14-day deletion is also NOT_RUN until a created object has aged through the lifecycle (or a controlled bucket test validates it).
+- External E2E is NOT_RUN until the operator provisions the isolated project and records actual execution evidence. GCS lifecycle deletion is also NOT_RUN until a created object has aged through the 14-day lifecycle (or a controlled bucket test validates it); lifecycle execution is asynchronous.
 - Three staggered jobs make three independent acquisition attempts, not a promise of run-at-08:00. A real handler start beyond 60 seconds, acquisition at/after cutoff, stale source, duplicate attempt, wrong caller, bad token, hash mismatch, write/readback mismatch, or after-cutoff readback fails closed.
 - Cloud Run Service scale-to-zero may introduce cold start; the <=60-second gate observes it. If real start delay exceeds 60 seconds, do not weaken the gate. Evaluate minimum instances (with added idle cost) or a dedicated always-on runner as a separately approved design.
 - Container internet egress is needed for the existing market sources. Their reachability/rate limits are not guaranteed by this code. TEST_ONLY retains source identities/status, and existing acquisition validation rejects unavailable or stale required values.
