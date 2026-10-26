@@ -120,7 +120,7 @@ class OneShotWorkflowDefinitionTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         definition = (root / "cloud" / "workflows" / "p1-one-shot-auto-verify.yaml").read_text(encoding="utf-8")
         self.assertLess(definition.index("pause_target:"), definition.index("read_target_after_pause:"))
-        self.assertLess(definition.index("read_target:"), definition.index("pause_watchdog:"))
+        self.assertLess(definition.index("read_target_after_pause:"), definition.index("pause_watchdog:"))
         self.assertLess(definition.index("pause_watchdog:"), definition.index("read_watchdog_after_pause:"))
         self.assertLess(definition.index("read_watchdog_after_pause:"), definition.index("query_logs:"))
         self.assertIn("targetReadback", definition)
