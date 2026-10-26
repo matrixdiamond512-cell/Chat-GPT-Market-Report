@@ -21,7 +21,7 @@ if [[ "${RUNNER_IMAGE}" != *@sha256:* ]]; then
 fi
 
 cat > "${TF_DIR}/terraform.tfvars" <<EOF
-project_id   = "${PROJECT_ID}"
+project_id            = "${PROJECT_ID}"
 runner_image          = "${RUNNER_IMAGE}"
 enable_test_scheduler = ${ENABLE_TEST_SCHEDULER}
 EOF
