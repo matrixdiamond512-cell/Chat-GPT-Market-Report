@@ -1140,7 +1140,7 @@ function isDashboardHistoricalArchive(r) {
   if (!r || r.archiveStatus !== "HISTORICAL_ARCHIVE" || r.verifiedAtSlot !== false) return false;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(r.date || "")) || !REPORT_TIMES.includes(r.time)) return false;
   if (typeof r.fullText !== "string" || r.fullText.length < 250) return false;
-  if (!String(r.title || "").startsWith("マーケットレポート｜") || !r.fullText.startsWith(r.title)) return false;
+  if (!String(r.title || "").startsWith("マーケットレポート｜") || !r.fullText.replace(/^#{1,3}\s+/, "").startsWith(r.title)) return false;
   if (!r.title.includes(r.date.replace(/-/g, "/")) || !r.title.endsWith(r.time)) return false;
   if (typeof r.archiveNotice !== "string" || r.archiveNotice.length < 15) return false;
   if (r.originalReportStatus === "PUBLISHED" || r.report_status === "PUBLISHED") return false;
