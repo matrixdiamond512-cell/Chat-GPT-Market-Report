@@ -31,83 +31,104 @@ main:
           - schedulerLastAttempt: null
           - lastAttemptLocal: ""
     - pause_target:
-        try:
+        for:
+          value: attempt
+          in: ${[1, 2, 3]}
           steps:
-            - send_target_pause:
-                call: http.post
-                args:
-                  url: ${"https://cloudscheduler.googleapis.com/v1/" + targetJob + ":pause"}
-                  auth:
-                    type: OAuth2
-                result: targetPauseResponse
-            - mark_target_pause_ok:
-                assign:
-                  - targetPauseCall: "OK"
-        except:
-          as: pauseError
-          steps:
-            - mark_target_pause_failed:
-                assign:
-                  - targetPauseCall: "FAILED"
-    - read_target:
-        try:
-          steps:
-            - get_target:
-                call: http.get
-                args:
-                  url: ${"https://cloudscheduler.googleapis.com/v1/" + targetJob}
-                  auth:
-                    type: OAuth2
-                result: targetResponse
-            - save_target:
-                assign:
-                  - targetReadback: ${map.get(targetResponse.body, "state", "UNKNOWN")}
-                  - schedulerStatusCode: ${map.get(map.get(targetResponse.body, "status", {}), "code", null)}
-                  - schedulerLastAttempt: ${map.get(map.get(targetResponse.body, "status", {}), "lastAttemptTime", null)}
-        except:
-          as: readTargetError
-          steps:
-            - mark_target_unreadable:
-                assign:
-                  - targetReadback: "UNREADABLE"
+            - request_target_pause:
+                try:
+                  steps:
+                    - send_target_pause:
+                        call: http.post
+                        args:
+                          url: ${"https://cloudscheduler.googleapis.com/v1/" + targetJob + ":pause"}
+                          auth:
+                            type: OAuth2
+                        result: targetPauseResponse
+                    - mark_target_pause_ok:
+                        assign:
+                          - targetPauseCall: "OK"
+                except:
+                  as: pauseError
+                  steps:
+                    - mark_target_pause_failed:
+                        assign:
+                          - targetPauseCall: "FAILED"
+            - read_target_after_pause:
+                try:
+                  steps:
+                    - get_target:
+                        call: http.get
+                        args:
+                          url: ${"https://cloudscheduler.googleapis.com/v1/" + targetJob}
+                          auth:
+                            type: OAuth2
+                        result: targetResponse
+                    - save_target:
+                        assign:
+                          - targetReadback: ${map.get(targetResponse.body, "state", "UNKNOWN")}
+                          - schedulerStatusCode: ${map.get(map.get(targetResponse.body, "status", {}), "code", null)}
+                          - schedulerLastAttempt: ${map.get(map.get(targetResponse.body, "status", {}), "lastAttemptTime", null)}
+                  except:
+                    as: readTargetError
+                    steps:
+                      - mark_target_unreadable:
+                          assign:
+                            - targetReadback: "UNREADABLE"
+    - target_pause_gate:
+        switch:
+          - condition: ${targetReadback == "PAUSED"}
+            next: pause_watchdog
+          - condition: ${true}
+            next: keep_watchdog_active
+    - keep_watchdog_active:
+        assign:
+          - watchdogPauseCall: "SKIPPED_TARGET_NOT_PAUSED"
+          - watchdogReadback: "ACTIVE"
+        next: format_last_attempt
     - pause_watchdog:
-        try:
+        for:
+          value: attempt
+          in: ${[1, 2, 3]}
           steps:
-            - send_watchdog_pause:
-                call: http.post
-                args:
-                  url: ${"https://cloudscheduler.googleapis.com/v1/" + watchdogJob + ":pause"}
-                  auth:
-                    type: OAuth2
-                result: watchdogPauseResponse
-            - mark_watchdog_pause_ok:
-                assign:
-                  - watchdogPauseCall: "OK"
-        except:
-          as: pauseWatchdogError
-          steps:
-            - mark_watchdog_pause_failed:
-                assign:
-                  - watchdogPauseCall: "FAILED"
-    - read_watchdog:
-        try:
-          steps:
-            - get_watchdog:
-                call: http.get
-                args:
-                  url: ${"https://cloudscheduler.googleapis.com/v1/" + watchdogJob}
-                  auth:
-                    type: OAuth2
-                result: watchdogResponse
-            - save_watchdog:
-                assign:
-                  - watchdogReadback: ${map.get(watchdogResponse.body, "state", "UNKNOWN")}
-        except:
-          as: readWatchdogError
-          steps:
-            - mark_watchdog_unreadable:
-                assign:
-                  - watchdogReadback: "UNREADABLE"
+            - request_watchdog_pause:
+                try:
+                  steps:
+                    - send_watchdog_pause:
+                        call: http.post
+                        args:
+                          url: ${"https://cloudscheduler.googleapis.com/v1/" + watchdogJob + ":pause"}
+                          auth:
+                            type: OAuth2
+                        result: watchdogPauseResponse
+                    - mark_watchdog_pause_ok:
+                        assign:
+                          - watchdogPauseCall: "OK"
+                except:
+                  as: pauseWatchdogError
+                  steps:
+                    - mark_watchdog_pause_failed:
+                        assign:
+                          - watchdogPauseCall: "FAILED"
+            - read_watchdog_after_pause:
+                try:
+                  steps:
+                    - get_watchdog:
+                        call: http.get
+                        args:
+                          url: ${"https://cloudscheduler.googleapis.com/v1/" + watchdogJob}
+                          auth:
+                            type: OAuth2
+                        result: watchdogResponse
+                    - save_watchdog:
+                        assign:
+                          - watchdogReadback: ${map.get(watchdogResponse.body, "state", "UNKNOWN")}
+                except:
+                  as: readWatchdogError
+                  steps:
+                    - mark_watchdog_unreadable:
+                        assign:
+                          - watchdogReadback: "UNREADABLE"
     - format_last_attempt:
         switch:
           - condition: ${schedulerLastAttempt != null}
