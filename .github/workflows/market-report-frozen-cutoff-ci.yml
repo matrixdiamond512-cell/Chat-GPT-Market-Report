@@ -102,6 +102,8 @@ jobs:
         run: python -m json.tool docs/p1-cloud-trial-config.json > /dev/null
       - name: Validate one-shot approval-only config JSON
         run: python -m json.tool config/p1-one-shot-auto-verify.json > /dev/null
+      - name: Parse one-shot Cloud Workflows YAML
+        run: ruby -e 'require "yaml"; YAML.parse_file("cloud/workflows/p1-one-shot-auto-verify.yaml")'
       - name: Build Cloud Run container image
         run: docker build --tag p1-cloudrun-smoke:ci .
       - name: Smoke test Cloud Run container startup and PORT binding
