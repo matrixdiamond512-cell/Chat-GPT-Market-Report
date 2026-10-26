@@ -119,7 +119,7 @@ class GCSPrivateEvidenceStore:
         generation = self.generations.get(evidence_id)
         if generation is None:
             return False
-        blob = self.bucket.blob(self._name(evidence_id), generation=generation)
+        blob = self.bucket.blob(self.object_name(evidence_id), generation=generation)
         try:
             blob.delete(if_generation_match=generation)
             return True
