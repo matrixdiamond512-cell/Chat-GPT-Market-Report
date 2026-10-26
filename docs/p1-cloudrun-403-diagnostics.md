@@ -56,3 +56,13 @@ Google Cloud Scheduler公式仕様ではHTTP呼出し時に `X-CloudScheduler-Jo
 - `alternateJobHeaderPresent`: 既知の別キー形の存在（真偽値）
 
 この診断は**どのジョブ名も受け入れる規則に変更しない**。OIDC検証前のジョブ照合・日付上限・Storage無効状態を維持する。根本原因が判明する前にヘッダー制約を緩和しない。通常のScheduler実行での403修正は未完了。
+
+## 2026-10-27 実機で判明した直接原因と修正
+
+Cloud Runリビジョン `p1-report-shadow-ingress-00005-797` で確認したアプリログは、`JOB_NOT_ALLOWLISTED` と `jobHeaderForm=SHORT_EXPECTED_ID` を同じ試行で記録した。`schedulerMarkerPresent=true` と `scheduleHeaderPresent=true` も確認した。Cloud Schedulerは、許可リストにある完全なリソース名ではなく、末尾のジョブID `slot-0800-t13` を送っていた。**これが今までのHTTP 403の直接原因**である。
+
+対応：完全なリソース名の設定は変更せず、末尾のIDが設定全体で一意である場合に限り、受信した短縮ジョブIDを対応する完全名のバインディングへ解決する。別プロジェクトの完全名、無関係なジョブID、短縮ID重複設定は拒否する。解決後もGoogle署名・issuer・audience・email_verified・ジョブ専用サービスアカウント・予定時刻・対象スロット・固定POST本文を検証する。ログへトークンや呼出元を出さない。
+
+単発実行のジョブ名検証だけを直した状態で、**OIDC署名検証成功・実機HTTP200・Google Storage証拠保存は未確認**。手動ジョブ実行時の`X-CloudScheduler-ScheduleTime`は、正規の定時実行とは異なる可能性があり、400でも直ちに不具合とは断定しない。
+
+PRのCI後、変更後Dockerイメージを固定digestでデプロイするときも、専用Cloud Run実行SA、IAM認証必須、`SHADOW_STORAGE_ENABLED=false`、Scheduler `PAUSED` を必ず維持・読戻し確認する。実機再試験は別途承認された短時間の操作に限る。
