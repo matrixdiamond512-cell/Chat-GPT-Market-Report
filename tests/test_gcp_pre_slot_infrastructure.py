@@ -17,6 +17,7 @@ class GcpPreSlotInfrastructureContracts(unittest.TestCase):
         config = self.read("infrastructure/gcp/pre-slot-test/cloudbuild.yaml")
         self.assertIn('--config "${CONFIG}"', script)
         self.assertIn('--substitutions="_IMAGE=${IMAGE}" .', script)
+        self.assertIn("--default-buckets-behavior=regional-user-owned-bucket", script)
         self.assertIn("infrastructure/gcp/pre-slot-test/Dockerfile", config)
         self.assertIn("      - .", config)
         self.assertNotIn("--file infrastructure/gcp/pre-slot-test/Dockerfile .", script)
