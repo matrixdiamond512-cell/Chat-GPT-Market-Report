@@ -19,7 +19,10 @@ gcloud artifacts repositories describe "${REPOSITORY}" --location "${REGION}" --
 
 # The final "." is intentionally the repository-root build context. The config
 # selects the existing Dockerfile; gcloud builds submit has no --file option.
+# Keep Cloud Build's source staging bucket in the build's region rather than
+# silently using the legacy US multi-region _cloudbuild bucket.
 gcloud builds submit --project "${PROJECT_ID}" --region "${REGION}" \
+  --default-buckets-behavior=regional-user-owned-bucket \
   --config "${CONFIG}" --substitutions="_IMAGE=${IMAGE}" .
 DIGEST="$(gcloud artifacts docker images describe "${IMAGE}" --project "${PROJECT_ID}" --format='value(image_summary.digest)')"
 if [[ -z "${DIGEST}" ]]; then
