@@ -22,8 +22,9 @@ fi
 
 DESCRIBE_ERROR="$(mktemp)"
 trap 'rm -f "${DESCRIBE_ERROR}"' EXIT
+# projectNumber is available in the raw Cloud Storage API response; standardized output can omit it.
 BUCKET_EXISTS=false
-if BUCKET_PROJECT_NUMBER="$(gcloud storage buckets describe "gs://${TF_STATE_BUCKET}" --format='value(projectNumber)' 2>"${DESCRIBE_ERROR}")"; then
+if BUCKET_PROJECT_NUMBER="$(gcloud storage buckets describe "gs://${TF_STATE_BUCKET}" --raw --format='value(projectNumber)' 2>"${DESCRIBE_ERROR}")"; then
   BUCKET_EXISTS=true
   if [[ ! "${BUCKET_PROJECT_NUMBER}" =~ ^[0-9]+$ ]]; then
     echo "Could not determine the existing bucket owner; refusing all bucket updates." >&2
@@ -43,7 +44,7 @@ if [[ "${BUCKET_EXISTS}" != true ]]; then
   gcloud storage buckets create "gs://${TF_STATE_BUCKET}" \
     --project "${PROJECT_ID}" --location "${LOCATION}" \
     --uniform-bucket-level-access --public-access-prevention
-  BUCKET_PROJECT_NUMBER="$(gcloud storage buckets describe "gs://${TF_STATE_BUCKET}" --format='value(projectNumber)')"
+  BUCKET_PROJECT_NUMBER="$(gcloud storage buckets describe "gs://${TF_STATE_BUCKET}" --raw --format='value(projectNumber)')"
   if [[ "${BUCKET_PROJECT_NUMBER}" != "${EXPECTED_PROJECT_NUMBER}" ]]; then
     echo "New state bucket owner does not match the TEST_ONLY project; refusing further changes." >&2
     exit 1
