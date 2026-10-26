@@ -188,3 +188,18 @@ Source: owner-pasted Cloud Shell output for the existing project and ingress dia
 | Cloud changes and budget changes | No API enablement, resource/IAM mutation, deployment, job resume/run, budget readback or budget creation was performed. The JPY 800 budget remains owner-reported created; do not duplicate | E5 action boundary |
 
 Open outcomes: inspect the existing bucket, Cloud Run configuration, Scheduler job target/audience/caller and IAM bindings read-only; capture the exact failed attempt's Scheduler execution logs; verify that the configured caller maps to the current allowlist. Keep the job PAUSED and do not deploy/retry until code CI is green and the user separately approves any live execution. Existing project only; new project and duplicate budget remain forbidden. PRs #170/#175/#180/#181/#182 remain unmerged; production, protected originals, formal three documents and P2+ remain untouched.
+
+## P1 Scheduler and Cloud Run IAM readback — ARCH-20261020-REPORT-CONTINUITY — 2026-10-27 JST (ADD)
+
+Source: owner-pasted Cloud Shell `jobs describe` and Cloud Run `get-iam-policy` output. Identifiers and principal emails are omitted.
+
+| Claim | Evidence / result | Level / limit |
+|---|---|---|
+| Scheduler target and OIDC configuration are present | Job points to the existing Cloud Run URL; its OIDC audience is the service URL and the caller is the dedicated 08:00/T−13 identity | E5 owner-supplied CLI output; not independently read and not reconciled against the deployed environment allowlist |
+| Cloud Run invocation IAM is narrow in the reported policy | The returned service IAM policy lists only the dedicated Scheduler caller with `roles/run.invoker`; no `allUsers` binding appears | E5 owner-supplied CLI output; the service-level auth annotation and complete effective IAM are not independently verified |
+| Failed-attempt timing is not in the job's current scheduleTime field | Job lastAttemptTime is 17:38:12Z while current next scheduleTime is 22:47:00Z with fractional precision. The API field is the next scheduled time, so it is not the exact failed-request header. Manual/off-schedule execution remains an inference | E5 owner output + official API semantics; exact failed header/attempt logs NOT_RUN |
+| Retry policy currently does not retry the failure | RetryConfig omits retryCount (default 0), lists maxRetryDuration 0, min backoff 5s and max backoff 3600s. With retryCount 0 and maxRetryDuration 0, the failed attempt is not retried | E5 owner output and official [Cloud Scheduler retry defaults](https://docs.cloud.google.com/scheduler/docs/configuring/retry-jobs) |
+| Bucket policy remains unknown | Bucket describe failed because the literal Japanese placeholder was passed as the bucket name. Existing bucket presence/location came from the prior list output; class and policies remain NOT_VERIFIED | E5 command error; no bucket mutation |
+| Cloud changes | No resource/API/IAM changes, budget creation, deployment, job resume or live retry was performed | Action record |
+
+Open outcomes: rerun bucket describe using the actual bucket name; inspect Cloud Run auth annotation, runtime account, image and environment allowlist; compare the Scheduler caller/job mapping to that allowlist; inspect Scheduler AttemptStarted/AttemptFinished entries for the exact request. Keep the job PAUSED. Budget remains owner-reported created and must not be duplicated. PR #182 remains Draft/unmerged; production, protected originals, formal three documents and P2+ remain untouched.
