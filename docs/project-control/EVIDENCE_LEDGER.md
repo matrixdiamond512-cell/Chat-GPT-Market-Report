@@ -203,3 +203,18 @@ Source: owner-pasted Cloud Shell `jobs describe` and Cloud Run `get-iam-policy` 
 | Cloud changes | No resource/API/IAM changes, budget creation, deployment, job resume or live retry was performed | Action record |
 
 Open outcomes: rerun bucket describe using the actual bucket name; inspect Cloud Run auth annotation, runtime account, image and environment allowlist; compare the Scheduler caller/job mapping to that allowlist; inspect Scheduler AttemptStarted/AttemptFinished entries for the exact request. Keep the job PAUSED. Budget remains owner-reported created and must not be duplicated. PR #182 remains Draft/unmerged; production, protected originals, formal three documents and P2+ remain untouched.
+
+
+## P1 existing bucket policy readback — ARCH-20261020-REPORT-CONTINUITY — 2026-10-27 JST (ADD)
+
+Source: owner-pasted Cloud Shell `gcloud storage buckets describe` output. Bucket name is omitted.
+
+| Claim | Evidence / result | Level / limit |
+|---|---|---|
+| Existing bucket location and class match the trial plan | `ASIA-NORTHEAST1`, `STANDARD`, regional | E5 owner-supplied external CLI output; not independently re-read by agent |
+| Public exposure controls match the trial plan | Uniform bucket-level access enabled; public access prevention enforced | E5 owner-supplied output; effective IAM bindings not included |
+| Retention and cleanup match the candidate plan | Soft delete retention is 604800 seconds (7 days); lifecycle Delete rule has age 30 and only the `shadow/` prefix | E5 owner-supplied output; object-level inventory and actual billing effect not read |
+| Retention lock and bucket IAM | No retentionPolicy was shown in the output; bucket IAM was not queried | NOT_VERIFIED |
+| Cloud changes | No bucket/resource/IAM/API changes, Storage write, deployment or Scheduler execution was performed | Action record |
+
+This existing bucket matches the observed Tokyo Standard, uniform-access, public-access-prevention, soft-delete and lifecycle settings, so do not create another bucket. Open outcome: inspect bucket IAM policy and verify runtime-only create/get scope before any separately approved live Storage test. Scheduler stays PAUSED; budget alert is already reported created and must not be duplicated.
