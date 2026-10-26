@@ -69,21 +69,11 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
     if len(short_bindings) != len(bindings):
         raise ValueError("SCHEDULER_SHORT_JOB_IDS_MUST_BE_UNIQUE")
     now = clock or (lambda: datetime.now(timezone.utc))
-    audit_context: dict[str, object] = {}
-
-    def emit_validation_stage(stage: str, result: str, reason: str | None = None,
-                              **fields: object) -> None:
-        record: dict[str, object] = {
-            "event": "P1_AUTO_VERIFY_STAGE",
-            "stage": stage,
-            "result": result,
-            **audit_context,
-        }
-        if reason:
-            record["reason"] = reason
-        record.update(fields)
-        print(json.dumps(record, separators=(",", ":"), sort_keys=True),
-              file=sys.stderr, flush=True)
+    audit_context: dict[str, object] = {
+        "oidcResult": "INCOMPLETE",
+        "jobNameResult": "INCOMPLETE",
+        "scheduleTimeResult": "INCOMPLETE",
+    }
 
     def respond(start_response, status: str, result: Mapping[str, object]):
         # Cloud Run platform/IAM rejection happens before this WSGI function.
@@ -125,12 +115,12 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
 
         match = _BEARER.fullmatch(environ.get("HTTP_AUTHORIZATION", ""))
         if not match:
-            emit_validation_stage("OIDC", "FAIL", "UNAUTHENTICATED")
+            audit_context["oidcResult"] = "FAIL"
             return respond(start_response, "401 Unauthorized", {"error": "UNAUTHENTICATED"})
         try:
             claims = verifier(match.group(1), audience)
         except Exception:
-            emit_validation_stage("OIDC", "FAIL", "UNAUTHENTICATED")
+            audit_context["oidcResult"] = "FAIL"
             return respond(start_response, "401 Unauthorized", {"error": "UNAUTHENTICATED"})
         issuer = claims.get("iss")
         email = claims.get("email")
@@ -140,9 +130,9 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
                 or claims.get("email_verified") is not True
                 or not isinstance(email, str)
                 or email.lower() not in allowed_callers):
-            emit_validation_stage("OIDC", "FAIL", "CALLER_NOT_AUTHORIZED")
+            audit_context["oidcResult"] = "FAIL"
             return respond(start_response, "403 Forbidden", {"error": "CALLER_NOT_AUTHORIZED"})
-        emit_validation_stage("OIDC", "PASS")
+        audit_context["oidcResult"] = "PASS"
 
         if binding is None:
             # Never log the untrusted job header value or treat a short name as
@@ -168,12 +158,12 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
                     or environ.get("HTTP_X_CLOUD_SCHEDULER_JOB_NAME")
                 ),
             }, separators=(",", ":"), sort_keys=True), file=sys.stderr, flush=True)
-            emit_validation_stage("JOB_NAME", "FAIL", "JOB_NOT_ALLOWLISTED")
+            audit_context["jobNameResult"] = "FAIL"
             return respond(start_response, "403 Forbidden", {"error": "JOB_NOT_ALLOWLISTED"})
         if email.lower() != binding.service_account_email.lower():
-            emit_validation_stage("JOB_NAME", "FAIL", "CALLER_NOT_AUTHORIZED")
+            audit_context["jobNameResult"] = "FAIL"
             return respond(start_response, "403 Forbidden", {"error": "CALLER_NOT_AUTHORIZED"})
-        emit_validation_stage("JOB_NAME", "PASS")
+        audit_context["jobNameResult"] = "PASS"
 
         try:
             scheduled = _utc_schedule(environ.get("HTTP_X_CLOUDSCHEDULER_SCHEDULETIME", ""))
@@ -186,7 +176,7 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
                 now=current,
             )
         except (ValueError, TypeError, OverflowError):
-            emit_validation_stage("SCHEDULE_TIME", "FAIL", "SCHEDULE_NOT_ALLOWED")
+            audit_context["scheduleTimeResult"] = "FAIL"
             return respond(start_response, "400 Bad Request", {"error": "SCHEDULE_NOT_ALLOWED"})
         scheduled_jst = scheduled.astimezone(ZoneInfo("Asia/Tokyo"))
         schedule_context = {
@@ -197,15 +187,12 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
         audit_context.update(schedule_context)
         if (identity.target.strftime("%H:%M") != binding.target_slot
                 or (binding.weekdays_only and identity.target.weekday() >= 5)):
-            emit_validation_stage("SCHEDULE_TIME", "FAIL", "SCHEDULE_NOT_ALLOWED")
+            audit_context["scheduleTimeResult"] = "FAIL"
             return respond(start_response, "400 Bad Request", {"error": "SCHEDULE_NOT_ALLOWED"})
         if identity.status != "ACTIVE":
-            emit_validation_stage("SCHEDULE_TIME", "FAIL", "SCHEDULE_EXPIRED")
+            audit_context["scheduleTimeResult"] = "FAIL"
             return respond(start_response, "409 Conflict", {"error": "SCHEDULE_EXPIRED"})
-        emit_validation_stage("SCHEDULE_TIME", "PASS",
-                              schedulerDateJst=schedule_context["schedulerDateJst"],
-                              schedulerTimeJst=schedule_context["schedulerTimeJst"],
-                              reportId=identity.report_id)
+        audit_context["scheduleTimeResult"] = "PASS"
 
         try:
             length_text = environ.get("CONTENT_LENGTH", "")
