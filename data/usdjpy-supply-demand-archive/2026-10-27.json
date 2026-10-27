@@ -2,7 +2,7 @@
   "schemaVersion": "1.0.0",
   "pageId": "usdjpy-supply-demand-archive",
   "reportDate": "2026-10-27",
-  "generatedAt": "2026-10-27T21:17:04+09:00",
+  "generatedAt": "2026-10-27T23:17:18+09:00",
   "market": {
     "schemaVersion": "1.1.0",
     "generatedAt": "2026-10-27T02:39:23+09:00",
@@ -75,12 +75,12 @@
   "rates": {
     "schemaVersion": "2.0.0",
     "pageId": "rates-bonds",
-    "generatedAt": "2026-10-27T09:51:24+09:00",
+    "generatedAt": "2026-10-27T21:44:43+09:00",
     "meta": {
       "page": "rates-bonds",
-      "asOfDate": "2026-10-26",
+      "asOfDate": "2026-10-27",
       "asOfTime": "各市場の公表時点",
-      "updatedAt": "2026-10-27T09:51:24+09:00",
+      "updatedAt": "2026-10-27T21:44:43+09:00",
       "status": "confirmed",
       "sourceStatus": "自動取得",
       "isStale": false,
@@ -118,23 +118,23 @@
       },
       {
         "name": "日本10年国債利回り",
-        "value": 2.824,
+        "value": 2.797,
         "unit": "%",
-        "changeBp": -1.3,
-        "weekChangeBp": -11.1,
+        "changeBp": -2.7,
+        "weekChangeBp": -13.0,
         "direction": "低下",
-        "asOf": "2026-10-26",
+        "asOf": "2026-10-27",
         "status": "confirmed",
-        "source": "財務省 国債金利情報",
+        "source": "TradingView JGB market snapshot (LSEG)",
         "missingReason": null,
         "staticMeaning": "円・銀行株・日経225・円キャリーへの影響を確認",
-        "currentInterpretation": "順イールド。短期と長期が逆方向。政策期待と長期プレミアムを分けて確認。"
+        "currentInterpretation": "順イールド。前日では長期側主導の金利低下。景気・インフレ期待や安全資産需要を確認。"
       }
     ]
   },
   "volume": {
     "schemaVersion": "1.0.0",
-    "generatedAt": "2026-10-27T16:33:00+09:00",
+    "generatedAt": "2026-10-27T21:34:59+09:00",
     "status": "ok",
     "data": {
       "sourceName": "日本銀行 外国為替市況（日次）",
@@ -143,12 +143,30 @@
       "priceSourceName": "Investing.com（2026/08/26以前の既存分）／Yahoo!ファイナンス日本版 USDJPY=X（日足OHLC補完分）",
       "unit": "百万ドル",
       "latestJudgement": {
-        "targetDate": "2026-10-23",
-        "publicationDate": "2026-10-26",
-        "spotVolumeLevel": "多い",
-        "summary": "直近のUSD/JPYスポット出来高は20営業日平均を上回っています。同日のUSD/JPY価格は未入力です。"
+        "targetDate": "2026-10-26",
+        "publicationDate": "2026-10-27",
+        "spotVolumeLevel": "少ない",
+        "summary": "直近のUSD/JPYスポット出来高は20営業日平均を下回っています。同日のUSD/JPY終値は157.50円です。"
       },
       "records": [
+        {
+          "targetDate": "2026-10-26",
+          "publicationDate": "2026-10-27",
+          "sourcePdfName": "fx261027.pdf",
+          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx261027.pdf",
+          "spotVolume": 3419,
+          "volumeChange": -2280,
+          "volumeChangePct": -40.01,
+          "avg20": 3903,
+          "vs20": -484,
+          "vs20Pct": -12.4,
+          "close": 157.5,
+          "open": 156.81,
+          "high": 157.64,
+          "low": 156.63,
+          "priceChangePct": 0.41,
+          "priceSourceId": "YAHOO_JP_USDJPY"
+        },
         {
           "targetDate": "2026-10-23",
           "publicationDate": "2026-10-26",
@@ -828,31 +846,23 @@
           "high": 159.44,
           "low": 158.88,
           "priceChangePct": 0.05
-        },
-        {
-          "targetDate": "2026-08-25",
-          "publicationDate": "2026-08-26",
-          "sourcePdfName": "fx260826.pdf",
-          "sourcePdfUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/fx260826.pdf",
-          "spotVolume": 3575,
-          "volumeChange": 781,
-          "volumeChangePct": 27.95,
-          "avg20": 5312,
-          "vs20": -1737,
-          "vs20Pct": -32.7,
-          "close": 159.22,
-          "open": 159.09,
-          "high": 159.5,
-          "low": 159.03,
-          "priceChangePct": 0.07
         }
       ],
       "priceRange": {
         "startDate": "2026-04-15",
-        "endDate": "2026-10-23",
-        "count": 131
+        "endDate": "2026-10-26",
+        "count": 132
       },
       "priceRecords": [
+        {
+          "date": "2026-10-26",
+          "open": 156.81,
+          "high": 157.64,
+          "low": 156.63,
+          "close": 157.5,
+          "priceSourceId": "YAHOO_JP_USDJPY",
+          "priceChangePct": 0.41
+        },
         {
           "date": "2026-10-23",
           "open": 156.76,
@@ -1920,14 +1930,13 @@
         }
       ],
       "priceAcquisition": {
-        "checkedAt": "2026-10-26T21:35:01+09:00",
+        "checkedAt": "2026-10-27T21:35:16+09:00",
         "source": "https://finance.yahoo.co.jp/quote/USDJPY=X/history",
         "filledMissingDates": 1,
-        "latestTargetDate": "2026-10-23",
+        "latestTargetDate": "2026-10-26",
         "missingLast20Dates": [],
         "note": "日足OHLCと日銀東京スポット出来高は取引時間帯が異なる。価格ソースの異なる日付がある。",
-        "provider": "YAHOO_JP_USDJPY",
-        "preservedFromPublishedGitHub": 17
+        "provider": "YAHOO_JP_USDJPY"
       }
     }
   },
@@ -2189,7 +2198,7 @@
   "config": {
     "schemaVersion": "3.2.0",
     "pageId": "usdjpy-supply-demand",
-    "generatedAt": "2026-10-27T21:17:04+09:00",
+    "generatedAt": "2026-10-27T23:17:18+09:00",
     "mode": "integrated-realistic",
     "sourceStatus": {
       "tradersWebFx": "confirmed",
@@ -2200,7 +2209,7 @@
       "name": "トレーダーズ・ウェブFX 無料ページ",
       "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
       "sourceUpdatedAt": "2026-10-27T06:24:00+09:00",
-      "checkedAt": "2026-10-27T21:17:06+09:00",
+      "checkedAt": "2026-10-27T23:17:19+09:00",
       "status": "confirmed",
       "pageConfirmed": true,
       "publicScope": "一般公開はUSD/JPYの直近情報",
@@ -2209,7 +2218,7 @@
       "sourceDate": "2026-10-27",
       "sourceTime": "06:24",
       "freshness": "today",
-      "ageHours": 14.9,
+      "ageHours": 16.9,
       "keyLevels": {
         "referenceSpot": "157.50",
         "referenceSpotDescription": "10/27 06:00現在（10/26 高値157.64円 - 安値156.65円）",
@@ -2712,7 +2721,7 @@
       "judgement": "円買い越し拡大",
       "judgementSub": "USD/JPYの下押し圧力",
       "priceStatus": "available",
-      "checkedAt": "2026-10-27T21:17:04+09:00",
+      "checkedAt": "2026-10-27T23:17:18+09:00",
       "comment": "円買い越し拡大。円先物のNetは+69,878枚、前週比+19,671枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
       "verifiedPoints": 52,
       "priceVerifiedPoints": 52,
@@ -2725,14 +2734,14 @@
         "verificationStatus": "verified"
       },
       "ratesBonds": {
-        "generatedAt": "2026-10-27T09:51:24+09:00",
-        "asOfDate": "2026-10-26",
+        "generatedAt": "2026-10-27T21:44:43+09:00",
+        "asOfDate": "2026-10-27",
         "status": "confirmed"
       },
       "usdJpyVolume": {
-        "generatedAt": "2026-10-27T16:33:00+09:00",
-        "targetDate": "2026-10-23",
-        "publicationDate": "2026-10-26",
+        "generatedAt": "2026-10-27T21:34:59+09:00",
+        "targetDate": "2026-10-26",
+        "publicationDate": "2026-10-27",
         "status": "ok"
       }
     },
@@ -2752,12 +2761,12 @@
   "flow": {
     "schemaVersion": "1.0.0",
     "pageId": "usdjpy-flow-summary",
-    "generatedAt": "2026-10-27T21:17:06+09:00",
+    "generatedAt": "2026-10-27T23:17:19+09:00",
     "status": "ok",
     "realDemand": {
       "score": null,
       "judgement": "判定保留",
-      "shortTermScore": 2.0,
+      "shortTermScore": 1.0,
       "structuralScore": 0.0,
       "verifiedCount": 2,
       "confirmedCount": 4,
@@ -2770,9 +2779,9 @@
           "direction": "usd_buy",
           "score": 0.5,
           "status": "calculated",
-          "asOf": "2026-10-23",
-          "updatedAt": "2026-10-27T16:33:00+09:00",
-          "valueText": "東京市場の始値→終値 156.76→156.86（+0.06%）。仲値実額ではなく価格代理",
+          "asOf": "2026-10-26",
+          "updatedAt": "2026-10-27T21:34:59+09:00",
+          "valueText": "東京市場の始値→終値 156.81→157.50（+0.44%）。仲値実額ではなく価格代理",
           "sourceName": "日本銀行 外国為替市況（日次）",
           "sourceUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/index.htm",
           "frequency": "daily proxy"
@@ -2782,11 +2791,11 @@
           "name": "東京市場出来高",
           "category": "short_term_real_demand",
           "direction": "usd_buy",
-          "score": 1.0,
+          "score": 0.5,
           "status": "verified",
-          "asOf": "2026-10-23",
-          "updatedAt": "2026-10-27T16:33:00+09:00",
-          "valueText": "価格 +0.06%／20日平均比 +45.94%（方向は価格と併用）",
+          "asOf": "2026-10-26",
+          "updatedAt": "2026-10-27T21:34:59+09:00",
+          "valueText": "価格 +0.41%／20日平均比 -12.40%（方向は価格と併用）",
           "sourceName": "日本銀行 外国為替市況（日次）",
           "sourceUrl": "https://www.boj.or.jp/statistics/market/forex/fxdaily/fxlist/index.htm",
           "frequency": "daily"
@@ -2799,7 +2808,7 @@
           "score": 0.0,
           "status": "verified",
           "asOf": "2026-10-27",
-          "updatedAt": "2026-10-27T21:17:06+09:00",
+          "updatedAt": "2026-10-27T23:17:19+09:00",
           "valueText": "非該当",
           "sourceName": "",
           "sourceUrl": "",
@@ -2813,7 +2822,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-10-27T21:17:06+09:00",
+          "updatedAt": "2026-10-27T23:17:19+09:00",
           "valueText": "対外－対内ネット +7,528億円。企業の当日実額ではなく週次資本フロー代理（為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -2827,7 +2836,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-06",
-          "updatedAt": "2026-10-27T21:17:06+09:00",
+          "updatedAt": "2026-10-27T23:17:19+09:00",
           "valueText": "輸出 10.93兆円／輸入 11.34兆円／収支 -4099億円（構造要因）",
           "sourceName": "財務省 貿易統計",
           "sourceUrl": "https://www.customs.go.jp/toukei/shinbun/trade-st/2026/2026065.pdf",
@@ -2841,7 +2850,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-10-27T21:17:06+09:00",
+          "updatedAt": "2026-10-27T23:17:19+09:00",
           "valueText": "合計 +6,262億円（取得超は外貨需要候補、為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -2855,7 +2864,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-10-27T21:17:06+09:00",
+          "updatedAt": "2026-10-27T23:17:19+09:00",
           "valueText": "合計 -1,266億円（取得超は円需要候補、為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -2869,7 +2878,7 @@
           "score": 0.0,
           "status": "verified",
           "asOf": "2026-10-27",
-          "updatedAt": "2026-10-27T21:17:06+09:00",
+          "updatedAt": "2026-10-27T23:17:19+09:00",
           "valueText": "月末非該当",
           "sourceName": "",
           "sourceUrl": "",
@@ -2892,7 +2901,7 @@
           "score": -0.5,
           "status": "verified",
           "asOf": "2026-10-20",
-          "updatedAt": "2026-10-27T21:17:04+09:00",
+          "updatedAt": "2026-10-27T23:17:18+09:00",
           "valueText": "円Net前週比 +19,671枚（USD/JPY方向へ符号反転）／基準日から7日",
           "sourceName": "CFTC Commitments of Traders - Japanese Yen",
           "sourceUrl": "https://www.cftc.gov/dea/newcot/deafut.txt",
@@ -2949,7 +2958,7 @@
           "status": "calculated",
           "asOf": "2026-10-27T02:39:30+09:00",
           "updatedAt": "2026-10-27T02:39:31+09:00",
-          "valueText": "USD/JPY +0.58%／米日2年金利変化差 +2.4bp（同時反応の代理、因果断定なし）",
+          "valueText": "USD/JPY +0.58%／米日2年金利変化差 +5.4bp（同時反応の代理、因果断定なし）",
           "sourceName": "市場価格・金利データ統合",
           "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
           "frequency": "daily proxy"
@@ -2968,7 +2977,7 @@
       "realDemand": null,
       "speculative": 0.0,
       "combined": null,
-      "generatedAt": "2026-10-27T09:45:48+09:00"
+      "generatedAt": "2026-10-27T21:17:06+09:00"
     },
     "officialFlows": {
       "trade": {
@@ -2992,8 +3001,8 @@
   "meta": {
     "priceDataDate": "2026-10-27",
     "usDataDate": "2026-10-23",
-    "japanDataDate": "2026-10-26",
-    "tokyoDataDate": "2026-10-23",
+    "japanDataDate": "2026-10-27",
+    "tokyoDataDate": "2026-10-26",
     "cftcDate": "2026-10-20"
   }
 }
