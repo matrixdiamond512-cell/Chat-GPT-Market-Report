@@ -222,6 +222,11 @@ class OneShotWorkflowDefinitionTests(unittest.TestCase):
         self.assertIn("                except:\n", target_read)
         self.assertIn("                  as: readTargetError\n", target_read)
         self.assertIn("                  steps:\n", target_read)
+        # Workflows expressions do not accept inline map literals, even
+        # though YAML accepts an empty mapping in a normal assign step.
+        self.assertNotIn(', {})}', source)
+        self.assertIn('- emptyPayload: {}', source)
+        self.assertIn('default(map.get(entry, "jsonPayload"), emptyPayload)', source)
 
     def test_config_is_preparation_only_and_does_not_enable_storage_writes(self):
         root = Path(__file__).resolve().parents[1]
