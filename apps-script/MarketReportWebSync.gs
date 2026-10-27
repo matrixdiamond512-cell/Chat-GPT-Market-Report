@@ -252,6 +252,7 @@ function publishWebReportObject_(report) {
   try {
     report.bodyHash = marketReportSha256_(Utilities.newBlob(report.fullText, 'text/plain').getBytes());
     verifyMarketReportSourceDocReadback_(report);
+    validateMarketReportEvidenceBeforeSave_(report);
     const key = report.date + '_' + report.time.replace(':', '-');
     report.report_status = 'PUBLISHED';
     report.infographic_status = 'NOT_READY';
@@ -512,6 +513,128 @@ function marketReportVisionTrustConfig_() {
     throw new Error('VISION_ATTESTATION_KEY_INVALID: HMAC key must contain at least 32 UTF-8 bytes.');
   }
   return { secret: secret, provider: provider };
+}
+
+
+/**
+ * Add a body-grounded market evidence check immediately before the report is saved.
+ * This guard is separate from, and does not relax, the existing formal publication gates.
+ */
+function validateMarketReportEvidenceBeforeSave_(report) {
+  var body = String(report && report.fullText || '').trim();
+  if (!body) throw new Error('MARKET_EVIDENCE_INVALID: fullText is required before saving.');
+  var required = ['金', '原油', '日経225先物', 'USD/JPY', 'EUR/USD', 'BTCUSD'];
+  var normalizedBody = marketEvidenceNormalize_(body);
+  var byName = {};
+  (Array.isArray(report.markets) ? report.markets : []).forEach(function(market) {
+    if (!market || typeof market !== 'object') return;
+    var name = String(market.name || '').trim();
+    if (!name) return;
+    if (byName[name]) {
+      var oldPrice = marketEvidenceNormalize_(byName[name].price);
+      var newPrice = marketEvidenceNormalize_(market.price);
+      if (oldPrice !== newPrice) throw new Error('MARKET_EVIDENCE_CONFLICT: duplicate market prices disagree for ' + name + '.');
+      throw new Error('MARKET_EVIDENCE_INVALID: duplicate market record for ' + name + '.');
+    }
+    byName[name] = market;
+  });
+
+  var errors = [];
+  required.forEach(function(name) {
+    var market = byName[name];
+    if (!market) { errors.push(name + ': structured market record is missing.'); return; }
+    var price = String(market.price || '').trim();
+    var status = String(market.verificationStatus || '').trim();
+    if (status && ['verified', 'reference', 'unavailable', 'conflict'].indexOf(status) < 0) {
+      errors.push(name + ': unsupported verificationStatus ' + status + '.'); return;
+    }
+    var unavailable = /(?:取得不能|未取得|価格なし)/.test(price);
+    if (unavailable) {
+      if (status === 'verified' || status === 'reference') {
+        errors.push(name + ': unavailable price conflicts with ' + status + ' status.'); return;
+      }
+      if (!normalizedBody.includes(marketEvidenceNormalize_(name)) || !/(?:取得不能|未取得|価格なし)/.test(body)) {
+        errors.push(name + ': unavailable status is not supported by fullText.'); return;
+      }
+      market.verificationStatus = status === 'conflict' ? 'conflict' : 'unavailable';
+      market.freshnessStatus = market.verificationStatus;
+      return;
+    }
+    if (!price) { errors.push(name + ': price is missing.'); return; }
+
+    var numbers = price.match(/\d[\d,]*(?:\.\d+)?/g) || [];
+    if (!numbers.length) { errors.push(name + ': price has no body-verifiable numeric value.'); return; }
+    if (!numbers.every(function(number) { return normalizedBody.includes(marketEvidenceNormalize_(number)); })) {
+      errors.push(name + ': one or more price numbers do not occur in fullText.'); return;
+    }
+    if (status === 'unavailable') { errors.push(name + ': numeric price conflicts with unavailable status.'); return; }
+
+    var observation = marketEvidenceObservation_(market, String(report.date || ''));
+    var cutoffDate = String(report.date || '');
+    var cutoffTime = Number(String(report.time || '').slice(0, 2)) * 60 + Number(String(report.time || '').slice(3, 5));
+    if (observation.date && observation.date > cutoffDate) {
+      errors.push(name + ': observation date is after the report cutoff.'); return;
+    }
+    if (observation.date === cutoffDate && observation.minutes !== null && observation.isJst &&
+        observation.minutes > cutoffTime) {
+      errors.push(name + ': observation time is after the report cutoff.'); return;
+    }
+
+    if (observation.display && !market.observationTimeJst) market.observationTimeJst = observation.display;
+    var inferred = observation.date === cutoffDate && observation.minutes !== null &&
+      observation.isJst && observation.minutes <= cutoffTime ? 'verified' : 'reference';
+    if (status === 'conflict' || status === 'reference') inferred = status;
+    else if (status === 'verified' && inferred !== 'verified') inferred = 'reference';
+    market.verificationStatus = inferred;
+    market.freshnessStatus = inferred;
+  });
+  if (errors.length) throw new Error('MARKET_EVIDENCE_INVALID: save blocked.\n- ' + errors.join('\n- '));
+  return {ok:true, marketCount:required.length, bodyLength:body.length};
+}
+
+function marketEvidenceNormalize_(value) {
+  return String(value || '').normalize('NFKC').replace(/,/g, '').replace(/[−–—]/g, '-').replace(/\s+/g, ' ').trim();
+}
+
+function marketEvidenceObservation_(market, reportDate) {
+  var explicit = String(market.observationTimeJst || market.observedAt || market.observationTime || '').trim();
+  var price = String(market.price || '');
+  var text = explicit || price;
+  var timezoneKnown = /(?:JST|日本時間|Asia\/Tokyo)/i.test(text) || Boolean(explicit);
+  var date = '', minutes = null, display = '';
+  var full = text.match(/(20\d{2})\s*[-/年]\s*(\d{1,2})\s*[-/月]\s*(\d{1,2})日?[^\d]{0,12}(\d{1,2}):(\d{2})/);
+  if (full) {
+    date = full[1] + '-' + ('0' + full[2]).slice(-2) + '-' + ('0' + full[3]).slice(-2);
+    minutes = Number(full[4]) * 60 + Number(full[5]); display = full[0].trim();
+  } else {
+    var short = text.match(/(^|[^\d])(\d{1,2})\s*[/月]\s*(\d{1,2})日?[^\d]{0,12}(\d{1,2}):(\d{2})/);
+    if (short) {
+      var year = Number(String(reportDate || '').slice(0, 4)) || new Date().getUTCFullYear();
+      var month = Number(short[2]), day = Number(short[3]);
+      var slotMonth = Number(String(reportDate || '').slice(5, 7)), slotDay = Number(String(reportDate || '').slice(8, 10));
+      if (month > slotMonth || (month === slotMonth && day > slotDay)) year--;
+      date = year + '-' + ('0' + month).slice(-2) + '-' + ('0' + day).slice(-2);
+      minutes = Number(short[4]) * 60 + Number(short[5]); display = short[0].trim();
+    } else {
+      var dateOnly = text.match(/(20\d{2})\s*[-/年]\s*(\d{1,2})\s*[-/月]\s*(\d{1,2})日?/);
+      if (dateOnly) {
+        date = dateOnly[1] + '-' + ('0' + dateOnly[2]).slice(-2) + '-' + ('0' + dateOnly[3]).slice(-2);
+        display = dateOnly[0].trim();
+      } else {
+        var shortOnly = text.match(/(^|[^\d])(\d{1,2})\s*[/月]\s*(\d{1,2})日?/);
+        if (shortOnly) {
+          var inferredYear = Number(String(reportDate || '').slice(0, 4)) || new Date().getUTCFullYear();
+          var inferredMonth = Number(shortOnly[2]), inferredDay = Number(shortOnly[3]);
+          var reportMonth = Number(String(reportDate || '').slice(5, 7)), reportDay = Number(String(reportDate || '').slice(8, 10));
+          if (inferredMonth > reportMonth || (inferredMonth === reportMonth && inferredDay > reportDay)) inferredYear--;
+          date = inferredYear + '-' + ('0' + inferredMonth).slice(-2) + '-' + ('0' + inferredDay).slice(-2);
+          display = shortOnly[0].trim();
+        }
+      }
+    }
+  }
+  if (/(?:JST不詳|時刻不詳|時間不詳)/.test(text)) { timezoneKnown = false; minutes = null; }
+  return {date:date, minutes:minutes, isJst:timezoneKnown, display:display};
 }
 
 function verifyMarketReportSourceDocReadback_(report) {
