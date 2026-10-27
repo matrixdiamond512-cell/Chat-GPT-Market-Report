@@ -34,7 +34,9 @@ window.fetch=async function(input,init){
  try{payload=await response.clone().json()}catch{payload=[]}
  const list=Array.isArray(payload)?payload:Array.isArray(payload?.reports)?payload.reports:[];
  const files=['08-00','12-00','16-00','21-00'];
- const full=await Promise.all(files.map(time=>original('reports/2026-09-18_'+time+'.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Full report HTTP '+r.status);return r.json()})));
+ let full=[];
+ try { full=await Promise.all(files.map(time=>original('reports/2026-09-18_'+time+'.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Full report HTTP '+r.status);return r.json()}))); }
+ catch(error){ console.warn('[2026-09-18 legacy fulltext] optional archive unavailable',error.message); }
  const morning=full.find(r=>r.time==='08:00');
  if(morning)morning.marketDataTable={semantics:'previous_close',dataDate:'2026-09-17',columns:['項目','終値・値','前日比','騰落率','方向感'],rows:morningRows};
  const merged=[...list.filter(r=>!full.some(f=>r.date===f.date&&r.time===f.time)),...full];

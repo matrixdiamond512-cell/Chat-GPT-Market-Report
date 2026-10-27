@@ -564,35 +564,50 @@
         const numeric = archived?.value && Number.isFinite(Number(numberText)) ? Number(numberText) : null;
         const original = String(archived?.originalLine || "取得不能（保存記録に価格の記載なし）");
         const outlook = String(archived?.outlook || "");
+        const bodyBacked = archived?.sourceKind === "BODY_MARKET_DATA";
         const isReference = /(?:前日|前営業日|10\/14|同時刻値は取得不能|同時刻の|参考|前回|09:00)/.test(original);
         card.price = numeric;
-        card.priceText = archived?.value || null;
-        card.priceStatus = numeric === null ? "missing" : "fallback";
+        card.priceText = archived?.verificationStatus === "conflict" ? "照合保留"
+          : archived?.verificationStatus === "unavailable" ? "取得不能"
+            : archived?.displayValue || archived?.value || null;
+        card.priceStatus = numeric === null ? "missing"
+          : bodyBacked && archived.verificationStatus === "verified" ? "confirmed" : "fallback";
         card.change = Number.isFinite(archived?.change) ? archived.change : null;
         // 24-hour crypto change and daily-close change use different benchmarks.
-        card.changePct = /24時間比/.test(original) ? null : Number.isFinite(archived?.changePct) ? archived.changePct : null;
+        card.changePct = bodyBacked ? (Number.isFinite(archived?.changePct) ? archived.changePct : null)
+          : /24時間比/.test(original) ? null : Number.isFinite(archived?.changePct) ? archived.changePct : null;
+        card.changeLabel = bodyBacked ? String(archived?.changeText || "") : "";
         card.changeStatus = card.change === null && card.changePct === null ? "missing" : "fallback";
-        card.priceSourceType = isReference ? "previous_confirmed" : "latest_report";
+        card.priceSourceType = bodyBacked && archived.verificationStatus === "verified" ? "latest_report"
+          : isReference ? "previous_confirmed" : "latest_report";
         card.changeSourceType = "latest_report";
         // The source readback distinguishes factual session change, forward
         // scenario, monitoring levels and downside risks. Never reuse the
         // same outlook paragraph for every market-card field.
         const strict = archived?.sourceKind === "SUPPLEMENTAL_DOC_LINE";
-        card.basisLabel = strict
-          ? "補充保存本文の参考値：" + archived.sourceLabel
-          : "事後改訂の保存原本：" + original.slice(0, 150);
-        card.reasoningText = strict ? (archived.reason || "材料は保存本文参照") : outlook || original;
-        card.keyPoint = strict ? (archived.keyPoint || "監視水準は保存本文参照") : outlook || original;
-        card.riskText = strict ? (archived.risk || "具体的なリスク条件は保存本文参照") : outlook || "具体的なリスク条件は保存原本参照";
-        card.directionLabel = strict ? archived.direction : outlook.split("。")[0] || "取得不能（方向感の原本記載なし）";
-        card.directionConfidence = strict && card.change !== null ? "numeric" : strict ? "insufficient" : "textual";
-        card.trend = strict
-          ? card.change === null ? "flat" : card.change > 0 ? "up" : card.change < 0 ? "down" : "flat"
-          : card.changePct > 0 ? "up" : card.changePct < 0 ? "down" : "flat";
+        card.basisLabel = bodyBacked
+          ? `${archived.verificationStatus === "reference" ? "参考値" : archived.verificationStatus === "verified" ? "確認済み" : archived.verificationStatus === "conflict" ? "照合保留" : "取得不能"}｜観測：${archived.observedAt}｜${archived.priceType}${archived.contractMonth ? "・" + archived.contractMonth : ""}｜出典：${archived.sourceName}`
+          : strict ? "補充保存本文の参考値：" + archived.sourceLabel
+            : "事後改訂の保存原本：" + original.slice(0, 150);
+        card.reasoningText = bodyBacked ? (archived.material || archived.outlook || "材料は本文参照")
+          : strict ? (archived.reason || "材料は保存本文参照") : outlook || original;
+        card.keyPoint = bodyBacked ? (archived.levels || "注目水準は本文参照")
+          : strict ? (archived.keyPoint || "監視水準は保存本文参照") : outlook || original;
+        card.riskText = bodyBacked ? (archived.risk || "リスクは本文参照")
+          : strict ? (archived.risk || "具体的なリスク条件は保存本文参照") : outlook || "具体的なリスク条件は保存原本参照";
+        card.directionLabel = bodyBacked ? archived.direction
+          : strict ? archived.direction : outlook.split("。")[0] || "取得不能（方向感の原本記載なし）";
+        card.directionConfidence = (strict || bodyBacked) && card.change !== null ? "numeric" : (strict || bodyBacked) ? "insufficient" : "textual";
+        const bodyDirection = String(archived?.direction || "");
+        card.trend = bodyBacked
+          ? /^(上昇|強気|up)$/i.test(bodyDirection) ? "up" : /^(下落|弱気|down)$/i.test(bodyDirection) ? "down" : bodyDirection === "不明" ? "missing" : card.change > 0 ? "up" : card.change < 0 ? "down" : "flat"
+          : strict ? card.change === null ? "flat" : card.change > 0 ? "up" : card.change < 0 ? "down" : "flat"
+            : card.changePct > 0 ? "up" : card.changePct < 0 ? "down" : "flat";
         card.consistencyStatus = "判定保留";
-        card.consistencyReason = strict
-          ? "価格と材料は補充保存本文から抽出。発行当時の事前snapshotは未照合で、因果関係は推定です。"
-          : "発行当時の数値snapshot未照合。参考値と各時間帯の観測時刻を区別してください。";
+        card.consistencyReason = bodyBacked
+          ? "市場データは保存本文に基づく" + (archived.verificationStatus === "reference" ? "参考値" : "確認値") + "です。発行当時のsnapshotは未照合のため、同時刻値や因果とみなしません。"
+          : strict ? "価格と材料は補充保存本文から抽出。発行当時の事前snapshotは未照合で、因果関係は推定です。"
+            : "発行当時の数値snapshot未照合。参考値と各時間帯の観測時刻を区別してください。";
       }
       const trend = card.trend;
       const trendClass = trend === "up" ? "up" : trend === "down" ? "down" : trend === "missing" ? "missing" : "flat";
@@ -607,13 +622,17 @@
       const href = definition.route ? ` href="${definition.route}"` : "";
       const aria = definition.route ? ` aria-label="${esc(definition.display)}の詳細へ"` : "";
       const price = card.priceText || "取得不能";
-      const changeLabel = report?.historicalArchiveDisplayOnly
-        && report.archiveQuotes?.[definition.key]?.sourceKind === "SUPPLEMENTAL_DOC_LINE"
-        && card.change === null && card.changePct === null
-        ? "前日比：比較対象なし（当時の観測参考値）"
-        : changeDisplay(card);
+      const bodyBackedArchive = report?.historicalArchiveDisplayOnly && report.archiveQuotes?.[definition.key]?.sourceKind === "BODY_MARKET_DATA";
+      const changeLabel = bodyBackedArchive
+        ? report.archiveQuotes[definition.key].changeText || (card.change === null && card.changePct === null ? "比較対象なし" : changeDisplay(card))
+        : report?.historicalArchiveDisplayOnly
+          && report.archiveQuotes?.[definition.key]?.sourceKind === "SUPPLEMENTAL_DOC_LINE"
+          && card.change === null && card.changePct === null
+          ? "前日比：比較対象なし（当時の観測参考値）"
+          : changeDisplay(card);
       const strictArchive = report?.historicalArchiveDisplayOnly && report.archiveQuotes?.[definition.key]?.sourceKind === "SUPPLEMENTAL_DOC_LINE";
-      const name = strictArchive ? report.archiveQuotes[definition.key].marketName
+      const name = bodyBackedArchive ? report.archiveQuotes[definition.key].marketName
+        : strictArchive ? report.archiveQuotes[definition.key].marketName
         : report?.historicalArchiveDisplayOnly && definition.key === "gold"
         ? (/^金先物/.test(report.archiveQuotes?.gold?.originalLine || "") ? "金先物（GC=F）" : "金スポット（参考値）")
         : definition.display;
