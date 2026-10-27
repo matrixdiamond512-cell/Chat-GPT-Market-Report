@@ -40,6 +40,9 @@
   }
 
   function shouldKeepHistoricalSelection(latest) {
+    // Preserve the original explicit deep link captured before async initialization.
+    if (window.MarketReportInitialRequestedSlot?.date &&
+        window.MarketReportInitialRequestedSlot?.time) return true;
     const params = new URLSearchParams(location.search);
     const requestedDate = params.get("date");
     const requestedTime = params.get("time");
