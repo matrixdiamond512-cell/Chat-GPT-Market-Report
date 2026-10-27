@@ -33,6 +33,7 @@ main:
           - scheduleTimeResult: "INCOMPLETE"
           - schedulerStatusCode: null
           - schedulerLastAttempt: null
+          - schedulerAttemptEpoch: -1
           - lastAttemptLocal: ""
     - pause_target:
         for:
@@ -158,12 +159,14 @@ main:
           steps:
             - format_attempt:
                 assign:
-                  - lastAttemptLocal: ${time.format(time.parse(schedulerLastAttempt), "Asia/Tokyo")}
+                  - schedulerAttemptEpoch: ${time.parse(schedulerLastAttempt)}
+                  - lastAttemptLocal: ${time.format(schedulerAttemptEpoch, "Asia/Tokyo")}
         except:
           as: attemptError
           steps:
             - mark_attempt_unreadable:
                 assign:
+                  - schedulerAttemptEpoch: -1
                   - lastAttemptLocal: "INVALID"
     - query_logs:
         try:
@@ -222,7 +225,7 @@ main:
           - oidcResult: ${if(oidcResult == "INCOMPLETE" and (httpStatus == 401 or httpStatus == 403), "FAIL", oidcResult)}
           - httpResult: ${if(httpStatus == 200, "PASS", if(httpStatus == null, "INCOMPLETE", "FAIL"))}
           - schedulerTimeLocal: ${if(lastAttemptLocal == "", "", text.substring(lastAttemptLocal, 0, 16))}
-          - attemptInWindow: ${schedulerTimeLocal >= runDateJst + "T07:46" and schedulerTimeLocal <= runDateJst + "T07:50"}
+          - attemptInWindow: ${schedulerAttemptEpoch >= expectedEpoch - 60 and schedulerAttemptEpoch <= expectedEpoch + 180}
           - schedulerAttemptResult: ${if(schedulerStatusCode == null or schedulerLastAttempt == null, "INCOMPLETE", if(schedulerStatusCode != 0 or not attemptInWindow, "FAIL", "PASS"))}
           - targetStopResult: ${if(targetReadback == "PAUSED", "PASS", "BLOCKED")}
           - watchdogStopResult: ${if(watchdogReadback == "PAUSED", "PASS", "BLOCKED")}
