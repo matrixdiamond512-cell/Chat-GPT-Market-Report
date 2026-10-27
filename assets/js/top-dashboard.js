@@ -1385,6 +1385,42 @@ function archiveDashboardSummary(record) {
   }
   const confirmedSupplementalQuotes = verifiedSupplementalArchiveQuotes(record);
   if (confirmedSupplementalQuotes) Object.assign(archiveQuotes, confirmedSupplementalQuotes);
+  // Prefer slot-bound market facts attached to the saved body. The archive is
+  // historical/display-only, so never synthesize them from live market data.
+  const bodyMarketKeys = {
+    gold: "gold", oil: "wti", nikkei: "nikkei225_futures_ose",
+    usdjpy: "usdjpy", eurusd: "eurusd", btc: "btcusd"
+  };
+  if (!isDashboardReconstructedArchive(record) && record.marketData?.markets) {
+    for (const [key, dataKey] of Object.entries(bodyMarketKeys)) {
+      const item = record.marketData.markets[dataKey];
+      if (!item || !["verified", "reference", "unavailable", "conflict"].includes(item.verificationStatus)) continue;
+      const stateLabel = item.verificationStatus === "reference" ? "参考値"
+        : item.verificationStatus === "verified" ? "確認済み"
+          : item.verificationStatus === "conflict" ? "数値矛盾・照合保留" : "取得不能";
+      const value = Number.isFinite(Number(item.value)) ? Number(item.value) : null;
+      const name = item.displayName || ({gold:"金",oil:"原油",nikkei:"日経225先物",usdjpy:"USD/JPY",eurusd:"EUR/USD",btc:"BTCUSD"}[key]);
+      const observedAt = String(item.observationTimeJst || item.asOf || "観測時刻不明");
+      const sourceName = String(item.sourceName || "本文内で取得元未特定");
+      const priceType = String(item.priceType || item.marketType || "価格種別本文参照");
+      const displayValue = String(item.displayValue || (value === null ? "" : value));
+      const originalLine = item.verificationStatus === "conflict" ? "同一条件の価格に矛盾。照合保留。"
+        : item.verificationStatus === "unavailable" ? "本文に採用可能な確認値なし。"
+          : `${stateLabel}：${priceType} ${displayValue}${item.unit ? ` ${item.unit}` : ""}｜観測：${observedAt}｜出典：${sourceName}`;
+      archiveQuotes[key] = {
+        value: ["unavailable", "conflict"].includes(item.verificationStatus) ? null : value,
+        displayValue: item.displayValue || null,
+        change: Number.isFinite(item.change) ? item.change : null,
+        changePct: Number.isFinite(item.changePercent) ? item.changePercent : null,
+        changeText: String(item.changeText || ""), observedAt, priceType,
+        contractMonth: String(item.contractMonth || ""), sourceName,
+        verificationStatus: item.verificationStatus, originalLine,
+        sourceKind: "BODY_MARKET_DATA", marketName: String(name),
+        direction: String(item.direction || "不明"), outlook: String(item.outlook || ""),
+        material: String(item.material || ""), levels: String(item.levels || ""), risk: String(item.risk || "")
+      };
+    }
+  }
   const explicitRows = Array.isArray(record.archiveTimelineRows) ? record.archiveTimelineRows : [];
   const timelineRows = explicitRows.length ? explicitRows.filter(row => row && typeof row.text === "string" && row.text.trim())
     .slice(0, 20).map(row => ({
