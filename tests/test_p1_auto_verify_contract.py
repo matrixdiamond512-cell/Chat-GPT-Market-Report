@@ -206,6 +206,23 @@ class OneShotWorkflowDefinitionTests(unittest.TestCase):
                     fragment.index(f"exit_{job}_retry_if_paused:"),
                 )
 
+    def test_workflow_compiler_constraints_regression(self):
+        """Guard GCP Workflows' 400-character expression and try/except structure."""
+        import re
+        root = Path(__file__).resolve().parents[1]
+        source = (root / "cloud" / "workflows" /
+                  "p1-one-shot-auto-verify.yaml").read_text(encoding="utf-8")
+        for expression in re.findall(r"\$\{[^\n]*?\}", source):
+            with self.subTest(expression=expression[:55]):
+                self.assertLessEqual(len(expression) - 3, 400)
+        target_read = source.split("            - read_target_after_pause:\n", 1)[1].split(
+            "            - normalize_target_pause_result:\n", 1
+        )[0]
+        self.assertIn("                try:\n", target_read)
+        self.assertIn("                except:\n", target_read)
+        self.assertIn("                  as: readTargetError\n", target_read)
+        self.assertIn("                  steps:\n", target_read)
+
     def test_config_is_preparation_only_and_does_not_enable_storage_writes(self):
         root = Path(__file__).resolve().parents[1]
         config = json.loads((root / "config" / "p1-one-shot-auto-verify.json").read_text(encoding="utf-8"))
