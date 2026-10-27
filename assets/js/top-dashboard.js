@@ -71,6 +71,15 @@ const MARKET_DEFINITIONS = [
 
 const FLOW_ASSETS = ["株式", "債券（米国）", "ドル", "円", "商品（原油・金）", "暗号資産"];
 
+// Capture the requested slot before any asynchronous bootstrap may rewrite the URL.
+const initialSlotParams = new URLSearchParams(window.location.search);
+const initialRequestedDate = initialSlotParams.get("date");
+const initialRequestedTime = initialSlotParams.get("time");
+window.MarketReportInitialRequestedSlot =
+  /^\d{4}-\d{2}-\d{2}$/.test(initialRequestedDate || "") &&
+  /^(08:00|12:00|16:00|21:00)$/.test(initialRequestedTime || "")
+    ? { date: initialRequestedDate, time: initialRequestedTime } : null;
+
 let reports = [];
 let selectedReport = null;
 let dashboardMeta = null;
@@ -2417,8 +2426,9 @@ async function init() {
     if (!reports.length) throw new Error("表示できるレポートがありません");
 
     const params = new URLSearchParams(window.location.search);
-    const date = params.get("date");
-    const time = params.get("time");
+    const initial = window.MarketReportInitialRequestedSlot;
+    const date = initial?.date || params.get("date");
+    const time = initial?.time || params.get("time");
     const exactRequestedReport = reports.find((report) => report.date === date && report.time === time);
     selectedReport = exactRequestedReport || reports[0];
     if (!exactRequestedReport && date && time && selectedReport) {
