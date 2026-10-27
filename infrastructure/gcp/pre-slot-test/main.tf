@@ -209,7 +209,10 @@ resource "google_cloud_scheduler_job" "pre_slot" {
     max_retry_duration   = "60s"
     min_backoff_duration = "5s"
     max_backoff_duration = "5s"
-    max_doublings        = 0
+    # Cloud Scheduler normalizes a zero API value to the default 5.
+    # With retry_count=1 and both backoff bounds at 5s, this does not
+    # increase retry count or spacing; matching API state avoids drift.
+    max_doublings        = 5
   }
 
   http_target {
