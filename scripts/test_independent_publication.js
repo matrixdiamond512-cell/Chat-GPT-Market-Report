@@ -17,7 +17,24 @@ vm.createContext(context);
 vm.runInContext(webSource, context);
 
 const bodyHash = value => crypto.createHash('sha256').update(value).digest('hex');
-const fixtureBodyHash = bodyHash('fixture body');
+const fixtureBody = [
+  '主要市場データ',
+  '金：4,020.60ドル/oz（2026-10-09 07:40 JST確認）',
+  '原油：101.76ドル/bbl（2026-10-08 NY清算）',
+  '日経225先物：62,890円（2026-10-09 06:00 JST確認）',
+  'USD/JPY：157.50円（2026-10-09 07:45 JST確認）',
+  'EUR/USD：1.1174（2026-10-09 07:45 JST確認）',
+  'BTCUSD：79,902.86ドル（2026-10-09 05:39 JST確認）'
+].join('\\n');
+const fixtureBodyHash = bodyHash(fixtureBody);
+const fixtureMarkets = [
+  { name: '金', price: '4,020.60ドル/oz（2026-10-09 07:40 JST確認）' },
+  { name: '原油', price: '101.76ドル/bbl（2026-10-08 NY清算）' },
+  { name: '日経225先物', price: '62,890円（2026-10-09 06:00 JST確認）' },
+  { name: 'USD/JPY', price: '157.50円（2026-10-09 07:45 JST確認）' },
+  { name: 'EUR/USD', price: '1.1174（2026-10-09 07:45 JST確認）' },
+  { name: 'BTCUSD', price: '79,902.86ドル（2026-10-09 05:39 JST確認）' }
+];
 function sortObject(value) {
   if (Array.isArray(value)) return value.map(sortObject);
   if (value && typeof value === 'object') return Object.fromEntries(Object.keys(value).sort().map(key => [key, sortObject(value[key])]));
@@ -49,7 +66,9 @@ context.upsertWebReportList_ = (items, report) => [...items.filter(item => item.
 context.syncDashboardJsonToGitHubFromReports_ = () => ({ commitSha: 'dashboard-fixture' });
 
 function report(extra = {}) {
-  return Object.assign({ date: '2026-10-09', time: '08:00', title: 'fixture report', fullText: 'fixture body', revision: 1, snapshot_id: 'snap-1' }, extra);
+  return Object.assign({ date: '2026-10-09', time: '08:00', title: 'fixture report', fullText: fixtureBody,
+    markets: fixtureMarkets.map(market => Object.assign({ direction: 'fixture', material: 'fixture', outlook: 'fixture', levels: 'fixture', risk: 'fixture' }, market)),
+    revision: 1, snapshot_id: 'snap-1' }, extra);
 }
 function runBodyPublish(input) {
   writes.length = 0;
