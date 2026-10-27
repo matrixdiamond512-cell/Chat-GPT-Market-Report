@@ -26,6 +26,7 @@ main:
           - ingressRecordFound: false
           - matchedIngressCount: 0
           - logEntries: []
+          - emptyPayload: {}
           - httpStatus: null
           - oidcResult: "INCOMPLETE"
           - jobNameResult: "INCOMPLETE"
@@ -198,7 +199,7 @@ main:
           steps:
             - extract_log_fields:
                 assign:
-                  - payload: ${default(map.get(entry, "jsonPayload"), {})}
+                  - payload: ${default(map.get(entry, "jsonPayload"), emptyPayload)}
                   - eventName: ${default(map.get(payload, "event"), "")}
                   - stageJobId: ${default(map.get(payload, "jobId"), "")}
                   - exactIngressMatch: ${eventName == "P1_INGRESS_RESULT" and stageJobId == expectedJobId and map.get(payload, "schedulerDateJst") == runDateJst and map.get(payload, "schedulerTimeJst") == expectedTimeJst and map.get(payload, "reportId") == expectedReportId}
