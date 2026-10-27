@@ -9107,7 +9107,7 @@
     },
     {
       "asOf": "2026-10-27",
-      "generatedAt": "2026-10-27T21:44:43+09:00",
+      "generatedAt": "2026-10-28T01:53:57+09:00",
       "rates": {
         "米2年債利回り": 4.69,
         "米5年債利回り": 4.82,
@@ -9116,10 +9116,10 @@
         "米10年実質金利": 2.66,
         "米10年期待インフレ率": 2.34,
         "米10年タームプレミアム": 0.986,
-        "日本2年国債利回り": 1.874,
-        "日本5年国債利回り": 2.234,
-        "日本10年国債利回り": 2.797,
-        "日本30年国債利回り": 3.834,
+        "日本2年国債利回り": 1.873,
+        "日本5年国債利回り": 2.243,
+        "日本10年国債利回り": 2.809,
+        "日本30年国債利回り": 3.848,
         "ドイツ10年国債利回り": 3.35
       },
       "policyExpectations": {
@@ -9152,8 +9152,8 @@
       "analysis": {
         "topLines": [
           "米国：ベア・フラットニング｜全面的な金利上昇",
-          "日本：ブル・フラットニング｜全面的な金利低下",
-          "クロスアセット：USD/JPYは整合、金は逆行、BTCUSDは逆行"
+          "日本：ブル・フラットニング｜年限ごとに方向が分かれる",
+          "クロスアセット：USD/JPYは逆行、金は逆行、BTCUSDは逆行"
         ],
         "theme": "米国はベア・フラットニング、日本はブル・フラットニング。日米金利差は拡大方向。",
         "usRates": {
@@ -9165,8 +9165,8 @@
         },
         "jpRates": {
           "structure": "ブル・フラットニング",
-          "direction": "全面的な金利低下",
-          "interpretation": "日本国債は全面的な金利低下。30年が前日 -5.0bp、週間 -15.8bpで変化を主導。",
+          "direction": "年限ごとに方向が分かれる",
+          "interpretation": "日本国債は年限ごとに方向が分かれる。30年が前日 -3.6bp、週間 -14.4bpで変化を主導。",
           "leadingTenor": "30年",
           "risk": "順イールド。前日では長期側主導の金利低下。景気・インフレ期待や安全資産需要を確認。"
         },
@@ -9180,31 +9180,31 @@
         },
         "usJapanComparison": {
           "usDirection": "全面的な金利上昇",
-          "jpDirection": "全面的な金利低下",
+          "jpDirection": "年限ごとに方向が分かれる",
           "rateGapDirection": "拡大方向",
           "usdJpyImplication": "上昇",
-          "actualUsdJpy": "上昇",
-          "verdict": "整合",
+          "actualUsdJpy": "横ばい",
+          "verdict": "逆行",
           "confidence": "低",
-          "interpretation": "金利示唆は上昇、実際は上昇。方向が整合。基準日が4日ずれるため参考方向として表示。",
+          "interpretation": "金利示唆は上昇、実際は横ばい。金利差以外のドル需要・円売りフローを確認。基準日が5日ずれるため参考方向として表示。",
           "tenors": [
             {
               "tenor": "2年",
               "usValue": 4.69,
               "usChangeBp": 4.0000000000000036,
               "usWeekChangeBp": -4.999999999999982,
-              "jpValue": 1.874,
-              "jpChangeBp": -1.399999999999979,
-              "jpWeekChangeBp": -3.499999999999992
+              "jpValue": 1.873,
+              "jpChangeBp": -1.4999999999999902,
+              "jpWeekChangeBp": -3.600000000000003
             },
             {
               "tenor": "10年",
               "usValue": 5.0,
               "usChangeBp": 4.0000000000000036,
               "usWeekChangeBp": -8.999999999999986,
-              "jpValue": 2.797,
-              "jpChangeBp": -2.699999999999969,
-              "jpWeekChangeBp": -12.99999999999999
+              "jpValue": 2.809,
+              "jpChangeBp": -1.499999999999968,
+              "jpWeekChangeBp": -11.799999999999988
             }
           ]
         },
@@ -9218,55 +9218,55 @@
           {
             "market": "USD/JPY",
             "expectedDirection": "上昇",
-            "actualDirection": "上昇",
-            "actualChangePct": 0.5789338153670442,
-            "verdict": "整合",
+            "actualDirection": "横ばい",
+            "actualChangePct": 2.3201403021033684e-06,
+            "verdict": "逆行",
             "confidence": "低",
-            "interpretation": "金利示唆は上昇、実際は上昇。方向が整合。",
-            "timingNote": "基準日が4日ずれるため参考方向として表示。"
+            "interpretation": "金利示唆は上昇、実際は横ばい。金利差以外のドル需要・円売りフローを確認。",
+            "timingNote": "基準日が5日ずれるため参考方向として表示。"
           },
           {
             "market": "EUR/USD",
             "expectedDirection": "下落",
-            "actualDirection": "下落",
-            "actualChangePct": -0.2179337250440616,
-            "verdict": "整合",
+            "actualDirection": "横ばい",
+            "actualChangePct": 0.004082012493267229,
+            "verdict": "逆行",
             "confidence": "低",
-            "interpretation": "金利示唆は下落、実際は下落。方向が整合。",
-            "timingNote": "基準日が4日ずれるため参考方向として表示。"
+            "interpretation": "金利示唆は下落、実際は横ばい。米欧金利差とドル需要を確認。",
+            "timingNote": "基準日が5日ずれるため参考方向として表示。"
           },
           {
             "market": "金",
             "expectedDirection": "下落",
             "actualDirection": "横ばい",
-            "actualChangePct": 0.0,
+            "actualChangePct": -2.3970017415386735e-06,
             "verdict": "逆行",
             "confidence": "低",
             "interpretation": "金利示唆は下落、実際は横ばい。実質金利とドル・ETFフローを確認。",
-            "timingNote": "基準日が4日ずれるため参考方向として表示。"
+            "timingNote": "基準日が5日ずれるため参考方向として表示。"
           },
           {
             "market": "BTCUSD",
             "expectedDirection": "下落",
             "actualDirection": "横ばい",
-            "actualChangePct": 2.7269608127156175e-06,
+            "actualChangePct": -2.720898306662889e-06,
             "verdict": "逆行",
             "confidence": "低",
             "interpretation": "金利示唆は下落、実際は横ばい。暗号資産固有需給・ETF・レバレッジを確認。",
-            "timingNote": "基準日が4日ずれるため参考方向として表示。"
+            "timingNote": "基準日が5日ずれるため参考方向として表示。"
           },
           {
             "market": "日経225先物",
             "expectedDirection": "混合",
             "actualDirection": "上昇",
-            "actualChangePct": 1.495176848874591,
+            "actualChangePct": 1.4960629921259905,
             "verdict": "混合",
             "confidence": "低",
             "interpretation": "金利示唆は混合、実際は上昇。米金利の追い風と日本金利の逆風を併せて確認。",
-            "timingNote": "基準日が4日ずれるため参考方向として表示。"
+            "timingNote": "基準日が5日ずれるため参考方向として表示。"
           }
         ],
-        "marketConclusion": "米国はベア・フラットニング、日本はブル・フラットニング。日米金利差は拡大方向。米国債は全面的な金利上昇。2年が前日 +4.0bp、週間 -5.0bpで変化を主導。日本国債は全面的な金利低下。30年が前日 -5.0bp、週間 -15.8bpで変化を主導。",
+        "marketConclusion": "米国はベア・フラットニング、日本はブル・フラットニング。日米金利差は拡大方向。米国債は全面的な金利上昇。2年が前日 +4.0bp、週間 -5.0bpで変化を主導。日本国債は年限ごとに方向が分かれる。30年が前日 -3.6bp、週間 -14.4bpで変化を主導。",
         "mainScenario": "2年の方向が続く間はベア・フラットニングを基本シナリオとし、ドルは上昇、金は下落方向を確認。",
         "alternativeScenario": "米2年が反転しカーブ分類が変わる場合、政策期待の巻き戻しとクロスアセットの再連動を確認。",
         "breakConditions": [
