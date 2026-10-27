@@ -196,6 +196,40 @@ def _gcp_clients():
     return client.bucket(bucket_name)
 
 
+def resolve_allowed_scheduler_job(job_name: str, allowed_callers: Mapping[str, str]) -> tuple[str, str]:
+    """Resolve an exact Scheduler resource name or a unique short job ID.
+
+    A short ID is not itself trusted: the caller's signed OIDC email is still
+    checked against the resolved full resource's dedicated service account.
+    Arbitrary resource paths/project aliases are never accepted.
+    """
+    if job_name in allowed_callers:
+        return job_name, allowed_callers[job_name]
+    if not job_name or "/" in job_name:
+        raise ContractError("SCHEDULER_JOB_NOT_ALLOWLISTED")
+    matches = [(name, email) for name, email in allowed_callers.items()
+               if name.rsplit("/", 1)[-1] == job_name]
+    if len(matches) != 1:
+        raise ContractError("SCHEDULER_JOB_NOT_ALLOWLISTED")
+    return matches[0]
+
+
+def scheduler_header_diagnostics(environ: Mapping, headers: Mapping[str, str]) -> dict:
+    """Log only job metadata/WSGI key names, never bearer tokens or body."""
+    name = headers.get("X-CloudScheduler-JobName", "")
+    safe_name = (
+        name[:256] if name and len(name) <= 256
+        and all(ch.isalnum() or ch in "-_/." for ch in name)
+        else None
+    )
+    return {
+        "schedulerJobName": safe_name,
+        "schedulerJobHeaderPresent": bool(name),
+        "schedulerScheduleHeaderPresent": bool(headers.get("X-CloudScheduler-ScheduleTime")),
+        "schedulerWsgiKeys": sorted(str(key) for key in environ if "CLOUDSCHEDULER" in str(key).upper()),
+    }
+
+
 def process_test_only_request(
     headers: Mapping[str, str],
     body: bytes,
@@ -218,14 +252,12 @@ def process_test_only_request(
         raise ContractError("SCHEDULER_OIDC_MISSING")
     job_name = headers.get("X-CloudScheduler-JobName", "")
     scheduled = headers.get("X-CloudScheduler-ScheduleTime", "")
-    expected_email = allowed_callers.get(job_name)
-    if not expected_email:
-        raise ContractError("SCHEDULER_JOB_NOT_ALLOWLISTED")
+    canonical_job_name, expected_email = resolve_allowed_scheduler_job(job_name, allowed_callers)
     caller_email = verify_oidc(auth[7:], audience)
     if caller_email.lower() != expected_email.lower():
         raise ContractError("SCHEDULER_CALLER_NOT_ALLOWLISTED")
 
-    payload = build_internal_trigger(job_name, scheduled, actual_start)
+    payload = build_internal_trigger(canonical_job_name, scheduled, actual_start)
     signature = sign_trigger_request(payload, secret)
     # The existing HMAC contract enforces real start lag, weekday, 08:00 cutoff,
     # replay freshness, and TEST_ONLY mode before acquisition begins.
@@ -302,9 +334,16 @@ def application(environ, start_response):
         if not isinstance(allowed, dict):
             raise ContractError("SCHEDULER_ALLOWLIST_INVALID")
         auth = headers.get("X-Serverless-Authorization") or headers.get("Authorization") or ""
-        expected_email = allowed.get(headers.get("X-CloudScheduler-JobName", ""))
-        if not expected_email:
-            raise ContractError("SCHEDULER_JOB_NOT_ALLOWLISTED")
+        try:
+            _, expected_email = resolve_allowed_scheduler_job(
+                headers.get("X-CloudScheduler-JobName", ""), allowed
+            )
+        except ContractError:
+            LOG.warning(json.dumps({
+                "event": "test_only_scheduler_header_diagnostics",
+                **scheduler_header_diagnostics(environ, headers),
+            }, ensure_ascii=False, sort_keys=True))
+            raise
         if not auth.startswith("Bearer "):
             raise ContractError("SCHEDULER_OIDC_MISSING")
         verified_email = verify_scheduler_oidc(auth[7:], audience)
