@@ -129,6 +129,13 @@ esac
         self.assertIn("max_instance_count = 1", tf)
         self.assertIn("max_instance_request_concurrency = 1", tf)
 
+    def test_scheduler_retry_defaults_are_explicit_and_stable(self):
+        tf = self.read("infrastructure/gcp/pre-slot-test/main.tf")
+        self.assertIn('max_doublings        = 5', tf)
+        self.assertIn('retry_count          = 1', tf)
+        self.assertIn('min_backoff_duration = "5s"', tf)
+        self.assertIn('max_backoff_duration = "5s"', tf)
+
     def test_runtime_iam_and_scheduler_audience_are_narrow_and_aligned(self):
         tf = self.read("infrastructure/gcp/pre-slot-test/main.tf")
         runner = self.read("scripts/gcp/pre_slot_cloud_runner.py")
