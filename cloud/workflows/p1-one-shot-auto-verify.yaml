@@ -72,8 +72,8 @@ main:
                           - targetReadback: ${default(map.get(targetResponse.body, "state"), "UNKNOWN")}
                           - schedulerStatusCode: ${default(map.get(targetResponse.body, ["status", "code"]), 0)}
                           - schedulerLastAttempt: ${map.get(targetResponse.body, "lastAttemptTime")}
-                  except:
-                    as: readTargetError
+                except:
+                  as: readTargetError
                     steps:
                       - mark_target_unreadable:
                           assign:
@@ -227,7 +227,9 @@ main:
           - watchdogStopResult: ${if(watchdogReadback == "PAUSED", "PASS", "BLOCKED")}
           - logResult: ${if(not logsRead or not ingressRecordFound, "INCOMPLETE", if(matchedIngressCount == 1, "PASS", "FAIL"))}
           - logCorrelationResult: ${if(not logsRead or matchedIngressCount == 0, "INCOMPLETE", if(matchedIngressCount == 1, "PASS", "FAIL"))}
-          - overall: ${if(targetReadback != "PAUSED" or watchdogReadback != "PAUSED", "BLOCKED", if(httpResult == "FAIL" or oidcResult == "FAIL" or jobNameResult == "FAIL" or scheduleTimeResult == "FAIL" or schedulerAttemptResult == "FAIL" or logCorrelationResult == "FAIL", "FAIL", if(httpResult == "PASS" and oidcResult == "PASS" and jobNameResult == "PASS" and scheduleTimeResult == "PASS" and schedulerAttemptResult == "PASS" and logResult == "PASS" and logCorrelationResult == "PASS", "PASS", "INCOMPLETE")))}
+          - failureDetected: ${httpResult == "FAIL" or oidcResult == "FAIL" or jobNameResult == "FAIL" or scheduleTimeResult == "FAIL" or schedulerAttemptResult == "FAIL" or logCorrelationResult == "FAIL"}
+          - successDetected: ${httpResult == "PASS" and oidcResult == "PASS" and jobNameResult == "PASS" and scheduleTimeResult == "PASS" and schedulerAttemptResult == "PASS" and logResult == "PASS" and logCorrelationResult == "PASS"}
+          - overall: ${if(targetReadback != "PAUSED" or watchdogReadback != "PAUSED", "BLOCKED", if(failureDetected, "FAIL", if(successDetected, "PASS", "INCOMPLETE")))}
           - record:
               schemaVersion: 1
               result: ${overall}
