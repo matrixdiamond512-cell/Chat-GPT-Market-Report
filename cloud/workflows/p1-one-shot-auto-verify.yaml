@@ -74,10 +74,10 @@ main:
                           - schedulerLastAttempt: ${map.get(targetResponse.body, "lastAttemptTime")}
                 except:
                   as: readTargetError
-                    steps:
-                      - mark_target_unreadable:
-                          assign:
-                            - targetReadback: "UNREADABLE"
+                  steps:
+                    - mark_target_unreadable:
+                        assign:
+                          - targetReadback: "UNREADABLE"
             - normalize_target_pause_result:
                 assign:
                   - targetPauseCall: ${if(targetReadback == "PAUSED" and targetPauseCall == "FAILED", "ALREADY_PAUSED", targetPauseCall)}
