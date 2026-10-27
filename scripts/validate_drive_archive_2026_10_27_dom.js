@@ -92,6 +92,49 @@ const expected=archive.reports.find(x=>x.date==='2026-10-27'&&x.time==='08:00');
    assert(noonDash.status.includes('2026/10/27（火）'),'Noon JST weekday/date label incorrect: '+noonDash.status);
    assert(!errors.length,'Noon dashboard JS errors: '+errors.join(';'));
    console.log('PASS live index.html date/time selector 2026-10-27 12:00; cards='+noonDash.cards);
+
+   // Verify 16:00 analytical report and all six cards on the actual public DOM.
+   const afternoon=archive.reports.find(x=>x.date==='2026-10-27'&&x.time==='16:00');
+   assert(afternoon && afternoon.report_status==='HISTORICAL_ARCHIVE_DISPLAY_ONLY','16:00 archive missing');
+   const liveAfternoon=live.reports.find(x=>x.date==='2026-10-27'&&x.time==='16:00');
+   assert(liveAfternoon,'Published 16:00 archive missing');
+   assert.strictEqual(liveAfternoon.fullText,afternoon.fullText,'Published 16:00 fullText mismatch');
+   await page.goto(base+'report.html?date=2026-10-27&time=16%3A00&qa='+Date.now(),{waitUntil:'domcontentloaded',timeout:60000});
+   await page.waitForFunction(()=>window.MarketReportLastRendered &&
+     document.querySelector('.report-title') &&
+     document.querySelector('.time-tab.is-active')?.textContent.trim()==='16:00',null,{timeout:60000});
+   const afternoonView=await page.evaluate(()=>({
+     title:document.querySelector('.report-title')?.textContent.trim(),
+     date:document.querySelector('#datePicker')?.value,
+     time:document.querySelector('.time-tab.is-active')?.textContent.trim(),
+     text:window.MarketReportLastRendered?.fullText,
+     archiveStatus:window.MarketReportLastRendered?.archiveStatus,
+     verifiedAtSlot:window.MarketReportLastRendered?.verifiedAtSlot,
+     body:document.querySelector('.report-body')?.innerText||''
+   }));
+   assert.strictEqual(afternoonView.title,afternoon.title,'16:00 title mismatch');
+   assert.strictEqual(afternoonView.date,'2026-10-27');
+   assert.strictEqual(afternoonView.time,'16:00');
+   assert.strictEqual(afternoonView.text,afternoon.fullText,'16:00 report page fullText mismatch');
+   assert.strictEqual(afternoonView.archiveStatus,'HISTORICAL_ARCHIVE');
+   assert.strictEqual(afternoonView.verifiedAtSlot,false);
+   assert(afternoonView.body.includes('11｜出典・データ制約'),'16:00 final section missing');
+   assert(afternoonView.body.length>3000,'16:00 visible body truncated');
+   assert(!errors.length,'16:00 report page JS errors: '+errors.join(';'));
+   console.log('PASS live report.html 2026-10-27 16:00; fullText='+afternoonView.text.length+'; visibleBody='+afternoonView.body.length+'; display-only');
+   await page.goto(base+'index.html?date=2026-10-27&time=16%3A00&qa='+Date.now(),{waitUntil:'domcontentloaded',timeout:60000});
+   await page.waitForFunction(()=>document.querySelector('#dateInput')?.value==='2026-10-27' &&
+     document.querySelector('.time-tab.is-active')?.textContent.trim()==='16:00',null,{timeout:60000});
+   const afternoonDash=await page.evaluate(()=>({
+     date:document.querySelector('#dateInput')?.value,
+     time:document.querySelector('.time-tab.is-active')?.textContent.trim(),
+     cards:document.querySelectorAll('#marketCards .market-card').length,
+     status:document.querySelector('#reportStatus')?.textContent||''
+   }));
+   assert(afternoonDash.cards>=6,'16:00 dashboard market cards missing: '+afternoonDash.cards);
+   assert(afternoonDash.status.includes('2026/10/27（火）'),'16:00 JST weekday/date label incorrect: '+afternoonDash.status);
+   assert(!errors.length,'16:00 dashboard JS errors: '+errors.join(';'));
+   console.log('PASS live index.html date/time selector 2026-10-27 16:00; cards='+afternoonDash.cards);
    await page.close();
  }finally{await browser.close();}
 })().catch(e=>{console.error(e.stack||String(e));process.exit(1);});
