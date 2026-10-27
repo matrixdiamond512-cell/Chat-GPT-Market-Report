@@ -227,6 +227,21 @@ class OneShotWorkflowDefinitionTests(unittest.TestCase):
         self.assertNotIn(', {})}', source)
         self.assertIn('- emptyPayload: {}', source)
         self.assertIn('default(map.get(entry, "jsonPayload"), emptyPayload)', source)
+        # Workflows relational operators (<, >=) are numeric only, not
+        # lexicographic string comparisons. This failed at the live smoke.
+        self.assertIn(
+            '- schedulerAttemptEpoch: ${time.parse(schedulerLastAttempt)}',
+            source,
+        )
+        self.assertIn(
+            '- attemptInWindow: ${schedulerAttemptEpoch >= expectedEpoch - 60'
+            ' and schedulerAttemptEpoch <= expectedEpoch + 180}',
+            source,
+        )
+        self.assertNotIn('schedulerTimeLocal >=', source)
+        self.assertNotIn('schedulerTimeLocal <=', source)
+        self.assertIn('- schedulerAttemptEpoch: -1', source)
+
 
     def test_config_is_preparation_only_and_does_not_enable_storage_writes(self):
         root = Path(__file__).resolve().parents[1]
