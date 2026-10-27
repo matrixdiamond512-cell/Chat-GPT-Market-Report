@@ -42,7 +42,16 @@ const expected=archive.reports.find(x=>x.date==='2026-10-27'&&x.time==='08:00');
    assert(!errors.length,'Report page JS errors: '+errors.join(';'));
    console.log('PASS live report.html 2026-10-27 08:00; fullText='+v.text.length+'; visibleBody='+v.body.length+'; display-only');
    await page.goto(base+'index.html?date=2026-10-27&time=08%3A00&qa='+Date.now(),{waitUntil:'domcontentloaded',timeout:60000});
-   await page.waitForFunction(()=>document.querySelector('#dateInput')?.value==='2026-10-27' && document.querySelector('.time-tab.is-active')?.textContent.trim()==='08:00',null,{timeout:60000});
+   await page.waitForTimeout(4000);
+   console.log('DEBUG 08 dashboard',JSON.stringify(await page.evaluate(()=>({
+     date:document.querySelector('#dateInput')?.value,
+     time:document.querySelector('.time-tab.is-active')?.textContent.trim(),
+     reportStatus:document.querySelector('#reportStatus')?.textContent,
+     bodyText:document.body?.innerText?.slice(0,700),
+     url:location.href,
+     errors:window.onerror?.toString().slice(0,200)
+   }))), 'pageErrors='+errors.join(' | '));
+   await page.waitForFunction(()=>document.querySelector('#dateInput')?.value==='2026-10-27' && document.querySelector('.time-tab.is-active')?.textContent.trim()==='08:00',null,{timeout:15000});
    const dash=await page.evaluate(()=>({date:document.querySelector('#dateInput')?.value,time:document.querySelector('.time-tab.is-active')?.textContent.trim(),cards:document.querySelectorAll('#marketCards .market-card').length,status:document.querySelector('#reportStatus')?.textContent||''}));
    assert(dash.cards>=6,'Dashboard market cards missing: '+dash.cards);
    assert(dash.status.includes('2026/10/27（火）'),'JST weekday/date label incorrect: '+dash.status);
