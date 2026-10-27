@@ -2,12 +2,12 @@
   "schemaVersion": "1.0.0",
   "pageId": "gold-supply-demand",
   "reportDate": "2026-10-27",
-  "generatedAt": "2026-10-27T10:26:35+09:00",
+  "generatedAt": "2026-10-27T17:52:09+09:00",
   "gold": {
     "schemaVersion": "2.0.0",
     "pageTitle": "ゴールド需給分析",
     "subtitle": "COMEX先物・投機筋・ETF・中国/インド現物需要から総合判定",
-    "generatedAt": "2026-10-27T10:26:35+09:00",
+    "generatedAt": "2026-10-27T17:52:09+09:00",
     "comex": {
       "status": "preserved_after_fetch_error",
       "asOfDate": "2026-08-06",
@@ -21,7 +21,7 @@
       "sourceUrl": "https://www.cmegroup.com/daily_bulletin/current/Section02B_Summary_Volume_And_Open_Interest_Metals_Futures_And_Options.pdf",
       "note": "CME Daily Bulletin PG02BのGC COMEX GOLD FUTURES。価格×建玉判定は同一基準日の価格取得後に実施。",
       "error": "CME取得失敗: RuntimeError: HTTP取得失敗（3回試行）: HTTPSConnectionPool(host='www.cmegroup.com', port=443): Read timed out. (read timeout=45)",
-      "lastAttemptAt": "2026-10-27T10:28:13+09:00"
+      "lastAttemptAt": "2026-10-27T17:53:47+09:00"
     },
     "cftc": {
       "status": "verified",
@@ -34,7 +34,7 @@
       "judgement": "投機筋の売り増加",
       "sourceName": "CFTC Disaggregated COT - Futures Only",
       "sourceUrl": "https://publicreporting.cftc.gov/Commitments-of-Traders/Disaggregated-Futures-Only/72hh-3qpy",
-      "fetchedAt": "2026-10-27T10:28:13+09:00",
+      "fetchedAt": "2026-10-27T17:53:48+09:00",
       "historyWeeks": [
         {
           "asOfDate": "2025-10-28",
@@ -614,17 +614,17 @@
       "managedMoneyLongChange": -3777,
       "managedMoneyShortChange": -894,
       "goldPrice": 4142.6,
-      "historyFetchedAt": "2026-10-27T01:28:21+00:00"
+      "historyFetchedAt": "2026-10-27T08:53:51+00:00"
     },
     "etf": {
       "gld": {
         "status": "verified",
-        "asOfDate": "2026-10-23",
-        "tonnes": 1041.65,
-        "changeTonnes": -3.990000000000009,
+        "asOfDate": "2026-10-26",
+        "tonnes": 1040.8,
+        "changeTonnes": -0.8500000000001364,
         "sourceName": "SPDR Gold Shares Historical Archive",
         "sourceUrl": "https://www.spdrgoldshares.com/usa/gld/",
-        "fetchedAt": "2026-10-27T10:28:14+09:00"
+        "fetchedAt": "2026-10-27T17:53:48+09:00"
       },
       "iau": {
         "status": "verified",
@@ -633,7 +633,7 @@
         "changeTonnes": -0.21000000000003638,
         "sourceName": "iShares Gold Trust",
         "sourceUrl": "https://www.ishares.com/us/products/239561/ishares-gold-trust-fund",
-        "fetchedAt": "2026-10-27T10:28:15+09:00"
+        "fetchedAt": "2026-10-27T17:53:49+09:00"
       },
       "global": {
         "status": "verified",
@@ -646,15 +646,10 @@
         "frequency": "monthly",
         "sourceName": "World Gold Council Gold ETF Flows",
         "sourceUrl": "https://www.gold.org/goldhub/research/gold-etfs-holdings-and-flows/2026/10",
-        "fetchedAt": "2026-10-27T10:28:17+09:00",
+        "fetchedAt": "2026-10-27T17:53:51+09:00",
         "note": "WGC公式月次レポート本文から公開値を抽出。週次チャートがログイン必須の場合は月次公開値を使用。"
       },
       "gldHistory": [
-        {
-          "asOfDate": "2026-06-17",
-          "tonnes": 1013.07,
-          "changeTonnes": 0.8600000000000136
-        },
         {
           "asOfDate": "2026-06-18",
           "tonnes": 1020.49,
@@ -1099,6 +1094,11 @@
           "asOfDate": "2026-10-23",
           "tonnes": 1041.65,
           "changeTonnes": -3.990000000000009
+        },
+        {
+          "asOfDate": "2026-10-26",
+          "tonnes": 1040.8,
+          "changeTonnes": -0.8500000000001364
         }
       ],
       "iauHistory": [
@@ -1878,9 +1878,18 @@
           "iauChangeTonnes": -0.37999999999999545,
           "combinedChangeTonnes": -4.3700000000000045,
           "aligned": true
+        },
+        {
+          "asOfDate": "2026-10-26",
+          "gldTonnes": 1040.8,
+          "iauTonnes": 462.84,
+          "gldChangeTonnes": -0.8500000000001364,
+          "iauChangeTonnes": -0.21000000000003638,
+          "combinedChangeTonnes": -1.0600000000001728,
+          "aligned": true
         }
       ],
-      "historyDaysCount": 55,
+      "historyDaysCount": 56,
       "historyStatus": "verified",
       "historyFallback": null
     },
@@ -1889,7 +1898,7 @@
       "frequency": "weekly",
       "sourceName": "World Gold Council Local gold price premium/discount",
       "sourceUrl": "https://www.gold.org/goldhub/data/gold-premium",
-      "fetchedAt": "2026-10-27T10:28:15+09:00",
+      "fetchedAt": "2026-10-27T17:53:49+09:00",
       "error": "WGC現物プレミアム取得不能: RuntimeError: HTTP取得失敗（1回試行）: 403 Client Error: Forbidden for url: https://www.gold.org/download/file/11657/gold-premiums.xlsx",
       "note": "一般公開経路を確認できないため旧値を最新値として表示しません。"
     },
@@ -1930,7 +1939,7 @@
         "sourceName": "FRED DFII10",
         "sourceUrl": "https://fred.stlouisfed.org/series/DFII10",
         "label": "米10年実質金利",
-        "fetchedAt": "2026-10-27T10:28:16+09:00"
+        "fetchedAt": "2026-10-27T17:53:50+09:00"
       },
       "dollarBroad": {
         "status": "verified",
@@ -1940,7 +1949,7 @@
         "sourceName": "FRED DTWEXBGS",
         "sourceUrl": "https://fred.stlouisfed.org/series/DTWEXBGS",
         "label": "米ドル実効指数（Broad）",
-        "fetchedAt": "2026-10-27T10:28:16+09:00"
+        "fetchedAt": "2026-10-27T17:53:50+09:00"
       },
       "usdjpy": {
         "status": "verified",
@@ -1983,7 +1992,7 @@
       "金先物は前回比+0.00%です。COMEXの出来高・建玉は別の基準日で表示し、日付を合わせられた場合だけ価格×建玉判定を行います。",
       "COMEX出来高・建玉は取得待ちです。取得不能時は推測値を表示しません。",
       "CFTC Managed Moneyのネットは104,206枚、前週比-2,883枚です。週次データとして短期需給に反映します。",
-      "主要金ETF保有量は GLD 1041.65t / IAU 462.84t。金融需要の実流入・流出を先物と分けて確認します。",
+      "主要金ETF保有量は GLD 1040.80t / IAU 462.84t。金融需要の実流入・流出を先物と分けて確認します。",
       "中国・インドの現物プレミアムはWGCの公開更新を確認できる場合だけ表示します。ログイン等で取得できない場合は前回値を捏造せず保留します。"
     ]
   },
@@ -2591,13 +2600,8 @@
   },
   "etfHistory": {
     "schemaVersion": "1.0.0",
-    "updatedAt": "2026-10-27T10:28:17+09:00",
+    "updatedAt": "2026-10-27T17:53:51+09:00",
     "gld": [
-      {
-        "asOfDate": "2026-05-05",
-        "tonnes": 1034.05,
-        "changeTonnes": -1.7200000000000273
-      },
       {
         "asOfDate": "2026-05-06",
         "tonnes": 1033.2,
@@ -3192,6 +3196,11 @@
         "asOfDate": "2026-10-23",
         "tonnes": 1041.65,
         "changeTonnes": -3.990000000000009
+      },
+      {
+        "asOfDate": "2026-10-26",
+        "tonnes": 1040.8,
+        "changeTonnes": -0.8500000000001364
       }
     ],
     "iau": [
