@@ -132,3 +132,10 @@ On candidate head `a0d309d25fb4a698b03aef7425b1dbbea649118f`, all four triggered
 - The 12:00 source includes a clearly labeled `結論：...` paragraph. PR #187's code candidate `47282fdce4c10b5a86cea655c10ec71128dc6182` now recognizes explicit conclusion labels only; generic prose remains rejected. Other SOP and evidence requirements still block historical promotion.
 - 08:00 table QA is performed by `.github/workflows/qa-morning-report.yml` after `reports.json` changes and fails closed for portal selection. It is separate from the Drive importer's source-body check. The strict table rule remains in place.
 - Code candidate CI PASS: `40735294321`, `40735294265`, `40735294396`, `40735294223`. Documentation follow-up commits are not code/test evidence. No real 10/29 slot, Docs/PNG output, receipt, Pages deployment or notification has been verified.
+
+
+## 2026-10-29 05:01 JST — inline conclusion SOP continuation
+
+- The saved-source parser now recognizes the explicit inline label `結論：本文` and preserves the text after the label as conclusion-section body in the SOP extractor. Only `結論`, `最終判断`, and `まとめ` labels are handled; unmarked prose remains rejected.
+- Regression test and workflow path/env updated. Hosted CI PASS on code candidate `e69f63846b2e42ca10ac0cdfe4e36e777542d81c`: [40759356660](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759356660), [40759356570](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759356570), [40759356601](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759356601), [40759356351](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759356351), [40759356413](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759356413).
+- These are regression checks only. The October 28 Docs remain invalid analysis copies (including the missing 08:00 28×5 table and missing pre-draft evidence). No 2026-10-29 execution or end-to-end publication is confirmed; do not resume the P1 schedulers.
