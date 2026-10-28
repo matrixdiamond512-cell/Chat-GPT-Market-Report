@@ -86,6 +86,50 @@ class CloudRunIngressTests(unittest.TestCase):
         self.assertEqual(result["status"], "CREATED")
         self.assertEqual(self.processor.call_args.args[0].report_id, "2026-10-27_08-00")
 
+    def test_rfc3339_nonzero_offset_matches_utc_cron_schedule(self):
+        # A valid RFC3339 offset represents the same instant as 22:47 UTC.
+        status, result = run_request(
+            self.app, schedule="2026-10-27T07:47:00.270272+09:00"
+        )
+        self.assertEqual(status, "200 OK")
+        self.assertEqual(result["status"], "CREATED")
+        self.assertEqual(self.processor.call_args.args[0].report_id, "2026-10-27_08-00")
+
+    def test_wrong_second_is_rejected_with_safe_diagnostic_code(self):
+        captured = io.StringIO()
+        with redirect_stderr(captured):
+            status, response = run_request(
+                self.app, schedule="2026-10-27T07:47:10+09:00"
+            )
+        self.assertEqual(status, "400 Bad Request")
+        self.assertEqual(response, {"error": "SCHEDULE_NOT_ALLOWED"})
+        record = json.loads(captured.getvalue())
+        self.assertEqual(record["scheduleRejectCode"], "INVALID_SCHEDULE_TIME")
+        self.assertTrue(record["scheduleHeaderPresent"])
+        self.assertNotIn("2026-10-27T07:47:10+09:00", captured.getvalue())
+
+    def test_missing_schedule_header_is_classified_without_leaking_values(self):
+        captured = io.StringIO()
+        with redirect_stderr(captured):
+            status, response = run_request(self.app, schedule="")
+        self.assertEqual(status, "400 Bad Request")
+        self.assertEqual(response, {"error": "SCHEDULE_NOT_ALLOWED"})
+        record = json.loads(captured.getvalue())
+        self.assertEqual(record["scheduleRejectCode"], "MISSING_SCHEDULE_HEADER")
+        self.assertFalse(record["scheduleHeaderPresent"])
+
+    def test_future_schedule_fails_closed_with_safe_reason(self):
+        captured = io.StringIO()
+        with redirect_stderr(captured):
+            status, response = run_request(
+                self.app, schedule="2026-10-27T07:47:00+09:00"
+            )
+        self.assertEqual(status, "400 Bad Request")
+        self.assertEqual(response, {"error": "SCHEDULE_NOT_ALLOWED"})
+        record = json.loads(captured.getvalue())
+        self.assertEqual(record["scheduleRejectCode"], "FUTURE_SCHEDULE")
+        self.processor.assert_not_called()
+
     def test_valid_oidc_request_binds_job_slot_time_and_attempt(self):
         status, result = run_request(self.app)
         self.assertEqual(status, "200 OK")
