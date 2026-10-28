@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "scripts/report_source_contract.py"
+      - "scripts/sync_latest_report_publication.py"
       - "tests/test_report_source_contract_headings.py"
       - ".github/workflows/report-source-contract-tests.yml"
 
@@ -21,4 +22,6 @@ jobs:
         with:
           python-version: "3.12"
       - name: Run parser regression tests
+        env:
+          PYTHONPATH: scripts
         run: python -m unittest discover -s tests -p "test_report_source_contract_headings.py" -v
