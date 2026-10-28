@@ -69,3 +69,13 @@ Google Docs固定ID `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg` に対応す�
 - 図解3件はDrive上の最新保存日時・PNG MIMEを確認。GitHub Pagesでの画像実体、SHA-256、manifest、snapshot/本文との対応が未検証のため図解正式READYへ昇格させない。旧ファイルは削除しない。
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
+
+## DELIVERY-RECOVERY-20261029-01｜見出し読取り障害と復旧状態（2026-10-29 JST）
+
+- 2026-10-28のGoogle Docs本文11章は「01｜見出し」形式を使用していた。mainの `report_source_contract.heading()` がこの全角縦棒形式を認識せず、同期run 40714284584で08:00/12:00/16:00/21:00をすべて `missing sections/conclusion` として保留した。
+- PR #187は全角縦棒付き番号見出しを共通パーサーで認識する最小修正と、見出し形式の単体ケースを追加。文字数・結論・6市場、SOP意味見出し、枠前証拠、PNG、receipt、公開ゲートは変更しない。PR CIが実行され結果を読み戻すまでテスト結果はNOT_RUN。
+- この修正は章数の誤読を直すだけで、本文の意味要件を満たす証明ではない。SOPは「今日の相場テーマ」「主要市場データ」「材料と値動きの整合性」「主導市場」「重要ニュース」「クロスアセット資金フロー」「需給・ポジション」「個別市場見通し」「シナリオ」「崩れる条件」「結論」を独立した実質本文付き見出しとして要求する。時刻枠別の遷移見出しも必須。08:00の28項目×5列の前日終値表は別途QAする。
+- 10/28各枠のDocs原本は保存済みだが正式公開に昇格していない。公開に必要な発行前evidence・PNG・canonical/receiptが揃わない既存枠を、後付け証拠や推測で昇格させない。
+- ChatGPTタスクの繰り返しは毎日から平日へ保存変更した。編集UIから厳密な08:00の保存値は読戻せず、他3枠のタスクは未確認。P1 Cloud Scheduler停止状態は維持し、再開しない。
+
+今後の配信復旧判定は `docs/project-control/production-recovery-20261029-01/EVIDENCE_LEDGER.md` を参照する。
