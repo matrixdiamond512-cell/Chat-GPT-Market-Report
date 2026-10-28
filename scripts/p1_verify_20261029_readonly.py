@@ -15,7 +15,7 @@ TARGET = "slot-0800-t13"
 WATCHDOG = "p1-one-shot-verification-stop"
 WORKFLOW = "p1-one-shot-verification"
 SERVICE = "p1-report-shadow-ingress"
-DAY = dt.date(2026, 10, 28)
+DAY = dt.date(2026, 10, 29)
 JST = ZoneInfo("Asia/Tokyo")
 UTC = dt.timezone.utc
 
