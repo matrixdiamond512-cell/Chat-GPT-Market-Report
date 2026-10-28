@@ -1,0 +1,317 @@
+# P1 one-shot Scheduler safety supervisor.
+# Deploy only after separate approval; this file is configuration, not an apply.
+main:
+  params: [args]
+  steps:
+    - initialize:
+        assign:
+          - expectedJobId: ${args.expected_job_id}
+          - targetJob: ${args.target_job}
+          - watchdogJob: ${args.watchdog_job}
+          - projectId: ${args.project_id}
+          - serviceName: ${args.cloud_run_service}
+          - localNow: ${time.format(sys.now(), "Asia/Tokyo")}
+          - runDateJst: ${text.substring(localNow, 0, 10)}
+          - expectedTimeJst: "07:47"
+          - expectedReportId: ${runDateJst + "_08-00"}
+          - expectedDateTimeJst: ${runDateJst + "T07:47:00+09:00"}
+          - expectedEpoch: ${time.parse(expectedDateTimeJst)}
+          - logsStart: ${time.format(expectedEpoch - 120)}
+          - logsEnd: ${time.format(expectedEpoch + 300)}
+          - targetPauseCall: "NOT_RUN"
+          - targetReadback: "UNKNOWN"
+          - watchdogPauseCall: "NOT_RUN"
+          - watchdogReadback: "UNKNOWN"
+          - logsRead: false
+          - schedulerLogsRead: false
+          - schedulerLogEntries: []
+          - schedulerFinishCount: 0
+          - schedulerFinishStatus: "UNKNOWN"
+          - ingressRecordFound: false
+          - matchedIngressCount: 0
+          - logEntries: []
+          - emptyPayload: {}
+          - httpStatus: null
+          - oidcResult: "INCOMPLETE"
+          - jobNameResult: "INCOMPLETE"
+          - scheduleTimeResult: "INCOMPLETE"
+          - schedulerStatusCode: null
+          - schedulerLastAttempt: null
+          - schedulerAttemptEpoch: -1
+          - lastAttemptLocal: ""
+    - pause_target:
+        for:
+          value: attempt
+          in: ${[1, 2, 3]}
+          steps:
+            - request_target_pause:
+                try:
+                  steps:
+                    - send_target_pause:
+                        call: http.post
+                        args:
+                          url: ${"https://cloudscheduler.googleapis.com/v1/" + targetJob + ":pause"}
+                          auth:
+                            type: OAuth2
+                        result: targetPauseResponse
+                    - mark_target_pause_ok:
+                        assign:
+                          - targetPauseCall: "OK"
+                except:
+                  as: pauseError
+                  steps:
+                    - mark_target_pause_failed:
+                        assign:
+                          - targetPauseCall: "FAILED"
+            - read_target_after_pause:
+                try:
+                  steps:
+                    - get_target:
+                        call: http.get
+                        args:
+                          url: ${"https://cloudscheduler.googleapis.com/v1/" + targetJob}
+                          auth:
+                            type: OAuth2
+                        result: targetResponse
+                    - save_target:
+                        assign:
+                          - targetReadback: ${default(map.get(targetResponse.body, "state"), "UNKNOWN")}
+                          - schedulerStatusCode: ${default(map.get(targetResponse.body, ["status", "code"]), 0)}
+                          - schedulerLastAttempt: ${map.get(targetResponse.body, "lastAttemptTime")}
+                except:
+                  as: readTargetError
+                  steps:
+                    - mark_target_unreadable:
+                        assign:
+                          - targetReadback: "UNREADABLE"
+            - normalize_target_pause_result:
+                assign:
+                  - targetPauseCall: ${if(targetReadback == "PAUSED" and targetPauseCall == "FAILED", "ALREADY_PAUSED", targetPauseCall)}
+            - exit_target_retry_if_paused:
+                switch:
+                  - condition: ${targetReadback == "PAUSED"}
+                    next: break
+    - target_pause_gate:
+        switch:
+          - condition: ${targetReadback == "PAUSED"}
+            next: pause_watchdog
+          - condition: ${true}
+            next: keep_watchdog_active
+    - keep_watchdog_active:
+        assign:
+          - watchdogPauseCall: "SKIPPED_TARGET_NOT_PAUSED"
+          - watchdogReadback: "ACTIVE"
+        next: format_last_attempt
+    - pause_watchdog:
+        for:
+          value: attempt
+          in: ${[1, 2, 3]}
+          steps:
+            - request_watchdog_pause:
+                try:
+                  steps:
+                    - send_watchdog_pause:
+                        call: http.post
+                        args:
+                          url: ${"https://cloudscheduler.googleapis.com/v1/" + watchdogJob + ":pause"}
+                          auth:
+                            type: OAuth2
+                        result: watchdogPauseResponse
+                    - mark_watchdog_pause_ok:
+                        assign:
+                          - watchdogPauseCall: "OK"
+                except:
+                  as: pauseWatchdogError
+                  steps:
+                    - mark_watchdog_pause_failed:
+                        assign:
+                          - watchdogPauseCall: "FAILED"
+            - read_watchdog_after_pause:
+                try:
+                  steps:
+                    - get_watchdog:
+                        call: http.get
+                        args:
+                          url: ${"https://cloudscheduler.googleapis.com/v1/" + watchdogJob}
+                          auth:
+                            type: OAuth2
+                        result: watchdogResponse
+                    - save_watchdog:
+                        assign:
+                          - watchdogReadback: ${default(map.get(watchdogResponse.body, "state"), "UNKNOWN")}
+                except:
+                  as: readWatchdogError
+                  steps:
+                    - mark_watchdog_unreadable:
+                        assign:
+                          - watchdogReadback: "UNREADABLE"
+            - normalize_watchdog_pause_result:
+                assign:
+                  - watchdogPauseCall: ${if(watchdogReadback == "PAUSED" and watchdogPauseCall == "FAILED", "ALREADY_PAUSED", watchdogPauseCall)}
+            - exit_watchdog_retry_if_paused:
+                switch:
+                  - condition: ${watchdogReadback == "PAUSED"}
+                    next: break
+    - format_last_attempt:
+        switch:
+          - condition: ${schedulerLastAttempt != null}
+            next: parse_last_attempt
+          - condition: ${true}
+            next: query_logs
+    - parse_last_attempt:
+        try:
+          steps:
+            - format_attempt:
+                assign:
+                  - schedulerAttemptEpoch: ${time.parse(schedulerLastAttempt)}
+                  - lastAttemptLocal: ${time.format(schedulerAttemptEpoch, "Asia/Tokyo")}
+        except:
+          as: attemptError
+          steps:
+            - mark_attempt_unreadable:
+                assign:
+                  - schedulerAttemptEpoch: -1
+                  - lastAttemptLocal: "INVALID"
+    - query_logs:
+        try:
+          steps:
+            - list_run_logs:
+                call: http.post
+                args:
+                  url: https://logging.googleapis.com/v2/entries:list
+                  auth:
+                    type: OAuth2
+                  body:
+                    resourceNames:
+                      - ${"projects/" + projectId}
+                    orderBy: timestamp asc
+                    pageSize: 100
+                    filter: ${"resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"" + serviceName + "\" AND jsonPayload.event=\"P1_INGRESS_RESULT\" AND timestamp >= \"" + logsStart + "\" AND timestamp <= \"" + logsEnd + "\""}
+                result: logResponse
+            - save_log_entries:
+                assign:
+                  - logEntries: ${default(map.get(logResponse.body, "entries"), [])}
+                  - logsRead: true
+        except:
+          as: logError
+          steps:
+            - mark_logs_unreadable:
+                assign:
+                  - logEntries: []
+                  - logsRead: false
+    - query_scheduler_logs:
+        try:
+          steps:
+            - list_scheduler_attempt_logs:
+                call: http.post
+                args:
+                  url: https://logging.googleapis.com/v2/entries:list
+                  auth:
+                    type: OAuth2
+                  body:
+                    resourceNames:
+                      - ${"projects/" + projectId}
+                    orderBy: timestamp asc
+                    pageSize: 100
+                    filter: ${"resource.type=\"cloud_scheduler_job\" AND resource.labels.job_id=\"" + expectedJobId + "\" AND timestamp >= \"" + logsStart + "\" AND timestamp <= \"" + logsEnd + "\""}
+                result: schedulerLogResponse
+            - save_scheduler_log_entries:
+                assign:
+                  - schedulerLogEntries: ${default(map.get(schedulerLogResponse.body, "entries"), [])}
+                  - schedulerLogsRead: true
+        except:
+          as: schedulerLogError
+          steps:
+            - mark_scheduler_logs_unreadable:
+                assign:
+                  - schedulerLogEntries: []
+                  - schedulerLogsRead: false
+    - scan_scheduler_logs:
+        for:
+          value: schedulerEntry
+          in: ${schedulerLogEntries}
+          steps:
+            - extract_scheduler_attempt:
+                assign:
+                  - schedulerPayload: ${default(map.get(schedulerEntry, "jsonPayload"), emptyPayload)}
+                  - schedulerLogType: ${default(map.get(schedulerPayload, "@type"), "")}
+                  - schedulerLogEpoch: ${time.parse(schedulerEntry.timestamp)}
+                  - exactSchedulerFinish: ${schedulerLogType == "type.googleapis.com/google.cloud.scheduler.logging.AttemptFinished" and schedulerLogEpoch >= expectedEpoch - 60 and schedulerLogEpoch <= expectedEpoch + 180}
+            - collect_scheduler_finish:
+                assign:
+                  - schedulerFinishCount: ${if(exactSchedulerFinish, schedulerFinishCount + 1, schedulerFinishCount)}
+                  - schedulerFinishStatus: ${if(exactSchedulerFinish, default(map.get(schedulerPayload, "status"), ""), schedulerFinishStatus)}
+    - scan_logs:
+        for:
+          value: entry
+          in: ${logEntries}
+          steps:
+            - extract_log_fields:
+                assign:
+                  - payload: ${default(map.get(entry, "jsonPayload"), emptyPayload)}
+                  - eventName: ${default(map.get(payload, "event"), "")}
+                  - stageJobId: ${default(map.get(payload, "jobId"), "")}
+                  - exactIngressMatch: ${eventName == "P1_INGRESS_RESULT" and stageJobId == expectedJobId and map.get(payload, "schedulerDateJst") == runDateJst and map.get(payload, "schedulerTimeJst") == expectedTimeJst and map.get(payload, "reportId") == expectedReportId}
+            - collect_http_status:
+                assign:
+                  - ingressRecordFound: ${if(exactIngressMatch, true, ingressRecordFound)}
+                  - matchedIngressCount: ${if(exactIngressMatch, matchedIngressCount + 1, matchedIngressCount)}
+                  - httpStatus: ${if(exactIngressMatch, map.get(payload, "httpStatus"), httpStatus)}
+            - collect_oidc:
+                assign:
+                  - oidcResult: ${if(exactIngressMatch, default(map.get(payload, "oidcResult"), oidcResult), oidcResult)}
+            - collect_job_name:
+                assign:
+                  - jobNameResult: ${if(exactIngressMatch, default(map.get(payload, "jobNameResult"), jobNameResult), jobNameResult)}
+            - collect_schedule_time:
+                assign:
+                  - scheduleTimeResult: ${if(exactIngressMatch, if(default(map.get(payload, "scheduleTimeResult"), "INCOMPLETE") == "FAIL", "FAIL", if(default(map.get(payload, "scheduleTimeResult"), "INCOMPLETE") == "PASS", "PASS", "INCOMPLETE")), scheduleTimeResult)}
+    - classify:
+        assign:
+          - oidcResult: ${if(oidcResult == "INCOMPLETE" and (httpStatus == 401 or httpStatus == 403), "FAIL", oidcResult)}
+          - httpResult: ${if(httpStatus == 200, "PASS", if(httpStatus == null, "INCOMPLETE", "FAIL"))}
+          - schedulerTimeLocal: ${if(lastAttemptLocal == "", "", text.substring(lastAttemptLocal, 0, 16))}
+          - attemptInWindow: ${schedulerAttemptEpoch >= expectedEpoch - 60 and schedulerAttemptEpoch <= expectedEpoch + 180}
+          - schedulerAttemptResult: ${if(not schedulerLogsRead or schedulerFinishCount == 0, "INCOMPLETE", if(schedulerFinishCount != 1 or schedulerFinishStatus != "", "FAIL", "PASS"))}
+          - targetStopResult: ${if(targetReadback == "PAUSED", "PASS", "BLOCKED")}
+          - watchdogStopResult: ${if(watchdogReadback == "PAUSED", "PASS", "BLOCKED")}
+          - logResult: ${if(not logsRead or not ingressRecordFound, "INCOMPLETE", if(matchedIngressCount == 1, "PASS", "FAIL"))}
+          - logCorrelationResult: ${if(not logsRead or matchedIngressCount == 0, "INCOMPLETE", if(matchedIngressCount == 1, "PASS", "FAIL"))}
+          - failureDetected: ${httpResult == "FAIL" or oidcResult == "FAIL" or jobNameResult == "FAIL" or scheduleTimeResult == "FAIL" or schedulerAttemptResult == "FAIL" or logCorrelationResult == "FAIL"}
+          - successDetected: ${httpResult == "PASS" and oidcResult == "PASS" and jobNameResult == "PASS" and scheduleTimeResult == "PASS" and schedulerAttemptResult == "PASS" and logResult == "PASS" and logCorrelationResult == "PASS"}
+          - overall: ${if(targetReadback != "PAUSED" or watchdogReadback != "PAUSED", "BLOCKED", if(failureDetected, "FAIL", if(successDetected, "PASS", "INCOMPLETE")))}
+          - record:
+              schemaVersion: 1
+              result: ${overall}
+              runDateJst: ${runDateJst}
+              expectedJobId: ${expectedJobId}
+              expectedSchedulerTimeJst: ${expectedTimeJst}
+              httpStatus: ${httpStatus}
+              checks:
+                http: ${httpResult}
+                oidc: ${oidcResult}
+                jobName: ${jobNameResult}
+                scheduleTime: ${scheduleTimeResult}
+                schedulerAttempt: ${schedulerAttemptResult}
+                targetPauseReadback: ${targetStopResult}
+                watchdogPauseReadback: ${watchdogStopResult}
+                logs: ${logResult}
+                logCorrelation: ${logCorrelationResult}
+              targetSchedulerState: ${targetReadback}
+              watchdogSchedulerState: ${watchdogReadback}
+              targetLastAttemptTime: ${schedulerLastAttempt}
+              schedulerFinishCount: ${schedulerFinishCount}
+              schedulerFinishStatus: ${schedulerFinishStatus}
+              schedulerLogsRead: ${schedulerLogsRead}
+              matchedIngressCount: ${matchedIngressCount}
+              targetSchedulerStatusCode: ${schedulerStatusCode}
+              targetPauseCall: ${targetPauseCall}
+              watchdogPauseCall: ${watchdogPauseCall}
+              logsRead: ${logsRead}
+    - write_result_log:
+        call: sys.log
+        args:
+          json: ${record}
+          severity: ${if(overall == "PASS", "INFO", if(overall == "FAIL", "ERROR", "WARNING"))}
+    - return_result:
+        return: ${record}

@@ -86,6 +86,50 @@ class CloudRunIngressTests(unittest.TestCase):
         self.assertEqual(result["status"], "CREATED")
         self.assertEqual(self.processor.call_args.args[0].report_id, "2026-10-27_08-00")
 
+    def test_rfc3339_nonzero_offset_matches_utc_cron_schedule(self):
+        # A valid RFC3339 offset represents the same instant as 22:47 UTC.
+        status, result = run_request(
+            self.app, schedule="2026-10-27T07:47:00.270272+09:00"
+        )
+        self.assertEqual(status, "200 OK")
+        self.assertEqual(result["status"], "CREATED")
+        self.assertEqual(self.processor.call_args.args[0].report_id, "2026-10-27_08-00")
+
+    def test_wrong_second_is_rejected_with_safe_diagnostic_code(self):
+        captured = io.StringIO()
+        with redirect_stderr(captured):
+            status, response = run_request(
+                self.app, schedule="2026-10-27T07:47:10+09:00"
+            )
+        self.assertEqual(status, "400 Bad Request")
+        self.assertEqual(response, {"error": "SCHEDULE_NOT_ALLOWED"})
+        record = json.loads(captured.getvalue())
+        self.assertEqual(record["scheduleRejectCode"], "INVALID_SCHEDULE_TIME")
+        self.assertTrue(record["scheduleHeaderPresent"])
+        self.assertNotIn("2026-10-27T07:47:10+09:00", captured.getvalue())
+
+    def test_missing_schedule_header_is_classified_without_leaking_values(self):
+        captured = io.StringIO()
+        with redirect_stderr(captured):
+            status, response = run_request(self.app, schedule="")
+        self.assertEqual(status, "400 Bad Request")
+        self.assertEqual(response, {"error": "SCHEDULE_NOT_ALLOWED"})
+        record = json.loads(captured.getvalue())
+        self.assertEqual(record["scheduleRejectCode"], "MISSING_SCHEDULE_HEADER")
+        self.assertFalse(record["scheduleHeaderPresent"])
+
+    def test_future_schedule_fails_closed_with_safe_reason(self):
+        captured = io.StringIO()
+        with redirect_stderr(captured):
+            status, response = run_request(
+                self.app, schedule="2026-10-28T07:47:00+09:00"
+            )
+        self.assertEqual(status, "400 Bad Request")
+        self.assertEqual(response, {"error": "SCHEDULE_NOT_ALLOWED"})
+        record = json.loads(captured.getvalue())
+        self.assertEqual(record["scheduleRejectCode"], "FUTURE_SCHEDULE")
+        self.processor.assert_not_called()
+
     def test_valid_oidc_request_binds_job_slot_time_and_attempt(self):
         status, result = run_request(self.app)
         self.assertEqual(status, "200 OK")
@@ -152,12 +196,12 @@ class CloudRunIngressTests(unittest.TestCase):
         logs = [json.loads(line) for line in captured.getvalue().splitlines()]
         self.assertEqual(logs[0]["event"], "P1_JOB_HEADER_DIAGNOSTIC")
         self.assertEqual(logs[0]["jobHeaderForm"], "OTHER_FULL_RESOURCE")
-        self.assertEqual(logs[1], {
-            "event": "P1_INGRESS_RESULT",
-            "severity": "WARNING",
-            "httpStatus": 403,
-            "reason": "JOB_NOT_ALLOWLISTED",
-        })
+        self.assertEqual(logs[1]["event"], "P1_INGRESS_RESULT")
+        self.assertEqual(logs[1]["severity"], "WARNING")
+        self.assertEqual(logs[1]["httpStatus"], 403)
+        self.assertEqual(logs[1]["reason"], "JOB_NOT_ALLOWLISTED")
+        self.assertEqual(logs[1]["oidcResult"], "PASS")
+        self.assertEqual(logs[1]["jobNameResult"], "FAIL")
         self.assertNotIn(secret_token, captured.getvalue())
         self.assertNotIn(CALLER, captured.getvalue())
         self.assertNotIn(JOB, captured.getvalue())
@@ -221,6 +265,29 @@ class CloudRunIngressTests(unittest.TestCase):
         self.assertEqual((entry["httpStatus"], entry["reason"]),
                          (409, "SCHEDULE_EXPIRED"))
         self.processor.assert_not_called()
+
+    def test_request_diagnostics_do_not_leak_between_sequential_requests(self):
+        captured = io.StringIO()
+        with redirect_stderr(captured):
+            first_status, _ = run_request(self.app)
+            second_status, _ = run_request(self.app, schedule="not-a-schedule")
+            third_status, _ = run_request(self.app, method="GET")
+        self.assertEqual(first_status, "200 OK")
+        self.assertEqual(second_status, "400 Bad Request")
+        self.assertEqual(third_status, "405 Method Not Allowed")
+        records = [entry for line in captured.getvalue().splitlines()
+                   if (entry := json.loads(line)).get("event") == "P1_INGRESS_RESULT"]
+        self.assertEqual(len(records), 3)
+        self.assertEqual(records[0]["scheduleTimeResult"], "PASS")
+        self.assertEqual(records[0]["reportId"], "2026-10-27_08-00")
+        self.assertEqual(records[1]["oidcResult"], "PASS")
+        self.assertEqual(records[1]["jobNameResult"], "PASS")
+        self.assertEqual(records[1]["scheduleTimeResult"], "FAIL")
+        self.assertNotIn("reportId", records[1])
+        self.assertEqual(records[2]["oidcResult"], "INCOMPLETE")
+        self.assertEqual(records[2]["jobNameResult"], "INCOMPLETE")
+        self.assertEqual(records[2]["scheduleTimeResult"], "INCOMPLETE")
+        self.assertNotIn("jobId", records[2])
 
     def test_diagnostic_log_marks_success_without_echoing_processor_payload(self):
         secret = "do-not-emit-acquisition-payload"
@@ -413,6 +480,63 @@ class FixtureProviderTests(unittest.TestCase):
         self.assertIn(b'"attemptMinutes":13', first)
         with self.assertRaisesRegex(ValueError, "INVALID_SCHEDULER_TRIGGER"):
             acquire(identity, binding, b'{"market":"payload"}')
+
+
+class AutoVerifyIngressLoggingTests(unittest.TestCase):
+    def test_ingress_emits_bounded_result_fields_without_sensitive_values(self):
+        app = create_app(
+            bindings={JOB: self._binding()}, audience=AUDIENCE,
+            processor=Mock(return_value={"status": "CREATED"}),
+            verifier=Mock(return_value={
+                "iss": "https://accounts.google.com", "aud": AUDIENCE,
+                "email": CALLER, "email_verified": True,
+            }),
+            clock=lambda: NOW,
+        )
+        output = io.StringIO()
+        with redirect_stderr(output):
+            status, _ = run_request(app)
+        self.assertEqual(status, "200 OK")
+        records = [json.loads(line) for line in output.getvalue().splitlines()]
+        record = next(item for item in records
+                      if item.get("event") == "P1_INGRESS_RESULT")
+        self.assertEqual(record["oidcResult"], "PASS")
+        self.assertEqual(record["jobNameResult"], "PASS")
+        self.assertEqual(record["scheduleTimeResult"], "PASS")
+        self.assertEqual(record["schedulerDateJst"], "2026-10-27")
+        self.assertEqual(record["schedulerTimeJst"], "07:47")
+        self.assertEqual(record["httpStatus"], 200)
+        self.assertEqual(record["jobId"], "slot-0800-t13")
+        self.assertNotIn("email", record)
+        self.assertNotIn("authorization", record)
+        self.assertEqual(len(records), 1)
+
+    @staticmethod
+    def _binding():
+        return SchedulerBinding(JOB, CALLER, 13, "08:00")
+
+    def test_off_schedule_request_records_failed_time_after_auth_and_job_pass(self):
+        app = create_app(
+            bindings={JOB: self._binding()}, audience=AUDIENCE,
+            processor=Mock(return_value={"status": "CREATED"}),
+            verifier=Mock(return_value={
+                "iss": "https://accounts.google.com", "aud": AUDIENCE,
+                "email": CALLER, "email_verified": True,
+            }),
+            clock=lambda: NOW,
+        )
+        output = io.StringIO()
+        with redirect_stderr(output):
+            status, body = run_request(app, schedule="2026-10-26T22:48:00Z")
+        self.assertEqual(status, "400 Bad Request")
+        self.assertEqual(body["error"], "SCHEDULE_NOT_ALLOWED")
+        records = [json.loads(line) for line in output.getvalue().splitlines()]
+        result = next(item for item in records
+                      if item.get("event") == "P1_INGRESS_RESULT")
+        self.assertEqual(result["oidcResult"], "PASS")
+        self.assertEqual(result["jobNameResult"], "PASS")
+        self.assertEqual(result["scheduleTimeResult"], "FAIL")
+        self.assertEqual(result["httpStatus"], 400)
 
 
 if __name__ == "__main__":

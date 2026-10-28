@@ -218,3 +218,20 @@ Source: owner-pasted Cloud Shell `gcloud storage buckets describe` output. Bucke
 | Cloud changes | No bucket/resource/IAM/API changes, Storage write, deployment or Scheduler execution was performed | Action record |
 
 This existing bucket matches the observed Tokyo Standard, uniform-access, public-access-prevention, soft-delete and lifecycle settings, so do not create another bucket. Open outcome: inspect bucket IAM policy and verify runtime-only create/get scope before any separately approved live Storage test. Scheduler stays PAUSED; budget alert is already reported created and must not be duplicated.
+
+
+## P1 one-shot auto verification — ARCH-20261020-REPORT-CONTINUITY — 2026-10-27 JST (ADD)
+
+Source: owner-supplied Cloud Shell outputs and explicit confirmation; PR #182 exact HEAD was read as `796f5c867e830f5b3474bbbee639be44ab19b063`.
+
+| Claim | Evidence / result | Level / limit |
+|---|---|---|
+| Manual Scheduler-equivalent request passed job-name and OIDC checks, then failed the schedule check | Owner confirms the attempt returned app HTTP 400 `SCHEDULE_NOT_ALLOWED` after the job-name and OIDC checks passed | E5 owner-supplied external observation; this was a manual/off-schedule request, not the normal 07:47 JST Cron execution |
+| PR #182's fractional schedule-time handling | Latest ingress source accepts subsecond precision only when whole seconds are zero, canonicalizes to the Cron minute, and rejects nonzero seconds; PR #182's CI recorded the fractional timestamp regression as passing | E1/E2 source and CI evidence at PR #182 HEAD; does not mean the deployed Cloud Run image contains this HEAD |
+| Automatic single-run verification | Added structured OIDC/job/time stage logs and a separate Cloud Workflows stop/readback design; target Scheduler is paused first, watchdog pauses itself only after the target reads PAUSED; result contract is PASS/FAIL/BLOCKED/INCOMPLETE | Offline code/CI only; no Cloud Workflow, safety job, API, IAM, or deployment has been created |
+| Cloud result record | Workflow execution output and structured Cloud Logging record; no GCS write | Design only; log query/retention and execution not externally verified |
+| Cloud changes | No resource/API/IAM changes, Scheduler resume/run, deployment, or Storage write performed | Action record |
+
+Existing Cloud Run readiness, deployed image digest, and PR #182 source HEAD are distinct facts. No code-only change updates the deployed image. PR #182 and all earlier specified PRs remain unmerged; production, protected originals, formal three documents and P2+ remain untouched. Budget alert creation remains owner-reported and must not be duplicated.
+
+Open outcomes: GitHub CI for the new stacked PR; Cloud Workflows definition/API validation, IAM permissions, Scheduler watchdog creation, one normal 07:47 JST trial, auto-pause PAUSED readback, and Cloud Logging result readback remain NOT_RUN pending separate cloud approval.

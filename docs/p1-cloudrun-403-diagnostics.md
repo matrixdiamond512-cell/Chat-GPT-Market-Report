@@ -66,3 +66,10 @@ Cloud Runリビジョン `p1-report-shadow-ingress-00005-797` で確認したア
 単発実行のジョブ名検証だけを直した状態で、**OIDC署名検証成功・実機HTTP200・Google Storage証拠保存は未確認**。手動ジョブ実行時の`X-CloudScheduler-ScheduleTime`は、正規の定時実行とは異なる可能性があり、400でも直ちに不具合とは断定しない。
 
 PRのCI後、変更後Dockerイメージを固定digestでデプロイするときも、専用Cloud Run実行SA、IAM認証必須、`SHADOW_STORAGE_ENABLED=false`、Scheduler `PAUSED` を必ず維持・読戻し確認する。実機再試験は別途承認された短時間の操作に限る。
+
+
+## 2026-10-27 追記：手動実行時の認証・時刻判定（所有者確認）
+
+所有者からのCloud Shell結果と明示確認により、手動実行の一試行は許可対象のジョブ名とOIDC認証を通過し、その後の予定時刻検証でアプリHTTP 400 `SCHEDULE_NOT_ALLOWED` となったことを記録する。これは07:47 JSTの正規Scheduler配信ではなく、正常な定時実行・実機HTTP 200・GCS保存の証拠には数えない。先行記録の「OIDC成功は未確認」はこの手動試行について更新する。正規定時実行は未検証のままである。
+
+この確認は所有者提供のCloud Shell出力・明示報告（E5 owner-supplied observation）に基づく。クラウド状態をこちらから変更・再実行していない。
