@@ -30,6 +30,8 @@ def validate_staging_root(staging_root: Path, *, importer_root: Path) -> Path:
     if not root.is_dir():
         raise ImporterHandoffBlocked("STAGING_ROOT_NOT_FOUND")
     marker_path = root / ".market-report-staging.json"
+    if marker_path.is_symlink() or not marker_path.is_file():
+        raise ImporterHandoffBlocked("STAGING_MARKER_MISSING_OR_INVALID")
     try:
         marker = json.loads(marker_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
@@ -126,6 +128,8 @@ def stage_test_only_evidence(
         with destination.open("xb") as handle:
             handle.write(payload)
     except FileExistsError:
+        if destination.is_symlink():
+            raise ImporterHandoffBlocked("STAGING_EVIDENCE_SYMLINK_FORBIDDEN")
         try:
             existing = destination.read_bytes()
         except OSError as exc:
@@ -148,3 +152,36 @@ def stage_test_only_evidence(
         "object_sha256": actual_hash,
         "path": str(relative).replace("\\", "/"),
     }
+
+def main() -> None:
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Stage one pinned TEST_ONLY GCS evidence object in an isolated local importer checkout.")
+    parser.add_argument("--staging-root", type=Path, required=True)
+    parser.add_argument("--project-id", required=True)
+    parser.add_argument("--bucket", required=True)
+    parser.add_argument("--object", dest="object_name", required=True)
+    parser.add_argument("--generation", type=int, required=True)
+    parser.add_argument("--sha256", dest="object_sha256", required=True)
+    parser.add_argument("--date", dest="report_date", required=True)
+    parser.add_argument("--revision", type=int, required=True)
+    parser.add_argument("--snapshot-id", dest="expected_snapshot_id", required=True)
+    args = parser.parse_args()
+    importer_root = Path(__file__).resolve().parents[2]
+    result = stage_test_only_evidence(
+        staging_root=args.staging_root,
+        importer_root=importer_root,
+        project_id=args.project_id,
+        bucket_name=args.bucket,
+        object_name=args.object_name,
+        generation=args.generation,
+        object_sha256=args.object_sha256,
+        report_date=args.report_date,
+        revision=args.revision,
+        expected_snapshot_id=args.expected_snapshot_id,
+    )
+    print(json.dumps(result, ensure_ascii=False, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()
