@@ -119,3 +119,8 @@ Continue from `docs/project-control/production-recovery-20261029-01/`. Required 
 - Scheduled-task list recheck timed out. Cloud Shell now reports the session disconnected. Current P1 Scheduler state is UNKNOWN; do not resume either verification scheduler until a fresh readback. No production setting was changed.
 - Recovery remains incomplete: no 2026-10-29 report execution, Docs/PNG content readback, canonical report/receipt, Pages deploy/DOM check, or delivery notification was observed. At this timestamp, 08:00 JST has not occurred yet.
 - Next: regain browser access, inspect exact ChatGPT task recurrence/prompts and P1 scheduler states; verify each real slot after its scheduled run through every downstream gate. Keep the existing fail-closed publication requirements.
+
+
+## Final-head CI readback — 2026-10-29 02:19 JST
+
+On candidate head `a0d309d25fb4a698b03aef7425b1dbbea649118f`, all four triggered workflows passed: [40734389296](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40734389296), [40734389300](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40734389300), [40734389352](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40734389352), and [40734389420](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40734389420). These are regression checks only. PR #187 remains open/unmerged. Current main is four commits ahead; its diff from PR base affects data paths outside this PR. Do not infer live delivery from CI.
