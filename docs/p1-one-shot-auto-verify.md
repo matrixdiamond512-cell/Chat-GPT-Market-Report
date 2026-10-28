@@ -53,3 +53,50 @@ Pause the primary job and the safety job and read both states back. Leave the ex
 ## Verification limits
 
 CI tests the offline status contract, log-stage events, fixed-body two-date ingress behavior, fractional Scheduler timestamp normalization, and the ordering of the checked-in safety workflow. It cannot prove Cloud Workflows API acceptance, IAM conditions, Cloud Scheduler delivery timing, Cloud Logging query permissions, or deployed image/runtime behavior. Those remain an approved external trial.
+
+
+## 2026-10-28 JST real one-shot outcome (P1 SHADOW ONLY)
+
+The approved 2026-10-28 07:47/07:50 trial was armed and executed, then
+both Scheduler jobs were paused by the independent watchdog Workflow.
+**This trial did NOT pass the full P1 ingress acceptance test.**
+
+- Scheduler `slot-0800-t13` logged `AttemptStarted` and `AttemptFinished`
+  around 07:47:10 JST; the finish event reported `INVALID_ARGUMENT`,
+  `Original HTTP response code number = 400`.
+- Cloud Run `p1-report-shadow-ingress` logged one `P1_INGRESS_RESULT`
+  with `reason=SCHEDULE_NOT_ALLOWED`, `oidcResult=PASS`,
+  `jobNameResult=PASS`, `scheduleTimeResult=FAIL`.
+- The configured POST method, `Content-Type: application/json`, and the
+  fixed 41-byte trigger body matched the contract.
+- Watchdog job started at 07:50, invoked Workflow successfully, and both
+  Scheduler jobs were read back `PAUSED`; Workflow `result=INCOMPLETE`
+  because no successful schedule-bound Cloud Run ingress log existed.
+- The primary job can show `lastAttemptTime=null`, `status.code=-1`
+  after pausing **even though Cloud Scheduler's durable logs confirm the
+  07:47 attempt**. Do not infer a missing run from that readback.
+- The exact value of the incoming `X-CloudScheduler-ScheduleTime` header
+  was not recorded, so the specific subreason for the 400 is not known.
+
+### Fixes prepared in GitHub — not yet applied to GCP
+
+1. The ingress accepts RFC3339 schedule times with nonzero UTC offsets
+   (convert to UTC before calculating the 08:00 report slot), still rejecting
+   malformed/future/off-minute/unauthorized schedule data.
+2. Failed schedule validation now writes only enumerated
+   `scheduleRejectCode` and `scheduleHeaderPresent` to Cloud Logging,
+   **never** the raw header, OIDC token, or principal identity.
+3. The safety Workflow reads Cloud Scheduler's `AttemptFinished` entries,
+   scoped by job ID and expected 07:47 time, rather than requiring
+   `lastAttemptTime` and `status.code` which may be reset by pause.
+   It still requires one exact ingress log, HTTP 200, all stage PASS
+   and both PAUSED readbacks; duplicate/failed attempts are rejected.
+4. The read-only audit script also relies on `AttemptFinished` logs.
+
+This source change and offline CI alone do not prove the live defect is fixed.
+**Do not rearm the recurring Cron or rerun the whole setup** without a new
+controlled single-day trial plan, cloud-side deployment/verification of
+the patched image and Workflow, and a working safety stop. Keep both
+Scheduler jobs PAUSED until that separate approved trial. No production
+report, Google Drive publication, canonical/latest, or GCS evidence writes
+may be enabled as part of this retry.
