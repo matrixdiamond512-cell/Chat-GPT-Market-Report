@@ -155,3 +155,11 @@ On candidate head `a0d309d25fb4a698b03aef7425b1dbbea649118f`, all four triggered
 - The task named ゴールド毎時分析・朝8時予想・急変警戒 is a separate gold-only hourly schedule, not a report 21:00 task; it was not changed. A report-specific 21:00 task is absent.
 - Attempt to register the requested new 21:00 market-report task was denied because the five-active-task limit is reached. No report was run. Do not pause or repurpose the unrelated gold or daily-briefing tasks without the user's choice. 21:00 remains BLOCKED until an approved task slot becomes available.
 - No Oct 29 report, Docs/PNG, receipt, Pages DOM, or notification has been verified. Continue with scheduled execution checks only after each actual slot; do not treat the task configuration or CI as delivery proof.
+
+
+## DELIVERY-RECOVERY-20261029-01 — 2026-10-29 05:19 JST schedule restoration
+
+- User approved pausing the unrelated gold hourly task to free one slot. It remains intact but paused; the schedule list shows “一時停止中 · 前回の実行：昨日” and offers “再開”.
+- New active task マーケットレポート21:00 was registered, task ID `6ae2585ca6988191acff74ecb4d75770`. Task manager readback: Monday–Friday, 21:00 JST, Asia/Tokyo; no report was executed. Its saved prompt was opened and read; it includes the required six markets, report/body requirements, Docs save/readback, duplicate prevention, GitHub reference publication, hard pre-draft-evidence gate, Pages/notification checks. The task list shows weekly, next run in 16 hours at the 05:19 JST observation.
+- The active report triggers now cover 08:00, 12:00, 16:00, and 21:00 on weekdays. The task limit is again full (four reports plus the existing daily briefing); no other task was changed.
+- Configuration has been restored for four slots, but no Oct 29 report execution or downstream artifact was verified at 05:19 JST. Continue with real slot-by-slot observations; do not call the system recovered until report generation, Drive, image, GitHub, Pages, and notification evidence is available.
