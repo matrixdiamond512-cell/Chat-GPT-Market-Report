@@ -122,7 +122,7 @@ class CloudRunIngressTests(unittest.TestCase):
         captured = io.StringIO()
         with redirect_stderr(captured):
             status, response = run_request(
-                self.app, schedule="2026-10-27T07:47:00+09:00"
+                self.app, schedule="2026-10-28T07:47:00+09:00"
             )
         self.assertEqual(status, "400 Bad Request")
         self.assertEqual(response, {"error": "SCHEDULE_NOT_ALLOWED"})
