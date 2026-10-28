@@ -131,6 +131,46 @@ class OneShotVerificationContractTests(unittest.TestCase):
         self.assertEqual(result["checks"]["logCorrelation"], "FAIL")
         self.assertEqual(result["overall"], "FAIL")
 
+    def test_durable_scheduler_log_passes_when_pause_clears_attempt_fields(self):
+        log = {"type": "AttemptFinished", "timestamp": ATTEMPT, "status": None}
+        record = evaluate_one_shot(
+            expected_date_jst=DATE, expected_job_id=JOB,
+            events=[ingress_record()], scheduler_status_code=-1,
+            scheduler_last_attempt_time=None,
+            target_state_after_pause="PAUSED",
+            watchdog_state_after_pause="PAUSED", logs_read=True,
+            scheduler_attempt_events=[log],
+        )
+        self.assertEqual(record["checks"]["schedulerAttempt"], "PASS")
+        self.assertEqual(record["overall"], "PASS")
+
+    def test_scheduler_http_400_log_is_failure_even_if_last_attempt_is_cleared(self):
+        bad = {"type": "AttemptFinished", "timestamp": ATTEMPT,
+               "status": "INVALID_ARGUMENT"}
+        record = evaluate_one_shot(
+            expected_date_jst=DATE, expected_job_id=JOB,
+            events=[], scheduler_status_code=-1,
+            scheduler_last_attempt_time=None,
+            target_state_after_pause="PAUSED",
+            watchdog_state_after_pause="PAUSED", logs_read=True,
+            scheduler_attempt_events=[bad],
+        )
+        self.assertEqual(record["checks"]["schedulerAttempt"], "FAIL")
+        self.assertEqual(record["overall"], "FAIL")
+
+    def test_duplicate_scheduler_finish_logs_are_not_mistaken_for_one_run(self):
+        log = {"type": "AttemptFinished", "timestamp": ATTEMPT, "status": None}
+        record = evaluate_one_shot(
+            expected_date_jst=DATE, expected_job_id=JOB,
+            events=[ingress_record()], scheduler_status_code=-1,
+            scheduler_last_attempt_time=None,
+            target_state_after_pause="PAUSED",
+            watchdog_state_after_pause="PAUSED", logs_read=True,
+            scheduler_attempt_events=[log, log],
+        )
+        self.assertEqual(record["checks"]["schedulerAttempt"], "FAIL")
+        self.assertEqual(record["overall"], "FAIL")
+
     def test_log_delay_keeps_result_incomplete(self):
         result = observation(logs=False)
         self.assertEqual(result["checks"]["http"], "INCOMPLETE")
@@ -162,6 +202,11 @@ class OneShotWorkflowDefinitionTests(unittest.TestCase):
         self.assertLess(definition.index("pause_watchdog:"), definition.index("read_watchdog_after_pause:"))
         self.assertLess(definition.index("read_watchdog_after_pause:"), definition.index("query_logs:"))
         self.assertIn("targetReadback", definition)
+        self.assertIn('resource.type=\\\"cloud_scheduler_job\\\"', definition)
+        self.assertIn('schedulerFinishCount', definition)
+        self.assertIn('schedulerFinishStatus', definition)
+        self.assertIn('schedulerLogsRead', definition)
+        self.assertIn('type.googleapis.com/google.cloud.scheduler.logging.AttemptFinished', definition)
         self.assertIn('default(map.get(targetResponse.body, "state"), "UNKNOWN")', definition)
         self.assertIn('map.get(targetResponse.body, "lastAttemptTime")', definition)
         self.assertIn('default(map.get(targetResponse.body, ["status", "code"]), 0)', definition)
