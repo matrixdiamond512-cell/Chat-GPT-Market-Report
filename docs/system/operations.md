@@ -91,3 +91,16 @@ External setup still required: production GCS evidence/claim IAM, approved Googl
 - The existing importer only sees slot evidence present in its checked-out repository path `data/report-evidence/`. Do not assume the PR #183 GCS bucket is reachable by that workflow; no GCS-to-importer handoff or WIF identity is configured by PR #188.
 - Do not dispatch `publish-saved-google-docs-reports.yml` as a test: its apply path commits canonical report files to main and dispatches Pages. It requires a separately approved, evidence-bound staging or production operation.
 - Current proof stops at offline Docs/portal adapter contract tests plus TEST_ONLY GCS evidence capture. Existing importer execution, canonical main readback, Pages deployment and browser DOM readback are NOT_RUN.
+
+
+
+## MRF-0800-20261029 — local TEST_ONLY importer handoff
+
+1. Keep the current PR checkout as the handoff tool, then create a second isolated checkout of the same PR branch in a sibling directory. Do not use the main checkout as the staging root.
+2. In the second checkout, create `.market-report-staging.json` with `schemaVersion: 1`, `mode: LOCAL_STAGING_ONLY`, `environment: TEST_ONLY`, the expected `report_id`, and `revision`. Do not place credentials in this file.
+3. From the handoff-tool checkout, run `python -m scripts.reporting.importer_handoff` with `--staging-root`, the TEST_ONLY project/bucket, object name, immutable generation, SHA-256, date, revision, and expected snapshot ID. Accept only `LOCAL_STAGE_READBACK_PASS`; it records no publication status.
+4. For a Docs read-only dry run, run the importer with `--root <second-checkout> --require-issuance-binding` and the existing read-only Docs credentials. Missing/mismatched appProperties must remain held. Review the dry-run output before considering `--apply`; apply modifies only that isolated checkout and must not be pushed or used for Pages.
+5. Never dispatch `publish-saved-google-docs-reports.yml` for staging. It writes canonical files to main and dispatches Pages. No Google Docs write is part of this procedure.
+6. The 2026-10-28 viewing/analysis document lacks a supplied pre-save G2 body/hash and same-run receipt. It cannot satisfy official issuance acceptance even if TEST_ONLY evidence is staged.
+
+Current validation covers mocked exact-generation reads, create-only readback, identity/hash conflicts, and strict Docs binding. GCS/IAM, real Docs metadata, importer runtime, canonical readback, and portal/Pages remain NOT_RUN until independently observed.
