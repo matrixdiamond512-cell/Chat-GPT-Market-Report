@@ -160,3 +160,19 @@ The operator reports that the isolated TEST_ONLY environment completed three wee
 Evidence status: **operator-reported; independently unverified**. This repository update records the report only. No run IDs, actual Cloud Run start timestamps/latencies, report identity/revision, source or snapshot hashes, GCS object generations, or sanitized readback records were supplied to this review, and no connected Cloud account was available to retrieve them. Therefore these observations do not establish a production run, report-body generation, Google Docs save/readback, canonical registration, portal publication, or end-to-end recovery.
 
 No secret values or credentials are recorded. Preserve the raw TEST_ONLY evidence in its isolated private store; do not copy it into production paths or use it as formal publication evidence. Attach independently verifiable run metadata through the existing TEST_ONLY review process when available.
+
+## 2026-10-28 TEST_ONLY runtime evidence — operator Cloud Shell transcript reviewed 2026-10-29 JST
+
+The operator supplied Cloud Shell output for the three weekday Scheduler invocations and generation-pinned verifier. This is runtime evidence from the isolated TEST_ONLY project, not production. The transcript contains no credential or secret values. It was not independently fetched by this review from a connected GCP account.
+
+| Scheduled JST | Cloud Run request timestamp JST | Request result / latency | Acquisition capturedAt / cutoff | Object generation | Object SHA-256 | Source SHA-256 | Snapshot ID |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 07:47 | 07:47:02.001 | HTTP 200 / 28.145 s | 07:47:06 | 1793141250168186 | `e40ce308cb91b4d0782b62ec488362bde304b63c2a5b174284afdce2b40b078a` | `e5543f06a9590e78500ecd809e84bf3548d043a40ea7e612e8f00f8d01c1f840` | `snapshot-e0e76b39b096e2f5a5cbe670ec90fed5080a53f862d8d1532ad9200cbc41abf5` |
+| 07:53 | 07:53:05.248 | HTTP 200 / 23.567 s | 07:53:06 | 1793141608748351 | `33eea335855b90f2813541e9289dddab4f9da04ed7f7b343bddf518bb17ad732` | `fe9aa664828c974ad57f95328430d22a8e255a3e7db8325707187dc82bed6af8` | `snapshot-472ab5d32d1db77e84617eb0078b666c5096e1d9586a59291e624a42a954ab30` |
+| 07:57 | 07:57:02.788 | HTTP 200 / 23.530 s | 07:57:03 | 1793141846249968 | `7bfc2561d8896423882aa6c40bdc2efa912c9e90b07c1a946adcfaa07193b55f` | `3d716b69fd4b4ed74e914b8bfce3b2bb8789b8ea945b5b13a312c558285774da` | `snapshot-a7c7f9d2537620770c524283e9de84841b5976492f27420ed5575ed097968ca4` |
+
+All three objects returned `PASS_EXACT_GENERATION_READBACK`. The stored-evidence validator completed for all three and reported `READY_FOR_DRAFT`, `sourceStatus=verified`, `reportId=2026-10-28_08-00`, and `revision=1`. Captures preceded the 08:00 JST cutoff by 12m54s, 6m54s and 2m57s respectively, within the existing 15-minute freshness limit.
+
+These are three independent acquisition attempts: each has a different source hash, evidence ID and snapshot ID. A downstream official draft must select and pin exactly one successful attempt (normally the latest eligible pre-cutoff attempt) and bind all body/spec/Docs/portal artifacts to that identity. Do not combine values across attempts.
+
+**Scope limit:** this establishes TEST_ONLY trigger arrival, verified acquisition metadata, evidence object creation and exact-generation byte readback. It does not establish G2/body generation, Google Docs writing or full readback, GitHub canonical/receipt registration, infographic generation, or portal publication. Do not call production 08:00 issuance restored based on these runs.
