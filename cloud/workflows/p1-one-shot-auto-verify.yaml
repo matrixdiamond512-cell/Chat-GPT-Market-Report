@@ -23,6 +23,10 @@ main:
           - watchdogPauseCall: "NOT_RUN"
           - watchdogReadback: "UNKNOWN"
           - logsRead: false
+          - schedulerLogsRead: false
+          - schedulerLogEntries: []
+          - schedulerFinishCount: 0
+          - schedulerFinishStatus: "UNKNOWN"
           - ingressRecordFound: false
           - matchedIngressCount: 0
           - logEntries: []
@@ -195,6 +199,48 @@ main:
                 assign:
                   - logEntries: []
                   - logsRead: false
+    - query_scheduler_logs:
+        try:
+          steps:
+            - list_scheduler_attempt_logs:
+                call: http.post
+                args:
+                  url: https://logging.googleapis.com/v2/entries:list
+                  auth:
+                    type: OAuth2
+                  body:
+                    resourceNames:
+                      - ${"projects/" + projectId}
+                    orderBy: timestamp asc
+                    pageSize: 100
+                    filter: ${"resource.type=\"cloud_scheduler_job\" AND resource.labels.job_id=\"" + expectedJobId + "\" AND timestamp >= \"" + logsStart + "\" AND timestamp <= \"" + logsEnd + "\""}
+                result: schedulerLogResponse
+            - save_scheduler_log_entries:
+                assign:
+                  - schedulerLogEntries: ${default(map.get(schedulerLogResponse.body, "entries"), [])}
+                  - schedulerLogsRead: true
+        except:
+          as: schedulerLogError
+          steps:
+            - mark_scheduler_logs_unreadable:
+                assign:
+                  - schedulerLogEntries: []
+                  - schedulerLogsRead: false
+    - scan_scheduler_logs:
+        for:
+          value: schedulerEntry
+          in: ${schedulerLogEntries}
+          steps:
+            - extract_scheduler_attempt:
+                assign:
+                  - schedulerPayload: ${default(map.get(schedulerEntry, "jsonPayload"), emptyPayload)}
+                  - schedulerLogType: ${default(map.get(schedulerPayload, "@type"), "")}
+                  - schedulerLogEpoch: ${time.parse(schedulerEntry.timestamp)}
+                  - exactSchedulerFinish: ${schedulerLogType == "type.googleapis.com/google.cloud.scheduler.logging.AttemptFinished" and schedulerLogEpoch >= expectedEpoch - 60 and schedulerLogEpoch <= expectedEpoch + 180}
+            - collect_scheduler_finish:
+                assign:
+                  - schedulerFinishCount: ${if(exactSchedulerFinish, schedulerFinishCount + 1, schedulerFinishCount)}
+                  - schedulerFinishStatus: ${if(exactSchedulerFinish, default(map.get(schedulerPayload, "status"), ""), schedulerFinishStatus)}
     - scan_logs:
         for:
           value: entry
@@ -226,7 +272,7 @@ main:
           - httpResult: ${if(httpStatus == 200, "PASS", if(httpStatus == null, "INCOMPLETE", "FAIL"))}
           - schedulerTimeLocal: ${if(lastAttemptLocal == "", "", text.substring(lastAttemptLocal, 0, 16))}
           - attemptInWindow: ${schedulerAttemptEpoch >= expectedEpoch - 60 and schedulerAttemptEpoch <= expectedEpoch + 180}
-          - schedulerAttemptResult: ${if(schedulerStatusCode == null or schedulerLastAttempt == null, "INCOMPLETE", if(schedulerStatusCode != 0 or not attemptInWindow, "FAIL", "PASS"))}
+          - schedulerAttemptResult: ${if(not schedulerLogsRead or schedulerFinishCount == 0, "INCOMPLETE", if(schedulerFinishCount != 1 or schedulerFinishStatus != "", "FAIL", "PASS"))}
           - targetStopResult: ${if(targetReadback == "PAUSED", "PASS", "BLOCKED")}
           - watchdogStopResult: ${if(watchdogReadback == "PAUSED", "PASS", "BLOCKED")}
           - logResult: ${if(not logsRead or not ingressRecordFound, "INCOMPLETE", if(matchedIngressCount == 1, "PASS", "FAIL"))}
@@ -254,6 +300,9 @@ main:
               targetSchedulerState: ${targetReadback}
               watchdogSchedulerState: ${watchdogReadback}
               targetLastAttemptTime: ${schedulerLastAttempt}
+              schedulerFinishCount: ${schedulerFinishCount}
+              schedulerFinishStatus: ${schedulerFinishStatus}
+              schedulerLogsRead: ${schedulerLogsRead}
               matchedIngressCount: ${matchedIngressCount}
               targetSchedulerStatusCode: ${schedulerStatusCode}
               targetPauseCall: ${targetPauseCall}
