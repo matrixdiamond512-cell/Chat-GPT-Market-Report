@@ -187,3 +187,18 @@ GitHub main advanced from `c3dae9fdaea7c05d8006006b6fb052a28e2535f4` to `9615882
 Main advanced four commits from `9615882cf018479bf3cb2eeeb6f6b73367ea764b` to `d6420e2c3d53a16304bb8d301677e2db4c41da0c`. The actual range changes 15 production data files only (Japan stocks, Nikkei/US dollar-yen supply-demand and market references); no acquisition/evidence code, workflow, or tests changed. Merged without conflicts as `415c28c6d`; local compare 0 behind / 14 ahead before this record commit.
 
 Verified on the synced tree: `data/market/latest.json` is `2026-10-16T20:16:17+09:00`, slot `21:00`, `verified`, with no required-field gaps; `data/report-evidence/2026-10-16_21-00-r1.json` and `reports/2026-10-16_21-00.json` are absent; `reports.json` latest is 2026-10-13 16:00. Do not reconstruct or publish the missed 21:00 slot. The recovery PR applies to future eligible acquisitions. Following local/final-head CI, the user has now directed PR #156 to be reviewed and merged; verify head/base once more, mark ready, and merge the exact approved head. Then observe future-slot production acceptance separately.
+
+
+## MRF-0800-20261029 — 08:00 issuance integration (ADD)
+
+PRIMARY OBJECTIVE: Safely connect one authentic weekday 08:00 report run from immutable pre-slot evidence through fixed G2 text and exact Google Docs readback into the existing canonical portal path, with no publication on any mismatch.
+
+ACCEPTANCE: A latest-main-based independent Draft PR; same-run identity/revision/body hash/evidence generation/snapshot across stages; create-only duplicate protection; human source-bound scenario review; exact Docs ID/revision/fullText readback; existing portal/canonical/Pages readback; normal/abnormal tests; no gate weakening. External acceptance is separate from CI.
+
+CONSTRAINTS: PR #97 untouched; no main merge, production deployment, Google Drive write, or other-time rollout. TEST_ONLY evidence cannot stand in for production evidence.
+
+OUT OF SCOPE: Actual production rollout and live report publication in this task.
+
+FORBIDDEN SUBSTITUTE: TEST_ONLY capture, fake adapter PASS, passing CI, or Docs save alone is not a restored published 08:00 report.
+
+OPEN OUTCOMES: Trusted G2 source connection, production configuration/IAM, concrete existing-portal invocation, hosted CI on this branch, external Docs/importer/Pages E2E.

@@ -17,3 +17,10 @@ For changes to the market report delivery system, read `docs/system/DOCUMENT_CON
 - Do not use documentation updates as authorization to change production data, report slots, Apps Script triggers, Drive/Docs files, PNGs, receipts, Pages deployment, or API billing.
 - CI PASS, fixture PASS, report text availability, Drive readback, receipt validity, portal live DOM, and notification arrival are different proofs. Report NOT_RUN/UNKNOWN honestly, and never fabricate pre-slot evidence after the slot.
 - Do not push secrets, login material, service-account JSON, or unreviewed bulk market data. Avoid force-push and overwriting another computer's work.
+
+
+## MRF-0800-20261029 — scheduled issuance integration review
+
+- Keep TEST_ONLY acquisition evidence separate from production issuance. An external capture PASS does not prove G2 creation, Google Docs save/readback, canonical registration, or portal publication.
+- For the proposed 08:00 issuance transaction, preserve one report identity/revision/body hash and one generation-pinned snapshot through Docs and portal readbacks. Keep the duplicate-slot claim and all existing freshness, cutoff, receipt, and publish gates fail-closed.
+- The independent Draft PR is based on the latest main observed for that PR. No production Docs/Drive write, main change, or Pages deployment is authorized by this implementation task. Real external stages remain NOT_RUN until observed.

@@ -33,3 +33,11 @@
 - 2026-10-07 PORTAL-D03: Run browser DOM validation on the normalized local artifact before upload/deploy and repeat the same strict checks against the public Portal after deployment. Keep exact title equality and fail closed. A successful Deploy step is not a successful Portal publication when live DOM validation fails.
 
 - 2026-10-20 / HANDOFF-20261020-01: Add `README.md` and `HANDOFF.md` as **stable developer onboarding paths**, extend existing `AGENTS.md` and introduce a PR evidence checklist. This is development-process documentation only: no report schedule, publication code, market data, receipt, Google Docs canonical requirements/specification/operations, or portal output is changed. Preserve the `docs/system/DOCUMENT_CONTROL.md` precedence and fixed-ID formal document workflow. Refer to Issue #173 for actual second-PC acceptance, Issue #103 for production audit, and live PR/Actions state rather than copying old success claims. Reassess any future functional change separately with the affected-document matrix.
+
+
+## MRF-0800-20261029 decisions
+
+- D-0800-01: Retain GCS generation-pinned evidence and immutable create-only per-slot claim; identical retry may continue, any changed identity/hash is a conflict. Do not clear a claim automatically.
+- D-0800-02: Google Docs writer saves only the frozen G2 fullText and exact readback is mandatory before portal work. Ambiguous or partial Docs creation stops for manual reconciliation.
+- D-0800-03: Existing portal publication is behind an adapter boundary. Contract fixtures can test the boundary but cannot represent a live portal publish; rollout awaits a concrete, approved invocation/readback route.
+- D-0800-04: No main/production/Drive/Pages change; PR #97 remains untouched.

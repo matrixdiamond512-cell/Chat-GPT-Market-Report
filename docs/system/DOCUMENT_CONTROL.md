@@ -60,3 +60,12 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 - 図解3件はDrive上の最新保存日時・PNG MIMEを確認。GitHub Pagesでの画像実体、SHA-256、manifest、snapshot/本文との対応が未検証のため図解正式READYへ昇格させない。旧ファイルは削除しない。
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
+
+
+## MRF-0800-20261029 — change record
+
+- Source: user request to restore the weekday 08:00 issuance path; TEST_ONLY Cloud Shell outputs for 2026-10-28; independent Draft PR based on main observed at e70751bc4a202c84f4322df8748a08775d836458.
+- Affected canonical files: docs/system/requirements.md, docs/system/specification.md, docs/system/operations.md; root AGENTS.md; project-control objective/evidence/decision/lesson records. Existing fixed Google Docs IDs were not written.
+- Code scope: proposed fail-closed G2/evidence/Docs/portal transaction adapter and offline contract workflow. No main, production, Drive, or Pages changes.
+- Verification: external TEST_ONLY GCS generation readbacks were operator-provided and all three passed; new code tests require hosted Actions. Docs API, production GCS, existing canonical importer, and public portal E2E are NOT_RUN.
+- Open outcomes: connect trusted G2/body freeze and independent scenario review; configure production identities/folders/buckets; implement approved invocation of the existing importer; run external E2E and live DOM verification. Do not report production recovery complete.

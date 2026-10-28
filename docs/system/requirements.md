@@ -66,3 +66,12 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - 図解3件はDrive上の最新保存日時・PNG MIMEを確認。GitHub Pagesでの画像実体、SHA-256、manifest、snapshot/本文との対応が未検証のため図解正式READYへ昇格させない。旧ファイルは削除しない。
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
+
+
+## MRF-0800-20261029 — 08:00 issuance integration contract (Draft proposal)
+
+- Keep one weekday 08:00 report identity/revision bound to one immutable, generation-pinned acquisition snapshot, the complete pre-save G2 body and its SHA-256, a human-reviewed scenario record, Google Docs document/revision/full-text readback, and the existing portal canonical/readback identity.
+- Reject stale or post-cutoff evidence, TEST_ONLY evidence in the production path, any changed body/snapshot/identity, missing scenario review, ambiguous duplicate Docs, duplicate-slot identity conflicts, or a Docs/portal readback mismatch. Never publish after a failed stage.
+- Exact retries may proceed only when report ID, revision, body hash, evidence ID, and snapshot ID match the durable create-only slot claim.
+- TEST_ONLY acquisition on 2026-10-28 is limited evidence of the upstream acquisition/store path. It does not satisfy Docs, canonical, or portal acceptance. This requirement is proposed in a separate Draft PR and is not yet active on main.
+- 12:00/16:00/21:00 schedules and existing publication gates remain outside the implementation scope. No production write or deployment was performed.
