@@ -1,45 +1,39 @@
 {
-  "schemaVersion": "2.1.0",
-  "generatedAt": "2026-10-28T22:57:40+09:00",
-  "dataAsOf": "2026-10-28",
-  "sourceMode": "東京市場確定値統合（複数ソース・項目別基準日）",
+  "schemaVersion": "1.1.0",
+  "generatedAt": "2026-10-28T23:19:34+09:00",
+  "dataAsOf": "2026-10-17",
   "sourceSheet": "終値一覧",
-  "reference": "data/market/japan-close-reference.json",
+  "sourceRow": 33,
   "metrics": {
     "日経VI": {
-      "raw": "取得不能（対象日の確定値なし）",
-      "display": "取得不能（対象日の確定値なし）",
-      "change": "—",
-      "evaluation": "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-10-28。",
-      "source": "公開ソース"
+      "raw": "32.17",
+      "display": "32.17",
+      "change": "-3.96（-10.96%）",
+      "evaluation": "警戒域。日本株のボラティリティ上昇に注意。基準日 2026-10-17。"
     },
     "日経225予想PER": {
-      "raw": "取得不能（対象日の確定値なし）",
-      "display": "取得不能（対象日の確定値なし）",
+      "raw": "17.07",
+      "display": "17.07倍",
       "change": "—",
-      "evaluation": "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-10-28。",
-      "source": "公開ソース"
+      "evaluation": "予想利益に対する株価水準。EPSと指数水準を合わせて確認。基準日 2026-10-17。"
     },
     "日経225予想EPS": {
-      "raw": "取得不能（対象日の確定値なし）",
-      "display": "取得不能（対象日の確定値なし）",
+      "raw": "3826.85",
+      "display": "3,826.85円",
       "change": "—",
-      "evaluation": "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-10-28。",
-      "source": "公開ソース"
+      "evaluation": "日経225構成銘柄の予想利益水準。PERの分母として確認。基準日 2026-10-17。"
     },
     "日経225 25日乖離率": {
-      "raw": "-3.39%",
-      "display": "-3.39%",
+      "raw": "-1.68%",
+      "display": "-1.68%",
       "change": "—",
-      "evaluation": "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-10-28。",
-      "source": "Yahoo Finance Nikkei 225 daily history"
+      "evaluation": "25日線からの乖離は警戒域外。短期の過熱感は限定的。基準日 2026-10-17。"
     },
     "日経225 200日乖離率": {
-      "raw": "+3.73%",
-      "display": "+3.73%",
+      "raw": "+6.88%",
+      "display": "+6.88%",
       "change": "—",
-      "evaluation": "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-10-28。",
-      "source": "Yahoo Finance Nikkei 225 daily history"
+      "evaluation": "200日線を上回り長期上昇基調。+30%以上は過熱警戒。基準日 2026-10-17。"
     }
   }
 }
