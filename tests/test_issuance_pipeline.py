@@ -33,10 +33,12 @@ class FakeDocs:
         self.mutate = mutate
         self.saved_at = saved_at
         self.calls = 0
+        self.title = None
 
     def save_exact(self, *, title, report_id, revision, full_text, body_hash,
                    evidence_id, snapshot_id):
         self.calls += 1
+        self.title = title
         text = full_text + " changed" if self.mutate else full_text
         return DocsReadback("doc-123", "revision-7", text,
                             hashlib.sha256(text.encode()).hexdigest(), self.saved_at)
@@ -101,11 +103,27 @@ class FakeGoogleSession:
 
 class IssuancePipelineContractTests(unittest.TestCase):
     def setUp(self):
-        self.full_text = (
-            "Main condition: above 100. Main development: rally continues. Main impact: equities rise.\n"
-            "Alternative condition: below 100. Alternative development: pullback extends. Alternative impact: yen strengthens.\n"
-            "Invalidation condition: yield breaks 5%. Invalidation development: main thesis fails. Invalidation impact: risk assets fall.\n"
-        )
+        scenario_lines = [
+            "Main condition: above 100.",
+            "Main development: rally continues.",
+            "Main impact: equities rise.",
+            "Alternative condition: below 100.",
+            "Alternative development: pullback extends.",
+            "Alternative impact: yen strengthens.",
+            "Invalidation condition: yield breaks 5%.",
+            "Invalidation development: main thesis fails.",
+            "Invalidation impact: risk assets fall.",
+        ]
+        sections = [
+            "結論", "総括", "今日の相場テーマ", "金利", "重要ニュース",
+            "主要市場データ", "市場データ確認：金、WTI、日経平均、USD/JPY、EUR/USD、BTC。",
+            "クロスアセット資金フロー", "需給・ポジション", "6市場の個別見通し",
+            "メインシナリオ", scenario_lines[0], scenario_lines[1], scenario_lines[2],
+            "代替シナリオ", scenario_lines[3], scenario_lines[4], scenario_lines[5],
+            "崩れる条件", scenario_lines[6], scenario_lines[7], scenario_lines[8],
+        ]
+        sections.extend(["TEST_FIXTURE: synthetic body-length coverage."] * 28)
+        self.full_text = "マーケットレポート｜2026/10/16（金）08:00\n" + "\n".join(sections) + "\n"
         payload = {
             "generatedAt": "2026-10-16T07:55:00+09:00",
             "reportDate": "2026-10-16", "reportSlot": "08:00",
@@ -123,7 +141,7 @@ class IssuancePipelineContractTests(unittest.TestCase):
         self.evidence_bytes = canonical_bytes(self.evidence)
         self.body_hash = hashlib.sha256(self.full_text.encode()).hexdigest()
         self.report = {
-            "date": "2026-10-16", "time": "08:00", "title": "Market report 2026-10-16 08:00",
+            "date": "2026-10-16", "time": "08:00", "title": "マーケットレポート｜2026/10/16（金）08:00",
             "report_id": "2026-10-16_08-00", "revision": 1, "fullText": self.full_text,
             "bodyHash": self.body_hash, "snapshot_id": self.evidence["snapshot"]["snapshot_id"],
             "snapshot": self.evidence["snapshot"], "context": self.evidence["context"],
@@ -173,9 +191,11 @@ class IssuancePipelineContractTests(unittest.TestCase):
                             claim_store=FakeClaimStore())
 
     def test_same_run_docs_and_portal_exact_readback(self):
-        result = self.execute_pipeline()
+        docs = FakeDocs()
+        result = self.execute_pipeline(docs=docs)
         self.assertEqual(result["status"], "E2E_READBACK_PASS")
         self.assertEqual(result["report_id"], self.report["report_id"])
+        self.assertEqual(docs.title, "マーケットレポート_2026-10-16_08-00")
 
     def test_test_only_evidence_is_rejected_before_any_write(self):
         self.bundle["environment"] = "TEST_ONLY"
@@ -260,4 +280,3 @@ class IssuancePipelineContractTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

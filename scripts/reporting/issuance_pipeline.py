@@ -24,6 +24,16 @@ def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _canonical_drive_title(report: dict) -> str:
+    """Return the Drive filename format consumed by the existing importer."""
+    from scripts.report_source_contract import source_key
+    drive_title = f"マーケットレポート_{report['date']}_{report['time'].replace(':', '-')}"
+    expected_key = f"{report['date']}_{report['time'][:2]}-00"
+    if source_key(drive_title) != expected_key:
+        raise IssuanceBlocked("DOCS_DRIVE_TITLE_SLOT_MISMATCH")
+    return drive_title
+
+
 @dataclass(frozen=True)
 class DocsReadback:
     document_id: str
@@ -342,6 +352,12 @@ def validate_issuance_bundle(bundle: dict, *, expected_project_id: str,
         raise IssuanceBlocked("G2_SLOT_OR_REVISION_INVALID")
     if g2.get("report_id") != report_id or g2.get("revision") != report["revision"]:
         raise IssuanceBlocked("G2_IDENTITY_MISMATCH")
+    try:
+        from scripts.report_source_contract import validate_saved_body
+        validate_saved_body(report)
+        _canonical_drive_title(report)
+    except (ValueError, KeyError, TypeError) as exc:
+        raise IssuanceBlocked("G2_REPORT_NOT_IMPORTER_ELIGIBLE") from exc
 
     try:
         frozen = validate_stored_slot_evidence(evidence_bytes, report["date"], report["time"])
@@ -386,7 +402,7 @@ def run_issuance(bundle: dict, *, expected_project_id: str,
         snapshot_id=evidence["snapshot"]["snapshot_id"],
     )
     docs = docs_writer.save_exact(
-        title=report["title"], report_id=report["report_id"],
+        title=_canonical_drive_title(report), report_id=report["report_id"],
         revision=report["revision"], full_text=report["fullText"],
         body_hash=body_hash, evidence_id=evidence["evidenceId"],
         snapshot_id=evidence["snapshot"]["snapshot_id"],
