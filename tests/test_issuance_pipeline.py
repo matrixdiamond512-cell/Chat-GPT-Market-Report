@@ -166,14 +166,14 @@ class IssuancePipelineContractTests(unittest.TestCase):
             },
         }
 
-    def run(self, *, docs=None, portal=None):
+    def execute_pipeline(self, *, docs=None, portal=None):
         return run_issuance(self.bundle, expected_project_id=PROJECT,
                             expected_evidence_bucket=BUCKET,
                             docs_writer=docs or FakeDocs(), portal=portal or FakePortal(),
                             claim_store=FakeClaimStore())
 
     def test_same_run_docs_and_portal_exact_readback(self):
-        result = self.run()
+        result = self.execute_pipeline()
         self.assertEqual(result["status"], "E2E_READBACK_PASS")
         self.assertEqual(result["report_id"], self.report["report_id"])
 
@@ -181,35 +181,35 @@ class IssuancePipelineContractTests(unittest.TestCase):
         self.bundle["environment"] = "TEST_ONLY"
         docs, portal = FakeDocs(), FakePortal()
         with self.assertRaisesRegex(IssuanceBlocked, "NON_PRODUCTION_EVIDENCE_FORBIDDEN"):
-            self.run(docs=docs, portal=portal)
+            self.execute_pipeline(docs=docs, portal=portal)
         self.assertEqual((docs.calls, portal.calls), (0, 0))
 
     def test_tampered_source_evidence_is_rejected(self):
         self.bundle["evidence_object"]["bytes"] += " "
         with self.assertRaisesRegex(IssuanceBlocked, "EVIDENCE_OBJECT_HASH_MISMATCH"):
-            self.run()
+            self.execute_pipeline()
 
     def test_scenario_source_quote_mismatch_is_rejected(self):
         self.bundle["g2"]["scenario_review"]["scenarios"]["main_scenario"]["condition"]["source"]["quote"] = "fabricated"
         with self.assertRaisesRegex(IssuanceBlocked, "SCENARIO_SOURCE_QUOTE_MISMATCH"):
-            self.run()
+            self.execute_pipeline()
 
     def test_scenario_review_requires_human_branch_and_invalidation_attestation(self):
         self.bundle["g2"]["scenario_review"]["invalidation_trigger_is_decision_change"] = False
         docs, portal = FakeDocs(), FakePortal()
         with self.assertRaisesRegex(IssuanceBlocked, "SCENARIO_SEMANTIC_REVIEW_REQUIRED"):
-            self.run(docs=docs, portal=portal)
+            self.execute_pipeline(docs=docs, portal=portal)
         self.assertEqual((docs.calls, portal.calls), (0, 0))
 
     def test_changed_docs_body_stops_before_portal(self):
         portal = FakePortal()
         with self.assertRaisesRegex(IssuanceBlocked, "DOCS_READBACK_MISMATCH"):
-            self.run(docs=FakeDocs(mutate=True), portal=portal)
+            self.execute_pipeline(docs=FakeDocs(mutate=True), portal=portal)
         self.assertEqual(portal.calls, 0)
 
     def test_portal_readback_mismatch_fails(self):
         with self.assertRaisesRegex(IssuanceBlocked, "PORTAL_READBACK_MISMATCH"):
-            self.run(portal=FakePortal(mutate=True))
+            self.execute_pipeline(portal=FakePortal(mutate=True))
 
     def test_same_claim_can_retry_but_changed_identity_conflicts(self):
         store = FakeClaimStore()
@@ -223,7 +223,7 @@ class IssuancePipelineContractTests(unittest.TestCase):
 
     def test_docs_save_must_follow_fixed_g2_body(self):
         with self.assertRaisesRegex(IssuanceBlocked, "G2_BODY_NOT_FROZEN_BEFORE_DOCS_SAVE"):
-            self.run(docs=FakeDocs(saved_at="2026-10-16T08:00:30+09:00"))
+            self.execute_pipeline(docs=FakeDocs(saved_at="2026-10-16T08:00:30+09:00"))
 
     def test_report_body_mutation_breaks_hash_binding(self):
         self.bundle["g2"]["report"]["fullText"] += "tamper"
@@ -258,3 +258,4 @@ class IssuancePipelineContractTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
