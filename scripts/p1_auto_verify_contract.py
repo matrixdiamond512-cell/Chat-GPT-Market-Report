@@ -35,7 +35,9 @@ def evaluate_one_shot(*, expected_date_jst: str, expected_job_id: str,
                       scheduler_last_attempt_time: str | None,
                       target_state_after_pause: str | None,
                       watchdog_state_after_pause: str | None,
-                      logs_read: bool) -> dict[str, Any]:
+                      logs_read: bool,
+                      scheduler_attempt_events: Iterable[dict[str, Any]] | None = None
+                      ) -> dict[str, Any]:
     """Classify today's normal 07:47 JST run and independent stop readbacks."""
     records = [event for event in events
                if event.get("event") == "P1_INGRESS_RESULT"]
@@ -69,7 +71,24 @@ def evaluate_one_shot(*, expected_date_jst: str, expected_job_id: str,
     correlation_result = ("INCOMPLETE" if not logs_read or not correlated
                           else "PASS" if len(correlated) == 1 else "FAIL")
 
-    if scheduler_status_code is None or scheduler_last_attempt_time is None:
+    if scheduler_attempt_events is not None:
+        # Pausing Cloud Scheduler can clear lastAttemptTime and overwrite the
+        # status code with -1, even when the 07:47 HTTP call actually ran.
+        # The durable AttemptFinished log is the authoritative evidence.
+        finishes = [
+            item for item in scheduler_attempt_events
+            if item.get("type") == "AttemptFinished"
+            and _last_attempt_matches(
+                item.get("timestamp"), date_jst=expected_date_jst
+            ) is True
+        ]
+        if not finishes:
+            scheduler_result = "INCOMPLETE"
+        elif len(finishes) != 1 or finishes[0].get("status"):
+            scheduler_result = "FAIL"
+        else:
+            scheduler_result = "PASS"
+    elif scheduler_status_code is None or scheduler_last_attempt_time is None:
         scheduler_result = "INCOMPLETE"
     elif scheduler_status_code != 0:
         scheduler_result = "FAIL"
