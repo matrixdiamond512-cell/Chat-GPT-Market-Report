@@ -3,12 +3,12 @@
   "pageId": "rates-bonds",
   "pageTitle": "金利・債券市場分析",
   "subtitle": "米・日・欧の金利、イールドカーブ、実質金利、入札需給、他市場への波及を一画面で確認",
-  "generatedAt": "2026-10-28T18:01:24+09:00",
+  "generatedAt": "2026-10-28T22:35:15+09:00",
   "meta": {
     "page": "rates-bonds",
     "asOfDate": "2026-10-28",
     "asOfTime": "各市場の公表時点",
-    "updatedAt": "2026-10-28T18:01:24+09:00",
+    "updatedAt": "2026-10-28T22:35:15+09:00",
     "status": "confirmed",
     "sourceStatus": "自動取得",
     "isStale": false,
@@ -18,7 +18,7 @@
   "summary": {
     "headline": "米2年 4.680%（-1.0bp）、米10年 5.000%（+0.0bp）",
     "theme": "米国はツイスト、日本はツイスト。日米金利差は方向混在。",
-    "conclusion": "米国はツイスト、日本はツイスト。日米金利差は方向混在。米国債は年限ごとに方向が分かれる。30年が前日 -2.0bp、週間 -17.0bpで変化を主導。日本国債は年限ごとに方向が分かれる。30年が前日 -2.1bp、週間 -10.6bpで変化を主導。",
+    "conclusion": "米国はツイスト、日本はツイスト。日米金利差は方向混在。米国債は年限ごとに方向が分かれる。30年が前日 -2.0bp、週間 -17.0bpで変化を主導。日本国債は年限ごとに方向が分かれる。2年が前日 +2.1bp、週間 -0.5bpで変化を主導。",
     "consistency": "米10年・実質金利・期待インフレは最新公表日が一致していないため、同日内訳としては扱わない。各系列の基準日を確認しながら株・為替・金との反応を見る。"
   },
   "analysis": {
@@ -38,8 +38,8 @@
     "jpRates": {
       "structure": "ツイスト",
       "direction": "年限ごとに方向が分かれる",
-      "interpretation": "日本国債は年限ごとに方向が分かれる。30年が前日 -2.1bp、週間 -10.6bpで変化を主導。",
-      "leadingTenor": "30年",
+      "interpretation": "日本国債は年限ごとに方向が分かれる。2年が前日 +2.1bp、週間 -0.5bpで変化を主導。",
+      "leadingTenor": "2年",
       "risk": "順イールド。短期と長期が逆方向。政策期待と長期プレミアムを分けて確認。"
     },
     "usCurveAnalysis": {
@@ -65,18 +65,18 @@
           "usValue": 4.68,
           "usChangeBp": -1.0000000000000675,
           "usWeekChangeBp": -8.999999999999986,
-          "jpValue": 1.908,
-          "jpChangeBp": 2.0000000000000018,
-          "jpWeekChangeBp": -0.6000000000000005
+          "jpValue": 1.909,
+          "jpChangeBp": 2.100000000000013,
+          "jpWeekChangeBp": -0.49999999999998934
         },
         {
           "tenor": "10年",
           "usValue": 5.0,
           "usChangeBp": 0.0,
           "usWeekChangeBp": -15.000000000000036,
-          "jpValue": 2.824,
-          "jpChangeBp": -0.5000000000000338,
-          "jpWeekChangeBp": -9.90000000000002
+          "jpValue": 2.825,
+          "jpChangeBp": -0.40000000000000036,
+          "jpWeekChangeBp": -9.799999999999986
         }
       ]
     },
@@ -138,7 +138,7 @@
         "timingNote": "基準日が2日ずれるため参考方向として表示。"
       }
     ],
-    "marketConclusion": "米国はツイスト、日本はツイスト。日米金利差は方向混在。米国債は年限ごとに方向が分かれる。30年が前日 -2.0bp、週間 -17.0bpで変化を主導。日本国債は年限ごとに方向が分かれる。30年が前日 -2.1bp、週間 -10.6bpで変化を主導。",
+    "marketConclusion": "米国はツイスト、日本はツイスト。日米金利差は方向混在。米国債は年限ごとに方向が分かれる。30年が前日 -2.0bp、週間 -17.0bpで変化を主導。日本国債は年限ごとに方向が分かれる。2年が前日 +2.1bp、週間 -0.5bpで変化を主導。",
     "mainScenario": "30年の方向が続く間はツイストを基本シナリオとし、ドルは中立、金は下落方向を確認。",
     "alternativeScenario": "米2年が反転しカーブ分類が変わる場合、政策期待の巻き戻しとクロスアセットの再連動を確認。",
     "breakConditions": [
@@ -162,9 +162,9 @@
       "label": "日本金利",
       "direction": "低下",
       "status": "confirmed",
-      "reason": "日本10年 2.824% / 前日比 -0.5bp",
+      "reason": "日本10年 2.825% / 前日比 -0.4bp",
       "asOf": "2026-10-28",
-      "interpretation": "日本国債は年限ごとに方向が分かれる。30年が前日 -2.1bp、週間 -10.6bpで変化を主導。"
+      "interpretation": "日本国債は年限ごとに方向が分かれる。2年が前日 +2.1bp、週間 -0.5bpで変化を主導。"
     },
     {
       "label": "米イールドカーブ",
@@ -284,38 +284,38 @@
     },
     {
       "name": "日本2年国債利回り",
-      "value": 1.908,
+      "value": 1.909,
       "unit": "%",
-      "changeBp": 2.0,
-      "weekChangeBp": -0.6,
+      "changeBp": 2.1,
+      "weekChangeBp": -0.5,
       "direction": "上昇",
       "asOf": "2026-10-28",
       "status": "confirmed",
       "source": "TradingView JGB market snapshot (LSEG)",
       "missingReason": null,
       "staticMeaning": "日銀の政策正常化・短期金利期待を確認",
-      "currentInterpretation": "日本国債は年限ごとに方向が分かれる。30年が前日 -2.1bp、週間 -10.6bpで変化を主導。"
+      "currentInterpretation": "日本国債は年限ごとに方向が分かれる。2年が前日 +2.1bp、週間 -0.5bpで変化を主導。"
     },
     {
       "name": "日本5年国債利回り",
-      "value": 2.256,
+      "value": 2.255,
       "unit": "%",
-      "changeBp": 1.0,
-      "weekChangeBp": -5.3,
+      "changeBp": 0.9,
+      "weekChangeBp": -5.4,
       "direction": "上昇",
       "asOf": "2026-10-28",
       "status": "confirmed",
       "source": "TradingView JGB market snapshot (LSEG)",
       "missingReason": null,
       "staticMeaning": "日本の中期金利とカーブ形状を確認",
-      "currentInterpretation": "日本国債は年限ごとに方向が分かれる。30年が前日 -2.1bp、週間 -10.6bpで変化を主導。"
+      "currentInterpretation": "日本国債は年限ごとに方向が分かれる。2年が前日 +2.1bp、週間 -0.5bpで変化を主導。"
     },
     {
       "name": "日本10年国債利回り",
-      "value": 2.824,
+      "value": 2.825,
       "unit": "%",
-      "changeBp": -0.5,
-      "weekChangeBp": -9.9,
+      "changeBp": -0.4,
+      "weekChangeBp": -9.8,
       "direction": "低下",
       "asOf": "2026-10-28",
       "status": "confirmed",
@@ -326,10 +326,10 @@
     },
     {
       "name": "日本30年国債利回り",
-      "value": 3.874,
+      "value": 3.877,
       "unit": "%",
-      "changeBp": -2.1,
-      "weekChangeBp": -10.6,
+      "changeBp": -1.8,
+      "weekChangeBp": -10.3,
       "direction": "低下",
       "asOf": "2026-10-28",
       "status": "confirmed",
@@ -340,17 +340,17 @@
     },
     {
       "name": "ドイツ10年国債利回り",
-      "value": 3.35,
+      "value": 3.37,
       "unit": "%",
-      "changeBp": -2.0,
-      "weekChangeBp": -7.0,
-      "direction": "低下",
-      "asOf": "2026-10-27",
+      "changeBp": 2.0,
+      "weekChangeBp": -4.0,
+      "direction": "上昇",
+      "asOf": "2026-10-28",
       "status": "confirmed",
       "source": "Deutsche Bundesbank",
       "missingReason": null,
       "staticMeaning": "EUR/USDとユーロ圏長期金利の基準",
-      "currentInterpretation": "前日 -2.0bp、週間 -7.0bp。低下が継続しているかを確認。"
+      "currentInterpretation": "前日 +2.0bp、週間 -4.0bp。上昇が継続しているかを確認。"
     }
   ],
   "decomposition": {
@@ -431,10 +431,10 @@
       },
       {
         "spread": "日本30年－10年",
-        "value": 105.0,
+        "value": 105.2,
         "unit": "bp",
-        "changeBp": -1.6,
-        "weekChangeBp": -0.7,
+        "changeBp": -1.4,
+        "weekChangeBp": -0.5,
         "shape": "順イールド",
         "reading": "フラット化",
         "status": "calculated"
@@ -465,22 +465,22 @@
     "jpCurve": [
       {
         "tenor": "2年",
-        "value": 1.908,
+        "value": 1.909,
         "status": "confirmed"
       },
       {
         "tenor": "5年",
-        "value": 2.256,
+        "value": 2.255,
         "status": "confirmed"
       },
       {
         "tenor": "10年",
-        "value": 2.824,
+        "value": 2.825,
         "status": "confirmed"
       },
       {
         "tenor": "30年",
-        "value": 3.874,
+        "value": 3.877,
         "status": "confirmed"
       }
     ]
