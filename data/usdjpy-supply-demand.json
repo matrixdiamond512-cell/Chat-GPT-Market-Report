@@ -1,7 +1,7 @@
 {
   "schemaVersion": "3.2.0",
   "pageId": "usdjpy-supply-demand",
-  "generatedAt": "2026-10-28T02:11:09+09:00",
+  "generatedAt": "2026-10-28T09:42:32+09:00",
   "mode": "integrated-realistic",
   "sourceStatus": {
     "tradersWebFx": "confirmed",
@@ -11,77 +11,77 @@
   "tradersWebFx": {
     "name": "トレーダーズ・ウェブFX 無料ページ",
     "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
-    "sourceUpdatedAt": "2026-10-27T06:24:00+09:00",
-    "checkedAt": "2026-10-28T02:11:11+09:00",
+    "sourceUpdatedAt": "2026-10-28T06:24:00+09:00",
+    "checkedAt": "2026-10-28T09:42:34+09:00",
     "status": "confirmed",
     "pageConfirmed": true,
     "publicScope": "一般公開はUSD/JPYの直近情報",
     "redistributionMode": "key-levels-excerpt-with-attribution",
     "note": "無料公開データから需給判断に必要な主要水準のみ抜粋し、基準日時と出典を明示する。",
-    "sourceDate": "2026-10-27",
+    "sourceDate": "2026-10-28",
     "sourceTime": "06:24",
-    "freshness": "previous-session",
-    "ageHours": 19.8,
+    "freshness": "today",
+    "ageHours": 3.3,
     "keyLevels": {
-      "referenceSpot": "157.50",
-      "referenceSpotDescription": "10/27 06:00現在（10/26 高値157.64円 - 安値156.65円）",
+      "referenceSpot": "157.95",
+      "referenceSpotDescription": "10/28 06:00現在（10/27 高値157.98円 - 安値157.42円）",
       "sellOrders": [
         {
-          "price": "157.70",
+          "price": "158.10-20",
           "description": "売りやや小さめ"
         },
         {
-          "price": "158.00",
-          "description": "売り・超えるとストップロス買い小さめ、OP27日NYカット大きめ/OP28・30・2・3日NYカット"
+          "price": "158.30",
+          "description": "売りやや小さめ"
         }
       ],
       "buyOrders": [
         {
-          "price": "157.00",
-          "description": "買い小さめ、OP27・30・2日NYカット/OP29日NYカット大きめ"
+          "price": "157.20-30",
+          "description": "買い小さめ（157.25円 OP4日NYカット）"
         },
         {
-          "price": "156.60",
-          "description": "買い小さめ・割り込むとストップロス売りやや小さめ"
+          "price": "157.00",
+          "description": "買い小さめ、OP29・2日NYカット大きめ/OP30日NYカット"
         }
       ],
       "stops": [
         {
-          "price": "158.00",
-          "description": "売り・超えるとストップロス買い小さめ、OP27日NYカット大きめ/OP28・30・2・3日NYカット"
+          "price": "157.50",
+          "description": "割り込むとストップロス売りやや小さめ、OP30日NYカット"
         },
         {
-          "price": "156.60",
-          "description": "買い小さめ・割り込むとストップロス売りやや小さめ"
+          "price": "159.10",
+          "description": "超えるとストップロス買い小さめ"
         }
       ],
       "nyCutOptions": [
         {
-          "price": "157.50",
-          "description": "OP27日NYカット"
+          "price": "157.95",
+          "description": "OP3日NYカット"
         },
         {
-          "price": "157.75",
-          "description": "OP27日NYカット"
+          "price": "157.90",
+          "description": "OP29日NYカット"
         },
         {
-          "price": "157.85",
-          "description": "OP27日NYカット大きめ"
+          "price": "158.00",
+          "description": "OP28・2・3日NYカット/OP30日NYカット大きめ"
         }
       ],
       "optionAnalysis": {
         "status": "calculated",
         "headline": "上下のNYカットに挟まれ、カット前はレンジ化しやすい",
         "summary": "NYカットは方向を保証せず、カット時刻までは吸着、その後は反動が出る可能性を注文・ストップとの重複で評価します。",
-        "nearestPrice": "157.50",
+        "nearestPrice": "157.95",
         "nearestDistancePips": 0,
         "points": [
-          "最接近は157.50円（現在値から同水準へ約0pips、通常規模）。NYカット接近時は同水準へ値が寄る動きと、通過後の反動に注意。",
-          "158.00円はNYカットと売り注文・買いストップが重複。カット前後は上値を抑えやすい水準。",
+          "最接近は157.95円（現在値から同水準へ約0pips、通常規模）。NYカット接近時は同水準へ値が寄る動きと、通過後の反動に注意。",
+          "157.50円はNYカットと売りストップが重複。カット前後は通過時に値動きが加速しやすい水準。",
           "複数期日のNYカットが同一水準に重なるため、単一期日より意識されやすい価格帯があります。"
         ]
       },
-      "extractedRowCount": 27,
+      "extractedRowCount": 26,
       "displayMode": "key-levels-excerpt"
     }
   },
@@ -524,7 +524,7 @@
     "judgement": "円買い越し拡大",
     "judgementSub": "USD/JPYの下押し圧力",
     "priceStatus": "available",
-    "checkedAt": "2026-10-28T02:11:09+09:00",
+    "checkedAt": "2026-10-28T09:42:32+09:00",
     "comment": "円買い越し拡大。円先物のNetは+69,878枚、前週比+19,671枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
     "verifiedPoints": 52,
     "priceVerifiedPoints": 52,
@@ -542,7 +542,7 @@
       "status": "confirmed"
     },
     "usdJpyVolume": {
-      "generatedAt": "2026-10-28T01:49:58+09:00",
+      "generatedAt": "2026-10-28T07:28:19+09:00",
       "targetDate": "2026-10-26",
       "publicationDate": "2026-10-27",
       "status": "ok"
