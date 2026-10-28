@@ -72,3 +72,9 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 
 
 - MRF-0800-20261029 continuation: corrected Drive filename compatibility with the existing source importer and added existing-body validation before Docs save. Inspection found the remaining handoff boundary: main importer consumes `data/report-evidence/` from its checkout; TEST_ONLY/production GCS evidence is not automatically provided. The existing manual-dispatch workflow applies canonical data to main and dispatches Pages. No dispatch or external write was run. Portal E2E remains NOT_RUN.
+
+
+
+## MRF-0800-20261029 change record — isolated importer staging
+
+Affected stable paths: `AGENTS.md`, `docs/system/requirements.md`, `docs/system/specification.md`, `docs/system/operations.md`, `scripts/reporting/importer_handoff.py`, `scripts/sync_reports_from_drive.py`, `tests/test_importer_handoff.py`, and `.github/workflows/0800-issuance-contract.yml`. Verification: hosted issuance, delivery-health, and frozen-cutoff Actions all PASS on code head `2642412`. Limits: only offline/mock contract verification; TEST_ONLY cloud handoff, Google Docs readback, canonical importer runtime, and public portal remain NOT_RUN. No Google Docs or main/Pages write occurred.
