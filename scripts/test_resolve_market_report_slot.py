@@ -34,14 +34,15 @@ class ResolveMarketReportSlotTests(unittest.TestCase):
             "21:00",
         )
 
-    def test_push_uses_latest_report(self):
+    def test_push_uses_current_window_not_latest_report(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             path = Path(temp_dir) / "reports.json"
             path.write_text(json.dumps({"reports": [
                 {"date": "2026-08-05", "time": "16:00"},
                 {"date": "2026-08-05", "time": "21:00"},
             ]}), encoding="utf-8")
-            self.assertEqual(resolve_slot("push", "", "auto", path), "21:00")
+            now = dt.datetime(2026, 8, 6, 7, 50, tzinfo=JST)
+            self.assertEqual(resolve_slot("push", "", "auto", path, now), "08:00")
 
     def test_manual_dispatch_never_writes_manual(self):
         now = dt.datetime(2026, 8, 5, 21, 5, tzinfo=JST)
