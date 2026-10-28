@@ -45,3 +45,7 @@
 
 - D-0800-05: Use the existing importer filename (`マーケットレポート_YYYY-MM-DD_08-00`) for the Drive object while preserving the report's separate in-body title; run the existing body validator before creating Docs.
 - D-0800-06: Do not invoke the existing Docs publication workflow in the current task. It applies canonical writes to main and deploys Pages; first add and review an exact-generation GCS evidence handoff and an explicitly authorized environment boundary.
+
+
+
+- D-0800-07 (2026-10-29): Permit importer execution only against a separately marked LOCAL_STAGING_ONLY checkout using exact-generation TEST_ONLY GCS evidence and strict Docs appProperties binding. Keep the production workflow's default root and flags unchanged; never use its workflow_dispatch as a staging mechanism because it writes main and dispatches Pages.
