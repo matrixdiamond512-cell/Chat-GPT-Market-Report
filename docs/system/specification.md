@@ -79,3 +79,12 @@ Google Docs固定ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` へ対応す�
 - Drive source file name is `マーケットレポート_YYYY-MM-DD_08-00`, which the existing importer discovers. The document body begins with the separate `title_for(date, slot)` title and must pass `report_source_contract.validate_saved_body`; exact fullText and SHA-256 remain unchanged.
 - The existing `scripts/sync_reports_from_drive.py` reads its frozen evidence from the repository checkout at `data/report-evidence/<date>_08-00-r1.json`. PR #188 currently reads a generation-pinned GCS object but does not transfer that exact object into the importer's execution workspace or main. Therefore Docs success is insufficient for portal acceptance.
 - The existing `publish-saved-google-docs-reports.yml` `workflow_dispatch` path checks out main, runs importer with `--apply`, commits eligible canonical files to main, and dispatches Pages deployment. It is a production write route. This PR did not dispatch or modify it. A later WIF-based evidence handoff, explicit identity binding, and approved publication switch are required before connecting it.
+
+
+
+## MRF-0800-20261029 — strict staging importer behavior
+
+- `scripts/reporting/importer_handoff.py` reads a caller-pinned TEST_ONLY GCS generation, validates its hash and stored slot identity, then writes the exact bytes create-only to `data/report-evidence/<date>_08-00-r<revision>.json` below a separate checkout containing a `.market-report-staging.json` marker (`LOCAL_STAGING_ONLY`, `TEST_ONLY`). It verifies exact byte readback and never overwrites conflicting evidence.
+- `sync_reports_from_drive.py --root <isolated-checkout> --require-issuance-binding` is an explicit opt-in local staging path. It requires the marker, rejects the current importer checkout as a target, and enforces Docs appProperties binding for report ID, revision, exact readback body hash, evidence ID, and snapshot ID before issuing a readback receipt.
+- The ordinary scheduled workflow calls the importer without either flag; its default root and behavior are unchanged. No workflow_dispatch or Pages action is part of staging. `--apply` writes only files under the selected isolated checkout; use the default dry-run first.
+- The staging helper accepts only project and bucket names identifying TEST_ONLY. Its result is `LOCAL_STAGE_READBACK_PASS`, never `PUBLISHED` or `VERIFIED`. Production GCS, G2, Docs save/readback, portal publication, and public DOM remain separate gates.
