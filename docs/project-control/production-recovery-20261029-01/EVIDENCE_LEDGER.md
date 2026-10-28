@@ -12,9 +12,9 @@ Updated: 2026-10-29 JST
 | Parser defect is reproducible from source format | Main parser regex recognizes period/Japanese list punctuation but not `｜`; all four Docs use `01｜...` numbered section lines | E0 | Structural defect confirmed; PR #187 proposes adding this separator while retaining gates |
 | October 28 infographics exist | October infographic folder ID `1Ma24qcksen9Ufqz1wIUYqSTdYFfpok2w` listing had no Oct 28 assets | E2 | NOT FOUND in listing; no image readback |
 | Official canonical, receipt, and Pages represent all Oct 28 reports | Reports path 404, no Oct 28 receipts; run built historical index only | E2/E4 | FAIL for Oct 28 publication outcome |
-| ChatGPT task fires on weekdays at exact 08:00 | Saved task editor changed repeat from daily to weekday; list showed weekly; time editor exposed only dayparts; exact trigger not read back | E4 | PARTIAL; exact time and remaining three slots UNKNOWN |
+| ChatGPT schedule state | UI registration response for new `マーケットレポート12:00` said Mon–Fri 12:00 JST, weekends off; scheduled list showed it as `毎週`. The legacy `平日マーケットレポート・本文優先配信` still read `毎日` (~6h to next run). 16:00 creation conversation ended in connection loss and is absent from the list; no 21:00 task created. | E4 | 12:00 registration response observed, but duplicate exclusion conflicts with list state; four-slot schedule NOT restored |
 | Regression test execution | PR #187 test file added; combined status and PR workflow-run query returned no runs/statuses; local Python launcher unavailable | E1 | NOT_RUN; added tests are not evidence of passing |
 | Four-slot live E2E | No actual slot execution after changes yet | E4/E5 | NOT_RUN |
 
 ## Next necessary action
-Resolve the active task time/prompt and the other three exact-time schedules under the existing account permissions, then execute the regression suite and observe the next eligible slot. Keep each external stage and failure separate. Do not retroactively publish Oct 28.
+Resolve the legacy daily task and 12:00 task overlap, establish exact weekday schedules for 08:00/12:00/16:00/21:00 and update prompts, then execute the regression suite and observe the next eligible slot. Keep each external stage and failure separate. Do not retroactively publish Oct 28.
