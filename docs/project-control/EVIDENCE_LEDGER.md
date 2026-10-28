@@ -102,3 +102,12 @@ All three carry reportId=2026-10-28_08-00, revision 1, sourceStatus=verified, ev
 ## MRF-0800-20261029 importer boundary (E1 code inspection)
 
 Claim: Existing importer and Actions flow are not yet connected to PR #188's GCS evidence source. The importer reads `data/report-evidence/<date>_08-00-r1.json` from its checkout. Existing `workflow_dispatch` uses `--apply`, writes canonical report files to main, then dispatches Pages. Evidence: latest-main source review of `scripts/sync_reports_from_drive.py` and `.github/workflows/publish-saved-google-docs-reports.yml`. Result: implementation boundary confirmed; no runtime invocation performed. Limit: static code inspection only; production IAM/runtime remains UNKNOWN.
+
+
+## MRF-0800-20261029 Docs read-only reconciliation (E5 read; not issuance acceptance)
+
+- Read-only Drive search located `マーケットレポート_2026-10-28_08-00` (document ID `1laY8WojdqX5kUNJj35PIXlNnikXqH_F7NntuNPuhOYA`). Metadata: created `2026-10-27T23:02:02.184Z` / modified `2026-10-27T23:02:29.411Z` (JST 08:02:02 / 08:02:29), parent is the October report folder. Docs readback revision ID was returned by the read-only connector.
+- The body explicitly labels itself `閲覧用分析版` and states that the pre-issuance evidence is absent from GitHub main. The body is not treated as the frozen G2 source; no pre-save G2 fullText/hash or same-run Docs save receipt was available for comparison.
+- Read-only GitHub fetch for `reports/2026-10-28_08-00.json` and `publication-receipts/2026-10-28_08-00.json` on main returned 404. This corroborates absence of canonical report/receipt at those paths; it does not establish a production import failure cause beyond the inspected code boundary.
+- Result: formal issuance acceptance BLOCKED before canonical importer eligibility; no PNG or portal E2E. The three 2026-10-28 GCS TEST_ONLY captures remain independent evidence attempts and were not mixed or promoted. No Drive writes, GitHub main changes, workflow dispatch, or Pages deployment occurred.
+- Limits: E5 is limited to read-only observation of the Docs file and metadata; the connector did not provide an independently matched pre-save G2 body or a production snapshot receipt. The existing importer workflow was not executed.
