@@ -14,6 +14,9 @@ class NumberedJapaneseHeadingTests(unittest.TestCase):
         self.assertEqual(heading("2. 結論"), "結論")
         self.assertEqual(heading("3）重要ニュース"), "重要ニュース")
 
+    def test_explicit_labeled_conclusion_is_recognized(self):
+        self.assertEqual(heading("結論：東京前場では半導体主導の上昇。"), "結論")
+
     def test_unmarked_prose_is_not_a_heading(self):
         self.assertEqual(heading("今日はAI株が相場を主導した。"), "")
 
