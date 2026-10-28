@@ -207,3 +207,10 @@ OPEN OUTCOMES: Trusted G2 source connection, production configuration/IAM, concr
 ## MRF-0800-20261029 continuation
 
 OPEN OUTCOME: Existing importer handoff is still missing. It consumes slot evidence from the main checkout, while the observed TEST_ONLY records are in GCS. A protected generation-pinned transfer and an approved invoke/readback path are required. The existing workflow dispatch writes main and Pages, so live portal verification is outside the current authorization.
+
+
+
+## MRF-0800-20261029 staging continuation
+
+COMPLETED: isolated TEST_ONLY evidence-to-importer handoff code, strict Docs issuance-binding opt-in, and hosted regression workflows.
+OPEN: Actual G2 capture/body hash, Docs create/readback using that exact body, matching Docs appProperties, human panel-12 review, external GCS staging invocation, isolated importer readback, and any approved production route. These were not supplied or executed; do not claim publication recovery.
