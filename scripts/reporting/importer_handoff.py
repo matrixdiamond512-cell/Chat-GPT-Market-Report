@@ -12,7 +12,10 @@ import json
 from pathlib import Path
 import re
 
-from scripts.persist_report_slot_evidence import validate_stored_slot_evidence
+try:
+    from scripts.persist_report_slot_evidence import validate_stored_slot_evidence
+except ModuleNotFoundError:  # direct execution from scripts/sync_reports_from_drive.py
+    from persist_report_slot_evidence import validate_stored_slot_evidence
 
 
 class ImporterHandoffBlocked(ValueError):
@@ -116,7 +119,8 @@ def stage_test_only_evidence(
     relative = Path("data") / "report-evidence" / f"{report_date}_08-00-r{revision}.json"
     destination = root / relative
     destination.parent.mkdir(parents=True, exist_ok=True)
-    if destination.parent.resolve() not in (root, *root.parents) and root not in destination.parent.resolve().parents:
+    resolved_parent = destination.parent.resolve()
+    if resolved_parent != root and root not in resolved_parent.parents:
         raise ImporterHandoffBlocked("STAGING_EVIDENCE_PATH_ESCAPES_ROOT")
     try:
         with destination.open("xb") as handle:
