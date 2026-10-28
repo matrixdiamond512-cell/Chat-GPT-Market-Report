@@ -152,3 +152,11 @@ Prices can change; check the [Cloud Run](https://cloud.google.com/run/pricing), 
 - Cloud Run Service scale-to-zero may introduce cold start; the <=60-second gate observes it. If real start delay exceeds 60 seconds, do not weaken the gate. Evaluate minimum instances (with added idle cost) or a dedicated always-on runner as a separately approved design.
 - Container internet egress is needed for the existing market sources. Their reachability/rate limits are not guaranteed by this code. TEST_ONLY retains source identities/status, and existing acquisition validation rejects unavailable or stale required values.
 - The ingress currently captures market acquisition and immutable snapshot evidence only. It does not generate the full report body/Docs receipt/manifest or run the infographic renderer. Those remain downstream gates and out of the Cloud-only pre-slot capture scope.
+
+## 2026-10-28 operator-reported TEST_ONLY observations (recorded 2026-10-29 JST)
+
+The operator reports that the isolated TEST_ONLY environment completed three weekday 08:00-slot attempts on 2026-10-28, corresponding to 07:47, 07:53 and 07:57 JST. Each is reported as market acquisition `verified`, GCS evidence save, generation-pinned readback, and integrity validation success.
+
+Evidence status: **operator-reported; independently unverified**. This repository update records the report only. No run IDs, actual Cloud Run start timestamps/latencies, report identity/revision, source or snapshot hashes, GCS object generations, or sanitized readback records were supplied to this review, and no connected Cloud account was available to retrieve them. Therefore these observations do not establish a production run, report-body generation, Google Docs save/readback, canonical registration, portal publication, or end-to-end recovery.
+
+No secret values or credentials are recorded. Preserve the raw TEST_ONLY evidence in its isolated private store; do not copy it into production paths or use it as formal publication evidence. Attach independently verifiable run metadata through the existing TEST_ONLY review process when available.
