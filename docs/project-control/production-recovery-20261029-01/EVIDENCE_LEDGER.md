@@ -19,3 +19,10 @@ Updated: 2026-10-29 JST
 
 ## Next necessary action
 Create/read back the missing 21:00 task; verify exact saved recurrence for 08/12/16/21 and no duplicate slots; verify/update the 08:00 prompt and required 28×5 table; then execute regression tests and observe the next eligible slot. Keep each external stage and failure separate. Do not retroactively publish Oct 28.
+
+
+## 2026-10-29 05:02 JST — current-main and final-head check
+
+- Main has advanced 17 commits since PR merge base `2c03f525526f378e1a07028b89e1f9fc86a92ffa`; the changed paths are market/event/history data only and do not overlap the nine files changed by PR #187. GitHub reports PR #187 `mergeable=true`, open, unmerged. Current main HEAD: `e70751bc4a202c84f4322df8748a08775d836458`.
+- Latest PR head `3bf244ca3e0d5bcee6846293c4a2818c8dddea35` has five completed successful workflows: [40759587355](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759587355) source contract tests; [40759587341](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759587341) delivery health; [40759587547](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759587547) synchronization recovery; [40759587584](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759587584) frozen cutoff; [40759587460](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759587460) dashboard publication health.
+- Evidence level remains CI/regression only. No 2026-10-29 slot output, new Drive Doc/PNG, receipt, Pages live readback, or notification is observed. The latest CI does not prove a production delivery.
