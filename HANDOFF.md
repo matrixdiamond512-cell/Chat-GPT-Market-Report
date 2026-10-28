@@ -110,3 +110,12 @@ git branch --show-current
 - Paused P1 verification schedulers were not resumed. No Drive, canonical, receipt, Pages, or production Cloud Scheduler writes were made.
 
 Continue from `docs/project-control/production-recovery-20261029-01/`. Required next actions: create and read back the missing 21:00 schedule, verify exact weekday/time recurrence and the legacy task's saved prompt and slot behavior, ensure no duplicate 12:00/16:00 runs, update the 08:00 prompt to enforce its verified 28×5 table and all semantic headings without weakening validation; run regression tests in CI; then observe real executions through Docs/PNG/receipt/Pages and notification. Missing pre-publication evidence remains a hard stop for official publication.
+
+
+## DELIVERY-RECOVERY-20261029-01 — 2026-10-29 02:17 JST recheck
+
+- The Drive October report folder lists four 2026-10-28 Docs and no 2026-10-29 report. The October infographic folder lists no 2026-10-28 or 2026-10-29 PNG. This is metadata readback only; it does not prove file contents.
+- Latest PR head `b9bd84c9872bc292662fba6f882fd20f4d6129a7` has successful final-head CI runs [40728327528](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40728327528) and [40728327541](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40728327541). PR #187 remains open and unmerged.
+- Scheduled-task list recheck timed out. Cloud Shell now reports the session disconnected. Current P1 Scheduler state is UNKNOWN; do not resume either verification scheduler until a fresh readback. No production setting was changed.
+- Recovery remains incomplete: no 2026-10-29 report execution, Docs/PNG content readback, canonical report/receipt, Pages deploy/DOM check, or delivery notification was observed. At this timestamp, 08:00 JST has not occurred yet.
+- Next: regain browser access, inspect exact ChatGPT task recurrence/prompts and P1 scheduler states; verify each real slot after its scheduled run through every downstream gate. Keep the existing fail-closed publication requirements.
