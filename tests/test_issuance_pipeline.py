@@ -249,9 +249,11 @@ class IssuancePipelineContractTests(unittest.TestCase):
     def test_google_docs_writer_rejects_non_exact_body_hash_and_terminal_shape(self):
         writer = GoogleDocsApiWriter(folder_id="month-folder", root_folder_id="root-folder",
                                      session=FakeGoogleSession(self.full_text))
+        without_newline = self.full_text.rstrip("\n")
         with self.assertRaisesRegex(IssuanceBlocked, "DOCS_INPUT_TERMINAL_NEWLINE_REQUIRED"):
             writer.save_exact(title="Report", report_id=self.report["report_id"], revision=1,
-                              full_text=self.full_text.rstrip("\n"), body_hash=self.body_hash,
+                              full_text=without_newline,
+                              body_hash=hashlib.sha256(without_newline.encode()).hexdigest(),
                               evidence_id=self.evidence["evidenceId"],
                               snapshot_id=self.evidence["snapshot"]["snapshot_id"])
 
