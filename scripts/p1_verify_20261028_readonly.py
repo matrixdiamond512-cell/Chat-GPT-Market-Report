@@ -93,6 +93,23 @@ def main():
         f'timestamp>="{start_iso}" AND timestamp<="{end_iso}"'
     )
     logs = cloud("logging", "read", query, "--limit=200")
+    scheduler_query = (
+        'resource.type="cloud_scheduler_job" AND '
+        f'resource.labels.job_id="{TARGET}" AND '
+        f'timestamp>="{start_iso}" AND timestamp<="{end_iso}"'
+    )
+    scheduler_logs = cloud("logging", "read", scheduler_query, "--limit=100")
+    scheduler_finishes = [
+        entry for entry in scheduler_logs
+        if (entry.get("jsonPayload") or {}).get("@type", "").endswith(".AttemptFinished")
+        and expected_window(timestamp(entry.get("timestamp")), 7, 46, 7, 50)
+    ]
+    print("Target Scheduler AttemptFinished count:", len(scheduler_finishes))
+    for entry in scheduler_finishes:
+        payload = entry.get("jsonPayload") or {}
+        print("  finished:", entry.get("timestamp"),
+              "status:", payload.get("status"),
+              "debugInfo:", payload.get("debugInfo"))
     matching = []
     for entry in logs:
         payload = entry.get("jsonPayload") or {}
@@ -117,8 +134,12 @@ def main():
         reasons.append("07:47 scheduler not PAUSED")
     if watchdog.get("state") != "PAUSED":
         reasons.append("07:50 watchdog not PAUSED")
-    if not expected_window(timestamp(target.get("lastAttemptTime")), 7, 46, 7, 51):
-        reasons.append("target lastAttemptTime outside today's 07:46–07:51")
+    # lastAttemptTime may be absent once a job has been paused; use durable
+    # Cloud Scheduler AttemptFinished logs rather than inferring no invocation.
+    if len(scheduler_finishes) != 1:
+        reasons.append("not exactly one Scheduler AttemptFinished at 07:47")
+    elif (scheduler_finishes[0].get("jsonPayload") or {}).get("status"):
+        reasons.append("Scheduler AttemptFinished reported a failed HTTP call")
     if not expected_window(timestamp(watchdog.get("lastAttemptTime")), 7, 49, 7, 56):
         reasons.append("watchdog lastAttemptTime outside today's 07:49–07:56")
     if not execution or execution.get("state") != "SUCCEEDED":
