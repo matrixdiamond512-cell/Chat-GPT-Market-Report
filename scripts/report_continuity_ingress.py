@@ -45,13 +45,11 @@ def _utc_schedule(value: str) -> datetime:
         scheduled = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError as exc:
         raise ValueError("INVALID_SCHEDULE_TIME") from exc
-    if (scheduled.tzinfo is None or scheduled.utcoffset() != timedelta(0)
-            or scheduled.second):
+    if scheduled.tzinfo is None or scheduled.second:
         raise ValueError("INVALID_SCHEDULE_TIME")
-    # Cloud Scheduler's RFC3339 schedule timestamp can include fractional
-    # seconds. Cron is minute-granular here, so accept only whole-second-zero
-    # timestamps and canonicalize the fraction away before deriving the slot.
-    return scheduled.replace(microsecond=0).astimezone(timezone.utc)
+    # RFC3339 allows a nonzero UTC offset. Normalize to UTC *after* parsing;
+    # retain the strict cron-minute check and discard only fractional seconds.
+    return scheduled.astimezone(timezone.utc).replace(microsecond=0)
 
 
 def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
@@ -167,8 +165,9 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
             return respond(start_response, "403 Forbidden", {"error": "CALLER_NOT_AUTHORIZED"}, audit_context)
         audit_context["jobNameResult"] = "PASS"
 
+        raw_schedule = environ.get("HTTP_X_CLOUDSCHEDULER_SCHEDULETIME", "")
         try:
-            scheduled = _utc_schedule(environ.get("HTTP_X_CLOUDSCHEDULER_SCHEDULETIME", ""))
+            scheduled = _utc_schedule(raw_schedule)
             current = now()
             if current.tzinfo is None:
                 raise ValueError("INVALID_CLOCK")
@@ -177,7 +176,20 @@ def create_app(*, bindings: Mapping[str, SchedulerBinding], audience: str,
                 attempt_minutes=binding.attempt_minutes,
                 now=current,
             )
-        except (ValueError, TypeError, OverflowError):
+        except (ValueError, TypeError, OverflowError) as exc:
+            # Enumerated diagnostics distinguish missing/malformed headers from
+            # slot/clock failures without emitting raw headers, tokens or claims.
+            safe_codes = {
+                "INVALID_SCHEDULE_TIME", "INVALID_CLOCK", "INVALID_SLOT",
+                "INVALID_UTC_SCHEDULE", "INVALID_PUBLICATION_SLOT",
+                "FUTURE_SCHEDULE", "AMBIGUOUS_IDENTITY",
+            }
+            code = str(exc)
+            audit_context["scheduleHeaderPresent"] = bool(raw_schedule)
+            audit_context["scheduleRejectCode"] = (
+                "MISSING_SCHEDULE_HEADER" if not raw_schedule else
+                code if code in safe_codes else "UNCLASSIFIED_SCHEDULE_ERROR"
+            )
             audit_context["scheduleTimeResult"] = "FAIL"
             return respond(start_response, "400 Bad Request", {"error": "SCHEDULE_NOT_ALLOWED"}, audit_context)
         scheduled_jst = scheduled.astimezone(ZoneInfo("Asia/Tokyo"))
