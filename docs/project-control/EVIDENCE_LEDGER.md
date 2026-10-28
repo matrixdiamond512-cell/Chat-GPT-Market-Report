@@ -96,3 +96,10 @@ Local implementation evidence E1/E2 (candidate only): connected the last eligibl
 
 
 2026-10-29 02:19 JST — final candidate head `a0d309d25fb4a698b03aef7425b1dbbea649118f`: final-head PASS for Report source contract tests run `40734389296`, Market report synchronization recovery CI `40734389300`, Market report frozen-cutoff regression `40734389352`, and Delivery health regression CI `40734389420`. Evidence is hosted automated regression only; live scheduled delivery is still NOT_RUN. PR #187 remains OPEN/unmerged. The branch is 4 commits behind current main; the four main-side commits affect market-data paths outside this PR diff. No rebase or merge was performed in this turn.
+
+
+2026-10-29 02:26 JST — DELIVERY-RECOVERY-20261029-01 source-body audit:
+- E5 Drive readback: fetched the full text of all four 2026-10-28 Docs. Each identifies itself as an analysis/viewing copy and says pre-draft evidence is missing/unverified. The 08:00 previous-close section is 17 bullet lines, not the required 28-row × 5-column table; no numbered 28-row table was parsed. Existing 08:00 Docs are not eligible for promotion.
+- The 12:00 Doc ends with an explicit `結論：...` labeled paragraph. PR code/test candidate `47282fdce4c10b5a86cea655c10ec71128dc6182` recognizes only explicitly labeled conclusion/final-judgment/summary paragraphs; generic prose remains rejected. The other SOP semantic and pre-slot evidence gates remain unchanged, so this does not qualify the historical Docs for publication.
+- Existing table QA is in `.github/workflows/qa-morning-report.yml`: it runs after `reports.json` changes and is fail-closed for portal selection. The Drive importer does not run this table QA before appending an archive/canonical candidate; keep this distinction explicit. No gate was weakened.
+- Hosted CI PASS on code candidate `47282fdce4c10b5a86cea655c10ec71128dc6182`: source contract `40735294321`, synchronization recovery `40735294265`, frozen cutoff `40735294396`, delivery health `40735294223`. Later commits on the PR branch are documentation-only; live 10/29 slots remain NOT_RUN.
