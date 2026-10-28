@@ -27,3 +27,7 @@ For changes to the market report delivery system, read `docs/system/DOCUMENT_CON
 
 
 - MRF-0800-20261029 continuation: Drive source filenames and body titles are separate contracts. Before claiming portal connectivity, verify the existing importer's evidence source and workflow side effects. The saved-Docs publication workflow writes canonical data to main and dispatches Pages; never invoke it as a test without explicit release authorization.
+
+
+
+- Run `sync_reports_from_drive.py --apply` for this work only against a separately marked `LOCAL_STAGING_ONLY` checkout and only after exact-generation TEST_ONLY evidence staging plus strict Docs identity/body-hash binding. The normal scheduled workflow remains unchanged; never dispatch its production write/deploy path as a test.
