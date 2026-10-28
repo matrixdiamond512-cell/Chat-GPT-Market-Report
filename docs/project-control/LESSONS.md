@@ -13,3 +13,6 @@
 
 
 - MRF-0800-20261029: Three successful TEST_ONLY acquisition/snapshot readbacks prove only the acquisition and evidence-store stages. They do not establish G2 source capture, Google Docs persistence, canonical registration, or public portal delivery. Keep every later stage separately evidenced.
+
+
+- MRF-0800-20261029: An exact Docs body and verified snapshot still do not reach the portal when the importer reads evidence from a different storage path. Trace the actual runtime handoff and workflow side effects before claiming end-to-end connectivity.

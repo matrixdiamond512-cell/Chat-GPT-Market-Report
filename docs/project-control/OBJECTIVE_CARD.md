@@ -202,3 +202,8 @@ OUT OF SCOPE: Actual production rollout and live report publication in this task
 FORBIDDEN SUBSTITUTE: TEST_ONLY capture, fake adapter PASS, passing CI, or Docs save alone is not a restored published 08:00 report.
 
 OPEN OUTCOMES: Trusted G2 source connection, production configuration/IAM, concrete existing-portal invocation, hosted CI on this branch, external Docs/importer/Pages E2E.
+
+
+## MRF-0800-20261029 continuation
+
+OPEN OUTCOME: Existing importer handoff is still missing. It consumes slot evidence from the main checkout, while the observed TEST_ONLY records are in GCS. A protected generation-pinned transfer and an approved invoke/readback path are required. The existing workflow dispatch writes main and Pages, so live portal verification is outside the current authorization.

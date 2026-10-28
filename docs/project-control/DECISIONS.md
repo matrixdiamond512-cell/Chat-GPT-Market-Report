@@ -41,3 +41,7 @@
 - D-0800-02: Google Docs writer saves only the frozen G2 fullText and exact readback is mandatory before portal work. Ambiguous or partial Docs creation stops for manual reconciliation.
 - D-0800-03: Existing portal publication is behind an adapter boundary. Contract fixtures can test the boundary but cannot represent a live portal publish; rollout awaits a concrete, approved invocation/readback route.
 - D-0800-04: No main/production/Drive/Pages change; PR #97 remains untouched.
+
+
+- D-0800-05: Use the existing importer filename (`マーケットレポート_YYYY-MM-DD_08-00`) for the Drive object while preserving the report's separate in-body title; run the existing body validator before creating Docs.
+- D-0800-06: Do not invoke the existing Docs publication workflow in the current task. It applies canonical writes to main and deploys Pages; first add and review an exact-generation GCS evidence handoff and an explicitly authorized environment boundary.

@@ -83,3 +83,11 @@ This procedure describes an unmerged Draft integration. Do not use it to write p
 - On any mismatch, stop before the next side effect, retain the claim/evidence, preserve diagnostics without logging report text or credentials, and escalate for identity reconciliation. No backfill or later-snapshot substitution.
 
 External setup still required: production GCS evidence/claim IAM, approved Google OAuth/ADC scope and monthly-folder ACL, a trusted and authenticated G2/scenario-review producer, and a safe invocation/readback route for the existing importer/Pages workflow. These were not configured or exercised by this PR.
+
+
+## MRF-0800-20261029 — existing portal handoff status
+
+- Save the Drive file with source name `マーケットレポート_YYYY-MM-DD_08-00`; keep the separate report title on the first line of the body. Before saving, pass the same `validate_saved_body` contract used by the importer.
+- The existing importer only sees slot evidence present in its checked-out repository path `data/report-evidence/`. Do not assume the PR #183 GCS bucket is reachable by that workflow; no GCS-to-importer handoff or WIF identity is configured by PR #188.
+- Do not dispatch `publish-saved-google-docs-reports.yml` as a test: its apply path commits canonical report files to main and dispatches Pages. It requires a separately approved, evidence-bound staging or production operation.
+- Current proof stops at offline Docs/portal adapter contract tests plus TEST_ONLY GCS evidence capture. Existing importer execution, canonical main readback, Pages deployment and browser DOM readback are NOT_RUN.

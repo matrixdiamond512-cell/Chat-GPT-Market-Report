@@ -69,3 +69,6 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 - Code scope: proposed fail-closed G2/evidence/Docs/portal transaction adapter and offline contract workflow. No main, production, Drive, or Pages changes.
 - Verification: external TEST_ONLY GCS generation readbacks were operator-provided and all three passed; new code tests require hosted Actions. Docs API, production GCS, existing canonical importer, and public portal E2E are NOT_RUN.
 - Open outcomes: connect trusted G2/body freeze and independent scenario review; configure production identities/folders/buckets; implement approved invocation of the existing importer; run external E2E and live DOM verification. Do not report production recovery complete.
+
+
+- MRF-0800-20261029 continuation: corrected Drive filename compatibility with the existing source importer and added existing-body validation before Docs save. Inspection found the remaining handoff boundary: main importer consumes `data/report-evidence/` from its checkout; TEST_ONLY/production GCS evidence is not automatically provided. The existing manual-dispatch workflow applies canonical data to main and dispatches Pages. No dispatch or external write was run. Portal E2E remains NOT_RUN.

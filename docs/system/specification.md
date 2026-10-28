@@ -72,3 +72,10 @@ Google Docs固定ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` へ対応す�
 4. Save only the fixed fullText to one uniquely identified Docs file in the configured monthly folder. Re-read through the Docs API and verify document ID, revision ID, exact full text, SHA-256, Drive parent, and slot save-time window. A partial create or conflicting duplicate is quarantined for operator reconciliation; never create a second document to recover.
 5. Only after Docs readback passes may an adapter invoke the existing canonical importer/publication workflow. Require its independent readback to match report ID/revision, snapshot ID, Docs ID/revision, full text, and body hash before returning PUBLISHED. The PR currently defines this adapter boundary and offline tests; actual portal workflow invocation and public DOM readback remain NOT_RUN.
 6. No status returned by fixture adapters is evidence of live publication. A production rollout requires separate review, configured least-privilege identities, a verified G2 producer connection, and approved external E2E.
+
+
+## MRF-0800-20261029 — existing importer compatibility and stop boundary
+
+- Drive source file name is `マーケットレポート_YYYY-MM-DD_08-00`, which the existing importer discovers. The document body begins with the separate `title_for(date, slot)` title and must pass `report_source_contract.validate_saved_body`; exact fullText and SHA-256 remain unchanged.
+- The existing `scripts/sync_reports_from_drive.py` reads its frozen evidence from the repository checkout at `data/report-evidence/<date>_08-00-r1.json`. PR #188 currently reads a generation-pinned GCS object but does not transfer that exact object into the importer's execution workspace or main. Therefore Docs success is insufficient for portal acceptance.
+- The existing `publish-saved-google-docs-reports.yml` `workflow_dispatch` path checks out main, runs importer with `--apply`, commits eligible canonical files to main, and dispatches Pages deployment. It is a production write route. This PR did not dispatch or modify it. A later WIF-based evidence handoff, explicit identity binding, and approved publication switch are required before connecting it.

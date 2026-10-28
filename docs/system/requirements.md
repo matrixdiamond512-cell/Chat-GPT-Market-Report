@@ -75,3 +75,9 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - Exact retries may proceed only when report ID, revision, body hash, evidence ID, and snapshot ID match the durable create-only slot claim.
 - TEST_ONLY acquisition on 2026-10-28 is limited evidence of the upstream acquisition/store path. It does not satisfy Docs, canonical, or portal acceptance. This requirement is proposed in a separate Draft PR and is not yet active on main.
 - 12:00/16:00/21:00 schedules and existing publication gates remain outside the implementation scope. No production write or deployment was performed.
+
+
+## MRF-0800-20261029 — importer handoff clarification
+
+- The Google Drive file name must follow the existing source importer key, `マーケットレポート_YYYY-MM-DD_08-00`; the report title remains the first line of the body. The writer now keeps those identities distinct and validates the body with the existing saved-report contract before Docs creation.
+- The existing portal importer reads pre-slot evidence from the checked-out `data/report-evidence/` path. A GCS generation alone is not visible to that importer. Until a protected, exact-generation GCS-to-importer handoff is implemented and proven, canonical portal publication remains NOT_RUN.

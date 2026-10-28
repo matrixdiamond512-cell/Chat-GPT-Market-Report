@@ -97,3 +97,8 @@ Claim: On 2026-10-28 JST, three Cloud Scheduler-triggered TEST_ONLY attempts cap
 - 07:57: object generation 1793141846249968; object SHA-256 7bfc2561d8896423882aa6c40bdc2efa912c9e90b07c1a946adcfaa07193b55f; source SHA-256 3d716b69fd4b4ed74e914b8bfce3b2bb8789b8ea945b5b13a312c558285774da; snapshot snapshot-a7c7f9d2537620770c524283e9de84841b5976492f27420ed5575ed097968ca4; snapshot SHA-256 4731ceed2186438ad5474054090d1b5b96b68d497d14f6e9cb02a9631b679624; captured/cutoff 07:57:03 JST; evidence b7ba30ff29184e97534b7682e138045412593b92a1d5a61753c2bf901a4d0e87.
 
 All three carry reportId=2026-10-28_08-00, revision 1, sourceStatus=verified, evidenceStatus=READY_FOR_DRAFT; each is an independent attempt and snapshots must never be mixed. Exact-generation verifier reported PASS for all three. Evidence source: user-provided Cloud Shell transcript; Codex did not independently authenticate to GCP. No G2 body, Docs save/readback, canonical record, PNG, portal publish, or production result is included. TEST_ONLY only; no full publication transaction run ID.
+
+
+## MRF-0800-20261029 importer boundary (E1 code inspection)
+
+Claim: Existing importer and Actions flow are not yet connected to PR #188's GCS evidence source. The importer reads `data/report-evidence/<date>_08-00-r1.json` from its checkout. Existing `workflow_dispatch` uses `--apply`, writes canonical report files to main, then dispatches Pages. Evidence: latest-main source review of `scripts/sync_reports_from_drive.py` and `.github/workflows/publish-saved-google-docs-reports.yml`. Result: implementation boundary confirmed; no runtime invocation performed. Limit: static code inspection only; production IAM/runtime remains UNKNOWN.

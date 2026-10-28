@@ -24,3 +24,6 @@ For changes to the market report delivery system, read `docs/system/DOCUMENT_CON
 - Keep TEST_ONLY acquisition evidence separate from production issuance. An external capture PASS does not prove G2 creation, Google Docs save/readback, canonical registration, or portal publication.
 - For the proposed 08:00 issuance transaction, preserve one report identity/revision/body hash and one generation-pinned snapshot through Docs and portal readbacks. Keep the duplicate-slot claim and all existing freshness, cutoff, receipt, and publish gates fail-closed.
 - The independent Draft PR is based on the latest main observed for that PR. No production Docs/Drive write, main change, or Pages deployment is authorized by this implementation task. Real external stages remain NOT_RUN until observed.
+
+
+- MRF-0800-20261029 continuation: Drive source filenames and body titles are separate contracts. Before claiming portal connectivity, verify the existing importer's evidence source and workflow side effects. The saved-Docs publication workflow writes canonical data to main and dispatches Pages; never invoke it as a test without explicit release authorization.
