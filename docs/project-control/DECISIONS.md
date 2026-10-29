@@ -33,3 +33,11 @@
 - 2026-10-07 PORTAL-D03: Run browser DOM validation on the normalized local artifact before upload/deploy and repeat the same strict checks against the public Portal after deployment. Keep exact title equality and fail closed. A successful Deploy step is not a successful Portal publication when live DOM validation fails.
 
 - 2026-10-20 / HANDOFF-20261020-01: Add `README.md` and `HANDOFF.md` as **stable developer onboarding paths**, extend existing `AGENTS.md` and introduce a PR evidence checklist. This is development-process documentation only: no report schedule, publication code, market data, receipt, Google Docs canonical requirements/specification/operations, or portal output is changed. Preserve the `docs/system/DOCUMENT_CONTROL.md` precedence and fixed-ID formal document workflow. Refer to Issue #173 for actual second-PC acceptance, Issue #103 for production audit, and live PR/Actions state rather than copying old success claims. Reassess any future functional change separately with the affected-document matrix.
+
+
+- 2026-10-26 / ISSUE-176: Keep this work isolated from PR #97 and main. Do not adjust GitHub production cron; it cannot guarantee runner start time. Add a signed direct-runner contract and explicit unconfigured TEST_ONLY example; deployment stays blocked until an external scheduler/runtime and secret/IAM are separately configured.
+- 2026-10-26 / ISSUE-176: Freeze exact G2 producer text/hash before Docs write and require independent Docs API readback of ID/revision/fullText. Diagnostics exclude bodies and secrets; private storage requires service-only IAM and 14-day retention. No Docs writer adapter exists in main; contracts/tests do not claim it is connected.
+- 2026-10-26 / ISSUE-176: Local Python runtime unavailable (Windows Store aliases denied); require PR CI to execute tests. Synthetic fixtures remain TEST_ONLY.
+
+
+- 2026-10-26 / ISSUE-176 verification update: First hosted test run exposed the test’s incorrect firstDiffOffset expectation (13 vs actual 11); implementation returned the correct index. Fixed the assertion and added a maximum-lag policy bound so callers cannot relax the 60-second cutoff. The exact updated head passed frozen-cutoff and delivery-health workflows. Do not interpret synthetic or hosted unit/integration tests as live 08:00 recovery.
