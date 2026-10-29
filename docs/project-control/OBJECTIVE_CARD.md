@@ -203,3 +203,7 @@ STATUS: IN_PROGRESS; implementation branch codex/report-ingestion-stage-truth-20
 OPEN OUTCOMES: exact-head hosted CI, Draft PR creation/readback, formal Google Docs fixed-ID sync assessment, and four-slot production E2E. `test_report_contract.py` remains NOT_RUN because this Windows Python lacks IANA tzdata.
 FORBIDDEN SUBSTITUTE: a successful import, local projection check, unit/CI result, or existing Drive file alone is not proof of formal publication or whole-system completion.
 NEXT NECESSARY ACTION: inspect the final diff, commit/push this branch, submit a Draft PR, and record exact-head CI and remaining external outcomes.
+
+
+### PR #189 code-head CI evidence (ADD, 2026-10-30 JST)
+PR #189 is OPEN / Draft / unmerged. Exact implementation head `71fce84ddfa814a3b0c66bbc0545d36e78bfec1a` passed hosted sync recovery run 40968791396, frozen-cutoff run 40968791427, and delivery-health run 40968791433. Evidence/docs were then updated, so final PR-head CI confirmation remains open. Hosted sync CI also passed `test_report_contract.py`, which local Windows Python could not import due missing IANA tzdata. Live scheduled delivery and downstream public readback remain NOT_RUN.
