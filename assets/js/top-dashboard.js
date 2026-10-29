@@ -2561,7 +2561,8 @@ async function loadDashboardReports() {
     "data/dashboard-drive-archive-2026-10-26.json",
     "data/dashboard-drive-archive-2026-10-27.json",
     "data/dashboard-drive-archive-2026-10-28.json",
-    "data/dashboard-drive-archive-2026-10-29.json"
+    "data/dashboard-drive-archive-2026-10-29.json",
+    "data/dashboard-drive-archive-2026-10-30.json"
   ];
   const drivePayloads = await Promise.all(driveArchivePaths.map(async path => {
     try {
