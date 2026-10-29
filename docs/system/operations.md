@@ -69,3 +69,12 @@ Google Docs固定ID `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg` に対応す�
 - 図解3件はDrive上の最新保存日時・PNG MIMEを確認。GitHub Pagesでの画像実体、SHA-256、manifest、snapshot/本文との対応が未検証のため図解正式READYへ昇格させない。旧ファイルは削除しない。
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
+
+
+## MRF-INGESTION-20261030-01｜取込ログの運用判定（2026-10-30 JST）
+- CANONICAL_SOURCE_INGESTION_COMPLETE: sourceをappend-only canonicalへ取り込んだ。正式公開の証明ではない。
+- SOURCE_ARCHIVED_ONLY: publication evidence/receiptが揃わず閲覧用archiveに保持した。公開成功として扱わず、後付け証拠を作成しない。
+- DOC_READBACK_RECEIPT_RECORDED: Docs読戻しreceiptを記録した段階。Pages deploy・公開DOM・通知の確認は別途必要。
+- ARCHIVED_SOURCE_PROMOTED_TO_CANONICAL: 既存archiveのcanonical状態をevidenceに基づき更新した段階。公開URLの確認は別途必要。
+- Importerが最後まで実行したこと、canonical projection consistencyが通ったこと、Pages/public DOMが対象reportIdと一致したことを一つの「publication verified」へまとめない。
+- この変更では本番Pages deploy、Google Drive書込み、既存report/receipt変更、スケジュール変更を行わない。

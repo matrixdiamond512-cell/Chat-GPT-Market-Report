@@ -100,3 +100,12 @@ git branch --show-current
 
 ---
 この文書の最終更新: 2026-10-20 JST。文書管理の根拠は `docs/system/DOCUMENT_CONTROL.md`。配信システム本体の変更、Google Docsの正式正本の書換え、外部サービスの設定変更は、この引き継ぎ整備だけでは実施しない。
+
+
+## Handoff addendum — MRF-INGESTION-20261030-01 (2026-10-30 JST)
+- Base: GitHub main 52e99701f3bc71a77bdde31729e0f887f44a9135; branch codex/report-ingestion-stage-truth-20261030.
+- Scope: correct importer stage labels; add four focused offline contract tests and run them through the existing sync recovery CI.
+- No main merge, production Pages deployment, Google Drive write, receipt/report/PNG mutation, schedule or Cloud setting change.
+- Local Python 3.13.14: 38 workflow-scope tests PASS across the six runnable modules; 24 additional evidence regression tests PASS; `py_compile` PASS. `test_report_contract.py` and `test_publication_evidence.py` are BLOCKED at import because this Windows runtime has no IANA `tzdata` (`ZoneInfoNotFoundError: Asia/Tokyo`). Exact-head hosted CI and PR readback remain open.
+- Full live 08:00/12:00/16:00/21:00 acceptance, external task state, Drive fixed-ID formal-document synchronization, Pages public DOM readback, and notification acceptance remain NOT_RUN.
+- Next: commit/push, create a Draft PR, collect exact-head hosted CI, then hand off the remaining externally gated stages.

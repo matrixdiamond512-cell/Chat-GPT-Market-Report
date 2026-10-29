@@ -187,3 +187,19 @@ GitHub main advanced from `c3dae9fdaea7c05d8006006b6fb052a28e2535f4` to `9615882
 Main advanced four commits from `9615882cf018479bf3cb2eeeb6f6b73367ea764b` to `d6420e2c3d53a16304bb8d301677e2db4c41da0c`. The actual range changes 15 production data files only (Japan stocks, Nikkei/US dollar-yen supply-demand and market references); no acquisition/evidence code, workflow, or tests changed. Merged without conflicts as `415c28c6d`; local compare 0 behind / 14 ahead before this record commit.
 
 Verified on the synced tree: `data/market/latest.json` is `2026-10-16T20:16:17+09:00`, slot `21:00`, `verified`, with no required-field gaps; `data/report-evidence/2026-10-16_21-00-r1.json` and `reports/2026-10-16_21-00.json` are absent; `reports.json` latest is 2026-10-13 16:00. Do not reconstruct or publish the missed 21:00 slot. The recovery PR applies to future eligible acquisitions. Following local/final-head CI, the user has now directed PR #156 to be reviewed and merged; verify head/base once more, mark ready, and merge the exact approved head. Then observe future-slot production acceptance separately.
+
+
+## MRF-INGESTION-20261030-01 active objective (ADD, 2026-10-30 JST)
+PRIMARY OBJECTIVE: Keep each scheduled report slot's evidence-backed delivery state observable from source ingestion through Docs readback, canonical receipt, Pages deployment, and public readback, without treating a saved archive or code test as completed publication.
+ACTIVE PROFILE: generic-app + data-tool.
+ACCEPTANCE CRITERIA:
+- Import logs distinguish canonical ingestion, archive-only holding, Docs readback receipt, archive promotion, Pages deployment, and public DOM readback.
+- Archive-only and unknown receipt/status pairs never emit a publication-success label.
+- Focused offline tests and the relevant PR workflow run on the exact PR head.
+- The original dirty checkout, existing PRs, main data, Drive files, receipts, schedule, Cloud settings, and Pages production state remain untouched.
+CONSTRAINTS: Implement on a branch from GitHub main 52e99701f3bc71a77bdde31729e0f887f44a9135; do not merge, deploy, or write production Drive/Cloud state without a later explicit approval.
+OUT OF SCOPE: Completing the full live four-slot transaction in this change; upstream generation, external scheduler provisioning, real Docs writer, actual PNG review/save, production publication, and runtime public-DOM acceptance remain independent outcomes.
+STATUS: IN_PROGRESS; implementation branch codex/report-ingestion-stage-truth-20261030.
+OPEN OUTCOMES: exact-head hosted CI, Draft PR creation/readback, formal Google Docs fixed-ID sync assessment, and four-slot production E2E. `test_report_contract.py` remains NOT_RUN because this Windows Python lacks IANA tzdata.
+FORBIDDEN SUBSTITUTE: a successful import, local projection check, unit/CI result, or existing Drive file alone is not proof of formal publication or whole-system completion.
+NEXT NECESSARY ACTION: inspect the final diff, commit/push this branch, submit a Draft PR, and record exact-head CI and remaining external outcomes.
