@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-10-29T17:19:52+09:00",
-  "publishedAt": "2026-10-29T17:19:52+09:00",
-  "dataAsOf": "2026-10-29T17:19:52+09:00",
+  "generatedAt": "2026-10-30T00:19:22+09:00",
+  "publishedAt": "2026-10-30T00:19:22+09:00",
+  "dataAsOf": "2026-10-30T00:19:22+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -20,7 +20,7 @@
       "name": "TradingView Economic Calendar",
       "url": "https://www.tradingview.com/economic-calendar/",
       "status": "ok",
-      "note": "実績値を6件照合。生データは公開保存しません。"
+      "note": "実績値を9件照合。生データは公開保存しません。"
     },
     {
       "id": "official_source_map",
@@ -37,13 +37,13 @@
       "id": "event_result_repair",
       "name": "重要イベント実績値の補完取得",
       "status": "ok",
-      "note": "代替カレンダー照合 0件、公式PDF補完 0件、取得不能理由明記 0件。"
+      "note": "代替カレンダー照合 4件、公式PDF補完 0件、取得不能理由明記 0件。"
     },
     {
       "id": "weekly_claims_validation",
       "name": "米新規失業保険申請件数の公式検証",
       "status": "ok",
-      "note": "公式PDFで訂正・検証 0件、誤照合値を除外 0件。"
+      "note": "公式PDFで訂正・検証 13件、誤照合値を除外 0件。"
     }
   ],
   "errors": [],
@@ -294,7 +294,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-25T16:00:10+09:00",
-      "updatedAt": "2026-10-29T17:19:52+09:00",
+      "updatedAt": "2026-10-30T00:19:22+09:00",
       "resultSavedAt": "2026-10-29T03:25:12+09:00",
       "resultSource": {
         "id": "tradingview_repair",
@@ -547,8 +547,8 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-25T16:00:10+09:00",
-      "updatedAt": "2026-10-29T17:19:52+09:00",
-      "resultSavedAt": "2026-10-29T17:19:52+09:00",
+      "updatedAt": "2026-10-30T00:19:22+09:00",
+      "resultSavedAt": "2026-10-30T00:19:22+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Federal Reserve",
@@ -800,7 +800,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-25T16:00:10+09:00",
-      "updatedAt": "2026-10-29T17:19:53+09:00",
+      "updatedAt": "2026-10-30T00:19:23+09:00",
       "resultSavedAt": "2026-10-29T07:45:22+09:00",
       "resultSource": {
         "id": "federal_reserve",
@@ -829,11 +829,11 @@
       "importanceLabel": "中",
       "forecast": "",
       "previous": "4.58|1.6",
-      "actual": "",
+      "actual": "4.49%",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "実績 4.49% は予想 なし に対して比較保留。名称差・国コード差を補正してTradingView実績データから照合しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1035,8 +1035,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1054,7 +1054,269 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-25T16:00:10+09:00",
-      "updatedAt": "2026-10-29T17:19:52+09:00"
+      "updatedAt": "2026-10-30T00:19:24+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "tradingview_repair",
+        "name": "Dipartimento del Tesoro",
+        "url": "http://www.dt.tesoro.it"
+      },
+      "resultSavedAt": "2026-10-30T00:19:24+09:00"
+    },
+    {
+      "id": "event-98275ccd649312",
+      "sourceKey": "2026-10-29|19:08|EUR|italian 10-y bond auction",
+      "date": "2026-10-29",
+      "time": "19:08",
+      "datetimeJst": "2026-10-29T19:08:00+09:00",
+      "scheduledAtSource": "2026-10-29T06:08:00-04:00",
+      "scheduledAtUtc": "2026-10-29T10:08:00Z",
+      "country": "欧州",
+      "currency": "EUR",
+      "title": "欧州 Italian 10-y 国債入札",
+      "eventNameOriginal": "Italian 10-y Bond Auction",
+      "category": "bond_auction",
+      "impactOriginal": "Low",
+      "ffImportance": 1,
+      "importance": 2,
+      "importanceLabel": "中",
+      "forecast": "",
+      "previous": "4.58|1.6",
+      "actual": "4.49%",
+      "revised": "",
+      "resultComparison": "",
+      "resultExplanation": "実績 4.49% は予想 なし に対して比較保留。名称差・国コード差を補正してTradingView実績データから照合しました。",
+      "status": "released",
+      "isTimed": true,
+      "isImportantEvent": true,
+      "affectedMarkets": [
+        "米2年債",
+        "米10年債",
+        "USD/JPY",
+        "ダウ先物",
+        "ナスダック先物",
+        "金"
+      ],
+      "focusMarkets": [
+        "米2年債",
+        "米10年債",
+        "USD/JPY",
+        "ダウ先物",
+        "ナスダック先物"
+      ],
+      "pricedIn": [
+        "市場予想：予想なし",
+        "前回値：4.58|1.6",
+        "発表直後は米2年債、米10年債、株価指数先物、為替の順に確認"
+      ],
+      "scenarios": [
+        [
+          "米2年債",
+          "上昇しやすい",
+          "小動き",
+          "低下しやすい"
+        ],
+        [
+          "米10年債",
+          "上昇しやすい",
+          "小動き",
+          "低下しやすい"
+        ],
+        [
+          "ダウ先物",
+          "金利上昇なら重い",
+          "小動き",
+          "金利低下なら支え"
+        ],
+        [
+          "ナスダック先物",
+          "高金利なら重い",
+          "小動き",
+          "金利低下なら支え"
+        ],
+        [
+          "日経225先物",
+          "米株安・円高なら重い",
+          "小動き",
+          "米株高・円安なら支え"
+        ],
+        [
+          "USD/JPY",
+          "ドル高で上昇しやすい",
+          "小動き",
+          "ドル安で下落しやすい"
+        ],
+        [
+          "EUR/USD",
+          "ユーロ高になりやすい",
+          "小動き",
+          "ユーロ安になりやすい"
+        ],
+        [
+          "金",
+          "実質金利上昇なら重い",
+          "小動き",
+          "実質金利低下なら支え"
+        ],
+        [
+          "原油",
+          "景気上振れなら支え",
+          "小動き",
+          "景気減速なら重い"
+        ]
+      ],
+      "outlook": [
+        [
+          "米2年債",
+          "政策金利見通しに反応",
+          "初動と翌営業日の持続性を確認",
+          "利下げ期待後退",
+          "利下げ期待拡大"
+        ],
+        [
+          "米10年債",
+          "成長・インフレ・国債需給に反応",
+          "2年債との方向差を確認",
+          "インフレ再燃・需給悪化",
+          "成長鈍化・利下げ期待"
+        ],
+        [
+          "ダウ先物",
+          "景気敏感株の反応を確認",
+          "金利と業績期待の綱引きを確認",
+          "景気悪化・金利上昇",
+          "景気底堅さ・金利低下"
+        ],
+        [
+          "ナスダック先物",
+          "高PER株の金利感応度を確認",
+          "実質金利への耐性を見る",
+          "実質金利上昇",
+          "金利低下・買い戻し"
+        ],
+        [
+          "日経225先物",
+          "米株と円相場に反応",
+          "USD/JPYとの組み合わせを見る",
+          "米株安・円高",
+          "米株高・円安"
+        ],
+        [
+          "USD/JPY",
+          "米金利差とドルに反応",
+          "米2年・10年債との連動を確認",
+          "米金利上昇・ドル高",
+          "米金利低下・ドル安"
+        ],
+        [
+          "EUR/USD",
+          "ドルと欧州固有材料に反応",
+          "ドル全面高かを確認",
+          "米金利上昇・ドル高",
+          "米金利低下・ドル安"
+        ],
+        [
+          "金",
+          "実質金利とドルに反応",
+          "安全資産需要との整合性を確認",
+          "実質金利上昇・ドル高",
+          "実質金利低下・ドル安"
+        ],
+        [
+          "原油",
+          "需要見通しと供給材料に反応",
+          "景気と在庫のどちらが主導か確認",
+          "需要上振れ・供給不安",
+          "需要鈍化・供給懸念後退"
+        ]
+      ],
+      "postReleaseReactions": [],
+      "comparison": [
+        [
+          "米2年債",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "米10年債",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "ダウ先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "ナスダック先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "日経225先物",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "USD/JPY",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "EUR/USD",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "金",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ],
+        [
+          "原油",
+          "データ次第",
+          "未計測",
+          "確認中"
+        ]
+      ],
+      "conclusion": {
+        "narrative": "結果確認済み",
+        "reaction": "市場反応を確認",
+        "watch": [
+          "米2年債の初動",
+          "米10年債への波及",
+          "ダウ・ナスダック先物",
+          "USD/JPYとEUR/USD",
+          "日経225先物・金・原油"
+        ]
+      },
+      "officialSource": {
+        "id": "forex_factory",
+        "name": "Forex Factory Economic Calendar",
+        "url": "https://www.forexfactory.com/calendar"
+      },
+      "sourceType": "forex_factory_weekly",
+      "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
+      "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
+      "createdAt": "2026-10-30T00:19:22+09:00",
+      "updatedAt": "2026-10-30T00:19:24+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "tradingview_repair",
+        "name": "Dipartimento del Tesoro",
+        "url": "http://www.dt.tesoro.it"
+      },
+      "resultSavedAt": "2026-10-30T00:19:24+09:00"
     },
     {
       "id": "event-51d09788ec3d05",
@@ -1075,11 +1337,11 @@
       "importanceLabel": "高",
       "forecast": "0.3%",
       "previous": "0.2%",
-      "actual": "",
+      "actual": "0.3%",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultComparison": "市場予想と一致",
+      "resultExplanation": "実績 0.3% は予想 0.3% に対して市場予想と一致。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1282,8 +1544,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想と一致",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1301,7 +1563,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-25T16:00:10+09:00",
-      "updatedAt": "2026-10-29T17:19:52+09:00"
+      "updatedAt": "2026-10-30T00:19:22+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "Bureau of Economics Analysis",
+        "url": "http://www.bea.gov/"
+      },
+      "resultSavedAt": "2026-10-30T00:19:22+09:00"
     },
     {
       "id": "event-bda52ed76a0033",
@@ -1325,8 +1593,8 @@
       "actual": "",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
+      "status": "result_pending",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1529,7 +1797,7 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
+        "narrative": "結果確認中",
         "reaction": "結果待ち",
         "watch": [
           "米2年債の初動",
@@ -1548,7 +1816,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-25T16:00:10+09:00",
-      "updatedAt": "2026-10-29T17:19:52+09:00"
+      "updatedAt": "2026-10-30T00:19:22+09:00"
     },
     {
       "id": "event-cce3689244c038",
@@ -1569,11 +1837,11 @@
       "importanceLabel": "高",
       "forecast": "3.2%",
       "previous": "6.2%",
-      "actual": "",
+      "actual": "2.2%",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultComparison": "市場予想を下回る",
+      "resultExplanation": "実績 2.2% は予想 3.2% に対して市場予想を下回る。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1776,8 +2044,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を下回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1795,7 +2063,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-25T16:00:10+09:00",
-      "updatedAt": "2026-10-29T17:19:52+09:00"
+      "updatedAt": "2026-10-30T00:19:22+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "Bureau of Economics Analysis",
+        "url": "http://www.bea.gov"
+      },
+      "resultSavedAt": "2026-10-30T00:19:22+09:00"
     },
     {
       "id": "event-701ad113dd2d31",
@@ -1816,11 +2090,11 @@
       "importanceLabel": "中",
       "forecast": "198K",
       "previous": "194K",
-      "actual": "",
-      "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "actual": "194K",
+      "revised": "195K",
+      "resultComparison": "市場予想を下回る",
+      "resultExplanation": "実績 194K は予想 198K に対して市場予想を下回る。同時刻に公表される継続受給者数との取り違えを防ぐため、米労働省の公式Weekly Claims PDFで検証しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -2023,8 +2297,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を下回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -2042,7 +2316,16 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-25T16:00:10+09:00",
-      "updatedAt": "2026-10-29T17:19:52+09:00"
+      "updatedAt": "2026-10-30T00:19:25+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "us_dol_claims_pdf",
+        "name": "U.S. Department of Labor - Unemployment Insurance Weekly Claims",
+        "url": "https://www.dol.gov/ui/data.pdf"
+      },
+      "resultSavedAt": "2026-10-30T00:19:25+09:00",
+      "resultValidation": "official_pdf_verified"
     },
     {
       "id": "event-032937a035a170",
@@ -2063,11 +2346,11 @@
       "importanceLabel": "高",
       "forecast": "2.65%",
       "previous": "2.65%",
-      "actual": "",
+      "actual": "2.9%",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultComparison": "市場予想を上回る",
+      "resultExplanation": "実績 2.9% は予想 2.65% に対して市場予想を上回る。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -2268,8 +2551,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を上回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -2287,7 +2570,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-25T16:00:10+09:00",
-      "updatedAt": "2026-10-29T17:19:52+09:00"
+      "updatedAt": "2026-10-30T00:19:22+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "European Central Bank",
+        "url": "https://www.ecb.europa.eu"
+      },
+      "resultSavedAt": "2026-10-30T00:19:22+09:00"
     },
     {
       "id": "event-f6b2c7e87b1833",
@@ -2308,11 +2597,11 @@
       "importanceLabel": "高",
       "forecast": "",
       "previous": "",
-      "actual": "",
+      "actual": "2.9%",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "実績 2.9% は予想 なし に対して比較保留。名称差・国コード差を補正してTradingView実績データから照合しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -2513,8 +2802,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -2532,7 +2821,15 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-25T16:00:10+09:00",
-      "updatedAt": "2026-10-29T17:19:52+09:00"
+      "updatedAt": "2026-10-30T00:19:24+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "tradingview_repair",
+        "name": "European Central Bank",
+        "url": "https://www.ecb.europa.eu"
+      },
+      "resultSavedAt": "2026-10-30T00:19:24+09:00"
     },
     {
       "id": "event-6ef6d48e700678",
@@ -2551,13 +2848,13 @@
       "ffImportance": 3,
       "importance": 3,
       "importanceLabel": "高",
-      "forecast": "",
-      "previous": "",
-      "actual": "",
+      "forecast": "数値発表なし",
+      "previous": "数値発表なし",
+      "actual": "数値発表なし（発言イベント）",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "数値の実績値が発表されるイベントではありません。発言内容と、金利・為替・株価指数先物の反応を確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -2758,8 +3055,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "発言イベント終了",
+        "reaction": "発言内容と市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -2777,9 +3074,15 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-25T16:00:10+09:00",
-      "updatedAt": "2026-10-29T17:19:52+09:00",
+      "updatedAt": "2026-10-30T00:19:23+09:00",
       "resultExpected": false,
-      "resultType": "qualitative"
+      "resultType": "qualitative",
+      "resultSource": {
+        "id": "ecb",
+        "name": "ECB monetary policy calendar",
+        "url": "https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html"
+      },
+      "resultSavedAt": "2026-10-30T00:19:23+09:00"
     }
   ]
 }
