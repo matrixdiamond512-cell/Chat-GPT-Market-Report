@@ -106,6 +106,21 @@ class PersonalSnapshotTests(unittest.TestCase):
             self.assertEqual(payload["markets"][field]["sourceId"], "manual_official_nikkei")
         self.assertEqual(report_counts(payload), (16, 5, 7))
 
+    def test_intraday_futures_reference_with_market_date_is_not_a_close(self):
+        source = self._source()
+        source["referenceValues"].append([
+            "intraday-gold-with-date", "gold", 9999.0, "USD/oz", "COMEX:GC1!",
+            "CONTINUOUS_FUTURES_INTRADAY_QUOTE", "comex", "2026-10-10", "",
+            "TradingView official MCP", "REFERENCE_ONLY",
+            "Intraday quote captured before session close; not a daily bar.",
+            "2026-10-10T20:00:00Z",
+        ])
+        payload = build_snapshot(source, "2026-10-11T00:00:00Z")
+        self.assertEqual(payload["markets"]["gold"]["value"], 201.1)
+        self.assertEqual(payload["markets"]["gold"]["asOf"], "2026-10-09")
+        self.assertEqual(payload["markets"]["gold"]["barAnchorUTC"], "2026-10-09T22:00:00Z")
+        self.assertEqual(report_counts(payload), (9, 5, 14))
+
     def test_nikkei_deviation_reference_rows_join_without_becoming_futures(self):
         source = self._source()
         source["referenceValues"].append([
