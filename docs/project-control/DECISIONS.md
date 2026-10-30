@@ -56,3 +56,10 @@ The isolated handoff helper and the Docs issuance-binding helper had separate un
 
 
 - MRF-INGESTION-20261030-01 (2026-10-30 JST): Replace the combined VERIFIED_REPORT_INGESTION_AND_PUBLICATION message with stage-specific status lines. Keep source archival available when publication evidence is absent; do not turn evidence failure into a claim of publication or erase the archive. Docs readback receipt remains separate from Pages deployment and live public readback. No gate or data behavior changes.
+
+
+## MRF-0800-IMPORTER-COMBO-20261030-01 — integrate importer changes for joint validation (2026-10-30 JST)
+
+Decision: Carry PR #189's ingestion status helper, test/workflow and affected requirements/specification/operations/project records onto the latest-main PR #188 branch so both importer behaviors are tested on one Draft head. Keep PR #188 based on current main and retain PR #189 as OPEN/Draft for now; do not merge either independently while duplicate code is present.
+
+Reason: Both changes touch `scripts/sync_reports_from_drive.py`; per-PR CI alone did not prove they compose. The combined head ran both test suites and all four relevant workflows. Reversal: if the owner chooses separate review scopes, remove the incorporated PR #189 delta from #188 in follow-up commits, or designate one Draft as superseded before merging. No force-push, merge to main, deployment, or production write occurred.
