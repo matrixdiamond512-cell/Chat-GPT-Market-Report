@@ -91,3 +91,16 @@ Source: user-directed continuation of Issue #176 / Draft PR #188, current main `
 Verification: read-only local and Drive prerequisite recheck; importer `--apply` was NOT_RUN because no staging root/marker, no staged evidence, and no usable GCS authentication was observed; the existing 2026-10-28 Doc is labeled `閲覧用分析版` and does not provide a matching pre-save G2 body/hash or same-run receipt. Strict `appProperties` binding remains UNKNOWN. Evidence ledger and HANDOFF record the exact evidence and limits. No external writes, main change, or Pages deploy occurred.
 
 Unresolved: provision/authorize an isolated TEST_ONLY identity and exact-generation object; provide one coherent issuance-bound G2/Docs readback; stage into a separate marked checkout; run strict dry-run and only then `--apply` if every binding passes. PR #188 and PR #189 remain separate Drafts; their shared importer changes have not received combined validation.
+
+
+## 変更記録 MRF-INGESTION-20261030-01（2026-10-30 JST）
+対象: GitHub固定パス docs/system/requirements.md、specification.md、operations.md、本規程、scripts/sync_reports_from_drive.py、scripts/reporting/ingestion_outcome.py、tests/test_ingestion_outcome.py、.github/workflows/market-report-sync-recovery-ci.yml、project-control記録、HANDOFF.md。
+理由: Importerがarchive-onlyのsourceについても VERIFIED_REPORT_INGESTION_AND_PUBLICATION と出力し、取込と正式公開の状態を誤って一つに見せていたため。
+変更: stageごとの明示ログへ置換し、archive-only・Docs読戻しreceipt・未認識statusを独立表示。該当する回帰テストをCI対象に追加。
+制約: main merge、Google Drive正式文書更新、本番Docs/PNG/receipt/report変更、Pages deploy、schedule/Cloud設定変更なし。
+検証: Python 3.13.14でworkflow対象の6モジュール38 tests PASS、追加証拠回帰3モジュール24 tests PASS、py_compile PASS。test_report_contract.py / test_publication_evidence.pyはWindows環境にIANA tzdataがなくZoneInfoNotFoundErrorでBLOCKED。Hosted CIはPR作成後。E3–E5本番E2EはNOT_RUN。
+未解決: CI最終head確認、PR review/merge、Google Drive固定ID文書への同期判定、将来slotでのlive Docs/canonical/Pages acceptance。
+
+
+## MRF-INGESTION-20261030-01 evidence-link correction (CORRECT, 2026-10-30 JST)
+The four-slot HANDOFF matrix originally linked 2026-10-29 report JSON paths at main `52e99701f3bc71a77bdde31729e0f887f44a9135`, where those paths were absent. Repointed its read-only evidence links to current main `ec3e38b56397686c781e61de7efe97baeec48544`, where the four JSON files are present and each has `SOURCE_ARCHIVED` / `infographic_status=NOT_VERIFIED`; the four receipt paths are absent. No requirements, pipeline behavior, reports, receipts, Docs, PNGs, Pages, or external services were changed.
