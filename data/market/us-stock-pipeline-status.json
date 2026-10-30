@@ -1,29 +1,11 @@
 {
   "schemaVersion": "1.1.0",
-  "updatedAt": "2026-10-30T10:21:17+09:00",
-  "status": "failed",
-  "fetchOutcome": "failure",
-  "crosscheckOutcome": "skipped",
+  "updatedAt": "2026-10-30T10:53:39+09:00",
+  "status": "ok",
+  "fetchOutcome": "success",
+  "crosscheckOutcome": "success",
   "logTail": [
-    "Traceback (most recent call last):",
-    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/fetch_us_stock_movers_sp500_contributions.py\", line 461, in <module>",
-    "    raise SystemExit(main())",
-    "                     ^^^^^^",
-    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/fetch_us_stock_movers_sp500_contributions.py\", line 447, in main",
-    "    sync_stock_analysis_json(stocks)",
-    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/fetch_us_stock_movers_sp500_contributions.py\", line 391, in sync_stock_analysis_json",
-    "    client.update(\"Stock_Analysis_JSON\", \"B2\", [[json.dumps(payload, ensure_ascii=False)]])",
-    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/write_market_data_to_sheets.py\", line 245, in update",
-    "    self._request(",
-    "  File \"/home/runner/work/Chat-GPT-Market-Report/Chat-GPT-Market-Report/scripts/write_market_data_to_sheets.py\", line 210, in _request",
-    "    raise SheetsSyncError(f\"Google Sheets API {method} failed: {response.status_code} {detail}\")",
-    "write_market_data_to_sheets.SheetsSyncError: Google Sheets API PUT failed: 400 {",
-    "  \"error\": {",
-    "    \"code\": 400,",
-    "    \"message\": \"Your input contains more than the maximum of 50000 characters in a single cell.\",",
-    "    \"status\": \"INVALID_ARGUMENT\"",
-    "  }",
-    "}",
-    ""
+    "{\"status\": \"already-current\", \"marketDate\": \"2026-10-29\", \"validation\": {\"estimatedWeightedReturnPct\": -0.1871, \"verifiedSP500ReturnPct\": null, \"differencePt\": null}}",
+    "{\"status\": \"passed\", \"marketDate\": \"2026-10-29\", \"estimatedWeightedReturnPct\": -0.1871, \"verifiedSP500ReturnPct\": -0.3, \"differencePt\": 0.1129, \"tolerancePt\": 0.2}"
   ]
 }
