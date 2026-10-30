@@ -570,3 +570,18 @@ Local implementation evidence E1/E2 (candidate only): connected the last eligibl
 
 
 2026-10-30 — CR MRDATA-20261030-NIKKEI-MARKET-TYPE. PR #94 source PR #94, runs #309/#313/#314. E4/E5: #309 isolated the dedicated Nikkei Sheets failure to `NIKKEI_VALIDATION_MARKET_TYPE_MISMATCH` before any write. Both official Nikkei SMA source definitions were incorrectly tagged `index`, while their report symbols are `technical`; corrected to `marketType: technical` and retained `underlyingMarketType: index`. Added a regression asserting the adapter result passes candidate validation. Corrected the fixture to use realistic in-range close values and the exact trailing-25-session mean (102..126; mean 114), avoiding a false out-of-range test failure. PR check run #313 completed successfully, including candidate tests and Treasury validation; earlier #311/#312 failures were test-fixture errors, not source failures. Workflow dispatch run #314 on HEAD `c258abf29ff346162f79429f6f6c4c7748fbf66a` completed `nikkei-sheets-test` SUCCESS: four official Nikkei fields fetched for market date 2026-10-30; 4 numeric and 4 date readbacks verified; each item had one occurrence; retry added 0 history rows; production spreadsheet used=false. Dedicated test tabs only. Public GitHub/dashboard flags were false; production close-list remained untouched. Limits: proves only these four Nikkei fields and the dedicated private test-sheet roundtrip for this run; does not prove all 28 fields, production-sheet writes, or completion of PR #94. PR #94 remains OPEN/DRAFT/unmerged.
+
+
+## MRDATA-20261030-NIKKEI-200D-REPORT-ROUNDTRIP — 2026-10-30 JST
+
+Claim: the official Nikkei 200-session deviation observation acquired by the dedicated PR Actions job was incorporated into a separate personal test-sheet report history row.
+
+Evidence:
+- Actions run #314 / run ID 41059206296 job `nikkei-sheets-test` completed SUCCESS. Sanitized job output reported marketDate 2026-10-30, source match, four numeric and date readbacks, history readback verified, duplicate occurrence 1 for each of four fields, retryHistoryRowsAdded 0, and productionSpreadsheetUsed false. The 200-day deviation source ID was `nikkei_nk225_official_sma200`; retrieved 2026-10-30T12:57:15Z.
+- The dedicated Nikkei history/input tabs returned the 2026-10-30 Nikkei cash close, Nikkei VI, 25-day deviation and 200-day deviation. The 200-day result is 2.4395019396% (display 2.44%).
+- A separate report row was appended to the private test spreadsheet `Personal_Market_Report`, row 37, ID `personal-report-nikkei-200d-verified-2026-10-30-20261030142313Z`. It carries 16 verified / 12 reference / 0 unavailable, preserves per-market dates, and updates the 200-day analysis/table row. All nine cells, full report body, SHA-256, and unique report ID were read back and matched.
+- No production `終値一覧` write occurred. The production tab remains 186 columns, frozen top row 1, frozen first column 1; existing values, formulas, and 23 conditional-format rules were not changed. No code changed; code tests NOT_RUN.
+
+Evidence level: E5 for run result and private Sheets save/readback; no new Actions full-market acquisition. Limit: this report is an addendum to the stored 2026-10-30 partial-market report. A new 28-field acquisition and report/save roundtrip in one Actions execution remains unverified.
+
+Unresolved: Actions-driven all-28 refresh and report roundtrip; official JPX Prime daily statistics and 25-session breadth; named-contract futures settlements for gold, WTI, OSE and CME; legacy production PER/PBR/EPS series definitions. PR #94 remains OPEN / Draft / unmerged; production close-list remains read-only.
