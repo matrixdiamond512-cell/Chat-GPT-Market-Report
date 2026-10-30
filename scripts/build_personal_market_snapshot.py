@@ -119,8 +119,13 @@ def build_snapshot(source: dict[str, Any], generated_at: str) -> dict[str, Any]:
         if str(row.get("Unit") or "") != expected_unit and str(row.get("Unit") or "") not in ACCEPTED_SOURCE_UNITS.get(symbol, set()):
             raise SnapshotError("verified source unit does not match its report field")
         if source_id == "cnn_fear_greed":
+            # Older rows used generic VERIFIED status and omitted the retrieval timestamp.
+            # Leave those historical rows out; only a complete, explicitly manual
+            # observation can enter the report snapshot.
+            if evidence_status != "VERIFIED_MANUAL":
+                continue
             source_name = str(row.get("Source") or "").strip().lower()
-            if evidence_status != "VERIFIED_MANUAL" or "cnn" not in source_name or "fear-and-greed" not in source_name:
+            if "cnn" not in source_name or "fear-and-greed" not in source_name:
                 raise SnapshotError("CNN Fear & Greed must be a manually verified observation from the CNN official page")
         try:
             value = float(row["Observed Value"])
