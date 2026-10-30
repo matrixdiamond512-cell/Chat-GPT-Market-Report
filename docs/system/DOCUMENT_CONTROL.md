@@ -69,3 +69,7 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 制約: main merge、Google Drive正式文書更新、本番Docs/PNG/receipt/report変更、Pages deploy、schedule/Cloud設定変更なし。
 検証: Python 3.13.14でworkflow対象の6モジュール38 tests PASS、追加証拠回帰3モジュール24 tests PASS、py_compile PASS。test_report_contract.py / test_publication_evidence.pyはWindows環境にIANA tzdataがなくZoneInfoNotFoundErrorでBLOCKED。Hosted CIはPR作成後。E3–E5本番E2EはNOT_RUN。
 未解決: CI最終head確認、PR review/merge、Google Drive固定ID文書への同期判定、将来slotでのlive Docs/canonical/Pages acceptance。
+
+
+## MRF-INGESTION-20261030-01 evidence-link correction (CORRECT, 2026-10-30 JST)
+The four-slot HANDOFF matrix originally linked 2026-10-29 report JSON paths at main `52e99701f3bc71a77bdde31729e0f887f44a9135`, where those paths were absent. Repointed its read-only evidence links to current main `ec3e38b56397686c781e61de7efe97baeec48544`, where the four JSON files are present and each has `SOURCE_ARCHIVED` / `infographic_status=NOT_VERIFIED`; the four receipt paths are absent. No requirements, pipeline behavior, reports, receipts, Docs, PNGs, Pages, or external services were changed.

@@ -207,3 +207,7 @@ NEXT NECESSARY ACTION: inspect the final diff, commit/push this branch, submit a
 
 ### PR #189 code-head CI evidence (ADD, 2026-10-30 JST)
 PR #189 is OPEN / Draft / unmerged. Exact implementation head `71fce84ddfa814a3b0c66bbc0545d36e78bfec1a` passed hosted sync recovery run 40968791396, frozen-cutoff run 40968791427, and delivery-health run 40968791433. Evidence/docs were then updated, so final PR-head CI confirmation remains open. Hosted sync CI also passed `test_report_contract.py`, which local Windows Python could not import due missing IANA tzdata. Live scheduled delivery and downstream public readback remain NOT_RUN.
+
+
+### MRF-INGESTION-20261030-01 matrix source-link correction (CORRECT, 2026-10-30 JST)
+Corrected the four 10/29 report evidence links in HANDOFF from old main `52e99701f3bc71a77bdde31729e0f887f44a9135` (paths absent there) to current main `ec3e38b56397686c781e61de7efe97baeec48544`. Readback confirms all four are still `SOURCE_ARCHIVED` with `NOT_VERIFIED` infographics and no matching receipts. This is evidence-link repair only; live acceptance remains NOT_RUN.

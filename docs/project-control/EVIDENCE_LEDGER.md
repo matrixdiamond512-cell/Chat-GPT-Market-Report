@@ -94,3 +94,7 @@ Base `52e99701f3bc71a77bdde31729e0f887f44a9135`; isolated branch `codex/report-i
 
 
 2026-10-30 PR #189 hosted validation for code head `71fce84ddfa814a3b0c66bbc0545d36e78bfec1a`: Market report synchronization recovery CI run 40968791396 PASS (including `test_report_contract.py`, `test_ingestion_outcome.py`, py_compile, publication consistency and report-index checks); frozen-cutoff regression run 40968791427 PASS; delivery-health regression run 40968791433 PASS. These three checks are exact for the implementation commit. A docs-only evidence update will create a later PR head and require final-head CI confirmation. PR #189 is OPEN / Draft / unmerged. Production four-slot delivery and all external publication readbacks remain NOT_RUN.
+
+
+## MRF-INGESTION-20261030-01 acceptance-matrix source correction — 2026-10-30 09:47 JST
+Read-only audit found the HANDOFF matrix's 10/29 JSON links pinned to `52e99701f3bc71a77bdde31729e0f887f44a9135`, before those archive JSON files were added; the links were not valid evidence at that SHA. Corrected the four links to current main `ec3e38b56397686c781e61de7efe97baeec48544`. At that main SHA all four 10/29 reports exist as `SOURCE_ARCHIVED`, all four have `infographic_status=NOT_VERIFIED`, and the corresponding `publication-receipts/` paths are absent. Pages timeout evidence remains run 40966149397; public DOM readback NOT_RUN. This repairs evidence-link integrity only; it does not upgrade any production acceptance state.
