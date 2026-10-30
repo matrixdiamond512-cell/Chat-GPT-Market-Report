@@ -513,3 +513,12 @@ Local implementation evidence E1/E2 (candidate only): connected the last eligibl
 - テストシート: 専用 Personal_Report_Ready に取得日時を含む修正版観測を一意IDで追記し、読み戻しで12列・値・基準日・表示更新時刻・出典・状態・取得日時を確認。旧行を含む既存履歴は変更していない。
 - 検証: PR Actions run 41003024908 の tradingview-mcp-candidate-tests SUCCESS。新規手動CNN接続・不正ソース/範囲テストを含むスナップショット22 tests PASS。test 28 tests PASS、structure SUCCESS。Sheets write系ジョブはSKIPPED。このActions結果はコード検証であり、同じ実データからのレポート再生成・保存/readbackの証拠ではない。
 - 制約/未解決: 個人用Sheetsの修正行は取得入力として保存済みだが、新しい共通スナップショットおよび別履歴レポートの実生成・保存/readbackは未実施。実データ経路への接続確認が必要。PRはOPEN / Draft / 未マージ。本番 終値一覧 は読み取り専用。
+
+
+### PR94-REPORT-SNAPSHOT-READBACK-20261030 — 保存済み市場データからのレポート再生成・個人用テストSheets読戻し
+- 変更日: 2026-10-30 JST。対象: PR #94、personal test spreadsheet。変更要求ID PR94-REPORT-SNAPSHOT-READBACK-20261030。
+- 接続修正: Personal_Report_Readyの明示VERIFIED_MANUAL CNN行をfear_greedへ接続し、CNN公式ページ識別・0〜100点・市場日・観測時刻・取得日時を確認。取得日時を欠く旧行は除外。Personal_Reference_Valuesの10/29日付付き日経225 25/200日乖離率もsnapshotへ接続し、technical referenceとして保持（先物清算値に分類しない）。
+- 実データ実行: 個人用テストSheetsの保存済み実測行のみを入力として、PRのbuild_personal_market_snapshot.pyとbuild_personal_market_report.pyをPython 3.14.6で実行。対象データ期間2026-10-09〜2026-10-29、snapshot ID 829cc20c9c24363ff0768120、状態historical_only、28項目中 VERIFIED 15 / REFERENCE 13 / 未取得0。日付なしの10/30取引中先物値は除外。生成日時点の最新相場とは表示せず、ニュース/時間帯別観測/資金フロー等のない分析は未取得と明記。レポート本文3265文字、SHA256 95a1e0defd6ca1d8fbc9f5832154e5c404be1cae5c4364b905309d059492faf6。
+- Sheets: test spreadsheetのPersonal_Market_Reportへ新しいID personal-report-917a75732899448c4fe973b4を追記。追記前ID件数0、追記後1。本文・日付・状態・15/13/0件数・SHA256を全列読み戻し、生成行との完全一致を確認。本番spreadsheetには書き込みなし。
+- Actions: 初回run 41004430139で新規テストの期待未取得数が1件過少と判明（実装値は正しく13）。テスト期待値のみ修正。最新コードHEAD 5b535e6e83e5ac62f5b60d3014cef32540458f7fでcandidate tests run 41004746678、P0 read-only tests run 41004746642、general test run 41004746654、structure run 41004746686 がSUCCESS。updateとSheets ActionsはPRイベントによりSKIPPEDであり、今回の外部実行は別途行った個人用テストシートの追記/readback。
+- 制約: レポートは履歴再構成であり、現在の投資判断用ではない。データは市場日・ソース別で非同期、15 VERIFIEDを同一営業日の一斉取得と解釈しない。参考13件は正式確定値ではない。PR #94はOPEN / Draft / 未マージ、本番終値一覧は不変更。
