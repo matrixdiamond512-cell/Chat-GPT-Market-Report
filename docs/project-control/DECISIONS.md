@@ -63,3 +63,7 @@ The isolated handoff helper and the Docs issuance-binding helper had separate un
 Decision: Carry PR #189's ingestion status helper, test/workflow and affected requirements/specification/operations/project records onto the latest-main PR #188 branch so both importer behaviors are tested on one Draft head. Keep PR #188 based on current main and retain PR #189 as OPEN/Draft for now; do not merge either independently while duplicate code is present.
 
 Reason: Both changes touch `scripts/sync_reports_from_drive.py`; per-PR CI alone did not prove they compose. The combined head ran both test suites and all four relevant workflows. Reversal: if the owner chooses separate review scopes, remove the incorporated PR #189 delta from #188 in follow-up commits, or designate one Draft as superseded before merging. No force-push, merge to main, deployment, or production write occurred.
+
+## D-0800-08 (2026-10-30) — Fail-closed TEST_ONLY importer staging boundary
+
+A separately marked staging checkout must be path-disjoint from the importer checkout in both directions. GCS project and bucket identifiers require a standalone `test` token, and the object name must start with `test-only/`; substring matches alone are not a TEST_ONLY identity. Resolve the evidence destination and prove it remains under the staging root before creating directories, then verify again afterward. This is a local staging guard only; it is not independent proof of external resource identity or publication.
