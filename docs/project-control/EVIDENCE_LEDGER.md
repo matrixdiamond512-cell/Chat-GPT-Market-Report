@@ -585,3 +585,8 @@ Evidence:
 Evidence level: E5 for run result and private Sheets save/readback; no new Actions full-market acquisition. Limit: this report is an addendum to the stored 2026-10-30 partial-market report. A new 28-field acquisition and report/save roundtrip in one Actions execution remains unverified.
 
 Unresolved: Actions-driven all-28 refresh and report roundtrip; official JPX Prime daily statistics and 25-session breadth; named-contract futures settlements for gold, WTI, OSE and CME; legacy production PER/PBR/EPS series definitions. PR #94 remains OPEN / Draft / unmerged; production close-list remains read-only.
+
+
+### Follow-up MRDATA-20261030-NIKKEI-200D-REPORT-ROUNDTRIP — normalized input rows (2026-10-31 JST)
+
+Source/PR: Actions run #314 (41059206296), PR #94 branch. Four official Nikkei observations for market date 2026-10-30 (cash, VI, 25-day deviation, 200-day deviation) were appended to the private test-sheet `Personal_Report_Ready` using the existing 12-column schema. The prior rows were preserved. All four rows read back exactly, including source date, VERIFIED state and retrieval time; each new observation ID occurred once. Values matched the existing dedicated Nikkei history tab. This connects the Actions result to the standard report-input tab; it does not mean a new all-28 acquisition ran. No production sheet write. Code tests NOT_RUN; no code changed. Unresolved acceptance remains the all-28 Actions acquisition/report/readback and JPX/futures items listed above.
