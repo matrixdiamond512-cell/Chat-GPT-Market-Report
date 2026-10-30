@@ -1,0 +1,51 @@
+name: Report quarantine DOM regression
+on:
+  push:
+    branches: [fix/deploy-unverified-report-quarantine-20261013]
+  pull_request:
+    paths:
+      - assets/js/morning-report-qa-gate.js
+      - scripts/validate_market_report_dom.js
+      - .github/workflows/report-quarantine-dom-ci.yml
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Parse and verify source contracts
+        run: |
+          node --check assets/js/morning-report-qa-gate.js
+          node --check scripts/validate_market_report_dom.js
+          node - <<'NODE'
+          const fs=require('fs'),assert=require('assert');
+          const report=JSON.parse(fs.readFileSync('reports/2026-10-12_08-00.json','utf8'));
+          assert.strictEqual(report.report_status,'RECONSTRUCTED_UNVERIFIED');
+          assert.notStrictEqual(report.marketDataTable?.rows?.length,28);
+          const gate=fs.readFileSync('assets/js/morning-report-qa-gate.js','utf8');
+          const check=fs.readFileSync('scripts/validate_market_report_dom.js','utf8');
+          assert(gate.includes('body.style.display = "none"'));
+          assert(gate.includes('dataset.morningReportQa = "quarantined"'));
+          assert(check.includes('unverified morning body is publicly visible'));
+          console.log('Quarantine invariants PASS');
+          NODE
+      - name: Install browser validator
+        run: |
+          npm install --prefix "$RUNNER_TEMP/portal-validation" --no-save playwright
+          "$RUNNER_TEMP/portal-validation/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Run local Portal DOM regression
+        env:
+          PORTAL_URL: http://127.0.0.1:8765
+          NODE_PATH: ${{ runner.temp }}/portal-validation/node_modules
+        run: |
+          python -m http.server 8765 --bind 127.0.0.1 >/tmp/report-portal.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8765/reports.json -o /dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/validate_market_report_dom.js

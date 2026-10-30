@@ -1,0 +1,19 @@
+name: USDJPY volume price preservation regression
+on:
+  pull_request:
+    paths:
+      - "apps-script/UsdJpyVolumeJsonFlexibleSync.gs"
+      - "scripts/test_usdjpy_volume_json_preservation.js"
+      - ".github/workflows/usdjpy-volume-price-regression-ci.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node scripts/test_usdjpy_volume_json_preservation.js

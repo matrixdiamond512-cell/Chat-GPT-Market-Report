@@ -2,6 +2,7 @@ var MARKET_REPORT_MASTER_SCHEDULER_CONFIG = {
   timezone: 'Asia/Tokyo',
   lastResultProperty: 'MARKET_REPORT_MASTER_SCHEDULER_LAST_RESULT',
   reportHours: [8, 12, 16, 21],
+  recoveryHandler: 'runMarketReportMasterRecovery2330',
   slots: [
     { handler: 'runMarketReportMaster0830', hour: 8, slotHour: 8, mode: 'main-0830', retry: false },
     { handler: 'runMarketReportMaster0930Retry', hour: 9, slotHour: 8, mode: 'retry-0930', retry: true },
@@ -46,6 +47,15 @@ function installMarketReportMasterSchedulerTriggers() {
         .create();
       created.push(slot.handler);
     });
+    // Archive repair is maintenance, not a fifth report publication slot.
+    ScriptApp.newTrigger(MARKET_REPORT_MASTER_SCHEDULER_CONFIG.recoveryHandler)
+      .timeBased()
+      .atHour(23)
+      .nearMinute(30)
+      .everyDays(1)
+      .inTimezone(MARKET_REPORT_MASTER_SCHEDULER_CONFIG.timezone)
+      .create();
+    created.push(MARKET_REPORT_MASTER_SCHEDULER_CONFIG.recoveryHandler);
   } catch (error) {
     var remaining = marketReportMasterTriggerNames_();
     SpreadsheetApp.getUi().alert(
@@ -61,7 +71,8 @@ function installMarketReportMasterSchedulerTriggers() {
   SpreadsheetApp.getUi().alert(
     '本文・ダッシュボード用の自動更新を設定しました。\n\n' +
     '通常: 08:30 / 12:30 / 16:30 / 21:30\n' +
-    '再チェック: 09:30 / 13:30 / 17:30 / 22:30\n\n' +
+    '再チェック: 09:30 / 13:30 / 17:30 / 22:30\n' +
+    'Drive→GitHub未登録レポート復旧: 23:30\n\n' +
     '東京市場ドル円出来高・重要イベント・株式市場分析は対象外です。\n' +
     '削除した共通管理トリガー: ' + cleanup.deletedCount + '\n' +
     '作成した共通トリガー: ' + created.length
@@ -114,6 +125,19 @@ function showMarketReportMasterSchedulerStatus() {
     'Last result:\n' + lastResult
   );
   return { masterInstalled: masterInstalled, oldInstalled: oldInstalled, allTriggers: allNames, lastResult: lastResult };
+}
+
+function runMarketReportMasterRecovery2330() {
+  var day = Number(Utilities.formatDate(new Date(), MARKET_REPORT_MASTER_SCHEDULER_CONFIG.timezone, 'u'));
+  if (day === 6 || day === 7) {
+    return saveMarketReportMasterResult_({ok: true, skipped: true,
+      mode: 'drive-github-recovery-2330', reason: 'No weekend recovery schedule'});
+  }
+  if (typeof repairMissingMarketReportsFromDrive !== 'function') {
+    throw new Error('Drive→GitHub repair function has not been deployed');
+  }
+  // Existing repair function uses canonical source validation and remote readback.
+  return repairMissingMarketReportsFromDrive();
 }
 
 function runMarketReportMaster0830() { return runMarketReportMasterScheduler_(8, 'main-0830', false); }
@@ -203,9 +227,9 @@ function runMarketReportMasterScheduler_(slotHour, mode, isRetry) {
   var result = { ok: true, skipped: false, mode: mode, slotHour: slotHour, retry: !!isRetry, modules: [] };
   try {
     var day = Number(Utilities.formatDate(new Date(), MARKET_REPORT_MASTER_SCHEDULER_CONFIG.timezone, 'u'));
-    if (day === 7 || (day === 6 && slotHour !== 8)) {
+    if (day === 6 || day === 7) {
       result.skipped = true;
-      result.reason = day === 7 ? '日曜のため本文・ダッシュボード自動更新をスキップしました。' : '土曜は08:00朝レポート以外を発行しません。';
+      result.reason = '土日休止の発行スケジュールに従い、本文・ダッシュボード自動更新をスキップしました。';
       return saveMarketReportMasterResult_(result);
     }
     runMarketReportMasterModule_(result, 'market_report', 'マーケットレポート本文・ダッシュボード公開', function() {
@@ -275,7 +299,8 @@ function deleteMarketReportMasterTriggers_() {
 }
 
 function marketReportMasterHandlerNames_() {
-  return MARKET_REPORT_MASTER_SCHEDULER_CONFIG.slots.map(function(slot) { return slot.handler; });
+  return MARKET_REPORT_MASTER_SCHEDULER_CONFIG.slots.map(function(slot) { return slot.handler; })
+    .concat([MARKET_REPORT_MASTER_SCHEDULER_CONFIG.recoveryHandler]);
 }
 
 function marketReportMasterTriggerNames_() {

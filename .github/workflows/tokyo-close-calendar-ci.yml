@@ -1,0 +1,22 @@
+name: Tokyo close calendar regression
+on:
+  push:
+    branches: [fix/tokyo-close-trading-calendar-20261013]
+  pull_request:
+    paths:
+      - scripts/resolve_tokyo_close_target.py
+      - tests/test_tokyo_close_calendar.py
+      - .github/workflows/capture-japan-close-reference.yml
+      - .github/workflows/tokyo-close-calendar-ci.yml
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install jpholiday
+      - run: python -m unittest discover -s tests -p 'test_tokyo_close_calendar.py' -v

@@ -1,0 +1,20 @@
+name: Archive serialization regression
+on:
+  push:
+    branches: [fix/archive-backfill-valid-json-oct13]
+  pull_request:
+    paths:
+      - apps-script/MarketReportAutoPublish.gs
+      - scripts/test_archive_serialization_fix.js
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node scripts/test_archive_serialization_fix.js
+      - run: node scripts/test_drive_github_archive_backfill.js

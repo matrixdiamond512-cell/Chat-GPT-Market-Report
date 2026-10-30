@@ -1,0 +1,170 @@
+name: Freeze pre-draft report-slot evidence
+
+on:
+  workflow_dispatch:
+    inputs:
+      report_slot:
+        description: "Current JST report slot only. Past slots are rejected."
+        required: true
+        type: choice
+        options: ["08:00", "12:00", "16:00", "21:00"]
+  schedule:
+    # Redundant pre-slot attempts tolerate skipped/delayed Actions schedules.
+    # No attempt may synthesize evidence after the slot cutoff.
+    - cron: "47,53,57 22 * * 0-4"
+    - cron: "47,53,57 2 * * 1-5"
+    - cron: "47,53,57 6 * * 1-5"
+    - cron: "47,53,57 11 * * 1-5"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: freeze-pre-draft-report-slot-evidence
+  cancel-in-progress: false
+
+jobs:
+  freeze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Resolve explicit JST report slot
+        id: slot
+        shell: bash
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
+          MANUAL_SLOT: ${{ inputs.report_slot }}
+        run: |
+          case "$SCHEDULE" in
+            "47,53,57 22 * * 0-4") SLOT="08:00" ;;
+            "47,53,57 2 * * 1-5") SLOT="12:00" ;;
+            "47,53,57 6 * * 1-5") SLOT="16:00" ;;
+            "47,53,57 11 * * 1-5") SLOT="21:00" ;;
+            "") SLOT="$MANUAL_SLOT" ;;
+            *) echo "Unexpected schedule: $SCHEDULE" >&2; exit 1 ;;
+          esac
+          case "$SLOT" in
+            "08:00"|"12:00"|"16:00"|"21:00") ;;
+            *) echo "Unsupported report slot: $SLOT" >&2; exit 1 ;;
+          esac
+          echo "date=$(TZ=Asia/Tokyo date +%F)" >> "$GITHUB_OUTPUT"
+          echo "slot=$SLOT" >> "$GITHUB_OUTPUT"
+      - name: Reject any run that starts at or after the report cutoff
+        env:
+          REPORT_DATE: ${{ steps.slot.outputs.date }}
+          REPORT_SLOT: ${{ steps.slot.outputs.slot }}
+        run: |
+          python - <<'PY'
+          import os
+          from scripts.persist_report_slot_evidence import require_before_slot
+          require_before_slot(os.environ["REPORT_DATE"], os.environ["REPORT_SLOT"])
+          print("LIVE_PRE_SLOT_WINDOW=PASS")
+          PY
+      - name: Validate writer and offline regression tests
+        run: |
+          python -m py_compile scripts/persist_report_slot_evidence.py
+          python -m unittest tests.test_report_slot_evidence -v
+      - name: Verify an existing immutable artifact before retrying acquisition
+        id: existing
+        env:
+          REPORT_DATE: ${{ steps.slot.outputs.date }}
+          REPORT_SLOT: ${{ steps.slot.outputs.slot }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from scripts.persist_report_slot_evidence import validate_stored_slot_evidence
+          report_date = os.environ["REPORT_DATE"]
+          report_slot = os.environ["REPORT_SLOT"]
+          path = Path("data/report-evidence") / f"{report_date}_{report_slot.replace(':', '-')}-r1.json"
+          if not path.is_file():
+              print("EXISTING_SLOT_EVIDENCE=ABSENT")
+              with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+                  output.write("ready=false\n")
+              raise SystemExit(0)
+          validate_stored_slot_evidence(path.read_bytes(), report_date, report_slot)
+          print("EXISTING_SLOT_EVIDENCE=VALID_NO_OP")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write("ready=true\n")
+          PY
+      - name: Check whether a fresh verified acquisition already exists
+        id: input
+        if: steps.existing.outputs.ready != 'true'
+        continue-on-error: true
+        env:
+          REPORT_DATE: ${{ steps.slot.outputs.date }}
+          REPORT_SLOT: ${{ steps.slot.outputs.slot }}
+        run: |
+          python - <<'PY'
+          import json, os, sys
+          from datetime import date
+          from pathlib import Path
+          from scripts.persist_report_slot_evidence import build_slot_evidence
+          source = Path("data/market/latest.json")
+          if not source.exists():
+              print("INPUT_MISSING: no acquisition file")
+              sys.exit(2)
+          raw = source.read_bytes()
+          try:
+              build_slot_evidence(os.environ["REPORT_DATE"], os.environ["REPORT_SLOT"],
+                                  json.loads(raw), raw, max_age_minutes=15)
+          except (ValueError, KeyError, TypeError) as exc:
+              print("INPUT_NOT_ELIGIBLE: " + str(exc))
+              sys.exit(2)
+          print("CURRENT_VERIFIED_INPUT=PASS")
+          PY
+      - name: Recover missing acquisition once before the slot (never after)
+        if: steps.existing.outputs.ready != 'true' && steps.input.outcome != 'success'
+        env:
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          REPORT_SLOT: ${{ steps.slot.outputs.slot }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
+          TARGET_DATE="$(TZ=Asia/Tokyo date +%F)"
+          ACTUAL_TIME="$(TZ=Asia/Tokyo date +%H:%M)"
+          python - "$TARGET_DATE" "$REPORT_SLOT" <<'PY'
+          import sys
+          from scripts.persist_report_slot_evidence import require_before_slot
+          require_before_slot(sys.argv[1], sys.argv[2])
+          PY
+          python scripts/run_market_data_window.py \
+            --slot "$REPORT_SLOT" \
+            --times "$ACTUAL_TIME" \
+            --trigger-source report_evidence_pre_slot_recovery \
+            --max-catchup-minutes 5 \
+            --mode auto \
+            --recover-expired
+      - name: Freeze only verified current-slot acquisition, with live cutoff guard
+        if: steps.existing.outputs.ready != 'true'
+        run: |
+          python scripts/persist_report_slot_evidence.py \
+            --date "${{ steps.slot.outputs.date }}" \
+            --slot "${{ steps.slot.outputs.slot }}" \
+            --max-age-minutes 15 \
+            --require-live-before-slot
+      - name: Commit immutable evidence (not a report or publication receipt)
+        if: steps.existing.outputs.ready != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add data/report-evidence/
+          if git diff --cached --quiet; then
+            echo "NO_OP: identical evidence already exists."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Freeze pre-draft evidence for ${{ steps.slot.outputs.date }} ${{ steps.slot.outputs.slot }}"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "PRE_DRAFT_EVIDENCE_PERSISTED: publication remains separately gated."

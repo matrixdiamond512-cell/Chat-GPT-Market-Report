@@ -9,7 +9,11 @@ on:
       - 'apps-script/MarketReportContext.gs'
       - 'apps-script/MarketReportMasterScheduler.gs'
       - 'apps-script/MarketReportPrePublishValidation.gs'
+      - 'scripts/test_market_report_save_evidence_guard.js'
       - 'scripts/test_apps_script_narrative_report.js'
+      - 'scripts/test_actual_1600_source_recovery.js'
+      - 'scripts/test_github_large_report_index_read.js'
+      - 'tests/fixtures/market_report_20261013_1600_original.txt'
       - 'scripts/test_apps_script_infographic_gate.js'
       - 'scripts/reporting/infographic.py'
       - 'scripts/reporting/vision_provider.py'
@@ -36,6 +40,8 @@ on:
       - 'apps-script/MarketReportMasterScheduler.gs'
       - 'apps-script/MarketReportPrePublishValidation.gs'
       - 'scripts/test_apps_script_narrative_report.js'
+      - 'scripts/test_actual_1600_source_recovery.js'
+      - 'tests/fixtures/market_report_20261013_1600_original.txt'
       - 'scripts/test_apps_script_infographic_gate.js'
       - 'scripts/reporting/infographic.py'
       - 'scripts/reporting/vision_provider.py'
@@ -92,8 +98,16 @@ jobs:
           node --check /tmp/MarketReportMasterScheduler.js
           node --check /tmp/MarketReportPrePublishValidation.js
 
+      - name: Validate six-market evidence before report save
+        run: node scripts/test_market_report_save_evidence_guard.js
+
       - name: Test narrative 21:00 report parsing and validation
         run: node scripts/test_apps_script_narrative_report.js
+
+      - name: Test actual 16:00 original parsing and fail-closed controls
+        run: node scripts/test_actual_1600_source_recovery.js
+      - name: Test large GitHub report index readback fallback
+        run: node scripts/test_github_large_report_index_read.js
 
       - name: Confirm independent body publication and manifest-bound infographic gate
         run: |
@@ -217,7 +231,7 @@ jobs:
             ];
             if (time === '08:00') {
               morningLabels.forEach((label, index) => {
-                lines.push(label, String(100 + index), '+1', '+0.10%', '上昇');
+                lines.push(label + '：' + String(100 + index));
               });
             } else {
               lines.push(...coreMarketLines);
@@ -293,7 +307,7 @@ jobs:
           }
 
           const broken08 = buildReport('08:00');
-          broken08.fullText = broken08.fullText.replace('\n日経VI\n', '\n');
+          broken08.fullText = broken08.fullText.replace('\n日経VI：' + (100 + morningLabels.indexOf('日経VI')) + '\n', '\n');
           let failed = false;
           try { context.validateMarketReportBeforePublish_(broken08, 8); }
           catch (error) { failed = /公開前検証に失敗/.test(String(error.message)); }

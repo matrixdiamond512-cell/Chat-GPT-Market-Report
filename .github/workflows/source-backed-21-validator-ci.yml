@@ -1,0 +1,20 @@
+name: Source-backed 21h report validation
+on:
+  push:
+    branches: [fix/report-source-aware-21h-validator-20261013]
+  pull_request:
+    paths:
+      - scripts/validate_market_reports.py
+      - tests/test_source_backed_21_validator.py
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests -p 'test_source_backed_21_validator.py' -v
+      - run: python scripts/validate_market_reports.py --file reports.json > /tmp/market-validation.log 2>&1 || (tail -n 60 /tmp/market-validation.log; exit 1)

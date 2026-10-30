@@ -1,0 +1,2529 @@
+{
+  "status": "AUDITED",
+  "sheet": "終値一覧",
+  "rows": 108,
+  "columns": 186,
+  "coreBlank": 149,
+  "extraBlank": 4414,
+  "coreUnavailable": 0,
+  "extraUnavailable": 44,
+  "unverifiedValueWarning": "Filled means non-empty, NOT source-verified.",
+  "missingByColumn": [
+    {
+      "column": 97,
+      "name": "金オプションPut/Call比率",
+      "blank": 107,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 1
+    },
+    {
+      "column": 98,
+      "name": "最大コール建玉行使価格",
+      "blank": 107,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 1
+    },
+    {
+      "column": 99,
+      "name": "最大プット建玉行使価格",
+      "blank": 107,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 1
+    },
+    {
+      "column": 100,
+      "name": "ATMインプライド・ボラティリティ",
+      "blank": 107,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 1
+    },
+    {
+      "column": 104,
+      "name": "NYSE値上がり銘柄数",
+      "blank": 97,
+      "unavailable": 1,
+      "notApplicable": 0,
+      "filled": 10
+    },
+    {
+      "column": 105,
+      "name": "NYSE値下がり銘柄数",
+      "blank": 97,
+      "unavailable": 1,
+      "notApplicable": 0,
+      "filled": 10
+    },
+    {
+      "column": 106,
+      "name": "NASDAQ値上がり銘柄数",
+      "blank": 97,
+      "unavailable": 1,
+      "notApplicable": 0,
+      "filled": 10
+    },
+    {
+      "column": 107,
+      "name": "NASDAQ値下がり銘柄数",
+      "blank": 97,
+      "unavailable": 1,
+      "notApplicable": 0,
+      "filled": 10
+    },
+    {
+      "column": 108,
+      "name": "米国株値上がり比率",
+      "blank": 97,
+      "unavailable": 1,
+      "notApplicable": 0,
+      "filled": 10
+    },
+    {
+      "column": 109,
+      "name": "米国株市場内部判定",
+      "blank": 97,
+      "unavailable": 1,
+      "notApplicable": 0,
+      "filled": 10
+    },
+    {
+      "column": 151,
+      "name": "セクター取得日時",
+      "blank": 96,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 12
+    },
+    {
+      "column": 102,
+      "name": "USDJPY価格取得元",
+      "blank": 81,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 27
+    },
+    {
+      "column": 103,
+      "name": "USDJPY価格取得日時",
+      "blank": 81,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 27
+    },
+    {
+      "column": 150,
+      "name": "セクター取得基準日",
+      "blank": 79,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 29
+    },
+    {
+      "column": 74,
+      "name": "IAU発行済口数前日比",
+      "blank": 70,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 38
+    },
+    {
+      "column": 76,
+      "name": "IAU推定資金フロー（百万USD）",
+      "blank": 70,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 38
+    },
+    {
+      "column": 77,
+      "name": "IAU推定5日累積フロー（百万USD）",
+      "blank": 70,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 38
+    },
+    {
+      "column": 78,
+      "name": "IAU推定20日累積フロー（百万USD）",
+      "blank": 70,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 38
+    },
+    {
+      "column": 73,
+      "name": "IAU発行済口数",
+      "blank": 69,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 39
+    },
+    {
+      "column": 75,
+      "name": "IAU推定純資産額（百万USD）",
+      "blank": 69,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 39
+    },
+    {
+      "column": 101,
+      "name": "オプションデータ注記",
+      "blank": 69,
+      "unavailable": 38,
+      "notApplicable": 0,
+      "filled": 1
+    },
+    {
+      "column": 154,
+      "name": "日経225寄与度上位1コード",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 155,
+      "name": "日経225寄与度上位1銘柄",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 156,
+      "name": "日経225寄与度上位1寄与度",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 157,
+      "name": "日経225寄与度上位2コード",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 158,
+      "name": "日経225寄与度上位2銘柄",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 159,
+      "name": "日経225寄与度上位2寄与度",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 160,
+      "name": "日経225寄与度上位3コード",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 161,
+      "name": "日経225寄与度上位3銘柄",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 162,
+      "name": "日経225寄与度上位3寄与度",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 163,
+      "name": "日経225寄与度上位4コード",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 164,
+      "name": "日経225寄与度上位4銘柄",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 165,
+      "name": "日経225寄与度上位4寄与度",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 166,
+      "name": "日経225寄与度上位5コード",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 167,
+      "name": "日経225寄与度上位5銘柄",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 168,
+      "name": "日経225寄与度上位5寄与度",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 169,
+      "name": "日経225寄与度下位1コード",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 170,
+      "name": "日経225寄与度下位1銘柄",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 171,
+      "name": "日経225寄与度下位1寄与度",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 172,
+      "name": "日経225寄与度下位2コード",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 173,
+      "name": "日経225寄与度下位2銘柄",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 174,
+      "name": "日経225寄与度下位2寄与度",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 175,
+      "name": "日経225寄与度下位3コード",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 176,
+      "name": "日経225寄与度下位3銘柄",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 177,
+      "name": "日経225寄与度下位3寄与度",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 178,
+      "name": "日経225寄与度下位4コード",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 179,
+      "name": "日経225寄与度下位4銘柄",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 180,
+      "name": "日経225寄与度下位4寄与度",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 181,
+      "name": "日経225寄与度下位5コード",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 182,
+      "name": "日経225寄与度下位5銘柄",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 183,
+      "name": "日経225寄与度下位5寄与度",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 184,
+      "name": "日経225寄与度基準日",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 185,
+      "name": "日経225寄与度取得日時",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 186,
+      "name": "日経225寄与度取得元",
+      "blank": 58,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 49
+    },
+    {
+      "column": 66,
+      "name": "登録日時",
+      "blank": 57,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 51
+    },
+    {
+      "column": 80,
+      "name": "北米・欧州・アジア別フロー（百万USD）",
+      "blank": 45,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 63
+    },
+    {
+      "column": 95,
+      "name": "米ドル実効指数前日比",
+      "blank": 37,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 71
+    },
+    {
+      "column": 96,
+      "name": "金価格・実質金利・ドル整合性",
+      "blank": 37,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 71
+    },
+    {
+      "column": 94,
+      "name": "米ドル実効指数（Broad）",
+      "blank": 35,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 73
+    },
+    {
+      "column": 93,
+      "name": "米10年実質金利前日比（pt）",
+      "blank": 20,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 87
+    },
+    {
+      "column": 91,
+      "name": "金価格・総建玉判定",
+      "blank": 18,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 90
+    },
+    {
+      "column": 92,
+      "name": "米10年実質金利（%）",
+      "blank": 18,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 89
+    },
+    {
+      "column": 90,
+      "name": "金価格前週比（%）",
+      "blank": 17,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 91
+    },
+    {
+      "column": 72,
+      "name": "GLD保有量前日比（トン）",
+      "blank": 14,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 94
+    },
+    {
+      "column": 71,
+      "name": "GLD金保有量（トン）",
+      "blank": 13,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 95
+    },
+    {
+      "column": 81,
+      "name": "金価格との整合性",
+      "blank": 12,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 96
+    },
+    {
+      "column": 89,
+      "name": "金COT総建玉前週比（枚）",
+      "blank": 12,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 96
+    },
+    {
+      "column": 82,
+      "name": "金COT基準日",
+      "blank": 10,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 98
+    },
+    {
+      "column": 83,
+      "name": "金COTマネージドマネー ロング（枚）",
+      "blank": 10,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 98
+    },
+    {
+      "column": 84,
+      "name": "金COTマネージドマネー ショート（枚）",
+      "blank": 10,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 98
+    },
+    {
+      "column": 85,
+      "name": "金COTネットロング（枚）",
+      "blank": 10,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 98
+    },
+    {
+      "column": 86,
+      "name": "金COTネットロング前週比（枚）",
+      "blank": 10,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 98
+    },
+    {
+      "column": 87,
+      "name": "金COT総建玉（枚）",
+      "blank": 10,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 98
+    },
+    {
+      "column": 88,
+      "name": "金COT需給判定",
+      "blank": 10,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 98
+    },
+    {
+      "column": 79,
+      "name": "世界金ETF直近月間フロー（百万USD）",
+      "blank": 9,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 99
+    },
+    {
+      "column": 62,
+      "name": "東京市場USDJPYスポット出来高（百万ドル）",
+      "blank": 8,
+      "unavailable": 0,
+      "notApplicable": 5,
+      "filled": 95
+    },
+    {
+      "column": 63,
+      "name": "東京市場USDJPY出来高前日比",
+      "blank": 8,
+      "unavailable": 0,
+      "notApplicable": 5,
+      "filled": 95
+    },
+    {
+      "column": 65,
+      "name": "ゴトー日",
+      "blank": 7,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 101
+    },
+    {
+      "column": 110,
+      "name": "米国セクター上昇1業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 111,
+      "name": "米国セクター上昇1騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 112,
+      "name": "米国セクター上昇2業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 113,
+      "name": "米国セクター上昇2騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 114,
+      "name": "米国セクター上昇3業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 115,
+      "name": "米国セクター上昇3騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 116,
+      "name": "米国セクター上昇4業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 117,
+      "name": "米国セクター上昇4騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 118,
+      "name": "米国セクター上昇5業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 119,
+      "name": "米国セクター上昇5騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 120,
+      "name": "米国セクター下落1業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 121,
+      "name": "米国セクター下落1騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 122,
+      "name": "米国セクター下落2業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 123,
+      "name": "米国セクター下落2騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 124,
+      "name": "米国セクター下落3業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 125,
+      "name": "米国セクター下落3騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 126,
+      "name": "米国セクター下落4業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 127,
+      "name": "米国セクター下落4騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 128,
+      "name": "米国セクター下落5業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 129,
+      "name": "米国セクター下落5騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 130,
+      "name": "東京業種上昇1業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 131,
+      "name": "東京業種上昇1騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 132,
+      "name": "東京業種上昇2業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 133,
+      "name": "東京業種上昇2騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 134,
+      "name": "東京業種上昇3業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 135,
+      "name": "東京業種上昇3騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 136,
+      "name": "東京業種上昇4業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 137,
+      "name": "東京業種上昇4騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 138,
+      "name": "東京業種上昇5業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 139,
+      "name": "東京業種上昇5騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 140,
+      "name": "東京業種下落1業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 141,
+      "name": "東京業種下落1騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 142,
+      "name": "東京業種下落2業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 143,
+      "name": "東京業種下落2騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 144,
+      "name": "東京業種下落3業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 145,
+      "name": "東京業種下落3騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 146,
+      "name": "東京業種下落4業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 147,
+      "name": "東京業種下落4騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 148,
+      "name": "東京業種下落5業種",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 149,
+      "name": "東京業種下落5騰落率",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 152,
+      "name": "米国セクター取得元",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 102
+    },
+    {
+      "column": 153,
+      "name": "東京業種取得元",
+      "blank": 6,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 101
+    },
+    {
+      "column": 61,
+      "name": "日経225_200日乖離率",
+      "blank": 5,
+      "unavailable": 0,
+      "notApplicable": 5,
+      "filled": 98
+    },
+    {
+      "column": 42,
+      "name": "FearGreed前日比",
+      "blank": 4,
+      "unavailable": 0,
+      "notApplicable": 2,
+      "filled": 102
+    },
+    {
+      "column": 41,
+      "name": "FearGreed終値",
+      "blank": 3,
+      "unavailable": 0,
+      "notApplicable": 2,
+      "filled": 103
+    },
+    {
+      "column": 43,
+      "name": "FearGreed判定",
+      "blank": 3,
+      "unavailable": 0,
+      "notApplicable": 2,
+      "filled": 103
+    },
+    {
+      "column": 53,
+      "name": "日経225予想EPS",
+      "blank": 3,
+      "unavailable": 0,
+      "notApplicable": 6,
+      "filled": 99
+    },
+    {
+      "column": 2,
+      "name": "Dow終値",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 2,
+      "filled": 104
+    },
+    {
+      "column": 3,
+      "name": "Dow前日比",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 3,
+      "filled": 103
+    },
+    {
+      "column": 4,
+      "name": "Dow騰落率",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 3,
+      "filled": 103
+    },
+    {
+      "column": 5,
+      "name": "Nasdaq終値",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 3,
+      "filled": 103
+    },
+    {
+      "column": 6,
+      "name": "Nasdaq前日比",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 3,
+      "filled": 103
+    },
+    {
+      "column": 7,
+      "name": "Nasdaq騰落率",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 3,
+      "filled": 103
+    },
+    {
+      "column": 8,
+      "name": "S&P500終値",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 3,
+      "filled": 103
+    },
+    {
+      "column": 9,
+      "name": "S&P500前日比",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 3,
+      "filled": 103
+    },
+    {
+      "column": 10,
+      "name": "S&P500騰落率",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 3,
+      "filled": 103
+    },
+    {
+      "column": 11,
+      "name": "Russell 2000終値",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 3,
+      "filled": 103
+    },
+    {
+      "column": 12,
+      "name": "Russell 2000前日比",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 3,
+      "filled": 103
+    },
+    {
+      "column": 13,
+      "name": "Russell 2000騰落率",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 3,
+      "filled": 103
+    },
+    {
+      "column": 14,
+      "name": "日経225終値",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 7,
+      "filled": 99
+    },
+    {
+      "column": 15,
+      "name": "日経225前日比",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 6,
+      "filled": 100
+    },
+    {
+      "column": 16,
+      "name": "日経225騰落率",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 6,
+      "filled": 100
+    },
+    {
+      "column": 17,
+      "name": "日経225先物大阪終値",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 105
+    },
+    {
+      "column": 18,
+      "name": "日経225先物大阪前日比",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 105
+    },
+    {
+      "column": 19,
+      "name": "日経225先物大阪騰落率",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 1,
+      "filled": 105
+    },
+    {
+      "column": 20,
+      "name": "USDJPY終値",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 23,
+      "name": "EURUSD終値",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 24,
+      "name": "EURUSD前日比",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 25,
+      "name": "EURUSD騰落率",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 26,
+      "name": "ゴールド終値",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 27,
+      "name": "ゴールド前日比",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 28,
+      "name": "ゴールド騰落率",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 29,
+      "name": "WTI原油終値",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 30,
+      "name": "WTI原油前日比",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 31,
+      "name": "WTI原油騰落率",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 32,
+      "name": "BTCUSD終値",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 33,
+      "name": "BTCUSD前日比",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 34,
+      "name": "BTCUSD騰落率",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 35,
+      "name": "VIX終値",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 2,
+      "filled": 104
+    },
+    {
+      "column": 36,
+      "name": "VIX前日比",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 2,
+      "filled": 104
+    },
+    {
+      "column": 37,
+      "name": "VIX騰落率",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 2,
+      "filled": 104
+    },
+    {
+      "column": 38,
+      "name": "日経VI終値",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 2,
+      "filled": 104
+    },
+    {
+      "column": 39,
+      "name": "日経VI前日比",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 2,
+      "filled": 104
+    },
+    {
+      "column": 40,
+      "name": "日経VI騰落率",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 2,
+      "filled": 104
+    },
+    {
+      "column": 44,
+      "name": "米10年債利回り",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 2,
+      "filled": 104
+    },
+    {
+      "column": 45,
+      "name": "米10年債前日比",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 2,
+      "filled": 104
+    },
+    {
+      "column": 46,
+      "name": "日本10年債利回り",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 2,
+      "filled": 104
+    },
+    {
+      "column": 47,
+      "name": "日本10年債前日比",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 2,
+      "filled": 104
+    },
+    {
+      "column": 48,
+      "name": "ECB政策金利",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 49,
+      "name": "ECB預金ファシリティ金利",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 50,
+      "name": "ECB限界貸出金利",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 51,
+      "name": "ECB前回比",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 52,
+      "name": "ECB金利スタンス",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 0,
+      "filled": 106
+    },
+    {
+      "column": 54,
+      "name": "日経225予想PER",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 6,
+      "filled": 100
+    },
+    {
+      "column": 55,
+      "name": "東証プライム値上がり銘柄数",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 6,
+      "filled": 100
+    },
+    {
+      "column": 56,
+      "name": "東証プライム値下がり銘柄数",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 6,
+      "filled": 100
+    },
+    {
+      "column": 57,
+      "name": "東証プライム騰落レシオ",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 6,
+      "filled": 100
+    },
+    {
+      "column": 58,
+      "name": "東証プライム売買代金",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 6,
+      "filled": 100
+    },
+    {
+      "column": 59,
+      "name": "東証プライム売買高",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 6,
+      "filled": 100
+    },
+    {
+      "column": 60,
+      "name": "日経225_25日乖離率",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 6,
+      "filled": 100
+    },
+    {
+      "column": 64,
+      "name": "日経225予想PBR",
+      "blank": 2,
+      "unavailable": 0,
+      "notApplicable": 6,
+      "filled": 100
+    }
+  ],
+  "missingByDate": [
+    {
+      "row": 109,
+      "date": "2026/10/29",
+      "coreBlank": 62,
+      "extraBlank": 38,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 108,
+      "date": "2026/10/28",
+      "coreBlank": 4,
+      "extraBlank": 38,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 107,
+      "date": "2026/10/27",
+      "coreBlank": 3,
+      "extraBlank": 38,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 106,
+      "date": "2026/10/26",
+      "coreBlank": 3,
+      "extraBlank": 38,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 105,
+      "date": "2026/10/24",
+      "coreBlank": 62,
+      "extraBlank": 115,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 104,
+      "date": "2026/10/23",
+      "coreBlank": 4,
+      "extraBlank": 38,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 103,
+      "date": "2026/10/22",
+      "coreBlank": 6,
+      "extraBlank": 38,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 102,
+      "date": "2026/10/21",
+      "coreBlank": 3,
+      "extraBlank": 38,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 101,
+      "date": "2026/10/20",
+      "coreBlank": 1,
+      "extraBlank": 38,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 100,
+      "date": "2026/10/19",
+      "coreBlank": 1,
+      "extraBlank": 29,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 99,
+      "date": "2026/10/17",
+      "coreBlank": 0,
+      "extraBlank": 24,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 2,
+      "extraClosed": 0
+    },
+    {
+      "row": 98,
+      "date": "2026/10/16",
+      "coreBlank": 0,
+      "extraBlank": 24,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 97,
+      "date": "2026/10/15",
+      "coreBlank": 0,
+      "extraBlank": 23,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 96,
+      "date": "2026/10/14",
+      "coreBlank": 0,
+      "extraBlank": 22,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 95,
+      "date": "2026/10/13",
+      "coreBlank": 0,
+      "extraBlank": 21,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 94,
+      "date": "2026/10/12",
+      "coreBlank": 0,
+      "extraBlank": 24,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 25,
+      "extraClosed": 56
+    },
+    {
+      "row": 93,
+      "date": "2026/10/10",
+      "coreBlank": 0,
+      "extraBlank": 44,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 2,
+      "extraClosed": 0
+    },
+    {
+      "row": 92,
+      "date": "2026/10/09",
+      "coreBlank": 0,
+      "extraBlank": 24,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 91,
+      "date": "2026/10/08",
+      "coreBlank": 0,
+      "extraBlank": 25,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 90,
+      "date": "2026/10/07",
+      "coreBlank": 0,
+      "extraBlank": 25,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 89,
+      "date": "2026/10/06",
+      "coreBlank": 0,
+      "extraBlank": 25,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 88,
+      "date": "2026/10/05",
+      "coreBlank": 0,
+      "extraBlank": 25,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 87,
+      "date": "2026/10/03",
+      "coreBlank": 0,
+      "extraBlank": 48,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 2,
+      "extraClosed": 0
+    },
+    {
+      "row": 86,
+      "date": "2026/10/02",
+      "coreBlank": 0,
+      "extraBlank": 23,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 85,
+      "date": "2026/10/01",
+      "coreBlank": 0,
+      "extraBlank": 23,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 84,
+      "date": "2026/09/30",
+      "coreBlank": 0,
+      "extraBlank": 19,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 83,
+      "date": "2026/09/29",
+      "coreBlank": 0,
+      "extraBlank": 26,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 82,
+      "date": "2026/09/28",
+      "coreBlank": 0,
+      "extraBlank": 59,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 81,
+      "date": "2026/09/25",
+      "coreBlank": 0,
+      "extraBlank": 23,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 80,
+      "date": "2026/09/24",
+      "coreBlank": 0,
+      "extraBlank": 23,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 79,
+      "date": "2026/09/23",
+      "coreBlank": 0,
+      "extraBlank": 77,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 13,
+      "extraClosed": 0
+    },
+    {
+      "row": 78,
+      "date": "2026/09/22",
+      "coreBlank": 0,
+      "extraBlank": 77,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 13,
+      "extraClosed": 0
+    },
+    {
+      "row": 77,
+      "date": "2026/09/21",
+      "coreBlank": 0,
+      "extraBlank": 77,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 13,
+      "extraClosed": 0
+    },
+    {
+      "row": 76,
+      "date": "2026/09/18",
+      "coreBlank": 0,
+      "extraBlank": 23,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 75,
+      "date": "2026/09/17",
+      "coreBlank": 0,
+      "extraBlank": 23,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 74,
+      "date": "2026/09/16",
+      "coreBlank": 0,
+      "extraBlank": 23,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 73,
+      "date": "2026/09/15",
+      "coreBlank": 0,
+      "extraBlank": 23,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 72,
+      "date": "2026/09/14",
+      "coreBlank": 0,
+      "extraBlank": 23,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 71,
+      "date": "2026/09/11",
+      "coreBlank": 0,
+      "extraBlank": 22,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 70,
+      "date": "2026/09/10",
+      "coreBlank": 0,
+      "extraBlank": 23,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 69,
+      "date": "2026/09/09",
+      "coreBlank": 0,
+      "extraBlank": 23,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 68,
+      "date": "2026/09/08",
+      "coreBlank": 0,
+      "extraBlank": 24,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 67,
+      "date": "2026/09/07",
+      "coreBlank": 0,
+      "extraBlank": 49,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 12,
+      "extraClosed": 0
+    },
+    {
+      "row": 66,
+      "date": "2026/09/04",
+      "coreBlank": 0,
+      "extraBlank": 22,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 65,
+      "date": "2026/09/03",
+      "coreBlank": 0,
+      "extraBlank": 22,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 64,
+      "date": "2026/09/02",
+      "coreBlank": 0,
+      "extraBlank": 22,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 63,
+      "date": "2026/09/01",
+      "coreBlank": 0,
+      "extraBlank": 55,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 62,
+      "date": "2026/08/31",
+      "coreBlank": 0,
+      "extraBlank": 55,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 61,
+      "date": "2026/08/28",
+      "coreBlank": 0,
+      "extraBlank": 22,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 60,
+      "date": "2026/08/27",
+      "coreBlank": 0,
+      "extraBlank": 22,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 59,
+      "date": "2026/08/26",
+      "coreBlank": 0,
+      "extraBlank": 22,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 58,
+      "date": "2026/08/25",
+      "coreBlank": 0,
+      "extraBlank": 22,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 57,
+      "date": "2026/08/24",
+      "coreBlank": 0,
+      "extraBlank": 20,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 56,
+      "date": "2026/08/21",
+      "coreBlank": 0,
+      "extraBlank": 22,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 55,
+      "date": "2026/08/20",
+      "coreBlank": 0,
+      "extraBlank": 22,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 54,
+      "date": "2026/08/19",
+      "coreBlank": 0,
+      "extraBlank": 22,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 53,
+      "date": "2026/08/18",
+      "coreBlank": 0,
+      "extraBlank": 22,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 52,
+      "date": "2026/08/17",
+      "coreBlank": 0,
+      "extraBlank": 48,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 51,
+      "date": "2026/08/14",
+      "coreBlank": 0,
+      "extraBlank": 48,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 50,
+      "date": "2026/08/13",
+      "coreBlank": 0,
+      "extraBlank": 48,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 49,
+      "date": "2026/08/12",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 48,
+      "date": "2026/08/11",
+      "coreBlank": 0,
+      "extraBlank": 68,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 12,
+      "extraClosed": 0
+    },
+    {
+      "row": 47,
+      "date": "2026/08/10",
+      "coreBlank": 0,
+      "extraBlank": 48,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 46,
+      "date": "2026/08/07",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 45,
+      "date": "2026/08/06",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 44,
+      "date": "2026/08/05",
+      "coreBlank": 0,
+      "extraBlank": 49,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 43,
+      "date": "2026/08/04",
+      "coreBlank": 0,
+      "extraBlank": 55,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 42,
+      "date": "2026/08/03",
+      "coreBlank": 0,
+      "extraBlank": 55,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 41,
+      "date": "2026/07/31",
+      "coreBlank": 0,
+      "extraBlank": 43,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 40,
+      "date": "2026/07/30",
+      "coreBlank": 0,
+      "extraBlank": 56,
+      "coreUnavailable": 0,
+      "extraUnavailable": 0,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 39,
+      "date": "2026/07/29",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 38,
+      "date": "2026/07/28",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 37,
+      "date": "2026/07/27",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 36,
+      "date": "2026/07/24",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 35,
+      "date": "2026/07/23",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 34,
+      "date": "2026/07/22",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 33,
+      "date": "2026/07/21",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 32,
+      "date": "2026/07/20",
+      "coreBlank": 0,
+      "extraBlank": 68,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 20,
+      "extraClosed": 0
+    },
+    {
+      "row": 31,
+      "date": "2026/07/17",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 30,
+      "date": "2026/07/16",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 29,
+      "date": "2026/07/15",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 28,
+      "date": "2026/07/14",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 27,
+      "date": "2026/07/13",
+      "coreBlank": 0,
+      "extraBlank": 49,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 26,
+      "date": "2026/07/10",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 25,
+      "date": "2026/07/09",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 24,
+      "date": "2026/07/08",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 23,
+      "date": "2026/07/07",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 22,
+      "date": "2026/07/03",
+      "coreBlank": 0,
+      "extraBlank": 81,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 21,
+      "extraClosed": 0
+    },
+    {
+      "row": 21,
+      "date": "2026/07/02",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 20,
+      "date": "2026/07/01",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 19,
+      "date": "2026/06/30",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 18,
+      "date": "2026/06/29",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 17,
+      "date": "2026/06/26",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 16,
+      "date": "2026/06/25",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 15,
+      "date": "2026/06/24",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 14,
+      "date": "2026/06/23",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 13,
+      "date": "2026/06/22",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 12,
+      "date": "2026/06/19",
+      "coreBlank": 0,
+      "extraBlank": 81,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 17,
+      "extraClosed": 0
+    },
+    {
+      "row": 11,
+      "date": "2026/06/18",
+      "coreBlank": 0,
+      "extraBlank": 50,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 10,
+      "date": "2026/06/17",
+      "coreBlank": 0,
+      "extraBlank": 50,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 9,
+      "date": "2026/06/16",
+      "coreBlank": 0,
+      "extraBlank": 50,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 8,
+      "date": "2026/06/15",
+      "coreBlank": 0,
+      "extraBlank": 50,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 7,
+      "date": "2026/06/12",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 6,
+      "date": "2026/06/11",
+      "coreBlank": 0,
+      "extraBlank": 49,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 5,
+      "date": "2026/06/10",
+      "coreBlank": 0,
+      "extraBlank": 49,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 4,
+      "date": "2026/06/09",
+      "coreBlank": 0,
+      "extraBlank": 49,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 3,
+      "date": "2026/06/08",
+      "coreBlank": 0,
+      "extraBlank": 50,
+      "coreUnavailable": 0,
+      "extraUnavailable": 1,
+      "coreClosed": 0,
+      "extraClosed": 0
+    },
+    {
+      "row": 2,
+      "date": "2026/06/05",
+      "coreBlank": 0,
+      "extraBlank": 47,
+      "coreUnavailable": 0,
+      "extraUnavailable": 7,
+      "coreClosed": 0,
+      "extraClosed": 0
+    }
+  ],
+  "checkedAt": "2026-10-30T01:18:26+09:00",
+  "spreadsheetId": "1n2ACInX4pmK0TdijC8xaur2RIiNZyVa6GFTZAyofcuE"
+}

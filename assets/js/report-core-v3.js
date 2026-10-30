@@ -17,7 +17,23 @@ function dateToJp(dateText) {
   return `${m[1]}/${m[2]}/${m[3]}（${days[dow]}）`;
 }
 function reportKey(r) { return `${r?.date || ""} ${r?.time || ""}`; }
-function sortReports(list) { return list.filter(r => r && /^\d{4}-\d{2}-\d{2}$/.test(r.date || "")).sort((a,b) => reportKey(b).localeCompare(reportKey(a))); }
+function isPublicReport(r) {
+  return window.MarketReportPublicationPolicy.isEligible(r);
+}
+function isArchivedRecovery(r) {
+  // Historical recovery records are readable, but are never formal publication.
+  return !!r && r.archiveStatus === "HISTORICAL_ARCHIVE"
+    && r.verifiedAtSlot === false
+    && /^\d{4}-\d{2}-\d{2}$/.test(String(r.date || ""))
+    && REPORT_TIMES.includes(r.time)
+    && typeof r.fullText === "string" && r.fullText.replace(/^#{1,3}\s+/, "").startsWith(String(r.title || ""))
+    && String(r.archiveNotice || "").length > 10;
+}
+function sortReports(list) {
+  return list.filter(r => r && (isPublicReport(r) || isArchivedRecovery(r))
+      && /^\d{4}-\d{2}-\d{2}$/.test(r.date || ""))
+    .sort((a,b) => reportKey(b).localeCompare(reportKey(a)));
+}
 function uniqueDates() { return [...new Set(reports.map(r => r.date))].sort().reverse(); }
 function reportsForDate(d) { return reports.filter(r => r.date === d).sort((a,b) => REPORT_TIMES.indexOf(a.time) - REPORT_TIMES.indexOf(b.time)); }
 function resolveAvailableDate(d) {
@@ -70,6 +86,7 @@ function renderMissingReport(date, time) {
   window.MarketReportLastRendered = null;
 }
 function renderInfographic(report) {
+  if (typeof isArchivedRecovery === "function" && isArchivedRecovery(report)) return "";
   const image = report.infographic;
   if (!image || report.infographic_status !== "READY") return "";
   if (image.artifact_type !== "FORMAL_INFOGRAPHIC" || image.debug_preview === true) return "";
@@ -260,10 +277,27 @@ function marketSectionTitle(report, title) {
   const dataDate = previousCloseDataDate(report);
   return dataDate ? `主要市場データ（前営業日終値：${dataDate}）` : "主要市場データ（前営業日終値）";
 }
+function marketRowsFromSectionLines(lines) {
+  const rows = [];
+  for (const raw of lines || []) {
+    const line = clean(raw);
+    if (!line || /^【.*】$/.test(line) || /^(項目|市場・指標)[｜|]/.test(line)) continue;
+    // Morning report prose uses "label value / change / rate", not a Markdown table.
+    const m = line.match(/^(.+?)\s+([+−-]?(?:約\s*)?[\d,]+(?:\.\d+)?\s*(?:円|ドル|%|％|倍|銘柄|ポイント|pt|bp)?)(?:\s*\/\s*([^\/\n（]+))?(?:\s*\/\s*([^\/\n（]+))?(.*)$/);
+    if (!m || m[1].length > 58 || !/[0-9]/.test(m[2])) continue;
+    const label = m[1].trim();
+    if (/^(?:作成基準|注|出典)/.test(label)) continue;
+    const remainder = [m[3], m[4], m[5]].filter(Boolean).join(" ").trim();
+    const percent = remainder.match(/[+−-]?\d+(?:\.\d+)?\s*[%％]/);
+    rows.push({label, value:m[2].trim(), change:(m[3] || "").trim() || "—", rate:percent ? percent[0] : "—", direction:"—"});
+  }
+  return rows;
+}
 function renderMarketTable(report, lines, sectionTitle = "") {
   const previousClose = isPreviousCloseTable(report, sectionTitle);
   const hasStructuredRows = Array.isArray(report?.marketDataTable?.rows) && report.marketDataTable.rows.length > 0;
   let rows = marketRows(report);
+  if (!rows.length) rows = marketRowsFromSectionLines(lines || []);
   if (!rows.length) rows = legacyMarketRowsFromFullText(report);
   // A structured 08:00 table is the canonical 28-row contract. Do not append
   // guesses extracted from prose, which can reintroduce current-value rows.
@@ -307,6 +341,19 @@ function renderPreface(lines) {
   const visible = (lines || []).map(clean).filter(x => x && !/^作成日時[：:]/.test(x) && !/^ファイル名[：:]/.test(x) && !/^データ基準[：:]/.test(x));
   return visible.length ? `<div class="document-preface">${visible.map(x=>`<p>${esc(x)}</p>`).join("")}</div>` : "";
 }
+const supplementalChronology20261016 = {"08:00":[["10/15 21:30","米9月PPI・小売売上高等が発表","インフレ警戒が残る一方、消費指標の評価が分かれる","米国","高","NY市場の反応"],["10/15 22:30","NY株式市場開場。AI資金調達・採算懸念","半導体・ハイテクに売り圧力","米国","高","主要指数の推移"],["10/16 00:05","Dow 52,146.08、Nasdaq 26,614.79を観測","Dow上昇・Nasdaq下落、業種格差","米国","高","米金利・AI株"],["10/16 04:12","Dow 52,183.86、Nasdaq 26,701.01を観測","Nasdaqがプラス圏回復","米国","中","NY終値"],["10/16 05:00頃","NY主要指数が反発して引ける","SOXは弱さを残す","米国","高","大阪先物夜間"],["10/16 06:00","大阪先物夜間引け65,520円","前日清算値比+720円","日本","高","東京寄り付き"]],"12:00":[["09:00","東京寄り付き、日経平均64,925.29円","前日比+499.34円で反発","日本","高","半導体株"],["09:30～10:30","半導体中心に買い戻し、10:16頃65,688円","急落後の反発が拡大","日本","高","買いの広がり"],["11:30","日経平均65,550.68円で前場終了","前日比+1,124.73円","日本","高","後場開始"],["12:00","大阪先物約65,600円","東京現物の反発を引き継ぐ","日本","中","65,000円維持"]],"16:00":[["09:00～11:30","日経平均が64,925.29円で寄り付き、65,550.68円で前引け","急落後の買い戻し拡大","日本","高","後場反応"],["12:30","後場寄り付き65,421.10円","前引け比約130円安、利益確定が交錯","日本","高","売り圧力"],["14:42","日経平均65,612.47円まで再上昇","午後も買い戻しが続く場面","日本","中","大引け"],["15:30","日経平均65,324.29円で大引け","前引け比226.39円下落、前日比+898.34円","日本","高","夜間先物"],["15:45","大阪先物清算値65,520円","前日比+720円","日本","高","NY市場"]],"21:00":[["12:00～13:00頃","東京後場の買い戻しと利益確定が交錯","時間帯概況。個別時刻の価格取得なし","日本","中","引け値"],["14:00～15:30","日経平均65,324.29円で大引け","前引け65,550.68円より伸び悩む","日本","高","欧州市場"],["16:00～18:00頃","欧州でAI信用懸念と金利低下を評価","時間帯概況。定量的な反応は未取得","欧州","中","NY市場"],["18:00～21:00頃","米株開場前、AI関連株と米金利に注目","21:00同時点の市場反応は未取得","米国・欧州","中","米鉱工業生産"],["22:15（予定）","米鉱工業生産・設備稼働率発表予定","21時時点では未発表","米国","高","指標結果"],["22:30（予定）","米株式市場開場予定","21時時点では未開始","米国","高","AI関連株"]]};
+function renderSupplementalChronology(report) {
+  if (!isArchivedRecovery(report)) return "";
+  const legacyRows = report.date === "2026-10-16" ? supplementalChronology20261016[report.time] || [] : [];
+  const storedRows = Array.isArray(report.archiveTimelineRows)
+    ? report.archiveTimelineRows.filter(row => row && row.text && row.time).slice(0, 20)
+        .map(row => [row.time, row.text, row.reaction || "", row.region || "対象市場", row.importance || "中", row.next || "確認待ち"])
+    : [];
+  const rows = storedRows.length ? storedRows : legacyRows;
+  if (!rows.length) return "";
+  const headers = ["日時（日本時間）","イベント","市場反応","国・地域","重要度","次のイベントまで"];
+  return '<section class="section sop-section" data-sop-title="当日の市場時系列（実際に起きた出来事と市場反応）"><h2>当日の市場時系列（実際に起きた出来事と市場反応）</h2><p>保存本文に基づく補充・再構成データ。概況・予定は区別して表示。</p><div style="overflow-x:auto"><table class="market-table"><thead><tr>' + headers.map(h=>'<th>'+esc(h)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(row=>'<tr>'+row.map(cell=>'<td>'+esc(cell)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div></section>';
+}
 function renderDocument(report) {
   const source = fullTextOf(report);
   const fallback = report.title || `マーケットレポート｜${dateToJp(report.date)} ${report.time || ""}`;
@@ -316,7 +363,30 @@ function renderDocument(report) {
   $("reportStatus").textContent = `本文全文を表示中｜reports.json正本｜統合レンダラー v3`;
   $("app").className = "report sop-report-applied";
   const app = $("app");
-  app.innerHTML = `<header class="report-head"><h1 class="report-title">${esc(parsed.title || fallback)}</h1><div class="source-badge">reports.json正本</div></header>${renderInfographic(report)}<article class="report-body">${renderPreface(parsed.preface)}${sections.map(s => { const market = isMarketSection(s.title); const title = market ? marketSectionTitle(report, s.title) : s.title; return `<section class="section sop-section" data-sop-title="${esc(title)}"><h2>${s.number ? `${esc(s.number)}．` : ""}${esc(title)}</h2>${market ? renderMarketTable(report, s.lines, s.title) : renderRichText(s.lines)}</section>`; }).join("")}</article>`;
+  app.innerHTML = `<header class="report-head"><h1 class="report-title">${esc(parsed.title || fallback)}</h1><div class="source-badge">reports.json正本</div></header>${renderInfographic(report)}<article class="report-body">${renderSupplementalChronology(report)}${renderPreface(parsed.preface)}${sections.map(s => { const market = isMarketSection(s.title); const title = market ? marketSectionTitle(report, s.title) : s.title; return `<section class="section sop-section" data-sop-title="${esc(title)}"><h2>${s.number ? `${esc(s.number)}．` : ""}${esc(title)}</h2>${market ? renderMarketTable(report, s.lines, s.title) : renderRichText(s.lines)}</section>`; }).join("")}</article>`;
+  if (isArchivedRecovery(report)) {
+    $("reportStatus").textContent = "過去の記録を表示中｜保存本文・事後修復版（正式発行とは区別）";
+    app.classList.add("report-archive-recovery");
+    const sourceBadge = app.querySelector(".source-badge");
+    if (sourceBadge) sourceBadge.textContent = "過去の保存記録・修復版";
+    const notice = document.createElement("div");
+    notice.className = "archive-provenance";
+    notice.setAttribute("role", "note");
+    const strong = document.createElement("strong");
+    strong.textContent = "記録復元版（正式な発行原本とは区別・公開承認とは別）";
+    notice.appendChild(strong);
+    for (const line of [
+      report.archiveNotice,
+      "原本状態：" + report.originalReportStatus + "／復元区分：" + report.archiveType,
+      "後日確認したデータは発行時点の情報として扱いません。"
+    ]) {
+      const p = document.createElement("p");
+      p.textContent = line;
+      notice.appendChild(p);
+    }
+    const head = app.querySelector(".report-head");
+    if (head) head.insertAdjacentElement("afterend", notice);
+  }
   void verifyAndLoadInfographicHash_(app);
 }
 function render() { if (!selectedReport) return; renderControls(selectedReport); renderDocument(selectedReport); window.MarketReportLastRendered = selectedReport; window.dispatchEvent(new CustomEvent("market-report-rendered", { detail: { report: selectedReport } })); }
@@ -326,7 +396,103 @@ async function init() {
     const response = await fetch(`reports.json?ts=${Date.now()}`, {cache:"no-store"});
     if (!response.ok) throw new Error(`reports.json HTTP ${response.status}`);
     const payload = await response.json();
-    reports = sortReports(Array.isArray(payload) ? payload : (Array.isArray(payload?.reports) ? payload.reports : []));
+    const formallyPublished = sortReports(Array.isArray(payload) ? payload : (Array.isArray(payload?.reports) ? payload.reports : [])).filter(isPublicReport);
+    let recovered = [];
+    try {
+      const archiveResponse = await fetch("data/report-recovery-2026-10.json?ts=" + Date.now(), {cache:"no-store"});
+      if (!archiveResponse.ok) throw new Error("archive HTTP " + archiveResponse.status);
+      const archivePayload = await archiveResponse.json();
+      if (archivePayload?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION"
+          || !Array.isArray(archivePayload.reports)) throw new Error("archive schema mismatch");
+      recovered = archivePayload.reports.filter(isArchivedRecovery);
+      if (recovered.length !== archivePayload.reports.length) throw new Error("archive entries invalid");
+    } catch (error) {
+      console.warn("[market report recovery] archive read unavailable", error.message);
+    }
+    // Read-back owner-folder docs are display-only history, not canonical publication.
+    // This provides all four 2026-10-19 slots through the normal date/time controls.
+    let driveArchive = [];
+    try {
+      const path = "data/dashboard-drive-archive-2026-10-19.json";
+      const response = await fetch(path + "?ts=" + Date.now(), {cache:"no-store"});
+      if (!response.ok) throw new Error(path + " HTTP " + response.status);
+      const data = await response.json();
+      if (data?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION" ||
+          data?.sourceFolderId !== "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz" ||
+          !Array.isArray(data.reports)) throw new Error("Drive archive schema invalid");
+      driveArchive = data.reports.filter(r => isArchivedRecovery(r) &&
+        r.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED" &&
+        r.archiveType === "DRIVE_SAVED_DOCUMENT" && r.sourceDocument?.id &&
+        typeof r.driveRevisionId === "string" && r.driveRevisionId &&
+        r.driveTextLength === r.fullText.length &&
+        Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length);
+    } catch (error) {
+      console.warn("[market report Drive readback] unavailable", error.message);
+    }
+    // Additional verified folder readback: October 26 analytical text, not formal publication.
+    try {
+      const path = "data/dashboard-drive-archive-2026-10-26.json";
+      const response = await fetch(path + "?ts=" + Date.now(), {cache:"no-store"});
+      if (!response.ok) throw new Error(path + " HTTP " + response.status);
+      const data = await response.json();
+      if (data?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION" ||
+          data?.sourceFolderId !== "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz" ||
+          !Array.isArray(data.reports)) throw new Error("October 26 Drive archive schema invalid");
+      driveArchive.push(...data.reports.filter(r => isArchivedRecovery(r) &&
+        r.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED" &&
+        r.archiveType === "DRIVE_SAVED_DOCUMENT" && r.sourceDocument?.id &&
+        typeof r.driveRevisionId === "string" && r.driveRevisionId &&
+        r.driveTextLength === r.fullText.length &&
+        Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length));
+    } catch (error) {
+      console.warn("[market report October 26 Drive readback] unavailable", error.message);
+    }
+    // Additional verified folder readback: October 27 analytical text, not formal publication.
+    try {
+      const path = "data/dashboard-drive-archive-2026-10-27.json";
+      const response = await fetch(path + "?ts=" + Date.now(), {cache:"no-store"});
+      if (!response.ok) throw new Error(path + " HTTP " + response.status);
+      const data = await response.json();
+      if (data?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION" ||
+          data?.sourceFolderId !== "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz" ||
+          !Array.isArray(data.reports)) throw new Error("October 27 Drive archive schema invalid");
+      driveArchive.push(...data.reports.filter(r => isArchivedRecovery(r) &&
+        r.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED" &&
+        r.archiveType === "DRIVE_SAVED_DOCUMENT" && r.sourceDocument?.id &&
+        typeof r.driveRevisionId === "string" && r.driveRevisionId &&
+        r.driveTextLength === r.fullText.length &&
+        Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length));
+    } catch (error) {
+      console.warn("[market report October 27 Drive readback] unavailable", error.message);
+    }
+    // Additional date-scoped, read-back-verified Google Docs analytical archives.
+    // They remain display-only and cannot supersede formal publications.
+    for (const archiveDate of ["2026-10-28", "2026-10-29"]) {
+      try {
+        const path = "data/dashboard-drive-archive-" + archiveDate + ".json";
+        const response = await fetch(path + "?ts=" + Date.now(), {cache:"no-store"});
+        if (!response.ok) throw new Error(path + " HTTP " + response.status);
+        const data = await response.json();
+        if (data?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION" ||
+            data?.sourceFolderId !== "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz" ||
+            !Array.isArray(data.reports)) throw new Error("Drive archive schema invalid: " + archiveDate);
+        driveArchive.push(...data.reports.filter(r => isArchivedRecovery(r) &&
+          r.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED" &&
+          r.archiveType === "DRIVE_SAVED_DOCUMENT" && r.sourceDocument?.id &&
+          typeof r.driveRevisionId === "string" && r.driveRevisionId &&
+          r.driveTextLength === r.fullText.length &&
+          Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length));
+      } catch (error) {
+        console.warn("[market report " + archiveDate + " Drive readback] unavailable", error.message);
+      }
+    }
+    const bySlot = new Map(recovered.map(r => [reportKey(r), r]));
+    driveArchive.forEach(r => {
+      if (!bySlot.has(reportKey(r))) bySlot.set(reportKey(r), r);
+    });
+    formallyPublished.forEach(r => bySlot.set(reportKey(r), r)); // formal takes precedence
+    reports = sortReports([...bySlot.values()]);
+    window.MarketReportArchiveInfo = {count: recovered.length, publishedCount: formallyPublished.length};
     if (!reports.length) throw new Error("reports.jsonに表示できる本文データがありません");
     const params = new URLSearchParams(location.search);
     const date = params.get("date"), time = params.get("time");

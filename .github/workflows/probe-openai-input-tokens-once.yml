@@ -1,0 +1,68 @@
+name: OpenAI real input count probe
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/probe-openai-input-tokens-once.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  count-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 15d89a16d186222959fecc50e6c4ebfb92de0cc7
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify frozen market facts and count real input tokens only
+        shell: bash
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_PROJECT_ID: ${{ secrets.OPENAI_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          from urllib.request import Request,build_opener,HTTPRedirectHandler
+          from urllib.error import URLError,HTTPError
+          from scripts.reporting.context import ReportContext
+          from scripts.reporting.snapshot import MarketDataSnapshot
+          from scripts.reporting.shadow_worker import freeze_shadow_input,json_bytes
+          from scripts.reporting.d2_responses_contract import build_request
+          from scripts.reporting.d2_token_count_contract import build_count_plan,review_count_fixture
+          class NoRedirect(HTTPRedirectHandler):
+              def redirect_request(self,*args,**kwargs):
+                  raise ValueError('API_REDIRECT_BLOCKED')
+          key=os.environ.get('OPENAI_API_KEY','')
+          project=os.environ.get('OPENAI_PROJECT_ID','')
+          if not key.startswith('sk-') or not project.startswith('proj_'):
+              raise SystemExit('API_CREDENTIALS_NOT_CONFIGURED')
+          ctx=ReportContext.create('2026-10-14','21:00','2026-10-14T21:00:00+09:00',mode='historical')
+          source=json.loads(Path('data/market/history/2026-10-14_21-00.json').read_text(encoding='utf-8'))
+          snap=MarketDataSnapshot.from_acquisition(ctx,source)
+          freeze_shadow_input(ctx,snap)
+          req=build_request(ctx,snap,instructions='Use only verified frozen observations. Never invent prices or sources. This token count probe never generates or publishes a report.')
+          plan=build_count_plan(req,max_input_tokens=12000,max_run_usd='0.03')
+          print('FROZEN_MARKET_INPUT_OK')
+          print('COUNT_PAYLOAD_SHA256='+plan.count_request_sha256)
+          http=Request('https://api.openai.com/v1/responses/input_tokens',method='POST',data=json_bytes(plan.payload),headers={'Authorization':'Bearer '+key,'OpenAI-Project':project,'Content-Type':'application/json'})
+          try:
+              with build_opener(NoRedirect()).open(http,timeout=35) as resp:
+                  if resp.status!=200: raise ValueError('HTTP_STATUS_UNEXPECTED')
+                  raw=resp.read(4097)
+          except (HTTPError,URLError,ValueError,TimeoutError) as exc:
+              status=exc.code if isinstance(exc,HTTPError) else type(exc).__name__
+              raise SystemExit('OPENAI_COUNT_FAILED_'+str(status)+'_NO_GENERATION') from None
+          if len(raw)>4096: raise SystemExit('OPENAI_COUNT_RESPONSE_TOO_LARGE')
+          review=review_count_fixture(plan,req,raw)
+          print('LIVE_COUNT_VERIFIED')
+          print('INPUT_TOKENS='+str(review.input_tokens))
+          print('ESTIMATED_MAX_MODEL_COST_USD='+review.planned_cost_usd)
+          print('NO_MODEL_GENERATION_NO_REPORT_PUBLICATION')
+          PY

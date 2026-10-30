@@ -6,6 +6,7 @@ const workflow = fs.readFileSync('.github/workflows/deploy-pages.yml', 'utf8').r
 const regressionWorkflow = fs.readFileSync('.github/workflows/report-21-ui-validation.yml', 'utf8').replace(/\r\n?/g, '\n');
 const localValidator = fs.readFileSync('scripts/validate_market_report_dom.js', 'utf8');
 const core = fs.readFileSync('assets/js/report-core-v3.js', 'utf8');
+const archiveWorkflow = fs.readFileSync('.github/workflows/recover-real-report-archive.yml', 'utf8');
 
 const pushMatch = workflow.match(/^  push:\r?\n([\s\S]*?)(?=^  [A-Za-z_]+:|^permissions:)/m);
 if (!pushMatch) throw new Error('main push trigger is missing');
@@ -105,6 +106,19 @@ if (!localValidator.includes("status: failures.length ? 'FAIL' : 'PASS'")
 }
 if (!core.includes('splitCanonicalTitleFromSource_') || !core.includes('bodySource:text.slice(title.length)')) {
   throw new Error('Canonical title split and malformed-body recovery are missing');
+}
+const publicationPolicy = fs.readFileSync('assets/js/report-publication-policy.js', 'utf8');
+if (!core.includes('return window.MarketReportPublicationPolicy.isEligible(r);')
+  || !publicationPolicy.includes('return !status || status === "PUBLISHED" || status === "DOC_READBACK_PASS";')) {
+  throw new Error('Report renderer must use the shared fail-closed publication policy');
+}
+if (/^  push:/m.test(archiveWorkflow) || archiveWorkflow.includes('git push origin main')) {
+  throw new Error('Archive recovery workflow must not mutate main directly');
+}
+if (!workflow.includes('scripts/prepare_pages_site.py')
+  || !workflow.includes('market-report-pages-site')
+  || !workflow.includes('path: ${{ runner.temp }}/market-report-pages-site')) {
+  throw new Error('Pages upload must use the sanitized staging directory');
 }
 
 console.log('Portal deploy paths, workflow_run consumers, fail-closed stage order, and strict DOM contract passed.');

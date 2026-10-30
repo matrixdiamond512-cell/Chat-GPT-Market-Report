@@ -10,6 +10,12 @@ on:
       - "reports.json"
       - "data/dashboard.json"
       - "scripts/build_reports.py"
+      - "scripts/reporting/publication_eligibility.py"
+      - "scripts/report_identity.py"
+      - "scripts/report_source_contract.py"
+      - "scripts/reconcile_latest_report_market_data.py"
+      - "scripts/build_report_index.py"
+      - "scripts/sync_latest_report_publication.py"
       - "scripts/verify_publication_consistency.py"
       - "scripts/validate_drive_publication_receipt.py"
       - "config/report_schedule.json"
@@ -42,45 +48,7 @@ jobs:
           python -m json.tool data/dashboard.json > /dev/null
 
       - name: Verify canonical/index/latest/dashboard consistency
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          latest_payload = json.loads(Path('data/latest-report.json').read_text(encoding='utf-8'))
-          latest = latest_payload.get('latestReport', latest_payload)
-          index = json.loads(Path('reports.json').read_text(encoding='utf-8'))
-          dashboard = json.loads(Path('data/dashboard.json').read_text(encoding='utf-8'))
-
-          key = (latest.get('date'), latest.get('time'))
-          if not all(key):
-              raise SystemExit('latest report missing date/time')
-
-          canonical_path = Path('reports') / f"{key[0]}_{key[1].replace(':', '-')}.json"
-          if not canonical_path.exists():
-              raise SystemExit(f'canonical history file missing: {canonical_path}')
-
-          canonical = json.loads(canonical_path.read_text(encoding='utf-8'))
-          if canonical != latest:
-              raise SystemExit(f'canonical history does not match latest report: {canonical_path}')
-
-          matches = [r for r in index if (r.get('date'), r.get('time')) == key]
-          if len(matches) != 1 or matches[0] != latest:
-              raise SystemExit('reports.json does not contain exactly one matching latest report')
-
-          dashboard_latest = dashboard.get('latestReport')
-          if dashboard_latest != latest:
-              raise SystemExit('dashboard.latestReport does not match latest report')
-
-          expected_key = f"{key[0]} {key[1]}"
-          if dashboard.get('currentReportKey') != expected_key:
-              raise SystemExit(
-                  f"dashboard currentReportKey mismatch: "
-                  f"{dashboard.get('currentReportKey')!r} != {expected_key!r}"
-              )
-
-          print(f'Publication consistency PASS: {expected_key}')
-          PY
+        run: python scripts/verify_publication_consistency.py
 
       - name: Verify builder would not rewrite publication history
         run: |
@@ -102,9 +70,6 @@ jobs:
             git status --short -- reports
             exit 1
           fi
-
-      - name: Verify publication consistency script
-        run: python scripts/verify_publication_consistency.py
 
       - name: Confirm validator made no publication changes
         run: |

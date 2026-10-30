@@ -1,0 +1,16 @@
+const fs=require('fs');const assert=require('assert');const vm=require('vm');
+const config=JSON.parse(fs.readFileSync('config/report_schedule.json','utf8'));
+assert.deepStrictEqual(config.saturday.publicationSlots,[]);
+assert.deepStrictEqual(config.sunday.publicationSlots,[]);
+const master=fs.readFileSync('apps-script/MarketReportMasterScheduler.gs','utf8');
+const auto=fs.readFileSync('apps-script/MarketReportAutoPublish.gs','utf8');
+assert.match(master,/if \(day === 6 \|\| day === 7\)/);
+assert.doesNotMatch(master,/day === 6 && slotHour !== 8/);
+const match=auto.match(/function isScheduledMarketReportSlot_\(day, hour\) \{[\s\S]*?\n\}/);
+assert.ok(match, 'slot function exists');
+const ctx={MARKET_REPORT_AUTO_CONFIG:{reportHours:[8,12,16,21]}};
+vm.createContext(ctx);vm.runInContext(match[0],ctx);
+for (const d of [6,7]) for(const h of [8,12,16,21]) assert.strictEqual(ctx.isScheduledMarketReportSlot_(d,h),false,`weekend ${d} ${h}`);
+for (const h of [8,12,16,21]) assert.strictEqual(ctx.isScheduledMarketReportSlot_(1,h),true,`weekday ${h}`);
+assert.strictEqual(ctx.isScheduledMarketReportSlot_(1,9),false);
+console.log('Weekend schedule contracts PASS');

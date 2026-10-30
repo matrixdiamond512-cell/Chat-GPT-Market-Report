@@ -11,6 +11,8 @@ const fixturePath = process.env.PORTAL_REPORT_FIXTURE || '';
 function validReports(payload) {
   const rows = Array.isArray(payload) ? payload : (Array.isArray(payload?.reports) ? payload.reports : []);
   return rows.filter(report => report
+    && (!String(report.report_status || '').trim()
+      || ['PUBLISHED', 'DOC_READBACK_PASS'].includes(String(report.report_status).trim().toUpperCase()))
     && /^\d{4}-\d{2}-\d{2}$/.test(String(report.date || ''))
     && /^\d{2}:\d{2}$/.test(String(report.time || ''))
     && String(report.title || '').trim());
@@ -29,7 +31,13 @@ async function main() {
       headers: {'cache-control': 'no-cache', pragma: 'no-cache'}
     });
     if (!response.ok) throw new Error('reports.json HTTP ' + response.status);
-    reports = validReports(await response.json());
+    const payload = await response.json();
+    const rows = Array.isArray(payload) ? payload : (Array.isArray(payload?.reports) ? payload.reports : []);
+    const excluded = rows.filter(report => report && String(report.report_status || '').trim()
+      && !['PUBLISHED', 'DOC_READBACK_PASS'].includes(String(report.report_status).trim().toUpperCase()));
+    if (excluded.length) throw new Error('reports.json contains non-publication-eligible reports: '
+      + excluded.map(report => report.date + ' ' + report.time).join(', '));
+    reports = validReports(payload);
   }
   if (!reports.length) throw new Error('No valid report slots found');
 
@@ -83,6 +91,9 @@ async function main() {
           title: title?.textContent?.trim() || '',
           titleLength: (title?.textContent || '').trim().length,
           bodyText: body?.textContent || '',
+          bodyHidden: Boolean(body && (body.hidden || getComputedStyle(body).display === 'none')),
+          quarantineWarning: document.getElementById('unverifiedReportWarning')?.textContent?.trim() || '',
+          morningQaState: document.documentElement.dataset.morningReportQa || '',
           date: picker?.value || '',
           activeTime: activeTab?.textContent?.trim() || '',
           marketSectionFound: Boolean(market),
@@ -98,10 +109,19 @@ async function main() {
       if (result.activeTime !== report.time) failures.push('active time mismatch: ' + result.activeTime);
       if (result.title !== report.title) failures.push('title mismatch: ' + result.title);
       if (result.titleLength > 160) failures.push('rendered title is abnormally long: ' + result.titleLength);
-      if (!result.bodyText.trim()) failures.push('report body is empty');
-      if (!result.marketSectionFound) failures.push('major market section missing');
-      if (!result.marketTableFound) failures.push('major market data is not rendered as a table');
-      if (result.marketRowCount < 6) failures.push('market table has fewer than 6 rows: ' + result.marketRowCount);
+      const knownUnverified = String(report.report_status || '').toUpperCase() === 'RECONSTRUCTED_UNVERIFIED';
+      if (knownUnverified && report.time === '08:00') {
+        // This is a visible, intentionally blocked historical report, not a QA pass.
+        // Deployment may carry the warning but must never show the partial numbers.
+        if (result.morningQaState !== 'quarantined') failures.push('unverified morning source is not quarantined');
+        if (!result.bodyHidden) failures.push('unverified morning body is publicly visible');
+        if (!result.quarantineWarning.includes('原本の読み戻し検証に失敗')) failures.push('missing quarantine warning');
+      } else {
+        if (!result.bodyText.trim()) failures.push('report body is empty');
+        if (!result.marketSectionFound) failures.push('major market section missing');
+        if (!result.marketTableFound) failures.push('major market data is not rendered as a table');
+        if (result.marketRowCount < 6) failures.push('market table has fewer than 6 rows: ' + result.marketRowCount);
+      }
       if (result.loadingTextPresent) failures.push('loading text remains visible');
       if (fixture && !result.bodyText.includes(fixture.expectedBodyText || '')) {
         failures.push('canonical title remainder is missing from report body');

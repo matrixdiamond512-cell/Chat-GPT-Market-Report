@@ -1,0 +1,36 @@
+name: Drive saved-source selection QA
+on:
+  pull_request:
+    paths:
+      - "data/drive-source-selection.json"
+      - "assets/js/report-drive-source-reference.js"
+      - "drive-source-selection.html"
+      - "report.html"
+      - "scripts/validate_drive_source_selection.py"
+      - ".github/workflows/drive-source-selection-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "data/drive-source-selection.json"
+      - "assets/js/report-drive-source-reference.js"
+      - "drive-source-selection.html"
+      - "report.html"
+      - "scripts/validate_drive_source_selection.py"
+      - ".github/workflows/drive-source-selection-ci.yml"
+permissions:
+  contents: read
+jobs:
+  saved-source-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Check selected Drive originals and portal link safety
+        run: |
+          python scripts/validate_drive_source_selection.py
+          node --check assets/js/report-drive-source-reference.js

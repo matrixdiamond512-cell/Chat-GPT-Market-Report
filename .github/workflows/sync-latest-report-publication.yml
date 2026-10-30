@@ -17,6 +17,9 @@ on:
       - "scripts/build_chatgpt_report_input.py"
       - "scripts/build_market_sheet_exports.py"
       - "scripts/sync_latest_report_publication.py"
+      - "scripts/build_reports.py"
+      - "scripts/report_identity.py"
+      - "scripts/report_source_contract.py"
       - "scripts/sync_stock_judgement_from_latest_report.py"
       - "scripts/reconcile_latest_report_market_data.py"
       - "scripts/test_reconcile_latest_report_market_data.py"
@@ -63,12 +66,6 @@ jobs:
 
       - name: Install optional Google Sheets dependencies
         run: python -m pip install --disable-pip-version-check gspread google-auth
-
-      - name: Optional enrichment from canonical previous-close sheet
-        env:
-          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-        run: python scripts/enrich_latest_morning_from_sheet.py
 
       - name: Normalize 08:00 table to 28-row publication contract
         shell: bash
@@ -159,6 +156,12 @@ jobs:
               'missingFilled': [label for label in expected if label not in by_label],
           }, ensure_ascii=False))
           PY
+
+      - name: Optional enrichment from canonical previous-close sheet
+        env:
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python scripts/enrich_latest_morning_from_sheet.py
 
       - name: Repair date-matched previous closes
         run: python scripts/repair_morning_daily_references.py

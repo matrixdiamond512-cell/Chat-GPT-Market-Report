@@ -51,6 +51,18 @@ def main() -> None:
         )
 
     receipt = json.loads(path.read_text(encoding="utf-8"))
+    # Legacy receipts prove a distinct, weaker set of facts. Never silently
+    # promote them into strict ChatGPT-save evidence.
+    if "docId" in receipt and "driveFileId" not in receipt:
+        if receipt.get("date") != report["date"] or receipt.get("time") != report["time"]:
+            raise SystemExit(f"{path}: legacy receipt report slot mismatch")
+        if receipt.get("docStatus") != "READBACK_PASS" or not str(receipt.get("docId", "")).strip():
+            raise SystemExit(f"{path}: legacy document readback evidence missing")
+        raise SystemExit(
+            f"{path}: LEGACY_RECEIPT_REQUIRES_MIGRATION; docId/readback alone cannot establish "
+            "publisher, savedAt, or strict Drive-save receipt provenance"
+        )
+
     required = {
         "date", "time", "title", "status", "publisher", "driveFileId", "driveUrl", "savedAt"
     }

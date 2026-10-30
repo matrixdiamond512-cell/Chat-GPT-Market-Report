@@ -1,0 +1,23 @@
+name: Morning actual source market-value check
+on:
+  push:
+    branches: [fix/morning-market-value-check-20261013]
+  pull_request:
+    paths:
+      - apps-script/MarketReportPrePublishValidation.gs
+      - scripts/test_morning_actual_source_values.js
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: cp apps-script/MarketReportPrePublishValidation.gs /tmp/morning_validator.js
+      - run: node --check /tmp/morning_validator.js
+      - run: node scripts/test_morning_actual_source_values.js
+      - run: node scripts/test_actual_report_heading_aliases.js
+      - run: node scripts/test_apps_script_narrative_report.js

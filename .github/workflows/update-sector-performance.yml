@@ -35,10 +35,13 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install public-source dependencies
-        run: python -m pip install --disable-pip-version-check beautifulsoup4
+      - name: Install source and Sheets dependencies
+        run: python -m pip install --disable-pip-version-check beautifulsoup4 gspread google-auth
 
       - name: Fetch sectors from public sources
+        env:
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: python scripts/fetch_sector_performance.py
 
       - name: Validate output
@@ -77,3 +80,19 @@ jobs:
       - name: Commit updated sector data
         shell: bash
         run: bash scripts/publish_stock_update.sh "Update sector performance data" data/sector-performance.json data/market/sector-performance.json
+      - name: Require successful Sheets sync for verified sectors
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = json.loads(Path("data/sector-performance.json").read_text(encoding="utf-8"))
+          receipt = p.get("sheetSync") or {}
+          status = receipt.get("status")
+          verified = [
+              name for name, group in (p.get("markets") or {}).items()
+              if group.get("status") == "verified" and group.get("freshness") == "fresh"
+          ]
+          if status == "FAILED" or (verified and status != "SUCCESS"):
+              raise SystemExit("SECTOR_SHEETS_SYNC_NOT_VERIFIED: " + str(receipt.get("error") or status))
+          print("SECTOR_SYNC_STATUS:", status, "verified markets:", verified)
+          PY

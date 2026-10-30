@@ -2,7 +2,7 @@
   "schemaVersion": "2.0.0",
   "pageTitle": "ゴールド需給分析",
   "subtitle": "COMEX先物・投機筋・ETF・中国/インド現物需要から総合判定",
-  "generatedAt": "2026-10-10T10:43:41+09:00",
+  "generatedAt": "2026-10-30T03:25:28+09:00",
   "comex": {
     "status": "preserved_after_fetch_error",
     "asOfDate": "2026-08-06",
@@ -16,43 +16,21 @@
     "sourceUrl": "https://www.cmegroup.com/daily_bulletin/current/Section02B_Summary_Volume_And_Open_Interest_Metals_Futures_And_Options.pdf",
     "note": "CME Daily Bulletin PG02BのGC COMEX GOLD FUTURES。価格×建玉判定は同一基準日の価格取得後に実施。",
     "error": "CME取得失敗: RuntimeError: HTTP取得失敗（3回試行）: HTTPSConnectionPool(host='www.cmegroup.com', port=443): Read timed out. (read timeout=45)",
-    "lastAttemptAt": "2026-10-10T10:45:20+09:00"
+    "lastAttemptAt": "2026-10-30T03:27:07+09:00"
   },
   "cftc": {
     "status": "verified",
-    "asOfDate": "2026-10-06",
-    "managedMoneyLong": 127101,
-    "managedMoneyShort": 16114,
-    "managedMoneyNet": 110987,
-    "managedMoneyNetChange": -9331,
-    "openInterest": 396109,
+    "asOfDate": "2026-10-20",
+    "managedMoneyLong": 120970,
+    "managedMoneyShort": 16764,
+    "managedMoneyNet": 104206,
+    "managedMoneyNetChange": -2883,
+    "openInterest": 402279,
     "judgement": "投機筋の売り増加",
     "sourceName": "CFTC Disaggregated COT - Futures Only",
     "sourceUrl": "https://publicreporting.cftc.gov/Commitments-of-Traders/Disaggregated-Futures-Only/72hh-3qpy",
-    "fetchedAt": "2026-10-10T10:45:21+09:00",
+    "fetchedAt": "2026-10-30T03:27:07+09:00",
     "historyWeeks": [
-      {
-        "asOfDate": "2025-10-14",
-        "long": 152187,
-        "short": 43877,
-        "net": 108310,
-        "openInterest": 485788,
-        "goldPrice": 4163.4,
-        "longChange": null,
-        "shortChange": null,
-        "netChange": null
-      },
-      {
-        "asOfDate": "2025-10-21",
-        "long": 135503,
-        "short": 43276,
-        "net": 92227,
-        "openInterest": 472421,
-        "goldPrice": 4109.1,
-        "longChange": -16684,
-        "shortChange": -601,
-        "netChange": -16083
-      },
       {
         "asOfDate": "2025-10-28",
         "long": 138605,
@@ -60,9 +38,9 @@
         "net": 104159,
         "openInterest": 457122,
         "goldPrice": 3983.1,
-        "longChange": 3102,
-        "shortChange": -8830,
-        "netChange": 11932
+        "longChange": null,
+        "shortChange": null,
+        "netChange": null
       },
       {
         "asOfDate": "2025-11-04",
@@ -602,33 +580,55 @@
         "longChange": -4610,
         "shortChange": 4721,
         "netChange": -9331
+      },
+      {
+        "asOfDate": "2026-10-13",
+        "long": 124747,
+        "short": 17658,
+        "net": 107089,
+        "openInterest": 396345,
+        "goldPrice": 4177.3,
+        "longChange": -2354,
+        "shortChange": 1544,
+        "netChange": -3898
+      },
+      {
+        "asOfDate": "2026-10-20",
+        "long": 120970,
+        "short": 16764,
+        "net": 104206,
+        "openInterest": 402279,
+        "goldPrice": 4142.6,
+        "longChange": -3777,
+        "shortChange": -894,
+        "netChange": -2883
       }
     ],
     "historyStatus": "verified",
     "historyWeeksCount": 52,
-    "managedMoneyLongChange": -4610,
-    "managedMoneyShortChange": 4721,
-    "goldPrice": 4187.1,
-    "historyFetchedAt": "2026-10-10T01:45:25+00:00"
+    "managedMoneyLongChange": -3777,
+    "managedMoneyShortChange": -894,
+    "goldPrice": 4142.6,
+    "historyFetchedAt": "2026-10-29T18:27:12+00:00"
   },
   "etf": {
     "gld": {
       "status": "verified",
-      "asOfDate": "2026-10-08",
-      "tonnes": 1055.41,
-      "changeTonnes": -5.699999999999818,
+      "asOfDate": "2026-10-28",
+      "tonnes": 1043.36,
+      "changeTonnes": 1.709999999999809,
       "sourceName": "SPDR Gold Shares Historical Archive",
       "sourceUrl": "https://www.spdrgoldshares.com/usa/gld/",
-      "fetchedAt": "2026-10-10T10:45:21+09:00"
+      "fetchedAt": "2026-10-30T03:27:08+09:00"
     },
     "iau": {
       "status": "verified",
-      "asOfDate": "2026-10-09",
-      "tonnes": 463.87,
+      "asOfDate": "2026-10-28",
+      "tonnes": 462.26,
       "changeTonnes": 0.0,
       "sourceName": "iShares Gold Trust",
       "sourceUrl": "https://www.ishares.com/us/products/239561/ishares-gold-trust-fund",
-      "fetchedAt": "2026-10-10T10:45:22+09:00"
+      "fetchedAt": "2026-10-30T03:27:09+09:00"
     },
     "global": {
       "status": "verified",
@@ -637,84 +637,14 @@
       "tonnes": 4256.0,
       "changeTonnes": -1.0,
       "ytdChangeTonnes": null,
-      "monthlyFlowUsdBillion": 3.6,
+      "monthlyFlowUsdBillion": 10.0,
       "frequency": "monthly",
       "sourceName": "World Gold Council Gold ETF Flows",
       "sourceUrl": "https://www.gold.org/goldhub/research/gold-etfs-holdings-and-flows/2026/10",
-      "fetchedAt": "2026-10-10T10:45:24+09:00",
+      "fetchedAt": "2026-10-30T03:27:11+09:00",
       "note": "WGC公式月次レポート本文から公開値を抽出。週次チャートがログイン必須の場合は月次公開値を使用。"
     },
     "gldHistory": [
-      {
-        "asOfDate": "2026-06-02",
-        "tonnes": 1028.0,
-        "changeTonnes": -0.8599999999999
-      },
-      {
-        "asOfDate": "2026-06-03",
-        "tonnes": 1026.86,
-        "changeTonnes": -1.1400000000001
-      },
-      {
-        "asOfDate": "2026-06-04",
-        "tonnes": 1025.14,
-        "changeTonnes": -1.7199999999998
-      },
-      {
-        "asOfDate": "2026-06-05",
-        "tonnes": 1019.92,
-        "changeTonnes": -5.220000000000141
-      },
-      {
-        "asOfDate": "2026-06-08",
-        "tonnes": 1019.92,
-        "changeTonnes": 0.0
-      },
-      {
-        "asOfDate": "2026-06-09",
-        "tonnes": 1016.49,
-        "changeTonnes": -3.42999999999995
-      },
-      {
-        "asOfDate": "2026-06-10",
-        "tonnes": 1013.64,
-        "changeTonnes": -2.8500000000000227
-      },
-      {
-        "asOfDate": "2026-06-11",
-        "tonnes": 1013.64,
-        "changeTonnes": 0.0
-      },
-      {
-        "asOfDate": "2026-06-12",
-        "tonnes": 1013.64,
-        "changeTonnes": 0.0
-      },
-      {
-        "asOfDate": "2026-06-15",
-        "tonnes": 1012.21,
-        "changeTonnes": -1.42999999999995
-      },
-      {
-        "asOfDate": "2026-06-16",
-        "tonnes": 1012.21,
-        "changeTonnes": 0.0
-      },
-      {
-        "asOfDate": "2026-06-17",
-        "tonnes": 1013.07,
-        "changeTonnes": 0.8600000000000136
-      },
-      {
-        "asOfDate": "2026-06-18",
-        "tonnes": 1020.49,
-        "changeTonnes": 7.419999999999959
-      },
-      {
-        "asOfDate": "2026-06-22",
-        "tonnes": 1022.2,
-        "changeTonnes": 1.7100000000000364
-      },
       {
         "asOfDate": "2026-06-23",
         "tonnes": 1017.64,
@@ -1094,6 +1024,76 @@
         "asOfDate": "2026-10-08",
         "tonnes": 1055.41,
         "changeTonnes": -5.699999999999818
+      },
+      {
+        "asOfDate": "2026-10-09",
+        "tonnes": 1053.13,
+        "changeTonnes": -2.2799999999999727
+      },
+      {
+        "asOfDate": "2026-10-12",
+        "tonnes": 1055.41,
+        "changeTonnes": 2.2799999999999727
+      },
+      {
+        "asOfDate": "2026-10-13",
+        "tonnes": 1054.2,
+        "changeTonnes": -1.2100000000000364
+      },
+      {
+        "asOfDate": "2026-10-14",
+        "tonnes": 1054.2,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-10-15",
+        "tonnes": 1053.91,
+        "changeTonnes": -0.2899999999999636
+      },
+      {
+        "asOfDate": "2026-10-16",
+        "tonnes": 1059.04,
+        "changeTonnes": 5.129999999999882
+      },
+      {
+        "asOfDate": "2026-10-19",
+        "tonnes": 1058.47,
+        "changeTonnes": -0.5699999999999363
+      },
+      {
+        "asOfDate": "2026-10-20",
+        "tonnes": 1060.18,
+        "changeTonnes": 1.7100000000000364
+      },
+      {
+        "asOfDate": "2026-10-21",
+        "tonnes": 1057.62,
+        "changeTonnes": -2.560000000000173
+      },
+      {
+        "asOfDate": "2026-10-22",
+        "tonnes": 1045.64,
+        "changeTonnes": -11.97999999999979
+      },
+      {
+        "asOfDate": "2026-10-23",
+        "tonnes": 1041.65,
+        "changeTonnes": -3.990000000000009
+      },
+      {
+        "asOfDate": "2026-10-26",
+        "tonnes": 1040.8,
+        "changeTonnes": -0.8500000000001364
+      },
+      {
+        "asOfDate": "2026-10-27",
+        "tonnes": 1041.65,
+        "changeTonnes": 0.8500000000001364
+      },
+      {
+        "asOfDate": "2026-10-28",
+        "tonnes": 1043.36,
+        "changeTonnes": 1.709999999999809
       }
     ],
     "iauHistory": [
@@ -1320,6 +1320,71 @@
       {
         "asOfDate": "2026-10-09",
         "tonnes": 463.87,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-10-12",
+        "tonnes": 463.87,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-10-13",
+        "tonnes": 463.51,
+        "changeTonnes": -0.36000000000001364
+      },
+      {
+        "asOfDate": "2026-10-14",
+        "tonnes": 463.05,
+        "changeTonnes": -0.45999999999997954
+      },
+      {
+        "asOfDate": "2026-10-15",
+        "tonnes": 463.11,
+        "changeTonnes": 0.060000000000002274
+      },
+      {
+        "asOfDate": "2026-10-16",
+        "tonnes": 462.93,
+        "changeTonnes": -0.18000000000000682
+      },
+      {
+        "asOfDate": "2026-10-19",
+        "tonnes": 462.93,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-10-20",
+        "tonnes": 463.81,
+        "changeTonnes": 0.8799999999999955
+      },
+      {
+        "asOfDate": "2026-10-21",
+        "tonnes": 463.81,
+        "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-10-22",
+        "tonnes": 463.43,
+        "changeTonnes": -0.37999999999999545
+      },
+      {
+        "asOfDate": "2026-10-23",
+        "tonnes": 463.05,
+        "changeTonnes": -0.37999999999999545
+      },
+      {
+        "asOfDate": "2026-10-26",
+        "tonnes": 462.84,
+        "changeTonnes": -0.21000000000003638
+      },
+      {
+        "asOfDate": "2026-10-27",
+        "tonnes": 462.26,
+        "changeTonnes": -0.5799999999999841
+      },
+      {
+        "asOfDate": "2026-10-28",
+        "tonnes": 462.26,
         "changeTonnes": 0.0
       }
     ],
@@ -1719,9 +1784,135 @@
         "iauChangeTonnes": 0.3299999999999841,
         "combinedChangeTonnes": -5.369999999999834,
         "aligned": true
+      },
+      {
+        "asOfDate": "2026-10-09",
+        "gldTonnes": 1053.13,
+        "iauTonnes": 463.87,
+        "gldChangeTonnes": -2.2799999999999727,
+        "iauChangeTonnes": 0.0,
+        "combinedChangeTonnes": -2.2799999999999727,
+        "aligned": true
+      },
+      {
+        "asOfDate": "2026-10-12",
+        "gldTonnes": 1055.41,
+        "iauTonnes": 463.87,
+        "gldChangeTonnes": 2.2799999999999727,
+        "iauChangeTonnes": 0.0,
+        "combinedChangeTonnes": 2.2799999999999727,
+        "aligned": true
+      },
+      {
+        "asOfDate": "2026-10-13",
+        "gldTonnes": 1054.2,
+        "iauTonnes": 463.51,
+        "gldChangeTonnes": -1.2100000000000364,
+        "iauChangeTonnes": -0.36000000000001364,
+        "combinedChangeTonnes": -1.57000000000005,
+        "aligned": true
+      },
+      {
+        "asOfDate": "2026-10-14",
+        "gldTonnes": 1054.2,
+        "iauTonnes": 463.05,
+        "gldChangeTonnes": 0.0,
+        "iauChangeTonnes": -0.45999999999997954,
+        "combinedChangeTonnes": -0.45999999999997954,
+        "aligned": true
+      },
+      {
+        "asOfDate": "2026-10-15",
+        "gldTonnes": 1053.91,
+        "iauTonnes": 463.11,
+        "gldChangeTonnes": -0.2899999999999636,
+        "iauChangeTonnes": 0.060000000000002274,
+        "combinedChangeTonnes": -0.22999999999996135,
+        "aligned": true
+      },
+      {
+        "asOfDate": "2026-10-16",
+        "gldTonnes": 1059.04,
+        "iauTonnes": 462.93,
+        "gldChangeTonnes": 5.129999999999882,
+        "iauChangeTonnes": -0.18000000000000682,
+        "combinedChangeTonnes": 4.949999999999875,
+        "aligned": true
+      },
+      {
+        "asOfDate": "2026-10-19",
+        "gldTonnes": 1058.47,
+        "iauTonnes": 462.93,
+        "gldChangeTonnes": -0.5699999999999363,
+        "iauChangeTonnes": 0.0,
+        "combinedChangeTonnes": -0.5699999999999363,
+        "aligned": true
+      },
+      {
+        "asOfDate": "2026-10-20",
+        "gldTonnes": 1060.18,
+        "iauTonnes": 463.81,
+        "gldChangeTonnes": 1.7100000000000364,
+        "iauChangeTonnes": 0.8799999999999955,
+        "combinedChangeTonnes": 2.590000000000032,
+        "aligned": true
+      },
+      {
+        "asOfDate": "2026-10-21",
+        "gldTonnes": 1057.62,
+        "iauTonnes": 463.81,
+        "gldChangeTonnes": -2.560000000000173,
+        "iauChangeTonnes": 0.0,
+        "combinedChangeTonnes": -2.560000000000173,
+        "aligned": true
+      },
+      {
+        "asOfDate": "2026-10-22",
+        "gldTonnes": 1045.64,
+        "iauTonnes": 463.43,
+        "gldChangeTonnes": -11.97999999999979,
+        "iauChangeTonnes": -0.37999999999999545,
+        "combinedChangeTonnes": -12.359999999999786,
+        "aligned": true
+      },
+      {
+        "asOfDate": "2026-10-23",
+        "gldTonnes": 1041.65,
+        "iauTonnes": 463.05,
+        "gldChangeTonnes": -3.990000000000009,
+        "iauChangeTonnes": -0.37999999999999545,
+        "combinedChangeTonnes": -4.3700000000000045,
+        "aligned": true
+      },
+      {
+        "asOfDate": "2026-10-26",
+        "gldTonnes": 1040.8,
+        "iauTonnes": 462.84,
+        "gldChangeTonnes": -0.8500000000001364,
+        "iauChangeTonnes": -0.21000000000003638,
+        "combinedChangeTonnes": -1.0600000000001728,
+        "aligned": true
+      },
+      {
+        "asOfDate": "2026-10-27",
+        "gldTonnes": 1041.65,
+        "iauTonnes": 462.26,
+        "gldChangeTonnes": 0.8500000000001364,
+        "iauChangeTonnes": -0.5799999999999841,
+        "combinedChangeTonnes": 0.27000000000015234,
+        "aligned": true
+      },
+      {
+        "asOfDate": "2026-10-28",
+        "gldTonnes": 1043.36,
+        "iauTonnes": 462.26,
+        "gldChangeTonnes": 1.709999999999809,
+        "iauChangeTonnes": 0.0,
+        "combinedChangeTonnes": 1.709999999999809,
+        "aligned": true
       }
     ],
-    "historyDaysCount": 44,
+    "historyDaysCount": 58,
     "historyStatus": "verified",
     "historyFallback": null
   },
@@ -1730,7 +1921,7 @@
     "frequency": "weekly",
     "sourceName": "World Gold Council Local gold price premium/discount",
     "sourceUrl": "https://www.gold.org/goldhub/data/gold-premium",
-    "fetchedAt": "2026-10-10T10:45:22+09:00",
+    "fetchedAt": "2026-10-30T03:27:09+09:00",
     "error": "WGC現物プレミアム取得不能: RuntimeError: HTTP取得失敗（1回試行）: 403 Client Error: Forbidden for url: https://www.gold.org/download/file/11657/gold-premiums.xlsx",
     "note": "一般公開経路を確認できないため旧値を最新値として表示しません。"
   },
@@ -1765,38 +1956,38 @@
   "environment": {
     "realYield10y": {
       "status": "verified",
-      "asOfDate": "2026-10-08",
-      "value": 2.87,
-      "change": -0.04999999999999982,
+      "asOfDate": "2026-10-27",
+      "value": 2.64,
+      "change": -0.020000000000000018,
       "sourceName": "FRED DFII10",
       "sourceUrl": "https://fred.stlouisfed.org/series/DFII10",
       "label": "米10年実質金利",
-      "fetchedAt": "2026-10-10T10:45:23+09:00"
+      "fetchedAt": "2026-10-30T03:27:10+09:00"
     },
     "dollarBroad": {
       "status": "verified",
-      "asOfDate": "2026-10-02",
-      "value": 121.3848,
-      "change": -0.40340000000000487,
+      "asOfDate": "2026-10-23",
+      "value": 121.3202,
+      "change": -0.03289999999999793,
       "sourceName": "FRED DTWEXBGS",
       "sourceUrl": "https://fred.stlouisfed.org/series/DTWEXBGS",
       "label": "米ドル実効指数（Broad）",
-      "fetchedAt": "2026-10-10T10:45:23+09:00"
+      "fetchedAt": "2026-10-30T03:27:10+09:00"
     },
     "usdjpy": {
       "status": "verified",
-      "asOfDateTime": "2026-10-10T05:59:56+09:00",
-      "value": 158.246,
-      "change": 0.18299645996094682,
-      "changePercent": 0.11577437848357963,
+      "asOfDateTime": "2026-10-30T02:32:49+09:00",
+      "value": 157.903,
+      "change": 1.22070304087174e-07,
+      "changePercent": 7.730713846854087e-08,
       "sourceName": "Yahoo Finance USD/JPY",
       "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/"
     }
   },
   "assessment": {
-    "shortTerm": "中立",
+    "shortTerm": "買い優勢",
     "structural": "買い需要あり（確認項目限定）",
-    "score": 50,
+    "score": 68,
     "components": [
       {
         "name": "CFTC",
@@ -1804,7 +1995,7 @@
       },
       {
         "name": "ETF",
-        "score": -1.0
+        "score": 1.0
       },
       {
         "name": "実質金利",
@@ -1821,10 +2012,10 @@
     "total": 7
   },
   "aiSummary": [
-    "金先物は前回比+0.00%です。COMEXの出来高・建玉は別の基準日で表示し、日付を合わせられた場合だけ価格×建玉判定を行います。",
+    "金先物は前回比-0.00%です。COMEXの出来高・建玉は別の基準日で表示し、日付を合わせられた場合だけ価格×建玉判定を行います。",
     "COMEX出来高・建玉は取得待ちです。取得不能時は推測値を表示しません。",
-    "CFTC Managed Moneyのネットは110,987枚、前週比-9,331枚です。週次データとして短期需給に反映します。",
-    "主要金ETF保有量は GLD 1055.41t / IAU 463.87t。金融需要の実流入・流出を先物と分けて確認します。",
+    "CFTC Managed Moneyのネットは104,206枚、前週比-2,883枚です。週次データとして短期需給に反映します。",
+    "主要金ETF保有量は GLD 1043.36t / IAU 462.26t。金融需要の実流入・流出を先物と分けて確認します。",
     "中国・インドの現物プレミアムはWGCの公開更新を確認できる場合だけ表示します。ログイン等で取得できない場合は前回値を捏造せず保留します。"
   ]
 }

@@ -49,6 +49,8 @@
   }
 
   function canonicalMetric(report, definition) {
+    // A historical archive view must not adopt an unrelated mutable live feed.
+    if (report?.historicalArchiveDisplayOnly) return null;
     if (!reportMatchesPayload(report, canonicalPayload)) return null;
 
     const item = canonicalPayload?.markets?.[marketKey(definition)];

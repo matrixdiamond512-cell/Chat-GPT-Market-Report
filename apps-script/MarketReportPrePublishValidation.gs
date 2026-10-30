@@ -55,7 +55,7 @@ var MARKET_REPORT_PREPUBLISH_CONFIG = {
       changeLabel: '12:00からの変化',
       changePattern: /^(?:12:00|12時|前回)からの(?:主な)?変化$/,
       handoverLabel: 'NY時間への引き継ぎ',
-      handoverPattern: /^(?:NY時間|NY市場|次の時間帯)への引き継ぎ$/
+      handoverPattern: /^(?:NY時間|NY市場|21:00|次の時間帯)への引き継ぎ$/
     },
     '21:00': {
       changeLabel: '16:00からの変化',
@@ -269,11 +269,8 @@ function validateMarketReportManualContract_(report, byName, errors) {
   }
 
   if (timeText === '08:00') {
-    var normalizedLines = source.split('\n').map(function(line) {
-      return marketReportPrePublishNormalizeHeading_(line);
-    }).filter(Boolean);
     MARKET_REPORT_PREPUBLISH_CONFIG.morningRequiredLabels.forEach(function(rule) {
-      if (!normalizedLines.some(function(line) { return rule.pattern.test(line); })) {
+      if (!marketReportMorningHasSourceValue_(source, rule)) {
         errors.push('08:00 主要市場データ不足: ' + rule.label);
       }
     });
@@ -303,10 +300,99 @@ function validateMarketReportManualContract_(report, byName, errors) {
   });
 }
 
+/**
+ * In real morning reports, a market datum is a labeled numeric line,
+ * not a stand-alone heading. Match within the explicit data section only.
+ * Never infer values from the broader news or commentary paragraphs.
+ */
+function marketReportMorningHasSourceValue_(source, rule) {
+  const text = String(source || '').replace(/\r/g, '');
+  const start = text.search(/^\s*(?:\d+[．.、)]\s*)?(?:前営業日終値一覧と基準時刻|主要市場データ|主要市場の確認値)/m);
+  if (start < 0) return false;
+  const rest = text.slice(start);
+  const stop = rest.search(/\n\s*\d+[．.、)]\s*(?:昨夜|市場の動き|前回|今日の相場テーマ|重要ニュース)/);
+  const section = stop > 0 ? rest.slice(0, stop) : rest;
+  const labels = {
+    'Russell 2000': /Russell\s*2000/i,
+    '日経225先物（大阪取引所）': /大阪取引所日経225先物(?:\d+月限)?/,
+    '金': /COMEX金先物(?:\d+月限)?/,
+    '日経225 PBR': /PBR\s*[：:]?\s*\d/i,
+    '日経225予想EPS': /予想EPS\s*[：:]?\s*\d/i,
+    '200日移動平均乖離率': /200日乖離率\s*[：:]?\s*[+\-]?\d/,
+    '東証プライム売買代金': /売買代金\s*[\d,.]+/,
+    '東証プライム売買高': /売買高\s*[\d,.]+/,
+    '値上がり銘柄数': /値上がり銘柄\s*[\d,.]+/,
+    '値下がり銘柄数': /値下がり\s*[\d,.]+/,
+    '騰落レシオ': /騰落レシオ\s*[\d,.]+/
+  };
+  return section.split('\n').some(function(raw) {
+    const line = raw.trim();
+    // Prime breadth is legitimately written as one numeric sentence without
+    // a colon in the original 2026-10-13 08:00 Google document.
+    if (/^東証プライム値上がり銘柄\s*[\d,]+/.test(line)) {
+      const primeEvidence = {
+        '値上がり銘柄数': /値上がり銘柄\s*[\d,]+/,
+        '値下がり銘柄数': /値下がり\s*[\d,]+/,
+        '騰落レシオ': /騰落レシオ\s*[\d.]+/,
+        '東証プライム売買代金': /売買代金\s*[\d,]+/,
+        '東証プライム売買高': /売買高\s*[\d,]+/
+      };
+      if (primeEvidence[rule.label]) return primeEvidence[rule.label].test(line);
+    }
+    const colon = line.search(/[：:]/);
+    if (colon < 1) return false;
+    const label = line.slice(0, colon).trim();
+    const value = line.slice(colon + 1).trim();
+    if (!value || !/(?:\d|取得不能|休場)/.test(value)) return false;
+    if (rule.pattern.test(label)) return true;
+    // Explicit compound numeric lines used in the verified source documents.
+    const compound = {
+      '日経225 PBR': /^日経225予想PER$/,
+      '日経225予想EPS': /^日経225予想PER$/,
+      '25日移動平均乖離率': /^日経225・25日移動平均乖離率$/,
+      '200日移動平均乖離率': /^日経225・25日移動平均乖離率$/,
+      '東証プライム売買代金': /^東証プライム値上がり銘柄/,
+      '東証プライム売買高': /^東証プライム値上がり銘柄/,
+      '値上がり銘柄数': /^東証プライム値上がり銘柄/,
+      '値下がり銘柄数': /^東証プライム値上がり銘柄/,
+      '騰落レシオ': /^東証プライム値上がり銘柄/
+    };
+    const namePattern = compound[rule.label] || labels[rule.label];
+    if (!namePattern || !namePattern.test(label)) return false;
+    const evidence = labels[rule.label];
+    return !evidence || evidence.test(line);
+  });
+}
+
 function marketReportPrePublishHeadingLines_(source) {
-  return String(source || '').split('\n').map(function(line) {
-    return marketReportPrePublishNormalizeHeading_(line);
-  }).filter(Boolean);
+  const headings = [];
+  String(source || '').split('\n').forEach(function(raw) {
+    const line = String(raw || '').trim();
+    const normalized = marketReportPrePublishNormalizeHeading_(line);
+    if (normalized) headings.push(normalized);
+    // Only numbered/explicit heading lines are eligible for compound aliases.
+    // Never infer missing report sections from incidental prose mentions.
+    if (!/^(?:\d{1,2}[．.、)）]|【|[■◆◇●▶])/.test(line)) return;
+    const aliases = [
+      [/^主要市場データ(?:（.*）)?$/, ['主要市場データ']],
+      [/^前営業日終値一覧と基準時刻$/, ['主要市場データ']],
+      [/^材料と値動きの整合性・(?:今日の)?主導市場$/, ['材料と値動きの整合性', '今日の主導市場']],
+      [/^重要ニュースと市場への影響$/, ['重要ニュース']],
+      [/^金利・為替・(?:市場心理|センチメント)$/, ['金利・為替']],
+      [/^需給・ポジション(?:・SQ(?:・.*)?|、SQ／オプション)$/, ['需給・ポジション']],
+      [/^(?:主要)?6市場の(?:短期)?見通し(?:（.*）)?$/, ['6市場の見通し']],
+      [/^今後のイベント$/, ['今後の予定']],
+      [/^代替シナリオ(?:と|・)崩れる条件$/, ['代替シナリオ', '崩れる条件', 'リスク管理']],
+      [/^結論・リスク管理$/, ['結論', 'リスク管理']],
+      [/^結論・クロスチェック$/, ['結論']],
+      [/^前回21:00からの変化$/, ['21:00からの変化']],
+      [/^12:00への引き継ぎ・リスク管理$/, ['12:00への引き継ぎ', 'リスク管理']]
+    ];
+    aliases.forEach(function(entry) {
+      if (entry[0].test(normalized)) headings.push.apply(headings, entry[1]);
+    });
+  });
+  return headings;
 }
 
 function marketReportPrePublishNormalizeHeading_(line) {
@@ -365,3 +451,4 @@ function marketReportPrePublishIsUnavailable_(value) {
     return pattern.test(text);
   });
 }
+

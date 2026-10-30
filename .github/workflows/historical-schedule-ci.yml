@@ -1,0 +1,19 @@
+name: Historical schedule validation
+on:
+  push:
+    branches: [fix/historical-saturday-report-slots-20261013]
+  pull_request:
+    paths:
+      - config/report_schedule.json
+      - tests/test_historical_saturday_slots.py
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests -p 'test_historical_saturday_slots.py' -v

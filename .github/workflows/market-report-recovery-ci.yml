@@ -1,0 +1,48 @@
+name: Historical Report Recovery QA
+
+on:
+  pull_request:
+    paths:
+      - "data/report-recovery-2026-10.json"
+      - "report.html"
+      - "assets/js/report-core-v3.js"
+      - "assets/js/morning-report-qa-gate.js"
+      - "assets/js/report-structured-enrichment.js"
+      - "scripts/validate_report_recovery.py"
+      - "scripts/validate_report_recovery_dom.js"
+      - ".github/workflows/market-report-recovery-ci.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "data/report-recovery-2026-10.json"
+      - "report.html"
+      - "assets/js/report-core-v3.js"
+      - "scripts/validate_report_recovery.py"
+      - ".github/workflows/market-report-recovery-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  archive-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Verify all preserved and retrospective entries without publication promotion
+        run: python scripts/validate_report_recovery.py
+      - name: Verify main publication index unaffected
+        run: python scripts/validate_report_index.py
+      - name: Check browser and recovery QA scripts
+        run: |
+          node --check assets/js/report-core-v3.js
+          node --check assets/js/morning-report-qa-gate.js
+          node --check assets/js/report-structured-enrichment.js
+          node --check scripts/validate_report_recovery_dom.js

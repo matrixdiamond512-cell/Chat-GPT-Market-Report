@@ -172,6 +172,13 @@
       const requestedTime = params.get("time");
       const current = typeof selectedReport !== "undefined" ? selectedReport : null;
 
+      const validExplicitSelection = Boolean(requestedDate && requestedTime
+        && list.some(item => item?.date === requestedDate && item?.time === requestedTime));
+      if (validExplicitSelection) {
+        window.clearInterval(timer);
+        return;
+      }
+
       const staleLatestDateSelection = Boolean(
         requestedDate === latest.date
         && requestedTime

@@ -12,11 +12,14 @@ import build_reports
 import reconcile_report_history
 import validate_market_reports
 import verify_publication_consistency
+import sync_latest_report_publication
 
 
 class ReportContractTests(unittest.TestCase):
     def test_schedule_has_one_authoritative_saturday_slot(self):
-        self.assertEqual(validate_market_reports.publication_slots("2026-09-19"), {"08:00"})
+        # Saturdays have no new publication slots; saved 07:00/08:00/09:00
+        # reports remain valid as legacy history.
+        self.assertEqual(validate_market_reports.publication_slots("2026-09-19"), set())
         self.assertEqual(validate_market_reports.publication_slots("2026-09-20"), set())
         self.assertEqual(validate_market_reports.expected_slots("2026-09-19"), {"07:00", "08:00", "09:00"})
 
@@ -70,7 +73,7 @@ class ReportContractTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             reconcile_report_history._should_replace(current, incoming, ("2026-09-22", "08:00"))
 
-    def test_publication_consistency_accepts_one_projection(self):
+    def test_publication_consistency_requires_complete_dashboard_copy(self):
         report = {
             "date": "2020-01-01",
             "time": "08:00",
@@ -86,8 +89,8 @@ class ReportContractTests(unittest.TestCase):
             (root / "reports.json").write_text(json.dumps([report]), encoding="utf-8")
             (root / "data/dashboard.json").write_text(
                 json.dumps({
-                    "currentReportKey": "2020-01-01 08:00",
-                    "latestReport": {"date": report["date"], "time": report["time"], "title": report["title"], "summary": "projection"},
+                    "currentReportKey": "2020-01-01_08-00",
+                    "latestReport": report,
                 }),
                 encoding="utf-8",
             )
@@ -101,6 +104,10 @@ class ReportContractTests(unittest.TestCase):
                     "--dashboard", str(root / "data/dashboard.json"),
                 ]
                 self.assertEqual(verify_publication_consistency.main(), 0)
+                dashboard = json.loads((root / "data/dashboard.json").read_text(encoding="utf-8"))
+                dashboard["latestReport"] = {"date": report["date"], "time": report["time"], "title": report["title"]}
+                with self.assertRaisesRegex(SystemExit, "complete latest report"):
+                    verify_publication_consistency.verify_dashboard_copy(report, dashboard)
             finally:
                 sys.argv = old_argv
 
@@ -152,6 +159,84 @@ BTCUSD：84,000ドル
         errors, warnings = [], []
         validate_market_reports.validate_report_content(report, "report", True, errors, warnings)
         self.assertFalse(any("必須市場不足" in error for error in errors))
+
+
+    def test_slot_transition_heading_requires_substantive_body(self):
+        section_body = (
+            "観測した市場の値、基準時刻、材料との因果関係、反対シナリオを照合し、"
+            "判断根拠と崩れる条件を明記します。"
+        )
+        titles = [
+            "今日の相場テーマ",
+            "主要市場データ",
+            "材料と値動きの整合性",
+            "今日の主導市場",
+            "重要ニュース",
+            "クロスアセット資金フロー",
+            "需給・ポジション",
+            "個別市場見通し",
+            "メインシナリオ",
+            "代替シナリオ",
+            "シナリオが崩れる条件",
+            "結論",
+        ]
+        full_text = "\n\n".join(
+            f"{title}\n{section_body * 3}" for title in titles
+        )
+        transition_title = "NY時間への引き継ぎ"
+        transition_body = "次の時間帯では米金利・為替・株価を照合し、前提が変わる条件を確認します。"
+        full_text += f"\n\n{transition_title}\n{transition_body}"
+        report = {
+            "date": "2026-10-16",
+            "time": "21:00",
+            "title": "マーケットレポート｜2026/10/16（金）21:00",
+            "fullText": full_text,
+        }
+
+        sync_latest_report_publication.validate_sop_body(report)
+        empty_section = {
+            **report,
+            "fullText": full_text.replace(
+                f"{transition_title}\n{transition_body}",
+                transition_title,
+            ),
+        }
+        with self.assertRaisesRegex(
+            SystemExit, "transition section is empty or substantively insufficient"
+        ):
+            sync_latest_report_publication.validate_sop_body(empty_section)
+
+    def test_oct15_21_archive_requires_substantive_change_section_body(self):
+        report = json.loads(
+            (ROOT / "reports" / "2026-10-15_21-00.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(report.get("report_status"), "SOURCE_ARCHIVED")
+        lines = report["fullText"].splitlines()
+        section_index = next(
+            index for index, line in enumerate(lines)
+            if "16:00からの変化" in sync_latest_report_publication.normalize_heading(line)
+        )
+        next_heading = next(
+            index for index in range(section_index + 1, len(lines))
+            if sync_latest_report_publication.normalize_heading(lines[index])
+        )
+        self.assertTrue(
+            any(
+                len(body.strip()) >= 24
+                for title, body in sync_latest_report_publication.sop_sections(report["fullText"])
+                if "16:00からの変化" in title
+            )
+        )
+
+        # Keep incidental mentions elsewhere in the source, but blank the
+        # actual time-slot section in this in-memory validation copy.
+        blanked_text = "\n".join(lines[:section_index + 1] + [""] + lines[next_heading:])
+        self.assertIn("次の時間帯への引き継ぎ", blanked_text)
+        blocked = {**report, "fullText": blanked_text}
+        with self.assertRaisesRegex(
+            SystemExit, "transition section is empty or substantively insufficient"
+        ):
+            sync_latest_report_publication.validate_sop_body(blocked)
 
 if __name__ == "__main__":
     unittest.main()

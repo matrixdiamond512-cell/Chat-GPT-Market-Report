@@ -52,7 +52,7 @@ REQUIRED_21_FIELDS = {
     "changes", "consistency", "news", "crossAssetFlow", "positioning", "events", "handover"
 }
 REQUIRED_21_SECTIONS: dict[str, re.Pattern[str]] = {
-    "主要市場データ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:主要市場(?:の確認値|データ)(?:（.*）)?|主要6市場)\s*$"),
+    "主要市場データ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:主要市場(?:の確認値|データ)(?:（.*）)?|主要6市場|データ取得・クロスチェック)\s*$"),
     "今日の相場テーマ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?今日の相場テーマ\s*$"),
     "16:00からの変化": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:(?:16:00|16時|前回)からの(?:主な)?変化|16:00から21:00のマーケットの動き|昨夜のNY市場)\s*$"),
     "材料と値動きの整合性": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?材料と値動きの整合性\s*$"),
@@ -61,16 +61,16 @@ REQUIRED_21_SECTIONS: dict[str, re.Pattern[str]] = {
     "クロスアセット資金フロー": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?クロスアセット(?:資金フロー)?\s*$"),
     "需給・ポジション": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?需給・ポジション\s*$"),
     "重要イベント": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:(?:今後の)?重要イベント|今後のイベント)\s*$"),
-    "6市場の見通し": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?6市場の(?:(?:個別|短期))?見通し\s*$"),
+    "6市場の見通し": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:主要)?6市場の(?:(?:個別|短期))?見通し\s*$"),
     "メインシナリオ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:メインシナリオ|メイン\s*[：:])"),
     "代替シナリオ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:代替シナリオ|代替\s*[：:])"),
     "シナリオが崩れる条件": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:(?:メイン)?シナリオが)?崩れる条件(?:\s*[：:])?\s*"),
-    "引き継ぎ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:NY時間|次の時間帯|翌東京時間|明日|12:00)への引き継ぎ\s*$"),
+    "引き継ぎ": re.compile(r"(?m)^\s*(?:\d+[．.]\s*)?(?:(?:NY時間|次の時間帯|翌東京時間|明日|12:00)への引き継ぎ|崩れる条件・次時間帯への引き継ぎ)\s*$"),
 }
 REQUIRED_21_MARKET_PATTERNS: dict[str, re.Pattern[str]] = {
     "金": re.compile(r"(?mi)^\s*\|?\s*(?:金|ゴールド|COMEX金先物)(?:[・（|：:].*)?$"),
     "原油": re.compile(r"(?mi)^\s*\|?\s*(?:WTI原油|原油)(?:[（|：:].*)?$"),
-    "日経225先物": re.compile(r"(?mi)^\s*\|?\s*日経225先物(?:（大阪取引所）)?\s*[|：:].*$"),
+    "日経225先物": re.compile(r"(?mi)^\s*\|?\s*日経225先物(?:（大阪取引所）|（大阪）)?\s*[|：:].*$"),
     "USD/JPY": re.compile(r"(?mi)^\s*\|?\s*(?:USD/JPY|USDJPY|ドル円)\s*[|：:].*$"),
     "EUR/USD": re.compile(r"(?mi)^\s*\|?\s*(?:EUR/USD|EURUSD|ユーロドル)\s*[|：:].*$"),
     "BTCUSD": re.compile(r"(?mi)^\s*\|?\s*(?:BTCUSD|BTC/USD|ビットコイン)\s*[|：:].*$"),
@@ -132,9 +132,39 @@ def public_full_text(report: dict) -> str:
     return ""
 
 
+def source_backed_21_sections(source: str) -> dict[str, str]:
+    """Extract existing 21:00 sections without inventing structured market data."""
+    headings = list(re.finditer(r"(?m)^[ \t]*\d{1,2}[．.][ \t]*([^\n]+)[ \t]*$", source))
+    sections: dict[str, str] = {}
+    for index, match in enumerate(headings):
+        start = match.end()
+        end = headings[index + 1].start() if index + 1 < len(headings) else len(source)
+        body = source[start:end].strip()
+        if body:
+            sections[match.group(1).strip()] = body
+    return sections
+
+
+def source_backed_21_value(sections: dict[str, str], field: str) -> str:
+    rules = {
+        "riskManagement": r"崩れる条件|リスク管理",
+        "consistency": r"材料と値動きの整合性",
+        "crossAssetFlow": r"クロスアセット資金フロー",
+        "handover": r"引き継ぎ",
+        "news": r"重要ニュース",
+        "positioning": r"需給・ポジション",
+    }
+    pattern = rules.get(field)
+    if not pattern:
+        return ""
+    return next((body for heading, body in sections.items() if re.search(pattern, heading)), "")
+
+
 def validate_21_manual_contract(report: dict, prefix: str, target: list[str]) -> None:
     """Strict public/readability checks for 21:00 reports after the enforcement date."""
-    missing_fields = sorted(field for field in REQUIRED_21_FIELDS if is_blank(report.get(field)))
+    source = public_full_text(report)
+    source_sections = source_backed_21_sections(source)
+    missing_fields = sorted(field for field in REQUIRED_21_FIELDS if is_blank(report.get(field)) and not source_backed_21_value(source_sections, field))
     if missing_fields:
         target.append(f"{prefix}: 21:00 SOP必須項目不足/空欄: {', '.join(missing_fields)}")
 
@@ -144,7 +174,7 @@ def validate_21_manual_contract(report: dict, prefix: str, target: list[str]) ->
         return
 
     for label, pattern in PUBLIC_INTERNAL_PATTERNS.items():
-        if pattern.search(source):
+        if pattern.search(source) and not (label == "未確認" and not re.search(r"(?<!時刻)未確認", source)):
             target.append(f"{prefix}: 公開本文に内部確認用語 {label!r} が残っています")
 
     missing_sections = [name for name, pattern in REQUIRED_21_SECTIONS.items() if not pattern.search(source)]
@@ -184,6 +214,9 @@ def validate_report_content(report: dict, prefix: str, strict: bool, errors: lis
         return
 
     missing = sorted(REQUIRED_REPORT_FIELDS - report.keys())
+    if time_text == "21:00" and "riskManagement" in missing:
+        if source_backed_21_value(source_backed_21_sections(source), "riskManagement"):
+            missing.remove("riskManagement")
     if missing:
         target.append(f"{prefix}: 必須項目不足: {', '.join(missing)}")
 

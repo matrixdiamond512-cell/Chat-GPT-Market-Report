@@ -195,11 +195,120 @@ function autoPublishDueMarketReports_(reason) {
   return summary;
 }
 
-function publishMarketReportSlot_(hour, mode, throwOnError) {
+/**
+ * Repair Drive→GitHub gaps for the last 5 calendar days, including today.
+ * Safe to retry: the remote canonical+index readback short-circuits matching
+ * revisions; source-readback and publication validation still fail closed.
+ * This needs an Apps Script deployment and an installed time-based trigger.
+ */
+function repairMissingMarketReportsFromDrive() {
+  const now = new Date();
+  const today = Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd');
+  const results = [];
+  // The standard publisher also updates the latest-report pointer. Never run it
+  // against an older key than the currently published newest report.
+  const latestResponse = getGitHubJsonFile_('data/latest-report.json');
+  const latestContainer = latestResponse && latestResponse.data;
+  const latest = latestContainer && (latestContainer.latestReport || latestContainer.report || latestContainer);
+  const publishedKey = latest && latest.date && latest.time ? latest.date + ' ' + latest.time : '';
+  for (let offset = 4; offset >= 0; offset--) {
+    const timestamp = new Date(now.getTime() - offset * 86400000);
+    const targetDate = Utilities.formatDate(timestamp, MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd');
+    const weekday = Number(Utilities.formatDate(timestamp, MARKET_REPORT_AUTO_CONFIG.timezone, 'u'));
+    if (weekday >= 6) continue;
+    MARKET_REPORT_AUTO_CONFIG.reportHours.forEach(function(hour) {
+      const currentHour = Number(Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'H'));
+      if (targetDate === today && hour >= currentHour) return;
+      const slotKey = targetDate + ' ' + ('0' + hour).slice(-2) + ':00';
+      if (publishedKey && slotKey < publishedKey) {
+        const archivalFile = findMarketReportDocForAutoPublishSlot_(hour, targetDate);
+        if (!archivalFile) {
+          results.push({date: targetDate, hour: hour, status: 'WAITING_INPUT'});
+          return;
+        }
+        try {
+          const archived = archiveMarketReportFromDriveWithoutLatestRollback_(archivalFile, hour);
+          results.push({date: targetDate, hour: hour, status: archived.skipped ? 'ALREADY_VERIFIED' : 'ARCHIVED'});
+        } catch (error) {
+          results.push({date: targetDate, hour: hour, status: 'FAILED', error: String(error.message || error)});
+        }
+        return;
+      }
+      // Never manufacture an absent source or change report titles.
+      if (!findMarketReportDocForAutoPublishSlot_(hour, targetDate)) {
+        results.push({ date: targetDate, hour: hour, status: 'WAITING_INPUT' });
+        return;
+      }
+      const outcome = publishMarketReportSlot_(hour, 'drive-github-recovery', false, targetDate);
+      results.push({date: targetDate, hour: hour, status: outcome.ok ? (outcome.skipped ? 'ALREADY_VERIFIED' : 'PUBLISHED') : (outcome.status || 'FAILED'), error: outcome.error || ''});
+    });
+  }
+  const failed = results.filter(function(item) { return item.status === 'FAILED'; });
+  const summary = { ok: failed.length === 0, mode: 'drive-github-recovery', checkedCount: results.length, results: results };
+  saveMarketReportAutoResult_(summary);
+  if (failed.length) throw new Error('Drive→GitHub recovery had failures. See script property log.');
+  return summary;
+}
+
+/**
+ * Archive older original documents without touching the latest-report pointer,
+ * dashboard, or active infographic. Only the canonical archive and sorted index
+ * are changed. Use the same strict validation and source readback as publishing.
+ */
+function archiveMarketReportFromDriveWithoutLatestRollback_(file, expectedHour) {
+  if (marketReportAutoVerifyPublishedSource_(file, expectedHour)) {
+    return {ok: true, skipped: true};
+  }
+  if (typeof getGitHubJsonFile_ !== 'function' ||
+      typeof putGitHubJsonFile_ !== 'function' ||
+      typeof verifyMarketReportSourceDocReadback_ !== 'function') {
+    throw new Error('GitHub archival publication dependencies missing');
+  }
+  const report = buildWebReportFromGoogleDoc_(file);
+  runMarketReportAutoValidation_(report, expectedHour);
+  report.bodyHash = marketReportSha256_(Utilities.newBlob(report.fullText, 'text/plain').getBytes());
+  verifyMarketReportSourceDocReadback_(report);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const key = report.date + '_' + report.time.replace(':', '-');
+    const path = 'reports/' + key + '.json';
+    const existing = getGitHubJsonFile_(path);
+    const old = existing.data && !Array.isArray(existing.data) &&
+      (existing.data.latestReport || existing.data.report || existing.data);
+    if (existing.sha && old && old.date && old.time) {
+      const oldRevision = Number(old.revision || 0);
+      const newRevision = Number(report.revision || 0);
+      if (oldRevision > newRevision ||
+          (oldRevision === newRevision && old.bodyHash !== report.bodyHash)) {
+        throw new Error('Existing archived revision conflicts: ' + path);
+      }
+    }
+    report.report_status = 'PUBLISHED';
+    report.infographic_status = 'NOT_READY';
+    delete report.infographic;
+    // Commit canonical first; safe to retry if the index write fails.
+    putGitHubJsonFile_(path, JSON.stringify(report, null, 2) + '\n',
+      existing.sha, 'Recover archived market report ' + key);
+    const index = getGitHubJsonFile_('reports.json');
+    const list = normalizeWebReportList_(index.data);
+    const next = upsertWebReportList_(list, report);
+    putGitHubJsonFile_('reports.json', JSON.stringify(next, null, 2) + '\n',
+      index.sha, 'Recover report history index ' + key);
+    if (!marketReportAutoVerifyPublishedSource_(file, expectedHour)) {
+      throw new Error('Archival GitHub readback did not match Drive source: ' + key);
+    }
+    return {ok: true, skipped: false};
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function publishMarketReportSlot_(hour, mode, throwOnError, targetDate) {
   const now = new Date();
 
   try {
-    const file = findMarketReportDocForAutoPublishSlot_(hour);
+    const file = findMarketReportDocForAutoPublishSlot_(hour, targetDate);
 
     if (!file) {
       const missing = {
@@ -219,7 +328,8 @@ function publishMarketReportSlot_(hour, mode, throwOnError) {
     const publishedVersionKey = MARKET_REPORT_AUTO_CONFIG.publishedPrefix + file.getId();
     const props = PropertiesService.getScriptProperties();
 
-    if (props.getProperty(publishedVersionKey) === fileVersion) {
+    if (props.getProperty(publishedVersionKey) === fileVersion &&
+        marketReportAutoVerifyPublishedSource_(file, hour)) {
       return saveMarketReportSlotResult_({
         ok: true,
         skipped: true,
@@ -268,6 +378,41 @@ function publishMarketReportSlot_(hour, mode, throwOnError) {
   }
 }
 
+function marketReportAutoVerifyPublishedSource_(file, expectedHour) {
+  // A local success marker is not proof that GitHub retained the transaction.
+  // Check the source-linked canonical and indexed item before skipping a retry.
+  try {
+    if (typeof getGitHubJsonFile_ !== 'function' ||
+        typeof normalizeWebReportList_ !== 'function') return false;
+    const report = buildWebReportFromGoogleDoc_(file);
+    if (Number(String(report.time).slice(0, 2)) !== Number(expectedHour)) return false;
+    const key = report.date + '_' + report.time.replace(':', '-');
+    const canonicalResponse = getGitHubJsonFile_('reports/' + key + '.json');
+    const stored = canonicalResponse && canonicalResponse.data;
+    const canonical = stored && (stored.latestReport || stored.report || stored);
+    if (!canonical || !canonicalResponse.sha) return false;
+    if (canonical.date !== report.date || canonical.time !== report.time ||
+        canonical.title !== report.title) return false;
+    if (!canonical.sourceDocument || canonical.sourceDocument.id !== file.getId()) return false;
+    if (String(canonical.revision || '') !== String(report.revision || '')) return false;
+    // Validate that the original document text has not changed since publication.
+    if (typeof marketReportSha256_ !== 'function') return false;
+    const expectedHash = marketReportSha256_(
+      Utilities.newBlob(report.fullText, 'text/plain').getBytes());
+    if (canonical.bodyHash !== expectedHash) return false;
+    const indexResponse = getGitHubJsonFile_('reports.json');
+    const matches = normalizeWebReportList_(indexResponse.data).filter(function(item) {
+      return item.date === report.date && item.time === report.time &&
+        item.bodyHash === expectedHash && item.sourceDocument &&
+        item.sourceDocument.id === file.getId();
+    });
+    return matches.length === 1;
+  } catch (error) {
+    console.warn('Report remote readback unavailable; republishing is required: ' + error.message);
+    return false;
+  }
+}
+
 function saveMarketReportSlotResult_(result, mode) {
   if (mode === 'scheduled') {
     saveMarketReportAutoResult_(result);
@@ -280,28 +425,8 @@ function runMarketReportAutoValidation_(report, expectedHour) {
     return validateMarketReportBeforePublish_(report, expectedHour);
   }
 
-  const warnings = ['validateMarketReportBeforePublish_ was not found. Basic validation was used.'];
-
-  if (!report || typeof report !== 'object') {
-    throw new Error('Market report object was not created.');
-  }
-
-  if (!report.date) warnings.push('Report date is missing.');
-  if (!report.time) warnings.push('Report time is missing.');
-  if (!report.title) warnings.push('Report title is missing.');
-
-  if (expectedHour !== undefined && report.time) {
-    const expectedTime = ('0' + expectedHour).slice(-2) + ':00';
-    if (String(report.time) !== expectedTime) {
-      warnings.push('Report time is ' + report.time + ', expected ' + expectedTime + '.');
-    }
-  }
-
-  return {
-    ok: true,
-    fallback: true,
-    warnings: warnings
-  };
+  // Fail closed: publication cannot proceed without the full source validator.
+  throw new Error('validateMarketReportBeforePublish_ is unavailable; publication blocked.');
 }
 
 function findLatestMarketReportDocForAutoPublish_() {
@@ -327,9 +452,9 @@ function findLatestMarketReportDocForAutoPublish_() {
   return latest;
 }
 
-function findMarketReportDocForAutoPublishSlot_(hour) {
+function findMarketReportDocForAutoPublishSlot_(hour, targetDate) {
   const now = new Date();
-  const dateText = Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd');
+  const dateText = targetDate || Utilities.formatDate(now, MARKET_REPORT_AUTO_CONFIG.timezone, 'yyyy-MM-dd');
   const name = marketReportAutoDocName_(dateText, hour);
   return findMarketReportAutoBestFileByName_(name) ||
     findMarketReportAutoBestFileByPattern_(dateText, hour);
@@ -439,8 +564,7 @@ function marketReportAutoDocName_(dateText, hour) {
 }
 
 function isScheduledMarketReportSlot_(day, hour) {
-  if (day === 7) return false;
-  if (day === 6) return hour === 8;
+  if (day === 6 || day === 7) return false;
   return MARKET_REPORT_AUTO_CONFIG.reportHours.includes(hour);
 }
 

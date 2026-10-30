@@ -1,0 +1,20 @@
+name: Drive-GitHub recovery scheduler CI
+on:
+  push:
+    branches: [fix/schedule-drive-github-recovery-20261013]
+  pull_request:
+    paths:
+      - apps-script/MarketReportMasterScheduler.gs
+      - scripts/test_market_report_recovery_trigger.js
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node scripts/test_market_report_recovery_trigger.js
+      - run: node scripts/test_drive_github_archive_backfill.js

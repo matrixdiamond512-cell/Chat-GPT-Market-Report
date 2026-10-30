@@ -40,8 +40,21 @@
   }
 
   function shouldKeepHistoricalSelection(latest) {
+    // Preserve the original explicit deep link captured before async initialization.
+    if (window.MarketReportInitialRequestedSlot?.date &&
+        window.MarketReportInitialRequestedSlot?.time) return true;
     const params = new URLSearchParams(location.search);
     const requestedDate = params.get("date");
+    const requestedTime = params.get("time");
+    // A valid explicit date/time deep link is authoritative even while async
+    // archive data is still loading. Never redirect it to the latest slot.
+    if (/^\d{4}-\d{2}-\d{2}$/.test(requestedDate || "")
+        && /^(08:00|12:00|16:00|21:00)$/.test(requestedTime || "")) return true;
+    // Respect an explicit archived or published slot, including a time on the latest date.
+    try {
+      if (requestedDate && requestedTime && Array.isArray(reports)
+          && reports.some(item => item?.date === requestedDate && item?.time === requestedTime)) return true;
+    } catch (error) { /* proceed using the date-only guard */ }
     return Boolean(requestedDate && requestedDate < latest.date);
   }
 
@@ -151,6 +164,8 @@
     }
 
     const latest = latestReport(list);
+    // Historical archive view is a user-visible record, not an eligible latest report override.
+    try { if (selectedReport?.archiveStatus === "HISTORICAL_ARCHIVE") return; } catch (error) { /* no selection */ }
     if (!latest || shouldKeepHistoricalSelection(latest)) return;
 
     let current = null;
