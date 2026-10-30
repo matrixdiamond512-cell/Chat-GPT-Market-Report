@@ -89,3 +89,10 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - A TEST_ONLY GCS evidence object may be copied only by exact object generation and SHA-256 into a separately marked LOCAL_STAGING_ONLY checkout; create-only identical retries are allowed, conflicting bytes or identity stop.
 - The existing importer may run against that isolated checkout only when the caller explicitly opts into strict issuance binding. Docs appProperties must match report_id, revision, body_hash, evidence_id, and snapshot_id; otherwise the report remains held/archived.
 - The default scheduled importer path is unchanged. Staging code must not write Google Drive, GitHub main, or Pages. TEST_ONLY evidence and local staging output are not production issuance evidence.
+
+
+## MRF-INGESTION-20261030-01｜取込状態と公開状態の分離（2026-10-30 JST）
+- REQ-12: 保存済みDocsのGitHub取込結果は、canonical保存、発行前evidence/Docs読戻しreceipt、Pages配備、公開後DOM読戻しを別段階で記録する。SOURCE_ARCHIVEDのみの取込を正式publication成功として報告しない。
+- REQ-12a: evidence不足の本文は閲覧用canonical archiveに保存できるが、記録は「SOURCE_ARCHIVED_ONLY」とし、publication eligibilityを獲得しない。
+- REQ-12b: Docs readback receiptがある場合もPages配備・公開DOM確認とは別状態とする。
+- 適用範囲：GitHub取込ログと対応するCI。既存レポート、receipt、Docs、PNG、release schedule、publication gateの変更を含まない。
