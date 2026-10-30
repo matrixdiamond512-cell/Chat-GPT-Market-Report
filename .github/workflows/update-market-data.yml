@@ -520,6 +520,10 @@ jobs:
       - name: Validate official U.S. Treasury daily 10-year source
         if: github.event_name == 'workflow_dispatch' && inputs.acquisition_mode == 'validate-only' && inputs.validation_target == 'treasury-us10y'
         run: python scripts/validate_market_data_source.py --symbol us10y --source-id us_treasury_yield_curve
+      - name: Validate official Cboe VIX daily close feed
+        if: always() && github.event_name == 'pull_request'
+        run: python scripts/validate_market_data_source.py --symbol vix --source-id cboe_vix_history
+
       - name: Validate official Ministry of Finance Japan 10-year reference series
         if: always() && github.event_name == 'pull_request'
         shell: bash
