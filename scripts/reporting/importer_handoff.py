@@ -73,12 +73,12 @@ def stage_test_only_evidence(
 ) -> dict:
     """Read one pinned TEST_ONLY GCS generation and create-only stage exact bytes."""
     root = validate_staging_root(staging_root, importer_root=importer_root)
-    def has_test_only_segment(value: str) -> bool:
-        return bool(re.search(r"(?:^|[-._])test-only(?:$|[-._])", value.lower()))
+    def has_test_segment(value: str) -> bool:
+        return bool(re.search(r"(?:^|[-._])test(?:$|[-._])", value.lower()))
 
     if (
-        not isinstance(project_id, str) or not has_test_only_segment(project_id)
-        or not isinstance(bucket_name, str) or not has_test_only_segment(bucket_name)
+        not isinstance(project_id, str) or not has_test_segment(project_id)
+        or not isinstance(bucket_name, str) or not has_test_segment(bucket_name)
     ):
         raise ImporterHandoffBlocked("TEST_ONLY_GCS_TARGET_REQUIRED")
     object_parts = object_name.replace("\\", "/").split("/") if isinstance(object_name, str) else []
