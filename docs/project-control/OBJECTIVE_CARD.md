@@ -222,3 +222,16 @@ For the existing 08:00 issuance objective, added one composed offline contract t
 PR #188 source head before this addition was `0a37e8c35d8669110aa95560054e2ab275a56569`, based on `e70751bc4a202c84f4322df8748a08775d836458`; latest inspected main is `ec3e38b56397686c781e61de7efe97baeec48544`, 152 commits ahead. The 153 paths changed on main since PR base do not overlap PR #188's 16 changed paths, but latest-main reconciliation remains open before merge/readiness.
 
 OPEN: push and exact-head hosted CI; inspect/reconcile main drift before PR readiness; real TEST_ONLY GCS staging invocation, authentic G2 body and human scenario review, Google Docs API save/readback, importer apply in isolated checkout, canonical persistence, Pages/public DOM, and future approved slot remain NOT_RUN. The 2026-10-30 08:00 Drive document is a display-only archive with missing pre-slot evidence; it was not used by this test. No production or schedule state changed.
+
+
+## 08:00 importer staging prerequisite recheck — 2026-10-30 (ADD)
+
+PRIMARY OBJECTIVE remains: verify one authorized weekday 08:00 issuance from exact pre-slot TEST_ONLY evidence through the isolated importer boundary, while preserving all identity, freshness, cutoff and readback gates. An offline bridge contract test is supporting evidence, not the final outcome.
+
+ACTIVE PHASE: external TEST_ONLY staging readiness. PR #188 head `7a1b751923dc40c1cfae26e980f49bc10f7b82c9`, based on main `ec3e38b56397686c781e61de7efe97baeec48544`; PR #188 remains OPEN / Draft / unmerged.
+
+COMPLETED: composed offline exact-generation staging → strict importer receipt/Docs-property binding test; local focused suites 12/12 + 12/12 PASS on the prior tested code; exact-head hosted issuance, frozen-cutoff and delivery-health CI PASS.
+
+OPEN OUTCOMES: no local TEST_ONLY GCS auth/CLI or staged exact-generation object; no separate marked staging checkout; no confirmed Docs appProperties bound to the exact frozen G2 body/evidence/snapshot; strict importer runtime and apply; canonical/receipt, Pages/public DOM, and scheduled-slot acceptance. The read-only 2026-10-28 Doc is `閲覧用分析版` and lacks the required pre-issuance source linkage. These gaps remain BLOCKED/NOT_RUN; no historic evidence may be reconstructed.
+
+NEXT NECESSARY ACTION: obtain an authorized TEST_ONLY identity and one exact-generation object, a matching issuance-bound Docs readback, and a separate marked staging checkout. Stage the exact generation and inspect strict-binding dry-run; run `--apply` only if all bindings pass. Otherwise stop and preserve the hold. No production workflow dispatch, Drive write, main change, or Pages deploy is authorized here.
