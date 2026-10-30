@@ -259,3 +259,12 @@ PR #189 is OPEN / Draft / unmerged. Exact implementation head `71fce84ddfa814a3b
 
 ### MRF-INGESTION-20261030-01 matrix source-link correction (CORRECT, 2026-10-30 JST)
 Corrected the four 10/29 report evidence links in HANDOFF from old main `52e99701f3bc71a77bdde31729e0f887f44a9135` (paths absent there) to current main `ec3e38b56397686c781e61de7efe97baeec48544`. Readback confirms all four are still `SOURCE_ARCHIVED` with `NOT_VERIFIED` infographics and no matching receipts. This is evidence-link repair only; live acceptance remains NOT_RUN.
+
+
+## MRF-0800-IMPORTER-COMBO-20261030-01 — integrated importer validation (ADD, 2026-10-30 JST)
+
+PR #188 now carries the compatible code and documentation from PR #189 for joint Draft validation. At head `d8394400dac2935f338d4d2ae9c068db689526eb`, exact-head issuance, synchronization recovery, frozen-cutoff and delivery-health hosted CI all PASS (runs 40989666087, 40989665981, 40989666048, 40989666122). Logs show importer handoff 12/12, issuance pipeline 12/12, and ingestion outcome 4/4, including the composed bridge and status-helper cases.
+
+OPEN OUTCOMES remain: real TEST_ONLY GCS staging, exact issuance-bound Docs readback, isolated importer dry-run/apply, canonical receipt persistence, Pages/public DOM, and a future authorized slot. The standard GCS CLI/ADC, staged object and sibling staging checkout are still absent. The available 2026-10-28 Docs item is display-only and cannot satisfy issuance binding.
+
+PR #188 and PR #189 both remain OPEN / Draft / unmerged. PR #189's code and affected formal documentation are now included in #188 for combined validation; do not merge both independently. Next necessary action: provision the permitted TEST_ONLY prerequisites, run the isolated staging gates, and settle the duplicate PR disposition before any merge.
