@@ -35,6 +35,7 @@ READY_MAP = {
     "nikkei225_cash": "nikkei225_cash", "nikkei_vi": "nikkei_vi",
     "nikkei225_dev25": "nikkei225_dev25", "nikkei225_dev200": "nikkei225_dev200",
     "nikkei225_per": "nikkei225_per", "nikkei225_pbr": "nikkei225_pbr", "nikkei225_eps": "nikkei225_eps",
+    "cnn_fear_greed": "fear_greed",
 }
 ACCEPTED_SOURCE_UNITS = {
     "usdjpy": {"JPY per USD"}, "eurusd": {"USD per EUR"},
@@ -117,12 +118,18 @@ def build_snapshot(source: dict[str, Any], generated_at: str) -> dict[str, Any]:
         label, expected_unit, market_type, session = items_by_id[symbol]
         if str(row.get("Unit") or "") != expected_unit and str(row.get("Unit") or "") not in ACCEPTED_SOURCE_UNITS.get(symbol, set()):
             raise SnapshotError("verified source unit does not match its report field")
+        if source_id == "cnn_fear_greed":
+            source_name = str(row.get("Source") or "").strip().lower()
+            if evidence_status != "VERIFIED_MANUAL" or "cnn" not in source_name or "fear-and-greed" not in source_name:
+                raise SnapshotError("CNN Fear & Greed must be a manually verified observation from the CNN official page")
         try:
             value = float(row["Observed Value"])
         except (ValueError, TypeError, KeyError) as exc:
             raise SnapshotError("verified source value is not numeric") from exc
         market_date = _parse_date(row.get("Source Market Date"))
         retrieved = _parse_timestamp(row.get("Retrieved At (UTC)"))
+        if source_id == "cnn_fear_greed" and not 0 <= value <= 100:
+            raise SnapshotError("CNN Fear & Greed score must be between 0 and 100")
         retrieved_dt = dt.datetime.fromisoformat(retrieved.replace("Z", "+00:00"))
         if market_date > retrieved_dt.astimezone(JST).date().isoformat():
             raise SnapshotError("market observation is future-dated relative to retrieval")
@@ -141,6 +148,7 @@ def build_snapshot(source: dict[str, Any], generated_at: str) -> dict[str, Any]:
             "fetchedAt": retrieved, "sourceId": (
                 "tradingview_nikkei_daily_history" if is_reference else
                 "us_treasury_yield_curve" if source_id == "us10y" else
+                "cnn_official_current_reading" if source_id == "cnn_fear_greed" else
                 "manual_official_nikkei" if evidence_status == "VERIFIED_MANUAL" else
                 "tradingview_official_mcp"
             ),
