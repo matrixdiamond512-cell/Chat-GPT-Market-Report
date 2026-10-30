@@ -504,3 +504,12 @@ Local implementation evidence E1/E2 (candidate only): connected the last eligibl
 2026-10-30 — PR94-CI-TRIGGER-20261030 — Follow-up after identifying why the post-fix Structure Market Reports run did not trigger. Added `data/market/report_evidence/**` to that workflow's existing pull-request path filter so future evidence/snapshot/dry-run moves run the canonical builder check. `git diff --check` PASS. No build/persistence step, market refresh, Sheets write, production-sheet write, or merge performed locally. Hosted validation is pending on the commit that contains this trigger change; do not count unrelated workflow success as Structure Market Reports proof.
 
 2026-10-30 — PR94-CI-TRIGGER-20261030 hosted acceptance on `4abbfc5c99d32aecd9d7513249eff31c7482008f`: Structure Market Reports run `40990275977` SUCCESS. The canonical build, structuring, schema completion, validation, and persistence steps all succeeded; the workflow's commit step was SKIPPED because this was a pull-request event. Also successful on the same head: frozen-cutoff `40990275933`, delivery-health `40990276007`, 08:00 QA `40990275929`, independent market-data workflow `40990275959`, and read-only reconstruction `40990275951`. The market-data workflow did not perform live snapshot/update or Sheets writes (those jobs remain skipped as in the run configuration); this CI fix is not a full-data or Sheets acceptance. No production close-list write or main merge. PR remains OPEN / Draft / unmerged.
+
+
+### PR94-CNN-MANUAL-SNAPSHOT-20261030 — 手動CNN観測のスナップショット接続
+- 変更日: 2026-10-30 JST。対象: PR #94 codex/market-data-completeness-recovery。影響: scripts/build_personal_market_snapshot.py, tests/test_personal_market_snapshot.py, 本台帳。
+- 原因: Personal_Report_Ready の cnn_fear_greed 行がREADY_MAPに存在せず、2026-10-29のCNN公式ページ手動観測（score 35、表示更新時刻 2026-10-29T23:59:48Z、観測取得 2026-10-30T03:28:44Z）が共通スナップショットへ入らなかった。元行は取得時刻列を欠いていたため旧行として除外。
+- 修正: 完全な VERIFIED_MANUAL 観測のみを fear_greed へ接続。CNN公式ページの識別、0–100範囲、基準日、取得日時を検証し、sourceIdを cnn_official_current_reading として維持。自動CNN取得経路・公開配信・本番シート保存は変更しない。
+- テストシート: 専用 Personal_Report_Ready に取得日時を含む修正版観測を一意IDで追記し、読み戻しで12列・値・基準日・表示更新時刻・出典・状態・取得日時を確認。旧行を含む既存履歴は変更していない。
+- 検証: PR Actions run 41003024908 の tradingview-mcp-candidate-tests SUCCESS。新規手動CNN接続・不正ソース/範囲テストを含むスナップショット22 tests PASS。test 28 tests PASS、structure SUCCESS。Sheets write系ジョブはSKIPPED。このActions結果はコード検証であり、同じ実データからのレポート再生成・保存/readbackの証拠ではない。
+- 制約/未解決: 個人用Sheetsの修正行は取得入力として保存済みだが、新しい共通スナップショットおよび別履歴レポートの実生成・保存/readbackは未実施。実データ経路への接続確認が必要。PRはOPEN / Draft / 未マージ。本番 終値一覧 は読み取り専用。
