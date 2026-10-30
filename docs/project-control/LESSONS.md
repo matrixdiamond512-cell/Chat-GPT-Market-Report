@@ -25,3 +25,10 @@
 
 
 - MRF-INGESTION-20261030-01: Pin an evidence link to a commit that actually contains the referenced artifact. A later existence check cannot make an earlier 404 link valid; repair the link and record the correction without changing the acceptance state.
+
+
+## MRF-0800-IMPORTER-COMBO-20261030-01 — test wiring is part of acceptance (ACTIVE, 2026-10-30 JST)
+
+LESSON: Adding a regression test file and listing its path in a workflow filter do not prove it ran. Add the test command to the job and include the relevant source/helper paths in the trigger filter; inspect the exact-head job log for the test name and summary.
+
+SOURCE PROBLEM: PR #189 added `tests/test_ingestion_outcome.py`, but its sync recovery workflow did not invoke that file. ROOT CAUSE: workflow path selection and test execution were treated as the same step. REPAIR: the integrated PR #188 workflow now watches the importer/helper/test paths and runs the test module; exact-head CI log reports 4 tests, OK. EXPECTED EFFECT: new contract tests become executable evidence on matching changes. STATUS: ACTIVE.
