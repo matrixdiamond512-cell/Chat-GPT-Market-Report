@@ -559,3 +559,11 @@ Local implementation evidence E1/E2 (candidate only): connected the last eligibl
 - Interpretation/limit: the later official quote and the official CSV date/direction validation support classifying the 2026-10-29 VIX candidate as a confirmed close observation at published precision. The Actions log alone does not expose the CSV's numeric close, so no claim of direct logged numeric CSV equality is made. Preserve the older saved snapshot/report as-is until a new same-snapshot report is actually generated and read back.
 - Verification: latest-head PR Actions: candidate tests, treasury-validation, QA, structure, P0 read-only and test jobs succeeded; all update/Sheets write jobs were SKIPPED. VIX validation is E4; direct Cboe page observation is E5 for its displayed quote. No Sheets save/readback was run. The saved `latest.json` VIX entry was still 2026-10-28 / 16.91 at the last read; it was not updated here. PR remains OPEN / Draft / unmerged.
 - Open outcomes: integrate a new verified snapshot/report and read it back in the personal test Sheet; perform a new complete market-window acquisition when all target markets have finished. No production close-list write.
+
+### PR94-DAILY-SERIES-PROBE-20261030 — 200日乖離率の代替系列を棄却
+- 変更要求ID: PR94-DAILY-SERIES-PROBE-20261030。実施日: 2026-10-30 JST。対象PR #94 / `codex/market-data-completeness-recovery`。対象: 日経225の200営業日乖離率およびJPXプライム日報。
+- TradingViewの `TVC:NI225` 日足220本を取得。最終barは市場日2026-10-30、終値63289.89。日経平均プロフィルの同日公式大引値63290.11と0.22円差があり、同一系列の証拠もないため、この履歴を公式日経平均の200日乖離率計算に採用しない。参考値のSheets追記も行わず、既存スナップショットを変更しない。
+- JPX東京証券取引所日報の利用案内は立会日の翌営業日掲載と明記。2026-10-30 JSTの一覧では最新掲載日が10/29で、10/30分は未掲載。よって当日のプライム売買代金・売買高・騰落統計は新規取得扱いにしない。10/30分は次のJPX掲載後に処理する。
+- テストSheets readbackで10/30東京レポートID `personal-report-tokyo-close-2026-10-30-20261030121113Z` が1件、Personal_Report_Readyに6項目、Personal_Reference_ValuesにPrime参考4項目を確認。レポート全文のreadbackは前回実行証拠を維持。本番「終値一覧」は未変更。
+- PR HEAD `f65cbcdad0269c14d96f943a53963464346e607e` のActions run `41013199102`: candidate checksと参照検証はSUCCESS、update/Speadsheet保存ジョブはSKIPPED。新規市場取得・新規保存のE2E証拠には数えない。PRはOPEN / Draft / 未マージ。
+- 検証レベル: TV日足と公式値比較 E3、JPX掲載タイミング E5、Sheets存在・読戻し E5。残課題: 日経公式CSVの200本取得、JPX公式10/30日報取得、同一snapshotの再生成と保存readback。
