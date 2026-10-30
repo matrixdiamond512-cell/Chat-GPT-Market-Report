@@ -218,7 +218,8 @@ class OfficialMarketDataAdapterTests(unittest.TestCase):
 
     def test_nikkei_official_sma_uses_exact_window_on_or_before_target(self):
         source={"id":"nikkei_dev25","name":"Nikkei official SMA25","url":"https://example.test/nikkei.csv",
-                "marketType":"index","session":"japan_cash","targetDate":"2026-10-09","window":25}
+                "marketType":"technical","underlyingMarketType":"index","session":"japan_cash",
+                "targetDate":"2026-10-09","window":25}
         dates=[]
         day=market_data.dt.date(2026,9,1)
         while len(dates)<26:
@@ -233,6 +234,12 @@ class OfficialMarketDataAdapterTests(unittest.TestCase):
         self.assertAlmostEqual(value["value"],(26/14-1)*100)
         self.assertEqual(value["asOf"],f"{dates[25].isoformat()}T15:30:00+09:00")
         self.assertEqual(value["window"],25)
+        self.assertEqual(value["marketType"],"technical")
+        self.assertEqual(source["underlyingMarketType"],"index")
+        accepted, code, _ = market_data.validate_candidate(
+            "nikkei225_dev25", {"marketType":"technical"}, {"min":-50,"max":50}, value, None
+        )
+        self.assertTrue(accepted, code)
 
     def test_nikkei_csv_fails_closed_if_close_column_is_not_identifiable(self):
         source={"id":"nikkei","name":"Nikkei","url":"https://example.test","targetDate":"2026-10-09"}
