@@ -246,6 +246,36 @@ class PersonalSnapshotTests(unittest.TestCase):
         self.assertEqual(payload["markets"]["jp10y"]["verificationStatus"], "verified")
         self.assertEqual(report_counts(payload), (11, 5, 12))
 
+    def test_manual_cnn_page_observation_joins_snapshot_with_lineage(self):
+        source = self._source()
+        source["reportReadyValues"].append([
+            "personal-report-cnn-fng-2026-10-29-corrected",
+            "cnn_fear_greed", 35, "score", "sentiment_index", "cnn_fear_greed_daily",
+            "2026-10-29", "2026-10-29T23:59:48Z",
+            "CNN Fear & Greed official page — https://edition.cnn.com/markets/fear-and-greed",
+            "Manual page observation; source update time 2026-10-29 7:59:48 PM ET (EDT).",
+            "VERIFIED_MANUAL", "2026-10-30T03:28:44Z",
+        ])
+        payload = build_snapshot(source, "2026-10-30T04:00:00Z")
+        observation = payload["markets"]["fear_greed"]
+        self.assertEqual(observation["value"], 35)
+        self.assertEqual(observation["asOf"], "2026-10-29")
+        self.assertEqual(observation["barAnchorUTC"], "2026-10-29T23:59:48Z")
+        self.assertEqual(observation["sourceId"], "cnn_official_current_reading")
+        self.assertEqual(observation["verificationStatus"], "verified")
+        self.assertEqual(report_counts(payload), (10, 5, 13))
+
+    def test_manual_cnn_value_requires_cnn_official_page_and_score_range(self):
+        source = self._source()
+        row = [
+            "cnn-manual-invalid", "cnn_fear_greed", 101, "score", "sentiment_index",
+            "cnn_fear_greed_daily", "2026-10-29", "2026-10-29T23:59:48Z",
+            "unrelated source", "manual observation", "VERIFIED_MANUAL", "2026-10-30T03:28:44Z",
+        ]
+        source["reportReadyValues"].append(row)
+        with self.assertRaises(SnapshotError):
+            build_snapshot(source, "2026-10-30T04:00:00Z")
+
     def test_cnn_fallback_or_old_observation_is_not_promoted(self):
         rates = {"generatedAt": "2026-10-10T02:34:06+09:00", "meta": {"asOfDate": "2026-10-09", "status": "confirmed", "isStale": False}, "rates": []}
         close = {"generatedAt": "2026-10-10T18:45:54+09:00", "dataDate": "2026-10-09", "items": {}, "breadthHistory": []}
