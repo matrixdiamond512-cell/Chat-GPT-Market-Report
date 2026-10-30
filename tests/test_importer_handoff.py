@@ -180,6 +180,20 @@ class ImporterHandoffTests(unittest.TestCase):
             with self.assertRaisesRegex(ImporterHandoffBlocked, "TEST_ONLY_GCS_TARGET_REQUIRED"):
                 self.stage(root, project_id="market-report-production")
 
+    def test_substring_test_in_resource_names_is_not_a_test_only_marker(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "stage"
+            self.make_root(root)
+            with self.assertRaisesRegex(ImporterHandoffBlocked, "TEST_ONLY_GCS_TARGET_REQUIRED"):
+                self.stage(root, project_id="market-contest-prod", bucket_name="contest-evidence")
+
+    def test_object_must_use_safe_test_only_prefix(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "stage"
+            self.make_root(root)
+            with self.assertRaisesRegex(ImporterHandoffBlocked, "TEST_ONLY_GCS_OBJECT_REQUIRED"):
+                self.stage(root, object_name="production/08-00/evidence/run.json")
+
     def test_wrong_marker_identity_is_rejected(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp) / "stage"
@@ -236,6 +250,14 @@ class ImporterHandoffTests(unittest.TestCase):
             root.mkdir()
             with self.assertRaisesRegex(ImporterHandoffBlocked, "STAGING_ROOT_MUST_BE_ISOLATED"):
                 validate_staging_root(root, importer_root=root)
+
+    def test_staging_root_cannot_be_an_ancestor_of_importer_checkout(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "staging"
+            self.make_root(root)
+            importer_root = root / "nested-checkout"
+            with self.assertRaisesRegex(ImporterHandoffBlocked, "STAGING_ROOT_MUST_BE_ISOLATED"):
+                validate_staging_root(root, importer_root=importer_root)
 
 
     def test_exact_generation_staging_feeds_receipt_and_strict_docs_binding(self):
