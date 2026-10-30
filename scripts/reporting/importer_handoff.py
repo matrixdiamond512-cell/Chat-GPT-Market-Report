@@ -25,7 +25,7 @@ class ImporterHandoffBlocked(ValueError):
 def validate_staging_root(staging_root: Path, *, importer_root: Path) -> Path:
     root = Path(staging_root).expanduser().resolve()
     current = Path(importer_root).expanduser().resolve()
-    if root == current or current in root.parents:
+    if root == current or root in current.parents or current in root.parents:
         raise ImporterHandoffBlocked("STAGING_ROOT_MUST_BE_ISOLATED")
     if not root.is_dir():
         raise ImporterHandoffBlocked("STAGING_ROOT_NOT_FOUND")
@@ -73,8 +73,20 @@ def stage_test_only_evidence(
 ) -> dict:
     """Read one pinned TEST_ONLY GCS generation and create-only stage exact bytes."""
     root = validate_staging_root(staging_root, importer_root=importer_root)
-    if not project_id or "test" not in project_id.lower() or not bucket_name or "test" not in bucket_name.lower():
+    def has_test_only_segment(value: str) -> bool:
+        return bool(re.search(r"(?:^|[-._])test-only(?:$|[-._])", value.lower()))
+
+    if (
+        not isinstance(project_id, str) or not has_test_only_segment(project_id)
+        or not isinstance(bucket_name, str) or not has_test_only_segment(bucket_name)
+    ):
         raise ImporterHandoffBlocked("TEST_ONLY_GCS_TARGET_REQUIRED")
+    object_parts = object_name.replace("\\", "/").split("/") if isinstance(object_name, str) else []
+    if (
+        not object_parts or object_parts[0] != "test-only"
+        or any(part in ("", ".", "..") for part in object_parts)
+    ):
+        raise ImporterHandoffBlocked("TEST_ONLY_GCS_OBJECT_REQUIRED")
     try:
         parsed_date = date.fromisoformat(report_date)
     except (TypeError, ValueError) as exc:
