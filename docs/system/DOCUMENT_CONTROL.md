@@ -104,3 +104,10 @@ Unresolved: provision/authorize an isolated TEST_ONLY identity and exact-generat
 
 ## MRF-INGESTION-20261030-01 evidence-link correction (CORRECT, 2026-10-30 JST)
 The four-slot HANDOFF matrix originally linked 2026-10-29 report JSON paths at main `52e99701f3bc71a77bdde31729e0f887f44a9135`, where those paths were absent. Repointed its read-only evidence links to current main `ec3e38b56397686c781e61de7efe97baeec48544`, where the four JSON files are present and each has `SOURCE_ARCHIVED` / `infographic_status=NOT_VERIFIED`; the four receipt paths are absent. No requirements, pipeline behavior, reports, receipts, Docs, PNGs, Pages, or external services were changed.
+
+
+## MRF-0800-IMPORTER-COMBO-20261030-01 — integrated importer validation record (2026-10-30 JST)
+
+Source: user-directed continuation of Issue #176 and Draft PRs #188/#189. Base/current main `ec3e38b56397686c781e61de7efe97baeec48544`; integrated PR #188 head at validation `d8394400dac2935f338d4d2ae9c068db689526eb`. Affected stable paths: `scripts/sync_reports_from_drive.py`, `scripts/reporting/ingestion_outcome.py`, `tests/test_ingestion_outcome.py`, `.github/workflows/market-report-sync-recovery-ci.yml`, and the previously added #188 issuance modules/tests/workflow; formal GitHub docs `requirements.md`, `specification.md`, `operations.md`; project records and `HANDOFF.md`. The body-authoring manual and fixed-ID Google Docs were not changed.
+
+Verification: exact-head hosted issuance, sync recovery, frozen-cutoff and delivery-health runs 40989666087 / 40989665981 / 40989666048 / 40989666122 all SUCCESS; logs confirm 12 + 12 importer contract tests and 4 ingestion-outcome tests. E2 fixture/integration evidence only. Unresolved: actual TEST_ONLY GCS staging, matching Docs issuance binding, isolated importer run, canonical receipt, Pages/public DOM and scheduled-slot acceptance remain BLOCKED / NOT_RUN. PR #189's changes are incorporated into PR #188 for combined review; both drafts remain open and unmerged. No production/Drive/main/Pages writes occurred.
