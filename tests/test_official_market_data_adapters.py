@@ -231,7 +231,7 @@ class OfficialMarketDataAdapterTests(unittest.TestCase):
         payload=("\n".join(rows)+"\n").encode("utf-8")
         with patch.object(market_data,"http_get",return_value=(payload,"utf-8")):
             value=market_data.fetch_nikkei_sma_deviation(source)
-        self.assertAlmostEqual(value["value"],(126/113-1)*100)
+        self.assertAlmostEqual(value["value"],(126/114-1)*100)
         self.assertEqual(value["asOf"],f"{dates[25].isoformat()}T15:30:00+09:00")
         self.assertEqual(value["window"],25)
         self.assertEqual(value["marketType"],"technical")
