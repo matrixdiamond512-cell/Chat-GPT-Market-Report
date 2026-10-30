@@ -195,3 +195,12 @@ PRIMARY OBJECTIVE: Keep the 28-item personal market workflow safe and usable whi
 STATUS: PR #94 remains OPEN / Draft / unmerged. The PR branch carries market-data acquisition, snapshot, report and private test-Sheets work; production close-list writes remain prohibited unless exact series/date/blank-cell guards pass.
 
 NEXT NECESSARY ACTION: Run focused market acquisition/window regressions on the synchronized PR head, then verify GitHub reports the PR OPEN, Draft and unmerged.
+
+
+## PR #94 Nikkei validation repair — 2026-10-30 (ADD)
+
+The mismatched Nikkei SMA market-type metadata is corrected: each deviation item is `technical` and retains `underlyingMarketType: index`. Its regression fixture now uses a realistic in-range series and the exact trailing 25-session average. Latest HEAD before this record: `e9fabc4f17c128d98092f2bfe6e48d1d04cd8b12`; hosted checks on that head are all successful. Actions run #314 also completed the dedicated Nikkei test-sheet fetch/write/readback/idempotency path for four official fields, with four numeric readbacks, four date readbacks, one occurrence per field, and no rows added on retry. No production sheet was used. PR #94 remains OPEN / Draft / unmerged.
+
+OPEN OUTCOMES: 28-item coverage and production integration are still incomplete; JPX Prime history, official 200-day series, futures settlement values, and other previously listed gaps remain.
+
+NEXT NECESSARY ACTION: Continue the remaining market-data gaps already listed in the PR body and Evidence Ledger. Keep production close-list read-only, do not merge, and verify any new sheet writes only in the private test spreadsheet.
