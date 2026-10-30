@@ -86,7 +86,7 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 
 ## MRF-0800-20261029 — isolated importer staging contract
 
-- A TEST_ONLY GCS evidence object may be copied only by exact object generation and SHA-256 into a separately marked LOCAL_STAGING_ONLY checkout; create-only identical retries are allowed, conflicting bytes or identity stop.
+- A TEST_ONLY GCS evidence object may be copied only by exact object generation and SHA-256 into a separately marked LOCAL_STAGING_ONLY checkout whose root is disjoint from the importer checkout (neither is an ancestor of the other). Require a standalone `test` token in both project and bucket identifiers and an exact `test-only/` object-name prefix; substring matches do not qualify. Create-only identical retries are allowed; conflicting bytes or identity stop.
 - The existing importer may run against that isolated checkout only when the caller explicitly opts into strict issuance binding. Docs appProperties must match report_id, revision, body_hash, evidence_id, and snapshot_id; otherwise the report remains held/archived.
 - The default scheduled importer path is unchanged. Staging code must not write Google Drive, GitHub main, or Pages. TEST_ONLY evidence and local staging output are not production issuance evidence.
 
