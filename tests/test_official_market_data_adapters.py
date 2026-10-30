@@ -227,11 +227,11 @@ class OfficialMarketDataAdapterTests(unittest.TestCase):
                 dates.append(day)
             day += market_data.dt.timedelta(days=1)
         rows=["Date,Close"]
-        rows += [f"{d:%Y.%m.%d},{i}" for i,d in enumerate(dates,1)]
+        rows += [f"{d:%Y.%m.%d},{100+i}" for i,d in enumerate(dates,1)]
         payload=("\n".join(rows)+"\n").encode("utf-8")
         with patch.object(market_data,"http_get",return_value=(payload,"utf-8")):
             value=market_data.fetch_nikkei_sma_deviation(source)
-        self.assertAlmostEqual(value["value"],(26/14-1)*100)
+        self.assertAlmostEqual(value["value"],(126/113-1)*100)
         self.assertEqual(value["asOf"],f"{dates[25].isoformat()}T15:30:00+09:00")
         self.assertEqual(value["window"],25)
         self.assertEqual(value["marketType"],"technical")
