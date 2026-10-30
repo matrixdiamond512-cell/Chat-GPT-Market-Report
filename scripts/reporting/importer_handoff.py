@@ -73,6 +73,7 @@ def stage_test_only_evidence(
 ) -> dict:
     """Read one pinned TEST_ONLY GCS generation and create-only stage exact bytes."""
     root = validate_staging_root(staging_root, importer_root=importer_root)
+
     def has_test_segment(value: str) -> bool:
         return bool(re.search(r"(?:^|[-._])test(?:$|[-._])", value.lower()))
 
@@ -132,6 +133,9 @@ def stage_test_only_evidence(
 
     relative = Path("data") / "report-evidence" / f"{report_date}_08-00-r{revision}.json"
     destination = root / relative
+    resolved_parent = destination.parent.resolve()
+    if resolved_parent != root and root not in resolved_parent.parents:
+        raise ImporterHandoffBlocked("STAGING_EVIDENCE_PATH_ESCAPES_ROOT")
     destination.parent.mkdir(parents=True, exist_ok=True)
     resolved_parent = destination.parent.resolve()
     if resolved_parent != root and root not in resolved_parent.parents:
