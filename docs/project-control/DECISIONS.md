@@ -49,3 +49,7 @@
 
 
 - D-0800-07 (2026-10-29): Permit importer execution only against a separately marked LOCAL_STAGING_ONLY checkout using exact-generation TEST_ONLY GCS evidence and strict Docs appProperties binding. Keep the production workflow's default root and flags unchanged; never use its workflow_dispatch as a staging mechanism because it writes main and dispatches Pages.
+
+
+## MRF-0800-BRIDGE-20261030-01 — use a composition test at the importer boundary (ADD, 2026-10-30 JST)
+The isolated handoff helper and the Docs issuance-binding helper had separate unit tests, while the actual importer's `publication_evidence` wrapper had no test proving the staged evidence and Docs properties meet in one call. Add one offline contract test to compose those existing seams. Preserve the `TEST_ONLY` environment marker and use fake GCS and Google-auth modules. A valid local receipt plus strict property match is component/integration evidence only; do not interpret it as Google Docs save, canonical receipt persistence, Portal publication, or production GCS evidence. No functional requirements/spec/operations text changes.

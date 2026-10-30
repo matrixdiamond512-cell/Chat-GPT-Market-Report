@@ -16,3 +16,6 @@
 
 
 - MRF-0800-20261029: An exact Docs body and verified snapshot still do not reach the portal when the importer reads evidence from a different storage path. Trace the actual runtime handoff and workflow side effects before claiming end-to-end connectivity.
+
+
+- MRF-0800-BRIDGE-20261030-01: Adjacent helper tests can pass while the importer wrapper between them remains untested. Compose the real local wrapper around fake external adapters, assert both exact-binding PASS and mismatch HOLD, and preserve TEST_ONLY provenance throughout.

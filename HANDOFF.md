@@ -100,3 +100,7 @@ git branch --show-current
 
 ---
 この文書の最終更新: 2026-10-20 JST。文書管理の根拠は `docs/system/DOCUMENT_CONTROL.md`。配信システム本体の変更、Google Docsの正式正本の書換え、外部サービスの設定変更は、この引き継ぎ整備だけでは実施しない。
+
+
+## MRF-0800-BRIDGE-20261030-01 continuation
+Added a composed offline test in `tests/test_importer_handoff.py`: pinned TEST_ONLY generation → isolated file readback → actual importer `publication_evidence` strict-binding path → Docs revision/body/evidence/snapshot match; a wrong body hash returns HOLD. Local handoff and issuance suites pass 12/12 each. Current task branch is based on PR #188 head `0a37e8c35d8669110aa95560054e2ab275a56569`; latest main `ec3e38b56397686c781e61de7efe97baeec48544` is 152 commits ahead, with no changed-file path overlap observed. Keep PR #188 Draft and unmerged; resync/review main drift before readiness. After pushing, wait for exact-head issuance/frozen-cutoff/delivery-health CI. External GCS/Docs/Portal production transaction remains NOT_RUN.

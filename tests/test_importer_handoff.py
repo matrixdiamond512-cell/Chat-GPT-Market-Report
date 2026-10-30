@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
+import sys
 import tempfile
+import types
 import unittest
+from unittest.mock import patch
 
 from scripts.persist_report_slot_evidence import build_slot_evidence, canonical_bytes
 from scripts.reporting.importer_handoff import (
@@ -13,6 +17,25 @@ from scripts.reporting.importer_handoff import (
     validate_docs_issuance_binding,
     validate_staging_root,
 )
+
+
+def _fake_google_auth_modules():
+    names = (
+        "google",
+        "google.auth",
+        "google.auth.transport",
+        "google.auth.transport.requests",
+        "google.oauth2",
+        "google.oauth2.service_account",
+    )
+    modules = {}
+    for name in names:
+        module = types.ModuleType(name)
+        module.__path__ = []
+        modules[name] = module
+    modules["google.auth.transport.requests"].AuthorizedSession = object
+    modules["google.oauth2.service_account"].Credentials = object
+    return modules
 
 
 class FakeBlob:
@@ -213,6 +236,85 @@ class ImporterHandoffTests(unittest.TestCase):
             root.mkdir()
             with self.assertRaisesRegex(ImporterHandoffBlocked, "STAGING_ROOT_MUST_BE_ISOLATED"):
                 validate_staging_root(root, importer_root=root)
+
+
+    def test_exact_generation_staging_feeds_receipt_and_strict_docs_binding(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "isolated-staging"
+            self.make_root(root)
+            staged = self.stage(root)
+            evidence_path = root / "data/report-evidence/2026-10-16_08-00-r1.json"
+            body = "synthetic G2 body; TEST_ONLY integration fixture\n"
+            body_hash = hashlib.sha256(body.encode("utf-8")).hexdigest()
+            report = {
+                "date": self.date,
+                "time": "08:00",
+                "title": "マーケットレポート｜2026/10/16（金）08:00",
+                "report_id": self.report_id,
+                "revision": self.revision,
+                "fullText": body,
+                "bodyHash": body_hash,
+                "sourceRevisionId": "test-doc-revision-7",
+                "sourceDocument": {
+                    "id": "test-doc-123",
+                    "url": "https://docs.google.com/document/d/test-doc-123/edit",
+                },
+            }
+            drive_file = {
+                "id": "test-doc-123",
+                "createdTime": "2026-10-16T08:02:00+09:00",
+                "modifiedTime": "2026-10-16T08:02:01+09:00",
+            }
+            with patch.dict(sys.modules, _fake_google_auth_modules()):
+                scripts_path = str(Path(__file__).resolve().parents[1] / "scripts")
+                sys.path.insert(0, scripts_path)
+                try:
+                    importer_path = Path(__file__).resolve().parents[1] / "scripts/sync_reports_from_drive.py"
+                    spec = importlib.util.spec_from_file_location(
+                        "isolated_sync_reports_from_drive", importer_path
+                    )
+                    importer = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(importer)
+                    receipt, hold = importer.publication_evidence(
+                        root,
+                        report,
+                        {
+                            **drive_file,
+                            "appProperties": {
+                                "report_id": self.report_id,
+                                "revision": str(self.revision),
+                                "body_hash": body_hash,
+                                "evidence_id": json.loads(self.payload)["evidenceId"],
+                                "snapshot_id": self.snapshot_id,
+                            },
+                        },
+                        require_issuance_binding=True,
+                    )
+                    mismatched_properties = {
+                        "report_id": self.report_id,
+                        "revision": str(self.revision),
+                        "body_hash": "0" * 64,
+                        "evidence_id": receipt["evidenceId"],
+                        "snapshot_id": receipt["snapshotId"],
+                    }
+                    blocked, reason = importer.publication_evidence(
+                        root,
+                        report,
+                        {**drive_file, "appProperties": mismatched_properties},
+                        require_issuance_binding=True,
+                    )
+                finally:
+                    sys.path.remove(scripts_path)
+            self.assertIsNone(hold)
+            self.assertIsNotNone(receipt)
+            self.assertEqual(staged["environment"], "TEST_ONLY")
+            self.assertEqual(staged["generation"], self.generation)
+            self.assertEqual(staged["object_sha256"], self.sha256)
+            self.assertEqual(receipt["documentRevisionId"], "test-doc-revision-7")
+            self.assertEqual(receipt["evidenceId"], json.loads(self.payload)["evidenceId"])
+            self.assertEqual(receipt["snapshotId"], self.snapshot_id)
+            self.assertIsNone(blocked)
+            self.assertIn("body_hash", reason)
 
 
 if __name__ == "__main__":

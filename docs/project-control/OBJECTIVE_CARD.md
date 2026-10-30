@@ -214,3 +214,11 @@ OPEN OUTCOME: Existing importer handoff is still missing. It consumes slot evide
 
 COMPLETED: isolated TEST_ONLY evidence-to-importer handoff code, strict Docs issuance-binding opt-in, and hosted regression workflows.
 OPEN: Actual G2 capture/body hash, Docs create/readback using that exact body, matching Docs appProperties, human panel-12 review, external GCS staging invocation, isolated importer readback, and any approved production route. These were not supplied or executed; do not claim publication recovery.
+
+
+### MRF-0800 bridge-test continuation (ADD, 2026-10-30 JST)
+For the existing 08:00 issuance objective, added one composed offline contract test covering exact-generation TEST_ONLY staging, importer's slot-evidence receipt validation, Docs source revision, and strict Docs appProperties binding. A body-hash mismatch is held. Local: `test_importer_handoff.py` 12/12 and `test_issuance_pipeline.py` 12/12 PASS; py_compile and `git diff --check` PASS. Evidence E1/E2 only.
+
+PR #188 source head before this addition was `0a37e8c35d8669110aa95560054e2ab275a56569`, based on `e70751bc4a202c84f4322df8748a08775d836458`; latest inspected main is `ec3e38b56397686c781e61de7efe97baeec48544`, 152 commits ahead. The 153 paths changed on main since PR base do not overlap PR #188's 16 changed paths, but latest-main reconciliation remains open before merge/readiness.
+
+OPEN: push and exact-head hosted CI; inspect/reconcile main drift before PR readiness; real TEST_ONLY GCS staging invocation, authentic G2 body and human scenario review, Google Docs API save/readback, importer apply in isolated checkout, canonical persistence, Pages/public DOM, and future approved slot remain NOT_RUN. The 2026-10-30 08:00 Drive document is a display-only archive with missing pre-slot evidence; it was not used by this test. No production or schedule state changed.
