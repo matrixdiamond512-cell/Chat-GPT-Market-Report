@@ -235,3 +235,27 @@ COMPLETED: composed offline exact-generation staging → strict importer receipt
 OPEN OUTCOMES: no local TEST_ONLY GCS auth/CLI or staged exact-generation object; no separate marked staging checkout; no confirmed Docs appProperties bound to the exact frozen G2 body/evidence/snapshot; strict importer runtime and apply; canonical/receipt, Pages/public DOM, and scheduled-slot acceptance. The read-only 2026-10-28 Doc is `閲覧用分析版` and lacks the required pre-issuance source linkage. These gaps remain BLOCKED/NOT_RUN; no historic evidence may be reconstructed.
 
 NEXT NECESSARY ACTION: obtain an authorized TEST_ONLY identity and one exact-generation object, a matching issuance-bound Docs readback, and a separate marked staging checkout. Stage the exact generation and inspect strict-binding dry-run; run `--apply` only if all bindings pass. Otherwise stop and preserve the hold. No production workflow dispatch, Drive write, main change, or Pages deploy is authorized here.
+
+
+## MRF-INGESTION-20261030-01 active objective (ADD, 2026-10-30 JST)
+PRIMARY OBJECTIVE: Keep each scheduled report slot's evidence-backed delivery state observable from source ingestion through Docs readback, canonical receipt, Pages deployment, and public readback, without treating a saved archive or code test as completed publication.
+ACTIVE PROFILE: generic-app + data-tool.
+ACCEPTANCE CRITERIA:
+- Import logs distinguish canonical ingestion, archive-only holding, Docs readback receipt, archive promotion, Pages deployment, and public DOM readback.
+- Archive-only and unknown receipt/status pairs never emit a publication-success label.
+- Focused offline tests and the relevant PR workflow run on the exact PR head.
+- The original dirty checkout, existing PRs, main data, Drive files, receipts, schedule, Cloud settings, and Pages production state remain untouched.
+CONSTRAINTS: Implement on a branch from GitHub main 52e99701f3bc71a77bdde31729e0f887f44a9135; do not merge, deploy, or write production Drive/Cloud state without a later explicit approval.
+OUT OF SCOPE: Completing the full live four-slot transaction in this change; upstream generation, external scheduler provisioning, real Docs writer, actual PNG review/save, production publication, and runtime public-DOM acceptance remain independent outcomes.
+STATUS: IN_PROGRESS; implementation branch codex/report-ingestion-stage-truth-20261030.
+OPEN OUTCOMES: exact-head hosted CI, Draft PR creation/readback, formal Google Docs fixed-ID sync assessment, and four-slot production E2E. `test_report_contract.py` remains NOT_RUN because this Windows Python lacks IANA tzdata.
+FORBIDDEN SUBSTITUTE: a successful import, local projection check, unit/CI result, or existing Drive file alone is not proof of formal publication or whole-system completion.
+NEXT NECESSARY ACTION: inspect the final diff, commit/push this branch, submit a Draft PR, and record exact-head CI and remaining external outcomes.
+
+
+### PR #189 code-head CI evidence (ADD, 2026-10-30 JST)
+PR #189 is OPEN / Draft / unmerged. Exact implementation head `71fce84ddfa814a3b0c66bbc0545d36e78bfec1a` passed hosted sync recovery run 40968791396, frozen-cutoff run 40968791427, and delivery-health run 40968791433. Evidence/docs were then updated, so final PR-head CI confirmation remains open. Hosted sync CI also passed `test_report_contract.py`, which local Windows Python could not import due missing IANA tzdata. Live scheduled delivery and downstream public readback remain NOT_RUN.
+
+
+### MRF-INGESTION-20261030-01 matrix source-link correction (CORRECT, 2026-10-30 JST)
+Corrected the four 10/29 report evidence links in HANDOFF from old main `52e99701f3bc71a77bdde31729e0f887f44a9135` (paths absent there) to current main `ec3e38b56397686c781e61de7efe97baeec48544`. Readback confirms all four are still `SOURCE_ARCHIVED` with `NOT_VERIFIED` infographics and no matching receipts. This is evidence-link repair only; live acceptance remains NOT_RUN.
