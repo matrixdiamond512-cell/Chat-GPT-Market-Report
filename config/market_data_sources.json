@@ -608,14 +608,15 @@
           "sourceUrl": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_daily_jp.csv",
           "sourceSeriesId": "Nikkei225 official daily close",
           "priority": 1,
-          "marketType": "index",
+          "marketType": "technical",
           "session": "japan_cash",
           "window": 25,
           "closeTimeJst": "15:30",
           "timeoutSeconds": 20,
-          "note": "Calculated from 25 most recent official Nikkei daily closes on or before the report market date.",
+          "note": "Calculated from 25 most recent official Nikkei daily closes on or before the report market date. The published value is a technical deviation derived from the Nikkei 225 index close series.",
           "dateColumnIndex": 0,
-          "valueColumnIndex": 1
+          "valueColumnIndex": 1,
+          "underlyingMarketType": "index"
         },
         {
           "id": "yahoo_nikkei225_dev25",
@@ -648,14 +649,15 @@
           "sourceUrl": "https://indexes.nikkei.co.jp/nkave/historical/nikkei_stock_average_daily_jp.csv",
           "sourceSeriesId": "Nikkei225 official daily close",
           "priority": 1,
-          "marketType": "index",
+          "marketType": "technical",
           "session": "japan_cash",
           "window": 200,
           "closeTimeJst": "15:30",
           "timeoutSeconds": 20,
-          "note": "Calculated from 200 most recent official Nikkei daily closes on or before the report market date.",
+          "note": "Calculated from 200 most recent official Nikkei daily closes on or before the report market date. The published value is a technical deviation derived from the Nikkei 225 index close series.",
           "dateColumnIndex": 0,
-          "valueColumnIndex": 1
+          "valueColumnIndex": 1,
+          "underlyingMarketType": "index"
         },
         {
           "id": "yahoo_nikkei225_dev200",
