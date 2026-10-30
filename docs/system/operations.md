@@ -104,3 +104,12 @@ External setup still required: production GCS evidence/claim IAM, approved Googl
 6. The 2026-10-28 viewing/analysis document lacks a supplied pre-save G2 body/hash and same-run receipt. It cannot satisfy official issuance acceptance even if TEST_ONLY evidence is staged.
 
 Current validation covers mocked exact-generation reads, create-only readback, identity/hash conflicts, and strict Docs binding. GCS/IAM, real Docs metadata, importer runtime, canonical readback, and portal/Pages remain NOT_RUN until independently observed.
+
+
+## MRF-INGESTION-20261030-01｜取込ログの運用判定（2026-10-30 JST）
+- CANONICAL_SOURCE_INGESTION_COMPLETE: sourceをappend-only canonicalへ取り込んだ。正式公開の証明ではない。
+- SOURCE_ARCHIVED_ONLY: publication evidence/receiptが揃わず閲覧用archiveに保持した。公開成功として扱わず、後付け証拠を作成しない。
+- DOC_READBACK_RECEIPT_RECORDED: Docs読戻しreceiptを記録した段階。Pages deploy・公開DOM・通知の確認は別途必要。
+- ARCHIVED_SOURCE_PROMOTED_TO_CANONICAL: 既存archiveのcanonical状態をevidenceに基づき更新した段階。公開URLの確認は別途必要。
+- Importerが最後まで実行したこと、canonical projection consistencyが通ったこと、Pages/public DOMが対象reportIdと一致したことを一つの「publication verified」へまとめない。
+- この変更では本番Pages deploy、Google Drive書込み、既存report/receipt変更、スケジュール変更を行わない。
