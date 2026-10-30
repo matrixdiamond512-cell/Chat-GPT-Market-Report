@@ -531,3 +531,12 @@ Local implementation evidence E1/E2 (candidate only): connected the last eligibl
 - Personal_Market_Reportへ訂正版を新規追記: personal-report-23ba56e45f8d1eb2edb8d5d9。追記前ID件数0、追記後1。全9列を読み戻し完全一致。前回の履歴 personal-report-917a75732899448c4fe973b4 は編集・削除せず残し、本報告で場中値除外の訂正版に置き換えて参照する。本番「終値一覧」への書き込みなし。
 - Actions: run 41004971189でtradingview-mcp-candidate-tests、treasury-validation、qa、p0-read-only-tests、testはSUCCESS。structureもSUCCESS。Sheets/updateジョブはPRイベントによりSKIPPED。実際の個人用テストSheets保存/readbackは上記別工程で実施。
 - 状態: PRはOPEN / Draft / 未マージ。未解決: この履歴スナップショットは古い市場日を含むため、次工程は新しい確定値の取得と、ニュース/当日時間帯証拠を含む実運用スナップショット生成。プライム市場・金利等の参考値は公式確定値ではない。
+
+
+### PR94-LIVE-CROSSMARKET-20261030 — 2026-10-29市場データ更新とテストレポート保存
+- 実行日時: 2026-10-30 JST。対象: PR #94 `codex/market-data-completeness-recovery`。PRはOPEN / Draft / 未マージ、実行前HEAD `5ebeb787f1d10edbedb4fd3c0a790351e14bf587`。
+- TradingView公式MCPから確定済み日足を取得。Dow 52,342.56、Nasdaq Composite 26,184.7244、S&P 500 7,720.39、Russell 2000 2,859.216557（市場日2026-10-29）。APが同日終値を独立照合し、指数4項目をVERIFIEDとして記録。USD/JPY 157.71、EUR/USD 1.11794はOANDA/FX同一提供元の日次境界と対応H1足で確認。BTC/USD 77,792.67はBITSTAMPのUTC日足と同取引所H1足で確認。FX/BTCは同一提供元内検証で、独立ソース照合とは区別。
+- VIX 17.20はTradingViewとCboe表示が一致したが、Cboe画面の「8:15 PM」のタイムゾーンおよびCSV実体を確認できずREFERENCE_ONLY。5つの先物連続足（GC1! 4031.4、CL1! 102.00、OSE NK2251! 64730、CME NIY1! 64900、CME NKD1! 64935）は日足参考値。限月別清算値とは扱わず、清算値証拠はNOT_CONFIRMED。
+- 個人用テストSheetsの `Personal_Report_Ready` に7件VERIFIEDとVIX 1件REFERENCE_ONLY、`Personal_Reference_Values` に先物5件REFERENCE_ONLYを追記し、全行を読み戻して一致を確認。既存行・書式は変更なし。
+- 共通スナップショットID `0560dd4b97ff3b9a6f13f0fc` はVERIFIED 14 / REFERENCE 14 / UNAVAILABLE 0。2026-10-29の実取得に含まれない既存記録は「今回新規取得」と数えていない。そこから生成したレポートID `personal-report-4cadd9f192721e8d3b1e21a9`、SHA-256 `600f3c35fe29aa32c6b74c25d515713bcb502a03639dfcae9d28ee3b40d646c0`。個人用 `Personal_Market_Report` に別履歴として9セル追記し、本文全体・メタデータ・ID一意性（1件）を読み戻し確認。
+- 本番 `終値一覧` はread-onlyで、書込みなし。GitHub Actions dispatchおよびテスト実行は今回NOT_RUN。実測はTradingView MCP取得とGoogle Sheets外部readbackに限定。JPX/MOFの当日公式値、VIX時刻・CSV、先物個別限月清算値、FX/BTC独立照合、東京市場当日終了後データは未完了。
