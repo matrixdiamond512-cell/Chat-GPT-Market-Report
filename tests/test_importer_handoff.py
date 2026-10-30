@@ -187,6 +187,21 @@ class ImporterHandoffTests(unittest.TestCase):
             with self.assertRaisesRegex(ImporterHandoffBlocked, "TEST_ONLY_GCS_TARGET_REQUIRED"):
                 self.stage(root, project_id="market-contest-prod", bucket_name="contest-evidence")
 
+    def test_staging_parent_symlink_cannot_create_outside_path(self):
+        with tempfile.TemporaryDirectory() as temp:
+            temp_root = Path(temp)
+            root = temp_root / "stage"
+            outside = temp_root / "outside"
+            self.make_root(root)
+            outside.mkdir()
+            try:
+                (root / "data").symlink_to(outside, target_is_directory=True)
+            except OSError as exc:
+                self.skipTest(f"directory symlink unavailable: {exc}")
+            with self.assertRaisesRegex(ImporterHandoffBlocked, "STAGING_EVIDENCE_PATH_ESCAPES_ROOT"):
+                self.stage(root)
+            self.assertFalse((outside / "report-evidence").exists())
+
     def test_object_must_use_safe_test_only_prefix(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp) / "stage"
