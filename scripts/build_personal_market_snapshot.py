@@ -175,6 +175,9 @@ def build_snapshot(source: dict[str, Any], generated_at: str) -> dict[str, Any]:
         symbol = REFERENCE_MAP.get(source_id)
         if not symbol or str(row.get("Use Status") or "") != "REFERENCE_ONLY":
             continue
+        reference_type = str(row.get("Reference Type") or "").upper()
+        if "INTRADAY" in reference_type or "FORMING" in reference_type:
+            continue
         if symbol in seen_ids:
             raise SnapshotError("duplicate observation for one report field")
         seen_ids.add(symbol)
