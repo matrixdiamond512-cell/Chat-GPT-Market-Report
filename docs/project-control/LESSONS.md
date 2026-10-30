@@ -19,3 +19,9 @@
 
 
 - MRF-0800-BRIDGE-20261030-01: Adjacent helper tests can pass while the importer wrapper between them remains untested. Compose the real local wrapper around fake external adapters, assert both exact-binding PASS and mismatch HOLD, and preserve TEST_ONLY provenance throughout.
+
+
+- MRF-INGESTION-20261030-01: A successful importer process can store a non-public archive while failing publication eligibility. Log the performed stage, not the workflow's broad name. Keep receipt creation, canonical projection, Pages deployment, and public DOM readback as separate claims.
+
+
+- MRF-INGESTION-20261030-01: Pin an evidence link to a commit that actually contains the referenced artifact. A later existence check cannot make an earlier 404 link valid; repair the link and record the correction without changing the acceptance state.
