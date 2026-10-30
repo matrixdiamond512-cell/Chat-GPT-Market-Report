@@ -82,3 +82,12 @@ Affected stable paths: `AGENTS.md`, `docs/system/requirements.md`, `docs/system/
 
 ## MRF-0800-BRIDGE-20261030-01 — isolated importer bridge contract test (2026-10-30 JST)
 Source: user-directed continuation of Issue #176 / Draft PR #188. Changed `tests/test_importer_handoff.py` only for code behavior; project evidence records updated in `docs/project-control/{OBJECTIVE_CARD,EVIDENCE_LEDGER,DECISIONS,LESSONS}.md` and `HANDOFF.md`. Test composes pinned-generation TEST_ONLY staging → existing importer `publication_evidence(..., require_issuance_binding=True)` → exact Docs revision/body/evidence/snapshot binding, including a tampered-body-hash hold. Formal requirements/specification/body-authoring/operations/Google Docs fixed-ID contents: NO_CHANGE (test-only verification; no delivery contract or production behavior changed). Local focused suites: 12/12 handoff and 12/12 issuance pipeline PASS; py_compile and diff check PASS. Exact-head hosted CI pending until push. Fake GCS/Google modules only; actual GCS, Docs, poll/apply, portal and schedule remain NOT_RUN.
+
+
+## MRF-0800-BRIDGE-20261030-01 — staging prerequisite recheck (2026-10-30 JST)
+
+Source: user-directed continuation of Issue #176 / Draft PR #188, current main `ec3e38b56397686c781e61de7efe97baeec48544`, code head `7a1b751923dc40c1cfae26e980f49bc10f7b82c9`. Affected paths: `docs/project-control/OBJECTIVE_CARD.md`, `docs/project-control/EVIDENCE_LEDGER.md`, and `HANDOFF.md`; this control record. Formal requirements, system specification, authoring manual, operations, fixed-ID Google Docs, code and production artifacts: NO_CHANGE. No credentials or report body copied into records.
+
+Verification: read-only local and Drive prerequisite recheck; importer `--apply` was NOT_RUN because no staging root/marker, no staged evidence, and no usable GCS authentication was observed; the existing 2026-10-28 Doc is labeled `閲覧用分析版` and does not provide a matching pre-save G2 body/hash or same-run receipt. Strict `appProperties` binding remains UNKNOWN. Evidence ledger and HANDOFF record the exact evidence and limits. No external writes, main change, or Pages deploy occurred.
+
+Unresolved: provision/authorize an isolated TEST_ONLY identity and exact-generation object; provide one coherent issuance-bound G2/Docs readback; stage into a separate marked checkout; run strict dry-run and only then `--apply` if every binding passes. PR #188 and PR #189 remain separate Drafts; their shared importer changes have not received combined validation.
