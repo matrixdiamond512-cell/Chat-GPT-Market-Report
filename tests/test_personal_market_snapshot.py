@@ -124,7 +124,7 @@ class PersonalSnapshotTests(unittest.TestCase):
         self.assertEqual(observation["marketType"], "technical")
         self.assertNotIn("priceType", observation)
         self.assertIn("公式系列ではない", observation["note"])
-        self.assertEqual(report_counts(payload), (9, 6, 12))
+        self.assertEqual(report_counts(payload), (9, 6, 13))
 
     def test_secondary_history_metric_stays_reference_and_news_is_time_bound(self):
         source = self._source()
