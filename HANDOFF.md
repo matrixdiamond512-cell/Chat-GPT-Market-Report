@@ -104,3 +104,14 @@ git branch --show-current
 
 ## MRF-0800-BRIDGE-20261030-01 continuation
 Added a composed offline test in `tests/test_importer_handoff.py`: pinned TEST_ONLY generation → isolated file readback → actual importer `publication_evidence` strict-binding path → Docs revision/body/evidence/snapshot match; a wrong body hash returns HOLD. Local handoff and issuance suites pass 12/12 each. Current task branch is based on PR #188 head `0a37e8c35d8669110aa95560054e2ab275a56569`; latest main `ec3e38b56397686c781e61de7efe97baeec48544` is 152 commits ahead, with no changed-file path overlap observed. Keep PR #188 Draft and unmerged; resync/review main drift before readiness. After pushing, wait for exact-head issuance/frozen-cutoff/delivery-health CI. External GCS/Docs/Portal production transaction remains NOT_RUN.
+
+
+## MRF-0800-BRIDGE-20261030-01 — current continuation state (2026-10-30 10:23 JST)
+
+Branch: `codex/0800-main-issuance-e2e-20261029`; source PR #188; code head before this documentation update `7a1b751923dc40c1cfae26e980f49bc10f7b82c9); base/current main `ec3e38b56397686c781e61de7efe97baeec48544`. Exact-head issuance contract run 40981647510, frozen-cutoff run 40981647421, and delivery-health run 40981647442 were SUCCESS. PR #189 remains a separate OPEN/Draft branch and both PRs touch `scripts/sync_reports_from_drive.py`; their combined behavior has not been merged/tested.
+
+Staging gate recheck: current checkout has no staging marker, `data/report-evidence/` has 0 files, and the checked sibling staging path is absent. `gcloud` is unavailable, `GOOGLE_APPLICATION_CREDENTIALS` is unset, and the standard Windows gcloud ADC file is absent. These observations mean no usable GCS authentication was available in this environment; they do not prove credentials are absent elsewhere.
+
+Read-only Google Drive recheck of Doc `1laY8WojdqX5kUNJj35PIXlNnikXqH_F7NntuNPuhOYA` returned revision `AHj4eMRVs5vDnuQa4YLl1GD72hFIH1tg8Vqsc4PUep97iqrGsHghlhh5TBDzEPgkgYyJ54wLhmnxFBfMgqydAJiYY1zXUmC12ne2kgChMAc`; body says `閲覧用分析版` and pre-issuance evidence is absent. No matching frozen G2 body/hash or same-run Docs save receipt was available. Connector did not expose `appProperties`; strict binding is UNKNOWN.
+
+Status: isolated real importer execution and `--apply` BLOCKED / NOT_RUN. Do not use this Doc or fabricate a historic source. No external write or production operation was performed. Resume only after an authorized TEST_ONLY identity/object, exact-generation/hash details, matching Docs issuance properties, and a separate marked `LOCAL_STAGING_ONLY` checkout are available. Stage exact bytes, inspect strict-binding dry-run, and apply only on a full binding PASS.
