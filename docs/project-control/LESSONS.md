@@ -32,3 +32,5 @@
 LESSON: Adding a regression test file and listing its path in a workflow filter do not prove it ran. Add the test command to the job and include the relevant source/helper paths in the trigger filter; inspect the exact-head job log for the test name and summary.
 
 SOURCE PROBLEM: PR #189 added `tests/test_ingestion_outcome.py`, but its sync recovery workflow did not invoke that file. ROOT CAUSE: workflow path selection and test execution were treated as the same step. REPAIR: the integrated PR #188 workflow now watches the importer/helper/test paths and runs the test module; exact-head CI log reports 4 tests, OK. EXPECTED EFFECT: new contract tests become executable evidence on matching changes. STATUS: ACTIVE.
+
+- MRF-0800-STAGING-BOUNDARY-20261030-01: Environment-name checks must use bounded tokens, not substrings, and path isolation must reject ancestor and descendant overlap. Check resolved destinations before creating directories so a symlink cannot cause an outside-root side effect.
