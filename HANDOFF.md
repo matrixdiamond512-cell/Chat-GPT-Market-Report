@@ -115,3 +115,28 @@ Staging gate recheck: current checkout has no staging marker, `data/report-evide
 Read-only Google Drive recheck of Doc `1laY8WojdqX5kUNJj35PIXlNnikXqH_F7NntuNPuhOYA` returned revision `AHj4eMRVs5vDnuQa4YLl1GD72hFIH1tg8Vqsc4PUep97iqrGsHghlhh5TBDzEPgkgYyJ54wLhmnxFBfMgqydAJiYY1zXUmC12ne2kgChMAc`; body says `閲覧用分析版` and pre-issuance evidence is absent. No matching frozen G2 body/hash or same-run Docs save receipt was available. Connector did not expose `appProperties`; strict binding is UNKNOWN.
 
 Status: isolated real importer execution and `--apply` BLOCKED / NOT_RUN. Do not use this Doc or fabricate a historic source. No external write or production operation was performed. Resume only after an authorized TEST_ONLY identity/object, exact-generation/hash details, matching Docs issuance properties, and a separate marked `LOCAL_STAGING_ONLY` checkout are available. Stage exact bytes, inspect strict-binding dry-run, and apply only on a full binding PASS.
+
+
+## Handoff addendum — MRF-INGESTION-20261030-01 (2026-10-30 JST)
+- Base: GitHub main 52e99701f3bc71a77bdde31729e0f887f44a9135; branch codex/report-ingestion-stage-truth-20261030.
+- Scope: correct importer stage labels; add four focused offline contract tests and run them through the existing sync recovery CI.
+- No main merge, production Pages deployment, Google Drive write, receipt/report/PNG mutation, schedule or Cloud setting change.
+- Local Python 3.13.14: 38 workflow-scope tests PASS across the six runnable modules; 24 additional evidence regression tests PASS; `py_compile` PASS. `test_report_contract.py` and `test_publication_evidence.py` are BLOCKED at import because this Windows runtime has no IANA `tzdata` (`ZoneInfoNotFoundError: Asia/Tokyo`). Exact-head hosted CI and PR readback remain open.
+- Full live 08:00/12:00/16:00/21:00 acceptance, external task state, Drive fixed-ID formal-document synchronization, Pages public DOM readback, and notification acceptance remain NOT_RUN.
+- Draft PR #189 is OPEN / Draft / unmerged. On code head `71fce84ddfa814a3b0c66bbc0545d36e78bfec1a`, hosted runs 40968791396 (sync recovery), 40968791427 (frozen cutoff), and 40968791433 (delivery health) all PASS. A documentation-only update is now being added, so final PR-head CI must be rechecked. Then hand off the remaining externally gated stages.
+
+
+## MRF-INGESTION-20261030-01 acceptance matrix — 2026-10-30 JST
+
+**Production acceptance is NOT_RUN / incomplete.** The rows below record the last read-only snapshot inspected during this task for 2026-10-29; they are not evidence of a new live run. A report JSON existing in `reports/` proves only an archive record.
+
+| Report slot | Data + pre-issue evidence | Body QA + Docs full readback | GitHub canonical + valid receipt | Pages deploy + public body readback | PNG + exact body provenance | Overall |
+|---|---|---|---|---|---|---|
+| 2026-10-29 08:00 | NOT_VERIFIED | Report archived; body QA / Docs full-text readback NOT_VERIFIED | `SOURCE_ARCHIVED`; receipt missing in inspected snapshot | NOT_VERIFIED; shared Pages workflow later timed out | PNG exists; content/body match NOT_VERIFIED | BLOCKED / NOT_ACCEPTED |
+| 2026-10-29 12:00 | NOT_VERIFIED | Report archived; body QA / Docs full-text readback NOT_VERIFIED | `SOURCE_ARCHIVED`; receipt missing in inspected snapshot | NOT_VERIFIED; shared Pages workflow later timed out | PNG exists; content/body match NOT_VERIFIED | BLOCKED / NOT_ACCEPTED |
+| 2026-10-29 16:00 | NOT_VERIFIED | Report archived; body QA / Docs full-text readback NOT_VERIFIED | `SOURCE_ARCHIVED`; receipt missing in inspected snapshot | NOT_VERIFIED; shared Pages workflow later timed out | PNG exists; content/body match NOT_VERIFIED | BLOCKED / NOT_ACCEPTED |
+| 2026-10-29 21:00 | NOT_VERIFIED | Report archived; body QA / Docs full-text readback NOT_VERIFIED | `SOURCE_ARCHIVED`; receipt missing in inspected snapshot | NOT_VERIFIED; shared Pages workflow later timed out | PNG exists; content/body match NOT_VERIFIED | BLOCKED / NOT_ACCEPTED |
+
+Evidence links (latest main read-only recheck at ec3e38b56397686c781e61de7efe97baeec48544): [08:00 JSON](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/blob/ec3e38b56397686c781e61de7efe97baeec48544/reports/2026-10-29_08-00.json), [12:00 JSON](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/blob/ec3e38b56397686c781e61de7efe97baeec48544/reports/2026-10-29_12-00.json), [16:00 JSON](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/blob/ec3e38b56397686c781e61de7efe97baeec48544/reports/2026-10-29_16-00.json), [21:00 JSON](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/blob/ec3e38b56397686c781e61de7efe97baeec48544/reports/2026-10-29_21-00.json); [PR #189](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/189); [Pages timeout run 40966149397](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40966149397). PR #189 checks (40968927389 / 40968927469 / 40968927385) establish hosted code regression only, not production acceptance.
+
+**Acceptance still required per slot:** immutable pre-slot snapshot/context/evidence and source readback; complete body QA; Docs file identity and full-text/hash readback; matching canonical reportId/revision/hash and valid receipt; successful Pages deploy and public URL body readback; PNG file readback with matching body revision/hash plus visual/content review; idempotent rerun and failure-path proof. Run separate approved production validation for each slot; do not backfill missing historical evidence.
