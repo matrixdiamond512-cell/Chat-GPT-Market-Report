@@ -268,3 +268,11 @@ PR #188 now carries the compatible code and documentation from PR #189 for joint
 OPEN OUTCOMES remain: real TEST_ONLY GCS staging, exact issuance-bound Docs readback, isolated importer dry-run/apply, canonical receipt persistence, Pages/public DOM, and a future authorized slot. The standard GCS CLI/ADC, staged object and sibling staging checkout are still absent. The available 2026-10-28 Docs item is display-only and cannot satisfy issuance binding.
 
 PR #188 and PR #189 both remain OPEN / Draft / unmerged. PR #189's code and affected formal documentation are now included in #188 for combined validation; do not merge both independently. Next necessary action: provision the permitted TEST_ONLY prerequisites, run the isolated staging gates, and settle the duplicate PR disposition before any merge.
+
+## MRF-0800 staging boundary continuation (ADD, 2026-10-30 JST)
+
+ACTIVE PHASE: hosted verification of the isolated TEST_ONLY staging boundary, then external prerequisite reconciliation. PR #188 code/test head `4125df20409bcb0337677ba12ec2e87590b2d8db`, based on main `ec3e38b56397686c781e61de7efe97baeec48544`; four hosted workflows PASS, including 12 issuance and 16 importer-handoff tests.
+
+COMPLETED: closed root-ancestor overlap, substring-only TEST_ONLY identifier acceptance, non-test-only object path, and symlink-parent escape cases; requirements/specification/operations and evidence records updated together.
+
+OPEN: independently authenticated exact-generation GCS read; authentic G2 body and human scenario review; matching Docs ID/revision/fullText/hash/appProperties readback; isolated staging and strict importer dry-run; apply only after all bindings pass. Canonical/receipt persistence, Pages/public DOM, and a future authorized slot remain NOT_RUN. PR #189 is still OPEN/Draft with duplicate code; no independent merge or production change.
