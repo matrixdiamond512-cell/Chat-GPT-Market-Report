@@ -522,3 +522,12 @@ Local implementation evidence E1/E2 (candidate only): connected the last eligibl
 - Sheets: test spreadsheetのPersonal_Market_Reportへ新しいID personal-report-917a75732899448c4fe973b4を追記。追記前ID件数0、追記後1。本文・日付・状態・15/13/0件数・SHA256を全列読み戻し、生成行との完全一致を確認。本番spreadsheetには書き込みなし。
 - Actions: 初回run 41004430139で新規テストの期待未取得数が1件過少と判明（実装値は正しく13）。テスト期待値のみ修正。最新コードHEAD 5b535e6e83e5ac62f5b60d3014cef32540458f7fでcandidate tests run 41004746678、P0 read-only tests run 41004746642、general test run 41004746654、structure run 41004746686 がSUCCESS。updateとSheets ActionsはPRイベントによりSKIPPEDであり、今回の外部実行は別途行った個人用テストシートの追記/readback。
 - 制約: レポートは履歴再構成であり、現在の投資判断用ではない。データは市場日・ソース別で非同期、15 VERIFIEDを同一営業日の一斉取得と解釈しない。参考13件は正式確定値ではない。PR #94はOPEN / Draft / 未マージ、本番終値一覧は不変更。
+
+
+### PR94-REFERENCE-INTRADAY-GUARD-20261030 — 先物場中観測を終値スナップショットから除外し、履歴レポートを訂正
+- 変更日: 2026-10-30 JST。対象PR #94 codex/market-data-completeness-recovery。影響: scripts/build_personal_market_snapshot.py, tests/test_personal_market_snapshot.py, 個人用テストSheets履歴。
+- 原因と修正: 既存Personal_Reference_Valuesには市場日欄が埋まった場中先物観測があり、日付だけを見て終値参考として採用する問題を発見。Reference TypeにINTRADAYまたはFORMINGを含む行をスナップショットから除外するガードと回帰テストを追加。日付付き日足連続先物バーはREFERENCE_ONLYのまま保持し、正式清算値と区別。
+- レポート: 訂正スナップショットID 6cca1759011c7c9a780ba1ae、対象期間2026-10-09〜2026-10-29、historical_only、VERIFIED 15 / REFERENCE 13 / 未取得0。取得日時別の履歴再構成であり、生成時点の最新相場ではない。先物5項目は2026-10-09連続足終値参考値。乖離率2項目は2026-10-29のチャート系列計算参考値。本文4,684文字、SHA256 a30b76a011a4c4d374ea485c6f4a947c4eb4fa7aea5f80496fd1d82e51c8acdf。
+- Personal_Market_Reportへ訂正版を新規追記: personal-report-23ba56e45f8d1eb2edb8d5d9。追記前ID件数0、追記後1。全9列を読み戻し完全一致。前回の履歴 personal-report-917a75732899448c4fe973b4 は編集・削除せず残し、本報告で場中値除外の訂正版に置き換えて参照する。本番「終値一覧」への書き込みなし。
+- Actions: run 41004971189でtradingview-mcp-candidate-tests、treasury-validation、qa、p0-read-only-tests、testはSUCCESS。structureもSUCCESS。Sheets/updateジョブはPRイベントによりSKIPPED。実際の個人用テストSheets保存/readbackは上記別工程で実施。
+- 状態: PRはOPEN / Draft / 未マージ。未解決: この履歴スナップショットは古い市場日を含むため、次工程は新しい確定値の取得と、ニュース/当日時間帯証拠を含む実運用スナップショット生成。プライム市場・金利等の参考値は公式確定値ではない。
