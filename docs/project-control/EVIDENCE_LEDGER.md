@@ -540,3 +540,13 @@ Local implementation evidence E1/E2 (candidate only): connected the last eligibl
 - 個人用テストSheetsの `Personal_Report_Ready` に7件VERIFIEDとVIX 1件REFERENCE_ONLY、`Personal_Reference_Values` に先物5件REFERENCE_ONLYを追記し、全行を読み戻して一致を確認。既存行・書式は変更なし。
 - 共通スナップショットID `0560dd4b97ff3b9a6f13f0fc` はVERIFIED 14 / REFERENCE 14 / UNAVAILABLE 0。2026-10-29の実取得に含まれない既存記録は「今回新規取得」と数えていない。そこから生成したレポートID `personal-report-4cadd9f192721e8d3b1e21a9`、SHA-256 `600f3c35fe29aa32c6b74c25d515713bcb502a03639dfcae9d28ee3b40d646c0`。個人用 `Personal_Market_Report` に別履歴として9セル追記し、本文全体・メタデータ・ID一意性（1件）を読み戻し確認。
 - 本番 `終値一覧` はread-onlyで、書込みなし。GitHub Actions dispatchおよびテスト実行は今回NOT_RUN。実測はTradingView MCP取得とGoogle Sheets外部readbackに限定。JPX/MOFの当日公式値、VIX時刻・CSV、先物個別限月清算値、FX/BTC独立照合、東京市場当日終了後データは未完了。
+
+
+### PR94-SOURCE-LIMITS-20261030 — JPX日報・先物ソースとVIX公式経路の確認
+- 実施日: 2026-10-30 JST。PR #94 `codex/market-data-completeness-recovery`。記録対象は取得許諾・実データ更新の境界。今回、スナップショット更新、Sheets書込、本番シート書込、Actions再実行は行っていない。
+- JPX「東京証券取引所日報」公式手引きは立会日の翌営業日掲載とし、概算表は当日の売買高等、精算表は4営業日前の値と説明する。10/29分は日報一覧に掲載済みだが、公式PDF本体はこの実行環境で内容抽出できず、東証プライム統計値は更新していない。参照: https://www.jpx.co.jp/markets/statistics-equities/daily/01.html
+- JPX先物・オプション公式ページはOSE/TOCOM銘柄の清算値CSVを毎営業日16:45頃掲載予定と明示する。一方、JPXサイト一般利用条件は許諾なしの二次利用・再配信を認めず、同サイトのQUICK提供先物画面は蓄積・編集・加工および第三者提供を禁止する旨を表示している。個人用Sheets/レポートへの保存可否は当該条件だけでは確定できないため、公式CSVの値を保存・反映していない。参照: https://www.jpx.co.jp/markets/derivatives/settlement-price/index.html ; https://www.jpx.co.jp/term-of-use/index.html
+- Cboe公式VIX履歴ページは日次終値を掲載し、現在までのデータは毎日更新と説明、CSVリンクも提示する。ブラウザの取得経路は当該CSVを開けず、独立照合元のFREDは2026-10-28までの表示だったため、10/29 VIX 17.20は引き続きREFERENCE_ONLY。参照: https://www.cboe.com/tradable-products/vix/vix-historical-data ; https://fred.stlouisfed.org/data/VIXCLS
+- GitHub Actions run 41006563156 の参照検証（MOF JP10Y、BOJ USD/JPY、ECB EUR/USD、Kraken BTC/USD）は成功だが、全市場取得/updateとSheetsジョブはSKIPPED。最新確認済みの個人用スナップショット/レポートは2026-10-29観測であり、2026-10-30更新として扱わない。東京市場はこの確認時刻に取引中。
+- 本番Sheetsの「終値一覧」はメタデータ上186列、949行、条件付き書式23件、frozenRowCount=1/frozenColumnCount=1。A1:H1の読戻しでA1「日付」とB1「Dow終値」を確認。ユーザーのタイトル行固定依頼は既に反映済みで、今回変更なし。既存セル・書式・数式に変更なし。
+- 状態: E1/E2 readback。Cboe CSVの10/29値、JPX日報PDFの対象数値、JPXデータの私的保存条件、全市場新規取得と新規レポート/Sheets readbackは未確認。次の営業日後工程で取得可能な公開済み確定データのみ更新し、明示的に制限された経路は保存せず代替を探す。
