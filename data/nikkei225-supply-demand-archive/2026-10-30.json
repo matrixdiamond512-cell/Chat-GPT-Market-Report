@@ -2,12 +2,12 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-supply-demand",
   "reportDate": "2026-10-30",
-  "generatedAt": "2026-10-30T18:05:05+09:00",
+  "generatedAt": "2026-10-30T23:06:15+09:00",
   "nikkei": {
     "schemaVersion": "2.1.0",
     "pageId": "nikkei225-supply-demand",
     "pageTitle": "日経225需給分析",
-    "generatedAt": "2026-10-30T18:05:05+09:00",
+    "generatedAt": "2026-10-30T23:06:15+09:00",
     "spot": {
       "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
@@ -16,7 +16,7 @@
       "value": 63290.11,
       "asOfDate": "2026-10-30",
       "status": "verified",
-      "fetchedAt": "2026-10-30T18:05:05+09:00"
+      "fetchedAt": "2026-10-30T23:06:15+09:00"
     },
     "futures": {
       "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -24,21 +24,21 @@
       "price": 64710.0,
       "priceChange": -20.0,
       "priceChangePercent": -0.03089757454040054,
-      "asOfDate": "2026-10-29",
+      "asOfDate": "2026-10-30",
       "priceAsOf": "2026-10-30T02:17:00+09:00",
-      "volume": 55037,
-      "openInterest": 170777,
-      "miniVolume": 867797,
-      "miniOpenInterest": 289027,
-      "openInterestChange": 74,
-      "miniOpenInterestChange": 19163,
-      "volumeChangePercent": null,
-      "miniVolumeChangePercent": null,
+      "volume": 50710,
+      "openInterest": 168431,
+      "miniVolume": 866278,
+      "miniOpenInterest": 283072,
+      "openInterestChange": -2346,
+      "miniOpenInterestChange": -5955,
+      "volumeChangePercent": 0.0,
+      "miniVolumeChangePercent": 0.0,
       "status": "verified",
-      "fetchedAt": "2026-10-30T18:03:49+09:00",
-      "previousOpenInterest": 170703,
-      "miniPreviousOpenInterest": 269864,
-      "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261029open_interest.xlsx"
+      "fetchedAt": "2026-10-30T23:04:20+09:00",
+      "previousOpenInterest": 170777,
+      "miniPreviousOpenInterest": 289027,
+      "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261030open_interest.xlsx"
     },
     "sessions": {
       "sourceName": "JPX デリバティブ取引市況（ナイト・日通し）",
@@ -55,7 +55,7 @@
       "asOfDate": "2026-09-30",
       "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260930_derivatives_market_data_night.xlsx",
       "status": "stale",
-      "fetchedAt": "2026-10-30T18:04:58+09:00",
+      "fetchedAt": "2026-10-30T23:06:06+09:00",
       "error": "JPXセッション別出来高取得失敗: ValueError: night-session workbook link not found"
     },
     "arbitrage": {
@@ -70,9 +70,9 @@
       "buyChange": 8019,
       "status": "verified",
       "frequency": "daily",
-      "lastAttemptAt": "2026-10-30T18:03:43+09:00",
-      "lastSuccessAt": "2026-10-30T18:03:43+09:00",
-      "fetchedAt": "2026-10-30T18:03:43+09:00",
+      "lastAttemptAt": "2026-10-30T23:04:03+09:00",
+      "lastSuccessAt": "2026-10-30T23:04:03+09:00",
+      "fetchedAt": "2026-10-30T23:04:03+09:00",
       "error": null
     },
     "options": {
@@ -87,7 +87,7 @@
       "asOfDate": "2026-10-30",
       "status": "calculated",
       "error": "Put/Call・IVはJPX列構造を確認できるまで推測せず空欄",
-      "fetchedAt": "2026-10-30T18:05:05+09:00",
+      "fetchedAt": "2026-10-30T23:06:15+09:00",
       "putVolume": null,
       "callVolume": null,
       "putCallStatus": "unavailable",
@@ -163,7 +163,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202610/20261030_volume_by_participant_whole_day.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-10-30T18:04:59+09:00"
+      "fetchedAt": "2026-10-30T23:06:08+09:00"
     },
     "foreignInvestors": {
       "sourceName": "JPX 投資部門別売買状況",
@@ -776,7 +776,7 @@
         ]
       },
       "status": "verified",
-      "fetchedAt": "2026-10-30T18:04:57+09:00"
+      "fetchedAt": "2026-10-30T23:06:05+09:00"
     },
     "participantOpenInterest": {
       "sourceName": "JPX 取引参加者別建玉残高",
@@ -890,7 +890,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20261023_indexfut_oi_by_tp.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-10-30T18:05:00+09:00"
+      "fetchedAt": "2026-10-30T23:06:09+09:00"
     },
     "shortSelling": {
       "sourceName": "JPX 空売り集計",
@@ -1005,7 +1005,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-10-30T18:03:49+09:00"
+      "fetchedAt": "2026-10-30T23:04:19+09:00"
     },
     "margin": {
       "sourceName": "JPX 信用取引現在高",
@@ -1066,16 +1066,16 @@
         }
       ],
       "status": "stale",
-      "fetchedAt": "2026-10-30T18:03:50+09:00",
+      "fetchedAt": "2026-10-30T23:04:21+09:00",
       "error": "JPX信用需給取得失敗: ValueError: weekly margin total monetary row not found"
     },
     "assessment": {
       "overall": "やや売り優勢",
-      "shortTerm": "弱気（新規売り）",
+      "shortTerm": "下落（手仕舞い）",
       "arbitrage": "強い",
       "options": "SQ日程のみ確認済み",
       "foreign": "現物売り・先物買い",
-      "reason": "短期先物=弱気（新規売り）、裁定=強い、オプション=中立（SQ日程のみ）、海外投資家=現物売り・先物買い。各データの鮮度を分離して判定。",
+      "reason": "短期先物=下落（手仕舞い）、裁定=強い、オプション=中立（SQ日程のみ）、海外投資家=現物売り・先物買い。各データの鮮度を分離して判定。",
       "comment": "価格×建玉を中心に、裁定・オプション・海外投資家を補助線として重ねます。"
     },
     "watchpoints": [
@@ -1362,19 +1362,19 @@
       "market": null,
       "status": "partial",
       "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202610.xlsx",
-      "fetchedAt": "2026-10-30T18:05:03+09:00",
+      "fetchedAt": "2026-10-30T23:06:13+09:00",
       "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
     },
     "nikkeiFuturesDailyHistory": [
       {
-        "asOfDate": "2026-10-29",
+        "asOfDate": "2026-10-30",
         "price": 64710.0,
-        "openInterest": 170777,
-        "volume": 55037,
+        "openInterest": 168431,
+        "volume": 50710,
         "sourceName": "JPX / 大阪取引所 日経225先物",
         "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
-        "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261029open_interest.xlsx",
-        "capturedAt": "2026-10-30T18:05:03+09:00",
+        "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261030open_interest.xlsx",
+        "capturedAt": "2026-10-30T23:06:12+09:00",
         "status": "verified"
       }
     ],
@@ -1391,7 +1391,7 @@
       "status": "verified",
       "releaseFrequency": "weekly",
       "lookbackWeeks": 52,
-      "fetchedAt": "2026-10-30T18:05:06+09:00",
+      "fetchedAt": "2026-10-30T23:06:16+09:00",
       "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
       "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
       "priceStatus": "available",
@@ -7281,7 +7281,7 @@
     "judgementSource": "data/stocks.json（指数・市場内部・セクター・上昇下落銘柄・セッション分析）",
     "judgementUpdatedAt": "2026-08-22T08:04:00+09:00",
     "marketDates": {
-      "japan": "2026-10-29",
+      "japan": "2026-10-30",
       "us": "2026-10-29"
     },
     "marketInternals": {
@@ -7383,69 +7383,69 @@
         "rows": [
           [
             "日経225",
-            "64,659.47",
+            "63,290.11",
             "—",
-            "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-10-29。"
+            "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-10-30。"
           ],
           [
             "TOPIX",
-            "4,003.28",
-            "+11.57（+0.29%）",
-            "トレーダーズ・ウェブ 国内市場の当日終値確認。基準日 2026-10-29。"
+            "3,965.07",
+            "-38.21（-0.95%）",
+            "トレーダーズ・ウェブ 国内市場の当日終値確認。基準日 2026-10-30。"
           ],
           [
             "グロース250",
-            "791.04",
-            "-6.94（-0.87%）",
-            "トレーダーズ・ウェブ 国内市場の当日終値確認。基準日 2026-10-29。"
+            "780.53",
+            "-10.51（-1.33%）",
+            "トレーダーズ・ウェブ 国内市場の当日終値確認。基準日 2026-10-30。"
           ],
           [
             "日経VI",
-            "27.66",
-            "-6.80（-19.73%）",
-            "警戒域。日本株のボラティリティ上昇に注意。基準日 2026-10-27。"
+            "取得不能（対象日の確定値なし）",
+            "—",
+            "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-10-30。"
           ],
           [
             "値上がり銘柄 / 値下がり銘柄",
-            "734 / 779",
+            "807 / 714",
             "—",
-            "投資の森 値上がり・値下がり銘柄数の確定値。基準日 2026-10-29。"
+            "投資の森 値上がり・値下がり銘柄数の確定値。基準日 2026-10-30。"
           ],
           [
             "東証プライム売買代金",
-            "13.86 兆円",
+            "8.46 兆円",
             "—",
-            "トレーダーズ・ウェブ 後場概況の確定値。基準日 2026-10-29。"
+            "トレーダーズ・ウェブ 後場概況の確定値。基準日 2026-10-30。"
           ],
           [
             "騰落レシオ（25日）",
-            "91.99%",
+            "93.26%",
             "—",
-            "投資の森 東証プライム騰落銘柄数の保存履歴から25営業日で算出の確定値。基準日 2026-10-29。"
+            "投資の森 東証プライム騰落銘柄数の保存履歴から25営業日で算出の確定値。基準日 2026-10-30。"
           ],
           [
             "日経225予想PER",
-            "16.75倍",
+            "取得不能（対象日の確定値なし）",
             "—",
-            "予想利益に対する株価水準。EPSと指数水準を合わせて確認。基準日 2026-10-27。"
+            "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-10-30。"
           ],
           [
             "日経225予想EPS",
-            "3,777.22円",
+            "取得不能（対象日の確定値なし）",
             "—",
-            "日経225構成銘柄の予想利益水準。PERの分母として確認。基準日 2026-10-27。"
+            "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-10-30。"
           ],
           [
             "日経225 25日乖離率",
-            "-4.43%",
+            "-4.24%",
             "—",
-            "25日線からの乖離は警戒域外。短期の過熱感は限定的。基準日 2026-10-27。"
+            "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-10-30。"
           ],
           [
             "日経225 200日乖離率",
-            "+2.73%",
+            "+2.44%",
             "—",
-            "200日線を上回り長期上昇基調。+30%以上は過熱警戒。基準日 2026-10-27。"
+            "Yahoo Finance Nikkei 225 daily historyの確定値。基準日 2026-10-30。"
           ],
           [
             "海外投資家動向（現物）",
@@ -7454,8 +7454,8 @@
             "JPX 投資部門別売買状況の東証プライム現物・週次公表値。売り越し。基準週末 2026-09-11。日次値ではない。"
           ]
         ],
-        "dataDate": "2026-10-29",
-        "updatedAt": "2026-10-30T00:11:16+09:00",
+        "dataDate": "2026-10-30",
+        "updatedAt": "2026-10-30T23:00:06+09:00",
         "source": {
           "name": "東京市場確定値統合（複数ソース・項目別基準日）",
           "sheet": "終値一覧",
@@ -7471,16 +7471,16 @@
             "東証プライム売買代金": "repaired from exact-date Traders Web post-close commentary",
             "日経225予想PER": "exact-date reference unavailable",
             "日経225予想EPS": "exact-date reference unavailable",
-            "日経VI": "not verified for target date: 2026-10-28",
-            "TOPIX": "exact target-date row not found",
-            "グロース250": "exact target-date row not found",
+            "日経VI": "not verified for target date: 2026-10-29",
+            "TOPIX": "repaired from トレーダーズ・ウェブ 国内市場 current-session close",
+            "グロース250": "repaired from トレーダーズ・ウェブ 国内市場 dated current-session close",
             "海外投資家動向（現物）": "repaired from verified JPX weekly flow 2026-09-11"
           }
         }
       }
     },
     "marketUpdatedAt": {
-      "japan": "2026-10-30T00:11:16+09:00",
+      "japan": "2026-10-30T23:00:06+09:00",
       "us": "2026-10-30T10:16:28+09:00"
     },
     "movers": {
@@ -10859,7 +10859,7 @@
         }
       }
     },
-    "nikkeiMetricsAsOf": "2026-10-27",
+    "nikkeiMetricsAsOf": "2026-10-30",
     "note": "データ欠損がある場合は推測で補完せず、該当セルに「取得不能」と理由を表示します。本ページは株式市場分析用の表示構成です。",
     "pageId": "stocks",
     "pageStatus": "ok",
@@ -11140,7 +11140,7 @@
       }
     },
     "sessionDataUpdatedAt": "2026-10-30T14:35:53+09:00",
-    "sourceStatus": "Google Sheetsから更新＋日経VI・日経バリュエーション自動連携",
+    "sourceStatus": "米国市場と東京市場を独立更新・項目別基準日を明示・欠損は複数ソースで補完",
     "sources": [
       {
         "id": "INITIAL_STOCKS_HTML",
