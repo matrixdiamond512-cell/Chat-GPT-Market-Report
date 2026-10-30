@@ -153,3 +153,12 @@ Read-only Drive recheck of Doc `1laY8WojdqX5kUNJj35PIXlNnikXqH_F7NntuNPuhOYA` (`
 Evidence level: E0 for local prerequisite inspection; E5 only for the observed read-only Docs revision/body, not for issuance acceptance. Run ID: none (no GCS or importer execution). Limits: local configuration checks do not prove global credential absence; hosted CI and the earlier fake-adapter composition tests do not substitute for GCS/Docs runtime. `--apply` was not invoked; no Google Drive, main, receipt, report, or Pages write occurred.
 
 Next necessary action: provision/authorize an isolated TEST_ONLY GCS identity and exact-generation object for one coherent report identity; supply a Docs item whose saved body/revision and appProperties bind to that exact G2/evidence/snapshot; create a separate marked `LOCAL_STAGING_ONLY` checkout. Then stage exact generation, inspect strict-binding dry-run, and invoke `--apply` only if the required bindings pass.
+
+
+## MRF-0800-BRIDGE-20261030-01 PR #188/#189 static importer compatibility review — 2026-10-30 10:58 JST
+
+Claim: PR #188 strict issuance-binding changes and PR #189 truthful ingestion-status changes have no obvious call-site contradiction in the importer. Evidence: read-only GitHub source fetch at PR #188 branch `codex/0800-main-issuance-e2e-20261029` (code head `7a1b751923dc40c1cfae26e980f49bc10f7b82c9`; docs head `0bed2378ef4dd147096f764624e5180f1aee66cb)) and PR #189 head `b757430fbd56c3abed01b0f25399df2e3b8bd355`. The only overlapping runtime file is `scripts/sync_reports_from_drive.py`: PR #188 adds strict `publication_evidence`/poll binding parameters; PR #189 replaces the terminal combined-success logger with `format_ingestion_status_lines`. Its `to_write`/`to_promote` mappings match the helper signature, and the `internal_report_key` references removed by PR #189 are the two old logger calls being replaced.
+
+Result: E0 static compatibility review only; likely composable, NOT an integrated pass. No merged tree was built and no combined importer/test execution occurred. The current Windows runner cannot start its Python shims (access denied) and local `git status` reports “not a work tree”; GitHub-hosted per-PR CI remains separate evidence. No source branch was changed by this review.
+
+Open: execute the combined code and tests on one temporary integration ref, or equivalent isolated merged checkout, before asserting the branches are jointly verified. Keep PR #188 and #189 open/Draft until reviewed; no merge, deployment, or production change.
