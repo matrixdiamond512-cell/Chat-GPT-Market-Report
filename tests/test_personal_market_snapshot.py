@@ -106,6 +106,26 @@ class PersonalSnapshotTests(unittest.TestCase):
             self.assertEqual(payload["markets"][field]["sourceId"], "manual_official_nikkei")
         self.assertEqual(report_counts(payload), (16, 5, 7))
 
+    def test_nikkei_deviation_reference_rows_join_without_becoming_futures(self):
+        source = self._source()
+        source["referenceValues"].append([
+            "tv-nikkei-deviation-20261029", "nikkei225_dev25", -2.300859, "%",
+            "TVC:NI225", "CALCULATED_DAILY_SMA25", "japan_cash_1D", "2026-10-29",
+            "2026-10-29T00:00:00Z", "TradingView official MCP OHLCV; 260 daily bars",
+            "REFERENCE_ONLY",
+            "公式日経終値との差があり、チャート系列計算の参考値。",
+            "2026-10-30T03:03:56Z",
+        ])
+        payload = build_snapshot(source, "2026-10-30T04:40:00Z")
+        observation = payload["markets"]["nikkei225_dev25"]
+        self.assertEqual(observation["value"], -2.300859)
+        self.assertEqual(observation["asOf"], "2026-10-29")
+        self.assertEqual(observation["verificationStatus"], "reference_only")
+        self.assertEqual(observation["marketType"], "technical")
+        self.assertNotIn("priceType", observation)
+        self.assertIn("公式系列ではない", observation["note"])
+        self.assertEqual(report_counts(payload), (9, 6, 12))
+
     def test_secondary_history_metric_stays_reference_and_news_is_time_bound(self):
         source = self._source()
         source["reportReadyValues"].append([
