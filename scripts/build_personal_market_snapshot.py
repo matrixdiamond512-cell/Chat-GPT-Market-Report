@@ -44,6 +44,7 @@ REFERENCE_MAP = {
     "gold": "gold", "wti": "wti", "nikkei225_futures_ose": "nikkei225_futures_ose",
     "cme_nikkei225_jpy": "nikkei225_futures_cme_yen",
     "cme_nikkei225_usd": "nikkei225_futures_cme_usd",
+    "nikkei225_dev25": "nikkei225_dev25", "nikkei225_dev200": "nikkei225_dev200",
 }
 SUPPLEMENT_MAP = {
     "jp10y": "jp10y", "fear_greed": "fear_greed", "tse_prime_advancers": "tse_prime_advancers",
@@ -190,17 +191,22 @@ def build_snapshot(source: dict[str, Any], generated_at: str) -> dict[str, Any]:
         max_retrieved = max(max_retrieved, retrieved_dt) if max_retrieved else retrieved_dt
         date_values.append(market_date)
         settlement = str(row.get("Settlement Evidence") or "")
-        markets[symbol].update({
+        observation = {
             "value": value, "displayValue": str(row["Observed Value"]), "unit": str(row["Unit"]),
             "marketType": market_type, "session": str(row.get("Market Session") or ""),
             "asOf": market_date, "fetchedAt": retrieved,
             "sourceId": "tradingview_official_mcp", "sourceName": str(row.get("Source") or ""),
             "verificationStatus": "reference_only", "referenceOnly": True,
-            "priceType": "continuous_bar_close", "referenceType": str(row.get("Reference Type") or ""),
+            "referenceType": str(row.get("Reference Type") or ""),
             "verificationBasis": settlement, "barAnchorUTC": str(row.get("Bar Anchor (UTC)") or ""),
             "snapshotId": str(row.get("Snapshot ID") or ""), "symbol": str(row.get("TradingView Symbol") or ""),
-            "note": "連続足の終値。限月別の公式清算値は未確認。",
-        })
+        }
+        if market_type in DERIVATIVE_TYPES:
+            observation["priceType"] = "continuous_bar_close"
+            observation["note"] = "連続足の終値。限月別の公式清算値は未確認。"
+        else:
+            observation["note"] = "検証済みの公式系列ではない計算・価格参考値。確定値と混同しない。"
+        markets[symbol].update(observation)
 
     for row in source.get("supplementalValues") or []:
         if not isinstance(row, dict):
