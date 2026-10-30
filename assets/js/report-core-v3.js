@@ -467,7 +467,7 @@ async function init() {
     }
     // Additional date-scoped, read-back-verified Google Docs analytical archives.
     // They remain display-only and cannot supersede formal publications.
-    for (const archiveDate of ["2026-10-28", "2026-10-29"]) {
+    for (const archiveDate of ["2026-10-28", "2026-10-29", "2026-10-30"]) {
       try {
         const path = "data/dashboard-drive-archive-" + archiveDate + ".json";
         const response = await fetch(path + "?ts=" + Date.now(), {cache:"no-store"});
