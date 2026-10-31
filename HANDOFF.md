@@ -100,3 +100,66 @@ git branch --show-current
 
 ---
 この文書の最終更新: 2026-10-20 JST。文書管理の根拠は `docs/system/DOCUMENT_CONTROL.md`。配信システム本体の変更、Google Docsの正式正本の書換え、外部サービスの設定変更は、この引き継ぎ整備だけでは実施しない。
+
+## DELIVERY-RECOVERY-20261029-01 status (2026-10-29 JST)
+
+- Main was checked at `2c03f525526f378e1a07028b89e1f9fc86a92ffa`. Recovery PR [#187](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/187) adds recognition for fullwidth-pipe numbered headings. The strict semantic publication and evidence gates remain.
+- The Oct 28 Drive Docs exist for 08:00, 12:00, 16:00, and 21:00, but importer run [40714284584](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40714284584) rejected all four as incomplete; it created no canonical report/receipt and explicitly reported `NO_NEW_REPORTS`. The October infographic folder has no Oct 28 images.
+- ChatGPT scheduled-task UI list readback showed the legacy `平日マーケットレポート・本文優先配信` as weekly, next in ~6 hours (~08:00 JST), and new `マーケットレポート12:00` (~12:00) plus `マーケットレポート16:00` (~16:00) tasks as weekly. Creation responses said weekday-only and the 12:00 response said the legacy task would drop that slot; the 21:00 setup conversation said the legacy task was changed to 08:00-only. However, no 21:00 task appeared in the list and its response ended `この回答を読み込めませんでした`. The legacy task prompt itself remains unverified/unchanged, exact stored days/times are not inspectable in the list, and actual executions have not occurred. Do not treat this schedule as four-slot delivery recovery.
+- CI on latest PR head `dd93ad7a0ce63e2e665a80540542578b5d3e79e6` passed: [focused heading regression run 40728029673](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40728029673) and [existing synchronization/publication contract run 40728029672](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40728029672). These are automated test/contract results only, not four-slot live delivery.
+- Paused P1 verification schedulers were not resumed. No Drive, canonical, receipt, Pages, or production Cloud Scheduler writes were made.
+
+Continue from `docs/project-control/production-recovery-20261029-01/`. Required next actions: create and read back the missing 21:00 schedule, verify exact weekday/time recurrence and the legacy task's saved prompt and slot behavior, ensure no duplicate 12:00/16:00 runs, update the 08:00 prompt to enforce its verified 28×5 table and all semantic headings without weakening validation; run regression tests in CI; then observe real executions through Docs/PNG/receipt/Pages and notification. Missing pre-publication evidence remains a hard stop for official publication.
+
+
+## DELIVERY-RECOVERY-20261029-01 — 2026-10-29 02:17 JST recheck
+
+- The Drive October report folder lists four 2026-10-28 Docs and no 2026-10-29 report. The October infographic folder lists no 2026-10-28 or 2026-10-29 PNG. This is metadata readback only; it does not prove file contents.
+- Latest PR head `b9bd84c9872bc292662fba6f882fd20f4d6129a7` has successful final-head CI runs [40728327528](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40728327528) and [40728327541](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40728327541). PR #187 remains open and unmerged.
+- Scheduled-task list recheck timed out. Cloud Shell now reports the session disconnected. Current P1 Scheduler state is UNKNOWN; do not resume either verification scheduler until a fresh readback. No production setting was changed.
+- Recovery remains incomplete: no 2026-10-29 report execution, Docs/PNG content readback, canonical report/receipt, Pages deploy/DOM check, or delivery notification was observed. At this timestamp, 08:00 JST has not occurred yet.
+- Next: regain browser access, inspect exact ChatGPT task recurrence/prompts and P1 scheduler states; verify each real slot after its scheduled run through every downstream gate. Keep the existing fail-closed publication requirements.
+
+
+## Final-head CI readback — 2026-10-29 02:19 JST
+
+On candidate head `a0d309d25fb4a698b03aef7425b1dbbea649118f`, all four triggered workflows passed: [40734389296](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40734389296), [40734389300](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40734389300), [40734389352](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40734389352), and [40734389420](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40734389420). These are regression checks only. PR #187 remains open/unmerged. Current main is four commits ahead; its diff from PR base affects data paths outside this PR. Do not infer live delivery from CI.
+
+
+## 2026-10-29 02:26 JST — source-body audit continuation
+
+- Read back all four 2026-10-28 Google Docs. They are analysis/viewing copies with missing or unverified pre-draft evidence. The 08:00 previous-close content is a 17-line bullet list, not the required 28×5 table; leave the historical Docs unchanged and unpromoted.
+- The 12:00 source includes a clearly labeled `結論：...` paragraph. PR #187's code candidate `47282fdce4c10b5a86cea655c10ec71128dc6182` now recognizes explicit conclusion labels only; generic prose remains rejected. Other SOP and evidence requirements still block historical promotion.
+- 08:00 table QA is performed by `.github/workflows/qa-morning-report.yml` after `reports.json` changes and fails closed for portal selection. It is separate from the Drive importer's source-body check. The strict table rule remains in place.
+- Code candidate CI PASS: `40735294321`, `40735294265`, `40735294396`, `40735294223`. Documentation follow-up commits are not code/test evidence. No real 10/29 slot, Docs/PNG output, receipt, Pages deployment or notification has been verified.
+
+
+## 2026-10-29 05:01 JST — inline conclusion SOP continuation
+
+- The saved-source parser now recognizes the explicit inline label `結論：本文` and preserves the text after the label as conclusion-section body in the SOP extractor. Only `結論`, `最終判断`, and `まとめ` labels are handled; unmarked prose remains rejected.
+- Regression test and workflow path/env updated. Hosted CI PASS on code candidate `e69f63846b2e42ca10ac0cdfe4e36e777542d81c`: [40759356660](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759356660), [40759356570](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759356570), [40759356601](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759356601), [40759356351](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759356351), [40759356413](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759356413).
+- These are regression checks only. The October 28 Docs remain invalid analysis copies (including the missing 08:00 28×5 table and missing pre-draft evidence). No 2026-10-29 execution or end-to-end publication is confirmed; do not resume the P1 schedulers.
+
+
+## DELIVERY-RECOVERY-20261029-01 — 2026-10-29 05:02 JST latest repository check
+
+- Current main HEAD is `e70751bc4a202c84f4322df8748a08775d836458`. Its 17 commits since PR #187's merge base touch market/event/history data paths only; no overlap with the PR's nine implementation/documentation paths. GitHub currently reports PR #187 as open, unmerged, and mergeable.
+- Current PR head `3bf244ca3e0d5bcee6846293c4a2818c8dddea35` has five completed PASS workflows: [40759587355](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759587355), [40759587341](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759587341), [40759587547](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759587547), [40759587584](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759587584), and [40759587460](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40759587460). These test changes at the PR head; they are not live-delivery evidence.
+- At 05:02 JST on Oct 29, no Oct 29 slot execution or new Doc/PNG, canonical report/receipt, Pages content/image readback, or notification has been confirmed. The next scheduled slot remains 08:00 JST; after its time, verify the actual task and each downstream stage. Do not treat importer-only artifact pickup or CI as report generation.
+
+
+## DELIVERY-RECOVERY-20261029-01 — 2026-10-29 05:14 JST scheduled-task repair
+
+- The legacy 08:00 ChatGPT task was misconfigured at 09:00 and needed a weekday correction. Existing task ID 6a9e338d450481919e8fd6b36f462458 was updated without changing its prompt or running a report. The task-manager response read back: active, Monday–Friday, 08:00 JST, Asia/Tokyo, prompt unchanged. The scheduled list then showed it as weekly, next execution in 3 hours from 05:14 JST. Treat this as configuration evidence only.
+- Existing 12:00 and 16:00 market-report tasks are configured for weekdays. No prompt changes were made.
+- The task named ゴールド毎時分析・朝8時予想・急変警戒 is a separate gold-only hourly schedule, not a report 21:00 task; it was not changed. A report-specific 21:00 task is absent.
+- Attempt to register the requested new 21:00 market-report task was denied because the five-active-task limit is reached. No report was run. Do not pause or repurpose the unrelated gold or daily-briefing tasks without the user's choice. 21:00 remains BLOCKED until an approved task slot becomes available.
+- No Oct 29 report, Docs/PNG, receipt, Pages DOM, or notification has been verified. Continue with scheduled execution checks only after each actual slot; do not treat the task configuration or CI as delivery proof.
+
+
+## DELIVERY-RECOVERY-20261029-01 — 2026-10-29 05:19 JST schedule restoration
+
+- User approved pausing the unrelated gold hourly task to free one slot. It remains intact but paused; the schedule list shows “一時停止中 · 前回の実行：昨日” and offers “再開”.
+- New active task マーケットレポート21:00 was registered, task ID `6ae2585ca6988191acff74ecb4d75770`. Task manager readback: Monday–Friday, 21:00 JST, Asia/Tokyo; no report was executed. Its saved prompt was opened and read; it includes the required six markets, report/body requirements, Docs save/readback, duplicate prevention, GitHub reference publication, hard pre-draft-evidence gate, Pages/notification checks. The task list shows weekly, next run in 16 hours at the 05:19 JST observation.
+- The active report triggers now cover 08:00, 12:00, 16:00, and 21:00 on weekdays. The task limit is again full (four reports plus the existing daily briefing); no other task was changed.
+- Configuration has been restored for four slots, but no Oct 29 report execution or downstream artifact was verified at 05:19 JST. Continue with real slot-by-slot observations; do not call the system recovered until report generation, Drive, image, GitHub, Pages, and notification evidence is available.

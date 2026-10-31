@@ -47,6 +47,10 @@ def sop_sections(full_text: str) -> list[tuple[str, str]]:
     """Extract heading-line bodies without treating incidental prose as headings."""
     sections: list[list[object]] = []
     for line in str(full_text or "").replace("\r", "").split("\n"):
+        inline_label = re.match(r"^(結論|最終判断|まとめ)[：:]\s*(\S.*)$", line.strip())
+        if inline_label:
+            sections.append([inline_label.group(1), [inline_label.group(2)]])
+            continue
         title = normalize_heading(line)
         if title:
             sections.append([title, []])

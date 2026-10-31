@@ -86,3 +86,26 @@ Local implementation evidence E1/E2 (candidate only): connected the last eligibl
 - Scope: development onboarding and documentation only. Unchanged by this task: `docs/system/requirements.md`, `docs/system/specification.md`, `docs/system/operations.md`, fixed-ID Google Docs, Apps Script runtime settings, market data, reports, images, publication receipts, Pages deploy scripts, schedules, paid API credentials.
 - GitHub connector returned file commit SHA values; final PR diff/readback and CI evidence must be checked after the PR is created. Local application regression tests = NOT_RUN; second-PC Codex sign-in/clone = NOT_RUN; production E2E = NOT_RUN; Google Drive formal document write/readback = NOT_RUN because no formal functional specification change is made.
 - Unresolved: GitHub PR review/merge, exact-head CI check, partner-PC permissions and test (#173), existing 2026-10-20 publication failures and other production audit findings (#103), existing PR #172 and #170.
+
+
+2026-10-29 02:17 JST — DELIVERY-RECOVERY-20261029-01 recheck:
+- E5 Drive metadata readback: target October report folder list returned 82 files; the only 2026-10-28 titles are the four 08:00/12:00/16:00/21:00 Docs (IDs recorded above); no 2026-10-29 report title was present. Infographic month folder list returned 75 files and no 2026-10-28 or 2026-10-29 PNG title. This is folder metadata evidence, not body/PNG-content verification.
+- Final PR head `b9bd84c9872bc292662fba6f882fd20f4d6129a7` has completed successful Actions runs: synchronization recovery CI `40728327528`, source contract tests `40728327541`. E1/E2 regression evidence only; no external delivery proof.
+- UI recheck remains BLOCKED: scheduled-task page did not return within browser automation timeout; Cloud Shell reports disconnected. P1 Scheduler current state UNKNOWN; no scheduler resume/write occurred. No Oct 29 slot has executed as of this 02:17 JST readback (08:00 is still future).
+- No new Docs, PNG, canonical report, receipt, Pages deployment or user notification was observed. Real four-slot end-to-end outcome remains NOT_RUN/UNKNOWN.
+
+
+2026-10-29 02:19 JST — final candidate head `a0d309d25fb4a698b03aef7425b1dbbea649118f`: final-head PASS for Report source contract tests run `40734389296`, Market report synchronization recovery CI `40734389300`, Market report frozen-cutoff regression `40734389352`, and Delivery health regression CI `40734389420`. Evidence is hosted automated regression only; live scheduled delivery is still NOT_RUN. PR #187 remains OPEN/unmerged. The branch is 4 commits behind current main; the four main-side commits affect market-data paths outside this PR diff. No rebase or merge was performed in this turn.
+
+
+2026-10-29 02:26 JST — DELIVERY-RECOVERY-20261029-01 source-body audit:
+- E5 Drive readback: fetched the full text of all four 2026-10-28 Docs. Each identifies itself as an analysis/viewing copy and says pre-draft evidence is missing/unverified. The 08:00 previous-close section is 17 bullet lines, not the required 28-row × 5-column table; no numbered 28-row table was parsed. Existing 08:00 Docs are not eligible for promotion.
+- The 12:00 Doc ends with an explicit `結論：...` labeled paragraph. PR code/test candidate `47282fdce4c10b5a86cea655c10ec71128dc6182` recognizes only explicitly labeled conclusion/final-judgment/summary paragraphs; generic prose remains rejected. The other SOP semantic and pre-slot evidence gates remain unchanged, so this does not qualify the historical Docs for publication.
+- Existing table QA is in `.github/workflows/qa-morning-report.yml`: it runs after `reports.json` changes and is fail-closed for portal selection. The Drive importer does not run this table QA before appending an archive/canonical candidate; keep this distinction explicit. No gate was weakened.
+- Hosted CI PASS on code candidate `47282fdce4c10b5a86cea655c10ec71128dc6182`: source contract `40735294321`, synchronization recovery `40735294265`, frozen cutoff `40735294396`, delivery health `40735294223`. Later commits on the PR branch are documentation-only; live 10/29 slots remain NOT_RUN.
+
+
+2026-10-29 05:01 JST — inline conclusion SOP continuation:
+- Found that source-contract heading recognition alone did not transfer same-line text in `結論：本文` into the semantic section body. Updated `scripts/sync_latest_report_publication.py::sop_sections` to split only explicit `結論/最終判断/まとめ：本文` labels into a conclusion heading plus its inline body. Unmarked prose remains rejected.
+- Added regression coverage to `tests/test_report_source_contract_headings.py` and widened the focused workflow path/env to include the SOP extractor.
+- E1/E2 hosted PASS on code candidate `e69f63846b2e42ca10ac0cdfe4e36e777542d81c`: source contract `40759356660`, synchronization recovery `40759356570`, delivery health `40759356601`, frozen cutoff `40759356351`, dashboard publication health `40759356413`. Later docs-only commits have no workflow runs. No live delivery was observed; 08:00 JST on 2026-10-29 is still ahead at this 05:01 JST check.
