@@ -93,6 +93,10 @@ Google Docs固定ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` へ対応す�
 
 `report_source_contract.heading()` recognizes explicit numbered prefixes with ASCII/full-width pipes, punctuation separators, or colons; it continues to recognize the existing plain and Markdown heading forms. An explicitly labeled inline conclusion (`結論：text`, `最終判断：text`, `まとめ：text`) is a section with the text after the label retained as that section's body. Unmarked prose remains ordinary body text. This changes source parsing only and preserves body bytes/hash and every issuance/publication gate. GitHub main and the fixed-ID Docs have not yet been updated.
 
+## DELIVERY-CLOSEOUT-20261101-01 — retrospective archive identity
+
+`validate_report_recovery.py` must require the three 2026-10-16 posthoc entries, pin `recoveryRecordedAt` to `2026-10-17T04:22:00+09:00`, and require `originalReportStatus=ORIGINAL_NOT_FOUND` plus `archiveType=RETROSPECTIVE_REPORT`. These entries remain non-official historical material and may not shadow canonical reports. The Pages workflow watches this validator. Candidate validation: 31 archive entries PASS; main/Drive production acceptance remains unverified.
+
 
 ## MRF-INGESTION-20261030-01｜取込段階ログ契約（2026-10-30 JST）
 scripts/sync_reports_from_drive.pyの完了ログは、結果に対応する段階だけを示す。canonicalへの保存は CANONICAL_SOURCE_INGESTION_COMPLETE、証拠/receipt不足の本文は SOURCE_ARCHIVED_ONLY、Docs readback receiptありは DOC_READBACK_RECEIPT_RECORDED とする。Docs receiptはPages配備または公開DOMの証明として扱わない。未認識のreceipt/status組合せは CANONICAL_INGESTION_STATUS_UNKNOWN として、上位状態へ昇格しない。既存のeligibility gate、本文、canonical、receipt、公開投影のロジックは変更しない。

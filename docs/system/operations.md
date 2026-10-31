@@ -119,3 +119,7 @@ Current validation covers mocked exact-generation reads, create-only readback, i
 - Docs取込前のsource validationで `01｜見出し` 等の明示番号見出しと、同一行に本文が続く明示的な結論ラベルを認識する。未ラベルの文を見出しとして推測しない。
 - 不足判定が出た場合は保存原文の全文と見出し/body境界を調査する。過去本文の書換え、発行後Evidenceの補完、再発行昇格を行わない。
 - 実装・5件のparser回帰テストは統合candidate上の検証。既存Docsの読戻し、正本登録、Pages公開および公開DOM一致は別工程であり、この変更だけでは成功としない。
+
+## DELIVERY-CLOSEOUT-20261101-01 — 回顧アーカイブ検証
+
+2026-10-16 12:00/16:00/21:00の回顧資料は通常の発行記録として扱わない。`scripts/validate_report_recovery.py` が原本未発見、回顧区分、および固定記録日時を検証したPASSを確認する。検証器の変更をPages workflowで実行する。統合candidateでは31件の保存本文・アーカイブ区分検証がPASS。公開DOMは別に確認する。
