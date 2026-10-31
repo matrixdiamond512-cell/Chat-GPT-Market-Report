@@ -89,6 +89,10 @@ Google Docs固定ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` へ対応す�
 - The ordinary scheduled workflow calls the importer without either flag; its default root and behavior are unchanged. No workflow_dispatch or Pages action is part of staging. `--apply` writes only files under the selected isolated checkout; use the default dry-run first.
 - The staging helper requires importer and staging roots to be disjoint in both directions. It accepts project and bucket identifiers only when `test` is a standalone token, and accepts GCS object names only under the exact `test-only/` prefix. Substring matches such as `contest` do not qualify. It resolves the evidence destination and verifies containment before creating directories, then checks containment again after creation. Its result is `LOCAL_STAGE_READBACK_PASS`, never `PUBLISHED` or `VERIFIED`. Production GCS, G2, Docs save/readback, portal publication, and public DOM remain separate gates.
 
+## DELIVERY-CLOSEOUT-20261101-01 — source heading/parser contract (integration candidate)
+
+`report_source_contract.heading()` recognizes explicit numbered prefixes with ASCII/full-width pipes, punctuation separators, or colons; it continues to recognize the existing plain and Markdown heading forms. An explicitly labeled inline conclusion (`結論：text`, `最終判断：text`, `まとめ：text`) is a section with the text after the label retained as that section's body. Unmarked prose remains ordinary body text. This changes source parsing only and preserves body bytes/hash and every issuance/publication gate. GitHub main and the fixed-ID Docs have not yet been updated.
+
 
 ## MRF-INGESTION-20261030-01｜取込段階ログ契約（2026-10-30 JST）
 scripts/sync_reports_from_drive.pyの完了ログは、結果に対応する段階だけを示す。canonicalへの保存は CANONICAL_SOURCE_INGESTION_COMPLETE、証拠/receipt不足の本文は SOURCE_ARCHIVED_ONLY、Docs readback receiptありは DOC_READBACK_RECEIPT_RECORDED とする。Docs receiptはPages配備または公開DOMの証明として扱わない。未認識のreceipt/status組合せは CANONICAL_INGESTION_STATUS_UNKNOWN として、上位状態へ昇格しない。既存のeligibility gate、本文、canonical、receipt、公開投影のロジックは変更しない。

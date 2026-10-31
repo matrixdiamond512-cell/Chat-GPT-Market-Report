@@ -113,3 +113,9 @@ Current validation covers mocked exact-generation reads, create-only readback, i
 - ARCHIVED_SOURCE_PROMOTED_TO_CANONICAL: 既存archiveのcanonical状態をevidenceに基づき更新した段階。公開URLの確認は別途必要。
 - Importerが最後まで実行したこと、canonical projection consistencyが通ったこと、Pages/public DOMが対象reportIdと一致したことを一つの「publication verified」へまとめない。
 - この変更では本番Pages deploy、Google Drive書込み、既存report/receipt変更、スケジュール変更を行わない。
+
+## DELIVERY-CLOSEOUT-20261101-01 — 保存本文の取込確認
+
+- Docs取込前のsource validationで `01｜見出し` 等の明示番号見出しと、同一行に本文が続く明示的な結論ラベルを認識する。未ラベルの文を見出しとして推測しない。
+- 不足判定が出た場合は保存原文の全文と見出し/body境界を調査する。過去本文の書換え、発行後Evidenceの補完、再発行昇格を行わない。
+- 実装・5件のparser回帰テストは統合candidate上の検証。既存Docsの読戻し、正本登録、Pages公開および公開DOM一致は別工程であり、この変更だけでは成功としない。

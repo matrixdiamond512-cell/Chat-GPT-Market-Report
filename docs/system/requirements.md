@@ -96,3 +96,10 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - REQ-12a: evidence不足の本文は閲覧用canonical archiveに保存できるが、記録は「SOURCE_ARCHIVED_ONLY」とし、publication eligibilityを獲得しない。
 - REQ-12b: Docs readback receiptがある場合もPages配備・公開DOM確認とは別状態とする。
 - 適用範囲：GitHub取込ログと対応するCI。既存レポート、receipt、Docs、PNG、release schedule、publication gateの変更を含まない。
+
+## DELIVERY-CLOSEOUT-20261101-01 — 保存本文の見出し認識（統合candidate）
+
+- 保存本文の明示見出しとして `01｜見出し`、`第1: 見出し`、既存の番号付き形式を認識する。`結論：本文`、`最終判断：本文`、`まとめ：本文`はラベル以降の同じ段落本文を結論sectionとして保持する。
+- 見出しではない説明文を見出しへ昇格しない。パース後も元の本文を改変しない。
+- この認識修正は保存本文の取り込みに関するもの。28×5表、必須section、発行前Evidence、Docs読戻し、canonical/Receipt、Pagesの公開ゲートは変えず、過去枠の再発行資格を与えない。
+- 適用状態: latest-main基点の統合candidate上で実装・ローカル回帰確認。GitHub mainへの反映と固定ID Google Docsの更新/読戻しは未実施。
