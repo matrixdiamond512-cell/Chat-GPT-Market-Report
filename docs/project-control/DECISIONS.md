@@ -67,3 +67,5 @@ Reason: Both changes touch `scripts/sync_reports_from_drive.py`; per-PR CI alone
 ## D-0800-08 (2026-10-30) — Fail-closed TEST_ONLY importer staging boundary
 
 A separately marked staging checkout must be path-disjoint from the importer checkout in both directions. GCS project and bucket identifiers require a standalone `test` token, and the object name must start with `test-only/`; substring matches alone are not a TEST_ONLY identity. Resolve the evidence destination and prove it remains under the staging root before creating directories, then verify again afterward. This is a local staging guard only; it is not independent proof of external resource identity or publication.
+
+- MRF-INGESTION-20261030-01 (2026-10-30 JST): Replace the combined VERIFIED_REPORT_INGESTION_AND_PUBLICATION message with stage-specific status lines. Keep source archival available when publication evidence is absent; do not turn evidence failure into a claim of publication or erase the archive. Docs readback receipt remains separate from Pages deployment and live public readback. No gate or data behavior changes.
