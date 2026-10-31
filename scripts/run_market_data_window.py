@@ -399,6 +399,7 @@ def perform_attempt(
         "actionsUrl": workflow_run_url(),
         "startedAt": iso(started),
         "completedAt": iso(completed),
+        "durationSeconds": round((completed - started).total_seconds(), 1),
         "startedAtUTC": iso_utc(started),
         "completedAtUTC": iso_utc(completed),
         "scheduledAtJST": target_datetime(scheduled_day, scheduled_time).isoformat(),

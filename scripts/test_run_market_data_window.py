@@ -24,6 +24,14 @@ class SnapshotCurrentTests(unittest.TestCase):
         }
         self.assertFalse(snapshot_is_current(payload, "16:00", dt.date(2026, 8, 10)))
 
+    def test_accepts_delayed_run_when_snapshot_was_created_before_cutoff(self):
+        payload = {"generatedAt": "2026-08-10T15:30:00+09:00", "reportSlot": "16:00", "overallStatus": "verified"}
+        self.assertTrue(snapshot_is_current(payload, "16:00", dt.date(2026, 8, 10)))
+
+    def test_rejects_snapshot_created_after_cutoff(self):
+        payload = {"generatedAt": "2026-08-10T16:01:00+09:00", "reportSlot": "16:00", "overallStatus": "verified"}
+        self.assertFalse(snapshot_is_current(payload, "16:00", dt.date(2026, 8, 10)))
+
     def test_rejects_blocked_snapshot(self):
         payload = {
             "generatedAt": "2026-08-10T19:49:30+09:00",
