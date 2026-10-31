@@ -62,3 +62,33 @@ Google Docs固定ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` へ対応す�
 - 図解3件はDrive上の最新保存日時・PNG MIMEを確認。GitHub Pagesでの画像実体、SHA-256、manifest、snapshot/本文との対応が未検証のため図解正式READYへ昇格させない。旧ファイルは削除しない。
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
+
+
+## MRF-0800-20261029 — G2 → Docs → portal transaction (Draft proposal)
+
+1. Read the production evidence object at an explicit GCS generation and verify its byte SHA-256, evidence ID, report ID/revision, context, snapshot, source hash, 15-minute freshness, and pre-slot cutoff using the existing evidence validator. Reject TEST_ONLY project/bucket configuration.
+2. Bind the frozen G2 fullText and bodyHash to that evidence. Require an independent human scenario review for main, alternative, and invalidation roles, each with exact source offsets/quotes for condition, development, and market impact; require explicit attestations that the alternative branches from the main case and that the invalidation item changes the decision.
+3. Acquire a create-only GCS claim keyed by report ID/revision. Identical claims are idempotent; any body/evidence/snapshot difference blocks.
+4. Save only the fixed fullText to one uniquely identified Docs file in the configured monthly folder. Re-read through the Docs API and verify document ID, revision ID, exact full text, SHA-256, Drive parent, and slot save-time window. A partial create or conflicting duplicate is quarantined for operator reconciliation; never create a second document to recover.
+5. Only after Docs readback passes may an adapter invoke the existing canonical importer/publication workflow. Require its independent readback to match report ID/revision, snapshot ID, Docs ID/revision, full text, and body hash before returning PUBLISHED. The PR currently defines this adapter boundary and offline tests; actual portal workflow invocation and public DOM readback remain NOT_RUN.
+6. No status returned by fixture adapters is evidence of live publication. A production rollout requires separate review, configured least-privilege identities, a verified G2 producer connection, and approved external E2E.
+
+
+## MRF-0800-20261029 — existing importer compatibility and stop boundary
+
+- Drive source file name is `マーケットレポート_YYYY-MM-DD_08-00`, which the existing importer discovers. The document body begins with the separate `title_for(date, slot)` title and must pass `report_source_contract.validate_saved_body`; exact fullText and SHA-256 remain unchanged.
+- The existing `scripts/sync_reports_from_drive.py` reads its frozen evidence from the repository checkout at `data/report-evidence/<date>_08-00-r1.json`. PR #188 currently reads a generation-pinned GCS object but does not transfer that exact object into the importer's execution workspace or main. Therefore Docs success is insufficient for portal acceptance.
+- The existing `publish-saved-google-docs-reports.yml` `workflow_dispatch` path checks out main, runs importer with `--apply`, commits eligible canonical files to main, and dispatches Pages deployment. It is a production write route. This PR did not dispatch or modify it. A later WIF-based evidence handoff, explicit identity binding, and approved publication switch are required before connecting it.
+
+
+
+## MRF-0800-20261029 — strict staging importer behavior
+
+- `scripts/reporting/importer_handoff.py` reads a caller-pinned TEST_ONLY GCS generation, validates its hash and stored slot identity, then writes the exact bytes create-only to `data/report-evidence/<date>_08-00-r<revision>.json` below a separate checkout containing a `.market-report-staging.json` marker (`LOCAL_STAGING_ONLY`, `TEST_ONLY`). It verifies exact byte readback and never overwrites conflicting evidence.
+- `sync_reports_from_drive.py --root <isolated-checkout> --require-issuance-binding` is an explicit opt-in local staging path. It requires the marker, rejects the current importer checkout as a target, and enforces Docs appProperties binding for report ID, revision, exact readback body hash, evidence ID, and snapshot ID before issuing a readback receipt.
+- The ordinary scheduled workflow calls the importer without either flag; its default root and behavior are unchanged. No workflow_dispatch or Pages action is part of staging. `--apply` writes only files under the selected isolated checkout; use the default dry-run first.
+- The staging helper requires importer and staging roots to be disjoint in both directions. It accepts project and bucket identifiers only when `test` is a standalone token, and accepts GCS object names only under the exact `test-only/` prefix. Substring matches such as `contest` do not qualify. It resolves the evidence destination and verifies containment before creating directories, then checks containment again after creation. Its result is `LOCAL_STAGE_READBACK_PASS`, never `PUBLISHED` or `VERIFIED`. Production GCS, G2, Docs save/readback, portal publication, and public DOM remain separate gates.
+
+
+## MRF-INGESTION-20261030-01｜取込段階ログ契約（2026-10-30 JST）
+scripts/sync_reports_from_drive.pyの完了ログは、結果に対応する段階だけを示す。canonicalへの保存は CANONICAL_SOURCE_INGESTION_COMPLETE、証拠/receipt不足の本文は SOURCE_ARCHIVED_ONLY、Docs readback receiptありは DOC_READBACK_RECEIPT_RECORDED とする。Docs receiptはPages配備または公開DOMの証明として扱わない。未認識のreceipt/status組合せは CANONICAL_INGESTION_STATUS_UNKNOWN として、上位状態へ昇格しない。既存のeligibility gate、本文、canonical、receipt、公開投影のロジックは変更しない。

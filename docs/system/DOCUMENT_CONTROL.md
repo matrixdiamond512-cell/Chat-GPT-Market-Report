@@ -60,3 +60,62 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 - 図解3件はDrive上の最新保存日時・PNG MIMEを確認。GitHub Pagesでの画像実体、SHA-256、manifest、snapshot/本文との対応が未検証のため図解正式READYへ昇格させない。旧ファイルは削除しない。
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
+
+
+## MRF-0800-20261029 — change record
+
+- Source: user request to restore the weekday 08:00 issuance path; TEST_ONLY Cloud Shell outputs for 2026-10-28; independent Draft PR based on main observed at e70751bc4a202c84f4322df8748a08775d836458.
+- Affected canonical files: docs/system/requirements.md, docs/system/specification.md, docs/system/operations.md; root AGENTS.md; project-control objective/evidence/decision/lesson records. Existing fixed Google Docs IDs were not written.
+- Code scope: proposed fail-closed G2/evidence/Docs/portal transaction adapter and offline contract workflow. No main, production, Drive, or Pages changes.
+- Verification: external TEST_ONLY GCS generation readbacks were operator-provided and all three passed; new code tests require hosted Actions. Docs API, production GCS, existing canonical importer, and public portal E2E are NOT_RUN.
+- Open outcomes: connect trusted G2/body freeze and independent scenario review; configure production identities/folders/buckets; implement approved invocation of the existing importer; run external E2E and live DOM verification. Do not report production recovery complete.
+
+
+- MRF-0800-20261029 continuation: corrected Drive filename compatibility with the existing source importer and added existing-body validation before Docs save. Inspection found the remaining handoff boundary: main importer consumes `data/report-evidence/` from its checkout; TEST_ONLY/production GCS evidence is not automatically provided. The existing manual-dispatch workflow applies canonical data to main and dispatches Pages. No dispatch or external write was run. Portal E2E remains NOT_RUN.
+
+
+
+## MRF-0800-20261029 change record — isolated importer staging
+
+Affected stable paths: `AGENTS.md`, `docs/system/requirements.md`, `docs/system/specification.md`, `docs/system/operations.md`, `scripts/reporting/importer_handoff.py`, `scripts/sync_reports_from_drive.py`, `tests/test_importer_handoff.py`, and `.github/workflows/0800-issuance-contract.yml`. Verification: hosted issuance, delivery-health, and frozen-cutoff Actions all PASS on code head `2642412`. Limits: only offline/mock contract verification; TEST_ONLY cloud handoff, Google Docs readback, canonical importer runtime, and public portal remain NOT_RUN. No Google Docs or main/Pages write occurred.
+
+
+## MRF-0800-BRIDGE-20261030-01 — isolated importer bridge contract test (2026-10-30 JST)
+Source: user-directed continuation of Issue #176 / Draft PR #188. Changed `tests/test_importer_handoff.py` only for code behavior; project evidence records updated in `docs/project-control/{OBJECTIVE_CARD,EVIDENCE_LEDGER,DECISIONS,LESSONS}.md` and `HANDOFF.md`. Test composes pinned-generation TEST_ONLY staging → existing importer `publication_evidence(..., require_issuance_binding=True)` → exact Docs revision/body/evidence/snapshot binding, including a tampered-body-hash hold. Formal requirements/specification/body-authoring/operations/Google Docs fixed-ID contents: NO_CHANGE (test-only verification; no delivery contract or production behavior changed). Local focused suites: 12/12 handoff and 12/12 issuance pipeline PASS; py_compile and diff check PASS. Exact-head hosted CI pending until push. Fake GCS/Google modules only; actual GCS, Docs, poll/apply, portal and schedule remain NOT_RUN.
+
+
+## MRF-0800-BRIDGE-20261030-01 — staging prerequisite recheck (2026-10-30 JST)
+
+Source: user-directed continuation of Issue #176 / Draft PR #188, current main `ec3e38b56397686c781e61de7efe97baeec48544`, code head `7a1b751923dc40c1cfae26e980f49bc10f7b82c9`. Affected paths: `docs/project-control/OBJECTIVE_CARD.md`, `docs/project-control/EVIDENCE_LEDGER.md`, and `HANDOFF.md`; this control record. Formal requirements, system specification, authoring manual, operations, fixed-ID Google Docs, code and production artifacts: NO_CHANGE. No credentials or report body copied into records.
+
+Verification: read-only local and Drive prerequisite recheck; importer `--apply` was NOT_RUN because no staging root/marker, no staged evidence, and no usable GCS authentication was observed; the existing 2026-10-28 Doc is labeled `閲覧用分析版` and does not provide a matching pre-save G2 body/hash or same-run receipt. Strict `appProperties` binding remains UNKNOWN. Evidence ledger and HANDOFF record the exact evidence and limits. No external writes, main change, or Pages deploy occurred.
+
+Unresolved: provision/authorize an isolated TEST_ONLY identity and exact-generation object; provide one coherent issuance-bound G2/Docs readback; stage into a separate marked checkout; run strict dry-run and only then `--apply` if every binding passes. PR #188 and PR #189 remain separate Drafts; their shared importer changes have not received combined validation.
+
+
+## 変更記録 MRF-INGESTION-20261030-01（2026-10-30 JST）
+対象: GitHub固定パス docs/system/requirements.md、specification.md、operations.md、本規程、scripts/sync_reports_from_drive.py、scripts/reporting/ingestion_outcome.py、tests/test_ingestion_outcome.py、.github/workflows/market-report-sync-recovery-ci.yml、project-control記録、HANDOFF.md。
+理由: Importerがarchive-onlyのsourceについても VERIFIED_REPORT_INGESTION_AND_PUBLICATION と出力し、取込と正式公開の状態を誤って一つに見せていたため。
+変更: stageごとの明示ログへ置換し、archive-only・Docs読戻しreceipt・未認識statusを独立表示。該当する回帰テストをCI対象に追加。
+制約: main merge、Google Drive正式文書更新、本番Docs/PNG/receipt/report変更、Pages deploy、schedule/Cloud設定変更なし。
+検証: Python 3.13.14でworkflow対象の6モジュール38 tests PASS、追加証拠回帰3モジュール24 tests PASS、py_compile PASS。test_report_contract.py / test_publication_evidence.pyはWindows環境にIANA tzdataがなくZoneInfoNotFoundErrorでBLOCKED。Hosted CIはPR作成後。E3–E5本番E2EはNOT_RUN。
+未解決: CI最終head確認、PR review/merge、Google Drive固定ID文書への同期判定、将来slotでのlive Docs/canonical/Pages acceptance。
+
+
+## MRF-INGESTION-20261030-01 evidence-link correction (CORRECT, 2026-10-30 JST)
+The four-slot HANDOFF matrix originally linked 2026-10-29 report JSON paths at main `52e99701f3bc71a77bdde31729e0f887f44a9135`, where those paths were absent. Repointed its read-only evidence links to current main `ec3e38b56397686c781e61de7efe97baeec48544`, where the four JSON files are present and each has `SOURCE_ARCHIVED` / `infographic_status=NOT_VERIFIED`; the four receipt paths are absent. No requirements, pipeline behavior, reports, receipts, Docs, PNGs, Pages, or external services were changed.
+
+
+## MRF-0800-IMPORTER-COMBO-20261030-01 — integrated importer validation record (2026-10-30 JST)
+
+Source: user-directed continuation of Issue #176 and Draft PRs #188/#189. Base/current main `ec3e38b56397686c781e61de7efe97baeec48544`; integrated PR #188 head at validation `d8394400dac2935f338d4d2ae9c068db689526eb`. Affected stable paths: `scripts/sync_reports_from_drive.py`, `scripts/reporting/ingestion_outcome.py`, `tests/test_ingestion_outcome.py`, `.github/workflows/market-report-sync-recovery-ci.yml`, and the previously added #188 issuance modules/tests/workflow; formal GitHub docs `requirements.md`, `specification.md`, `operations.md`; project records and `HANDOFF.md`. The body-authoring manual and fixed-ID Google Docs were not changed.
+
+Verification: exact-head hosted issuance, sync recovery, frozen-cutoff and delivery-health runs 40989666087 / 40989665981 / 40989666048 / 40989666122 all SUCCESS; logs confirm 12 + 12 importer contract tests and 4 ingestion-outcome tests. E2 fixture/integration evidence only. Unresolved: actual TEST_ONLY GCS staging, matching Docs issuance binding, isolated importer run, canonical receipt, Pages/public DOM and scheduled-slot acceptance remain BLOCKED / NOT_RUN. PR #189's changes are incorporated into PR #188 for combined review; both drafts remain open and unmerged. No production/Drive/main/Pages writes occurred.
+
+## MRF-0800-STAGING-BOUNDARY-20261030-01 — isolated TEST_ONLY staging safety review (2026-10-30 JST)
+
+Source: user-directed continuation and static review of PR #188 at code head b936d9ddeb56608ad2b04d0c01488f9852496aa6; base main ec3e38b56397686c781e61de7efe97baeec48544.
+Affected fixed paths: docs/system/requirements.md, docs/system/specification.md, docs/system/operations.md, scripts/reporting/importer_handoff.py, tests/test_importer_handoff.py, this control record, project-control records, and HANDOFF.md. Fixed-ID Google Docs were not edited.
+Change: require importer and staging roots to be disjoint in both directions; require a standalone `test` token in GCS project and bucket names plus the exact `test-only/` object prefix; verify resolved destination containment before and after directory creation. Add regression coverage for ancestor-root overlap, substring false positives, invalid object prefixes, and symlink escape.
+Verification: code/test head 4125df20409bcb0337677ba12ec2e87590b2d8db. Hosted issuance contract 40990908975, synchronization recovery 40990909005, frozen-cutoff 40990908966, and delivery-health 40990908970 all SUCCESS. Issuance logs show 12 issuance tests and 16 importer-handoff tests PASS. Evidence level E2, limited to hosted CI and fake adapters.
+Limits/unresolved: no independently authenticated GCS read, issuance-bound G2/Docs readback, staging invocation, importer --apply, canonical/receipt write, Pages deployment, or public DOM verification. PR #189 remains OPEN/Draft with duplicate importer changes. No production, Drive, main, or Pages write occurred.

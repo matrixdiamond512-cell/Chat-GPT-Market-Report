@@ -11,6 +11,9 @@ on:
       - "scripts/build_report_index.py"
       - "scripts/report_identity.py"
       - "scripts/reconcile_latest_report_market_data.py"
+      - "scripts/sync_reports_from_drive.py"
+      - "scripts/reporting/ingestion_outcome.py"
+      - "tests/test_ingestion_outcome.py"
       - "scripts/sync_latest_report_publication.py"
       - "scripts/verify_publication_consistency.py"
       - "scripts/verify_scheduled_report_delivery.py"
@@ -42,6 +45,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_publication_eligibility.py' -v
           python -m unittest discover -s tests -p 'test_report_contract.py' -v
           python scripts/test_reconcile_latest_report_market_data.py
+          python -m unittest discover -s tests -p 'test_ingestion_outcome.py' -v
       - name: Verify publication and history
         run: |
           python scripts/verify_publication_consistency.py

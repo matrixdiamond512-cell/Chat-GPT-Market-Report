@@ -33,3 +33,37 @@
 - 2026-10-07 PORTAL-D03: Run browser DOM validation on the normalized local artifact before upload/deploy and repeat the same strict checks against the public Portal after deployment. Keep exact title equality and fail closed. A successful Deploy step is not a successful Portal publication when live DOM validation fails.
 
 - 2026-10-20 / HANDOFF-20261020-01: Add `README.md` and `HANDOFF.md` as **stable developer onboarding paths**, extend existing `AGENTS.md` and introduce a PR evidence checklist. This is development-process documentation only: no report schedule, publication code, market data, receipt, Google Docs canonical requirements/specification/operations, or portal output is changed. Preserve the `docs/system/DOCUMENT_CONTROL.md` precedence and fixed-ID formal document workflow. Refer to Issue #173 for actual second-PC acceptance, Issue #103 for production audit, and live PR/Actions state rather than copying old success claims. Reassess any future functional change separately with the affected-document matrix.
+
+
+## MRF-0800-20261029 decisions
+
+- D-0800-01: Retain GCS generation-pinned evidence and immutable create-only per-slot claim; identical retry may continue, any changed identity/hash is a conflict. Do not clear a claim automatically.
+- D-0800-02: Google Docs writer saves only the frozen G2 fullText and exact readback is mandatory before portal work. Ambiguous or partial Docs creation stops for manual reconciliation.
+- D-0800-03: Existing portal publication is behind an adapter boundary. Contract fixtures can test the boundary but cannot represent a live portal publish; rollout awaits a concrete, approved invocation/readback route.
+- D-0800-04: No main/production/Drive/Pages change; PR #97 remains untouched.
+
+
+- D-0800-05: Use the existing importer filename (`マーケットレポート_YYYY-MM-DD_08-00`) for the Drive object while preserving the report's separate in-body title; run the existing body validator before creating Docs.
+- D-0800-06: Do not invoke the existing Docs publication workflow in the current task. It applies canonical writes to main and deploys Pages; first add and review an exact-generation GCS evidence handoff and an explicitly authorized environment boundary.
+
+
+
+- D-0800-07 (2026-10-29): Permit importer execution only against a separately marked LOCAL_STAGING_ONLY checkout using exact-generation TEST_ONLY GCS evidence and strict Docs appProperties binding. Keep the production workflow's default root and flags unchanged; never use its workflow_dispatch as a staging mechanism because it writes main and dispatches Pages.
+
+
+## MRF-0800-BRIDGE-20261030-01 — use a composition test at the importer boundary (ADD, 2026-10-30 JST)
+The isolated handoff helper and the Docs issuance-binding helper had separate unit tests, while the actual importer's `publication_evidence` wrapper had no test proving the staged evidence and Docs properties meet in one call. Add one offline contract test to compose those existing seams. Preserve the `TEST_ONLY` environment marker and use fake GCS and Google-auth modules. A valid local receipt plus strict property match is component/integration evidence only; do not interpret it as Google Docs save, canonical receipt persistence, Portal publication, or production GCS evidence. No functional requirements/spec/operations text changes.
+
+
+- MRF-INGESTION-20261030-01 (2026-10-30 JST): Replace the combined VERIFIED_REPORT_INGESTION_AND_PUBLICATION message with stage-specific status lines. Keep source archival available when publication evidence is absent; do not turn evidence failure into a claim of publication or erase the archive. Docs readback receipt remains separate from Pages deployment and live public readback. No gate or data behavior changes.
+
+
+## MRF-0800-IMPORTER-COMBO-20261030-01 — integrate importer changes for joint validation (2026-10-30 JST)
+
+Decision: Carry PR #189's ingestion status helper, test/workflow and affected requirements/specification/operations/project records onto the latest-main PR #188 branch so both importer behaviors are tested on one Draft head. Keep PR #188 based on current main and retain PR #189 as OPEN/Draft for now; do not merge either independently while duplicate code is present.
+
+Reason: Both changes touch `scripts/sync_reports_from_drive.py`; per-PR CI alone did not prove they compose. The combined head ran both test suites and all four relevant workflows. Reversal: if the owner chooses separate review scopes, remove the incorporated PR #189 delta from #188 in follow-up commits, or designate one Draft as superseded before merging. No force-push, merge to main, deployment, or production write occurred.
+
+## D-0800-08 (2026-10-30) — Fail-closed TEST_ONLY importer staging boundary
+
+A separately marked staging checkout must be path-disjoint from the importer checkout in both directions. GCS project and bucket identifiers require a standalone `test` token, and the object name must start with `test-only/`; substring matches alone are not a TEST_ONLY identity. Resolve the evidence destination and prove it remains under the staging root before creating directories, then verify again afterward. This is a local staging guard only; it is not independent proof of external resource identity or publication.

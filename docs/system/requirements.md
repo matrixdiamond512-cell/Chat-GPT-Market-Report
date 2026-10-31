@@ -66,3 +66,33 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - 図解3件はDrive上の最新保存日時・PNG MIMEを確認。GitHub Pagesでの画像実体、SHA-256、manifest、snapshot/本文との対応が未検証のため図解正式READYへ昇格させない。旧ファイルは削除しない。
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
+
+
+## MRF-0800-20261029 — 08:00 issuance integration contract (Draft proposal)
+
+- Keep one weekday 08:00 report identity/revision bound to one immutable, generation-pinned acquisition snapshot, the complete pre-save G2 body and its SHA-256, a human-reviewed scenario record, Google Docs document/revision/full-text readback, and the existing portal canonical/readback identity.
+- Reject stale or post-cutoff evidence, TEST_ONLY evidence in the production path, any changed body/snapshot/identity, missing scenario review, ambiguous duplicate Docs, duplicate-slot identity conflicts, or a Docs/portal readback mismatch. Never publish after a failed stage.
+- Exact retries may proceed only when report ID, revision, body hash, evidence ID, and snapshot ID match the durable create-only slot claim.
+- TEST_ONLY acquisition on 2026-10-28 is limited evidence of the upstream acquisition/store path. It does not satisfy Docs, canonical, or portal acceptance. This requirement is proposed in a separate Draft PR and is not yet active on main.
+- 12:00/16:00/21:00 schedules and existing publication gates remain outside the implementation scope. No production write or deployment was performed.
+
+
+## MRF-0800-20261029 — importer handoff clarification
+
+- The Google Drive file name must follow the existing source importer key, `マーケットレポート_YYYY-MM-DD_08-00`; the report title remains the first line of the body. The writer now keeps those identities distinct and validates the body with the existing saved-report contract before Docs creation.
+- The existing portal importer reads pre-slot evidence from the checked-out `data/report-evidence/` path. A GCS generation alone is not visible to that importer. Until a protected, exact-generation GCS-to-importer handoff is implemented and proven, canonical portal publication remains NOT_RUN.
+
+
+
+## MRF-0800-20261029 — isolated importer staging contract
+
+- A TEST_ONLY GCS evidence object may be copied only by exact object generation and SHA-256 into a separately marked LOCAL_STAGING_ONLY checkout whose root is disjoint from the importer checkout (neither is an ancestor of the other). Require a standalone `test` token in both project and bucket identifiers and an exact `test-only/` object-name prefix; substring matches do not qualify. Create-only identical retries are allowed; conflicting bytes or identity stop. Resolve and verify the destination path remains inside staging root before creating directories; reject symlink or junction escapes.
+- The existing importer may run against that isolated checkout only when the caller explicitly opts into strict issuance binding. Docs appProperties must match report_id, revision, body_hash, evidence_id, and snapshot_id; otherwise the report remains held/archived.
+- The default scheduled importer path is unchanged. Staging code must not write Google Drive, GitHub main, or Pages. TEST_ONLY evidence and local staging output are not production issuance evidence.
+
+
+## MRF-INGESTION-20261030-01｜取込状態と公開状態の分離（2026-10-30 JST）
+- REQ-12: 保存済みDocsのGitHub取込結果は、canonical保存、発行前evidence/Docs読戻しreceipt、Pages配備、公開後DOM読戻しを別段階で記録する。SOURCE_ARCHIVEDのみの取込を正式publication成功として報告しない。
+- REQ-12a: evidence不足の本文は閲覧用canonical archiveに保存できるが、記録は「SOURCE_ARCHIVED_ONLY」とし、publication eligibilityを獲得しない。
+- REQ-12b: Docs readback receiptがある場合もPages配備・公開DOM確認とは別状態とする。
+- 適用範囲：GitHub取込ログと対応するCI。既存レポート、receipt、Docs、PNG、release schedule、publication gateの変更を含まない。

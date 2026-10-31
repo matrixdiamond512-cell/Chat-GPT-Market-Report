@@ -100,3 +100,60 @@ git branch --show-current
 
 ---
 この文書の最終更新: 2026-10-20 JST。文書管理の根拠は `docs/system/DOCUMENT_CONTROL.md`。配信システム本体の変更、Google Docsの正式正本の書換え、外部サービスの設定変更は、この引き継ぎ整備だけでは実施しない。
+
+
+## MRF-0800-BRIDGE-20261030-01 continuation
+Added a composed offline test in `tests/test_importer_handoff.py`: pinned TEST_ONLY generation → isolated file readback → actual importer `publication_evidence` strict-binding path → Docs revision/body/evidence/snapshot match; a wrong body hash returns HOLD. Local handoff and issuance suites pass 12/12 each. Current task branch is based on PR #188 head `0a37e8c35d8669110aa95560054e2ab275a56569`; latest main `ec3e38b56397686c781e61de7efe97baeec48544` is 152 commits ahead, with no changed-file path overlap observed. Keep PR #188 Draft and unmerged; resync/review main drift before readiness. After pushing, wait for exact-head issuance/frozen-cutoff/delivery-health CI. External GCS/Docs/Portal production transaction remains NOT_RUN.
+
+
+## MRF-0800-BRIDGE-20261030-01 — current continuation state (2026-10-30 10:23 JST)
+
+Branch: `codex/0800-main-issuance-e2e-20261029`; source PR #188; code head before this documentation update `7a1b751923dc40c1cfae26e980f49bc10f7b82c9); base/current main `ec3e38b56397686c781e61de7efe97baeec48544`. Exact-head issuance contract run 40981647510, frozen-cutoff run 40981647421, and delivery-health run 40981647442 were SUCCESS. PR #189 remains a separate OPEN/Draft branch and both PRs touch `scripts/sync_reports_from_drive.py`; their combined behavior has not been merged/tested.
+
+Staging gate recheck: current checkout has no staging marker, `data/report-evidence/` has 0 files, and the checked sibling staging path is absent. `gcloud` is unavailable, `GOOGLE_APPLICATION_CREDENTIALS` is unset, and the standard Windows gcloud ADC file is absent. These observations mean no usable GCS authentication was available in this environment; they do not prove credentials are absent elsewhere.
+
+Read-only Google Drive recheck of Doc `1laY8WojdqX5kUNJj35PIXlNnikXqH_F7NntuNPuhOYA` returned revision `AHj4eMRVs5vDnuQa4YLl1GD72hFIH1tg8Vqsc4PUep97iqrGsHghlhh5TBDzEPgkgYyJ54wLhmnxFBfMgqydAJiYY1zXUmC12ne2kgChMAc`; body says `閲覧用分析版` and pre-issuance evidence is absent. No matching frozen G2 body/hash or same-run Docs save receipt was available. Connector did not expose `appProperties`; strict binding is UNKNOWN.
+
+Status: isolated real importer execution and `--apply` BLOCKED / NOT_RUN. Do not use this Doc or fabricate a historic source. No external write or production operation was performed. Resume only after an authorized TEST_ONLY identity/object, exact-generation/hash details, matching Docs issuance properties, and a separate marked `LOCAL_STAGING_ONLY` checkout are available. Stage exact bytes, inspect strict-binding dry-run, and apply only on a full binding PASS.
+
+
+## Handoff addendum — MRF-INGESTION-20261030-01 (2026-10-30 JST)
+- Base: GitHub main 52e99701f3bc71a77bdde31729e0f887f44a9135; branch codex/report-ingestion-stage-truth-20261030.
+- Scope: correct importer stage labels; add four focused offline contract tests and run them through the existing sync recovery CI.
+- No main merge, production Pages deployment, Google Drive write, receipt/report/PNG mutation, schedule or Cloud setting change.
+- Local Python 3.13.14: 38 workflow-scope tests PASS across the six runnable modules; 24 additional evidence regression tests PASS; `py_compile` PASS. `test_report_contract.py` and `test_publication_evidence.py` are BLOCKED at import because this Windows runtime has no IANA `tzdata` (`ZoneInfoNotFoundError: Asia/Tokyo`). Exact-head hosted CI and PR readback remain open.
+- Full live 08:00/12:00/16:00/21:00 acceptance, external task state, Drive fixed-ID formal-document synchronization, Pages public DOM readback, and notification acceptance remain NOT_RUN.
+- Draft PR #189 is OPEN / Draft / unmerged. On code head `71fce84ddfa814a3b0c66bbc0545d36e78bfec1a`, hosted runs 40968791396 (sync recovery), 40968791427 (frozen cutoff), and 40968791433 (delivery health) all PASS. A documentation-only update is now being added, so final PR-head CI must be rechecked. Then hand off the remaining externally gated stages.
+
+
+## MRF-INGESTION-20261030-01 acceptance matrix — 2026-10-30 JST
+
+**Production acceptance is NOT_RUN / incomplete.** The rows below record the last read-only snapshot inspected during this task for 2026-10-29; they are not evidence of a new live run. A report JSON existing in `reports/` proves only an archive record.
+
+| Report slot | Data + pre-issue evidence | Body QA + Docs full readback | GitHub canonical + valid receipt | Pages deploy + public body readback | PNG + exact body provenance | Overall |
+|---|---|---|---|---|---|---|
+| 2026-10-29 08:00 | NOT_VERIFIED | Report archived; body QA / Docs full-text readback NOT_VERIFIED | `SOURCE_ARCHIVED`; receipt missing in inspected snapshot | NOT_VERIFIED; shared Pages workflow later timed out | PNG exists; content/body match NOT_VERIFIED | BLOCKED / NOT_ACCEPTED |
+| 2026-10-29 12:00 | NOT_VERIFIED | Report archived; body QA / Docs full-text readback NOT_VERIFIED | `SOURCE_ARCHIVED`; receipt missing in inspected snapshot | NOT_VERIFIED; shared Pages workflow later timed out | PNG exists; content/body match NOT_VERIFIED | BLOCKED / NOT_ACCEPTED |
+| 2026-10-29 16:00 | NOT_VERIFIED | Report archived; body QA / Docs full-text readback NOT_VERIFIED | `SOURCE_ARCHIVED`; receipt missing in inspected snapshot | NOT_VERIFIED; shared Pages workflow later timed out | PNG exists; content/body match NOT_VERIFIED | BLOCKED / NOT_ACCEPTED |
+| 2026-10-29 21:00 | NOT_VERIFIED | Report archived; body QA / Docs full-text readback NOT_VERIFIED | `SOURCE_ARCHIVED`; receipt missing in inspected snapshot | NOT_VERIFIED; shared Pages workflow later timed out | PNG exists; content/body match NOT_VERIFIED | BLOCKED / NOT_ACCEPTED |
+
+Evidence links (latest main read-only recheck at ec3e38b56397686c781e61de7efe97baeec48544): [08:00 JSON](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/blob/ec3e38b56397686c781e61de7efe97baeec48544/reports/2026-10-29_08-00.json), [12:00 JSON](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/blob/ec3e38b56397686c781e61de7efe97baeec48544/reports/2026-10-29_12-00.json), [16:00 JSON](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/blob/ec3e38b56397686c781e61de7efe97baeec48544/reports/2026-10-29_16-00.json), [21:00 JSON](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/blob/ec3e38b56397686c781e61de7efe97baeec48544/reports/2026-10-29_21-00.json); [PR #189](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/189); [Pages timeout run 40966149397](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40966149397). PR #189 checks (40968927389 / 40968927469 / 40968927385) establish hosted code regression only, not production acceptance.
+
+**Acceptance still required per slot:** immutable pre-slot snapshot/context/evidence and source readback; complete body QA; Docs file identity and full-text/hash readback; matching canonical reportId/revision/hash and valid receipt; successful Pages deploy and public URL body readback; PNG file readback with matching body revision/hash plus visual/content review; idempotent rerun and failure-path proof. Run separate approved production validation for each slot; do not backfill missing historical evidence.
+
+
+## MRF-0800-IMPORTER-COMBO-20261030-01 — integrated Draft status (2026-10-30 11:07 JST)
+
+Current branch: `codex/0800-main-issuance-e2e-20261029`; PR #188 final integrated head before this record update: `d8394400dac2935f338d4d2ae9c068db689526eb`; base/current main: `ec3e38b56397686c781e61de7efe97baeec48544`. PR #188 and #189 are OPEN / Draft / unmerged / mergeable. PR #188 includes PR #189's importer stage-status code, helper test/workflow, and affected formal/project documents for joint validation. Do not merge both independently.
+
+Exact-head CI at `d839440`: issuance [40989666087](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40989666087), synchronization recovery [40989665981](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40989665981), frozen-cutoff [40989666048](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40989666048), delivery-health [40989666122](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/40989666122) all SUCCESS. Job logs confirm 12 importer handoff tests, 12 issuance tests, and 4 ingestion outcome tests passed. Local Windows Python cannot start in this worktree; exact-hosted checks are the available final-run evidence.
+
+Actual GCS staging and importer dry-run/apply remain BLOCKED / NOT_RUN: no gcloud/standard ADC, no staged exact-generation object, no marked sibling checkout, and the known Docs document is display-only without the required same-run G2/Docs binding. No Google Drive, main, report/receipt, or Pages write occurred. Resume only with an authorized TEST_ONLY identity/object, bound Docs readback and isolated staging checkout.
+
+## 2026-10-30 — MRF-0800 isolated staging safety review
+
+PR #188 was statically reviewed beyond the happy path. The importer handoff now rejects ancestor/descendant root overlap, requires standalone `test` tokens in GCS project and bucket identifiers, requires object paths under `test-only/`, and checks resolved destination containment before and after directory creation. Four regression cases were added. Hosted code/test head `4125df20409bcb0337677ba12ec2e87590b2d8db` passed issuance, synchronization recovery, frozen-cutoff, and delivery-health workflows; issuance log shows 12 issuance tests and 16 importer-handoff tests PASS.
+
+External acceptance remains BLOCKED / NOT_RUN. Operator-provided GCS generations exist in project records but were not independently read here. The 2026-10-29 Docs file remains `閲覧用分析版`; the TEST_ONLY Docs probe is explicitly non-issuance. Drive search found no Docs containing the recorded evidence IDs, and the connector did not expose appProperties. Current local folder is not a Git worktree and has no staging marker or slot evidence file.
+
+Next: authorize/use an authenticated TEST_ONLY Cloud Shell session and obtain one coherent G2/Docs readback bound to one exact GCS generation. Stage only after this binding is evidenced; inspect strict dry-run before any `--apply`. Do not dispatch the production publication workflow. PR #189 remains open and Draft with duplicate importer changes; do not merge both branches independently.
