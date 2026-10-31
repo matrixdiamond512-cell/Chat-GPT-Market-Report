@@ -163,7 +163,7 @@ def publication_evidence(root: Path, report: dict, item: dict) -> tuple[dict | N
         return None, str(exc)
 
 def poll(root: Path, *, apply: bool, enforce_slot: bool):
-    from report_identity import internal_report_key
+    from reporting.ingestion_outcome import format_ingestion_status_lines
     from build_reports import _verified_source_revision
     now = datetime.now(JST)
     env = read_json(root / "data/latest-report.json")
@@ -321,11 +321,8 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                        cwd=root, check=True)
         subprocess.run([sys.executable, "scripts/verify_publication_consistency.py"],
                        cwd=root, check=True)
-        print("VERIFIED_REPORT_INGESTION_AND_PUBLICATION: "+", ".join(
-            internal_report_key(to_write[x][0]) for x in sorted(to_write)))
-        if to_promote:
-            print("SOURCE_ARCHIVE_PROMOTION_VERIFIED: "+", ".join(
-                internal_report_key(to_promote[x][0]) for x in sorted(to_promote)))
+        for line in format_ingestion_status_lines(to_write, to_promote):
+            print(line)
     finally:
         session.close()
 

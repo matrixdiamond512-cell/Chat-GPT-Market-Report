@@ -66,3 +66,10 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - 図解3件はDrive上の最新保存日時・PNG MIMEを確認。GitHub Pagesでの画像実体、SHA-256、manifest、snapshot/本文との対応が未検証のため図解正式READYへ昇格させない。旧ファイルは削除しない。
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
+
+
+## MRF-INGESTION-20261030-01｜取込状態と公開状態の分離（2026-10-30 JST）
+- REQ-12: 保存済みDocsのGitHub取込結果は、canonical保存、発行前evidence/Docs読戻しreceipt、Pages配備、公開後DOM読戻しを別段階で記録する。SOURCE_ARCHIVEDのみの取込を正式publication成功として報告しない。
+- REQ-12a: evidence不足の本文は閲覧用canonical archiveに保存できるが、記録は「SOURCE_ARCHIVED_ONLY」とし、publication eligibilityを獲得しない。
+- REQ-12b: Docs readback receiptがある場合もPages配備・公開DOM確認とは別状態とする。
+- 適用範囲：GitHub取込ログと対応するCI。既存レポート、receipt、Docs、PNG、release schedule、publication gateの変更を含まない。
