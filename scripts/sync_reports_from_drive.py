@@ -24,7 +24,7 @@ JST = timezone(timedelta(hours=9))
 SLOTS = ("08:00", "12:00", "16:00", "21:00")
 # Monthly report folder is discovered by name, not a fixed October ID.
 SOURCE = re.compile(r"^マーケットレポート_(\d{4}-\d{2}-\d{2})_(08|12|16|21)-00$")
-FIELDS = "nextPageToken,files(id,name,mimeType,parents,createdTime,modifiedTime,headRevisionId)"
+FIELDS = "nextPageToken,files(id,name,mimeType,parents,createdTime,modifiedTime,headRevisionId,appProperties)"
 DRIVE = "https://www.googleapis.com/drive/v3"
 DOCS = "https://docs.googleapis.com/v1"
 
@@ -118,11 +118,11 @@ def build_report(session, date: str, slot: str, item: dict) -> dict:
     if doc.get("documentId") != docid or doc.get("title") != item.get("name"):
         raise RuntimeError(f"Docs identity/title changed: {date} {slot}")
     drive_after = get_json(session, f"{DRIVE}/files/{docid}", {
-        "fields": "id,name,mimeType,parents,createdTime,modifiedTime,headRevisionId"
+        "fields": "id,name,mimeType,parents,createdTime,modifiedTime,headRevisionId,appProperties"
     })
     if drive_after.get("id") != docid or drive_after.get("name") != item.get("name"):
         raise RuntimeError(f"Drive identity/title changed during Docs readback: {date} {slot}")
-    for field in ("createdTime", "modifiedTime", "headRevisionId"):
+    for field in ("createdTime", "modifiedTime", "headRevisionId", "appProperties"):
         before = item.get(field)
         after = drive_after.get(field)
         if before and after != before:
@@ -152,18 +152,21 @@ def build_report(session, date: str, slot: str, item: dict) -> dict:
     return result
 
 
-def publication_evidence(root: Path, report: dict, item: dict) -> tuple[dict | None, str | None]:
+def publication_evidence(root: Path, report: dict, item: dict, *, require_issuance_binding: bool = False) -> tuple[dict | None, str | None]:
     """Return a strict contemporaneous receipt, or a fail-closed hold reason."""
     from reporting.publication_evidence import verify_slot_evidence
     evidence_path = root / "data" / "report-evidence" / f"{report['date']}_{report['time'].replace(':', '-')}-r{report['revision']}.json"
     try:
         receipt = verify_slot_evidence(report, evidence_path, item, str(report.get("sourceRevisionId") or ""))
+        if require_issuance_binding:
+            from reporting.importer_handoff import validate_docs_issuance_binding
+            validate_docs_issuance_binding(item.get("appProperties"), report, receipt)
         return receipt, None
     except (ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
         return None, str(exc)
 
-def poll(root: Path, *, apply: bool, enforce_slot: bool):
-    from report_identity import internal_report_key
+def poll(root: Path, *, apply: bool, enforce_slot: bool, require_issuance_binding: bool = False):
+    from reporting.ingestion_outcome import format_ingestion_status_lines
     from build_reports import _verified_source_revision
     now = datetime.now(JST)
     env = read_json(root / "data/latest-report.json")
@@ -234,7 +237,7 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                             rebuilt.get("sourceDocument") != canonical.get("sourceDocument")):
                         print(f"SOURCE_ARCHIVED_READBACK_CONFLICT: {key}; preserving canonical")
                         continue
-                    receipt, hold = publication_evidence(root, rebuilt, anchored[0])
+                    receipt, hold = publication_evidence(root, rebuilt, anchored[0], require_issuance_binding=require_issuance_binding)
                     if receipt is None:
                         print(f"PUBLICATION_HELD: {key[0]} {key[1]}: {hold}")
                         continue
@@ -266,7 +269,7 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                 invalid_sources[key] = str(exc)
                 print(f"SOURCE_VALIDATION_BLOCKED: {key[0]} {key[1]}: {exc}")
                 continue
-            receipt, hold = publication_evidence(root, new_report, item)
+            receipt, hold = publication_evidence(root, new_report, item, require_issuance_binding=require_issuance_binding)
             if receipt is not None:
                 new_report["report_status"] = "DOC_READBACK_PASS"
                 new_report["publicationEvidence"] = {k: receipt[k] for k in (
@@ -321,11 +324,8 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                        cwd=root, check=True)
         subprocess.run([sys.executable, "scripts/verify_publication_consistency.py"],
                        cwd=root, check=True)
-        print("VERIFIED_REPORT_INGESTION_AND_PUBLICATION: "+", ".join(
-            internal_report_key(to_write[x][0]) for x in sorted(to_write)))
-        if to_promote:
-            print("SOURCE_ARCHIVE_PROMOTION_VERIFIED: "+", ".join(
-                internal_report_key(to_promote[x][0]) for x in sorted(to_promote)))
+        for line in format_ingestion_status_lines(to_write, to_promote):
+            print(line)
     finally:
         session.close()
 
@@ -333,8 +333,22 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--apply", action="store_true")
     ap.add_argument("--enforce-slot", action="store_true")
+    ap.add_argument("--root", type=Path, help="isolated checkout root; requires --require-issuance-binding")
+    ap.add_argument("--require-issuance-binding", action="store_true", help="require exact G2 identity/body/evidence appProperties on the Docs file")
     args = ap.parse_args()
-    poll(ROOT, apply=args.apply, enforce_slot=args.enforce_slot)
+    if args.root is not None and not args.require_issuance_binding:
+        ap.error("--root is only allowed with --require-issuance-binding")
+    if args.require_issuance_binding and args.root is None:
+        ap.error("--require-issuance-binding requires an isolated --root")
+    root = ROOT
+    if args.root is not None:
+        from reporting.importer_handoff import validate_staging_root
+        try:
+            root = validate_staging_root(args.root, importer_root=ROOT)
+        except ValueError as exc:
+            ap.error(str(exc))
+    poll(root, apply=args.apply, enforce_slot=args.enforce_slot,
+         require_issuance_binding=args.require_issuance_binding)
 
 if __name__ == "__main__":
     main()

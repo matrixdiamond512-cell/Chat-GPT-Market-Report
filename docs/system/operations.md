@@ -69,3 +69,47 @@ Google Docs固定ID `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg` に対応す�
 - 図解3件はDrive上の最新保存日時・PNG MIMEを確認。GitHub Pagesでの画像実体、SHA-256、manifest、snapshot/本文との対応が未検証のため図解正式READYへ昇格させない。旧ファイルは削除しない。
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
+
+
+## MRF-0800-20261029 — proposed 08:00 issuance verification
+
+This procedure describes an unmerged Draft integration. Do not use it to write production Docs or publish a portal until separately approved.
+
+- Before a run, confirm the report date/slot, one generation-pinned production evidence object, source/snapshot/context hashes, and a frozen G2 fullText/bodyHash. Do not substitute the TEST_ONLY objects recorded in PR #183.
+- Confirm the independent reviewer approved all three panel-12 scenario roles with exact body offsets and quotes, including the main/alternative branch and a concrete decision-changing invalidation trigger.
+- Confirm the target monthly Docs folder ID and parent identity. The writer rejects duplicate titles, altered appProperties, a different existing body, and incomplete creation. Never clear a slot claim or create a replacement Doc without reconciliation.
+- After save, record actual Docs ID/revision, exact full-text readback/hash, and Drive timestamps. The transaction stops unless the readback is text-exact to the frozen source and inside the configured slot window.
+- Only then run the established importer and portal publication workflow. Verify canonical report, receipt, dashboard/latest projection, Pages deployment, and public DOM independently. Do not treat Docs save or fixture adapter PASS as publication.
+- On any mismatch, stop before the next side effect, retain the claim/evidence, preserve diagnostics without logging report text or credentials, and escalate for identity reconciliation. No backfill or later-snapshot substitution.
+
+External setup still required: production GCS evidence/claim IAM, approved Google OAuth/ADC scope and monthly-folder ACL, a trusted and authenticated G2/scenario-review producer, and a safe invocation/readback route for the existing importer/Pages workflow. These were not configured or exercised by this PR.
+
+
+## MRF-0800-20261029 — existing portal handoff status
+
+- Save the Drive file with source name `マーケットレポート_YYYY-MM-DD_08-00`; keep the separate report title on the first line of the body. Before saving, pass the same `validate_saved_body` contract used by the importer.
+- The existing importer only sees slot evidence present in its checked-out repository path `data/report-evidence/`. Do not assume the PR #183 GCS bucket is reachable by that workflow; no GCS-to-importer handoff or WIF identity is configured by PR #188.
+- Do not dispatch `publish-saved-google-docs-reports.yml` as a test: its apply path commits canonical report files to main and dispatches Pages. It requires a separately approved, evidence-bound staging or production operation.
+- Current proof stops at offline Docs/portal adapter contract tests plus TEST_ONLY GCS evidence capture. Existing importer execution, canonical main readback, Pages deployment and browser DOM readback are NOT_RUN.
+
+
+
+## MRF-0800-20261029 — local TEST_ONLY importer handoff
+
+1. Keep the current PR checkout as the handoff tool, then create a second isolated checkout of the same PR branch in a sibling directory. The two checkout roots must be disjoint: neither may be an ancestor or descendant of the other. Do not use the main checkout as the staging root. The resolved evidence destination must remain inside the staging root; symlink or junction escapes are rejected before directory creation.
+2. In the second checkout, create `.market-report-staging.json` with `schemaVersion: 1`, `mode: LOCAL_STAGING_ONLY`, `environment: TEST_ONLY`, the expected `report_id`, and `revision`. Do not place credentials in this file.
+3. From the handoff-tool checkout, run `python -m scripts.reporting.importer_handoff` with `--staging-root`, TEST_ONLY project/bucket identifiers containing a standalone `test` token, an object name under the exact `test-only/` prefix, immutable generation, SHA-256, date, revision, and expected snapshot ID. Substring matches do not qualify. Accept only `LOCAL_STAGE_READBACK_PASS`; it records no publication status.
+4. For a Docs read-only dry run, run the importer with `--root <second-checkout> --require-issuance-binding` and the existing read-only Docs credentials. Missing/mismatched appProperties must remain held. Review the dry-run output before considering `--apply`; apply modifies only that isolated checkout and must not be pushed or used for Pages.
+5. Never dispatch `publish-saved-google-docs-reports.yml` for staging. It writes canonical files to main and dispatches Pages. No Google Docs write is part of this procedure.
+6. The 2026-10-28 viewing/analysis document lacks a supplied pre-save G2 body/hash and same-run receipt. It cannot satisfy official issuance acceptance even if TEST_ONLY evidence is staged.
+
+Current validation covers mocked exact-generation reads, create-only readback, identity/hash conflicts, and strict Docs binding. GCS/IAM, real Docs metadata, importer runtime, canonical readback, and portal/Pages remain NOT_RUN until independently observed.
+
+
+## MRF-INGESTION-20261030-01｜取込ログの運用判定（2026-10-30 JST）
+- CANONICAL_SOURCE_INGESTION_COMPLETE: sourceをappend-only canonicalへ取り込んだ。正式公開の証明ではない。
+- SOURCE_ARCHIVED_ONLY: publication evidence/receiptが揃わず閲覧用archiveに保持した。公開成功として扱わず、後付け証拠を作成しない。
+- DOC_READBACK_RECEIPT_RECORDED: Docs読戻しreceiptを記録した段階。Pages deploy・公開DOM・通知の確認は別途必要。
+- ARCHIVED_SOURCE_PROMOTED_TO_CANONICAL: 既存archiveのcanonical状態をevidenceに基づき更新した段階。公開URLの確認は別途必要。
+- Importerが最後まで実行したこと、canonical projection consistencyが通ったこと、Pages/public DOMが対象reportIdと一致したことを一つの「publication verified」へまとめない。
+- この変更では本番Pages deploy、Google Drive書込み、既存report/receipt変更、スケジュール変更を行わない。

@@ -187,3 +187,92 @@ GitHub main advanced from `c3dae9fdaea7c05d8006006b6fb052a28e2535f4` to `9615882
 Main advanced four commits from `9615882cf018479bf3cb2eeeb6f6b73367ea764b` to `d6420e2c3d53a16304bb8d301677e2db4c41da0c`. The actual range changes 15 production data files only (Japan stocks, Nikkei/US dollar-yen supply-demand and market references); no acquisition/evidence code, workflow, or tests changed. Merged without conflicts as `415c28c6d`; local compare 0 behind / 14 ahead before this record commit.
 
 Verified on the synced tree: `data/market/latest.json` is `2026-10-16T20:16:17+09:00`, slot `21:00`, `verified`, with no required-field gaps; `data/report-evidence/2026-10-16_21-00-r1.json` and `reports/2026-10-16_21-00.json` are absent; `reports.json` latest is 2026-10-13 16:00. Do not reconstruct or publish the missed 21:00 slot. The recovery PR applies to future eligible acquisitions. Following local/final-head CI, the user has now directed PR #156 to be reviewed and merged; verify head/base once more, mark ready, and merge the exact approved head. Then observe future-slot production acceptance separately.
+
+
+## MRF-0800-20261029 — 08:00 issuance integration (ADD)
+
+PRIMARY OBJECTIVE: Safely connect one authentic weekday 08:00 report run from immutable pre-slot evidence through fixed G2 text and exact Google Docs readback into the existing canonical portal path, with no publication on any mismatch.
+
+ACCEPTANCE: A latest-main-based independent Draft PR; same-run identity/revision/body hash/evidence generation/snapshot across stages; create-only duplicate protection; human source-bound scenario review; exact Docs ID/revision/fullText readback; existing portal/canonical/Pages readback; normal/abnormal tests; no gate weakening. External acceptance is separate from CI.
+
+CONSTRAINTS: PR #97 untouched; no main merge, production deployment, Google Drive write, or other-time rollout. TEST_ONLY evidence cannot stand in for production evidence.
+
+OUT OF SCOPE: Actual production rollout and live report publication in this task.
+
+FORBIDDEN SUBSTITUTE: TEST_ONLY capture, fake adapter PASS, passing CI, or Docs save alone is not a restored published 08:00 report.
+
+OPEN OUTCOMES: Trusted G2 source connection, production configuration/IAM, concrete existing-portal invocation, hosted CI on this branch, external Docs/importer/Pages E2E.
+
+
+## MRF-0800-20261029 continuation
+
+OPEN OUTCOME: Existing importer handoff is still missing. It consumes slot evidence from the main checkout, while the observed TEST_ONLY records are in GCS. A protected generation-pinned transfer and an approved invoke/readback path are required. The existing workflow dispatch writes main and Pages, so live portal verification is outside the current authorization.
+
+
+
+## MRF-0800-20261029 staging continuation
+
+COMPLETED: isolated TEST_ONLY evidence-to-importer handoff code, strict Docs issuance-binding opt-in, and hosted regression workflows.
+OPEN: Actual G2 capture/body hash, Docs create/readback using that exact body, matching Docs appProperties, human panel-12 review, external GCS staging invocation, isolated importer readback, and any approved production route. These were not supplied or executed; do not claim publication recovery.
+
+
+### MRF-0800 bridge-test continuation (ADD, 2026-10-30 JST)
+For the existing 08:00 issuance objective, added one composed offline contract test covering exact-generation TEST_ONLY staging, importer's slot-evidence receipt validation, Docs source revision, and strict Docs appProperties binding. A body-hash mismatch is held. Local: `test_importer_handoff.py` 12/12 and `test_issuance_pipeline.py` 12/12 PASS; py_compile and `git diff --check` PASS. Evidence E1/E2 only.
+
+PR #188 source head before this addition was `0a37e8c35d8669110aa95560054e2ab275a56569`, based on `e70751bc4a202c84f4322df8748a08775d836458`; latest inspected main is `ec3e38b56397686c781e61de7efe97baeec48544`, 152 commits ahead. The 153 paths changed on main since PR base do not overlap PR #188's 16 changed paths, but latest-main reconciliation remains open before merge/readiness.
+
+OPEN: push and exact-head hosted CI; inspect/reconcile main drift before PR readiness; real TEST_ONLY GCS staging invocation, authentic G2 body and human scenario review, Google Docs API save/readback, importer apply in isolated checkout, canonical persistence, Pages/public DOM, and future approved slot remain NOT_RUN. The 2026-10-30 08:00 Drive document is a display-only archive with missing pre-slot evidence; it was not used by this test. No production or schedule state changed.
+
+
+## 08:00 importer staging prerequisite recheck — 2026-10-30 (ADD)
+
+PRIMARY OBJECTIVE remains: verify one authorized weekday 08:00 issuance from exact pre-slot TEST_ONLY evidence through the isolated importer boundary, while preserving all identity, freshness, cutoff and readback gates. An offline bridge contract test is supporting evidence, not the final outcome.
+
+ACTIVE PHASE: external TEST_ONLY staging readiness. PR #188 head `7a1b751923dc40c1cfae26e980f49bc10f7b82c9`, based on main `ec3e38b56397686c781e61de7efe97baeec48544`; PR #188 remains OPEN / Draft / unmerged.
+
+COMPLETED: composed offline exact-generation staging → strict importer receipt/Docs-property binding test; local focused suites 12/12 + 12/12 PASS on the prior tested code; exact-head hosted issuance, frozen-cutoff and delivery-health CI PASS.
+
+OPEN OUTCOMES: no local TEST_ONLY GCS auth/CLI or staged exact-generation object; no separate marked staging checkout; no confirmed Docs appProperties bound to the exact frozen G2 body/evidence/snapshot; strict importer runtime and apply; canonical/receipt, Pages/public DOM, and scheduled-slot acceptance. The read-only 2026-10-28 Doc is `閲覧用分析版` and lacks the required pre-issuance source linkage. These gaps remain BLOCKED/NOT_RUN; no historic evidence may be reconstructed.
+
+NEXT NECESSARY ACTION: obtain an authorized TEST_ONLY identity and one exact-generation object, a matching issuance-bound Docs readback, and a separate marked staging checkout. Stage the exact generation and inspect strict-binding dry-run; run `--apply` only if all bindings pass. Otherwise stop and preserve the hold. No production workflow dispatch, Drive write, main change, or Pages deploy is authorized here.
+
+
+## MRF-INGESTION-20261030-01 active objective (ADD, 2026-10-30 JST)
+PRIMARY OBJECTIVE: Keep each scheduled report slot's evidence-backed delivery state observable from source ingestion through Docs readback, canonical receipt, Pages deployment, and public readback, without treating a saved archive or code test as completed publication.
+ACTIVE PROFILE: generic-app + data-tool.
+ACCEPTANCE CRITERIA:
+- Import logs distinguish canonical ingestion, archive-only holding, Docs readback receipt, archive promotion, Pages deployment, and public DOM readback.
+- Archive-only and unknown receipt/status pairs never emit a publication-success label.
+- Focused offline tests and the relevant PR workflow run on the exact PR head.
+- The original dirty checkout, existing PRs, main data, Drive files, receipts, schedule, Cloud settings, and Pages production state remain untouched.
+CONSTRAINTS: Implement on a branch from GitHub main 52e99701f3bc71a77bdde31729e0f887f44a9135; do not merge, deploy, or write production Drive/Cloud state without a later explicit approval.
+OUT OF SCOPE: Completing the full live four-slot transaction in this change; upstream generation, external scheduler provisioning, real Docs writer, actual PNG review/save, production publication, and runtime public-DOM acceptance remain independent outcomes.
+STATUS: IN_PROGRESS; implementation branch codex/report-ingestion-stage-truth-20261030.
+OPEN OUTCOMES: exact-head hosted CI, Draft PR creation/readback, formal Google Docs fixed-ID sync assessment, and four-slot production E2E. `test_report_contract.py` remains NOT_RUN because this Windows Python lacks IANA tzdata.
+FORBIDDEN SUBSTITUTE: a successful import, local projection check, unit/CI result, or existing Drive file alone is not proof of formal publication or whole-system completion.
+NEXT NECESSARY ACTION: inspect the final diff, commit/push this branch, submit a Draft PR, and record exact-head CI and remaining external outcomes.
+
+
+### PR #189 code-head CI evidence (ADD, 2026-10-30 JST)
+PR #189 is OPEN / Draft / unmerged. Exact implementation head `71fce84ddfa814a3b0c66bbc0545d36e78bfec1a` passed hosted sync recovery run 40968791396, frozen-cutoff run 40968791427, and delivery-health run 40968791433. Evidence/docs were then updated, so final PR-head CI confirmation remains open. Hosted sync CI also passed `test_report_contract.py`, which local Windows Python could not import due missing IANA tzdata. Live scheduled delivery and downstream public readback remain NOT_RUN.
+
+
+### MRF-INGESTION-20261030-01 matrix source-link correction (CORRECT, 2026-10-30 JST)
+Corrected the four 10/29 report evidence links in HANDOFF from old main `52e99701f3bc71a77bdde31729e0f887f44a9135` (paths absent there) to current main `ec3e38b56397686c781e61de7efe97baeec48544`. Readback confirms all four are still `SOURCE_ARCHIVED` with `NOT_VERIFIED` infographics and no matching receipts. This is evidence-link repair only; live acceptance remains NOT_RUN.
+
+
+## MRF-0800-IMPORTER-COMBO-20261030-01 — integrated importer validation (ADD, 2026-10-30 JST)
+
+PR #188 now carries the compatible code and documentation from PR #189 for joint Draft validation. At head `d8394400dac2935f338d4d2ae9c068db689526eb`, exact-head issuance, synchronization recovery, frozen-cutoff and delivery-health hosted CI all PASS (runs 40989666087, 40989665981, 40989666048, 40989666122). Logs show importer handoff 12/12, issuance pipeline 12/12, and ingestion outcome 4/4, including the composed bridge and status-helper cases.
+
+OPEN OUTCOMES remain: real TEST_ONLY GCS staging, exact issuance-bound Docs readback, isolated importer dry-run/apply, canonical receipt persistence, Pages/public DOM, and a future authorized slot. The standard GCS CLI/ADC, staged object and sibling staging checkout are still absent. The available 2026-10-28 Docs item is display-only and cannot satisfy issuance binding.
+
+PR #188 and PR #189 both remain OPEN / Draft / unmerged. PR #189's code and affected formal documentation are now included in #188 for combined validation; do not merge both independently. Next necessary action: provision the permitted TEST_ONLY prerequisites, run the isolated staging gates, and settle the duplicate PR disposition before any merge.
+
+## MRF-0800 staging boundary continuation (ADD, 2026-10-30 JST)
+
+ACTIVE PHASE: hosted verification of the isolated TEST_ONLY staging boundary, then external prerequisite reconciliation. PR #188 code/test head `4125df20409bcb0337677ba12ec2e87590b2d8db`, based on main `ec3e38b56397686c781e61de7efe97baeec48544`; four hosted workflows PASS, including 12 issuance and 16 importer-handoff tests.
+
+COMPLETED: closed root-ancestor overlap, substring-only TEST_ONLY identifier acceptance, non-test-only object path, and symlink-parent escape cases; requirements/specification/operations and evidence records updated together.
+
+OPEN: independently authenticated exact-generation GCS read; authentic G2 body and human scenario review; matching Docs ID/revision/fullText/hash/appProperties readback; isolated staging and strict importer dry-run; apply only after all bindings pass. Canonical/receipt persistence, Pages/public DOM, and a future authorized slot remain NOT_RUN. PR #189 is still OPEN/Draft with duplicate code; no independent merge or production change.
