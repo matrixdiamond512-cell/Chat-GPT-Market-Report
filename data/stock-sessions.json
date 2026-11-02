@@ -1,8 +1,8 @@
 {
   "schemaVersion": "1.1.0",
   "pageId": "stock-sessions",
-  "updatedAt": "2026-11-02T14:52:05+09:00",
-  "updateMode": "tokyo",
+  "updatedAt": "2026-11-03T05:51:30+09:00",
+  "updateMode": "us",
   "sourcePolicy": "セッション別に基準日・取得時刻を保持。前日終値で当日寄り付き/プレマーケットを代用しない。",
   "sessionAnalysis": {
     "tokyoOpen": {
@@ -49,113 +49,113 @@
       "title": "米国市場 プレマーケット分析",
       "flag": "US",
       "status": "取得不能（当日プレマーケット時間外・休場、または株価データなし）",
-      "dataDate": "2026-10-30",
-      "updatedAt": "2026-10-31T02:05:35+09:00",
+      "dataDate": "2026-11-02",
+      "updatedAt": "2026-11-03T05:51:25+09:00",
       "source": "Yahoo Finance chart API（指数先物・金利・FX・大型株）",
       "metrics": [
         {
           "label": "S&P500先物",
-          "value": "7,614.75",
-          "change": "-1.80%",
+          "value": "7,576.75",
+          "change": "-0.49%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "Nasdaq100先物",
-          "value": "28,609.25",
-          "change": "-3.22%",
+          "value": "28,118.75",
+          "change": "-1.46%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "Dow先物",
-          "value": "52,038.00",
-          "change": "-0.90%",
+          "value": "52,181.00",
+          "change": "+0.51%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "Russell2000先物",
-          "value": "2,811.80",
-          "change": "-1.94%",
+          "value": "2,820.70",
+          "change": "-0.02%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "VIX",
-          "value": "19.92",
-          "change": "+15.81%",
+          "value": "21.53",
+          "change": "+10.87%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "米10年債利回り",
-          "value": "4.95%",
-          "change": "-0.88%",
+          "value": "4.89%",
+          "change": "-0.71%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "ドル指数",
-          "value": "101.94",
-          "change": "-0.10%",
+          "value": "101.73",
+          "change": "-0.14%",
           "note": "前日通常取引終値比"
         },
         {
           "label": "USD/JPY",
-          "value": "157.485",
-          "change": "-0.10%",
+          "value": "157.853",
+          "change": "+0.21%",
           "note": "前日通常取引終値比"
         }
       ],
       "premarketMovers": [
         {
-          "symbol": "AMZN",
-          "price": 232.79,
-          "changePct": -4.512080068911772,
-          "volume": 0
-        },
-        {
-          "symbol": "AVGO",
-          "price": 330.231,
-          "changePct": -4.280869565217394,
-          "volume": 0
-        },
-        {
-          "symbol": "TSLA",
-          "price": 393.4,
-          "changePct": -2.454748326307965,
-          "volume": 0
-        },
-        {
           "symbol": "NVDA",
-          "price": 208.9,
-          "changePct": -2.22783862210989,
-          "volume": 0
-        },
-        {
-          "symbol": "META",
-          "price": 614.1,
-          "changePct": -1.6684813937103637,
+          "price": 206.15,
+          "changePct": 0.73788115715403,
           "volume": 0
         },
         {
           "symbol": "GOOGL",
-          "price": 280.98,
-          "changePct": -1.0006342047776617,
+          "price": 281.9,
+          "changePct": 0.7361349342481338,
           "volume": 0
         },
         {
           "symbol": "MSFT",
-          "price": 525.68,
-          "changePct": -0.8412872071528299,
+          "price": 525.7437,
+          "changePct": 0.7345519342415452,
+          "volume": 0
+        },
+        {
+          "symbol": "TSLA",
+          "price": 402.5,
+          "changePct": 0.6728195893049183,
+          "volume": 0
+        },
+        {
+          "symbol": "AVGO",
+          "price": 327.4613,
+          "changePct": 0.42360770363101263,
+          "volume": 0
+        },
+        {
+          "symbol": "AMZN",
+          "price": 241.17,
+          "changePct": 0.3411691283544904,
+          "volume": 0
+        },
+        {
+          "symbol": "META",
+          "price": 613.995,
+          "changePct": -0.16179124863818783,
           "volume": 0
         },
         {
           "symbol": "AAPL",
-          "price": 346.77,
-          "changePct": -0.6133386833280907,
+          "price": 344.6,
+          "changePct": -0.008704987958096932,
           "volume": 0
         }
       ],
       "insights": [
-        "大型テック・主要株プレマーケット: AMZN -4.51%（出来高 0） / AVGO -4.28%（出来高 0） / TSLA -2.45%（出来高 0） / NVDA -2.23%（出来高 0） / META -1.67%（出来高 0）",
+        "大型テック・主要株プレマーケット: NVDA +0.74%（出来高 0） / GOOGL +0.74%（出来高 0） / MSFT +0.73%（出来高 0） / TSLA +0.67%（出来高 0） / AVGO +0.42%（出来高 0）",
         "S&P500先物とNasdaq100先物はともにマイナス圏。NY寄り前はリスクオフ寄りです。",
-        "米10年債利回り 4.95%（前日比 -0.88%）。株先物との整合性を確認します。"
+        "米10年債利回り 4.89%（前日比 -0.71%）。株先物との整合性を確認します。"
       ],
       "judgement": "米株先物は明確に下方向。大型テックも追随する場合はNY寄りのリスクオフを優先します。",
       "errors": []
@@ -169,7 +169,7 @@
         },
         {
           "label": "米国プレマーケット",
-          "text": "2026-10-30 / S&P500先物 7,614.75 -1.80% / Nasdaq100先物 28,609.25 -3.22%"
+          "text": "2026-11-02 / S&P500先物 7,576.75 -0.49% / Nasdaq100先物 28,118.75 -1.46%"
         },
         {
           "label": "米国通常市場（直近終値）",
