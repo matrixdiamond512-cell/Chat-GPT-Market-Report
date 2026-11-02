@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-11-02T22:50:04+09:00",
-  "publishedAt": "2026-11-02T22:50:04+09:00",
-  "dataAsOf": "2026-11-02T22:50:04+09:00",
+  "generatedAt": "2026-11-03T07:30:15+09:00",
+  "publishedAt": "2026-11-03T07:30:15+09:00",
+  "dataAsOf": "2026-11-03T07:30:15+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -20,7 +20,7 @@
       "name": "TradingView Economic Calendar",
       "url": "https://www.tradingview.com/economic-calendar/",
       "status": "ok",
-      "note": "実績値を0件照合。生データは公開保存しません。"
+      "note": "実績値を1件照合。生データは公開保存しません。"
     },
     {
       "id": "official_source_map",
@@ -68,11 +68,11 @@
       "importanceLabel": "高",
       "forecast": "54.5",
       "previous": "54.5",
-      "actual": "",
+      "actual": "55.5",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultComparison": "市場予想を上回る",
+      "resultExplanation": "実績 55.5 は予想 54.5 に対して市場予想を上回る。発表後の市場反応は検証済み価格データで確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -275,8 +275,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を上回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -294,7 +294,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-02T22:50:04+09:00"
+      "updatedAt": "2026-11-03T07:30:15+09:00",
+      "resultSource": {
+        "id": "tradingview_economic_calendar",
+        "name": "Institute for Supply Management",
+        "url": "https://www.ismworld.org"
+      },
+      "resultSavedAt": "2026-11-03T07:30:15+09:00"
     },
     {
       "id": "event-7d592766ed26f5",
@@ -539,7 +545,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-02T22:50:04+09:00",
+      "updatedAt": "2026-11-03T07:30:15+09:00",
       "resultExpected": false,
       "resultType": "qualitative"
     },
@@ -788,7 +794,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-02T22:50:04+09:00"
+      "updatedAt": "2026-11-03T07:30:15+09:00"
     },
     {
       "id": "event-13676d34de1c60",
@@ -1035,7 +1041,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-02T22:50:04+09:00"
+      "updatedAt": "2026-11-03T07:30:15+09:00"
     },
     {
       "id": "event-7d7935225c2c65",
@@ -1282,7 +1288,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-02T22:50:04+09:00"
+      "updatedAt": "2026-11-03T07:30:15+09:00"
     },
     {
       "id": "event-be2bb52096501c",
@@ -1529,7 +1535,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-02T22:50:04+09:00",
+      "updatedAt": "2026-11-03T07:30:15+09:00",
       "resultExpected": false,
       "resultType": "qualitative"
     },
@@ -1778,7 +1784,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-02T22:50:04+09:00"
+      "updatedAt": "2026-11-03T07:30:15+09:00"
     },
     {
       "id": "event-e5c4c615c74fc7",
@@ -2024,7 +2030,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-02T22:50:04+09:00"
+      "updatedAt": "2026-11-03T07:30:15+09:00"
     }
   ]
 }
