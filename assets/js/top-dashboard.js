@@ -2593,9 +2593,12 @@ async function loadDashboardReports() {
   reportList.forEach(r => bySlotDrive.set(r.date + " " + r.time, r));
   const combinedReportList = [...bySlotDrive.values()];
 
-  if (!reportList.length) {
-    throw new Error(`ダッシュボードJSONを取得できませんでした。理由：${errors.join(" / ")}`);
+  // Google Docs read-back archives remain browseable when the formal dashboard
+  // and October recovery sources are unavailable. No publication promotion.
+  if (!combinedReportList.length) {
+    throw new Error(`表示可能なレポートを取得できませんでした。理由：${errors.join(" / ") || "保存記録の取得または検証に失敗"}`);
   }
+  if (!reportList.length) console.warn("[dashboard] displaying read-back archives only; formal publication not verified");
 
   const embeddedMarketData = dashboardPayload?.marketData || dashboardPayload?.latestReport?.marketData || null;
   const independentMarketData = await loadIndependentMarketData();
