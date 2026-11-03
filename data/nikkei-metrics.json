@@ -1,39 +1,45 @@
 {
-  "schemaVersion": "1.1.0",
-  "generatedAt": "2026-11-04T00:25:42+09:00",
-  "dataAsOf": "2026-10-27",
+  "schemaVersion": "2.1.0",
+  "generatedAt": "2026-11-04T00:28:15+09:00",
+  "dataAsOf": "2026-11-02",
+  "sourceMode": "東京市場確定値統合（複数ソース・項目別基準日）",
   "sourceSheet": "終値一覧",
-  "sourceRow": 7,
+  "reference": "data/market/japan-close-reference.json",
   "metrics": {
     "日経VI": {
-      "raw": "27.66",
-      "display": "27.66",
-      "change": "-6.80（-19.73%）",
-      "evaluation": "警戒域。日本株のボラティリティ上昇に注意。基準日 2026-10-27。"
+      "raw": "35.72",
+      "display": "35.72",
+      "change": "+1.90（+5.62%）",
+      "evaluation": "Nikkei 225 VI official profileの確認済み値。基準日 2026-11-02。",
+      "source": "Nikkei 225 VI official profile"
     },
     "日経225予想PER": {
-      "raw": "16.75",
-      "display": "16.75倍",
+      "raw": "15.93倍",
+      "display": "15.93倍",
       "change": "—",
-      "evaluation": "予想利益に対する株価水準。EPSと指数水準を合わせて確認。基準日 2026-10-27。"
+      "evaluation": "投資の森 日経平均PER・PBRの確定値。基準日 2026-11-02。",
+      "source": "投資"
     },
     "日経225予想EPS": {
-      "raw": "3777.22",
-      "display": "3,777.22円",
+      "raw": "3,959.94円",
+      "display": "3,959.94円",
       "change": "—",
-      "evaluation": "日経225構成銘柄の予想利益水準。PERの分母として確認。基準日 2026-10-27。"
+      "evaluation": "投資の森 日経平均PER・PBRの確定値。基準日 2026-11-02。",
+      "source": "投資"
     },
     "日経225 25日乖離率": {
-      "raw": "-4.43%",
-      "display": "-4.43%",
+      "raw": "-4.37%",
+      "display": "-4.37%",
       "change": "—",
-      "evaluation": "25日線からの乖離は警戒域外。短期の過熱感は限定的。基準日 2026-10-27。"
+      "evaluation": "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）の確定値。基準日 2026-11-02。",
+      "source": "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）"
     },
     "日経225 200日乖離率": {
-      "raw": "+2.73%",
-      "display": "+2.73%",
+      "raw": "+2.02%",
+      "display": "+2.02%",
       "change": "—",
-      "evaluation": "200日線を上回り長期上昇基調。+30%以上は過熱警戒。基準日 2026-10-27。"
+      "evaluation": "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）の確定値。基準日 2026-11-02。",
+      "source": "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）"
     }
   }
 }
