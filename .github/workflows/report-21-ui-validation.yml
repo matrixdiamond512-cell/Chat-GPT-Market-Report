@@ -42,6 +42,9 @@ jobs:
         with:
           node-version: '24'
 
+      - name: Test archived report loading and publication separation
+        run: node --test tests/report-archive-loader.test.mjs
+
       - name: Syntax-check active report scripts
         run: |
           node --check assets/js/report-core-v3.js
