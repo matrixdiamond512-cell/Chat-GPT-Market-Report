@@ -56,7 +56,7 @@ async function boot({ search = "", fail = [], payloadOverrides = {} } = {}) {
   let testable = source.replace(/window\.MarketReportRendererVersion = ([^;]+);\s*init\(\);\s*$/, (whole, version) =>
     `window.MarketReportRendererVersion = ${version};
       render = () => { renderControls(selectedReport); window.MarketReportLastRendered = selectedReport; };
-      renderMissingReport = (date, time) => { window.MarketReportMissing = { date, time }; };
+      renderMissingReport = (date, time) => { window.MarketReportMissing = { date, time }; window.MarketReportLastRendered = null; document.getElementById("app").textContent = "対象データなし：この日時のレポート本文は登録されていません。"; };
       window.__hooks = { reports: () => reports, select: (d,t) => selectReport(d,t), selected: () => selectedReport };
       window.__loadPromise = init();`);
   assert.notEqual(testable, source, "test hook insertion point");
@@ -70,7 +70,7 @@ function archiveSlot(date, time) {
 }
 
 test("manifest archive slots preserve exact bodies; missing 11/03 21:00 never falls back", async () => {
-  const { window } = await boot();
+  const { window, nodes } = await boot();
   const slots = [
     ["2026-11-02","08:00"],["2026-11-02","12:00"],["2026-11-02","16:00"],["2026-11-02","21:00"],
     ["2026-11-03","08:00"],["2026-11-03","12:00"],["2026-11-03","16:00"],
@@ -83,8 +83,8 @@ test("manifest archive slots preserve exact bodies; missing 11/03 21:00 never fa
   window.__hooks.select("2026-11-03","21:00");
   assert.equal(window.MarketReportMissing.date, "2026-11-03");
   assert.equal(window.MarketReportMissing.time, "21:00");
-  assert.equal(window.MarketReportLastRendered.fullText, archiveSlot("2026-10-30","21:00").fullText,
-    "failed selection leaves prior body visible; it must not be mistaken for the requested slot");
+  assert.equal(window.MarketReportLastRendered, null, "missing slot clears any previous body");
+  assert.match(nodes.get("app").textContent, /本文は登録されていません/);
   assert.equal(window.__hooks.reports().some(r => r.date==="2026-11-03" && r.time==="21:00"), false);
 });
 
