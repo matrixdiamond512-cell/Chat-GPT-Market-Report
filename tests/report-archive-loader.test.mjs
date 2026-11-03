@@ -56,7 +56,7 @@ async function boot({ search = "", fail = [], payloadOverrides = {} } = {}) {
   let testable = source.replace(/window\.MarketReportRendererVersion = ([^;]+);\s*init\(\);\s*$/, (whole, version) =>
     `window.MarketReportRendererVersion = ${version};
       render = () => { renderControls(selectedReport); window.MarketReportLastRendered = selectedReport; };
-      renderMissingReport = (date, time) => { window.MarketReportMissing = { date, time }; window.MarketReportLastRendered = null; document.getElementById("app").textContent = "対象データなし：この日時のレポート本文は登録されていません。"; };
+      renderMissingReport = (date, time) => { selectedReport = null; window.MarketReportMissing = { date, time }; window.MarketReportLastRendered = null; document.getElementById("app").textContent = "対象データなし：この日時のレポート本文は登録されていません。"; };
       window.__hooks = { reports: () => reports, select: (d,t) => selectReport(d,t), selected: () => selectedReport };
       window.__loadPromise = init();`);
   assert.notEqual(testable, source, "test hook insertion point");
@@ -80,12 +80,12 @@ test("manifest archive slots preserve exact bodies; missing 11/03 21:00 never fa
     window.__hooks.select(date,time);
     assert.equal(window.MarketReportLastRendered.fullText, archiveSlot(date,time).fullText, slotKey({date,time}));
   }
+  const nov3Times = window.__hooks.reports().filter(r => r.date === "2026-11-03").map(r => r.time).sort();
+  assert.equal(nov3Times.join(","), "08:00,12:00,16:00", "only stored Nov 3 slots are available");
   window.__hooks.select("2026-11-03","21:00");
-  assert.equal(window.MarketReportMissing.date, "2026-11-03");
-  assert.equal(window.MarketReportMissing.time, "21:00");
+  assert.equal(window.__hooks.selected(), null, "missing slot clears the selection");
   assert.equal(window.MarketReportLastRendered, null, "missing slot clears any previous body");
   assert.match(nodes.get("app").textContent, /本文は登録されていません/);
-  assert.equal(window.__hooks.reports().some(r => r.date==="2026-11-03" && r.time==="21:00"), false);
 });
 
 test("unverified archives stay display-only and 11/02 12:00 source is not mutated", async () => {
@@ -107,8 +107,8 @@ test("date controls move Oct 30 to Nov 2, then allow selecting a real Nov 3 slot
   assert.equal(window.MarketReportLastRendered.time, "21:00");
   nodes.get("datePicker").value = "2026-11-03";
   nodes.get("datePicker").onchange();
-  assert.equal(window.MarketReportMissing.date, "2026-11-03");
-  assert.equal(window.MarketReportMissing.time, "21:00");
+  assert.equal(window.__hooks.selected(), null);
+  assert.equal(window.MarketReportLastRendered, null);
   window.__hooks.select("2026-11-03","16:00");
   assert.equal(window.MarketReportLastRendered.fullText, archiveSlot("2026-11-03","16:00").fullText);
 });
