@@ -73,19 +73,22 @@ test("manifest archive slots preserve exact bodies; missing 11/03 21:00 never fa
   const { window, nodes } = await boot();
   const slots = [
     ["2026-11-02","08:00"],["2026-11-02","12:00"],["2026-11-02","16:00"],["2026-11-02","21:00"],
-    ["2026-11-03","08:00"],["2026-11-03","12:00"],["2026-11-03","16:00"],
+    ...archives.get("data/dashboard-drive-archive-2026-11-03.json").reports.map(r => [r.date,r.time]),
     ["2026-10-30","21:00"]
   ];
   for (const [date,time] of slots) {
     window.__hooks.select(date,time);
     assert.equal(window.MarketReportLastRendered.fullText, archiveSlot(date,time).fullText, slotKey({date,time}));
   }
-  const nov3Times = window.__hooks.reports().filter(r => r.date === "2026-11-03").map(r => r.time).sort();
-  assert.equal(nov3Times.join(","), "08:00,12:00,16:00", "only stored Nov 3 slots are available");
-  window.__hooks.select("2026-11-03","21:00");
-  assert.equal(window.__hooks.selected(), null, "missing slot clears the selection");
-  assert.equal(window.MarketReportLastRendered, null, "missing slot clears any previous body");
-  assert.match(nodes.get("app").textContent, /本文は登録されていません/);
+  const nov3Archive = structuredClone(archives.get("data/dashboard-drive-archive-2026-11-03.json"));
+  nov3Archive.reports = nov3Archive.reports.filter(r => r.time !== "21:00");
+  const missingSlot = await boot({payloadOverrides:{"data/dashboard-drive-archive-2026-11-03.json":nov3Archive}});
+  const nov3Times = missingSlot.window.__hooks.reports().filter(r => r.date === "2026-11-03").map(r => r.time).sort();
+  assert.equal(nov3Times.join(","), "08:00,12:00,16:00", "only saved Nov 3 slots are available");
+  missingSlot.window.__hooks.select("2026-11-03","21:00");
+  assert.equal(missingSlot.window.__hooks.selected(), null, "missing slot clears the selection");
+  assert.equal(missingSlot.window.MarketReportLastRendered, null, "missing slot clears any previous body");
+  assert.match(missingSlot.nodes.get("app").textContent, /本文は登録されていません/);
 });
 
 test("unverified archives stay display-only and 11/02 12:00 source is not mutated", async () => {
@@ -100,7 +103,9 @@ test("unverified archives stay display-only and 11/02 12:00 source is not mutate
 });
 
 test("date controls move Oct 30 to Nov 2, then allow selecting a real Nov 3 slot", async () => {
-  const { window, nodes } = await boot({search:"?date=2026-10-30&time=21:00"});
+  const nov3Archive = structuredClone(archives.get("data/dashboard-drive-archive-2026-11-03.json"));
+  nov3Archive.reports = nov3Archive.reports.filter(r => r.time !== "21:00");
+  const { window, nodes } = await boot({search:"?date=2026-10-30&time=21:00",payloadOverrides:{"data/dashboard-drive-archive-2026-11-03.json":nov3Archive}});
   assert.equal(window.MarketReportLastRendered.date, "2026-10-30");
   nodes.get("nextDate").onclick();
   assert.equal(window.MarketReportLastRendered.date, "2026-11-02");
