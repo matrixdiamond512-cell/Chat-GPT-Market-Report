@@ -91,6 +91,21 @@ test("manifest archive slots preserve exact bodies; missing 11/03 21:00 never fa
   assert.match(missingSlot.nodes.get("app").textContent, /本文は登録されていません/);
 });
 
+test("legacy archive count stays separate from manifest-listed Drive archives", async () => {
+  const { window } = await boot();
+  const legacyCount = recoveryPayload.reports.filter(r =>
+    r.archiveStatus === "HISTORICAL_ARCHIVE" && r.verifiedAtSlot === false &&
+    /^\d{4}-\d{2}-\d{2}$/.test(String(r.date || "")) &&
+    ["08:00","12:00","16:00","21:00"].includes(r.time) &&
+    typeof r.fullText === "string" &&
+    r.fullText.replace(/^#{1,3}\s+/, "").startsWith(String(r.title || "")) &&
+    String(r.archiveNotice || "").length > 10).length;
+  assert.equal(window.MarketReportArchiveInfo.count, legacyCount);
+  assert.equal(window.MarketReportArchiveInfo.driveArchiveCount,
+    window.MarketReportArchiveInfo.totalCount - legacyCount);
+  assert.ok(window.MarketReportArchiveInfo.driveArchiveCount > 0);
+});
+
 test("unverified archives stay display-only and 11/02 12:00 source is not mutated", async () => {
   const { window } = await boot({search:"?date=2026-11-02&time=12:00"});
   const selected = window.MarketReportLastRendered;
