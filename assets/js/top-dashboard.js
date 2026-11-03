@@ -1160,11 +1160,16 @@ function isDashboardHistoricalArchive(r) {
     && r.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED"
     && !!r.sourceDocument?.id && !!r.driveRevisionId && r.driveTextLength === r.fullText.length
     && Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length > 0;
+  const evidencePresentUnverified = r.archiveType === "DRIVE_SAVED_DOCUMENT"
+    && r.originalReportStatus === "DRIVE_DOC_READBACK_EVIDENCE_PRESENT_HASH_UNVERIFIED"
+    && !!r.sourceDocument?.id && !!r.driveRevisionId
+    && r.driveTextLength === r.fullText.length
+    && Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length === 0;
   const reconstructed = ["ORIGINAL_NOT_FOUND", "RECONSTRUCTED_UNVERIFIED"].includes(r.originalReportStatus)
     && ["PARTIAL_ORIGINAL_WITH_RETROSPECTIVE_ADDENDUM", "RECONSTRUCTED_SOURCE", "RETROSPECTIVE_REPORT"].includes(r.archiveType)
     && !r.sourceDocument?.id && typeof r.archiveSource === "string" && r.archiveSource.length > 10
     && r.missingAtSlotEvidence === true;
-  return legacyOriginal || sourceDocReadback || reconstructed;
+  return legacyOriginal || sourceDocReadback || evidencePresentUnverified || reconstructed;
 }
 function isDashboardReconstructedArchive(r) {
   return ["ORIGINAL_NOT_FOUND", "RECONSTRUCTED_UNVERIFIED"].includes(r?.originalReportStatus);
