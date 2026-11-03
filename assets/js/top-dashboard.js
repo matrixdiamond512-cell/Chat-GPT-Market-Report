@@ -1161,7 +1161,7 @@ function isDashboardHistoricalArchive(r) {
     && !!r.sourceDocument?.id && !!r.driveRevisionId && r.driveTextLength === r.fullText.length
     && Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length > 0;
   const evidencePresentUnverified = r.archiveType === "DRIVE_SAVED_DOCUMENT"
-    && r.originalReportStatus === "DRIVE_DOC_READBACK_EVIDENCE_PRESENT_HASH_UNVERIFIED"
+    && ["DRIVE_DOC_READBACK_EVIDENCE_PRESENT_HASH_UNVERIFIED", "DRIVE_DOC_READBACK_EVIDENCE_HASH_VALIDATED_PUBLICATION_PENDING"].includes(r.originalReportStatus)
     && !!r.sourceDocument?.id && !!r.driveRevisionId
     && r.driveTextLength === r.fullText.length
     && Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length === 0;
