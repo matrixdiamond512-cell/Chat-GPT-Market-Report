@@ -449,15 +449,14 @@ async function fetchJsonLogged(path) {
 async function init() {
   const warnings = [];
   const archiveReports = [];
+  let recoveredArchiveCount = 0;
   try {
   let formallyPublished = [];
-  let reportsLoaded = false;
 
   try {
     const payload = await fetchJsonLogged("reports.json");
     const candidates = Array.isArray(payload) ? payload : (Array.isArray(payload?.reports) ? payload.reports : []);
     formallyPublished = sortReports(candidates).filter(isPublicReport);
-    reportsLoaded = true;
   } catch (error) {
     warnings.push("正式発行データ: " + error.message);
     console.warn("[market report publication data] unavailable", error.message);
@@ -470,7 +469,7 @@ async function init() {
         throw new Error("archive schema mismatch");
       let accepted = 0;
       payload.reports.forEach((r) => {
-        if (isArchivedRecovery(r)) { archiveReports.push(r); accepted++; }
+        if (isArchivedRecovery(r)) { archiveReports.push(r); accepted++; recoveredArchiveCount++; }
         else console.warn("[market report archive validation]", path, r?.date || "date:unknown",
           r?.time || "time:unknown", "REJECTED legacy recovery predicate");
       });
@@ -530,8 +529,16 @@ async function init() {
   archiveReports.forEach((r) => { if (!bySlot.has(reportKey(r))) bySlot.set(reportKey(r), r); });
   formallyPublished.forEach((r) => bySlot.set(reportKey(r), r)); // formal publication takes precedence.
   reports = sortReports([...bySlot.values()]);
-  window.MarketReportArchiveInfo = { count: archiveReports.length, publishedCount: formallyPublished.length,
-    warningCount: warnings.length, warnings: [...warnings] };
+  const driveArchiveCount = archiveReports.length - recoveredArchiveCount;
+  window.MarketReportArchiveInfo = {
+    // Keep count compatible with legacy recovery diagnostics; Drive archives are separate.
+    count: recoveredArchiveCount,
+    driveArchiveCount,
+    totalCount: archiveReports.length,
+    publishedCount: formallyPublished.length,
+    warningCount: warnings.length,
+    warnings: [...warnings]
+  };
 
   if (!reports.length) {
     const detail = warnings.length ? warnings.join(" / ") : "保存記録と正式発行データに有効な本文がありません";
