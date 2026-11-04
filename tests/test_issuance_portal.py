@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 from pathlib import Path
 import tempfile
@@ -380,6 +381,15 @@ class IssuancePortalIntegrationTests(unittest.TestCase):
             wrong = {"evidence_object": envelope, "evidence_id": "different"}
             with self.assertRaisesRegex(IssuanceBlocked, "ISSUANCE_EVIDENCE_IDENTITY_MISMATCH"):
                 stage_pinned_evidence(root, report, wrong)
+            mismatched_payload = json.loads(envelope["bytes"])
+            mismatched_payload["reportId"] = "2026-10-15_08-00"
+            mismatched_raw = (json.dumps(mismatched_payload, ensure_ascii=False, sort_keys=True,
+                                         separators=(",", ":")) + "\n").encode("utf-8")
+            wrong_report = {"evidence_object": {**envelope, "bytes": mismatched_raw.decode("utf-8"),
+                                                  "object_sha256": hashlib.sha256(mismatched_raw).hexdigest()},
+                            "evidence_id": self.fixture.evidence["evidenceId"]}
+            with self.assertRaisesRegex(IssuanceBlocked, "ISSUANCE_EVIDENCE_IDENTITY_MISMATCH"):
+                stage_pinned_evidence(root, report, wrong_report)
 
     def test_live_writes_require_explicit_environment_gate(self):
         with patch.dict(os.environ, {"REPORT_ISSUANCE_WRITE_ENABLED": "false"}, clear=False):
