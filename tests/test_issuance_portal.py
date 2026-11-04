@@ -184,7 +184,9 @@ class IssuancePortalIntegrationTests(unittest.TestCase):
         report = dict(self.fixture.report)
         report["evidence_id"] = self.fixture.evidence["evidenceId"]
         report["snapshot_id"] = self.fixture.evidence["snapshot"]["snapshot_id"]
-        receipt = {"evidenceId": report["evidence_id"], "snapshotId": report["snapshot_id"]}
+        receipt = {"evidenceId": report["evidence_id"], "snapshotId": report["snapshot_id"],
+                   "contextHash": "c", "snapshotHash": "s", "bodyHash": report["bodyHash"],
+                   "documentRevisionId": "revision-7"}
         item = {"id": "doc-123", "name": "マーケットレポート_2026-10-16_08-00",
                 "appProperties": {"report_id": report["report_id"], "revision": "1",
                                   "body_hash": report["bodyHash"], "evidence_id": report["evidence_id"],
