@@ -181,16 +181,16 @@ def run_configuration_diagnostic(*, env=None) -> dict:
                 "REPORT_EVIDENCE_BUCKET", "REPORT_ISSUANCE_CLAIM_BUCKET",
                 "REPORT_ISSUANCE_DOCS_FOLDER_ID", "REPORT_ISSUANCE_ROOT_FOLDER_ID")
     missing = [key for key in required if not env.get(key)]
-    g2_missing = not env.get("REPORT_ISSUANCE_G2_BUNDLE_OBJECT") or not env.get(
-        "REPORT_ISSUANCE_G2_BUNDLE_GENERATION")
+    g2_reference_present = bool(env.get("REPORT_ISSUANCE_G2_BUNDLE_OBJECT") and
+                                 env.get("REPORT_ISSUANCE_G2_BUNDLE_GENERATION"))
     return {"mode": "CONFIGURATION_DIAGNOSTIC", "status": "NOT_READY",
             "secrets_emitted": False,
             "checks": {
                 "static_configuration": {"status": "PASS" if not missing else "BLOCKED",
                                          "missing": missing},
-                "g2_producer": {"status": "BLOCKED" if g2_missing else "UNKNOWN",
-                                "reason": "BLOCKED_G2_PRODUCER_MISSING" if g2_missing else
-                                          "G2_OBJECT_NOT_READ_IN_CONFIGURATION_MODE"},
+                "g2_producer": {"status": "BLOCKED",
+                                "reason": "BLOCKED_G2_PRODUCER_MISSING",
+                                "bundle_reference_present": g2_reference_present},
                 "protected_environment": {"status": "NOT_RUN",
                                           "reason": "Configuration mode has no credentials"},
                 "cloud_and_github_permissions": {"status": "NOT_RUN"},
@@ -324,6 +324,12 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None,
         env=env, google_probe=google_probe) if google_probe is not None else {
             "status": "BLOCKED", "reason": "BLOCKED_G2_PRODUCER_MISSING"
         }
+    # An object and matching hashes do not prove which actor produced it. No
+    # trusted G2 producer is registered in this repository yet.
+    result["checks"]["g2_producer_identity"] = {
+        "status": "BLOCKED", "reason": "BLOCKED_G2_PRODUCER_MISSING",
+        "producer_registered": False, "producer_identity_verified": False,
+    }
     owner_path = Path(env.get("REPORT_ISSUANCE_OWNER_CONFIG_PATH",
                               Path(__file__).resolve().parents[2] / "config" / "issuance_ownership.json"))
     try:
