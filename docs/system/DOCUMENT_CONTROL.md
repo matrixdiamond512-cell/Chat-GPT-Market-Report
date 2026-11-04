@@ -1,9 +1,9 @@
 # 配信システム文書管理規程
 
-現行版: 2.1
-改訂日: 2026-10-19 JST
-変更ID: DOCCTRL-20261019-HISTORY
-本規程は新しい要件定義書や仕様書の別冊ではなく、既存の文書を固定IDで管理する手順を定める。v2.0の旧未解決一覧は当時の履歴であり、末尾のv2.1照合結果と文書管理台帳の123件索引が現在の正本。
+現行版: 2.2
+改訂日: 2026-11-04 JST
+変更ID: REPORT-ARCHIVE-CONTENT-AUDIT-20261104-01
+本規程は新しい要件定義書や仕様書の別冊ではなく、既存の文書を固定IDで管理する手順を定める。v2.0の旧未解決一覧は当時の履歴であり、末尾の現行追補v2.2、文書管理台帳の固定ID索引、GitHub mainの対応パスが現行正本。
 
 ## Google Drive 正式文書（固定名・固定ID）
 | 文書名 | Google Docs ID | GitHub対応 |
@@ -127,3 +127,10 @@ Affected GitHub fixed paths: `docs/system/requirements.md`, `docs/system/specifi
 Candidate includes PR #188 issuance integration, PR #189 truthful importer status helper, and the minimal required parser behavior from PR #187. Implementation remains on a local branch until exact-head hosted CI/review and existing merge approvals. Fixed Drive Docs IDs (requirements `102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA`, specification `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI`, operations `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg`) were not written/read back; no external document update is claimed. The existing publication gates and reports/receipts/PNG were not changed.
 
 2026-11-01 update: PR #172's still-needed retrospective identity/timestamp checks and Pages workflow path trigger are also included in the candidate. Local recovery validation passed on all 31 archived slots. Exact-head hosted CI passed for the preceding code head; this final #172 patch remains pending exact-head hosted CI. Fixed-ID Drive Docs and GitHub main remain unmodified; the updated candidate stays OPEN/Draft pending review. Production GCS/Docs, schedule history, canonical receipts, Pages public DOM, notifications, and ten-workday observation remain NOT_RUN.
+
+## 2026-11-04 改訂記録｜REPORT-ARCHIVE-CONTENT-AUDIT-20261104-01
+
+- 対象固定Google Docs：要件定義書 ID `102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA` revision `AHj4eMQ4aATq9nIBs5IK1h2cWbicH4qM-GESxHj18sKXWL4-c5GmT_q9X2r2vOVNcftJAB6xZ3vgBFtYzzDyKIzdm5xGSzKuZ_A4onsF8N4`; システム仕様書 ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` revision `AHj4eMQYKTJWnqv7gPwXTq7q8n1bivxpZXDDiFTAZde2kr7V2J0v-kAGpNt66qOmuLN5j-ZmhukWlmGnveT2PYbu7EmDnqiuxw6C9VCkJfE`; 運用マニュアル ID `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg` revision `AHj4eMQMINuad4YxThu6BGcWJWXF6c_lQWpcuWTU4mRmgqOM7Hwewj-QKQOdzOXfhD8xJuV_1p3JiwusxeRNelGjwJYhaM_gNPkdeooWkoc`; 文書管理台帳 ID `1F5vH9_O0LUC9Dki0CNm1JDNVfg7gMYMcUCIxgeanE5g` revision `AHj4eMRRPYfcfxG-ZAFWkNnuS1mROzpCaF3OJEWII0UMfs15zQbeK7AIS_H8l_BfLbHuJMBymrcxHPo0TVIGT4G_iQMnckxp08d7S5xiRPw`. 各文書は同じIDから読み戻し、変更見出しと対象本文を確認した。
+- GitHub固定パス：`docs/system/requirements.md`、`docs/system/specification.md`、`docs/system/operations.md`。PR #197で更新し、PR #193～#196の表示修正・QA表示要件を同一変更IDで反映する。
+- 受入根拠：PR #193～#196 main統合、UI/アーカイブCI成功、Pages deploy run 41836815631成功、公開画面の68slot/18日分読み戻し。
+- 未解決原本：2026-10-22 12:00本文欠落、2026-11-02 12:00 source status矛盾。状態値を書き換えない。市場価格を全件外部照合した結果とは主張しない。

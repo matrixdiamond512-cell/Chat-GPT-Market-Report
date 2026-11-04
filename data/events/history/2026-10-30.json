@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-11-01T02:51:14+09:00",
-  "publishedAt": "2026-11-01T02:51:14+09:00",
-  "dataAsOf": "2026-11-01T02:51:14+09:00",
+  "generatedAt": "2026-11-04T20:14:05+09:00",
+  "publishedAt": "2026-11-04T20:14:05+09:00",
+  "dataAsOf": "2026-11-04T20:14:05+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -20,7 +20,7 @@
       "name": "TradingView Economic Calendar",
       "url": "https://www.tradingview.com/economic-calendar/",
       "status": "ok",
-      "note": "実績値を12件照合。生データは公開保存しません。"
+      "note": "実績値を9件照合。生データは公開保存しません。"
     },
     {
       "id": "official_source_map",
@@ -37,7 +37,7 @@
       "id": "event_result_repair",
       "name": "重要イベント実績値の補完取得",
       "status": "ok",
-      "note": "代替カレンダー照合 0件、公式PDF補完 0件、取得不能理由明記 0件。"
+      "note": "代替カレンダー照合 0件、公式PDF補完 0件、取得不能理由明記 1件。"
     },
     {
       "id": "weekly_claims_validation",
@@ -292,13 +292,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-25T16:00:10+09:00",
-      "updatedAt": "2026-11-01T02:51:14+09:00",
+      "updatedAt": "2026-11-01T11:40:39+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Statistics Bureau",
         "url": "https://www.stat.go.jp"
       },
-      "resultSavedAt": "2026-11-01T02:51:14+09:00"
+      "resultSavedAt": "2026-11-01T11:40:39+09:00"
     },
     {
       "id": "event-06b2133ada79fc",
@@ -543,7 +543,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-30T14:37:11+09:00",
-      "updatedAt": "2026-11-01T02:51:14+09:00",
+      "updatedAt": "2026-11-01T11:40:39+09:00",
       "resultSource": {
         "id": "tradingview_repair",
         "name": "Central Bank",
@@ -794,7 +794,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-30T14:37:11+09:00",
-      "updatedAt": "2026-11-01T02:51:14+09:00"
+      "updatedAt": "2026-11-01T11:40:39+09:00"
     },
     {
       "id": "event-878e1ff63b5eff",
@@ -1039,7 +1039,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-30T14:37:11+09:00",
-      "updatedAt": "2026-11-01T02:51:14+09:00",
+      "updatedAt": "2026-11-01T11:40:39+09:00",
       "resultSource": {
         "id": "tradingview_repair",
         "name": "Central Bank",
@@ -1543,7 +1543,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-30T20:37:43+09:00",
-      "updatedAt": "2026-11-01T02:51:16+09:00",
+      "updatedAt": "2026-11-01T11:40:40+09:00",
       "resultSource": {
         "id": "boj",
         "name": "Bank of Japan Monetary Policy Meetings",
@@ -1796,7 +1796,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-27T06:26:52+09:00",
-      "updatedAt": "2026-11-01T02:51:14+09:00"
+      "updatedAt": "2026-11-01T11:40:39+09:00"
     },
     {
       "id": "event-f17e60ca112dd7",
@@ -1817,11 +1817,11 @@
       "importanceLabel": "高",
       "forecast": "0.1%",
       "previous": "0.2%",
-      "actual": "",
+      "actual": "-0.1%",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
-      "status": "result_pending",
+      "resultComparison": "市場予想を下回る",
+      "resultExplanation": "実績 -0.1% は予想 0.1% に対して市場予想を下回る。名称差・国コード差を補正してTradingView実績データから照合しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -2022,8 +2022,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "結果確認中",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を下回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -2041,7 +2041,15 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-25T16:00:10+09:00",
-      "updatedAt": "2026-11-01T02:51:14+09:00"
+      "updatedAt": "2026-11-03T20:22:28+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "tradingview_repair",
+        "name": "Landesamt für Statistik Niedersachsen",
+        "url": "https://www.statistik.niedersachsen.de"
+      },
+      "resultSavedAt": "2026-11-03T20:22:28+09:00"
     },
     {
       "id": "event-b8e924de2bcc37",
@@ -2288,13 +2296,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-25T16:00:10+09:00",
-      "updatedAt": "2026-11-01T02:51:14+09:00",
+      "updatedAt": "2026-11-01T11:40:39+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Bureau of Labour Statistics",
         "url": "http://www.bls.gov"
       },
-      "resultSavedAt": "2026-11-01T02:51:14+09:00"
+      "resultSavedAt": "2026-11-01T11:40:39+09:00"
     },
     {
       "id": "event-145cc631b40e5f",
@@ -2541,13 +2549,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-10-25T16:00:10+09:00",
-      "updatedAt": "2026-11-01T02:51:14+09:00",
+      "updatedAt": "2026-11-01T11:40:39+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Statistics Canada",
         "url": "https://www.statcan.gc.ca"
       },
-      "resultSavedAt": "2026-11-01T02:51:14+09:00"
+      "resultSavedAt": "2026-11-01T11:40:39+09:00"
     }
   ]
 }

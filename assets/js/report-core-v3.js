@@ -101,7 +101,7 @@ function renderInfographic(report) {
       !image.manifest_id || !hex.test(image.manifest_hash || "") ||
       !hex.test(image.sha256 || "") ||
       image.numeric_validation !== "PASS" || image.renderer_status !== "PASS" ||
-      !new RegExp(`^images/reports/${key}\\.png$`).test(image.src || "")) return "";
+      !new RegExp(`^images/reports/${key}\.png$`).test(image.src || "")) return "";
   return `<figure class="report-infographic" data-report-key="${esc(key)}" hidden><img data-infographic-src="${esc(image.src)}" data-infographic-sha256="${esc(image.sha256)}" alt="${esc(report.title)} 図解" style="display:none;width:100%;height:auto" loading="eager"><figcaption>${esc(report.title)} 図解</figcaption></figure>`;
 }
 async function verifyAndLoadInfographicHash_(container) {
@@ -293,7 +293,28 @@ function marketRowsFromSectionLines(lines) {
   }
   return rows;
 }
+function isMarkdownTableAt(lines, index) {
+  const current = clean(lines?.[index] || "");
+  const separator = clean(lines?.[index + 1] || "");
+  if (!current.includes("|") || !separator.includes("|")) return false;
+  const cells = (value) => value.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(x => x.trim());
+  const headers = cells(current), separators = cells(separator);
+  return headers.length > 0 && headers.length === separators.length
+    && separators.every(cell => /^:?-{3,}:?$/.test(cell.replace(/\s/g, "")));
+}
+function isReferenceOnlyMarketSection(lines) {
+  const nonblank = (lines || []).map(clean).filter(Boolean);
+  return nonblank.length === 1
+    && /^(?:上表|上記の表|上記表|前掲表)(?:のとおり|を参照|をご参照)/.test(nonblank[0]);
+}
 function renderMarketTable(report, lines, sectionTitle = "") {
+  const hasStructuredMarketRows = marketRows(report).length > 0;
+  const hasMarkdownTable = (lines || []).some((_, index) => isMarkdownTableAt(lines, index));
+  // Historical archive prose is readable, but it is not structured market data.
+  // Render its authored text as-is instead of guessing prices from dates or times.
+  if (isArchivedRecovery(report) && !hasStructuredMarketRows) return renderRichText(lines || []);
+  if (!hasStructuredMarketRows && hasMarkdownTable) return renderRichText(lines);
+  if (!hasStructuredMarketRows && isReferenceOnlyMarketSection(lines)) return renderRichText(lines);
   const previousClose = isPreviousCloseTable(report, sectionTitle);
   const hasStructuredRows = Array.isArray(report?.marketDataTable?.rows) && report.marketDataTable.rows.length > 0;
   let rows = marketRows(report);
@@ -310,6 +331,8 @@ function renderMarketTable(report, lines, sectionTitle = "") {
 function ensureMarketSection(report, parsed) {
   const sections = parsed.sections.slice();
   if (sections.some(s => isMarketSection(s.title))) return sections;
+  // Do not add a synthetic summary table to a view-only archive from prose.
+  if (isArchivedRecovery(report) && !marketRows(report).length) return sections;
   if (!marketRows(report).length && !legacyMarketRowsFromFullText(report).length) return sections;
   let insertAt = sections.findIndex(s => /今日の相場テーマ/.test(s.title));
   if (insertAt < 0) insertAt = sections.findIndex(s => /結論/.test(s.title));
@@ -391,118 +414,171 @@ function renderDocument(report) {
 }
 function render() { if (!selectedReport) return; renderControls(selectedReport); renderDocument(selectedReport); window.MarketReportLastRendered = selectedReport; window.dispatchEvent(new CustomEvent("market-report-rendered", { detail: { report: selectedReport } })); }
 
+function normalizeArchiveEntry(report, sourcePath, expectedFolderId) {
+  const reject = (reason) => {
+    console.warn("[market report archive validation]", sourcePath, report?.date || "date:unknown",
+      report?.time || "time:unknown", "REJECTED", reason);
+    return null;
+  };
+  if (!report || !/^\d{4}-\d{2}-\d{2}$/.test(String(report.date || "")) ||
+      !REPORT_TIMES.includes(report.time) || typeof report.fullText !== "string" ||
+      !report.fullText.replace(/^#{1,3}\s+/, "").startsWith(String(report.title || "")) ||
+      String(report.archiveNotice || "").length <= 10) return reject("slot/body/title/archiveNotice invalid");
+  if (report.archiveStatus !== "HISTORICAL_ARCHIVE" &&
+      report.archiveStatus !== "SOURCE_ARCHIVED") return reject("archiveStatus is not display-only");
+  if (report.originalReportStatus === "PUBLISHED" || report.originalReportStatus === "FORMALLY_PUBLISHED" ||
+      report.publicationStatus === "PUBLISHED") return reject("formal publication records are not archives");
+  if (report.sourceFolderId && report.sourceFolderId !== expectedFolderId) return reject("record sourceFolderId mismatch");
+  const source = report.sourceDocument;
+  if (!source?.id || typeof report.driveRevisionId !== "string" || !report.driveRevisionId ||
+      report.driveTextLength !== report.fullText.length) return reject("Google Docs readback identity/revision/text length mismatch");
+
+  const conventionalReadback = report.archiveType === "DRIVE_SAVED_DOCUMENT" &&
+    report.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED" &&
+    Array.isArray(report.missingAtSlotEvidence) && report.missingAtSlotEvidence.length > 0;
+  const analysisReadback = (
+      (report.archiveType === "GOOGLE_DOCS_VERIFIED" && report.originalReportStatus === "ANALYSIS_VIEW_ONLY" &&
+        report.missingAtSlotEvidence === true) ||
+      (report.archiveType === "GOOGLE_DOCS_READBACK_NON_OFFICIAL_ANALYSIS" &&
+        report.originalReportStatus === "NOT_VERIFIED" && report.missingAtSlotEvidence === true) ||
+      (report.archiveType === "DRIVE_SAVED_DOCUMENT" &&
+        report.originalReportStatus === "DRIVE_DOC_READBACK_EVIDENCE_HASH_VALIDATED_PUBLICATION_PENDING" &&
+        Array.isArray(report.missingAtSlotEvidence) && report.missingAtSlotEvidence.length === 0)
+    );
+  if (!conventionalReadback && !analysisReadback) return reject("unsupported readback provenance/status combination");
+  if (report.verifiedAtSlot !== false) {
+    // Nov 2 12:00 source JSON contradicts itself: verifiedAtSlot=true while its
+    // original status and missing evidence explicitly say slot verification failed.
+    // Preserve the source record and use a conservative display-only view model.
+    const contradictoryButConservative = report.verifiedAtSlot === true && conventionalReadback;
+    if (!contradictoryButConservative) return reject("verifiedAtSlot must be false for archive display");
+    console.warn("[market report archive validation]", sourcePath, report.date, report.time,
+      "NORMALIZED view model only: status and missing evidence deny slot verification");
+  }
+  const view = report.verifiedAtSlot === false && report.archiveStatus === "HISTORICAL_ARCHIVE"
+    ? report : { ...report, verifiedAtSlot: false, archiveStatus: "HISTORICAL_ARCHIVE" };
+  if (view !== report) console.info("[market report archive validation]", sourcePath, report.date, report.time,
+    "ACCEPTED display-only view model; source publication fields unchanged");
+  return isArchivedRecovery(view) ? view : reject("historical archive predicate failed after safe normalization");
+}
+
+async function fetchJsonLogged(path) {
+  const response = await fetch(path + (path.includes("?") ? "&" : "?") + "ts=" + Date.now(), { cache: "no-store" });
+  console.info("[market report fetch]", path, "HTTP", response.status);
+  if (!response.ok) throw new Error(path + " HTTP " + response.status);
+  try { return await response.json(); }
+  catch (_) { throw new Error(path + " JSON parse failed"); }
+}
 async function init() {
+  const warnings = [];
+  const archiveReports = [];
+  let recoveredArchiveCount = 0;
   try {
-    const response = await fetch(`reports.json?ts=${Date.now()}`, {cache:"no-store"});
-    if (!response.ok) throw new Error(`reports.json HTTP ${response.status}`);
-    const payload = await response.json();
-    const formallyPublished = sortReports(Array.isArray(payload) ? payload : (Array.isArray(payload?.reports) ? payload.reports : [])).filter(isPublicReport);
-    let recovered = [];
-    try {
-      const archiveResponse = await fetch("data/report-recovery-2026-10.json?ts=" + Date.now(), {cache:"no-store"});
-      if (!archiveResponse.ok) throw new Error("archive HTTP " + archiveResponse.status);
-      const archivePayload = await archiveResponse.json();
-      if (archivePayload?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION"
-          || !Array.isArray(archivePayload.reports)) throw new Error("archive schema mismatch");
-      recovered = archivePayload.reports.filter(isArchivedRecovery);
-      if (recovered.length !== archivePayload.reports.length) throw new Error("archive entries invalid");
-    } catch (error) {
-      console.warn("[market report recovery] archive read unavailable", error.message);
-    }
-    // Read-back owner-folder docs are display-only history, not canonical publication.
-    // This provides all four 2026-10-19 slots through the normal date/time controls.
-    let driveArchive = [];
-    try {
-      const path = "data/dashboard-drive-archive-2026-10-19.json";
-      const response = await fetch(path + "?ts=" + Date.now(), {cache:"no-store"});
-      if (!response.ok) throw new Error(path + " HTTP " + response.status);
-      const data = await response.json();
-      if (data?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION" ||
-          data?.sourceFolderId !== "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz" ||
-          !Array.isArray(data.reports)) throw new Error("Drive archive schema invalid");
-      driveArchive = data.reports.filter(r => isArchivedRecovery(r) &&
-        r.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED" &&
-        r.archiveType === "DRIVE_SAVED_DOCUMENT" && r.sourceDocument?.id &&
-        typeof r.driveRevisionId === "string" && r.driveRevisionId &&
-        r.driveTextLength === r.fullText.length &&
-        Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length);
-    } catch (error) {
-      console.warn("[market report Drive readback] unavailable", error.message);
-    }
-    // Additional verified folder readback: October 26 analytical text, not formal publication.
-    try {
-      const path = "data/dashboard-drive-archive-2026-10-26.json";
-      const response = await fetch(path + "?ts=" + Date.now(), {cache:"no-store"});
-      if (!response.ok) throw new Error(path + " HTTP " + response.status);
-      const data = await response.json();
-      if (data?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION" ||
-          data?.sourceFolderId !== "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz" ||
-          !Array.isArray(data.reports)) throw new Error("October 26 Drive archive schema invalid");
-      driveArchive.push(...data.reports.filter(r => isArchivedRecovery(r) &&
-        r.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED" &&
-        r.archiveType === "DRIVE_SAVED_DOCUMENT" && r.sourceDocument?.id &&
-        typeof r.driveRevisionId === "string" && r.driveRevisionId &&
-        r.driveTextLength === r.fullText.length &&
-        Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length));
-    } catch (error) {
-      console.warn("[market report October 26 Drive readback] unavailable", error.message);
-    }
-    // Additional verified folder readback: October 27 analytical text, not formal publication.
-    try {
-      const path = "data/dashboard-drive-archive-2026-10-27.json";
-      const response = await fetch(path + "?ts=" + Date.now(), {cache:"no-store"});
-      if (!response.ok) throw new Error(path + " HTTP " + response.status);
-      const data = await response.json();
-      if (data?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION" ||
-          data?.sourceFolderId !== "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz" ||
-          !Array.isArray(data.reports)) throw new Error("October 27 Drive archive schema invalid");
-      driveArchive.push(...data.reports.filter(r => isArchivedRecovery(r) &&
-        r.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED" &&
-        r.archiveType === "DRIVE_SAVED_DOCUMENT" && r.sourceDocument?.id &&
-        typeof r.driveRevisionId === "string" && r.driveRevisionId &&
-        r.driveTextLength === r.fullText.length &&
-        Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length));
-    } catch (error) {
-      console.warn("[market report October 27 Drive readback] unavailable", error.message);
-    }
-    // Additional date-scoped, read-back-verified Google Docs analytical archives.
-    // They remain display-only and cannot supersede formal publications.
-    for (const archiveDate of ["2026-10-28", "2026-10-29", "2026-10-30"]) {
-      try {
-        const path = "data/dashboard-drive-archive-" + archiveDate + ".json";
-        const response = await fetch(path + "?ts=" + Date.now(), {cache:"no-store"});
-        if (!response.ok) throw new Error(path + " HTTP " + response.status);
-        const data = await response.json();
-        if (data?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION" ||
-            data?.sourceFolderId !== "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz" ||
-            !Array.isArray(data.reports)) throw new Error("Drive archive schema invalid: " + archiveDate);
-        driveArchive.push(...data.reports.filter(r => isArchivedRecovery(r) &&
-          r.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED" &&
-          r.archiveType === "DRIVE_SAVED_DOCUMENT" && r.sourceDocument?.id &&
-          typeof r.driveRevisionId === "string" && r.driveRevisionId &&
-          r.driveTextLength === r.fullText.length &&
-          Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length));
-      } catch (error) {
-        console.warn("[market report " + archiveDate + " Drive readback] unavailable", error.message);
-      }
-    }
-    const bySlot = new Map(recovered.map(r => [reportKey(r), r]));
-    driveArchive.forEach(r => {
-      if (!bySlot.has(reportKey(r))) bySlot.set(reportKey(r), r);
-    });
-    formallyPublished.forEach(r => bySlot.set(reportKey(r), r)); // formal takes precedence
-    reports = sortReports([...bySlot.values()]);
-    window.MarketReportArchiveInfo = {count: recovered.length, publishedCount: formallyPublished.length};
-    if (!reports.length) throw new Error("reports.jsonに表示できる本文データがありません");
-    const params = new URLSearchParams(location.search);
-    const date = params.get("date"), time = params.get("time");
-    selectedReport = reports.find(r => r.date === date && r.time === time) || ((!date && !time) ? reports[0] : null);
-    if (!selectedReport) { renderMissingReport(date || "", time || ""); return; }
-    render();
-    // The enrichment script needs the resolved default slot as well as explicit selections.
-    // Keep the canonical slot in the URL so the bare report.html route gets full details.
-    syncSelectedReportUrl(selectedReport);
+  let formallyPublished = [];
+
+  try {
+    const payload = await fetchJsonLogged("reports.json");
+    const candidates = Array.isArray(payload) ? payload : (Array.isArray(payload?.reports) ? payload.reports : []);
+    formallyPublished = sortReports(candidates).filter(isPublicReport);
   } catch (error) {
+    warnings.push("正式発行データ: " + error.message);
+    console.warn("[market report publication data] unavailable", error.message);
+  }
+
+  const loadRecovery = async (path) => {
+    try {
+      const payload = await fetchJsonLogged(path);
+      if (payload?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION" || !Array.isArray(payload.reports))
+        throw new Error("archive schema mismatch");
+      let accepted = 0;
+      payload.reports.forEach((r) => {
+        if (isArchivedRecovery(r)) { archiveReports.push(r); accepted++; recoveredArchiveCount++; }
+        else console.warn("[market report archive validation]", path, r?.date || "date:unknown",
+          r?.time || "time:unknown", "REJECTED legacy recovery predicate");
+      });
+      console.info("[market report archive validation]", path, "HTTP 200", accepted + "/" + payload.reports.length, "accepted");
+    } catch (error) {
+      warnings.push(path + ": " + error.message);
+      console.warn("[market report archive] unavailable", path, error.message);
+    }
+  };
+
+  // Legacy recovery records remain supported alongside the manifest-listed monthly Docs archives.
+  await loadRecovery("data/report-recovery-2026-10.json");
+
+  let manifest;
+  try {
+    manifest = await fetchJsonLogged("data/report-archive-manifest.json");
+    if (manifest?.schemaVersion !== 1 || !Array.isArray(manifest.files)) throw new Error("manifest schema mismatch");
+  } catch (error) {
+    warnings.push("保存記録一覧: " + error.message);
+    console.warn("[market report archive manifest] unavailable", error.message);
+    manifest = { files: [] };
+  }
+
+  const seenPaths = new Set();
+  for (const entry of manifest.files) {
+    const path = entry?.path;
+    if (typeof path !== "string" || !/^data\/dashboard-drive-archive-\d{4}-\d{2}-\d{2}\.json$/.test(path) ||
+        typeof entry.sourceFolderId !== "string" || !entry.sourceFolderId) {
+      warnings.push("保存記録一覧に不正な項目があります");
+      console.warn("[market report archive manifest] REJECTED invalid path/sourceFolderId", path || "path:unknown");
+      continue;
+    }
+    if (seenPaths.has(path)) {
+      console.warn("[market report archive manifest]", path, "duplicate path ignored");
+      continue;
+    }
+    seenPaths.add(path);
+    try {
+      const payload = await fetchJsonLogged(path);
+      if (payload?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION" ||
+          payload?.sourceFolderId !== entry.sourceFolderId || !Array.isArray(payload.reports))
+        throw new Error("archive kind/sourceFolderId/schema mismatch");
+      let accepted = 0;
+      payload.reports.forEach((record) => {
+        const displayRecord = normalizeArchiveEntry(record, path, entry.sourceFolderId);
+        if (displayRecord) { archiveReports.push(displayRecord); accepted++; }
+      });
+      console.info("[market report archive validation]", path, "HTTP 200", accepted + "/" + payload.reports.length, "accepted");
+      if (accepted !== payload.reports.length) warnings.push(path + ": 一部保存記録を検証条件により除外");
+    } catch (error) {
+      warnings.push(path + ": " + error.message);
+      console.warn("[market report archive] unavailable", path, error.message);
+    }
+  }
+
+  const bySlot = new Map();
+  archiveReports.forEach((r) => { if (!bySlot.has(reportKey(r))) bySlot.set(reportKey(r), r); });
+  formallyPublished.forEach((r) => bySlot.set(reportKey(r), r)); // formal publication takes precedence.
+  reports = sortReports([...bySlot.values()]);
+  const driveArchiveCount = archiveReports.length - recoveredArchiveCount;
+  window.MarketReportArchiveInfo = {
+    // Keep count compatible with legacy recovery diagnostics; Drive archives are separate.
+    count: recoveredArchiveCount,
+    driveArchiveCount,
+    totalCount: archiveReports.length,
+    publishedCount: formallyPublished.length,
+    warningCount: warnings.length,
+    warnings: [...warnings]
+  };
+
+  if (!reports.length) {
+    const detail = warnings.length ? warnings.join(" / ") : "保存記録と正式発行データに有効な本文がありません";
+    throw new Error("表示可能なレポートがありません。通信を確認して再読み込みしてください。理由：" + detail);
+  }
+  const params = new URLSearchParams(location.search);
+  const date = params.get("date"), time = params.get("time");
+  selectedReport = reports.find(r => r.date === date && r.time === time) || ((!date && !time) ? reports[0] : null);
+  if (!selectedReport) { renderMissingReport(date || "", time || ""); return; }
+  render();
+  if (warnings.length) {
+    $("reportStatus").textContent += "｜一部データ未取得（再読み込みで再試行）";
+    $("reportStatus").setAttribute("title", warnings.join(" / "));
+  }
+  syncSelectedReportUrl(selectedReport);
+  } catch (error) {
+    console.error("[market report load] failed", error.message);
     $("lastUpdated").textContent = "読込エラー";
     $("reportStatus").textContent = "マーケットレポート本文を読み込めませんでした";
     $("app").className = "empty";

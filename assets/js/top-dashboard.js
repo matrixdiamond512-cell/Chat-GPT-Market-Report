@@ -1160,11 +1160,16 @@ function isDashboardHistoricalArchive(r) {
     && r.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED"
     && !!r.sourceDocument?.id && !!r.driveRevisionId && r.driveTextLength === r.fullText.length
     && Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length > 0;
+  const evidencePresentUnverified = r.archiveType === "DRIVE_SAVED_DOCUMENT"
+    && ["DRIVE_DOC_READBACK_EVIDENCE_PRESENT_HASH_UNVERIFIED", "DRIVE_DOC_READBACK_EVIDENCE_HASH_VALIDATED_PUBLICATION_PENDING"].includes(r.originalReportStatus)
+    && !!r.sourceDocument?.id && !!r.driveRevisionId
+    && r.driveTextLength === r.fullText.length
+    && Array.isArray(r.missingAtSlotEvidence) && r.missingAtSlotEvidence.length === 0;
   const reconstructed = ["ORIGINAL_NOT_FOUND", "RECONSTRUCTED_UNVERIFIED"].includes(r.originalReportStatus)
     && ["PARTIAL_ORIGINAL_WITH_RETROSPECTIVE_ADDENDUM", "RECONSTRUCTED_SOURCE", "RETROSPECTIVE_REPORT"].includes(r.archiveType)
     && !r.sourceDocument?.id && typeof r.archiveSource === "string" && r.archiveSource.length > 10
     && r.missingAtSlotEvidence === true;
-  return legacyOriginal || sourceDocReadback || reconstructed;
+  return legacyOriginal || sourceDocReadback || evidencePresentUnverified || reconstructed;
 }
 function isDashboardReconstructedArchive(r) {
   return ["ORIGINAL_NOT_FOUND", "RECONSTRUCTED_UNVERIFIED"].includes(r?.originalReportStatus);
@@ -2562,7 +2567,10 @@ async function loadDashboardReports() {
     "data/dashboard-drive-archive-2026-10-27.json",
     "data/dashboard-drive-archive-2026-10-28.json",
     "data/dashboard-drive-archive-2026-10-29.json",
-    "data/dashboard-drive-archive-2026-10-30.json"
+    "data/dashboard-drive-archive-2026-10-30.json",
+    "data/dashboard-drive-archive-2026-11-02.json",
+    "data/dashboard-drive-archive-2026-11-03.json",
+    "data/dashboard-drive-archive-2026-11-04.json"
   ];
   const drivePayloads = await Promise.all(driveArchivePaths.map(async path => {
     try {
@@ -2571,7 +2579,7 @@ async function loadDashboardReports() {
       const payload = await response.json();
       const expectedFolder = path.includes("-external.json")
         ? "CROSS_FOLDER_VERIFIED_GOOGLE_DOCS"
-        : "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz";
+        : (path.includes("-2026-11-") ? "1vnZ7JgQTbqVSvoTIaY-1GlEroSzNLXkP" : "1qDOwDACdzWsGYcMaEobciDP3dFOdJ4Vz");
       if (payload?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION"
           || payload?.sourceFolderId !== expectedFolder
           || !Array.isArray(payload.reports)) throw new Error("source archive schema mismatch");
@@ -2586,9 +2594,12 @@ async function loadDashboardReports() {
   reportList.forEach(r => bySlotDrive.set(r.date + " " + r.time, r));
   const combinedReportList = [...bySlotDrive.values()];
 
-  if (!reportList.length) {
-    throw new Error(`ダッシュボードJSONを取得できませんでした。理由：${errors.join(" / ")}`);
+  // Google Docs read-back archives remain browseable when the formal dashboard
+  // and October recovery sources are unavailable. No publication promotion.
+  if (!combinedReportList.length) {
+    throw new Error(`表示可能なレポートを取得できませんでした。理由：${errors.join(" / ") || "保存記録の取得または検証に失敗"}`);
   }
+  if (!reportList.length) console.warn("[dashboard] displaying read-back archives only; formal publication not verified");
 
   const embeddedMarketData = dashboardPayload?.marketData || dashboardPayload?.latestReport?.marketData || null;
   const independentMarketData = await loadIndependentMarketData();

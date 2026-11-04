@@ -12,6 +12,8 @@ on:
       - 'scripts/test_market_report_title_boundary.js'
       - 'scripts/test_portal_deploy_safety.js'
       - 'tests/fixtures/report_title_boundary_malformed.json'
+      - 'tests/report-markdown-table-rendering.test.mjs'
+      - 'tests/morning-report-qa-display.test.mjs'
       - '.github/workflows/report-21-ui-validation.yml'
   push:
     branches:
@@ -25,6 +27,8 @@ on:
       - 'scripts/test_market_report_title_boundary.js'
       - 'scripts/test_portal_deploy_safety.js'
       - 'tests/fixtures/report_title_boundary_malformed.json'
+      - 'tests/report-markdown-table-rendering.test.mjs'
+      - 'tests/morning-report-qa-display.test.mjs'
       - '.github/workflows/report-21-ui-validation.yml'
 
 permissions:
@@ -41,6 +45,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+
+      - name: Test archived report loading and publication separation
+        run: node --test tests/report-archive-loader.test.mjs
+
+      - name: Test Markdown table rendering and archive market section
+        run: node --test tests/report-markdown-table-rendering.test.mjs
+
+      - name: Test visible handling of failed morning report QA
+        run: node --test tests/morning-report-qa-display.test.mjs
 
       - name: Syntax-check active report scripts
         run: |
