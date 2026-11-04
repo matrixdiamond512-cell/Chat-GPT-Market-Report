@@ -227,6 +227,10 @@ class G2BundleProducerTests(unittest.TestCase):
 
     def test_create_only_store_marks_uncertain_readback_retryable(self):
         class UnreadableBlob(FakeBlob):
+            def upload_from_string(self, payload, *, content_type, if_generation_match):
+                super().upload_from_string(payload, content_type=content_type,
+                                           if_generation_match=if_generation_match)
+                raise RuntimeError("creation response lost")
             def reload(self):
                 raise RuntimeError("readback unavailable")
         bundle = self.build()

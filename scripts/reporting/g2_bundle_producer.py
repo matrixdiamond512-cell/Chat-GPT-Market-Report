@@ -30,6 +30,9 @@ def _slot_at(report_date: str, report_time: str):
     if report_time != "08:00":
         raise IssuanceBlocked("G2_PRODUCER_SLOT_NOT_SUPPORTED")
     try:
+        parsed = datetime.strptime(report_date, "%Y-%m-%d").date()
+        if parsed.weekday() >= 5:
+            raise IssuanceBlocked("G2_PRODUCER_WEEKDAY_REQUIRED")
         return aware(f"{report_date}T08:00:00+09:00")
     except (TypeError, ValueError) as exc:
         raise IssuanceBlocked("G2_PRODUCER_SLOT_INVALID") from exc
@@ -44,6 +47,9 @@ def build_frozen_g2_bundle(*, report: dict, full_text: str,
     """Build a G2 bundle only from a complete exact Evidence readback and task output."""
     if not isinstance(report, dict) or not isinstance(full_text, str) or not full_text:
         raise IssuanceBlocked("G2_PRODUCER_REPORT_INPUT_MISSING")
+    if (not expected_project_id or not expected_evidence_bucket or
+            "test" in expected_project_id.lower() or "test" in expected_evidence_bucket.lower()):
+        raise IssuanceBlocked("PRODUCTION_EVIDENCE_TARGET_NOT_CONFIGURED")
     report_date, report_time = report.get("date"), report.get("time")
     slot_at = _slot_at(report_date, report_time)
     report_id = f"{report_date}_08-00"
