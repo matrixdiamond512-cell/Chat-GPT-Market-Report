@@ -293,7 +293,25 @@ function marketRowsFromSectionLines(lines) {
   }
   return rows;
 }
+function isMarkdownTableAt(lines, index) {
+  const current = clean(lines?.[index] || "");
+  const separator = clean(lines?.[index + 1] || "");
+  if (!current.includes("|") || !separator.includes("|")) return false;
+  const cells = (value) => value.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map(x => x.trim());
+  const headers = cells(current), separators = cells(separator);
+  return headers.length > 0 && headers.length === separators.length
+    && separators.every(cell => /^:?-{3,}:?$/.test(cell.replace(/\s/g, "")));
+}
+function isReferenceOnlyMarketSection(lines) {
+  const nonblank = (lines || []).map(clean).filter(Boolean);
+  return nonblank.length === 1
+    && /^(?:上表|上記の表|上記表|前掲表)(?:のとおり|を参照|をご参照)/.test(nonblank[0]);
+}
 function renderMarketTable(report, lines, sectionTitle = "") {
+  const hasStructuredMarketRows = marketRows(report).length > 0;
+  const hasMarkdownTable = (lines || []).some((_, index) => isMarkdownTableAt(lines, index));
+  if (!hasStructuredMarketRows && hasMarkdownTable) return renderRichText(lines);
+  if (!hasStructuredMarketRows && isReferenceOnlyMarketSection(lines)) return renderRichText(lines);
   const previousClose = isPreviousCloseTable(report, sectionTitle);
   const hasStructuredRows = Array.isArray(report?.marketDataTable?.rows) && report.marketDataTable.rows.length > 0;
   let rows = marketRows(report);
