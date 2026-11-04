@@ -209,7 +209,7 @@ def import_exact_issuance_doc(root: Path, *, report: dict, docs, session) -> tup
         "snapshotId": report.get("snapshot_id"),
     })
     evidence_path = root / "data" / "report-evidence" / f"{date}_{slot.replace(':', '-')}-r{report['revision']}.json"
-    receipt = verify_issuance_evidence(report, evidence_path, item, rebuilt["sourceRevisionId"])
+    receipt = verify_issuance_evidence(rebuilt, evidence_path, item, rebuilt["sourceRevisionId"])
     rebuilt["report_status"] = "DOC_READBACK_PASS"
     rebuilt["publicationEvidence"] = {key: receipt[key] for key in (
         "evidenceId", "snapshotId", "contextHash", "snapshotHash", "bodyHash", "documentRevisionId"
