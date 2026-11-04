@@ -16,8 +16,6 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from google.auth.transport.requests import AuthorizedSession
-from google.oauth2 import service_account
 
 ROOT = Path(__file__).resolve().parents[1]
 JST = timezone(timedelta(hours=9))
@@ -36,6 +34,8 @@ def save_json(path: Path, obj):
     path.write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 def open_session() -> AuthorizedSession:
+    from google.auth.transport.requests import AuthorizedSession
+    from google.oauth2 import service_account
     raw = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "")
     if not raw:
         raise RuntimeError("GOOGLE_SERVICE_ACCOUNT_JSON secret is not configured")
@@ -164,6 +164,78 @@ def publication_evidence(root: Path, report: dict, item: dict, *, require_issuan
         return receipt, None
     except (ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
         return None, str(exc)
+
+def import_exact_issuance_doc(root: Path, *, report: dict, docs, session) -> tuple[dict, dict]:
+    """Import exactly one already-read-back issuance Doc, without a 3-day scan.
+
+    The normal scheduled importer remains unchanged. This narrow entry point is
+    for the issuance transaction and requires the precise Docs ID/revision and
+    appProperties supplied by the caller.
+    """
+    from reporting.importer_handoff import validate_docs_issuance_binding
+    from reporting.publication_evidence import validate_receipt
+
+    report_id = report.get("report_id")
+    date, slot = report.get("date"), report.get("time")
+    expected_id = f"{date}_{str(slot).replace(':', '-')}"
+    if report_id != expected_id or slot != "08:00" or type(report.get("revision")) is not int or report["revision"] <= 0:
+        raise RuntimeError("ISSUANCE_TARGET_IDENTITY_INVALID")
+    title = f"マーケットレポート_{date}_{slot.replace(':', '-')}"
+    query = ("name = '" + title.replace("\\", "\\\\").replace("'", "\\'") +
+             "' and mimeType = 'application/vnd.google-apps.document' and trashed = false")
+    found = get_json(session, DRIVE + "/files", {
+        "q": query, "fields": FIELDS, "pageSize": 100,
+    }).get("files", [])
+    if len(found) != 1 or found[0].get("id") != docs.document_id:
+        raise RuntimeError("ISSUANCE_DOC_DUPLICATE_OR_ID_MISMATCH")
+    item = found[0]
+    rebuilt = build_report(session, date, slot, item)
+    rebuilt["report_id"] = report_id
+    rebuilt["revision"] = report.get("revision")
+    if (rebuilt.get("sourceRevisionId") != docs.document_revision_id or
+            rebuilt.get("fullText") != report.get("fullText") or
+            rebuilt.get("bodyHash") != report.get("bodyHash")):
+        raise RuntimeError("ISSUANCE_DOC_REVISION_OR_BODY_CHANGED")
+    validate_docs_issuance_binding(item.get("appProperties"), report, {
+        "evidenceId": report.get("evidence_id"),
+        "snapshotId": report.get("snapshot_id"),
+    })
+    evidence_path = root / "data" / "report-evidence" / f"{date}_{slot.replace(':', '-')}-r{report['revision']}.json"
+    receipt = verify_issuance_evidence(report, evidence_path, item, rebuilt["sourceRevisionId"])
+    rebuilt["report_status"] = "DOC_READBACK_PASS"
+    rebuilt["publicationEvidence"] = {key: receipt[key] for key in (
+        "evidenceId", "snapshotId", "contextHash", "snapshotHash", "bodyHash", "documentRevisionId"
+    )}
+    validate_receipt(receipt, rebuilt)
+    canonical_path = root / "reports" / f"{date}_{slot.replace(':', '-')}.json"
+    receipt_path = root / "publication-receipts" / f"{date}_{slot.replace(':', '-')}.json"
+    if canonical_path.exists() or receipt_path.exists():
+        if not canonical_path.is_file() or not receipt_path.is_file():
+            raise RuntimeError("ISSUANCE_PARTIAL_CANONICAL_CONFLICT")
+        existing_report = read_json(canonical_path)
+        existing_receipt = read_json(receipt_path)
+        identity_fields = ("report_id", "date", "time", "revision", "bodyHash", "fullText", "sourceDocument", "publicationEvidence")
+        if any(existing_report.get(key) != rebuilt.get(key) for key in identity_fields):
+            raise RuntimeError("ISSUANCE_CANONICAL_CONFLICT")
+        if any(existing_receipt.get(key) != receipt.get(key) for key in (
+            "reportId", "revision", "driveFileId", "documentRevisionId", "bodyHash", "evidenceId", "snapshotId"
+        )):
+            raise RuntimeError("ISSUANCE_RECEIPT_CONFLICT")
+        rebuilt, receipt = existing_report, existing_receipt
+    else:
+        save_json(canonical_path, rebuilt)
+        save_json(receipt_path, receipt)
+        if read_json(canonical_path) != rebuilt or read_json(receipt_path) != receipt:
+            raise RuntimeError("ISSUANCE_CANONICAL_READBACK_FAILED")
+    return rebuilt, receipt
+
+def verify_issuance_evidence(report: dict, evidence_path: Path, item: dict, revision: str) -> dict:
+    """Run the established evidence verifier and strict Docs issuance binding."""
+    from reporting.publication_evidence import verify_slot_evidence
+    receipt = verify_slot_evidence(report, evidence_path, item, revision)
+    from reporting.importer_handoff import validate_docs_issuance_binding
+    validate_docs_issuance_binding(item.get("appProperties"), report, receipt)
+    return receipt
 
 def poll(root: Path, *, apply: bool, enforce_slot: bool, require_issuance_binding: bool = False):
     from reporting.ingestion_outcome import format_ingestion_status_lines

@@ -134,3 +134,9 @@ Current validation covers mocked exact-generation reads, create-only readback, i
 7. JS変更のcache query version、Pages deploy結果、HTTP/DOM、公開本文を読み戻す。古いキャッシュは確認後にcache bustする。原因確認前にdeployを繰り返さない。ログにtokenや認証情報を出さない。
 8. 2026-11-04実績：68slot/18日分を公開ブラウザで照合。10/06 08:00 QA未達の警告表示・市場表抑制・本文維持を確認。Pages run 41836815631 SUCCESS。価格全件の外部ソース照合は対象外。
 9. 未解決原本：10/22 12:00本文欠落、11/02 12:00状態メタデータ矛盾。元証拠を確認するまで発行状態を変更しない。
+
+## MR-ISSUANCE-CONNECT-20261104-02 — controlled issuance adapter
+
+Do not run the production adapter as part of PR CI or from a developer checkout. Production execution requires GitHub Actions on `refs/heads/main`, an independently protected environment supplying `REPORT_ISSUANCE_APPROVED=true` and explicit `REPORT_ISSUANCE_WRITE_ENABLED=true`, a least-privilege Docs/GCS identity for the same already-approved evidence/G2/Docs flow, `REPORT_ISSUANCE_GITHUB_TOKEN` capable of contents write plus Actions read whose GitHub-authored commit starts the existing Pages-on-push workflow, and the correct HTTPS `REPORT_PAGES_BASE_URL`. No credential or environment was configured by this change. The GitHub token must never be printed.
+
+On a failed attempt, record stage, completed stages, commit SHA if observed, report/revision/body hash, receipt hash, Pages run ID and public URL, excluding secrets and report body. Before retry, reconcile main and receipt against the exact report identity. A Pages failure after verified canonical readback is retryable only after confirming the exact canonical and receipt still match; uncertain ref update/readback requires operator reconciliation. `PUBLISHED` requires public JSON body/hash readback, not a green deployment alone. TEST_ONLY CI remains distinct from production E2E.

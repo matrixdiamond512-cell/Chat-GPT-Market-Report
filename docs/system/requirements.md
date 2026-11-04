@@ -116,3 +116,10 @@ DELIVERY-CLOSEOUT-20261101-01 追加受入条件: 回顧アーカイブ対象（
 - 受入条件は11/02・11/03の各実在slot、10/30 21:00回帰、日付移動、URL指定、正本優先、取得失敗、不正アーカイブ除外、Pages公開後の実ブラウザ読み戻しとする。
 - 実績：PR #193～#196 main統合、68slot/18日分の公開画面確認、Pages deploy run 41836815631 SUCCESS。PR #193/#194は日付・時刻を価格として誤認するアーカイブ表を抑止。PR #195/#196は08:00 QA未達を明示する。
 - 未解決原本：10/22 12:00の復旧記録に12:00本文がなく、11/02 12:00の保存元状態情報に矛盾がある。元資料なしに修正・昇格しない。
+
+## MR-ISSUANCE-CONNECT-20261104-02 — issuance transaction acceptance
+
+- The existing PR #188 path must bind the same report ID/revision, immutable generation/hash-pinned pre-slot evidence, G2 body SHA-256, Docs ID/revision/full-text readback, canonical report, publication receipt, GitHub main commit, Pages workflow and actual public report JSON body.
+- Formal importer invocation is scoped to the exact 08:00 report title and Docs ID; ordinary scheduled three-day import and TEST_ONLY staging guards remain unchanged. A duplicate matching Docs name, changed revision, partial canonical/receipt pair, conflicting same report identity, failed GitHub readback, failed Pages workflow, or public body mismatch blocks `PUBLISHED`.
+- Identical retries may reuse an exact existing canonical report/receipt and must not create another main commit. If main commit completed but Pages/public readback did not, record partial completion and reconcile the exact commit/files before retrying Pages.
+- Mock/isolated test success is TEST_ONLY. Production acceptance requires a separate authorized 08:00 E2E; this implementation does not change the four weekday schedules or grant retroactive publication eligibility.

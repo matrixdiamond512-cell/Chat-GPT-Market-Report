@@ -5,9 +5,11 @@ on:
     paths:
       - ".github/workflows/0800-issuance-contract.yml"
       - "scripts/reporting/issuance_pipeline.py"
+      - "scripts/reporting/issuance_portal.py"
       - "scripts/reporting/importer_handoff.py"
       - "scripts/sync_reports_from_drive.py"
       - "tests/test_issuance_pipeline.py"
+      - "tests/test_issuance_portal.py"
       - "tests/test_importer_handoff.py"
       - "scripts/persist_report_slot_evidence.py"
       - "scripts/reporting/context.py"
@@ -26,8 +28,9 @@ jobs:
         with:
           python-version: "3.12"
       - name: Compile integration modules
-        run: python -m py_compile scripts/reporting/issuance_pipeline.py scripts/reporting/importer_handoff.py scripts/sync_reports_from_drive.py tests/test_issuance_pipeline.py tests/test_importer_handoff.py
+        run: python -m py_compile scripts/reporting/issuance_pipeline.py scripts/reporting/issuance_portal.py scripts/reporting/importer_handoff.py scripts/sync_reports_from_drive.py tests/test_issuance_pipeline.py tests/test_issuance_portal.py tests/test_importer_handoff.py
       - name: Run isolated Docs and portal readback contract tests
         run: |
           python -m unittest discover -s tests -p test_issuance_pipeline.py -v
+          python -m unittest discover -s tests -p test_issuance_portal.py -v
           python -m unittest discover -s tests -p test_importer_handoff.py -v

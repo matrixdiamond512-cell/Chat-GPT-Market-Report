@@ -19,6 +19,13 @@ from .context import aware
 class IssuanceBlocked(ValueError):
     """A fail-closed validation or downstream readback failure."""
 
+    def __init__(self, message: str, *, stage: str = "VALIDATION",
+                 completed_stages: tuple[str, ...] = (), retryable: bool = False):
+        super().__init__(message)
+        self.stage = stage
+        self.completed_stages = completed_stages
+        self.retryable = retryable
+
 
 def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -53,6 +60,12 @@ class PortalReadback:
     full_text: str
     body_hash: str
     status: str
+    canonical_commit_sha: str = ""
+    receipt_sha256: str = ""
+    pages_run_id: str = ""
+    public_url: str = ""
+    public_body_verified: bool = False
+    environment: str = "TEST_ONLY"
 
 
 class DocsWriter(Protocol):
@@ -138,7 +151,9 @@ def load_pinned_production_evidence(*, project_id: str, bucket_name: str,
         "evidence_object": {
             "environment": "PRODUCTION", "project_id": project_id,
             "bucket": bucket_name, "object": object_name,
-            "generation": generation, "bytes": text,
+            "generation": generation, "generation_readback": int(blob.generation),
+            "created_at": (blob.time_created.isoformat() if getattr(blob, "time_created", None) else None),
+            "bytes": text,
             "object_sha256": hashlib.sha256(payload).hexdigest(),
             "evidence_id": evidence.get("evidenceId"),
         },
@@ -324,6 +339,15 @@ def validate_issuance_bundle(bundle: dict, *, expected_project_id: str,
         raise IssuanceBlocked("TEST_ONLY_EVIDENCE_REJECTED")
     if type(envelope.get("generation")) is not int or envelope["generation"] <= 0:
         raise IssuanceBlocked("EVIDENCE_GENERATION_REQUIRED")
+    if envelope.get("generation_readback") != envelope.get("generation"):
+        raise IssuanceBlocked("EVIDENCE_GENERATION_READBACK_MISMATCH")
+    try:
+        evidence_created_at = aware(envelope.get("created_at", ""))
+        slot_at = aware(f"{bundle['g2']['report']['date']}T{bundle['g2']['report']['time']}:00+09:00")
+    except (KeyError, ValueError, TypeError) as exc:
+        raise IssuanceBlocked("EVIDENCE_CREATION_TIME_MISSING_OR_INVALID") from exc
+    if evidence_created_at > slot_at:
+        raise IssuanceBlocked("EVIDENCE_CREATED_AFTER_REPORT_SLOT")
     encoded = envelope.get("bytes")
     if not isinstance(encoded, str):
         raise IssuanceBlocked("EVIDENCE_BYTES_NOT_SUPPLIED")
@@ -427,11 +451,14 @@ def run_issuance(bundle: dict, *, expected_project_id: str,
             portal_result.document_id != docs.document_id or
             portal_result.document_revision_id != docs.document_revision_id or
             portal_result.full_text != report["fullText"] or
-            portal_result.body_hash != body_hash or portal_result.status != "PUBLISHED"):
+            portal_result.body_hash != body_hash or portal_result.status != "PUBLISHED" or
+            not portal_result.canonical_commit_sha or not portal_result.receipt_sha256 or
+            not portal_result.pages_run_id or not portal_result.public_url or
+            portal_result.public_body_verified is not True):
         raise IssuanceBlocked("PORTAL_READBACK_MISMATCH")
     return {
         "status": "E2E_READBACK_PASS",
-        "environment": "PRODUCTION",
+        "environment": portal_result.environment,
         "report_id": report["report_id"],
         "revision": report["revision"],
         "body_hash": body_hash,
@@ -440,4 +467,9 @@ def run_issuance(bundle: dict, *, expected_project_id: str,
         "document_id": docs.document_id,
         "document_revision_id": docs.document_revision_id,
         "portal_status": portal_result.status,
+        "canonical_commit_sha": portal_result.canonical_commit_sha,
+        "receipt_sha256": portal_result.receipt_sha256,
+        "pages_run_id": portal_result.pages_run_id,
+        "public_url": portal_result.public_url,
+        "public_body_verified": portal_result.public_body_verified,
     }

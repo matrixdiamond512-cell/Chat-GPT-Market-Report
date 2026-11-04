@@ -57,7 +57,8 @@ class FakePortal:
             docs.document_revision_id,
             docs.full_text + (" changed" if self.mutate else ""),
             hashlib.sha256((docs.full_text + (" changed" if self.mutate else "")).encode()).hexdigest(),
-            "PUBLISHED",
+            "PUBLISHED", "test-commit", "a" * 64, "test-run",
+            "https://example.invalid/report", True, "TEST_ONLY",
         )
 
 
@@ -163,7 +164,9 @@ class IssuancePipelineContractTests(unittest.TestCase):
             "environment": "PRODUCTION",
             "evidence_object": {
                 "environment": "PRODUCTION", "project_id": PROJECT, "bucket": BUCKET,
-                "generation": 123, "bytes": self.evidence_bytes.decode(),
+                "generation": 123, "generation_readback": 123,
+                "created_at": "2026-10-16T07:55:00+09:00",
+                "bytes": self.evidence_bytes.decode(),
                 "object_sha256": hashlib.sha256(self.evidence_bytes).hexdigest(),
                 "evidence_id": self.evidence["evidenceId"],
             },
@@ -207,6 +210,44 @@ class IssuancePipelineContractTests(unittest.TestCase):
     def test_tampered_source_evidence_is_rejected(self):
         self.bundle["evidence_object"]["bytes"] += " "
         with self.assertRaisesRegex(IssuanceBlocked, "EVIDENCE_OBJECT_HASH_MISMATCH"):
+            self.execute_pipeline()
+
+    def test_missing_evidence_stops_before_docs(self):
+        docs, portal = FakeDocs(), FakePortal()
+        self.bundle["evidence_object"] = None
+        with self.assertRaisesRegex(IssuanceBlocked, "EVIDENCE_OBJECT_ENVELOPE_MISSING"):
+            self.execute_pipeline(docs=docs, portal=portal)
+        self.assertEqual((docs.calls, portal.calls), (0, 0))
+
+    def test_generation_readback_mismatch_blocks_docs(self):
+        self.bundle["evidence_object"]["generation_readback"] += 1
+        docs = FakeDocs()
+        with self.assertRaisesRegex(IssuanceBlocked, "EVIDENCE_GENERATION_READBACK_MISMATCH"):
+            self.execute_pipeline(docs=docs)
+        self.assertEqual(docs.calls, 0)
+
+    def test_evidence_object_created_after_slot_is_rejected(self):
+        self.bundle["evidence_object"]["created_at"] = "2026-10-16T08:00:01+09:00"
+        with self.assertRaisesRegex(IssuanceBlocked, "EVIDENCE_CREATED_AFTER_REPORT_SLOT"):
+            self.execute_pipeline()
+
+    def test_expired_pre_slot_evidence_is_rejected(self):
+        source = {"generatedAt": "2026-10-16T07:30:00+09:00", "reportDate": "2026-10-16",
+                  "reportSlot": "08:00", "overallStatus": "verified",
+                  "markets": self.evidence["snapshot"]["markets"]}
+        for market in source["markets"].values():
+            market["asOf"] = "2026-10-16T07:29:00+09:00"
+        stale = build_slot_evidence("2026-10-16", "08:00", source,
+                                    json.dumps(source, sort_keys=True).encode(), max_age_minutes=60)
+        raw = canonical_bytes(stale)
+        digest = hashlib.sha256(raw).hexdigest()
+        self.bundle["evidence_object"].update({"bytes": raw.decode(), "object_sha256": digest,
+                                               "evidence_id": stale["evidenceId"]})
+        self.bundle["g2"].update({"evidence_id": stale["evidenceId"],
+                                  "snapshot_id": stale["snapshot"]["snapshot_id"]})
+        self.bundle["g2"]["report"].update({"snapshot_id": stale["snapshot"]["snapshot_id"],
+                                            "snapshot": stale["snapshot"], "context": stale["context"]})
+        with self.assertRaisesRegex(IssuanceBlocked, "BLOCKED_STORED_EVIDENCE_CUTOFF_INVALID"):
             self.execute_pipeline()
 
     def test_scenario_source_quote_mismatch_is_rejected(self):
