@@ -310,6 +310,9 @@ function isReferenceOnlyMarketSection(lines) {
 function renderMarketTable(report, lines, sectionTitle = "") {
   const hasStructuredMarketRows = marketRows(report).length > 0;
   const hasMarkdownTable = (lines || []).some((_, index) => isMarkdownTableAt(lines, index));
+  // Historical archive prose is readable, but it is not structured market data.
+  // Render its authored text as-is instead of guessing prices from dates or times.
+  if (isArchivedRecovery(report) && !hasStructuredMarketRows) return renderRichText(lines || []);
   if (!hasStructuredMarketRows && hasMarkdownTable) return renderRichText(lines);
   if (!hasStructuredMarketRows && isReferenceOnlyMarketSection(lines)) return renderRichText(lines);
   const previousClose = isPreviousCloseTable(report, sectionTitle);
@@ -328,6 +331,8 @@ function renderMarketTable(report, lines, sectionTitle = "") {
 function ensureMarketSection(report, parsed) {
   const sections = parsed.sections.slice();
   if (sections.some(s => isMarketSection(s.title))) return sections;
+  // Do not add a synthetic summary table to a view-only archive from prose.
+  if (isArchivedRecovery(report) && !marketRows(report).length) return sections;
   if (!marketRows(report).length && !legacyMarketRowsFromFullText(report).length) return sections;
   let insertAt = sections.findIndex(s => /今日の相場テーマ/.test(s.title));
   if (insertAt < 0) insertAt = sections.findIndex(s => /結論/.test(s.title));
