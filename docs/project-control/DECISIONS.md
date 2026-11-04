@@ -79,3 +79,11 @@ Evidence: latest main `27a7a1f6`; integrated candidate `f0a6517d`; seven exact-h
 Reason: a merge candidate based on current main and passing fixture checks is reviewable, but the pipeline cannot satisfy the requested external outcome without the concrete bridge and a protected authorized execution route. Main merge or production dispatch would exceed the current acceptance evidence.
 
 Reversal condition: the owner reviews and approves a concrete bridge whose tests cover exact-slot import, create-only canonical/receipt behavior, duplicate/retry conflict, and public body readback; then a future eligible slot proves the full chain independently.
+
+## MR-ISSUANCE-CONNECT-20261104-02 — concrete adapter and production stop boundary
+
+Decision: keep PR #188 Draft and add a concrete target-scoped adapter, while requiring a protected main Actions runner and explicit approval variables for production construction. The adapter uses a single GitHub main ref compare-and-swap for canonical report, receipt and indexes, performs remote file readback, then waits for the existing Pages workflow and verifies the actual public JSON body/hash. Keep the TEST_ONLY handoff module untouched and the ordinary scheduled importer unchanged.
+
+Reason: this connects the previously abstract `PortalPublisher` to the existing publication validators without widening the importer sweep or weakening eligibility. A main commit and Pages deployment cannot be atomic together; a verified canonical commit followed by a Pages failure is an explicitly incomplete state that requires reconciliation before retry.
+
+Reversal/next condition: obtain separate authorization and configure least-privilege protected identities, then validate one future 08:00 transaction. Do not merge, write production Docs/main/receipt, or deploy Pages based on fixture CI. Generalize other slots only after the 08:00 run is independently accepted.

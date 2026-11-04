@@ -287,3 +287,13 @@ OPEN OUTCOMES: (1) implement and test a concrete authenticated bridge from issua
 ROOT CAUSE: `run_issuance` accepts only the abstract `PortalPublisher` Protocol. No concrete implementation invokes the strict importer or proves canonical/receipt/Pages readback. TEST_ONLY staging is not a production handoff.
 FORBIDDEN SUBSTITUTE: exact-head CI and fake adapters do not prove live Docs, canonical/receipt, Pages, or production acceptance.
 NEXT NECESSARY ACTION: design the concrete bridge with exact-slot selection, pinned evidence identity, create-only behavior, durable readback, and a protected write/deploy boundary; add normal, failure, duplicate, and retry tests; then run hosted CI on the new head. Keep Draft until missing live acceptance and review are separately satisfied.
+
+## MR-ISSUANCE-CONNECT-20261104-02 continuation
+
+PRIMARY OBJECTIVE remains completion of PR #188's fail-closed formal issuance code and automated tests; production operation is excluded. Current main at start was `2df3113ac0934a92056c4546d35b210f390a393b`; code-test head `3f2a32324273032b51124fd96da7067ad251ea51` is on PR #188, still OPEN / Draft / unmerged. Exact-head hosted issuance, sync recovery, frozen-cutoff, delivery-health, dashboard-health and archive-recovery checks passed. Evidence ledger has run IDs and limits.
+
+IMPLEMENTED: concrete adapter, exact-title importer entry point, create-only pinned evidence transfer, GitHub CAS canonical/receipt/index update with file readback, exact Pages-run and live JSON body/hash verification; 61 hosted unit/fixture tests across issuance pipeline, portal adapter and TEST_ONLY handoff.
+
+NOT_RUN: local Python on Windows; live Docs write/readback; production main canonical/receipt write/readback; Pages deploy/public fetch; other slots and 12-slot/10-workday acceptance. No external write or merge occurred.
+
+NEXT: settle required protected GitHub Actions environment and least-privilege identities; perform a separately authorized eligible 08:00 E2E after merge/review; reconcile all external stages; only then plan 12:00/16:00/21:00 generalization.
