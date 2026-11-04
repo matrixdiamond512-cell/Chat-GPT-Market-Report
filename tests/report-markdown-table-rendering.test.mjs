@@ -33,7 +33,7 @@ test("actual Nov 3 21:00 Markdown tables render as readable tables with all sour
   assert.equal((rendered.match(/<th scope="col"/g) || []).length, 8, "both tables keep their four columns");
   assert.doesNotMatch(rendered, /\|\s*:?-{3,}/, "Markdown separator lines are not shown as prose");
   assert.match(rendered, /Dow \+0\.41%/);
-  assert.match(rendered, /14:00～15:30/);
+  assert.match(rendered, /18:55観測/);
 });
 
 test("reference-only major-market prose is not fabricated into a price row", () => {
