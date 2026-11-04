@@ -151,8 +151,15 @@ jobs:
           cp report.html "$RUNNER_TEMP/issuance-public-dom-site/report.html"
           cp -r assets "$RUNNER_TEMP/issuance-public-dom-site/assets"
           cp -r data "$RUNNER_TEMP/issuance-public-dom-site/data"
-          node -e "const fs=require('fs'); const report=JSON.parse(fs.readFileSync('tests/fixtures/issuance_dom_report.json','utf8')); fs.writeFileSync(process.argv[1], JSON.stringify([report], null, 2));" \
-            "$RUNNER_TEMP/issuance-public-dom-site/reports.json"
+          node - "$RUNNER_TEMP/issuance-public-dom-site" <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const site = process.argv[2];
+          const report = JSON.parse(fs.readFileSync('tests/fixtures/issuance_dom_report.json', 'utf8'));
+          fs.mkdirSync(path.join(site, 'reports'), {recursive: true});
+          fs.writeFileSync(path.join(site, 'reports.json'), JSON.stringify([report], null, 2));
+          fs.writeFileSync(path.join(site, 'reports', `${report.report_id}.json`), JSON.stringify(report, null, 2));
+          NODE
           python3 -m http.server 8767 --bind 127.0.0.1 --directory "$RUNNER_TEMP/issuance-public-dom-site" > /tmp/issuance-public-dom-http.log 2>&1 &
           echo $! > /tmp/issuance-public-dom-http.pid
           for attempt in $(seq 1 30); do

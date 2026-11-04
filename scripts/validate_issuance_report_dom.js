@@ -52,6 +52,9 @@ async function main() {
       await page.route('**/reports.json*', route => route.fulfill({
         status: 200, contentType: 'application/json; charset=utf-8', body: JSON.stringify([target])
       }));
+      await page.route(`**/reports/${expectedId}.json*`, route => route.fulfill({
+        status: 200, contentType: 'application/json; charset=utf-8', body: JSON.stringify(target)
+      }));
     }
     await page.goto(`${base}/report.html?date=${encodeURIComponent(target.date)}&time=${encodeURIComponent(target.time)}`,
       {waitUntil: 'domcontentloaded', timeout: 60000});
