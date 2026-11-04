@@ -171,3 +171,6 @@ Source inspection found Apps Script `buildWebReportFromGoogleDoc_()` reads an ex
 The preflight now keeps overall status NOT_READY unless a trusted G2 producer is implemented and registered, even if a supplied pinned object has matching content. Safe transition order: deploy/test the Apps Script guard while legacy remains owner; inspect installed triggers/history and ensure no old 08:30 attempt is active; establish producer identity and protected Environment/least-privilege access; separately approve the owner change; then run one future 08:00 slot through the protected path. Do not touch 12:00/16:00/21:00.
 
 PR #188 changes report.html, assets and deploy-pages.yml, which match the existing main push/path filters. Merging it starts the Pages workflow. No Pages deployment or github-pages Environment approval was inspected or run; plan an authorized deployment review before merge.
+
+
+Code/test evidence: on `642a5d104fa7adc212d4b136a943d0a0a34f6c96`, the 08:00 suite passed 95 Python tests (17+39+16+16+7), compile and CLI smoke. All ten related Actions passed. This demonstrates only automated contract/fixture checks. No real G2 producer was connected, and production preflight is NOT_READY with BLOCKED_G2_PRODUCER_MISSING. The exact evidence and run IDs are in the project-control evidence ledger.
