@@ -157,6 +157,7 @@ jobs:
           const site = process.argv[2];
           const report = JSON.parse(fs.readFileSync('tests/fixtures/issuance_dom_report.json', 'utf8'));
           fs.mkdirSync(path.join(site, 'reports'), {recursive: true});
+          fs.writeFileSync(path.join(site, 'data', 'reports.json'), JSON.stringify({updatedAt: new Date().toISOString()}));
           fs.writeFileSync(path.join(site, 'reports.json'), JSON.stringify([report], null, 2));
           fs.writeFileSync(path.join(site, 'reports', `${report.report_id}.json`), JSON.stringify(report, null, 2));
           NODE

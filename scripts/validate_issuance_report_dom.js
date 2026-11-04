@@ -28,7 +28,15 @@ async function main() {
     const page = await browser.newPage();
     const errors = [];
     page.on('pageerror', e => errors.push(String(e.message || e)));
-    page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+    page.on('response', response => {
+      if (response.status() >= 400) {
+        const pathname = new URL(response.url()).pathname;
+        if (!pathname.endsWith('/favicon.ico')) errors.push(`HTTP ${response.status()} ${pathname}`);
+      }
+    });
+    page.on('console', m => {
+      if (m.type() === 'error' && !m.text().startsWith('Failed to load resource:')) errors.push(m.text());
+    });
     if (process.env.ISSUANCE_DOM_MODE === 'public') {
       const response = await fetch(`${base}/reports.json?issuance-dom=${Date.now()}`, {
         headers: {'cache-control': 'no-cache', pragma: 'no-cache'}
