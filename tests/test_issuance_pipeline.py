@@ -139,6 +139,7 @@ class IssuancePipelineContractTests(unittest.TestCase):
         }
         self.evidence = build_slot_evidence("2026-10-16", "08:00", payload,
                                             json.dumps(payload, sort_keys=True).encode())
+        self.market_payload = payload
         self.evidence_bytes = canonical_bytes(self.evidence)
         self.body_hash = hashlib.sha256(self.full_text.encode()).hexdigest()
         self.report = {
@@ -234,7 +235,7 @@ class IssuancePipelineContractTests(unittest.TestCase):
     def test_expired_pre_slot_evidence_is_rejected(self):
         source = {"generatedAt": "2026-10-16T07:30:00+09:00", "reportDate": "2026-10-16",
                   "reportSlot": "08:00", "overallStatus": "verified",
-                  "markets": self.evidence["snapshot"]["markets"]}
+                  "markets": {key: dict(value) for key, value in self.market_payload["markets"].items()}}
         for market in source["markets"].values():
             market["asOf"] = "2026-10-16T07:29:00+09:00"
         stale = build_slot_evidence("2026-10-16", "08:00", source,
