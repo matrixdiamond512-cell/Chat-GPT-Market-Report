@@ -32,7 +32,7 @@ test("actual Nov 3 21:00 Markdown tables render as readable tables with all sour
   assert.equal((rendered.match(/<tr>/g) || []).length, 21, "all 19 body rows plus two table header rows");
   assert.equal((rendered.match(/<th scope="col"/g) || []).length, 8, "both tables keep their four columns");
   assert.doesNotMatch(rendered, /\|\s*:?-{3,}/, "Markdown separator lines are not shown as prose");
-  assert.match(rendered, /NYダウ/);
+  assert.match(rendered, /Dow \+0\.41%/);
   assert.match(rendered, /14:00～15:30/);
 });
 
