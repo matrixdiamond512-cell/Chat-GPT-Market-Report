@@ -179,7 +179,7 @@ class IssuancePipelineContractTests(unittest.TestCase):
                 "frozen_at": "2026-10-16T08:01:00+09:00",
                 "scenario_review": {
                     "status": "APPROVED", "reviewer": "human-reviewer",
-                    "reviewed_at": "2026-10-16T08:01:30+09:00",
+                    "reviewed_at": "2026-10-16T08:00:30+09:00",
                     "branching_validated": True,
                     "invalidation_trigger_is_decision_change": True,
                     "report_id": self.report["report_id"], "body_hash": self.body_hash,
