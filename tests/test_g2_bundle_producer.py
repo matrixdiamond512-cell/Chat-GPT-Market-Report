@@ -188,7 +188,7 @@ class G2BundleProducerTests(unittest.TestCase):
         envelope = dict(self.evidence_object, object_sha256="0" * 64)
         with self.assertRaisesRegex(IssuanceBlocked, "EVIDENCE_HASH_MISMATCH"):
             self.build(evidence_object=envelope)
-        envelope = dict(self.evidence_object, reportId="2026-10-15_08-00")
+        envelope = dict(self.evidence_object, evidence_id="different-evidence")
         # The evidence bytes remain authoritative; changing only envelope metadata is not accepted.
         with self.assertRaisesRegex(IssuanceBlocked, "EVIDENCE_IDENTITY_MISMATCH"):
             self.build(evidence_object=envelope)
@@ -215,6 +215,27 @@ class G2BundleProducerTests(unittest.TestCase):
             self.build(scenario_review={**self.review,
                                         "reviewed_at": "2026-10-16T07:59:30+09:00"})
 
+    def test_rejects_scenario_review_bound_to_different_identity(self):
+        with self.assertRaisesRegex(IssuanceBlocked, "SCENARIO_REVIEW_IDENTITY_MISMATCH"):
+            self.build(scenario_review={**self.review, "report_id": "other-report"})
+
+    def test_rejects_non_0800_or_mismatched_report_identity(self):
+        with self.assertRaisesRegex(IssuanceBlocked, "SLOT_NOT_SUPPORTED"):
+            self.build(report={**self.report, "time": "12:00"})
+        with self.assertRaisesRegex(IssuanceBlocked, "REPORT_IDENTITY_INVALID"):
+            self.build(report={**self.report, "report_id": "other-report"})
+
+    def test_create_only_store_marks_uncertain_readback_retryable(self):
+        class UnreadableBlob(FakeBlob):
+            def reload(self):
+                raise RuntimeError("readback unavailable")
+        bundle = self.build()
+        store = GcsCreateOnlyG2BundleStore(project_id=PROJECT, bucket_name=G2_BUCKET,
+                                            client=FakeClient(FakeBucket(UnreadableBlob())))
+        with self.assertRaisesRegex(IssuanceBlocked, "G2_BUNDLE_CREATE_OR_READBACK_FAILED") as caught:
+            store.create_only(report_id="2026-10-16_08-00", revision=1, bundle=bundle)
+        self.assertTrue(caught.exception.retryable)
+
     def test_trusted_producer_writes_only_after_valid_freeze(self):
         store = FakeStore()
         producer = TrustedG2BundleProducer(
@@ -228,7 +249,7 @@ class G2BundleProducerTests(unittest.TestCase):
             frozen_at="2026-10-16T07:59:00+09:00",
             scenario_review=self.review, now=SLOT)
         self.assertEqual(store.calls, 1)
-        self.assertEqual(bundle["g2"]["body_hash"], receipt.sha256[:0] + bundle["g2"]["body_hash"])
+        self.assertEqual(receipt.sha256, "a" * 64)
         self.assertEqual(receipt.status, "CREATED")
 
     def test_create_only_gcs_store_writes_and_reads_exact_generation(self):

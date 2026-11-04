@@ -84,6 +84,8 @@ def build_frozen_g2_bundle(*, report: dict, full_text: str,
         raise IssuanceBlocked("G2_PRODUCER_EVIDENCE_SNAPSHOT_MISSING")
     if evidence_created_at > slot_at or evidence_created_at > freeze_instant:
         raise IssuanceBlocked("G2_PRODUCER_EVIDENCE_CREATED_TOO_LATE")
+    if evidence_object.get("evidence_id") != evidence.get("evidenceId"):
+        raise IssuanceBlocked("G2_PRODUCER_EVIDENCE_IDENTITY_MISMATCH")
     if freeze_instant > slot_at or freeze_instant > current:
         raise IssuanceBlocked("G2_PRODUCER_FREEZE_TIME_INVALID")
     if current >= slot_at:
@@ -109,12 +111,17 @@ def build_frozen_g2_bundle(*, report: dict, full_text: str,
     review = deepcopy(scenario_review) if isinstance(scenario_review, dict) else scenario_review
     if not isinstance(review, dict):
         raise IssuanceBlocked("G2_PRODUCER_HUMAN_REVIEW_REQUIRED")
+    if review.get("report_id") not in (None, report_id):
+        raise IssuanceBlocked("SCENARIO_REVIEW_IDENTITY_MISMATCH")
+    if review.get("body_hash") not in (None, body_hash):
+        raise IssuanceBlocked("SCENARIO_REVIEW_IDENTITY_MISMATCH")
     if review.get("reviewed_at"):
         try:
-            if aware(review["reviewed_at"]) > freeze_instant:
-                raise IssuanceBlocked("G2_PRODUCER_REVIEW_AFTER_FREEZE")
+            reviewed_at = aware(review["reviewed_at"])
         except (ValueError, TypeError) as exc:
             raise IssuanceBlocked("G2_PRODUCER_REVIEW_TIME_INVALID") from exc
+        if reviewed_at > freeze_instant:
+            raise IssuanceBlocked("G2_PRODUCER_REVIEW_AFTER_FREEZE")
     review["report_id"] = report_id
     review["body_hash"] = body_hash
     _validate_scenario_review(review, frozen_report, body_hash)
