@@ -117,6 +117,25 @@ class IssuancePreflightTests(unittest.TestCase):
         self.assertFalse(result["checks"]["g2_producer_identity"]["producer_identity_verified"])
         self.assertEqual(result["status"], "NOT_READY")
 
+    def test_preflight_rejects_pinned_g2_object_created_after_slot(self):
+        class LateBundle(FakeGoogle):
+            def read_exact_json_object(self, bucket, object_name, generation):
+                result = super().read_exact_json_object(bucket, object_name, generation)
+                if object_name == "g2/slot.json":
+                    result["created_at"] = "2026-11-05T08:00:01+09:00"
+                return result
+        with tempfile.TemporaryDirectory() as folder:
+            owner_path = Path(folder) / "issuance_ownership.json"
+            owner_path.write_text(json.dumps({"schemaVersion": 1,
+                "slotOwners": {"08:00": "g2_issuance_cli"}}), encoding="utf-8")
+            env = {**self.env, "REPORT_ISSUANCE_OWNER_CONFIG_PATH": str(owner_path)}
+            result = run_preflight(env=env, github=FakeGitHub(), google_probe=LateBundle(),
+                                   dom_runtime=True, pages_probe=lambda _url: True)
+        self.assertEqual(result["checks"]["g2_evidence_binding"]["status"], "BLOCKED")
+        self.assertEqual(result["checks"]["g2_evidence_binding"]["reason"],
+                         "G2_BUNDLE_CREATED_AFTER_REPORT_SLOT")
+        self.assertEqual(result["status"], "NOT_READY")
+
     def test_configuration_diagnostic_is_secret_free_and_never_ready(self):
         result = run_configuration_diagnostic(env={"GITHUB_REPOSITORY": "acme/report"})
         self.assertEqual(result["status"], "NOT_READY")

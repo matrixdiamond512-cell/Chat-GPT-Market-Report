@@ -285,6 +285,15 @@ class G2BundleProducerTests(unittest.TestCase):
         self.assertEqual(blob.payload, original)
         self.assertEqual(blob.upload_calls, 2)
 
+    def test_gcs_store_rejects_object_created_after_slot(self):
+        blob = FakeBlob()
+        blob.time_created = datetime.fromisoformat("2026-10-16T08:00:01+09:00")
+        store = GcsCreateOnlyG2BundleStore(project_id=PROJECT, bucket_name=G2_BUCKET,
+                                            client=FakeClient(FakeBucket(blob)))
+        with self.assertRaisesRegex(IssuanceBlocked, "G2_BUNDLE_CREATED_AFTER_SLOT"):
+            store.create_only(report_id="2026-10-16_08-00", revision=1,
+                              bundle=self.build())
+
     def test_conflicting_existing_generation_blocks(self):
         blob = FakeBlob()
         store = GcsCreateOnlyG2BundleStore(project_id=PROJECT, bucket_name=G2_BUCKET,

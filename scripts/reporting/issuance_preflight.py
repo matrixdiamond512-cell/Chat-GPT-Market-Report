@@ -151,6 +151,10 @@ def _validate_g2_evidence_binding(*, env, google_probe) -> dict:
         report_slot = aware(report["date"] + "T" + report["time"] + ":00+09:00")
         if report["time"] != "08:00" or frozen_at > report_slot:
             raise PreflightBlocked("G2_FREEZE_TIME_OR_SLOT_INVALID")
+        if not g2_object.get("created_at"):
+            raise PreflightBlocked("G2_BUNDLE_CREATION_TIME_UNKNOWN")
+        if aware(g2_object["created_at"]) > report_slot:
+            raise PreflightBlocked("G2_BUNDLE_CREATED_AFTER_REPORT_SLOT")
         evidence = evidence_object["data"]
         if (evidence.get("reportId") != report_id or
                 evidence.get("revision") != expected_revision or

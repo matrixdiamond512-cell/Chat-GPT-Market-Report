@@ -186,6 +186,21 @@ class GcsCreateOnlyG2BundleStore:
                 report.get("report_id") != report_id or g2.get("revision") != revision or
                 report.get("revision") != revision):
             raise IssuanceBlocked("G2_BUNDLE_TARGET_IDENTITY_MISMATCH")
+        if bundle.get("schemaVersion") != 1:
+            raise IssuanceBlocked("G2_BUNDLE_SCHEMA_INVALID")
+        slot_at = _slot_at(report.get("date"), report.get("time"))
+        full_text = report.get("fullText")
+        body_hash = _sha256(full_text.encode("utf-8")) if isinstance(full_text, str) else ""
+        ref = bundle.get("evidence_ref") or {}
+        if (not body_hash or report.get("bodyHash") != body_hash or
+                g2.get("body_hash") != body_hash or
+                not ref.get("object") or type(ref.get("generation")) is not int or
+                ref["generation"] <= 0):
+            raise IssuanceBlocked("G2_BUNDLE_CONTENT_OR_EVIDENCE_INVALID")
+        frozen_at = aware(g2.get("frozen_at", ""))
+        if frozen_at > slot_at:
+            raise IssuanceBlocked("G2_BUNDLE_FREEZE_AFTER_SLOT")
+        _validate_scenario_review(g2.get("scenario_review"), report, body_hash)
         object_name = f"{self._prefix}{report_id}-r{revision}.json"
         payload = _canonical_bytes(bundle)
         digest = _sha256(payload)
@@ -217,6 +232,13 @@ class GcsCreateOnlyG2BundleStore:
                 retryable=True) from exc
         if readback != payload:
             raise IssuanceBlocked("G2_BUNDLE_READBACK_MISMATCH",
+                                  stage="G2_BUNDLE_READBACK")
+        created_at = getattr(blob, "time_created", None)
+        if not created_at:
+            raise IssuanceBlocked("G2_BUNDLE_CREATION_TIME_UNKNOWN",
+                                  stage="G2_BUNDLE_READBACK")
+        if aware(created_at.isoformat()) > slot_at:
+            raise IssuanceBlocked("G2_BUNDLE_CREATED_AFTER_SLOT",
                                   stage="G2_BUNDLE_READBACK")
         return G2BundleWriteReceipt(object_name, generation, digest,
                                     "CREATED" if created else "IDEMPOTENT_RETRY")
