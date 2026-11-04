@@ -152,3 +152,9 @@ Candidate includes PR #188 issuance integration, PR #189 truthful importer statu
 - CLI補正：bundleの日時・G2/evidence参照をクラウド接続前に検証する純粋関数へ分離し、認証設定のないモジュール実行でも不正日付が`BLOCKED`になる回帰テストを追加した。新headの契約CIで検証する。
 - 証拠水準：隔離テストと最終head Actionsの結果を個別に記録する。待機中・未開始のActionsはPASSと扱わない。固定ID Google Docsは今回も更新・読戻ししていない（NOT_RUN）。
 - 制限：本番Docs/main/receipt/Pages書込み、Secrets・Environment・定時タスク変更、PR mergeは行わない。将来の08:00承認付きE2Eが必要。\n\n## MR-ISSUANCE-PRODUCTION-READINESS-20261105-01｜変更記録（2026-11-05 JST）\n対象固定パス：docs/system/requirements.md、docs/system/specification.md、docs/system/operations.md、docs/system/DOCUMENT_CONTROL.md。PR #188のpreflightで環境変数自己申告をEnvironment reviewer保護証拠と扱わず、実API reviewer規則の確認と当該run承認の証拠水準を分離する。手動workflow_dispatchは読取り専用・単一対象・Secretsなしとし、G2生成元の未接続を明記する。\nコード/CI検証は本変更SHAでのActions完了後に記録する。本番G2/Docs/canonical/receipt/Pages E2EはNOT_RUN。Google Docs固定IDへの同期は未実施。
+
+## MR-ISSUANCE-PRODUCTION-READINESS-20261105-01｜CI証拠追記
+- CI code head 5538a8707f2179fcabde9ea5b4fa32239664a00e でissuance integration contract PASS：83 Python tests (17+39+16+11) とcompile/CLI smoke。https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41875493256
+- isolated UI/DOM PASS：https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41875493440。その他8件も同じheadでPASS。これはActions隔離環境の結果で、本番Docs/GCS/GitHub canonical/receipt/PagesはNOT_RUN。
+- main f43cc00f60d5a32fa96fa6cb4de440c7f971fc4a を2親同期commitに保持。main-only data/history変更はPR側の変更パスと重複なし。Google Docs固定IDへの同期はNOT_RUN。
+
