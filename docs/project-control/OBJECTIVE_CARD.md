@@ -276,3 +276,14 @@ ACTIVE PHASE: hosted verification of the isolated TEST_ONLY staging boundary, th
 COMPLETED: closed root-ancestor overlap, substring-only TEST_ONLY identifier acceptance, non-test-only object path, and symlink-parent escape cases; requirements/specification/operations and evidence records updated together.
 
 OPEN: independently authenticated exact-generation GCS read; authentic G2 body and human scenario review; matching Docs ID/revision/fullText/hash/appProperties readback; isolated staging and strict importer dry-run; apply only after all bindings pass. Canonical/receipt persistence, Pages/public DOM, and a future authorized slot remain NOT_RUN. PR #189 is still OPEN/Draft with duplicate code; no independent merge or production change.
+
+## MR-DELIVERY-STABILIZE-20261104-01 — current continuation
+
+PRIMARY OBJECTIVE: Complete the authorized PR #188 code and test work for a fail-closed formal issuance path; keep production, Drive, main merge, and Pages operations outside this candidate run.
+ACTIVE PROFILE: data-tool + generic-app + dashboard.
+CURRENT MAIN: `27a7a1f6fb903901f345d71ec9c4cfce686f8b0f`.
+PR #188: OPEN / Draft / unmerged at `f0a6517df07bc9a5a57a47ac02126b7ab933c421`, synchronized with latest main; PR diff is 25 paths. Exact-head hosted CI passed on that SHA.
+OPEN OUTCOMES: (1) implement and test a concrete authenticated bridge from issuance to strict importer, canonical report + receipt commit, and Pages public-body readback; (2) enable production authorization/identities only through the existing review boundary; (3) prove a future real 08:00 transaction and later 12:00/16:00/21:00 rollout. Local Python tests were NOT_RUN because this Windows session has no accessible interpreter.
+ROOT CAUSE: `run_issuance` accepts only the abstract `PortalPublisher` Protocol. No concrete implementation invokes the strict importer or proves canonical/receipt/Pages readback. TEST_ONLY staging is not a production handoff.
+FORBIDDEN SUBSTITUTE: exact-head CI and fake adapters do not prove live Docs, canonical/receipt, Pages, or production acceptance.
+NEXT NECESSARY ACTION: design the concrete bridge with exact-slot selection, pinned evidence identity, create-only behavior, durable readback, and a protected write/deploy boundary; add normal, failure, duplicate, and retry tests; then run hosted CI on the new head. Keep Draft until missing live acceptance and review are separately satisfied.

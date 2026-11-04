@@ -69,3 +69,13 @@ Reason: Both changes touch `scripts/sync_reports_from_drive.py`; per-PR CI alone
 A separately marked staging checkout must be path-disjoint from the importer checkout in both directions. GCS project and bucket identifiers require a standalone `test` token, and the object name must start with `test-only/`; substring matches alone are not a TEST_ONLY identity. Resolve the evidence destination and prove it remains under the staging root before creating directories, then verify again afterward. This is a local staging guard only; it is not independent proof of external resource identity or publication.
 
 - MRF-INGESTION-20261030-01 (2026-10-30 JST): Replace the combined VERIFIED_REPORT_INGESTION_AND_PUBLICATION message with stage-specific status lines. Keep source archival available when publication evidence is absent; do not turn evidence failure into a claim of publication or erase the archive. Docs readback receipt remains separate from Pages deployment and live public readback. No gate or data behavior changes.
+
+## MR-DELIVERY-STABILIZE-20261104-01 — keep PR #188 Draft pending a concrete publication bridge
+
+Decision: synchronize PR #188 with latest main and keep it OPEN/Draft/unmerged. Do not call the current adapter contract a complete issuance pipeline.
+
+Evidence: latest main `27a7a1f6`; integrated candidate `f0a6517d`; seven exact-head hosted checks PASS. Static inspection shows `PortalPublisher` has no concrete importer/canonical/receipt/Pages implementation. The 2026-11-04 21:00 recovery was held as `BLOCKED_FREEZE`; no pre-slot evidence existed.
+
+Reason: a merge candidate based on current main and passing fixture checks is reviewable, but the pipeline cannot satisfy the requested external outcome without the concrete bridge and a protected authorized execution route. Main merge or production dispatch would exceed the current acceptance evidence.
+
+Reversal condition: the owner reviews and approves a concrete bridge whose tests cover exact-slot import, create-only canonical/receipt behavior, duplicate/retry conflict, and public body readback; then a future eligible slot proves the full chain independently.
