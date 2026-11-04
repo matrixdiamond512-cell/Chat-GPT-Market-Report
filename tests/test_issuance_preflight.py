@@ -200,6 +200,19 @@ class IssuancePreflightTests(unittest.TestCase):
         self.assertEqual(status, 2)
         self.assertEqual(result["reason"], "BLOCKED_G2_PRODUCER_MISSING")
 
+    def test_non_object_owner_config_blocks_without_crashing(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "issuance_ownership.json"
+            path.write_text("[]", encoding="utf-8")
+            with self.assertRaisesRegex(IssuanceBlocked, "ISSUANCE_OWNER_CONFIG_INVALID"):
+                require_08_issuance_owner(path)
+            env = {**self.env, "REPORT_ISSUANCE_OWNER_CONFIG_PATH": str(path)}
+            result = run_preflight(env=env, github=FakeGitHub(), google_probe=FakeGoogle(),
+                                   dom_runtime=True, pages_probe=lambda _url: True)
+        self.assertEqual(result["checks"]["issuance_owner"]["status"], "BLOCKED")
+        self.assertIsNone(result["checks"]["issuance_owner"]["owner"])
+        self.assertEqual(result["status"], "NOT_READY")
+
     def test_08_ownership_is_shared_and_cli_stays_blocked_until_explicit_switch(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "issuance_ownership.json"

@@ -332,9 +332,10 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None,
     }
     owner_path = Path(env.get("REPORT_ISSUANCE_OWNER_CONFIG_PATH",
                               Path(__file__).resolve().parents[2] / "config" / "issuance_ownership.json"))
+    owner = None
     try:
         owner_config = json.loads(owner_path.read_text(encoding="utf-8"))
-        owner = (owner_config.get("slotOwners") or {}).get("08:00")
+        owner = (owner_config.get("slotOwners") or {}).get("08:00") if isinstance(owner_config, dict) else None
         owner_status = "PASS" if owner_config.get("schemaVersion") == 1 and owner == "g2_issuance_cli" else "BLOCKED"
         owner_reason = "" if owner_status == "PASS" else "ISSUANCE_OWNER_CONFLICT:08:00:" + str(owner)
     except (OSError, UnicodeError, json.JSONDecodeError, AttributeError) as exc:

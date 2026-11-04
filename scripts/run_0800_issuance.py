@@ -35,7 +35,9 @@ def require_08_issuance_owner(config_path: Path | None = None) -> str:
         config = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise IssuanceBlocked("ISSUANCE_OWNER_CONFIG_UNAVAILABLE") from exc
-    owners = config.get("slotOwners") if isinstance(config, dict) else None
+    if not isinstance(config, dict):
+        raise IssuanceBlocked("ISSUANCE_OWNER_CONFIG_INVALID")
+    owners = config.get("slotOwners")
     owner = owners.get("08:00") if isinstance(owners, dict) else None
     if config.get("schemaVersion") != 1 or not isinstance(owner, str):
         raise IssuanceBlocked("ISSUANCE_OWNER_CONFIG_INVALID")
