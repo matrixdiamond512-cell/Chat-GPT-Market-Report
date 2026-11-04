@@ -1,11 +1,16 @@
 """Read-only production readiness checks for the controlled issuance adapter."""
 from __future__ import annotations
 
+import argparse
+from datetime import datetime, timedelta
+import hashlib
 import json
 import os
 import shutil
 import subprocess
 from pathlib import Path
+
+from scripts.reporting.context import aware
 
 
 class PreflightBlocked(RuntimeError):
@@ -41,7 +46,14 @@ class DefaultGoogleReadOnlyProbe:
         scopes = ["https://www.googleapis.com/auth/drive.metadata.readonly",
                   "https://www.googleapis.com/auth/devstorage.read_only",
                   "https://www.googleapis.com/auth/cloud-platform.read-only"]
-        credentials, project = google.auth.default(scopes=scopes)
+        raw = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "")
+        if raw:
+            from google.oauth2 import service_account
+            credentials = service_account.Credentials.from_service_account_info(
+                json.loads(raw), scopes=scopes)
+            project = credentials.project_id
+        else:
+            credentials, project = google.auth.default(scopes=scopes)
         self.session = AuthorizedSession(credentials)
         self.storage = storage.Client(project=project, credentials=credentials)
 
@@ -54,6 +66,28 @@ class DefaultGoogleReadOnlyProbe:
         blob = self.storage.bucket(bucket).blob(object_name, generation=int(generation))
         blob.reload()
         return str(blob.generation) == generation
+
+    def read_exact_json_object(self, bucket: str, object_name: str, generation: str) -> dict:
+        if not bucket or not object_name or not generation.isdigit():
+            raise PreflightBlocked("PINNED_GCS_OBJECT_REFERENCE_INVALID")
+        blob = self.storage.bucket(bucket).blob(object_name, generation=int(generation))
+        try:
+            payload = blob.download_as_bytes(if_generation_match=int(generation))
+            blob.reload()
+        except Exception as exc:
+            raise PreflightBlocked("PINNED_GCS_OBJECT_READ_FAILED") from exc
+        if str(blob.generation) != generation:
+            raise PreflightBlocked("PINNED_GCS_GENERATION_MISMATCH")
+        try:
+            data = json.loads(payload.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise PreflightBlocked("PINNED_GCS_OBJECT_JSON_INVALID") from exc
+        if not isinstance(data, dict):
+            raise PreflightBlocked("PINNED_GCS_OBJECT_NOT_JSON_OBJECT")
+        created_at = getattr(blob, "time_created", None)
+        return {"data": data, "generation": str(blob.generation),
+                "created_at": created_at.isoformat() if created_at else None,
+                "sha256": hashlib.sha256(payload).hexdigest()}
 
     def test_claim_permissions(self, bucket: str) -> dict:
         permissions = self.storage.bucket(bucket).test_iam_permissions(
@@ -74,12 +108,112 @@ def _chromium_runtime_ready() -> bool:
     return result.returncode == 0 and bool(result.stdout.strip()) and Path(result.stdout.strip()).is_file()
 
 
-def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None) -> dict:
+def _validate_g2_evidence_binding(*, env, google_probe) -> dict:
+    required = ("REPORT_ISSUANCE_REPORT_ID", "REPORT_ISSUANCE_REVISION",
+                "REPORT_ISSUANCE_G2_BUNDLE_OBJECT", "REPORT_ISSUANCE_G2_BUNDLE_GENERATION",
+                "REPORT_EVIDENCE_OBJECT", "REPORT_EVIDENCE_GENERATION")
+    missing = [key for key in required if not env.get(key)]
+    if missing:
+        return {"status": "BLOCKED",
+                "reason": "BLOCKED_G2_PRODUCER_MISSING" if any(
+                    key.startswith("REPORT_ISSUANCE_G2_BUNDLE_") for key in missing)
+                    else "G2_EVIDENCE_TARGET_INPUT_MISSING",
+                "missing": missing}
+    revision = env["REPORT_ISSUANCE_REVISION"]
+    if not revision.isdigit() or int(revision) <= 0:
+        return {"status": "BLOCKED", "reason": "G2_REVISION_INVALID"}
+    bucket = env.get("REPORT_ISSUANCE_G2_BUNDLE_BUCKET") or env.get("REPORT_EVIDENCE_BUCKET", "")
+    try:
+        g2_object = google_probe.read_exact_json_object(
+            bucket, env["REPORT_ISSUANCE_G2_BUNDLE_OBJECT"],
+            env["REPORT_ISSUANCE_G2_BUNDLE_GENERATION"])
+        evidence_object = google_probe.read_exact_json_object(
+            env.get("REPORT_EVIDENCE_BUCKET", ""), env["REPORT_EVIDENCE_OBJECT"],
+            env["REPORT_EVIDENCE_GENERATION"])
+        bundle = g2_object["data"]
+        g2 = bundle.get("g2") or {}
+        report = g2.get("report") or {}
+        ref = bundle.get("evidence_ref") or {}
+        report_id = env["REPORT_ISSUANCE_REPORT_ID"]
+        expected_revision = int(revision)
+        if (report.get("report_id") != report_id or report.get("revision") != expected_revision or
+                g2.get("report_id") != report_id or g2.get("revision") != expected_revision):
+            raise PreflightBlocked("G2_REPORT_ID_OR_REVISION_MISMATCH")
+        if (ref.get("object") != env["REPORT_EVIDENCE_OBJECT"] or
+                str(ref.get("generation")) != env["REPORT_EVIDENCE_GENERATION"]):
+            raise PreflightBlocked("G2_EVIDENCE_REFERENCE_MISMATCH")
+        full_text = report.get("fullText")
+        body_hash = hashlib.sha256(full_text.encode("utf-8")).hexdigest() if isinstance(full_text, str) else ""
+        if (not body_hash or g2.get("body_hash") != body_hash or
+                report.get("bodyHash") != body_hash):
+            raise PreflightBlocked("G2_BODY_HASH_MISMATCH")
+        frozen_at = aware(g2.get("frozen_at", ""))
+        report_slot = aware(report["date"] + "T" + report["time"] + ":00+09:00")
+        if report["time"] != "08:00" or frozen_at > report_slot:
+            raise PreflightBlocked("G2_FREEZE_TIME_OR_SLOT_INVALID")
+        evidence = evidence_object["data"]
+        if (evidence.get("reportId") != report_id or
+                evidence.get("revision") != expected_revision or
+                not evidence.get("evidenceId") or
+                not (evidence.get("snapshot") or {}).get("snapshot_id")):
+            raise PreflightBlocked("EVIDENCE_IDENTITY_MISMATCH")
+        if not evidence_object.get("created_at"):
+            raise PreflightBlocked("EVIDENCE_CREATION_TIME_UNKNOWN")
+        if aware(evidence_object["created_at"]) > report_slot:
+            raise PreflightBlocked("EVIDENCE_CREATED_AFTER_REPORT_SLOT")
+        return {"status": "PASS", "report_id": report_id, "revision": expected_revision,
+                "body_sha256": body_hash, "g2_frozen_at": g2["frozen_at"],
+                "g2_bundle_generation": g2_object["generation"],
+                "g2_bundle_sha256": g2_object["sha256"],
+                "evidence_generation": evidence_object["generation"],
+                "evidence_sha256": evidence_object["sha256"],
+                "evidence_id": evidence["evidenceId"],
+                "snapshot_id": evidence["snapshot"]["snapshot_id"]}
+    except (PreflightBlocked, KeyError, TypeError, ValueError) as exc:
+        return {"status": "BLOCKED", "reason": str(exc)}
+
+
+def run_configuration_diagnostic(*, env=None) -> dict:
+    """No-secret static diagnosis; never reports READY or contacts external services."""
+    env = os.environ if env is None else env
+    required = ("GITHUB_REPOSITORY", "REPORT_ISSUANCE_ENVIRONMENT",
+                "REPORT_PAGES_BASE_URL", "REPORT_EVIDENCE_PROJECT_ID",
+                "REPORT_EVIDENCE_BUCKET", "REPORT_ISSUANCE_CLAIM_BUCKET",
+                "REPORT_ISSUANCE_DOCS_FOLDER_ID", "REPORT_ISSUANCE_ROOT_FOLDER_ID")
+    missing = [key for key in required if not env.get(key)]
+    g2_missing = not env.get("REPORT_ISSUANCE_G2_BUNDLE_OBJECT") or not env.get(
+        "REPORT_ISSUANCE_G2_BUNDLE_GENERATION")
+    return {"mode": "CONFIGURATION_DIAGNOSTIC", "status": "NOT_READY",
+            "secrets_emitted": False,
+            "checks": {
+                "static_configuration": {"status": "PASS" if not missing else "BLOCKED",
+                                         "missing": missing},
+                "g2_producer": {"status": "BLOCKED" if g2_missing else "UNKNOWN",
+                                "reason": "BLOCKED_G2_PRODUCER_MISSING" if g2_missing else
+                                          "G2_OBJECT_NOT_READ_IN_CONFIGURATION_MODE"},
+                "protected_environment": {"status": "NOT_RUN",
+                                          "reason": "Configuration mode has no credentials"},
+                "cloud_and_github_permissions": {"status": "NOT_RUN"},
+                "pages_and_dom": {"status": "NOT_RUN"},
+                "installed_apps_script_triggers": {"status": "UNKNOWN"},
+            }}
+
+
+def _read_only_pages_probe(url: str) -> bool:
+    if not url.startswith("https://"):
+        return False
+    import requests
+    response = requests.get(url, timeout=20, allow_redirects=True)
+    return response.status_code == 200 and response.url.startswith("https://")
+
+
+def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None,
+                  pages_probe=None) -> dict:
     """Inspect config and read permissions only; never call a write endpoint."""
     env = os.environ if env is None else env
-    result = {"mode": "READ_ONLY", "checks": {}, "secrets_emitted": False}
+    result = {"mode": "AUTHENTICATED_READ_ONLY", "checks": {}, "secrets_emitted": False}
     required = ("GITHUB_ACTIONS", "GITHUB_REF", "GITHUB_REPOSITORY",
-                "REPORT_ISSUANCE_GITHUB_TOKEN", "REPORT_PAGES_BASE_URL",
+                "REPORT_PREFLIGHT_GITHUB_TOKEN", "REPORT_PAGES_BASE_URL",
                 "REPORT_ISSUANCE_ENVIRONMENT",
                 "REPORT_EVIDENCE_PROJECT_ID", "REPORT_EVIDENCE_BUCKET",
                 "REPORT_EVIDENCE_OBJECT", "REPORT_EVIDENCE_GENERATION",
@@ -110,7 +244,7 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None)
     if github is None:
         try:
             github = GitHubReadOnlyProbe(env.get("GITHUB_REPOSITORY", ""),
-                                        env.get("REPORT_ISSUANCE_GITHUB_TOKEN", ""))
+                                        env.get("REPORT_PREFLIGHT_GITHUB_TOKEN", ""))
         except PreflightBlocked as exc:
             result["checks"]["github"] = {"status": "BLOCKED", "reason": str(exc)}
     if github is not None:
@@ -186,14 +320,49 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None)
                                             "claim_create_permission": claim_permissions.get("create", False)}
         except Exception as exc:
             result["checks"]["google"] = {"status": "BLOCKED", "reason": str(exc)}
+    result["checks"]["g2_evidence_binding"] = _validate_g2_evidence_binding(
+        env=env, google_probe=google_probe) if google_probe is not None else {
+            "status": "BLOCKED", "reason": "BLOCKED_G2_PRODUCER_MISSING"
+        }
+    owner_path = Path(env.get("REPORT_ISSUANCE_OWNER_CONFIG_PATH",
+                              Path(__file__).resolve().parents[2] / "config" / "issuance_ownership.json"))
+    try:
+        owner_config = json.loads(owner_path.read_text(encoding="utf-8"))
+        owner = (owner_config.get("slotOwners") or {}).get("08:00")
+        owner_status = "PASS" if owner_config.get("schemaVersion") == 1 and owner == "g2_issuance_cli" else "BLOCKED"
+        owner_reason = "" if owner_status == "PASS" else "ISSUANCE_OWNER_CONFLICT:08:00:" + str(owner)
+    except (OSError, UnicodeError, json.JSONDecodeError, AttributeError) as exc:
+        owner_status, owner_reason = "BLOCKED", "ISSUANCE_OWNER_CONFIG_UNAVAILABLE:" + type(exc).__name__
+    result["checks"]["issuance_owner"] = {"status": owner_status, "owner": owner,
+                                            "reason": owner_reason}
+    if pages_probe is None:
+        try:
+            pages_ok = _read_only_pages_probe(env.get("REPORT_PAGES_BASE_URL", ""))
+            result["checks"]["public_pages"] = {"status": "PASS" if pages_ok else "BLOCKED",
+                                                "https_readback": pages_ok}
+        except Exception as exc:
+            result["checks"]["public_pages"] = {"status": "BLOCKED",
+                                                "reason": type(exc).__name__}
+    else:
+        pages_ok = bool(pages_probe(env.get("REPORT_PAGES_BASE_URL", "")))
+        result["checks"]["public_pages"] = {"status": "PASS" if pages_ok else "BLOCKED",
+                                            "https_readback": pages_ok}
     statuses = [check.get("status") for check in result["checks"].values()]
     result["status"] = "READY" if statuses and all(status == "PASS" for status in statuses) else "NOT_READY"
     return result
 
 
-def main() -> int:
-    # The same Google principal must be configured for Drive and Storage. This
-    # probe deliberately exposes no token, key material, or report contents.
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--mode", choices=("config", "authenticated-readonly"),
+                        default="config")
+    args = parser.parse_args(argv)
+    if args.mode == "config":
+        report = run_configuration_diagnostic()
+        print(json.dumps(report, ensure_ascii=False, sort_keys=True))
+        # Configuration diagnostics are informational and can never say READY.
+        return 0
+    # The protected Environment job provides separate read-only GitHub/Google identities.
     report = run_preflight()
     print(json.dumps(report, ensure_ascii=False, sort_keys=True))
     return 0 if report["status"] == "READY" else 2
