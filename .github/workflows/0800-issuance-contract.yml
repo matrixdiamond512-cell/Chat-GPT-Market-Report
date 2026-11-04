@@ -9,7 +9,6 @@ on:
       - "scripts/reporting/issuance_preflight.py"
       - "config/issuance_ownership.json"
       - "scripts/run_0800_issuance.py"
-      - "scripts/run_0800_issuance.py"
       - "scripts/validate_issuance_report_dom.js"
       - "scripts/reporting/importer_handoff.py"
       - "scripts/sync_reports_from_drive.py"
@@ -17,6 +16,7 @@ on:
       - "tests/test_issuance_pipeline.py"
       - "tests/test_issuance_portal.py"
       - "tests/test_issuance_preflight.py"
+      - "tests/test_g2_bundle_handoff.py"
       - "docs/system/requirements.md"
       - "docs/system/specification.md"
       - "docs/system/operations.md"
@@ -50,7 +50,7 @@ jobs:
             exit_code=$?
             test "$exit_code" -eq 2
           fi
-          python -c "import json, pathlib, sys; p=json.loads(pathlib.Path(sys.argv[1]).read_text()); assert p['status']=='BLOCKED' and p['reason']=='ISSUANCE_BUNDLE_REQUIRED', p" \
+          python -c "import json, pathlib, sys; p=json.loads(pathlib.Path(sys.argv[1]).read_text()); assert p['status']=='BLOCKED' and p['reason']=='BLOCKED_G2_PRODUCER_MISSING', p" \
             "$RUNNER_TEMP/issuance-missing-input.json"
       - name: Run isolated Docs and portal readback contract tests
         run: |
@@ -58,4 +58,5 @@ jobs:
           python -m unittest discover -s tests -p test_issuance_portal.py -v
           python -m unittest discover -s tests -p test_importer_handoff.py -v
           python -m unittest discover -s tests -p test_issuance_preflight.py -v
+          python -m unittest discover -s tests -p test_g2_bundle_handoff.py -v
 
