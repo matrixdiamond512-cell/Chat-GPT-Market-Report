@@ -26,8 +26,8 @@ from scripts.reporting.issuance_portal import (
 JST = ZoneInfo("Asia/Tokyo")
 
 
-def load_bundle(path: Path, *, now: datetime | None = None) -> dict:
-    """Bind a scheduled G2 bundle to one explicit immutable evidence object."""
+def validate_bundle_input(path: Path, *, now: datetime | None = None) -> dict:
+    """Validate the local G2/evidence references without creating cloud clients."""
     try:
         supplied = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
@@ -37,6 +37,11 @@ def load_bundle(path: Path, *, now: datetime | None = None) -> dict:
     ref = supplied.get("evidence_ref")
     if not isinstance(ref, dict):
         raise IssuanceBlocked("ISSUANCE_EVIDENCE_REF_REQUIRED")
+    object_name = ref.get("object")
+    generation = ref.get("generation")
+    if (not isinstance(object_name, str) or not object_name or
+            type(generation) is not int or generation <= 0):
+        raise IssuanceBlocked("ISSUANCE_EVIDENCE_REF_INVALID")
     report = supplied["g2"].get("report") or {}
     now = (now or datetime.now(JST)).astimezone(JST)
     try:
@@ -49,13 +54,17 @@ def load_bundle(path: Path, *, now: datetime | None = None) -> dict:
     slot_start = datetime.combine(report_date, time(8, 0), tzinfo=JST)
     if now < slot_start or now > slot_start + timedelta(minutes=40):
         raise IssuanceBlocked("ISSUANCE_ENTRYPOINT_OUTSIDE_SLOT_WINDOW")
+    return supplied
+
+
+def load_bundle(path: Path, *, now: datetime | None = None) -> dict:
+    """Bind a scheduled G2 bundle to one explicit immutable evidence object."""
+    supplied = validate_bundle_input(path, now=now)
+    ref = supplied["evidence_ref"]
     project_id = os.environ.get("REPORT_EVIDENCE_PROJECT_ID", "")
     bucket = os.environ.get("REPORT_EVIDENCE_BUCKET", "")
-    object_name = ref.get("object")
-    generation = ref.get("generation")
-    if (not isinstance(object_name, str) or not object_name or
-            type(generation) is not int or generation <= 0):
-        raise IssuanceBlocked("ISSUANCE_EVIDENCE_REF_INVALID")
+    object_name = ref["object"]
+    generation = ref["generation"]
     envelope = load_pinned_production_evidence(
         project_id=project_id, bucket_name=bucket, object_name=object_name,
         generation=generation,
@@ -72,6 +81,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.bundle is None:
             raise IssuanceBlocked("ISSUANCE_BUNDLE_REQUIRED")
+        validate_bundle_input(args.bundle)
         required_env = ("REPORT_EVIDENCE_PROJECT_ID", "REPORT_EVIDENCE_BUCKET",
                        "REPORT_ISSUANCE_CLAIM_BUCKET", "REPORT_ISSUANCE_DOCS_FOLDER_ID",
                        "REPORT_ISSUANCE_ROOT_FOLDER_ID", "GITHUB_SHA")

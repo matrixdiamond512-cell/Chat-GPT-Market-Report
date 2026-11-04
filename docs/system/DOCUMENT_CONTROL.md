@@ -149,6 +149,7 @@ Candidate includes PR #188 issuance integration, PR #189 truthful importer statu
 - 対象：同じ固定パスの要件定義・仕様・運用マニュアル。管理者確認済みpreflightを`READY/PASS`、未確認を`NOT_READY/UNKNOWN`とする別テストを維持し、`python -m scripts.run_0800_issuance`、公開索引配列、reportId/revision/body hash/DOM一致を明記。
 - Actions追跡：旧head `cc3f8ff0` のrun `41864195550` はpreflight期待値不一致、`41864195592` は単一オブジェクトを配列として読めなかったためFAIL。head `748d5c7f` では契約スイート/CLI smokeが成功し、UI DOM fixtureで追加の404が発覚。画面rendererが同時に読む `reports/<reportId>.json` が隔離siteになかったため、fixture routeと隔離siteの双方で正本detailを用意する修正を追加した。最終headの再検証結果を別途記録する。
 - 再検証補正：head `362a0042` では画面loaderが既存の2026-09-18 4枠canonicalも要求していたが、隔離siteへ対象fixtureだけを置いていたため404になった。次のheadで既存の`reports/` corpusをコピーし、対象canonicalを追加する。失敗URL/statusを出力し、任意favicon 404だけ除外する。その他のHTTP errorは引き続きDOM validationを止める。
+- CLI補正：bundleの日時・G2/evidence参照をクラウド接続前に検証する純粋関数へ分離し、認証設定のないモジュール実行でも不正日付が`BLOCKED`になる回帰テストを追加した。新headの契約CIで検証する。
 - 証拠水準：隔離テストと最終head Actionsの結果を個別に記録する。待機中・未開始のActionsはPASSと扱わない。固定ID Google Docsは今回も更新・読戻ししていない（NOT_RUN）。
 - 制限：本番Docs/main/receipt/Pages書込み、Secrets・Environment・定時タスク変更、PR mergeは行わない。将来の08:00承認付きE2Eが必要。
 

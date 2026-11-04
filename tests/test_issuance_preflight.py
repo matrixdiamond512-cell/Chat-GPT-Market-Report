@@ -123,6 +123,20 @@ class IssuancePreflightTests(unittest.TestCase):
         self.assertEqual(payload["reason"], "ISSUANCE_BUNDLE_REQUIRED")
         self.assertNotIn("secret", output.getvalue().lower())
 
+    def test_module_entrypoint_rejects_invalid_date_before_config_or_cloud_access(self):
+        payload = {"g2": {"report": {"date": "not-a-date", "time": "08:00"}},
+                   "evidence_ref": {"object": "evidence/slot.json", "generation": 9}}
+        output = io.StringIO()
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "invalid-bundle.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            with patch.dict(os.environ, {}, clear=True), redirect_stdout(output):
+                status = issuance_main([str(path)])
+        result = json.loads(output.getvalue())
+        self.assertEqual(status, 2)
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(result["reason"], "ISSUANCE_REPORT_SLOT_INVALID")
+
     def test_entrypoint_reads_only_named_generation_and_returns_same_pinned_bytes(self):
         payload = {"g2": {"report": {"date": "2026-11-05", "time": "08:00"}},
                    "evidence_ref": {"object": "evidence/slot.json", "generation": 17}}
