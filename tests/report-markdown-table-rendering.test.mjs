@@ -9,6 +9,9 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const coreSource = fs.readFileSync(path.join(root, "assets/js/report-core-v3.js"), "utf8");
 const markdownSource = fs.readFileSync(path.join(root, "assets/js/report-markdown-fulltext-fix.js"), "utf8");
 const nov3 = JSON.parse(fs.readFileSync(path.join(root, "data/dashboard-drive-archive-2026-11-03.json"), "utf8"));
+const octRecovery = JSON.parse(fs.readFileSync(path.join(root, "data/report-recovery-2026-10.json"), "utf8"));
+const oct23Morning = octRecovery.reports.find(report => report.date === "2026-10-23" && report.time === "08:00");
+assert.ok(oct23Morning, "the 2026-10-23 08:00 view-only archive fixture exists");
 const archive = nov3.reports.find(report => report.date === "2026-11-03" && report.time === "21:00");
 assert.ok(archive, "the 21:00 view-only archive fixture exists");
 
@@ -19,7 +22,7 @@ function renderer() {
   assert.notEqual(coreWithoutInit, coreSource, "renderer test hook insertion point");
   vm.runInContext(coreWithoutInit, context, { filename: "report-core-v3.js" });
   vm.runInContext(markdownSource, context, { filename: "report-markdown-fulltext-fix.js" });
-  vm.runInContext("window.__reportRenderTest = { renderMarketTable, renderRichText, parseDocument };", context);
+  vm.runInContext("window.__reportRenderTest = { renderMarketTable, renderRichText, parseDocument, ensureMarketSection };", context);
   return window.__reportRenderTest;
 }
 
@@ -45,6 +48,19 @@ test("reference-only major-market prose is not fabricated into a price row", () 
   assert.doesNotMatch(rendered, /<table\b/);
   assert.match(rendered, /上表のとおり/);
   assert.doesNotMatch(rendered, /<th scope="row">上表のとおり/);
+});
+
+test("view-only archive prose never becomes a fabricated market-data table", () => {
+  const api = renderer();
+  const parsed = api.parseDocument(oct23Morning.fullText, oct23Morning.title);
+  const sections = api.ensureMarketSection(oct23Morning, parsed);
+  assert.equal(sections.some(section => /主要市場データ/.test(section.title)), false,
+    "the archive has no structured price rows, so no synthetic section is inserted");
+
+  const prose = ["金曜日 08:00 の時点では、USD/JPY は時刻付き価格を確認できない。"];
+  const rendered = api.renderMarketTable(oct23Morning, prose, "主要市場データ");
+  assert.doesNotMatch(rendered, /<table\\b/, "unstructured archive prose is not converted to prices");
+  assert.match(rendered, /金曜日 08:00/);
 });
 
 test("five-column Markdown tables and cell escaping preserve content safely", () => {
