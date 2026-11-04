@@ -1,5 +1,5 @@
 # マーケットレポート配信システム 仕様書
-現行文書版：2.1｜改訂：2026-10-19 JST｜変更ID：DOCCTRL-20261019-HISTORY。過去に記載した「PRレビュー用」「未実装」「未解決」はその時点の履歴。現在の確定業務契約は本ファイル末尾の「現行差分統合 v2.1」と固定ID Google Docs v2.1を参照。GitHub main静的確認と実稼働成功は別判定。
+現行文書版：2.2｜改訂：2026-11-04 JST｜変更ID：REPORT-ARCHIVE-CONTENT-AUDIT-20261104-01。過去の「未実装」「未解決」状態は当時の記録。現在のポータル保存記録・slot選択・QA表示契約は本ファイル末尾の「現行差分統合 v2.2」と固定ID Google Docsの同一追補を参照する。
 実装で確認した契約：config/report_schedule.jsonのmainはweekday=08/12/16/21、saturday=なし、sunday=なし（PR #99 mainマージ後）。実ChatGPTタスクも土曜なし。apps-script/MarketReportWebSync.gsは本文PUBLISHED/図解NOT_READYを許容し、図解READY時のmanifest・Drive PNG bytes hashを検査。scripts/verify_morning_report_qa.pyは08:00の28行データQA。scripts/validate_drive_publication_receipt.pyはdate/time/title、publisher=chatgpt、status=saved、driveFileId/URL、savedAtを検査。
 図解manifestはreport_id、revision、snapshot_id、body_hash、manifest_id、drive_file_id、png_filename、png_sha256、manifest_hash、numeric_validation、renderer_status等を照合する。DEBUG_PREVIEWを正式画像として公開しない。
 .github/workflows/build-reports.ymlは発行データ整合の検証。deploy-pages.ymlは公開前DOM、Pages deploy、公開後index/PNG/live DOM照合。PR #98で追加したReceipt validatorの公開ワークフロー直接呼出しは、実Receiptの旧型スキーマと不一致のため撤回済み。現時点で新ゲートは有効化されていない。
@@ -62,3 +62,12 @@ Google Docs固定ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` へ対応す�
 - 図解3件はDrive上の最新保存日時・PNG MIMEを確認。GitHub Pagesでの画像実体、SHA-256、manifest、snapshot/本文との対応が未検証のため図解正式READYへ昇格させない。旧ファイルは削除しない。
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
+
+## 2026-11-04 現行差分統合 v2.2｜REPORT-ARCHIVE-CONTENT-AUDIT-20261104-01
+- `data/report-archive-manifest.json` のschemaVersion/filesを検証し、各path/sourceFolderIdのJSONを個別取得する。対象ファイルのスキーマ、date/time、本文、archive statusを検証し、失敗はファイル単位で記録する。
+- 正式発行可能データと履歴保存記録をdate + timeで統合し、同一slotでは正式データを優先する。全ソースの取得・検証・統合後に表示可否を判定する。正式ソースの取得失敗で保存記録を捨てない。
+- `availableDates` は実レコードから生成し、`reportsForDate` は対象日だけ、time tabsは存在するslotだけを有効にする。存在しないdate/timeはmissing状態にし、別slotへfallbackしない。
+- `isDashboardHistoricalArchive` 等の検証と `MarketReportPublicationPolicy` は別判定とする。formal sourceが同じslotなら優先する。archiveのstatus、verifiedAtSlot、source metadataをUI都合で変更しない。
+- 08:00 QAは正式対象の28項目・順序・5列・基準日・必須行を検証する。HISTORICAL_ARCHIVEを正式QA合格に算入しない。QA未達ではrole=alertを表示し、対象市場表だけをDOMから除去する。本文と保存元statusを保持する。RECONSTRUCTED_UNVERIFIEDのquarantineは維持。
+- エラー/デバッグ出力は対象path/date/time/HTTP status/検証結果を含め、秘密情報を除く。JS更新時はHTMLのquery versionも更新し、Pages deploy後に公開DOMと実ファイルを読み戻す。
+- 実績：PR #193 98f3bcc、#194 025da7c、#195 8630b2c、#196 f870b22を統合。UI・アーカイブ関連CIとPages run 41836815631がSUCCESS。公開ブラウザで18日68slotを確認。
