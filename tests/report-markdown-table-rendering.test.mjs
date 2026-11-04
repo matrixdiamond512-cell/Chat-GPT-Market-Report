@@ -15,10 +15,11 @@ assert.ok(archive, "the 21:00 view-only archive fixture exists");
 function renderer() {
   const window = { MarketReportPublicationPolicy: { isEligible: () => false } };
   const context = vm.createContext({ window, console, URL, URLSearchParams, Date });
-  const testable = coreSource.replace(/init\(\);\s*$/, "window.__reportRenderTest = { renderMarketTable, renderRichText, parseDocument };");
-  assert.notEqual(testable, coreSource, "renderer test hook insertion point");
-  vm.runInContext(testable, context, { filename: "report-core-v3.js" });
+  const coreWithoutInit = coreSource.replace(/init\(\);\s*$/, "");
+  assert.notEqual(coreWithoutInit, coreSource, "renderer test hook insertion point");
+  vm.runInContext(coreWithoutInit, context, { filename: "report-core-v3.js" });
   vm.runInContext(markdownSource, context, { filename: "report-markdown-fulltext-fix.js" });
+  vm.runInContext("window.__reportRenderTest = { renderMarketTable, renderRichText, parseDocument };", context);
   return window.__reportRenderTest;
 }
 
