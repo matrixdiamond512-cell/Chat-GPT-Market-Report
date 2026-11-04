@@ -1,5 +1,5 @@
 # マーケットレポート配信システム 運用マニュアル
-現行文書版：2.1｜改訂：2026-10-19 JST｜変更ID：DOCCTRL-20261019-HISTORY。過去に記載した「PRレビュー用」「未実装」「未解決」はその時点の履歴。現在の確定業務契約は本ファイル末尾の「現行差分統合 v2.1」と固定ID Google Docs v2.1を参照。GitHub main静的確認と実稼働成功は別判定。
+現行文書版：2.2｜改訂：2026-11-04 JST｜変更ID：REPORT-ARCHIVE-CONTENT-AUDIT-20261104-01。過去の「未実装」「未解決」状態は当時の記録。現在のポータル保存記録・slot選択・QA表示契約は本ファイル末尾の「現行差分統合 v2.2」と固定ID Google Docsの同一追補を参照する。
 1. 編集依頼の対象文書を要件定義書/仕様書/マニュアルに分類し、Google Docs fileId・GitHubパス・版とrevisionを確認する。
 2. mainにある実装、未マージPR、ドキュメントの提案、実際の稼働実績を分ける。配信システムと関連するWeb資料は同一プロセスの一部だが、他文書だけの更新を完了と呼ばない。
 3. 発行前に設定ファイルと実際のChatGPT定期タスク・Apps Scriptトリガーを個別確認する。コードにトリガー関数があるだけでは稼働とは言えない。
@@ -69,3 +69,14 @@ Google Docs固定ID `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg` に対応す�
 - 図解3件はDrive上の最新保存日時・PNG MIMEを確認。GitHub Pagesでの画像実体、SHA-256、manifest、snapshot/本文との対応が未検証のため図解正式READYへ昇格させない。旧ファイルは削除しない。
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
+
+## 2026-11-04 現行障害対応・公開検証手順 v2.2｜REPORT-ARCHIVE-CONTENT-AUDIT-20261104-01
+1. 画面の要求date/time、タイトル、選択ボタンを記録。Networkで `dashboard.json`、`reports.json`、`data/report-archive-manifest.json`、各archive JSONのHTTP statusを確認する。
+2. manifest entryと個別JSONのschema、slot、本文、archive/source statusを検証する。取得失敗は対象path/date/time/statusを記録し、取得できたデータは表示する。一部失敗警告と全件失敗エラーを区別する。
+3. 同一slotに正本と保存記録があれば正本優先。指定slotがない場合は欠落状態を確認し、他日時の本文が表示されないことを確認する。
+4. 検証失敗recordは除外理由を残す。verifiedAtSlot、originalReportStatus、保存元本文/価格を手修正してはならない。正式証拠不足は閲覧記録として区別する。
+5. 08:00は28×5の品質結果を確認。不合格なら画面に警告があり対象表が非表示、本文と保存statusは保持されることを確認する。既存のRECONSTRUCTED_UNVERIFIED quarantineは維持する。
+6. 日付と時間帯の実在slot、URL date/time、本文見出しを照合する。11/02・11/03、10/30 21:00、日付移動、欠損slot・重複slotを自動テストと実ブラウザで検査する。
+7. JS変更のcache query version、Pages deploy結果、HTTP/DOM、公開本文を読み戻す。古いキャッシュは確認後にcache bustする。原因確認前にdeployを繰り返さない。ログにtokenや認証情報を出さない。
+8. 2026-11-04実績：68slot/18日分を公開ブラウザで照合。10/06 08:00 QA未達の警告表示・市場表抑制・本文維持を確認。Pages run 41836815631 SUCCESS。価格全件の外部ソース照合は対象外。
+9. 未解決原本：10/22 12:00本文欠落、11/02 12:00状態メタデータ矛盾。元証拠を確認するまで発行状態を変更しない。
