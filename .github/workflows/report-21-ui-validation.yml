@@ -151,6 +151,7 @@ jobs:
           cp report.html "$RUNNER_TEMP/issuance-public-dom-site/report.html"
           cp -r assets "$RUNNER_TEMP/issuance-public-dom-site/assets"
           cp -r data "$RUNNER_TEMP/issuance-public-dom-site/data"
+          cp -r reports "$RUNNER_TEMP/issuance-public-dom-site/reports"
           node - "$RUNNER_TEMP/issuance-public-dom-site" <<'NODE'
           const fs = require('fs');
           const path = require('path');

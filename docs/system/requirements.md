@@ -127,7 +127,7 @@ DELIVERY-CLOSEOUT-20261101-01 追加受入条件: 回顧アーカイブ対象（
 ### Invocation and public-index regression criteria
 
 - Invoke the 08:00 module as `python -m scripts.run_0800_issuance`; `--help` must run without credentials, while missing input and invalid slot data fail closed as `BLOCKED` before creating cloud clients.
-- Isolated public-mode DOM validation must use the public `reports.json` array shape and serve the exact `reports/<reportId>.json` canonical source used by the page renderer. It must require exactly one target reportId row and compare revision, date, time, fullText/body SHA-256, and the rendered report DOM before accepting the page.
+- Isolated public-mode DOM validation must use the public `reports.json` array shape, retain the existing `reports/` canonical corpus requested by page loaders, and serve the exact `reports/<reportId>.json` target source. It must require exactly one target reportId row and compare revision, date, time, fullText/body SHA-256, and the rendered report DOM before accepting the page.
 - The read-only preflight returns overall `READY` only when each required check is `PASS`; an unverified GitHub `contents:write` scope stays `UNKNOWN` and yields overall `NOT_READY`. An explicit independent administrator attestation may move that check to `PASS`; it does not bypass the protected Environment or write gate.
 
 ### Follow-up acceptance: invocation, create-only, DOM, preflight
