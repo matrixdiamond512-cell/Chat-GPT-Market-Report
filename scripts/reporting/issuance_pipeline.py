@@ -411,72 +411,92 @@ def run_issuance(bundle: dict, *, expected_project_id: str,
     stages must return exact identity and content readback. A failure stops
     before the next stage; retries are safe only for the exact same claim.
     """
-    report, evidence, body_hash = validate_issuance_bundle(
-        bundle, expected_project_id=expected_project_id,
-        expected_evidence_bucket=expected_evidence_bucket,
-    )
-    g2 = bundle["g2"]
+    stage = "G2_EVIDENCE_VALIDATION"
+    completed: list[str] = []
     try:
-        frozen_at = aware(g2["frozen_at"])
-    except (KeyError, ValueError, TypeError) as exc:
-        raise IssuanceBlocked("G2_FREEZE_TIME_INVALID") from exc
-    claim_store.claim(
-        report_id=report["report_id"], revision=report["revision"],
-        body_hash=body_hash, evidence_id=evidence["evidenceId"],
-        snapshot_id=evidence["snapshot"]["snapshot_id"],
-    )
-    docs = docs_writer.save_exact(
-        title=_canonical_drive_title(report), report_id=report["report_id"],
-        revision=report["revision"], full_text=report["fullText"],
-        body_hash=body_hash, evidence_id=evidence["evidenceId"],
-        snapshot_id=evidence["snapshot"]["snapshot_id"],
-    )
-    if (not docs.document_id or not docs.document_revision_id or
-            docs.full_text != report["fullText"] or docs.body_hash != body_hash):
-        raise IssuanceBlocked("DOCS_READBACK_MISMATCH")
-    try:
-        saved_at = aware(docs.saved_at)
-    except ValueError as exc:
-        raise IssuanceBlocked("DOCS_SAVED_AT_INVALID") from exc
-    if saved_at <= frozen_at:
-        raise IssuanceBlocked("G2_BODY_NOT_FROZEN_BEFORE_DOCS_SAVE")
-    slot_at = aware(f"{report['date']}T{report['time']}:00+09:00")
-    if saved_at < slot_at or saved_at > slot_at + timedelta(minutes=40):
-        raise IssuanceBlocked("DOCS_SAVE_TIME_OUTSIDE_SLOT_WINDOW")
+        report, evidence, body_hash = validate_issuance_bundle(
+            bundle, expected_project_id=expected_project_id,
+            expected_evidence_bucket=expected_evidence_bucket,
+        )
+        g2 = bundle["g2"]
+        try:
+            frozen_at = aware(g2["frozen_at"])
+        except (KeyError, ValueError, TypeError) as exc:
+            raise IssuanceBlocked("G2_FREEZE_TIME_INVALID") from exc
+        completed.append("G2_EVIDENCE_VALIDATED")
+        stage = "ISSUANCE_CLAIM"
+        claim_store.claim(
+            report_id=report["report_id"], revision=report["revision"],
+            body_hash=body_hash, evidence_id=evidence["evidenceId"],
+            snapshot_id=evidence["snapshot"]["snapshot_id"],
+        )
+        completed.append("CREATE_ONLY_CLAIM")
+        stage = "DOCS_SAVE_AND_FULLTEXT_READBACK"
+        docs = docs_writer.save_exact(
+            title=_canonical_drive_title(report), report_id=report["report_id"],
+            revision=report["revision"], full_text=report["fullText"],
+            body_hash=body_hash, evidence_id=evidence["evidenceId"],
+            snapshot_id=evidence["snapshot"]["snapshot_id"],
+        )
+        if (not docs.document_id or not docs.document_revision_id or
+                docs.full_text != report["fullText"] or docs.body_hash != body_hash):
+            raise IssuanceBlocked("DOCS_READBACK_MISMATCH")
+        try:
+            saved_at = aware(docs.saved_at)
+        except ValueError as exc:
+            raise IssuanceBlocked("DOCS_SAVED_AT_INVALID") from exc
+        if saved_at <= frozen_at:
+            raise IssuanceBlocked("G2_BODY_NOT_FROZEN_BEFORE_DOCS_SAVE")
+        slot_at = aware(f"{report['date']}T{report['time']}:00+09:00")
+        if saved_at < slot_at or saved_at > slot_at + timedelta(minutes=40):
+            raise IssuanceBlocked("DOCS_SAVE_TIME_OUTSIDE_SLOT_WINDOW")
+        completed.append("DOCS_FULLTEXT_REVISION_READBACK")
 
-    # Preserve the exact pinned source envelope alongside the validated
-    # immutable evidence payload; the strict importer stages these same bytes.
-    portal_evidence = {
-        **evidence,
-        "evidence_id": evidence["evidenceId"],
-        "evidence_object": bundle["evidence_object"],
-    }
-    portal_result = portal.publish_and_readback(report=report, docs=docs, evidence=portal_evidence)
-    if (portal_result.report_id != report["report_id"] or
-            portal_result.revision != report["revision"] or
-            portal_result.snapshot_id != evidence["snapshot"]["snapshot_id"] or
-            portal_result.document_id != docs.document_id or
-            portal_result.document_revision_id != docs.document_revision_id or
-            portal_result.full_text != report["fullText"] or
-            portal_result.body_hash != body_hash or portal_result.status != "PUBLISHED" or
-            not portal_result.canonical_commit_sha or not portal_result.receipt_sha256 or
-            not portal_result.pages_run_id or not portal_result.public_url or
-            portal_result.public_body_verified is not True):
-        raise IssuanceBlocked("PORTAL_READBACK_MISMATCH")
-    return {
-        "status": "E2E_READBACK_PASS",
-        "environment": portal_result.environment,
-        "report_id": report["report_id"],
-        "revision": report["revision"],
-        "body_hash": body_hash,
-        "evidence_id": evidence["evidenceId"],
-        "snapshot_id": evidence["snapshot"]["snapshot_id"],
-        "document_id": docs.document_id,
-        "document_revision_id": docs.document_revision_id,
-        "portal_status": portal_result.status,
-        "canonical_commit_sha": portal_result.canonical_commit_sha,
-        "receipt_sha256": portal_result.receipt_sha256,
-        "pages_run_id": portal_result.pages_run_id,
-        "public_url": portal_result.public_url,
-        "public_body_verified": portal_result.public_body_verified,
-    }
+        # Preserve the exact pinned source envelope alongside the validated
+        # immutable evidence payload; the strict importer stages these same bytes.
+        portal_evidence = {
+            **evidence,
+            "evidence_id": evidence["evidenceId"],
+            "evidence_object": bundle["evidence_object"],
+        }
+        stage = "PORTAL_CANONICAL_RECEIPT_PAGES_AND_DOM_READBACK"
+        portal_result = portal.publish_and_readback(report=report, docs=docs, evidence=portal_evidence)
+        if (portal_result.report_id != report["report_id"] or
+                portal_result.revision != report["revision"] or
+                portal_result.snapshot_id != evidence["snapshot"]["snapshot_id"] or
+                portal_result.document_id != docs.document_id or
+                portal_result.document_revision_id != docs.document_revision_id or
+                portal_result.full_text != report["fullText"] or
+                portal_result.body_hash != body_hash or portal_result.status != "PUBLISHED" or
+                not portal_result.canonical_commit_sha or not portal_result.receipt_sha256 or
+                not portal_result.pages_run_id or not portal_result.public_url or
+                portal_result.public_body_verified is not True):
+            raise IssuanceBlocked("PORTAL_READBACK_MISMATCH")
+        completed.append("CANONICAL_RECEIPT_PAGES_PUBLIC_DOM_READBACK")
+        return {
+            "status": "E2E_READBACK_PASS",
+            "environment": portal_result.environment,
+            "report_id": report["report_id"],
+            "revision": report["revision"],
+            "body_hash": body_hash,
+            "evidence_id": evidence["evidenceId"],
+            "snapshot_id": evidence["snapshot"]["snapshot_id"],
+            "document_id": docs.document_id,
+            "document_revision_id": docs.document_revision_id,
+            "portal_status": portal_result.status,
+            "canonical_commit_sha": portal_result.canonical_commit_sha,
+            "receipt_sha256": portal_result.receipt_sha256,
+            "pages_run_id": portal_result.pages_run_id,
+            "public_url": portal_result.public_url,
+            "public_body_verified": portal_result.public_body_verified,
+            "completed_stages": completed,
+        }
+    except IssuanceBlocked as exc:
+        if exc.stage == "VALIDATION":
+            exc.stage = stage
+        exc.completed_stages = tuple(dict.fromkeys((*completed, *exc.completed_stages)))
+        raise
+    except Exception as exc:
+        raise IssuanceBlocked("ISSUANCE_FAILED_AFTER:" + type(exc).__name__,
+                              stage=stage, completed_stages=tuple(completed),
+                              retryable=stage == "PORTAL_CANONICAL_RECEIPT_PAGES_AND_DOM_READBACK") from exc

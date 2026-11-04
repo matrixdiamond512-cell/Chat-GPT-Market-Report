@@ -294,11 +294,13 @@ class GitHubPortalPublisher:
             raise IssuanceBlocked("PRODUCTION_ISSUANCE_WRITE_NOT_ENABLED")
         if (os.environ.get("GITHUB_ACTIONS") != "true" or
                 os.environ.get("GITHUB_REF") != "refs/heads/main" or
-                os.environ.get("REPORT_ISSUANCE_APPROVED") != "true"):
+                os.environ.get("REPORT_ISSUANCE_APPROVED") != "true" or
+                os.environ.get("REPORT_ISSUANCE_ENVIRONMENT") != "report-publication"):
             raise IssuanceBlocked("PROTECTED_MAIN_WORKFLOW_APPROVAL_REQUIRED")
         import subprocess
-        if subprocess.check_output(["git", "branch", "--show-current"], cwd=importer.root, text=True).strip() != "main":
-            raise IssuanceBlocked("ISSUANCE_REQUIRES_MAIN_CHECKOUT")
+        # GitHub Actions checks out a detached HEAD for scheduled/workflow
+        # events; the protected refs/heads/main context plus exact SHA binding
+        # is the branch proof, not `git branch --show-current`.
         local_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=importer.root, text=True).strip()
         if local_head != expected_head:
             raise IssuanceBlocked("ISSUANCE_CHECKOUT_HEAD_MISMATCH")

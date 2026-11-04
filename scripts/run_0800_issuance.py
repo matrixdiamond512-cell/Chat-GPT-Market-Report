@@ -97,8 +97,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"status": result["status"], "environment": result["environment"],
                           "report_id": result["report_id"], "revision": result["revision"],
                           "body_hash": result["body_hash"],
-                          "completed_stages": ["G2_EVIDENCE_VALIDATED", "CLAIM_CREATED",
-                                               "DOCS_FULLTEXT_READBACK", "PORTAL_PUBLIC_BODY_READBACK"]},
+                          "completed_stages": result["completed_stages"]},
                          ensure_ascii=False))
         return 0
     except IssuanceBlocked as exc:

@@ -140,3 +140,5 @@ Candidate includes PR #188 issuance integration, PR #189 truthful importer statu
 影響文書：固定パス `docs/system/requirements.md`、`docs/system/specification.md`、`docs/system/operations.md`。既存Google Docs固定IDは要件定義 `102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA`、仕様 `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI`、運用 `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg`。今回はこの環境からDocsを更新していないため、Docs本文読戻しはNOT_RUN。
 
 変更理由：PR #188の発行接続を定時入口・main create-only再試行・画面DOM照合・本番read-only preflightまで具体化する。GitHub仕様/要件/運用の固定パスとproject-control記録へ同一変更IDで追記。Node構文/画面回帰と差分検査PASS。Python・GitHub Actionsは更新後のSHAで未実行、PR branch push未完了。実績はこの追補だけで本番成功へ昇格しない。
+
+追加実装：Pages verifierが公開JSON照合後にpublic-mode Chromium DOM検証を必須実行し、reportId/date/time/title/body不一致やDOM実行環境欠落で停止する。08:00入口/Docs/GitHub/Pages失敗時のstageと累積completed stagesを返す。CIのpublic-mode fixtureはローカルに隔離したsiteを使う。実行結果は最終PR SHAのActionsで更新し、固定Docsの書込み・読戻しは引き続き未実施。

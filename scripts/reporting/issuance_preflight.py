@@ -80,6 +80,7 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None)
     result = {"mode": "READ_ONLY", "checks": {}, "secrets_emitted": False}
     required = ("GITHUB_ACTIONS", "GITHUB_REF", "GITHUB_REPOSITORY",
                 "REPORT_ISSUANCE_GITHUB_TOKEN", "REPORT_PAGES_BASE_URL",
+                "REPORT_ISSUANCE_ENVIRONMENT",
                 "REPORT_EVIDENCE_PROJECT_ID", "REPORT_EVIDENCE_BUCKET",
                 "REPORT_EVIDENCE_OBJECT", "REPORT_EVIDENCE_GENERATION",
                 "REPORT_ISSUANCE_CLAIM_BUCKET", "REPORT_ISSUANCE_DOCS_FOLDER_ID",
@@ -90,6 +91,7 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None)
     result["checks"]["protected_execution"] = {
         "status": "PASS" if env.get("GITHUB_ACTIONS") == "true" and
         env.get("GITHUB_REF") == "refs/heads/main" and
+        env.get("REPORT_ISSUANCE_ENVIRONMENT") == "report-publication" and
         env.get("REPORT_ISSUANCE_APPROVED") == "true" and
         env.get("REPORT_ISSUANCE_WRITE_ENABLED") == "true" else "BLOCKED",
         "approval_present": env.get("REPORT_ISSUANCE_APPROVED") == "true",
@@ -141,7 +143,7 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None)
             for folder_id in (env.get("REPORT_ISSUANCE_DOCS_FOLDER_ID", ""),
                               env.get("REPORT_ISSUANCE_ROOT_FOLDER_ID", "")):
                 response = google_probe.request("GET", "https://www.googleapis.com/drive/v3/files/" + folder_id,
-                    params={"fields": "id,mimeType,trashed,capabilities(canAddChildren)"}, timeout=20)
+                    params={"fields": "id,mimeType,parents,trashed,capabilities(canAddChildren)"}, timeout=20)
                 if not response.ok:
                     raise PreflightBlocked("DRIVE_FOLDER_READ_FAILED:" + str(response.status_code))
                 folder_states.append(response.json())
@@ -151,8 +153,12 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None)
             claim_permissions = google_probe.test_claim_permissions(
                 env.get("REPORT_ISSUANCE_CLAIM_BUCKET", ""))
             drive_ok = len(folder_states) == 2 and all(
+                row.get("id") == expected_id and
                 row.get("mimeType") == "application/vnd.google-apps.folder" and not row.get("trashed")
-                for row in folder_states) and folder_states[0].get("capabilities", {}).get("canAddChildren") is True
+                for row, expected_id in zip(folder_states, (env.get("REPORT_ISSUANCE_DOCS_FOLDER_ID", ""),
+                                                            env.get("REPORT_ISSUANCE_ROOT_FOLDER_ID", "")))
+            ) and env.get("REPORT_ISSUANCE_ROOT_FOLDER_ID", "") in folder_states[0].get("parents", []) and \
+                folder_states[0].get("capabilities", {}).get("canAddChildren") is True
             google_ok = drive_ok and exact_read and claim_permissions.get("create") is True
             result["checks"]["google"] = {"status": "PASS" if google_ok else "BLOCKED",
                                             "drive_folders_read": True,

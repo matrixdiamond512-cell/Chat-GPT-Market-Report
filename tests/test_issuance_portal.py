@@ -419,6 +419,14 @@ class IssuancePortalIntegrationTests(unittest.TestCase):
             with self.assertRaisesRegex(IssuanceBlocked, "PROTECTED_MAIN_WORKFLOW_APPROVAL_REQUIRED"):
                 GitHubPortalPublisher.from_environment(importer=FakeImporter(self.fixture.report), expected_head="sha")
 
+    def test_live_writes_require_the_configured_protected_environment(self):
+        env = {"REPORT_ISSUANCE_WRITE_ENABLED": "true", "GITHUB_ACTIONS": "true",
+               "GITHUB_REF": "refs/heads/main", "REPORT_ISSUANCE_APPROVED": "true",
+               "REPORT_ISSUANCE_ENVIRONMENT": "unprotected"}
+        with patch.dict(os.environ, env, clear=True):
+            with self.assertRaisesRegex(IssuanceBlocked, "PROTECTED_MAIN_WORKFLOW_APPROVAL_REQUIRED"):
+                GitHubPortalPublisher.from_environment(importer=FakeImporter(self.fixture.report), expected_head="sha")
+
 
 class GitHubCreateOnlyRestTests(unittest.TestCase):
     class Response:

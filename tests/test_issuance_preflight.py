@@ -36,7 +36,9 @@ class FakeGoogle:
     def request(self, method, url, **kwargs):
         self.methods.append(method)
         is_docs = "/docs-folder" in url
-        return self.Response({"mimeType": "application/vnd.google-apps.folder", "trashed": False,
+        folder_id = "docs-folder" if is_docs else "root-folder"
+        return self.Response({"id": folder_id, "parents": ["root-folder"] if is_docs else [],
+                              "mimeType": "application/vnd.google-apps.folder", "trashed": False,
                               "capabilities": {"canAddChildren": is_docs}})
     def get_exact_evidence(self, bucket, object_name, generation):
         self.methods.append("GET_GCS_GENERATION")
@@ -51,6 +53,7 @@ class IssuancePreflightTests(unittest.TestCase):
         self.env = {
             "GITHUB_ACTIONS": "true", "GITHUB_REF": "refs/heads/main",
             "GITHUB_REPOSITORY": "acme/report", "REPORT_ISSUANCE_GITHUB_TOKEN": "secret-token",
+            "REPORT_ISSUANCE_ENVIRONMENT": "report-publication",
             "REPORT_PAGES_BASE_URL": "https://example.invalid", "REPORT_EVIDENCE_PROJECT_ID": "market-prod",
             "REPORT_EVIDENCE_BUCKET": "market-evidence", "REPORT_EVIDENCE_OBJECT": "evidence/slot.json",
             "REPORT_EVIDENCE_GENERATION": "9", "REPORT_ISSUANCE_CLAIM_BUCKET": "market-claims",
@@ -81,6 +84,12 @@ class IssuancePreflightTests(unittest.TestCase):
         result = run_preflight(env=env, github=FakeGitHub(), google_probe=FakeGoogle(), dom_runtime=True)
         self.assertEqual(result["status"], "NOT_READY")
         self.assertEqual(result["checks"]["github"]["credential_contents_write_permission"], "UNKNOWN")
+
+    def test_wrong_environment_is_blocked_by_preflight(self):
+        env = {**self.env, "REPORT_ISSUANCE_ENVIRONMENT": "developer"}
+        result = run_preflight(env=env, github=FakeGitHub(), google_probe=FakeGoogle(), dom_runtime=True)
+        self.assertEqual(result["status"], "NOT_READY")
+        self.assertEqual(result["checks"]["protected_execution"]["status"], "BLOCKED")
 
     def test_08_entrypoint_rejects_wrong_slot_before_any_cloud_client_is_created(self):
         bundle = {"g2": {"report": {"date": "2026-11-05", "time": "12:00"}},

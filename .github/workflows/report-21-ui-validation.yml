@@ -145,6 +145,30 @@ jobs:
           NODE_PATH: ${{ runner.temp }}/renderer-regression/node_modules
         run: node scripts/validate_issuance_report_dom.js
 
+      - name: Build isolated public-mode DOM site with target reports.json
+        run: |
+          mkdir -p "$RUNNER_TEMP/issuance-public-dom-site"
+          cp report.html "$RUNNER_TEMP/issuance-public-dom-site/report.html"
+          cp -r assets "$RUNNER_TEMP/issuance-public-dom-site/assets"
+          cp -r data "$RUNNER_TEMP/issuance-public-dom-site/data"
+          cp tests/fixtures/issuance_dom_report.json "$RUNNER_TEMP/issuance-public-dom-site/reports.json"
+          python3 -m http.server 8767 --bind 127.0.0.1 --directory "$RUNNER_TEMP/issuance-public-dom-site" > /tmp/issuance-public-dom-http.log 2>&1 &
+          echo $! > /tmp/issuance-public-dom-http.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8767/reports.json -o /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/issuance-public-dom-http.log
+          exit 1
+
+      - name: Verify exact report body against public-mode JSON and rendered DOM
+        env:
+          PORTAL_URL: http://127.0.0.1:8767
+          ISSUANCE_CANONICAL_REPORT: tests/fixtures/issuance_dom_report.json
+          ISSUANCE_DOM_MODE: public
+          NODE_PATH: ${{ runner.temp }}/renderer-regression/node_modules
+        run: node scripts/validate_issuance_report_dom.js
+
   strict-current-report:
     runs-on: ubuntu-latest
     timeout-minutes: 10

@@ -200,6 +200,16 @@ class IssuancePipelineContractTests(unittest.TestCase):
         self.assertEqual(result["status"], "E2E_READBACK_PASS")
         self.assertEqual(result["report_id"], self.report["report_id"])
         self.assertEqual(docs.title, "マーケットレポート_2026-10-16_08-00")
+        self.assertEqual(result["completed_stages"], ["G2_EVIDENCE_VALIDATED", "CREATE_ONLY_CLAIM",
+                         "DOCS_FULLTEXT_REVISION_READBACK", "CANONICAL_RECEIPT_PAGES_PUBLIC_DOM_READBACK"])
+
+    def test_docs_failure_reports_failure_stage_and_completed_work(self):
+        class BrokenDocs:
+            def save_exact(self, **kwargs): raise RuntimeError("docs unavailable")
+        with self.assertRaisesRegex(IssuanceBlocked, "ISSUANCE_FAILED_AFTER:RuntimeError") as caught:
+            self.execute_pipeline(docs=BrokenDocs())
+        self.assertEqual(caught.exception.stage, "DOCS_SAVE_AND_FULLTEXT_READBACK")
+        self.assertEqual(caught.exception.completed_stages, ("G2_EVIDENCE_VALIDATED", "CREATE_ONLY_CLAIM"))
 
     def test_test_only_evidence_is_rejected_before_any_write(self):
         self.bundle["environment"] = "TEST_ONLY"
