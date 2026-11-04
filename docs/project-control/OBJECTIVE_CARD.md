@@ -313,3 +313,7 @@ The controlled 08:00 CLI entrypoint, GitHub create-only conflict/retry guards, r
 ### MR-ISSUANCE-ENTITY-20261105-02 status
 
 New pinned-generation G2 consumer has been added to the existing 08:00 CLI. This does not generate a G2 bundle. Source review found only an Apps Script path that reads an existing Google Doc and publishes it; the ChatGPT task and installed trigger/history are not accessible here. Production remains blocked by BLOCKED_G2_PRODUCER_MISSING, and ownership config remains legacy for every slot. No merge, external write, Pages deployment, auth/environment change, or scheduled task change was performed. Exact-head hosted CI is pending and will be recorded after final main sync.
+
+### MR-ISSUANCE-ENTITY-20261105-02
+
+The CLI now supports exact-generation GCS G2 intake and verifies explicit report/revision/Evidence target fields. No trusted G2 producer was found in repository source; Apps Script reads existing Docs, while external ChatGPT task settings were not inspectable. Producer identity remains unverified, the preflight fails closed with BLOCKED_G2_PRODUCER_MISSING, and ownership remains apps_script_legacy. Main `8a09c2e4838d044e04b9e162961ec2d042f8963c` was synchronized with zero path overlap. CI results are pending on the synchronized head. Production E2E remains NOT_RUN.

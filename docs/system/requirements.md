@@ -148,3 +148,7 @@ DELIVERY-CLOSEOUT-20261101-01 追加受入条件: 回顧アーカイブ対象（
 ## MR-ISSUANCE-ENTITY-20261105-02 — G2 producer/handoff acceptance
 
 A production G2 must be frozen by a declared producer before Docs save. Its exact GCS bucket/object/generation must bind reportId, revision, fullText SHA-256, frozen_at, Evidence object/generation, evidenceId, and snapshotId. Reading an existing Docs file is not evidence that this pre-save G2 existed. Repository inspection found no producer that creates this bundle: Apps Script reads an existing Google Doc and publishes it; the scheduled ChatGPT task is external and its configuration was not inspectable. Until that producer and its trusted write identity are connected, issuance is BLOCKED_G2_PRODUCER_MISSING.
+
+## MR-ISSUANCE-ENTITY-20261105-02 — trusted G2 producer requirement
+
+A valid production G2 requires a declared producer that freezes the exact fullText, reportId/revision, fullText SHA-256, freeze timestamp, and exact pre-slot Evidence object/generation, evidenceId and snapshotId before Docs creation. The protected runtime must verify producer provenance as well as object bytes/generation. Existing Google Docs are downstream saved copies and cannot establish that source. Until a producer and trusted writer identity are implemented and confirmed, report BLOCKED_G2_PRODUCER_MISSING; matching bundle fields alone do not permit preflight READY.

@@ -130,3 +130,9 @@ Partial state is explicit: an importer failure does not reach GitHub; a GitHub r
 The 08:00 CLI may accept a G2 bundle from a local file or an explicit GCS generation. The production GCS handoff requires reportId, positive revision, Evidence object/generation, and exact G2 object/generation. It verifies the downloaded generation and G2 creation time, then requires the bundle and Evidence references to match before Docs work. A reader alone does not create the producer or establish provenance; the producer identity and bucket write policy still require administrator confirmation.
 
 config/issuance_ownership.json currently assigns all four slots to apps_script_legacy. The new CLI therefore remains blocked for 08:00 until a separately reviewed ownership change; 12:00/16:00/21:00 remain on the legacy owner. Do not switch ownership until the Apps Script guard is deployed and tested, no legacy 08:30 attempt is in flight, the protected CLI is ready, and rollback ownership is agreed.
+
+## MR-ISSUANCE-ENTITY-20261105-02 — G2 object input and ownership
+
+The 08:00 consumer supports an exact GCS object generation and requires explicit reportId, positive revision, Evidence object/generation. It rejects a non-matching identity/reference, late object creation, invalid generation, and malformed owner config before Docs work. This is a consumer contract, not a G2 generation function. The preflight must separately block until a trusted producer and source identity are registered; a hash match does not prove who authored the text.
+
+The ownership file remains apps_script_legacy for all four report slots. Only a separately approved, reviewed transition after the Apps Script guard is deployed may assign 08:00 to g2_issuance_cli; all other slots retain their current owner. Actual installed time triggers and history are not inferred from source declarations.
