@@ -301,3 +301,7 @@ NEXT: settle required protected GitHub Actions environment and least-privilege i
 ### MR-ISSUANCE-CONNECT final code-test correction
 
 Latest exact code-test head: `e31f50db5c0c6f1316ea3c28eddd889d04a1fb13`. Composed chain test is now present and passed: Evidence/G2 validation → Docs fake writer/readback → exact-title strict importer and real receipt/evidence validation → fake atomic GitHub file/ref readback → Pages workflow stub and public report JSON text/hash comparison. Actions: issuance 16 + portal 30 + handoff 16 PASS; sync recovery, frozen-cutoff, delivery-health, dashboard-health, archive-recovery all PASS. This is E2 fixture evidence only; production/external stages remain NOT_RUN. Latest PR head will include this result-record update and must retain the same code tests as the preceding exact code head.
+
+### MR-ISSUANCE-CONNECT latest exact-head run
+
+Added an embedded different-reportId evidence regression. Exact code-test head `9c8ec84265891469f5ec473803a9e4bc6c15370f` passed issuance pipeline 16/16, composed portal/importer 30/30, TEST_ONLY handoff 16/16 and all five related regression workflows. External production stages remain NOT_RUN; no authorization boundary changed. The latest PR commit records this evidence and triggers a final documentation-head CI check.
