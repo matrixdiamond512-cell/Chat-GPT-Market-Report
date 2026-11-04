@@ -444,7 +444,14 @@ def run_issuance(bundle: dict, *, expected_project_id: str,
     if saved_at < slot_at or saved_at > slot_at + timedelta(minutes=40):
         raise IssuanceBlocked("DOCS_SAVE_TIME_OUTSIDE_SLOT_WINDOW")
 
-    portal_result = portal.publish_and_readback(report=report, docs=docs, evidence=evidence)
+    # Preserve the exact pinned source envelope alongside the validated
+    # immutable evidence payload; the strict importer stages these same bytes.
+    portal_evidence = {
+        **evidence,
+        "evidence_id": evidence["evidenceId"],
+        "evidence_object": bundle["evidence_object"],
+    }
+    portal_result = portal.publish_and_readback(report=report, docs=docs, evidence=portal_evidence)
     if (portal_result.report_id != report["report_id"] or
             portal_result.revision != report["revision"] or
             portal_result.snapshot_id != evidence["snapshot"]["snapshot_id"] or
