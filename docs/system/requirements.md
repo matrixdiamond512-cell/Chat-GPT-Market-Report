@@ -124,6 +124,12 @@ DELIVERY-CLOSEOUT-20261101-01 追加受入条件: 回顧アーカイブ対象（
 - Identical retries may reuse an exact existing canonical report/receipt and must not create another main commit. If main commit completed but Pages/public readback did not, record partial completion and reconcile the exact commit/files before retrying Pages.
 - Mock/isolated test success is TEST_ONLY. Production acceptance requires a separate authorized 08:00 E2E; this implementation does not change the four weekday schedules or grant retroactive publication eligibility.
 
+### Invocation and public-index regression criteria
+
+- Invoke the 08:00 module as `python -m scripts.run_0800_issuance`; `--help` must run without credentials, while missing input and invalid slot data fail closed as `BLOCKED` before creating cloud clients.
+- Isolated public-mode DOM validation must use the public `reports.json` array shape. It must require exactly one target reportId row and compare revision, date, time, fullText/body SHA-256, and the rendered report DOM before accepting the page.
+- The read-only preflight returns overall `READY` only when each required check is `PASS`; an unverified GitHub `contents:write` scope stays `UNKNOWN` and yields overall `NOT_READY`. An explicit independent administrator attestation may move that check to `PASS`; it does not bypass the protected Environment or write gate.
+
 ### Follow-up acceptance: invocation, create-only, DOM, preflight
 
 - The protected 08:00 entry point accepts only today's weekday 08:00 slot within the existing 40-minute window, requires a G2 bundle plus an explicit GCS object name and generation, reads that exact generation, and calls existing `run_issuance()`. It does not select a latest object or change the scheduled task definition.
@@ -133,3 +139,4 @@ DELIVERY-CLOSEOUT-20261101-01 追加受入条件: 回顧アーカイブ対象（
 - The production publisher requires GitHub Actions `refs/heads/main`, the named `report-publication` Environment context, its approval gate, an administrator attestation of the separately supplied token's contents-write permission, and the existing explicit write gate; developer checkouts and other Environments remain blocked.
 - A read-only preflight reports observable GitHub repository push access, active Pages workflow, protected Environment reviewers, Docs folder capability, exact Evidence generation access, and claim-bucket create permission through the provider's non-mutating permission-check endpoint. GitHub's read APIs cannot certify a fine-grained token's exact contents-write grant; that remains UNKNOWN and prevents overall READY until an authorized administrator attests it using protected `REPORT_ISSUANCE_CONTENTS_WRITE_VERIFIED=true`. Credentials are never emitted.
 - These are code/isolated acceptance criteria only; they do not prove scheduled-task linkage or production Docs, main, receipt, Pages, or public DOM.
+

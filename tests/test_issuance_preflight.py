@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import json
+import io
+import os
 import tempfile
 import unittest
 from pathlib import Path
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from unittest.mock import patch
+from contextlib import redirect_stdout
 
 from scripts.reporting.issuance_preflight import run_preflight
-from scripts.run_0800_issuance import load_bundle
+from scripts.run_0800_issuance import load_bundle, main as issuance_main
 from scripts.reporting.issuance_pipeline import IssuanceBlocked
 
 
@@ -62,12 +65,12 @@ class IssuancePreflightTests(unittest.TestCase):
             "REPORT_ISSUANCE_CONTENTS_WRITE_VERIFIED": "true",
         }
 
-    def test_read_only_preflight_checks_protected_environment_github_and_google(self):
+    def test_admin_verified_read_only_preflight_is_ready(self):
         github, google = FakeGitHub(), FakeGoogle()
         result = run_preflight(env=self.env, github=github, google_probe=google, dom_runtime=True)
         self.assertEqual(result["status"], "READY")
         self.assertEqual(result["mode"], "READ_ONLY")
-        self.assertEqual(result["checks"]["github"]["status"], "UNKNOWN")
+        self.assertEqual(result["checks"]["github"]["status"], "PASS")
         self.assertEqual(result["checks"]["github"]["credential_contents_write_permission"], "ADMIN_ATTESTED")
         self.assertFalse(result["secrets_emitted"])
         self.assertNotIn("secret-token", json.dumps(result))
@@ -84,6 +87,7 @@ class IssuancePreflightTests(unittest.TestCase):
         result = run_preflight(env=env, github=FakeGitHub(), google_probe=FakeGoogle(), dom_runtime=True)
         self.assertEqual(result["status"], "NOT_READY")
         self.assertEqual(result["checks"]["github"]["credential_contents_write_permission"], "UNKNOWN")
+        self.assertEqual(result["checks"]["github"]["status"], "UNKNOWN")
 
     def test_wrong_environment_is_blocked_by_preflight(self):
         env = {**self.env, "REPORT_ISSUANCE_ENVIRONMENT": "developer"}
@@ -99,6 +103,25 @@ class IssuancePreflightTests(unittest.TestCase):
             path.write_text(json.dumps(bundle), encoding="utf-8")
             with self.assertRaisesRegex(IssuanceBlocked, "TODAY_WEEKDAY_0800"):
                 load_bundle(path)
+
+    def test_08_entrypoint_rejects_invalid_date_before_cloud_client_is_created(self):
+        bundle = {"g2": {"report": {"date": "not-a-date", "time": "08:00"}},
+                  "evidence_ref": {"object": "evidence/slot.json", "generation": 9}}
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "bundle.json"
+            path.write_text(json.dumps(bundle), encoding="utf-8")
+            with self.assertRaisesRegex(IssuanceBlocked, "ISSUANCE_REPORT_SLOT_INVALID"):
+                load_bundle(path)
+
+    def test_module_entrypoint_without_input_is_safely_blocked_without_credentials(self):
+        output = io.StringIO()
+        with patch.dict(os.environ, {}, clear=True), redirect_stdout(output):
+            status = issuance_main([])
+        payload = json.loads(output.getvalue())
+        self.assertEqual(status, 2)
+        self.assertEqual(payload["status"], "BLOCKED")
+        self.assertEqual(payload["reason"], "ISSUANCE_BUNDLE_REQUIRED")
+        self.assertNotIn("secret", output.getvalue().lower())
 
     def test_entrypoint_reads_only_named_generation_and_returns_same_pinned_bytes(self):
         payload = {"g2": {"report": {"date": "2026-11-05", "time": "08:00"}},
@@ -119,3 +142,4 @@ class IssuancePreflightTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

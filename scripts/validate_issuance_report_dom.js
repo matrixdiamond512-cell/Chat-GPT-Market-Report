@@ -19,7 +19,8 @@ async function main() {
   const expectedId = `${target.date}_${String(target.time).replace(':', '-')}`;
   const raw = String(target.fullText || '');
   const digest = crypto.createHash('sha256').update(raw, 'utf8').digest('hex');
-  if (target.report_id !== expectedId || !target.bodyHash || target.bodyHash !== digest) {
+  if (target.report_id !== expectedId || !Number.isInteger(target.revision) || target.revision < 1 ||
+      !target.bodyHash || target.bodyHash !== digest) {
     throw new Error('Canonical target identity/body hash is invalid');
   }
   const browser = await chromium.launch({headless: true});
@@ -35,13 +36,17 @@ async function main() {
       if (!response.ok) throw new Error('Public reports.json HTTP ' + response.status);
       const payload = await response.json();
       const rows = Array.isArray(payload) ? payload : (Array.isArray(payload?.reports) ? payload.reports : []);
-      const found = rows.find(row => row?.report_id === target.report_id && row?.revision === target.revision);
+      const identityRows = rows.filter(row => row?.report_id === target.report_id);
+      const found = identityRows.length === 1 ? identityRows[0] : null;
+      if (identityRows.length !== 1) {
+        throw new Error('Public reports.json must contain exactly one row for the target reportId');
+      }
       if (found && found.report_status && !['PUBLISHED', 'DOC_READBACK_PASS'].includes(String(found.report_status).toUpperCase())) {
         throw new Error('Public target report is not publication-eligible');
       }
-      if (!found || found.bodyHash !== digest || found.fullText !== raw ||
+      if (!found || found.revision !== target.revision || found.bodyHash !== digest || found.fullText !== raw ||
           found.date !== target.date || found.time !== target.time) {
-        throw new Error('Public reports.json does not contain the exact target identity/body');
+        throw new Error('Public reports.json does not contain the exact target reportId/revision/date/time/body');
       }
     } else {
       await page.route('**/reports.json*', route => route.fulfill({
@@ -84,3 +89,4 @@ async function main() {
 }
 
 main().catch(error => { console.error(error && error.stack || error); process.exit(1); });
+

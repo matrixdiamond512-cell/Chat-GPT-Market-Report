@@ -66,9 +66,12 @@ def load_bundle(path: Path, *, now: datetime | None = None) -> dict:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("bundle", type=Path, help="G2 JSON containing evidence_ref.object and generation")
+    parser.add_argument("bundle", nargs="?", type=Path,
+                        help="G2 JSON containing evidence_ref.object and generation")
     args = parser.parse_args(argv)
     try:
+        if args.bundle is None:
+            raise IssuanceBlocked("ISSUANCE_BUNDLE_REQUIRED")
         required_env = ("REPORT_EVIDENCE_PROJECT_ID", "REPORT_EVIDENCE_BUCKET",
                        "REPORT_ISSUANCE_CLAIM_BUCKET", "REPORT_ISSUANCE_DOCS_FOLDER_ID",
                        "REPORT_ISSUANCE_ROOT_FOLDER_ID", "GITHUB_SHA")
@@ -109,3 +112,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

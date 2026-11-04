@@ -151,7 +151,8 @@ jobs:
           cp report.html "$RUNNER_TEMP/issuance-public-dom-site/report.html"
           cp -r assets "$RUNNER_TEMP/issuance-public-dom-site/assets"
           cp -r data "$RUNNER_TEMP/issuance-public-dom-site/data"
-          cp tests/fixtures/issuance_dom_report.json "$RUNNER_TEMP/issuance-public-dom-site/reports.json"
+          node -e "const fs=require('fs'); const report=JSON.parse(fs.readFileSync('tests/fixtures/issuance_dom_report.json','utf8')); fs.writeFileSync(process.argv[1], JSON.stringify([report], null, 2));" \
+            "$RUNNER_TEMP/issuance-public-dom-site/reports.json"
           python3 -m http.server 8767 --bind 127.0.0.1 --directory "$RUNNER_TEMP/issuance-public-dom-site" > /tmp/issuance-public-dom-http.log 2>&1 &
           echo $! > /tmp/issuance-public-dom-http.pid
           for attempt in $(seq 1 30); do
@@ -201,3 +202,4 @@ jobs:
           PORTAL_URL: http://127.0.0.1:8765
           NODE_PATH: ${{ runner.temp }}/current-report-validation/node_modules
         run: node scripts/validate_market_report_dom.js
+

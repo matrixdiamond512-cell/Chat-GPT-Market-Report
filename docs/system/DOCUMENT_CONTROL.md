@@ -142,3 +142,11 @@ Candidate includes PR #188 issuance integration, PR #189 truthful importer statu
 変更理由：PR #188の発行接続を定時入口・main create-only再試行・画面DOM照合・本番read-only preflightまで具体化する。GitHub仕様/要件/運用の固定パスとproject-control記録へ同一変更IDで追記。Node構文/画面回帰と差分検査PASS。コードを既存PR branchへ追加済み。PythonとHosted CIはWindowsローカルでは未実行で、更新後SHAのActions実行中。実績はこの追補だけで本番成功へ昇格しない。
 
 追加実装：Pages verifierが公開JSON照合後にpublic-mode Chromium DOM検証を必須実行し、reportId/date/time/title/body不一致やDOM実行環境欠落で停止する。08:00入口/Docs/GitHub/Pages失敗時のstageと累積completed stagesを返す。CIのpublic-mode fixtureはローカルに隔離したsiteを使う。実行結果は最終PR SHAのActionsで更新し、固定Docsの書込み・読戻しは引き続き未実施。
+
+## MR-ISSUANCE-CONNECT-20261104-02 CI補正｜2026-11-05 JST
+
+- 修正理由：preflightテストが管理者attestation済みのGitHub checkを`UNKNOWN`と誤期待し、公開DOM CIでは単一オブジェクトをreports.jsonへ置いていた。実行手順も直接スクリプト起動の表記が残っていた。
+- 対象：同じ固定パスの要件定義・仕様・運用マニュアル。管理者確認済みpreflightを`READY/PASS`、未確認を`NOT_READY/UNKNOWN`とする別テストを維持し、`python -m scripts.run_0800_issuance`、公開索引配列、reportId/revision/body hash/DOM一致を明記。
+- 証拠水準：隔離テストと最終head Actionsの結果を個別に記録する。待機中・未開始のActionsはPASSと扱わない。固定ID Google Docsは今回も更新・読戻ししていない（NOT_RUN）。
+- 制限：本番Docs/main/receipt/Pages書込み、Secrets・Environment・定時タスク変更、PR mergeは行わない。将来の08:00承認付きE2Eが必要。
+
