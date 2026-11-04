@@ -194,7 +194,9 @@ class IssuancePortalIntegrationTests(unittest.TestCase):
         for heading in ("今日の相場テーマ", "主要市場データ", "材料と値動きの整合性", "主導市場",
                         "重要ニュース", "クロスアセット資金フロー", "需給・ポジション",
                         "6市場の個別見通し"):
-            body_lines.extend((heading, paragraph))
+            detail = ("金・XAU/USD、WTI原油、日経225先物、USD/JPY、EUR/USD、BTCUSDを確認する。 " + paragraph
+                      if heading == "主要市場データ" else paragraph)
+            body_lines.extend((heading, detail))
         body_lines.extend(("シナリオ", "メインシナリオ", *main_quotes, "代替シナリオ", *alt_quotes,
                            "崩れる条件", *invalid_quotes, "前回からの主な変化", paragraph,
                            "結論", paragraph))
