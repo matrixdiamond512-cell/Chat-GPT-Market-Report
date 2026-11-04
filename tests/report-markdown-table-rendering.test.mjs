@@ -59,7 +59,7 @@ test("view-only archive prose never becomes a fabricated market-data table", () 
 
   const prose = ["金曜日 08:00 の時点では、USD/JPY は時刻付き価格を確認できない。"];
   const rendered = api.renderMarketTable(oct23Morning, prose, "主要市場データ");
-  assert.doesNotMatch(rendered, /<table\\b/, "unstructured archive prose is not converted to prices");
+  assert.doesNotMatch(rendered, /<table\b/, "unstructured archive prose is not converted to prices");
   assert.match(rendered, /金曜日 08:00/);
 });
 
