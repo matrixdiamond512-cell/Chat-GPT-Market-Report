@@ -145,7 +145,9 @@ class IssuancePreflightTests(unittest.TestCase):
             owner_path = Path(folder) / "issuance_ownership.json"
             owner_path.write_text(json.dumps({"schemaVersion": 1,
                 "slotOwners": {"08:00": "g2_issuance_cli"}}), encoding="utf-8")
-            env = {**self.env, "REPORT_ISSUANCE_OWNER_CONFIG_PATH": str(owner_path)}
+            env = {**self.env, "REPORT_ISSUANCE_OWNER_CONFIG_PATH": str(owner_path),
+                   "REPORT_ISSUANCE_G2_PRODUCER_SERVICE_ACCOUNT":
+                       "report-issuer@acme.iam.gserviceaccount.com"}
             result = run_preflight(env=env, github=FakeGitHub(), google_probe=FakeGoogle(),
                                    dom_runtime=True, pages_probe=lambda _url: True)
         self.assertEqual(result["checks"]["g2_evidence_binding"]["status"], "PASS")
@@ -296,7 +298,11 @@ class IssuancePreflightTests(unittest.TestCase):
         self.assertEqual(result["reason"], "ISSUANCE_REPORT_SLOT_INVALID")
 
     def test_entrypoint_reads_only_named_generation_and_returns_same_pinned_bytes(self):
-        payload = {"g2": {"report": {"date": "2026-11-05", "time": "08:00"}},
+        payload = {"g2": {
+                       "report_id": "2026-11-05_08-00", "revision": 1,
+                       "frozen_at": "2026-11-05T08:05:00+09:00",
+                       "scenario_review": {"reviewed_at": "2026-11-05T08:04:00+09:00"},
+                       "report": {"date": "2026-11-05", "time": "08:00"}},
                    "evidence_ref": {"object": "evidence/slot.json", "generation": 17}}
         envelope = {"evidence_object": {"generation": 17, "object": "evidence/slot.json"}}
         instant = datetime(2026, 11, 5, 8, 15, tzinfo=ZoneInfo("Asia/Tokyo"))
