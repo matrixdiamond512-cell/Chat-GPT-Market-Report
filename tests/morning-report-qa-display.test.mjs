@@ -55,7 +55,8 @@ test("failed enforced 08:00 data stays readable but its market table is hidden a
   assert.equal(report.report_status, "PUBLISHED", "source publication status is not rewritten");
   assert.equal(h.tableRemoved, true, "unverified rendered market table is withheld");
   assert.equal(h.warnings.length, 1);
-  assert.match(h.warnings[0].textContent, /閲覧記録/);
+  assert.match(h.warnings[0].textContent, /発行ステータスは変更していません/);
+  assert.match(h.warnings[0].textContent, /市場データ検証に未達/);
   assert.equal(h.warnings[0].role, "alert");
   assert.equal(h.messages[0][1].file, "reports/2026-10-06_08-00.json");
   assert.equal(h.messages[0][1].date, "2026-10-06");
