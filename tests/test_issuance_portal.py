@@ -9,7 +9,8 @@ from unittest.mock import patch
 
 from scripts.reporting.issuance_pipeline import IssuanceBlocked
 from scripts.reporting.issuance_portal import (
-    GitHubPagesVerifier, GitHubPortalPublisher, stage_pinned_evidence,
+    GitHubPagesVerifier, GitHubPortalPublisher, StrictGoogleDocsImporter,
+    stage_pinned_evidence,
 )
 from test_issuance_pipeline import IssuancePipelineContractTests
 
@@ -109,6 +110,42 @@ class DriveSession:
         return HttpResponse(200, {"files": self.files})
 
 
+class ExactIssuanceDriveSession:
+    def __init__(self, *, docs_id, drive_title, full_text, app_properties):
+        self.docs_id, self.drive_title, self.full_text = docs_id, drive_title, full_text
+        self.app_properties = app_properties
+        self.item = {"id": docs_id, "name": drive_title,
+                     "mimeType": "application/vnd.google-apps.document", "parents": ["month-folder"],
+                     "createdTime": "2026-10-16T08:02:00+09:00",
+                     "modifiedTime": "2026-10-16T08:02:01+09:00",
+                     "headRevisionId": "revision-7", "appProperties": app_properties}
+
+    def get(self, endpoint, *, params=None, timeout):
+        if endpoint.endswith("/files"):
+            return HttpResponse(200, {"files": [self.item]})
+        if endpoint.endswith("/documents/doc-123"):
+            return HttpResponse(200, {"documentId": self.docs_id, "title": self.drive_title,
+                                      "revisionId": "revision-7", "body": {"content": [
+                                          {"paragraph": {"elements": [{"textRun": {"content": self.full_text}}]}}
+                                      ]}})
+        if endpoint.endswith("/files/doc-123"):
+            return HttpResponse(200, self.item)
+        raise AssertionError("unexpected exact issuance Drive request: " + endpoint)
+
+
+class DynamicPublicSession:
+    def __init__(self, github):
+        self.github = github
+
+    def get(self, url, *, timeout):
+        path = url.split("example.invalid/", 1)[1]
+        data = self.github.contents.get(path)
+        if data is None:
+            return HttpResponse(404, {})
+        import json
+        return HttpResponse(200, json.loads(data.decode("utf-8")))
+
+
 class IssuancePortalIntegrationTests(unittest.TestCase):
     def setUp(self):
         self.fixture = IssuancePipelineContractTests()
@@ -136,6 +173,52 @@ class IssuancePortalIntegrationTests(unittest.TestCase):
         self.assertEqual(result["canonical_commit_sha"], "commit-1")
         self.assertEqual(github.calls, 1)
         self.assertEqual(pages.calls, 1)
+
+    def test_composed_run_issuance_uses_real_strict_importer_receipt_and_public_readback(self):
+        import json
+        from test_issuance_pipeline import FakeDocs
+
+        github = FakeGitHub()
+        pages = GitHubPagesVerifier(github=WorkflowGateway(), base_url="https://example.invalid",
+                                    public_session=DynamicPublicSession(github), poll_interval=0)
+        report = self.fixture.report
+        app_properties = {"report_id": report["report_id"], "revision": "1",
+                          "body_hash": report["bodyHash"],
+                          "evidence_id": self.fixture.evidence["evidenceId"],
+                          "snapshot_id": self.fixture.evidence["snapshot"]["snapshot_id"]}
+        docs_session = ExactIssuanceDriveSession(
+            docs_id="doc-123", drive_title="マーケットレポート_2026-10-16_08-00",
+            full_text=report["fullText"], app_properties=app_properties,
+        )
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+
+            def project_indexes():
+                index = [{"date": report["date"], "time": report["time"], "title": report["title"],
+                          "report_id": report["report_id"], "revision": report["revision"],
+                          "bodyHash": report["bodyHash"], "fullText": report["fullText"]}]
+                (root / "reports.json").write_text(json.dumps(index), encoding="utf-8")
+                (root / "data").mkdir(exist_ok=True)
+                (root / "data/latest-report.json").write_text(json.dumps({"latestReport": index[0]}), encoding="utf-8")
+                (root / "data/dashboard.json").write_text(json.dumps({"latestReport": index[0]}), encoding="utf-8")
+
+            strict_importer = StrictGoogleDocsImporter(
+                root=root, docs_session=docs_session, projection_runner=project_indexes,
+            )
+            portal = GitHubPortalPublisher(
+                importer=strict_importer, github=github, pages=pages, expected_head="main-sha",
+            )
+            result = self.fixture.execute_pipeline(docs=FakeDocs(), portal=portal)
+            canonical_path = root / "reports/2026-10-16_08-00.json"
+            receipt_path = root / "publication-receipts/2026-10-16_08-00.json"
+            self.assertTrue(canonical_path.is_file())
+            self.assertTrue(receipt_path.is_file())
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            self.assertEqual(receipt["reportId"], report["report_id"])
+            self.assertEqual(receipt["documentRevisionId"], "revision-7")
+            self.assertIn("reports.json", github.contents)
+            self.assertEqual(result["environment"], "TEST_ONLY")
+            self.assertTrue(result["public_body_verified"])
 
     def test_github_write_failure_stops_pages(self):
         pages = FakePages()
