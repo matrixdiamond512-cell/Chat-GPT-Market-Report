@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "market-report-pre-slot-trigger/v1",
+  "status": "PREPARATION_ONLY",
+  "architectureCandidate": "cloud-scheduler-oidc-cloud-run-existing-runner-private-gcs",
+  "architectureComparison": {
+    "githubActionsCron": "REJECTED_AS_TIME_GUARANTEE; may start late or be dropped",
+    "cloudSchedulerCloudRunGCS": "SELECTED_MINIMAL_CHANGE; reuse existing PR 181/182 ingress and storage design; configuration not observed",
+    "awsEventBridgeLambdaS3": "ALTERNATIVE_NOT_SELECTED; adds a separate cloud runtime and IAM/storage stack"
+  },
+  "timezone": "Asia/Tokyo",
+  "reportSlot": "08:00",
+  "weekdays": ["MON", "TUE", "WED", "THU", "FRI"],
+  "scheduledTimesJST": ["07:47", "07:53", "07:57"],
+  "executionMode": "TEST_ONLY",
+  "triggerSource": "external_direct_runner",
+  "maxTriggerDelaySeconds": 60,
+  "githubWorkflowDispatch": false,
+  "oidc": {
+    "required": true,
+    "audience": "REPLACE_WITH_CLOUD_RUN_AUDIENCE",
+    "allowlistedSchedulerJobResourceNames": [
+      "projects/REPLACE/locations/asia-northeast1/jobs/report-0800-0747",
+      "projects/REPLACE/locations/asia-northeast1/jobs/report-0800-0753",
+      "projects/REPLACE/locations/asia-northeast1/jobs/report-0800-0757"
+    ],
+    "uniqueServiceAccountPerJob": true
+  },
+  "secretReferences": {
+    "triggerHmac": "projects/REPLACE/secrets/PRE_SLOT_TRIGGER_HMAC_KEY/versions/REPLACE",
+    "githubAppPrivateKey": "NOT_CONFIGURED",
+    "marketDataCredentials": "NOT_CONFIGURED",
+    "googleDocsCredentials": "NOT_CONFIGURED"
+  },
+  "storage": {
+    "attemptLedger": "private-gcs://REPLACE/pre-slot-ledger",
+    "immutableEvidence": "private-gcs://REPLACE/pre-slot-evidence",
+    "diagnostics": "private-gcs://REPLACE/pre-slot-diagnostics",
+    "diagnosticRetentionDays": 14,
+    "createOnlyEvidence": true,
+    "publicAccess": false,
+    "lifecycleDeletionReadbackRequired": true
+  },
+  "privateAttemptLedgerRequired": true,
+  "productionEnabled": false,
+  "liveMainEvidenceWriteEnabled": false,
+  "googleDocsWriterConfigured": false,
+  "externalResourcesObserved": false
+}

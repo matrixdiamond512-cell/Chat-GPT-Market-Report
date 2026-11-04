@@ -187,3 +187,18 @@ GitHub main advanced from `c3dae9fdaea7c05d8006006b6fb052a28e2535f4` to `9615882
 Main advanced four commits from `9615882cf018479bf3cb2eeeb6f6b73367ea764b` to `d6420e2c3d53a16304bb8d301677e2db4c41da0c`. The actual range changes 15 production data files only (Japan stocks, Nikkei/US dollar-yen supply-demand and market references); no acquisition/evidence code, workflow, or tests changed. Merged without conflicts as `415c28c6d`; local compare 0 behind / 14 ahead before this record commit.
 
 Verified on the synced tree: `data/market/latest.json` is `2026-10-16T20:16:17+09:00`, slot `21:00`, `verified`, with no required-field gaps; `data/report-evidence/2026-10-16_21-00-r1.json` and `reports/2026-10-16_21-00.json` are absent; `reports.json` latest is 2026-10-13 16:00. Do not reconstruct or publish the missed 21:00 slot. The recovery PR applies to future eligible acquisitions. Following local/final-head CI, the user has now directed PR #156 to be reviewed and merged; verify head/base once more, mark ready, and merge the exact approved head. Then observe future-slot production acceptance separately.
+
+
+## Issue #176 — 08:00 upstream recovery (ADD, 2026-10-26)
+PRIMARY OBJECTIVE: Establish a fail-closed, independently triggered pre-slot and G2-to-Docs handoff contract, with safe failure diagnostics, without changing PR #97 or production workflows.
+ACCEPTANCE: signed external direct-run trigger contract and delay/cutoff rejection; exact producer body/hash pin and independent Docs readback contract; redacted diagnostics/private-storage constraints; normal and abnormal regression coverage; CI and fixed-document updates; new Draft PR from main.
+CONSTRAINTS: no main merge, deployment, scheduled-workflow production application, Drive writes, other-slot behavior, or PR #97 edits. No fixture PASS reported as live E2E.
+OPEN OUTCOMES: real scheduler/runner/secrets/IAM; acquisition and immutable evidence transaction through main readback; actual G2 producer/writer/readback adapters; private diagnostic store; weekday 08:00 live E2E; fixed Google Docs document readback.
+NEXT NECESSARY ACTION: review Draft PR and configure separately approved nonproduction external resources before a TEST_ONLY runtime observation.
+
+
+## ISSUE-176 review follow-up (2026-10-26)
+PRIMARY OBJECTIVE: Safely connect pre-slot acquisition and G2-to-Docs verification without changing PR #97, main, or production.
+ACCEPTANCE: timezone-safe default clock; same-run save-receipt bound Docs readback; frozen G2 body is writer's sole text input and timestamp precedes save; fixed 14-day diagnostic deletion exercised at actual TEST_ONLY store; explicit direct-runner path and scheduler choice documented; 07:47/07:53/07:57 TEST_ONLY acquisition/evidence/readback suite; existing cutoff and freshness gates unchanged.
+OPEN OUTCOMES: hosted CI exact head; Cloud Scheduler/Run/GCS/Secret Manager/IAM configuration; real market source invocation; main write/readback staging approval; Google Docs writer and independent readback adapter; live weekday acceptance.
+NEXT: check exact-head Actions, repair failures, and report synthetic TEST_ONLY separately from external E2E. No main merge/deploy/Drive write or PR #97 changes.

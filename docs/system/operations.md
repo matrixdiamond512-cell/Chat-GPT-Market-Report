@@ -69,3 +69,20 @@ Google Docs固定ID `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg` に対応す�
 - 図解3件はDrive上の最新保存日時・PNG MIMEを確認。GitHub Pagesでの画像実体、SHA-256、manifest、snapshot/本文との対応が未検証のため図解正式READYへ昇格させない。旧ファイルは削除しない。
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
+
+
+## ISSUE-176-20261026｜08:00上流復旧の準備運用（Draft）
+1. 既存GitHub cronの成功・起動時刻を保証とみなさない。専用の外部実行基盤から08:00 slotを直接runnerへ実行する。外部SchedulerからGitHub workflow_dispatchだけを呼ぶ構成は採用しない。
+2. 準備例は `config/pre_slot_runner.example.json`。本番化前に外部schedulerのAsia/Tokyo weekday 07:47/07:53/07:57設定、直接到達するrunner、HMAC鍵Secret Manager参照、専用サービスidentity/IAM、private durable attempt ledger/診断保存先、14日retention、ネットワーク/監査ログを設定しreadbackする。実リソースの存在はこのPRでは確認していない。
+3. 外部runnerは署名・reportDate・08:00 slot・attempt ID・scheduledAt/triggeredAtを検証し、cutoff前かつ起動遅延60秒以内の場合だけ続行する。08:00以後は取得・凍結・再試行を禁止する。遅延workflow runnerや後刻データ、別slot値で補わない。
+4. 既存の取得・snapshot/evidence保存・15分鮮度・main readback gateをそのまま用いる。市場データ/証拠をmainへ書込むlive接続は、Draftレビュー後の別承認まで実行しない。
+5. ChatGPT/producer本文のfullTextとSHA-256をDocs書込み直前に固定し、writerは固定全文だけを使う。保存後にDocs APIからdocument ID・revision ID・fullTextを読戻す。本文、hash、revisionまたはidentity不一致なら失敗とし、元データに置換して再保存しない。
+6. 失敗時はredacted diagnosticsのみprivate保存。本文全文や資格情報はGitHub log/artifact/public repoに置かない。private sinkはrunner identityのみread/write、14日後削除（最大30日）を独立確認する。
+7. 現在のIssue #176ブランチのテストはTEST_ONLY。実行時刻・証拠・Docs readbackを観測するまではslot E2E=NOT_RUN、未配備の外部scheduler/secret/runner/writerはBLOCKEDと記録する。
+
+
+## ISSUE-176｜外部runner段階導入（2026-10-26 JST）
+候補比較：GitHub Actions cronは既存依存が少ないが起動時刻保証にならず08:00締切前のデータ取得に使わない。AWS EventBridge Scheduler＋Lambda＋Secrets Manager＋private S3は同等の分離が可能だが、新規AWS権限/実行イメージ/保管先を追加する。現行リポジトリのPR #181/#182ですでに候補化されたCloud Scheduler→OIDC認証Cloud Run ingress→既存runner＋private GCSを第一候補とする。これは既存コードとの重複が最小であり、Google Cloudの構成済み状態を意味しない。
+導入順: (1) TEST_ONLYで07:47/07:53/07:57の起動遅延・署名・snapshot freshness・create-only private evidence・readbackを確認 (2) 専用Cloud Scheduler service accountとallowlist、Cloud Run Invoker限定、OIDC audience、HMAC secretをSecret Manager参照で用意 (3) private attempt ledger/evidence/diagnostic GCSをservice accountのみ読み書き可能にし、diagnosticは14日lifecycle＋期限後実削除を監査 (4) source read permissionと限定GitHub App installationを付与 (5) stagingでmain readbackまで観測 (6) 別途承認後だけ本番設定を検討。
+SchedulerのOIDC認証はHTTP ingressの呼出者認証に用い、ingressが検証したallowlisted job identityから内部HMAC envelopeを作る。GitHub Actions dispatchを起動時刻証明にしない。起動遅延60秒超、08:00以後、取得がslotより未来/15分超古い、same-run identity/hash/readback不一致は停止する。
+今回のPRコードはTEST_ONLY実行経路と既存perform_attemptへの明示opt-in adapterを追加するが、LIVE_MAIN_EVIDENCE_WRITE_ENABLEDはデフォルトfalse。TEST_ONLYはfixture入力で、外部市場取得やmain readbackを示さない。外部基盤は未設定証拠のためBLOCKED。Google Docs writer/readback adapterも未接続であり、14日診断削除はローカルTEST_ONLY filesystem storeでの確認に限る。

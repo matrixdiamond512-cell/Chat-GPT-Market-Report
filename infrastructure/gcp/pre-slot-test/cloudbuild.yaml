@@ -1,0 +1,15 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --file
+      - infrastructure/gcp/pre-slot-test/Dockerfile
+      - --tag
+      - ${_IMAGE}
+      - .
+images:
+  - ${_IMAGE}
+options:
+  logging: CLOUD_LOGGING_ONLY
+substitutions:
+  _IMAGE: asia-northeast1-docker.pkg.dev/invalid-test-only/market-report-test-only/runner:unset

@@ -60,3 +60,17 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 - 図解3件はDrive上の最新保存日時・PNG MIMEを確認。GitHub Pagesでの画像実体、SHA-256、manifest、snapshot/本文との対応が未検証のため図解正式READYへ昇格させない。旧ファイルは削除しない。
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
+
+
+## 変更記録 ISSUE-176-20261026（2026-10-26 JST）
+対象: Issue #176、main `613eb3c72230b0df2f5add95502fce6f0ba87964`起点の独立Draft PR。変更対象は `scripts/reporting/slot_recovery_contract.py`、そのオフラインテスト、pre-slot runner例示config、凍結cutoff CI、要件・仕様・運用・本規程、project-control記録。PR #97と他時刻の描画/公開処理は変更しない。
+内容: direct external trigger契約、G2 immutable body/readback契約、redacted private diagnostic契約を追加。実定時起動・市場取得・Google Docs writer/readbackは外部adapter/credential未構成のため未接続。
+検証: PR CIで新規正常/異常系と既存cutoff/evidence testsを実行予定。ローカルPython実行は環境未搭載のためNOT_RUN。実データE2E/Drive/本番schedulerもNOT_RUN。
+外部未解決: 外部scheduler・runner/service identity・HMAC Secret Manager・市場取得権限・G2本文producer・Google Docs writer/readback API・private diagnostic/ledger storage/IAM/retention readback。Google Docs固定ID文書への書込みはこの作業では実施しない。
+
+
+## ISSUE-176 変更記録（2026-10-26 JST｜Draft PR #183）
+変更範囲: slot_recovery_contract.py、pre_slot_execution.py、TEST_ONLY runner CLI、関連テスト、凍結cutoff CI、要件/仕様/運用の固定パス、project-control台帳。
+設計判断: GitHub cronは時刻保証を持たず候補から除外。既存PR #181/#182に沿うCloud Scheduler→OIDC Cloud Run ingress→既存runner/private GCSを最小変更候補として選定。AWS案より既存のGCP設計下書きを再利用できる。ただし外部Cloud Scheduler/Run/GCS/IAM/Secret Manager設定の実在は未確認でBLOCKED。
+G2/Docs: writer入力は凍結fullTextのみ。同一runのDocsSaveEvidence receiptとreadbackのdocument ID/revision、bodyHash、全文を照合し、frozen_at < savedAtを要求する。writer/readback adapter自体は未構成。診断14日保持とfilesystem test sinkでの期限後削除を実装/検査し、cloud lifecycleは未確認。
+検証スコープ: TEST_ONLY fixtureで07:47/07:53/07:57を通すよう回帰テストを追加。ローカルPython実行不可のためGitHub Actions結果待ち。これらは実市場取得/Docs/Drive/main readbackの証拠ではない。固定ID Google Docsへの書き込みなし。

@@ -8,6 +8,10 @@ on:
       - scripts/test_run_market_data_window.py
       - scripts/test_market_acquisition_cutoff.py
       - tests/test_report_slot_evidence.py
+      - scripts/reporting/slot_recovery_contract.py
+      - scripts/reporting/pre_slot_execution.py
+      - scripts/run_pre_slot_test_capture.py
+      - tests/test_slot_recovery_contract.py
       - docs/project-control/OBJECTIVE_CARD.md
       - docs/project-control/EVIDENCE_LEDGER.md
       - .github/workflows/market-report-frozen-cutoff-ci.yml
@@ -20,6 +24,10 @@ on:
       - scripts/test_run_market_data_window.py
       - scripts/test_market_acquisition_cutoff.py
       - tests/test_report_slot_evidence.py
+      - scripts/reporting/slot_recovery_contract.py
+      - scripts/reporting/pre_slot_execution.py
+      - scripts/run_pre_slot_test_capture.py
+      - tests/test_slot_recovery_contract.py
       - docs/project-control/OBJECTIVE_CARD.md
       - docs/project-control/EVIDENCE_LEDGER.md
       - .github/workflows/market-report-frozen-cutoff-ci.yml
@@ -37,6 +45,6 @@ jobs:
         with:
           python-version: '3.12'
       - name: Compile acquisition and snapshot evidence scripts
-        run: python -m compileall -q scripts/run_market_data_window.py scripts/run_market_data_acquisition.py scripts/persist_report_slot_evidence.py
+        run: python -m compileall -q scripts/run_market_data_window.py scripts/run_market_data_acquisition.py scripts/persist_report_slot_evidence.py scripts/reporting/slot_recovery_contract.py scripts/reporting/pre_slot_execution.py scripts/run_pre_slot_test_capture.py
       - name: Run strictly offline cutoff and immutable-evidence regression suites
-        run: python -m unittest scripts.test_run_market_data_window scripts.test_market_acquisition_cutoff tests.test_report_slot_evidence -v
+        run: python -m unittest scripts.test_run_market_data_window scripts.test_market_acquisition_cutoff tests.test_report_slot_evidence tests.test_slot_recovery_contract -v

@@ -1,0 +1,88 @@
+name: GCP TEST_ONLY infrastructure contracts
+on:
+  pull_request:
+    paths:
+      - .gitignore
+      - scripts/gcp/**
+      - infrastructure/gcp/pre-slot-test/**
+      - tests/test_gcp_pre_slot_cloud_runner.py
+      - tests/test_gcp_pre_slot_infrastructure.py
+      - docs/gcp-test-only-runner.md
+      - .github/workflows/gcp-test-only-infrastructure-ci.yml
+  push:
+    paths:
+      - .gitignore
+      - scripts/gcp/**
+      - infrastructure/gcp/pre-slot-test/**
+      - tests/test_gcp_pre_slot_cloud_runner.py
+      - tests/test_gcp_pre_slot_infrastructure.py
+      - docs/gcp-test-only-runner.md
+      - .github/workflows/gcp-test-only-infrastructure-ci.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile runner and execute offline normal/abnormal and infrastructure contracts
+        run: |
+          python -m compileall -q scripts/gcp/pre_slot_cloud_runner.py scripts/gcp/verify_test_only_object.py
+          python -m unittest tests.test_gcp_pre_slot_cloud_runner tests.test_gcp_pre_slot_infrastructure -v
+      - name: Build Docker image and smoke-test container startup
+        run: |
+          image="market-report-test-only:ci-$GITHUB_SHA"
+          container="market-report-test-only-smoke"
+          docker build --file infrastructure/gcp/pre-slot-test/Dockerfile --tag "$image" .
+          docker run --detach --name "$container" --publish 127.0.0.1:18080:8080 "$image"
+          cleanup() { docker rm --force "$container" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18080/healthz > /tmp/runner-health.json; then
+              cat /tmp/runner-health.json
+              grep -q 'READY_TEST_ONLY' /tmp/runner-health.json
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs "$container"
+          echo "Container did not become healthy within 60 seconds." >&2
+          exit 1
+      - name: Terraform formatting and validation
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+      - name: Verify the plan script's generated tfvars formatting without GCP calls
+        shell: bash
+        run: |
+          real_terraform="$(command -v terraform)"
+          temp_bin="$(mktemp -d)"
+          tfvars="infrastructure/gcp/pre-slot-test/terraform.tfvars"
+          cleanup() {
+            rm -f "$tfvars"
+            rm -rf "$temp_bin"
+          }
+          trap cleanup EXIT
+          cat > "$temp_bin/terraform" <<'SH'
+          #!/usr/bin/env bash
+          case " $* " in
+            *" fmt -check "*) exec "$REAL_TERRAFORM" "$@" ;;
+            *" init "*|*" validate "*|*" plan "*|*" show "*) exit 0 ;;
+            *) echo "unexpected terraform command in dry-run: $*" >&2; exit 2 ;;
+          esac
+          SH
+          chmod +x "$temp_bin/terraform"
+          REAL_TERRAFORM="$real_terraform" PATH="$temp_bin:$PATH" \
+            PROJECT_ID="market-report-ci-test-only" \
+            RUNNER_IMAGE="asia-northeast1-docker.pkg.dev/test/runner@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" \
+            TF_STATE_BUCKET="market-report-ci-state-test-only" \
+            ENABLE_TEST_SCHEDULER=false \
+            scripts/gcp/deploy_test_only.sh plan
+      - run: terraform -chdir=infrastructure/gcp/pre-slot-test fmt -diff -check
+      - run: terraform -chdir=infrastructure/gcp/pre-slot-test init -backend=false
+      - run: terraform -chdir=infrastructure/gcp/pre-slot-test validate
