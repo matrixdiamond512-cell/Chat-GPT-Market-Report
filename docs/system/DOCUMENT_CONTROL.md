@@ -158,3 +158,9 @@ Candidate includes PR #188 issuance integration, PR #189 truthful importer statu
 - isolated UI/DOM PASS：https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41875493440。その他8件も同じheadでPASS。これはActions隔離環境の結果で、本番Docs/GCS/GitHub canonical/receipt/PagesはNOT_RUN。
 - main f43cc00f60d5a32fa96fa6cb4de440c7f971fc4a を2親同期commitに保持。main-only data/history変更はPR側の変更パスと重複なし。Google Docs固定IDへの同期はNOT_RUN。
 
+
+## MR-EVIDENCE-GCS-WINDOW-20261105-01｜変更記録
+- 理由: 2026-11-05 03:52 JSTに動いたschedule runが当日の21:00枠として処理され、許可窓・データcutoffの判定前に後追い取得へ進む経路を修正する。GCS正本とGitHub監査mirrorのgeneration結合も実装する。
+- 固定パス: `scripts/persist_report_slot_evidence.py`, `.github/workflows/freeze-report-slot-evidence.yml`, `tests/test_report_slot_evidence.py`、およびrequirements/specification/operationsとproject-control決定・証拠台帳。
+- テスト: 隔離テスト追加済み。実行結果はPR headのGitHub Actions確認後に追記する。実GCS権限・create-only write・generation readbackはNOT_RUN。
+- 未解決: Actions scheduleは期限内実行を保証しない。今回の修正は窓外runを閉じるが、独立schedulerは設計/費用/管理者承認が未了。2026-11-05 08:00 Evidenceは事後生成しない。Drive固定ID文書への同期はNOT_RUN。

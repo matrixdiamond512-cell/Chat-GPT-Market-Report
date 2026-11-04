@@ -192,3 +192,10 @@ ChatGPT定時タスクの生成本文をこの実行環境から取得するコ�
 ### 08:00 ownerの切替条件
 
 Git上のApps Scriptは08:00枠を含むDocs→GitHub発行コード/08:30付近のretry handlerを定義する。これは実際のApps Script deployment、installed trigger一覧、 timezone、直近実行履歴の証拠ではない。実状態はUNKNOWN。owner configは08:00をapps_script_legacyのまま維持し、新CLIは競合ガードにより発行を停止する。切替は承認後、(1)現行deployment版・trigger/last executionを読取り確認、(2)08:00旧triggerと08:30 retryのみ停止し12/16/21を維持、(3)停止状態を再読戻し、(4)08:00 owner configを新方式へ変更、(5)protected新方式を起動、(6)未来の08:00 slot 1件を承認付きE2Eで照合、の順とする。確認できないtrigger/historyはUNKNOWNのまま所有権を切り替えない。
+
+## MR-EVIDENCE-GCS-WINDOW-20261105-01｜発行前Evidenceの時刻・正本要件
+- 対象枠のJST実行時刻は枠開始15分前以上かつ枠時刻未満に限る。workflow scheduleと手動実行は同じ条件を適用し、対象日を実行日から推測して遅延イベントを翌日同時刻へ付け替えない。
+- この判定はmarket-data acquisition・GCS保存より前に行う。締切後・対象日違い・週末は `BLOCKED_SCHEDULE_WINDOW_MISMATCH`、遅延は `SCHEDULE_LATE` として停止する。
+- GCSはEvidenceの正本とし、`if_generation_match=0` で作成する。保存後、固定generationを指定して再読戻し、本文バイト列/SHA-256、reportId、revision、Evidence ID、snapshot ID、元データhash、Evidence作成時刻、GCS作成時刻を検証する。既存オブジェクトの内容不一致は上書きせず停止する。
+- GitHubのEvidenceファイルとGCS参照sidecarは監査用ミラーであり、GCS generationの読戻しがない限りREADYとしない。ミラーのみの成功を正本保存とみなさない。
+- Actions scheduleの欠落/遅延は自身のjobから確実に判定できないため、実行履歴上の未観測は `SCHEDULE_NOT_OBSERVED`、起動後の時間窓逸脱は `SCHEDULE_LATE` に分ける。実GCS権限・実generation読戻しは本番接続検証までNOT_RUN。

@@ -177,3 +177,10 @@ Cloud Audit Logsの`storage.objects.create`記録は、対象GCS object/generati
 ### 08:00 ownerの切替条件
 
 Git上のApps Scriptは08:00枠を含むDocs→GitHub発行コード/08:30付近のretry handlerを定義する。これは実際のApps Script deployment、installed trigger一覧、 timezone、直近実行履歴の証拠ではない。実状態はUNKNOWN。owner configは08:00をapps_script_legacyのまま維持し、新CLIは競合ガードにより発行を停止する。切替は承認後、(1)現行deployment版・trigger/last executionを読取り確認、(2)08:00旧triggerと08:30 retryのみ停止し12/16/21を維持、(3)停止状態を再読戻し、(4)08:00 owner configを新方式へ変更、(5)protected新方式を起動、(6)未来の08:00 slot 1件を承認付きE2Eで照合、の順とする。確認できないtrigger/historyはUNKNOWNのまま所有権を切り替えない。
+
+## MR-EVIDENCE-GCS-WINDOW-20261105-01｜Evidence freeze契約
+- `require_slot_window(report_date, report_time, now)` がJSTへ変換した実時計で `[target - 15 minutes, target)` と平日条件を検証する。日付は必ず明示し、cron表現から選んだslotと実行日が15分窓に合わない遅延runは停止する。
+- 実行窓ガードを入力データ取得・書込み前に評価し、Evidence作成時刻も同窓内であること、market data generatedAtがEvidence作成より後でないことを検証する。既存artifact再読戻しにも枠同一性と時刻を要求する。
+- GCS object名はreportId/revisionに固定し、create-only preconditionを用いる。同一内容の再試行のみ成功とし、異なる内容、generation、読戻しhash、時刻またはidentityの不一致は停止する。
+- GCS canonical bytesに対するGitHub mirrorは同じEvidence本文とgeneration参照sidecarから構成する。部分成功時は現行15分窓内で既存の同一バイト列のみ再調整可能。GCS不在・不一致、期限後、異なるlocal bytesの場合は修復・再生成せず停止する。
+- エラー分類: `SCHEDULE_NOT_OBSERVED` (run履歴にrunなし), `SCHEDULE_LATE` (実行時刻が許可窓外), `INPUT_STALE`, `INPUT_SLOT_MISMATCH`, `ACQUISITION_FAILED`, `EVIDENCE_WRITE_FAILED`。履歴欠落とrun内失敗を混同しない。

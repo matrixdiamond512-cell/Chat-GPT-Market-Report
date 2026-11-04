@@ -214,3 +214,10 @@ ChatGPT定時タスクの生成本文をこの実行環境から取得するコ�
 ### 08:00 ownerの切替条件
 
 Git上のApps Scriptは08:00枠を含むDocs→GitHub発行コード/08:30付近のretry handlerを定義する。これは実際のApps Script deployment、installed trigger一覧、 timezone、直近実行履歴の証拠ではない。実状態はUNKNOWN。owner configは08:00をapps_script_legacyのまま維持し、新CLIは競合ガードにより発行を停止する。切替は承認後、(1)現行deployment版・trigger/last executionを読取り確認、(2)08:00旧triggerと08:30 retryのみ停止し12/16/21を維持、(3)停止状態を再読戻し、(4)08:00 owner configを新方式へ変更、(5)protected新方式を起動、(6)未来の08:00 slot 1件を承認付きE2Eで照合、の順とする。確認できないtrigger/historyはUNKNOWNのまま所有権を切り替えない。
+
+## MR-EVIDENCE-GCS-WINDOW-20261105-01｜Evidence freeze運用・障害分類
+1. workflow実行開始時に明示report date/slotの組をJSTの15分窓で確認する。窓外は市場データ取得、GCS保存、GitHubミラー更新より前に停止する。GitHub Actions scheduleの遅延を、次の日の同slotとして再解釈しない。
+2. 同一workflow内で現在枠のデータを検証し、Evidenceファイルを一度だけ生成してGCSへcreate-only保存する。その後、実際のgenerationを指定した別読戻しで本文・SHA-256・slot識別子・作成時刻を照合する。最後に同じ本文とGCS generationを指す監査用GitHub mirrorを作る。
+3. GitHub mirrorだけが残った同一run内の部分失敗は、枠の15分窓内で保存済みbytesの時刻と内容を検証後にのみGCSへ再試行できる。GCSの作成済みobjectだけ残った場合は同一generationを読み戻してmirrorを再構築する。衝突や内容違いは `BLOCKED_GCS_EVIDENCE_CONFLICT` で停止し、削除・上書きしない。
+4. 失敗分類は、履歴上runが見つからない場合 `SCHEDULE_NOT_OBSERVED`、遅延/窓外 `SCHEDULE_LATE`、入力の日付/slot違い `INPUT_SLOT_MISMATCH`、鮮度不足 `INPUT_STALE`、取得不能 `ACQUISITION_FAILED`、GCS/読戻し/mirror保存失敗 `EVIDENCE_WRITE_FAILED`。再試行は同一slot・同一bytes・窓内に限定する。
+5. 2026-11-05 08:00枠の既存欠落Evidenceは後生成せず、参照/閲覧用Docsのままとする。Actions scheduleの稼働保証はなく、GCS接続、権限、実generation読戻しは本番preflightおよび承認付き試験までNOT_RUN。

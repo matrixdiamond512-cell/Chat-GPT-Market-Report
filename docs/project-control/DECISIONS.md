@@ -87,3 +87,8 @@ Decision: keep PR #188 Draft and add a concrete target-scoped adapter, while req
 Reason: this connects the previously abstract `PortalPublisher` to the existing publication validators without widening the importer sweep or weakening eligibility. A main commit and Pages deployment cannot be atomic together; a verified canonical commit followed by a Pages failure is an explicitly incomplete state that requires reconciliation before retry.
 
 Reversal/next condition: obtain separate authorization and configure least-privilege protected identities, then validate one future 08:00 transaction. Do not merge, write production Docs/main/receipt, or deploy Pages based on fixture CI. Generalize other slots only after the 08:00 run is independently accepted.
+
+## MR-EVIDENCE-GCS-WINDOW-20261105-01｜Evidence正本と時刻窓の決定
+決定: 1 slot / 1 immutable EvidenceをJSTのtarget-15m以上かつtarget未満でのみ作成する。遅延scheduled runにrunnerの今日の日付を機械的に付けず、実時間がslot日に整合しない場合は処理の最初でBLOCKする。GCSを正本とし、generation-match=0、generation pinned readback、content/identity/time検証が成立した後にのみGitHub mirrorを認める。既存データの不一致は上書きせず停止する。
+理由: run #41891416946は予定枠より遅れて2026-11-05 03:52 JSTに開始し、`REPORT_DATE=2026-11-05` / `REPORT_SLOT=21:00` になった。旧workflowでは実時間windowを確認せず、市場データ再取得に進み、最終的に対象slotに対するfresh acquisitionではないとしてEvidence作成を拒否した。窓ガードは誤日付割当てと遅延取得を発生前に止める。
+証拠範囲: GitHub run metadata/job log + offline fake-GCS contract tests。実GCS保存・権限・production scheduleは別途E5 runtime確認を要する。
