@@ -1,0 +1,75 @@
+name: 08:00 issuance production preflight (read-only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      report_id:
+        description: "One weekday report ID, YYYY-MM-DD_08-00"
+        required: true
+        type: string
+      revision:
+        description: "Expected positive integer revision"
+        required: true
+        type: string
+      evidence_object:
+        description: "Exact pre-issuance evidence object name"
+        required: true
+        type: string
+      evidence_generation:
+        description: "Pinned GCS evidence generation"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: issuance-readonly-preflight-${{ inputs.report_id }}
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: report-publication
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Validate one-slot identifiers without external access
+        env:
+          REPORT_ID: ${{ inputs.report_id }}
+          REPORT_REVISION: ${{ inputs.revision }}
+          EVIDENCE_OBJECT: ${{ inputs.evidence_object }}
+          EVIDENCE_GENERATION: ${{ inputs.evidence_generation }}
+        run: |
+          python - <<'PY'
+          import os, re, sys
+          report_id = os.environ["REPORT_ID"]
+          revision = os.environ["REPORT_REVISION"]
+          evidence_object = os.environ["EVIDENCE_OBJECT"]
+          generation = os.environ["EVIDENCE_GENERATION"]
+          ok = (re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}_08-00", report_id)
+                and revision.isdigit() and int(revision) > 0
+                and evidence_object and not evidence_object.startswith("/")
+                and generation.isdigit() and int(generation) > 0)
+          print({"status": "INPUTS_VALID" if ok else "NOT_READY",
+                 "report_id": report_id, "revision": revision,
+                 "evidence_object": evidence_object, "generation": generation,
+                 "writes_enabled": False, "g2_bundle_connected": False})
+          if not ok:
+              sys.exit(2)
+          PY
+      - name: Run existing read-only readiness probes without issuance credentials
+        env:
+          REPORT_ISSUANCE_ENVIRONMENT: report-publication
+          REPORT_EVIDENCE_OBJECT: ${{ inputs.evidence_object }}
+          REPORT_EVIDENCE_GENERATION: ${{ inputs.evidence_generation }}
+          REPORT_PAGES_BASE_URL: ${{ vars.REPORT_PAGES_BASE_URL }}
+          REPORT_EVIDENCE_PROJECT_ID: ${{ vars.REPORT_EVIDENCE_PROJECT_ID }}
+          REPORT_EVIDENCE_BUCKET: ${{ vars.REPORT_EVIDENCE_BUCKET }}
+          REPORT_ISSUANCE_CLAIM_BUCKET: ${{ vars.REPORT_ISSUANCE_CLAIM_BUCKET }}
+          REPORT_ISSUANCE_DOCS_FOLDER_ID: ${{ vars.REPORT_ISSUANCE_DOCS_FOLDER_ID }}
+          REPORT_ISSUANCE_ROOT_FOLDER_ID: ${{ vars.REPORT_ISSUANCE_ROOT_FOLDER_ID }}
+        run: python -m scripts.reporting.issuance_preflight

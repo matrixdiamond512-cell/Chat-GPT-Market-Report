@@ -88,13 +88,20 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None)
     missing = [key for key in required if not env.get(key)]
     result["checks"]["configuration"] = {"status": "PASS" if not missing else "BLOCKED",
                                           "missing": missing}
-    result["checks"]["protected_execution"] = {
-        "status": "PASS" if env.get("GITHUB_ACTIONS") == "true" and
+    protected_context = (
+        env.get("GITHUB_ACTIONS") == "true" and
         env.get("GITHUB_REF") == "refs/heads/main" and
-        env.get("REPORT_ISSUANCE_ENVIRONMENT") == "report-publication" and
-        env.get("REPORT_ISSUANCE_APPROVED") == "true" and
-        env.get("REPORT_ISSUANCE_WRITE_ENABLED") == "true" else "BLOCKED",
-        "approval_present": env.get("REPORT_ISSUANCE_APPROVED") == "true",
+        env.get("REPORT_ISSUANCE_ENVIRONMENT") == "report-publication"
+    )
+    result["checks"]["protected_execution"] = {
+        "status": "UNKNOWN",
+        "workflow_main_ref": env.get("GITHUB_REF") == "refs/heads/main",
+        "environment_name_matches": env.get("REPORT_ISSUANCE_ENVIRONMENT") == "report-publication",
+        "reviewer_gate_configured": False,
+        # A workflow input/environment variable is never evidence of an
+        # approved GitHub Environment deployment. Approval is not inferred.
+        "approval_for_current_run": "NOT_INFERRED",
+        "approval_environment_variable_ignored": True,
         "write_gate_present": env.get("REPORT_ISSUANCE_WRITE_ENABLED") == "true",
     }
     runtime_ready = _chromium_runtime_ready() if dom_runtime is None else bool(dom_runtime)
@@ -121,6 +128,17 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None)
             # contents:write grant. Repository push access is evidence about
             # the principal, not proof about this credential's token scope.
             scope_attested = env.get("REPORT_ISSUANCE_CONTENTS_WRITE_VERIFIED") == "true"
+            protected_ready = protected_context and bool(reviewers)
+            result["checks"]["protected_execution"] = {
+                "status": "PASS" if protected_ready else "BLOCKED",
+                "workflow_main_ref": env.get("GITHUB_REF") == "refs/heads/main",
+                "environment_name_matches": env.get("REPORT_ISSUANCE_ENVIRONMENT") == "report-publication",
+                "reviewer_gate_configured": bool(reviewers),
+                "environment_required_reviewers": len(reviewers),
+                "approval_for_current_run": "NOT_INFERRED",
+                "approval_environment_variable_ignored": True,
+                "write_gate_present": env.get("REPORT_ISSUANCE_WRITE_ENABLED") == "true",
+            }
             result["checks"]["github"] = {"status": ("PASS" if baseline_ok and scope_attested else
                                                               "UNKNOWN" if baseline_ok else "BLOCKED"),
                 "repository_identity_match": identity_ok,

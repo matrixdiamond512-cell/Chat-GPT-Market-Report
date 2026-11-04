@@ -82,6 +82,27 @@ class IssuancePreflightTests(unittest.TestCase):
         self.assertEqual(result["status"], "NOT_READY")
         self.assertEqual(result["checks"]["github"]["status"], "BLOCKED")
 
+    def test_approved_environment_variable_cannot_replace_actual_reviewer_gate(self):
+        # The self-asserted variable must not pass when GitHub reports no reviewers.
+        result = run_preflight(env=self.env, github=FakeGitHub(reviewers=0),
+                               google_probe=FakeGoogle(), dom_runtime=True)
+        protected = result["checks"]["protected_execution"]
+        self.assertEqual(result["status"], "NOT_READY")
+        self.assertEqual(protected["status"], "BLOCKED")
+        self.assertFalse(protected["reviewer_gate_configured"])
+        self.assertEqual(protected["approval_for_current_run"], "NOT_INFERRED")
+        self.assertTrue(protected["approval_environment_variable_ignored"])
+
+    def test_environment_configuration_readiness_does_not_claim_run_approval(self):
+        env = {**self.env, "REPORT_ISSUANCE_APPROVED": "false",
+               "REPORT_ISSUANCE_WRITE_ENABLED": "false"}
+        result = run_preflight(env=env, github=FakeGitHub(reviewers=1),
+                               google_probe=FakeGoogle(), dom_runtime=True)
+        protected = result["checks"]["protected_execution"]
+        self.assertEqual(protected["status"], "PASS")
+        self.assertEqual(protected["approval_for_current_run"], "NOT_INFERRED")
+        self.assertTrue(protected["approval_environment_variable_ignored"])
+
     def test_unattested_fine_grained_contents_scope_remains_unknown(self):
         env = {**self.env, "REPORT_ISSUANCE_CONTENTS_WRITE_VERIFIED": "false"}
         result = run_preflight(env=env, github=FakeGitHub(), google_probe=FakeGoogle(), dom_runtime=True)

@@ -151,5 +151,4 @@ Candidate includes PR #188 issuance integration, PR #189 truthful importer statu
 - 再検証補正：head `362a0042` では画面loaderが既存の2026-09-18 4枠canonicalも要求していたが、隔離siteへ対象fixtureだけを置いていたため404になった。次のheadで既存の`reports/` corpusをコピーし、対象canonicalを追加する。失敗URL/statusを出力し、任意favicon 404だけ除外する。その他のHTTP errorは引き続きDOM validationを止める。
 - CLI補正：bundleの日時・G2/evidence参照をクラウド接続前に検証する純粋関数へ分離し、認証設定のないモジュール実行でも不正日付が`BLOCKED`になる回帰テストを追加した。新headの契約CIで検証する。
 - 証拠水準：隔離テストと最終head Actionsの結果を個別に記録する。待機中・未開始のActionsはPASSと扱わない。固定ID Google Docsは今回も更新・読戻ししていない（NOT_RUN）。
-- 制限：本番Docs/main/receipt/Pages書込み、Secrets・Environment・定時タスク変更、PR mergeは行わない。将来の08:00承認付きE2Eが必要。
-
+- 制限：本番Docs/main/receipt/Pages書込み、Secrets・Environment・定時タスク変更、PR mergeは行わない。将来の08:00承認付きE2Eが必要。\n\n## MR-ISSUANCE-PRODUCTION-READINESS-20261105-01｜変更記録（2026-11-05 JST）\n対象固定パス：docs/system/requirements.md、docs/system/specification.md、docs/system/operations.md、docs/system/DOCUMENT_CONTROL.md。PR #188のpreflightで環境変数自己申告をEnvironment reviewer保護証拠と扱わず、実API reviewer規則の確認と当該run承認の証拠水準を分離する。手動workflow_dispatchは読取り専用・単一対象・Secretsなしとし、G2生成元の未接続を明記する。\nコード/CI検証は本変更SHAでのActions完了後に記録する。本番G2/Docs/canonical/receipt/Pages E2EはNOT_RUN。Google Docs固定IDへの同期は未実施。
