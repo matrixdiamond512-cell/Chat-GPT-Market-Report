@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 import hashlib
 import json
 from typing import Protocol
@@ -36,6 +36,11 @@ def _slot_at(report_date: str, report_time: str):
         return aware(f"{report_date}T08:00:00+09:00")
     except (TypeError, ValueError) as exc:
         raise IssuanceBlocked("G2_PRODUCER_SLOT_INVALID") from exc
+
+
+def _slot_window(report_date: str, report_time: str):
+    start = _slot_at(report_date, report_time)
+    return start, start + timedelta(minutes=40)
 
 
 def build_frozen_g2_bundle(*, report: dict, full_text: str,
@@ -92,10 +97,13 @@ def build_frozen_g2_bundle(*, report: dict, full_text: str,
         raise IssuanceBlocked("G2_PRODUCER_EVIDENCE_CREATED_TOO_LATE")
     if evidence_object.get("evidence_id") != evidence.get("evidenceId"):
         raise IssuanceBlocked("G2_PRODUCER_EVIDENCE_IDENTITY_MISMATCH")
-    if freeze_instant > slot_at or freeze_instant > current:
+    slot_end = slot_at + timedelta(minutes=40)
+    if freeze_instant < slot_at or freeze_instant > slot_end:
+        raise IssuanceBlocked("G2_PRODUCER_FREEZE_OUTSIDE_SLOT_WINDOW")
+    if freeze_instant > current:
         raise IssuanceBlocked("G2_PRODUCER_FREEZE_TIME_INVALID")
-    if current >= slot_at:
-        raise IssuanceBlocked("G2_PRODUCER_AFTER_SLOT_CUTOFF")
+    if current > slot_end:
+        raise IssuanceBlocked("G2_PRODUCER_AFTER_SLOT_WINDOW")
 
     body_hash = _sha256(full_text.encode("utf-8"))
     frozen_report = deepcopy(report)
@@ -121,13 +129,16 @@ def build_frozen_g2_bundle(*, report: dict, full_text: str,
         raise IssuanceBlocked("SCENARIO_REVIEW_IDENTITY_MISMATCH")
     if review.get("body_hash") not in (None, body_hash):
         raise IssuanceBlocked("SCENARIO_REVIEW_IDENTITY_MISMATCH")
-    if review.get("reviewed_at"):
-        try:
-            reviewed_at = aware(review["reviewed_at"])
-        except (ValueError, TypeError) as exc:
-            raise IssuanceBlocked("G2_PRODUCER_REVIEW_TIME_INVALID") from exc
-        if reviewed_at > freeze_instant:
-            raise IssuanceBlocked("G2_PRODUCER_REVIEW_AFTER_FREEZE")
+    if not review.get("reviewed_at"):
+        raise IssuanceBlocked("G2_PRODUCER_REVIEW_TIME_REQUIRED")
+    try:
+        reviewed_at = aware(review["reviewed_at"])
+    except (ValueError, TypeError) as exc:
+        raise IssuanceBlocked("G2_PRODUCER_REVIEW_TIME_INVALID") from exc
+    if reviewed_at < slot_at:
+        raise IssuanceBlocked("G2_PRODUCER_REVIEW_BEFORE_SLOT")
+    if reviewed_at > freeze_instant:
+        raise IssuanceBlocked("G2_PRODUCER_REVIEW_AFTER_FREEZE")
     review["report_id"] = report_id
     review["body_hash"] = body_hash
     _validate_scenario_review(review, frozen_report, body_hash)
@@ -188,7 +199,7 @@ class GcsCreateOnlyG2BundleStore:
             raise IssuanceBlocked("G2_BUNDLE_TARGET_IDENTITY_MISMATCH")
         if bundle.get("schemaVersion") != 1:
             raise IssuanceBlocked("G2_BUNDLE_SCHEMA_INVALID")
-        slot_at = _slot_at(report.get("date"), report.get("time"))
+        slot_at, slot_end = _slot_window(report.get("date"), report.get("time"))
         full_text = report.get("fullText")
         body_hash = _sha256(full_text.encode("utf-8")) if isinstance(full_text, str) else ""
         ref = bundle.get("evidence_ref") or {}
@@ -198,8 +209,8 @@ class GcsCreateOnlyG2BundleStore:
                 ref["generation"] <= 0):
             raise IssuanceBlocked("G2_BUNDLE_CONTENT_OR_EVIDENCE_INVALID")
         frozen_at = aware(g2.get("frozen_at", ""))
-        if frozen_at > slot_at:
-            raise IssuanceBlocked("G2_BUNDLE_FREEZE_AFTER_SLOT")
+        if frozen_at < slot_at or frozen_at > slot_end:
+            raise IssuanceBlocked("G2_BUNDLE_FREEZE_OUTSIDE_SLOT_WINDOW")
         _validate_scenario_review(g2.get("scenario_review"), report, body_hash)
         object_name = f"{self._prefix}{report_id}-r{revision}.json"
         payload = _canonical_bytes(bundle)
@@ -237,8 +248,12 @@ class GcsCreateOnlyG2BundleStore:
         if not created_at:
             raise IssuanceBlocked("G2_BUNDLE_CREATION_TIME_UNKNOWN",
                                   stage="G2_BUNDLE_READBACK")
-        if aware(created_at.isoformat()) > slot_at:
-            raise IssuanceBlocked("G2_BUNDLE_CREATED_AFTER_SLOT",
+        created_at = aware(created_at.isoformat())
+        if created_at < frozen_at:
+            raise IssuanceBlocked("G2_BUNDLE_CREATED_BEFORE_FREEZE",
+                                  stage="G2_BUNDLE_READBACK")
+        if created_at > slot_end:
+            raise IssuanceBlocked("G2_BUNDLE_CREATED_AFTER_SLOT_WINDOW",
                                   stage="G2_BUNDLE_READBACK")
         return G2BundleWriteReceipt(object_name, generation, digest,
                                     "CREATED" if created else "IDEMPOTENT_RETRY")

@@ -12,7 +12,8 @@ from zoneinfo import ZoneInfo
 from unittest.mock import patch
 from contextlib import redirect_stdout
 
-from scripts.reporting.issuance_preflight import (run_preflight, run_configuration_diagnostic)
+from scripts.reporting.issuance_preflight import (run_preflight, run_configuration_diagnostic,
+    _verify_g2_producer_identity)
 from scripts.run_0800_issuance import (load_bundle, main as issuance_main, require_08_issuance_owner)
 from scripts.reporting.issuance_pipeline import IssuanceBlocked
 
@@ -52,10 +53,12 @@ class FakeGoogle:
         full_text = "Synthetic test-only G2 body"
         body_hash = hashlib.sha256(full_text.encode("utf-8")).hexdigest()
         if object_name == "g2/slot.json":
-            return {"generation": "10", "created_at": "2026-11-05T07:50:00+09:00",
+            return {"generation": "10", "created_at": "2026-11-05T08:06:00+09:00",
                     "sha256": "a" * 64, "data": {"g2": {
                         "report_id": "2026-11-05_08-00", "revision": 1,
-                        "frozen_at": "2026-11-05T07:55:00+09:00", "body_hash": body_hash,
+                        "frozen_at": "2026-11-05T08:05:00+09:00", "body_hash": body_hash,
+                        "scenario_review": {"report_id": "2026-11-05_08-00", "body_hash": body_hash,
+                            "reviewed_at": "2026-11-05T08:04:00+09:00"},
                         "report": {"report_id": "2026-11-05_08-00", "date": "2026-11-05",
                             "time": "08:00", "revision": 1, "fullText": full_text,
                             "bodyHash": body_hash}},
@@ -102,6 +105,41 @@ class IssuancePreflightTests(unittest.TestCase):
         self.assertIn("READ_GCS:evidence/slot.json", google.methods)
         self.assertTrue(all(method == "GET" for method in google.methods[:2]))
 
+    def test_g2_producer_identity_requires_matching_audit_record_not_env_self_report(self):
+        class AuditGoogle(FakeGoogle):
+            def read_g2_creation_audit(self, *, bucket, object_name, generation):
+                return {"principal_email": "report-issuer@acme.iam.gserviceaccount.com",
+                        "resource_name": f"projects/_/buckets/{bucket}/objects/{object_name}",
+                        "generation": generation, "timestamp": "2026-11-04T23:06:00Z"}
+        expected = "report-issuer@acme.iam.gserviceaccount.com"
+        env = {**self.env, "REPORT_ISSUANCE_G2_PRODUCER_SERVICE_ACCOUNT": expected,
+               "REPORT_ISSUANCE_G2_BUNDLE_BUCKET": "market-g2",
+               "REPORT_ISSUANCE_G2_BUNDLE_OBJECT": "g2/slot.json",
+               "REPORT_ISSUANCE_G2_BUNDLE_GENERATION": "10"}
+        binding = {"status": "PASS", "g2_bundle_generation": "10",
+                   "g2_bundle_sha256": "a" * 64,
+                   "g2_frozen_at": "2026-11-05T08:05:00+09:00",
+                   "g2_window_end": "2026-11-05T08:40:00+09:00"}
+        verified = _verify_g2_producer_identity(env=env, google_probe=AuditGoogle(),
+                                                 binding=binding)
+        self.assertEqual(verified["status"], "PASS")
+        self.assertEqual(verified["producer_principal"], expected)
+        unverified = _verify_g2_producer_identity(env=env, google_probe=FakeGoogle(),
+                                                  binding=binding)
+        self.assertEqual(unverified["status"], "BLOCKED")
+        self.assertEqual(unverified["reason"], "G2_CREATOR_AUDIT_READER_UNAVAILABLE")
+
+        class WrongPrincipalGoogle(AuditGoogle):
+            def read_g2_creation_audit(self, *, bucket, object_name, generation):
+                event = super().read_g2_creation_audit(bucket=bucket, object_name=object_name,
+                                                       generation=generation)
+                event["principal_email"] = "other@acme.iam.gserviceaccount.com"
+                return event
+        wrong = _verify_g2_producer_identity(env=env, google_probe=WrongPrincipalGoogle(),
+                                              binding=binding)
+        self.assertEqual(wrong["status"], "BLOCKED")
+        self.assertEqual(wrong["reason"], "G2_CREATOR_AUDIT_IDENTITY_MISMATCH")
+
     def test_object_contents_alone_do_not_prove_a_trusted_g2_producer(self):
         with tempfile.TemporaryDirectory() as folder:
             owner_path = Path(folder) / "issuance_ownership.json"
@@ -113,7 +151,7 @@ class IssuancePreflightTests(unittest.TestCase):
         self.assertEqual(result["checks"]["g2_evidence_binding"]["status"], "PASS")
         self.assertEqual(result["checks"]["g2_producer_identity"]["status"], "BLOCKED")
         self.assertEqual(result["checks"]["g2_producer_identity"]["reason"],
-                         "BLOCKED_G2_PRODUCER_MISSING")
+                         "G2_CREATOR_AUDIT_READER_UNAVAILABLE")
         self.assertFalse(result["checks"]["g2_producer_identity"]["producer_identity_verified"])
         self.assertEqual(result["status"], "NOT_READY")
 
@@ -122,7 +160,7 @@ class IssuancePreflightTests(unittest.TestCase):
             def read_exact_json_object(self, bucket, object_name, generation):
                 result = super().read_exact_json_object(bucket, object_name, generation)
                 if object_name == "g2/slot.json":
-                    result["created_at"] = "2026-11-05T08:00:01+09:00"
+                    result["created_at"] = "2026-11-05T08:41:00+09:00"
                 return result
         with tempfile.TemporaryDirectory() as folder:
             owner_path = Path(folder) / "issuance_ownership.json"
@@ -133,7 +171,7 @@ class IssuancePreflightTests(unittest.TestCase):
                                    dom_runtime=True, pages_probe=lambda _url: True)
         self.assertEqual(result["checks"]["g2_evidence_binding"]["status"], "BLOCKED")
         self.assertEqual(result["checks"]["g2_evidence_binding"]["reason"],
-                         "G2_BUNDLE_CREATED_AFTER_REPORT_SLOT")
+                         "G2_BUNDLE_CREATED_AFTER_REPORT_WINDOW")
         self.assertEqual(result["status"], "NOT_READY")
 
     def test_configuration_diagnostic_is_secret_free_and_never_ready(self):

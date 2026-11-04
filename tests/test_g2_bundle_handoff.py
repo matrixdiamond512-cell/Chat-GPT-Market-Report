@@ -8,7 +8,8 @@ from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 from scripts.reporting.issuance_pipeline import IssuanceBlocked
-from scripts.run_0800_issuance import (load_bundle, load_pinned_g2_bundle, main as issuance_main)
+from scripts.run_0800_issuance import (load_bundle, load_pinned_g2_bundle,
+                                       validate_bundle_payload, main as issuance_main)
 
 
 JST = ZoneInfo("Asia/Tokyo")
@@ -58,9 +59,9 @@ def bundle(report_id="2026-11-05_08-00", revision=3, evidence_generation=71):
     return {
         "g2": {
             "report_id": report_id, "revision": revision,
-            "frozen_at": "2026-11-05T07:55:00+09:00",
+            "frozen_at": "2026-11-05T08:05:00+09:00",
             "body_hash": body_hash, "evidence_id": "evidence-71",
-            "snapshot_id": "snapshot-71", "scenario_review": {"status": "PASS"},
+            "snapshot_id": "snapshot-71", "scenario_review": {"status": "PASS", "reviewed_at": "2026-11-05T08:04:00+09:00"},
             "report": {"report_id": report_id, "revision": revision,
                        "date": "2026-11-05", "time": "08:00",
                        "fullText": full_text, "bodyHash": body_hash},
@@ -70,7 +71,7 @@ def bundle(report_id="2026-11-05_08-00", revision=3, evidence_generation=71):
     }
 
 
-def storage_for(data, generation=88, created_at="2026-11-05T07:56:00+09:00"):
+def storage_for(data, generation=88, created_at="2026-11-05T08:06:00+09:00"):
     raw = json.dumps(data, ensure_ascii=False, sort_keys=True).encode("utf-8")
     blob = FakeBlob(raw, generation, created_at)
     bucket = FakeBucket(blob)
@@ -127,7 +128,7 @@ class PinnedG2BundleHandoffTests(unittest.TestCase):
                                       "REPORT_EVIDENCE_BUCKET": "market-evidence"}), \
              patch("scripts.run_0800_issuance.load_pinned_g2_bundle",
                    return_value={"data": data, "generation": 88, "object": "g2/slot.json",
-                                 "bucket": "market-evidence", "created_at": "2026-11-05T07:56:00+09:00",
+                                 "bucket": "market-evidence", "created_at": "2026-11-05T08:06:00+09:00",
                                  "sha256": "a" * 64}), \
              patch("scripts.run_0800_issuance.load_pinned_production_evidence",
                    return_value=evidence) as read_evidence:
@@ -142,12 +143,28 @@ class PinnedG2BundleHandoffTests(unittest.TestCase):
             bucket_name="market-evidence", object_name="evidence/2026-11-05_08-00.json",
             generation=71)
 
+    def test_gcs_handoff_rejects_bundle_created_before_freeze(self):
+        data = bundle()
+        with patch.dict("os.environ", {"REPORT_EVIDENCE_PROJECT_ID": "market-prod",
+                                      "REPORT_EVIDENCE_BUCKET": "market-evidence"}), \
+             patch("scripts.run_0800_issuance.load_pinned_g2_bundle",
+                   return_value={"data": data, "generation": 88, "created_at": "2026-11-05T08:04:00+09:00",
+                                 "object": "g2/slot.json", "bucket": "market-evidence",
+                                 "sha256": "a" * 64}), \
+             patch("scripts.run_0800_issuance.load_pinned_production_evidence") as read_evidence:
+            with self.assertRaisesRegex(IssuanceBlocked, "G2_BUNDLE_CREATED_BEFORE_FREEZE"):
+                load_bundle(None, now=SLOT, g2_object_name="g2/slot.json",
+                            g2_generation=88, expected_report_id="2026-11-05_08-00",
+                            expected_revision=3, expected_evidence_object="evidence/2026-11-05_08-00.json",
+                            expected_evidence_generation=71)
+        read_evidence.assert_not_called()
+
     def test_gcs_handoff_stops_on_wrong_report_id_before_reading_evidence(self):
         data = bundle()
         with patch.dict("os.environ", {"REPORT_EVIDENCE_PROJECT_ID": "market-prod",
                                       "REPORT_EVIDENCE_BUCKET": "market-evidence"}), \
              patch("scripts.run_0800_issuance.load_pinned_g2_bundle",
-                   return_value={"data": data, "generation": 88, "created_at": "2026-11-05T07:56:00+09:00",
+                   return_value={"data": data, "generation": 88, "created_at": "2026-11-05T08:06:00+09:00",
                                  "object": "g2/slot.json", "bucket": "market-evidence",
                                  "sha256": "a" * 64}), \
              patch("scripts.run_0800_issuance.load_pinned_production_evidence") as read_evidence:
@@ -158,21 +175,33 @@ class PinnedG2BundleHandoffTests(unittest.TestCase):
                             expected_evidence_generation=71)
         read_evidence.assert_not_called()
 
-    def test_gcs_handoff_rejects_bundle_created_after_slot(self):
+    def test_gcs_handoff_rejects_bundle_created_after_slot_window(self):
         data = bundle()
         with patch.dict("os.environ", {"REPORT_EVIDENCE_PROJECT_ID": "market-prod",
                                       "REPORT_EVIDENCE_BUCKET": "market-evidence"}), \
              patch("scripts.run_0800_issuance.load_pinned_g2_bundle",
-                   return_value={"data": data, "generation": 88, "created_at": "2026-11-05T08:01:00+09:00",
+                   return_value={"data": data, "generation": 88, "created_at": "2026-11-05T08:41:00+09:00",
                                  "object": "g2/slot.json", "bucket": "market-evidence",
                                  "sha256": "a" * 64}), \
              patch("scripts.run_0800_issuance.load_pinned_production_evidence") as read_evidence:
-            with self.assertRaisesRegex(IssuanceBlocked, "G2_BUNDLE_CREATED_AFTER_REPORT_SLOT"):
+            with self.assertRaisesRegex(IssuanceBlocked, "G2_BUNDLE_CREATED_AFTER_REPORT_WINDOW"):
                 load_bundle(None, now=SLOT, g2_object_name="g2/slot.json",
                             g2_generation=88, expected_report_id="2026-11-05_08-00",
                             expected_revision=3, expected_evidence_object="evidence/2026-11-05_08-00.json",
                             expected_evidence_generation=71)
         read_evidence.assert_not_called()
+
+
+    def test_cli_bundle_time_contract_accepts_in_slot_freeze_and_rejects_pre_slot_freeze(self):
+        data = bundle()
+        self.assertEqual(validate_bundle_payload(data, now=SLOT), data)
+        data["g2"]["frozen_at"] = "2026-11-05T07:59:59+09:00"
+        with self.assertRaisesRegex(IssuanceBlocked, "G2_FREEZE_OUTSIDE_0800_WINDOW"):
+            validate_bundle_payload(data, now=SLOT)
+        data = bundle()
+        data["g2"]["scenario_review"]["reviewed_at"] = "2026-11-05T08:06:00+09:00"
+        with self.assertRaisesRegex(IssuanceBlocked, "G2_REVIEW_OUTSIDE_FREEZE_WINDOW"):
+            validate_bundle_payload(data, now=SLOT)
 
 
 if __name__ == "__main__":

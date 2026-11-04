@@ -331,3 +331,15 @@ On code SHA `9fd7470606bbf2bdd9fbcc9fd1e9f250b63de736`, six isolated Python suit
 Executable tree on synchronized code SHA `a4641d4fa1d55120e1e95af0548d06a886dafb17` passed 110 Python tests under Actions Python 3.12: pipeline 17, portal 39, importer handoff 16, preflight 17, pinned G2 handoff 7, producer 14; compile and CLI smoke also passed. All ten related Actions passed: [issuance 41907967951](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907967951), [UI/DOM 41907968119](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968119), [sync recovery 41907967813](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907967813), [Apps Script validation 41907967892](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907967892), [frozen cutoff 41907968232](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968232), [delivery 41907968211](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968211), [dashboard health 41907967835](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907967835), [eligibility 41907968113](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968113), [historical recovery 41907968451](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968451), and [saved-source QA 41907968393](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968393).
 
 Main `ba8d09a1b1170b56b42c8f33c125a19f120fb0dd` was synchronized in merge commit `a4641d4fa1d55120e1e95af0548d06a886dafb17`. Main's only change since the previous sync was `data/usdjpy-volume.json`; it did not overlap the 44 PR paths and is absent from the PR diff. PR #188 remains OPEN/Draft/unmerged. Live G2 task invocation, workload identity/IAM, installed trigger inventory, authenticated preflight, Docs, canonical/receipt and Pages writes remain NOT_RUN or UNKNOWN. The adapter's automated pass does not remove BLOCKED_G2_PRODUCER_MISSING.
+
+## MR-ISSUANCE-TIME-CONTRACT-20261105-01｜継続状態
+
+- 08:00時刻契約を修正：pre-slot Evidenceを維持し、G2生成・レビュー・freezeは08:00〜08:40に整合。CI確認待ち。
+- Latest main c82235d39bbe03c3ce8833a061cb1daface84a32を4つのデータ/履歴JSON込みで同期。PR履歴・既存ファイルは保持。
+- 未完了：ChatGPTタスク出力との実接続、信頼ID/作成主体の証明、Apps Script deployed version/triggers/history読取、承認付き本番08:00 E2E。
+- Ownerはapps_script_legacyのまま。PR #188未マージ。
+
+### G2 provenance and owner blockers
+
+- G2 producer identity preflight now requires a matching Cloud Storage create audit record for exact object/generation and independently read-back body hash; environment self-report cannot authorize PASS.
+- Admin work not performed: verify/enable Data Access audit logs and logging reader permission, establish protected GitHub OIDC→GCP service identity, confirm task output handoff, inspect deployed Apps Script triggers/history, and approve future one-slot E2E.

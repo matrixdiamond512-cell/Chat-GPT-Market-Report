@@ -150,3 +150,29 @@ On code SHA `9fd7470606bbf2bdd9fbcc9fd1e9f250b63de736`, six isolated Python suit
 Executable tree on synchronized code SHA `a4641d4fa1d55120e1e95af0548d06a886dafb17` passed 110 Python tests under Actions Python 3.12: pipeline 17, portal 39, importer handoff 16, preflight 17, pinned G2 handoff 7, producer 14; compile and CLI smoke also passed. All ten related Actions passed: [issuance 41907967951](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907967951), [UI/DOM 41907968119](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968119), [sync recovery 41907967813](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907967813), [Apps Script validation 41907967892](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907967892), [frozen cutoff 41907968232](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968232), [delivery 41907968211](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968211), [dashboard health 41907967835](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907967835), [eligibility 41907968113](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968113), [historical recovery 41907968451](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968451), and [saved-source QA 41907968393](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968393).
 
 Main `ba8d09a1b1170b56b42c8f33c125a19f120fb0dd` was synchronized in merge commit `a4641d4fa1d55120e1e95af0548d06a886dafb17`. Main's only change since the previous sync was `data/usdjpy-volume.json`; it did not overlap the 44 PR paths and is absent from the PR diff. PR #188 remains OPEN/Draft/unmerged. Live G2 task invocation, workload identity/IAM, installed trigger inventory, authenticated preflight, Docs, canonical/receipt and Pages writes remain NOT_RUN or UNKNOWN. The adapter's automated pass does not remove BLOCKED_G2_PRODUCER_MISSING.
+
+## MR-ISSUANCE-TIME-CONTRACT-20261105-01｜08:00時刻契約修正
+
+08:00枠の工程時刻を分離する。Evidenceの期限・鮮度条件は変更しない。
+
+- 市場データ取得：定義済み06:30取得系およびT-13/T-7/T-3の当日枠取得。snapshotの生成時刻・鮮度は既存validator（15分以内）で検査する。
+- Evidence生成・凍結：08:00:00 JST以前。generation、object SHA-256、reportId/revision、snapshot/context/source hashを固定し、発行後生成・再構成を拒否する。
+- G2生成開始・レビュー・凍結：08:00:00〜08:40:00 JST。08:00に始まるレポート作成タスクが同時刻以前に本文を凍結することはできないため、G2はslot開始後に作成・人手レビューし、Docs保存前にfreezeする。reviewed_atは本文hashと同一reportIdに結び、slot開始以降かつfrozen_at以前とする。
+- G2 object保存：凍結後、同じ08:00〜08:40枠でcreate-only。GCS作成時刻・generation・本文hashを読戻し、作成時刻がfreezeより前または枠終了後なら停止する。
+- Docs保存・正式発行・公開照合：08:00:00〜08:40:00 JST。G2 freeze/review後に保存し、既存の全文読戻し、正式原本/receipt、Pages実DOMゲートを維持する。
+
+変更理由：従来のproducerはG2を08:00以前にfreezeし、producerの現在時刻を08:00未満に限定していた。一方で発行CLIは08:00〜08:40にのみ起動する。定時タスクが08:00開始なら、そのtaskが開始前に本文をfreezeするのは不可能である（実際のtask開始時刻と出力経路はUNKNOWN）。従来条件では一つの08:00開始経路として成立しなかった。これはEvidence期限を緩めず、本文側のfreeze/review条件のみをslot内に明示する改訂である。過去Docs・本文・Evidenceは新たな発行前証拠として認定しない。コード/隔離CIの合格は実タスク接続や本番公開の証拠ではない。
+
+### G2生成主体と実接続の証拠条件
+
+G2生成主体の判定は環境変数やbundle内の申告を証拠にしない。認証付きpreflightは、正確に読戻したGCSのbucket/object/generationとSHA-256に対してCloud Audit Logsのstorage.objects.create記録を引き、principalEmail・resourceName・generation・記録時刻（G2 freeze〜08:40 JST）を照合する。照合が取れない、記録が未有効、Logging API権限がない、principalが違う場合はBLOCKEDとする。Cloud Storage Data Access監査ログは明示的に有効化が必要で、未設定ならここで止まる。有効化や課金影響の設定は管理者作業とし、この変更では行わない。
+
+想定認証はGitHub Actionsの保護main/ref+EnvironmentからGoogle Workload Identity Federationで専用service accountをimpersonateし、G2 objectはcreate-only、Evidenceは指定generation read、claim prefixは既存の必要権限に限定する構成。GitHub側の期待service account名は保護環境の設定として扱い、監査ログの実principal一致が必要。service account keyをSecretsへ追加しない。
+
+ChatGPT定時タスクの生成本文をこの実行環境から取得するコネクタ/APIは確認できていないため、TrustedG2BundleProducerは呼出し可能なアダプターであり、タスクへ実接続済みの生成主体ではない。既存taskは08:00開始とされ、task出力が08:00〜08:40内に人手レビュー・freezeされれば新時刻契約には適合するが、実出力・完了時刻は未確認。
+
+実運用代替案は二つある。第一案は、本文を生成する既存ChatGPT taskを維持し、運用者が本文/revision/reviewを非公開の承認済み実行環境へ受け渡し、protected workflowがEvidence generationを読んでG2をfreeze/storeし、そのgenerationを発行CLIに渡す手動運用。早期の限定試験に向くが、手動受渡し記録が必要。第二案は、taskがOIDC/Webhookを実際に出せることを確認した後、専用の受信実行主体を作り、その主体がWIFで同じproducerを呼ぶ自動運用。taskのWebhook能力が未確認で、追加serviceの保護・費用確認も要るため現時点では実装可能と断定しない。公開GitHubのdispatch inputsへレポート本文を直接貼り付ける方法は監査イベントへの本文露出があるため採用しない。
+
+### 08:00 ownerの切替条件
+
+Git上のApps Scriptは08:00枠を含むDocs→GitHub発行コード/08:30付近のretry handlerを定義する。これは実際のApps Script deployment、installed trigger一覧、 timezone、直近実行履歴の証拠ではない。実状態はUNKNOWN。owner configは08:00をapps_script_legacyのまま維持し、新CLIは競合ガードにより発行を停止する。切替は承認後、(1)現行deployment版・trigger/last executionを読取り確認、(2)08:00旧triggerと08:30 retryのみ停止し12/16/21を維持、(3)停止状態を再読戻し、(4)08:00 owner configを新方式へ変更、(5)protected新方式を起動、(6)未来の08:00 slot 1件を承認付きE2Eで照合、の順とする。確認できないtrigger/historyはUNKNOWNのまま所有権を切り替えない。

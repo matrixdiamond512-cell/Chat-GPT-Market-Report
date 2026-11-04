@@ -18,7 +18,7 @@ PROJECT = "market-report-production-shadow"
 EVIDENCE_BUCKET = "market-report-production-evidence"
 G2_BUCKET = "market-report-production-g2"
 JST = ZoneInfo("Asia/Tokyo")
-SLOT = datetime(2026, 10, 16, 7, 59, tzinfo=JST)
+SLOT = datetime(2026, 10, 16, 8, 6, tzinfo=JST)
 EVIDENCE_OBJECT = "evidence/2026-10-16_08-00-r1.json"
 EVIDENCE_GENERATION = 123
 
@@ -79,7 +79,7 @@ def fixture_source():
         scenarios[name] = fields
     review = {
         "status": "APPROVED", "reviewer": "fixture-reviewer",
-        "reviewed_at": "2026-10-16T07:58:00+09:00",
+        "reviewed_at": "2026-10-16T08:04:00+09:00",
         "branching_validated": True,
         "invalidation_trigger_is_decision_change": True,
         "scenarios": scenarios,
@@ -122,7 +122,7 @@ class FakeBlob:
             raise RuntimeError("precondition failed")
         self.payload = bytes(payload)
         self.generation = 321
-        self.time_created = datetime.fromisoformat("2026-10-16T07:59:10+09:00")
+        self.time_created = datetime.fromisoformat("2026-10-16T08:05:10+09:00")
 
     def reload(self):
         if self.payload is None:
@@ -164,7 +164,7 @@ class G2BundleProducerTests(unittest.TestCase):
             "evidence_object": self.evidence_object,
             "evidence_object_name": EVIDENCE_OBJECT,
             "evidence_generation": EVIDENCE_GENERATION,
-            "frozen_at": "2026-10-16T07:59:00+09:00",
+            "frozen_at": "2026-10-16T08:05:00+09:00",
             "scenario_review": self.review, "now": SLOT,
             "expected_project_id": PROJECT,
             "expected_evidence_bucket": EVIDENCE_BUCKET,
@@ -193,27 +193,44 @@ class G2BundleProducerTests(unittest.TestCase):
         with self.assertRaisesRegex(IssuanceBlocked, "EVIDENCE_IDENTITY_MISMATCH"):
             self.build(evidence_object=envelope)
 
-    def test_rejects_evidence_created_after_slot_or_freeze(self):
+    def test_evidence_created_before_slot_remains_valid_for_later_g2_freeze(self):
+        envelope = dict(self.evidence_object, created_at="2026-10-16T07:59:30+09:00")
+        bundle = self.build(evidence_object=envelope)
+        self.assertEqual(bundle["g2"]["frozen_at"], "2026-10-16T08:05:00+09:00")
+
+    def test_rejects_evidence_created_after_slot(self):
         envelope = dict(self.evidence_object, created_at="2026-10-16T08:00:01+09:00")
         with self.assertRaisesRegex(IssuanceBlocked, "EVIDENCE_CREATED_TOO_LATE"):
             self.build(evidence_object=envelope)
-        envelope = dict(self.evidence_object, created_at="2026-10-16T07:59:30+09:00")
-        with self.assertRaisesRegex(IssuanceBlocked, "EVIDENCE_CREATED_TOO_LATE"):
-            self.build(evidence_object=envelope)
 
-    def test_rejects_freeze_after_slot_or_after_current_clock(self):
+    def test_accepts_g2_freeze_during_0800_issuance_window_after_slot_start(self):
+        bundle = self.build(frozen_at="2026-10-16T08:05:00+09:00",
+                            now=datetime(2026, 10, 16, 8, 6, tzinfo=JST))
+        self.assertEqual(bundle["g2"]["frozen_at"], "2026-10-16T08:05:00+09:00")
+
+    def test_rejects_freeze_outside_slot_window_or_after_current_clock(self):
+        with self.assertRaisesRegex(IssuanceBlocked, "FREEZE_OUTSIDE_SLOT_WINDOW"):
+            self.build(frozen_at="2026-10-16T07:59:59+09:00")
+        with self.assertRaisesRegex(IssuanceBlocked, "FREEZE_OUTSIDE_SLOT_WINDOW"):
+            self.build(frozen_at="2026-10-16T08:40:01+09:00")
         with self.assertRaisesRegex(IssuanceBlocked, "FREEZE_TIME_INVALID"):
-            self.build(frozen_at="2026-10-16T08:00:00+09:00")
-        with self.assertRaisesRegex(IssuanceBlocked, "FREEZE_TIME_INVALID"):
-            self.build(frozen_at="2026-10-16T08:00:10+09:00",
-                       now=datetime(2026, 10, 16, 8, 1, tzinfo=JST))
+            self.build(frozen_at="2026-10-16T08:07:00+09:00",
+                       now=datetime(2026, 10, 16, 8, 6, tzinfo=JST))
+        with self.assertRaisesRegex(IssuanceBlocked, "AFTER_SLOT_WINDOW"):
+            self.build(now=datetime(2026, 10, 16, 8, 41, tzinfo=JST))
 
     def test_rejects_unapproved_or_late_scenario_review(self):
         with self.assertRaisesRegex(IssuanceBlocked, "HUMAN_REVIEW_REQUIRED"):
             self.build(scenario_review={**self.review, "status": "PENDING"})
         with self.assertRaisesRegex(IssuanceBlocked, "REVIEW_AFTER_FREEZE"):
             self.build(scenario_review={**self.review,
+                                        "reviewed_at": "2026-10-16T08:05:30+09:00"})
+        with self.assertRaisesRegex(IssuanceBlocked, "REVIEW_BEFORE_SLOT"):
+            self.build(scenario_review={**self.review,
                                         "reviewed_at": "2026-10-16T07:59:30+09:00"})
+        with self.assertRaisesRegex(IssuanceBlocked, "REVIEW_TIME_REQUIRED"):
+            self.build(scenario_review={k: v for k, v in self.review.items()
+                                       if k != "reviewed_at"})
 
     def test_rejects_scenario_review_bound_to_different_identity(self):
         with self.assertRaisesRegex(IssuanceBlocked, "SCENARIO_REVIEW_IDENTITY_MISMATCH"):
@@ -250,7 +267,7 @@ class G2BundleProducerTests(unittest.TestCase):
             evidence_object=self.evidence_object,
             evidence_object_name=EVIDENCE_OBJECT,
             evidence_generation=EVIDENCE_GENERATION,
-            frozen_at="2026-10-16T07:59:00+09:00",
+            frozen_at="2026-10-16T08:05:00+09:00",
             scenario_review=self.review, now=SLOT)
         self.assertEqual(store.calls, 1)
         self.assertEqual(receipt.sha256, "a" * 64)
@@ -290,11 +307,24 @@ class G2BundleProducerTests(unittest.TestCase):
             def upload_from_string(self, payload, *, content_type, if_generation_match):
                 super().upload_from_string(payload, content_type=content_type,
                                            if_generation_match=if_generation_match)
-                self.time_created = datetime.fromisoformat("2026-10-16T08:00:01+09:00")
+                self.time_created = datetime.fromisoformat("2026-10-16T08:40:01+09:00")
         blob = LateCreatedBlob()
         store = GcsCreateOnlyG2BundleStore(project_id=PROJECT, bucket_name=G2_BUCKET,
                                             client=FakeClient(FakeBucket(blob)))
-        with self.assertRaisesRegex(IssuanceBlocked, "G2_BUNDLE_CREATED_AFTER_SLOT"):
+        with self.assertRaisesRegex(IssuanceBlocked, "G2_BUNDLE_CREATED_AFTER_SLOT_WINDOW"):
+            store.create_only(report_id="2026-10-16_08-00", revision=1,
+                              bundle=self.build())
+
+    def test_gcs_store_rejects_g2_object_created_before_body_freeze(self):
+        class EarlyCreatedBlob(FakeBlob):
+            def upload_from_string(self, payload, *, content_type, if_generation_match):
+                super().upload_from_string(payload, content_type=content_type,
+                                           if_generation_match=if_generation_match)
+                self.time_created = datetime.fromisoformat("2026-10-16T08:04:59+09:00")
+        blob = EarlyCreatedBlob()
+        store = GcsCreateOnlyG2BundleStore(project_id=PROJECT, bucket_name=G2_BUCKET,
+                                            client=FakeClient(FakeBucket(blob)))
+        with self.assertRaisesRegex(IssuanceBlocked, "G2_BUNDLE_CREATED_BEFORE_FREEZE"):
             store.create_only(report_id="2026-10-16_08-00", revision=1,
                               bundle=self.build())
 

@@ -56,6 +56,7 @@ class DefaultGoogleReadOnlyProbe:
             credentials, project = google.auth.default(scopes=scopes)
         self.session = AuthorizedSession(credentials)
         self.storage = storage.Client(project=project, credentials=credentials)
+        self.project_id = project or getattr(credentials, "project_id", None)
 
     def request(self, *args, **kwargs):
         return self.session.request(*args, **kwargs)
@@ -88,6 +89,43 @@ class DefaultGoogleReadOnlyProbe:
         return {"data": data, "generation": str(blob.generation),
                 "created_at": created_at.isoformat() if created_at else None,
                 "sha256": hashlib.sha256(payload).hexdigest()}
+
+
+    def read_g2_creation_audit(self, *, bucket: str, object_name: str,
+                               generation: str) -> dict | None:
+        """Read the Cloud Audit Log record binding one GCS generation to its creator."""
+        if not self.project_id or not bucket or not object_name or not generation.isdigit():
+            raise PreflightBlocked("G2_CREATOR_AUDIT_TARGET_INVALID")
+        resource_name = f"projects/_/buckets/{bucket}/objects/{object_name}"
+        log_name = f"projects/{self.project_id}/logs/cloudaudit.googleapis.com%2Fdata_access"
+        filters = [
+            "logName=" + json.dumps(log_name),
+            'protoPayload.serviceName="storage.googleapis.com"',
+            'protoPayload.methodName="storage.objects.create"',
+            "protoPayload.resourceName=" + json.dumps(resource_name),
+            "protoPayload.response.generation=" + json.dumps(generation),
+        ]
+        response = self.request(
+            "POST", "https://logging.googleapis.com/v2/entries:list",
+            json={"resourceNames": [f"projects/{self.project_id}"],
+                  "filter": " AND ".join(filters), "orderBy": "timestamp desc",
+                  "pageSize": 20}, timeout=20)
+        if response.status_code != 200:
+            raise PreflightBlocked("G2_CREATOR_AUDIT_READ_FAILED:" + str(response.status_code))
+        entries = response.json().get("entries", [])
+        for entry in entries:
+            payload = entry.get("protoPayload", {})
+            response_object = payload.get("response", {})
+            if (payload.get("resourceName") != resource_name or
+                    str(response_object.get("generation", "")) != generation):
+                continue
+            return {
+                "principal_email": (payload.get("authenticationInfo") or {}).get("principalEmail", ""),
+                "resource_name": payload.get("resourceName", ""),
+                "generation": str(response_object.get("generation", "")),
+                "timestamp": entry.get("timestamp", ""),
+            }
+        return None
 
     def test_claim_permissions(self, bucket: str) -> dict:
         permissions = self.storage.bucket(bucket).test_iam_permissions(
@@ -147,14 +185,26 @@ def _validate_g2_evidence_binding(*, env, google_probe) -> dict:
         if (not body_hash or g2.get("body_hash") != body_hash or
                 report.get("bodyHash") != body_hash):
             raise PreflightBlocked("G2_BODY_HASH_MISMATCH")
-        frozen_at = aware(g2.get("frozen_at", ""))
-        report_slot = aware(report["date"] + "T" + report["time"] + ":00+09:00")
-        if report["time"] != "08:00" or frozen_at > report_slot:
+        if report["time"] != "08:00":
             raise PreflightBlocked("G2_FREEZE_TIME_OR_SLOT_INVALID")
+        report_slot = aware(report["date"] + "T" + report["time"] + ":00+09:00")
+        slot_end = report_slot + timedelta(minutes=40)
+        frozen_at = aware(g2.get("frozen_at", ""))
+        if not report_slot <= frozen_at <= slot_end:
+            raise PreflightBlocked("G2_FREEZE_OUTSIDE_0800_WINDOW")
+        review = g2.get("scenario_review") or {}
+        reviewed_at = aware(review.get("reviewed_at", ""))
+        if (review.get("report_id") not in (None, report_id) or
+                review.get("body_hash") not in (None, body_hash) or
+                not report_slot <= reviewed_at <= frozen_at):
+            raise PreflightBlocked("G2_REVIEW_IDENTITY_OR_TIME_INVALID")
         if not g2_object.get("created_at"):
             raise PreflightBlocked("G2_BUNDLE_CREATION_TIME_UNKNOWN")
-        if aware(g2_object["created_at"]) > report_slot:
-            raise PreflightBlocked("G2_BUNDLE_CREATED_AFTER_REPORT_SLOT")
+        g2_created_at = aware(g2_object["created_at"])
+        if g2_created_at < frozen_at:
+            raise PreflightBlocked("G2_BUNDLE_CREATED_BEFORE_FREEZE")
+        if g2_created_at > slot_end:
+            raise PreflightBlocked("G2_BUNDLE_CREATED_AFTER_REPORT_WINDOW")
         evidence = evidence_object["data"]
         if (evidence.get("reportId") != report_id or
                 evidence.get("revision") != expected_revision or
@@ -168,6 +218,8 @@ def _validate_g2_evidence_binding(*, env, google_probe) -> dict:
         return {"status": "PASS", "report_id": report_id, "revision": expected_revision,
                 "body_sha256": body_hash, "g2_frozen_at": g2["frozen_at"],
                 "g2_bundle_generation": g2_object["generation"],
+                "g2_bundle_created_at": g2_object["created_at"],
+                "g2_window_end": slot_end.isoformat(),
                 "g2_bundle_sha256": g2_object["sha256"],
                 "evidence_generation": evidence_object["generation"],
                 "evidence_sha256": evidence_object["sha256"],
@@ -175,6 +227,50 @@ def _validate_g2_evidence_binding(*, env, google_probe) -> dict:
                 "snapshot_id": evidence["snapshot"]["snapshot_id"]}
     except (PreflightBlocked, KeyError, TypeError, ValueError) as exc:
         return {"status": "BLOCKED", "reason": str(exc)}
+
+
+def _verify_g2_producer_identity(*, env, google_probe, binding) -> dict:
+    """Require an observed Cloud Audit Log creator for the exact pinned object."""
+    if not isinstance(binding, dict) or binding.get("status") != "PASS":
+        return {"status": "BLOCKED", "reason": "G2_EVIDENCE_BINDING_NOT_VERIFIED"}
+    required = ("REPORT_ISSUANCE_G2_PRODUCER_SERVICE_ACCOUNT",
+                "REPORT_ISSUANCE_G2_BUNDLE_BUCKET", "REPORT_ISSUANCE_G2_BUNDLE_OBJECT",
+                "REPORT_ISSUANCE_G2_BUNDLE_GENERATION")
+    missing = [name for name in required if not env.get(name)]
+    if missing:
+        return {"status": "BLOCKED", "reason": "G2_PRODUCER_IDENTITY_CONFIG_MISSING",
+                "missing": missing}
+    reader = getattr(google_probe, "read_g2_creation_audit", None)
+    if not callable(reader):
+        return {"status": "BLOCKED", "reason": "G2_CREATOR_AUDIT_READER_UNAVAILABLE"}
+    expected_generation = env["REPORT_ISSUANCE_G2_BUNDLE_GENERATION"]
+    if str(binding.get("g2_bundle_generation", "")) != expected_generation:
+        return {"status": "BLOCKED", "reason": "G2_AUDIT_GENERATION_BINDING_MISMATCH"}
+    try:
+        event = reader(bucket=env["REPORT_ISSUANCE_G2_BUNDLE_BUCKET"],
+                       object_name=env["REPORT_ISSUANCE_G2_BUNDLE_OBJECT"],
+                       generation=expected_generation)
+    except (PreflightBlocked, OSError, ValueError) as exc:
+        return {"status": "BLOCKED", "reason": str(exc)}
+    if not isinstance(event, dict):
+        return {"status": "BLOCKED", "reason": "G2_CREATOR_AUDIT_EVENT_NOT_FOUND"}
+    expected_resource = (f"projects/_/buckets/{env['REPORT_ISSUANCE_G2_BUNDLE_BUCKET']}/objects/"
+                         f"{env['REPORT_ISSUANCE_G2_BUNDLE_OBJECT']}")
+    try:
+        event_at = aware(event.get("timestamp", ""))
+        frozen_at = aware(binding.get("g2_frozen_at", ""))
+        window_end = aware(binding.get("g2_window_end", ""))
+    except (ValueError, TypeError) as exc:
+        return {"status": "BLOCKED", "reason": "G2_CREATOR_AUDIT_TIME_INVALID"}
+    if (event.get("principal_email") != env["REPORT_ISSUANCE_G2_PRODUCER_SERVICE_ACCOUNT"] or
+            event.get("generation") != expected_generation or
+            event.get("resource_name") != expected_resource or
+            not frozen_at <= event_at <= window_end):
+        return {"status": "BLOCKED", "reason": "G2_CREATOR_AUDIT_IDENTITY_MISMATCH"}
+    return {"status": "PASS", "producer_principal": event["principal_email"],
+            "g2_object": env["REPORT_ISSUANCE_G2_BUNDLE_OBJECT"],
+            "g2_generation": expected_generation,
+            "g2_bundle_sha256": binding.get("g2_bundle_sha256")}
 
 
 def run_configuration_diagnostic(*, env=None) -> dict:
@@ -328,12 +424,15 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None,
         env=env, google_probe=google_probe) if google_probe is not None else {
             "status": "BLOCKED", "reason": "BLOCKED_G2_PRODUCER_MISSING"
         }
-    # An object and matching hashes do not prove which actor produced it. No
-    # trusted G2 producer is registered in this repository yet.
-    result["checks"]["g2_producer_identity"] = {
-        "status": "BLOCKED", "reason": "BLOCKED_G2_PRODUCER_MISSING",
-        "producer_registered": False, "producer_identity_verified": False,
-    }
+    result["checks"]["g2_producer_identity"] = (
+        _verify_g2_producer_identity(env=env, google_probe=google_probe,
+                                     binding=result["checks"]["g2_evidence_binding"])
+        if google_probe is not None else
+        {"status": "BLOCKED", "reason": "G2_CREATOR_AUDIT_READER_UNAVAILABLE"}
+    )
+    result["checks"]["g2_producer_identity"].setdefault(
+        "producer_identity_verified",
+        result["checks"]["g2_producer_identity"]["status"] == "PASS")
     owner_path = Path(env.get("REPORT_ISSUANCE_OWNER_CONFIG_PATH",
                               Path(__file__).resolve().parents[2] / "config" / "issuance_ownership.json"))
     owner = None

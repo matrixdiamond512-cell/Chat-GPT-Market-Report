@@ -68,8 +68,19 @@ def validate_bundle_payload(supplied: dict, *, now: datetime | None = None) -> d
     if report_time != "08:00" or report_date != now.date() or now.weekday() >= 5:
         raise IssuanceBlocked("ISSUANCE_ENTRYPOINT_REQUIRES_TODAY_WEEKDAY_0800")
     slot_start = datetime.combine(report_date, time(8, 0), tzinfo=JST)
-    if now < slot_start or now > slot_start + timedelta(minutes=40):
+    slot_end = slot_start + timedelta(minutes=40)
+    if now < slot_start or now > slot_end:
         raise IssuanceBlocked("ISSUANCE_ENTRYPOINT_OUTSIDE_SLOT_WINDOW")
+    g2 = supplied["g2"]
+    try:
+        frozen_at = aware(g2.get("frozen_at", ""))
+        reviewed_at = aware((g2.get("scenario_review") or {}).get("reviewed_at", ""))
+    except (ValueError, TypeError, AttributeError) as exc:
+        raise IssuanceBlocked("G2_FREEZE_OR_REVIEW_TIME_INVALID") from exc
+    if not slot_start <= frozen_at <= slot_end or frozen_at > now:
+        raise IssuanceBlocked("G2_FREEZE_OUTSIDE_0800_WINDOW")
+    if not slot_start <= reviewed_at <= frozen_at:
+        raise IssuanceBlocked("G2_REVIEW_OUTSIDE_FREEZE_WINDOW")
     return supplied
 
 
@@ -140,8 +151,13 @@ def load_bundle(path: Path | None, *, now: datetime | None = None,
         report = supplied["g2"]["report"]
         slot_start = datetime.combine(
             datetime.strptime(report["date"], "%Y-%m-%d").date(), time(8, 0), tzinfo=JST)
-        if aware(pinned_g2["created_at"]) > slot_start:
-            raise IssuanceBlocked("G2_BUNDLE_CREATED_AFTER_REPORT_SLOT")
+        slot_end = slot_start + timedelta(minutes=40)
+        frozen_at = aware(supplied["g2"]["frozen_at"])
+        created_at = aware(pinned_g2["created_at"])
+        if created_at < frozen_at:
+            raise IssuanceBlocked("G2_BUNDLE_CREATED_BEFORE_FREEZE")
+        if created_at > slot_end:
+            raise IssuanceBlocked("G2_BUNDLE_CREATED_AFTER_REPORT_WINDOW")
         if not expected_report_id or expected_revision is None:
             raise IssuanceBlocked("G2_BUNDLE_TARGET_IDENTITY_REQUIRED")
         ref = supplied["evidence_ref"]

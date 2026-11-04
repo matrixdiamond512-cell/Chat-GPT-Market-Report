@@ -377,6 +377,17 @@ def validate_issuance_bundle(bundle: dict, *, expected_project_id: str,
     if g2.get("report_id") != report_id or g2.get("revision") != report["revision"]:
         raise IssuanceBlocked("G2_IDENTITY_MISMATCH")
     try:
+        slot_start = aware(f"{report['date']}T{report['time']}:00+09:00")
+        slot_end = slot_start + timedelta(minutes=40)
+        frozen_at = aware(g2.get("frozen_at", ""))
+        reviewed_at = aware((g2.get("scenario_review") or {}).get("reviewed_at", ""))
+    except (KeyError, ValueError, TypeError, AttributeError) as exc:
+        raise IssuanceBlocked("G2_FREEZE_OR_REVIEW_TIME_INVALID") from exc
+    if not slot_start <= frozen_at <= slot_end:
+        raise IssuanceBlocked("G2_FREEZE_OUTSIDE_0800_WINDOW")
+    if not slot_start <= reviewed_at <= frozen_at:
+        raise IssuanceBlocked("G2_REVIEW_OUTSIDE_FREEZE_WINDOW")
+    try:
         from scripts.report_source_contract import validate_saved_body
         validate_saved_body(report)
         _canonical_drive_title(report)

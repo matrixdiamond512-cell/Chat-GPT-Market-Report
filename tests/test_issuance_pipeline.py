@@ -194,6 +194,13 @@ class IssuancePipelineContractTests(unittest.TestCase):
                             docs_writer=docs or FakeDocs(), portal=portal or FakePortal(),
                             claim_store=FakeClaimStore())
 
+    def test_rejects_g2_frozen_before_0800_before_any_write(self):
+        self.bundle["g2"]["frozen_at"] = "2026-10-16T07:59:59+09:00"
+        docs, portal = FakeDocs(), FakePortal()
+        with self.assertRaisesRegex(IssuanceBlocked, "G2_FREEZE_OUTSIDE_0800_WINDOW"):
+            self.execute_pipeline(docs=docs, portal=portal)
+        self.assertEqual((docs.calls, portal.calls), (0, 0))
+
     def test_same_run_docs_and_portal_exact_readback(self):
         docs = FakeDocs()
         result = self.execute_pipeline(docs=docs)
