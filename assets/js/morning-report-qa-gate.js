@@ -181,7 +181,28 @@
       }
       console.warn("[MorningReportQA] quarantined unverified source", result);
     } else {
-      console.error("[MorningReportQA] DOM FAIL", result);
+      // Keep the authored report body available for reference, but never present a
+      // market table as verified when the enforced 08:00 close-data gate failed.
+      const body = document.querySelector(".report-body");
+      if (body) {
+        const oldWarning = document.getElementById("morningReportQaWarning");
+        if (oldWarning) oldWarning.remove();
+        const table = domTable(report, body);
+        if (table) table.remove();
+        const warning = document.createElement("p");
+        warning.id = "morningReportQaWarning";
+        warning.className = "morning-report-qa-warning";
+        warning.setAttribute("role", "alert");
+        warning.textContent = "08:00の必須市場データ検証に未達です。この本文は照合用の閲覧記録です。検証を通過していない市場表は非表示にしました。正式発行の状態は別途表示された出典情報で確認してください。";
+        body.insertBefore(warning, body.firstChild);
+      }
+      console.warn("[MorningReportQA] failed 08:00 validation; market table hidden for view-only display", {
+        file: report?.sourceFile || report?.source || "reports.json",
+        date: report?.date || "",
+        time: report?.time || "",
+        httpStatus: report?.httpStatus ?? null,
+        validation: result
+      });
     }
     return result;
   }
