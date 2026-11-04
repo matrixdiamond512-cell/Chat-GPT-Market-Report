@@ -297,3 +297,7 @@ IMPLEMENTED: concrete adapter, exact-title importer entry point, create-only pin
 NOT_RUN: local Python on Windows; live Docs write/readback; production main canonical/receipt write/readback; Pages deploy/public fetch; other slots and 12-slot/10-workday acceptance. No external write or merge occurred.
 
 NEXT: settle required protected GitHub Actions environment and least-privilege identities; perform a separately authorized eligible 08:00 E2E after merge/review; reconcile all external stages; only then plan 12:00/16:00/21:00 generalization.
+
+### MR-ISSUANCE-CONNECT final code-test correction
+
+Latest exact code-test head: `e31f50db5c0c6f1316ea3c28eddd889d04a1fb13`. Composed chain test is now present and passed: Evidence/G2 validation → Docs fake writer/readback → exact-title strict importer and real receipt/evidence validation → fake atomic GitHub file/ref readback → Pages workflow stub and public report JSON text/hash comparison. Actions: issuance 16 + portal 30 + handoff 16 PASS; sync recovery, frozen-cutoff, delivery-health, dashboard-health, archive-recovery all PASS. This is E2 fixture evidence only; production/external stages remain NOT_RUN. Latest PR head will include this result-record update and must retain the same code tests as the preceding exact code head.
