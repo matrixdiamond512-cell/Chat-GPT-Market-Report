@@ -12,7 +12,7 @@ from unittest.mock import patch
 from contextlib import redirect_stdout
 
 from scripts.reporting.issuance_preflight import run_preflight
-from scripts.run_0800_issuance import load_bundle, main as issuance_main
+from scripts.run_0800_issuance import (load_bundle, main as issuance_main, require_08_issuance_owner)
 from scripts.reporting.issuance_pipeline import IssuanceBlocked
 
 
@@ -141,8 +141,27 @@ class IssuancePreflightTests(unittest.TestCase):
         payload = json.loads(output.getvalue())
         self.assertEqual(status, 2)
         self.assertEqual(payload["status"], "BLOCKED")
-        self.assertEqual(payload["reason"], "ISSUANCE_BUNDLE_REQUIRED")
+        self.assertEqual(payload["reason"], "BLOCKED_G2_PRODUCER_MISSING")
         self.assertNotIn("secret", output.getvalue().lower())
+
+    def test_missing_bundle_reports_missing_g2_producer(self):
+        output = io.StringIO()
+        with patch.dict(os.environ, {}, clear=True), redirect_stdout(output):
+            status = issuance_main([])
+        result = json.loads(output.getvalue())
+        self.assertEqual(status, 2)
+        self.assertEqual(result["reason"], "BLOCKED_G2_PRODUCER_MISSING")
+
+    def test_08_ownership_is_shared_and_cli_stays_blocked_until_explicit_switch(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "issuance_ownership.json"
+            path.write_text(json.dumps({"schemaVersion": 1,
+                "slotOwners": {"08:00": "apps_script_legacy"}}), encoding="utf-8")
+            with self.assertRaisesRegex(IssuanceBlocked, "ISSUANCE_OWNER_CONFLICT:08:00:apps_script_legacy"):
+                require_08_issuance_owner(path)
+            path.write_text(json.dumps({"schemaVersion": 1,
+                "slotOwners": {"08:00": "g2_issuance_cli"}}), encoding="utf-8")
+            self.assertEqual(require_08_issuance_owner(path), "g2_issuance_cli")
 
     def test_module_entrypoint_rejects_invalid_date_before_config_or_cloud_access(self):
         payload = {"g2": {"report": {"date": "not-a-date", "time": "08:00"}},

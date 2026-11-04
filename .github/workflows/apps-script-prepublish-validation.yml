@@ -10,6 +10,8 @@ on:
       - 'apps-script/MarketReportMasterScheduler.gs'
       - 'apps-script/MarketReportPrePublishValidation.gs'
       - 'scripts/test_market_report_save_evidence_guard.js'
+      - 'scripts/test_issuance_owner_guard.js'
+      - 'scripts/test_issuance_owner_guard.js'
       - 'scripts/test_apps_script_narrative_report.js'
       - 'scripts/test_actual_1600_source_recovery.js'
       - 'scripts/test_github_large_report_index_read.js'
@@ -100,6 +102,9 @@ jobs:
 
       - name: Validate six-market evidence before report save
         run: node scripts/test_market_report_save_evidence_guard.js
+
+      - name: Verify exclusive 08:00 publisher ownership
+        run: node scripts/test_issuance_owner_guard.js
 
       - name: Test narrative 21:00 report parsing and validation
         run: node scripts/test_apps_script_narrative_report.js

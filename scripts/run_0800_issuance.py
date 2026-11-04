@@ -26,6 +26,22 @@ from scripts.reporting.issuance_portal import (
 JST = ZoneInfo("Asia/Tokyo")
 
 
+def require_08_issuance_owner(config_path: Path | None = None) -> str:
+    """Require the one shared owner recorded in the checked-out main config."""
+    path = config_path or Path(__file__).resolve().parents[1] / "config" / "issuance_ownership.json"
+    try:
+        config = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise IssuanceBlocked("ISSUANCE_OWNER_CONFIG_UNAVAILABLE") from exc
+    owners = config.get("slotOwners") if isinstance(config, dict) else None
+    owner = owners.get("08:00") if isinstance(owners, dict) else None
+    if config.get("schemaVersion") != 1 or not isinstance(owner, str):
+        raise IssuanceBlocked("ISSUANCE_OWNER_CONFIG_INVALID")
+    if owner != "g2_issuance_cli":
+        raise IssuanceBlocked("ISSUANCE_OWNER_CONFLICT:08:00:" + owner)
+    return owner
+
+
 def validate_bundle_input(path: Path, *, now: datetime | None = None) -> dict:
     """Validate the local G2/evidence references without creating cloud clients."""
     try:
@@ -33,10 +49,10 @@ def validate_bundle_input(path: Path, *, now: datetime | None = None) -> dict:
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise IssuanceBlocked("ISSUANCE_BUNDLE_UNREADABLE") from exc
     if not isinstance(supplied, dict) or not isinstance(supplied.get("g2"), dict):
-        raise IssuanceBlocked("ISSUANCE_G2_BUNDLE_REQUIRED")
+        raise IssuanceBlocked("BLOCKED_G2_PRODUCER_MISSING")
     ref = supplied.get("evidence_ref")
     if not isinstance(ref, dict):
-        raise IssuanceBlocked("ISSUANCE_EVIDENCE_REF_REQUIRED")
+        raise IssuanceBlocked("BLOCKED_G2_PRODUCER_MISSING")
     object_name = ref.get("object")
     generation = ref.get("generation")
     if (not isinstance(object_name, str) or not object_name or
@@ -80,8 +96,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         if args.bundle is None:
-            raise IssuanceBlocked("ISSUANCE_BUNDLE_REQUIRED")
+            raise IssuanceBlocked("BLOCKED_G2_PRODUCER_MISSING")
         validate_bundle_input(args.bundle)
+        require_08_issuance_owner()
         required_env = ("REPORT_EVIDENCE_PROJECT_ID", "REPORT_EVIDENCE_BUCKET",
                        "REPORT_ISSUANCE_CLAIM_BUCKET", "REPORT_ISSUANCE_DOCS_FOLDER_ID",
                        "REPORT_ISSUANCE_ROOT_FOLDER_ID", "GITHUB_SHA")
