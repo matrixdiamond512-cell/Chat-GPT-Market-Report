@@ -175,13 +175,49 @@ class IssuancePortalIntegrationTests(unittest.TestCase):
         self.assertEqual(pages.calls, 1)
 
     def test_composed_run_issuance_uses_real_strict_importer_receipt_and_public_readback(self):
+        import hashlib
         import json
         from test_issuance_pipeline import FakeDocs
+
+        # Give the existing SOP validator a substantive 08:00 test report while
+        # keeping scenario quote offsets bound to this exact pre-save body.
+        report = self.fixture.report
+        main_quotes = ("Main condition: above 100.", "Main development: rally continues.",
+                       "Main impact: equities rise.")
+        alt_quotes = ("Alternative condition: below 100.", "Alternative development: pullback extends.",
+                      "Alternative impact: yen strengthens.")
+        invalid_quotes = ("Invalidation condition: yield breaks 5%.",
+                          "Invalidation development: main thesis fails.",
+                          "Invalidation impact: risk assets fall.")
+        paragraph = "確認済み材料と対応する価格反応を分離し、観測できた事実だけを記録する。 " * 5
+        body_lines = [report["title"]]
+        for heading in ("今日の相場テーマ", "主要市場データ", "材料と値動きの整合性", "主導市場",
+                        "重要ニュース", "クロスアセット資金フロー", "需給・ポジション",
+                        "6市場の個別見通し"):
+            body_lines.extend((heading, paragraph))
+        body_lines.extend(("シナリオ", "メインシナリオ", *main_quotes, "代替シナリオ", *alt_quotes,
+                           "崩れる条件", *invalid_quotes, "前回からの主な変化", paragraph,
+                           "結論", paragraph))
+        self.fixture.full_text = "\n".join(body_lines) + "\n"
+        body_hash = hashlib.sha256(self.fixture.full_text.encode("utf-8")).hexdigest()
+        report["fullText"] = self.fixture.full_text
+        report["bodyHash"] = body_hash
+        self.fixture.body_hash = body_hash
+        self.fixture.bundle["g2"]["body_hash"] = body_hash
+        self.fixture.bundle["g2"]["scenario_review"]["body_hash"] = body_hash
+        scenarios = self.fixture.bundle["g2"]["scenario_review"]["scenarios"]
+        for scenario_name, quotes in (("main_scenario", main_quotes),
+                                      ("alternative_scenario", alt_quotes),
+                                      ("invalidation_trigger", invalid_quotes)):
+            for field_name, quote in zip(("condition", "development", "market_impact"), quotes):
+                start = self.fixture.full_text.index(quote)
+                scenarios[scenario_name][field_name]["source"] = {
+                    "start": start, "end": start + len(quote), "quote": quote,
+                }
 
         github = FakeGitHub()
         pages = GitHubPagesVerifier(github=WorkflowGateway(), base_url="https://example.invalid",
                                     public_session=DynamicPublicSession(github), poll_interval=0)
-        report = self.fixture.report
         app_properties = {"report_id": report["report_id"], "revision": "1",
                           "body_hash": report["bodyHash"],
                           "evidence_id": self.fixture.evidence["evidenceId"],
