@@ -110,8 +110,12 @@ def paragraph_text(doc: dict) -> str:
     return "".join(parts).lstrip("\ufeff")
 
 def build_report(session, date: str, slot: str, item: dict) -> dict:
-    from report_source_contract import body_hash, title_for, validate_saved_body
-    from sync_latest_report_publication import validate_sop_body
+    try:
+        from scripts.report_source_contract import body_hash, title_for, validate_saved_body
+        from scripts.sync_latest_report_publication import validate_sop_body
+    except ModuleNotFoundError:
+        from report_source_contract import body_hash, title_for, validate_saved_body
+        from sync_latest_report_publication import validate_sop_body
     docid = item["id"]
     doc = get_json(session, f"{DOCS}/documents/{docid}",
                    {"fields": "documentId,title,revisionId,body(content)"})
@@ -172,8 +176,12 @@ def import_exact_issuance_doc(root: Path, *, report: dict, docs, session) -> tup
     for the issuance transaction and requires the precise Docs ID/revision and
     appProperties supplied by the caller.
     """
-    from reporting.importer_handoff import validate_docs_issuance_binding
-    from reporting.publication_evidence import validate_receipt
+    try:
+        from scripts.reporting.importer_handoff import validate_docs_issuance_binding
+        from scripts.reporting.publication_evidence import validate_receipt
+    except ModuleNotFoundError:
+        from reporting.importer_handoff import validate_docs_issuance_binding
+        from reporting.publication_evidence import validate_receipt
 
     report_id = report.get("report_id")
     date, slot = report.get("date"), report.get("time")
@@ -231,9 +239,13 @@ def import_exact_issuance_doc(root: Path, *, report: dict, docs, session) -> tup
 
 def verify_issuance_evidence(report: dict, evidence_path: Path, item: dict, revision: str) -> dict:
     """Run the established evidence verifier and strict Docs issuance binding."""
-    from reporting.publication_evidence import verify_slot_evidence
+    try:
+        from scripts.reporting.publication_evidence import verify_slot_evidence
+        from scripts.reporting.importer_handoff import validate_docs_issuance_binding
+    except ModuleNotFoundError:
+        from reporting.publication_evidence import verify_slot_evidence
+        from reporting.importer_handoff import validate_docs_issuance_binding
     receipt = verify_slot_evidence(report, evidence_path, item, revision)
-    from reporting.importer_handoff import validate_docs_issuance_binding
     validate_docs_issuance_binding(item.get("appProperties"), report, receipt)
     return receipt
 
