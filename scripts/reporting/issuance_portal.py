@@ -13,6 +13,8 @@ import json
 import base64
 import os
 from pathlib import Path
+import subprocess
+import tempfile
 import time
 from urllib.parse import quote
 
@@ -127,12 +129,13 @@ class GitHubRestClient:
             raise IssuanceBlocked(f"GITHUB_{method}_FAILED:{response.status_code}")
         return response.json() if response.content else {}
 
-    def publish_files(self, *, expected_head: str, files: dict[str, bytes], message: str) -> str:
+    def publish_files(self, *, expected_head: str, files: dict[str, bytes], message: str,
+                      create_only_paths: tuple[str, ...] = ()) -> str:
         ref = self._request("GET", "/git/ref/heads/main")
         head = ref["object"]["sha"]
-        if head != expected_head:
-            raise IssuanceBlocked("GITHUB_MAIN_MOVED_RECONCILE_REQUIRED")
+        main_moved = head != expected_head
         unchanged = True
+        found_paths: set[str] = set()
         for path, expected in files.items():
             response = self._session.request(
                 "GET", self.API + "/repos/" + self.repository + "/contents/" + quote(path, safe="/") + f"?ref={head}",
@@ -140,18 +143,27 @@ class GitHubRestClient:
             )
             if response.status_code == 404:
                 unchanged = False
-                break
+                continue
             if response.status_code != 200:
                 raise IssuanceBlocked(f"GITHUB_GET_FAILED:{response.status_code}")
             try:
                 actual = base64.b64decode(response.json()["content"], validate=False)
             except (KeyError, ValueError, TypeError) as exc:
                 raise IssuanceBlocked("GITHUB_FILE_READBACK_INVALID") from exc
+            found_paths.add(path)
             if actual != expected:
+                if path in create_only_paths:
+                    raise IssuanceBlocked("GITHUB_CREATE_ONLY_PATH_CONFLICT:" + path)
                 unchanged = False
-                break
+        pair_found = found_paths.intersection(create_only_paths)
+        if pair_found and pair_found != set(create_only_paths):
+            raise IssuanceBlocked("GITHUB_CREATE_ONLY_PAIR_INCOMPLETE")
         if unchanged:
-            return head  # identical report/revision retry: no duplicate commit
+            # This also reconciles a lost response after a successful main ref
+            # update: reuse only when the complete target set is already exact.
+            return head
+        if main_moved:
+            raise IssuanceBlocked("GITHUB_MAIN_MOVED_RECONCILE_REQUIRED")
         commit = self._request("GET", f"/git/commits/{head}")
         tree_entries = []
         for path, data in sorted(files.items()):
@@ -164,8 +176,13 @@ class GitHubRestClient:
             "base_tree": commit["tree"]["sha"], "tree": tree_entries})
         created = self._request("POST", "/git/commits", expected=(201,), body={
             "message": message, "tree": tree["sha"], "parents": [head]})
-        self._request("PATCH", "/git/refs/heads/main", expected=(200,), body={
-            "sha": created["sha"], "force": False})
+        try:
+            self._request("PATCH", "/git/refs/heads/main", expected=(200,), body={
+                "sha": created["sha"], "force": False})
+        except IssuanceBlocked as exc:
+            if "GITHUB_PATCH_FAILED:422" in str(exc) or "GITHUB_PATCH_FAILED:409" in str(exc):
+                raise IssuanceBlocked("GITHUB_MAIN_UPDATE_CONFLICT_RECONCILE_REQUIRED") from exc
+            raise
         observed = self._request("GET", "/git/ref/heads/main")["object"]["sha"]
         if observed != created["sha"]:
             raise IssuanceBlocked("GITHUB_MAIN_COMMIT_READBACK_MISMATCH")
@@ -187,10 +204,10 @@ class GitHubRestClient:
 
 
 class GitHubPagesVerifier:
-    """Poll the existing Pages workflow and compare the actual public JSON body."""
+    """Poll deployment, compare public JSON, and verify the rendered public DOM."""
 
     def __init__(self, *, github: GitHubRestClient, base_url: str, public_session=None,
-                 poll_interval: float = 5, timeout: float = 900):
+                 poll_interval: float = 5, timeout: float = 900, dom_verifier=None):
         if not base_url.startswith("https://"):
             raise IssuanceBlocked("PAGES_HTTPS_URL_REQUIRED")
         if public_session is None:
@@ -198,6 +215,29 @@ class GitHubPagesVerifier:
             public_session = requests.Session()
         self.github, self.base_url, self._public = github, base_url.rstrip("/"), public_session
         self.poll_interval, self.timeout = poll_interval, timeout
+        self.dom_verifier = dom_verifier or self._run_public_dom
+
+    def _run_public_dom(self, report: dict) -> None:
+        root = Path(__file__).resolve().parents[2]
+        script = root / "scripts" / "validate_issuance_report_dom.js"
+        if not script.is_file():
+            raise IssuanceBlocked("PAGES_PUBLIC_DOM_VALIDATOR_MISSING")
+        # Temporary file remains local to the runner and is removed immediately.
+        # subprocess output is intentionally suppressed because it is not needed
+        # for the result and could contain untrusted reporter/render content.
+        with tempfile.TemporaryDirectory(prefix="issuance-public-dom-") as folder:
+            target = Path(folder) / "canonical-report.json"
+            target.write_bytes(_json_bytes(report))
+            environment = {**os.environ, "PORTAL_URL": self.base_url,
+                           "ISSUANCE_CANONICAL_REPORT": str(target),
+                           "ISSUANCE_DOM_MODE": "public"}
+            try:
+                completed = subprocess.run(["node", str(script)], cwd=root, env=environment,
+                                           capture_output=True, text=True, timeout=180, check=False)
+            except (OSError, subprocess.TimeoutExpired) as exc:
+                raise IssuanceBlocked("PAGES_PUBLIC_DOM_RUNTIME_UNAVAILABLE") from exc
+            if completed.returncode != 0:
+                raise IssuanceBlocked("PAGES_PUBLIC_DOM_READBACK_FAILED")
 
     def verify(self, *, report: dict, commit_sha: str) -> tuple[str, str]:
         deadline = time.monotonic() + self.timeout
@@ -228,7 +268,15 @@ class GitHubPagesVerifier:
                 public.get("report_id") != report.get("report_id") or
                 public.get("revision") != report.get("revision")):
             raise IssuanceBlocked("PAGES_PUBLIC_BODY_MISMATCH")
-        return run_id, self.base_url + "/" + path
+        try:
+            self.dom_verifier(report)
+        except IssuanceBlocked:
+            raise
+        except Exception as exc:
+            raise IssuanceBlocked("PAGES_PUBLIC_DOM_READBACK_FAILED") from exc
+        page_url = (self.base_url + "/report.html?date=" + quote(report["date"], safe="") +
+                    "&time=" + quote(report["time"], safe=""))
+        return run_id, page_url
 
 
 @dataclass
@@ -269,9 +317,11 @@ class GitHubPortalPublisher:
             completed.append("STRICT_IMPORTER")
             receipt_bytes = _json_bytes(receipt)
             canonical_bytes = _json_bytes(canonical)
+            canonical_path = f"reports/{report['date']}_{report['time'].replace(':', '-')}.json"
+            receipt_path = f"publication-receipts/{report['date']}_{report['time'].replace(':', '-')}.json"
             paths = {
-                f"reports/{report['date']}_{report['time'].replace(':', '-')}.json": canonical_bytes,
-                f"publication-receipts/{report['date']}_{report['time'].replace(':', '-')}.json": receipt_bytes,
+                canonical_path: canonical_bytes,
+                receipt_path: receipt_bytes,
             }
             # Indexes are produced by the established projection scripts; include only
             # existing publication artifacts and never stage unrelated repository files.
@@ -283,6 +333,7 @@ class GitHubPortalPublisher:
             commit_sha = self.github.publish_files(
                 expected_head=self.expected_head, files=paths,
                 message=f"Publish market report {report['report_id']} r{report['revision']}",
+                create_only_paths=(canonical_path, receipt_path),
             )
             completed.append("GITHUB_MAIN_COMMIT")
             stage = "GITHUB_READBACK"

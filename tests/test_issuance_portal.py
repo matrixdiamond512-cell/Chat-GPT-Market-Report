@@ -42,7 +42,7 @@ class FakeGitHub:
         self.contents = None
         self.commit = "commit-1"
 
-    def publish_files(self, *, expected_head, files, message):
+    def publish_files(self, *, expected_head, files, message, create_only_paths=()):
         self.calls += 1
         if self.fail_write:
             raise IssuanceBlocked("GITHUB_WRITE_FAILED")
@@ -220,7 +220,8 @@ class IssuancePortalIntegrationTests(unittest.TestCase):
 
         github = FakeGitHub()
         pages = GitHubPagesVerifier(github=WorkflowGateway(), base_url="https://example.invalid",
-                                    public_session=DynamicPublicSession(github), poll_interval=0)
+                                    public_session=DynamicPublicSession(github), poll_interval=0,
+                                    dom_verifier=lambda report: None)
         app_properties = {"report_id": report["report_id"], "revision": "1",
                           "body_hash": report["bodyHash"],
                           "evidence_id": self.fixture.evidence["evidenceId"],
@@ -288,17 +289,31 @@ class IssuancePortalIntegrationTests(unittest.TestCase):
     def test_concrete_pages_verifier_reads_the_exact_public_json_body(self):
         report = dict(self.fixture.report)
         report["report_id"] = report["report_id"]
+        dom_calls = []
         verifier = GitHubPagesVerifier(github=WorkflowGateway(), base_url="https://example.invalid",
-                                       public_session=PublicSession(report), poll_interval=0)
+                                       public_session=PublicSession(report), poll_interval=0,
+                                       dom_verifier=lambda target: dom_calls.append(target["report_id"]))
         run_id, url = verifier.verify(report=report, commit_sha="commit-1")
         self.assertEqual(run_id, "88")
-        self.assertTrue(url.endswith("2026-10-16_08-00.json"))
+        self.assertTrue(url.endswith("report.html?date=2026-10-16&time=08%3A00"))
+        self.assertEqual(dom_calls, [report["report_id"]])
+
+    def test_public_dom_mismatch_blocks_publication_after_json_readback(self):
+        report = dict(self.fixture.report)
+        def mismatch(_):
+            raise IssuanceBlocked("PAGES_PUBLIC_DOM_READBACK_FAILED")
+        verifier = GitHubPagesVerifier(github=WorkflowGateway(), base_url="https://example.invalid",
+                                       public_session=PublicSession(report), poll_interval=0,
+                                       dom_verifier=mismatch)
+        with self.assertRaisesRegex(IssuanceBlocked, "PAGES_PUBLIC_DOM_READBACK_FAILED"):
+            verifier.verify(report=report, commit_sha="commit-1")
 
     def test_concrete_pages_verifier_rejects_failed_deploy_and_public_hash_mismatch(self):
         report = dict(self.fixture.report)
         with self.assertRaisesRegex(IssuanceBlocked, "PAGES_DEPLOYMENT_FAILED"):
             GitHubPagesVerifier(github=WorkflowGateway("failure"), base_url="https://example.invalid",
-                                public_session=PublicSession(report), poll_interval=0).verify(
+                                public_session=PublicSession(report), poll_interval=0,
+                                dom_verifier=lambda report: None).verify(
                                     report=report, commit_sha="commit-1")
 
     def test_strict_importer_queries_one_title_and_binds_exact_doc_revision(self):
@@ -351,7 +366,8 @@ class IssuancePortalIntegrationTests(unittest.TestCase):
         bad_report = dict(report, bodyHash="0" * 64)
         with self.assertRaisesRegex(IssuanceBlocked, "PAGES_PUBLIC_BODY_MISMATCH"):
             GitHubPagesVerifier(github=WorkflowGateway(), base_url="https://example.invalid",
-                                public_session=PublicSession(bad_report), poll_interval=0).verify(
+                                public_session=PublicSession(bad_report), poll_interval=0,
+                                dom_verifier=lambda report: None).verify(
                                     report=report, commit_sha="commit-1")
 
     def test_duplicate_retry_is_idempotent_and_retry_after_pages_failure_recovers(self):
@@ -402,6 +418,129 @@ class IssuancePortalIntegrationTests(unittest.TestCase):
         with patch.dict(os.environ, env, clear=True):
             with self.assertRaisesRegex(IssuanceBlocked, "PROTECTED_MAIN_WORKFLOW_APPROVAL_REQUIRED"):
                 GitHubPortalPublisher.from_environment(importer=FakeImporter(self.fixture.report), expected_head="sha")
+
+
+class GitHubCreateOnlyRestTests(unittest.TestCase):
+    class Response:
+        def __init__(self, status, payload=None):
+            self.status_code = status
+            self.content = b"{}" if payload is not None else b""
+            self._payload = payload or {}
+        def json(self): return self._payload
+
+    class Session:
+        def __init__(self):
+            self.head = "main-0"
+            self.files = {}
+            self.blob_count = self.commit_count = 0
+            self.pending_tree = []
+            self.fail_patch = False
+            self.lose_patch_response = False
+        def request(self, method, url, **kwargs):
+            from urllib.parse import unquote, urlparse
+            path = urlparse(url).path.split("/repos/acme/report", 1)[-1]
+            if method == "GET" and path == "/git/ref/heads/main":
+                return GitHubCreateOnlyRestTests.Response(200, {"object": {"sha": self.head}})
+            if method == "GET" and path.startswith("/contents/"):
+                file_path = unquote(path.split("/contents/", 1)[1].split("?", 1)[0])
+                if file_path not in self.files:
+                    return GitHubCreateOnlyRestTests.Response(404)
+                import base64
+                return GitHubCreateOnlyRestTests.Response(200, {"content": base64.b64encode(self.files[file_path]).decode()})
+            if method == "GET" and path.startswith("/git/commits/"):
+                return GitHubCreateOnlyRestTests.Response(200, {"tree": {"sha": "tree-0"}})
+            if method == "POST" and path == "/git/blobs":
+                self.blob_count += 1
+                return GitHubCreateOnlyRestTests.Response(201, {"sha": "blob-" + str(self.blob_count)})
+            if method == "POST" and path == "/git/trees":
+                self.pending_tree = kwargs["json"]["tree"]
+                return GitHubCreateOnlyRestTests.Response(201, {"sha": "tree-new"})
+            if method == "POST" and path == "/git/commits":
+                self.commit_count += 1
+                return GitHubCreateOnlyRestTests.Response(201, {"sha": "commit-" + str(self.commit_count)})
+            if method == "PATCH" and path == "/git/refs/heads/main":
+                if self.fail_patch:
+                    return GitHubCreateOnlyRestTests.Response(422, {"message": "Update is not a fast forward"})
+                if kwargs["json"]["sha"] != "commit-" + str(self.commit_count):
+                    return GitHubCreateOnlyRestTests.Response(422)
+                self.head = kwargs["json"]["sha"]
+                for row in self.pending_tree:
+                    data = "blob-" + str(self.blob_count)
+                    # This fake only needs tree/ref behavior; the write is inspected separately.
+                    self.files[row["path"]] = b"new-content"
+                return GitHubCreateOnlyRestTests.Response(200, {})
+            raise AssertionError((method, path))
+
+    def setUp(self):
+        from scripts.reporting.issuance_portal import GitHubRestClient
+        self.session = self.Session()
+        self.client = GitHubRestClient(repository="acme/report", token="never-print", session=self.session)
+        self.files = {"reports/2026-11-05_08-00.json": b"canonical-v1",
+                      "publication-receipts/2026-11-05_08-00.json": b"receipt-v1",
+                      "reports.json": b"index-v1"}
+        self.create_only = tuple(list(self.files)[:2])
+
+    def test_existing_canonical_or_receipt_mismatch_is_rejected_before_write(self):
+        self.session.files = {**self.files, self.create_only[0]: b"old-canonical",
+                              self.create_only[1]: b"receipt-v1"}
+        with self.assertRaisesRegex(IssuanceBlocked, "GITHUB_CREATE_ONLY_PATH_CONFLICT"):
+            self.client.publish_files(expected_head="main-0", files=self.files, message="x",
+                                      create_only_paths=self.create_only)
+        self.assertEqual(self.session.commit_count, 0)
+        self.assertEqual(self.session.head, "main-0")
+
+    def test_main_moved_before_start_is_rejected(self):
+        self.session.head = "main-1"
+        with self.assertRaisesRegex(IssuanceBlocked, "GITHUB_MAIN_MOVED_RECONCILE_REQUIRED"):
+            self.client.publish_files(expected_head="main-0", files=self.files, message="x",
+                                      create_only_paths=self.create_only)
+        self.assertEqual(self.session.commit_count, 0)
+
+    def test_main_compare_and_swap_conflict_does_not_claim_publication(self):
+        self.session.fail_patch = True
+        with self.assertRaisesRegex(IssuanceBlocked, "GITHUB_MAIN_UPDATE_CONFLICT_RECONCILE_REQUIRED"):
+            self.client.publish_files(expected_head="main-0", files=self.files, message="x",
+                                      create_only_paths=self.create_only)
+        self.assertEqual(self.session.head, "main-0")
+
+    def test_partial_success_retry_reuses_exact_commit_without_duplicate_commit(self):
+        # Model the main ref update succeeding while the caller loses the response.
+        self.session.fail_patch = False
+        self.session.files = {}
+        self.session.pending_tree = []
+        self.session.request = self._successful_session_request_with_content
+        first = self.client.publish_files(expected_head="main-0", files=self.files, message="x",
+                                          create_only_paths=self.create_only)
+        second = self.client.publish_files(expected_head=first, files=self.files, message="retry",
+                                           create_only_paths=self.create_only)
+        self.assertEqual(first, second)
+        self.assertEqual(self.session.commit_count, 1)
+
+    def _successful_session_request_with_content(self, method, url, **kwargs):
+        response = self.Session.request(self.session, method, url, **kwargs)
+        if method == "PATCH" and response.status_code == 200:
+            self.session.files.update(self.files)
+            if self.session.lose_patch_response:
+                self.session.lose_patch_response = False
+                return self.Response(500, {"message": "response lost after ref update"})
+        return response
+
+    def test_lost_success_response_retries_by_reconciling_exact_remote_files(self):
+        self.session.lose_patch_response = True
+        self.session.request = self._successful_session_request_with_content
+        with self.assertRaisesRegex(IssuanceBlocked, "GITHUB_PATCH_FAILED:500"):
+            self.client.publish_files(expected_head="main-0", files=self.files, message="x",
+                                      create_only_paths=self.create_only)
+        commit = self.client.publish_files(expected_head="main-0", files=self.files, message="retry",
+                                           create_only_paths=self.create_only)
+        self.assertEqual(commit, "commit-1")
+        self.assertEqual(self.session.commit_count, 1)
+
+    def test_one_sided_canonical_receipt_pair_is_rejected(self):
+        self.session.files = {self.create_only[0]: self.files[self.create_only[0]]}
+        with self.assertRaisesRegex(IssuanceBlocked, "GITHUB_CREATE_ONLY_PAIR_INCOMPLETE"):
+            self.client.publish_files(expected_head="main-0", files=self.files, message="x",
+                                      create_only_paths=self.create_only)
 
 
 if __name__ == "__main__":

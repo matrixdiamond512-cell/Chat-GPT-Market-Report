@@ -134,3 +134,9 @@ Candidate includes PR #188 issuance integration, PR #189 truthful importer statu
 - GitHub固定パス：`docs/system/requirements.md`、`docs/system/specification.md`、`docs/system/operations.md`。PR #197で更新し、PR #193～#196の表示修正・QA表示要件を同一変更IDで反映する。
 - 受入根拠：PR #193～#196 main統合、UI/アーカイブCI成功、Pages deploy run 41836815631成功、公開画面の68slot/18日分読み戻し。
 - 未解決原本：2026-10-22 12:00本文欠落、2026-11-02 12:00 source status矛盾。状態値を書き換えない。市場価格を全件外部照合した結果とは主張しない。
+
+## MR-ISSUANCE-CONNECT-20261104-02 追補｜2026-11-05 JST
+
+影響文書：固定パス `docs/system/requirements.md`、`docs/system/specification.md`、`docs/system/operations.md`。既存Google Docs固定IDは要件定義 `102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA`、仕様 `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI`、運用 `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg`。今回はこの環境からDocsを更新していないため、Docs本文読戻しはNOT_RUN。
+
+変更理由：PR #188の発行接続を定時入口・main create-only再試行・画面DOM照合・本番read-only preflightまで具体化する。GitHub仕様/要件/運用の固定パスとproject-control記録へ同一変更IDで追記。Node構文/画面回帰と差分検査PASS。Python・GitHub Actionsは更新後のSHAで未実行、PR branch push未完了。実績はこの追補だけで本番成功へ昇格しない。

@@ -305,3 +305,7 @@ Latest exact code-test head: `e31f50db5c0c6f1316ea3c28eddd889d04a1fb13`. Compose
 ### MR-ISSUANCE-CONNECT latest exact-head run
 
 Added an embedded different-reportId evidence regression. Exact code-test head `9c8ec84265891469f5ec473803a9e4bc6c15370f` passed issuance pipeline 16/16, composed portal/importer 30/30, TEST_ONLY handoff 16/16 and all five related regression workflows. External production stages remain NOT_RUN; no authorization boundary changed. The latest PR commit records this evidence and triggers a final documentation-head CI check.
+
+### MR-ISSUANCE-CONNECT follow-up objective status
+
+The controlled 08:00 CLI entrypoint, GitHub create-only conflict/retry guards, rendered DOM identity/body validator, and read-only auth preflight are implemented in the current candidate. Local Node and diff checks PASS; Python and hosted CI are NOT_RUN. Fine-grained GitHub credential `contents:write` scope is UNKNOWN to read-only APIs and blocks preflight READY until administrator confirmation. Production Docs/main/receipt/Pages/public DOM and actual scheduled invocation remain NOT_RUN. Keep PR #188 Draft and unmerged pending exact-head CI.

@@ -9,6 +9,9 @@ on:
       - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
       - 'scripts/validate_market_report_dom.js'
+      - 'scripts/validate_issuance_report_dom.js'
+      - 'assets/js/report-core-v3.js'
+      - 'tests/fixtures/issuance_dom_report.json'
       - 'scripts/test_market_report_title_boundary.js'
       - 'scripts/test_portal_deploy_safety.js'
       - 'tests/fixtures/report_title_boundary_malformed.json'
@@ -24,6 +27,9 @@ on:
       - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
       - 'scripts/validate_market_report_dom.js'
+      - 'scripts/validate_issuance_report_dom.js'
+      - 'assets/js/report-core-v3.js'
+      - 'tests/fixtures/issuance_dom_report.json'
       - 'scripts/test_market_report_title_boundary.js'
       - 'scripts/test_portal_deploy_safety.js'
       - 'tests/fixtures/report_title_boundary_malformed.json'
@@ -131,6 +137,13 @@ jobs:
           PORTAL_REPORT_FIXTURE: tests/fixtures/report_title_boundary_malformed.json
           NODE_PATH: ${{ runner.temp }}/renderer-regression/node_modules
         run: node scripts/validate_market_report_dom.js
+
+      - name: Browser DOM identity and full body readback for exact issuance target
+        env:
+          PORTAL_URL: http://127.0.0.1:8766
+          ISSUANCE_CANONICAL_REPORT: tests/fixtures/issuance_dom_report.json
+          NODE_PATH: ${{ runner.temp }}/renderer-regression/node_modules
+        run: node scripts/validate_issuance_report_dom.js
 
   strict-current-report:
     runs-on: ubuntu-latest
