@@ -295,7 +295,8 @@ class GitHubPortalPublisher:
         if (os.environ.get("GITHUB_ACTIONS") != "true" or
                 os.environ.get("GITHUB_REF") != "refs/heads/main" or
                 os.environ.get("REPORT_ISSUANCE_APPROVED") != "true" or
-                os.environ.get("REPORT_ISSUANCE_ENVIRONMENT") != "report-publication"):
+                os.environ.get("REPORT_ISSUANCE_ENVIRONMENT") != "report-publication" or
+                os.environ.get("REPORT_ISSUANCE_CONTENTS_WRITE_VERIFIED") != "true"):
             raise IssuanceBlocked("PROTECTED_MAIN_WORKFLOW_APPROVAL_REQUIRED")
         import subprocess
         # GitHub Actions checks out a detached HEAD for scheduled/workflow
