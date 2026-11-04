@@ -309,3 +309,7 @@ Added an embedded different-reportId evidence regression. Exact code-test head `
 ### MR-ISSUANCE-CONNECT follow-up objective status
 
 The controlled 08:00 CLI entrypoint, GitHub create-only conflict/retry guards, rendered DOM identity/body validator, and read-only auth preflight are implemented in the current candidate. The production Pages verifier invokes public-mode DOM validation after the Pages JSON check; failures include the top-level completed stages. Local Node and diff checks PASS; Python and hosted CI are NOT_RUN. Fine-grained GitHub credential `contents:write` scope is UNKNOWN to read-only APIs and blocks preflight READY until administrator confirmation. Production Docs/main/receipt/Pages/public DOM and actual scheduled invocation remain NOT_RUN. Keep PR #188 Draft and unmerged pending exact-head CI.
+
+### MR-ISSUANCE-ENTITY-20261105-02 status
+
+New pinned-generation G2 consumer has been added to the existing 08:00 CLI. This does not generate a G2 bundle. Source review found only an Apps Script path that reads an existing Google Doc and publishes it; the ChatGPT task and installed trigger/history are not accessible here. Production remains blocked by BLOCKED_G2_PRODUCER_MISSING, and ownership config remains legacy for every slot. No merge, external write, Pages deployment, auth/environment change, or scheduled task change was performed. Exact-head hosted CI is pending and will be recorded after final main sync.

@@ -156,3 +156,10 @@ Preflight and CI do not configure protected Environments, create credentials, gr
 - isolated UI/DOM PASS：https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41875493440。その他8件も同じheadでPASS。これはActions隔離環境の結果で、本番Docs/GCS/GitHub canonical/receipt/PagesはNOT_RUN。
 - main f43cc00f60d5a32fa96fa6cb4de440c7f971fc4a を2親同期commitに保持。main-only data/history変更はPR側の変更パスと重複なし。Google Docs固定IDへの同期はNOT_RUN。
 
+## MR-ISSUANCE-ENTITY-20261105-02 — owner transition and G2 source
+
+Source code defines Apps Script 08:30 handlers (autoPublishMarketReport0800/master 0830 path) that read existing Google Docs and publish the formal report. This is not a G2 freezer. The installed trigger list, task history, and external ChatGPT schedule remain UNKNOWN. No new timer or existing task was edited.
+
+The PR adds a consumer for an exact pinned GCS G2 generation and explicit target identity/evidence reference. A genuine producer is still missing, so the production path remains BLOCKED_G2_PRODUCER_MISSING; do not create a test body or promote an existing Doc. Current ownership config stays apps_script_legacy for all slots. To transition 08:00 later: deploy and verify the Apps Script fail-closed guard while legacy remains owner; reconcile installed triggers and ensure no 08:30 run is active; confirm G2 producer provenance and protected Environment; approve an ownership-config update to g2_issuance_cli; then use one separately approved future slot and retain the full acceptance evidence. The other three slots remain untouched.
+
+Merging this PR will also push report.html, assets/**, and a Pages workflow change. The existing deploy-pages.yml push/path filters include those paths, so a merge to main starts a Pages deployment workflow. Deployment and github-pages Environment approval have not been inspected or run here. Plan approval and monitoring before merge; do not treat CI success as deployment approval.

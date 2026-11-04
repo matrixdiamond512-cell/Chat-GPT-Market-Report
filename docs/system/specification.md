@@ -125,3 +125,8 @@ Partial state is explicit: an importer failure does not reach GitHub; a GitHub r
 - isolated UI/DOM PASS：https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41875493440。その他8件も同じheadでPASS。これはActions隔離環境の結果で、本番Docs/GCS/GitHub canonical/receipt/PagesはNOT_RUN。
 - main f43cc00f60d5a32fa96fa6cb4de440c7f971fc4a を2親同期commitに保持。main-only data/history変更はPR側の変更パスと重複なし。Google Docs固定IDへの同期はNOT_RUN。
 
+## MR-ISSUANCE-ENTITY-20261105-02 — pinned G2 source and single owner
+
+The 08:00 CLI may accept a G2 bundle from a local file or an explicit GCS generation. The production GCS handoff requires reportId, positive revision, Evidence object/generation, and exact G2 object/generation. It verifies the downloaded generation and G2 creation time, then requires the bundle and Evidence references to match before Docs work. A reader alone does not create the producer or establish provenance; the producer identity and bucket write policy still require administrator confirmation.
+
+config/issuance_ownership.json currently assigns all four slots to apps_script_legacy. The new CLI therefore remains blocked for 08:00 until a separately reviewed ownership change; 12:00/16:00/21:00 remain on the legacy owner. Do not switch ownership until the Apps Script guard is deployed and tested, no legacy 08:30 attempt is in flight, the protected CLI is ready, and rollback ownership is agreed.

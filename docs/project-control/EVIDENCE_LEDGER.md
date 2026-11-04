@@ -261,3 +261,9 @@ Evidence remains E2 fixture-only. Production Google Docs/canonical/receipt/Pages
 - Run failures now include a named failure stage and cumulative completed stages, including prior G2/evidence, claim and Docs work when the portal adapter fails. The entrypoint emits those exact completed stages on success.
 - Local `git diff --check`, Node syntax checks, and renderer regression suite 6/6 PASS. Python unavailable in the Windows session; Python tests NOT_RUN locally. Hosted Actions are pending and will be recorded against exact SHA after PR update. This is E1 local static/Node evidence pending E2 hosted tests.
 - Production Docs/main/receipt/Pages/public DOM and actual recurring task invocation are NOT_RUN. No main merge, external write, deploy, secret/configuration change, or schedule change was performed.
+
+## MR-ISSUANCE-ENTITY-20261105-02 — source and runtime evidence (2026-11-05 JST)
+
+E0 source review: Apps Script buildWebReportFromGoogleDoc_() consumes a saved Google Doc, and publishMarketReportSlot_() sends it through the legacy publisher. The code defines 08:30 main/retry handlers. No ChatGPT scheduled-task settings, installed Apps Script trigger inventory/history, actual G2 producer, or producer-to-GCS write identity was available to inspect; those remain UNKNOWN. The saved Doc cannot be promoted into a pre-save G2.
+
+The PR adds exact-generation GCS G2 consumption with target report/revision and Evidence object/generation checks. Added fixture tests cover pinned reads, generation mismatch, wrong target, late creation, and missing explicit target. The read path is not a live producer test; hosted CI pending on this record. BLOCKED_G2_PRODUCER_MISSING remains the production blocker. No Docs, main report, receipt, Pages, Environment, Secret, or schedule write was performed. Main 8a09c2e4838d044e04b9e162961ec2d042f8963c differs from the PR by data/history paths only; no path overlap was observed. Fixed-ID Google Docs sync is NOT_RUN.

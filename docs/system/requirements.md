@@ -145,3 +145,6 @@ DELIVERY-CLOSEOUT-20261101-01 追加受入条件: 回顧アーカイブ対象（
 - isolated UI/DOM PASS：https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41875493440。その他8件も同じheadでPASS。これはActions隔離環境の結果で、本番Docs/GCS/GitHub canonical/receipt/PagesはNOT_RUN。
 - main f43cc00f60d5a32fa96fa6cb4de440c7f971fc4a を2親同期commitに保持。main-only data/history変更はPR側の変更パスと重複なし。Google Docs固定IDへの同期はNOT_RUN。
 
+## MR-ISSUANCE-ENTITY-20261105-02 — G2 producer/handoff acceptance
+
+A production G2 must be frozen by a declared producer before Docs save. Its exact GCS bucket/object/generation must bind reportId, revision, fullText SHA-256, frozen_at, Evidence object/generation, evidenceId, and snapshotId. Reading an existing Docs file is not evidence that this pre-save G2 existed. Repository inspection found no producer that creates this bundle: Apps Script reads an existing Google Doc and publishes it; the scheduled ChatGPT task is external and its configuration was not inspectable. Until that producer and its trusted write identity are connected, issuance is BLOCKED_G2_PRODUCER_MISSING.
