@@ -286,8 +286,12 @@ class G2BundleProducerTests(unittest.TestCase):
         self.assertEqual(blob.upload_calls, 2)
 
     def test_gcs_store_rejects_object_created_after_slot(self):
-        blob = FakeBlob()
-        blob.time_created = datetime.fromisoformat("2026-10-16T08:00:01+09:00")
+        class LateCreatedBlob(FakeBlob):
+            def upload_from_string(self, payload, *, content_type, if_generation_match):
+                super().upload_from_string(payload, content_type=content_type,
+                                           if_generation_match=if_generation_match)
+                self.time_created = datetime.fromisoformat("2026-10-16T08:00:01+09:00")
+        blob = LateCreatedBlob()
         store = GcsCreateOnlyG2BundleStore(project_id=PROJECT, bucket_name=G2_BUCKET,
                                             client=FakeClient(FakeBucket(blob)))
         with self.assertRaisesRegex(IssuanceBlocked, "G2_BUNDLE_CREATED_AFTER_SLOT"):
@@ -301,7 +305,7 @@ class G2BundleProducerTests(unittest.TestCase):
         good = self.build()
         store.create_only(report_id="2026-10-16_08-00", revision=1, bundle=good)
         different = json.loads(json.dumps(good))
-        different["g2"]["report"]["fullText"] += "different"
+        different["producer_metadata_fixture"] = "different"
         with self.assertRaisesRegex(IssuanceBlocked, "G2_BUNDLE_EXISTING_CONFLICT"):
             store.create_only(report_id="2026-10-16_08-00", revision=1, bundle=different)
         self.assertEqual(blob.upload_calls, 2)
