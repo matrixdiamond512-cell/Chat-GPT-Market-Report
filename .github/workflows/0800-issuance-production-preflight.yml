@@ -50,7 +50,7 @@ jobs:
           revision = os.environ["REPORT_REVISION"]
           evidence_object = os.environ["EVIDENCE_OBJECT"]
           generation = os.environ["EVIDENCE_GENERATION"]
-          ok = (re.fullmatch(r"\\d{4}-\\d{2}-\\d{2}_08-00", report_id)
+          ok = (re.fullmatch(r"\d{4}-\d{2}-\d{2}_08-00", report_id)
                 and revision.isdigit() and int(revision) > 0
                 and evidence_object and not evidence_object.startswith("/")
                 and generation.isdigit() and int(generation) > 0)
