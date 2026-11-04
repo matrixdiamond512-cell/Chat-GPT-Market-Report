@@ -5,9 +5,14 @@ import json
 import re
 from pathlib import Path
 
-from report_source_contract import heading, validate_saved_body
-from report_identity import internal_report_key
-from reporting.publication_eligibility import is_publication_eligible
+try:
+    from scripts.report_source_contract import heading, validate_saved_body
+    from scripts.report_identity import internal_report_key
+    from scripts.reporting.publication_eligibility import is_publication_eligible
+except ModuleNotFoundError:
+    from report_source_contract import heading, validate_saved_body
+    from report_identity import internal_report_key
+    from reporting.publication_eligibility import is_publication_eligible
 
 ROOT = Path(__file__).resolve().parents[1]
 LATEST = ROOT / "data/latest-report.json"
