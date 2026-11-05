@@ -40,8 +40,6 @@ def require_slot_window(report_date: str, report_time: str, *, now: datetime | N
     if report_time not in {"08:00", "12:00", "16:00", "21:00"}:
         raise ValueError("BLOCKED_SCHEDULE_WINDOW_MISMATCH:unsupported report slot")
     target = aware(f"{report_date}T{report_time}:00+09:00")
-    if target.weekday() >= 5:
-        raise ValueError("BLOCKED_SCHEDULE_WINDOW_MISMATCH:non-weekday report date")
     current = now if now is not None else datetime.now(timezone.utc)
     if current.tzinfo is None or current.utcoffset() is None:
         raise ValueError("BLOCKED_SCHEDULE_WINDOW_MISMATCH:naive execution clock")
@@ -55,7 +53,11 @@ def require_slot_window(report_date: str, report_time: str, *, now: datetime | N
             # crossed midnight, not an early run for today's slot.
             if current - previous_target < target - current:
                 raise ValueError("BLOCKED_SCHEDULE_WINDOW_MISMATCH:SCHEDULE_LATE")
+        if target.weekday() >= 5:
+            raise ValueError("BLOCKED_SCHEDULE_WINDOW_MISMATCH:non-weekday report date")
         raise ValueError("BLOCKED_SCHEDULE_WINDOW_MISMATCH:early or date-mismatched execution")
+    if target.weekday() >= 5:
+        raise ValueError("BLOCKED_SCHEDULE_WINDOW_MISMATCH:non-weekday report date")
     if current >= target:
         raise ValueError("BLOCKED_SCHEDULE_WINDOW_MISMATCH:SCHEDULE_LATE")
     return current

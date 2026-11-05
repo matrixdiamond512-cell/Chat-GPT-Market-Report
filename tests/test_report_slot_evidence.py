@@ -252,6 +252,7 @@ class ReportSlotEvidenceTests(unittest.TestCase):
             ("2026-10-16", "08:00", datetime(2026, 10, 16, 8, 0, tzinfo=jst), "SCHEDULE_LATE"),
             ("2026-10-20", "21:00", datetime(2026, 10, 20, 3, 52, tzinfo=jst), "SCHEDULE_LATE"),
             ("2026-10-17", "08:00", datetime(2026, 10, 17, 7, 51, tzinfo=jst), "non-weekday"),
+            ("2026-10-17", "21:00", datetime(2026, 10, 17, 3, 52, tzinfo=jst), "SCHEDULE_LATE"),
             ("2026-10-19", "08:00", datetime(2026, 10, 16, 7, 51, tzinfo=jst), "early"),
         ]
         for report_date, slot, now, reason in blocked_cases:
