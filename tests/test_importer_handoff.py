@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import sys
 import tempfile
+from datetime import datetime, timedelta, timezone
 import types
 import unittest
 from unittest.mock import patch
@@ -100,7 +101,8 @@ class ImporterHandoffTests(unittest.TestCase):
             },
         }
         evidence = build_slot_evidence(
-            self.date, "08:00", source, json.dumps(source, sort_keys=True).encode()
+            self.date, "08:00", source, json.dumps(source, sort_keys=True).encode(),
+            evidence_created_at=datetime(2026, 10, 16, 7, 56, tzinfo=timezone(timedelta(hours=9))),
         )
         self.payload = canonical_bytes(evidence)
         self.sha256 = hashlib.sha256(self.payload).hexdigest()
