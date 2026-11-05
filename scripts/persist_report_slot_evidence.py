@@ -66,6 +66,8 @@ def require_slot_window(report_date: str, report_time: str, *, now: datetime | N
 def require_evidence_slot_guard(report_date: str, report_time: str, *, now: datetime | None = None) -> datetime:
     """Use the new narrow live window for 08:00; preserve cutoff-only legacy gates for other slots."""
     if report_time == "08:00":
+        if now is None:
+            return require_slot_window(report_date, report_time)
         return require_slot_window(report_date, report_time, now=now)
     current = now if now is not None else datetime.now(timezone.utc)
     require_before_slot(report_date, report_time, now=current)

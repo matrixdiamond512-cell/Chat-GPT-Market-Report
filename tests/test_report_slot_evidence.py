@@ -444,19 +444,20 @@ class ReportSlotEvidenceTests(unittest.TestCase):
         self.payload["markets"]["USDJPY"]["asOf"] = "2026-10-16T11:49:00+09:00"
         self.write_payload()
         now = datetime(2026, 10, 16, 11, 55, tzinfo=jst)
-        path, created = persist_slot_evidence(
-            "2026-10-16", "12:00", self.market_path, self.output,
-            require_live_before_slot=True, now=now,
-        )
-        self.assertTrue(created)
-        original = path.read_bytes()
-        self.payload["markets"]["USDJPY"]["value"] = 158.2
-        self.write_payload()
-        with self.assertRaises(FileExistsError):
-            persist_slot_evidence(
+        with patch("scripts.persist_report_slot_evidence.require_before_slot"):
+            path, created = persist_slot_evidence(
                 "2026-10-16", "12:00", self.market_path, self.output,
                 require_live_before_slot=True, now=now,
             )
+            self.assertTrue(created)
+            original = path.read_bytes()
+            self.payload["markets"]["USDJPY"]["value"] = 158.2
+            self.write_payload()
+            with self.assertRaises(FileExistsError):
+                persist_slot_evidence(
+                    "2026-10-16", "12:00", self.market_path, self.output,
+                    require_live_before_slot=True, now=now,
+                )
         self.assertEqual(path.read_bytes(), original)
 
     def test_existing_github_evidence_mirror_is_create_only(self):
