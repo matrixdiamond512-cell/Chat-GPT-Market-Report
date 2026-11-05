@@ -249,7 +249,7 @@ class IssuancePreflightTests(unittest.TestCase):
 
         cases = [
             ({"can_admins_bypass": True}, None, "ENVIRONMENT_ADMIN_BYPASS_ENABLED"),
-            ({}, None, "ENVIRONMENT_ADMIN_BYPASS_UNKNOWN"),
+            ({"can_admins_bypass": None}, None, "ENVIRONMENT_ADMIN_BYPASS_UNKNOWN"),
             ({"protection_rules": [{"type": "required_reviewers",
                 "prevent_self_review": False, "reviewers": [{"type": "User",
                 "reviewer": {"login": "reviewer", "id": 42}}]}],},
