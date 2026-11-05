@@ -26,6 +26,9 @@ concurrency:
 jobs:
   freeze:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -35,8 +38,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install pinned Google Storage client
-        run: python -m pip install --disable-pip-version-check -r scripts/requirements-issuance.txt
       - name: Resolve explicit JST report slot
         id: slot
         shell: bash
@@ -58,36 +59,78 @@ jobs:
           esac
           echo "date=$(TZ=Asia/Tokyo date +%F)" >> "$GITHUB_OUTPUT"
           echo "slot=$SLOT" >> "$GITHUB_OUTPUT"
-      - name: Reject runs outside the actual slot window
+      - name: Apply the matching slot guard
         env:
           REPORT_DATE: ${{ steps.slot.outputs.date }}
           REPORT_SLOT: ${{ steps.slot.outputs.slot }}
         run: |
           python - <<'PY'
           import os
-          from scripts.persist_report_slot_evidence import require_slot_window
-          require_slot_window(os.environ["REPORT_DATE"], os.environ["REPORT_SLOT"])
+          from scripts.persist_report_slot_evidence import require_evidence_slot_guard
+          require_evidence_slot_guard(os.environ["REPORT_DATE"], os.environ["REPORT_SLOT"])
           print("LIVE_PRE_SLOT_WINDOW=PASS")
           PY
+      - name: Install pinned Google Storage client for the 08:00 path only
+        if: steps.slot.outputs.slot == '08:00'
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-issuance.txt
+      - name: Require 08:00 GCS WIF configuration
+        if: steps.slot.outputs.slot == '08:00'
+        env:
+          WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          EVIDENCE_SERVICE_ACCOUNT: ${{ vars.REPORT_EVIDENCE_SERVICE_ACCOUNT }}
+          EVIDENCE_PROJECT_ID: ${{ vars.REPORT_EVIDENCE_PROJECT_ID }}
+          EVIDENCE_BUCKET: ${{ vars.REPORT_EVIDENCE_BUCKET }}
+        run: |
+          test -n "$WIF_PROVIDER" || { echo "EVIDENCE_AUTH_NOT_CONFIGURED: GCP_WORKLOAD_IDENTITY_PROVIDER"; exit 1; }
+          test -n "$EVIDENCE_SERVICE_ACCOUNT" || { echo "EVIDENCE_AUTH_NOT_CONFIGURED: REPORT_EVIDENCE_SERVICE_ACCOUNT"; exit 1; }
+          test -n "$EVIDENCE_PROJECT_ID" || { echo "EVIDENCE_AUTH_NOT_CONFIGURED: REPORT_EVIDENCE_PROJECT_ID"; exit 1; }
+          test -n "$EVIDENCE_BUCKET" || { echo "EVIDENCE_AUTH_NOT_CONFIGURED: REPORT_EVIDENCE_BUCKET"; exit 1; }
+      - name: Authenticate to GCS using GitHub OIDC and Workload Identity Federation
+        if: steps.slot.outputs.slot == '08:00'
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.REPORT_EVIDENCE_SERVICE_ACCOUNT }}
+          create_credentials_file: true
       - name: Validate writer and offline regression tests
         run: |
           python -m py_compile scripts/persist_report_slot_evidence.py
           python -m unittest tests.test_report_slot_evidence -v
-      - name: Reconcile existing exact-slot GCS evidence before acquisition
+      - name: Reconcile or validate existing slot evidence before acquisition
         id: existing
         env:
           REPORT_DATE: ${{ steps.slot.outputs.date }}
           REPORT_SLOT: ${{ steps.slot.outputs.slot }}
           REPORT_EVIDENCE_BUCKET: ${{ vars.REPORT_EVIDENCE_BUCKET }}
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: |
-          python scripts/persist_report_slot_evidence.py \
-            --date "$REPORT_DATE" \
-            --slot "$REPORT_SLOT" \
-            --output-dir data/report-evidence \
-            --gcs-bucket "$REPORT_EVIDENCE_BUCKET" \
-            --gcs-prefix pre-draft-evidence \
-            --reconcile-gcs
+          set -euo pipefail
+          if [ "$REPORT_SLOT" = "08:00" ]; then
+            python scripts/persist_report_slot_evidence.py \
+              --date "$REPORT_DATE" \
+              --slot "$REPORT_SLOT" \
+              --output-dir data/report-evidence \
+              --gcs-bucket "$REPORT_EVIDENCE_BUCKET" \
+              --gcs-prefix pre-draft-evidence \
+              --reconcile-gcs
+          else
+            python - <<'PY'
+          import os
+          from pathlib import Path
+          from scripts.persist_report_slot_evidence import validate_stored_slot_evidence
+          report_date = os.environ["REPORT_DATE"]
+          report_slot = os.environ["REPORT_SLOT"]
+          path = Path("data/report-evidence") / f"{report_date}_{report_slot.replace(':', '-')}-r1.json"
+          if not path.is_file():
+              print("EXISTING_SLOT_EVIDENCE=ABSENT")
+              with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+                  output.write("ready=false\n")
+              raise SystemExit(0)
+          validate_stored_slot_evidence(path.read_bytes(), report_date, report_slot)
+          print("EXISTING_SLOT_EVIDENCE=VALID_NO_OP")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              output.write("ready=true\n")
+          PY
+          fi
       - name: Check whether a fresh verified acquisition already exists
         id: input
         if: steps.existing.outputs.ready != 'true'
@@ -130,8 +173,8 @@ jobs:
           ACTUAL_TIME="$(TZ=Asia/Tokyo date +%H:%M)"
           python - "$TARGET_DATE" "$REPORT_SLOT" <<'PY'
           import sys
-          from scripts.persist_report_slot_evidence import require_slot_window
-          require_slot_window(sys.argv[1], sys.argv[2])
+          from scripts.persist_report_slot_evidence import require_evidence_slot_guard
+          require_evidence_slot_guard(sys.argv[1], sys.argv[2])
           PY
           if ! python scripts/run_market_data_window.py \
             --slot "$REPORT_SLOT" \
@@ -143,12 +186,11 @@ jobs:
             echo "ACQUISITION_FAILED" >&2
             exit 1
           fi
-      - name: Freeze and persist one verified current-slot Evidence to canonical GCS
-        if: steps.existing.outputs.ready != 'true'
+      - name: Freeze and persist 08:00 Evidence to canonical GCS
+        if: steps.slot.outputs.slot == '08:00' && steps.existing.outputs.ready != 'true'
         env:
           REPORT_EVIDENCE_BUCKET: ${{ vars.REPORT_EVIDENCE_BUCKET }}
           REPORT_EVIDENCE_PROJECT_ID: ${{ vars.REPORT_EVIDENCE_PROJECT_ID }}
-          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: |
           python scripts/persist_report_slot_evidence.py \
             --date "${{ steps.slot.outputs.date }}" \
@@ -158,6 +200,15 @@ jobs:
             --gcs-prefix pre-draft-evidence \
             --max-age-minutes 15 \
             --persist-gcs \
+            --require-live-before-slot
+      - name: Freeze non-08:00 Evidence using the legacy local-only path
+        if: steps.slot.outputs.slot != '08:00' && steps.existing.outputs.ready != 'true'
+        run: |
+          python scripts/persist_report_slot_evidence.py \
+            --date "${{ steps.slot.outputs.date }}" \
+            --slot "${{ steps.slot.outputs.slot }}" \
+            --output-dir data/report-evidence \
+            --max-age-minutes 15 \
             --require-live-before-slot
       - name: Commit immutable evidence (not a report or publication receipt)
         if: steps.existing.outputs.ready != 'true' || steps.existing.outputs.restored == 'true'

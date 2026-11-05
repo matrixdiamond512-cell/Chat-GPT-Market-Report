@@ -92,3 +92,10 @@ Reversal/next condition: obtain separate authorization and configure least-privi
 決定: 1 slot / 1 immutable EvidenceをJSTのtarget-15m以上かつtarget未満でのみ作成する。遅延scheduled runにrunnerの今日の日付を機械的に付けず、実時間がslot日に整合しない場合は処理の最初でBLOCKする。GCSを正本とし、generation-match=0、generation pinned readback、content/identity/time検証が成立した後にのみGitHub mirrorを認める。既存データの不一致は上書きせず停止する。
 理由: run #41891416946は予定枠より遅れて2026-11-05 03:52 JSTに開始し、`REPORT_DATE=2026-11-05` / `REPORT_SLOT=21:00` になった。旧workflowでは実時間windowを確認せず、市場データ再取得に進み、最終的に対象slotに対するfresh acquisitionではないとしてEvidence作成を拒否した。窓ガードは誤日付割当てと遅延取得を発生前に止める。
 証拠範囲: GitHub run metadata/job log + offline fake-GCS contract tests。実GCS保存・権限・production scheduleは別途E5 runtime確認を要する。
+
+
+## MR-EVIDENCE-GCS-WIF-SLOT-ISOLATION-20261105-01
+
+決定: GCS正本Evidence経路とそのgeneration固定読戻しは08:00専用とする。12:00・16:00・21:00は従来のGitHubローカルEvidence保存・締切前検証を保ち、GCS未設定を理由に停止させない。GCSクライアントはGitHub Actions OIDC/WIFのADCだけを使い、サービスアカウント鍵JSONを使わない。対象bucket/prefixの最小権限create/getを管理者が付与する。隔離テスト/CIは本番権限・書込みの証明にならない。
+理由: 共通workflowでGCS設定未導入時に全4枠が失敗する影響を局所化し、08:00の新方式をfail-closedで保護するため。
+実施状態: 設計・コード変更を準備中。WIF/IAM/実GCSは未確認。MR-EVIDENCE-GCS-WIF-SLOT-ISOLATION-20261105-01に同一変更のCI結果を追記する。

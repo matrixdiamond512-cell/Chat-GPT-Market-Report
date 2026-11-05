@@ -322,3 +322,15 @@ Main `ba8d09a1b1170b56b42c8f33c125a19f120fb0dd` was synchronized in merge commit
 - 中間CIでは構文separator、旧fixtureにEvidence creation timeがない問題、GCS conflict test fixtureの不備を検出。これらをfail-closedを保ったまま修正し、上記headで通過した。
 - fake GCSではgeneration 731を模したcreate-only、exact byte retry、別bytes衝突拒否、GCS metadata/hash/source-data-hash照合、late server timestamp停止、GCS-first/local-first部分成功再調整を確認。これは隔離テストであり、実GCS書込みの証拠ではない。
 - E2 isolated CI: PASS。E5 real GCS Evidence: NOT_RUN。11/05 08:00 missing Evidenceは事後作成なし。PR #188はDraft/open/unmerged。
+
+
+## MR-EVIDENCE-GCS-WIF-SLOT-ISOLATION-20261105-01 — Evidence register
+
+| Claim | Evidence | Level | Result | Limit / run | Timestamp |
+|---|---|---:|---|---|---|
+| 08:00 only is routed through WIF and canonical GCS; 12/16/21 retain local legacy route | PR workflow and persistence adapter diff | E0 | NOT_RUN | Await exact-head CI | 2026-11-05 JST |
+| Other slots are not blocked by missing GCS configuration and retain cutoff-only execution guard | New isolated contract tests | E1 | NOT_RUN | Await hosted Python 3.12 workflow | 2026-11-05 JST |
+| GCS create-only, identical retry, conflict rejection, and partial-success reconciliation | Existing + new fake-client tests | E1/E2 | NOT_RUN | Synthetic adapter only; no production calls | 2026-11-05 JST |
+| GitHub Evidence mirrors are immutable | create-only file regression test | E1 | NOT_RUN | Local fixture only | 2026-11-05 JST |
+| WIF/ADC configuration is live and authorized for target bucket | No runtime credentials or cloud calls used | E5 | NOT_RUN | Admin configuration and protected runtime required | 2026-11-05 JST |
+

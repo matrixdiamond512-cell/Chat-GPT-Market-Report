@@ -12,6 +12,7 @@ from scripts.persist_report_slot_evidence import (
     canonical_bytes,
     persist_gcs_slot_evidence,
     require_slot_window,
+    require_evidence_slot_guard,
     persist_slot_evidence,
     reconcile_gcs_slot_evidence,
     validate_stored_slot_evidence,
@@ -395,6 +396,78 @@ class ReportSlotEvidenceTests(unittest.TestCase):
                 evidence_path.read_bytes(), "test-evidence", object_name,
                 "2026-10-16", "08:00", client=client, now=self.run_at,
             )
+
+    def test_legacy_slots_keep_cutoff_only_gate_without_gcs_dependency(self):
+        jst = timezone(timedelta(hours=9))
+        for slot, now in (
+            ("12:00", datetime(2026, 10, 16, 11, 30, tzinfo=jst)),
+            ("16:00", datetime(2026, 10, 16, 15, 30, tzinfo=jst)),
+            ("21:00", datetime(2026, 10, 16, 20, 30, tzinfo=jst)),
+        ):
+            with self.subTest(slot=slot):
+                # Outside the new 15-minute 08:00 window, but before the legacy cutoff.
+                self.assertEqual(require_evidence_slot_guard("2026-10-16", slot, now=now), now)
+                with self.assertRaisesRegex(ValueError, "BLOCKED_GCS_EVIDENCE_08_ONLY"):
+                    persist_gcs_slot_evidence(b"{}", "bucket", "object", "2026-10-16", slot, client=FakeGcsClient(), now=now)
+
+    def test_0800_missing_gcs_configuration_is_blocked_before_client_creation(self):
+        with self.assertRaisesRegex(RuntimeError, "REPORT_EVIDENCE_BUCKET is not configured"):
+            persist_gcs_slot_evidence(
+                b"{}", "", "pre-draft-evidence/2026-10-16_08-00-r1.json",
+                "2026-10-16", "08:00", now=self.run_at,
+            )
+
+    def test_non_0800_legacy_evidence_without_creation_timestamp_remains_readable(self):
+        self.payload.update({
+            "generatedAt": "2026-10-16T11:50:00+09:00",
+            "reportDate": "2026-10-16",
+            "reportSlot": "12:00",
+        })
+        self.payload["markets"]["USDJPY"]["asOf"] = "2026-10-16T11:49:00+09:00"
+        raw = json.dumps(self.payload, ensure_ascii=False).encode("utf-8")
+        evidence = build_slot_evidence(
+            "2026-10-16", "12:00", self.payload, raw,
+            evidence_created_at=None, max_age_minutes=15,
+        )
+        evidence.pop("evidenceCreatedAt", None)
+        encoded = canonical_bytes(evidence)
+        checked = validate_stored_slot_evidence(encoded, "2026-10-16", "12:00")
+        self.assertEqual(checked["reportId"], "2026-10-16_12-00")
+
+    def test_non_0800_existing_evidence_is_not_overwritten_on_retry_conflict(self):
+        jst = timezone(timedelta(hours=9))
+        self.payload.update({
+            "generatedAt": "2026-10-16T11:50:00+09:00",
+            "reportDate": "2026-10-16",
+            "reportSlot": "12:00",
+        })
+        self.payload["markets"]["USDJPY"]["asOf"] = "2026-10-16T11:49:00+09:00"
+        self.write_payload()
+        now = datetime(2026, 10, 16, 11, 55, tzinfo=jst)
+        path, created = persist_slot_evidence(
+            "2026-10-16", "12:00", self.market_path, self.output,
+            require_live_before_slot=True, now=now,
+        )
+        self.assertTrue(created)
+        original = path.read_bytes()
+        self.payload["markets"]["USDJPY"]["value"] = 158.2
+        self.write_payload()
+        with self.assertRaises(FileExistsError):
+            persist_slot_evidence(
+                "2026-10-16", "12:00", self.market_path, self.output,
+                require_live_before_slot=True, now=now,
+            )
+        self.assertEqual(path.read_bytes(), original)
+
+    def test_existing_github_evidence_mirror_is_create_only(self):
+        from scripts.persist_report_slot_evidence import write_create_only_file
+        path = self.output / "2026-10-16_08-00-r1.gcs-reference.json"
+        write_create_only_file(path, b'{"generation":731}')
+        # Exact retry is idempotent.
+        write_create_only_file(path, b'{"generation":731}')
+        with self.assertRaisesRegex(FileExistsError, "BLOCKED_GCS_EVIDENCE_CONFLICT"):
+            write_create_only_file(path, b'{"generation":732}')
+        self.assertEqual(path.read_bytes(), b'{"generation":731}')
 
     def test_weekend_new_report_is_rejected(self):
         self.payload["generatedAt"] = "2026-10-17T07:50:00+09:00"

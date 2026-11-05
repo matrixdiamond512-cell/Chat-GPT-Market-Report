@@ -170,3 +170,11 @@ Candidate includes PR #188 issuance integration, PR #189 truthful importer statu
 - [frozen-cutoff regression run 41939360170](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41939360170) PASS、31 tests。[delivery health run 41939360118](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41939360118) PASS。[UI/DOM run 41939360203](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41939360203) PASS。同期復旧、Dashboard eligibility/health、Apps Script validation、Drive selection QA、historical recovery QAも同headでPASS。
 - CI初回はテストファイルの改行混入を検出。その後、必須Evidence作成時刻をpipeline/importer/G2のfixtureへ追加し、GCS conflictテストを有効JSONへ修正して通過。公開ゲートの条件は緩和していない。
 - 証拠水準はCI隔離契約E2まで。実GCS service account/bucket権限、実create-only object、production generation readback、11月6日発行前EvidenceはNOT_RUN。成功扱いにしない。
+
+
+## Change record — MR-EVIDENCE-GCS-WIF-SLOT-ISOLATION-20261105-01
+
+- 対象: 固定パスの要件定義書、仕様書、運用マニュアル、Evidence Ledger、DECISIONS。
+- 理由: PR #188のEvidence生成にGCS要件と15分実行窓が全4枠へ適用され、既存12:00・16:00・21:00運用へ不要な依存を加える危険を除去するため。
+- 文書上の変更: GCS create-only / pinned-generationは08:00限定。残る3枠は既存GitHubローカルEvidenceと締切前ガードを維持。GCSは専用SAを通じたOIDC/WIFを使用し、権限と実環境未確認を記録。
+- 証拠水準: この記録作成時点ではコード変更・CIは未確定。実サービスのIAM/WIF、GCS書込み、scheduled runはNOT_RUNであり、READYを意味しない。

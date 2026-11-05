@@ -63,6 +63,20 @@ def require_slot_window(report_date: str, report_time: str, *, now: datetime | N
     return current
 
 
+def require_evidence_slot_guard(report_date: str, report_time: str, *, now: datetime | None = None) -> datetime:
+    """Use the new narrow live window for 08:00; preserve cutoff-only legacy gates for other slots."""
+    if report_time == "08:00":
+        return require_slot_window(report_date, report_time, now=now)
+    current = now if now is not None else datetime.now(timezone.utc)
+    require_before_slot(report_date, report_time, now=current)
+    return current.astimezone(JST)
+
+
+def require_gcs_evidence_slot(report_time: str) -> None:
+    if report_time != "08:00":
+        raise ValueError("BLOCKED_GCS_EVIDENCE_08_ONLY")
+
+
 def build_slot_evidence(report_date: str, report_time: str, market_payload: dict, raw_market_bytes: bytes, *, max_age_minutes: int = 15, evidence_created_at: datetime | None = None) -> dict:
     day = date.fromisoformat(report_date)
     if max_age_minutes < 0:
@@ -83,7 +97,7 @@ def build_slot_evidence(report_date: str, report_time: str, market_payload: dict
         if evidence_created_at.tzinfo is None or evidence_created_at.utcoffset() is None:
             raise ValueError("BLOCKED_SCHEDULE_WINDOW_MISMATCH:naive evidence creation time")
         evidence_created_at = evidence_created_at.astimezone(JST)
-        require_slot_window(report_date, report_time, now=evidence_created_at)
+        require_evidence_slot_guard(report_date, report_time, now=evidence_created_at)
         if generated_at > evidence_created_at:
             raise ValueError("INPUT_STALE: acquisition timestamp is after evidence creation")
     context = ReportContext.create(report_date, report_time, generated_at.isoformat(), revision=1, mode="new")
@@ -148,12 +162,15 @@ def validate_stored_slot_evidence(encoded: bytes, report_date: str, report_time:
     if evidence.get("evidenceId") != expected_evidence_id:
         raise ValueError("BLOCKED_STORED_EVIDENCE_ID_MISMATCH")
     created_at_raw = evidence.get("evidenceCreatedAt")
-    if not isinstance(created_at_raw, str):
-        raise ValueError("BLOCKED_STORED_EVIDENCE_CREATION_TIME_MISSING")
-    created_at = aware(created_at_raw)
     target_for_creation = aware(f"{report_date}T{report_time}:00+09:00")
-    if created_at < target_for_creation - timedelta(minutes=max_age_minutes) or created_at >= target_for_creation:
-        raise ValueError("BLOCKED_STORED_EVIDENCE_CREATION_TIME_OUTSIDE_WINDOW")
+    if report_time == "08:00":
+        if not isinstance(created_at_raw, str):
+            raise ValueError("BLOCKED_STORED_EVIDENCE_CREATION_TIME_MISSING")
+        created_at = aware(created_at_raw)
+        if created_at < target_for_creation - timedelta(minutes=max_age_minutes) or created_at >= target_for_creation:
+            raise ValueError("BLOCKED_STORED_EVIDENCE_CREATION_TIME_OUTSIDE_WINDOW")
+    elif isinstance(created_at_raw, str) and aware(created_at_raw) >= target_for_creation:
+        raise ValueError("BLOCKED_STORED_EVIDENCE_CREATION_TIME_OUTSIDE_CUTOFF")
     context = ReportContext(**context_data)
     snapshot = MarketDataSnapshot.restore(snapshot_data)
     snapshot.validate_context(context)
@@ -199,7 +216,7 @@ def persist_slot_evidence(report_date: str, report_time: str, market_data_path: 
     if evidence_created_at.tzinfo is None or evidence_created_at.utcoffset() is None:
         raise ValueError("BLOCKED_SCHEDULE_WINDOW_MISMATCH:naive execution clock")
     if require_live_before_slot:
-        require_slot_window(report_date, report_time, now=evidence_created_at)
+        require_evidence_slot_guard(report_date, report_time, now=evidence_created_at)
     raw = market_data_path.read_bytes()
     payload = json.loads(raw.decode("utf-8"))
     if not isinstance(payload, dict):
@@ -212,7 +229,7 @@ def persist_slot_evidence(report_date: str, report_time: str, market_data_path: 
             return out_path, False
         raise FileExistsError(f"immutable report evidence already exists with different content: {out_path}")
     if require_live_before_slot:
-        require_slot_window(report_date, report_time, now=now)
+        require_evidence_slot_guard(report_date, report_time, now=now)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     created_stat: os.stat_result
     try:
@@ -231,7 +248,7 @@ def persist_slot_evidence(report_date: str, report_time: str, market_data_path: 
         try:
             # Re-read the clock after the write; `now` may be a caller-supplied
             # snapshot from before serialization and file I/O.
-            require_slot_window(report_date, report_time)
+            require_evidence_slot_guard(report_date, report_time)
         except ValueError:
             unlink_if_same_file(out_path, created_stat)
             raise
@@ -249,21 +266,21 @@ def persist_slot_evidence(report_date: str, report_time: str, market_data_path: 
 
 
 def gcs_storage_client():
-    """Create a storage client from the existing service-account secret only."""
-    raw = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "")
-    if not raw:
-        raise RuntimeError("EVIDENCE_WRITE_FAILED: Google storage credentials are unavailable")
+    """Use ADC established by GitHub OIDC/WIF; service-account JSON keys are not accepted here."""
     try:
-        info = json.loads(raw)
+        import google.auth
         from google.cloud import storage
-        from google.oauth2 import service_account
-        credentials = service_account.Credentials.from_service_account_info(info)
-        return storage.Client(
-            project=os.environ.get("REPORT_EVIDENCE_PROJECT_ID") or info.get("project_id"),
-            credentials=credentials,
+        credentials, detected_project = google.auth.default(
+            scopes=["https://www.googleapis.com/auth/devstorage.read_write"]
         )
+        project = os.environ.get("REPORT_EVIDENCE_PROJECT_ID") or detected_project
+        if not project:
+            raise RuntimeError("EVIDENCE_WRITE_FAILED: REPORT_EVIDENCE_PROJECT_ID is required for ADC")
+        return storage.Client(project=project, credentials=credentials)
     except Exception as exc:
-        raise RuntimeError("EVIDENCE_WRITE_FAILED: Google storage client initialization failed") from exc
+        if isinstance(exc, RuntimeError) and str(exc).startswith("EVIDENCE_WRITE_FAILED:"):
+            raise
+        raise RuntimeError("EVIDENCE_WRITE_FAILED: WIF/ADC credentials are unavailable") from exc
 
 
 def gcs_evidence_object_name(prefix: str, report_id: str, revision: int) -> str:
@@ -334,7 +351,8 @@ def _download_gcs_generation(bucket, object_name: str, generation: int) -> tuple
 
 
 def read_gcs_slot_evidence(bucket_name: str, object_name: str, report_date: str, report_time: str, *, client=None) -> tuple[bytes, dict] | None:
-    """Read one deterministic object name and immediately pin its generation."""
+    """Read one deterministic 08:00 object name and immediately pin its generation."""
+    require_gcs_evidence_slot(report_time)
     client = client or gcs_storage_client()
     bucket = client.bucket(bucket_name)
     current = bucket.blob(object_name)
@@ -369,7 +387,8 @@ def read_gcs_slot_evidence(bucket_name: str, object_name: str, report_date: str,
 
 
 def persist_gcs_slot_evidence(encoded: bytes, bucket_name: str, object_name: str, report_date: str, report_time: str, *, client=None, now: datetime | None = None, max_age_minutes: int = SLOT_WINDOW_MINUTES) -> dict:
-    """Create the canonical Evidence object with a create-only precondition and pinned readback."""
+    """Create the canonical 08:00 Evidence object with create-only and pinned readback."""
+    require_gcs_evidence_slot(report_time)
     if not bucket_name:
         raise RuntimeError("EVIDENCE_WRITE_FAILED: REPORT_EVIDENCE_BUCKET is not configured")
     require_slot_window(report_date, report_time, now=now)
@@ -464,6 +483,7 @@ def verify_gcs_reference_mirror(evidence_bytes: bytes, reference_bytes: bytes, b
     if reference.get("bucket") != bucket_name:
         raise ValueError("BLOCKED_GCS_REFERENCE_BUCKET_MISMATCH")
     evidence = json.loads(evidence_bytes.decode("utf-8"))
+    require_gcs_evidence_slot(evidence.get("context", {}).get("report_time"))
     if hashlib.sha256(evidence_bytes).hexdigest() != reference.get("contentSha256"):
         raise ValueError("BLOCKED_GCS_REFERENCE_HASH_MISMATCH")
     for key, expected in (
@@ -494,7 +514,8 @@ def verify_gcs_reference_mirror(evidence_bytes: bytes, reference_bytes: bytes, b
 
 
 def reconcile_gcs_slot_evidence(report_date: str, report_time: str, output_dir: Path, bucket_name: str, prefix: str, *, client=None, now: datetime | None = None) -> bool:
-    """Reconcile only the current slot, restoring a GCS-first partial success safely."""
+    """Reconcile only the current 08:00 slot, restoring a GCS-first partial success safely."""
+    require_gcs_evidence_slot(report_time)
     require_slot_window(report_date, report_time, now=now)
     if not bucket_name:
         raise RuntimeError("EVIDENCE_WRITE_FAILED: REPORT_EVIDENCE_BUCKET is not configured")

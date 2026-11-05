@@ -199,3 +199,12 @@ Git上のApps Scriptは08:00枠を含むDocs→GitHub発行コード/08:30付近
 - GCSはEvidenceの正本とし、`if_generation_match=0` で作成する。保存後、固定generationを指定して再読戻し、本文バイト列/SHA-256、reportId、revision、Evidence ID、snapshot ID、元データhash、Evidence作成時刻、GCS作成時刻を検証する。既存オブジェクトの内容不一致は上書きせず停止する。
 - GitHubのEvidenceファイルとGCS参照sidecarは監査用ミラーであり、GCS generationの読戻しがない限りREADYとしない。ミラーのみの成功を正本保存とみなさない。
 - Actions scheduleの欠落/遅延は自身のjobから確実に判定できないため、実行履歴上の未観測は `SCHEDULE_NOT_OBSERVED`、起動後の時間窓逸脱は `SCHEDULE_LATE` に分ける。実GCS権限・実generation読戻しは本番接続検証までNOT_RUN。
+
+
+## MR-EVIDENCE-GCS-WIF-SLOT-ISOLATION-20261105-01 — 08:00 GCS isolation and WIF contract (2026-11-05)
+
+- 新方式のGCS canonical Evidence保存・generation読戻しは08:00枠だけに適用する。08:00は対象日時の直前15分以内の実時間ガード、Evidenceの作成時刻・本文・取得データhashを保持し、GCSオブジェクトをcreate-onlyで保存してgenerationを固定読戻しする。GCS未設定・認証失敗・読戻し不一致は08:00をBLOCKEDとする。
+- 12:00・16:00・21:00は従来のGitHub内ローカルEvidence経路を維持する。従来の「対象締切より前」ガードとデータ鮮度・同一reportIdのimmutable衝突停止を維持し、GCS bucket・GCS認証を要求しない。GCS操作APIからは08:00以外を拒否する。
+- GCS認証はGitHub Actions OIDC→Google Cloud Workload Identity Federation→専用サービスアカウントのADCを使う。JSON鍵をGCSクライアントへ渡さない。既存の市場データ取得に使われるサービスアカウントSecretは別経路として扱い、本改修では変更しない。
+- 管理者設定: GitHub Actions Environment/Repository VariablesにWIF provider resource name、専用SA email、明示的project ID、Evidence bucketを登録し、Google Cloud側でGitHub repository/ref/workflow条件を限定したWIF provider/trustを構成する。専用SAには対象bucket/prefixに限定したcreate/get（object create + generation-pinned object get）権限を付与する。object list/delete/update権限は要求しない。Cloud Storage Data Access監査ログを利用する場合は管理者が対象サービス/ログ種別を有効化し、監査閲覧主体を別に制限する。
+- 検証状態: 実GCS書込み、IAM/WIF trust、Actions Environment設定は未実行。隔離テストとCIが通過しても本番Evidence READYとはしない。CI結果は同変更IDのEvidence Ledgerに追記する。
