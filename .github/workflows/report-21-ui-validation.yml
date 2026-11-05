@@ -9,6 +9,9 @@ on:
       - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
       - 'scripts/validate_market_report_dom.js'
+      - 'scripts/validate_issuance_report_dom.js'
+      - 'assets/js/report-core-v3.js'
+      - 'tests/fixtures/issuance_dom_report.json'
       - 'scripts/test_market_report_title_boundary.js'
       - 'scripts/test_portal_deploy_safety.js'
       - 'tests/fixtures/report_title_boundary_malformed.json'
@@ -24,6 +27,9 @@ on:
       - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
       - 'scripts/validate_market_report_dom.js'
+      - 'scripts/validate_issuance_report_dom.js'
+      - 'assets/js/report-core-v3.js'
+      - 'tests/fixtures/issuance_dom_report.json'
       - 'scripts/test_market_report_title_boundary.js'
       - 'scripts/test_portal_deploy_safety.js'
       - 'tests/fixtures/report_title_boundary_malformed.json'
@@ -132,6 +138,47 @@ jobs:
           NODE_PATH: ${{ runner.temp }}/renderer-regression/node_modules
         run: node scripts/validate_market_report_dom.js
 
+      - name: Browser DOM identity and full body readback for exact issuance target
+        env:
+          PORTAL_URL: http://127.0.0.1:8766
+          ISSUANCE_CANONICAL_REPORT: tests/fixtures/issuance_dom_report.json
+          NODE_PATH: ${{ runner.temp }}/renderer-regression/node_modules
+        run: node scripts/validate_issuance_report_dom.js
+
+      - name: Build isolated public-mode DOM site with target reports.json
+        run: |
+          mkdir -p "$RUNNER_TEMP/issuance-public-dom-site"
+          cp report.html "$RUNNER_TEMP/issuance-public-dom-site/report.html"
+          cp -r assets "$RUNNER_TEMP/issuance-public-dom-site/assets"
+          cp -r data "$RUNNER_TEMP/issuance-public-dom-site/data"
+          cp -r reports "$RUNNER_TEMP/issuance-public-dom-site/reports"
+          node - "$RUNNER_TEMP/issuance-public-dom-site" <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const site = process.argv[2];
+          const report = JSON.parse(fs.readFileSync('tests/fixtures/issuance_dom_report.json', 'utf8'));
+          fs.mkdirSync(path.join(site, 'reports'), {recursive: true});
+          fs.writeFileSync(path.join(site, 'data', 'reports.json'), JSON.stringify({updatedAt: new Date().toISOString()}));
+          fs.writeFileSync(path.join(site, 'reports.json'), JSON.stringify([report], null, 2));
+          fs.writeFileSync(path.join(site, 'reports', `${report.report_id}.json`), JSON.stringify(report, null, 2));
+          NODE
+          python3 -m http.server 8767 --bind 127.0.0.1 --directory "$RUNNER_TEMP/issuance-public-dom-site" > /tmp/issuance-public-dom-http.log 2>&1 &
+          echo $! > /tmp/issuance-public-dom-http.pid
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8767/reports.json -o /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/issuance-public-dom-http.log
+          exit 1
+
+      - name: Verify exact report body against public-mode JSON and rendered DOM
+        env:
+          PORTAL_URL: http://127.0.0.1:8767
+          ISSUANCE_CANONICAL_REPORT: tests/fixtures/issuance_dom_report.json
+          ISSUANCE_DOM_MODE: public
+          NODE_PATH: ${{ runner.temp }}/renderer-regression/node_modules
+        run: node scripts/validate_issuance_report_dom.js
+
   strict-current-report:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -164,3 +211,4 @@ jobs:
           PORTAL_URL: http://127.0.0.1:8765
           NODE_PATH: ${{ runner.temp }}/current-report-validation/node_modules
         run: node scripts/validate_market_report_dom.js
+

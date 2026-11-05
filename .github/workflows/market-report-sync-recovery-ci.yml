@@ -11,10 +11,26 @@ on:
       - "scripts/build_report_index.py"
       - "scripts/report_identity.py"
       - "scripts/reconcile_latest_report_market_data.py"
+      - "scripts/sync_reports_from_drive.py"
+      - "scripts/reporting/issuance_portal.py"
+      - "scripts/reporting/ingestion_outcome.py"
+      - "tests/test_ingestion_outcome.py"
       - "scripts/sync_latest_report_publication.py"
+      - "scripts/report_source_contract.py"
+      - "tests/test_report_source_contract_headings.py"
       - "scripts/verify_publication_consistency.py"
       - "scripts/verify_scheduled_report_delivery.py"
+      - "docs/system/requirements.md"
+      - "docs/system/specification.md"
+      - "docs/system/operations.md"
+      - "docs/system/DOCUMENT_CONTROL.md"
+      - "docs/project-control/OBJECTIVE_CARD.md"
+      - "docs/project-control/DECISIONS.md"
+      - "docs/project-control/EVIDENCE_LEDGER.md"
+      - "docs/project-control/LESSONS.md"
+      - "HANDOFF.md"
       - "tests/test_market_report_sync_contract.py"
+      - "tests/test_issuance_portal.py"
       - "tests/test_report_contract.py"
       - "tests/test_dashboard_publication_health.py"
       - "tests/test_scheduled_report_delivery.py"
@@ -29,6 +45,8 @@ permissions:
 jobs:
   publication-contract:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: scripts
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -41,6 +59,9 @@ jobs:
           python -m unittest discover -s tests -p 'test_scheduled_report_delivery.py' -v
           python -m unittest discover -s tests -p 'test_publication_eligibility.py' -v
           python -m unittest discover -s tests -p 'test_report_contract.py' -v
+          python -m unittest discover -s tests -p 'test_report_source_contract_headings.py' -v
+          python -m unittest discover -s tests -p 'test_ingestion_outcome.py' -v
+          python -m py_compile scripts/sync_reports_from_drive.py scripts/reporting/ingestion_outcome.py scripts/report_source_contract.py scripts/sync_latest_report_publication.py
           python scripts/test_reconcile_latest_report_market_data.py
       - name: Verify publication and history
         run: |

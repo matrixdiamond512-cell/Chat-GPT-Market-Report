@@ -35,6 +35,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install pinned Google Storage client
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-issuance.txt
       - name: Resolve explicit JST report slot
         id: slot
         shell: bash
@@ -56,44 +58,36 @@ jobs:
           esac
           echo "date=$(TZ=Asia/Tokyo date +%F)" >> "$GITHUB_OUTPUT"
           echo "slot=$SLOT" >> "$GITHUB_OUTPUT"
-      - name: Reject any run that starts at or after the report cutoff
+      - name: Reject runs outside the actual slot window
         env:
           REPORT_DATE: ${{ steps.slot.outputs.date }}
           REPORT_SLOT: ${{ steps.slot.outputs.slot }}
         run: |
           python - <<'PY'
           import os
-          from scripts.persist_report_slot_evidence import require_before_slot
-          require_before_slot(os.environ["REPORT_DATE"], os.environ["REPORT_SLOT"])
+          from scripts.persist_report_slot_evidence import require_slot_window
+          require_slot_window(os.environ["REPORT_DATE"], os.environ["REPORT_SLOT"])
           print("LIVE_PRE_SLOT_WINDOW=PASS")
           PY
       - name: Validate writer and offline regression tests
         run: |
           python -m py_compile scripts/persist_report_slot_evidence.py
           python -m unittest tests.test_report_slot_evidence -v
-      - name: Verify an existing immutable artifact before retrying acquisition
+      - name: Reconcile existing exact-slot GCS evidence before acquisition
         id: existing
         env:
           REPORT_DATE: ${{ steps.slot.outputs.date }}
           REPORT_SLOT: ${{ steps.slot.outputs.slot }}
+          REPORT_EVIDENCE_BUCKET: ${{ vars.REPORT_EVIDENCE_BUCKET }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: |
-          python - <<'PY'
-          import os
-          from pathlib import Path
-          from scripts.persist_report_slot_evidence import validate_stored_slot_evidence
-          report_date = os.environ["REPORT_DATE"]
-          report_slot = os.environ["REPORT_SLOT"]
-          path = Path("data/report-evidence") / f"{report_date}_{report_slot.replace(':', '-')}-r1.json"
-          if not path.is_file():
-              print("EXISTING_SLOT_EVIDENCE=ABSENT")
-              with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
-                  output.write("ready=false\n")
-              raise SystemExit(0)
-          validate_stored_slot_evidence(path.read_bytes(), report_date, report_slot)
-          print("EXISTING_SLOT_EVIDENCE=VALID_NO_OP")
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
-              output.write("ready=true\n")
-          PY
+          python scripts/persist_report_slot_evidence.py \
+            --date "$REPORT_DATE" \
+            --slot "$REPORT_SLOT" \
+            --output-dir data/report-evidence \
+            --gcs-bucket "$REPORT_EVIDENCE_BUCKET" \
+            --gcs-prefix pre-draft-evidence \
+            --reconcile-gcs
       - name: Check whether a fresh verified acquisition already exists
         id: input
         if: steps.existing.outputs.ready != 'true'
@@ -116,7 +110,9 @@ jobs:
               build_slot_evidence(os.environ["REPORT_DATE"], os.environ["REPORT_SLOT"],
                                   json.loads(raw), raw, max_age_minutes=15)
           except (ValueError, KeyError, TypeError) as exc:
-              print("INPUT_NOT_ELIGIBLE: " + str(exc))
+              message = str(exc)
+              category = "INPUT_SLOT_MISMATCH" if "INPUT_SLOT_MISMATCH" in message else ("ACQUISITION_FAILED" if "ACQUISITION_FAILED" in message else "INPUT_STALE")
+              print(category + ": " + message)
               sys.exit(2)
           print("CURRENT_VERIFIED_INPUT=PASS")
           PY
@@ -134,26 +130,37 @@ jobs:
           ACTUAL_TIME="$(TZ=Asia/Tokyo date +%H:%M)"
           python - "$TARGET_DATE" "$REPORT_SLOT" <<'PY'
           import sys
-          from scripts.persist_report_slot_evidence import require_before_slot
-          require_before_slot(sys.argv[1], sys.argv[2])
+          from scripts.persist_report_slot_evidence import require_slot_window
+          require_slot_window(sys.argv[1], sys.argv[2])
           PY
-          python scripts/run_market_data_window.py \
+          if ! python scripts/run_market_data_window.py \
             --slot "$REPORT_SLOT" \
             --times "$ACTUAL_TIME" \
             --trigger-source report_evidence_pre_slot_recovery \
             --max-catchup-minutes 5 \
             --mode auto \
-            --recover-expired
-      - name: Freeze only verified current-slot acquisition, with live cutoff guard
+            --recover-expired; then
+            echo "ACQUISITION_FAILED" >&2
+            exit 1
+          fi
+      - name: Freeze and persist one verified current-slot Evidence to canonical GCS
         if: steps.existing.outputs.ready != 'true'
+        env:
+          REPORT_EVIDENCE_BUCKET: ${{ vars.REPORT_EVIDENCE_BUCKET }}
+          REPORT_EVIDENCE_PROJECT_ID: ${{ vars.REPORT_EVIDENCE_PROJECT_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
         run: |
           python scripts/persist_report_slot_evidence.py \
             --date "${{ steps.slot.outputs.date }}" \
             --slot "${{ steps.slot.outputs.slot }}" \
+            --output-dir data/report-evidence \
+            --gcs-bucket "$REPORT_EVIDENCE_BUCKET" \
+            --gcs-prefix pre-draft-evidence \
             --max-age-minutes 15 \
+            --persist-gcs \
             --require-live-before-slot
       - name: Commit immutable evidence (not a report or publication receipt)
-        if: steps.existing.outputs.ready != 'true'
+        if: steps.existing.outputs.ready != 'true' || steps.existing.outputs.restored == 'true'
         shell: bash
         run: |
           set -euo pipefail

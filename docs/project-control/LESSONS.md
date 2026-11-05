@@ -10,3 +10,31 @@
 - Phase E: UNKNOWN recovery must restore a successful prior state even when the remaining run has no new checkpoint. Persist validated publication observations before attempting Receipt creation.
 - Phase E: Simulation markers and disabled production adapters bound the evidence claim. Synthetic SHA/DOM/PNG binding can establish E3 recovery behavior, not E5 real publication.
 - Infographic validation: require exact section headings and bind each number to a typed market row, timestamp, unit and source section; caller-supplied PASS flags cannot stand in for provider-backed Vision or live readback.
+
+
+- MRF-0800-20261029: Three successful TEST_ONLY acquisition/snapshot readbacks prove only the acquisition and evidence-store stages. They do not establish G2 source capture, Google Docs persistence, canonical registration, or public portal delivery. Keep every later stage separately evidenced.
+
+
+- MRF-0800-20261029: An exact Docs body and verified snapshot still do not reach the portal when the importer reads evidence from a different storage path. Trace the actual runtime handoff and workflow side effects before claiming end-to-end connectivity.
+
+
+- MRF-0800-BRIDGE-20261030-01: Adjacent helper tests can pass while the importer wrapper between them remains untested. Compose the real local wrapper around fake external adapters, assert both exact-binding PASS and mismatch HOLD, and preserve TEST_ONLY provenance throughout.
+
+
+- MRF-INGESTION-20261030-01: A successful importer process can store a non-public archive while failing publication eligibility. Log the performed stage, not the workflow's broad name. Keep receipt creation, canonical projection, Pages deployment, and public DOM readback as separate claims.
+
+
+- MRF-INGESTION-20261030-01: Pin an evidence link to a commit that actually contains the referenced artifact. A later existence check cannot make an earlier 404 link valid; repair the link and record the correction without changing the acceptance state.
+
+
+## MRF-0800-IMPORTER-COMBO-20261030-01 — test wiring is part of acceptance (ACTIVE, 2026-10-30 JST)
+
+LESSON: Adding a regression test file and listing its path in a workflow filter do not prove it ran. Add the test command to the job and include the relevant source/helper paths in the trigger filter; inspect the exact-head job log for the test name and summary.
+
+SOURCE PROBLEM: PR #189 added `tests/test_ingestion_outcome.py`, but its sync recovery workflow did not invoke that file. ROOT CAUSE: workflow path selection and test execution were treated as the same step. REPAIR: the integrated PR #188 workflow now watches the importer/helper/test paths and runs the test module; exact-head CI log reports 4 tests, OK. EXPECTED EFFECT: new contract tests become executable evidence on matching changes. STATUS: ACTIVE.
+
+- MRF-0800-STAGING-BOUNDARY-20261030-01: Environment-name checks must use bounded tokens, not substrings, and path isolation must reject ancestor and descendant overlap. Check resolved destinations before creating directories so a symlink cannot cause an outside-root side effect.
+
+- MR-ISSUANCE-CONNECT-20261104-02: A hosted suite can pass its older pipeline cases while newly added exact-importer tests remain unexecuted if the workflow stops at the first failure. Add the composed test to the real CI command list, inspect step-level logs, and keep the final SHA's exact run IDs. Package imports must be tested in both script and `scripts.*` module invocation contexts.
+- MR-ISSUANCE-CONNECT-20261104-02: A green Pages workflow cannot prove publication. Bind the workflow run to the canonical commit SHA, then GET the public report JSON and compare report ID, revision, full text and body hash. Treat post-main Pages failure as partial completion, not PUBLISHED.
+- MR-ISSUANCE-CONNECT-20261104-02: Component tests around PortalPublisher missed that run_issuance stripped the original pinned evidence envelope and the importer passed the pre-import G2 shape to the existing receipt verifier. Include one composed test using the real local importer and verifier with fake external boundaries; validate both input shape and downstream receipt source identity.

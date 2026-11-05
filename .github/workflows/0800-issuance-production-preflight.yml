@@ -1,0 +1,100 @@
+name: 08:00 issuance preflight (read-only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      report_id:
+        description: "One weekday report ID, YYYY-MM-DD_08-00"
+        required: true
+        type: string
+      revision:
+        description: "Expected positive integer revision"
+        required: true
+        type: string
+      evidence_object:
+        description: "Exact pre-issuance Evidence object"
+        required: true
+        type: string
+      evidence_generation:
+        description: "Pinned Evidence generation"
+        required: true
+        type: string
+      g2_bundle_object:
+        description: "Exact G2 bundle object from the trusted producer; blank until implemented"
+        required: false
+        type: string
+      g2_bundle_generation:
+        description: "Pinned generation of the G2 bundle object"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: issuance-readonly-preflight-${{ inputs.report_id }}
+  cancel-in-progress: false
+
+jobs:
+  config-diagnostic:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run no-secret configuration diagnosis
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          REPORT_ISSUANCE_ENVIRONMENT: report-publication
+          REPORT_PAGES_BASE_URL: ${{ vars.REPORT_PAGES_BASE_URL }}
+          REPORT_EVIDENCE_PROJECT_ID: ${{ vars.REPORT_EVIDENCE_PROJECT_ID }}
+          REPORT_EVIDENCE_BUCKET: ${{ vars.REPORT_EVIDENCE_BUCKET }}
+          REPORT_ISSUANCE_CLAIM_BUCKET: ${{ vars.REPORT_ISSUANCE_CLAIM_BUCKET }}
+          REPORT_ISSUANCE_DOCS_FOLDER_ID: ${{ vars.REPORT_ISSUANCE_DOCS_FOLDER_ID }}
+          REPORT_ISSUANCE_ROOT_FOLDER_ID: ${{ vars.REPORT_ISSUANCE_ROOT_FOLDER_ID }}
+          REPORT_ISSUANCE_REPORT_ID: ${{ inputs.report_id }}
+          REPORT_ISSUANCE_REVISION: ${{ inputs.revision }}
+          REPORT_ISSUANCE_G2_BUNDLE_OBJECT: ${{ inputs.g2_bundle_object }}
+          REPORT_ISSUANCE_G2_BUNDLE_GENERATION: ${{ inputs.g2_bundle_generation }}
+        run: python -m scripts.reporting.issuance_preflight --mode config
+
+  authenticated-readonly:
+    needs: config-diagnostic
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: report-publication
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install read-only preflight dependencies
+        run: python -m pip install --disable-pip-version-check -q -r scripts/requirements-issuance.txt requests
+      - name: Inspect actual protected identity and read permissions
+        env:
+          REPORT_PREFLIGHT_GITHUB_TOKEN: ${{ secrets.REPORT_PREFLIGHT_GITHUB_TOKEN }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          REPORT_ISSUANCE_ENVIRONMENT: report-publication
+          REPORT_ISSUANCE_CONTENTS_WRITE_VERIFIED: ${{ vars.REPORT_ISSUANCE_CONTENTS_WRITE_VERIFIED }}
+          REPORT_PAGES_BASE_URL: ${{ vars.REPORT_PAGES_BASE_URL }}
+          REPORT_EVIDENCE_PROJECT_ID: ${{ vars.REPORT_EVIDENCE_PROJECT_ID }}
+          REPORT_EVIDENCE_BUCKET: ${{ vars.REPORT_EVIDENCE_BUCKET }}
+          REPORT_EVIDENCE_OBJECT: ${{ inputs.evidence_object }}
+          REPORT_EVIDENCE_GENERATION: ${{ inputs.evidence_generation }}
+          REPORT_ISSUANCE_REPORT_ID: ${{ inputs.report_id }}
+          REPORT_ISSUANCE_REVISION: ${{ inputs.revision }}
+          REPORT_ISSUANCE_G2_BUNDLE_BUCKET: ${{ vars.REPORT_ISSUANCE_G2_BUNDLE_BUCKET }}
+          REPORT_ISSUANCE_G2_BUNDLE_OBJECT: ${{ inputs.g2_bundle_object }}
+          REPORT_ISSUANCE_G2_BUNDLE_GENERATION: ${{ inputs.g2_bundle_generation }}
+          REPORT_ISSUANCE_CLAIM_BUCKET: ${{ vars.REPORT_ISSUANCE_CLAIM_BUCKET }}
+          REPORT_ISSUANCE_DOCS_FOLDER_ID: ${{ vars.REPORT_ISSUANCE_DOCS_FOLDER_ID }}
+          REPORT_ISSUANCE_ROOT_FOLDER_ID: ${{ vars.REPORT_ISSUANCE_ROOT_FOLDER_ID }}
+        run: python -m scripts.reporting.issuance_preflight --mode authenticated-readonly
