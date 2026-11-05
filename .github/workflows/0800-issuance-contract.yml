@@ -6,6 +6,8 @@ on:
       - ".github/workflows/0800-issuance-contract.yml"
       - "scripts/reporting/issuance_pipeline.py"
       - "scripts/reporting/g2_bundle_producer.py"
+      - "scripts/reporting/gcs_wif_readonly.py"
+      - "tests/test_gcs_wif_readonly.py"
       - "scripts/reporting/issuance_portal.py"
       - "scripts/reporting/issuance_preflight.py"
       - "config/issuance_ownership.json"
@@ -42,7 +44,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Compile integration modules
-        run: python -m py_compile scripts/reporting/issuance_pipeline.py scripts/reporting/g2_bundle_producer.py scripts/reporting/issuance_portal.py scripts/reporting/issuance_preflight.py scripts/run_0800_issuance.py scripts/reporting/importer_handoff.py scripts/sync_reports_from_drive.py scripts/sync_latest_report_publication.py scripts/persist_report_slot_evidence.py tests/test_issuance_pipeline.py tests/test_issuance_portal.py tests/test_importer_handoff.py tests/test_issuance_preflight.py tests/test_report_slot_evidence.py
+        run: python -m py_compile scripts/reporting/issuance_pipeline.py scripts/reporting/g2_bundle_producer.py scripts/reporting/issuance_portal.py scripts/reporting/issuance_preflight.py scripts/run_0800_issuance.py scripts/reporting/importer_handoff.py scripts/sync_reports_from_drive.py scripts/sync_latest_report_publication.py scripts/persist_report_slot_evidence.py scripts/reporting/gcs_wif_readonly.py tests/test_gcs_wif_readonly.py tests/test_issuance_pipeline.py tests/test_issuance_portal.py tests/test_importer_handoff.py tests/test_issuance_preflight.py tests/test_report_slot_evidence.py
       - name: Verify module CLI starts and blocks missing input without credentials
         run: |
           python -m scripts.run_0800_issuance --help
@@ -64,4 +66,5 @@ jobs:
           python -m unittest discover -s tests -p test_g2_bundle_handoff.py -v
           python -m unittest discover -s tests -p test_g2_bundle_producer.py -v
           python -m unittest discover -s tests -p test_report_slot_evidence.py -v
+          python -m unittest discover -s tests -p test_gcs_wif_readonly.py -v
 

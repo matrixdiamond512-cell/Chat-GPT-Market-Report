@@ -3,9 +3,16 @@ name: Freeze pre-draft report-slot evidence
 on:
   workflow_dispatch:
     inputs:
+      operation:
+        description: "Select regular Evidence generation or the TEST ONLY read-only WIF probe."
+        required: true
+        type: choice
+        default: "freeze_evidence"
+        options: ["freeze_evidence", "test_wif_readonly"]
       report_slot:
         description: "Current JST report slot only. Past slots are rejected."
         required: true
+        default: "08:00"
         type: choice
         options: ["08:00", "12:00", "16:00", "21:00"]
   schedule:
@@ -19,13 +26,13 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: freeze-pre-draft-report-slot-evidence
-  cancel-in-progress: false
-
 jobs:
   freeze:
+    if: github.event_name == 'schedule' || inputs.operation == 'freeze_evidence'
     runs-on: ubuntu-latest
+    concurrency:
+      group: freeze-pre-draft-report-slot-evidence
+      cancel-in-progress: false
     permissions:
       contents: write
       id-token: write
@@ -226,3 +233,40 @@ jobs:
           git pull --rebase origin main
           git push origin HEAD:main
           echo "PRE_DRAFT_EVIDENCE_PERSISTED: publication remains separately gated."
+
+  test-wif-readonly:
+    if: github.event_name == 'workflow_dispatch' && inputs.operation == 'test_wif_readonly' && github.ref == 'refs/heads/codex/0800-main-issuance-e2e-20261029'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: test-wif-readonly-${{ github.run_id }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - name: Verify the selected branch and workflow identity
+        env:
+          EXPECTED_REF: refs/heads/codex/0800-main-issuance-e2e-20261029
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+        run: |
+          test "$GITHUB_REF" = "$EXPECTED_REF"
+          test "$WORKFLOW_REF" = "matrixdiamond512-cell/Chat-GPT-Market-Report/.github/workflows/freeze-report-slot-evidence.yml@$EXPECTED_REF"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned Google Storage client
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-issuance.txt
+      - name: Authenticate with TEST ONLY Workload Identity Federation
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: projects/765600646675/locations/global/workloadIdentityPools/mr-evidence-test-github/providers/github-pr188-evidence
+          service_account: mr-pr188-evidence-test@market-report-test-only.iam.gserviceaccount.com
+          project_id: market-report-test-only
+          create_credentials_file: true
+          export_environment_variables: true
+      - name: Read one existing TEST ONLY object at its pinned generation
+        run: python -m scripts.reporting.gcs_wif_readonly
