@@ -164,8 +164,7 @@ class GcsWifCreateOnlyTests(unittest.TestCase):
 
     def test_readback_mismatch_is_detected(self):
         client = FakeClient()
-        result = run_probe(client)
-        blob = client.bucket_value.blobs[result["object"]]
+        blob = client.bucket(BUCKET_NAME).blob(f"{OBJECT_PREFIX}{RUN_ID}.json")
         blob.corrupt_readback = True
         with self.assertRaisesRegex(ValueError, "WIF_TEST_READBACK_MISMATCH"):
             run_probe(client)
