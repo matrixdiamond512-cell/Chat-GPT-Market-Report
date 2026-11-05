@@ -244,3 +244,8 @@ Git上のApps Scriptは08:00枠を含むDocs→GitHub発行コード/08:30付近
 - 専用Google identityには対象Evidence/G2 generationの読取、Drive folder metadata読取、必要なAudit Logs読取、claim bucket権限の読取検査だけを付与する。service-account JSON keyを作成・登録しない。
 - 最初にconfig modeを確認し、設定後はmainのprotected Environmentを通るauthenticated-readonlyだけを実行する。approval環境変数では承認済みとみなさない。preflightはGoogle Docs、Evidence、canonical、receipt、Pagesへ書き込まない。
 - 本番設定・認証・権限はNOT_RUN。修正コードとCIのPASSは本番稼働成功を意味しない。
+
+
+## 2026-11-05 — MR-PROTECTED-PREFLIGHT-WIF-20261105-01 correction
+
+Do not dispatch the authenticated read-only preflight until the repository Environment `report-publication` exists and has required reviewers. Read-only GitHub inspection found it absent. The workflow now checks this condition in a separate unauthenticated job; absent/unprotected/unreadable means the WIF job is skipped. Exact-head CI passed at `e8e96bf1acce7bb101f0ff9a9c9ac0b057f3371a`, including preflight tests 21/21. Admin Environment setup and authenticated production preflight remain NOT_RUN.

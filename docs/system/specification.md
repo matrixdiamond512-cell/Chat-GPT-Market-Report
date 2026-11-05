@@ -206,3 +206,10 @@ Git上のApps Scriptは08:00枠を含むDocs→GitHub発行コード/08:30付近
 - authenticated-readonly jobはmainからのみ起動し、既存のreport-publication Environmentに属する。GitHub権限はactions:read、contents:read、id-token:writeに限定する。
 - Google認証はEnvironment設定のWIF providerと期待する専用read-only service accountを使う。読戻した実principalが期待値と一致しなければBLOCKED。固定JSON鍵は使わない。
 - CONFIGURATION_DIAGNOSTICは常にNOT_READYで外部アクセスなし。本番Environment/WIF/Google Drive/GCS権限の実検証は未実施。CI成功は本番preflightや発行成功を意味しない。
+
+
+## 2026-11-05 — MR-PROTECTED-PREFLIGHT-WIF-20261105-01 correction
+
+- `report-publication` was absent in the read-only GitHub Environment inspection; earlier wording suggesting it existed was inaccurate.
+- Before the job-level Environment is referenced or OIDC is requested, an unauthenticated read-only gate now checks the GitHub API for an existing Environment with required reviewers. An absent, unprotected, or unreadable Environment blocks the authenticated job.
+- Exact-head Actions (head `e8e96bf1acce7bb101f0ff9a9c9ac0b057f3371a`) passed, including preflight tests 21/21: [issuance 42032888516](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42032888516). No production preflight or write ran. Admin configuration is still required.

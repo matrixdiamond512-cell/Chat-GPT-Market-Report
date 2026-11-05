@@ -191,3 +191,10 @@ Candidate includes PR #188 issuance integration, PR #189 truthful importer statu
 - 対象：固定IDの要件定義書、システム仕様書、運用マニュアル、本台帳。GitHub側の固定パスはdocs/system/requirements.md、specification.md、operations.md、DOCUMENT_CONTROL.md、project-control/EVIDENCE_LEDGER.md。別版文書は作成しない。
 - Google Docs既存固定IDを更新し、更新後に本文markerを読戻し確認した。要件定義書、仕様書、運用マニュアル、台帳のDocs本番接続設定・権限は今回の変更対象外。
 - PR #188のpreflightコード/CIはPASS。本番Environment承認、production WIF、実Docs/GCS権限、本番E2EはNOT_RUN。
+
+
+## 2026-11-05 record correction — MR-PROTECTED-PREFLIGHT-WIF-20261105-01
+
+The GitHub Environment `report-publication` was absent in the read-only Environment inventory (only `apps-script-production` and `github-pages` were listed). Previous entries describing it as existing are superseded by this correction. PR #188 now checks Environment existence and a required-reviewer rule through an unauthenticated read-only job; the authenticated WIF job is conditional on that check and cannot start when the Environment is absent, unprotected, or unreadable.
+
+At head `e8e96bf1acce7bb101f0ff9a9c9ac0b057f3371a`, the issuance contract [42032888516](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42032888516) and all nine other related Actions succeeded; the issuance run reports preflight 21/21. Evidence level: E2 hosted CI/static workflow assertions. Live protected Environment, production WIF preflight, and production issuance remain NOT_RUN / NOT_READY. Admin must create `report-publication`, configure required reviewers and scope policy, then request a separate approved preflight.

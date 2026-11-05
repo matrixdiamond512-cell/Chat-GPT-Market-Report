@@ -221,3 +221,10 @@ Git上のApps Scriptは08:00枠を含むDocs→GitHub発行コード/08:30付近
 - 認証付きread-only preflightは、保護Environment上でGitHub OIDC Workload Identity Federationを用い、指定された専用read-only Google service accountで実行する。service-account JSON keyは使用しない。
 - WIF設定または実認証主体が未確認、Environment必須reviewer・対象Evidence/G2 generation・Docs保存先権限・GitHub権限・Pages/DOM依存が不足または未確認ならNOT_READYとする。設定診断は認証・外部接続を行わずREADYを返さない。
 - PR #188のコード/契約テストはPASS。実際の本番Environment認証・本番Google権限確認はNOT_RUN。
+
+
+## 2026-11-05 — MR-PROTECTED-PREFLIGHT-WIF-20261105-01 correction
+
+- Read-only inspection found the GitHub Environment `report-publication` absent (the environment list contained only `apps-script-production` and `github-pages`). Prior wording that implied it already existed is corrected by this record.
+- The authenticated preflight is blocked unless a separate unauthenticated GitHub API job confirms that `report-publication` exists and has at least one required reviewer. Missing/unreadable/unprotected Environment causes the WIF job to be skipped before authentication.
+- Code head `e8e96bf1acce7bb101f0ff9a9c9ac0b057f3371a`; exact-head issuance contract [42032888516](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42032888516) passed (preflight suite 21 tests). This is CI evidence only. Environment configuration and production authenticated preflight remain NOT_RUN / NOT_READY. Admin must create and protect the Environment before a future preflight.
