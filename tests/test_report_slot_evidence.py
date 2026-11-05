@@ -8,6 +8,7 @@ from unittest.mock import call, patch
 
 from scripts.persist_report_slot_evidence import (
     build_slot_evidence,
+    gcs_reference_path,
     canonical_bytes,
     persist_gcs_slot_evidence,
     require_slot_window,
@@ -249,7 +250,7 @@ class ReportSlotEvidenceTests(unittest.TestCase):
         blocked_cases = [
             ("2026-10-16", "08:00", datetime(2026, 10, 16, 7, 44, 59, tzinfo=jst), "early"),
             ("2026-10-16", "08:00", datetime(2026, 10, 16, 8, 0, tzinfo=jst), "SCHEDULE_LATE"),
-            ("2026-10-17", "21:00", datetime(2026, 10, 17, 3, 52, tzinfo=jst), "SCHEDULE_LATE"),
+            ("2026-10-20", "21:00", datetime(2026, 10, 20, 3, 52, tzinfo=jst), "SCHEDULE_LATE"),
             ("2026-10-17", "08:00", datetime(2026, 10, 17, 7, 51, tzinfo=jst), "non-weekday"),
             ("2026-10-19", "08:00", datetime(2026, 10, 16, 7, 51, tzinfo=jst), "early"),
         ]
@@ -292,11 +293,12 @@ class ReportSlotEvidenceTests(unittest.TestCase):
             original, "test-evidence", "pre-draft-evidence/2026-10-16_08-00-r1.json",
             "2026-10-16", "08:00", client=client, now=self.run_at,
         )
-        altered = bytearray(original)
-        altered[-2] = ord(" ")
+        altered_record = json.loads(original.decode("utf-8"))
+        altered_record["conflictMarker"] = "do-not-overwrite"
+        altered = canonical_bytes(altered_record)
         with self.assertRaisesRegex(FileExistsError, "BLOCKED_GCS_EVIDENCE_CONFLICT"):
             persist_gcs_slot_evidence(
-                bytes(altered), "test-evidence", "pre-draft-evidence/2026-10-16_08-00-r1.json",
+                altered, "test-evidence", "pre-draft-evidence/2026-10-16_08-00-r1.json",
                 "2026-10-16", "08:00", client=client, now=self.run_at,
             )
         self.assertEqual(client.store["pre-draft-evidence/2026-10-16_08-00-r1.json"]["payload"], original)

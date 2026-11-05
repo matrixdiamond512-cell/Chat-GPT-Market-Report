@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import unittest
+from datetime import datetime, timedelta, timezone
 
 from scripts.persist_report_slot_evidence import build_slot_evidence, canonical_bytes
 from scripts.reporting.issuance_pipeline import (
@@ -137,8 +138,10 @@ class IssuancePipelineContractTests(unittest.TestCase):
                 "verificationStatus": "verified", "freshnessStatus": "fresh", "displayValue": "157.8",
             }},
         }
-        self.evidence = build_slot_evidence("2026-10-16", "08:00", payload,
-                                            json.dumps(payload, sort_keys=True).encode())
+        self.evidence = build_slot_evidence(
+            "2026-10-16", "08:00", payload, json.dumps(payload, sort_keys=True).encode(),
+            evidence_created_at=datetime(2026, 10, 16, 7, 56, tzinfo=timezone(timedelta(hours=9))),
+        )
         self.market_payload = payload
         self.evidence_bytes = canonical_bytes(self.evidence)
         self.body_hash = hashlib.sha256(self.full_text.encode()).hexdigest()
@@ -166,7 +169,7 @@ class IssuancePipelineContractTests(unittest.TestCase):
             "evidence_object": {
                 "environment": "PRODUCTION", "project_id": PROJECT, "bucket": BUCKET,
                 "generation": 123, "generation_readback": 123,
-                "created_at": "2026-10-16T07:55:00+09:00",
+                "created_at": "2026-10-16T07:56:00+09:00",
                 "bytes": self.evidence_bytes.decode(),
                 "object_sha256": hashlib.sha256(self.evidence_bytes).hexdigest(),
                 "evidence_id": self.evidence["evidenceId"],
