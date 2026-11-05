@@ -306,5 +306,6 @@ jobs:
               mismatches.append('aud')
           print('GITHUB_OIDC_EXPECTED_CLAIMS=' + ('FAIL' if mismatches else 'PASS'))
           print('GITHUB_OIDC_MISMATCH_FIELDS=' + (','.join(mismatches) if mismatches else 'NONE'))
-          PY      - name: Read one existing TEST ONLY object at its pinned generation
+          PY
+      - name: Read one existing TEST ONLY object at its pinned generation
         run: python -m scripts.reporting.gcs_wif_readonly
