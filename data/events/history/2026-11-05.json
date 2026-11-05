@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-11-05T15:08:13+09:00",
-  "publishedAt": "2026-11-05T15:08:13+09:00",
-  "dataAsOf": "2026-11-05T15:08:13+09:00",
+  "generatedAt": "2026-11-05T23:37:01+09:00",
+  "publishedAt": "2026-11-05T23:37:01+09:00",
+  "dataAsOf": "2026-11-05T23:37:01+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -37,13 +37,13 @@
       "id": "event_result_repair",
       "name": "重要イベント実績値の補完取得",
       "status": "ok",
-      "note": "代替カレンダー照合 0件、公式PDF補完 0件、取得不能理由明記 1件。"
+      "note": "代替カレンダー照合 3件、公式PDF補完 0件、取得不能理由明記 4件。"
     },
     {
       "id": "weekly_claims_validation",
       "name": "米新規失業保険申請件数の公式検証",
       "status": "ok",
-      "note": "公式PDFで訂正・検証 0件、誤照合値を除外 0件。"
+      "note": "公式PDFで訂正・検証 14件、誤照合値を除外 0件。"
     }
   ],
   "errors": [],
@@ -294,13 +294,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-05T15:08:13+09:00",
+      "updatedAt": "2026-11-05T23:37:01+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Institute for Supply Management",
         "url": "https://www.ismworld.org"
       },
-      "resultSavedAt": "2026-11-05T15:08:13+09:00"
+      "resultSavedAt": "2026-11-05T23:37:01+09:00"
     },
     {
       "id": "event-c5110cf89c4012",
@@ -545,13 +545,13 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-05T15:08:13+09:00",
+      "updatedAt": "2026-11-05T23:37:01+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "U.S. Energy Information Administration",
         "url": "https://www.eia.gov"
       },
-      "resultSavedAt": "2026-11-05T15:08:13+09:00"
+      "resultSavedAt": "2026-11-05T23:37:01+09:00"
     },
     {
       "id": "event-11451f7f3dd6c4",
@@ -796,7 +796,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-05T15:08:13+09:00"
+      "updatedAt": "2026-11-05T23:37:01+09:00"
     },
     {
       "id": "event-c2074bc33175a9",
@@ -820,7 +820,7 @@
       "actual": "",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
+      "resultExplanation": "取得不能（代替カレンダーと公式発表元の双方で入札結果を照合できません）",
       "status": "result_pending",
       "isTimed": true,
       "isImportantEvent": true,
@@ -1037,16 +1037,17 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-05T15:08:13+09:00"
+      "updatedAt": "2026-11-05T23:37:03+09:00",
+      "resultFetchStatus": "unavailable"
     },
     {
-      "id": "event-babf37ecc1a012",
-      "sourceKey": "2026-11-05|19:03|EUR|spanish 10-y bond auction",
+      "id": "event-8fb85d3b93a412",
+      "sourceKey": "2026-11-05|18:39|EUR|spanish 10-y bond auction",
       "date": "2026-11-05",
-      "time": "19:03",
-      "datetimeJst": "2026-11-05T19:03:00+09:00",
-      "scheduledAtSource": "2026-11-05T05:03:00-05:00",
-      "scheduledAtUtc": "2026-11-05T10:03:00Z",
+      "time": "18:39",
+      "datetimeJst": "2026-11-05T18:39:00+09:00",
+      "scheduledAtSource": "2026-11-05T04:39:00-05:00",
+      "scheduledAtUtc": "2026-11-05T09:39:00Z",
       "country": "欧州",
       "currency": "EUR",
       "title": "欧州 Spanish 10-y 国債入札",
@@ -1061,8 +1062,8 @@
       "actual": "",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "取得不能（代替カレンダーと公式発表元の双方で入札結果を照合できません）",
+      "status": "result_pending",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1264,7 +1265,7 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
+        "narrative": "結果確認中",
         "reaction": "結果待ち",
         "watch": [
           "米2年債の初動",
@@ -1282,17 +1283,18 @@
       "sourceType": "forex_factory_weekly",
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
-      "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-05T15:08:13+09:00"
+      "createdAt": "2026-11-05T23:37:01+09:00",
+      "updatedAt": "2026-11-05T23:37:03+09:00",
+      "resultFetchStatus": "unavailable"
     },
     {
-      "id": "event-7d777e8b35e278",
-      "sourceKey": "2026-11-05|19:18|EUR|french 10-y bond auction",
+      "id": "event-7f93319f2a3ec7",
+      "sourceKey": "2026-11-05|18:55|EUR|french 10-y bond auction",
       "date": "2026-11-05",
-      "time": "19:18",
-      "datetimeJst": "2026-11-05T19:18:00+09:00",
-      "scheduledAtSource": "2026-11-05T05:18:00-05:00",
-      "scheduledAtUtc": "2026-11-05T10:18:00Z",
+      "time": "18:55",
+      "datetimeJst": "2026-11-05T18:55:00+09:00",
+      "scheduledAtSource": "2026-11-05T04:55:00-05:00",
+      "scheduledAtUtc": "2026-11-05T09:55:00Z",
       "country": "欧州",
       "currency": "EUR",
       "title": "欧州 French 10-y 国債入札",
@@ -1307,8 +1309,8 @@
       "actual": "",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "取得不能（代替カレンダーと公式発表元の双方で入札結果を照合できません）",
+      "status": "result_pending",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1510,7 +1512,7 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
+        "narrative": "結果確認中",
         "reaction": "結果待ち",
         "watch": [
           "米2年債の初動",
@@ -1528,8 +1530,9 @@
       "sourceType": "forex_factory_weekly",
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
-      "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-05T15:08:13+09:00"
+      "createdAt": "2026-11-05T23:37:01+09:00",
+      "updatedAt": "2026-11-05T23:37:03+09:00",
+      "resultFetchStatus": "unavailable"
     },
     {
       "id": "event-acf5d28cafba68",
@@ -1550,11 +1553,11 @@
       "importanceLabel": "高",
       "forecast": "",
       "previous": "",
-      "actual": "",
+      "actual": "9",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "実績 9 は予想 なし に対して比較保留。名称差・国コード差を補正してTradingView実績データから照合しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -1757,8 +1760,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -1776,7 +1779,15 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-05T15:08:13+09:00"
+      "updatedAt": "2026-11-05T23:37:03+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "tradingview_repair",
+        "name": "Central Bank",
+        "url": "https://www.bankofengland.co.uk"
+      },
+      "resultSavedAt": "2026-11-05T23:37:03+09:00"
     },
     {
       "id": "event-256b3c38cb3ea0",
@@ -1800,8 +1811,8 @@
       "actual": "",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
+      "status": "result_pending",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -2004,7 +2015,7 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
+        "narrative": "結果確認中",
         "reaction": "結果待ち",
         "watch": [
           "米2年債の初動",
@@ -2023,7 +2034,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-05T15:08:13+09:00"
+      "updatedAt": "2026-11-05T23:37:01+09:00"
     },
     {
       "id": "event-82efc307c07be7",
@@ -2047,8 +2058,8 @@
       "actual": "",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
+      "status": "result_pending",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -2251,7 +2262,7 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
+        "narrative": "結果確認中",
         "reaction": "結果待ち",
         "watch": [
           "米2年債の初動",
@@ -2270,7 +2281,7 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-05T15:08:13+09:00"
+      "updatedAt": "2026-11-05T23:37:01+09:00"
     },
     {
       "id": "event-04490bbb5fa329",
@@ -2291,11 +2302,11 @@
       "importanceLabel": "高",
       "forecast": "4.00%",
       "previous": "3.75%",
-      "actual": "",
+      "actual": "4%",
       "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultComparison": "市場予想と一致",
+      "resultExplanation": "実績 4% は予想 4.00% に対して市場予想と一致。名称差・国コード差を補正してTradingView実績データから照合しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -2498,8 +2509,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想と一致",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -2517,7 +2528,15 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-05T15:08:13+09:00"
+      "updatedAt": "2026-11-05T23:37:03+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "tradingview_repair",
+        "name": "Central Bank",
+        "url": "https://www.bankofengland.co.uk"
+      },
+      "resultSavedAt": "2026-11-05T23:37:03+09:00"
     },
     {
       "id": "event-4a740540cf0cb5",
@@ -2536,13 +2555,13 @@
       "ffImportance": 3,
       "importance": 3,
       "importanceLabel": "高",
-      "forecast": "",
-      "previous": "",
-      "actual": "",
+      "forecast": "数値発表なし",
+      "previous": "数値発表なし",
+      "actual": "数値発表なし（発言イベント）",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "数値の実績値が発表されるイベントではありません。発言内容と、金利・為替・株価指数先物の反応を確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -2745,8 +2764,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "発言イベント終了",
+        "reaction": "発言内容と市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -2764,9 +2783,15 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-05T15:08:13+09:00",
+      "updatedAt": "2026-11-05T23:37:02+09:00",
       "resultExpected": false,
-      "resultType": "qualitative"
+      "resultType": "qualitative",
+      "resultSource": {
+        "id": "forex_factory",
+        "name": "Forex Factory Economic Calendar",
+        "url": "https://www.forexfactory.com/calendar"
+      },
+      "resultSavedAt": "2026-11-05T23:37:02+09:00"
     },
     {
       "id": "event-3d090944673b9b",
@@ -2785,13 +2810,13 @@
       "ffImportance": 2,
       "importance": 2,
       "importanceLabel": "中",
-      "forecast": "",
-      "previous": "",
-      "actual": "",
+      "forecast": "数値発表なし",
+      "previous": "数値発表なし",
+      "actual": "数値発表なし（発言イベント）",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "数値の実績値が発表されるイベントではありません。発言内容と、金利・為替・株価指数先物の反応を確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -2994,8 +3019,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "発言イベント終了",
+        "reaction": "発言内容と市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -3013,9 +3038,15 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-05T15:08:13+09:00",
+      "updatedAt": "2026-11-05T23:37:02+09:00",
       "resultExpected": false,
-      "resultType": "qualitative"
+      "resultType": "qualitative",
+      "resultSource": {
+        "id": "forex_factory",
+        "name": "Forex Factory Economic Calendar",
+        "url": "https://www.forexfactory.com/calendar"
+      },
+      "resultSavedAt": "2026-11-05T23:37:02+09:00"
     },
     {
       "id": "event-c15f1c9adc7921",
@@ -3036,11 +3067,11 @@
       "importanceLabel": "中",
       "forecast": "197K",
       "previous": "194K",
-      "actual": "",
-      "revised": "",
-      "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "actual": "189K",
+      "revised": "195K",
+      "resultComparison": "市場予想を下回る",
+      "resultExplanation": "実績 189K は予想 197K に対して市場予想を下回る。同時刻に公表される継続受給者数との取り違えを防ぐため、米労働省の公式Weekly Claims PDFで検証しました。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -3243,8 +3274,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "結果確認済み",
+        "reaction": "市場予想を下回る",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -3262,7 +3293,16 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-05T15:08:13+09:00"
+      "updatedAt": "2026-11-05T23:37:03+09:00",
+      "resultExpected": true,
+      "resultType": "numeric",
+      "resultSource": {
+        "id": "us_dol_claims_pdf",
+        "name": "U.S. Department of Labor - Unemployment Insurance Weekly Claims",
+        "url": "https://www.dol.gov/ui/data.pdf"
+      },
+      "resultSavedAt": "2026-11-05T23:37:03+09:00",
+      "resultValidation": "official_pdf_verified"
     },
     {
       "id": "event-eefa97413d0c01",
@@ -3281,13 +3321,13 @@
       "ffImportance": 1,
       "importance": 2,
       "importanceLabel": "中",
-      "forecast": "",
-      "previous": "",
-      "actual": "",
+      "forecast": "数値発表なし",
+      "previous": "数値発表なし",
+      "actual": "数値発表なし（発言イベント）",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "数値の実績値が発表されるイベントではありません。発言内容と、金利・為替・株価指数先物の反応を確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -3490,8 +3530,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "発言イベント終了",
+        "reaction": "発言内容と市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -3509,9 +3549,15 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-05T15:08:13+09:00",
+      "updatedAt": "2026-11-05T23:37:02+09:00",
       "resultExpected": false,
-      "resultType": "qualitative"
+      "resultType": "qualitative",
+      "resultSource": {
+        "id": "federal_reserve",
+        "name": "Federal Reserve FOMC calendar",
+        "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+      },
+      "resultSavedAt": "2026-11-05T23:37:02+09:00"
     },
     {
       "id": "event-0f84bc34f564bf",
@@ -3530,13 +3576,13 @@
       "ffImportance": 1,
       "importance": 2,
       "importanceLabel": "中",
-      "forecast": "",
-      "previous": "",
-      "actual": "",
+      "forecast": "数値発表なし",
+      "previous": "数値発表なし",
+      "actual": "数値発表なし（発言イベント）",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "発表後に実績値と市場反応を更新します。",
-      "status": "scheduled",
+      "resultExplanation": "数値の実績値が発表されるイベントではありません。発言内容と、金利・為替・株価指数先物の反応を確認します。",
+      "status": "released",
       "isTimed": true,
       "isImportantEvent": true,
       "affectedMarkets": [
@@ -3739,8 +3785,8 @@
         ]
       ],
       "conclusion": {
-        "narrative": "発表前",
-        "reaction": "結果待ち",
+        "narrative": "発言イベント終了",
+        "reaction": "発言内容と市場反応を確認",
         "watch": [
           "米2年債の初動",
           "米10年債への波及",
@@ -3758,9 +3804,15 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-01T18:45:59+09:00",
-      "updatedAt": "2026-11-05T15:08:13+09:00",
+      "updatedAt": "2026-11-05T23:37:02+09:00",
       "resultExpected": false,
-      "resultType": "qualitative"
+      "resultType": "qualitative",
+      "resultSource": {
+        "id": "federal_reserve",
+        "name": "Federal Reserve FOMC calendar",
+        "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm"
+      },
+      "resultSavedAt": "2026-11-05T23:37:02+09:00"
     }
   ]
 }
