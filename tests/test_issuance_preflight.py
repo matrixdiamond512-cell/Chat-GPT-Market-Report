@@ -33,7 +33,9 @@ class FakeGitHub:
 
 
 class FakeGoogle:
-    def __init__(self): self.methods = []
+    def __init__(self):
+        self.methods = []
+        self.principal_email = "preflight-reader@market-prod.iam.gserviceaccount.com"
     class Response:
         ok = True
         def __init__(self, payload): self.payload = payload
@@ -78,6 +80,8 @@ class IssuancePreflightTests(unittest.TestCase):
             "GITHUB_ACTIONS": "true", "GITHUB_REF": "refs/heads/main",
             "GITHUB_REPOSITORY": "acme/report", "REPORT_PREFLIGHT_GITHUB_TOKEN": "read-only-token",
             "REPORT_ISSUANCE_ENVIRONMENT": "report-publication",
+            "REPORT_ISSUANCE_WIF_PROVIDER": "projects/123/locations/global/workloadIdentityPools/preflight/providers/github",
+            "REPORT_ISSUANCE_READONLY_SERVICE_ACCOUNT": "preflight-reader@market-prod.iam.gserviceaccount.com",
             "REPORT_PAGES_BASE_URL": "https://example.invalid", "REPORT_EVIDENCE_PROJECT_ID": "market-prod",
             "REPORT_EVIDENCE_BUCKET": "market-evidence", "REPORT_EVIDENCE_OBJECT": "evidence/slot.json",
             "REPORT_EVIDENCE_GENERATION": "9", "REPORT_ISSUANCE_REPORT_ID": "2026-11-05_08-00",
@@ -183,6 +187,27 @@ class IssuancePreflightTests(unittest.TestCase):
         self.assertEqual(result["checks"]["g2_producer"]["reason"], "BLOCKED_G2_PRODUCER_MISSING")
         self.assertEqual(result["checks"]["cloud_and_github_permissions"]["status"], "NOT_RUN")
         self.assertFalse(result["secrets_emitted"])
+
+    def test_google_principal_mismatch_blocks_preflight(self):
+        google = FakeGoogle()
+        google.principal_email = "different@market-prod.iam.gserviceaccount.com"
+        result = run_preflight(env=self.env, github=FakeGitHub(), google_probe=google,
+                               dom_runtime=True, pages_probe=lambda _url: True)
+        self.assertEqual(result["status"], "NOT_READY")
+        self.assertEqual(result["checks"]["google"]["status"], "BLOCKED")
+        self.assertFalse(result["checks"]["google"]["expected_principal_match"])
+
+    def test_protected_preflight_uses_wif_without_service_account_key(self):
+        from pathlib import Path
+
+        workflow = Path(".github/workflows/0800-issuance-production-preflight.yml").read_text(encoding="utf-8")
+        source = Path("scripts/reporting/issuance_preflight.py").read_text(encoding="utf-8")
+        self.assertIn("google-github-actions/auth@v3", workflow)
+        self.assertIn("REPORT_PREFLIGHT_GITHUB_TOKEN: ${{ github.token }}", workflow)
+        self.assertIn("id-token: write", workflow)
+        self.assertIn("REPORT_ISSUANCE_READONLY_SERVICE_ACCOUNT", workflow)
+        self.assertNotIn("GOOGLE_SERVICE_ACCOUNT_JSON", workflow)
+        self.assertNotIn("GOOGLE_SERVICE_ACCOUNT_JSON", source)
 
     def test_missing_required_environment_reviewer_blocks_readiness(self):
         result = run_preflight(env=self.env, github=FakeGitHub(reviewers=0), google_probe=FakeGoogle(), dom_runtime=True)

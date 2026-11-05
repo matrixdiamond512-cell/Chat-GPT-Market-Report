@@ -46,14 +46,13 @@ class DefaultGoogleReadOnlyProbe:
         scopes = ["https://www.googleapis.com/auth/drive.metadata.readonly",
                   "https://www.googleapis.com/auth/devstorage.read_only",
                   "https://www.googleapis.com/auth/cloud-platform.read-only"]
-        raw = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "")
-        if raw:
-            from google.oauth2 import service_account
-            credentials = service_account.Credentials.from_service_account_info(
-                json.loads(raw), scopes=scopes)
-            project = credentials.project_id
-        else:
-            credentials, project = google.auth.default(scopes=scopes)
+        credentials, project = google.auth.default(scopes=scopes)
+        expected_principal = os.environ.get("REPORT_ISSUANCE_READONLY_SERVICE_ACCOUNT", "")
+        self.principal_email = getattr(credentials, "service_account_email", None)
+        if not expected_principal:
+            raise PreflightBlocked("GCP_READONLY_IDENTITY_NOT_CONFIGURED")
+        if self.principal_email != expected_principal:
+            raise PreflightBlocked("GCP_READONLY_IDENTITY_MISMATCH")
         self.session = AuthorizedSession(credentials)
         self.storage = storage.Client(project=project, credentials=credentials)
         self.project_id = project or getattr(credentials, "project_id", None)
@@ -279,6 +278,8 @@ def run_configuration_diagnostic(*, env=None) -> dict:
     required = ("GITHUB_REPOSITORY", "REPORT_ISSUANCE_ENVIRONMENT",
                 "REPORT_PAGES_BASE_URL", "REPORT_EVIDENCE_PROJECT_ID",
                 "REPORT_EVIDENCE_BUCKET", "REPORT_ISSUANCE_CLAIM_BUCKET",
+                "REPORT_ISSUANCE_WIF_PROVIDER",
+                "REPORT_ISSUANCE_READONLY_SERVICE_ACCOUNT",
                 "REPORT_ISSUANCE_DOCS_FOLDER_ID", "REPORT_ISSUANCE_ROOT_FOLDER_ID")
     missing = [key for key in required if not env.get(key)]
     g2_reference_present = bool(env.get("REPORT_ISSUANCE_G2_BUNDLE_OBJECT") and
@@ -315,6 +316,8 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None,
     required = ("GITHUB_ACTIONS", "GITHUB_REF", "GITHUB_REPOSITORY",
                 "REPORT_PREFLIGHT_GITHUB_TOKEN", "REPORT_PAGES_BASE_URL",
                 "REPORT_ISSUANCE_ENVIRONMENT",
+                "REPORT_ISSUANCE_WIF_PROVIDER",
+                "REPORT_ISSUANCE_READONLY_SERVICE_ACCOUNT",
                 "REPORT_EVIDENCE_PROJECT_ID", "REPORT_EVIDENCE_BUCKET",
                 "REPORT_EVIDENCE_OBJECT", "REPORT_EVIDENCE_GENERATION",
                 "REPORT_ISSUANCE_CLAIM_BUCKET", "REPORT_ISSUANCE_DOCS_FOLDER_ID",
@@ -388,7 +391,10 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None,
         try:
             google_probe = DefaultGoogleReadOnlyProbe()
         except Exception as exc:
-            result["checks"]["google"] = {"status": "UNKNOWN", "reason": type(exc).__name__}
+            result["checks"]["google"] = {
+                "status": "BLOCKED" if isinstance(exc, PreflightBlocked) else "UNKNOWN",
+                "reason": str(exc) if isinstance(exc, PreflightBlocked) else type(exc).__name__,
+            }
     if google_probe is not None:
         try:
             folder_states = []
@@ -411,8 +417,14 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None,
                                                             env.get("REPORT_ISSUANCE_ROOT_FOLDER_ID", "")))
             ) and env.get("REPORT_ISSUANCE_ROOT_FOLDER_ID", "") in folder_states[0].get("parents", []) and \
                 folder_states[0].get("capabilities", {}).get("canAddChildren") is True
-            google_ok = drive_ok and exact_read and claim_permissions.get("create") is True
+            expected_principal = env.get("REPORT_ISSUANCE_READONLY_SERVICE_ACCOUNT", "")
+            actual_principal = getattr(google_probe, "principal_email", None)
+            identity_match = bool(expected_principal) and actual_principal == expected_principal
+            google_ok = (drive_ok and exact_read and
+                         claim_permissions.get("create") is True and identity_match)
             result["checks"]["google"] = {"status": "PASS" if google_ok else "BLOCKED",
+                                            "authenticated_principal": actual_principal,
+                                            "expected_principal_match": identity_match,
                                             "drive_folders_read": True,
                                             "docs_folder_can_add_children": drive_ok,
                                             "evidence_generation_read": bool(exact_read),
