@@ -164,3 +164,9 @@ Candidate includes PR #188 issuance integration, PR #189 truthful importer statu
 - 固定パス: `scripts/persist_report_slot_evidence.py`, `.github/workflows/freeze-report-slot-evidence.yml`, `tests/test_report_slot_evidence.py`、およびrequirements/specification/operationsとproject-control決定・証拠台帳。
 - テスト: 隔離テスト追加済み。実行結果はPR headのGitHub Actions確認後に追記する。実GCS権限・create-only write・generation readbackはNOT_RUN。
 - 未解決: Actions scheduleは期限内実行を保証しない。今回の修正は窓外runを閉じるが、独立schedulerは設計/費用/管理者承認が未了。2026-11-05 08:00 Evidenceは事後生成しない。Drive固定ID文書への同期はNOT_RUN。
+
+## MR-EVIDENCE-GCS-WINDOW-20261105-01｜CI検証追記
+- Code/test head 4c533ff4ab50e9673d1dddf7b5ee9c8f63f6aa9a: [08:00 issuance contract run 41939360238](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41939360238) PASS。Python 3.12 compileとCLI smoke、契約unittest 136件（18+40+16+18+9+17+18）を確認。Evidence時刻境界とGCS fake tests 18件を含む。
+- [frozen-cutoff regression run 41939360170](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41939360170) PASS、31 tests。[delivery health run 41939360118](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41939360118) PASS。[UI/DOM run 41939360203](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41939360203) PASS。同期復旧、Dashboard eligibility/health、Apps Script validation、Drive selection QA、historical recovery QAも同headでPASS。
+- CI初回はテストファイルの改行混入を検出。その後、必須Evidence作成時刻をpipeline/importer/G2のfixtureへ追加し、GCS conflictテストを有効JSONへ修正して通過。公開ゲートの条件は緩和していない。
+- 証拠水準はCI隔離契約E2まで。実GCS service account/bucket権限、実create-only object、production generation readback、11月6日発行前EvidenceはNOT_RUN。成功扱いにしない。

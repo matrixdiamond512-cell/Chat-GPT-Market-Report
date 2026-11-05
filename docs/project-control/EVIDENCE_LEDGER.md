@@ -315,3 +315,10 @@ Main `ba8d09a1b1170b56b42c8f33c125a19f120fb0dd` was synchronized in merge commit
 - Tests added: slot start/end, early/late, date rollover, weekday/weekend; GCS create-only / exact retry / conflicting bytes / readback corruption / GCS-first and GitHub-first partial-success reconciliation. Results: NOT_RUN until exact PR head CI.
 - Evidence level: historical workflow log E4 for the cited failed run; current code/test review E0; live GCS E5 NOT_RUN. No current production write, action dispatch, main modification, PR merge, or schedule change.
 - Unresolved: GCS bucket variable, service-account IAM and detailed object create/read permissions not verified; actual Actions schedule execution is not guaranteed; separate scheduler proposal requires administrator/cost review. PR #188 remains Draft. Fixed-ID Google Docs sync NOT_RUN.
+
+## MR-EVIDENCE-GCS-WINDOW-20261105-01｜最終隔離CI結果
+- Code/test head 4c533ff4ab50e9673d1dddf7b5ee9c8f63f6aa9a の [issuance contract](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41939360238) はPASS。compile/CLI smokeと136 Python契約テストが成功し、Evidence creation timeを使うreport pipeline、strict importer、G2 producer fixtureも更新済み。test_report_slot_evidence.py 18 tests PASS。
+- [freeze-cutoff regression](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41939360170) は31 tests PASS。[delivery health](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41939360118)、[UI/DOM](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41939360203)、同headの他7 regression/QA ActionsもSUCCESS。
+- 中間CIでは構文separator、旧fixtureにEvidence creation timeがない問題、GCS conflict test fixtureの不備を検出。これらをfail-closedを保ったまま修正し、上記headで通過した。
+- fake GCSではgeneration 731を模したcreate-only、exact byte retry、別bytes衝突拒否、GCS metadata/hash/source-data-hash照合、late server timestamp停止、GCS-first/local-first部分成功再調整を確認。これは隔離テストであり、実GCS書込みの証拠ではない。
+- E2 isolated CI: PASS。E5 real GCS Evidence: NOT_RUN。11/05 08:00 missing Evidenceは事後作成なし。PR #188はDraft/open/unmerged。
