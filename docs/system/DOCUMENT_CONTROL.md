@@ -198,3 +198,12 @@ Candidate includes PR #188 issuance integration, PR #189 truthful importer statu
 The GitHub Environment `report-publication` was absent in the read-only Environment inventory (only `apps-script-production` and `github-pages` were listed). Previous entries describing it as existing are superseded by this correction. PR #188 now checks Environment existence and a required-reviewer rule through an unauthenticated read-only job; the authenticated WIF job is conditional on that check and cannot start when the Environment is absent, unprotected, or unreadable.
 
 At head `e8e96bf1acce7bb101f0ff9a9c9ac0b057f3371a`, the issuance contract [42032888516](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42032888516) and all nine other related Actions succeeded; the issuance run reports preflight 21/21. Evidence level: E2 hosted CI/static workflow assertions. Live protected Environment, production WIF preflight, and production issuance remain NOT_RUN / NOT_READY. Admin must create `report-publication`, configure required reviewers and scope policy, then request a separate approved preflight.
+
+
+
+## 2026-11-06 変更記録 — MR-ENV-WIF-ISSUANCE-PREFLIGHT-20261106-01
+
+- 変更理由: reviewer数だけで本番Environment保護を判断していたpreflightをfail-closedにし、08:00発行前認証の誤通過を防ぐ。Chromium依存インストールの既知の遅延も検証対象にする。
+- 対象固定パス: `docs/system/requirements.md`、`docs/system/specification.md`、`docs/system/operations.md`、`docs/system/DOCUMENT_CONTROL.md`、`docs/project-control/EVIDENCE_LEDGER.md`、`.github/workflows/0800-issuance-production-preflight.yml`、`.github/workflows/report-21-ui-validation.yml`、`scripts/reporting/issuance_preflight.py`、`tests/test_issuance_preflight.py`。
+- 変更内容: reviewer有効性、自己承認防止、main限定、管理者バイパス状態を認証前に検査。秘密値は取得せず、GitHub Variables一覧はAPIが値を含むため照会しない。GitHub書込み権限は自己申告を証拠にせずUNKNOWNのまま。UI strict timeout 25分を維持し、headless shell installで試験する。
+- 検証: 記録時点では変更headのHosted CI待ち。最終Actions URLとSHAは作業報告で証拠範囲を分けて記載する。固定ID Google Docsは未更新・未読戻し。本番Environment/WIF/IAM/Docs/GCS/receipt/Pagesは未実施。

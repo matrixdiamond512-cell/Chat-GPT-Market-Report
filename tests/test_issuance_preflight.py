@@ -13,22 +13,42 @@ from unittest.mock import patch
 from contextlib import redirect_stdout
 
 from scripts.reporting.issuance_preflight import (run_preflight, run_configuration_diagnostic,
-    _verify_g2_producer_identity)
+    run_environment_gate, _environment_protection_result, _verify_g2_producer_identity,
+    PreflightBlocked)
 from scripts.run_0800_issuance import (load_bundle, main as issuance_main, require_08_issuance_owner)
 from scripts.reporting.issuance_pipeline import IssuanceBlocked
 
 
 class FakeGitHub:
-    def __init__(self, reviewers=1):
+    def __init__(self, reviewers=1, environment=None, branch_policies=None,
+                 failures=None):
         self.reviewers = reviewers
         self.calls = []
+        self.failures = failures or {}
+        self.environment = environment or {
+            "name": "report-publication", "can_admins_bypass": False,
+            "deployment_branch_policy": {"protected_branches": False,
+                                         "custom_branch_policies": True},
+            "protection_rules": [{"type": "required_reviewers",
+                "prevent_self_review": True,
+                "reviewers": [{"type": "User", "reviewer":
+                    {"login": "reviewer", "id": 42}}] * reviewers}],
+        }
+        self.branch_policies = branch_policies or {
+            "total_count": 1, "branch_policies": [{"id": 1, "name": "main"}]}
     def get(self, path):
         self.calls.append(path)
+        for prefix, error in self.failures.items():
+            if path.startswith(prefix):
+                raise error
         if path == "":
             return {"full_name": "acme/report", "permissions": {"push": True}}
+        if path.endswith("/deployment-branch-policies?per_page=100"):
+            return self.branch_policies
+        if path.endswith("/secrets?per_page=100"):
+            return {"secrets": [{"name": "WIF_PROVIDER"}]}
         if path.startswith("/environments/"):
-            rows = [{"type": "required_reviewers", "reviewers": [{"login": "reviewer"}] * self.reviewers}]
-            return {"protection_rules": rows}
+            return self.environment
         return {"state": "active"}
 
 
@@ -93,15 +113,16 @@ class IssuancePreflightTests(unittest.TestCase):
             "REPORT_ISSUANCE_CONTENTS_WRITE_VERIFIED": "true",
         }
 
-    def test_admin_verified_read_only_preflight_is_ready(self):
+    def test_readonly_preflight_never_infers_github_write_scope_from_attestation(self):
         github, google = FakeGitHub(), FakeGoogle()
         result = run_preflight(env=self.env, github=github, google_probe=google, dom_runtime=True, pages_probe=lambda _url: True)
         self.assertEqual(result["status"], "NOT_READY")
         self.assertEqual(result["mode"], "AUTHENTICATED_READ_ONLY")
         self.assertEqual(result["checks"]["g2_evidence_binding"]["status"], "PASS")
         self.assertEqual(result["checks"]["issuance_owner"]["status"], "BLOCKED")
-        self.assertEqual(result["checks"]["github"]["status"], "PASS")
-        self.assertEqual(result["checks"]["github"]["credential_contents_write_permission"], "ADMIN_ATTESTED")
+        self.assertEqual(result["checks"]["github"]["status"], "UNKNOWN")
+        self.assertEqual(result["checks"]["github"]["credential_contents_write_permission"], "UNKNOWN")
+        self.assertFalse(result["checks"]["github"]["contents_write_admin_attestation_present"])
         self.assertFalse(result["secrets_emitted"])
         self.assertNotIn("read-only-token", json.dumps(result))
         self.assertEqual(google.methods[:2], ["GET", "GET"])
@@ -204,14 +225,77 @@ class IssuancePreflightTests(unittest.TestCase):
         authenticated = workflow.split("  authenticated-readonly:", 1)[1]
         self.assertNotIn("environment:", gate)
         self.assertNotIn("id-token: write", gate)
-        self.assertIn("repos.getEnvironment", gate)
-        self.assertIn("required_reviewers", gate)
-        self.assertIn("core.setOutput('ready', 'false')", gate)
+        self.assertIn("run: python -m scripts.reporting.issuance_preflight --mode environment-gate", gate)
+        self.assertIn("REPORT_PREFLIGHT_GITHUB_TOKEN: ${{ github.token }}", gate)
+        self.assertIn("actions: read", gate)
+        self.assertNotIn("id-token: write", gate)
         self.assertIn("needs: [config-diagnostic, environment-protection]", authenticated)
         self.assertIn("needs.environment-protection.outputs.ready == 'true'", authenticated)
         self.assertLess(workflow.index("  environment-protection:"), workflow.index("  authenticated-readonly:"))
         self.assertIn("environment: report-publication", authenticated)
         self.assertIn("google-github-actions/auth@v3", authenticated)
+
+
+    def test_environment_gate_requires_self_review_admin_and_exact_main_branch_rules(self):
+        good = FakeGitHub()
+        passed = run_environment_gate(env={"GITHUB_REPOSITORY": "acme/report",
+            "GITHUB_REF": "refs/heads/main", "REPORT_PREFLIGHT_GITHUB_TOKEN": "token"},
+            github=good)
+        self.assertEqual(passed["status"], "PASS")
+        self.assertEqual(passed["environment_inventory"]["secret_names"], ["WIF_PROVIDER"])
+        self.assertEqual(passed["environment_inventory"]["variable_names"], "NOT_READ")
+        self.assertFalse(passed["environment_inventory"]["values_read_or_emitted"])
+        self.assertFalse(any(path.endswith("/variables?per_page=100") for path in good.calls))
+
+        cases = [
+            ({"can_admins_bypass": True}, None, "ENVIRONMENT_ADMIN_BYPASS_ENABLED"),
+            ({}, None, "ENVIRONMENT_ADMIN_BYPASS_UNKNOWN"),
+            ({"protection_rules": [{"type": "required_reviewers",
+                "prevent_self_review": False, "reviewers": [{"type": "User",
+                "reviewer": {"login": "reviewer", "id": 42}}]}],},
+                None, "ENVIRONMENT_PREVENT_SELF_REVIEW_NOT_ENABLED"),
+        ]
+        for changes, policies, expected in cases:
+            env_data = dict(good.environment)
+            env_data.update(changes)
+            result = _environment_protection_result(repository={"full_name": "acme/report"},
+                environment=env_data,
+                branch_policies=policies or good.branch_policies,
+                expected_repository="acme/report", current_ref="refs/heads/main",
+                environment_name="report-publication")
+            self.assertEqual(result["status"], "BLOCKED")
+            self.assertIn(expected, result["reason"])
+
+        for policies in (
+            {"total_count": 0, "branch_policies": []},
+            {"total_count": 2, "branch_policies": [{"name": "main"}, {"name": "release/*"}]},
+            {"total_count": 1, "branch_policies": [{"name": "main", "type": "tag"}]},
+        ):
+            result = _environment_protection_result(repository={"full_name": "acme/report"},
+                environment=good.environment, branch_policies=policies,
+                expected_repository="acme/report", current_ref="refs/heads/main",
+                environment_name="report-publication")
+            self.assertEqual(result["status"], "BLOCKED")
+            self.assertIn("ENVIRONMENT_BRANCH_POLICY_NOT_MAIN_ONLY", result["reason"])
+
+    def test_environment_api_failure_and_non_main_ref_fail_closed(self):
+        error = PreflightBlocked("GITHUB_PREFLIGHT_GET_FAILED:403")
+        failed = run_environment_gate(env={"GITHUB_REPOSITORY": "acme/report",
+            "GITHUB_REF": "refs/heads/main", "REPORT_PREFLIGHT_GITHUB_TOKEN": "token"},
+            github=FakeGitHub(failures={"/environments/": error}))
+        self.assertEqual(failed["status"], "BLOCKED")
+        self.assertEqual(failed["reason"], "GITHUB_PREFLIGHT_GET_FAILED:403")
+        not_found = run_environment_gate(env={"GITHUB_REPOSITORY": "acme/report",
+            "GITHUB_REF": "refs/heads/main", "REPORT_PREFLIGHT_GITHUB_TOKEN": "token"},
+            github=FakeGitHub(failures={"/environments/": PreflightBlocked(
+                "GITHUB_PREFLIGHT_GET_FAILED:404")}))
+        self.assertEqual(not_found["status"], "BLOCKED")
+        self.assertEqual(not_found["reason"], "GITHUB_PREFLIGHT_GET_FAILED:404")
+        non_main = run_environment_gate(env={"GITHUB_REPOSITORY": "acme/report",
+            "GITHUB_REF": "refs/heads/codex/test", "REPORT_PREFLIGHT_GITHUB_TOKEN": "token"},
+            github=FakeGitHub())
+        self.assertEqual(non_main["status"], "BLOCKED")
+        self.assertIn("ENVIRONMENT_PREFLIGHT_NOT_ON_MAIN", non_main["protection"]["reason"])
 
     def test_protected_preflight_uses_wif_without_service_account_key(self):
         from pathlib import Path

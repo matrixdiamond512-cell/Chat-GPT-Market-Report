@@ -249,3 +249,14 @@ Git上のApps Scriptは08:00枠を含むDocs→GitHub発行コード/08:30付近
 ## 2026-11-05 — MR-PROTECTED-PREFLIGHT-WIF-20261105-01 correction
 
 Do not dispatch the authenticated read-only preflight until the repository Environment `report-publication` exists and has required reviewers. Read-only GitHub inspection found it absent. The workflow now checks this condition in a separate unauthenticated job; absent/unprotected/unreadable means the WIF job is skipped. Exact-head CI passed at `e8e96bf1acce7bb101f0ff9a9c9ac0b057f3371a`, including preflight tests 21/21. Admin Environment setup and authenticated production preflight remain NOT_RUN.
+
+
+
+## 2026-11-06 — MR-ENV-WIF-ISSUANCE-PREFLIGHT-20261106-01
+
+- `report-publication`を管理者が構成する場合、Required reviewersに有効な1〜6名/チームを登録し、Prevent self-reviewをON、管理者によるバイパスをOFF、deployment branch policyを`main`のみとする。設定の作成・変更はこの変更では行っていない。
+- read-only preflightはmainからのみ実行する。Environment gateが欠落・不明・API拒否を返したらauthenticated WIF jobを起動しない。Environment APIが管理者バイパス設定を返さない場合、UIを管理者が確認するまでBLOCKEDのままとする。
+- GitHub Actions Environment secret一覧は名前だけ取得する。GitHub variable一覧APIは値も返すため照会しない。値を画面・ログ・証拠へ転記しない。
+- `strict-current-report` jobは25分のtimeoutを維持し、`playwright install --only-shell chromium`を使用する。Playwright/Chromiumの起動を含むActions結果が確認できるまでCI PASSとしない。依存ライブラリ不足で失敗した場合はOS依存導入を復元する。
+- 管理者に必要な読取権限はリポジトリActions read。Production WIF/IAMやGCS/Docs権限の変更は別途承認が必要。TEST ONLY WIF成功を本番権限の証明にしない。
+- GitHub側の固定文書更新と固定ID Google Docsへの同期は別状態で記録する。Google Docsは本変更では未更新・未読戻し。

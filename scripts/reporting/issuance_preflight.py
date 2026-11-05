@@ -38,6 +38,107 @@ class GitHubReadOnlyProbe:
         return response.json()
 
 
+def _environment_protection_result(*, repository, environment, branch_policies,
+                                   expected_repository, current_ref, environment_name):
+    """Return PASS only for explicit reviewer, self-review, admin and main-only rules."""
+    reasons = []
+    identity_ok = (repository.get("full_name", "").lower() ==
+                   expected_repository.lower())
+    if not identity_ok:
+        reasons.append("ENVIRONMENT_REPOSITORY_MISMATCH")
+    ref_is_main = current_ref == "refs/heads/main"
+    if not ref_is_main:
+        reasons.append("ENVIRONMENT_PREFLIGHT_NOT_ON_MAIN")
+    name_ok = environment.get("name") == environment_name
+    if not name_ok:
+        reasons.append("ENVIRONMENT_NAME_MISMATCH")
+
+    reviewer_rules = [rule for rule in environment.get("protection_rules", [])
+                      if rule.get("type") == "required_reviewers"]
+    reviewers = reviewer_rules[0].get("reviewers", []) if len(reviewer_rules) == 1 else []
+    def valid_reviewer(row):
+        reviewer = row.get("reviewer") or {}
+        kind = row.get("type")
+        has_id = isinstance(reviewer.get("id"), int) and reviewer["id"] > 0
+        has_name = bool(reviewer.get("login") or reviewer.get("slug"))
+        return kind in ("User", "Team") and (has_id or has_name)
+    reviewers_ok = 1 <= len(reviewers) <= 6 and all(valid_reviewer(row) for row in reviewers)
+    if not reviewers_ok:
+        reasons.append("ENVIRONMENT_REQUIRED_REVIEWERS_INVALID")
+    self_review_ok = (len(reviewer_rules) == 1 and
+                      reviewer_rules[0].get("prevent_self_review") is True)
+    if not self_review_ok:
+        reasons.append("ENVIRONMENT_PREVENT_SELF_REVIEW_NOT_ENABLED")
+
+    branch_policy = environment.get("deployment_branch_policy")
+    custom_only = (isinstance(branch_policy, dict) and
+                   branch_policy.get("custom_branch_policies") is True and
+                   branch_policy.get("protected_branches") is False)
+    entries = branch_policies.get("branch_policies", [])
+    total = branch_policies.get("total_count", len(entries))
+    main_only = (custom_only and total == 1 and len(entries) == 1 and
+                 entries[0].get("name") == "main" and entries[0].get("type") != "tag")
+    if not main_only:
+        reasons.append("ENVIRONMENT_BRANCH_POLICY_NOT_MAIN_ONLY")
+
+    admin_bypass = environment.get("can_admins_bypass")
+    if admin_bypass is not False:
+        reasons.append("ENVIRONMENT_ADMIN_BYPASS_ENABLED" if admin_bypass is True
+                       else "ENVIRONMENT_ADMIN_BYPASS_UNKNOWN")
+
+    return {
+        "status": "PASS" if not reasons else "BLOCKED",
+        "reason": ";".join(reasons) if reasons else None,
+        "workflow_main_ref": ref_is_main,
+        "repository_identity_match": identity_ok,
+        "environment_name_matches": name_ok,
+        "reviewer_gate_configured": reviewers_ok,
+        "environment_required_reviewers": len(reviewers),
+        "prevent_self_review": self_review_ok,
+        "deployment_branch_main_only": main_only,
+        "admin_bypass_disabled": admin_bypass is False,
+        "approval_for_current_run": "NOT_INFERRED",
+        "approval_environment_variable_ignored": True,
+    }
+
+
+def run_environment_gate(*, env=None, github=None) -> dict:
+    """Read GitHub Environment controls and names only; never reads secret values."""
+    env = os.environ if env is None else env
+    repository = env.get("GITHUB_REPOSITORY", "")
+    token = env.get("REPORT_PREFLIGHT_GITHUB_TOKEN", "")
+    if github is None:
+        try:
+            github = GitHubReadOnlyProbe(repository, token)
+        except PreflightBlocked as exc:
+            return {"mode": "GITHUB_ENVIRONMENT_GATE", "status": "BLOCKED",
+                    "reason": str(exc), "secrets_emitted": False}
+    try:
+        repo = github.get("")
+        name = env.get("REPORT_ISSUANCE_ENVIRONMENT", "report-publication")
+        environment = github.get("/environments/" + name)
+        policies = github.get("/environments/" + name + "/deployment-branch-policies?per_page=100")
+        secret_data = github.get("/environments/" + name + "/secrets?per_page=100")
+        protection = _environment_protection_result(
+            repository=repo, environment=environment, branch_policies=policies,
+            expected_repository=repository, current_ref=env.get("GITHUB_REF", ""),
+            environment_name=name)
+        secret_names = sorted(row["name"] for row in secret_data.get("secrets", [])
+                              if isinstance(row, dict) and isinstance(row.get("name"), str))
+        inventory_complete = secret_data.get("total_count", len(secret_names)) == len(secret_names)
+        return {"mode": "GITHUB_ENVIRONMENT_GATE", "status": protection["status"],
+                "protection": protection,
+                "environment_inventory": {
+                    "status": "PASS" if inventory_complete else "BLOCKED",
+                    "secret_names": secret_names, "variable_names": "NOT_READ",
+                    "reason": "GitHub variable-list API returns values; values were not requested.",
+                    "values_read_or_emitted": False},
+                "secrets_emitted": False}
+    except (PreflightBlocked, KeyError, TypeError, AttributeError) as exc:
+        return {"mode": "GITHUB_ENVIRONMENT_GATE", "status": "BLOCKED",
+                "reason": str(exc), "secrets_emitted": False}
+
+
 class DefaultGoogleReadOnlyProbe:
     def __init__(self):
         import google.auth
@@ -355,38 +456,47 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None,
             repo = github.get("")
             environment = github.get("/environments/report-publication")
             workflow = github.get("/actions/workflows/deploy-pages.yml")
-            rules = environment.get("protection_rules", [])
-            reviewers = [x for rule in rules if rule.get("type") == "required_reviewers"
-                         for x in rule.get("reviewers", [])]
-            identity_ok = repo.get("full_name", "").lower() == env.get("GITHUB_REPOSITORY", "").lower()
+            branch_policies = github.get(
+                "/environments/report-publication/deployment-branch-policies?per_page=100")
+            secret_data = github.get("/environments/report-publication/secrets?per_page=100")
+            protection = _environment_protection_result(
+                repository=repo, environment=environment, branch_policies=branch_policies,
+                expected_repository=env.get("GITHUB_REPOSITORY", ""),
+                current_ref=env.get("GITHUB_REF", ""),
+                environment_name="report-publication")
+            if not protected_context:
+                protection["status"] = "BLOCKED"
+                protection["reason"] = ";".join(filter(None, [protection.get("reason"),
+                    "PREFLIGHT_NOT_RUNNING_IN_PROTECTED_MAIN_CONTEXT"]))
+            identity_ok = protection["repository_identity_match"]
             baseline_ok = (identity_ok and repo.get("permissions", {}).get("push") is True
-                           and workflow.get("state") == "active" and bool(reviewers))
-            # GitHub's read APIs do not expose the fine-grained token's exact
-            # contents:write grant. Repository push access is evidence about
-            # the principal, not proof about this credential's token scope.
-            scope_attested = env.get("REPORT_ISSUANCE_CONTENTS_WRITE_VERIFIED") == "true"
-            protected_ready = protected_context and bool(reviewers)
-            result["checks"]["protected_execution"] = {
-                "status": "PASS" if protected_ready else "BLOCKED",
-                "workflow_main_ref": env.get("GITHUB_REF") == "refs/heads/main",
-                "environment_name_matches": env.get("REPORT_ISSUANCE_ENVIRONMENT") == "report-publication",
-                "reviewer_gate_configured": bool(reviewers),
-                "environment_required_reviewers": len(reviewers),
-                "approval_for_current_run": "NOT_INFERRED",
-                "approval_environment_variable_ignored": True,
-                "write_gate_present": env.get("REPORT_ISSUANCE_WRITE_ENABLED") == "true",
-            }
-            result["checks"]["github"] = {"status": ("PASS" if baseline_ok and scope_attested else
-                                                              "UNKNOWN" if baseline_ok else "BLOCKED"),
+                           and workflow.get("state") == "active"
+                           and protection["status"] == "PASS")
+            result["checks"]["protected_execution"] = protection
+            secret_names = sorted(row["name"] for row in secret_data.get("secrets", [])
+                                  if isinstance(row, dict) and isinstance(row.get("name"), str))
+            inventory_complete = secret_data.get("total_count", len(secret_names)) == len(secret_names)
+            result["checks"]["environment_inventory"] = {
+                "status": "UNKNOWN" if inventory_complete else "BLOCKED",
+                "secret_names": secret_names, "variable_names": "NOT_READ",
+                "reason": "GitHub variable-list API returns values; values were not requested.",
+                "values_read_or_emitted": False}
+            # Read-only API access cannot prove a write scope. Ignore self-attestation.
+            result["checks"]["github"] = {"status": "UNKNOWN" if baseline_ok else "BLOCKED",
                 "repository_identity_match": identity_ok,
                 "repository_push_access": repo.get("permissions", {}).get("push") is True,
-                "credential_contents_write_permission": "ADMIN_ATTESTED" if scope_attested else "UNKNOWN",
-                "contents_write_admin_attestation_present": scope_attested,
+                "credential_contents_write_permission": "UNKNOWN",
+                "contents_write_admin_attestation_present": False,
                 "actions_workflow_read": workflow.get("state") == "active",
                 "pages_workflow_active": workflow.get("state") == "active",
-                "environment_required_reviewers": len(reviewers)}
+                "environment_protection": protection["status"],
+                "environment_required_reviewers": protection["environment_required_reviewers"]}
         except (PreflightBlocked, KeyError, TypeError, AttributeError) as exc:
             result["checks"]["github"] = {"status": "BLOCKED", "reason": str(exc)}
+            result["checks"]["protected_execution"] = {
+                "status": "BLOCKED", "reason": str(exc),
+                "approval_for_current_run": "NOT_INFERRED",
+                "approval_environment_variable_ignored": True}
     if google_probe is None:
         try:
             google_probe = DefaultGoogleReadOnlyProbe()
@@ -476,13 +586,22 @@ def run_preflight(*, env=None, github=None, google_probe=None, dom_runtime=None,
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--mode", choices=("config", "authenticated-readonly"),
+    parser.add_argument("--mode", choices=("config", "environment-gate", "authenticated-readonly"),
                         default="config")
     args = parser.parse_args(argv)
     if args.mode == "config":
         report = run_configuration_diagnostic()
         print(json.dumps(report, ensure_ascii=False, sort_keys=True))
         # Configuration diagnostics are informational and can never say READY.
+        return 0
+    if args.mode == "environment-gate":
+        report = run_environment_gate()
+        print(json.dumps(report, ensure_ascii=False, sort_keys=True))
+        output_path = os.environ.get("GITHUB_OUTPUT")
+        if output_path:
+            with open(output_path, "a", encoding="utf-8") as output:
+                output.write("ready=" + ("true" if report["status"] == "PASS" else "false") + "\n")
+        # A blocked gate is a successful diagnostic job with auth explicitly skipped.
         return 0
     # The protected Environment job provides separate read-only GitHub/Google identities.
     report = run_preflight()

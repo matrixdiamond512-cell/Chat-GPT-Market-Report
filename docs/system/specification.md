@@ -213,3 +213,12 @@ Git上のApps Scriptは08:00枠を含むDocs→GitHub発行コード/08:30付近
 - `report-publication` was absent in the read-only GitHub Environment inspection; earlier wording suggesting it existed was inaccurate.
 - Before the job-level Environment is referenced or OIDC is requested, an unauthenticated read-only gate now checks the GitHub API for an existing Environment with required reviewers. An absent, unprotected, or unreadable Environment blocks the authenticated job.
 - Exact-head Actions (head `e8e96bf1acce7bb101f0ff9a9c9ac0b057f3371a`) passed, including preflight tests 21/21: [issuance 42032888516](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42032888516). No production preflight or write ran. Admin configuration is still required.
+
+
+
+## 2026-11-06 — MR-ENV-WIF-ISSUANCE-PREFLIGHT-20261106-01
+
+`environment-gate` はmain上のread-only jobとして動作し、GitHub tokenは`actions:read`・`contents:read`に限定する。Google認証/OIDC要求より前にEnvironment API、deployment-branch-policies API、secret names APIを読み、reviewer対象の有効性、`prevent_self_review=true`、厳密な単一`main` policy、APIが返す場合の`can_admins_bypass=false`を検証する。必要条件の欠落、未知値、403/404、API例外はready=falseにし、認証jobをSkippedとする。
+- GitHub Environment variable一覧APIは値も返すため照会しない。secret一覧は名前のみを保持する。実行時承認はEnvironment自身の保護ルールによるもので、preflightは承認済みと推定しない。
+- `strict-current-report` は25分のjob timeoutを維持し、headless shellのみを導入してOS依存パッケージの再取得を避ける。Hosted CIでブラウザー起動を含むテストが成功することを受入条件とする。
+- 変更後のCI/Actions最終結果は固定SHAの実行を参照し、本番Environment/WIF/IAM/発行の成功へ外挿しない。

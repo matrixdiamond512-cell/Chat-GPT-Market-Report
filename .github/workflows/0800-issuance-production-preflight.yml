@@ -76,43 +76,23 @@ jobs:
     outputs:
       ready: ${{ steps.inspect.outputs.ready }}
     steps:
-      - name: Require an existing reviewer-protected Environment before auth
-        id: inspect
-        uses: actions/github-script@v7
-        env:
-          ENVIRONMENT_NAME: report-publication
+      - uses: actions/checkout@v4
         with:
-          script: |
-            const name = process.env.ENVIRONMENT_NAME;
-            try {
-              const { data } = await github.rest.repos.getEnvironment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                environment_name: name
-              });
-              const reviewers = (data.protection_rules || [])
-                .filter(rule => rule.type === 'required_reviewers')
-                .flatMap(rule => rule.reviewers || []);
-              const ready = reviewers.length > 0;
-              core.setOutput('ready', ready ? 'true' : 'false');
-              await core.summary.addHeading('Publication Environment gate')
-                .addTable([
-                  [{data:'Environment',header:true},{data:'Result',header:true}],
-                  [name, ready ? 'reviewers configured' : 'required reviewers missing']
-                ]).write();
-            } catch (error) {
-              const status = error.status || error.response?.status;
-              core.setOutput('ready', 'false');
-              if (status === 404) {
-                core.notice(`Environment ${name} is absent; authenticated preflight will be skipped.`);
-                await core.summary.addHeading('Publication Environment gate')
-                  .addText(`Environment ${name} is absent; no authentication job will start.`).write();
-              } else {
-                core.warning(`Unable to verify Environment protection (HTTP ${status || 'unknown'}); authentication is blocked.`);
-                await core.summary.addHeading('Publication Environment gate')
-                  .addText('Environment protection could not be verified; no authentication job will start.').write();
-              }
-            }
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install read-only GitHub preflight dependency
+        run: python -m pip install --disable-pip-version-check -q requests
+      - name: Verify Environment protection before auth
+        id: inspect
+        env:
+          GITHUB_ACTIONS: "true"
+          GITHUB_REF: ${{ github.ref }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          REPORT_PREFLIGHT_GITHUB_TOKEN: ${{ github.token }}
+          REPORT_ISSUANCE_ENVIRONMENT: report-publication
+        run: python -m scripts.reporting.issuance_preflight --mode environment-gate
 
   authenticated-readonly:
     needs: [config-diagnostic, environment-protection]
@@ -148,7 +128,6 @@ jobs:
           REPORT_ISSUANCE_WIF_PROVIDER: ${{ vars.REPORT_ISSUANCE_WIF_PROVIDER }}
           REPORT_ISSUANCE_READONLY_SERVICE_ACCOUNT: ${{ vars.REPORT_ISSUANCE_READONLY_SERVICE_ACCOUNT }}
           REPORT_ISSUANCE_ENVIRONMENT: report-publication
-          REPORT_ISSUANCE_CONTENTS_WRITE_VERIFIED: ${{ vars.REPORT_ISSUANCE_CONTENTS_WRITE_VERIFIED }}
           REPORT_PAGES_BASE_URL: ${{ vars.REPORT_PAGES_BASE_URL }}
           REPORT_EVIDENCE_PROJECT_ID: ${{ vars.REPORT_EVIDENCE_PROJECT_ID }}
           REPORT_EVIDENCE_BUCKET: ${{ vars.REPORT_EVIDENCE_BUCKET }}

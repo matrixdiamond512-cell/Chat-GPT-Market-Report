@@ -228,3 +228,12 @@ Git上のApps Scriptは08:00枠を含むDocs→GitHub発行コード/08:30付近
 - Read-only inspection found the GitHub Environment `report-publication` absent (the environment list contained only `apps-script-production` and `github-pages`). Prior wording that implied it already existed is corrected by this record.
 - The authenticated preflight is blocked unless a separate unauthenticated GitHub API job confirms that `report-publication` exists and has at least one required reviewer. Missing/unreadable/unprotected Environment causes the WIF job to be skipped before authentication.
 - Code head `e8e96bf1acce7bb101f0ff9a9c9ac0b057f3371a`; exact-head issuance contract [42032888516](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42032888516) passed (preflight suite 21 tests). This is CI evidence only. Environment configuration and production authenticated preflight remain NOT_RUN / NOT_READY. Admin must create and protect the Environment before a future preflight.
+
+
+
+## 2026-11-06 — MR-ENV-WIF-ISSUANCE-PREFLIGHT-20261106-01
+
+- 認証付きpreflightの前段ゲートは、Environmentの実在とRequired reviewersの有効な対象、Prevent self-review有効、Environment管理者バイパス無効、deployment branch policyが`main`のみであることを確認する。GitHub APIの失敗・欠落・未対応フィールドはBLOCKED/UNKNOWNとし、認証を開始しない。
+- 本番のEnvironment、WIF/IAM、Docs/GCS/canonical/receipt/Pages権限が未確認の場合はNOT_READYを維持する。自己申告変数やEnvironment設定値だけで実承認・権限をPASSにしない。
+- GitHub variable-list APIが値を返すためpreflightでは呼び出さず、Environment variableの全一覧は未確認とする。必要な設定値は保護付きread-only preflight内で不足の有無だけを表示し、値をログへ出さない。
+- CI変更と隔離テストは本番E2Eの証拠ではない。Google Docs固定ID同期、本番Environment/WIF/IAMと正式発行は未実施。
