@@ -13,8 +13,8 @@ from unittest.mock import patch
 from contextlib import redirect_stdout
 
 from scripts.reporting.issuance_preflight import (run_preflight, run_configuration_diagnostic,
-    run_environment_gate, _environment_protection_result, _verify_g2_producer_identity,
-    PreflightBlocked)
+    run_environment_gate, main as preflight_main, _environment_protection_result,
+    _verify_g2_producer_identity, PreflightBlocked)
 from scripts.run_0800_issuance import (load_bundle, main as issuance_main, require_08_issuance_owner)
 from scripts.reporting.issuance_pipeline import IssuanceBlocked
 
@@ -277,6 +277,31 @@ class IssuancePreflightTests(unittest.TestCase):
                 environment_name="report-publication")
             self.assertEqual(result["status"], "BLOCKED")
             self.assertIn("ENVIRONMENT_BRANCH_POLICY_NOT_MAIN_ONLY", result["reason"])
+
+    def test_environment_gate_cli_writes_only_fail_closed_ready_output(self):
+        with tempfile.TemporaryDirectory() as folder:
+            output_path = Path(folder) / "github-output.txt"
+            env = {"GITHUB_REPOSITORY": "acme/report", "GITHUB_REF": "refs/heads/main",
+                   "REPORT_PREFLIGHT_GITHUB_TOKEN": "read-only-token",
+                   "GITHUB_OUTPUT": str(output_path)}
+            output = io.StringIO()
+            with patch.dict(os.environ, env, clear=True), \
+                 patch("scripts.reporting.issuance_preflight.GitHubReadOnlyProbe",
+                       return_value=FakeGitHub()), redirect_stdout(output):
+                code = preflight_main(["--mode", "environment-gate"])
+            self.assertEqual(code, 0)
+            self.assertEqual(output_path.read_text(encoding="utf-8"), "ready=true\\n")
+            self.assertNotIn("DO_NOT_EMIT", output.getvalue())
+
+            blocked = FakeGitHub(environment={"name": "report-publication",
+                "can_admins_bypass": True, "protection_rules": [],
+                "deployment_branch_policy": {"protected_branches": False,
+                                             "custom_branch_policies": True}})
+            with patch.dict(os.environ, env, clear=True), \
+                 patch("scripts.reporting.issuance_preflight.GitHubReadOnlyProbe",
+                       return_value=blocked), redirect_stdout(io.StringIO()):
+                preflight_main(["--mode", "environment-gate"])
+            self.assertEqual(output_path.read_text(encoding="utf-8"), "ready=true\\nready=false\\n")
 
     def test_environment_api_failure_and_non_main_ref_fail_closed(self):
         error = PreflightBlocked("GITHUB_PREFLIGHT_GET_FAILED:403")

@@ -126,7 +126,10 @@ def run_environment_gate(*, env=None, github=None) -> dict:
         secret_names = sorted(row["name"] for row in secret_data.get("secrets", [])
                               if isinstance(row, dict) and isinstance(row.get("name"), str))
         inventory_complete = secret_data.get("total_count", len(secret_names)) == len(secret_names)
-        return {"mode": "GITHUB_ENVIRONMENT_GATE", "status": protection["status"],
+        gate_status = "PASS" if protection["status"] == "PASS" and inventory_complete else "BLOCKED"
+        inventory_reason = "" if inventory_complete else "ENVIRONMENT_SECRET_INVENTORY_INCOMPLETE"
+        return {"mode": "GITHUB_ENVIRONMENT_GATE", "status": gate_status,
+                "reason": inventory_reason or protection.get("reason"),
                 "protection": protection,
                 "environment_inventory": {
                     "status": "PASS" if inventory_complete else "BLOCKED",
