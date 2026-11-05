@@ -328,9 +328,17 @@ Main `ba8d09a1b1170b56b42c8f33c125a19f120fb0dd` was synchronized in merge commit
 
 | Claim | Evidence | Level | Result | Limit / run | Timestamp |
 |---|---|---:|---|---|---|
-| 08:00 only is routed through WIF and canonical GCS; 12/16/21 retain local legacy route | PR workflow and persistence adapter diff | E0 | NOT_RUN | Await exact-head CI | 2026-11-05 JST |
-| Other slots are not blocked by missing GCS configuration and retain cutoff-only execution guard | New isolated contract tests | E1 | NOT_RUN | Await hosted Python 3.12 workflow | 2026-11-05 JST |
-| GCS create-only, identical retry, conflict rejection, and partial-success reconciliation | Existing + new fake-client tests | E1/E2 | NOT_RUN | Synthetic adapter only; no production calls | 2026-11-05 JST |
-| GitHub Evidence mirrors are immutable | create-only file regression test | E1 | NOT_RUN | Local fixture only | 2026-11-05 JST |
+| 08:00 only is routed through WIF and canonical GCS; 12/16/21 retain local legacy route | PR workflow and persistence adapter diff | E0 | PASS | Code/static inspection only; runtime Environment credentials absent | 2026-11-05 JST |
+| Other slots are not blocked by missing GCS configuration and retain cutoff-only execution guard | Hosted Python 3.12 tests, 23 Evidence tests | E2 | PASS | Synthetic historical fixtures; no live scheduled run | 2026-11-05 JST |
+| GCS create-only, identical retry, conflict rejection, and partial-success reconciliation | Hosted Python 3.12 tests, fake GCS adapter | E2 | PASS | Synthetic adapter only; no production calls | 2026-11-05 JST |
+| GitHub Evidence mirrors are immutable | Hosted create-only file regression test | E2 | PASS | Local fixture only | 2026-11-05 JST |
 | WIF/ADC configuration is live and authorized for target bucket | No runtime credentials or cloud calls used | E5 | NOT_RUN | Admin configuration and protected runtime required | 2026-11-05 JST |
 
+
+
+### Verification update — code head bc9d7cd7fca9aa52c1e6ffe7269788204d2b49d1
+
+- Python 3.12 hosted CI: issuance contract suites PASS (18+40+16+18+9+17+23 = 141 tests); the 23-test Evidence suite includes 08:00 missing-GCS BLOCKED, non-08:00 cutoff-only behavior, immutable same-report conflict, late-run/date mismatch, GCS create-only/idempotent retry/conflict, and local-mirror retry/recovery cases.
+- The initial run on 4cfad54 failed 3 assertions in the new/affected Evidence suite. Logs showed a now=None keyword-shape expectation mismatch in the mocked 08:00 guard and a historical non-08:00 fixture whose post-write live-clock recheck correctly rejected it. The helper now preserves the no-argument live call shape; the historical-fixture test isolates the clock guard while asserting immutable conflict behavior. No gate was weakened.
+- Exact code-head Actions: issuance [41946722018](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946722018), frozen cutoff [41946722116](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946722116), delivery health [41946721817](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946721817), UI/DOM [41946722003](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946722003), Apps Script validation [41946721888](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946721888), sync recovery [41946721981](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946721981), dashboard health [41946722110](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946722110), dashboard eligibility [41946722083](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946722083), historical recovery [41946721805](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946721805), saved-source QA [41946721978](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946721978): all SUCCESS.
+- Evidence level: E2 hosted isolated tests and workflow regression. GCS used a fake adapter in tests; real OIDC/WIF trust, IAM, GCS object/generation, production schedule and 08:00 issuance are NOT_RUN. PR #188 remains Draft/open/unmerged; no main, Docs, receipt, Pages, Secrets or schedule writes occurred.
