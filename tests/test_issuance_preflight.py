@@ -290,7 +290,7 @@ class IssuancePreflightTests(unittest.TestCase):
                        return_value=FakeGitHub()), redirect_stdout(output):
                 code = preflight_main(["--mode", "environment-gate"])
             self.assertEqual(code, 0)
-            self.assertEqual(output_path.read_text(encoding="utf-8"), "ready=true\\n")
+            self.assertEqual(output_path.read_text(encoding="utf-8"), "ready=true\n")
             self.assertNotIn("DO_NOT_EMIT", output.getvalue())
 
             blocked = FakeGitHub(environment={"name": "report-publication",
@@ -301,7 +301,7 @@ class IssuancePreflightTests(unittest.TestCase):
                  patch("scripts.reporting.issuance_preflight.GitHubReadOnlyProbe",
                        return_value=blocked), redirect_stdout(io.StringIO()):
                 preflight_main(["--mode", "environment-gate"])
-            self.assertEqual(output_path.read_text(encoding="utf-8"), "ready=true\\nready=false\\n")
+            self.assertEqual(output_path.read_text(encoding="utf-8"), "ready=true\nready=false\n")
 
     def test_environment_api_failure_and_non_main_ref_fail_closed(self):
         error = PreflightBlocked("GITHUB_PREFLIGHT_GET_FAILED:403")
