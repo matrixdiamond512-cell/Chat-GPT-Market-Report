@@ -268,5 +268,43 @@ jobs:
           project_id: market-report-test-only
           create_credentials_file: true
           export_environment_variables: true
-      - name: Read one existing TEST ONLY object at its pinned generation
+      - name: Report allowlisted GitHub OIDC claims (diagnostic only)
+        env:
+          EXPECTED_ISS: https://token.actions.githubusercontent.com
+          EXPECTED_SUB: repo:matrixdiamond512-cell/Chat-GPT-Market-Report:ref:refs/heads/codex/0800-main-issuance-e2e-20261029
+          EXPECTED_REPOSITORY_ID: '1314063427'
+          EXPECTED_REF: refs/heads/codex/0800-main-issuance-e2e-20261029
+          EXPECTED_WORKFLOW_REF: matrixdiamond512-cell/Chat-GPT-Market-Report/.github/workflows/freeze-report-slot-evidence.yml@refs/heads/codex/0800-main-issuance-e2e-20261029
+        run: |
+          python - <<'PY'
+          import base64, json, os, sys
+          from urllib.parse import urlencode
+          from urllib.request import Request, urlopen
+          try:
+              with open(os.environ['GOOGLE_GHA_CREDS_PATH'], encoding='utf-8') as f:
+                  audience = json.load(f).get('audience')
+              if not audience:
+                  raise ValueError('missing audience')
+              separator = '&' if '?' in os.environ['ACTIONS_ID_TOKEN_REQUEST_URL'] else '?'
+              url = os.environ['ACTIONS_ID_TOKEN_REQUEST_URL'] + separator + urlencode({'audience': audience})
+              req = Request(url, headers={'Authorization': 'Bearer ' + os.environ['ACTIONS_ID_TOKEN_REQUEST_TOKEN']})
+              with urlopen(req, timeout=20) as response:
+                  token = json.load(response)['value']
+              payload = token.split('.')[1]
+              payload += '=' * (-len(payload) % 4)
+              claims = json.loads(base64.urlsafe_b64decode(payload.encode('ascii')))
+          except Exception as exc:
+              print('GITHUB_OIDC_DIAGNOSTIC=ERROR')
+              print('GITHUB_OIDC_ERROR_TYPE=' + type(exc).__name__)
+              sys.exit(1)
+          for name in ('iss', 'aud', 'sub', 'repository_id', 'ref', 'workflow_ref'):
+              print('GITHUB_OIDC_' + name.upper() + '=' + json.dumps(claims.get(name), ensure_ascii=True, sort_keys=True))
+          expected = {'iss': os.environ['EXPECTED_ISS'], 'sub': os.environ['EXPECTED_SUB'], 'repository_id': os.environ['EXPECTED_REPOSITORY_ID'], 'ref': os.environ['EXPECTED_REF'], 'workflow_ref': os.environ['EXPECTED_WORKFLOW_REF']}
+          mismatches = [name for name, value in expected.items() if str(claims.get(name)) != value]
+          aud = claims.get('aud')
+          if not (aud == audience or isinstance(aud, list) and audience in aud):
+              mismatches.append('aud')
+          print('GITHUB_OIDC_EXPECTED_CLAIMS=' + ('FAIL' if mismatches else 'PASS'))
+          print('GITHUB_OIDC_MISMATCH_FIELDS=' + (','.join(mismatches) if mismatches else 'NONE'))
+          PY      - name: Read one existing TEST ONLY object at its pinned generation
         run: python -m scripts.reporting.gcs_wif_readonly
