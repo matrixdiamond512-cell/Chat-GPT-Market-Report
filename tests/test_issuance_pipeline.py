@@ -258,8 +258,11 @@ class IssuancePipelineContractTests(unittest.TestCase):
                   "markets": {key: dict(value) for key, value in self.market_payload["markets"].items()}}
         for market in source["markets"].values():
             market["asOf"] = "2026-10-16T07:29:00+09:00"
-        stale = build_slot_evidence("2026-10-16", "08:00", source,
-                                    json.dumps(source, sort_keys=True).encode(), max_age_minutes=60)
+        stale = build_slot_evidence(
+            "2026-10-16", "08:00", source, json.dumps(source, sort_keys=True).encode(),
+            max_age_minutes=60,
+            evidence_created_at=datetime(2026, 10, 16, 7, 50, tzinfo=timezone(timedelta(hours=9))),
+        )
         raw = canonical_bytes(stale)
         digest = hashlib.sha256(raw).hexdigest()
         self.bundle["evidence_object"].update({"bytes": raw.decode(), "object_sha256": digest,

@@ -355,7 +355,9 @@ class ReportSlotEvidenceTests(unittest.TestCase):
             expected, "test-evidence", "pre-draft-evidence/2026-10-16_08-00-r1.json",
             "2026-10-16", "08:00", client=client, now=self.run_at,
         )
-        evidence_path.write_bytes(b"conflicting local content")
+        changed = json.loads(expected.decode("utf-8"))
+        changed["conflictMarker"] = "local-differs-from-canonical"
+        evidence_path.write_bytes(canonical_bytes(changed))
         with self.assertRaisesRegex(FileExistsError, "BLOCKED_GCS_EVIDENCE_CONFLICT"):
             reconcile_gcs_slot_evidence(
                 "2026-10-16", "08:00", self.output, "test-evidence", "pre-draft-evidence",
