@@ -197,6 +197,22 @@ class IssuancePreflightTests(unittest.TestCase):
         self.assertEqual(result["checks"]["google"]["status"], "BLOCKED")
         self.assertFalse(result["checks"]["google"]["expected_principal_match"])
 
+
+    def test_authenticated_job_is_gated_before_environment_and_wif_authentication(self):
+        workflow = Path(".github/workflows/0800-issuance-production-preflight.yml").read_text(encoding="utf-8")
+        gate = workflow.split("  environment-protection:", 1)[1].split("  authenticated-readonly:", 1)[0]
+        authenticated = workflow.split("  authenticated-readonly:", 1)[1]
+        self.assertNotIn("environment:", gate)
+        self.assertNotIn("id-token: write", gate)
+        self.assertIn("repos.getEnvironment", gate)
+        self.assertIn("required_reviewers", gate)
+        self.assertIn("core.setOutput('ready', 'false')", gate)
+        self.assertIn("needs: [config-diagnostic, environment-protection]", authenticated)
+        self.assertIn("needs.environment-protection.outputs.ready == 'true'", authenticated)
+        self.assertLess(workflow.index("  environment-protection:"), workflow.index("  authenticated-readonly:"))
+        self.assertIn("environment: report-publication", authenticated)
+        self.assertIn("google-github-actions/auth@v3", authenticated)
+
     def test_protected_preflight_uses_wif_without_service_account_key(self):
         from pathlib import Path
 

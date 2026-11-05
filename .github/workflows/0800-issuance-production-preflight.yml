@@ -65,9 +65,58 @@ jobs:
           REPORT_ISSUANCE_G2_BUNDLE_GENERATION: ${{ inputs.g2_bundle_generation }}
         run: python -m scripts.reporting.issuance_preflight --mode config
 
-  authenticated-readonly:
+  environment-protection:
     needs: config-diagnostic
     if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      ready: ${{ steps.inspect.outputs.ready }}
+    steps:
+      - name: Require an existing reviewer-protected Environment before auth
+        id: inspect
+        uses: actions/github-script@v7
+        env:
+          ENVIRONMENT_NAME: report-publication
+        with:
+          script: |
+            const name = process.env.ENVIRONMENT_NAME;
+            try {
+              const { data } = await github.rest.repos.getEnvironment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                environment_name: name
+              });
+              const reviewers = (data.protection_rules || [])
+                .filter(rule => rule.type === 'required_reviewers')
+                .flatMap(rule => rule.reviewers || []);
+              const ready = reviewers.length > 0;
+              core.setOutput('ready', ready ? 'true' : 'false');
+              await core.summary.addHeading('Publication Environment gate')
+                .addTable([
+                  [{data:'Environment',header:true},{data:'Result',header:true}],
+                  [name, ready ? 'reviewers configured' : 'required reviewers missing']
+                ]).write();
+            } catch (error) {
+              const status = error.status || error.response?.status;
+              core.setOutput('ready', 'false');
+              if (status === 404) {
+                core.notice(`Environment ${name} is absent; authenticated preflight will be skipped.`);
+                await core.summary.addHeading('Publication Environment gate')
+                  .addText(`Environment ${name} is absent; no authentication job will start.`).write();
+              } else {
+                core.warning(`Unable to verify Environment protection (HTTP ${status || 'unknown'}); authentication is blocked.`);
+                await core.summary.addHeading('Publication Environment gate')
+                  .addText('Environment protection could not be verified; no authentication job will start.').write();
+              }
+            }
+
+  authenticated-readonly:
+    needs: [config-diagnostic, environment-protection]
+    if: github.ref == 'refs/heads/main' && needs.environment-protection.outputs.ready == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: report-publication
