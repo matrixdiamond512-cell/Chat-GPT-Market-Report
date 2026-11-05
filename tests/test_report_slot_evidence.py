@@ -85,7 +85,8 @@ class FakeGcsClient:
     def bucket(self, name):
         return FakeGcsBucket(self.store)
 
-\nclass ReportSlotEvidenceTests(unittest.TestCase):
+
+class ReportSlotEvidenceTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
