@@ -39,7 +39,8 @@ def fixture_source():
     }
     evidence = build_slot_evidence(
         "2026-10-16", "08:00", market_payload,
-        json.dumps(market_payload, sort_keys=True).encode("utf-8"))
+        json.dumps(market_payload, sort_keys=True).encode("utf-8"),
+        evidence_created_at=datetime.fromisoformat(generated_at))
     evidence_bytes = canonical_bytes(evidence)
     phrases = [
         "Main condition: above 100.", "Main development: rally continues.",
