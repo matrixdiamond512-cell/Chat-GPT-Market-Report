@@ -387,6 +387,9 @@ function renderDocument(report) {
   $("app").className = "report sop-report-applied";
   const app = $("app");
   app.innerHTML = `<header class="report-head"><h1 class="report-title">${esc(parsed.title || fallback)}</h1><div class="source-badge">reports.json正本</div></header>${renderInfographic(report)}<article class="report-body">${renderSupplementalChronology(report)}${renderPreface(parsed.preface)}${sections.map(s => { const market = isMarketSection(s.title); const title = market ? marketSectionTitle(report, s.title) : s.title; return `<section class="section sop-section" data-sop-title="${esc(title)}"><h2>${s.number ? `${esc(s.number)}．` : ""}${esc(title)}</h2>${market ? renderMarketTable(report, s.lines, s.title) : renderRichText(s.lines)}</section>`; }).join("")}</article>`;
+  app.dataset.reportId = String(report.report_id || "");
+  app.dataset.reportDate = String(report.date || "");
+  app.dataset.reportTime = String(report.time || "");
   if (isArchivedRecovery(report)) {
     $("reportStatus").textContent = "過去の記録を表示中｜保存本文・事後修復版（正式発行とは区別）";
     app.classList.add("report-archive-recovery");

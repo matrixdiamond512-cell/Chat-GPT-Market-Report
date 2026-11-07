@@ -61,9 +61,149 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
 
+
+## MRF-0800-20261029 — change record
+
+- Source: user request to restore the weekday 08:00 issuance path; TEST_ONLY Cloud Shell outputs for 2026-10-28; independent Draft PR based on main observed at e70751bc4a202c84f4322df8748a08775d836458.
+- Affected canonical files: docs/system/requirements.md, docs/system/specification.md, docs/system/operations.md; root AGENTS.md; project-control objective/evidence/decision/lesson records. Existing fixed Google Docs IDs were not written.
+- Code scope: proposed fail-closed G2/evidence/Docs/portal transaction adapter and offline contract workflow. No main, production, Drive, or Pages changes.
+- Verification: external TEST_ONLY GCS generation readbacks were operator-provided and all three passed; new code tests require hosted Actions. Docs API, production GCS, existing canonical importer, and public portal E2E are NOT_RUN.
+- Open outcomes: connect trusted G2/body freeze and independent scenario review; configure production identities/folders/buckets; implement approved invocation of the existing importer; run external E2E and live DOM verification. Do not report production recovery complete.
+
+
+- MRF-0800-20261029 continuation: corrected Drive filename compatibility with the existing source importer and added existing-body validation before Docs save. Inspection found the remaining handoff boundary: main importer consumes `data/report-evidence/` from its checkout; TEST_ONLY/production GCS evidence is not automatically provided. The existing manual-dispatch workflow applies canonical data to main and dispatches Pages. No dispatch or external write was run. Portal E2E remains NOT_RUN.
+
+
+
+## MRF-0800-20261029 change record — isolated importer staging
+
+Affected stable paths: `AGENTS.md`, `docs/system/requirements.md`, `docs/system/specification.md`, `docs/system/operations.md`, `scripts/reporting/importer_handoff.py`, `scripts/sync_reports_from_drive.py`, `tests/test_importer_handoff.py`, and `.github/workflows/0800-issuance-contract.yml`. Verification: hosted issuance, delivery-health, and frozen-cutoff Actions all PASS on code head `2642412`. Limits: only offline/mock contract verification; TEST_ONLY cloud handoff, Google Docs readback, canonical importer runtime, and public portal remain NOT_RUN. No Google Docs or main/Pages write occurred.
+
+
+## MRF-0800-BRIDGE-20261030-01 — isolated importer bridge contract test (2026-10-30 JST)
+Source: user-directed continuation of Issue #176 / Draft PR #188. Changed `tests/test_importer_handoff.py` only for code behavior; project evidence records updated in `docs/project-control/{OBJECTIVE_CARD,EVIDENCE_LEDGER,DECISIONS,LESSONS}.md` and `HANDOFF.md`. Test composes pinned-generation TEST_ONLY staging → existing importer `publication_evidence(..., require_issuance_binding=True)` → exact Docs revision/body/evidence/snapshot binding, including a tampered-body-hash hold. Formal requirements/specification/body-authoring/operations/Google Docs fixed-ID contents: NO_CHANGE (test-only verification; no delivery contract or production behavior changed). Local focused suites: 12/12 handoff and 12/12 issuance pipeline PASS; py_compile and diff check PASS. Exact-head hosted CI pending until push. Fake GCS/Google modules only; actual GCS, Docs, poll/apply, portal and schedule remain NOT_RUN.
+
+
+## MRF-0800-BRIDGE-20261030-01 — staging prerequisite recheck (2026-10-30 JST)
+
+Source: user-directed continuation of Issue #176 / Draft PR #188, current main `ec3e38b56397686c781e61de7efe97baeec48544`, code head `7a1b751923dc40c1cfae26e980f49bc10f7b82c9`. Affected paths: `docs/project-control/OBJECTIVE_CARD.md`, `docs/project-control/EVIDENCE_LEDGER.md`, and `HANDOFF.md`; this control record. Formal requirements, system specification, authoring manual, operations, fixed-ID Google Docs, code and production artifacts: NO_CHANGE. No credentials or report body copied into records.
+
+Verification: read-only local and Drive prerequisite recheck; importer `--apply` was NOT_RUN because no staging root/marker, no staged evidence, and no usable GCS authentication was observed; the existing 2026-10-28 Doc is labeled `閲覧用分析版` and does not provide a matching pre-save G2 body/hash or same-run receipt. Strict `appProperties` binding remains UNKNOWN. Evidence ledger and HANDOFF record the exact evidence and limits. No external writes, main change, or Pages deploy occurred.
+
+Unresolved: provision/authorize an isolated TEST_ONLY identity and exact-generation object; provide one coherent issuance-bound G2/Docs readback; stage into a separate marked checkout; run strict dry-run and only then `--apply` if every binding passes. PR #188 and PR #189 remain separate Drafts; their shared importer changes have not received combined validation.
+
+
+## 変更記録 MRF-INGESTION-20261030-01（2026-10-30 JST）
+対象: GitHub固定パス docs/system/requirements.md、specification.md、operations.md、本規程、scripts/sync_reports_from_drive.py、scripts/reporting/ingestion_outcome.py、tests/test_ingestion_outcome.py、.github/workflows/market-report-sync-recovery-ci.yml、project-control記録、HANDOFF.md。
+理由: Importerがarchive-onlyのsourceについても VERIFIED_REPORT_INGESTION_AND_PUBLICATION と出力し、取込と正式公開の状態を誤って一つに見せていたため。
+変更: stageごとの明示ログへ置換し、archive-only・Docs読戻しreceipt・未認識statusを独立表示。該当する回帰テストをCI対象に追加。
+制約: main merge、Google Drive正式文書更新、本番Docs/PNG/receipt/report変更、Pages deploy、schedule/Cloud設定変更なし。
+検証: Python 3.13.14でworkflow対象の6モジュール38 tests PASS、追加証拠回帰3モジュール24 tests PASS、py_compile PASS。test_report_contract.py / test_publication_evidence.pyはWindows環境にIANA tzdataがなくZoneInfoNotFoundErrorでBLOCKED。Hosted CIはPR作成後。E3–E5本番E2EはNOT_RUN。
+未解決: CI最終head確認、PR review/merge、Google Drive固定ID文書への同期判定、将来slotでのlive Docs/canonical/Pages acceptance。
+
+
+## MRF-INGESTION-20261030-01 evidence-link correction (CORRECT, 2026-10-30 JST)
+The four-slot HANDOFF matrix originally linked 2026-10-29 report JSON paths at main `52e99701f3bc71a77bdde31729e0f887f44a9135`, where those paths were absent. Repointed its read-only evidence links to current main `ec3e38b56397686c781e61de7efe97baeec48544`, where the four JSON files are present and each has `SOURCE_ARCHIVED` / `infographic_status=NOT_VERIFIED`; the four receipt paths are absent. No requirements, pipeline behavior, reports, receipts, Docs, PNGs, Pages, or external services were changed.
+
+
+## MRF-0800-IMPORTER-COMBO-20261030-01 — integrated importer validation record (2026-10-30 JST)
+
+Source: user-directed continuation of Issue #176 and Draft PRs #188/#189. Base/current main `ec3e38b56397686c781e61de7efe97baeec48544`; integrated PR #188 head at validation `d8394400dac2935f338d4d2ae9c068db689526eb`. Affected stable paths: `scripts/sync_reports_from_drive.py`, `scripts/reporting/ingestion_outcome.py`, `tests/test_ingestion_outcome.py`, `.github/workflows/market-report-sync-recovery-ci.yml`, and the previously added #188 issuance modules/tests/workflow; formal GitHub docs `requirements.md`, `specification.md`, `operations.md`; project records and `HANDOFF.md`. The body-authoring manual and fixed-ID Google Docs were not changed.
+
+Verification: exact-head hosted issuance, sync recovery, frozen-cutoff and delivery-health runs 40989666087 / 40989665981 / 40989666048 / 40989666122 all SUCCESS; logs confirm 12 + 12 importer contract tests and 4 ingestion-outcome tests. E2 fixture/integration evidence only. Unresolved: actual TEST_ONLY GCS staging, matching Docs issuance binding, isolated importer run, canonical receipt, Pages/public DOM and scheduled-slot acceptance remain BLOCKED / NOT_RUN. PR #189's changes are incorporated into PR #188 for combined review; both drafts remain open and unmerged. No production/Drive/main/Pages writes occurred.
+
+## MRF-0800-STAGING-BOUNDARY-20261030-01 — isolated TEST_ONLY staging safety review (2026-10-30 JST)
+
+Source: user-directed continuation and static review of PR #188 at code head b936d9ddeb56608ad2b04d0c01488f9852496aa6; base main ec3e38b56397686c781e61de7efe97baeec48544.
+Affected fixed paths: docs/system/requirements.md, docs/system/specification.md, docs/system/operations.md, scripts/reporting/importer_handoff.py, tests/test_importer_handoff.py, this control record, project-control records, and HANDOFF.md. Fixed-ID Google Docs were not edited.
+Change: require importer and staging roots to be disjoint in both directions; require a standalone `test` token in GCS project and bucket names plus the exact `test-only/` object prefix; verify resolved destination containment before and after directory creation. Add regression coverage for ancestor-root overlap, substring false positives, invalid object prefixes, and symlink escape.
+Verification: code/test head 4125df20409bcb0337677ba12ec2e87590b2d8db. Hosted issuance contract 40990908975, synchronization recovery 40990909005, frozen-cutoff 40990908966, and delivery-health 40990908970 all SUCCESS. Issuance logs show 12 issuance tests and 16 importer-handoff tests PASS. Evidence level E2, limited to hosted CI and fake adapters.
+Limits/unresolved: no independently authenticated GCS read, issuance-bound G2/Docs readback, staging invocation, importer --apply, canonical/receipt write, Pages deployment, or public DOM verification. PR #189 remains OPEN/Draft with duplicate importer changes. No production, Drive, main, or Pages write occurred.
+
+## DELIVERY-CLOSEOUT-20261101-01 — source parser and importer integration candidate (2026-11-01 JST)
+
+Affected GitHub fixed paths: `docs/system/requirements.md`, `docs/system/specification.md`, `docs/system/operations.md`, this control record, `scripts/report_source_contract.py`, `scripts/sync_latest_report_publication.py`, `scripts/sync_reports_from_drive.py`, the sync recovery workflow, and focused parser tests. The body-authoring manual requires no change because this candidate accepts existing source forms without changing generation rules.
+
+Candidate includes PR #188 issuance integration, PR #189 truthful importer status helper, and the minimal required parser behavior from PR #187. Implementation remains on a local branch until exact-head hosted CI/review and existing merge approvals. Fixed Drive Docs IDs (requirements `102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA`, specification `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI`, operations `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg`) were not written/read back; no external document update is claimed. The existing publication gates and reports/receipts/PNG were not changed.
+
+2026-11-01 update: PR #172's still-needed retrospective identity/timestamp checks and Pages workflow path trigger are also included in the candidate. Local recovery validation passed on all 31 archived slots. Exact-head hosted CI passed for the preceding code head; this final #172 patch remains pending exact-head hosted CI. Fixed-ID Drive Docs and GitHub main remain unmodified; the updated candidate stays OPEN/Draft pending review. Production GCS/Docs, schedule history, canonical receipts, Pages public DOM, notifications, and ten-workday observation remain NOT_RUN.
+
 ## 2026-11-04 改訂記録｜REPORT-ARCHIVE-CONTENT-AUDIT-20261104-01
 
 - 対象固定Google Docs：要件定義書 ID `102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA` revision `AHj4eMQ4aATq9nIBs5IK1h2cWbicH4qM-GESxHj18sKXWL4-c5GmT_q9X2r2vOVNcftJAB6xZ3vgBFtYzzDyKIzdm5xGSzKuZ_A4onsF8N4`; システム仕様書 ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` revision `AHj4eMQYKTJWnqv7gPwXTq7q8n1bivxpZXDDiFTAZde2kr7V2J0v-kAGpNt66qOmuLN5j-ZmhukWlmGnveT2PYbu7EmDnqiuxw6C9VCkJfE`; 運用マニュアル ID `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg` revision `AHj4eMQMINuad4YxThu6BGcWJWXF6c_lQWpcuWTU4mRmgqOM7Hwewj-QKQOdzOXfhD8xJuV_1p3JiwusxeRNelGjwJYhaM_gNPkdeooWkoc`; 文書管理台帳 ID `1F5vH9_O0LUC9Dki0CNm1JDNVfg7gMYMcUCIxgeanE5g` revision `AHj4eMRRPYfcfxG-ZAFWkNnuS1mROzpCaF3OJEWII0UMfs15zQbeK7AIS_H8l_BfLbHuJMBymrcxHPo0TVIGT4G_iQMnckxp08d7S5xiRPw`. 各文書は同じIDから読み戻し、変更見出しと対象本文を確認した。
 - GitHub固定パス：`docs/system/requirements.md`、`docs/system/specification.md`、`docs/system/operations.md`。PR #197で更新し、PR #193～#196の表示修正・QA表示要件を同一変更IDで反映する。
 - 受入根拠：PR #193～#196 main統合、UI/アーカイブCI成功、Pages deploy run 41836815631成功、公開画面の68slot/18日分読み戻し。
 - 未解決原本：2026-10-22 12:00本文欠落、2026-11-02 12:00 source status矛盾。状態値を書き換えない。市場価格を全件外部照合した結果とは主張しない。
+
+## MR-ISSUANCE-CONNECT-20261104-02 追補｜2026-11-05 JST
+
+影響文書：固定パス `docs/system/requirements.md`、`docs/system/specification.md`、`docs/system/operations.md`。既存Google Docs固定IDは要件定義 `102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA`、仕様 `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI`、運用 `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg`。今回はこの環境からDocsを更新していないため、Docs本文読戻しはNOT_RUN。
+
+変更理由：PR #188の発行接続を定時入口・main create-only再試行・画面DOM照合・本番read-only preflightまで具体化する。GitHub仕様/要件/運用の固定パスとproject-control記録へ同一変更IDで追記。Node構文/画面回帰と差分検査PASS。コードを既存PR branchへ追加済み。PythonとHosted CIはWindowsローカルでは未実行で、更新後SHAのActions実行中。実績はこの追補だけで本番成功へ昇格しない。
+
+追加実装：Pages verifierが公開JSON照合後にpublic-mode Chromium DOM検証を必須実行し、reportId/date/time/title/body不一致やDOM実行環境欠落で停止する。08:00入口/Docs/GitHub/Pages失敗時のstageと累積completed stagesを返す。CIのpublic-mode fixtureはローカルに隔離したsiteを使う。実行結果は最終PR SHAのActionsで更新し、固定Docsの書込み・読戻しは引き続き未実施。
+
+## MR-ISSUANCE-CONNECT-20261104-02 CI補正｜2026-11-05 JST
+
+- 修正理由：preflightテストが管理者attestation済みのGitHub checkを`UNKNOWN`と誤期待し、公開DOM CIでは単一オブジェクトをreports.jsonへ置いていた。実行手順も直接スクリプト起動の表記が残っていた。
+- 対象：同じ固定パスの要件定義・仕様・運用マニュアル。管理者確認済みpreflightを`READY/PASS`、未確認を`NOT_READY/UNKNOWN`とする別テストを維持し、`python -m scripts.run_0800_issuance`、公開索引配列、reportId/revision/body hash/DOM一致を明記。
+- Actions追跡：旧head `cc3f8ff0` のrun `41864195550` はpreflight期待値不一致、`41864195592` は単一オブジェクトを配列として読めなかったためFAIL。head `748d5c7f` では契約スイート/CLI smokeが成功し、UI DOM fixtureで追加の404が発覚。画面rendererが同時に読む `reports/<reportId>.json` が隔離siteになかったため、fixture routeと隔離siteの双方で正本detailを用意する修正を追加した。最終headの再検証結果を別途記録する。
+- 再検証補正：head `362a0042` では画面loaderが既存の2026-09-18 4枠canonicalも要求していたが、隔離siteへ対象fixtureだけを置いていたため404になった。次のheadで既存の`reports/` corpusをコピーし、対象canonicalを追加する。失敗URL/statusを出力し、任意favicon 404だけ除外する。その他のHTTP errorは引き続きDOM validationを止める。
+- CLI補正：bundleの日時・G2/evidence参照をクラウド接続前に検証する純粋関数へ分離し、認証設定のないモジュール実行でも不正日付が`BLOCKED`になる回帰テストを追加した。新headの契約CIで検証する。
+- 証拠水準：隔離テストと最終head Actionsの結果を個別に記録する。待機中・未開始のActionsはPASSと扱わない。固定ID Google Docsは今回も更新・読戻ししていない（NOT_RUN）。
+- 制限：本番Docs/main/receipt/Pages書込み、Secrets・Environment・定時タスク変更、PR mergeは行わない。将来の08:00承認付きE2Eが必要。\n\n## MR-ISSUANCE-PRODUCTION-READINESS-20261105-01｜変更記録（2026-11-05 JST）\n対象固定パス：docs/system/requirements.md、docs/system/specification.md、docs/system/operations.md、docs/system/DOCUMENT_CONTROL.md。PR #188のpreflightで環境変数自己申告をEnvironment reviewer保護証拠と扱わず、実API reviewer規則の確認と当該run承認の証拠水準を分離する。手動workflow_dispatchは読取り専用・単一対象・Secretsなしとし、G2生成元の未接続を明記する。\nコード/CI検証は本変更SHAでのActions完了後に記録する。本番G2/Docs/canonical/receipt/Pages E2EはNOT_RUN。Google Docs固定IDへの同期は未実施。
+
+## MR-ISSUANCE-PRODUCTION-READINESS-20261105-01｜CI証拠追記
+- CI code head 5538a8707f2179fcabde9ea5b4fa32239664a00e でissuance integration contract PASS：83 Python tests (17+39+16+11) とcompile/CLI smoke。https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41875493256
+- isolated UI/DOM PASS：https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41875493440。その他8件も同じheadでPASS。これはActions隔離環境の結果で、本番Docs/GCS/GitHub canonical/receipt/PagesはNOT_RUN。
+- main f43cc00f60d5a32fa96fa6cb4de440c7f971fc4a を2親同期commitに保持。main-only data/history変更はPR側の変更パスと重複なし。Google Docs固定IDへの同期はNOT_RUN。
+
+
+## MR-EVIDENCE-GCS-WINDOW-20261105-01｜変更記録
+- 理由: 2026-11-05 03:52 JSTに動いたschedule runが当日の21:00枠として処理され、許可窓・データcutoffの判定前に後追い取得へ進む経路を修正する。GCS正本とGitHub監査mirrorのgeneration結合も実装する。
+- 固定パス: `scripts/persist_report_slot_evidence.py`, `.github/workflows/freeze-report-slot-evidence.yml`, `tests/test_report_slot_evidence.py`、およびrequirements/specification/operationsとproject-control決定・証拠台帳。
+- テスト: 隔離テスト追加済み。実行結果はPR headのGitHub Actions確認後に追記する。実GCS権限・create-only write・generation readbackはNOT_RUN。
+- 未解決: Actions scheduleは期限内実行を保証しない。今回の修正は窓外runを閉じるが、独立schedulerは設計/費用/管理者承認が未了。2026-11-05 08:00 Evidenceは事後生成しない。Drive固定ID文書への同期はNOT_RUN。
+
+## MR-EVIDENCE-GCS-WINDOW-20261105-01｜CI検証追記
+- Code/test head 4c533ff4ab50e9673d1dddf7b5ee9c8f63f6aa9a: [08:00 issuance contract run 41939360238](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41939360238) PASS。Python 3.12 compileとCLI smoke、契約unittest 136件（18+40+16+18+9+17+18）を確認。Evidence時刻境界とGCS fake tests 18件を含む。
+- [frozen-cutoff regression run 41939360170](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41939360170) PASS、31 tests。[delivery health run 41939360118](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41939360118) PASS。[UI/DOM run 41939360203](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41939360203) PASS。同期復旧、Dashboard eligibility/health、Apps Script validation、Drive selection QA、historical recovery QAも同headでPASS。
+- CI初回はテストファイルの改行混入を検出。その後、必須Evidence作成時刻をpipeline/importer/G2のfixtureへ追加し、GCS conflictテストを有効JSONへ修正して通過。公開ゲートの条件は緩和していない。
+- 証拠水準はCI隔離契約E2まで。実GCS service account/bucket権限、実create-only object、production generation readback、11月6日発行前EvidenceはNOT_RUN。成功扱いにしない。
+
+
+## Change record — MR-EVIDENCE-GCS-WIF-SLOT-ISOLATION-20261105-01
+
+- 対象: 固定パスの要件定義書、仕様書、運用マニュアル、Evidence Ledger、DECISIONS。
+- 理由: PR #188のEvidence生成にGCS要件と15分実行窓が全4枠へ適用され、既存12:00・16:00・21:00運用へ不要な依存を加える危険を除去するため。
+- 文書上の変更: GCS create-only / pinned-generationは08:00限定。残る3枠は既存GitHubローカルEvidenceと締切前ガードを維持。GCSは専用SAを通じたOIDC/WIFを使用し、権限と実環境未確認を記録。
+- 証拠水準: 対象コードhead bc9d7cd7fca9aa52c1e6ffe7269788204d2b49d1 の契約テスト141件と関連10 ActionsはSUCCESS（E2 hosted isolated/regression）。実サービスのIAM/WIF、GCS書込み、scheduled runはNOT_RUNであり、READYを意味しない。
+
+
+### Verification update — code head bc9d7cd7fca9aa52c1e6ffe7269788204d2b49d1
+
+- Python 3.12 hosted CI: issuance contract suites PASS (18+40+16+18+9+17+23 = 141 tests); the 23-test Evidence suite includes 08:00 missing-GCS BLOCKED, non-08:00 cutoff-only behavior, immutable same-report conflict, late-run/date mismatch, GCS create-only/idempotent retry/conflict, and local-mirror retry/recovery cases.
+- The initial run on 4cfad54 failed 3 assertions in the new/affected Evidence suite. Logs showed a now=None keyword-shape expectation mismatch in the mocked 08:00 guard and a historical non-08:00 fixture whose post-write live-clock recheck correctly rejected it. The helper now preserves the no-argument live call shape; the historical-fixture test isolates the clock guard while asserting immutable conflict behavior. No gate was weakened.
+- Exact code-head Actions: issuance [41946722018](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946722018), frozen cutoff [41946722116](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946722116), delivery health [41946721817](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946721817), UI/DOM [41946722003](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946722003), Apps Script validation [41946721888](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946721888), sync recovery [41946721981](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946721981), dashboard health [41946722110](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946722110), dashboard eligibility [41946722083](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946722083), historical recovery [41946721805](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946721805), saved-source QA [41946721978](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946721978): all SUCCESS.
+- Evidence level: E2 hosted isolated tests and workflow regression. GCS used a fake adapter in tests; real OIDC/WIF trust, IAM, GCS object/generation, production schedule and 08:00 issuance are NOT_RUN. PR #188 remains Draft/open/unmerged; no main, Docs, receipt, Pages, Secrets or schedule writes occurred.
+
+## 2026-11-05 固定文書変更記録（MR-PROTECTED-PREFLIGHT-WIF-20261105-01）
+- 対象：固定IDの要件定義書、システム仕様書、運用マニュアル、本台帳。GitHub側の固定パスはdocs/system/requirements.md、specification.md、operations.md、DOCUMENT_CONTROL.md、project-control/EVIDENCE_LEDGER.md。別版文書は作成しない。
+- Google Docs既存固定IDを更新し、更新後に本文markerを読戻し確認した。要件定義書、仕様書、運用マニュアル、台帳のDocs本番接続設定・権限は今回の変更対象外。
+- PR #188のpreflightコード/CIはPASS。本番Environment承認、production WIF、実Docs/GCS権限、本番E2EはNOT_RUN。
+
+
+## 2026-11-05 record correction — MR-PROTECTED-PREFLIGHT-WIF-20261105-01
+
+The GitHub Environment `report-publication` was absent in the read-only Environment inventory (only `apps-script-production` and `github-pages` were listed). Previous entries describing it as existing are superseded by this correction. PR #188 now checks Environment existence and a required-reviewer rule through an unauthenticated read-only job; the authenticated WIF job is conditional on that check and cannot start when the Environment is absent, unprotected, or unreadable.
+
+At head `e8e96bf1acce7bb101f0ff9a9c9ac0b057f3371a`, the issuance contract [42032888516](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42032888516) and all nine other related Actions succeeded; the issuance run reports preflight 21/21. Evidence level: E2 hosted CI/static workflow assertions. Live protected Environment, production WIF preflight, and production issuance remain NOT_RUN / NOT_READY. Admin must create `report-publication`, configure required reviewers and scope policy, then request a separate approved preflight.
+
+
+
+## 2026-11-06 変更記録 — MR-ENV-WIF-ISSUANCE-PREFLIGHT-20261106-01
+
+- 変更理由: reviewer数だけで本番Environment保護を判断していたpreflightをfail-closedにし、08:00発行前認証の誤通過を防ぐ。Chromium依存インストールの既知の遅延も検証対象にする。
+- 対象固定パス: `docs/system/requirements.md`、`docs/system/specification.md`、`docs/system/operations.md`、`docs/system/DOCUMENT_CONTROL.md`、`docs/project-control/EVIDENCE_LEDGER.md`、`.github/workflows/0800-issuance-production-preflight.yml`、`.github/workflows/report-21-ui-validation.yml`、`scripts/reporting/issuance_preflight.py`、`tests/test_issuance_preflight.py`。
+- 変更内容: reviewer有効性、自己承認防止、main限定、管理者バイパス状態を認証前に検査。秘密値は取得せず、GitHub Variables一覧はAPIが値を含むため照会しない。GitHub書込み権限は自己申告を証拠にせずUNKNOWNのまま。UI strict timeout 25分を維持し、headless shell installで試験する。
+- 検証: 記録時点では変更headのHosted CI待ち。最終Actions URLとSHAは作業報告で証拠範囲を分けて記載する。固定ID Google Docsは未更新・未読戻し。本番Environment/WIF/IAM/Docs/GCS/receipt/Pagesは未実施。
