@@ -1,9 +1,51 @@
 {
   "schemaVersion": "1.2.0",
-  "generatedAt": "2026-11-07T00:22:52+09:00",
+  "generatedAt": "2026-11-07T14:48:06+09:00",
   "dataDate": "2026-11-06",
   "complete": false,
   "items": {
+    "日経225現物": {
+      "value": "57,434.77",
+      "change": "-3,643.13",
+      "rate": "-5.96%",
+      "direction": "下落",
+      "date": "2026-11-06",
+      "sourceName": "投資の森 日経平均PER・PBR（同日終値・前日差）",
+      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/",
+      "status": "exact_date_close_anchor"
+    },
+    "日経225 25日移動平均乖離率": {
+      "value": "-12.00%",
+      "date": "2026-11-06",
+      "sourceName": "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）",
+      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
+      "status": "calculated_with_exact_date_close_anchor"
+    },
+    "日経225 200日移動平均乖離率": {
+      "value": "-7.31%",
+      "date": "2026-11-06",
+      "sourceName": "Yahoo Finance日足履歴（対象日終値は投資の森同日値で補正）",
+      "sourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
+      "status": "calculated_with_exact_date_close_anchor"
+    },
+    "日経225予想PER": {
+      "value": "14.68倍",
+      "date": "2026-11-06",
+      "sourceName": "投資の森 日経平均PER・PBR",
+      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
+    },
+    "日経225 PBR": {
+      "value": "1.69倍",
+      "date": "2026-11-06",
+      "sourceName": "投資の森 日経平均PER・PBR",
+      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
+    },
+    "日経225予想EPS": {
+      "value": "3,912.45円",
+      "date": "2026-11-06",
+      "sourceName": "投資の森 日経平均PER・PBR",
+      "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
+    },
     "東証プライム値上がり銘柄数": {
       "value": "21",
       "date": "2026-11-06",
@@ -25,8 +67,6 @@
     }
   },
   "unavailable": {
-    "日経225現物": "2026-11-06の確定日足がソースに未反映",
-    "日経225予想PER/PBR/EPS": "2026-11-06行がソースに未反映",
     "東証プライム売買高": "2026-11-06の大引けブロックがトレーダーズ・ウェブに取得時点で見つからず"
   },
   "breadthHistory": [
@@ -633,5 +673,18 @@
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
     }
   ],
-  "rule": "accept exact target-date records only; never carry stale records forward"
+  "rule": "accept exact target-date records only; never carry stale records forward",
+  "qualityChecks": {
+    "nikkeiCloseCrossCheck": {
+      "checkedAt": "2026-11-07T14:48:06+09:00",
+      "targetDate": "2026-11-06",
+      "authoritativeClose": 57434.77,
+      "authoritativeChange": -3643.13,
+      "previousCloseDerived": 61077.899999999994,
+      "oldReferenceClose": 57434.77,
+      "yahooTargetDayRawClose": 57434.76953125,
+      "differenceVsYahoo": 0.00046874999679857865,
+      "rule": "Exact-date valuation-page close anchors the session; Yahoo is used only for the historical moving-average window after target-close replacement."
+    }
+  }
 }
