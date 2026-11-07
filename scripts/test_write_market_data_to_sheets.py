@@ -7,6 +7,8 @@ import unittest
 from scripts.write_market_data_to_sheets import (
     load_service_account_info,
     market_rows,
+    SHEET_HEADERS,
+    SheetsSyncError,
     sync_payload,
     use_policy,
 )
@@ -23,15 +25,19 @@ class FakeSheetsClient:
 
     def clear(self, sheet_name):
         self.updates.append(("clear", sheet_name))
+        self.values[sheet_name] = []
 
     def update(self, sheet_name, cells, values):
         self.updates.append((sheet_name, cells, values))
+        if cells == "A1":
+            self.values[sheet_name] = [list(row) for row in values]
 
     def get_values(self, sheet_name, cells):
         return self.values.get(sheet_name, [])
 
     def append(self, sheet_name, cells, values):
         self.appends.append((sheet_name, cells, values))
+        self.values.setdefault(sheet_name, []).extend([list(row) for row in values])
 
     def format_table(self, sheet_id, column_count, row_count):
         return None
@@ -101,6 +107,64 @@ class MarketDataSheetRowsTest(unittest.TestCase):
         self.assertEqual(client.appends[0][0], "history")
         self.assertTrue(any(item[0] == "input" for item in client.updates if len(item) == 3))
 
+    def test_test_payload_roundtrip_reads_back_and_prevents_duplicate_history(self):
+        payload = {
+            "generatedAt": "TEST-RUN-001",
+            "reportSlot": "test-only",
+            "overallStatus": "verified",
+            "markets": {
+                "synthetic_test_item": {
+                    "displayName": "Synthetic Test Item",
+                    "value": 12345.67,
+                    "displayValue": "TEST_ONLY",
+                    "unit": "test",
+                    "verificationStatus": "verified",
+                    "fallbackUsed": False,
+                    "sourceName": "Synthetic fixture",
+                    "marketType": "test",
+                    "session": "test-only",
+                }
+            },
+        }
+        client = FakeSheetsClient()
+        first = sync_payload(client, payload, "test-input", "history", "test-rules")
+        input_readback = client.get_values("test-input", "A:AA")
+        history_readback = client.get_values("history", "A:AA")
+
+        self.assertEqual(first["inputRows"], 1)
+        self.assertEqual(input_readback[0], SHEET_HEADERS)
+        self.assertEqual(input_readback[1][4], "synthetic_test_item")
+        self.assertEqual(input_readback[1][7], 12345.67)
+        self.assertEqual(sum(row[0] == "TEST-RUN-001|synthetic_test_item" for row in history_readback[1:]), 1)
+
+        second = sync_payload(client, payload, "test-input", "history", "test-rules")
+        after_retry = client.get_values("history", "A:AA")
+        self.assertEqual(second["historyRowsAdded"], 0)
+        self.assertEqual(sum(row[0] == "TEST-RUN-001|synthetic_test_item" for row in after_retry[1:]), 1)
+        self.assertEqual(second["itemResults"][0]["acquisitionResult"], "SUCCESS")
+        self.assertEqual(second["itemResults"][0]["validationResult"], "PASS")
+        self.assertEqual(second["itemResults"][0]["persistenceResult"], "SAVED_READBACK_CONFIRMED")
+
+    def test_input_readback_mismatch_fails_closed(self):
+        class CorruptReadbackClient(FakeSheetsClient):
+            def get_values(self, sheet_name, cells):
+                values = super().get_values(sheet_name, cells)
+                if sheet_name == "test-input":
+                    broken = [list(row) for row in values]
+                    if len(broken) > 1:
+                        broken[1][4] = "corrupted_item_id"
+                    return broken
+                return values
+
+        payload = {
+            "generatedAt": "TEST-RUN-READBACK-FAIL",
+            "overallStatus": "verified",
+            "markets": {"synthetic": {"value": 1, "verificationStatus": "verified"}},
+        }
+        with self.assertRaisesRegex(SheetsSyncError, "input sheet readback mismatch"):
+            sync_payload(CorruptReadbackClient(), payload, "test-input", "history", "rules")
+
 
 if __name__ == "__main__":
     unittest.main()
+

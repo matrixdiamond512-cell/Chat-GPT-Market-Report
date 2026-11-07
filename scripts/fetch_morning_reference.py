@@ -19,7 +19,8 @@ from typing import Any
 
 ROOT=Path(__file__).resolve().parents[1]
 JST=dt.timezone(dt.timedelta(hours=9))
-SOURCE_URL="https://nikkei225jp.com/cme/"
+SOURCE_URL="https://query1.finance.yahoo.com/v8/finance/chart"
+OSE_SOURCE_URL="https://nikkei225jp.com/cme/"
 OUT=ROOT/"data"/"market"/"morning-reference.json"
 USER_AGENT="Mozilla/5.0 (compatible; ChatGPT-Market-Report/1.0)"
 REPORT_GRACE_MINUTES=5
@@ -46,20 +47,65 @@ def pct_from_change(value:float,change:float)->str:
 
 def fmt_integer(value:float)->str:return f"{value:,.0f}"
 
-def parse_cme(text:str,currency:str)->dict[str,str]|None:
-    marker="CME￥" if currency=="yen" else "CME＄"
-    pattern=re.compile(re.escape(marker)+r"\s+26年09月限\s+([0-9,]+)\s+([+\-][0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+(\d{2}:\d{2}|\d{2}/\d{2})")
-    match=pattern.search(text)
-    if not match:return None
-    value=number(match.group(1));change=number(match.group(2));stamp=match.group(6)
-    return {"value":fmt_integer(value),"change":f"{change:+,.0f}","rate":pct_from_change(value,change),"direction":"上昇" if change>0 else "下落" if change<0 else "横ばい","stamp":stamp,"stampType":"time" if ":" in stamp else "date"}
+def front_quarter_contract(report_date:dt.date,expiry_friday:int)->tuple[int,int]:
+    """Return the nearest quarterly contract whose expiry is still ahead."""
+    for year in range(report_date.year,report_date.year+3):
+        for month in (3,6,9,12):
+            first_day=dt.date(year,month,1)
+            first_friday=1+((4-first_day.weekday())%7)
+            expiry=first_friday+7*(expiry_friday-1)
+            if report_date<dt.date(year,month,expiry):
+                return year%100,month
+    raise ValueError("No front quarterly contract found")
 
-def parse_ose(text:str)->dict[str,str]|None:
-    pattern=re.compile(r"大証ラージ\s+26年9月限\s+([0-9,]+)\s+([+\-][0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+(\d{2}:\d{2})")
-    match=pattern.search(text)
+def parse_cme(payload:dict[str,Any],currency:str,report_date:dt.date|None=None)->dict[str,str]|None:
+    """Normalize Yahoo's auto-front CME continuous future without inferring a quarter month.
+
+    NIY=F/NKD=F resolve to the vendor's active lead contract. The displayed contract
+    name is retained and validated against the returned daily observation.
+    """
+    result=((payload.get("chart") or {}).get("result") or [None])[0]
+    if not isinstance(result,dict):
+        raise ValueError("Yahoo chart response contained no result")
+    meta=result.get("meta") or {}
+    quote=((result.get("indicators") or {}).get("quote") or [{}])[0]
+    timestamps=result.get("timestamp") or []
+    closes=quote.get("close") or []
+    rows=[(int(t),float(c)) for t,c in zip(timestamps,closes) if c is not None]
+    if not rows:
+        return None
+    timestamp,value=rows[-1]
+    # Yahoo's chart product name names the actual lead expiry (e.g. Dec-2026).
+    title=" ".join(str(meta.get(k) or "") for k in ("longName","shortName","instrumentType"))
+    months={name:i for i,name in enumerate(("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"),1)}
+    contract=re.search(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[ -](20\d{2})\b",title,re.I)
+    if not contract:
+        return None
+    month=months[contract.group(1).title()]
+    year=int(contract.group(2))
+    previous=float(rows[-2][1]) if len(rows)>1 else None
+    change=value-previous if previous is not None else 0.0
+    stamp=dt.datetime.fromtimestamp(timestamp,dt.timezone.utc).astimezone(JST)
+    if report_date and stamp.date()>report_date:
+        return None
+    return {"value":fmt_integer(value),"change":f"{change:+,.0f}","rate":pct_from_change(value,change),"direction":"上昇" if change>0 else "下落" if change<0 else "横ばい","stamp":stamp.strftime("%H:%M"),"stampType":"time","contractMonth":f"{year}-{month:02d}","asOf":stamp.isoformat(),"vendorSymbol":"NIY=F" if currency=="yen" else "NKD=F","currency":currency}
+
+def fetch_yahoo_cme(currency:str,report_date:dt.date)->dict[str,str]|None:
+    symbol="NIY=F" if currency=="yen" else "NKD=F"
+    url=f"{SOURCE_URL}/{symbol}?range=5d&interval=1d"
+    request=urllib.request.Request(url,headers={"User-Agent":USER_AGENT})
+    with urllib.request.urlopen(request,timeout=25) as response:
+        payload=json.loads(response.read().decode("utf-8"))
+    return parse_cme(payload,currency,report_date)
+
+def parse_ose(text:str,report_date:dt.date|None=None)->dict[str,str]|None:
+    report_date=report_date or now_jst().date()
+    pattern=re.compile(r"大証ラージ\s+(\d{2})年(\d{1,2})月限\s+([0-9,]+)\s+([+\-][0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+([0-9,]+)\s+(\d{2}:\d{2})")
+    yy,mm=front_quarter_contract(report_date,2)
+    match=next((item for item in pattern.finditer(text) if int(item.group(1))==yy and int(item.group(2))==mm),None)
     if not match:return None
-    value=number(match.group(1));change=number(match.group(2))
-    return {"value":f"{fmt_integer(value)}円","change":f"{change:+,.0f}","rate":pct_from_change(value,change),"direction":"上昇" if change>0 else "下落" if change<0 else "横ばい","time":match.group(7)}
+    value=number(match.group(3));change=number(match.group(4))
+    return {"value":f"{fmt_integer(value)}円","change":f"{change:+,.0f}","rate":pct_from_change(value,change),"direction":"上昇" if change>0 else "下落" if change<0 else "横ばい","time":match.group(9),"contractMonth":f"20{match.group(1)}-{int(match.group(2)):02d}"}
 
 def cme_as_of(report_date:dt.date,parsed:dict[str,str])->str:
     if parsed.get("stampType")=="time":return f"{report_date.isoformat()}T{parsed['stamp']}:00+09:00"
@@ -107,18 +153,18 @@ def load_existing(report_date:dt.date,slot:str)->dict[str,Any]:
 
 def main()->int:
     parser=argparse.ArgumentParser();parser.add_argument("--report-date",default=now_jst().date().isoformat());parser.add_argument("--slot",default="08:00");args=parser.parse_args()
-    report_date=dt.date.fromisoformat(args.report_date);text=get_text(SOURCE_URL)
-    yen=parse_cme(text,"yen");dollar=parse_cme(text,"dollar");ose=parse_ose(text)
+    report_date=dt.date.fromisoformat(args.report_date);text=get_text(OSE_SOURCE_URL)
+    yen=fetch_yahoo_cme("yen",report_date);dollar=fetch_yahoo_cme("dollar",report_date);ose=parse_ose(text,report_date)
     attempted:dict[str,dict[str,object]]={};reference_dates:list[str]=[]
-    for label,parsed,product in (("CME日経225先物・円建て",yen,"CME NIY"),("CME日経225先物・ドル建て",dollar,"CME NKD")):
+    for label,parsed,product in (("CME日経225先物・円建て",yen,"NIY=F"),("CME日経225先物・ドル建て",dollar,"NKD=F")):
         if not parsed:continue
-        as_of=cme_as_of(report_date,parsed)
+        as_of=parsed.get("asOf") or cme_as_of(report_date,parsed)
         if parsed.get("stampType")=="date":reference_dates.append(as_of[:10])
-        status=reference_status(as_of,report_date,args.slot);base="26年09月限のページ上最終表示値。CME公式清算値ではないため、その区別を維持する。"
-        attempted[label]={"value":parsed["value"],"change":parsed["change"],"rate":parsed["rate"],"direction":parsed["direction"],"asOf":as_of,"sourceName":f"nikkei225jp.com {product}","sourceUrl":SOURCE_URL,"status":status,"note":note_for_status(base,status,args.slot)}
+        status=reference_status(as_of,report_date,args.slot);base=parsed["contractMonth"]+"限のページ上最終表示値。CME公式清算値ではないため、その区別を維持する。"
+        attempted[label]={"value":parsed["value"],"change":parsed["change"],"rate":parsed["rate"],"direction":parsed["direction"],"asOf":as_of,"sourceName":f"Yahoo Finance {product} (CME delayed quote)","sourceUrl":f"https://finance.yahoo.com/quote/{product}","contractMonth":parsed["contractMonth"],"status":status,"note":note_for_status(base,status,args.slot)}
     if ose:
-        as_of=f"{report_date.isoformat()}T{ose['time']}:00+09:00";status=reference_status(as_of,report_date,args.slot);base="大証ラージ26年9月限。JPX/OSEの値とクロスチェックして使用する。"
-        attempted["日経225先物（大阪取引所）"]={"value":ose["value"],"change":ose["change"],"rate":ose["rate"],"direction":ose["direction"],"asOf":as_of,"sourceName":"JPX/OSE mirrored quote on nikkei225jp.com","sourceUrl":SOURCE_URL,"status":status,"note":note_for_status(base,status,args.slot)}
+        as_of=f"{report_date.isoformat()}T{ose['time']}:00+09:00";status=reference_status(as_of,report_date,args.slot);base="大証ラージ"+ose["contractMonth"]+"限。JPX/OSEの値とクロスチェックして使用する。"
+        attempted["日経225先物（大阪取引所）"]={"value":ose["value"],"change":ose["change"],"rate":ose["rate"],"direction":ose["direction"],"asOf":as_of,"sourceName":"JPX/OSE mirrored quote on nikkei225jp.com","sourceUrl":OSE_SOURCE_URL,"contractMonth":ose["contractMonth"],"status":status,"note":note_for_status(base,status,args.slot)}
     if not attempted:raise SystemExit("No morning reference values parsed")
 
     existing=load_existing(report_date,args.slot);old_items=existing.get("items") or {};items=dict(old_items)
