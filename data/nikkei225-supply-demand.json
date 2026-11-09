@@ -2,16 +2,16 @@
   "schemaVersion": "2.1.0",
   "pageId": "nikkei225-supply-demand",
   "pageTitle": "日経225需給分析",
-  "generatedAt": "2026-11-09T10:17:43+09:00",
+  "generatedAt": "2026-11-09T19:27:12+09:00",
   "spot": {
     "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
     "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
-    "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261106tp.csv",
+    "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261109tp.csv",
     "comment": "NK225E理論価格ファイルの原資産終値。先物とは同一取引日でも時刻が異なるため、表示差は理論ベーシスではなく単純な現物終値対比。",
-    "value": 57434.77,
-    "asOfDate": "2026-11-06",
+    "value": 58775.5,
+    "asOfDate": "2026-11-09",
     "status": "verified",
-    "fetchedAt": "2026-11-09T10:17:43+09:00"
+    "fetchedAt": "2026-11-09T19:27:12+09:00"
   },
   "futures": {
     "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -19,21 +19,21 @@
     "price": 58160.0,
     "priceChange": 750.0,
     "priceChangePercent": 1.3063926145270965,
-    "asOfDate": "2026-11-06",
+    "asOfDate": "2026-11-09",
     "priceAsOf": "2026-11-07T03:14:00+09:00",
-    "volume": 123733,
-    "openInterest": 176025,
-    "miniVolume": 1762668,
-    "miniOpenInterest": 319829,
-    "openInterestChange": 2927,
-    "miniOpenInterestChange": 8205,
-    "volumeChangePercent": null,
-    "miniVolumeChangePercent": null,
+    "volume": 70870,
+    "openInterest": 178289,
+    "miniVolume": 1114592,
+    "miniOpenInterest": 284432,
+    "openInterestChange": 2264,
+    "miniOpenInterestChange": -35397,
+    "volumeChangePercent": 0.0,
+    "miniVolumeChangePercent": 0.0,
     "status": "verified",
-    "fetchedAt": "2026-11-09T10:15:57+09:00",
-    "previousOpenInterest": 173098,
-    "miniPreviousOpenInterest": 311624,
-    "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261106open_interest.xlsx"
+    "fetchedAt": "2026-11-09T19:25:30+09:00",
+    "previousOpenInterest": 176025,
+    "miniPreviousOpenInterest": 319829,
+    "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261109open_interest.xlsx"
   },
   "sessions": {
     "sourceName": "JPX デリバティブ取引市況（ナイト・日通し）",
@@ -50,24 +50,24 @@
     "asOfDate": "2026-09-30",
     "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260930_derivatives_market_data_night.xlsx",
     "status": "stale",
-    "fetchedAt": "2026-11-09T10:17:33+09:00",
+    "fetchedAt": "2026-11-09T19:27:03+09:00",
     "error": "JPXセッション別出来高取得失敗: ValueError: night-session workbook link not found"
   },
   "arbitrage": {
     "sourceName": "JPX 裁定取引の状況",
     "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/",
     "comment": "裁定買い・売りポジションはJPXの全取引参加者報告合計。前々営業日データとして鮮度を分離表示。",
-    "asOfDate": "2026-11-04",
-    "sellBalance": 11149,
-    "buyBalance": 772557,
-    "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt000002kgi1-att/261104.pdf",
-    "sellChange": -6132,
-    "buyChange": -36691,
+    "asOfDate": "2026-11-05",
+    "sellBalance": 9155,
+    "buyBalance": 853996,
+    "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt000002kk6q-att/261105.pdf",
+    "sellChange": -1994,
+    "buyChange": 81439,
     "status": "verified",
     "frequency": "daily",
-    "lastAttemptAt": "2026-11-09T10:15:55+09:00",
-    "lastSuccessAt": "2026-11-09T10:15:55+09:00",
-    "fetchedAt": "2026-11-09T10:15:55+09:00",
+    "lastAttemptAt": "2026-11-09T19:25:28+09:00",
+    "lastSuccessAt": "2026-11-09T19:25:28+09:00",
+    "fetchedAt": "2026-11-09T19:25:28+09:00",
     "error": null
   },
   "options": {
@@ -77,88 +77,88 @@
     "nextSqDate": "2026-11-13",
     "businessDaysToSq": 4,
     "putCallRatio": null,
-    "iv": 51.67,
+    "iv": 34.57,
     "ivChange": null,
     "asOfDate": "2026-11-09",
     "status": "calculated",
     "error": "Put/Call・IVはJPX列構造を確認できるまで推測せず空欄",
-    "fetchedAt": "2026-11-09T10:17:43+09:00",
+    "fetchedAt": "2026-11-09T19:27:12+09:00",
     "putVolume": null,
     "callVolume": null,
     "putCallStatus": "unavailable",
     "putCallReason": "取得不能（ValueError: JPX当日取引総括CSVが見つかりません）",
     "ivStatus": "verified",
     "ivDefinition": "JPX基準ボラティリティ（NK225E・期近限月）",
-    "baseVolatility": 51.67,
-    "referenceStrikePrice": 57500.0,
-    "referencePutSettlementVolatility": 54.136799999999994,
-    "referenceCallSettlementVolatility": 49.196600000000004,
+    "baseVolatility": 34.57,
+    "referenceStrikePrice": 58750.0,
+    "referencePutSettlementVolatility": 41.6155,
+    "referenceCallSettlementVolatility": 47.0177,
     "ivContractMonth": "202611",
-    "ivUnderlyingClose": 57434.77,
-    "ivSourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261106tp.csv",
-    "ivAsOfDate": "2026-11-06"
+    "ivUnderlyingClose": 58775.5,
+    "ivSourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261109tp.csv",
+    "ivAsOfDate": "2026-11-09"
   },
   "participantFlow": {
     "sourceName": "JPX 取引参加者別取引高（手口上位一覧）",
     "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/participant-volume/",
     "comment": "日次ファイルは売買方向別ではなく取引高上位です。取引高上位を売り・買いと読み替えません。",
-    "asOfDate": "2026-11-06",
+    "asOfDate": "2026-11-09",
     "contract": "NIKKEI 225 FUT 2612",
     "leaders": [
       {
         "name": "ＡＢＮクリアリン証券",
-        "volume": 35228,
+        "volume": 18306,
         "rank": 1
       },
       {
-        "name": "ソシエテＧ証券",
-        "volume": 28292,
+        "name": "バークレイズ証券",
+        "volume": 14574,
         "rank": 2
       },
       {
-        "name": "バークレイズ証券",
-        "volume": 20588,
+        "name": "ソシエテＧ証券",
+        "volume": 12906,
         "rank": 3
       },
       {
-        "name": "野村証券",
-        "volume": 6371,
+        "name": "サスケハナ・ホンコン",
+        "volume": 3138,
         "rank": 4
       },
       {
-        "name": "サスケハナ・ホンコン",
-        "volume": 6340,
+        "name": "ゴールドマン証券",
+        "volume": 2849,
         "rank": 5
       },
       {
-        "name": "ゴールドマン証券",
-        "volume": 6280,
+        "name": "ＪＰモルガン証券",
+        "volume": 2561,
         "rank": 6
       },
       {
-        "name": "モルガンＭＵＦＧ証券",
-        "volume": 6259,
+        "name": "ドイツ証券",
+        "volume": 2205,
         "rank": 7
       },
       {
-        "name": "ＪＰモルガン証券",
-        "volume": 2813,
+        "name": "野村証券",
+        "volume": 2033,
         "rank": 8
       },
       {
-        "name": "ビーオブエー証券",
-        "volume": 2199,
+        "name": "モルガンＭＵＦＧ証券",
+        "volume": 1713,
         "rank": 9
       },
       {
-        "name": "ＢＮＰパリバ証券",
-        "volume": 2032,
+        "name": "ビーオブエー証券",
+        "volume": 988,
         "rank": 10
       }
     ],
-    "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202611/20261106_volume_by_participant_whole_day.xlsx",
+    "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202611/20261109_volume_by_participant_whole_day.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-11-09T10:17:35+09:00"
+    "fetchedAt": "2026-11-09T19:27:05+09:00"
   },
   "foreignInvestors": {
     "sourceName": "JPX 投資部門別売買状況",
@@ -771,132 +771,132 @@
       ]
     },
     "status": "verified",
-    "fetchedAt": "2026-11-09T10:17:33+09:00"
+    "fetchedAt": "2026-11-09T19:27:02+09:00"
   },
   "participantOpenInterest": {
     "sourceName": "JPX 取引参加者別建玉残高",
     "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/open-interest/",
     "comment": "週次の期近限月について、JPXが明示する売超参加者・買超参加者の上位を表示します。最終投資家を直接示すものではありません。",
-    "asOfDate": "2026-10-30",
+    "asOfDate": "2026-11-06",
     "contract": "2026年12月限月",
     "sellers": [
       {
         "name": "ＨＳＢＣ証券",
-        "openInterest": 31267,
+        "openInterest": 31097,
         "rank": 1
       },
       {
-        "name": "モルガンＭＵＦＧ証券",
-        "openInterest": 9510,
+        "name": "みずほ証券",
+        "openInterest": 11176,
         "rank": 2
       },
       {
-        "name": "みずほ証券",
-        "openInterest": 9400,
+        "name": "モルガンＭＵＦＧ証券",
+        "openInterest": 9959,
         "rank": 3
       },
       {
         "name": "三菱ＵＦＪ証券",
-        "openInterest": 7951,
+        "openInterest": 7479,
         "rank": 4
       },
       {
         "name": "ゴールドマン証券",
-        "openInterest": 6400,
+        "openInterest": 5166,
         "rank": 5
       },
       {
-        "name": "ＪＰモルガン証券",
-        "openInterest": 2503,
+        "name": "ＡＢＮクリアリン証券",
+        "openInterest": 2093,
         "rank": 6
       },
       {
-        "name": "フィリップ・キャ証券",
-        "openInterest": 1308,
+        "name": "ＳＢＩ証券",
+        "openInterest": 945,
         "rank": 7
       },
       {
-        "name": "ＡＢＮクリアリン証券",
-        "openInterest": 1192,
+        "name": "フィリップ・キャ証券",
+        "openInterest": 848,
         "rank": 8
-      },
-      {
-        "name": "ＳＢＩ証券",
-        "openInterest": 1002,
-        "rank": 9
       },
       {
         "name": "ナティクシス証券",
         "openInterest": 450,
+        "rank": 9
+      },
+      {
+        "name": "日産証券",
+        "openInterest": 404,
         "rank": 10
       }
     ],
     "buyers": [
       {
         "name": "野村証券",
-        "openInterest": 40031,
+        "openInterest": 37451,
         "rank": 1
       },
       {
         "name": "ＳＭＢＣ日興証券",
-        "openInterest": 5954,
+        "openInterest": 6168,
         "rank": 2
       },
       {
         "name": "バークレイズ証券",
-        "openInterest": 5835,
+        "openInterest": 5257,
         "rank": 3
       },
       {
-        "name": "ドイツ証券",
-        "openInterest": 4936,
+        "name": "ＢＮＰパリバ証券",
+        "openInterest": 4515,
         "rank": 4
       },
       {
         "name": "ＵＢＳ証券",
-        "openInterest": 3603,
+        "openInterest": 4426,
         "rank": 5
       },
       {
-        "name": "ソシエテＧ証券",
-        "openInterest": 3032,
+        "name": "ドイツ証券",
+        "openInterest": 3296,
         "rank": 6
       },
       {
-        "name": "大和証券",
-        "openInterest": 1972,
+        "name": "ソシエテＧ証券",
+        "openInterest": 2979,
         "rank": 7
       },
       {
-        "name": "サスケハナ・ホンコン",
-        "openInterest": 1899,
+        "name": "大和証券",
+        "openInterest": 1844,
         "rank": 8
       },
       {
-        "name": "ＢＮＰパリバ証券",
-        "openInterest": 1505,
+        "name": "サスケハナ・ホンコン",
+        "openInterest": 1674,
         "rank": 9
       },
       {
         "name": "シティグループ証券",
-        "openInterest": 1405,
+        "openInterest": 1192,
         "rank": 10
       }
     ],
-    "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20261030_indexfut_oi_by_tp.xlsx",
+    "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20261106_indexfut_oi_by_tp.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-11-09T10:17:36+09:00"
+    "fetchedAt": "2026-11-09T19:27:06+09:00"
   },
   "shortSelling": {
     "sourceName": "JPX 空売り集計",
     "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/",
     "comment": "空売り比率は価格規制あり・なしの合計。5日・20日平均と比較し、単独で弱気判定しません。",
-    "asOfDate": "2026-11-06",
-    "ratio": 35.3,
-    "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002khwb-att/261106-m.pdf",
-    "avg5": null,
+    "asOfDate": "2026-11-09",
+    "ratio": 35.800000000000004,
+    "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002kljg-att/261109-m.pdf",
+    "avg5": 36.44,
     "avg20": null,
-    "sampleCount": 4,
+    "sampleCount": 5,
     "series": [
       {
         "asOfDate": "2026-11-02",
@@ -917,10 +917,15 @@
         "asOfDate": "2026-11-06",
         "ratio": 35.3,
         "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002khwb-att/261106-m.pdf"
+      },
+      {
+        "asOfDate": "2026-11-09",
+        "ratio": 35.800000000000004,
+        "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002kljg-att/261109-m.pdf"
       }
     ],
     "status": "verified",
-    "fetchedAt": "2026-11-09T10:15:56+09:00"
+    "fetchedAt": "2026-11-09T19:25:29+09:00"
   },
   "margin": {
     "sourceName": "JPX 信用取引現在高",
@@ -981,16 +986,16 @@
       }
     ],
     "status": "stale",
-    "fetchedAt": "2026-11-09T10:15:57+09:00",
+    "fetchedAt": "2026-11-09T19:25:31+09:00",
     "error": "JPX信用需給取得失敗: ValueError: weekly margin total monetary row not found"
   },
   "assessment": {
-    "overall": "中立",
+    "overall": "やや買い優勢",
     "shortTerm": "強気（新規買い）",
-    "arbitrage": "やや弱い",
+    "arbitrage": "強い",
     "options": "SQ日程のみ確認済み",
     "foreign": "現物売り・先物買い",
-    "reason": "短期先物=強気（新規買い）、裁定=やや弱い、オプション=中立（SQ日程のみ）、海外投資家=現物売り・先物買い。各データの鮮度を分離して判定。",
+    "reason": "短期先物=強気（新規買い）、裁定=強い、オプション=中立（SQ日程のみ）、海外投資家=現物売り・先物買い。各データの鮮度を分離して判定。",
     "comment": "価格×建玉を中心に、裁定・オプション・海外投資家を補助線として重ねます。"
   },
   "watchpoints": [
@@ -1042,272 +1047,254 @@
   "sameDateParticipantAnalysis": {
     "sourceName": "JPX 同一基準日 取引参加者需給比較",
     "comment": "週次の取引参加者別建玉残高の基準日に、日次取引高・日経225先物価格・市場全体建玉を合わせて比較します。異なる基準日のデータは分析判定に混在させません。",
-    "asOfDate": "2026-10-30",
-    "previousAsOfDate": "2026-10-23",
+    "asOfDate": "2026-11-06",
+    "previousAsOfDate": "2026-10-30",
     "contract": "2026年12月限月",
     "previousContract": "2026年12月限月",
     "contractsMatch": true,
     "turnover": {
-      "asOfDate": "2026-10-30",
+      "asOfDate": "2026-11-06",
       "contract": "NIKKEI 225 FUT 2612",
       "leaders": [
         {
           "name": "ＡＢＮクリアリン証券",
-          "volume": 17079,
+          "volume": 35228,
           "rank": 1
         },
         {
           "name": "ソシエテＧ証券",
-          "volume": 13164,
+          "volume": 28292,
           "rank": 2
         },
         {
           "name": "バークレイズ証券",
-          "volume": 6362,
+          "volume": 20588,
           "rank": 3
         },
         {
-          "name": "ゴールドマン証券",
-          "volume": 2840,
+          "name": "野村証券",
+          "volume": 6371,
           "rank": 4
         },
         {
           "name": "サスケハナ・ホンコン",
-          "volume": 2786,
+          "volume": 6340,
           "rank": 5
         },
         {
-          "name": "モルガンＭＵＦＧ証券",
-          "volume": 2355,
+          "name": "ゴールドマン証券",
+          "volume": 6280,
           "rank": 6
         },
         {
-          "name": "野村証券",
-          "volume": 1847,
+          "name": "モルガンＭＵＦＧ証券",
+          "volume": 6259,
           "rank": 7
         },
         {
           "name": "ＪＰモルガン証券",
-          "volume": 1531,
+          "volume": 2813,
           "rank": 8
         },
         {
           "name": "ビーオブエー証券",
-          "volume": 1125,
+          "volume": 2199,
           "rank": 9
         },
         {
-          "name": "楽天証券",
-          "volume": 1107,
+          "name": "ＢＮＰパリバ証券",
+          "volume": 2032,
           "rank": 10
         }
       ],
-      "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202610/20261030_volume_by_participant_whole_day.xlsx",
+      "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202611/20261106_volume_by_participant_whole_day.xlsx",
       "status": "verified"
     },
     "openInterest": {
       "buyers": [
         {
           "name": "野村証券",
-          "openInterest": 40031,
+          "openInterest": 37451,
           "rank": 1,
-          "previousOpenInterest": 38569,
-          "weekChange": 1462,
+          "previousOpenInterest": 40031,
+          "weekChange": -2580,
           "previousRank": 1
         },
         {
           "name": "ＳＭＢＣ日興証券",
-          "openInterest": 5954,
+          "openInterest": 6168,
           "rank": 2,
-          "previousOpenInterest": 5873,
-          "weekChange": 81,
+          "previousOpenInterest": 5954,
+          "weekChange": 214,
           "previousRank": 2
         },
         {
           "name": "バークレイズ証券",
-          "openInterest": 5835,
+          "openInterest": 5257,
           "rank": 3,
-          "previousOpenInterest": 4332,
-          "weekChange": 1503,
-          "previousRank": 4
-        },
-        {
-          "name": "ドイツ証券",
-          "openInterest": 4936,
-          "rank": 4,
-          "previousOpenInterest": 3506,
-          "weekChange": 1430,
-          "previousRank": 6
-        },
-        {
-          "name": "ＵＢＳ証券",
-          "openInterest": 3603,
-          "rank": 5,
-          "previousOpenInterest": 4135,
-          "weekChange": -532,
-          "previousRank": 5
-        },
-        {
-          "name": "ソシエテＧ証券",
-          "openInterest": 3032,
-          "rank": 6,
-          "previousOpenInterest": 4428,
-          "weekChange": -1396,
+          "previousOpenInterest": 5835,
+          "weekChange": -578,
           "previousRank": 3
         },
         {
-          "name": "大和証券",
-          "openInterest": 1972,
+          "name": "ＢＮＰパリバ証券",
+          "openInterest": 4515,
+          "rank": 4,
+          "previousOpenInterest": 1505,
+          "weekChange": 3010,
+          "previousRank": 9
+        },
+        {
+          "name": "ＵＢＳ証券",
+          "openInterest": 4426,
+          "rank": 5,
+          "previousOpenInterest": 3603,
+          "weekChange": 823,
+          "previousRank": 5
+        },
+        {
+          "name": "ドイツ証券",
+          "openInterest": 3296,
+          "rank": 6,
+          "previousOpenInterest": 4936,
+          "weekChange": -1640,
+          "previousRank": 4
+        },
+        {
+          "name": "ソシエテＧ証券",
+          "openInterest": 2979,
           "rank": 7,
-          "previousOpenInterest": 2134,
-          "weekChange": -162,
-          "previousRank": 8
+          "previousOpenInterest": 3032,
+          "weekChange": -53,
+          "previousRank": 6
+        },
+        {
+          "name": "大和証券",
+          "openInterest": 1844,
+          "rank": 8,
+          "previousOpenInterest": 1972,
+          "weekChange": -128,
+          "previousRank": 7
         },
         {
           "name": "サスケハナ・ホンコン",
-          "openInterest": 1899,
-          "rank": 8,
-          "previousOpenInterest": 1692,
-          "weekChange": 207,
-          "previousRank": 10
-        },
-        {
-          "name": "ＢＮＰパリバ証券",
-          "openInterest": 1505,
+          "openInterest": 1674,
           "rank": 9,
-          "previousOpenInterest": null,
-          "weekChange": null,
-          "previousRank": null
+          "previousOpenInterest": 1899,
+          "weekChange": -225,
+          "previousRank": 8
         },
         {
           "name": "シティグループ証券",
-          "openInterest": 1405,
+          "openInterest": 1192,
           "rank": 10,
-          "previousOpenInterest": null,
-          "weekChange": null,
-          "previousRank": null
+          "previousOpenInterest": 1405,
+          "weekChange": -213,
+          "previousRank": 10
         }
       ],
       "sellers": [
         {
           "name": "ＨＳＢＣ証券",
-          "openInterest": 31267,
+          "openInterest": 31097,
           "rank": 1,
-          "previousOpenInterest": 31274,
-          "weekChange": -7,
+          "previousOpenInterest": 31267,
+          "weekChange": -170,
           "previousRank": 1
         },
         {
-          "name": "モルガンＭＵＦＧ証券",
-          "openInterest": 9510,
-          "rank": 2,
-          "previousOpenInterest": 10616,
-          "weekChange": -1106,
-          "previousRank": 2
-        },
-        {
           "name": "みずほ証券",
-          "openInterest": 9400,
-          "rank": 3,
-          "previousOpenInterest": 9174,
-          "weekChange": 226,
+          "openInterest": 11176,
+          "rank": 2,
+          "previousOpenInterest": 9400,
+          "weekChange": 1776,
           "previousRank": 3
         },
         {
-          "name": "三菱ＵＦＪ証券",
-          "openInterest": 7951,
-          "rank": 4,
-          "previousOpenInterest": 8254,
-          "weekChange": -303,
-          "previousRank": 5
+          "name": "モルガンＭＵＦＧ証券",
+          "openInterest": 9959,
+          "rank": 3,
+          "previousOpenInterest": 9510,
+          "weekChange": 449,
+          "previousRank": 2
         },
         {
-          "name": "ゴールドマン証券",
-          "openInterest": 6400,
-          "rank": 5,
-          "previousOpenInterest": 8557,
-          "weekChange": -2157,
+          "name": "三菱ＵＦＪ証券",
+          "openInterest": 7479,
+          "rank": 4,
+          "previousOpenInterest": 7951,
+          "weekChange": -472,
           "previousRank": 4
         },
         {
-          "name": "ＪＰモルガン証券",
-          "openInterest": 2503,
-          "rank": 6,
-          "previousOpenInterest": 2476,
-          "weekChange": 27,
-          "previousRank": 6
-        },
-        {
-          "name": "フィリップ・キャ証券",
-          "openInterest": 1308,
-          "rank": 7,
-          "previousOpenInterest": 985,
-          "weekChange": 323,
-          "previousRank": 7
+          "name": "ゴールドマン証券",
+          "openInterest": 5166,
+          "rank": 5,
+          "previousOpenInterest": 6400,
+          "weekChange": -1234,
+          "previousRank": 5
         },
         {
           "name": "ＡＢＮクリアリン証券",
-          "openInterest": 1192,
-          "rank": 8,
-          "previousOpenInterest": null,
-          "weekChange": null,
-          "previousRank": null
+          "openInterest": 2093,
+          "rank": 6,
+          "previousOpenInterest": 1192,
+          "weekChange": 901,
+          "previousRank": 8
         },
         {
           "name": "ＳＢＩ証券",
-          "openInterest": 1002,
-          "rank": 9,
-          "previousOpenInterest": 714,
-          "weekChange": 288,
-          "previousRank": 8
+          "openInterest": 945,
+          "rank": 7,
+          "previousOpenInterest": 1002,
+          "weekChange": -57,
+          "previousRank": 9
+        },
+        {
+          "name": "フィリップ・キャ証券",
+          "openInterest": 848,
+          "rank": 8,
+          "previousOpenInterest": 1308,
+          "weekChange": -460,
+          "previousRank": 7
         },
         {
           "name": "ナティクシス証券",
           "openInterest": 450,
-          "rank": 10,
+          "rank": 9,
           "previousOpenInterest": 450,
           "weekChange": 0,
-          "previousRank": 9
+          "previousRank": 10
+        },
+        {
+          "name": "日産証券",
+          "openInterest": 404,
+          "rank": 10,
+          "previousOpenInterest": null,
+          "weekChange": null,
+          "previousRank": null
         }
       ],
-      "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20261030_indexfut_oi_by_tp.xlsx",
-      "previousSourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20261023_indexfut_oi_by_tp.xlsx",
+      "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20261106_indexfut_oi_by_tp.xlsx",
+      "previousSourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20261030_indexfut_oi_by_tp.xlsx",
       "status": "verified"
     },
-    "market": {
-      "asOfDate": "2026-10-30",
-      "previousAsOfDate": "2026-10-23",
-      "price": null,
-      "previousWeekPrice": null,
-      "priceWeekChange": null,
-      "priceWeekChangePercent": null,
-      "openInterest": 168431,
-      "previousWeekOpenInterest": 169253,
-      "openInterestWeekChange": -822,
-      "volume": 50710,
-      "oiSourceName": "JPX 月間統計資料「指数先物取引取引状況（日別）」",
-      "oiSourceFileUrl": "https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202610.xlsx",
-      "previousOiSourceFileUrl": "https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202610.xlsx",
-      "priceSourceName": null,
-      "priceSourceUrl": null,
-      "priceDefinition": null,
-      "status": "partial"
-    },
+    "market": null,
     "status": "partial",
-    "error": "同日先物価格取得不能 / 前週先物価格取得不能",
-    "fetchedAt": "2026-11-09T10:17:40+09:00",
+    "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202611.xlsx",
+    "fetchedAt": "2026-11-09T19:27:09+09:00",
     "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
   },
   "nikkeiFuturesDailyHistory": [
     {
-      "asOfDate": "2026-11-06",
+      "asOfDate": "2026-11-09",
       "price": 58160.0,
-      "openInterest": 176025,
-      "volume": 123733,
+      "openInterest": 178289,
+      "volume": 70870,
       "sourceName": "JPX / 大阪取引所 日経225先物",
       "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
-      "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261106open_interest.xlsx",
-      "capturedAt": "2026-11-09T10:17:39+09:00",
+      "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261109open_interest.xlsx",
+      "capturedAt": "2026-11-09T19:27:09+09:00",
       "status": "verified"
     }
   ],
@@ -1324,7 +1311,7 @@
     "status": "verified",
     "releaseFrequency": "weekly",
     "lookbackWeeks": 52,
-    "fetchedAt": "2026-11-09T10:17:44+09:00",
+    "fetchedAt": "2026-11-09T19:27:13+09:00",
     "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
     "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
     "priceStatus": "available",
