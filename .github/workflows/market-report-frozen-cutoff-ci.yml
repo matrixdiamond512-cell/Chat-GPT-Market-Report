@@ -2,6 +2,18 @@ name: Market report frozen-cutoff regression
 on:
   push:
     paths:
+      - config/report_schedule.json
+      - scripts/report_continuity_shadow.py
+      - scripts/resolve_market_report_slot.py
+      - scripts/test_resolve_market_report_slot.py
+      - tests/test_report_continuity_shadow.py
+      - tests/test_market_data_window_evidence.py
+      - tests/test_policy_expectations.py
+      - tests/test_publication_eligibility.py
+      - tests/test_publication_evidence.py
+      - tests/test_historical_saturday_slots.py
+      - assets/js/report-publication-policy.js
+      - tests/test_report_publication_policy.js
       - scripts/run_market_data_window.py
       - scripts/run_market_data_acquisition.py
       - scripts/persist_report_slot_evidence.py
@@ -14,6 +26,18 @@ on:
       - .github/workflows/freeze-report-slot-evidence.yml
   pull_request:
     paths:
+      - config/report_schedule.json
+      - scripts/report_continuity_shadow.py
+      - scripts/resolve_market_report_slot.py
+      - scripts/test_resolve_market_report_slot.py
+      - tests/test_report_continuity_shadow.py
+      - tests/test_market_data_window_evidence.py
+      - tests/test_policy_expectations.py
+      - tests/test_publication_eligibility.py
+      - tests/test_publication_evidence.py
+      - tests/test_historical_saturday_slots.py
+      - assets/js/report-publication-policy.js
+      - tests/test_report_publication_policy.js
       - scripts/run_market_data_window.py
       - scripts/run_market_data_acquisition.py
       - scripts/persist_report_slot_evidence.py
@@ -40,3 +64,10 @@ jobs:
         run: python -m compileall -q scripts/run_market_data_window.py scripts/run_market_data_acquisition.py scripts/persist_report_slot_evidence.py
       - name: Run strictly offline cutoff and immutable-evidence regression suites
         run: python -m unittest scripts.test_run_market_data_window scripts.test_market_acquisition_cutoff tests.test_report_slot_evidence -v
+      - name: Run offline report continuity and publication policy tests
+        run: python -m unittest tests.test_report_continuity_shadow tests.test_market_data_window_evidence tests.test_report_slot_evidence tests.test_policy_expectations tests.test_publication_eligibility tests.test_publication_evidence scripts.test_resolve_market_report_slot scripts.test_market_acquisition_cutoff tests.test_historical_saturday_slots -v
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify unchanged publication eligibility policy
+        run: node tests/test_report_publication_policy.js
