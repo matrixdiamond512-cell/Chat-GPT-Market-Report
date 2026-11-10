@@ -151,12 +151,68 @@ class TaskOutputHandoffTests(unittest.TestCase):
         with self.assertRaisesRegex(IssuanceBlocked, "AFTER_SLOT_WINDOW"):
             self.freeze(now=SLOT + timedelta(minutes=40))
         self.assertIsNone(self.store.payload)
+        self.reader.assert_not_called()
 
     def test_reader_permission_failure_does_not_create_g2(self):
         self.reader.side_effect = IssuanceBlocked("PINNED_EVIDENCE_READBACK_FAILED")
         with self.assertRaisesRegex(IssuanceBlocked, "READBACK_FAILED"):
             self.freeze()
         self.assertIsNone(self.store.payload)
+
+
+    def test_malformed_readback_fails_closed_without_creating_g2(self):
+        for readback in (None, [], {}, {"evidence_object": None},
+                         {"evidence_object": {"bytes": []}},
+                         {"evidence_object": {"bytes": "[]"}},
+                         {"evidence_object": {"bytes": '{"snapshot": []}'}},
+                         {"evidence_object": {"bytes": "{"}}):
+            with self.subTest(readback=readback):
+                self.reader.return_value = readback
+                with self.assertRaisesRegex(IssuanceBlocked, "TASK_OUTPUT_EVIDENCE_INVALID"):
+                    self.freeze()
+                self.assertIsNone(self.store.payload)
+
+    def test_unclassified_reader_failure_is_retryable_without_success(self):
+        self.reader.side_effect = TimeoutError("simulated response loss")
+        with self.assertRaises(IssuanceBlocked) as caught:
+            self.freeze()
+        self.assertEqual(str(caught.exception), "TASK_OUTPUT_EVIDENCE_READ_FAILED")
+        self.assertEqual(caught.exception.stage, "TASK_EVIDENCE_READ")
+        self.assertTrue(caught.exception.retryable)
+        self.assertIsNone(self.store.payload)
+
+    def test_invalid_target_time_and_types_never_read_evidence(self):
+        from datetime import datetime, timedelta
+        mutations = [
+            lambda r: r.update(schemaVersion=True),
+            lambda r: r["report"].update(report_id="other-slot"),
+            lambda r: r["report"].update(revision=True),
+            lambda r: r["report"].update(date="2026-10-17"),
+            lambda r: r["report"].update(time="12:00"),
+            lambda r: r["evidence_ref"].update(generation=True),
+            lambda r: r["evidence_ref"].update(snapshot_id=[]),
+            lambda r: r["evidence_ref"].update(evidence_id=123),
+            lambda r: r.update(frozen_at="2026-10-16T08:05:00"),
+            lambda r: r.update(frozen_at="2026-10-16T08:41:00+09:00"),
+        ]
+        for mutate in mutations:
+            with self.subTest(mutate=mutate):
+                request = copy.deepcopy(self.request)
+                mutate(request)
+                with self.assertRaises(IssuanceBlocked):
+                    self.freeze(request)
+                self.reader.assert_not_called()
+                self.assertIsNone(self.store.payload)
+        for clock in (SLOT - timedelta(minutes=7), datetime(2026, 10, 16, 8, 6)):
+            with self.subTest(clock=clock):
+                with self.assertRaises(IssuanceBlocked):
+                    self.freeze(now=clock)
+                self.reader.assert_not_called()
+
+    def test_invalid_g2_store_receipt_is_never_reported_as_success(self):
+        self.store.create_only = Mock(return_value=None)
+        with self.assertRaisesRegex(IssuanceBlocked, "TASK_OUTPUT_G2_RECEIPT_INVALID"):
+            self.freeze()
 
 
 if __name__ == "__main__":
