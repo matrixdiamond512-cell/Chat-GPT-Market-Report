@@ -232,3 +232,25 @@ Head 8054d6286 passed nine related CI systems and strict-current-report, but UI 
 ### MR-G2-TASK-HANDOFF-20261111-01 — title parsing correction and isolated index binding
 
 The first renderer correction alone did not resolve UI run 42871382048. Local replay of the exact generated canonical proved legacyMarketRowsFromFullText interpreted the Friday title `(金)08:00` as gold price `08`. Exclude the exact canonical title before legacy price extraction; preserve original prose when no actual price rows remain. A Friday-title regression now exercises this path. The isolated chain also projects its own report into temporary indexes and uses the real GitHubPagesVerifier over fake storage/HTTP instead of accepting a fake Pages success; the generated canonical remains the input to hosted real-browser DOM validation. External live services remain NOT_RUN. Final-head CI must be checked independently.
+
+
+## MR-G2-TASK-HANDOFF-20261111-01 — hosted verification
+
+Exact executable/test head `2df1e9b36cb72554fd5c40bb72bd0ecf4dc494c7`: all ten requested PR CI systems independently read as completed/success. UI jobs validate and strict-current-report both SUCCESS; validate includes the dynamically generated task/G2/canonical fixture and real Playwright public-mode body/identity check.
+
+| System | Exact-head Actions run |
+|---|---|
+| 08:00 issuance contract | https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42871996353 |
+| Frozen cutoff | https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42871996348 |
+| Apps Script prepublish | https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42871996605 |
+| Sync recovery | https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42871996379 |
+| Delivery health | https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42871996376 |
+| Dashboard health | https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42871996990 |
+| Dashboard eligibility | https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42871996476 |
+| Historical recovery | https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42871996492 |
+| Saved-source QA | https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42871996405 |
+| UI / DOM | https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42871996799 |
+
+Local renderer regressions: 6/6 PASS. Local Python contracts: 168 tests (167 PASS, one Windows symlink privilege SKIP); updated isolated index/Pages test 7/7 PASS. Earlier UI failures 42870725218 and 42871382048 remain in history and are superseded only for this code head.
+
+Acceptance: integration candidate PASS at captured main 24fef1aa5750e1e2d87e26f6139727a0bdd9aff9; isolated simulated chain plus hosted real browser PASS; actual task-to-host connection BLOCKED_G2_TASK_HANDOFF; production Environment BLOCKED (self-review prevention disabled), production WIF/IAM UNKNOWN; production issuance NOT_READY. All owners remain legacy. No production write, merge, Draft removal, schedule/trigger/permission change, notification or retroactive Evidence generation occurred. Fixed-ID Google Docs synchronization, live fault injection, and ten-business-day operation remain NOT_RUN. This verification addition changes documentation only; verify its final head separately.
