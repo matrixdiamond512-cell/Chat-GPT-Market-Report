@@ -12,6 +12,8 @@ on:
       - 'scripts/validate_issuance_report_dom.js'
       - 'assets/js/report-core-v3.js'
       - 'tests/fixtures/issuance_dom_report.json'
+      - 'scripts/reporting/task_output_handoff.py'
+      - 'tests/test_task_output_handoff.py'
       - 'scripts/test_market_report_title_boundary.js'
       - 'scripts/test_portal_deploy_safety.js'
       - 'tests/fixtures/report_title_boundary_malformed.json'
@@ -30,6 +32,8 @@ on:
       - 'scripts/validate_issuance_report_dom.js'
       - 'assets/js/report-core-v3.js'
       - 'tests/fixtures/issuance_dom_report.json'
+      - 'scripts/reporting/task_output_handoff.py'
+      - 'tests/test_task_output_handoff.py'
       - 'scripts/test_market_report_title_boundary.js'
       - 'scripts/test_portal_deploy_safety.js'
       - 'tests/fixtures/report_title_boundary_malformed.json'
@@ -145,6 +149,11 @@ jobs:
           NODE_PATH: ${{ runner.temp }}/renderer-regression/node_modules
         run: node scripts/validate_issuance_report_dom.js
 
+      - name: Generate canonical input from isolated task handoff chain
+        env:
+          ISSUANCE_E2E_CANONICAL_OUTPUT: ${{ runner.temp }}/task-handoff-report.json
+        run: python3 -m unittest discover -s tests -p test_task_output_handoff.py -v
+
       - name: Build isolated public-mode DOM site with target reports.json
         run: |
           mkdir -p "$RUNNER_TEMP/issuance-public-dom-site"
@@ -156,7 +165,7 @@ jobs:
           const fs = require('fs');
           const path = require('path');
           const site = process.argv[2];
-          const report = JSON.parse(fs.readFileSync('tests/fixtures/issuance_dom_report.json', 'utf8'));
+          const report = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + '/task-handoff-report.json', 'utf8'));
           fs.mkdirSync(path.join(site, 'reports'), {recursive: true});
           fs.writeFileSync(path.join(site, 'data', 'reports.json'), JSON.stringify({updatedAt: new Date().toISOString()}));
           fs.writeFileSync(path.join(site, 'reports.json'), JSON.stringify([report], null, 2));
@@ -174,7 +183,7 @@ jobs:
       - name: Verify exact report body against public-mode JSON and rendered DOM
         env:
           PORTAL_URL: http://127.0.0.1:8767
-          ISSUANCE_CANONICAL_REPORT: tests/fixtures/issuance_dom_report.json
+          ISSUANCE_CANONICAL_REPORT: ${{ runner.temp }}/task-handoff-report.json
           ISSUANCE_DOM_MODE: public
           NODE_PATH: ${{ runner.temp }}/renderer-regression/node_modules
         run: node scripts/validate_issuance_report_dom.js

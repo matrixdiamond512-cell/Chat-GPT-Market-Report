@@ -6,6 +6,8 @@ on:
       - ".github/workflows/0800-issuance-contract.yml"
       - "scripts/reporting/issuance_pipeline.py"
       - "scripts/reporting/g2_bundle_producer.py"
+      - "scripts/reporting/task_output_handoff.py"
+      - "tests/test_task_output_handoff.py"
       - "scripts/reporting/gcs_wif_readonly.py"
       - "tests/test_gcs_wif_readonly.py"
       - "scripts/reporting/issuance_portal.py"
@@ -68,3 +70,6 @@ jobs:
           python -m unittest discover -s tests -p test_report_slot_evidence.py -v
           python -m unittest discover -s tests -p test_gcs_wif_readonly.py -v
 
+
+      - name: Verify task output handoff and isolated chain
+        run: python -m unittest discover -s tests -p test_task_output_handoff.py -v
