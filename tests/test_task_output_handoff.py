@@ -5,16 +5,17 @@ from html.parser import HTMLParser
 import html
 import json
 import os
+import tempfile
 from pathlib import Path
 import unittest
 from unittest.mock import Mock
 
 from test_g2_bundle_producer import fixture_source, PROJECT, EVIDENCE_BUCKET, SLOT
 from test_issuance_pipeline import FakeDocs, FakeClaimStore
-from test_issuance_portal import FakeImporter, FakeGitHub, FakePages
+from test_issuance_portal import FakeImporter, FakeGitHub, DynamicPublicSession, WorkflowGateway
 from scripts.reporting.g2_bundle_producer import TrustedG2BundleProducer, G2BundleWriteReceipt, _canonical_bytes
 from scripts.reporting.issuance_pipeline import IssuanceBlocked, run_issuance
-from scripts.reporting.issuance_portal import GitHubPortalPublisher
+from scripts.reporting.issuance_portal import GitHubPortalPublisher, GitHubPagesVerifier
 from scripts.reporting.task_output_handoff import VerifiedTaskInvocation, freeze_task_output
 
 
@@ -72,10 +73,27 @@ class TaskOutputHandoffTests(unittest.TestCase):
                    "driveFileId": "doc-123", "documentRevisionId": "revision-7",
                    "bodyHash": report["bodyHash"], "evidenceId": frozen["evidence_ref"]["evidence_id"],
                    "snapshotId": frozen["evidence_ref"]["snapshot_id"]}
-        portal = GitHubPortalPublisher(FakeImporter(report, receipt), github, FakePages(), "fixture-head")
-        result = run_issuance(bundle, expected_project_id=PROJECT, expected_evidence_bucket=EVIDENCE_BUCKET,
-            docs_writer=FakeDocs(saved_at="2026-10-16T08:07:00+09:00"),
-            portal=portal, claim_store=FakeClaimStore())
+        observed_dom = []
+        def verify_dom(public):
+            dom = TextDOM()
+            dom.feed("<main><pre>" + html.escape(public["fullText"]) + "</pre></main>")
+            self.assertEqual(dom.text, self.request["full_text"])
+            observed_dom.append(public["report_id"])
+        pages = GitHubPagesVerifier(github=WorkflowGateway(), base_url="https://example.invalid",
+            public_session=DynamicPublicSession(github), poll_interval=0, dom_verifier=verify_dom)
+        with tempfile.TemporaryDirectory() as temp:
+            importer = FakeImporter(report, receipt)
+            importer.root = Path(temp)
+            (importer.root / "reports.json").write_text(json.dumps([report]), encoding="utf-8")
+            (importer.root / "data").mkdir()
+            for name in ("latest-report.json", "dashboard.json"):
+                (importer.root / "data" / name).write_text(json.dumps({"latestReport": report}), encoding="utf-8")
+            portal = GitHubPortalPublisher(importer, github, pages, "fixture-head")
+            result = run_issuance(bundle, expected_project_id=PROJECT, expected_evidence_bucket=EVIDENCE_BUCKET,
+                docs_writer=FakeDocs(saved_at="2026-10-16T08:07:00+09:00"),
+                portal=portal, claim_store=FakeClaimStore())
+        self.assertEqual(observed_dom, [report["report_id"]])
+        self.assertEqual(json.loads(github.contents["reports.json"])[0]["bodyHash"], report["bodyHash"])
         canonical = json.loads(github.contents["reports/2026-10-16_08-00.json"])
         receipt = json.loads(github.contents["publication-receipts/2026-10-16_08-00.json"])
         dom = TextDOM()

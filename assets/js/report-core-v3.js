@@ -216,7 +216,8 @@ function marketRows(report) {
   return [];
 }
 function legacyMarketRowsFromFullText(report) {
-  const source = fullTextOf(report);
+  // A Friday title (金) followed by 08:00 is metadata, never a gold price.
+  const source = splitCanonicalTitleFromSource_(fullTextOf(report), report?.title).bodySource;
   const specs = [
     ["金", /(?:現物金|金(?:\s*\(XAU\/USD\))?)[^\n]*?(?:約|[:：]\s*)?([0-9][0-9,]*(?:\.[0-9]+)?\s*(?:ドル|USD\/oz)?)/],
     ["WTI原油", /WTI[^\n]*?(?:約|[:：]\s*)?([0-9][0-9,]*(?:\.[0-9]+)?\s*ドル)/],

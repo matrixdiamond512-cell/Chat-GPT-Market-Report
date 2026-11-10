@@ -87,3 +87,14 @@ test("issuance market-section prose survives when no price rows can be parsed", 
   assert.doesNotMatch(rendered, /<table\b/);
   assert.doesNotMatch(rendered, /sop-empty/);
 });
+
+
+test("Friday report title time is never inferred as a gold price", () => {
+  const api = renderer();
+  const title = "マーケットレポート｜2026/10/16（金）08:00";
+  const prose = "市場データ確認：金、WTI、日経平均、USD/JPY、EUR/USD、BTC。";
+  const report = {date: "2026-10-16", time: "08:00", title, fullText: title + "\n" + prose};
+  const rendered = api.renderMarketTable(report, [prose], "主要市場データ");
+  assert.doesNotMatch(rendered, /<table\b/);
+  assert.ok(rendered.includes(prose));
+});
