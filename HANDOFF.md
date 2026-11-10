@@ -175,3 +175,10 @@ Next: authorize/use an authenticated TEST_ONLY Cloud Shell session and obtain on
 - 所有権は平日08:00/12:00/16:00/21:00すべてapps_script_legacy、週末なし。実タスク接続はBLOCKED_G2_TASK_HANDOFF、本番E2E/10稼働日運用/Docs同期はNOT_RUN、本番NOT_READY。
 
 責任者の次の作業: 文書管理規程→本節→固定仕様/運用/証拠台帳→最新PR/head/Actionsを読む。その上で、本人アカウントから実ChatGPTタスク設定と利用可能な正式出力インターフェース、固定Google Docsの権限/revision、Apps Script実デプロイ/トリガーを読み取り確認する。将来の許可時間枠で認証済み受渡しとG2/Evidence generation・本文ハッシュ・GCS監査主体の一致を独立検証する。本番切替え、正式発行、通知、PR merge/Draft解除には別途明示承認が必要。過去枠のEvidenceは新規生成しない。
+
+
+### MR-G2-TASK-HANDOFF-20261111-03 — pushed-head readback and CI blocker
+
+GitHub readback confirmed PR #188 OPEN/Draft/unmerged, head `910cdc2852ad282bbf9ac228eb23fc3246efee45`, and HANDOFF.md section 9 present. All chat implementation changes including 70d73c250 are on the PR branch. This supersedes the prior local-only/push-pending status.
+
+At head 910cdc285, nine requested CI systems succeeded, including issuance contract run https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42881397691 and UI validate/strict-current-report https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42881398140 . Sync recovery run https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42881397868 failed: its regression tests passed, but verify_publication_consistency.py reported `dashboard.latestReport does not match complete latest report`. Root cause and live publication impact are not yet established. Do not treat old-head successes as acceptance of this head; overall related CI is BLOCKED. No data/dashboard/report/receipt was rewritten to force a pass and no production recovery or workflow rerun was dispatched. The owner should first inspect the exact CI checkout/merge SHA and dashboard/latest-report/canonical consistency, preserving market data and all publication gates. This follow-up changes handoff evidence only; its child head must be read back separately.
