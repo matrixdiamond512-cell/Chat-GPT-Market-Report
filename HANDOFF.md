@@ -157,3 +157,21 @@ PR #188 was statically reviewed beyond the happy path. The importer handoff now 
 External acceptance remains BLOCKED / NOT_RUN. Operator-provided GCS generations exist in project records but were not independently read here. The 2026-10-29 Docs file remains `閲覧用分析版`; the TEST_ONLY Docs probe is explicitly non-issuance. Drive search found no Docs containing the recorded evidence IDs, and the connector did not expose appProperties. Current local folder is not a Git worktree and has no staging marker or slot evidence file.
 
 Next: authorize/use an authenticated TEST_ONLY Cloud Shell session and obtain one coherent G2/Docs readback bound to one exact GCS generation. Stage only after this binding is evidenced; inspect strict dry-run before any `--apply`. Do not dispatch the production publication workflow. PR #189 remains open and Draft with duplicate importer changes; do not merge both branches independently.
+
+
+## 9. 責任者アカウントへの引継ぎ — 2026-11-11 JST
+
+変更要求ID: `MR-G2-TASK-HANDOFF-20261111-03`。出典: ユーザーの「責任者のアカウントで続きをやるため、このチャットでの変更をGitHubへ反映する」指示、PR #188。今回の明示指示で、前節/台帳の外部アクセス保留のうちGitHub反映と反映確認を再開する。本番操作の承認は含まない。
+
+- 継続対象PR: https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/188 。Open/Draft/未マージを維持。
+- PRブランチ: `codex/0800-main-issuance-e2e-20261029`。このPCの作業ブランチ: `codex/pr188-g2-handoff-20261111`。反映前remote head: `ebec70b4ffc0b02a9c839c8ea4b6acf061bdb567`。未push実装コミット: `70d73c250feeedfb53db1ac74a7d75d752095dc1`。本引継ぎを追加した子孫headを通常pushする。責任者はGitHub上の最新headを再取得して開始する。
+- main統合基準: `24fef1aa5750e1e2d87e26f6139727a0bdd9aff9`。通常mergeで競合なし。日々更新されるdataと実装を分離し、同期だけを繰り返さない。既存未コミット変更を破棄せず、別PC/担当者の更新をforce-pushで上書きしない。
+- 実装: `scripts/reporting/task_output_handoff.py` が本文/ハッシュ/正確なEvidence参照を独立読戻しと結合し、既存TrustedG2BundleProducerへ渡す。呼出元のVerifiedTaskInvocationはホスト契約であり、認証実装ではない。期限外・不正型/ID/時刻は読取り前に拒否、壊れた読戻しと不確定な保存結果はBLOCKED。
+- 隔離E2E: fake Docs/保存先を使い、G2→正本/Receipt/同一索引→既存Pages verifierの本文読戻しを検証。その実際の生成canonicalをreal renderer/Playwrightへ渡すCIを追加。金曜日タイトルの(金)08:00を金価格08と誤認する不具合と、市場節原文の欠落を修正。
+- `70d73c250` のローカル検証: Python 172件中171 PASS、1 SKIP（Windows symlink権限不足）。task handoff 11/11、renderer 6/6 PASS。CIはこのheadではまだ未実行。本push後の最終headで確認する。以前のhead ebec70b4fは関連10系統とUI validate/strict-current-reportがSUCCESSだが、新headへ流用しない。
+- 固定文書: requirements/specification/operations/DOCUMENT_CONTROLとproject-control/EVIDENCE_LEDGERに変更ID・検証範囲・未解決を記録。Google Docs固定原本は未更新。接続後も固定台帳ID `1F5vH9_O0LUC9Dki0CNm1JDNVfg7gMYMcUCIxgeanE5g` のDocs API読取りは403。読める旧版Markdownを正本へ昇格させない。
+- ChatGPTのタスク管理ページは未ログインへ遷移し、実タスクID/出力/実行履歴を読めていない。gcloud/claspはこのPCのPATH上にない。アカウント/認証/過去会話は引き継がれない。責任者自身の正規アカウントで確認する。
+- 本番Environmentは前回読取りで存在、main限定、prevent_self_review=false。管理者バイパスはUNKNOWN。本番WIF/IAM、G2作成audit主体、Docs保存権限、導入済みApps Script/triggersはUNKNOWN。権限や保護設定は無断変更しない。
+- 所有権は平日08:00/12:00/16:00/21:00すべてapps_script_legacy、週末なし。実タスク接続はBLOCKED_G2_TASK_HANDOFF、本番E2E/10稼働日運用/Docs同期はNOT_RUN、本番NOT_READY。
+
+責任者の次の作業: 文書管理規程→本節→固定仕様/運用/証拠台帳→最新PR/head/Actionsを読む。その上で、本人アカウントから実ChatGPTタスク設定と利用可能な正式出力インターフェース、固定Google Docsの権限/revision、Apps Script実デプロイ/トリガーを読み取り確認する。将来の許可時間枠で認証済み受渡しとG2/Evidence generation・本文ハッシュ・GCS監査主体の一致を独立検証する。本番切替え、正式発行、通知、PR merge/Draft解除には別途明示承認が必要。過去枠のEvidenceは新規生成しない。
