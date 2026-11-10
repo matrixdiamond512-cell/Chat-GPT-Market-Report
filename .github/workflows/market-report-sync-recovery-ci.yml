@@ -8,6 +8,8 @@ on:
       - "data/latest-report.json"
       - "data/dashboard.json"
       - "scripts/build_reports.py"
+      - "scripts/build_market_json.py"
+      - "tests/test_build_market_json.py"
       - "scripts/build_report_index.py"
       - "scripts/report_identity.py"
       - "scripts/reconcile_latest_report_market_data.py"
@@ -54,6 +56,7 @@ jobs:
           python-version: "3.12"
       - name: Run synchronization and publication regression tests
         run: |
+          python -m unittest discover -s tests -p 'test_build_market_json.py' -v
           python -m unittest discover -s tests -p 'test_market_report_sync_contract.py' -v
           python -m unittest discover -s tests -p 'test_dashboard_publication_health.py' -v
           python -m unittest discover -s tests -p 'test_scheduled_report_delivery.py' -v
