@@ -76,3 +76,14 @@ test("five-column Markdown tables and cell escaping preserve content safely", ()
   assert.doesNotMatch(rendered, /<script>/);
   assert.equal((rendered.match(/<td /g) || []).length, 5);
 });
+
+
+test("issuance market-section prose survives when no price rows can be parsed", () => {
+  const api = renderer();
+  const prose = ["市場データ確認：金、WTI、日経平均、USD/JPY、EUR/USD、BTC。"];
+  const report = {date: "2026-10-16", time: "08:00", fullText: prose[0]};
+  const rendered = api.renderMarketTable(report, prose, "主要市場データ");
+  assert.match(rendered, /市場データ確認：金、WTI、日経平均、USD\/JPY、EUR\/USD、BTC。/);
+  assert.doesNotMatch(rendered, /<table\b/);
+  assert.doesNotMatch(rendered, /sop-empty/);
+});
