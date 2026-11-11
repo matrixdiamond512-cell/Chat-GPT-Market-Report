@@ -391,4 +391,6 @@ Affected canonical paths: requirements.md, specification.md, operations.md, DOCU
 
 **Status:** code committed to the existing OPEN/Draft PR #188; hosted exact-head CI pending. Local Python unavailable; local tests NOT_RUN. No Cloud service, schedule, IAM/WIF, production GCS, task, Docs, receipt, Pages, notification, main, or PR lifecycle settings changed. Fixed-ID Docs are NOT_RUN. Production readiness remains NOT_READY.
 
-**Open outcomes:** exact-head hosted checks; review of time/date/slot/idempotency behavior; independent watchdog deployment and notification transport; approved GCP/identity/writer integration; no-cross-writer cutover/rollback plan; future eligible-slot external acceptance. Next necessary action is collect and inspect all relevant exact-head CI results, then resolve any failure before calling the PR candidate verified.
+**CI acceptance:** code/test head `2e5a286bc3847c9834cfec3af64bc0134985b48a` passed all 10 applicable exact-head hosted workflows; Evidence regression 23/23 and scheduler contract 10/10 passed in issuance CI. Initial three failures on the previous head were fixed and rerun successfully. Local Python remains NOT_RUN.
+
+**Open outcomes:** authenticated TEST ONLY adapter and storage integration; independent watchdog deployment/read-only polling and notification transport; approved GCP/identity/writer integration; one-writer cutover/rollback review; future eligible-slot external acceptance. Keep PR #188 Draft. Production delivery remains NOT_READY.
