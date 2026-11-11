@@ -34,12 +34,12 @@ APIs managed by this configuration: Cloud Run, Cloud Scheduler, IAM, IAM Credent
 Assumption: 4 weekday report slots × 20 weekdays/month, one producer and one watchdog request per slot, up to 45 seconds per request, 1 vCPU / 0.5 GiB, eight Scheduler jobs, <=0.5 GiB container image, and a TEST ONLY evidence corpus <=1 GiB. Uses current published rates and excludes tax, currency conversion, billing-account usage already consuming free tier, API enabling side effects, and abnormal retry storms.
 
 - Cloud Scheduler: 8 jobs, 3 free per billing account, 5 billable × $0.10/job/31 days = **$0.50/month**. If all three free jobs are already consumed, eight billable jobs total **$0.80/month**.
-- Cloud Run request-based ceiling at the assumption: about 14,400 vCPU-seconds and 7,200 GiB-seconds/month; at Tokyo Tier 1 rates ($0.000024/vCPU-second and $0.0000025/GiB-second), about **$0.36/month** before the shared monthly free allotments (180,000 vCPU-seconds, 360,000 GiB-seconds and 2 million requests). Expected cost is $0 when those shared allowances remain available; otherwise $0.36 is the estimate.
+- Cloud Run request-based ceiling at the assumption: about 7,200 vCPU-seconds and 3,600 GiB-seconds/month; at Tokyo Tier 1 rates ($0.000024/vCPU-second and $0.0000025/GiB-second), about **$0.36/month** before the shared monthly free allotments (180,000 vCPU-seconds, 360,000 GiB-seconds and 2 million requests). Expected cost is $0 when those shared allowances remain available; otherwise $0.36 is the estimate.
 - Existing GCS bucket: 1 GiB retained standard data is about **$0.02/month** at the Tokyo rate; 1,000 standard Class A and 1,000 Class B operations are about **$0.0054**. Actual Evidence objects are expected to be much smaller; retained-object growth is unbounded unless separately governed.
 - Artifact Registry: first 0.5 GiB per billing account is free; above that, published storage pricing is approximately $0.10/GiB-month. Assumed image fits in free allotment.
 - Cloud Logging: first 50 GiB/project/month is free; default log retention and Cloud Monitoring standard metrics/alerts are assumed within included quota. No notification channels are configured.
 
-Therefore the rough monthly service estimate is **$0.50–$1.20** under the stated profile, or **$0.80–$1.50** if the Scheduler and compute free allotments are already consumed. Actual charges depend on existing billing-account use and retries. Re-check the calculator before apply: https://cloud.google.com/products/calculator
+Therefore the rough monthly service estimate is **$0.50–$0.75** under the stated profile, or **$0.80–$1.05** if the Scheduler and compute free allotments are already consumed. Actual charges depend on existing billing-account use and retries. Re-check the calculator before apply: https://cloud.google.com/products/calculator
 
 ## Verification boundary
 
