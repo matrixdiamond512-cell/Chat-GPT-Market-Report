@@ -271,3 +271,38 @@ Source: PR #188, failed sync-recovery run 42881821634, and user request to ident
 Implementation: scripts/build_market_json.py no longer injects live payloads into latestReport or reports. Existing frontend consumers already prefer top-level marketData. Three isolated tests prove complete canonical equality, preservation of preexisting frozen marketData, and retry-safe source/error metadata. The sync-recovery CI watches and runs this regression. This prevents subsequent mutations; it neither retroactively repairs stored data nor promotes any publication. Body-authoring and G2/task interfaces are unchanged.
 
 Verification: local sync-related unittest 52/52, reconciliation helper 4/4, publication-consistency check PASS and index check 162 reports PASS; data/, reports/, reports.json and publication-receipts/ have zero working-tree changes. Final-head hosted CI pending at record creation. Google Docs fixed-ID synchronization and production E2E NOT_RUN; production NOT_READY. No schedule/owner/permission/trigger/main/Pages/Docs/notification change or production workflow dispatch.
+
+
+## 2026-11-11 scheduler reliability design — MR-EVIDENCE-SCHEDULER-RELIABILITY-20261111-01
+
+### Observed failure boundary
+
+The 2026-11-11 16:00 task reported the pre-slot Evidence reference missing (404). The GitHub freeze workflow's schedule history had no matching run in the 15:47/15:53/15:57 JST window. GitHub documents that scheduled Actions may be delayed under load and some queued runs may be dropped; its `schedule` event has no webhook payload. Therefore a cron string alone cannot attest the original occurrence date. The reason this particular run was absent remains unknown. The nearby 15:50 importer failure concerned the 12:00 source, and the Apps Script 16:23 execution concerned the 16:30 slot; neither is established as the 16:00 task's direct cause.
+
+### Scheduler options
+
+| Option | Reliability / identity | Complexity and cost | Decision |
+|---|---|---|---|
+| A. Keep GitHub Actions cron | Lowest change and current storage integration; repeat attempts and per-slot concurrency improve contention. GitHub cron can still delay/drop runs and does not supply an authenticated original occurrence timestamp. | Lowest incremental service cost/operations. | Keep as the current best-effort path while a replacement is staged; never treat cron dispatch as proof of Evidence. |
+| B. Cloud Scheduler → authenticated Cloud Run HTTP endpoint | Cloud Scheduler supplies original `X-CloudScheduler-ScheduleTime` (stable across retries) and job name. Verify OIDC principal, bind job name to one slot, derive report date in JST from the header, enforce cutoff, and deduplicate. Run an independent read-only watchdog schedule. | Adds GCP Scheduler/Run operations, IAM, logs, and possibly billing; requires a least-privilege writer handoff for GCS 08:00 and existing GitHub storage for other slots. | **Recommended target.** Reliable occurrence identity and independent monitoring address the observed weaknesses without changing publication gates. Production provisioning and storage credentials are separate approved work. |
+| C. Keep both GitHub and Cloud Scheduler as writers | Can improve attempts only if both write through one immutable reportId/idempotency claim; competing sources may produce different snapshots and create conflicts. | Highest secret, IAM, reconciliation, and on-call complexity; duplicate cost. | Not the first rollout. Do not dual-write without a single-writer/compare-and-set contract and separate acceptance. |
+
+### TEST ONLY implementation in this PR
+
+- `scripts/reporting/scheduler_reliability.py` validates the verified caller, exact scheduler job name, platform schedule-time header, JST weekday/slot and the fixed 13-minute schedule lead. It derives report date/reportId from the authenticated scheduled occurrence; no body field or runner-current date selects identity. Starts after the slot cutoff are rejected. The header-based idempotency key is stable across Cloud Scheduler retries.
+- `require_evidence_slot_guard` now applies the existing strict 15-minute pre-slot eligibility window to all four slots. The 08:00 GCS-only storage check remains separate and unchanged; 12:00/16:00/21:00 are not moved to GCS.
+- `assess_evidence_watchdog` computes waiting/warning/blocked/unknown and deterministic message output from independently read Evidence state and latest attempt. It does not send a notification or read/write production stores.
+- `tests/test_scheduler_reliability.py` covers authentication/job mismatch, schedule header omission/timezone, fixed occurrence date, UTC-to-JST day rollover, retry idempotency, on-time/5-minute delay, post-cutoff/next-day rejection, and independent warning states. Existing Evidence tests cover all-slot 15-minute gating and keep the GCS write path restricted to 08:00.
+- The GitHub freeze workflow keeps the existing UTC cron and storage branches. It scopes concurrency by cron expression (so different slots do not serialize) and runs offline contract tests. A GitHub scheduled event still cannot provide the Cloud Scheduler occurrence header; this workflow remains best-effort until an authenticated handoff is approved. Do not claim cross-day occurrence proof or production availability from these code changes.
+
+### Production cutover and recovery
+
+1. In a separate TEST ONLY GCP project, configure one authenticated Cloud Scheduler HTTP job per slot with `Asia/Tokyo` schedule and its fixed slot route/job identity. Restrict Cloud Run ingress and invocation to the scheduler service account; runtime code verifies the token and exact audience/principal.
+2. Configure the scheduler's retry deadline to end before the slot cutoff. Every retry uses the original scheduler timestamp; no retry may write after cutoff. Watchdog invocation is independent from the Evidence producer and reads the canonical Evidence state without creating or repairing it.
+3. Keep storage ownership unchanged: 08:00 uses existing WIF + GCS canonical generation/readback; the other slots use the existing GitHub contract. A service account/GitHub App handoff and exact minimum scopes must be reviewed before any writer can run.
+4. Test with a fixed clock, fake stores, and TEST ONLY credentials. Verify attempt metadata, create-only/identical retry, conflicting bytes rejection, watchdog message generation, and no notification/send/production write. Then run a separately approved shadow-read trial on a future eligible slot.
+5. Only after approval, select one authoritative writer per slot. Retain the existing workflow during a monitored transition but prevent concurrent canonical writes. Rollback by stopping the new Scheduler jobs and restoring the prior authorized owner; do not automatically replay a missed slot or generate historical Evidence.
+
+No Cloud Scheduler/Run resources, production IAM/WIF, task, trigger, GCS object, Docs, canonical report, Receipt, Pages, or notification were changed by this PR work. Fixed Google Docs originals remain unmodified until their controlled update/readback is separately authorized.
+
+Official platform limits: [GitHub scheduled workflow event behavior](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows); [Cloud Scheduler schedule-time and deduplication headers](https://cloud.google.com/scheduler/docs/configuring/deduplicate-job-requests); [Cloud Scheduler authenticated HTTP targets](https://cloud.google.com/scheduler/docs/http-target).
