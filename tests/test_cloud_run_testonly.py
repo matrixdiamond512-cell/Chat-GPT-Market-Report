@@ -321,7 +321,8 @@ class TestOnlyGcsStoreTests(unittest.TestCase):
     def setUp(self):
         self.client = FakeClient()
         self.store = TestOnlyEvidenceStore(
-            self.client, bucket_name=TEST_ONLY_BUCKET, prefix=TEST_ONLY_PREFIX
+            self.client, bucket_name=TEST_ONLY_BUCKET, prefix=TEST_ONLY_PREFIX,
+            clock=lambda: datetime(2026, 11, 11, 6, 45, tzinfo=timezone.utc),
         )
 
     @patch("scripts.reporting.test_only_evidence_store.validate_stored_slot_evidence")
@@ -346,6 +347,18 @@ class TestOnlyGcsStoreTests(unittest.TestCase):
         self.assertFalse(retry["created"])
         with self.assertRaises(TestOnlyConflict):
             self.store.create_evidence("2026-11-11", "16:00", {**evidence, "evidenceId": "d"})
+
+    def test_create_stops_before_upload_after_cutoff(self):
+        late = TestOnlyEvidenceStore(
+            self.client, bucket_name=TEST_ONLY_BUCKET, prefix=TEST_ONLY_PREFIX,
+            clock=lambda: datetime(2026, 11, 11, 7, 1, tzinfo=timezone.utc),
+        )
+        with self.assertRaisesRegex(TestOnlyStorageError, "SAVE_AFTER_CUTOFF"):
+            late.create_evidence(
+                "2026-11-11", "16:00",
+                {"reportId": "2026-11-11_16-00", "revision": 1, "evidenceId": "c"},
+            )
+        self.assertEqual(self.client.state.objects, {})
 
     def test_wrong_bucket_and_prefix_are_rejected(self):
         with self.assertRaisesRegex(TestOnlyStorageError, "BUCKET_REQUIRED"):
