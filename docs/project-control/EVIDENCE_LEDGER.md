@@ -494,3 +494,20 @@ At final checked head 260c136795a3cffd92b3c8298caaa68290ebf801, all 10 PR-trigge
 Final PR #188 state: OPEN / Draft / unmerged / mergeable, head 260c136795a3cffd92b3c8298caaa68290ebf801; current main 14f726649e65e814bda9067b75fb516a81ef0a30; compare main→head: 176 ahead, 0 behind, 56 changed paths. Two-parent sync commit 260c136795a3cffd92b3c8298caaa68290ebf801 has parents [main, prior feature head f9649d7bd5fc6ade21bc0f28b4ba5435bc22a2d3].
 
 Task/output and missing-artifact findings remain as above. Root cause UNKNOWN; live task→G2 authentication/handoff and GCS generation/audit identity BLOCKED. Production NOT_READY. No production side effect or task/schedule/trigger/permission change; no PR merge or Draft removal.
+
+
+## MR-EVIDENCE-SCHEDULER-RELIABILITY-20261111-01 — implementation candidate
+
+Observed 2026-11-11 JST. Repository PR #188 branch `codex/0800-main-issuance-e2e-20261029`, base SHA at start `24fef1aa5750e1e2d87e26f6139727a0bdd9aff9`, prior head `6d6603789b24d299e0e29978ef55fd5c6ab25f3b`. Writes remain on the Draft PR branch; no merge/deploy.
+
+| Claim | Evidence | Level / Result | Limit |
+|---|---|---|---|
+| Current GitHub schedule is best-effort and missing 16:00 Evidence is observed | 11/11 run histories and workflow definition; GitHub docs note scheduled events may delay/drop. 16:00 task reported Evidence 404. | E5 / observation | Internal scheduler cause and Docs API call status remain UNKNOWN. |
+| All new Evidence writes now have one strict pre-slot creation window | PR code `require_evidence_slot_guard` delegates to `require_slot_window` for all slots; existing all-slot writer tests updated; non-08:00 still cannot write GCS. | E0 / code committed | Runtime behavior awaits exact-head CI; no production execution. |
+| Explicit scheduler occurrence contract is implemented | New helper validates verified principal, exact job name, platform schedule time, JST weekday/slot/13-minute lead, before-cutoff start; derives reportId and stable retry idempotency key. | E0 / code committed | OIDC verification, handler, service account, scheduler job and storage adapter are host/deployment responsibilities and NOT_RUN. |
+| Independent watchdog decision and warning text are implemented | New pure evaluator handles WAITING/WARNING/BLOCKED/UNKNOWN/READY, latest attempt time and `NOT_SENT`; fixed-clock tests cover deadline and invalid cases. | E0 / code committed | No independent monitor job, external storage read, or notification transport was executed. |
+| Scheduler test contract is wired into PR CI | Both issuance-contract and freeze-evidence workflow test steps include the new module; path filters include changes. | E0 / configured | Exact-head hosted Actions are pending; local Python is unavailable so local tests NOT_RUN. |
+| 08:00 GCS and non-08:00 GitHub storage boundaries remain | No storage writer code/path was redirected; GCS-only guard remains; storage integration in PR source unchanged. | E0 / static diff intent | E2 tests/checks pending; no external write/readback. |
+| A/B/C decision and production change plan are documented | Requirements, specification, operations, document control and handoff addenda compare current GHA cron, authenticated Cloud Scheduler/Cloud Run, and dual-writer redundancy; B recommended as target. | E0 / documentation | Cost, actual service configuration, IAM, alert channel, and future-slot E2E not verified. |
+
+Tests run locally: NOT_RUN (Python launcher/runtime unavailable). Regression suite requested by the change: pending exact-head hosted CI. Production scheduler and formal report delivery: NOT_RUN / NOT_READY. Fixed Google Docs originals: NOT_RUN. No production configuration/artifacts or PR state changed; the PR branch received candidate code/documentation only.
