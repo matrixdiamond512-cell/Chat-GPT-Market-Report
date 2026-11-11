@@ -256,7 +256,7 @@ class TestOnlyEvidenceStore:
                     generation = int(item.generation)
                     if generation <= 0:
                         return {"state": "INVALID", "error": "EVIDENCE_GENERATION_INVALID"}
-                    blob = self._blob(name, generation=generation)
+                    blob = self._pre_slot_blob(name, generation=generation)
                     blob.reload()
                     stored_at = _object_time(blob.time_created)
                     payload = blob.download_as_bytes(if_generation_match=generation)
