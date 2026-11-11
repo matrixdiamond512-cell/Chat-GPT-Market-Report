@@ -75,10 +75,11 @@ def _object_time(value: Any) -> datetime:
 
 
 class TestOnlyEvidenceStore:
-    def __init__(self, client, *, bucket_name: str, prefix: str = TEST_ONLY_PREFIX):
+    def __init__(self, client, *, bucket_name: str, prefix: str = TEST_ONLY_PREFIX, clock=None):
         self.prefix = _validate_target(bucket_name, prefix)
         self.bucket_name = bucket_name
         self.client = client
+        self._clock = clock or (lambda: datetime.now(timezone.utc))
 
     def _blob(self, object_name: str, *, generation: int | None = None):
         if not object_name.startswith(self.prefix + "/"):
@@ -122,6 +123,14 @@ class TestOnlyEvidenceStore:
         _report_identity(report_id)
         object_name = f"{self.prefix}/evidence/{report_id}-r{evidence.get('revision')}.json"
         payload = canonical_bytes(evidence)
+        cutoff_at = datetime.fromisoformat(
+            f"{report_date}T{report_slot}:00+09:00"
+        ).astimezone(timezone.utc)
+        now = self._clock()
+        if not isinstance(now, datetime) or now.tzinfo is None or now.utcoffset() is None:
+            raise TestOnlyStorageError("SAVE_CLOCK_INVALID")
+        if now.astimezone(timezone.utc) >= cutoff_at:
+            raise TestOnlyStorageError("EVIDENCE_SAVE_AFTER_CUTOFF")
         blob = self._blob(object_name)
         created = True
         metadata = {
@@ -159,7 +168,6 @@ class TestOnlyEvidenceStore:
         checked = validate_stored_slot_evidence(readback, report_date, report_slot)
         if checked.get("reportId") != report_id or checked.get("revision") != evidence.get("revision"):
             raise TestOnlyStorageError("EVIDENCE_READBACK_IDENTITY_MISMATCH")
-        cutoff_at = datetime.fromisoformat(f"{report_date}T{report_slot}:00+09:00").astimezone(timezone.utc)
         if stored_at >= cutoff_at:
             raise TestOnlyStorageError("EVIDENCE_OBJECT_CREATED_AFTER_CUTOFF")
         return {
