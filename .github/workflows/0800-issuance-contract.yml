@@ -48,8 +48,8 @@ jobs:
         with:
           python-version: "3.12"
       - name: Compile integration modules
-        run: python -m py_compile scripts/reporting/issuance_pipeline.py scripts/reporting/g2_bundle_producer.py scripts/reporting/issuance_portal.py scripts/reporting/issuance_preflight.py scripts/run_0800_issuance.py scripts/reporting/importer_handoff.py scripts/sync_reports_from_drive.py scripts/sync_latest_report_publication.py scripts/persist_report_slot_evidence.py scripts/reporting/gcs_wif_readonly.py tests/test_gcs_wif_readonly.py tests/test_issuance_pipeline.py tests/test_issuance_portal.py tests/test_importer_handoff.py tests/test_issuance_preflight.py tests/test_report_slot_evidence.py
-          scripts/reporting/scheduler_reliability.py tests/test_scheduler_reliability.py
+        run: |
+          python -m py_compile scripts/reporting/issuance_pipeline.py scripts/reporting/g2_bundle_producer.py scripts/reporting/issuance_portal.py scripts/reporting/issuance_preflight.py scripts/run_0800_issuance.py scripts/reporting/importer_handoff.py scripts/sync_reports_from_drive.py scripts/sync_latest_report_publication.py scripts/persist_report_slot_evidence.py scripts/reporting/gcs_wif_readonly.py tests/test_gcs_wif_readonly.py tests/test_issuance_pipeline.py tests/test_issuance_portal.py tests/test_importer_handoff.py tests/test_issuance_preflight.py tests/test_report_slot_evidence.py scripts/reporting/scheduler_reliability.py tests/test_scheduler_reliability.py
       - name: Verify module CLI starts and blocks missing input without credentials
         run: |
           python -m scripts.run_0800_issuance --help
