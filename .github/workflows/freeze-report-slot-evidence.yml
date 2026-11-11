@@ -31,7 +31,8 @@ jobs:
     if: github.event_name == 'schedule' || inputs.operation == 'freeze_evidence'
     runs-on: ubuntu-latest
     concurrency:
-      group: freeze-pre-draft-report-slot-evidence
+      # Separate slots can proceed independently; duplicate attempts for one slot serialize.
+      group: freeze-pre-draft-report-slot-evidence-${{ github.event.schedule || inputs.report_slot }}
       cancel-in-progress: false
     permissions:
       contents: write
@@ -101,8 +102,8 @@ jobs:
           create_credentials_file: true
       - name: Validate writer and offline regression tests
         run: |
-          python -m py_compile scripts/persist_report_slot_evidence.py
-          python -m unittest tests.test_report_slot_evidence -v
+          python -m py_compile scripts/persist_report_slot_evidence.py scripts/reporting/scheduler_reliability.py
+          python -m unittest tests.test_report_slot_evidence tests.test_scheduler_reliability -v
       - name: Reconcile or validate existing slot evidence before acquisition
         id: existing
         env:
