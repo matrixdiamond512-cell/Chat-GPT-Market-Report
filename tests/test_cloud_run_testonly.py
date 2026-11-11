@@ -373,5 +373,24 @@ class TestOnlyGcsStoreTests(unittest.TestCase):
         self.assertEqual(forbidden.read_evidence("2026-11-11", "16:00")["state"], "UNKNOWN")
 
 
+    def test_attempt_is_logged_before_input_read_failure(self):
+        class MissingInputStore(FakeStore):
+            def read_input(self, report_id):
+                raise runtime.TestOnlyStorageError("INPUT_MISSING")
+
+        events = []
+        fixed_start = datetime(2026, 11, 11, 15, 52, tzinfo=timezone.utc)
+        with patch.object(runtime, "_emit", side_effect=lambda event, **fields: events.append((event, fields))):
+            result = runtime.dispatch_request(
+                request_for(), producer_config(), verifier=verifier,
+                store=MissingInputStore(), clock=lambda: fixed_start,
+            )
+        self.assertEqual(result[1], 422)
+        attempt_events = [fields for event, fields in events if event == "evidence_attempt"]
+        self.assertEqual(len(attempt_events), 1)
+        self.assertEqual(attempt_events[0]["outcome"], "STARTED")
+        self.assertEqual(attempt_events[0]["report_id"], "2026-11-11_16-00")
+        self.assertEqual(attempt_events[0]["attempt_id"], "2026-11-11_16-00:2026-11-11T15:47:00+09:00")
+
 if __name__ == "__main__":
     unittest.main()
