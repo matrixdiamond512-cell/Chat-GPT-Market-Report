@@ -85,6 +85,7 @@ class ScheduleReliabilityTests(unittest.TestCase):
             now=datetime(2026, 11, 11, 15, 58, tzinfo=JST), evidence_state="ABSENT")
         self.assertEqual(result["state"], "WARNING_EVIDENCE_MISSING")
         self.assertEqual(result["latestAttemptAt"], "none")
+        self.assertIn("WARNING_EVIDENCE_MISSING", result["message"])
         self.assertEqual(result["notification"], "NOT_SENT")
 
     def test_watchdog_deadline_invalid_unknown_and_valid_states(self):
@@ -114,4 +115,6 @@ class ScheduleReliabilityTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
 
