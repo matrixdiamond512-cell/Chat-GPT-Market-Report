@@ -1,18 +1,18 @@
-"""Fail-closed scheduling contract and independent Evidence watchdog decisions.
+"""Fail-closed Cloud Scheduler contract and independent Evidence watchdog decisions.
 
-This module is pure policy logic. A production adapter must authenticate the
-scheduler's OIDC identity before passing verified_principal and must obtain
-started_at from its trusted runtime clock. Request JSON alone is not trusted.
+The HTTP adapter must first verify the Cloud Scheduler OIDC token against the
+expected service account. It then passes the authenticated principal and the
+platform-supplied X-CloudScheduler-* headers here. JSON body fields never select
+or override the report date, slot, or scheduled time.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
-from typing import Mapping
 
 JST = timezone(timedelta(hours=9), "Asia/Tokyo")
 SLOTS = ("08:00", "12:00", "16:00", "21:00")
-ATTEMPT_MINUTES_BEFORE_SLOT = (13, 7, 3)
+SCHEDULE_LEAD_MINUTES = 13
 WARNING_MINUTES_BEFORE_SLOT = 3
 
 
@@ -31,14 +31,13 @@ class VerifiedSlotInvocation:
 
     @property
     def idempotency_key(self) -> str:
-        # Every retry/duplicate for this slot converges on one immutable claim.
-        return self.report_id
+        # Cloud Scheduler keeps its original schedule-time header on retries.
+        return self.attempt_id
 
     @property
     def cutoff_at(self) -> datetime:
-        day = date.fromisoformat(self.report_date)
         hour, minute = (int(part) for part in self.report_slot.split(":"))
-        return datetime.combine(day, time(hour, minute), JST)
+        return datetime.combine(date.fromisoformat(self.report_date), time(hour, minute), JST)
 
 
 def _parse_instant(value: object, field: str) -> datetime:
@@ -54,53 +53,41 @@ def _parse_instant(value: object, field: str) -> datetime:
 
 
 def validate_scheduled_invocation(
-    payload: Mapping[str, object],
     *,
     verified_principal: str | None,
     expected_principal: str,
+    job_name: str | None,
+    expected_job_name: str,
+    report_slot: str,
+    schedule_time: str | None,
     started_at: datetime,
 ) -> VerifiedSlotInvocation:
-    """Validate an authenticated, explicit schedule request for one current slot.
+    """Validate explicit Cloud Scheduler headers for one current report slot.
 
-    The host must verify an OIDC token before invoking this function. It must
-    pass the verified service-account subject separately from the JSON payload.
+    `verified_principal` must come from verified OIDC claims, never from a
+    request body/header. The schedule-time header is the platform's original
+    occurrence timestamp and remains stable through retries.
     """
     if not expected_principal or verified_principal != expected_principal:
         raise ScheduleRequestError("BLOCKED_SCHEDULE_AUTH:principal_mismatch")
-    if not isinstance(payload, Mapping):
-        raise ScheduleRequestError("BLOCKED_SCHEDULE_REQUEST:payload_invalid")
-
-    report_date = payload.get("reportDate")
-    report_slot = payload.get("reportSlot")
-    report_id = payload.get("reportId")
-    attempt_id = payload.get("attemptId")
-    if not all(isinstance(v, str) and v.strip() for v in (report_date, report_slot, report_id, attempt_id)):
-        raise ScheduleRequestError("BLOCKED_SCHEDULE_REQUEST:identity_fields_missing")
+    if not expected_job_name or job_name != expected_job_name:
+        raise ScheduleRequestError("BLOCKED_SCHEDULE_AUTH:job_name_mismatch")
     if report_slot not in SLOTS:
         raise ScheduleRequestError("BLOCKED_SCHEDULE_REQUEST:unsupported_slot")
-    try:
-        day = date.fromisoformat(report_date)
-    except ValueError as exc:
-        raise ScheduleRequestError("BLOCKED_SCHEDULE_REQUEST:report_date_invalid") from exc
-    if day.isoformat() != report_date or day.weekday() >= 5:
-        raise ScheduleRequestError("BLOCKED_SCHEDULE_REQUEST:report_date_not_weekday")
-    expected_id = f"{report_date}_{report_slot.replace(':', '-')}"
-    if report_id != expected_id:
-        raise ScheduleRequestError("BLOCKED_SCHEDULE_REQUEST:report_id_mismatch")
-    if len(attempt_id) > 128 or attempt_id != attempt_id.strip():
-        raise ScheduleRequestError("BLOCKED_SCHEDULE_REQUEST:attempt_id_invalid")
-
-    scheduled_at = _parse_instant(payload.get("scheduledAt"), "scheduled_at")
-    target_hour, target_minute = (int(part) for part in report_slot.split(":"))
-    cutoff = datetime.combine(day, time(target_hour, target_minute), JST)
-    allowed_times = {cutoff - timedelta(minutes=n) for n in ATTEMPT_MINUTES_BEFORE_SLOT}
-    if scheduled_at not in allowed_times:
-        raise ScheduleRequestError("BLOCKED_SCHEDULE_REQUEST:scheduled_at_not_allowed")
-    if scheduled_at.date() != day:
-        raise ScheduleRequestError("BLOCKED_SCHEDULE_REQUEST:scheduled_date_mismatch")
+    scheduled_at = _parse_instant(schedule_time, "schedule_time")
     if started_at.tzinfo is None or started_at.utcoffset() is None:
         raise ScheduleRequestError("BLOCKED_SCHEDULE_REQUEST:started_at_timezone_required")
     started = started_at.astimezone(JST)
+
+    # Date comes from the authenticated platform occurrence, normalized to JST.
+    report_date = scheduled_at.date().isoformat()
+    day = scheduled_at.date()
+    if day.weekday() >= 5:
+        raise ScheduleRequestError("BLOCKED_SCHEDULE_REQUEST:report_date_not_weekday")
+    hour, minute = (int(part) for part in report_slot.split(":"))
+    cutoff = datetime.combine(day, time(hour, minute), JST)
+    if scheduled_at != cutoff - timedelta(minutes=SCHEDULE_LEAD_MINUTES):
+        raise ScheduleRequestError("BLOCKED_SCHEDULE_REQUEST:scheduled_at_not_allowed")
     if started < scheduled_at:
         raise ScheduleRequestError("BLOCKED_SCHEDULE_REQUEST:started_before_schedule")
     if started >= cutoff:
@@ -108,6 +95,8 @@ def validate_scheduled_invocation(
     if started - scheduled_at > timedelta(minutes=15):
         raise ScheduleRequestError("BLOCKED_SCHEDULE_WINDOW_MISMATCH:SCHEDULE_DELAY_EXCEEDED")
 
+    report_id = f"{report_date}_{report_slot.replace(':', '-')}"
+    attempt_id = f"{expected_job_name}@{scheduled_at.astimezone(timezone.utc).isoformat()}"
     return VerifiedSlotInvocation(
         report_date=report_date,
         report_slot=report_slot,
@@ -134,8 +123,8 @@ def assess_evidence_watchdog(
         raise ValueError("BLOCKED_WATCHDOG:report_date_not_weekday")
     if now.tzinfo is None or now.utcoffset() is None:
         raise ValueError("BLOCKED_WATCHDOG:naive_clock")
-    target_hour, target_minute = (int(part) for part in report_slot.split(":"))
-    cutoff = datetime.combine(day, time(target_hour, target_minute), JST)
+    hour, minute = (int(part) for part in report_slot.split(":"))
+    cutoff = datetime.combine(day, time(hour, minute), JST)
     current = now.astimezone(JST)
     if evidence_state not in {"VALID", "ABSENT", "INVALID", "UNKNOWN"}:
         raise ValueError("BLOCKED_WATCHDOG:evidence_state_invalid")
@@ -157,9 +146,8 @@ def assess_evidence_watchdog(
         state = "WAITING_FOR_EVIDENCE"
     return {
         "state": state,
-        "reportId": f"{report_date}_{report_slot.replace(':', '-')}",
+        "reportId": f"{report_date}_{report_slot.replace(':', '-')}" ,
         "latestAttemptAt": attempt,
         "notification": "NOT_SENT",
     }
-
 
