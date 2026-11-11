@@ -10,17 +10,17 @@ locals {
   }
   invocations = merge(
     { for key, slot in local.slots : "producer-${key}" => {
-      mode = "producer", slot_key = key, slot = slot.slot,
-      minute = slot.producer_minute, hour = slot.producer_hour,
+      mode     = "producer", slot_key = key, slot = slot.slot,
+      minute   = slot.producer_minute, hour = slot.producer_hour,
       job_name = "mr-evidence-${key}", service_name = "mr-evidence-test-producer-${key}"
     } },
     { for key, slot in local.slots : "watchdog-${key}" => {
-      mode = "watchdog", slot_key = key, slot = slot.slot,
-      minute = slot.watchdog_minute, hour = slot.watchdog_hour,
+      mode     = "watchdog", slot_key = key, slot = slot.slot,
+      minute   = slot.watchdog_minute, hour = slot.watchdog_hour,
       job_name = "mr-watchdog-${key}", service_name = "mr-evidence-test-watchdog-${key}"
     } }
   )
-  writer_input_condition = "resource.name.startsWith(\"projects/_/buckets/${var.test_only_bucket}/objects/${var.test_only_prefix}/inputs/\")"
+  writer_input_condition    = "resource.name.startsWith(\"projects/_/buckets/${var.test_only_bucket}/objects/${var.test_only_prefix}/inputs/\")"
   writer_evidence_condition = "resource.name.startsWith(\"projects/_/buckets/${var.test_only_bucket}/objects/${var.test_only_prefix}/evidence/\")"
 }
 resource "google_project_service" "apis" {
