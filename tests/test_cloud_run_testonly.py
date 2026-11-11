@@ -156,7 +156,7 @@ class CloudRunSchedulerAdapterTests(unittest.TestCase):
 
     def test_producer_uses_schedule_headers_and_ignores_body_identity(self):
         store = FakeStore()
-        fixed_start = datetime(2026, 11, 11, 15, 52, tzinfo=timezone.utc)
+        fixed_start = datetime(2026, 11, 11, 15, 52, tzinfo=JST)
         with patch.object(runtime, "build_slot_evidence", return_value={"revision": 1, "reportId": "2026-11-11_16-00"}) as build, \
              patch("scripts.persist_report_slot_evidence.require_evidence_slot_guard"):
             result = runtime.dispatch_request(
@@ -379,7 +379,7 @@ class TestOnlyGcsStoreTests(unittest.TestCase):
                 raise runtime.TestOnlyStorageError("INPUT_MISSING")
 
         events = []
-        fixed_start = datetime(2026, 11, 11, 15, 52, tzinfo=timezone.utc)
+        fixed_start = datetime(2026, 11, 11, 15, 52, tzinfo=JST)
         with patch.object(runtime, "_emit", side_effect=lambda event, **fields: events.append((event, fields))):
             result = runtime.dispatch_request(
                 request_for(), producer_config(), verifier=verifier,
