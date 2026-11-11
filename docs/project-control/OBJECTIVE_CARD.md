@@ -394,3 +394,14 @@ Affected canonical paths: requirements.md, specification.md, operations.md, DOCU
 **CI acceptance:** code/test head `2e5a286bc3847c9834cfec3af64bc0134985b48a` passed all 10 applicable exact-head hosted workflows; Evidence regression 23/23 and scheduler contract 10/10 passed in issuance CI. Initial three failures on the previous head were fixed and rerun successfully. Local Python remains NOT_RUN.
 
 **Open outcomes:** authenticated TEST ONLY adapter and storage integration; independent watchdog deployment/read-only polling and notification transport; approved GCP/identity/writer integration; one-writer cutover/rollback review; future eligible-slot external acceptance. Keep PR #188 Draft. Production delivery remains NOT_READY.
+
+
+## MR-EVIDENCE-TESTONLY-E2E-20261111-01 status
+
+**Primary objective:** produce reviewable TEST ONLY adapters and deployment configuration for authenticated Cloud Scheduler → Cloud Run → immutable Evidence → independent Watchdog, without changing production.
+
+**Completed:** short Scheduler job-ID contract; OIDC principal/audience verification; fixed schedule-derived report identity and cutoff; TEST ONLY create-only GCS adapter with exact-generation/hash readback; watchdog readback/error classification and log-only warnings; separate runtime/caller identities and paused-by-default Terraform; isolated CI.
+
+**Acceptance evidence:** code/test head `40ec1f01d23d8d67b9beb4b396a7d96aa6759a04`, Actions [43013986998](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43013986998): 45 fixture/contract tests, compile, Terraform fmt/init/validate PASS. Existing WIF read-only run [43010954640](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43010954640): verified identity and exact pinned generation/hash; no GCS write.
+
+**Open outcomes:** real Scheduler invocation; deployed Cloud Run auth; fresh TEST ONLY Evidence create + generation/hash readback; independent Watchdog read; GCS audit principal; live duplicate/delay/auth rejection. These are `BLOCKED_TEST_ENV_APPROVAL / NOT_RUN`. Keep PR #188 OPEN / Draft / unmerged. Production E2E is NOT_RUN; formal delivery remains NOT_READY.

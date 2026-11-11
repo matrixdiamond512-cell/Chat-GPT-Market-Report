@@ -336,3 +336,18 @@ Use the watchdog decision function only with read-only, independently checked Ev
 ### 2026-11-11 incident evidence
 
 The 16:00 task result reported pre-slot Evidence 404. A separate 15:50 GitHub importer failed while looking for the 12:00 source (`monthly_folder_access=False`); an Apps Script 16:23 run reported no Docs for the separate 16:30 slot. Those are independent execution paths. The internal cause of the absent 16:00 GHA run and the actual Docs API call status remain UNKNOWN until scheduler/task audit records are available.
+
+
+## 2026-11-11 TEST ONLY scheduler adapter
+
+Deployment is intentionally not performed by CI. Before a separately approved TEST ONLY trial:
+1. Build and publish the container image to an approved TEST ONLY Artifact Registry repository, pin its immutable SHA-256 digest, and review the Terraform plan.
+2. Apply with `enable_scheduler_jobs=false`; confirm all eight jobs are paused, each service audience/principal/job resource is exact, runtime identities have only prefix-scoped GCS access, and each caller can invoke only its matching service.
+3. Seed one input for an approved future TEST ONLY weekday slot; verify it by generation/hash. Then enable only the approved test schedules under the same approval.
+4. Reconcile Scheduler execution, Cloud Run request log, producer attempt ID, object generation/hash, GCS audit principal, and independent Watchdog result. Do not retry after an uncertain write until the object state is independently read.
+5. Keep notifications disabled; warnings are log/Monitoring-only. A failure, late start, invalid Evidence, permission error, or read timeout must stop as BLOCKED/UNKNOWN.
+6. Disable jobs first for rollback, then remove or roll back TEST ONLY resources under the approved recovery procedure. Production workflows and writers are not part of this cutover.
+
+Current evidence: Actions run [43010954640](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43010954640) proves GitHub OIDC/WIF read-only access to one pinned TEST ONLY GCS generation and explicitly no writes. Run [43013986998](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43013986998) proves hosted E2 fixtures plus Terraform static validation only. Real Scheduler/Cloud Run/GCS-write/Watchdog acceptance remains `BLOCKED_TEST_ENV_APPROVAL / NOT_RUN`; production delivery remains `NOT_READY`.
+
+The estimate in `deploy/test-only-cloud-run/terraform/README.md` is roughly USD 0.70–1.05/month under its stated low-traffic profile; free-tier availability is shared at billing-account level. Recheck the linked official pricing calculator and current project usage before approval/apply.

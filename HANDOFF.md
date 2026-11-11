@@ -232,3 +232,14 @@ PR #188 now contains a TEST ONLY reliability candidate: all-slot strict pre-slot
 ### Exact-head check result — 2026-11-11
 
 Code/test head `2e5a286bc3847c9834cfec3af64bc0134985b48a` passed all 10 relevant GitHub Actions checks (runs 43007220039, 43007219848, 43007219866, 43007219746, 43007219901, 43007219700, 43007219600, 43007219617, 43007219627, 43007219684). The Evidence suite passed 23/23, scheduler contract 10/10, and frozen-cutoff suite 36/36. Three failures on the previous exact head were fixed before this successful run. Local Python remains NOT_RUN. This establishes only hosted E2 fixture/contract verification. Authenticated runtime, production GCP/IAM/WIF, storage/watchdog integration, notifications and live slot remain NOT_RUN; production stays NOT_READY. PR #188 remains Draft/open/unmerged.
+
+
+## 2026-11-11 TEST ONLY scheduler E2E handoff
+
+PR #188 now has the TEST ONLY producer, GCS evidence-store and independent watchdog adapters, Docker image recipe, and paused-by-default Terraform. The contract accepts only the short Scheduler job ID paired to one configured resource; OIDC identity/audience is checked first. Producer attempts are visible to the watchdog even when the input/read/write path fails.
+
+Code/test head `40ec1f01d23d8d67b9beb4b396a7d96aa6759a04`: [run 43013986998](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43013986998) passed 45 Python fixture tests, compile, Terraform formatting, provider init without backend, and validation. Existing read-only WIF run [43010954640](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43010954640) passed only for one pinned TEST ONLY object generation/hash and recorded no write.
+
+**Still open:** deployed Cloud Run OIDC invocation; Scheduler execution; fresh TEST ONLY Evidence write and exact readback; GCS audit principal; watchdog independent read; live rejection/retry/anomaly logs. These remain `BLOCKED_TEST_ENV_APPROVAL / NOT_RUN`. Production delivery and #188's G2/Docs/canonical/Pages handoff remain NOT_READY.
+
+**Next action:** authorize a bounded future TEST ONLY trial in the dedicated `market-report-test-only` project/asia-northeast1, including APIs, 8 paused Scheduler jobs, 8 Cloud Run services, 10 service accounts, prefix-scoped bucket IAM, and up to approximately USD 1.05/month under stated assumptions (actual shared free-tier and retries can vary). The test input must describe a future slot and be seeded only after approval. Jobs stay paused until a separately approved slot is prepared. No fixed Docs originals or production schedules/data are touched.

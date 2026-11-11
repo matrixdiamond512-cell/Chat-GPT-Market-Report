@@ -306,3 +306,17 @@ The 2026-11-11 16:00 task reported the pre-slot Evidence reference missing (404)
 No Cloud Scheduler/Run resources, production IAM/WIF, task, trigger, GCS object, Docs, canonical report, Receipt, Pages, or notification were changed by this PR work. Fixed Google Docs originals remain unmodified until their controlled update/readback is separately authorized.
 
 Official platform limits: [GitHub scheduled workflow event behavior](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows); [Cloud Scheduler schedule-time and deduplication headers](https://cloud.google.com/scheduler/docs/configuring/deduplicate-job-requests); [Cloud Scheduler authenticated HTTP targets](https://cloud.google.com/scheduler/docs/http-target).
+
+
+## 2026-11-11 TEST ONLY scheduler E2E candidate
+
+The runtime flow uses the existing `validate_scheduled_invocation()` and `build_slot_evidence()` paths. A Google-signed OIDC token is independently verified for the expected caller email and audience; only then are the Scheduler headers trusted as schedule metadata. The JobName header is the short job ID, strictly matched to the configured full resource's final segment. ScheduleTime fixes the JST date, slot, report ID, attempt ID, and cutoff. The body cannot choose identity. A final cutoff check runs immediately before the create-only GCS operation.
+
+TEST ONLY stores are confined to the existing TEST ONLY bucket and `test-only/scheduler-e2e/{inputs,evidence}/` paths. Writes use `if_generation_match=0`; exact generation and bytes are independently read back and SHA-256 checked. Watchdogs use their own service and read-only principal, query the producer's schedule-bound attempt log, map API errors to UNKNOWN, and log decisions with `notification=NOT_SENT`. Producer logs a STARTED attempt before input read/build/write, fixing the gap where a failed run previously left no attempt record.
+
+Terraform provisions four slot-specific producers and four watchdogs, separate runtime identities, individual Scheduler caller identities and service-scoped `roles/run.invoker`. Services use internal ingress, custom audiences, scale-to-zero and an instance cap. GCS IAM is conditional on the two TEST ONLY prefixes. Scheduler jobs are paused by default and use 13-minute producer / 3-minute watchdog leads in Asia/Tokyo; the tested production safe-stop remains unchanged.
+
+Verification distinction:
+- E2 fixtures + Terraform format/provider init/validate: PASS on code/test head `40ec1f01d23d8d67b9beb4b396a7d96aa6759a04`, run [43013986998](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43013986998).
+- TEST ONLY external proof: only the pre-existing pinned-generation GCS read through GitHub OIDC/WIF passed; no Scheduler invocation or write is proven.
+- Production E2E: NOT_RUN / NOT_READY. No current schedule, IAM, production data, Docs, canonical report, Receipt, Pages or notification changed.

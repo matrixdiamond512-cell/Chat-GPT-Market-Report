@@ -298,3 +298,15 @@ Verification: local sync-related unittest 52/52, reconciliation helper 4/4, publ
 - Acceptance for this change requires fixed-clock tests for on-time/5-minute/30-minute/hour/next-day delay, UTC/JST date rollover, weekday/weekend, missing/invalid scheduler headers, authenticated principal/job mismatch, duplicate retry idempotency, and missing/invalid Evidence watchdog states. Offline tests do not establish deployed scheduling or notification delivery.
 
 The 2026-11-11 16:00 run first reported missing pre-slot Evidence. The scheduled GitHub Actions execution history did not show a run for the configured attempt window; the internal scheduler reason and task Docs API invocation remain UNKNOWN. Do not represent the adjacent 12:00 importer failure or 16:30 Apps Script failure as direct causes of that 16:00 task.
+
+
+## 2026-11-11 TEST ONLY Scheduler → Cloud Run evidence boundary
+
+PR #188 adds an isolated TEST ONLY adapter contract. Cloud Scheduler's authenticated OIDC identity is checked separately from the short `X-CloudScheduler-JobName` ID and stable schedule-time header. Four weekday slots remain pinned to their scheduled date and cutoff; request-body identity is ignored. Producer attempts are logged after authentication and schedule validation, before GCS access, so the independent watchdog can find a failed attempt as well as a successful save.
+
+The Terraform candidate defines eight internal, IAM-authenticated Cloud Run services (producer + independent watchdog per slot), eight per-service caller identities, separate producer/watchdog runtime identities, prefix-conditional access to the pre-existing TEST ONLY bucket, and eight weekday JST Scheduler jobs. Scheduler jobs default to paused. Production endpoints, credentials, documents, canonical reports, receipts, Pages, notifications, and schedules are outside scope.
+
+Evidence:
+- Existing TEST ONLY WIF read-only Actions run [43010954640](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43010954640) authenticated the expected GitHub principal and read exactly generation `1793227650462378` with SHA-256 `92124cb17b36a407d3597487a09cca852b72d50de6c7b4f7cc98d6fb958aede9`; the log explicitly reports `GCS_WRITE_OPERATIONS=NONE`.
+- E2 contract tests and Terraform static validation are covered by [TEST ONLY Scheduler and Cloud Run contract run 43013986998](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43013986998).
+- Real Scheduler → Cloud Run invocation, new Evidence GCS write/readback, Watchdog read, and audit-principal verification remain `BLOCKED_TEST_ENV_APPROVAL / NOT_RUN`. The read-only WIF run is not a substitute for that E2E.
