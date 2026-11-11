@@ -397,18 +397,23 @@ class ReportSlotEvidenceTests(unittest.TestCase):
                 "2026-10-16", "08:00", client=client, now=self.run_at,
             )
 
-    def test_legacy_slots_keep_cutoff_only_gate_without_gcs_dependency(self):
+    def test_all_slots_use_one_strict_pre_slot_window_without_expanding_gcs_scope(self):
         jst = timezone(timedelta(hours=9))
-        for slot, now in (
-            ("12:00", datetime(2026, 10, 16, 11, 30, tzinfo=jst)),
-            ("16:00", datetime(2026, 10, 16, 15, 30, tzinfo=jst)),
-            ("21:00", datetime(2026, 10, 16, 20, 30, tzinfo=jst)),
-        ):
+        for slot, hour in (("08:00", 8), ("12:00", 12), ("16:00", 16), ("21:00", 21)):
             with self.subTest(slot=slot):
-                # Outside the new 15-minute 08:00 window, but before the legacy cutoff.
-                self.assertEqual(require_evidence_slot_guard("2026-10-16", slot, now=now), now)
-                with self.assertRaisesRegex(ValueError, "BLOCKED_GCS_EVIDENCE_08_ONLY"):
-                    persist_gcs_slot_evidence(b"{}", "bucket", "object", "2026-10-16", slot, client=FakeGcsClient(), now=now)
+                target = datetime(2026, 10, 16, hour, 0, tzinfo=jst)
+                accepted = target - timedelta(minutes=5)
+                self.assertEqual(require_evidence_slot_guard("2026-10-16", slot, now=accepted), accepted)
+                with self.assertRaisesRegex(ValueError, "early or date-mismatched"):
+                    require_evidence_slot_guard(
+                        "2026-10-16", slot, now=target - timedelta(minutes=30)
+                    )
+                if slot != "08:00":
+                    with self.assertRaisesRegex(ValueError, "BLOCKED_GCS_EVIDENCE_08_ONLY"):
+                        persist_gcs_slot_evidence(
+                            b"{}", "bucket", "object", "2026-10-16", slot,
+                            client=FakeGcsClient(), now=accepted,
+                        )
 
     def test_0800_missing_gcs_configuration_is_blocked_before_client_creation(self):
         with self.assertRaisesRegex(RuntimeError, "REPORT_EVIDENCE_BUCKET is not configured"):
