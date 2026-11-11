@@ -58,6 +58,7 @@ resource "google_cloud_run_v2_service" "service" {
   location            = var.region
   ingress             = "INGRESS_TRAFFIC_INTERNAL_ONLY"
   deletion_protection = true
+  custom_audiences    = ["https://test-only.market-report.invalid/${var.project_id}/${each.value.service_name}"]
   template {
     service_account                  = google_service_account.runtime[each.value.mode].email
     timeout                          = "45s"
@@ -71,9 +72,12 @@ resource "google_cloud_run_v2_service" "service" {
       resources {
         limits = { cpu = "1", memory = "512Mi" }
       }
-      env { name = "TEST_ONLY_ENVIRONMENT", value = "TEST_ONLY" }
+      env {
+        name  = "TEST_ONLY_ENVIRONMENT"
+        value = "TEST_ONLY"
+      }
       env { name = "SERVICE_MODE", value = each.value.mode }
-      env { name = "OIDC_AUDIENCE", value = google_cloud_run_v2_service.service[each.key].uri }
+      env { name = "OIDC_AUDIENCE", value = "https://test-only.market-report.invalid/${var.project_id}/${each.value.service_name}" }
       env { name = "EXPECTED_PRINCIPAL", value = google_service_account.scheduler[each.key].email }
       env { name = "EXPECTED_JOB_RESOURCE", value = "projects/${var.project_id}/locations/${var.region}/jobs/${each.value.job_name}" }
       env { name = "EXPECTED_REPORT_SLOT", value = each.value.slot }
@@ -119,7 +123,7 @@ resource "google_cloud_scheduler_job" "job" {
     headers     = { "Content-Type" = "application/json" }
     oidc_token {
       service_account_email = google_service_account.scheduler[each.key].email
-      audience              = google_cloud_run_v2_service.service[each.key].uri
+      audience              = "https://test-only.market-report.invalid/${var.project_id}/${each.value.service_name}"
     }
   }
   depends_on = [google_cloud_run_v2_service_iam_member.invoker]
