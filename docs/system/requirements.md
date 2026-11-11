@@ -308,5 +308,5 @@ The Terraform candidate defines eight internal, IAM-authenticated Cloud Run serv
 
 Evidence:
 - Existing TEST ONLY WIF read-only Actions run [43010954640](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43010954640) authenticated the expected GitHub principal and read exactly generation `1793227650462378` with SHA-256 `92124cb17b36a407d3597487a09cca852b72d50de6c7b4f7cc98d6fb958aede9`; the log explicitly reports `GCS_WRITE_OPERATIONS=NONE`.
-- E2 contract tests and Terraform static validation are covered by [TEST ONLY Scheduler and Cloud Run contract run 43013986998](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43013986998).
+- E2 contract tests and Terraform static validation are covered by [TEST ONLY Scheduler and Cloud Run contract run 43014475151](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43014475151).
 - Real Scheduler → Cloud Run invocation, new Evidence GCS write/readback, Watchdog read, and audit-principal verification remain `BLOCKED_TEST_ENV_APPROVAL / NOT_RUN`. The read-only WIF run is not a substitute for that E2E.
