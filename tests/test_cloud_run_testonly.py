@@ -1,3 +1,4 @@
+import hashlib
 import json
 import unittest
 from datetime import datetime, timezone
@@ -253,6 +254,7 @@ class FakeGcsState:
     def __init__(self):
         self.objects = {}
         self.next_generation = 7000
+        self.created_at = datetime(2026, 11, 11, 6, 0, tzinfo=timezone.utc)
 
 
 class PreconditionFailed(Exception):
@@ -289,7 +291,7 @@ class FakeBlob:
             raise NotFound()
         payload, generation, _ = self.state.objects[self.name]
         self.generation = generation
-        self.time_created = datetime(2026, 11, 11, 6, 0, tzinfo=timezone.utc)
+        self.time_created = self.state.created_at
         return payload
 
     def download_as_bytes(self, *, if_generation_match):
@@ -311,6 +313,16 @@ class FakeBucket:
 class FakeClient:
     def __init__(self):
         self.state = FakeGcsState()
+
+    def list_blobs(self, bucket_name, *, prefix, max_results):
+        self.bucket_name = bucket_name
+        if max_results <= 0:
+            raise AssertionError("bounded listing required")
+        return [
+            type("ListedBlob", (), {"name": name, "generation": record[1]})()
+            for name, record in sorted(self.state.objects.items())
+            if name.startswith(prefix)
+        ][:max_results]
 
     def bucket(self, name):
         self.bucket_name = name
@@ -404,6 +416,65 @@ class TestOnlyGcsStoreTests(unittest.TestCase):
         self.assertEqual(attempt_events[0]["outcome"], "STARTED")
         self.assertEqual(attempt_events[0]["report_id"], "2026-11-11_16-00")
         self.assertEqual(attempt_events[0]["attempt_id"], f"{JOB_RESOURCE}@2026-11-11T06:47:00+00:00")
+
+
+    @patch("scripts.reporting.test_only_evidence_store.validate_stored_slot_evidence")
+    def test_live_watchdog_reads_only_ledger_linked_pinned_evidence(self, validator):
+        validator.return_value = {
+            "reportId": "2026-11-11_08-00", "revision": 1,
+            "evidenceId": "evidence-id", "evidenceStatus": "READY_FOR_DRAFT",
+            "acquisitionSource": {"overallStatus": "verified"},
+        }
+        attempt = "sched-" + "a" * 32
+        ledger_name = (
+            f"test-only/08-00/ledger/2026-11-11_08-00/{attempt}.json"
+        )
+        ledger = json.dumps({
+            "schemaVersion": "market-report-pre-slot-trigger/v1",
+            "executionMode": "TEST_ONLY", "reportDate": "2026-11-11",
+            "reportSlot": "08:00", "attemptId": attempt,
+            "scheduledAt": "2026-11-11T07:47:00+09:00",
+            "triggeredAt": "2026-11-11T07:47:03+09:00",
+        }).encode()
+        payload = b"pinned Evidence bytes"
+        evidence_name = (
+            f"test-only/08-00/evidence/{attempt}/"
+            f"{hashlib.sha256(payload).hexdigest()}.json"
+        )
+        self.client.state.objects[ledger_name] = (ledger, 7001, None)
+        self.client.state.objects[evidence_name] = (payload, 7002, None)
+        self.client.state.created_at = datetime(2026, 11, 10, 22, 48, tzinfo=timezone.utc)
+
+        result = self.store.read_pre_slot_evidence("2026-11-11", "08:00")
+
+        self.assertEqual(result["state"], "VALID")
+        self.assertEqual(result["generation"], 7002)
+        self.assertEqual(result["attempt_id"], attempt)
+        self.assertEqual(result["sha256"], __import__("hashlib").sha256(payload).hexdigest())
+        self.assertEqual(validator.call_args.args[0], payload)
+        self.assertEqual(self.client.state.objects[evidence_name][1], 7002)
+
+    @patch("scripts.reporting.test_only_evidence_store.validate_stored_slot_evidence")
+    def test_live_watchdog_fails_closed_on_sha_mismatch_and_non_08_slot(self, validator):
+        attempt = "sched-" + "b" * 32
+        ledger_name = f"test-only/08-00/ledger/2026-11-11_08-00/{attempt}.json"
+        ledger = json.dumps({
+            "schemaVersion": "market-report-pre-slot-trigger/v1",
+            "executionMode": "TEST_ONLY", "reportDate": "2026-11-11",
+            "reportSlot": "08:00", "attemptId": attempt,
+            "scheduledAt": "2026-11-11T07:47:00+09:00",
+            "triggeredAt": "2026-11-11T07:47:03+09:00",
+        }).encode()
+        self.client.state.objects[ledger_name] = (ledger, 7003, None)
+        self.client.state.created_at = datetime(2026, 11, 10, 22, 48, tzinfo=timezone.utc)
+        evidence_name = f"test-only/08-00/evidence/{attempt}/{'0' * 64}.json"
+        self.client.state.objects[evidence_name] = (b"tampered", 7004, None)
+
+        mismatch = self.store.read_pre_slot_evidence("2026-11-11", "08:00")
+        unsupported = self.store.read_pre_slot_evidence("2026-11-11", "12:00")
+
+        self.assertEqual(mismatch["state"], "INVALID")
+        self.assertEqual(unsupported["state"], "UNKNOWN")
 
 if __name__ == "__main__":
     unittest.main()

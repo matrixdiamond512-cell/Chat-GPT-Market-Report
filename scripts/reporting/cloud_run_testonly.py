@@ -343,13 +343,19 @@ def _watchdog(request, config, *, verifier=None, store=None, logging_client=None
         default_store, default_logging = _new_clients(config)
         store = store or default_store
         logging_client = logging_client or default_logging
-    snapshot = store.read_evidence(report_date, report_slot)
+    snapshot = (
+        store.read_pre_slot_evidence(report_date, report_slot)
+        if report_slot == "08:00" and hasattr(store, "read_pre_slot_evidence")
+        else store.read_evidence(report_date, report_slot)
+    )
     try:
         latest_attempt = _latest_attempt(
             logging_client,
             service_name=config["producer_service_name"],
             report_id=report_id,
         )
+        if latest_attempt is None and snapshot.get("latest_attempt_at"):
+            latest_attempt = datetime.fromisoformat(snapshot["latest_attempt_at"])
     except Exception:
         snapshot = {"state": "UNKNOWN", "object": snapshot.get("object"), "error": "ATTEMPT_AUDIT_READ_FAILED"}
         latest_attempt = None
@@ -369,7 +375,11 @@ def _watchdog(request, config, *, verifier=None, store=None, logging_client=None
         "evidenceSha256": snapshot.get("sha256"),
         "evidenceStoredAt": snapshot.get("stored_at"),
         "evidenceBytes": snapshot.get("bytes"),
-        "auditReadStatus": "PASS" if latest_attempt is not None else "NO_ATTEMPT_FOUND",
+        "auditReadStatus": (
+            "LEDGER_READ" if snapshot.get("latest_attempt_at")
+            else "CLOUD_LOG_ATTEMPT_FOUND" if latest_attempt is not None
+            else "NO_ATTEMPT_FOUND"
+        ),
         "notification": "NOT_SENT",
     }
     _emit(
