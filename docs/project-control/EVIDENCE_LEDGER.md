@@ -549,3 +549,23 @@ Observed 2026-11-11 21:24 JST by read-only Google Cloud Console inspection of pr
 No Cloud resource, schedule, IAM, billing, production artifact, or repository main branch was modified in this read-only runtime reconciliation. The new TEST ONLY adapters/IaC remain a candidate and are not deployed. The existing 08:00 capture path has partial real-runtime evidence; an independent Watchdog readback and PR adapter deployment remain NOT_RUN.
 
 **Next necessary action:** inspect the deployed `mr-pre-slot-test` revision and its TEST ONLY bucket/input contract, then prepare a minimal, cost-bounded Watchdog integration against that existing boundary. Do not repeat billing setup or apply the eight-service/eight-job Terraform candidate. Any new billable resource or IAM change still requires its own scoped approval.
+
+
+## MR-TESTONLY-WATCHDOG-IMPLEMENTATION-20261111-01 — live 08:00 reader and minimal deployment candidate
+
+Observed 2026-11-11 22:55 JST. PR #188 started at head `20464c4a005eff14a697a924d3c25d12fd1286ea`; the implementation now sits at `6724b76fcaf6c7bed4b9afe2dfeaf9e8c329bd6e`.
+
+- The existing private TEST ONLY bucket contains per-report-date ledgers at `test-only/08-00/ledger/{reportId}/{attemptId}.json`; each verified TEST ONLY ledger names an attempt ID. Evidence is stored below `test-only/08-00/evidence/{attemptId}/{contentSha256}.json`. The independent reader follows only those ledger-linked attempt paths, pins each GCS generation, validates ledger/report identity and cutoff, validates the stored Evidence contract, and checks the SHA-256 encoded in the object name. It performs no GCS writes.
+- The PR runtime routes the 08:00 Watchdog through this existing layout. Terraform was reduced from 8 services / 8 jobs to one authenticated 08:00 Watchdog / one weekday 07:57 JST Scheduler job. GCS read access is restricted to the exact 08:00 ledger and Evidence prefixes; the service has no write permission; notification channels are absent. The Scheduler remains paused by default.
+- Exact-head TEST ONLY contract workflow [43033109154](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43033109154): adapter compile PASS; 48 scheduler, Cloud Run, GCS adapter and Evidence regression tests PASS; Terraform format, init and validate PASS. The preceding run [43032792777](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43032792777) exposed two adapter path failures; both were corrected before 6724b76. This is E2 hosted contract evidence, not deployed E2E.
+- Read-only Artifact Registry review found only the existing `runner` package and its two pre-slot digests, both dated 2026-10-27. No image containing the reviewed Watchdog implementation is present. Local gcloud, Docker, Terraform, and runnable Python are unavailable.
+- No Cloud Run service, Scheduler job, service account, IAM binding, registry image, GCS object, or billing setting was changed. Cloud Shell is waiting on the user-visible Google Cloud credential/API authorization prompt. Production, publication and notification paths remain untouched.
+
+| Claim | Evidence | Level / Result | Limit |
+|---|---|---|---|
+| Live 08:00 Evidence reader matches the real bucket layout | Read-only Console inspection of the 2026-11-11 attempt ledger and Evidence object path; implementation follows exact ledger attempt IDs and performs pinned-generation/hash/contract checks. | E4 layout observed; adapter covered by E2 tests | No deployed Watchdog read has run. |
+| Minimal TEST ONLY Watchdog candidate is structurally valid | Exact-head Python contract and Terraform validation workflow 43033109154. | E2 / PASS | Does not prove any Cloud API behavior. |
+| Container is ready for deployment | Artifact Registry contains only earlier producer images. | BLOCKED / no reviewed Watchdog image | Cloud Shell authorization and image build/push are still pending. |
+| TEST ONLY billing reconfiguration is needed | Existing capture resources and bucket are running; no billing setting was changed. | E4 / no reconfiguration performed | No estimate is a guarantee; the new Watchdog would be a billable-capable resource. |
+
+**Next necessary action:** after the Cloud Shell Google Cloud API credential prompt is authorized, build and push the immutable Watchdog image to the existing TEST ONLY Artifact Registry, review the single-service/single-job Terraform plan, then obtain the required action-time confirmation immediately before applying its new service-account, invoker, GCS viewer and Logs viewer IAM bindings. Keep the Scheduler paused until the deployed image/config and access scope have been read back; a future scheduled run is still required for E4 Watchdog acceptance.
