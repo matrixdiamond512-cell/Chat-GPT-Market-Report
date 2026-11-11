@@ -390,7 +390,7 @@ class TestOnlyGcsStoreTests(unittest.TestCase):
         self.assertEqual(len(attempt_events), 1)
         self.assertEqual(attempt_events[0]["outcome"], "STARTED")
         self.assertEqual(attempt_events[0]["report_id"], "2026-11-11_16-00")
-        self.assertEqual(attempt_events[0]["attempt_id"], "2026-11-11_16-00:2026-11-11T15:47:00+09:00")
+        self.assertEqual(attempt_events[0]["attempt_id"], f"{JOB_RESOURCE}@2026-11-11T06:47:00+00:00")
 
 if __name__ == "__main__":
     unittest.main()
