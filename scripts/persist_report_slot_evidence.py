@@ -69,6 +69,8 @@ def require_evidence_slot_guard(report_date: str, report_time: str, *, now: date
     The 08:00 GCS storage contract remains independently restricted by
     require_gcs_evidence_slot; this guard changes only when Evidence may be made.
     """
+    if now is None:
+        return require_slot_window(report_date, report_time)
     return require_slot_window(report_date, report_time, now=now)
 
 
