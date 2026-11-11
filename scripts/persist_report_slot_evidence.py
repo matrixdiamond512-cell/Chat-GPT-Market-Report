@@ -79,7 +79,7 @@ def require_gcs_evidence_slot(report_time: str) -> None:
         raise ValueError("BLOCKED_GCS_EVIDENCE_08_ONLY")
 
 
-def build_slot_evidence(report_date: str, report_time: str, market_payload: dict, raw_market_bytes: bytes, *, max_age_minutes: int = 15, evidence_created_at: datetime | None = None) -> dict:
+def build_slot_evidence(report_date: str, report_time: str, market_payload: dict, raw_market_bytes: bytes, *, max_age_minutes: int = 15, evidence_created_at: datetime | None = None, acquisition_path: str = "data/market/latest.json") -> dict:
     day = date.fromisoformat(report_date)
     if max_age_minutes < 0:
         raise ValueError("max_age_minutes must be nonnegative")
@@ -122,7 +122,7 @@ def build_slot_evidence(report_date: str, report_time: str, market_payload: dict
         "snapshot": snapshot_data,
         "snapshotHash": snapshot_hash,
         "acquisitionSource": {
-            "path": "data/market/latest.json",
+            "path": acquisition_path,
             "contentHash": source_hash,
             "generatedAt": market_payload["generatedAt"],
             "reportSlot": report_time,
