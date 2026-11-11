@@ -76,14 +76,38 @@ resource "google_cloud_run_v2_service" "service" {
         name  = "TEST_ONLY_ENVIRONMENT"
         value = "TEST_ONLY"
       }
-      env { name = "SERVICE_MODE", value = each.value.mode }
-      env { name = "OIDC_AUDIENCE", value = "https://test-only.market-report.invalid/${var.project_id}/${each.value.service_name}" }
-      env { name = "EXPECTED_PRINCIPAL", value = google_service_account.scheduler[each.key].email }
-      env { name = "EXPECTED_JOB_RESOURCE", value = "projects/${var.project_id}/locations/${var.region}/jobs/${each.value.job_name}" }
-      env { name = "EXPECTED_REPORT_SLOT", value = each.value.slot }
-      env { name = "TEST_ONLY_BUCKET", value = var.test_only_bucket }
-      env { name = "TEST_ONLY_PREFIX", value = var.test_only_prefix }
-      env { name = "EVIDENCE_SERVICE_NAME", value = "mr-evidence-test-producer-${each.value.slot_key}" }
+      env {
+        name  = "SERVICE_MODE"
+        value = each.value.mode
+      }
+      env {
+        name  = "OIDC_AUDIENCE"
+        value = "https://test-only.market-report.invalid/${var.project_id}/${each.value.service_name}"
+      }
+      env {
+        name  = "EXPECTED_PRINCIPAL"
+        value = google_service_account.scheduler[each.key].email
+      }
+      env {
+        name  = "EXPECTED_JOB_RESOURCE"
+        value = "projects/${var.project_id}/locations/${var.region}/jobs/${each.value.job_name}"
+      }
+      env {
+        name  = "EXPECTED_REPORT_SLOT"
+        value = each.value.slot
+      }
+      env {
+        name  = "TEST_ONLY_BUCKET"
+        value = var.test_only_bucket
+      }
+      env {
+        name  = "TEST_ONLY_PREFIX"
+        value = var.test_only_prefix
+      }
+      env {
+        name  = "EVIDENCE_SERVICE_NAME"
+        value = "mr-evidence-test-producer-${each.value.slot_key}"
+      }
     }
   }
   depends_on = [
