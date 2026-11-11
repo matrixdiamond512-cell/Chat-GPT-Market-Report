@@ -381,3 +381,14 @@ Affected canonical paths: requirements.md, specification.md, operations.md, DOCU
 - PR #188 synchronized onto main 14f726649e65e814bda9067b75fb516a81ef0a30 using merge commit 260c136795a3cffd92b3c8298caaa68290ebf801 (main first parent; previous feature head second). GitHub compare shows 56 changed PR paths, 176 ahead, 0 behind. Exact-head hosted Actions all 10/10 SUCCESS: issuance 42993123733; UI 42993123636; delivery health 42993123652; dashboard publication health 42993123564; saved-source QA 42993124027; publication eligibility 42993123861; sync recovery 42993123913; historical recovery 42993123624; frozen cutoff 42993123607; Apps Script validation 42993123858.
 - CI is E2 fixture evidence only. task_output_handoff.py is implemented/tested as a receiver contract, but VerifiedTaskInvocation does not authenticate ChatGPT task output. Live task-to-G2 invocation and GCS generation/audit-principal proof remain BLOCKED_G2_TASK_HANDOFF; production remains NOT_READY.
 - PR remains OPEN / Draft / unmerged. No scheduled task, trigger, Docs, GCS, canonical report, receipt, Pages, notification, IAM/WIF, or production setting was changed. No historical slot was backfilled.
+
+
+## MR-EVIDENCE-SCHEDULER-RELIABILITY-20261111-01 — additive outcome
+
+**Scope:** improve scheduler occurrence identity, strict late cutoff, duplicate retry behavior, and independent missing-Evidence monitoring within PR #188. Preserve the broader market-report delivery objective and existing G2/GCS/Docs/canonical/Pages acceptance criteria.
+
+**Implemented candidate:** strict all-slot 15-minute Evidence creation guard; per-slot Actions concurrency; TEST ONLY Cloud Scheduler header/OIDC contract; deterministic watchdog states/message; fixed-clock abnormal-case tests; A/B/C comparison recommends authenticated Cloud Scheduler→Cloud Run as future target. Existing 08:00 GCS-only and other-slot GitHub storage contracts stay separate.
+
+**Status:** code committed to the existing OPEN/Draft PR #188; hosted exact-head CI pending. Local Python unavailable; local tests NOT_RUN. No Cloud service, schedule, IAM/WIF, production GCS, task, Docs, receipt, Pages, notification, main, or PR lifecycle settings changed. Fixed-ID Docs are NOT_RUN. Production readiness remains NOT_READY.
+
+**Open outcomes:** exact-head hosted checks; review of time/date/slot/idempotency behavior; independent watchdog deployment and notification transport; approved GCP/identity/writer integration; no-cross-writer cutover/rollback plan; future eligible-slot external acceptance. Next necessary action is collect and inspect all relevant exact-head CI results, then resolve any failure before calling the PR candidate verified.
