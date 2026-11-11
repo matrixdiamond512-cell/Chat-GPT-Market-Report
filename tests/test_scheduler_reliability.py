@@ -66,7 +66,7 @@ class ScheduleReliabilityTests(unittest.TestCase):
     def test_jst_report_date_survives_utc_day_rollover(self):
         result = validate_scheduled_invocation(
             verified_principal=PRINCIPAL, expected_principal=PRINCIPAL,
-            job_name="projects/test/locations/asia-northeast1/jobs/market-report-0800-evidence",
+            job_name="market-report-0800-evidence",
             expected_job_name="projects/test/locations/asia-northeast1/jobs/market-report-0800-evidence",
             report_slot="08:00", schedule_time="2026-11-11T22:47:00Z",
             started_at=datetime(2026, 11, 11, 22, 52, tzinfo=timezone.utc),
@@ -77,7 +77,7 @@ class ScheduleReliabilityTests(unittest.TestCase):
         with self.assertRaisesRegex(ScheduleRequestError, "report_date_not_weekday"):
             validate_scheduled_invocation(
                 verified_principal=PRINCIPAL, expected_principal=PRINCIPAL,
-                job_name=JOB, expected_job_name=JOB, report_slot="16:00",
+                job_name=JOB.rsplit("/", 1)[-1], expected_job_name=JOB, report_slot="16:00",
                 schedule_time="2026-11-14T15:47:00+09:00",
                 started_at=datetime(2026, 11, 14, 15, 47, tzinfo=JST),
             )
