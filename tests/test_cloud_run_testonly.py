@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from unittest.mock import patch
 
 from scripts.reporting import cloud_run_testonly as runtime
+from scripts.reporting.scheduler_reliability import JST
 from scripts.reporting.test_only_evidence_store import (
     TEST_ONLY_BUCKET,
     TEST_ONLY_PREFIX,
@@ -241,9 +242,9 @@ class CloudRunSchedulerAdapterTests(unittest.TestCase):
                 )
 
     def test_post_and_body_size_guards(self):
-        self.assertEqual(runtime._validate_http_request(FakeRequest({"Authorization": "Bearer x"}))[1], 200 if False else 413) if False else None
         class GetRequest(FakeRequest):
             method = "GET"
+        self.assertIsNone(runtime._validate_http_request(FakeRequest()))
         self.assertEqual(runtime._validate_http_request(GetRequest())[1], 405)
         self.assertEqual(runtime._validate_http_request(FakeRequest(body=b"x" * (1024 * 1024 + 1)))[1], 413)
 
