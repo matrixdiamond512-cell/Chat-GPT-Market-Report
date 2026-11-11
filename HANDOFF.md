@@ -208,3 +208,12 @@ This supersedes the unresolved code-cause status of failed run 42881821634, whic
 - 16:00実行を08:00 G2受入へ代用しない。`task_output_handoff.py` と隔離テストはPRに既存実装済み。型付き `VerifiedTaskInvocation` は外部ホストの検証契約であり、ChatGPTタスクの認証やrun_idの真正性を単独で証明しない。正式な外部受渡し手段、認証済み主体、実際のtask→G2呼出し、GCS generation/audit principalは未実証のため `BLOCKED_G2_TASK_HANDOFF` / production `NOT_READY` を維持。
 
 固定Google Docs、schedule、trigger、権限、GCS、正本/Receipt、公開、通知は変更していない。過去枠のEvidenceは作成していない。
+
+
+## 2026-11-11 final task/G2 audit and exact-head CI
+
+- The attached task snapshot reports is_enabled=false, with run c60e9791-68a4-832f-b856-673aa58d6c80 marked completed for 16:00. Its output reports no saved Doc, no GitHub Evidence/canonical/Receipt, no Pages report, and no notification. This is not a successful publication.
+- Independent readback confirms expected 16:00 artifacts absent and the public 2026-11-11 page empty. Root cause remains UNKNOWN; task/Apps Script execution trace, effective Docs write permission, and GCS object/audit logs were unavailable.
+- PR #188 synchronized onto main 14f726649e65e814bda9067b75fb516a81ef0a30 using merge commit 260c136795a3cffd92b3c8298caaa68290ebf801 (main first parent; previous feature head second). GitHub compare shows 56 changed PR paths, 176 ahead, 0 behind. Exact-head hosted Actions all 10/10 SUCCESS: issuance 42993123733; UI 42993123636; delivery health 42993123652; dashboard publication health 42993123564; saved-source QA 42993124027; publication eligibility 42993123861; sync recovery 42993123913; historical recovery 42993123624; frozen cutoff 42993123607; Apps Script validation 42993123858.
+- CI is E2 fixture evidence only. task_output_handoff.py is implemented/tested as a receiver contract, but VerifiedTaskInvocation does not authenticate ChatGPT task output. Live task-to-G2 invocation and GCS generation/audit-principal proof remain BLOCKED_G2_TASK_HANDOFF; production remains NOT_READY.
+- PR remains OPEN / Draft / unmerged. No scheduled task, trigger, Docs, GCS, canonical report, receipt, Pages, notification, IAM/WIF, or production setting was changed. No historical slot was backfilled.
