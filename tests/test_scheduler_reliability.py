@@ -13,7 +13,7 @@ JOB = "projects/test-project/locations/asia-northeast1/jobs/market-report-1600-e
 
 
 def invoke(*, schedule_time="2026-11-11T15:47:00+09:00", started=None,
-           principal=PRINCIPAL, job_name=JOB, slot="16:00"):
+           principal=PRINCIPAL, job_name=JOB.rsplit("/", 1)[-1], slot="16:00"):
     return validate_scheduled_invocation(
         verified_principal=principal,
         expected_principal=PRINCIPAL,
@@ -44,6 +44,8 @@ class ScheduleReliabilityTests(unittest.TestCase):
             invoke(principal="attacker@example.com")
         with self.assertRaisesRegex(ScheduleRequestError, "job_name_mismatch"):
             invoke(job_name="projects/test/jobs/other")
+        with self.assertRaisesRegex(ScheduleRequestError, "job_name_mismatch"):
+            invoke(job_name=JOB)  # The header contains JOB_ID, not the full resource.
         with self.assertRaisesRegex(ScheduleRequestError, "unsupported_slot"):
             invoke(slot="15:00")
 
