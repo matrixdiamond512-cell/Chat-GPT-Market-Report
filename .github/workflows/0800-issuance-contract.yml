@@ -1,0 +1,75 @@
+name: 08:00 issuance integration contract
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/0800-issuance-contract.yml"
+      - "scripts/reporting/issuance_pipeline.py"
+      - "scripts/reporting/g2_bundle_producer.py"
+      - "scripts/reporting/task_output_handoff.py"
+      - "tests/test_task_output_handoff.py"
+      - "scripts/reporting/gcs_wif_readonly.py"
+      - "tests/test_gcs_wif_readonly.py"
+      - "scripts/reporting/issuance_portal.py"
+      - "scripts/reporting/issuance_preflight.py"
+      - "config/issuance_ownership.json"
+      - "scripts/run_0800_issuance.py"
+      - "scripts/validate_issuance_report_dom.js"
+      - "scripts/reporting/importer_handoff.py"
+      - "scripts/sync_reports_from_drive.py"
+      - "scripts/sync_latest_report_publication.py"
+      - "tests/test_issuance_pipeline.py"
+      - "tests/test_issuance_portal.py"
+      - "tests/test_issuance_preflight.py"
+      - "tests/test_g2_bundle_handoff.py"
+      - "docs/system/requirements.md"
+      - "docs/system/specification.md"
+      - "docs/system/operations.md"
+      - "docs/system/DOCUMENT_CONTROL.md"
+      - "tests/test_importer_handoff.py"
+      - "scripts/persist_report_slot_evidence.py"
+      - "tests/test_report_slot_evidence.py"
+      - ".github/workflows/freeze-report-slot-evidence.yml"
+      - "scripts/reporting/context.py"
+      - "scripts/reporting/snapshot.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  issuance-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile integration modules
+        run: python -m py_compile scripts/reporting/issuance_pipeline.py scripts/reporting/g2_bundle_producer.py scripts/reporting/issuance_portal.py scripts/reporting/issuance_preflight.py scripts/run_0800_issuance.py scripts/reporting/importer_handoff.py scripts/sync_reports_from_drive.py scripts/sync_latest_report_publication.py scripts/persist_report_slot_evidence.py scripts/reporting/gcs_wif_readonly.py tests/test_gcs_wif_readonly.py tests/test_issuance_pipeline.py tests/test_issuance_portal.py tests/test_importer_handoff.py tests/test_issuance_preflight.py tests/test_report_slot_evidence.py
+      - name: Verify module CLI starts and blocks missing input without credentials
+        run: |
+          python -m scripts.run_0800_issuance --help
+          if python -m scripts.run_0800_issuance > "$RUNNER_TEMP/issuance-missing-input.json"; then
+            echo "Missing input unexpectedly succeeded"
+            exit 1
+          else
+            exit_code=$?
+            test "$exit_code" -eq 2
+          fi
+          python -c "import json, pathlib, sys; p=json.loads(pathlib.Path(sys.argv[1]).read_text()); assert p['status']=='BLOCKED' and p['reason']=='BLOCKED_G2_PRODUCER_MISSING', p" \
+            "$RUNNER_TEMP/issuance-missing-input.json"
+      - name: Run isolated Docs and portal readback contract tests
+        run: |
+          python -m unittest discover -s tests -p test_issuance_pipeline.py -v
+          python -m unittest discover -s tests -p test_issuance_portal.py -v
+          python -m unittest discover -s tests -p test_importer_handoff.py -v
+          python -m unittest discover -s tests -p test_issuance_preflight.py -v
+          python -m unittest discover -s tests -p test_g2_bundle_handoff.py -v
+          python -m unittest discover -s tests -p test_g2_bundle_producer.py -v
+          python -m unittest discover -s tests -p test_report_slot_evidence.py -v
+          python -m unittest discover -s tests -p test_gcs_wif_readonly.py -v
+
+
+      - name: Verify task output handoff and isolated chain
+        run: python -m unittest discover -s tests -p test_task_output_handoff.py -v
