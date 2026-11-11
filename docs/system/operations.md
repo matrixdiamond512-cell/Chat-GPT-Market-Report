@@ -309,3 +309,30 @@ Source: PR #188, failed sync-recovery run 42881821634, and user request to ident
 Implementation: scripts/build_market_json.py no longer injects live payloads into latestReport or reports. Existing frontend consumers already prefer top-level marketData. Three isolated tests prove complete canonical equality, preservation of preexisting frozen marketData, and retry-safe source/error metadata. The sync-recovery CI watches and runs this regression. This prevents subsequent mutations; it neither retroactively repairs stored data nor promotes any publication. Body-authoring and G2/task interfaces are unchanged.
 
 Verification: local sync-related unittest 52/52, reconciliation helper 4/4, publication-consistency check PASS and index check 162 reports PASS; data/, reports/, reports.json and publication-receipts/ have zero working-tree changes. Final-head hosted CI pending at record creation. Google Docs fixed-ID synchronization and production E2E NOT_RUN; production NOT_READY. No schedule/owner/permission/trigger/main/Pages/Docs/notification change or production workflow dispatch.
+
+
+## 2026-11-11 Evidence scheduler reliability operation
+
+### Current operating state
+
+- GitHub Actions schedule remains the current best-effort Evidence producer. A scheduled run may be late or absent; no execution record by the pre-slot checkpoint is a monitor condition, not evidence that a retry will happen.
+- GitHub schedule input identifies its cron expression, but not the original occurrence timestamp. Do not calculate a historical report date from a late runner clock and claim it is the scheduled date. The authenticated TEST ONLY adapter contract is in `scripts/reporting/scheduler_reliability.py`; it requires the verified Cloud Scheduler caller plus the platform schedule-time and job-name headers.
+- New Evidence creation for 08:00/12:00/16:00/21:00 is now limited to the same strict 15-minute pre-slot window. At/after the target time, stop and record `BLOCKED_SCHEDULE_WINDOW_MISMATCH:SCHEDULE_LATE`. Never run a catch-up write, shift the report date, backfill an Evidence file, or silently proceed to Docs/publication.
+- For each incident, record scheduled occurrence, run ID/attempt, started time, reportId, source acquisition time, Evidence validation result, storage readback identity/hash, and next step. Separate `NOT_STARTED`, `FAILED`, `UNKNOWN`, and `NOT_RUN`; do not infer an inner scheduler cause from a missing run.
+
+### TEST ONLY monitoring operation
+
+Use the watchdog decision function only with read-only, independently checked Evidence state. It emits `WAITING_FOR_EVIDENCE`, `WARNING_EVIDENCE_MISSING`, `WARNING_EVIDENCE_INVALID`, `BLOCKED_EVIDENCE_MISSING`, `BLOCKED_EVIDENCE_INVALID`, `EVIDENCE_READY`, or `EVIDENCE_STATE_UNKNOWN` and a deterministic message. The warning threshold is three minutes before the slot; at/after the slot the missing/invalid state is blocked. It never writes Evidence, changes publication state, or sends a notification. Production monitoring must run on an independent schedule/identity and read 08:00's pinned GCS generation or the existing GitHub artifact for other slots.
+
+### Future installation, approval, and rollback
+
+1. Create Cloud Scheduler/Cloud Run only in the approved TEST ONLY project. Use Asia/Tokyo timezone; bind each scheduler job name to exactly one slot. Validate the verified OIDC service account, audience, job-name header, original schedule-time header, JST conversion, weekday, and expected pre-slot time before acquiring data.
+2. Keep the producer retry deadline before the slot. Retries keep one scheduled occurrence/idempotency key. Existing create-only persistence/readback must reject different bytes for the same reportId; a conflict is an incident, not a reason to overwrite.
+3. Give the Cloud Run runtime only the reviewed slot-specific read/write scopes. Keep 08:00 GCS/WIF canonical-generation behavior; keep other slots on the existing GitHub storage contract. Do not grant broad Drive or repository access merely to make a test pass.
+4. In TEST ONLY, run fixed-clock on-time, +5 minute, +30 minute, hours-late, next-day, weekend, retry, conflict, missing input, access denial, and watchdog cases. Warning text generation is verified; notification sending is not part of this test.
+5. Obtain separate approval before creating production resources/charges, IAM/WIF permissions, schedules, runtime writers, or notification destinations. On cutover, ensure a single authoritative writer per slot and monitor a future eligible slot through independent readbacks.
+6. Roll back by stopping only the newly approved scheduler jobs and returning ownership to the prior authorized path. Do not retroactively create missed Evidence and do not allow both writers to replace one another.
+
+### 2026-11-11 incident evidence
+
+The 16:00 task result reported pre-slot Evidence 404. A separate 15:50 GitHub importer failed while looking for the 12:00 source (`monthly_folder_access=False`); an Apps Script 16:23 run reported no Docs for the separate 16:30 slot. Those are independent execution paths. The internal cause of the absent 16:00 GHA run and the actual Docs API call status remain UNKNOWN until scheduler/task audit records are available.
