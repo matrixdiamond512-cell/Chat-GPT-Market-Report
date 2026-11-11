@@ -39,7 +39,7 @@ jobs:
         with:
           terraform_version: "1.9.8"
       - name: Format check
-        run: terraform fmt -check -recursive
+        run: terraform fmt -check -diff -recursive
       - name: Initialize providers without a backend
         run: terraform init -backend=false -input=false
       - name: Validate without credentials or resource access
