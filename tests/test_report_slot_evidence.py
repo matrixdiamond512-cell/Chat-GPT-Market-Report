@@ -449,7 +449,7 @@ class ReportSlotEvidenceTests(unittest.TestCase):
         self.payload["markets"]["USDJPY"]["asOf"] = "2026-10-16T11:49:00+09:00"
         self.write_payload()
         now = datetime(2026, 10, 16, 11, 55, tzinfo=jst)
-        with patch("scripts.persist_report_slot_evidence.require_before_slot"):
+        with patch("scripts.persist_report_slot_evidence.require_evidence_slot_guard"):
             path, created = persist_slot_evidence(
                 "2026-10-16", "12:00", self.market_path, self.output,
                 require_live_before_slot=True, now=now,
