@@ -159,8 +159,6 @@ class TestOnlyEvidenceStore:
         checked = validate_stored_slot_evidence(readback, report_date, report_slot)
         if checked.get("reportId") != report_id or checked.get("revision") != evidence.get("revision"):
             raise TestOnlyStorageError("EVIDENCE_READBACK_IDENTITY_MISMATCH")
-        cutoff = _report_identity(report_id)
-        del cutoff
         cutoff_at = datetime.fromisoformat(f"{report_date}T{report_slot}:00+09:00").astimezone(timezone.utc)
         if stored_at >= cutoff_at:
             raise TestOnlyStorageError("EVIDENCE_OBJECT_CREATED_AFTER_CUTOFF")
