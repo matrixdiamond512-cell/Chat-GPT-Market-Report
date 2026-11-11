@@ -144,10 +144,14 @@ def assess_evidence_watchdog(
         state = "WARNING_EVIDENCE_MISSING" if evidence_state == "ABSENT" else "WARNING_EVIDENCE_INVALID"
     else:
         state = "WAITING_FOR_EVIDENCE"
+    report_id = f"{report_date}_{report_slot.replace(':', '-')}"
+    message = f"{state}: Evidence status for {report_id}; latest attempt={attempt}. Notification not sent."
     return {
         "state": state,
-        "reportId": f"{report_date}_{report_slot.replace(':', '-')}" ,
+        "reportId": report_id,
         "latestAttemptAt": attempt,
+        "message": message,
         "notification": "NOT_SENT",
     }
+
 
