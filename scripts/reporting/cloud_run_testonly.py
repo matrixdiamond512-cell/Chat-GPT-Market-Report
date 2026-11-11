@@ -84,7 +84,8 @@ def verify_scheduler_oidc(
     verified = claims.get("email_verified")
     if email != expected_principal or verified not in (True, "true"):
         raise PermissionError("OIDC_PRINCIPAL_MISMATCH")
-    if claims.get("aud") != audience:
+    token_audience = claims.get("aud")
+    if token_audience != audience and token_audience != [audience]:
         raise PermissionError("OIDC_AUDIENCE_MISMATCH")
     return email
 
@@ -258,6 +259,19 @@ def _producer(request, config, *, verifier=None, store=None, started_at=None):
         report_slot=config["expected_report_slot"],
         schedule_time=schedule_time,
         started_at=started,
+    )
+    # Record the authenticated, schedule-bound attempt before any GCS access.
+    # The independent watchdog can then distinguish "no invocation" from a
+    # producer that started and failed while reading/building/saving Evidence.
+    _emit(
+        "evidence_attempt",
+        outcome="STARTED",
+        request_id=_safe_request_id(request.headers),
+        report_id=invocation.report_id,
+        report_slot=invocation.report_slot,
+        scheduled_at=invocation.scheduled_at.astimezone(timezone.utc).isoformat(),
+        started_at=started.astimezone(timezone.utc).isoformat(),
+        attempt_id=invocation.attempt_id,
     )
     if store is None:
         store, _ = _new_clients(config)
