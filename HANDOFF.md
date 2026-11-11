@@ -227,3 +227,8 @@ PR #188 now contains a TEST ONLY reliability candidate: all-slot strict pre-slot
 - Local Python tests could not run because this workspace has only inaccessible Windows Store execution aliases and no WSL distro. Exact-head hosted PR CI is required before reporting PASS.
 - No Cloud Scheduler/Run resources, production schedules, IAM/WIF, GCS, task, Apps Script, Docs, canonical/Receipt, Pages, or notification was changed. Fixed-ID Google Docs remain NOT_RUN. Production acceptance remains NOT_READY.
 - Next: await all new exact-head checks, inspect failure output, repair and recheck until exact-head CI is green. Then leave the PR Draft for review. Separately, an approved GCP owner must provision a TEST ONLY authenticated adapter, storage-specific least-privilege access, independent read-only watchdog and alert transport; test them with fixed clocks and no historical data. Production cutover/review and a future eligible-slot acceptance are separate outcomes.
+
+
+### Exact-head check result — 2026-11-11
+
+Code/test head `2e5a286bc3847c9834cfec3af64bc0134985b48a` passed all 10 relevant GitHub Actions checks (runs 43007220039, 43007219848, 43007219866, 43007219746, 43007219901, 43007219700, 43007219600, 43007219617, 43007219627, 43007219684). The Evidence suite passed 23/23, scheduler contract 10/10, and frozen-cutoff suite 36/36. Three failures on the previous exact head were fixed before this successful run. Local Python remains NOT_RUN. This establishes only hosted E2 fixture/contract verification. Authenticated runtime, production GCP/IAM/WIF, storage/watchdog integration, notifications and live slot remain NOT_RUN; production stays NOT_READY. PR #188 remains Draft/open/unmerged.
