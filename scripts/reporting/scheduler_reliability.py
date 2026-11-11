@@ -70,7 +70,16 @@ def validate_scheduled_invocation(
     """
     if not expected_principal or verified_principal != expected_principal:
         raise ScheduleRequestError("BLOCKED_SCHEDULE_AUTH:principal_mismatch")
-    if not expected_job_name or job_name != expected_job_name:
+    expected_job_id = expected_job_name.rsplit("/", 1)[-1] if expected_job_name else ""
+    expected_parts = expected_job_name.split("/") if expected_job_name else []
+    if (
+        len(expected_parts) != 6
+        or expected_parts[0] != "projects"
+        or expected_parts[2] != "locations"
+        or expected_parts[4] != "jobs"
+        or not expected_job_id
+        or job_name != expected_job_id
+    ):
         raise ScheduleRequestError("BLOCKED_SCHEDULE_AUTH:job_name_mismatch")
     if report_slot not in SLOTS:
         raise ScheduleRequestError("BLOCKED_SCHEDULE_REQUEST:unsupported_slot")
