@@ -3,12 +3,12 @@
   "pageId": "rates-bonds",
   "pageTitle": "金利・債券市場分析",
   "subtitle": "米・日・欧の金利、イールドカーブ、実質金利、入札需給、他市場への波及を一画面で確認",
-  "generatedAt": "2026-11-12T11:31:44+09:00",
+  "generatedAt": "2026-11-12T19:22:22+09:00",
   "meta": {
     "page": "rates-bonds",
-    "asOfDate": "2026-11-11",
+    "asOfDate": "2026-11-12",
     "asOfTime": "各市場の公表時点",
-    "updatedAt": "2026-11-12T11:31:44+09:00",
+    "updatedAt": "2026-11-12T19:22:22+09:00",
     "status": "confirmed",
     "sourceStatus": "自動取得",
     "isStale": false,
@@ -17,17 +17,17 @@
   },
   "summary": {
     "headline": "米2年 4.560%（+5.0bp）、米10年 4.880%（+2.0bp）",
-    "theme": "米国はベア・フラットニング、日本はベア・フラットニング。日米金利差は方向混在。",
-    "conclusion": "米国はベア・フラットニング、日本はベア・フラットニング。日米金利差は方向混在。米国債は年限ごとに方向が分かれる。2年が前日 +5.0bp、週間 -3.0bpで変化を主導。日本国債は全面的な金利上昇。10年が前日 +9.2bp、週間 -1.5bpで変化を主導。",
+    "theme": "米国はベア・フラットニング、日本はツイスト。日米金利差は拡大方向。",
+    "conclusion": "米国はベア・フラットニング、日本はツイスト。日米金利差は拡大方向。米国債は年限ごとに方向が分かれる。2年が前日 +5.0bp、週間 -3.0bpで変化を主導。日本国債は年限ごとに方向が分かれる。30年が前日 -6.1bp、週間 +1.4bpで変化を主導。",
     "consistency": "米10年・実質金利・期待インフレは最新公表日が一致していないため、同日内訳としては扱わない。各系列の基準日を確認しながら株・為替・金との反応を見る。"
   },
   "analysis": {
     "topLines": [
       "米国：ベア・フラットニング｜年限ごとに方向が分かれる",
-      "日本：ベア・フラットニング｜全面的な金利上昇",
-      "クロスアセット：USD/JPYは混合、金は整合、BTCUSDは逆行"
+      "日本：ツイスト｜年限ごとに方向が分かれる",
+      "クロスアセット：USD/JPYは整合、金は整合、BTCUSDは逆行"
     ],
-    "theme": "米国はベア・フラットニング、日本はベア・フラットニング。日米金利差は方向混在。",
+    "theme": "米国はベア・フラットニング、日本はツイスト。日米金利差は拡大方向。",
     "usRates": {
       "structure": "ベア・フラットニング",
       "direction": "年限ごとに方向が分かれる",
@@ -36,29 +36,29 @@
       "risk": "順イールド。前日では短期側主導の上昇で、金融引締め期待の強まりを示唆。"
     },
     "jpRates": {
-      "structure": "ベア・フラットニング",
-      "direction": "全面的な金利上昇",
-      "interpretation": "日本国債は全面的な金利上昇。10年が前日 +9.2bp、週間 -1.5bpで変化を主導。",
-      "leadingTenor": "10年",
-      "risk": "順イールド。前日では短期側主導の上昇で、金融引締め期待の強まりを示唆。"
+      "structure": "ツイスト",
+      "direction": "年限ごとに方向が分かれる",
+      "interpretation": "日本国債は年限ごとに方向が分かれる。30年が前日 -6.1bp、週間 +1.4bpで変化を主導。",
+      "leadingTenor": "30年",
+      "risk": "順イールド。短期と長期が逆方向。政策期待と長期プレミアムを分けて確認。"
     },
     "usCurveAnalysis": {
       "type": "ベア・フラットニング",
       "interpretation": "順イールド。前日では短期側主導の上昇で、金融引締め期待の強まりを示唆。"
     },
     "jpCurveAnalysis": {
-      "type": "ベア・フラットニング",
-      "interpretation": "順イールド。前日では短期側主導の上昇で、金融引締め期待の強まりを示唆。"
+      "type": "ツイスト",
+      "interpretation": "順イールド。短期と長期が逆方向。政策期待と長期プレミアムを分けて確認。"
     },
     "usJapanComparison": {
       "usDirection": "年限ごとに方向が分かれる",
-      "jpDirection": "全面的な金利上昇",
-      "rateGapDirection": "方向混在",
-      "usdJpyImplication": "中立",
+      "jpDirection": "年限ごとに方向が分かれる",
+      "rateGapDirection": "拡大方向",
+      "usdJpyImplication": "上昇",
       "actualUsdJpy": "上昇",
-      "verdict": "混合",
+      "verdict": "整合",
       "confidence": "低",
-      "interpretation": "金利示唆は中立、実際は上昇。金利差以外のドル需要・円売りフローを確認。基準日が3日ずれるため参考方向として表示。",
+      "interpretation": "金利示唆は上昇、実際は上昇。方向が整合。基準日が3日ずれるため参考方向として表示。",
       "tenors": [
         {
           "tenor": "2年",
@@ -66,17 +66,17 @@
           "usChangeBp": 4.999999999999982,
           "usWeekChangeBp": -3.000000000000025,
           "jpValue": 1.861,
-          "jpChangeBp": 7.699999999999996,
-          "jpWeekChangeBp": -3.0000000000000027
+          "jpChangeBp": 0.0,
+          "jpWeekChangeBp": 0.09999999999998899
         },
         {
           "tenor": "10年",
           "usValue": 4.88,
           "usChangeBp": 1.9999999999999574,
           "usWeekChangeBp": -3.000000000000025,
-          "jpValue": 2.84,
-          "jpChangeBp": 9.199999999999964,
-          "jpWeekChangeBp": -1.5000000000000124
+          "jpValue": 2.803,
+          "jpChangeBp": -3.699999999999992,
+          "jpWeekChangeBp": -0.30000000000001137
         }
       ]
     },
@@ -89,12 +89,12 @@
     "crossAssetAnalysis": [
       {
         "market": "USD/JPY",
-        "expectedDirection": "中立",
+        "expectedDirection": "上昇",
         "actualDirection": "上昇",
         "actualChangePct": 0.6786163993065752,
-        "verdict": "混合",
+        "verdict": "整合",
         "confidence": "低",
-        "interpretation": "金利示唆は中立、実際は上昇。金利差以外のドル需要・円売りフローを確認。",
+        "interpretation": "金利示唆は上昇、実際は上昇。方向が整合。",
         "timingNote": "基準日が3日ずれるため参考方向として表示。"
       },
       {
@@ -138,8 +138,8 @@
         "timingNote": "基準日が3日ずれるため参考方向として表示。"
       }
     ],
-    "marketConclusion": "米国はベア・フラットニング、日本はベア・フラットニング。日米金利差は方向混在。米国債は年限ごとに方向が分かれる。2年が前日 +5.0bp、週間 -3.0bpで変化を主導。日本国債は全面的な金利上昇。10年が前日 +9.2bp、週間 -1.5bpで変化を主導。",
-    "mainScenario": "2年の方向が続く間はベア・フラットニングを基本シナリオとし、ドルは中立、金は下落方向を確認。",
+    "marketConclusion": "米国はベア・フラットニング、日本はツイスト。日米金利差は拡大方向。米国債は年限ごとに方向が分かれる。2年が前日 +5.0bp、週間 -3.0bpで変化を主導。日本国債は年限ごとに方向が分かれる。30年が前日 -6.1bp、週間 +1.4bpで変化を主導。",
+    "mainScenario": "2年の方向が続く間はベア・フラットニングを基本シナリオとし、ドルは上昇、金は下落方向を確認。",
     "alternativeScenario": "米2年が反転しカーブ分類が変わる場合、政策期待の巻き戻しとクロスアセットの再連動を確認。",
     "breakConditions": [
       "米2年が前日比で明確に反転",
@@ -160,11 +160,11 @@
     },
     {
       "label": "日本金利",
-      "direction": "上昇",
+      "direction": "低下",
       "status": "confirmed",
-      "reason": "日本10年 2.840% / 前日比 +9.2bp",
-      "asOf": "2026-11-11",
-      "interpretation": "日本国債は全面的な金利上昇。10年が前日 +9.2bp、週間 -1.5bpで変化を主導。"
+      "reason": "日本10年 2.803% / 前日比 -3.7bp",
+      "asOf": "2026-11-12",
+      "interpretation": "日本国債は年限ごとに方向が分かれる。30年が前日 -6.1bp、週間 +1.4bpで変化を主導。"
     },
     {
       "label": "米イールドカーブ",
@@ -286,57 +286,57 @@
       "name": "日本2年国債利回り",
       "value": 1.861,
       "unit": "%",
-      "changeBp": 7.7,
-      "weekChangeBp": -3.0,
-      "direction": "上昇",
-      "asOf": "2026-11-11",
+      "changeBp": 0.0,
+      "weekChangeBp": 0.1,
+      "direction": "横ばい",
+      "asOf": "2026-11-12",
       "status": "confirmed",
-      "source": "財務省 国債金利情報",
+      "source": "TradingView JGB market snapshot (LSEG)",
       "missingReason": null,
       "staticMeaning": "日銀の政策正常化・短期金利期待を確認",
-      "currentInterpretation": "日本国債は全面的な金利上昇。10年が前日 +9.2bp、週間 -1.5bpで変化を主導。"
+      "currentInterpretation": "日本国債は年限ごとに方向が分かれる。30年が前日 -6.1bp、週間 +1.4bpで変化を主導。"
     },
     {
       "name": "日本5年国債利回り",
-      "value": 2.214,
+      "value": 2.187,
       "unit": "%",
-      "changeBp": 9.0,
-      "weekChangeBp": -5.5,
-      "direction": "上昇",
-      "asOf": "2026-11-11",
+      "changeBp": -2.7,
+      "weekChangeBp": -2.3,
+      "direction": "低下",
+      "asOf": "2026-11-12",
       "status": "confirmed",
-      "source": "財務省 国債金利情報",
+      "source": "TradingView JGB market snapshot (LSEG)",
       "missingReason": null,
       "staticMeaning": "日本の中期金利とカーブ形状を確認",
-      "currentInterpretation": "日本国債は全面的な金利上昇。10年が前日 +9.2bp、週間 -1.5bpで変化を主導。"
+      "currentInterpretation": "日本国債は年限ごとに方向が分かれる。30年が前日 -6.1bp、週間 +1.4bpで変化を主導。"
     },
     {
       "name": "日本10年国債利回り",
-      "value": 2.84,
+      "value": 2.803,
       "unit": "%",
-      "changeBp": 9.2,
-      "weekChangeBp": -1.5,
-      "direction": "上昇",
-      "asOf": "2026-11-11",
+      "changeBp": -3.7,
+      "weekChangeBp": -0.3,
+      "direction": "低下",
+      "asOf": "2026-11-12",
       "status": "confirmed",
-      "source": "財務省 国債金利情報",
+      "source": "TradingView JGB market snapshot (LSEG)",
       "missingReason": null,
       "staticMeaning": "円・銀行株・日経225・円キャリーへの影響を確認",
-      "currentInterpretation": "順イールド。前日では短期側主導の上昇で、金融引締め期待の強まりを示唆。"
+      "currentInterpretation": "順イールド。短期と長期が逆方向。政策期待と長期プレミアムを分けて確認。"
     },
     {
       "name": "日本30年国債利回り",
-      "value": 3.99,
+      "value": 3.929,
       "unit": "%",
-      "changeBp": 5.5,
-      "weekChangeBp": 1.1,
-      "direction": "上昇",
-      "asOf": "2026-11-11",
+      "changeBp": -6.1,
+      "weekChangeBp": 1.4,
+      "direction": "低下",
+      "asOf": "2026-11-12",
       "status": "confirmed",
-      "source": "財務省 国債金利情報",
+      "source": "TradingView JGB market snapshot (LSEG)",
       "missingReason": null,
       "staticMeaning": "日本の財政・超長期債需給を確認",
-      "currentInterpretation": "順イールド。前日では短期側主導の上昇で、金融引締め期待の強まりを示唆。"
+      "currentInterpretation": "順イールド。短期と長期が逆方向。政策期待と長期プレミアムを分けて確認。"
     },
     {
       "name": "ドイツ10年国債利回り",
@@ -421,20 +421,20 @@
       },
       {
         "spread": "日本10年－2年",
-        "value": 97.9,
+        "value": 94.2,
         "unit": "bp",
-        "changeBp": 1.5,
-        "weekChangeBp": 1.5,
+        "changeBp": -3.7,
+        "weekChangeBp": -0.4,
         "shape": "順イールド",
-        "reading": "スティープ化",
+        "reading": "フラット化",
         "status": "calculated"
       },
       {
         "spread": "日本30年－10年",
-        "value": 115.0,
+        "value": 112.6,
         "unit": "bp",
-        "changeBp": -3.7,
-        "weekChangeBp": 2.6,
+        "changeBp": -2.4,
+        "weekChangeBp": 1.7,
         "shape": "順イールド",
         "reading": "フラット化",
         "status": "calculated"
@@ -470,17 +470,17 @@
       },
       {
         "tenor": "5年",
-        "value": 2.214,
+        "value": 2.187,
         "status": "confirmed"
       },
       {
         "tenor": "10年",
-        "value": 2.84,
+        "value": 2.803,
         "status": "confirmed"
       },
       {
         "tenor": "30年",
-        "value": 3.99,
+        "value": 3.929,
         "status": "confirmed"
       }
     ]
@@ -589,16 +589,16 @@
     }
   ],
   "leadingRate": {
-    "name": "日本10年国債",
+    "name": "米2年債",
     "status": "calculated",
-    "reason": "前日 +9.2bp、週間 -1.5bp。日本国債は全面的な金利上昇。10年が前日 +9.2bp、週間 -1.5bpで変化を主導。",
-    "changeFromPrevious": "上昇 +9.2bp",
+    "reason": "前日 +5.0bp、週間 -3.0bp。米国債は年限ごとに方向が分かれる。2年が前日 +5.0bp、週間 -3.0bpで変化を主導。",
+    "changeFromPrevious": "上昇 +5.0bp",
     "switchCondition": "別年限の変化幅が上回る、または株・為替・商品への波及が別の金利に連動し始めた場合。"
   },
   "scenarios": {
     "main": {
       "title": "メインシナリオ",
-      "body": "2年の方向が続く間はベア・フラットニングを基本シナリオとし、ドルは中立、金は下落方向を確認。",
+      "body": "2年の方向が続く間はベア・フラットニングを基本シナリオとし、ドルは上昇、金は下落方向を確認。",
       "status": "calculated"
     },
     "alternative": {
@@ -639,7 +639,7 @@
     },
     {
       "name": "TradingView / LSEG JGB",
-      "status": "standby",
+      "status": "confirmed",
       "note": "財務省の翌営業日公表が遅れている場合のみ、直近市場スナップショットで補完。"
     },
     {
