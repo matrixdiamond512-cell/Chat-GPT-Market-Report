@@ -2,12 +2,12 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-supply-demand",
   "reportDate": "2026-11-13",
-  "generatedAt": "2026-11-13T00:58:59+09:00",
+  "generatedAt": "2026-11-13T02:33:40+09:00",
   "nikkei": {
     "schemaVersion": "2.1.0",
     "pageId": "nikkei225-supply-demand",
     "pageTitle": "日経225需給分析",
-    "generatedAt": "2026-11-13T00:58:59+09:00",
+    "generatedAt": "2026-11-13T02:33:40+09:00",
     "spot": {
       "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
@@ -16,7 +16,7 @@
       "value": 60819.36,
       "asOfDate": "2026-11-12",
       "status": "verified",
-      "fetchedAt": "2026-11-13T00:58:59+09:00"
+      "fetchedAt": "2026-11-13T02:33:40+09:00"
     },
     "futures": {
       "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -35,7 +35,7 @@
       "volumeChangePercent": null,
       "miniVolumeChangePercent": null,
       "status": "verified",
-      "fetchedAt": "2026-11-13T00:57:14+09:00",
+      "fetchedAt": "2026-11-13T02:31:58+09:00",
       "previousOpenInterest": 180710,
       "miniPreviousOpenInterest": 299911,
       "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261112open_interest.xlsx"
@@ -55,7 +55,7 @@
       "asOfDate": "2026-09-30",
       "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260930_derivatives_market_data_night.xlsx",
       "status": "stale",
-      "fetchedAt": "2026-11-13T00:58:49+09:00",
+      "fetchedAt": "2026-11-13T02:33:31+09:00",
       "error": "JPXセッション別出来高取得失敗: ValueError: night-session workbook link not found"
     },
     "arbitrage": {
@@ -70,9 +70,9 @@
       "buyChange": 32602,
       "status": "verified",
       "frequency": "daily",
-      "lastAttemptAt": "2026-11-13T00:57:07+09:00",
-      "lastSuccessAt": "2026-11-13T00:57:07+09:00",
-      "fetchedAt": "2026-11-13T00:57:07+09:00",
+      "lastAttemptAt": "2026-11-13T02:31:51+09:00",
+      "lastSuccessAt": "2026-11-13T02:31:51+09:00",
+      "fetchedAt": "2026-11-13T02:31:51+09:00",
       "error": null
     },
     "options": {
@@ -87,7 +87,7 @@
       "asOfDate": "2026-11-13",
       "status": "calculated",
       "error": "Put/Call・IVはJPX列構造を確認できるまで推測せず空欄",
-      "fetchedAt": "2026-11-13T00:58:59+09:00",
+      "fetchedAt": "2026-11-13T02:33:40+09:00",
       "putVolume": null,
       "callVolume": null,
       "putCallStatus": "unavailable",
@@ -163,7 +163,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202611/20261112_volume_by_participant_whole_day.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-11-13T00:58:51+09:00"
+      "fetchedAt": "2026-11-13T02:33:32+09:00"
     },
     "foreignInvestors": {
       "sourceName": "JPX 投資部門別売買状況",
@@ -776,7 +776,7 @@
         ]
       },
       "status": "verified",
-      "fetchedAt": "2026-11-13T00:58:49+09:00"
+      "fetchedAt": "2026-11-13T02:33:30+09:00"
     },
     "participantOpenInterest": {
       "sourceName": "JPX 取引参加者別建玉残高",
@@ -890,7 +890,7 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20261106_indexfut_oi_by_tp.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-11-13T00:58:52+09:00"
+      "fetchedAt": "2026-11-13T02:33:34+09:00"
     },
     "shortSelling": {
       "sourceName": "JPX 空売り集計",
@@ -945,7 +945,7 @@
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-11-13T00:57:13+09:00"
+      "fetchedAt": "2026-11-13T02:31:57+09:00"
     },
     "margin": {
       "sourceName": "JPX 信用取引現在高",
@@ -1006,7 +1006,7 @@
         }
       ],
       "status": "stale",
-      "fetchedAt": "2026-11-13T00:57:15+09:00",
+      "fetchedAt": "2026-11-13T02:31:58+09:00",
       "error": "JPX信用需給取得失敗: ValueError: weekly margin total monetary row not found"
     },
     "assessment": {
@@ -1302,7 +1302,7 @@
       "market": null,
       "status": "partial",
       "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202611.xlsx",
-      "fetchedAt": "2026-11-13T00:58:56+09:00",
+      "fetchedAt": "2026-11-13T02:33:38+09:00",
       "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
     },
     "nikkeiFuturesDailyHistory": [
@@ -1314,7 +1314,7 @@
         "sourceName": "JPX / 大阪取引所 日経225先物",
         "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
         "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261112open_interest.xlsx",
-        "capturedAt": "2026-11-13T00:58:55+09:00",
+        "capturedAt": "2026-11-13T02:33:37+09:00",
         "status": "verified"
       }
     ],
@@ -1331,7 +1331,7 @@
       "status": "verified",
       "releaseFrequency": "weekly",
       "lookbackWeeks": 52,
-      "fetchedAt": "2026-11-13T00:59:01+09:00",
+      "fetchedAt": "2026-11-13T02:33:41+09:00",
       "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
       "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
       "priceStatus": "available",
@@ -2408,7 +2408,7 @@
         "items": [
           "TOPIX —の相対優位が続くか、グロース250 —の下落が縮小するかを確認。",
           "米国はSOX +565.78（+5.66%）の底堅さが、S&P500 +98.45（+1.31%）・Nasdaq +400.32（+1.60%）の下落を吸収できるかが分岐。",
-          "寄り付き確認：TOPIX 3,931.26 +0.96%。"
+          "寄り付き確認：TOPIX 3,943.52 +0.36%。"
         ]
       },
       {
@@ -2434,112 +2434,112 @@
         "flag": "JP",
         "status": "verified",
         "freshness": "fresh",
-        "dataDate": "2026-11-11",
-        "asOf": "2026-11-11",
-        "updatedAt": "2026-11-12T00:07:23+09:00",
+        "dataDate": "2026-11-12",
+        "asOf": "2026-11-12",
+        "updatedAt": "2026-11-13T00:56:52+09:00",
         "source": {
           "name": "株探 日経平均の寄与度ランキング",
           "topUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=desc&market=all&order=contrib_price",
           "bottomUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=asc&market=all&order=contrib_price"
         },
         "error": null,
-        "generatedAt": "2026-11-12T00:07:23+09:00",
+        "generatedAt": "2026-11-13T00:56:52+09:00",
         "sourceAt": {
-          "top": "2026-11-11T16:00:00+09:00",
-          "bottom": "2026-11-11T16:00:00+09:00"
+          "top": "2026-11-12T16:00:00+09:00",
+          "bottom": "2026-11-12T16:00:00+09:00"
         },
         "top": [
           {
             "rank": 1,
-            "code": "6857",
-            "name": "アドテスト（6857）",
-            "shortName": "アドテスト",
-            "close": "31,440",
-            "contribution": "+377.56",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
+            "code": "9766",
+            "name": "コナミＧ（9766）",
+            "shortName": "コナミＧ",
+            "close": "28,650",
+            "contribution": "+16.86",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-12"
           },
           {
             "rank": 2,
             "code": "8035",
             "name": "東エレク（8035）",
             "shortName": "東エレク",
-            "close": "9,272",
-            "contribution": "+134.50",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
+            "close": "9,304",
+            "contribution": "+16.18",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-12"
           },
           {
             "rank": 3,
-            "code": "4062",
-            "name": "イビデン（4062）",
-            "shortName": "イビデン",
-            "close": "6,920",
-            "contribution": "+67.69",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
+            "code": "9433",
+            "name": "ＫＤＤＩ（9433）",
+            "shortName": "ＫＤＤＩ",
+            "close": "2,840.0",
+            "contribution": "+16.18",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-12"
           },
           {
             "rank": 4,
-            "code": "6762",
-            "name": "ＴＤＫ（6762）",
-            "shortName": "ＴＤＫ",
-            "close": "2,365.5",
-            "contribution": "+54.86",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
+            "code": "9735",
+            "name": "セコム（9735）",
+            "shortName": "セコム",
+            "close": "6,990",
+            "contribution": "+15.17",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-12"
           },
           {
             "rank": 5,
-            "code": "285A",
-            "name": "キオクシア（285A）",
-            "shortName": "キオクシア",
-            "close": "9,571",
-            "contribution": "+35.61",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
+            "code": "2914",
+            "name": "ＪＴ（2914）",
+            "shortName": "ＪＴ",
+            "close": "5,996",
+            "contribution": "+14.63",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-12"
           }
         ],
         "bottom": [
           {
             "rank": 1,
-            "code": "9983",
-            "name": "ファストリ（9983）",
-            "shortName": "ファストリ",
-            "close": "80,480",
-            "contribution": "-88.19",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
+            "code": "6857",
+            "name": "アドテスト（6857）",
+            "shortName": "アドテスト",
+            "close": "29,985",
+            "contribution": "-313.91",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-12"
           },
           {
             "rank": 2,
-            "code": "9766",
-            "name": "コナミＧ（9766）",
-            "shortName": "コナミＧ",
-            "close": "28,150",
-            "contribution": "-27.81",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
-          },
-          {
-            "rank": 3,
             "code": "6098",
             "name": "リクルート（6098）",
             "shortName": "リクルート",
-            "close": "17,705",
-            "contribution": "-25.79",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
+            "close": "16,715",
+            "contribution": "-100.12",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-12"
+          },
+          {
+            "rank": 3,
+            "code": "9984",
+            "name": "ＳＢＧ（9984）",
+            "shortName": "ＳＢＧ",
+            "close": "3,738",
+            "contribution": "-94.66",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-12"
           },
           {
             "rank": 4,
-            "code": "7267",
-            "name": "ホンダ（7267）",
-            "shortName": "ホンダ",
-            "close": "1,769.0",
-            "contribution": "-16.99",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
+            "code": "4062",
+            "name": "イビデン（4062）",
+            "shortName": "イビデン",
+            "close": "6,344",
+            "contribution": "-77.67",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-12"
           },
           {
             "rank": 5,
-            "code": "9433",
-            "name": "ＫＤＤＩ（9433）",
-            "shortName": "ＫＤＤＩ",
-            "close": "2,800.0",
-            "contribution": "-15.78",
-            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
+            "code": "6954",
+            "name": "ファナック（6954）",
+            "shortName": "ファナック",
+            "close": "5,521",
+            "contribution": "-25.11",
+            "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-12"
           }
         ],
         "lastGood": {
@@ -2547,112 +2547,112 @@
           "flag": "JP",
           "status": "verified",
           "freshness": "stale",
-          "dataDate": "2026-11-10",
-          "asOf": "2026-11-10",
-          "updatedAt": "2026-11-11T00:32:58+09:00",
+          "dataDate": "2026-11-11",
+          "asOf": "2026-11-11",
+          "updatedAt": "2026-11-12T00:07:23+09:00",
           "source": {
             "name": "株探 日経平均の寄与度ランキング",
             "topUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=desc&market=all&order=contrib_price",
             "bottomUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=asc&market=all&order=contrib_price"
           },
           "error": null,
-          "generatedAt": "2026-11-11T00:32:58+09:00",
+          "generatedAt": "2026-11-12T00:07:23+09:00",
           "sourceAt": {
-            "top": "2026-11-10T16:00:00+09:00",
-            "bottom": "2026-11-10T16:00:00+09:00"
+            "top": "2026-11-11T16:00:00+09:00",
+            "bottom": "2026-11-11T16:00:00+09:00"
           },
           "top": [
             {
               "rank": 1,
-              "code": "9984",
-              "name": "ＳＢＧ（9984）",
-              "shortName": "ＳＢＧ",
-              "close": "3,872.0",
-              "contribution": "+381.87",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
-            },
-            {
-              "rank": 2,
               "code": "6857",
               "name": "アドテスト（6857）",
               "shortName": "アドテスト",
-              "close": "29,690",
-              "contribution": "+283.71",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
+              "close": "31,440",
+              "contribution": "+377.56",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
             },
             {
-              "rank": 3,
+              "rank": 2,
               "code": "8035",
               "name": "東エレク（8035）",
               "shortName": "東エレク",
-              "close": "9,006",
-              "contribution": "+259.91",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
+              "close": "9,272",
+              "contribution": "+134.50",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
+            },
+            {
+              "rank": 3,
+              "code": "4062",
+              "name": "イビデン（4062）",
+              "shortName": "イビデン",
+              "close": "6,920",
+              "contribution": "+67.69",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
             },
             {
               "rank": 4,
               "code": "6762",
               "name": "ＴＤＫ（6762）",
               "shortName": "ＴＤＫ",
-              "close": "2,257.0",
-              "contribution": "+73.32",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
+              "close": "2,365.5",
+              "contribution": "+54.86",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
             },
             {
               "rank": 5,
-              "code": "4062",
-              "name": "イビデン（4062）",
-              "shortName": "イビデン",
-              "close": "6,418",
-              "contribution": "+65.53",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
+              "code": "285A",
+              "name": "キオクシア（285A）",
+              "shortName": "キオクシア",
+              "close": "9,571",
+              "contribution": "+35.61",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
             }
           ],
           "bottom": [
             {
               "rank": 1,
-              "code": "2801",
-              "name": "キッコマン（2801）",
-              "shortName": "キッコマン",
-              "close": "1,664.5",
-              "contribution": "-33.37",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
+              "code": "9983",
+              "name": "ファストリ（9983）",
+              "shortName": "ファストリ",
+              "close": "80,480",
+              "contribution": "-88.19",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
             },
             {
               "rank": 2,
-              "code": "7203",
-              "name": "トヨタ（7203）",
-              "shortName": "トヨタ",
-              "close": "3,414.0",
-              "contribution": "-12.98",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
+              "code": "9766",
+              "name": "コナミＧ（9766）",
+              "shortName": "コナミＧ",
+              "close": "28,150",
+              "contribution": "-27.81",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
             },
             {
               "rank": 3,
-              "code": "7832",
-              "name": "バンナムＨＤ（7832）",
-              "shortName": "バンナムＨＤ",
-              "close": "6,649",
-              "contribution": "-12.54",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
+              "code": "6098",
+              "name": "リクルート（6098）",
+              "shortName": "リクルート",
+              "close": "17,705",
+              "contribution": "-25.79",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
             },
             {
               "rank": 4,
-              "code": "6532",
-              "name": "ベイカレント（6532）",
-              "shortName": "ベイカレント",
-              "close": "12,415",
-              "contribution": "-11.80",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
+              "code": "7267",
+              "name": "ホンダ（7267）",
+              "shortName": "ホンダ",
+              "close": "1,769.0",
+              "contribution": "-16.99",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
             },
             {
               "rank": 5,
-              "code": "8591",
-              "name": "オリックス（8591）",
-              "shortName": "オリックス",
-              "close": "5,209",
-              "contribution": "-11.09",
-              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
+              "code": "9433",
+              "name": "ＫＤＤＩ（9433）",
+              "shortName": "ＫＤＤＩ",
+              "close": "2,800.0",
+              "contribution": "-15.78",
+              "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-11"
             }
           ],
           "lastGood": {
@@ -2660,115 +2660,229 @@
             "flag": "JP",
             "status": "verified",
             "freshness": "stale",
-            "dataDate": "2026-11-09",
-            "asOf": "2026-11-09",
-            "updatedAt": "2026-11-10T02:25:54+09:00",
+            "dataDate": "2026-11-10",
+            "asOf": "2026-11-10",
+            "updatedAt": "2026-11-11T00:32:58+09:00",
             "source": {
               "name": "株探 日経平均の寄与度ランキング",
               "topUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=desc&market=all&order=contrib_price",
               "bottomUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=asc&market=all&order=contrib_price"
             },
             "error": null,
-            "generatedAt": "2026-11-10T02:25:54+09:00",
+            "generatedAt": "2026-11-11T00:32:58+09:00",
             "sourceAt": {
-              "top": "2026-11-09T16:00:00+09:00",
-              "bottom": "2026-11-09T16:00:00+09:00"
+              "top": "2026-11-10T16:00:00+09:00",
+              "bottom": "2026-11-10T16:00:00+09:00"
             },
             "top": [
-              {
-                "rank": 1,
-                "code": "9983",
-                "name": "ファストリ（9983）",
-                "shortName": "ファストリ",
-                "close": "80,810",
-                "contribution": "+231.39",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
-              },
-              {
-                "rank": 2,
-                "code": "8035",
-                "name": "東エレク（8035）",
-                "shortName": "東エレク",
-                "close": "8,492",
-                "contribution": "+115.80",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
-              },
-              {
-                "rank": 3,
-                "code": "6857",
-                "name": "アドテスト（6857）",
-                "shortName": "アドテスト",
-                "close": "28,375",
-                "contribution": "+77.67",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
-              },
-              {
-                "rank": 4,
-                "code": "6098",
-                "name": "リクルート（6098）",
-                "shortName": "リクルート",
-                "close": "17,665",
-                "contribution": "+67.25",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
-              },
-              {
-                "rank": 5,
-                "code": "9766",
-                "name": "コナミＧ（9766）",
-                "shortName": "コナミＧ",
-                "close": "28,555",
-                "contribution": "+40.62",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
-              }
-            ],
-            "bottom": [
               {
                 "rank": 1,
                 "code": "9984",
                 "name": "ＳＢＧ（9984）",
                 "shortName": "ＳＢＧ",
-                "close": "3,400.0",
-                "contribution": "-120.55",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
+                "close": "3,872.0",
+                "contribution": "+381.87",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
               },
               {
                 "rank": 2,
-                "code": "2914",
-                "name": "ＪＴ（2914）",
-                "shortName": "ＪＴ",
-                "close": "5,269",
-                "contribution": "-33.71",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
+                "code": "6857",
+                "name": "アドテスト（6857）",
+                "shortName": "アドテスト",
+                "close": "29,690",
+                "contribution": "+283.71",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
               },
               {
                 "rank": 3,
-                "code": "4062",
-                "name": "イビデン（4062）",
-                "shortName": "イビデン",
-                "close": "5,932",
-                "contribution": "-28.99",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
+                "code": "8035",
+                "name": "東エレク（8035）",
+                "shortName": "東エレク",
+                "close": "9,006",
+                "contribution": "+259.91",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
               },
               {
                 "rank": 4,
-                "code": "285A",
-                "name": "キオクシア（285A）",
-                "shortName": "キオクシア",
-                "close": "8,302",
-                "contribution": "-14.80",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
+                "code": "6762",
+                "name": "ＴＤＫ（6762）",
+                "shortName": "ＴＤＫ",
+                "close": "2,257.0",
+                "contribution": "+73.32",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
               },
               {
                 "rank": 5,
-                "code": "6525",
-                "name": "コクサイエレ（6525）",
-                "shortName": "コクサイエレ",
-                "close": "4,876",
-                "contribution": "-6.10",
-                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
+                "code": "4062",
+                "name": "イビデン（4062）",
+                "shortName": "イビデン",
+                "close": "6,418",
+                "contribution": "+65.53",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
               }
             ],
-            "lastGood": null
+            "bottom": [
+              {
+                "rank": 1,
+                "code": "2801",
+                "name": "キッコマン（2801）",
+                "shortName": "キッコマン",
+                "close": "1,664.5",
+                "contribution": "-33.37",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
+              },
+              {
+                "rank": 2,
+                "code": "7203",
+                "name": "トヨタ（7203）",
+                "shortName": "トヨタ",
+                "close": "3,414.0",
+                "contribution": "-12.98",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
+              },
+              {
+                "rank": 3,
+                "code": "7832",
+                "name": "バンナムＨＤ（7832）",
+                "shortName": "バンナムＨＤ",
+                "close": "6,649",
+                "contribution": "-12.54",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
+              },
+              {
+                "rank": 4,
+                "code": "6532",
+                "name": "ベイカレント（6532）",
+                "shortName": "ベイカレント",
+                "close": "12,415",
+                "contribution": "-11.80",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
+              },
+              {
+                "rank": 5,
+                "code": "8591",
+                "name": "オリックス（8591）",
+                "shortName": "オリックス",
+                "close": "5,209",
+                "contribution": "-11.09",
+                "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-10"
+              }
+            ],
+            "lastGood": {
+              "title": "日本市場（日経225寄与度 上位・下位）",
+              "flag": "JP",
+              "status": "verified",
+              "freshness": "stale",
+              "dataDate": "2026-11-09",
+              "asOf": "2026-11-09",
+              "updatedAt": "2026-11-10T02:25:54+09:00",
+              "source": {
+                "name": "株探 日経平均の寄与度ランキング",
+                "topUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=desc&market=all&order=contrib_price",
+                "bottomUrl": "https://s.kabutan.jp/warnings/nk225_contrib/?direction=asc&market=all&order=contrib_price"
+              },
+              "error": null,
+              "generatedAt": "2026-11-10T02:25:54+09:00",
+              "sourceAt": {
+                "top": "2026-11-09T16:00:00+09:00",
+                "bottom": "2026-11-09T16:00:00+09:00"
+              },
+              "top": [
+                {
+                  "rank": 1,
+                  "code": "9983",
+                  "name": "ファストリ（9983）",
+                  "shortName": "ファストリ",
+                  "close": "80,810",
+                  "contribution": "+231.39",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
+                },
+                {
+                  "rank": 2,
+                  "code": "8035",
+                  "name": "東エレク（8035）",
+                  "shortName": "東エレク",
+                  "close": "8,492",
+                  "contribution": "+115.80",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
+                },
+                {
+                  "rank": 3,
+                  "code": "6857",
+                  "name": "アドテスト（6857）",
+                  "shortName": "アドテスト",
+                  "close": "28,375",
+                  "contribution": "+77.67",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
+                },
+                {
+                  "rank": 4,
+                  "code": "6098",
+                  "name": "リクルート（6098）",
+                  "shortName": "リクルート",
+                  "close": "17,665",
+                  "contribution": "+67.25",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
+                },
+                {
+                  "rank": 5,
+                  "code": "9766",
+                  "name": "コナミＧ（9766）",
+                  "shortName": "コナミＧ",
+                  "close": "28,555",
+                  "contribution": "+40.62",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
+                }
+              ],
+              "bottom": [
+                {
+                  "rank": 1,
+                  "code": "9984",
+                  "name": "ＳＢＧ（9984）",
+                  "shortName": "ＳＢＧ",
+                  "close": "3,400.0",
+                  "contribution": "-120.55",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
+                },
+                {
+                  "rank": 2,
+                  "code": "2914",
+                  "name": "ＪＴ（2914）",
+                  "shortName": "ＪＴ",
+                  "close": "5,269",
+                  "contribution": "-33.71",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
+                },
+                {
+                  "rank": 3,
+                  "code": "4062",
+                  "name": "イビデン（4062）",
+                  "shortName": "イビデン",
+                  "close": "5,932",
+                  "contribution": "-28.99",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
+                },
+                {
+                  "rank": 4,
+                  "code": "285A",
+                  "name": "キオクシア（285A）",
+                  "shortName": "キオクシア",
+                  "close": "8,302",
+                  "contribution": "-14.80",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
+                },
+                {
+                  "rank": 5,
+                  "code": "6525",
+                  "name": "コクサイエレ（6525）",
+                  "shortName": "コクサイエレ",
+                  "close": "4,876",
+                  "contribution": "-6.10",
+                  "reason": "株探 日経平均寄与度ランキング・基準日 2026-11-09"
+                }
+              ],
+              "lastGood": null
+            }
           }
         }
       },
@@ -3881,7 +3995,7 @@
         "items": [
           "S&P500 +98.45（+1.31%）・Nasdaq +400.32（+1.60%）の下落が続くか、SOX +565.78（+5.66%）が下支えを維持するか。",
           "日経225 / TOPIX / グロース250の方向と、値上がり・値下がり 1415 / 123の広がり。",
-          "次回寄り付き：TOPIX 3,931.26 +0.96%、日経225先物（CME参考） 61,400.00 +2.23%。"
+          "次回寄り付き：TOPIX 3,943.52 +0.36%、日経225先物（CME参考） 60,665.00 -2.18%。"
         ]
       }
     },
@@ -5032,13 +5146,13 @@
         "freshness": "unavailable",
         "dataDate": null,
         "asOf": null,
-        "updatedAt": "2026-11-12T06:34:36+09:00",
+        "updatedAt": "2026-11-13T01:46:08+09:00",
         "source": {
           "name": "トレーダーズ・ウェブ 国内市場ランキング（東証プライム・前日比）",
           "gainersUrl": "https://www.traders.co.jp/market_jp/stock_ranking/price_up/day/tp/all",
           "losersUrl": "https://www.traders.co.jp/market_jp/stock_ranking/price_down/day/tp/all"
         },
-        "error": "当日の東証プライムランキングを取得できませんでした: Traders Web ranking source is stale: source=2026-11-11, expected=2026-11-09",
+        "error": "当日の東証プライムランキングを取得できませんでした: Traders Web ranking source is stale: source=2026-11-12, expected=2026-11-09",
         "title": "日本市場の大幅上昇・下落銘柄（東証プライム）",
         "flag": "JP",
         "gainers": [],
