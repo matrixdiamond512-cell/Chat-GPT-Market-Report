@@ -2,21 +2,21 @@
   "schemaVersion": "1.0.0",
   "pageId": "nikkei225-supply-demand",
   "reportDate": "2026-11-12",
-  "generatedAt": "2026-11-12T11:35:44+09:00",
+  "generatedAt": "2026-11-12T19:23:53+09:00",
   "nikkei": {
     "schemaVersion": "2.1.0",
     "pageId": "nikkei225-supply-demand",
     "pageTitle": "日経225需給分析",
-    "generatedAt": "2026-11-12T11:35:44+09:00",
+    "generatedAt": "2026-11-12T19:23:53+09:00",
     "spot": {
       "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
-      "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261111tp.csv",
+      "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261112tp.csv",
       "comment": "NK225E理論価格ファイルの原資産終値。先物とは同一取引日でも時刻が異なるため、表示差は理論ベーシスではなく単純な現物終値対比。",
-      "value": 61248.59,
-      "asOfDate": "2026-11-11",
+      "value": 60819.36,
+      "asOfDate": "2026-11-12",
       "status": "verified",
-      "fetchedAt": "2026-11-12T11:35:44+09:00"
+      "fetchedAt": "2026-11-12T19:23:53+09:00"
     },
     "futures": {
       "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -24,21 +24,21 @@
       "price": 61640.0,
       "priceChange": 200.0,
       "priceChangePercent": 0.32552083333332593,
-      "asOfDate": "2026-11-11",
+      "asOfDate": "2026-11-12",
       "priceAsOf": "2026-11-12T11:00:00+09:00",
-      "volume": 52013,
-      "openInterest": 180710,
-      "miniVolume": 776249,
-      "miniOpenInterest": 299911,
-      "openInterestChange": 1682,
-      "miniOpenInterestChange": 8298,
-      "volumeChangePercent": null,
-      "miniVolumeChangePercent": null,
+      "volume": 48503,
+      "openInterest": 178709,
+      "miniVolume": 691709,
+      "miniOpenInterest": 317240,
+      "openInterestChange": -2001,
+      "miniOpenInterestChange": 17329,
+      "volumeChangePercent": 0.0,
+      "miniVolumeChangePercent": 0.0,
       "status": "verified",
-      "fetchedAt": "2026-11-12T11:33:54+09:00",
-      "previousOpenInterest": 179028,
-      "miniPreviousOpenInterest": 291613,
-      "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261111open_interest.xlsx"
+      "fetchedAt": "2026-11-12T19:22:39+09:00",
+      "previousOpenInterest": 180710,
+      "miniPreviousOpenInterest": 299911,
+      "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261112open_interest.xlsx"
     },
     "sessions": {
       "sourceName": "JPX デリバティブ取引市況（ナイト・日通し）",
@@ -55,24 +55,24 @@
       "asOfDate": "2026-09-30",
       "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260930_derivatives_market_data_night.xlsx",
       "status": "stale",
-      "fetchedAt": "2026-11-12T11:35:35+09:00",
+      "fetchedAt": "2026-11-12T19:23:46+09:00",
       "error": "JPXセッション別出来高取得失敗: ValueError: night-session workbook link not found"
     },
     "arbitrage": {
       "sourceName": "JPX 裁定取引の状況",
       "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/",
       "comment": "裁定買い・売りポジションはJPXの全取引参加者報告合計。前々営業日データとして鮮度を分離表示。",
-      "asOfDate": "2026-11-09",
-      "sellBalance": 4475,
-      "buyBalance": 786029,
-      "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt000002kp9z-att/261109.pdf",
-      "sellChange": -4456,
-      "buyChange": -29606,
+      "asOfDate": "2026-11-10",
+      "sellBalance": 6514,
+      "buyBalance": 818631,
+      "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt000002ktrq-att/261110.pdf",
+      "sellChange": 2039,
+      "buyChange": 32602,
       "status": "verified",
       "frequency": "daily",
-      "lastAttemptAt": "2026-11-12T11:33:48+09:00",
-      "lastSuccessAt": "2026-11-12T11:33:48+09:00",
-      "fetchedAt": "2026-11-12T11:33:48+09:00",
+      "lastAttemptAt": "2026-11-12T19:22:37+09:00",
+      "lastSuccessAt": "2026-11-12T19:22:37+09:00",
+      "fetchedAt": "2026-11-12T19:22:37+09:00",
       "error": null
     },
     "options": {
@@ -82,88 +82,88 @@
       "nextSqDate": "2026-11-13",
       "businessDaysToSq": 1,
       "putCallRatio": null,
-      "iv": 30.72,
+      "iv": 31.96,
       "ivChange": null,
       "asOfDate": "2026-11-12",
       "status": "calculated",
       "error": "Put/Call・IVはJPX列構造を確認できるまで推測せず空欄",
-      "fetchedAt": "2026-11-12T11:35:44+09:00",
+      "fetchedAt": "2026-11-12T19:23:53+09:00",
       "putVolume": null,
       "callVolume": null,
       "putCallStatus": "unavailable",
       "putCallReason": "取得不能（ValueError: JPX当日取引総括CSVが見つかりません）",
       "ivStatus": "verified",
       "ivDefinition": "JPX基準ボラティリティ（NK225E・期近限月）",
-      "baseVolatility": 30.72,
-      "referenceStrikePrice": 61250.0,
-      "referencePutSettlementVolatility": 33.5133,
-      "referenceCallSettlementVolatility": 37.810500000000005,
+      "baseVolatility": 31.96,
+      "referenceStrikePrice": 60875.0,
+      "referencePutSettlementVolatility": 47.4379,
+      "referenceCallSettlementVolatility": 31.1928,
       "ivContractMonth": "202611",
-      "ivUnderlyingClose": 61248.59,
-      "ivSourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261111tp.csv",
-      "ivAsOfDate": "2026-11-11"
+      "ivUnderlyingClose": 60819.36,
+      "ivSourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261112tp.csv",
+      "ivAsOfDate": "2026-11-12"
     },
     "participantFlow": {
       "sourceName": "JPX 取引参加者別取引高（手口上位一覧）",
       "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/participant-volume/",
       "comment": "日次ファイルは売買方向別ではなく取引高上位です。取引高上位を売り・買いと読み替えません。",
-      "asOfDate": "2026-11-11",
+      "asOfDate": "2026-11-12",
       "contract": "NIKKEI 225 FUT 2612",
       "leaders": [
         {
           "name": "ＡＢＮクリアリン証券",
-          "volume": 13704,
+          "volume": 14940,
           "rank": 1
         },
         {
           "name": "ソシエテＧ証券",
-          "volume": 11969,
+          "volume": 10492,
           "rank": 2
         },
         {
           "name": "バークレイズ証券",
-          "volume": 8917,
+          "volume": 7971,
           "rank": 3
         },
         {
-          "name": "サスケハナ・ホンコン",
-          "volume": 2534,
+          "name": "野村証券",
+          "volume": 2421,
           "rank": 4
         },
         {
           "name": "ゴールドマン証券",
-          "volume": 1954,
+          "volume": 1999,
           "rank": 5
         },
         {
-          "name": "ＳＢＩ証券",
-          "volume": 1378,
+          "name": "三菱ＵＦＪ証券",
+          "volume": 1475,
           "rank": 6
         },
         {
           "name": "ＪＰモルガン証券",
-          "volume": 1285,
+          "volume": 1447,
           "rank": 7
         },
         {
-          "name": "野村証券",
-          "volume": 1261,
+          "name": "モルガンＭＵＦＧ証券",
+          "volume": 1199,
           "rank": 8
         },
         {
-          "name": "モルガンＭＵＦＧ証券",
-          "volume": 936,
+          "name": "フィリップ・キャ証券",
+          "volume": 879,
           "rank": 9
         },
         {
-          "name": "ドイツ証券",
-          "volume": 933,
+          "name": "ＵＢＳ証券",
+          "volume": 873,
           "rank": 10
         }
       ],
-      "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202611/20261111_volume_by_participant_whole_day.xlsx",
+      "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202611/20261112_volume_by_participant_whole_day.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-11-12T11:35:36+09:00"
+      "fetchedAt": "2026-11-12T19:23:47+09:00"
     },
     "foreignInvestors": {
       "sourceName": "JPX 投資部門別売買状況",
@@ -776,7 +776,7 @@
         ]
       },
       "status": "verified",
-      "fetchedAt": "2026-11-12T11:35:34+09:00"
+      "fetchedAt": "2026-11-12T19:23:46+09:00"
     },
     "participantOpenInterest": {
       "sourceName": "JPX 取引参加者別建玉残高",
@@ -890,18 +890,18 @@
       ],
       "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20261106_indexfut_oi_by_tp.xlsx",
       "status": "verified",
-      "fetchedAt": "2026-11-12T11:35:38+09:00"
+      "fetchedAt": "2026-11-12T19:23:49+09:00"
     },
     "shortSelling": {
       "sourceName": "JPX 空売り集計",
       "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/",
       "comment": "空売り比率は価格規制あり・なしの合計。5日・20日平均と比較し、単独で弱気判定しません。",
-      "asOfDate": "2026-11-11",
-      "ratio": 42.4,
-      "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002krky-att/261111-m.pdf",
-      "avg5": 38.339999999999996,
+      "asOfDate": "2026-11-12",
+      "ratio": 42.3,
+      "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002kv8v-att/261112-m.pdf",
+      "avg5": 39.7,
       "avg20": null,
-      "sampleCount": 7,
+      "sampleCount": 8,
       "series": [
         {
           "asOfDate": "2026-11-02",
@@ -937,10 +937,15 @@
           "asOfDate": "2026-11-11",
           "ratio": 42.4,
           "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002krky-att/261111-m.pdf"
+        },
+        {
+          "asOfDate": "2026-11-12",
+          "ratio": 42.3,
+          "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002kv8v-att/261112-m.pdf"
         }
       ],
       "status": "verified",
-      "fetchedAt": "2026-11-12T11:33:53+09:00"
+      "fetchedAt": "2026-11-12T19:22:38+09:00"
     },
     "margin": {
       "sourceName": "JPX 信用取引現在高",
@@ -1001,16 +1006,16 @@
         }
       ],
       "status": "stale",
-      "fetchedAt": "2026-11-12T11:33:55+09:00",
+      "fetchedAt": "2026-11-12T19:22:39+09:00",
       "error": "JPX信用需給取得失敗: ValueError: weekly margin total monetary row not found"
     },
     "assessment": {
-      "overall": "中立",
-      "shortTerm": "強気（新規買い）",
-      "arbitrage": "やや弱い",
+      "overall": "やや買い優勢",
+      "shortTerm": "上昇（買い戻し）",
+      "arbitrage": "強い",
       "options": "SQ日程のみ確認済み",
       "foreign": "現物売り・先物買い",
-      "reason": "短期先物=強気（新規買い）、裁定=やや弱い、オプション=中立（SQ日程のみ）、海外投資家=現物売り・先物買い。各データの鮮度を分離して判定。",
+      "reason": "短期先物=上昇（買い戻し）、裁定=強い、オプション=中立（SQ日程のみ）、海外投資家=現物売り・先物買い。各データの鮮度を分離して判定。",
       "comment": "価格×建玉を中心に、裁定・オプション・海外投資家を補助線として重ねます。"
     },
     "watchpoints": [
@@ -1046,7 +1051,7 @@
         "cashParsedWeeks": 80,
         "cashFailureCount": 0,
         "cashFailureFiles": [],
-        "derivativesParsedWeeks": 95,
+        "derivativesParsedWeeks": 96,
         "matchedWeeks": 80,
         "missingDerivativeDatesWithinLatest52CashWeeks": [],
         "missingPriceDates": []
@@ -1297,19 +1302,19 @@
       "market": null,
       "status": "partial",
       "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202611.xlsx",
-      "fetchedAt": "2026-11-12T11:35:41+09:00",
+      "fetchedAt": "2026-11-12T19:23:51+09:00",
       "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
     },
     "nikkeiFuturesDailyHistory": [
       {
-        "asOfDate": "2026-11-11",
+        "asOfDate": "2026-11-12",
         "price": 61640.0,
-        "openInterest": 180710,
-        "volume": 52013,
+        "openInterest": 178709,
+        "volume": 48503,
         "sourceName": "JPX / 大阪取引所 日経225先物",
         "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
-        "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261111open_interest.xlsx",
-        "capturedAt": "2026-11-12T11:35:41+09:00",
+        "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261112open_interest.xlsx",
+        "capturedAt": "2026-11-12T19:23:51+09:00",
         "status": "verified"
       }
     ],
@@ -1326,7 +1331,7 @@
       "status": "verified",
       "releaseFrequency": "weekly",
       "lookbackWeeks": 52,
-      "fetchedAt": "2026-11-12T11:35:46+09:00",
+      "fetchedAt": "2026-11-12T19:23:54+09:00",
       "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
       "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
       "priceStatus": "available",
@@ -2364,7 +2369,7 @@
         "items": [
           "日本：値上がり/値下がり 1415 / 123、東証プライム売買代金 8.91 兆円。",
           "海外投資家動向（週次）：-2,749.34億円。",
-          "米国：NYSE 777 / 1,286、NASDAQ 1,135 / 2,087で下落優勢。"
+          "米国：NYSE 1,116 / 930、NASDAQ 1,925 / 1,264で下落優勢。"
         ]
       },
       {
@@ -2372,21 +2377,21 @@
         "items": [
           "日本：TOPIX —に対し、グロース250 —。指数間の強弱が残る。",
           "日本の上位セクター：電気機器 +1.72%、情報・通信業 +1.34%、輸送用機器 +1.05%。米国の上位セクター：コミュニケーション・サービス +1.78%、ヘルスケア +1.33%、一般消費財・サービス +1.07%。",
-          "米国：SOX -35.60（-0.35%）、Russell2000 -19.43（-0.68%）。資金の広がりは未確認。"
+          "米国：SOX +565.78（+5.66%）、Russell2000 +24.88（+0.88%）。資金の広がりは未確認。"
         ]
       },
       {
         "title": "メインシナリオ",
         "items": [
           "TOPIX —の相対優位が続くか、グロース250 —の下落が縮小するかを確認。",
-          "米国はSOX -35.60（-0.35%）の底堅さが、S&P500 -29.01（-0.38%）・Nasdaq -187.27（-0.74%）の下落を吸収できるかが分岐。",
+          "米国はSOX +565.78（+5.66%）の底堅さが、S&P500 +98.45（+1.31%）・Nasdaq +400.32（+1.60%）の下落を吸収できるかが分岐。",
           "寄り付き確認：TOPIX 3,931.26 +0.96%。"
         ]
       },
       {
         "title": "崩れる条件",
         "items": [
-          "米国でS&P500/Nasdaqの下落とVIX -0.46（-2.31%）の上昇が同時に続く場合。",
+          "米国でS&P500/Nasdaqの下落とVIX -1.97（-10.12%）の上昇が同時に続く場合。",
           "日本でTOPIXの上昇が広がりを伴わず、グロース250 —の下落が拡大する場合。",
           "個別株の下落が拡大：。"
         ]
@@ -2396,7 +2401,7 @@
         "items": [
           "日本の上昇率上位：。",
           "日本の下落率上位：。",
-          "米国の主要指数：S&P500 -29.01（-0.38%）、Nasdaq -187.27（-0.74%）、SOX -35.60（-0.35%）。"
+          "米国の主要指数：S&P500 +98.45（+1.31%）、Nasdaq +400.32（+1.60%）、SOX +565.78（+5.66%）。"
         ]
       }
     ],
@@ -2759,8 +2764,10 @@
         "method": "estimated contribution bp = Slickcharts SPY-holdings-based weight(%) × daily component change(%)",
         "validation": {
           "estimatedWeightedReturnPct": 1.3826,
-          "verifiedSP500ReturnPct": null,
-          "differencePt": null
+          "verifiedSP500ReturnPct": 1.31,
+          "differencePt": 0.0726,
+          "tolerancePt": 0.2,
+          "status": "passed"
         },
         "top": [
           {
@@ -3828,20 +3835,20 @@
       "conclusion": {
         "title": "今日の結論",
         "main": "米国主要指数は下落、日本はTOPIXが小幅高だがグロース250は下落。大型株・半導体を軸に強弱が分かれる株式市場。",
-        "sub": "日経225 58,775.50 / TOPIX 取得不能（対象日の確定値なし） / S&P500 7,520.93 / Nasdaq 25,065.88。"
+        "sub": "日経225 58,775.50 / TOPIX 取得不能（対象日の確定値なし） / S&P500 7,619.38 / Nasdaq 25,466.19。"
       },
       "reason": {
         "title": "なぜ買われたか／売られたか",
         "items": [
           "日本：TOPIX —、値上がり/値下がり 1415 / 123。",
-          "米国：SOX -35.60（-0.35%）に対し、S&P500 -29.01（-0.38%）、Nasdaq -187.27（-0.74%）。",
+          "米国：SOX +565.78（+5.66%）に対し、S&P500 +98.45（+1.31%）、Nasdaq +400.32（+1.60%）。",
           "日本の強いセクター：電気機器 +1.72%、情報・通信業 +1.34%。個別では。"
         ]
       },
       "risk": {
         "title": "リスク",
         "items": [
-          "米国はVIX -0.46（-2.31%）、NYSE値上がり/値下がり 777 / 1,286で内部下落が優勢。",
+          "米国はVIX -1.97（-10.12%）、NYSE値上がり/値下がり 1,116 / 930で内部下落が優勢。",
           "日本はグロース250 —で、TOPIXとの乖離に注意。",
           "日本の下落率上位：。"
         ]
@@ -3849,7 +3856,7 @@
       "watch": {
         "title": "次の注目点",
         "items": [
-          "S&P500 -29.01（-0.38%）・Nasdaq -187.27（-0.74%）の下落が続くか、SOX -35.60（-0.35%）が下支えを維持するか。",
+          "S&P500 +98.45（+1.31%）・Nasdaq +400.32（+1.60%）の下落が続くか、SOX +565.78（+5.66%）が下支えを維持するか。",
           "日経225 / TOPIX / グロース250の方向と、値上がり・値下がり 1415 / 123の広がり。",
           "次回寄り付き：TOPIX 3,931.26 +0.96%、日経225先物（CME参考） 61,400.00 +2.23%。"
         ]
@@ -4079,8 +4086,10 @@
         "universe": "S&P 500 constituents",
         "validation": {
           "estimatedWeightedReturnPct": 1.3826,
-          "verifiedSP500ReturnPct": null,
-          "differencePt": null
+          "verifiedSP500ReturnPct": 1.31,
+          "differencePt": 0.0726,
+          "tolerancePt": 0.2,
+          "status": "passed"
         },
         "gainers": [
           {
@@ -5134,7 +5143,7 @@
       "freshness": "unavailable",
       "dataDate": null,
       "asOf": null,
-      "updatedAt": "2026-11-11T14:01:36+09:00",
+      "updatedAt": "2026-11-12T15:05:25+09:00",
       "source": {
         "tradersWeb": {
           "name": "トレーダーズ・ウェブ Market Flash",
@@ -5145,7 +5154,7 @@
           "url": "https://s.kabutan.jp/news/"
         }
       },
-      "error": "当日の寄り前データを取得できませんでした: 当日の記事が見つかりません: index=https://www.traders.co.jp/market_jp/wadai, expected=2026-11-11",
+      "error": "当日の寄り前データを取得できませんでした: 当日の記事が見つかりません: index=https://www.traders.co.jp/market_jp/wadai, expected=2026-11-12",
       "summary": {},
       "tradersWebHighlights": [],
       "gainers": [],
@@ -5234,41 +5243,41 @@
         "title": "東京市場 朝の寄り付き分析",
         "flag": "JP",
         "status": "東京寄り付きデータ取得済み",
-        "dataDate": "2026-11-11",
-        "updatedAt": "2026-11-11T14:59:03+09:00",
+        "dataDate": "2026-11-12",
+        "updatedAt": "2026-11-12T16:00:31+09:00",
         "source": "Yahoo Finance chart API（日経225・FX・CME参考先物） / Google Finance（TOPIX）",
         "metrics": [
           {
             "label": "日経225",
-            "value": "61,348.34",
-            "change": "+1.47%",
-            "note": "寄り値 60,525.30 / ギャップ +0.11% / 寄り後 +1.36%"
+            "value": "60,819.36",
+            "change": "-0.70%",
+            "note": "寄り値 61,475.11 / ギャップ +0.37% / 寄り後 -1.07%"
           },
           {
             "label": "TOPIX",
-            "value": "3,931.26",
-            "change": "+0.96%",
-            "note": "寄り値 3,898.91 / ギャップ +0.13% / 寄り後 +0.83%"
+            "value": "3,943.52",
+            "change": "+0.36%",
+            "note": "寄り値 3,943.52 / ギャップ +0.36% / 寄り後 +0.00%"
           },
           {
             "label": "USD/JPY",
-            "value": "158.802",
-            "change": "+0.05%",
-            "note": "08:55以降の変化 / 08:55近辺 158.728"
+            "value": "159.759",
+            "change": "+0.03%",
+            "note": "08:55以降の変化 / 08:55近辺 159.706"
           },
           {
             "label": "日経225先物（CME参考）",
-            "value": "61,400.00",
-            "change": "+2.23%",
+            "value": "60,665.00",
+            "change": "-2.18%",
             "note": "CME参考値。大阪取引所先物とは別銘柄として表示"
           }
         ],
         "insights": [
-          "日経225はギャップアップ後も買いが継続。寄り付きの強さが維持されています。",
-          "日経225とTOPIXが同方向で、市場全体の方向は比較的整合的です。",
-          "USD/JPYは08:55以降 +0.05%。日本株の外需・先物方向との整合性を確認します。"
+          "日経225は高寄り後に失速。寄り天リスクを優先して確認します。",
+          "日経225とTOPIXが逆方向。指数寄与度の偏りやセクターローテーションに注意します。",
+          "USD/JPYは08:55以降 +0.03%。日本株の外需・先物方向との整合性を確認します。"
         ],
-        "judgement": "寄り後も買い優勢。先物・USD/JPY・TOPIXが追随する限り、東京時間は上方向を優先します。",
+        "judgement": "寄り後は売り優勢。高寄りでも上昇継続とは見なさず、寄り天警戒を優先します。",
         "errors": []
       },
       "usPremarket": {
@@ -5391,7 +5400,7 @@
         "steps": [
           {
             "label": "東京市場",
-            "text": "2026-11-11 / 日経225 61,348.34 +1.47% / TOPIX 3,931.26 +0.96%"
+            "text": "2026-11-12 / 日経225 60,819.36 -0.70% / TOPIX 3,943.52 +0.36%"
           },
           {
             "label": "米国プレマーケット",
@@ -5399,13 +5408,13 @@
           },
           {
             "label": "米国通常市場（直近終値）",
-            "text": "S&P500 -29.01（-0.38%） / Nasdaq -187.27（-0.74%）"
+            "text": "S&P500 +98.45（+1.31%） / Nasdaq +400.32（+1.60%）"
           }
         ],
-        "conclusion": "東京市場と米国株先物の方向が一致。日米で同じリスク選好が引き継がれている可能性が高まっています。"
+        "conclusion": "東京市場と米国株先物の方向が逆転。欧州時間の金利・為替・ニュースで市場テーマが変化した可能性を優先して確認します。"
       }
     },
-    "sessionDataUpdatedAt": "2026-11-12T03:50:04+09:00",
+    "sessionDataUpdatedAt": "2026-11-12T16:00:32+09:00",
     "sourceStatus": "Google Sheetsから更新＋日経VI・日経バリュエーション自動連携",
     "sources": [
       {
