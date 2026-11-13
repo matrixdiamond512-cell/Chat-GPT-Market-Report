@@ -11,10 +11,12 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import hashlib
 import math
 import os
 import sys
 import time
+import uuid
 from pathlib import Path
 from typing import Any, Callable
 from urllib.parse import urlencode
@@ -162,7 +164,7 @@ def read_values(client: SheetsClient, sheet: str, cells: str, option: str = "FOR
 
 def read_many_columns(client: SheetsClient, sheet: str, headers: list[str], header_indices: dict[str, int]) -> dict[str, list[Any]]:
     wanted = ["日付"] + [name for name in headers if name in header_indices]
-    ranges = [client._range(sheet, f"{letter_for_column(header_indices[name])}:{letter_for_column(header_indices[name])}") for name in wanted]
+    ranges = [SheetsClient.a1_range(sheet, f"{letter_for_column(header_indices[name])}:{letter_for_column(header_indices[name])}") for name in wanted]
     query: list[tuple[str, str]] = [("valueRenderOption", "FORMATTED_VALUE")]
     query.extend(("ranges", value) for value in ranges)
     response = retry(lambda: client._request("GET", client.base_url + "/values:batchGet?" + urlencode(query)))
@@ -225,7 +227,7 @@ def batch_write_values(client: SheetsClient, sheet: str, row: int, updates: dict
     data = []
     for col_index, value in sorted(updates.items()):
         col = letter_for_column(col_index)
-        data.append({"range": client._range(sheet, f"{col}{row}"), "values": [[value]]})
+        data.append({"range": SheetsClient.a1_range(sheet, f"{col}{row}"), "values": [[value]]})
     if not data:
         return
     retry(lambda: client._request(
@@ -309,9 +311,10 @@ def close_row_sync(
     summary: dict[str, Any] = {
         "status": "FAILED", "generatedAt": payload.get("generatedAt"), "targetDate": None,
         "row": None, "inserted": False, "failedStage": "FETCH",
-        "stages": {"FETCH": "PENDING", "VALIDATE": "PENDING", "GITHUB_SAVE": "SUCCESS", "SHEETS_IMPORT": "PENDING", "CHATGPT_INPUT": "PENDING", "CLOSE_DATA_WRITE": "PENDING", "READBACK_VERIFY": "PENDING", "LOG": "PENDING"},
+        "stages": {"FETCH": "PENDING", "VALIDATE": "PENDING", "GITHUB_SAVE": "UNKNOWN", "SHEETS_IMPORT": "PENDING", "CHATGPT_INPUT": "PENDING", "CLOSE_DATA_WRITE": "PENDING", "READBACK_VERIFY": "PENDING", "LOG": "PENDING"},
         "missingRequiredFields": [], "updatedFields": [], "sources": [], "marketData": [], "errors": [],
     }
+    active_stage = "VALIDATE"
     try:
         generated = parse_datetime(payload.get("generatedAt"))
         now_jst = now.astimezone(JST)
@@ -325,6 +328,7 @@ def close_row_sync(
         summary["stages"]["FETCH"] = "SUCCESS"
         summary["stages"]["VALIDATE"] = "SUCCESS"
 
+        active_stage = "SHEETS_READ"
         sheet_map = retry(client.sheet_map)
         for required_sheet in ("終値一覧", "GitHub_Market_Import", "ChatGPT_Market_Input", "WEB_Data_Update_Log"):
             if required_sheet not in sheet_map:
@@ -471,6 +475,7 @@ def close_row_sync(
             if header in header_indices and value:
                 writes[header] = str(value)
 
+        active_stage = "CLOSE_DATA_WRITE"
         if inserting:
             formula_columns = insert_formatted_row(client, sheet_map[sheet_name], target_row, len(headers), sheet_name, sleep)
         else:
@@ -485,6 +490,7 @@ def close_row_sync(
         summary["updatedFields"] = [name for name in writes if name in header_indices and header_indices[name] not in formula_columns]
         summary["sources"] = sorted(set(source_ids))
 
+        active_stage = "READBACK_VERIFY"
         readback = read_values(client, sheet_name, f"A{target_row}:{letter_for_column(len(headers)-1)}{target_row}", "UNFORMATTED_VALUE")
         actual_row = readback[0] if readback else []
         actual_date = parse_sheet_date(actual_row[header_indices["日付"]] if len(actual_row) > header_indices["日付"] else "")
@@ -543,12 +549,13 @@ def close_row_sync(
             summary["stages"]["VALIDATE"] = "PARTIAL"
         summary["failedStage"] = "" if complete else ("SHEETS_IMPORT" if import_errors else "VALIDATE" if validation_partial else "")
     except Exception as exc:
-        stage = exc.stage if isinstance(exc, CloseSyncError) else "CLOSE_DATA_WRITE"
+        stage = exc.stage if isinstance(exc, CloseSyncError) else active_stage
         summary["failedStage"] = stage
         summary["errors"].append(str(exc))
         summary["stages"][stage] = "FAILED"
         summary["status"] = "FAILED"
 
+    finalize_status(summary)
     # Always persist the status in the live audit sheet when the API is
     # available, including partial or readback failures.
     try:
@@ -557,9 +564,10 @@ def close_row_sync(
     except Exception as exc:
         summary["stages"]["LOG"] = "FAILED"
         summary["errors"].append(f"WEB_Data_Update_Log: {exc}")
-        summary["failedStage"] = "LOG"
+        if not summary.get("failedStage"):
+            summary["failedStage"] = "LOG"
         summary["status"] = "FAILED"
-    return summary
+    return finalize_status(summary)
 
 
 def verify_input_rows(rows: list[list[Any]], payload: dict[str, Any]) -> tuple[bool, str]:
@@ -625,6 +633,7 @@ def append_update_log(client: SheetsClient, summary: dict[str, Any], now: dt.dat
         "scheduledTime": scheduled_time,
         "failedStage": summary.get("failedStage") or "",
         "stages": summary.get("stages") or {},
+        "failureCode": summary.get("failureCode"),
         "missingRequiredFields": summary.get("missingRequiredFields") or [],
         "marketData": summary.get("marketData") or [],
         "errors": summary.get("errors") or [],
@@ -638,6 +647,78 @@ def write_status_file(path: Path, summary: dict[str, Any]) -> None:
     path.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def finalize_status(summary: dict[str, Any]) -> dict[str, Any]:
+    """Preserve the first failure and explicitly label downstream unexecuted work."""
+    codes = {
+        "FETCH": "FETCH_FAILED", "AUTH": "AUTH_FAILED", "VALIDATE": "VALIDATION_FAILED",
+        "SHEETS_READ": "SHEETS_READ_FAILED", "CLOSE_DATA_WRITE": "WRITE_FAILED",
+        "READBACK_VERIFY": "READBACK_FAILED", "LOG": "LOG_FAILED", "CLEANUP": "CLEANUP_FAILED",
+        "SHEETS_IMPORT": "IMPORT_FAILED", "CHATGPT_INPUT": "IMPORT_FAILED",
+    }
+    summary["failureCode"] = codes.get(summary.get("failedStage"))
+    for stage, status in summary.get("stages", {}).items():
+        if status == "PENDING":
+            summary["stages"][stage] = "NOT_RUN"
+    return summary
+
+
+def failed_summary(stage: str, reason: str) -> dict[str, Any]:
+    stages = {name: "NOT_RUN" for name in (
+        "FETCH", "AUTH", "VALIDATE", "GITHUB_SAVE", "SHEETS_IMPORT", "CHATGPT_INPUT",
+        "CLOSE_DATA_WRITE", "READBACK_VERIFY", "LOG",
+    )}
+    stages[stage] = "FAILED"
+    return finalize_status({
+        "status": "FAILED", "generatedAt": "", "targetDate": None, "row": None,
+        "inserted": False, "failedStage": stage, "stages": stages,
+        "missingRequiredFields": list(REQUIRED_CLOSE_HEADERS), "updatedFields": [],
+        "sources": [], "marketData": [], "errors": [reason],
+    })
+
+
+def permission_probe(client: SheetsClient) -> dict[str, Any]:
+    """Test the workflow principal on a new isolated tab; never touch report cells."""
+    title = "Codex_Close_Probe_" + uuid.uuid4().hex
+    marker = "close-permission-probe:" + uuid.uuid4().hex
+    summary = {"status": "FAILED", "stages": {}, "failedStage": "CLOSE_DATA_WRITE",
+               "temporarySheet": title, "cleanup": "NOT_RUN", "reportCellsModified": 0}
+    sheet_id = None
+    try:
+        created = client._request("POST", client.base_url + ":batchUpdate", json={
+            "requests": [{"addSheet": {"properties": {"title": title}}}],
+        })
+        sheet_id = created["replies"][0]["addSheet"]["properties"]["sheetId"]
+        batch_write_values(client, title, 1, {0: marker}, sleep=lambda _: None)
+        summary["stages"]["CLOSE_DATA_WRITE"] = "SUCCESS"
+        summary["failedStage"] = "READBACK_VERIFY"
+        values = read_values(client, title, "A1", "UNFORMATTED_VALUE")
+        if values != [[marker]]:
+            raise CloseSyncError("READBACK_VERIFY", "Permission probe readback mismatch.")
+        summary["stages"]["READBACK_VERIFY"] = "SUCCESS"
+        summary["failedStage"] = ""
+        summary["status"] = "SUCCESS"
+    except Exception as exc:
+        summary["stages"][summary["failedStage"]] = "FAILED"
+        summary["errors"] = [str(exc)]
+    finally:
+        if sheet_id is not None:
+            try:
+                client._request("POST", client.base_url + ":batchUpdate", json={
+                    "requests": [{"deleteSheet": {"sheetId": sheet_id}}],
+                })
+                remaining = client.sheet_map()
+                if title in remaining or sheet_id in remaining.values():
+                    raise SheetsSyncError("Temporary probe sheet still exists after delete.")
+                summary["cleanup"] = "SUCCESS"
+            except Exception as exc:
+                summary["cleanup"] = "FAILED"
+                summary["status"] = "FAILED"
+                summary["failedStage"] = summary["failedStage"] or "CLEANUP"
+                summary.setdefault("errors", []).append(str(exc))
+    summary["stages"].setdefault("READBACK_VERIFY", "NOT_RUN")
+    return finalize_status(summary)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--latest", default=str(ROOT / "data" / "market" / "latest.json"))
@@ -645,29 +726,41 @@ def main() -> int:
     parser.add_argument("--scheduled-time", default=os.environ.get("ACQUISITION_SCHEDULED_TIME", "06:30"))
     parser.add_argument("--run-key", default=os.environ.get("GITHUB_RUN_ID", "manual") + ":" + os.environ.get("GITHUB_RUN_ATTEMPT", "1"))
     parser.add_argument("--skip-import-check", action="store_true", help="Only for local unit/integration tests.")
+    parser.add_argument("--upstream-outcome", choices=("success", "failure", "cancelled", "skipped"), default="success")
+    parser.add_argument("--window-status", help="Current workflow acquisition summary; never a previous run's status.")
+    parser.add_argument("--permission-probe", action="store_true", help="Use a new temporary tab to test this principal, then delete it.")
     args = parser.parse_args()
 
     now = dt.datetime.now(JST).replace(microsecond=0)
-    summary: dict[str, Any]
-    client: SheetsClient | None = None
+    stage = "FETCH"
     try:
-        payload = json.loads(Path(args.latest).read_text(encoding="utf-8"))
-        spreadsheet_id = os.environ.get("MARKET_DATA_SPREADSHEET_ID", DEFAULT_SPREADSHEET_ID).strip()
-        service_account_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
-        if not service_account_json:
-            raise CloseSyncError("VALIDATE", "GOOGLE_SERVICE_ACCOUNT_JSON is required for close-row persistence.")
-        client = SheetsClient(create_authorized_session(load_service_account_info(service_account_json)), spreadsheet_id)
-        summary = close_row_sync(
-            client, payload, now, scheduled_time=args.scheduled_time,
-            run_key=args.run_key, verify_import_tabs=not args.skip_import_check,
-        )
+        if args.upstream_outcome != "success":
+            summary = failed_summary("FETCH", f"Upstream acquisition step: {args.upstream_outcome}; no Sheets request made.")
+            if args.window_status and Path(args.window_status).is_file():
+                window = json.loads(Path(args.window_status).read_text(encoding="utf-8"))
+                summary["upstreamStatus"] = window
+                summary["failureCode"] = window.get("failureCode") or "FETCH_FAILED"
+        else:
+            payload = {} if args.permission_probe else json.loads(Path(args.latest).read_text(encoding="utf-8"))
+            stage = "AUTH"
+            spreadsheet_id = os.environ.get("MARKET_DATA_SPREADSHEET_ID", DEFAULT_SPREADSHEET_ID).strip()
+            secret = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
+            if not secret:
+                raise CloseSyncError("AUTH", "GOOGLE_SERVICE_ACCOUNT_JSON is required; connected-user access is not workflow-principal evidence.")
+            account = load_service_account_info(secret)
+            client = SheetsClient(create_authorized_session(account), spreadsheet_id)
+            if args.permission_probe:
+                summary = permission_probe(client)
+                summary["spreadsheetId"] = spreadsheet_id
+                summary["principalSha256"] = hashlib.sha256(account["client_email"].encode("utf-8")).hexdigest()
+            else:
+                summary = close_row_sync(client, payload, now, scheduled_time=args.scheduled_time,
+                                         run_key=args.run_key, verify_import_tabs=not args.skip_import_check)
     except Exception as exc:
-        summary = {
-            "status": "FAILED", "generatedAt": "", "targetDate": None, "row": None,
-            "inserted": False, "failedStage": getattr(exc, "stage", "FETCH"),
-            "stages": {"FETCH": "FAILED", "VALIDATE": "PENDING", "GITHUB_SAVE": "SUCCESS", "SHEETS_IMPORT": "PENDING", "CHATGPT_INPUT": "PENDING", "CLOSE_DATA_WRITE": "PENDING", "READBACK_VERIFY": "PENDING", "LOG": "PENDING"},
-            "missingRequiredFields": list(REQUIRED_CLOSE_HEADERS), "updatedFields": [], "sources": [], "marketData": [], "errors": [str(exc)],
-        }
+        summary = failed_summary(getattr(exc, "stage", stage), str(exc))
+    summary["checkedAt"] = now.isoformat()
+    summary["runKey"] = args.run_key
+    summary["permissionProbe"] = args.permission_probe
     write_status_file(Path(args.status_output), summary)
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0 if summary.get("status") == "SUCCESS" else 1
@@ -675,4 +768,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

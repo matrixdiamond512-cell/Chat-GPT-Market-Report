@@ -67,3 +67,7 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 - GitHub固定パス：`docs/system/requirements.md`、`docs/system/specification.md`、`docs/system/operations.md`。PR #197で更新し、PR #193～#196の表示修正・QA表示要件を同一変更IDで反映する。
 - 受入根拠：PR #193～#196 main統合、UI/アーカイブCI成功、Pages deploy run 41836815631成功、公開画面の68slot/18日分読み戻し。
 - 未解決原本：2026-10-22 12:00本文欠落、2026-11-02 12:00 source status矛盾。状態値を書き換えない。市場価格を全件外部照合した結果とは主張しない。
+
+## MR-CLOSE-SYNC-20261114-01（2026-11-14 JST）
+
+出典: ユーザー修正版改善計画Version 1.1と添付計画、run 43355399689の認証付き実ログ。基準main 0204a20c4d188be86328034d93e319c370e02d42、task branch codex/close-sync-recovery-20261114。既存PR200とは分離、新規PRは未作成。影響: requirements/specification/operations/本台帳、EVIDENCE_LEDGER、HANDOFF、同期2script/window/朝用workflow/既存CI/回帰tests。既存日付キー/重複防止/値照合は維持。固定Google Docs要件102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA、仕様1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI、運用1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg、台帳1F5vH9_O0LUC9Dki0CNm1JDNVfg7gMYMcUCIxgeanE5gの現revision照合/同期はNOT_RUN。本文作成1M9LzxKgg8Y50uHSzE1OhML-lU-ufPhvh79xj_m1jWYQは品質・本文ルールNO_CHANGE（データ検証状態の運用整合のみ影響）。固定名/ID維持、別名の要件・仕様・マニュアルを作らない。ローカル68tests PASS、実権限probe/実終値行再読込/20営業日/本番適用はNOT_RUN。遅延原因UNKNOWN、取得定時性は未修復。詳細はevidence/close-sync-recovery.json。

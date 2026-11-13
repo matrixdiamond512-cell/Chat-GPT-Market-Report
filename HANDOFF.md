@@ -100,3 +100,7 @@ git branch --show-current
 
 ---
 この文書の最終更新: 2026-10-20 JST。文書管理の根拠は `docs/system/DOCUMENT_CONTROL.md`。配信システム本体の変更、Google Docsの正式正本の書換え、外部サービスの設定変更は、この引き継ぎ整備だけでは実施しない。
+
+## MR-CLOSE-SYNC-20261114-01（2026-11-14 JST）
+
+専用branch codex/close-sync-recovery-20261114、基準main0204a20c4。PR200の作業は別branchに保持。68ローカル回帰PASS。直近朝用failureはAPI取得失敗ではなく11:55 JST開始によるcutoff超過・取得未実行。A1修正と失敗診断を実装、定時性は未修復。手動probeは既存workflowのpermission_probe=trueで同Secretsの認証を使用し隔離タブだけでwrite/readback/delete。実終値行と20営業日は別受入。現時点probe/Google固定文書同期/main適用はNOT_RUN。証拠はdocs/project-control/evidence/close-sync-recovery.json。既存のpacked-refs.lock（11/13作成）は削除せず保持、branch切替は成立済み。

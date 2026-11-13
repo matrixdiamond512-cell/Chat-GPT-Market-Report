@@ -80,3 +80,7 @@ Google Docs固定ID `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg` に対応す�
 7. JS変更のcache query version、Pages deploy結果、HTTP/DOM、公開本文を読み戻す。古いキャッシュは確認後にcache bustする。原因確認前にdeployを繰り返さない。ログにtokenや認証情報を出さない。
 8. 2026-11-04実績：68slot/18日分を公開ブラウザで照合。10/06 08:00 QA未達の警告表示・市場表抑制・本文維持を確認。Pages run 41836815631 SUCCESS。価格全件の外部ソース照合は対象外。
 9. 未解決原本：10/22 12:00本文欠落、11/02 12:00状態メタデータ矛盾。元証拠を確認するまで発行状態を変更しない。
+
+## MR-CLOSE-SYNC-20261114-01（2026-11-14 JST）
+
+最新の取得step failureをAPI障害と即断せず、runログの開始時刻・予定枠・cutoffを照合する。11/13 run 43355399689は07:50予定に対して11:55 JST開始、取得未実行でexpired。遅延の発生主体はUNKNOWN、cron変更・締切緩和・過去枠evidence再生成は行わない。既存workflow market-data-08-anchor.ymlの手動permission_probe=trueは同じActions Secretsで隔離タブを検証し、結果artifactのwrite/readback/cleanupを確認する。cleanup失敗は仮タブ名/IDとともに未解決扱い、成功と報告しない。通常runの診断artifactはwindow-status/close-status、取得失敗時は実保存しない。Git保存に失敗してもartifactを確認する。実終値の受入と20営業日は別途必要。

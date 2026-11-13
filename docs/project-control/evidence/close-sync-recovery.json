@@ -1,0 +1,20 @@
+{
+  "changeRequestId": "MR-CLOSE-SYNC-20261114-01",
+  "checkedAt": "2026-11-14T02:23:27.054558+09:00",
+  "baseCommit": "0204a20c4d188be86328034d93e319c370e02d42",
+  "command": "python -m unittest tests.test_sync_market_close_sheet tests.test_close_sync_recovery tests.test_market_data_window_evidence scripts.test_write_market_data_to_sheets tests.test_close_sheet_missing_audit tests.test_scheduled_report_delivery tests.test_report_slot_evidence -v",
+  "testsRun": 68,
+  "failures": 0,
+  "errors": 0,
+  "status": "PASS",
+  "livePermissionProbe": "NOT_RUN",
+  "liveCloseRowReadback": "NOT_RUN",
+  "stable20BusinessDays": "NOT_RUN",
+  "sourceRun": {
+    "id": 43355399689,
+    "headSha": "559140a0705e9d9ab179baf1c835af6def0a0ef3",
+    "url": "https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43355399689",
+    "logObserved": "2026-11-13T02:55:19.5269370Z Past report cutoff for 08:00: no source acquisition",
+    "diagnosis": "07:50 intended attempt started at 11:55 JST. Acquisition was not attempted; scheduler delay origin UNKNOWN. Existing cutoff correctly blocked retrospective evidence."
+  }
+}
