@@ -67,3 +67,34 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 - GitHub固定パス：`docs/system/requirements.md`、`docs/system/specification.md`、`docs/system/operations.md`。PR #197で更新し、PR #193～#196の表示修正・QA表示要件を同一変更IDで反映する。
 - 受入根拠：PR #193～#196 main統合、UI/アーカイブCI成功、Pages deploy run 41836815631成功、公開画面の68slot/18日分読み戻し。
 - 未解決原本：2026-10-22 12:00本文欠落、2026-11-02 12:00 source status矛盾。状態値を書き換えない。市場価格を全件外部照合した結果とは主張しない。
+
+## MR-RELIABILITY-20261113-01 — 改善計画・調査着手（2026-11-13 JST）
+
+出典: ユーザー提示「マーケットレポート配信システム改善計画」2026-11-13 01:21 JST。状態: 計画受領、Phase 0調査中、今回の修復実装は未着手、運用受入は未検証。本記録は本番変更の承認ではない。
+
+- 平日08:00/12:00/16:00/21:00 JST、週末なしを維持する。新規分析機能、画面刷新、大規模構造変更を凍結し、既存機能の配信安定化を優先する。
+- Phase 0: main・未マージPR・Actions・実ChatGPTタスク・Drive・導入済みApps Scriptを照合。11月11日夕方のタスク変更について操作履歴を調査し、取得できなければ原因不明と監査証拠不足を分けて記録する。
+- Phase 1: Actionsの認証主体による月別フォルダ一覧・Doc全文/親/revisionの読戻し、取得0件/拒否/認証不備の区別、正式公開資格と全インデックス整合、予定日時/実行開始/reportIdの分離を修復する。接続中のDrive利用者とActionsサービスアカウントを混同しない。
+- Phase 2: 発行とは独立して15分後確認、30分後異常記録と再試行可否判定、45分後障害通知を目標とする。タスク実行、本文、Drive保存/全文読戻し、GitHub、公開URL本文、通知到達を別々に検証する。これは要求であり実装・稼働済みの主張ではない。
+- Phase 3/4: 本計画の運用受入基準は修正後の5営業日・20枠連続。1件でも失敗すれば原因/影響箇所/回帰検証を記録し、連続計数を再開する。以前の10稼働日等の記載は過去の計画として保持する。20/20のタスク実行・本文作成とチャット表示・Docs保存/全文読戻し・資格判定結果確定、適格本文全件の公開、日時ずれ/重複/未検出障害/重大誤記0件を必要とする。PNGは独立状態とする。
+- 停止/遅延/日付またぎ、Drive拒否/空Doc/同名重複、欠損/古い価格/方向誤り、部分成功/索引不整合、deploy成功だが公開本文なし、再実行の二重公開/上書き、通知失敗/検知漏れを検証対象にする。実タスク停止や本番障害注入は未承認・未実施であり、安全な隔離試験を先に行う。
+- 本番タスク停止、時刻/保存先/配信方式/権限変更、破壊的データ変更には事前承認と記録を必要とする。文書追記からmain merge、公開workflow実行、Docs/Drive書込、Pages deployの権限を推論しない。過去枠の発行前証拠は再構成しない。
+
+影響文書: requirements.md、specification.md、operations.md、DOCUMENT_CONTROL.md、project-control/EVIDENCE_LEDGER.md、OBJECTIVE_CARD.md、HANDOFF.md。固定Google Docs要件/仕様/本文作成/運用/台帳は同じIDを維持。今回の本文作成ルール変更なし（NO_CHANGE）だが本文作成/チャット表示/保存結果は受入対象。Google Docs現行revision照合・同期・読戻しはNOT_RUN、別名の要件/仕様/マニュアルを作成しない。
+
+## MR-ZEROCOST-20261113-01 — ローカル実装候補と影響マトリクス（2026-11-13 JST）
+
+出典：ユーザー03:16改訂指示書、後続の追加課金ゼロ/品質維持/現タスク保全指示、提示画像。調査base/main取得SHA `f94229ba1c135215623881faf4f5417509c252ab`、branch `codex/zero-cost-delivery`。関連PR #188（Draft、head `860ec370af7633a8ccadf393a474ee2614ce5430`）と重複を照合し、`build_market_json.py` の既存修正blobを再利用。今回のPR/hosted CI/main merge/本番切替はNOT_RUN。前回からの未コミット文書7件を保全し、同じ固定パスへ追記した。
+
+| 対象正本 | 今回の対象節/差分 | 現行revision・同期/読戻し |
+|---|---|---|
+| 要件 `102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA` / requirements.md | 追加0円、全4枠の品質/図解、単一責任・受入範囲 | GitHub候補追記、Google Docs取得403/fetch404、revision UNKNOWN、同期BLOCKED_EXTERNAL_ACCESS |
+| 仕様 `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` / specification.md | 無課金gate、固定原本bundle、隔離journal、live市場writer分離 | 同上 |
+| 本文作成 `1M9LzxKgg8Y50uHSzE1OhML-lU-ufPhvh79xj_m1jWYQ` | 詳細分析は維持。毎枠の独立図解と原本引渡し/未達表示の運用整合が必要 | 403/fetch404。内容変更/同期せず、既存品質を縮小しない。必要追補はoperationsの提案差分を参照 |
+| 図解 `1XKWLVmxuINqq4Zq_zVsfzJqpI-kzKUCpw9q-i1OqpFU` | 08時16項目/9月基準図を維持、本文同一性/実画像QA | 403/fetch404。基準図未取得、BLOCKED_REFERENCE_IMAGE。想像による再設計なし |
+| 運用 `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg` / operations.md | 受領/保留/同一原本再開、条件付き新旧切替/戻し、費用根拠 | GitHub候補追記、Google同期BLOCKED_EXTERNAL_ACCESS |
+| 台帳 `1F5vH9_O0LUC9Dki0CNm1JDNVfg7gMYMcUCIxgeanE5g` / DOCUMENT_CONTROL.md | 本マトリクス、変更ID/証拠/未解決 | GitHub候補追記、Google同期BLOCKED_EXTERNAL_ACCESS |
+
+実測・検証：同IDのEVIDENCE_LEDGERと固定DELIVERY_PATH_INVENTORY.json、追跡外logs/zero-cost-deliveryを参照。ローカル試験32件PASS、実本文4枠shadowはすべてWAITING_FOR_SOURCE_ARTIFACT、公開4枠DOMは対象データなし。全工程VERIFIED/完成/切替済みとは報告しない。
+
+未解決：Google正本6文書の実revision/本文/基準図、Drive本文の親とrevision、PNG実体、独立タスクrunログ/指定会話、GAS導入版/トリガー、Actions認証主体、公式自動受渡し、外部非本番保存/公開経路、課金/再配布条件、全4枠実地受入、単一writer切替、20枠連続運用。ログ/原本/履歴を削除して未解決を隠さない。

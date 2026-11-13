@@ -71,3 +71,38 @@ Google Docs固定ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` へ対応す�
 - 08:00 QAは正式対象の28項目・順序・5列・基準日・必須行を検証する。HISTORICAL_ARCHIVEを正式QA合格に算入しない。QA未達ではrole=alertを表示し、対象市場表だけをDOMから除去する。本文と保存元statusを保持する。RECONSTRUCTED_UNVERIFIEDのquarantineは維持。
 - エラー/デバッグ出力は対象path/date/time/HTTP status/検証結果を含め、秘密情報を除く。JS更新時はHTMLのquery versionも更新し、Pages deploy後に公開DOMと実ファイルを読み戻す。
 - 実績：PR #193 98f3bcc、#194 025da7c、#195 8630b2c、#196 f870b22を統合。UI・アーカイブ関連CIとPages run 41836815631がSUCCESS。公開ブラウザで18日68slotを確認。
+
+## MR-RELIABILITY-20261113-01 — 改善計画・調査着手（2026-11-13 JST）
+
+出典: ユーザー提示「マーケットレポート配信システム改善計画」2026-11-13 01:21 JST。状態: 計画受領、Phase 0調査中、今回の修復実装は未着手、運用受入は未検証。本記録は本番変更の承認ではない。
+
+- 平日08:00/12:00/16:00/21:00 JST、週末なしを維持する。新規分析機能、画面刷新、大規模構造変更を凍結し、既存機能の配信安定化を優先する。
+- Phase 0: main・未マージPR・Actions・実ChatGPTタスク・Drive・導入済みApps Scriptを照合。11月11日夕方のタスク変更について操作履歴を調査し、取得できなければ原因不明と監査証拠不足を分けて記録する。
+- Phase 1: Actionsの認証主体による月別フォルダ一覧・Doc全文/親/revisionの読戻し、取得0件/拒否/認証不備の区別、正式公開資格と全インデックス整合、予定日時/実行開始/reportIdの分離を修復する。接続中のDrive利用者とActionsサービスアカウントを混同しない。
+- Phase 2: 発行とは独立して15分後確認、30分後異常記録と再試行可否判定、45分後障害通知を目標とする。タスク実行、本文、Drive保存/全文読戻し、GitHub、公開URL本文、通知到達を別々に検証する。これは要求であり実装・稼働済みの主張ではない。
+- Phase 3/4: 本計画の運用受入基準は修正後の5営業日・20枠連続。1件でも失敗すれば原因/影響箇所/回帰検証を記録し、連続計数を再開する。以前の10稼働日等の記載は過去の計画として保持する。20/20のタスク実行・本文作成とチャット表示・Docs保存/全文読戻し・資格判定結果確定、適格本文全件の公開、日時ずれ/重複/未検出障害/重大誤記0件を必要とする。PNGは独立状態とする。
+- 停止/遅延/日付またぎ、Drive拒否/空Doc/同名重複、欠損/古い価格/方向誤り、部分成功/索引不整合、deploy成功だが公開本文なし、再実行の二重公開/上書き、通知失敗/検知漏れを検証対象にする。実タスク停止や本番障害注入は未承認・未実施であり、安全な隔離試験を先に行う。
+- 本番タスク停止、時刻/保存先/配信方式/権限変更、破壊的データ変更には事前承認と記録を必要とする。文書追記からmain merge、公開workflow実行、Docs/Drive書込、Pages deployの権限を推論しない。過去枠の発行前証拠は再構成しない。
+
+影響文書: requirements.md、specification.md、operations.md、DOCUMENT_CONTROL.md、project-control/EVIDENCE_LEDGER.md、OBJECTIVE_CARD.md、HANDOFF.md。固定Google Docs要件/仕様/本文作成/運用/台帳は同じIDを維持。今回の本文作成ルール変更なし（NO_CHANGE）だが本文作成/チャット表示/保存結果は受入対象。Google Docs現行revision照合・同期・読戻しはNOT_RUN、別名の要件/仕様/マニュアルを作成しない。
+
+## MR-ZEROCOST-20261113-01 — 追加課金ゼロの経路整理（2026-11-13 JST）
+
+出典：ユーザー提示03:16改訂指示書と同日の追加指示・タスク確認画像。受領テキストは `READY_FOR` の途中で終わるため、未受領の後続条項は補完しない。旧MR-RELIABILITY記録は当時の履歴として保持し、本追補の追加費用ゼロ・本文/図解品質維持を優先する。状態：ローカル実装候補、main未反映、定時発行・切替・連続運用受入は未達。
+
+`config/report_delivery_policy.json` は mode=shadow、productionOwner=legacy、productionAdapter=null、課金許可4項目=falseに固定。`scripts/verify_zero_cost_delivery.py` はネットワークやSecretsを使用せず、ポリシーとソース内AI API接続先を走査する。旧API接続workflow4本は全jobに `if: ${{ false }}` を付け、checkout/Secrets/HTTPより前に停止する。旧main/旧SHAからの再実行を止めた証拠ではなく、候補差分として管理する。
+
+単一shadow入口：`python scripts/run_report_delivery.py --report-id YYYY-MM-DD_HH-MM --source-bundle <受領フォルダー>`。日付/枠を実行時刻から推測せず、report_schedule.jsonの曜日と枠を検査。生成・Drive新規保存・GitHub push・Pages deploy・チャット投稿は実装していない。
+
+受領bundleは `report.json`（原文全文・同一性）、`receipt.json`（既存v2）、`drive-file.json`（実metadata）、`bundle.json`（独立に特定したbodyMonthFolderId）、`evidence.json`（実在する枠前証拠）、`infographic.png`、`infographic-manifest.json`。欠落時に作成しない。bundleの主張は独立Drive観測の代わりにはならない。
+
+1. 受領実バイトを固定し、既存 `validate_saved_body` / `validate_sop_body` を再利用。08時は既存 `verify_morning_report_qa.py` を隔離入出力で実行する。
+2. 既存 `validate_receipt` / `verify_slot_evidence` でsource revision、本文hash、snapshot/context/source hash、枠前時刻とDocs保存窓を照合。枠前証拠の隔離コピーは元バイトの転記だけで、過去の証拠を新規構成しない。
+3. PNG実バイト/CRC/構造を既存 `validate_png` で検査し、manifestのreport_id/revision/snapshot_id/body_hash/png_sha256/png_filenameを一致させる。これはレイアウト・数値内容の実画像QAを代替しない。
+4. 固定の `logs/report-delivery-shadow/journal.sqlite3` だけへ、reportId/revisionを主キーに候補・全受領ファイルの実バイト・イベントを同一SQLiteトランザクションで格納。既存同revisionの変更、格納済み画像の欠落、入力の検証中変更はブロック。失敗時rollback、同一原本再実行は同じ記録を返す。
+5. パス逸脱を拒否。SQLiteのロックは同じローカルDBに限る。GAS/複数PC/Actionsの分散ロックを実装・検証したとは扱わず、本番書込も許可しない。
+6. 最大到達状態は `SHADOW_STAGED`、全工程は常に `NOT_VERIFIED`。独立Drive読戻し/本文の事実QA/図解内容/視覚QA/会話出力/保存/Pages/通知は別状態に保持。欠落は `WAITING_FOR_SOURCE_ARTIFACT`、不正/競合は `SHADOW_BLOCKED`。原本のreport_statusやreceiptを変更して合格させない。
+
+`scripts/build_market_json.py` はPR #188 head `860ec370af7633a8ccadf393a474ee2614ce5430` の同一blobを再利用し、latestReport/reports内部へlive市場データを注入する処理を削除。dashboard.marketData、更新日時・出典・欠損警告は維持。既存の公開JSONの強制再生成や過去原本の補正はしない。
+
+PR用CIは読取権限、public repositoryの標準ubuntu runner、外部API/Secrets/依存インストール/追加schedule/有料artifact保存なし。ホストCIは未実行。全既存writerの本番単一化は、所有者/導入版/停止影響/readbackが揃うまで未実装・切替保留。

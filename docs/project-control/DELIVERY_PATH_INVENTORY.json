@@ -1,0 +1,5894 @@
+{
+  "changeId": "MR-ZEROCOST-20261113-01",
+  "observedAt": "2026-11-13T03:28:34.350525+09:00",
+  "head": "f94229ba1c135215623881faf4f5417509c252ab",
+  "branch": "codex/zero-cost-delivery",
+  "commitCountAllRefs": 14316,
+  "botHeuristicCount": 9394,
+  "botHeuristicRatio": 0.6561888795753004,
+  "rootFileCount": 102,
+  "workflowCount": 107,
+  "workflows": [
+    {
+      "path": ".github/workflows/actual-report-heading-compat-ci.yml",
+      "name": "name: Actual report heading compatibility CI",
+      "cron": [],
+      "calls": [
+        "scripts/test_actual_report_heading_aliases.js",
+        "scripts/test_apps_script_narrative_report.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "0ca5a1abe97ba54a0316b1784b65fe1f564f2f9db8e280d2dc6681abe13babca",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/apply-dashboard-timeout-fix.yml",
+      "name": "name: Apply dashboard timeout fix",
+      "cron": [],
+      "calls": [
+        "tools/apply_dashboard_timeout_fix.py",
+        "tools/decouple_dashboard_events.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push"
+      ],
+      "rawSourceSha256": "f8e2a4f227ac51e17ac9275b304feec06d2b0e0385deed90342a57f801b74af1",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/apps-script-prepublish-validation.yml",
+      "name": "name: Apps Script Pre-Publish Validation",
+      "cron": [],
+      "calls": [
+        "scripts/test_market_report_save_evidence_guard.js",
+        "scripts/test_apps_script_narrative_report.js",
+        "scripts/test_actual_1600_source_recovery.js",
+        "scripts/test_github_large_report_index_read.js",
+        "scripts/test_independent_publication.js",
+        "scripts/test_portal_deploy_safety.js",
+        "scripts/test_apps_script_infographic_gate.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "pull_request",
+        "push"
+      ],
+      "rawSourceSha256": "5d3c4351aa12068fa21d5f3438747d94589b559118f42aaba3517f2c39c10492",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/archive-nikkei225-arbitrage.yml",
+      "name": "name: Archive Nikkei 225 arbitrage reports",
+      "cron": [
+        "20 12 * * 1-5"
+      ],
+      "calls": [
+        "scripts/build_nikkei225_arbitrage_archive.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push",
+        "schedule"
+      ],
+      "rawSourceSha256": "efc7c2acfc77f33facf1774da839533c03b196a15f9b9ba5a54f91ee0238220c",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/archive-serialization-ci.yml",
+      "name": "name: Archive serialization regression",
+      "cron": [],
+      "calls": [
+        "scripts/test_archive_serialization_fix.js",
+        "scripts/test_drive_github_archive_backfill.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "a78d6b297c6420b12b0fcc394de60590a9ad50e331a03d6e85b1f38a6cc60e13",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/backfill-jp-sector-history.yml",
+      "name": "name: Backfill verified JP 33-sector historical rankings",
+      "cron": [
+        "40 9 * * 1"
+      ],
+      "calls": [
+        "scripts/backfill_jp_sector_history.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule",
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "e6fa51e73947b5e5f004cd9aa23ea73326aa90b2ac0f26df055f2b87c2b6140c",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/backfill-us-sector-history.yml",
+      "name": "name: Backfill verified US sector history into closing sheet",
+      "cron": [
+        "15 22 * * 0"
+      ],
+      "calls": [
+        "scripts/backfill_us_sector_history.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule",
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "c13d24c07efc44199bda42252105d0ec239dabaa54e57de62bd79bab66641201",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/build-app-icons.yml",
+      "name": "name: Build app icons",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "rawSourceSha256": "43924d3d9dd7fe1a7fb663304969fe5384bc01424f8d343f31a04c77c97be849",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/build-reports.yml",
+      "name": "name: Validate report publication",
+      "cron": [],
+      "calls": [
+        "scripts/verify_publication_consistency.py",
+        "scripts/build_reports.py"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "0097377ef120e89cfd28fa3fac09a2bc9bef2fa7251814e684a89492d4e72828",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/capture-japan-close-reference.yml",
+      "name": "name: Capture Japan close reference",
+      "cron": [
+        "10 7 * * 1-5",
+        "40 7 * * 1-5",
+        "10 8 * * 1-5",
+        "10 9 * * 1-5",
+        "10 11 * * 1-5",
+        "10 14 * * 1-5",
+        "10 0 * * 6",
+        "10 1 * * 6",
+        "10 3 * * 6"
+      ],
+      "calls": [
+        "scripts/resolve_tokyo_close_target.py",
+        "scripts/capture_japan_close_reference.py",
+        "scripts/correct_japan_close_reference.py",
+        "scripts/capture_japan_close_reference.py",
+        "scripts/correct_japan_close_reference.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push",
+        "schedule"
+      ],
+      "rawSourceSha256": "7b8606844aa0d6e10d38417432236c3d7e14d96edbd92536e77c61e6f0ea59b0",
+      "observedRecentRuns": [
+        {
+          "id": 43270394847,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T17:31:46Z",
+          "head_sha": "2dd12396cc6987ef19b3b596478639f027ff2c69"
+        },
+        {
+          "id": 43262073662,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T16:45:11Z",
+          "head_sha": "351e20a1765d8a09819a2a58a312478e006b31f3"
+        },
+        {
+          "id": 43256543916,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T16:14:49Z",
+          "head_sha": "22b42ba493009a9f6909a1d23fb35c5dfb8a5506"
+        },
+        {
+          "id": 43253145972,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T15:56:07Z",
+          "head_sha": "125730086989cc184ec495e371b3afeb3c0c9514"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/check-scheduled-report-delivery.yml",
+      "name": "name: Scheduled report actual-delivery health",
+      "cron": [
+        "45 23 * * 0-4",
+        "45 3 * * 1-5",
+        "45 7 * * 1-5",
+        "45 12 * * 1-5"
+      ],
+      "calls": [
+        "scripts/verify_scheduled_report_delivery.py",
+        "scripts/verify_scheduled_report_delivery.py"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "rawSourceSha256": "ec643eba532b5238972f8d90581014d7263abe07367a426060c1ca7b2ff59b96",
+      "observedRecentRuns": [
+        {
+          "id": 43257052990,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T16:17:33Z",
+          "head_sha": "22b42ba493009a9f6909a1d23fb35c5dfb8a5506"
+        },
+        {
+          "id": 43212745824,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T11:51:32Z",
+          "head_sha": "5e23a42e9d48ded18334ddd9e4886cc5f3d50b63"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/close-sheet-integrity.yml",
+      "name": "name: Close-sheet acquisition and missing-data integrity",
+      "cron": [
+        "25 9 * * 1-5"
+      ],
+      "calls": [
+        "scripts/backfill_verified_close_archives.py",
+        "scripts/audit_close_sheet_missing.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule",
+        "pull_request",
+        "push"
+      ],
+      "rawSourceSha256": "2425cdbc6746456d6e995d5539d90aeb7e90349f2b772a7bc118a498076821de",
+      "observedRecentRuns": [
+        {
+          "id": 43271803201,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T17:39:50Z",
+          "head_sha": "77d1577fc2c207cdec0a84046afe7ecb7a5a619f"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/delivery-health-regression-ci.yml",
+      "name": "name: Delivery health regression CI",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "afc159ea6e66d0bfcc328db283237687f13d8a1e63f357c8b241c170febe56d0",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/deploy-github-pages.yml",
+      "name": "name: Check GitHub Pages source consistency (legacy)",
+      "cron": [],
+      "calls": [
+        "scripts/build_reports.py"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "8def8dbf6e452254cdf73d7162942a8f9dab5ece248744266461e9e99efb9cfc",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/deploy-pages.yml",
+      "name": "name: Deploy WEB Market Report to GitHub Pages",
+      "cron": [],
+      "calls": [
+        "scripts/validate_report_index.py",
+        "scripts/validate_drive_source_selection.py",
+        "scripts/verify_publication_consistency.py",
+        "scripts/validate_report_recovery.py",
+        "scripts/prepare_pages_site.py",
+        "scripts/validate_market_report_dom.js",
+        "scripts/validate_market_report_dom.js",
+        "scripts/validate_report_recovery_dom.js",
+        "scripts/verify_public_report_deployment.py",
+        "scripts/validate_market_report_dom.js",
+        "scripts/validate_report_recovery_dom.js",
+        "scripts/validate_drive_archive_2026_10_27_dom.js"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "1838eecb2c9df665025c76f5a0cc057f1d48c02e12af05d5ecbf71f72366e177",
+      "observedRecentRuns": [
+        {
+          "id": 43271880495,
+          "event": "push",
+          "conclusion": "success",
+          "created_at": "2026-11-12T17:40:17Z",
+          "head_sha": "2bbdee88be1892e09791efb4092915e89f110d48"
+        },
+        {
+          "id": 43271869731,
+          "event": "push",
+          "conclusion": "cancelled",
+          "created_at": "2026-11-12T17:40:13Z",
+          "head_sha": "c3ab04013ddd76036a0a868e42d666a832615230"
+        },
+        {
+          "id": 43219215640,
+          "event": "push",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T12:34:59Z",
+          "head_sha": "014e72029b8ba9336f86cb59d3043b56eafef1fc"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/diagnose-market-sheet-account.yml",
+      "name": "name: Diagnose market Google service account access",
+      "cron": [],
+      "calls": [],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "8cb88ed08dc0fed151b2a5b300b57dcbda78d123062e93cac5dd2f9ef13f8124",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/drive-github-archive-backfill-ci.yml",
+      "name": "name: Drive-GitHub archive backfill CI",
+      "cron": [],
+      "calls": [
+        "scripts/test_drive_github_archive_backfill.js",
+        "scripts/test_drive_github_history_backfill.js",
+        "scripts/test_report_remote_readback.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "4f6b4e3c0e7fa24a9653f7d3ea44fc90e8962b51ef3ef98246433fccc6e731ba",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/drive-github-recovery-ci.yml",
+      "name": "name: Drive-GitHub recovery regression",
+      "cron": [],
+      "calls": [
+        "scripts/test_drive_github_history_backfill.js",
+        "scripts/test_report_remote_readback.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "553ae57b5a713fb0e83c7e18b6ca7b43d21dd5de4fd79af3eba08ca9184ea7b9",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/drive-github-recovery-scheduler-ci.yml",
+      "name": "name: Drive-GitHub recovery scheduler CI",
+      "cron": [],
+      "calls": [
+        "scripts/test_market_report_recovery_trigger.js",
+        "scripts/test_drive_github_archive_backfill.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "b2b894cc67b4e613b4ea815c22803f35cf0873d6cf441f71eab17ba4f2d84cb2",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/drive-source-selection-ci.yml",
+      "name": "name: Drive saved-source selection QA",
+      "cron": [],
+      "calls": [
+        "scripts/validate_drive_source_selection.py"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "pull_request",
+        "push"
+      ],
+      "rawSourceSha256": "3eeafe3c68098442cfdd6e5e9864074b541d5b525a2af82afd1d974e8d91136c",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/freeze-report-slot-evidence.yml",
+      "name": "name: Freeze pre-draft report-slot evidence",
+      "cron": [
+        "47,53,57 22 * * 0-4",
+        "47,53,57 2 * * 1-5",
+        "47,53,57 6 * * 1-5",
+        "47,53,57 11 * * 1-5"
+      ],
+      "calls": [
+        "scripts/run_market_data_window.py",
+        "scripts/persist_report_slot_evidence.py"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "rawSourceSha256": "11126bd6096206479c57317f147bfd1ae0f573873ea5dd0c959b6fcae6713fc7",
+      "observedRecentRuns": [
+        {
+          "id": 43249758992,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T15:37:12Z",
+          "head_sha": "8e9baf0cc2d90d8939d8641e32d483f4e8fa68bd"
+        },
+        {
+          "id": 43199586926,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T10:21:07Z",
+          "head_sha": "7dc75da7a35b821019c7bd299716295002745192"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/historical-schedule-ci.yml",
+      "name": "name: Historical schedule validation",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "cfb982a77d6fa5931a4b8c794818827c1d5bffb52a479c2497d6eee99318952a",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/inspect-dashboard-six-market-live.yml",
+      "name": "name: Inspect live six-market dashboard data",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "65dfe2aad2e050086e95eb8b40856120134944f4c2d83864006a5d2817f93830",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/inspect-dashboard-six-markets-live.yml",
+      "name": "name: Inspect live six-market dashboard",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "a26e45e4e948ca7006a0e76ce15f5dee62da68af940d504061a112ea16df73e6",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/inspect-github-pages.yml",
+      "name": "name: Inspect GitHub Pages configuration",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "rawSourceSha256": "33275ce7a85e34ab832bc83ff098f481b8f86bd1f6d81648436f703800c9f9dc",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/inspect-jpx-dynamic-json-once.yml",
+      "name": "name: Inspect JPX dynamic JSON once",
+      "cron": [],
+      "calls": [
+        "scripts/inspect_jpx_dynamic_json.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "rawSourceSha256": "836746887396d4b5e9b367767a29007144954b3e9b3becc62efed5bea5f5748a",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/inspect-jpx-dynamic-pages-once.yml",
+      "name": "name: Inspect JPX dynamic pages once",
+      "cron": [],
+      "calls": [
+        "scripts/inspect_dynamic_jpx_pages.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "rawSourceSha256": "6099839a04e670c3b6d3c9979474b9f1b3f313ea0a81012f2b2098c22419bfde",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/inspect-market-report-live.yml",
+      "name": "name: Inspect live market report page",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "9cd48ac588f734db9b9ef873cd54a69253623721475852d5bdfb94479f6d5520",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/inspect-nikkei225-oi-layout-once.yml",
+      "name": "name: Inspect Nikkei 225 OI layout once",
+      "cron": [],
+      "calls": [
+        "scripts/inspect_nikkei225_oi_layout.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "rawSourceSha256": "3a6ad629a580c738da918f7a4ad554411f51a34eb06b951fd1703c522de47f0c",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/inspect-nikkei225-options-files-once.yml",
+      "name": "name: Inspect Nikkei 225 options files once",
+      "cron": [],
+      "calls": [
+        "scripts/inspect_nikkei225_options_files.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "rawSourceSha256": "673f94acf7294ab612e571b0e5c8df216ddd9fc28499d5af100e756ca7be8967",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/inspect-nikkei225-participant-files-once.yml",
+      "name": "name: Inspect Nikkei 225 participant files once",
+      "cron": [],
+      "calls": [
+        "scripts/inspect_nikkei225_participant_files.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "rawSourceSha256": "0e48cccaf11169c304a20e43270ccef03a62dd41829cc979d66c6a16b8a387dc",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/inspect-nikkei225-session-rows-once.yml",
+      "name": "name: Inspect Nikkei 225 session rows once",
+      "cron": [],
+      "calls": [
+        "scripts/inspect_nikkei225_session_rows.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "rawSourceSha256": "44cef2bce5bd3af50aaca9c6c786723ce7e6cbebb2f5d047021465552b1c5ce4",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/inspect-nikkei225-sources-once.yml",
+      "name": "name: Inspect Nikkei 225 JPX sources once",
+      "cron": [],
+      "calls": [
+        "scripts/inspect_nikkei225_sources.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "rawSourceSha256": "e02200da4c61c89e0c910deb9ca9771e815e1a24241d240e9f4b97eccc0224c6",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/market-data-08-anchor.yml",
+      "name": "name: 08:00 supporting market-data attempts",
+      "cron": [
+        "28 21 * * 0-5",
+        "58 21 * * 0-5",
+        "18 22 * * 0-5",
+        "28 22 * * 0-5",
+        "38 22 * * 0-5",
+        "43 22 * * 0-5",
+        "48 22 * * 0-5"
+      ],
+      "calls": [
+        "scripts/run_market_data_window.py",
+        "scripts/sync_market_close_sheet.py"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "rawSourceSha256": "b3628f22acc13f901ff6f62bb6ab7fba415098109a399a4e378f90d62bd47db1",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/market-data-08-fallback.yml",
+      "name": "name: 08:00 market data fallback checks",
+      "cron": [
+        "55 21 * * 0-5",
+        "42 22 * * 0-5"
+      ],
+      "calls": [
+        "scripts/run_market_data_window.py"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "rawSourceSha256": "45093da9a3eb8983045d6695b5f65e124f4d3d2627f475ff4be4cebe7d6a2b8a",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/market-data-08-health.yml",
+      "name": "name: 08:00 market data final readiness check",
+      "cron": [
+        "53 22 * * 0-5"
+      ],
+      "calls": [
+        "scripts/run_market_data_window.py",
+        "scripts/fetch_morning_reference.py",
+        "scripts/verify_market_report_readiness.py"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "rawSourceSha256": "52f311ebfd99d1c3824357f4f5882f487d664bcd8e228b28339a96a0df96770d",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/market-data-intraday-anchor.yml",
+      "name": "name: Intraday market data primary windows",
+      "cron": [
+        "28 2 * * 1-5",
+        "28 6 * * 1-5",
+        "28 11 * * 1-5"
+      ],
+      "calls": [
+        "scripts/run_market_data_window.py"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "rawSourceSha256": "90e2a4f6b3e1169492cdd027d52587d18bdc7f33bf2755353ed3610ef6d6fec5",
+      "observedRecentRuns": [
+        {
+          "id": 43248332246,
+          "event": "schedule",
+          "conclusion": "cancelled",
+          "created_at": "2026-11-12T15:29:25Z",
+          "head_sha": "8e9baf0cc2d90d8939d8641e32d483f4e8fa68bd"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/market-data-intraday-fallback.yml",
+      "name": "name: Intraday market data fallback windows",
+      "cron": [
+        "42 2 * * 1-5",
+        "52 2 * * 1-5",
+        "42 6 * * 1-5",
+        "52 6 * * 1-5",
+        "42 11 * * 1-5",
+        "52 11 * * 1-5"
+      ],
+      "calls": [
+        "scripts/run_market_data_window.py"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "rawSourceSha256": "53cc27678daa1931f73935a903a14b4bd65bb6f0229cedfa232e7026ee857414",
+      "observedRecentRuns": [
+        {
+          "id": 43249735916,
+          "event": "schedule",
+          "conclusion": "cancelled",
+          "created_at": "2026-11-12T15:37:04Z",
+          "head_sha": "8e9baf0cc2d90d8939d8641e32d483f4e8fa68bd"
+        },
+        {
+          "id": 43249617014,
+          "event": "schedule",
+          "conclusion": "cancelled",
+          "created_at": "2026-11-12T15:36:24Z",
+          "head_sha": "8e9baf0cc2d90d8939d8641e32d483f4e8fa68bd"
+        },
+        {
+          "id": 43199678123,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T10:21:44Z",
+          "head_sha": "7dc75da7a35b821019c7bd299716295002745192"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/market-data-intraday-health.yml",
+      "name": "name: Intraday market data health checks",
+      "cron": [
+        "5 3 * * 1-5",
+        "5 7 * * 1-5",
+        "5 12 * * 1-5"
+      ],
+      "calls": [
+        "scripts/run_market_data_window.py"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "rawSourceSha256": "482fbf2618e8a1073e859ef4578f23cedf2403281d6613cee41104d6af0c6eec",
+      "observedRecentRuns": [
+        {
+          "id": 43252900077,
+          "event": "schedule",
+          "conclusion": "cancelled",
+          "created_at": "2026-11-12T15:54:45Z",
+          "head_sha": "125730086989cc184ec495e371b3afeb3c0c9514"
+        },
+        {
+          "id": 43204343010,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T10:53:35Z",
+          "head_sha": "b798c3db43d6009f99236b6bd5c194550d9317f5"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/market-data-live-recovery.yml",
+      "name": "name: Recover current market snapshot",
+      "cron": [
+        "12 21 * * 0-4",
+        "12 2 * * 1-5",
+        "12 6 * * 1-5",
+        "12 11 * * 1-5"
+      ],
+      "calls": [
+        "scripts/run_market_data_window.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push",
+        "schedule"
+      ],
+      "rawSourceSha256": "5d1ac66b7d22522a6106540da648d798ce9561bd1eec8e7de99ee5ea32da3fc4",
+      "observedRecentRuns": [
+        {
+          "id": 43243831357,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T15:04:27Z",
+          "head_sha": "5da74f3102d03e163991bf0633457ae732918220"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/market-data-recovery-once.yml",
+      "name": "name: One-time 07:00 market data recovery",
+      "cron": [],
+      "calls": [
+        "scripts/run_market_data_acquisition.py",
+        "scripts/build_market_sheet_exports.py",
+        "scripts/build_market_json.py",
+        "scripts/write_market_data_to_sheets.py"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "10ad15b14d1c95b17af1d33f9e2a6754e3e7bb528b394132c18f21cc901c3b80",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/market-report-frozen-cutoff-ci.yml",
+      "name": "name: Market report frozen-cutoff regression",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "push",
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "76e9c652272a0652c09f81d2326c26ed3189d3f021acbf7134f6e61711925bac",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/market-report-recovery-ci.yml",
+      "name": "name: Historical Report Recovery QA",
+      "cron": [],
+      "calls": [
+        "scripts/validate_report_recovery.py",
+        "scripts/validate_report_index.py"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "pull_request",
+        "push",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "26335432601370ea6de4cf080c076177673113f8f3d1dfdf4770c37faaedd9fa",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/market-report-sync-recovery-ci.yml",
+      "name": "name: Market report synchronization recovery CI",
+      "cron": [],
+      "calls": [
+        "scripts/test_reconcile_latest_report_market_data.py",
+        "scripts/verify_publication_consistency.py",
+        "scripts/validate_report_index.py"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "pull_request"
+      ],
+      "rawSourceSha256": "ece7505e657392d0463cd648b0a661044f0481f677af632285ac39917754d984",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/market-report-validation.yml",
+      "name": "name: Market Report Validation",
+      "cron": [
+        "*/15 * * * *"
+      ],
+      "calls": [
+        "scripts/validate_market_reports.py",
+        "scripts/validate_market_reports.py"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule",
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "38a9838c2327b9ebb680c921af0c1e9b7919e243ea3eec3aa0afa00c19b3630a",
+      "observedRecentRuns": [
+        {
+          "id": 43213039557,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T11:53:38Z",
+          "head_sha": "5e23a42e9d48ded18334ddd9e4886cc5f3d50b63"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/merge-nikkei-metrics-into-stocks.yml",
+      "name": "name: Update Tokyo stock table and daily archive",
+      "cron": [],
+      "calls": [
+        "scripts/merge_nikkei_metrics_into_stocks.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "rawSourceSha256": "6d06fc59deda18439da9dc2208ac3d398e7e14bfc88ee2f65f9b4173119f2f3b",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/morning-actual-source-values-ci.yml",
+      "name": "name: Morning actual source market-value check",
+      "cron": [],
+      "calls": [
+        "scripts/test_morning_actual_source_values.js",
+        "scripts/test_actual_report_heading_aliases.js",
+        "scripts/test_apps_script_narrative_report.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "732e9fa2fd56ad71ea9c726cf1ab06742f5954ecd9eccb94a1fddbcad8924284",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/morning-preflight-ci.yml",
+      "name": "name: Morning infographic preflight tests",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "aae437d641923f9e1bcedd984c29c79c22f70404006267b88e16ae9908e563bf",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/one-time-openai-funded-test-20261015.yml",
+      "name": "name: One-time funded OpenAI draft test 2026-10-15",
+      "cron": [],
+      "calls": [],
+      "credentials": [
+        "OPENAI_API_KEY",
+        "OPENAI_PROJECT_ID"
+      ],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "push"
+      ],
+      "rawSourceSha256": "9a6264567da8ddf1e18a919530465a305574968b7f56587c7fa888735eb99e9a",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/one-time-openai-generation-20261015.yml",
+      "name": "name: One-time approved OpenAI market report generation test 2026-10-15",
+      "cron": [],
+      "calls": [],
+      "credentials": [
+        "OPENAI_API_KEY",
+        "OPENAI_PROJECT_ID"
+      ],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "push"
+      ],
+      "rawSourceSha256": "b1d2cb40b28b4f002e4c735fa3ad350ec2fcc2e890d4ae04a52918dd817920e6",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/pages-removal-verification-ci.yml",
+      "name": "name: GitHub Pages publication removal verification",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "pull_request"
+      ],
+      "rawSourceSha256": "30636dfc8d60398c1aee4b016fcb7f4af57f69100d5a7ce204660f09e1c6b0fc",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/probe-openai-input-tokens-once.yml",
+      "name": "name: OpenAI real input count probe",
+      "cron": [],
+      "calls": [],
+      "credentials": [
+        "OPENAI_API_KEY",
+        "OPENAI_PROJECT_ID"
+      ],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "bf38f1cf808f9c273be4e213a65dc970218561653cace380c9f73acfb65d7d94",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/publish-saved-google-docs-reports.yml",
+      "name": "name: Publish saved Google Docs market reports",
+      "cron": [
+        "15,30,55 23 * * 0-4",
+        "25 0 * * 1-5",
+        "15,30,55 3 * * 1-5",
+        "25 4 * * 1-5",
+        "15,30,55 7 * * 1-5",
+        "25 8 * * 1-5",
+        "15,30,55 12 * * 1-5",
+        "25 13 * * 1-5"
+      ],
+      "calls": [
+        "scripts/sync_reports_from_drive.py",
+        "scripts/sync_reports_from_drive.py",
+        "scripts/sync_reports_from_drive.py",
+        "scripts/verify_publication_consistency.py",
+        "scripts/build_reports.py"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON"
+      ],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "発行/索引writer・統合候補（切替前は保持）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "rawSourceSha256": "55d30ee67ddfe99cef8c12b76215da554e7d5819e2541b6c083fa495ce889d50",
+      "observedRecentRuns": [
+        {
+          "id": 43264189019,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T16:57:00Z",
+          "head_sha": "2dd12396cc6987ef19b3b596478639f027ff2c69"
+        },
+        {
+          "id": 43253659543,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T15:59:02Z",
+          "head_sha": "46817415e431a76e40c1fba8eb93c6fa8c00bbcb"
+        },
+        {
+          "id": 43223057972,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T12:59:57Z",
+          "head_sha": "5da74f3102d03e163991bf0633457ae732918220"
+        },
+        {
+          "id": 43207360793,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T11:14:03Z",
+          "head_sha": "5e23a42e9d48ded18334ddd9e4886cc5f3d50b63"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/qa-morning-report.yml",
+      "name": "name: 08:00 report publication QA",
+      "cron": [],
+      "calls": [
+        "scripts/verify_morning_report_qa.py",
+        "scripts/check_morning_quarantine.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "pull_request",
+        "push"
+      ],
+      "rawSourceSha256": "c3002ce70feb94dea84d36916c4aa103f01795901bff06e36410eb54f5352b9c",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/rebuild-report-history-index.yml",
+      "name": "name: Rebuild canonical report history index",
+      "cron": [],
+      "calls": [
+        "scripts/build_reports.py",
+        "scripts/validate_report_index.py",
+        "scripts/verify_publication_consistency.py"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "発行/索引writer・統合候補（切替前は保持）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "0fc2e9eb307c12335ea0367faebfe77918d72c0b43cd41694f889979a1d7bc32",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/rebuild-report-index.yml",
+      "name": "name: Rebuild market report portal index",
+      "cron": [],
+      "calls": [
+        "scripts/build_report_index.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "発行/索引writer・統合候補（切替前は保持）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "4ae64488e628e2a471826bd62739593b7dd480ae9558d5ad7962a6eb16d5f797",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/reconcile-report-history.yml",
+      "name": "name: Reconcile market report history (read-only)",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "7846368cd98698f3572ce70dc98c7b58d2168b63c130f435e6f40206f1a53f73",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/recover-real-report-archive.yml",
+      "name": "name: Audit archived 2026-10-14 report sources",
+      "cron": [],
+      "calls": [
+        "scripts/validate_report_index.py",
+        "scripts/verify_publication_consistency.py"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "6be14cd3f8efe4228e2f6358661cef2015174fe6ecc89457a37a1fb1c2b0b0cc",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/report-21-ui-validation.yml",
+      "name": "name: Market Report UI Validation",
+      "cron": [],
+      "calls": [
+        "scripts/test_market_report_title_boundary.js",
+        "scripts/test_portal_deploy_safety.js",
+        "scripts/validate_market_report_dom.js",
+        "scripts/validate_market_report_dom.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "pull_request",
+        "push"
+      ],
+      "rawSourceSha256": "a62a1a2c10230e694be97604d19464c2fceae65acb859527c08dc8c51216c114",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/report-dashboard-health-ci.yml",
+      "name": "name: Report dashboard publication health regression",
+      "cron": [],
+      "calls": [
+        "scripts/validate_report_recovery.py"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "pull_request",
+        "push"
+      ],
+      "rawSourceSha256": "5f3493c5801fbbf150c817fe0baa68c17027dd9f5a45e174353d5d27867c56de",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/report-publication-policy-ci.yml",
+      "name": "name: Dashboard report publication eligibility",
+      "cron": [],
+      "calls": [
+        "tests/test_report_publication_policy.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "pull_request"
+      ],
+      "rawSourceSha256": "f007143373280898579d61a09f8417fe48b1309cd300f8b772a599cba659a4ea",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/report-quarantine-dom-ci.yml",
+      "name": "name: Report quarantine DOM regression",
+      "cron": [],
+      "calls": [
+        "scripts/validate_market_report_dom.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "d138bafc42bf7f269d0ea34b3ffacc46c90d7dc144fada8a2d38d7ec0c1a500a",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/report-remote-readback-ci.yml",
+      "name": "name: Market report remote readback regression",
+      "cron": [],
+      "calls": [
+        "scripts/test_report_remote_readback.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "4afef92a247224943a96744188e1f3ae04c28feac3bab8875f6c6ebf84f19f28",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/report-watchdog-fail-closed-ci.yml",
+      "name": "name: Report watchdog fail-closed CI",
+      "cron": [],
+      "calls": [
+        "scripts/test_report_watchdog_fail_closed.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "ab2670a3ecde9dfd684d1001e5c249173551e26403de2a673b8dd1c19fe9a4e2",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/restore-us-market-internals.yml",
+      "name": "name: Update US stock table and daily archive",
+      "cron": [
+        "30 21 * * 0-5"
+      ],
+      "calls": [
+        "scripts/restore_us_market_internals_table.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push",
+        "schedule"
+      ],
+      "rawSourceSha256": "fa324e6d55f378edb04126827fa3554cfd6a3744f08e66f7646d9e171c29eab9",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/safe-apps-script-sync-ci.yml",
+      "name": "name: Safe Apps Script sync source CI",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "319685050d864dc93ccd204f8c66458b7fbc0b7ff90fc071d19d0ff50c1de907",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/saved-docs-pages-dispatch-ci.yml",
+      "name": "name: Saved Docs Pages dispatch contract",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "現役配信検証/証拠/公開（実設定・履歴を分離）",
+      "triggerKinds": [
+        "pull_request"
+      ],
+      "rawSourceSha256": "701edc7b878cc403c363ab569aa99920d82ebb3fb67d726f46cd0798acafb0ba",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/source-backed-21-validator-ci.yml",
+      "name": "name: Source-backed 21h report validation",
+      "cron": [],
+      "calls": [
+        "scripts/validate_market_reports.py"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "a508df2a88e6eed19c05f1bc1504806c2a18a114625694dea3fb7776cf9dba17",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/structure-market-reports.yml",
+      "name": "name: Structure Market Reports",
+      "cron": [],
+      "calls": [
+        "scripts/build_reports.py",
+        "scripts/structure_reports.py",
+        "scripts/complete_report_schema.py",
+        "scripts/validate_market_reports.py",
+        "scripts/persist_report_index_to_canonical.py",
+        "scripts/build_reports.py",
+        "scripts/validate_market_reports.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "発行/索引writer・統合候補（切替前は保持）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "pull_request"
+      ],
+      "rawSourceSha256": "c928b298ff11957d278487a8cde6f93bb16522e2773cbea632100f8f8b9de707",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/supplemental-dashboard-six-market-ci.yml",
+      "name": "name: Supplemental morning dashboard six-market QA",
+      "cron": [],
+      "calls": [
+        "scripts/validate_supplemental_oct16_dashboard.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "pull_request"
+      ],
+      "rawSourceSha256": "51c033ff2077eead8f9ce6dd126af0b35567daae637f744d00c2b404dff60df8",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/sync-latest-report-publication.yml",
+      "name": "name: Sync latest market report publication",
+      "cron": [
+        "10 23 * * 0-4",
+        "25 23 * * 0-4",
+        "20 7 * * 1-5",
+        "50 7 * * 1-5",
+        "20 8 * * 1-5",
+        "20 9 * * 1-5",
+        "20 11 * * 1-5",
+        "20 14 * * 1-5",
+        "20 0 * * 6",
+        "20 1 * * 6",
+        "20 3 * * 6"
+      ],
+      "calls": [
+        "scripts/enrich_latest_morning_from_sheet.py",
+        "scripts/repair_morning_daily_references.py",
+        "scripts/apply_japan_close_reference.py",
+        "scripts/force_exact_japan_close_reference.py",
+        "scripts/restore_morning_published_values.py",
+        "scripts/restore_monday_from_saturday_report.py",
+        "scripts/build_chatgpt_report_input.py",
+        "scripts/build_market_sheet_exports.py",
+        "scripts/test_reconcile_latest_report_market_data.py",
+        "scripts/reconcile_latest_report_market_data.py",
+        "scripts/sync_latest_report_publication.py",
+        "scripts/build_reports.py",
+        "scripts/sync_stock_judgement_from_latest_report.py",
+        "scripts/verify_morning_report_qa.py"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "発行/索引writer・統合候補（切替前は保持）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "rawSourceSha256": "0c477fbdaf357eb6fa3977474e08d0002a8f6636eb78225c963e359b61eb5fc0",
+      "observedRecentRuns": [
+        {
+          "id": 43271623252,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T17:38:46Z",
+          "head_sha": "77d1577fc2c207cdec0a84046afe7ecb7a5a619f"
+        },
+        {
+          "id": 43263516938,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T16:53:14Z",
+          "head_sha": "2dd12396cc6987ef19b3b596478639f027ff2c69"
+        },
+        {
+          "id": 43257061875,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T16:17:36Z",
+          "head_sha": "22b42ba493009a9f6909a1d23fb35c5dfb8a5506"
+        },
+        {
+          "id": 43253613848,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T15:58:47Z",
+          "head_sha": "46817415e431a76e40c1fba8eb93c6fa8c00bbcb"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/sync-latest-report-watchdog.yml",
+      "name": "name: Market report publication watchdog",
+      "cron": [
+        "5,15,30 23 * * 0-4",
+        "5,15,30 3 * * 1-5",
+        "5,15,30,50 7 * * 1-5",
+        "10 8 * * 1-5",
+        "5,15,30 12 * * 1-5"
+      ],
+      "calls": [
+        "scripts/test_reconcile_latest_report_market_data.py",
+        "scripts/reconcile_latest_report_market_data.py",
+        "scripts/sync_latest_report_publication.py",
+        "scripts/build_reports.py",
+        "scripts/validate_report_index.py",
+        "scripts/verify_publication_consistency.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "発行/索引writer・統合候補（切替前は保持）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "rawSourceSha256": "8da3f5add399d25d385d593794b39d280c02bfb3eb13d2f70853cf2c5702754f",
+      "observedRecentRuns": [
+        {
+          "id": 43262010898,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T16:44:51Z",
+          "head_sha": "351e20a1765d8a09819a2a58a312478e006b31f3"
+        },
+        {
+          "id": 43252104170,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T15:50:19Z",
+          "head_sha": "125730086989cc184ec495e371b3afeb3c0c9514"
+        },
+        {
+          "id": 43202798632,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T10:42:57Z",
+          "head_sha": "b798c3db43d6009f99236b6bd5c194550d9317f5"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/sync-market-report-apps-script.yml",
+      "name": "name: Safely sync market report Apps Script sources",
+      "cron": [],
+      "calls": [
+        "scripts/deploy_market_report_apps_script.py",
+        "scripts/deploy_market_report_apps_script.py"
+      ],
+      "credentials": [
+        "APPS_SCRIPT_ID",
+        "APPS_SCRIPT_OAUTH_JSON"
+      ],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "703f5b6b5573dfdcd569cf75712a1d7edf97ebe28366dd56b06a54720391168a",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/sync-usdjpy-volume-apps-script.yml",
+      "name": "name: Scoped USDJPY Apps Script production sync",
+      "cron": [],
+      "calls": [],
+      "credentials": [
+        "APPS_SCRIPT_ID",
+        "APPS_SCRIPT_OAUTH_JSON"
+      ],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "87045855fe95bb35959c481c843d20b65477295a65f9eff225ad321555487a6d",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/tokyo-close-calendar-ci.yml",
+      "name": "name: Tokyo close calendar regression",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "b9552b8ad72192d86d04dd09ff63b52e2ceb25fc51e4fbe770b51049d43832fe",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/tokyo-stock-holiday-ci.yml",
+      "name": "name: Tokyo stock holiday date regression",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "5870c3a40c1a2bc57a268f03505ce6d352b300897f1691ea8d9b1123873eb6d7",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-economic-calendar.yml",
+      "name": "name: Update economic calendar",
+      "cron": [
+        "*/5 * * * *"
+      ],
+      "calls": [
+        "scripts/fetch_economic_calendar.py",
+        "scripts/postprocess_economic_calendar.py",
+        "scripts/test_build_completed_event_records.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push",
+        "schedule"
+      ],
+      "rawSourceSha256": "6691027c8b551ba4f74240fe1fdc55e6c5d5b1e298c5011744307ecf510bc36c",
+      "observedRecentRuns": [
+        {
+          "id": 43262808493,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T16:49:14Z",
+          "head_sha": "4bc9794780d78fa52dd77466e29a36ef3360399d"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-gold-supply-demand.yml",
+      "name": "name: Update gold supply-demand data",
+      "cron": [
+        "10 22 * * 0-4",
+        "10 3 * * 1-5",
+        "10 7 * * 1-5",
+        "10 12 * * 1-5",
+        "10 22 * * 5"
+      ],
+      "calls": [
+        "scripts/update_gold_supply_demand.py",
+        "scripts/enrich_gold_etf_flow.py",
+        "scripts/enrich_gold_cftc_history.py",
+        "scripts/postprocess_gold_supply_demand.py",
+        "scripts/build_gold_supply_demand_archive.py",
+        "scripts/build_gold_supply_demand_sheet_csv.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push",
+        "schedule"
+      ],
+      "rawSourceSha256": "989511ed1bc588341b3ee4dec22ce53545e5c1187ec89e284a4c156ef897cbeb",
+      "observedRecentRuns": [
+        {
+          "id": 43253104488,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T15:55:54Z",
+          "head_sha": "125730086989cc184ec495e371b3afeb3c0c9514"
+        },
+        {
+          "id": 43204314642,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T10:53:23Z",
+          "head_sha": "b798c3db43d6009f99236b6bd5c194550d9317f5"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-japan-stock-movers.yml",
+      "name": "name: Update Japan stock movers",
+      "cron": [
+        "30 7 * * 1-5",
+        "50 7 * * 1-5",
+        "10 8 * * 1-5",
+        "30 9 * * 1-5",
+        "30 11 * * 1-5",
+        "30 14 * * 1-5"
+      ],
+      "calls": [
+        "scripts/fetch_japan_stock_movers.py",
+        "scripts/validate_stock_data_freshness.py",
+        "scripts/snapshot_stocks_history.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push",
+        "schedule"
+      ],
+      "rawSourceSha256": "f4a22cc7e915bd30989de412be263d8300431df140a37fc665d281fca174ade3",
+      "observedRecentRuns": [
+        {
+          "id": 43272120566,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T17:41:39Z",
+          "head_sha": "dfa1c8a78c7df98ba8493686b52fdd3f7b958562"
+        },
+        {
+          "id": 43262182315,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T16:45:46Z",
+          "head_sha": "351e20a1765d8a09819a2a58a312478e006b31f3"
+        },
+        {
+          "id": 43257657653,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T16:20:55Z",
+          "head_sha": "22b42ba493009a9f6909a1d23fb35c5dfb8a5506"
+        },
+        {
+          "id": 43254854324,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T16:05:30Z",
+          "head_sha": "120cbe51916b3777c6d3bac1fe36414fafb5234f"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-market-data.yml",
+      "name": "name: Update independent market data",
+      "cron": [],
+      "calls": [
+        "scripts/resolve_market_report_slot.py",
+        "scripts/run_market_data_acquisition.py",
+        "scripts/build_market_sheet_exports.py",
+        "scripts/build_market_json.py",
+        "scripts/write_market_data_to_sheets.py"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "a1741ffd92702c95edd1e55b2bad8c35d0837f18215083bdbdb05e8fcf5ae56d",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-nikkei-contributions.yml",
+      "name": "name: Update Nikkei 225 contributions",
+      "cron": [
+        "15 7 * * 1-5"
+      ],
+      "calls": [
+        "scripts/fetch_nikkei_contributions.py",
+        "scripts/snapshot_stocks_history.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule",
+        "push"
+      ],
+      "rawSourceSha256": "92b36f38ca5f00dbe7e7a73fc5fbff70e3672931b5cb462be618494d1bc5de47",
+      "observedRecentRuns": [
+        {
+          "id": 43253179141,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T15:56:19Z",
+          "head_sha": "125730086989cc184ec495e371b3afeb3c0c9514"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-nikkei-metrics.yml",
+      "name": "name: Update Nikkei valuation metrics",
+      "cron": [
+        "35 21 * * 0-4",
+        "35 7 * * 1-5"
+      ],
+      "calls": [
+        "scripts/sync_nikkei_metrics.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule",
+        "push"
+      ],
+      "rawSourceSha256": "efa95f0d36f78cc112876e9fa846dfe802a7775883f254c920b6bc793bc30d63",
+      "observedRecentRuns": [
+        {
+          "id": 43255230368,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T16:07:36Z",
+          "head_sha": "ce39840d00e823dd4d58fc4e3926e308dc85f392"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-nikkei225-arbitrage.yml",
+      "name": "name: Update Nikkei 225 arbitrage data",
+      "cron": [
+        "20 8 * * 1-5",
+        "20 10 * * 1-5"
+      ],
+      "calls": [
+        "scripts/update_nikkei225_arbitrage.py",
+        "scripts/build_nikkei225_arbitrage_archive.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push",
+        "schedule"
+      ],
+      "rawSourceSha256": "520f8d51a83a5973f6a8335a8d1241d4fcbf7cb18750e726e4af0d6319970696",
+      "observedRecentRuns": [
+        {
+          "id": 43279512863,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T18:24:32Z",
+          "head_sha": "b77ada5a58c17c786877f1986114fea06545429e"
+        },
+        {
+          "id": 43262623621,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T16:48:12Z",
+          "head_sha": "eedc36d11c308a6ac858b3992ff325ed2200f477"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-nikkei225-options.yml",
+      "name": "name: Update Nikkei 225 options data",
+      "cron": [
+        "20 0 * * 1-5",
+        "20 1 * * 1-5"
+      ],
+      "calls": [
+        "scripts/update_nikkei225_options_primary.py",
+        "scripts/update_nikkei225_options_fallback.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule",
+        "push"
+      ],
+      "rawSourceSha256": "cde254adba56a0409390d93b4416b04e8c8dece03bcde1260e46a94c17089e74",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-nikkei225-supply-demand.yml",
+      "name": "name: Update Nikkei 225 supply-demand data",
+      "cron": [
+        "55 21 * * 0-4",
+        "50 2 * * 1-5",
+        "10 7 * * 1-5",
+        "5 9 * * 1-5",
+        "15 11 * * 1-5",
+        "50 11 * * 1-5",
+        "55 21 * * 5"
+      ],
+      "calls": [
+        "scripts/update_nikkei225_supply_demand.py",
+        "scripts/enrich_nikkei225_supply_demand.py",
+        "scripts/fix_nikkei225_verified_data.py",
+        "scripts/enrich_nikkei225_margin.py",
+        "scripts/enrich_nikkei225_foreign.py",
+        "scripts/enrich_nikkei225_sessions.py",
+        "scripts/enrich_nikkei225_participants.py",
+        "scripts/enrich_nikkei225_same_date.py",
+        "scripts/enrich_nikkei225_spot.py",
+        "scripts/enrich_nikkei225_options.py",
+        "scripts/enrich_nikkei225_iv.py",
+        "scripts/enrich_nikkei225_cftc_positioning.py",
+        "scripts/update_nikkei225_arbitrage.py",
+        "scripts/build_nikkei225_supply_demand_archive.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push",
+        "schedule"
+      ],
+      "rawSourceSha256": "00654c8c3862a57bb8d9a5361a99d531f21dedd2966e5fe878afda17e1466092",
+      "observedRecentRuns": [
+        {
+          "id": 43270188171,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T17:30:38Z",
+          "head_sha": "2dd12396cc6987ef19b3b596478639f027ff2c69"
+        },
+        {
+          "id": 43253119707,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T15:55:59Z",
+          "head_sha": "125730086989cc184ec495e371b3afeb3c0c9514"
+        },
+        {
+          "id": 43199634874,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T10:21:26Z",
+          "head_sha": "7dc75da7a35b821019c7bd299716295002745192"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-rates-bonds.yml",
+      "name": "name: Update rates and bonds page",
+      "cron": [
+        "50 21 * * 0-4",
+        "50 2 * * 1-5",
+        "50 6 * * 1-5",
+        "50 11 * * 1-5"
+      ],
+      "calls": [
+        "scripts/build_rates_bonds_archive.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule",
+        "push"
+      ],
+      "rawSourceSha256": "302bdb111ad1d7a288e735534c98d8dabcc2f1d9ef6944cd87d92971acc5a7dd",
+      "observedRecentRuns": [
+        {
+          "id": 43249730346,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T15:37:03Z",
+          "head_sha": "8e9baf0cc2d90d8939d8641e32d483f4e8fa68bd"
+        },
+        {
+          "id": 43199707433,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T10:21:56Z",
+          "head_sha": "7dc75da7a35b821019c7bd299716295002745192"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-sector-performance.yml",
+      "name": "name: Update sector performance",
+      "cron": [
+        "20 21 * * 0-4",
+        "20 7 * * 1-5"
+      ],
+      "calls": [
+        "scripts/fetch_sector_performance.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule",
+        "push"
+      ],
+      "rawSourceSha256": "edee74c911a6e9ce15343f58d0f628eedb39fc2a5413866311151a0ec1849ad7",
+      "observedRecentRuns": [
+        {
+          "id": 43253542975,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T15:58:22Z",
+          "head_sha": "46817415e431a76e40c1fba8eb93c6fa8c00bbcb"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-stock-sessions.yml",
+      "name": "name: Update Stock Session Analysis",
+      "cron": [
+        "5,10,15 0 * * 1-5",
+        "30,45,55 11 * * 1-5"
+      ],
+      "calls": [
+        "scripts/update_stock_sessions_topix.py",
+        "scripts/validate_stock_data_freshness.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule",
+        "push"
+      ],
+      "rawSourceSha256": "4918e4323f521b6066a77331b1a76304ecaa9221e466f230bc50898069b0dd79",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-stocks-history.yml",
+      "name": "name: Update stock analysis history",
+      "cron": [
+        "50 21 * * 0-4",
+        "50 7 * * 1-5"
+      ],
+      "calls": [
+        "scripts/snapshot_stocks_history.py",
+        "scripts/validate_stock_data_freshness.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule",
+        "push"
+      ],
+      "rawSourceSha256": "d5128afaf609f00f1c322c2ebe62cace9b75e9e63e9a9ce4aa139ca9bad6efcc",
+      "observedRecentRuns": [
+        {
+          "id": 43257452857,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T16:19:47Z",
+          "head_sha": "22b42ba493009a9f6909a1d23fb35c5dfb8a5506"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-stocks.yml",
+      "name": "name: Update all stock analysis components",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "rawSourceSha256": "9801d80b88a7c8cbde570d15cc5ea9c06a6f4ec626dfdcd52d092f59ee2ad5e7",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-tokyo-preopen.yml",
+      "name": "name: Update Tokyo pre-open analysis",
+      "cron": [
+        "50 23 * * 0-4",
+        "58 23 * * 0-4"
+      ],
+      "calls": [
+        "scripts/fetch_tokyo_preopen.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "rawSourceSha256": "e2b34fb5f9dc2ca58b7a143bc91bea4eb40080f347177a23453c48192672c776",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-tokyo-stock-table.yml",
+      "name": "name: Update completed Tokyo stock session",
+      "cron": [
+        "10 7 * * 1-5",
+        "40 7 * * 1-5",
+        "10 8 * * 1-5",
+        "10 9 * * 1-5",
+        "10 11 * * 1-5",
+        "10 14 * * 1-5"
+      ],
+      "calls": [
+        "scripts/update_tokyo_stock_table_from_sheet.py",
+        "scripts/repair_tokyo_market_internals.py",
+        "scripts/repair_tokyo_current_indexes.py",
+        "scripts/repair_tokyo_turnover.py",
+        "scripts/export_tokyo_stock_table.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push",
+        "schedule"
+      ],
+      "rawSourceSha256": "97407fc34b81e81aa490c38e76c03d2df0f4d81637584bdff33dc40c2517ae6a",
+      "observedRecentRuns": [
+        {
+          "id": 43270187200,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T17:30:38Z",
+          "head_sha": "2dd12396cc6987ef19b3b596478639f027ff2c69"
+        },
+        {
+          "id": 43262196042,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T16:45:51Z",
+          "head_sha": "351e20a1765d8a09819a2a58a312478e006b31f3"
+        },
+        {
+          "id": 43256169015,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T16:12:46Z",
+          "head_sha": "22b42ba493009a9f6909a1d23fb35c5dfb8a5506"
+        },
+        {
+          "id": 43252878516,
+          "event": "schedule",
+          "conclusion": "failure",
+          "created_at": "2026-11-12T15:54:38Z",
+          "head_sha": "125730086989cc184ec495e371b3afeb3c0c9514"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-us-premarket.yml",
+      "name": "name: Update US pre-market monitoring universe",
+      "cron": [
+        "40 11 * * 1-5",
+        "55 11 * * 1-5"
+      ],
+      "calls": [
+        "scripts/fetch_us_premarket.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "rawSourceSha256": "cefc4dc4a396df5f565573d9540ca1879a3287d05686b3fffb47dc1e5f0ddcc4",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-us-stock-breadth.yml",
+      "name": "name: Update US stock breadth",
+      "cron": [],
+      "calls": [
+        "scripts/fetch_us_stock_breadth.py",
+        "scripts/fix_us_stock_breadth_52w.py",
+        "scripts/recalculate_us_stock_breadth_history.py",
+        "scripts/build_us_stock_breadth_csv.py",
+        "scripts/validate_stock_data_freshness.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "workflow_run"
+      ],
+      "rawSourceSha256": "412badfccc3494f3f3eabc793d53e5257c8d92484304af475aab9345ca668da4",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-us-stock-movers-contributions.yml",
+      "name": "name: Update US stock movers and S&P contributions",
+      "cron": [
+        "45 21 * * 1-5",
+        "5 22 * * 1-5",
+        "25 22 * * 1-5"
+      ],
+      "calls": [
+        "scripts/fetch_us_stock_movers_sp500_contributions.py",
+        "scripts/validate_sp500_movers_contributions.py",
+        "scripts/validate_stock_data_freshness.py",
+        "scripts/snapshot_stocks_history.py",
+        "scripts/publish_stock_update.sh"
+      ],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "MARKET_DATA_SPREADSHEET_ID"
+      ],
+      "writePermission": true,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push",
+        "schedule",
+        "workflow_run"
+      ],
+      "rawSourceSha256": "510a218df741c5a1a43c36e0954365c9883687082b28a089f4613f4b816d0aa9",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-usdjpy-supply-demand.yml",
+      "name": "name: Update USDJPY supply demand page",
+      "cron": [
+        "35 21 * * 0-4",
+        "15 6 * * 1-5",
+        "0 8 * * 1-5",
+        "0 12 * * 1-5"
+      ],
+      "calls": [
+        "scripts/test_usdjpy_flow_summary.py",
+        "scripts/build_usdjpy_supply_demand.py",
+        "scripts/enrich_usdjpy_cftc_52.py",
+        "scripts/enrich_usdjpy_price_history.py",
+        "scripts/enrich_usdjpy_tradersweb_levels.py",
+        "scripts/build_usdjpy_flow_summary.py",
+        "scripts/archive_usdjpy_supply_demand.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule",
+        "push"
+      ],
+      "rawSourceSha256": "87235ec6cd01c8ba34be114b2d42cd2c894a1604b5845a8fc2a4a78ca52e00eb",
+      "observedRecentRuns": [
+        {
+          "id": 43261617361,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T16:42:38Z",
+          "head_sha": "f00730cf4b63af65e17cb93df9f1cd3f359b0c5a"
+        },
+        {
+          "id": 43246410925,
+          "event": "schedule",
+          "conclusion": "success",
+          "created_at": "2026-11-12T15:18:45Z",
+          "head_sha": "5da74f3102d03e163991bf0633457ae732918220"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-usdjpy-volume-prices.yml",
+      "name": "name: Repair Tokyo USDJPY spot volume price gaps",
+      "cron": [
+        "10 14 * * 1-5"
+      ],
+      "calls": [
+        "scripts/run_usdjpy_volume_price_backfill.py",
+        "scripts/fix_usdjpy_volume_price_labels.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "rawSourceSha256": "abc37055ad3c417392b0c67d6c115f04c7f740c60eaf8ad79f3fda9c6d13cf65",
+      "observedRecentRuns": [
+        {
+          "id": 43219215620,
+          "event": "push",
+          "conclusion": "success",
+          "created_at": "2026-11-12T12:34:59Z",
+          "head_sha": "014e72029b8ba9336f86cb59d3043b56eafef1fc"
+        }
+      ],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/update-usdjpy-volume.yml",
+      "name": "name: Update Tokyo USDJPY spot volume",
+      "cron": [
+        "40 11 * * 1-5",
+        "40 13 * * 1-5"
+      ],
+      "calls": [
+        "scripts/update_usdjpy_volume.py",
+        "scripts/run_usdjpy_volume_price_backfill.py"
+      ],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "rawSourceSha256": "b540d2f96a98af2130ddd2d281d63db7c75448752846c72f02e7771e616f6d46",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/usdjpy-volume-price-regression-ci.yml",
+      "name": "name: USDJPY volume price preservation regression",
+      "cron": [],
+      "calls": [
+        "scripts/test_usdjpy_volume_json_preservation.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "e299980bf350c9a7fdc244cf6516773da8e6f52da28afdf71bee73137ff231be",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/validate-nikkei225-foreign-flow.yml",
+      "name": "name: Validate Nikkei foreign investor flow chart",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": true,
+      "pushes": true,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "workflow_dispatch",
+        "push"
+      ],
+      "rawSourceSha256": "a9e93eb522ec16a9f7a89bbd3094e2621e1fe558ef5a2d8c82a261ff4f5b8afe",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/validate-publication-receipts.yml",
+      "name": "name: Validate publication receipt schema",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "pull_request",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "aaa83081ef1994ab3799f5c1333e70d150a46897305f2a33d84852cc705889ed",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/validate-report-publisher-fail-closed.yml",
+      "name": "name: Verify GAS publisher validation fail-closed",
+      "cron": [],
+      "calls": [
+        "scripts/test_market_report_fail_closed.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "f6766d9a32f37591f01a86c36b774299d79d6d4d01640716a820f96dea9acf89",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/validate-weekend-schedule.yml",
+      "name": "name: Validate market report weekend schedule",
+      "cron": [],
+      "calls": [
+        "scripts/test_market_report_weekend_schedule.js"
+      ],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "pull_request"
+      ],
+      "rawSourceSha256": "4b7289f77ee7cb46f4458eb182738adb9f9d97eccfc76caed17254c8d6a13c8d",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/verify-openai-api-readiness.yml",
+      "name": "name: OpenAI API read-only readiness",
+      "cron": [],
+      "calls": [],
+      "credentials": [
+        "OPENAI_API_KEY",
+        "OPENAI_PROJECT_ID"
+      ],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "f838c0f9510fb251199b15fb82603438f1ca8d6700981bd098de12ddb233633c",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/verify-real-google-docs-access.yml",
+      "name": "name: Verify real Google service account Docs access",
+      "cron": [],
+      "calls": [],
+      "credentials": [
+        "GOOGLE_SERVICE_ACCOUNT_JSON"
+      ],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "efce88bad62aab0fc3cea496fd0719aa82bbe462e4afa9f4b56dec995df3a78b",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/verify-sep17-report-restoration.yml",
+      "name": "name: Verify Sep 17 report restoration",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "履歴保全・停止候補（参照/所有者/履歴の追加確認が必要）",
+      "triggerKinds": [
+        "push",
+        "workflow_dispatch"
+      ],
+      "rawSourceSha256": "7557cf4e2c0e014b27aa0cc12a75aedfead960d8b22de57d5af1e3f9d72a4631",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    },
+    {
+      "path": ".github/workflows/wgc-global-flow-ci.yml",
+      "name": "name: WGC global ETF flow scope regression",
+      "cron": [],
+      "calls": [],
+      "credentials": [],
+      "writePermission": false,
+      "pushes": false,
+      "classification": "他系統/市場データ/調査（停止対象外・使用実態未確定）",
+      "triggerKinds": [
+        "pull_request",
+        "push"
+      ],
+      "rawSourceSha256": "4052fe9e28cfe5b1397fbade025fb1c9f135243355f2a4f562d5a2701b64eeeb",
+      "observedRecentRuns": [],
+      "runtimeEvidenceScope": "latest 100 repository runs only; absence does not mean unused"
+    }
+  ],
+  "writerCandidates": [
+    {
+      "path": "scripts/apply_japan_close_reference.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 22,
+          "text": "LATEST=ROOT/\"data/latest-report.json\""
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/sync-latest-report-publication.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/build-events-json-from-reports.js",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 3,
+          "text": "const reportsPayload = JSON.parse(fs.readFileSync(\"reports.json\", \"utf8\"));"
+        },
+        {
+          "line": 9,
+          "text": "if (!reports.length) throw new Error(\"reports.jsonに有効なレポートがありません。\");"
+        },
+        {
+          "line": 378,
+          "text": "path: \"reports.json\","
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/build_chatgpt_report_input.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 22,
+          "text": "LATEST_REPORT = ROOT / \"data\" / \"latest-report.json\""
+        },
+        {
+          "line": 207,
+          "text": "\"source\": \"data/latest-report.json marketDataTable\","
+        },
+        {
+          "line": 218,
+          "text": "raise SystemExit(\"data/latest-report.json has no report\")"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/sync-latest-report-publication.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/build_market_json.py",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 2,
+          "text": "\"\"\"Merge independent market data into data/dashboard.json.\"\"\""
+        },
+        {
+          "line": 84,
+          "text": "parser.add_argument(\"--dashboard\", default=str(ROOT / \"data\" / \"dashboard.json\"))"
+        },
+        {
+          "line": 97,
+          "text": "raise SystemExit(\"Market data is blocked; refusing to update dashboard.json\")"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/market-data-recovery-once.yml",
+        ".github/workflows/update-market-data.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/build_market_sheet_exports.py",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 6,
+          "text": "contract. In particular, never mutate an older data/latest-report.json while"
+        },
+        {
+          "line": 67,
+          "text": "report_path = ROOT / \"data\" / \"latest-report.json\""
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/market-data-recovery-once.yml",
+        ".github/workflows/sync-latest-report-publication.yml",
+        ".github/workflows/update-market-data.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/build_reports.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 14,
+          "text": "OUTPUT_FILE = Path(\"reports.json\")"
+        },
+        {
+          "line": 15,
+          "text": "LATEST_FILE = Path(\"data/latest-report.json\")"
+        },
+        {
+          "line": 22,
+          "text": "# data/latest-report.json envelope, while normalizing them in memory to"
+        },
+        {
+          "line": 23,
+          "text": "# the same canonical report object used by reports.json."
+        },
+        {
+          "line": 164,
+          "text": "\"\"\"Guarantee that data/latest-report.json also exists as canonical history.\"\"\""
+        },
+        {
+          "line": 327,
+          "text": "\"refusing to publish reports.json because previous report slots \""
+        },
+        {
+          "line": 358,
+          "text": "f\"latest report must appear exactly once in reports.json: {key[0]} {key[1]}\""
+        },
+        {
+          "line": 372,
+          "text": "\"Rebuild reports.json strictly from canonical report files without \""
+        },
+        {
+          "line": 373,
+          "text": "\"re-importing data/latest-report.json. Intended for the post-persistence \""
+        },
+        {
+          "line": 374,
+          "text": "\"verification pass after reports.json has already been structured and \""
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/build-reports.yml",
+        ".github/workflows/deploy-github-pages.yml",
+        ".github/workflows/publish-saved-google-docs-reports.yml",
+        ".github/workflows/rebuild-report-history-index.yml",
+        ".github/workflows/structure-market-reports.yml",
+        ".github/workflows/sync-latest-report-publication.yml",
+        ".github/workflows/sync-latest-report-watchdog.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/complete_report_schema.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 102,
+          "text": "parser.add_argument(\"path\", nargs=\"?\", default=\"reports.json\")"
+        },
+        {
+          "line": 109,
+          "text": "raise SystemExit(\"reports.json must contain an array\")"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/structure-market-reports.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/enrich_latest_morning_from_sheet.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 28,
+          "text": "LATEST = ROOT / \"data/latest-report.json\""
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/sync-latest-report-publication.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/force_exact_japan_close_reference.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 18,
+          "text": "LATEST = ROOT / \"data\" / \"latest-report.json\""
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/sync-latest-report-publication.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/mark_late_morning_references.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 15,
+          "text": "LATEST=ROOT/\"data/latest-report.json\""
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/persist_report_index_to_canonical.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 10,
+          "text": "INDEX_FILE = Path(\"reports.json\")"
+        },
+        {
+          "line": 88,
+          "text": "\"refusing to persist reports.json to canonical files because slot sets differ: \""
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/structure-market-reports.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/reconcile_latest_report_market_data.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 20,
+          "text": "LATEST_REPORT = ROOT / \"data\" / \"latest-report.json\""
+        },
+        {
+          "line": 239,
+          "text": "raise SystemExit(\"data/latest-report.json must be a JSON object\")"
+        },
+        {
+          "line": 243,
+          "text": "raise SystemExit(\"data/latest-report.json does not contain a report object\")"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/sync-latest-report-publication.yml",
+        ".github/workflows/sync-latest-report-watchdog.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/reconcile_report_history.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 9,
+          "text": "INDEX_FILE = Path(\"reports.json\")"
+        },
+        {
+          "line": 17,
+          "text": "# Some older canonical files retain the latest-report.json envelope."
+        },
+        {
+          "line": 117,
+          "text": "raise ValueError(\"reports.json must be an array\")"
+        },
+        {
+          "line": 118,
+          "text": "return [validate(item, f\"reports.json[{i}]\") for i, item in enumerate(data)]"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/recover_embedded_report_archive.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 46,
+          "text": "envelope=read(root/\"data/latest-report.json\")"
+        },
+        {
+          "line": 87,
+          "text": "index_path=root/\"reports.json\""
+        },
+        {
+          "line": 120,
+          "text": "write(root/\"data/latest-report.json\",envelope)"
+        },
+        {
+          "line": 121,
+          "text": "dashboard=read(root/\"data/dashboard.json\")"
+        },
+        {
+          "line": 125,
+          "text": "write(root/\"data/dashboard.json\",dashboard)"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/repair_btc_24h_change.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 26,
+          "text": "LATEST_REPORT = ROOT / \"data\" / \"latest-report.json\""
+        },
+        {
+          "line": 149,
+          "text": "raise SystemExit(\"data/latest-report.json is invalid\")"
+        },
+        {
+          "line": 214,
+          "text": "\"patched\": [\"data/latest-report.json\", *patched],"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/repair_morning_daily_references.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 31,
+          "text": "LATEST = ROOT / \"data\" / \"latest-report.json\""
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/sync-latest-report-publication.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/reporting/infographic.py",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 539,
+          "text": "or github.get('report_path') != f'reports/{rid}.json' or github.get('report_id') != rid"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/reporting/vision_signer.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 145,
+          "text": "if relative is not None and (relative.as_posix().lower() == 'reports.json'"
+        },
+        {
+          "line": 146,
+          "text": "or any(part.lower() in {'reports', 'data', 'images', 'publication-receipts'} for part in relative.parts)):"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/resolve_market_report_slot.py",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 140,
+          "text": "parser.add_argument(\"--reports-file\", type=Path, default=Path(\"reports.json\"))"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/update-market-data.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/restore_monday_from_saturday_report.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 21,
+          "text": "LATEST = ROOT / \"data\" / \"latest-report.json\""
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/sync-latest-report-publication.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/restore_morning_published_values.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 26,
+          "text": "LATEST = ROOT / \"data\" / \"latest-report.json\""
+        },
+        {
+          "line": 120,
+          "text": "[\"git\", \"log\", \"--reverse\", \"--format=%H\", \"--\", \"data/latest-report.json\"],"
+        },
+        {
+          "line": 133,
+          "text": "[\"git\", \"show\", f\"{commit}:data/latest-report.json\"],"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/sync-latest-report-publication.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/run_market_data_window.py",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 180,
+          "text": "paths = [\"data/market\", \"data/dashboard.json\"]"
+        },
+        {
+          "line": 363,
+          "text": "\"data/dashboard.json\","
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/freeze-report-slot-evidence.yml",
+        ".github/workflows/market-data-08-anchor.yml",
+        ".github/workflows/market-data-08-fallback.yml",
+        ".github/workflows/market-data-08-health.yml",
+        ".github/workflows/market-data-intraday-anchor.yml",
+        ".github/workflows/market-data-intraday-fallback.yml",
+        ".github/workflows/market-data-intraday-health.yml",
+        ".github/workflows/market-data-live-recovery.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/sign_market_report_vision_review.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 26,
+          "text": "if relative.as_posix().lower() == 'reports.json':"
+        },
+        {
+          "line": 28,
+          "text": "return not any(part.lower() in {'reports', 'data', 'images', 'publication-receipts'} for part in relative.parts)"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/structure_reports.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 2,
+          "text": "\"\"\"Convert imported market-report full text into the structured reports.json schema."
+        },
+        {
+          "line": 222,
+          "text": "parser.add_argument(\"path\", nargs=\"?\", default=\"reports.json\")"
+        },
+        {
+          "line": 228,
+          "text": "raise SystemExit(\"reports.json must contain an array\")"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/structure-market-reports.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/sync_latest_report_publication.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 13,
+          "text": "LATEST = ROOT / \"data/latest-report.json\""
+        },
+        {
+          "line": 15,
+          "text": "DASHBOARD = ROOT / \"data/dashboard.json\""
+        },
+        {
+          "line": 265,
+          "text": "\"path\": \"reports.json\","
+        },
+        {
+          "line": 268,
+          "text": "\"note\": \"data/latest-report.json を正本として reports.json と dashboard.json を自動同期。\","
+        },
+        {
+          "line": 306,
+          "text": "raise SystemExit(\"data/latest-report.json does not contain a report object\")"
+        },
+        {
+          "line": 333,
+          "text": "print(f\"Synced {report['date']} {report['time']} -> {report_path.relative_to(ROOT)}, data/dashboard.json\")"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/sync-latest-report-publication.yml",
+        ".github/workflows/sync-latest-report-watchdog.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/sync_reports_from_drive.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 169,
+          "text": "env = read_json(root / \"data/latest-report.json\")"
+        },
+        {
+          "line": 246,
+          "text": "receipt_path = root / \"publication-receipts\" / f\"{key[0]}_{key[1].replace(':','-')}.json\""
+        },
+        {
+          "line": 311,
+          "text": "save_json(root / \"publication-receipts\" / f\"{key[0]}_{key[1].replace(':','-')}.json\", receipt)"
+        },
+        {
+          "line": 314,
+          "text": "save_json(root / \"publication-receipts\" / f\"{key[0]}_{key[1].replace(':','-')}.json\", receipt)"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/publish-saved-google-docs-reports.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/sync_stock_judgement_from_latest_report.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 5,
+          "text": "copy narrative fields from ``data/latest-report.json`` here: that report is a"
+        },
+        {
+          "line": 18,
+          "text": "LATEST_PATH = ROOT / \"data\" / \"latest-report.json\""
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/sync-latest-report-publication.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/test_apps_script_infographic_gate.js",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 19,
+          "text": "DriveApp: { getFileById: id => ({"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/apps-script-prepublish-validation.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/test_drive_github_archive_backfill.js",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 5,
+          "text": "assert(!archival.includes(\"data/latest-report.json\"));"
+        },
+        {
+          "line": 19,
+          "text": "getGitHubJsonFile_:p=>p==='reports.json'?{sha:'index-sha',data:[]}:{sha:null,data:[]},"
+        },
+        {
+          "line": 26,
+          "text": "assert.strictEqual(result.ok,true);assert.deepStrictEqual(record.map(x=>x[0]),['reports/2026-10-10_08-00.json','reports.json']);"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/archive-serialization-ci.yml",
+        ".github/workflows/drive-github-archive-backfill-ci.yml",
+        ".github/workflows/drive-github-recovery-scheduler-ci.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/test_drive_github_history_backfill.js",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 4,
+          "text": "assert(s.includes(\"getGitHubJsonFile_('data/latest-report.json')\"));"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/drive-github-archive-backfill-ci.yml",
+        ".github/workflows/drive-github-recovery-ci.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/test_github_large_report_index_read.js",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 15,
+          "text": "metadataUrl: 'https://api.github.example/repos/report/contents/reports.json?ref=main',"
+        },
+        {
+          "line": 16,
+          "text": "rawUrl: 'https://raw.githubusercontent.com/report/main/reports.json',"
+        },
+        {
+          "line": 21,
+          "text": "githubContentsUrl_: () => 'https://api.github.example/repos/report/contents/reports.json',"
+        },
+        {
+          "line": 47,
+          "text": "const large = context.getGitHubJsonFile_('reports.json');"
+        },
+        {
+          "line": 68,
+          "text": "const small = context.getGitHubJsonFile_('reports.json');"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/apps-script-prepublish-validation.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/test_independent_publication.js",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 57,
+          "text": "context.getGitHubJsonFile_ = path => ({ data: files.has(path) ? files.get(path) : (path === 'reports.json' ? [] : null), sha: files.has(path) ? 'sha' : null });"
+        },
+        {
+          "line": 90,
+          "text": "if (!files.has('reports/2026-10-09_08-00.json') || !files.has('reports.json')) throw new Error('Body artifacts were not published');"
+        },
+        {
+          "line": 116,
+          "text": "context.DriveApp = { getFileById: id => ({"
+        },
+        {
+          "line": 159,
+          "text": "if (!files.get('reports.json').some(item => item.infographic_status === 'READY')) throw new Error('READY infographic metadata was not committed to the Portal projection');"
+        },
+        {
+          "line": 161,
+          "text": "context.DriveApp = { getFileById: () => { throw new Error('fixture PNG missing'); } };"
+        },
+        {
+          "line": 183,
+          "text": "infographic: { artifact_type: 'FORMAL_INFOGRAPHIC', slotKey: '2026-10-09_08-00', src: 'images/reports/2026-10-09_08-00.png',"
+        },
+        {
+          "line": 197,
+          "text": "if (/DriveApp\\.getFilesByName\\(name\\)[\\s\\S]{0,500}getLastUpdated\\(\\)/.test(webSource)) throw new Error('Latest-by-name image selection remains in production source');"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/apps-script-prepublish-validation.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/test_portal_deploy_safety.js",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 30,
+          "text": "'reports.json', 'reports/2026-10-07_12-00.json', 'data/dashboard.json',"
+        },
+        {
+          "line": 31,
+          "text": "'images/reports/2026-10-07_12-00.png', 'publication-receipts/receipt.json',"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/apps-script-prepublish-validation.yml",
+        ".github/workflows/report-21-ui-validation.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/test_report_remote_readback.js",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 15,
+          "text": "getGitHubJsonFile_:path=> path==='reports/2026-10-13_08-00.json'"
+        },
+        {
+          "line": 21,
+          "text": "ctx.getGitHubJsonFile_=(path)=>path.startsWith('reports/')?{sha:null,data:null}:{sha:'gitsha2',data:[data]};"
+        },
+        {
+          "line": 23,
+          "text": "ctx.getGitHubJsonFile_=(path)=>path.startsWith('reports/')?{sha:'gitsha',data}:{sha:'gitsha2',data:[]};"
+        },
+        {
+          "line": 25,
+          "text": "ctx.getGitHubJsonFile_=(path)=>path.startsWith('reports/')?{sha:'gitsha',data}:{sha:'gitsha2',data:[data]};"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/drive-github-archive-backfill-ci.yml",
+        ".github/workflows/drive-github-recovery-ci.yml",
+        ".github/workflows/report-remote-readback-ci.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/test_resolve_market_report_slot.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 39,
+          "text": "path = Path(temp_dir) / \"reports.json\""
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/validate_drive_publication_receipt.py",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 34,
+          "text": "parser.add_argument(\"--latest\", default=\"data/latest-report.json\")"
+        },
+        {
+          "line": 35,
+          "text": "parser.add_argument(\"--receipts\", default=\"publication-receipts\")"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/validate_market_report_dom.js",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 30,
+          "text": "const response = await fetch(base + 'reports.json?domverify=' + Date.now(), {"
+        },
+        {
+          "line": 33,
+          "text": "if (!response.ok) throw new Error('reports.json HTTP ' + response.status);"
+        },
+        {
+          "line": 38,
+          "text": "if (excluded.length) throw new Error('reports.json contains non-publication-eligible reports: '"
+        },
+        {
+          "line": 59,
+          "text": "await page.route('**/reports.json*', route => route.fulfill({"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/deploy-pages.yml",
+        ".github/workflows/report-21-ui-validation.yml",
+        ".github/workflows/report-quarantine-dom-ci.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/validate_market_reports.py",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 2,
+          "text": "\"\"\"Validate reports.json before publication."
+        },
+        {
+          "line": 276,
+          "text": "return [\"reports.json のルートは配列である必要があります\"], warnings"
+        },
+        {
+          "line": 357,
+          "text": "parser.add_argument(\"--file\", default=\"reports.json\")"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/market-report-validation.yml",
+        ".github/workflows/source-backed-21-validator-ci.yml",
+        ".github/workflows/structure-market-reports.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/validate_report_index.py",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 20,
+          "text": "parser.add_argument(\"--index\", default=\"reports.json\")"
+        },
+        {
+          "line": 63,
+          "text": "raise SystemExit(f\"reports.json/canonical mismatch: {canonical_path}\")"
+        },
+        {
+          "line": 75,
+          "text": "expected_src = f\"images/reports/{key_text}.png\""
+        },
+        {
+          "line": 91,
+          "text": "raise SystemExit(\"reports.json is not ordered date descending, then time descending\")"
+        },
+        {
+          "line": 94,
+          "text": "raise SystemExit(\"required report slots missing from reports.json: \" + \", \".join(missing))"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/deploy-pages.yml",
+        ".github/workflows/market-report-recovery-ci.yml",
+        ".github/workflows/market-report-sync-recovery-ci.yml",
+        ".github/workflows/rebuild-report-history-index.yml",
+        ".github/workflows/recover-real-report-archive.yml",
+        ".github/workflows/sync-latest-report-watchdog.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/validate_report_recovery.py",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 12,
+          "text": "FORMAL_INDEX = ROOT / \"reports.json\""
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/deploy-pages.yml",
+        ".github/workflows/market-report-recovery-ci.yml",
+        ".github/workflows/report-dashboard-health-ci.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/verify_morning_report_qa.py",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 130,
+          "text": "return report, \"reports.json\" if report else \"none\""
+        },
+        {
+          "line": 153,
+          "text": "p.add_argument(\"--reports\", default=str(ROOT / \"reports.json\"))"
+        },
+        {
+          "line": 154,
+          "text": "p.add_argument(\"--latest-report\", default=str(ROOT / \"data/latest-report.json\"))"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/qa-morning-report.yml",
+        ".github/workflows/sync-latest-report-publication.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/verify_public_report_deployment.py",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 51,
+          "text": "parser.add_argument(\"--index\", default=\"reports.json\")"
+        },
+        {
+          "line": 58,
+          "text": "raise SystemExit(\"local reports.json is empty or invalid\")"
+        },
+        {
+          "line": 61,
+          "text": "latest_error = \"public reports.json did not match this deployment\""
+        },
+        {
+          "line": 64,
+          "text": "status, body, _ = fetch(cache_busted(urljoin(base, \"reports.json\")))"
+        },
+        {
+          "line": 71,
+          "text": "latest_error = f\"public reports.json returned HTTP {status}\""
+        },
+        {
+          "line": 89,
+          "text": "if image.get(\"slotKey\") != slot_id or image.get(\"src\") != f\"images/reports/{slot_id}.png\":"
+        },
+        {
+          "line": 102,
+          "text": "urljoin(base, f\"reports/{local_path.name}\"),"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/deploy-pages.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/verify_publication_consistency.py",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 67,
+          "text": "parser.add_argument(\"--latest\", default=\"data/latest-report.json\")"
+        },
+        {
+          "line": 69,
+          "text": "parser.add_argument(\"--index\", default=\"reports.json\")"
+        },
+        {
+          "line": 70,
+          "text": "parser.add_argument(\"--dashboard\", default=\"data/dashboard.json\")"
+        },
+        {
+          "line": 99,
+          "text": "receipt_path = Path(\"publication-receipts\") / f\"{date_text}_{time_text.replace(':', '-')}.json\""
+        },
+        {
+          "line": 119,
+          "text": "item_receipt_path = Path(\"publication-receipts\") / f\"{item_date}_{item_time.replace(':', '-')}.json\""
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/build-reports.yml",
+        ".github/workflows/deploy-pages.yml",
+        ".github/workflows/market-report-sync-recovery-ci.yml",
+        ".github/workflows/publish-saved-google-docs-reports.yml",
+        ".github/workflows/rebuild-report-history-index.yml",
+        ".github/workflows/recover-real-report-archive.yml",
+        ".github/workflows/sync-latest-report-watchdog.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "scripts/verify_scheduled_report_delivery.py",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 29,
+          "text": "index = json.loads((root / \"reports.json\").read_text(encoding=\"utf-8\"))"
+        },
+        {
+          "line": 34,
+          "text": "latest_data = json.loads((root / \"data\" / \"latest-report.json\").read_text(encoding=\"utf-8\"))"
+        },
+        {
+          "line": 38,
+          "text": "dashboard = json.loads((root / \"data\" / \"dashboard.json\").read_text(encoding=\"utf-8\"))"
+        }
+      ],
+      "workflowCallers": [
+        ".github/workflows/check-scheduled-report-delivery.yml"
+      ],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "apps-script/DashboardJsonSync.gs",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 3,
+          "text": "targetPath: 'data/dashboard.json',"
+        },
+        {
+          "line": 4,
+          "text": "reportsPath: 'reports.json',"
+        },
+        {
+          "line": 72,
+          "text": "// dashboard.json は最新レポートだけを保持する。"
+        },
+        {
+          "line": 73,
+          "text": "// 過去レポート全文は reports.json をブラウザ側で結合して表示するため、"
+        },
+        {
+          "line": 752,
+          "text": "return 'https://api.github.com/repos/' + config.owner + '/' + config.repo + '/contents/' + path;"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "apps-script/EventsJsonSync.gs",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 3,
+          "text": "reportsPath: 'reports.json',"
+        },
+        {
+          "line": 675,
+          "text": "return 'https://api.github.com/repos/' + config.owner + '/' + config.repo + '/contents/' + path;"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "apps-script/GoldSupplyDemandPageUpdate.gs",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 72,
+          "text": "'https://api.github.com/repos/' +"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "apps-script/MarketReportAutoPublish.gs",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 210,
+          "text": "const latestResponse = getGitHubJsonFile_('data/latest-report.json');"
+        },
+        {
+          "line": 275,
+          "text": "const path = 'reports/' + key + '.json';"
+        },
+        {
+          "line": 293,
+          "text": "const index = getGitHubJsonFile_('reports.json');"
+        },
+        {
+          "line": 296,
+          "text": "putGitHubJsonFile_('reports.json', JSON.stringify(next, null, 2) + '\\n',"
+        },
+        {
+          "line": 390,
+          "text": "const canonicalResponse = getGitHubJsonFile_('reports/' + key + '.json');"
+        },
+        {
+          "line": 403,
+          "text": "const indexResponse = getGitHubJsonFile_('reports.json');"
+        },
+        {
+          "line": 464,
+          "text": "const files = DriveApp.getFilesByName(name);"
+        },
+        {
+          "line": 504,
+          "text": "return DriveApp.searchFiles("
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "apps-script/MarketReportHistoricalImport.gs",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 128,
+          "text": "const files = DriveApp.searchFiles(query);"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "apps-script/MarketReportMenu.gs",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 132,
+          "text": "var apiUrl = 'https://api.github.com/repos/' + encodeURIComponent(config.owner) + '/' +"
+        },
+        {
+          "line": 181,
+          "text": "var apiUrl = 'https://api.github.com/repos/' + encodeURIComponent(config.owner) + '/' +"
+        },
+        {
+          "line": 304,
+          "text": "targetPath: 'reports.json',"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "apps-script/MarketReportStructuredImport.gs",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 7,
+          "text": "* and publishes reports.json to GitHub in one operation."
+        },
+        {
+          "line": 47,
+          "text": "var folder = DriveApp.getFolderById(folderId);"
+        },
+        {
+          "line": 84,
+          "text": "var folder = DriveApp.getFolderById(folderId);"
+        },
+        {
+          "line": 249,
+          "text": "var url = 'https://api.github.com/repos/' + config.owner + '/' + config.repo + '/contents/reports.json?ref=' + encodeURIComponent(config.branch);"
+        },
+        {
+          "line": 252,
+          "text": "if (response.getResponseCode() < 200 || response.getResponseCode() >= 300) throw new Error('reports.json取得失敗: ' + response.getContentText());"
+        },
+        {
+          "line": 259,
+          "text": "var path = 'reports.json';"
+        },
+        {
+          "line": 260,
+          "text": "var url = 'https://api.github.com/repos/' + config.owner + '/' + config.repo + '/contents/' + path;"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "apps-script/MarketReportWebSync.gs",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 5,
+          "text": "targetPath: 'reports.json',"
+        },
+        {
+          "line": 228,
+          "text": "const file = DriveApp.getFileById(extractDriveId_(res.getResponseText()));"
+        },
+        {
+          "line": 260,
+          "text": "const canonicalPath = 'reports/' + key + '.json';"
+        },
+        {
+          "line": 378,
+          "text": "const file = DriveApp.getFileById(String(manifest.drive_file_id));"
+        },
+        {
+          "line": 389,
+          "text": "const imagePath = 'images/reports/' + key + '.png';"
+        },
+        {
+          "line": 429,
+          "text": "? DASHBOARD_JSON_CONFIG.targetPath : 'data/dashboard.json';"
+        },
+        {
+          "line": 450,
+          "text": "const api = 'https://api.github.com/repos/' + WEB_REPORT_CONFIG.owner + '/' + WEB_REPORT_CONFIG.repo;"
+        },
+        {
+          "line": 644,
+          "text": "const file = DriveApp.getFileById(fileId);"
+        },
+        {
+          "line": 661,
+          "text": "const files = DriveApp.getFilesByName(name);"
+        },
+        {
+          "line": 762,
+          "text": "const file = DriveApp.getFileById(String(manifest.drive_file_id));"
+        },
+        {
+          "line": 774,
+          "text": "const indexUrl = base + 'reports.json?verify=' + encodeURIComponent(String(Date.now()));"
+        },
+        {
+          "line": 783,
+          "text": "if (response.getResponseCode() !== 200) throw new Error('reports.json HTTP ' + response.getResponseCode());"
+        },
+        {
+          "line": 787,
+          "text": "throw new Error('公開reports.jsonの本文ハッシュが一致しません。');"
+        },
+        {
+          "line": 793,
+          "text": "throw new Error('公開reports.jsonの図解manifest/hashが一致しません。');"
+        },
+        {
+          "line": 900,
+          "text": "const files = DriveApp.searchFiles(query);"
+        },
+        {
+          "line": 1586,
+          "text": "// GitHub's contents API omits base64 content for large files such as reports.json."
+        },
+        {
+          "line": 1673,
+          "text": "return 'https://api.github.com/repos/' +"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "apps-script/RatesBondsPageUpdate.gs",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 83,
+          "text": "'https://api.github.com/repos/' +"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "apps-script/StockAnalysisJsonSync.gs",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 365,
+          "text": "return 'https://api.github.com/repos/' + config.owner + '/' + config.repo + '/contents/' + path;"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "apps-script/TokyoFlowSync.gs",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 159,
+          "text": "const apiUrl = 'https://api.github.com/repos/' + TOKYO_FLOW_CONFIG.owner + '/' + TOKYO_FLOW_CONFIG.repo + '/contents/' + TOKYO_FLOW_CONFIG.targetPath;"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "apps-script/UsdJpySupplyDemandPageUpdate.gs",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 83,
+          "text": "'https://api.github.com/repos/' +"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": "apps-script/UsdJpyVolumePageAutoUpdate.gs",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 1062,
+          "text": "pdfFile = DriveApp.createFile(response.getBlob().setName(tempName + '.pdf'));"
+        },
+        {
+          "line": 1075,
+          "text": "if (docId) DriveApp.getFileById(docId).setTrashed(true);"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/build-reports.yml",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 8,
+          "text": "- \"publication-receipts/*.json\""
+        },
+        {
+          "line": 9,
+          "text": "- \"reports/*.json\""
+        },
+        {
+          "line": 10,
+          "text": "- \"reports.json\""
+        },
+        {
+          "line": 11,
+          "text": "- \"data/dashboard.json\""
+        },
+        {
+          "line": 46,
+          "text": "python -m json.tool data/latest-report.json > /dev/null"
+        },
+        {
+          "line": 47,
+          "text": "python -m json.tool reports.json > /dev/null"
+        },
+        {
+          "line": 48,
+          "text": "python -m json.tool data/dashboard.json > /dev/null"
+        },
+        {
+          "line": 55,
+          "text": "cp reports.json /tmp/reports.before.json"
+        },
+        {
+          "line": 56,
+          "text": "cp data/latest-report.json /tmp/latest.before.json"
+        },
+        {
+          "line": 58,
+          "text": "if ! cmp -s reports.json /tmp/reports.before.json; then"
+        },
+        {
+          "line": 59,
+          "text": "echo \"ERROR: build_reports.py would rewrite reports.json; publication is not stable.\""
+        },
+        {
+          "line": 60,
+          "text": "git diff -- reports.json || true"
+        },
+        {
+          "line": 63,
+          "text": "if ! cmp -s data/latest-report.json /tmp/latest.before.json; then"
+        },
+        {
+          "line": 64,
+          "text": "echo \"ERROR: build_reports.py rewrote data/latest-report.json.\""
+        },
+        {
+          "line": 65,
+          "text": "git diff -- data/latest-report.json || true"
+        },
+        {
+          "line": 76,
+          "text": "if ! git diff --quiet -- reports reports.json data/latest-report.json data/dashboard.json; then"
+        },
+        {
+          "line": 78,
+          "text": "git status --short -- reports reports.json data/latest-report.json data/dashboard.json"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/deploy-github-pages.yml",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 25,
+          "text": "cp reports.json /tmp/reports.before.json"
+        },
+        {
+          "line": 28,
+          "text": "if ! cmp -s reports.json /tmp/reports.before.json; then"
+        },
+        {
+          "line": 30,
+          "text": "git diff -- reports.json || true"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/deploy-pages.yml",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 14,
+          "text": "- 'reports.json'"
+        },
+        {
+          "line": 15,
+          "text": "- 'reports/**'"
+        },
+        {
+          "line": 18,
+          "text": "- 'publication-receipts/**'"
+        },
+        {
+          "line": 63,
+          "text": "index = json.loads(Path('reports.json').read_text(encoding='utf-8'))"
+        },
+        {
+          "line": 156,
+          "text": "if curl --fail --silent http://127.0.0.1:8765/reports.json -o /dev/null; then"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/inspect-market-report-live.yml",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 30,
+          "text": "curl -fsSL --retry 2 --retry-delay 1 \"${BASE}/reports.json?cb=${CB}\" -o /tmp/reports.json || true"
+        },
+        {
+          "line": 62,
+          "text": "'reportsJsonSource': 'reports.json正本' in s,"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/market-data-recovery-once.yml",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 50,
+          "text": "python scripts/build_market_json.py --market-data data/market/latest.json --dashboard data/dashboard.json"
+        },
+        {
+          "line": 58,
+          "text": "git add data/market data/dashboard.json"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/market-report-sync-recovery-ci.yml",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 6,
+          "text": "- \"reports/*.json\""
+        },
+        {
+          "line": 7,
+          "text": "- \"reports.json\""
+        },
+        {
+          "line": 8,
+          "text": "- \"data/latest-report.json\""
+        },
+        {
+          "line": 9,
+          "text": "- \"data/dashboard.json\""
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/market-report-validation.yml",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 16,
+          "text": "- \"reports.json\""
+        },
+        {
+          "line": 23,
+          "text": "- \"reports.json\""
+        },
+        {
+          "line": 48,
+          "text": "run: python scripts/validate_market_reports.py --file reports.json"
+        },
+        {
+          "line": 52,
+          "text": "run: python scripts/validate_market_reports.py --file reports.json --require-current-slot"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/publish-saved-google-docs-reports.yml",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 67,
+          "text": "cp reports.json /tmp/market-report-index-before-idempotency.json"
+        },
+        {
+          "line": 69,
+          "text": "cmp /tmp/market-report-index-before-idempotency.json reports.json"
+        },
+        {
+          "line": 78,
+          "text": "git add reports/ reports.json data/latest-report.json data/dashboard.json publication-receipts/"
+        },
+        {
+          "line": 98,
+          "text": "--url \"https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/workflows/deploy-pages.yml/dispatches\" \\"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/qa-morning-report.yml",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 12,
+          "text": "- \"reports.json\""
+        },
+        {
+          "line": 13,
+          "text": "- \"reports/**\""
+        },
+        {
+          "line": 24,
+          "text": "# data/latest-report.json is intentionally excluded. The sync workflow"
+        },
+        {
+          "line": 27,
+          "text": "- \"reports.json\""
+        },
+        {
+          "line": 75,
+          "text": "if grep -Eq '^(reports\\.json|reports/.*_08-00\\.json|data/market/morning-reference\\.json|scripts/verify_morning_report_qa\\.py|assets/js/morning-report-qa-gate\\.js|\\.github/workflows/qa-morning-report\\.yml)$' /tmp/morning-qa-changed-files.txt"
+        },
+        {
+          "line": 94,
+          "text": "reports = json.loads(Path('reports.json').read_text(encoding='utf-8'))"
+        },
+        {
+          "line": 112,
+          "text": "latest_path = Path('data/latest-report.json')"
+        },
+        {
+          "line": 124,
+          "text": "reports = json.loads(Path('reports.json').read_text(encoding='utf-8'))"
+        },
+        {
+          "line": 141,
+          "text": "payload=json.loads(Path('data/latest-report.json').read_text(encoding='utf-8'))"
+        },
+        {
+          "line": 219,
+          "text": "--reports reports.json; then"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/rebuild-report-history-index.yml",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 29,
+          "text": "cp reports.json /tmp/report-index-before.json"
+        },
+        {
+          "line": 31,
+          "text": "cmp /tmp/report-index-before.json reports.json"
+        },
+        {
+          "line": 36,
+          "text": "git diff --exit-code -- reports reports.json data/latest-report.json data/dashboard.json"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/rebuild-report-index.yml",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 6,
+          "text": "- 'reports/*.json'"
+        },
+        {
+          "line": 36,
+          "text": "git add reports.json data/latest-report.json data/dashboard.json"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/reconcile-report-history.yml",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 7,
+          "text": "- \"reports/*.json\""
+        },
+        {
+          "line": 8,
+          "text": "- \"reports.json\""
+        },
+        {
+          "line": 44,
+          "text": "index_path = Path('reports.json')"
+        },
+        {
+          "line": 47,
+          "text": "raise SystemExit('reports.json must be a list')"
+        },
+        {
+          "line": 53,
+          "text": "raise SystemExit('reports.json contains a non-object item')"
+        },
+        {
+          "line": 60,
+          "text": "raise SystemExit(f'non-public report in reports.json: {key}')"
+        },
+        {
+          "line": 105,
+          "text": "if ! git diff --quiet -- reports reports.json; then"
+        },
+        {
+          "line": 107,
+          "text": "git status --short -- reports reports.json"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/recover-real-report-archive.yml",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 29,
+          "text": "index = json.loads(Path('reports.json').read_text(encoding='utf-8'))"
+        },
+        {
+          "line": 31,
+          "text": "path = Path(f'reports/2026-10-14_{slot}.json')"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/report-21-ui-validation.yml",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 90,
+          "text": "['canonical reports.json body source', 'function fullTextOf(report)']"
+        },
+        {
+          "line": 122,
+          "text": "if curl --fail --silent http://127.0.0.1:8766/reports.json -o /dev/null; then exit 0; fi"
+        },
+        {
+          "line": 156,
+          "text": "if curl --fail --silent http://127.0.0.1:8765/reports.json -o /dev/null; then exit 0; fi"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/report-quarantine-dom-ci.yml",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 27,
+          "text": "const report=JSON.parse(fs.readFileSync('reports/2026-10-12_08-00.json','utf8'));"
+        },
+        {
+          "line": 48,
+          "text": "if curl --fail --silent http://127.0.0.1:8765/reports.json -o /dev/null; then break; fi"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/source-backed-21-validator-ci.yml",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 20,
+          "text": "- run: python scripts/validate_market_reports.py --file reports.json > /tmp/market-validation.log 2>&1 || (tail -n 60 /tmp/market-validation.log; exit 1)"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/structure-market-reports.yml",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 7,
+          "text": "- reports.json"
+        },
+        {
+          "line": 8,
+          "text": "- \"reports/*.json\""
+        },
+        {
+          "line": 43,
+          "text": "run: python scripts/structure_reports.py reports.json"
+        },
+        {
+          "line": 46,
+          "text": "run: python scripts/complete_report_schema.py reports.json"
+        },
+        {
+          "line": 49,
+          "text": "run: python -m json.tool reports.json > /dev/null"
+        },
+        {
+          "line": 57,
+          "text": "reports = json.loads(Path('reports.json').read_text(encoding='utf-8'))"
+        },
+        {
+          "line": 77,
+          "text": "run: python scripts/validate_market_reports.py --file reports.json"
+        },
+        {
+          "line": 85,
+          "text": "python -m json.tool reports.json > /dev/null"
+        },
+        {
+          "line": 86,
+          "text": "python scripts/validate_market_reports.py --file reports.json"
+        },
+        {
+          "line": 91,
+          "text": "if git diff --quiet -- reports reports.json; then"
+        },
+        {
+          "line": 92,
+          "text": "echo 'Canonical reports and reports.json are already fully structured and validated.'"
+        },
+        {
+          "line": 98,
+          "text": "git add reports reports.json"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/sync-latest-report-publication.yml",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 7,
+          "text": "- \"data/latest-report.json\""
+        },
+        {
+          "line": 77,
+          "text": "path = Path('data/latest-report.json')"
+        },
+        {
+          "line": 205,
+          "text": "d=json.load(open('data/latest-report.json',encoding='utf-8'))"
+        },
+        {
+          "line": 212,
+          "text": "d=json.load(open('data/latest-report.json',encoding='utf-8'))"
+        },
+        {
+          "line": 253,
+          "text": "git add data/latest-report.json reports data/dashboard.json reports.json \\"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/sync-latest-report-watchdog.yml",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 122,
+          "text": "index = json.loads(Path('reports.json').read_text(encoding='utf-8'))"
+        },
+        {
+          "line": 126,
+          "text": "raise SystemExit(f'scheduled report is not synchronized exactly once in reports.json: {key}')"
+        },
+        {
+          "line": 144,
+          "text": "dashboard = json.loads(Path('data/dashboard.json').read_text(encoding='utf-8'))"
+        },
+        {
+          "line": 155,
+          "text": "git add data/latest-report.json data/dashboard.json reports reports.json"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/update-market-data.yml",
+      "candidateOnly": true,
+      "mutationTokens": true,
+      "references": [
+        {
+          "line": 53,
+          "text": "--reports-file reports.json)\""
+        },
+        {
+          "line": 91,
+          "text": "run: python scripts/build_market_json.py --market-data data/market/latest.json --dashboard data/dashboard.json"
+        },
+        {
+          "line": 98,
+          "text": "python -m json.tool data/dashboard.json > /dev/null"
+        },
+        {
+          "line": 112,
+          "text": "if git diff --quiet -- data/market data/dashboard.json; then"
+        },
+        {
+          "line": 119,
+          "text": "git add data/market data/dashboard.json"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    },
+    {
+      "path": ".github/workflows/validate-publication-receipts.yml",
+      "candidateOnly": true,
+      "mutationTokens": false,
+      "references": [
+        {
+          "line": 7,
+          "text": "- '.github/workflows/validate-publication-receipts.yml'"
+        }
+      ],
+      "workflowCallers": [],
+      "disposition": "保持・動的書込/導入版照合待ち。静的参照候補を全writer確定とは呼ばない"
+    }
+  ],
+  "slots": [
+    {
+      "reportId": "2026-11-06_08-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "NOT_OBSERVED_IN_FOLDER_LIST",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN"
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-06_12-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "11kbvc_YZcceMko1FLiYG5J6J92XoXMBcv0jB1zZjZWw",
+        "createdTime": "2026-11-06T17:37:17.827Z",
+        "modifiedTime": "2026-11-06T17:37:17.827Z",
+        "bodySha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+        "characterCount": 1
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-06_16-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "1ReBxCpuu-t7HFuKWRxzLyLFstoxOolOJQ9AEZFrqWjw",
+        "createdTime": "2026-11-06T07:05:56.475Z",
+        "modifiedTime": "2026-11-06T07:06:20.839Z",
+        "bodySha256": "a95f54cdd9048158508cec75a8f73ecb57a2d9ee8aae1de1624f047e1ff941e9",
+        "characterCount": 3573
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-06_21-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "1wU11oSn6Ts1mHjEURMPtVp9K4Y5jpkJptRjvMRQxFT4",
+        "createdTime": "2026-11-06T11:59:16.442Z",
+        "modifiedTime": "2026-11-06T11:59:49.939Z",
+        "bodySha256": "2d2d3b0c37efecdd21d826810719d6bc92c278195c2e774a781a64f182dd0609",
+        "characterCount": 3752
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-09_08-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "1h_S2ZEcjaF6ojEVj29EPDSIiYXjzoXa-DI3d-WDi11c",
+        "createdTime": "2026-11-08T23:01:42.500Z",
+        "modifiedTime": "2026-11-08T23:02:39.895Z",
+        "bodySha256": "2891b48ae5320e72756efa3108ff11cda12076e7d30ffd80b0c1a63b01d70be2",
+        "characterCount": 5156
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-09_12-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "1sktzPVHSU0Zzo1epU24fokRCCSkDbNXqVsYoUxVeAcs",
+        "createdTime": "2026-11-09T03:05:29.967Z",
+        "modifiedTime": "2026-11-09T03:05:50.543Z",
+        "bodySha256": "a7b58c229552ae2c2fdc3942df074a4abace0aae88131bc18b0f4e5cc518c298",
+        "characterCount": 3535
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-09_16-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "1bCvOiip-CFFzUIcJNGYB3O-tjtWvRBlF9TcrCIIBeys",
+        "createdTime": "2026-11-09T07:00:35.911Z",
+        "modifiedTime": "2026-11-09T07:00:59.345Z",
+        "bodySha256": "482556299ff614ae0b30e08c196dbc067310658c0aa204026f591b7c83abd419",
+        "characterCount": 3218
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-09_21-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "1VTp2WEO8gKaorRmqWhXRtgeFc-3ZRe5YX6bsQoxdv9M",
+        "createdTime": "2026-11-09T11:58:28.531Z",
+        "modifiedTime": "2026-11-09T11:59:16.933Z",
+        "bodySha256": "cd1030ed2f6decf622ad89fc4e2d949b63cc149a9fdaf2e414d04031f3e5b652",
+        "characterCount": 4025
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-10_08-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "1rV1eozQG5UrYz5Y-CSBcLT2L40CCgzVXgDnKgDoxnEg",
+        "createdTime": "2026-11-09T23:05:26.699Z",
+        "modifiedTime": "2026-11-09T23:06:10.625Z",
+        "bodySha256": "dfd10374bf220dcafd43573410b0734b593d99dbaf8d46557773e3f3789c360b",
+        "characterCount": 4494
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-10_12-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "1mk4_lQD71Rci_k8sTotu55PXHiDThBQ38JSXgGLFSBM",
+        "createdTime": "2026-11-10T02:59:24.111Z",
+        "modifiedTime": "2026-11-10T02:59:28.084Z",
+        "bodySha256": "1566b81d3f125c01c950b9ae9ba7e448aa467c9d3079f68c1d3ae5ab396b42b3",
+        "characterCount": 3285
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-10_16-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "1QusooC4NpRtxKsl7AmYmFCKc23AWTWTzbzlCipolr5M",
+        "createdTime": "2026-11-10T07:05:40.816Z",
+        "modifiedTime": "2026-11-10T07:06:01.828Z",
+        "bodySha256": "c4273fb695b500a8518b9af78eea522391290321f46125dba670a9f1971c5d49",
+        "characterCount": 3617
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-10_21-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "1Ti9cCAOy8CInHqT8klJ-ToTLuBo_u5YvGAtaK2296D4",
+        "createdTime": "2026-11-10T15:44:43.036Z",
+        "modifiedTime": "2026-11-10T15:44:48.510Z",
+        "bodySha256": "eb96dbaebaf0000b13be8dbc90e6f9a8743774c685b238df5497b83be292e58e",
+        "characterCount": 3009
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-11_08-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "16Eidh9eTIb7G-ZTOu-pt9lKI29z8CzzkBeTqTE8vr-g",
+        "createdTime": "2026-11-10T22:57:45.314Z",
+        "modifiedTime": "2026-11-10T22:58:22.973Z",
+        "bodySha256": "7b3aefb15290ebd000a91eea8fbb45f9f00e99ef3703fe8c52fbcb6a87236bcd",
+        "characterCount": 4749
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-11_12-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "17TC0x6dnVNHiL38JuBl_m2Yvi2FzotYprCVM5yE0xNA",
+        "createdTime": "2026-11-11T03:04:18.741Z",
+        "modifiedTime": "2026-11-11T03:04:45.247Z",
+        "bodySha256": "38bd4e1f01ca46277ef53ffe19fcf037c950c539de137d0ec665336396597c0e",
+        "characterCount": 3629
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-11_16-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "1UIL4gy_D2JcDzFicdmg74YuuSdO3JRUm1jqxXr7B6uk",
+        "createdTime": "2026-11-12T17:37:32.797Z",
+        "modifiedTime": "2026-11-12T17:37:37.200Z",
+        "bodySha256": "ab9659365bc535e871f0427f87839b9626b8b4d89cd1684643d1f04ab493e9e2",
+        "characterCount": 6135
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-11_21-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "1YfjGZiU2gqFDP5MTsndfH7fwcsGemAeUN2NMmjZgmyQ",
+        "createdTime": "2026-11-12T17:38:31.851Z",
+        "modifiedTime": "2026-11-12T17:38:35.911Z",
+        "bodySha256": "94462a2e10405f49cf4810c15f13fe3f0dfb48addea740ca98cb1848d3a4a23d",
+        "characterCount": 3813
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-12_08-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "1A2hASu03fve5IZIJDxQYJdaSxPiyzzrvoeA2LxfyF-w",
+        "createdTime": "2026-11-12T15:59:44.599Z",
+        "modifiedTime": "2026-11-12T16:02:55.418Z",
+        "bodySha256": "2f9347fd286f3311040fe76fbd7911d669503dff2dde75d69e1a6e61e899259e",
+        "characterCount": 2495
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-12_12-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "1mizuu8M7hu3Xbu7l-Fih4t39KKRUrOEAdbISp-tstRk",
+        "createdTime": "2026-11-12T16:00:04.176Z",
+        "modifiedTime": "2026-11-12T16:02:57.742Z",
+        "bodySha256": "266eb09f46f7d948a678c01a65ede8c88b320e06bc9557bc44efac58c217870f",
+        "characterCount": 1629
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-12_16-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "19Jk0-YQ3P5_iPr0nz3TiWn9GAd_7SDh3KLMnXC23Z4s",
+        "createdTime": "2026-11-12T16:00:06.226Z",
+        "modifiedTime": "2026-11-12T16:03:00.019Z",
+        "bodySha256": "ae696b855952ddb85809b0fa1737a0066ce0f380a7dee152dde9b06acf98d12f",
+        "characterCount": 1855
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    },
+    {
+      "reportId": "2026-11-12_21-00",
+      "canonical": {
+        "status": "MISSING"
+      },
+      "receipt": {
+        "status": "MISSING"
+      },
+      "evidence": {
+        "status": "MISSING"
+      },
+      "chat": "UNKNOWN",
+      "drive": {
+        "fullTextReadback": "READ",
+        "revision": "UNKNOWN",
+        "parentIds": "UNKNOWN",
+        "id": "19Yzv074EoqG3qeJ_wltm3_CxhsrD3oKHGYbP6W5A8qM",
+        "createdTime": "2026-11-12T16:00:08.779Z",
+        "modifiedTime": "2026-11-12T16:03:02.361Z",
+        "bodySha256": "a10892f09150af95ec7fadfd015d765c83dadcf6be8de23f4c429de62adfd46e",
+        "characterCount": 1951
+      },
+      "PNGVisualQA": "BLOCKED_REFERENCE_IMAGE"
+    }
+  ],
+  "warning": "Static candidates are not proof of runtime writes or unused code. No production disable/delete based only on names.",
+  "mainCommitCount": 12476,
+  "mainBotHeuristicCount": 9390,
+  "mainBotHeuristicRatio": 0.7526450785508175,
+  "reviewComparison": {
+    "reportedApproximateCommits": 12475,
+    "measuredMainCommits": 12476,
+    "reportedApproximateBotCommits": 9400,
+    "measuredBotHeuristic": 9390,
+    "reportedWorkflows": 107,
+    "measuredBaselineWorkflows": 107,
+    "reportedRootFiles": 114,
+    "measuredRootFiles": 102,
+    "note": "Counts differ by ref, scope and observation time; they do not establish a failure cause."
+  },
+  "webReferences": {
+    "dashboard-v4.html": [
+      "dashboard-v4.js?v=1"
+    ],
+    "events.html": [
+      "assets/js/events-forward-impact.js?v=20260822-events-mobile-fix2"
+    ],
+    "gold-supply-demand.html": [
+      "assets/js/gold-supply-demand-history.js?v=20260810-gold-history1",
+      "assets/js/gold-supply-demand.js?v=20260816-semantic-color2",
+      "assets/js/gold-macro-comparison.js?v=20260811-01",
+      "assets/js/gold-cftc-chart.js?v=20260810-52w1",
+      "assets/js/gold-card-order.js?v=20260809-02",
+      "assets/js/gold-supply-summary.js?v=20260809-02",
+      "assets/js/gold-etf-flow.js?v=20260816-meaning3",
+      "assets/js/gold-etf-flow-fallback.js?v=20260816-meaning3",
+      "assets/js/gold-comex-layout.js?v=20260809-0351",
+      "assets/js/site-common.js?v=20260804-ui1",
+      "assets/js/portal-update-controls.js?v=20260811-01",
+      "assets/js/gold-dashboard-redesign.js?v=20260820-balanced-lanes3"
+    ],
+    "index.html": [
+      "assets/js/dashboard-freeze-guard.js?v=20260809-1722",
+      "assets/js/market-report-backfill-2026-09-17.js?v=20260918-restore1",
+      "assets/js/report-publication-policy.js?v=20261015-fail-closed1",
+      "assets/js/top-dashboard.js?v=20261103-2100-nov-archive",
+      "assets/js/dashboard-change-fallback-fix.js?v=20260810-2354",
+      "assets/js/report-time-08-migration.js?v=20260808-0508",
+      "assets/js/dashboard-08-market-final-fix.js?v=20260808-1542",
+      "assets/js/dashboard-08-reference-fix.js?v=20260808-1650",
+      "assets/js/event-detail-cleanup.js?v=20260809-loopfix1",
+      "assets/js/remove-crypto-fear-greed.js?v=20260807-1012",
+      "assets/js/morning-report-qa-gate.js?v=20260812-0954",
+      "assets/js/latest-report-bootstrap.js?v=20261027-explicit-slot2",
+      "assets/js/stock-breadth-fallback.js?v=20260806-2205",
+      "assets/js/us-breadth-split-card-v2.js?v=20260807-0238",
+      "assets/js/position-fulltext-fix.js?v=20260806-1252",
+      "assets/js/dashboard-empty-section-guard.js?v=20260806-2215",
+      "assets/js/site-common.js?v=20260804-ui1",
+      "assets/js/dashboard-report-price-fallback-fix.js?v=20260817-1949-verified2",
+      "assets/js/dashboard-canonical-market-final.js?v=20261016-archive-safety3",
+      "assets/js/portal-update-controls.js?v=20260811-01",
+      "assets/js/dashboard-market-card-normalizer.js?v=20261016-strict-archive1",
+      "assets/js/dashboard-market-card-reason-fix.js?v=20260821-reason1"
+    ],
+    "market.html": [
+      "market.js?v=10",
+      "market-enhancements.js?v=3",
+      "decision-support.js?v=1",
+      "report-review.js?v=1",
+      "intelligence-suite.js?v=1"
+    ],
+    "nikkei225-arbitrage.html": [
+      "assets/js/nikkei225-arbitrage-history.js?v=20260810-arbitrage-history2",
+      "assets/js/nikkei225-arbitrage.js?v=20260812-history1",
+      "assets/js/nikkei225-arbitrage-analysis.js?v=20260816-analysis1",
+      "assets/js/nikkei225-arbitrage-trade-decision.js?v=20260816-trade1",
+      "assets/js/site-common.js?v=20260804-ui1",
+      "assets/js/portal-update-controls.js?v=20260811-02"
+    ],
+    "nikkei225-supply-demand.html": [
+      "assets/js/nikkei225-supply-demand-history.js?v=20260810-nikkei-history1",
+      "assets/js/nikkei225-options-data-overlay.js?v=20260810-01",
+      "assets/js/nikkei225-supply-demand.js?v=20260811-freshness1",
+      "assets/js/nikkei225-session-display.js?v=20260810-01",
+      "assets/js/nikkei225-participant-display.js?v=20260810-01",
+      "assets/js/nikkei225-basis-options-display.js?v=20260810-01",
+      "assets/js/nikkei225-margin-display.js?v=20260810-creditfix1",
+      "assets/js/nikkei225-foreign-flow-display.js?v=20260810-01",
+      "assets/js/nikkei225-cftc-positioning-display.js?v=20260810-03",
+      "assets/js/nikkei225-demand-summary-display.js?v=20260809-01",
+      "assets/js/nikkei225-options-analysis.js?v=20260812-analysis1",
+      "assets/js/nikkei225-options-polish.js?v=20260810-02",
+      "assets/js/nikkei225-options-live-polish.js?v=20260810-03",
+      "assets/js/site-common.js?v=20260804-ui1",
+      "assets/js/portal-update-controls.js?v=20260811-02"
+    ],
+    "rates-bonds.html": [
+      "assets/js/rates-bonds-history.js?v=20260810-rb-history1",
+      "assets/js/rates-bonds.js?v=20260815-analysis1",
+      "assets/js/site-common.js?v=20260804-ui1",
+      "assets/js/portal-update-controls.js?v=20260811-02"
+    ],
+    "recovery.html": [
+      "dashboard-v4-final.js?v=recovery-20260729-1"
+    ],
+    "report.html": [
+      "assets/js/report-2026-09-18-fulltext-loader.js?v=20260919-close-table-1",
+      "assets/js/market-report-backfill-2026-09-17.js?v=20260918-restore1",
+      "assets/js/report-publication-policy.js?v=20261015-fail-closed1",
+      "assets/js/report-core-v3.js?v=20261104-archive-market-fallback2",
+      "assets/js/report-drive-source-reference.js?v=20261020-source-audit1",
+      "assets/js/report-markdown-fulltext-fix.js?v=20261104-market-table-render1",
+      "assets/js/report-structured-enrichment.js?v=20261016-history-recovery1",
+      "assets/js/morning-report-qa-gate.js?v=20261104-morning-qa-warning2",
+      "assets/js/site-common.js?v=20260804-ui1",
+      "assets/js/portal-update-controls.js?v=20260811-01"
+    ],
+    "stocks.html": [
+      "assets/js/stock-sector-decliners.js?v=20260823-card-meta1",
+      "assets/js/stocks-preopen-board-reading.js?v=20260812-01",
+      "assets/js/site-common.js?v=20260804-ui1",
+      "assets/js/portal-update-controls.js?v=20260811-02",
+      "assets/js/stocks-v701.js?v=20260823-session-balance4"
+    ],
+    "tokyo-flow.html": [
+      "tokyo-flow.js?v=2",
+      "tokyo-flow-advanced.js?v=1",
+      "tokyo-flow-decision.js?v=1"
+    ],
+    "usdjpy-supply-demand.html": [
+      "assets/js/usdjpy-supply-demand-history.js?v=20260812-flow1",
+      "assets/js/usdjpy-flow-summary.js?v=20260813-card-dates1",
+      "assets/js/usdjpy-supply-demand.js?v=20260813-verdict-color3",
+      "assets/js/usdjpy-supply-demand-ui-fix.js?v=20260812-option-analysis1",
+      "assets/js/usdjpy-cftc-positioning-display.js?v=20260813-card-dates1",
+      "assets/js/usdjpy-cftc-price-52w-backfill.js?v=20260810-fix2",
+      "assets/js/usdjpy-dashboard-redesign.js?v=20260813-verdict-color4",
+      "assets/js/site-common.js?v=20260804-ui1",
+      "assets/js/portal-update-controls.js?v=20260811-02"
+    ],
+    "usdjpy-volume.html": [
+      "assets/js/site-common.js?v=20260812-volume-fix1",
+      "assets/js/portal-update-controls.js?v=20260812-volume-fix1"
+    ]
+  },
+  "authorityBoundary": {
+    "chatTask": "User supplied task identity/enabled schedule and screenshot; view tool rendered card but returned no independent run log. Existing task preserved.",
+    "fixedDocs": "6 get_document calls returned 403 PERMISSION_DENIED",
+    "bodyMonthSearch": "Keyword search 0; direct folder listing returned 34 files, including 19 of target 20 slots. Metadata says access_not_verified, parent_ids null.",
+    "imageMonthSearch": "0 visible folders; not proof of PNG absence",
+    "appsScriptRuntime": "NOT_RUN: deployment/owners/triggers/executions unavailable",
+    "productionCost": "BLOCKED_COST_UNVERIFIED: account quota/billing/data redistribution rights unavailable",
+    "bodyDocs": "19 get_document successes/full text retained locally; revisionId null; no independent parent/revision attestation."
+  },
+  "liveReadback": {
+    "observedAt": "2026-11-13T03:36:05.247164+09:00",
+    "base": "https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/",
+    "rows": [
+      {
+        "path": "data/latest-report.json",
+        "status": 200,
+        "sha256": "6554a7d3c4c90da4e21a79deafa93130ce6970e8fbf5043516f1bcff9299d1e7",
+        "bytes": 67158,
+        "latestSlot": [
+          "2026-10-13",
+          "16:00"
+        ]
+      },
+      {
+        "path": "data/dashboard.json",
+        "status": 200,
+        "sha256": "72a719f18dac19248b48d6c721a4363bebf212610252c7cab24ed442d53b045a",
+        "bytes": 84883
+      },
+      {
+        "path": "reports.json",
+        "status": 200,
+        "sha256": "3febae92f8d52dadf0523a5747573f5f30706c9c10d43ceffbcda713e1adaf2f",
+        "bytes": 1978516,
+        "count": 162
+      },
+      {
+        "path": "data/report-archive-manifest.json",
+        "status": 200,
+        "sha256": "4d4fbf0fa0ba3a9427c63644b6e33fcdd4f27bc83e59fbab1cc06ce546119f9d",
+        "bytes": 1257
+      },
+      {
+        "path": "report.html",
+        "status": 200,
+        "sha256": "8c6a8f81baa90e22cfb063737a1171d1feb61bd9a8a0d437335918ae60e4dbec",
+        "bytes": 3748
+      },
+      {
+        "path": "reports/2026-11-06_08-00.json",
+        "status": 404
+      },
+      {
+        "path": "reports/2026-11-06_12-00.json",
+        "status": 404
+      },
+      {
+        "path": "reports/2026-11-06_16-00.json",
+        "status": 404
+      },
+      {
+        "path": "reports/2026-11-06_21-00.json",
+        "status": 503
+      },
+      {
+        "path": "reports/2026-11-09_08-00.json",
+        "status": 404
+      },
+      {
+        "path": "reports/2026-11-09_12-00.json",
+        "status": 404
+      },
+      {
+        "path": "reports/2026-11-09_16-00.json",
+        "status": 404
+      },
+      {
+        "path": "reports/2026-11-09_21-00.json",
+        "status": 404
+      },
+      {
+        "path": "reports/2026-11-10_08-00.json",
+        "status": 503
+      },
+      {
+        "path": "reports/2026-11-10_12-00.json",
+        "status": 404
+      },
+      {
+        "path": "reports/2026-11-10_16-00.json",
+        "status": 404
+      },
+      {
+        "path": "reports/2026-11-10_21-00.json",
+        "status": 503
+      },
+      {
+        "path": "reports/2026-11-11_08-00.json",
+        "status": 503
+      },
+      {
+        "path": "reports/2026-11-11_12-00.json",
+        "status": 503
+      },
+      {
+        "path": "reports/2026-11-11_16-00.json",
+        "status": 404
+      },
+      {
+        "path": "reports/2026-11-11_21-00.json",
+        "status": 503
+      },
+      {
+        "path": "reports/2026-11-12_08-00.json",
+        "status": 404
+      },
+      {
+        "path": "reports/2026-11-12_12-00.json",
+        "status": 503
+      },
+      {
+        "path": "reports/2026-11-12_16-00.json",
+        "status": 404
+      },
+      {
+        "path": "reports/2026-11-12_21-00.json",
+        "status": 404
+      }
+    ],
+    "browserReadback": {
+      "date": "2026-11-12",
+      "slots": [
+        "08:00",
+        "12:00",
+        "16:00",
+        "21:00"
+      ],
+      "observedText": "対象データなし：この日時のレポート本文は登録されていません。",
+      "PNG": "No report body/image displayed; original Drive PNG status unverified"
+    }
+  },
+  "apiHistory": [
+    {
+      "path": "/actions/workflows/publish-saved-google-docs-reports.yml/runs?per_page=5",
+      "status": 200,
+      "error": null
+    },
+    {
+      "path": "/actions/workflows/check-scheduled-report-delivery.yml/runs?per_page=5",
+      "status": 200,
+      "error": null
+    },
+    {
+      "path": "/actions/workflows/sync-latest-report-watchdog.yml/runs?per_page=5",
+      "status": 200,
+      "error": null
+    },
+    {
+      "path": "/actions/workflows/one-time-openai-generation-20261015.yml/runs?per_page=5",
+      "status": 200,
+      "error": null
+    },
+    {
+      "path": "/actions/workflows/one-time-openai-funded-test-20261015.yml/runs?per_page=5",
+      "status": 200,
+      "error": null
+    },
+    {
+      "path": "/actions/workflows/probe-openai-input-tokens-once.yml/runs?per_page=5",
+      "status": 200,
+      "error": null
+    },
+    {
+      "path": "/actions/workflows/verify-openai-api-readiness.yml/runs?per_page=5",
+      "status": 200,
+      "error": null
+    },
+    {
+      "path": "/actions/runs/43253659543/jobs?per_page=100",
+      "status": 200,
+      "error": null
+    },
+    {
+      "path": "/actions/runs/43257052990/jobs?per_page=100",
+      "status": 200,
+      "error": null
+    },
+    {
+      "path": "/pulls/188/files?per_page=100",
+      "status": 200,
+      "error": null
+    },
+    {
+      "path": "/actions/runs/43253659543/logs",
+      "status": 403,
+      "error": null
+    }
+  ],
+  "actualShadowResults": [
+    {
+      "reportId": "2026-11-12_21-00",
+      "status": "WAITING_FOR_SOURCE_ARTIFACT",
+      "missing": [
+        "receipt.json",
+        "drive-file.json",
+        "bundle.json",
+        "evidence.json",
+        "infographic.png",
+        "infographic-manifest.json"
+      ],
+      "mode": "shadow",
+      "productionWrites": 0
+    },
+    {
+      "reportId": "2026-11-12_16-00",
+      "status": "WAITING_FOR_SOURCE_ARTIFACT",
+      "missing": [
+        "receipt.json",
+        "drive-file.json",
+        "bundle.json",
+        "evidence.json",
+        "infographic.png",
+        "infographic-manifest.json"
+      ],
+      "mode": "shadow",
+      "productionWrites": 0
+    },
+    {
+      "reportId": "2026-11-12_12-00",
+      "status": "WAITING_FOR_SOURCE_ARTIFACT",
+      "missing": [
+        "receipt.json",
+        "drive-file.json",
+        "bundle.json",
+        "evidence.json",
+        "infographic.png",
+        "infographic-manifest.json"
+      ],
+      "mode": "shadow",
+      "productionWrites": 0
+    },
+    {
+      "reportId": "2026-11-12_08-00",
+      "status": "WAITING_FOR_SOURCE_ARTIFACT",
+      "missing": [
+        "receipt.json",
+        "drive-file.json",
+        "bundle.json",
+        "evidence.json",
+        "infographic.png",
+        "infographic-manifest.json"
+      ],
+      "mode": "shadow",
+      "productionWrites": 0
+    }
+  ],
+  "sourceDocs": [
+    {
+      "id": "1YfjGZiU2gqFDP5MTsndfH7fwcsGemAeUN2NMmjZgmyQ",
+      "title": "マーケットレポート_2026-11-11_21-00",
+      "createdTime": "2026-11-12T17:38:31.851Z",
+      "modifiedTime": "2026-11-12T17:38:35.911Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "94462a2e10405f49cf4810c15f13fe3f0dfb48addea740ca98cb1848d3a4a23d",
+      "characterCount": 3813,
+      "readError": false
+    },
+    {
+      "id": "1UIL4gy_D2JcDzFicdmg74YuuSdO3JRUm1jqxXr7B6uk",
+      "title": "マーケットレポート_2026-11-11_16-00",
+      "createdTime": "2026-11-12T17:37:32.797Z",
+      "modifiedTime": "2026-11-12T17:37:37.200Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "ab9659365bc535e871f0427f87839b9626b8b4d89cd1684643d1f04ab493e9e2",
+      "characterCount": 6135,
+      "readError": false
+    },
+    {
+      "id": "19Yzv074EoqG3qeJ_wltm3_CxhsrD3oKHGYbP6W5A8qM",
+      "title": "マーケットレポート_2026-11-12_21-00",
+      "createdTime": "2026-11-12T16:00:08.779Z",
+      "modifiedTime": "2026-11-12T16:03:02.361Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "a10892f09150af95ec7fadfd015d765c83dadcf6be8de23f4c429de62adfd46e",
+      "characterCount": 1951,
+      "readError": false
+    },
+    {
+      "id": "19Jk0-YQ3P5_iPr0nz3TiWn9GAd_7SDh3KLMnXC23Z4s",
+      "title": "マーケットレポート_2026-11-12_16-00",
+      "createdTime": "2026-11-12T16:00:06.226Z",
+      "modifiedTime": "2026-11-12T16:03:00.019Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "ae696b855952ddb85809b0fa1737a0066ce0f380a7dee152dde9b06acf98d12f",
+      "characterCount": 1855,
+      "readError": false
+    },
+    {
+      "id": "1mizuu8M7hu3Xbu7l-Fih4t39KKRUrOEAdbISp-tstRk",
+      "title": "マーケットレポート_2026-11-12_12-00",
+      "createdTime": "2026-11-12T16:00:04.176Z",
+      "modifiedTime": "2026-11-12T16:02:57.742Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "266eb09f46f7d948a678c01a65ede8c88b320e06bc9557bc44efac58c217870f",
+      "characterCount": 1629,
+      "readError": false
+    },
+    {
+      "id": "1A2hASu03fve5IZIJDxQYJdaSxPiyzzrvoeA2LxfyF-w",
+      "title": "マーケットレポート_2026-11-12_08-00",
+      "createdTime": "2026-11-12T15:59:44.599Z",
+      "modifiedTime": "2026-11-12T16:02:55.418Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "2f9347fd286f3311040fe76fbd7911d669503dff2dde75d69e1a6e61e899259e",
+      "characterCount": 2495,
+      "readError": false
+    },
+    {
+      "id": "17TC0x6dnVNHiL38JuBl_m2Yvi2FzotYprCVM5yE0xNA",
+      "title": "マーケットレポート_2026-11-11_12-00",
+      "createdTime": "2026-11-11T03:04:18.741Z",
+      "modifiedTime": "2026-11-11T03:04:45.247Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "38bd4e1f01ca46277ef53ffe19fcf037c950c539de137d0ec665336396597c0e",
+      "characterCount": 3629,
+      "readError": false
+    },
+    {
+      "id": "16Eidh9eTIb7G-ZTOu-pt9lKI29z8CzzkBeTqTE8vr-g",
+      "title": "マーケットレポート_2026-11-11_08-00",
+      "createdTime": "2026-11-10T22:57:45.314Z",
+      "modifiedTime": "2026-11-10T22:58:22.973Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "7b3aefb15290ebd000a91eea8fbb45f9f00e99ef3703fe8c52fbcb6a87236bcd",
+      "characterCount": 4749,
+      "readError": false
+    },
+    {
+      "id": "1Ti9cCAOy8CInHqT8klJ-ToTLuBo_u5YvGAtaK2296D4",
+      "title": "マーケットレポート_2026-11-10_21-00",
+      "createdTime": "2026-11-10T15:44:43.036Z",
+      "modifiedTime": "2026-11-10T15:44:48.510Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "eb96dbaebaf0000b13be8dbc90e6f9a8743774c685b238df5497b83be292e58e",
+      "characterCount": 3009,
+      "readError": false
+    },
+    {
+      "id": "1QusooC4NpRtxKsl7AmYmFCKc23AWTWTzbzlCipolr5M",
+      "title": "マーケットレポート_2026-11-10_16-00",
+      "createdTime": "2026-11-10T07:05:40.816Z",
+      "modifiedTime": "2026-11-10T07:06:01.828Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "c4273fb695b500a8518b9af78eea522391290321f46125dba670a9f1971c5d49",
+      "characterCount": 3617,
+      "readError": false
+    },
+    {
+      "id": "1mk4_lQD71Rci_k8sTotu55PXHiDThBQ38JSXgGLFSBM",
+      "title": "マーケットレポート_2026-11-10_12-00",
+      "createdTime": "2026-11-10T02:59:24.111Z",
+      "modifiedTime": "2026-11-10T02:59:28.084Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "1566b81d3f125c01c950b9ae9ba7e448aa467c9d3079f68c1d3ae5ab396b42b3",
+      "characterCount": 3285,
+      "readError": false
+    },
+    {
+      "id": "1rV1eozQG5UrYz5Y-CSBcLT2L40CCgzVXgDnKgDoxnEg",
+      "title": "マーケットレポート_2026-11-10_08-00",
+      "createdTime": "2026-11-09T23:05:26.699Z",
+      "modifiedTime": "2026-11-09T23:06:10.625Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "dfd10374bf220dcafd43573410b0734b593d99dbaf8d46557773e3f3789c360b",
+      "characterCount": 4494,
+      "readError": false
+    },
+    {
+      "id": "1VTp2WEO8gKaorRmqWhXRtgeFc-3ZRe5YX6bsQoxdv9M",
+      "title": "マーケットレポート_2026-11-09_21-00",
+      "createdTime": "2026-11-09T11:58:28.531Z",
+      "modifiedTime": "2026-11-09T11:59:16.933Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "cd1030ed2f6decf622ad89fc4e2d949b63cc149a9fdaf2e414d04031f3e5b652",
+      "characterCount": 4025,
+      "readError": false
+    },
+    {
+      "id": "1bCvOiip-CFFzUIcJNGYB3O-tjtWvRBlF9TcrCIIBeys",
+      "title": "マーケットレポート_2026-11-09_16-00",
+      "createdTime": "2026-11-09T07:00:35.911Z",
+      "modifiedTime": "2026-11-09T07:00:59.345Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "482556299ff614ae0b30e08c196dbc067310658c0aa204026f591b7c83abd419",
+      "characterCount": 3218,
+      "readError": false
+    },
+    {
+      "id": "1sktzPVHSU0Zzo1epU24fokRCCSkDbNXqVsYoUxVeAcs",
+      "title": "マーケットレポート_2026-11-09_12-00",
+      "createdTime": "2026-11-09T03:05:29.967Z",
+      "modifiedTime": "2026-11-09T03:05:50.543Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "a7b58c229552ae2c2fdc3942df074a4abace0aae88131bc18b0f4e5cc518c298",
+      "characterCount": 3535,
+      "readError": false
+    },
+    {
+      "id": "1h_S2ZEcjaF6ojEVj29EPDSIiYXjzoXa-DI3d-WDi11c",
+      "title": "マーケットレポート_2026-11-09_08-00",
+      "createdTime": "2026-11-08T23:01:42.500Z",
+      "modifiedTime": "2026-11-08T23:02:39.895Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "2891b48ae5320e72756efa3108ff11cda12076e7d30ffd80b0c1a63b01d70be2",
+      "characterCount": 5156,
+      "readError": false
+    },
+    {
+      "id": "11kbvc_YZcceMko1FLiYG5J6J92XoXMBcv0jB1zZjZWw",
+      "title": "マーケットレポート_2026-11-06_12-00",
+      "createdTime": "2026-11-06T17:37:17.827Z",
+      "modifiedTime": "2026-11-06T17:37:17.827Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "characterCount": 1,
+      "readError": false
+    },
+    {
+      "id": "1wU11oSn6Ts1mHjEURMPtVp9K4Y5jpkJptRjvMRQxFT4",
+      "title": "マーケットレポート_2026-11-06_21-00",
+      "createdTime": "2026-11-06T11:59:16.442Z",
+      "modifiedTime": "2026-11-06T11:59:49.939Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "2d2d3b0c37efecdd21d826810719d6bc92c278195c2e774a781a64f182dd0609",
+      "characterCount": 3752,
+      "readError": false
+    },
+    {
+      "id": "1ReBxCpuu-t7HFuKWRxzLyLFstoxOolOJQ9AEZFrqWjw",
+      "title": "マーケットレポート_2026-11-06_16-00",
+      "createdTime": "2026-11-06T07:05:56.475Z",
+      "modifiedTime": "2026-11-06T07:06:20.839Z",
+      "parentIds": null,
+      "revision": null,
+      "bodySha256": "a95f54cdd9048158508cec75a8f73ecb57a2d9ee8aae1de1624f047e1ff941e9",
+      "characterCount": 3573,
+      "readError": false
+    }
+  ],
+  "overlapResolution": {
+    "pull": 188,
+    "head": "860ec370af7633a8ccadf393a474ee2614ce5430",
+    "reusedFile": "scripts/build_market_json.py",
+    "method": "exact git blob reused; removes live market-data writes into saved projections; no production JSON regeneration"
+  },
+  "finalVerification": {
+    "remoteMain": "545fd7fabf7b722618056332400a850dae108426",
+    "upstreamChangedPaths": [
+      "data/dashboard.json",
+      "data/gold-etf-flow-history.json",
+      "data/gold-supply-demand-archive/2026-11-13.json",
+      "data/gold-supply-demand-archive/index.json",
+      "data/gold-supply-demand-sheet.csv",
+      "data/gold-supply-demand.json",
+      "data/history/stocks/2026-11-13.json",
+      "data/history/stocks/index.json",
+      "data/market/acquisition_runs/2026-11-13_21-00.jsonl",
+      "data/market/acquisition_status.json",
+      "data/market/chatgpt-input.json",
+      "data/market/chatgpt_input.csv",
+      "data/market/history/2026-11-13_21-00.json",
+      "data/market/japan-stock-movers.json",
+      "data/market/last_verified.json",
+      "data/market/latest.json",
+      "data/market/us-premarket.json",
+      "data/market/verified_history.csv",
+      "data/nikkei225-arbitrage-archive/2026-11-13.json",
+      "data/nikkei225-arbitrage-archive/index.json",
+      "data/nikkei225-arbitrage.json",
+      "data/nikkei225-supply-demand-archive/2026-11-13.json",
+      "data/nikkei225-supply-demand-archive/index.json",
+      "data/nikkei225-supply-demand.json",
+      "data/rates-bonds-archive/2026-11-13.json",
+      "data/rates-bonds-archive/index.json",
+      "data/rates-bonds-history.json",
+      "data/rates-bonds.json",
+      "data/stock-sessions.json",
+      "data/stocks.json",
+      "data/usdjpy-flow-summary.json",
+      "data/usdjpy-supply-demand-archive/2026-11-13.json",
+      "data/usdjpy-supply-demand-archive/index.json",
+      "data/usdjpy-supply-demand.json",
+      "data/usdjpy-volume.json"
+    ],
+    "tests": "32 PASS (offline synthetic contracts)",
+    "productionArtifactDiff": "NONE vs candidate HEAD",
+    "syntax": "Python compile PASS; YAML parser NOT_RUN (module unavailable)",
+    "hostedCI": "NOT_RUN",
+    "overallAcceptance": "NOT_VERIFIED",
+    "cutover": "NOT_RUN"
+  }
+}

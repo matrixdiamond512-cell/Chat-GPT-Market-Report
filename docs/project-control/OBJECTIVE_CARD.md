@@ -187,3 +187,15 @@ GitHub main advanced from `c3dae9fdaea7c05d8006006b6fb052a28e2535f4` to `9615882
 Main advanced four commits from `9615882cf018479bf3cb2eeeb6f6b73367ea764b` to `d6420e2c3d53a16304bb8d301677e2db4c41da0c`. The actual range changes 15 production data files only (Japan stocks, Nikkei/US dollar-yen supply-demand and market references); no acquisition/evidence code, workflow, or tests changed. Merged without conflicts as `415c28c6d`; local compare 0 behind / 14 ahead before this record commit.
 
 Verified on the synced tree: `data/market/latest.json` is `2026-10-16T20:16:17+09:00`, slot `21:00`, `verified`, with no required-field gaps; `data/report-evidence/2026-10-16_21-00-r1.json` and `reports/2026-10-16_21-00.json` are absent; `reports.json` latest is 2026-10-13 16:00. Do not reconstruct or publish the missed 21:00 slot. The recovery PR applies to future eligible acquisitions. Following local/final-head CI, the user has now directed PR #156 to be reviewed and merged; verify head/base once more, mark ready, and merge the exact approved head. Then observe future-slot production acceptance separately.
+
+## MR-RELIABILITY-20261113-01 — 2026-11-13 JST 継続先
+
+ユーザーの5営業日20枠の安定配信改善計画に着手。branch codex/reliability-phase0、base origin/main f00730cf4b63af65e17cb93df9f1cd3f359b0c5a。変更は固定文書と証拠記録のみ、未push。詳細はEVIDENCE_LEDGERの同ID。Phase 0未完了、修復未着手、運用受入未検証。
+
+最新API観測でPR #188はDraft/open、head 860ec370af7633a8ccadf393a474ee2614ce5430。dashboard writer修正候補と重複するため独立実装前に差分照合。mainでは依然live marketDataをlatestReportに注入。取込run 43253659543は索引readback失敗（Docsステップsuccessだけで取得成功を認定しない）、health run 43257052990も失敗。日付推論処理と未接続の独立監視を優先調査。
+
+次の必要証拠: 本人の認可アカウントから実task ID/有効状態/11月11日夕方の操作履歴、Apps Script導入版/trigger/history、Actions認証主体と月別フォルダ/対象Doc全文/親/revision、失敗run詳細ログ。Drive接続はフォルダ検索0件・固定台帳metadata 404であり不存在と断定しない。本番停止/変更/障害注入/公開workflow起動は未承認・未実施。新しい実枠を観測する前に20枠計数を開始しない。
+
+## MR-ZEROCOST-20261113-01（2026-11-13 JST）
+
+03:16改訂依頼を優先。追加課金ゼロ、承認済み詳細本文/図解を保全。経路Aの原本引渡し→単一検証/publisherを最小構成候補とし、現在はshadow受領/不変保全/ローカル再開だけ実装。旧API4jobの停止候補と原本へのlive価格注入除去を実装、32回帰試験PASS。11/12実本文4本は翌日補充で、shadowは全枠WAITING_FOR_SOURCE_ARTIFACT。公開DOMは全4枠欠落。Google固定正本/基準図403/404、外部publisher/費用条件/実writer所有者は未確認。完全無人発行・本番切替・20枠受入は未達。根拠は同IDのEVIDENCE_LEDGER/DELIVERY_PATH_INVENTORY。現行タスク/Google正本を無断停止/削除しない。
