@@ -135,3 +135,13 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 現在のDoc本文4640文字は以前の読戻しhashと一致。GitHub535e5ddの保存版は同じDoc ID・月親・提示revision、verifiedAtSlot=false。ただしfullTextは4548文字・1行、Docの92個のLFを全削除した文字列とだけ一致する。全文byte/hashの一致条件はFAIL。改行を無視してPASSにせず、改行を失わせた操作主体・処理はUNKNOWNとする。今回mainの保存版は修正していない。将来の承認済み取込ではDocの原文改行を保全し、readback hashとarchive hashを独立照合する。
 
 16時固有run ID/会話参照/保存actionログはユーザー側でも取得不能。21時runを流用しない。TASK_RUN_BINDING_UNKNOWNを維持。対象実PNGは未受領（検索で見つかった非レポート画像は除外）、PNG保存/byte読戻し/正式公開はNOT_RUN。必要な次証拠は許可された実runの対象Doc ID付き保存action結果と同runのPNG原本。既存タスク・固定Google文書・本番・未適用prompt候補は変更なし。要件/本文・図解品質の変更なし、コード変更・追加機械試験なし。固定Google Docs同期は未実施。
+
+
+## MR-BODY-INTEGRITY-20261114-01（2026-11-14 JST）
+出典: ユーザーの改行保全指示 / Draft PR #200 / 535e5ddの保存版と実Doc読戻し。変更対象: report_source_contract.py、sync_reports_from_drive.py、回帰tests、既存shadow CI。本番・タスク・Google Docs原本・正式資格gateは未変更。
+
+実装: Docs textRunを無変換抽出し、空行・日本語・Markdown見出し・先頭BOMを保持。既存paragraph_textはLFを保持しており、既存のBOM削除だけを廃止した。535e5ddはJSON登録のみで実行コード/ツールtraceを含まず、92LFを脱落させた実関数/実行主体はUNKNOWN。BOM削除を92LF欠落原因と偽認しない。既存save_jsonへ書込前の本文hash/JSON変換後/ファイル読戻しの一致gateを追加。review専用archive_body_candidateは元Doc ID・元本文hash・変更前archive hash・一意な枠を要求し、全文を変更なしに設定、status/revisionを保全。新しいpublisher/監視なし。
+
+非本番候補: docs/project-control/evidence/archive-body-candidate.json（535e5dd時点の完全archiveを基準）。16時fullTextとdriveTextLengthの2項目だけ変更。4640文字/92LF、読戻しSHA 3d4bdc1b0d85edbdb2e59d662683192d2fbdfa4d8ab5a0546e1500749bcbae04。source Docは読取りのみ、archiveの既存revisionは維持するが、そのrevisionと今回の本文を結ぶ独立証明は引き続きUNKNOWN。現在mainに追加変更があれば候補をそのまま上書きせず再照合する。候補は本番ファイルではなく正式発行でもない。
+
+検証: 従来41件＋9件=50件PASS。実本文候補のディスク保存/読戻しはPASS。改行脱落・変更前hash不一致・別Doc・複数tabを拒否。証拠はbody-integrity-verification.jsonとbody-integrity-tests.txt。16時run結合・PNG・正式publicationは未検証。Google固定ID要件/仕様/本文作成/運用/図解/台帳は未同期、既存詳細品質はNO_CHANGE。影響文書: requirements/specification/operations/DOCUMENT_CONTROL/EVIDENCE_LEDGER。main merge/本番データ修正は承認待ち。

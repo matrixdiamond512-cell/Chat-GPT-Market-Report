@@ -1,6 +1,8 @@
 """Validate saved source material without generating missing report content."""
 from __future__ import annotations
 
+import copy
+import json
 import hashlib
 import re
 from datetime import datetime, timedelta, timezone
@@ -68,3 +70,62 @@ def validate_pair(report: dict, image: dict) -> None:
     key = f"{report['date']}_{report['time'].replace(':', '-')}"
     if source_key(image["name"]) != key or not image.get("mimeType", "").startswith("image/"):
         raise ValueError(f"image does not match report slot: {key}")
+
+
+def docs_body_text(doc: dict) -> str:
+    """Copy Docs textRun contents verbatim, including blank lines and leading BOM."""
+    parts = []
+    def walk(elements):
+        for element in elements:
+            if "paragraph" in element:
+                for part in element["paragraph"].get("elements", []):
+                    parts.append(part.get("textRun", {}).get("content", ""))
+            if "table" in element:
+                for row in element["table"].get("tableRows", []):
+                    for cell in row.get("tableCells", []):
+                        walk(cell.get("content", []))
+            if "tableOfContents" in element:
+                walk(element["tableOfContents"].get("content", []))
+    body = doc.get("body")
+    if body is None:
+        tabs = doc.get("tabs") or []
+        if len(tabs) != 1 or tabs[0].get("childTabs"):
+            raise ValueError("Explicit single source tab required")
+        body = tabs[0].get("body") or (tabs[0].get("documentTab") or {}).get("body")
+    if not isinstance(body, dict):
+        raise ValueError("Docs body unavailable")
+    walk(body.get("content", []))
+    return "".join(parts)
+
+
+def archive_body_candidate(archive: dict, *, date: str, slot: str, document_id: str,
+                           original_text: str, original_hash: str, previous_hash: str) -> dict:
+    """Prepare a review-only correction; never write or promote publication status."""
+    if body_hash(original_text) != original_hash:
+        raise ValueError("Original body hash mismatch")
+    candidate = copy.deepcopy(archive)
+    matches = [r for r in candidate.get("reports", [])
+               if (r.get("date"), r.get("time")) == (date, slot)]
+    if len(matches) != 1:
+        raise ValueError("Archive slot must be unique")
+    report = matches[0]
+    if (report.get("sourceDocument") or {}).get("id") != document_id:
+        raise ValueError("Archive source document mismatch")
+    if body_hash(report["fullText"]) != previous_hash:
+        raise ValueError("Archive body changed since observation")
+    if report.get("verifiedAtSlot") is not False:
+        raise ValueError("Reference-only archive required")
+    report["fullText"] = original_text
+    for key in ("bodyHash", "originalBodyHash"):
+        if key in report:
+            report[key] = original_hash
+    if "driveTextLength" in report:
+        report["driveTextLength"] = len(original_text)
+    # Serialize to UTF-8 bytes, then independently decode the exact saved payload.
+    saved = json.dumps(candidate, ensure_ascii=False, indent=2).encode("utf-8")
+    readback = json.loads(saved)
+    restored = next(r for r in readback["reports"] if
+                    (r.get("date"), r.get("time")) == (date, slot))
+    if restored["fullText"] != original_text or body_hash(restored["fullText"]) != original_hash:
+        raise ValueError("Archive serialized readback body mismatch")
+    return readback
