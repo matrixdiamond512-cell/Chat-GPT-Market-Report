@@ -139,11 +139,11 @@ class ProbeTests(unittest.TestCase):
             if url.endswith("/values:batchUpdate"):
                 if write_error:
                     raise sync.SheetsSyncError("HTTP 403")
-                client.marker = body["data"][0]["values"][0][0]
+                client.probe_values = [entry["values"][0][0] for entry in body["data"]]
             if method == "GET":
                 if read_error:
                     raise sync.SheetsSyncError("HTTP 403")
-                return {"values": [[client.marker]]}
+                return {"values": [client.probe_values]}
             if "deleteSheet" in body.get("requests", [{}])[0] and delete_error:
                 raise sync.SheetsSyncError("HTTP 403 delete")
             return {}

@@ -678,7 +678,7 @@ def failed_summary(stage: str, reason: str) -> dict[str, Any]:
 
 def permission_probe(client: SheetsClient) -> dict[str, Any]:
     """Test the workflow principal on a new isolated tab; never touch report cells."""
-    title = "Codex_Close_Probe_" + uuid.uuid4().hex
+    title = "終値同期_検証_" + uuid.uuid4().hex
     marker = "close-permission-probe:" + uuid.uuid4().hex
     summary = {"status": "FAILED", "stages": {}, "failedStage": "CLOSE_DATA_WRITE",
                "temporarySheet": title, "cleanup": "NOT_RUN", "reportCellsModified": 0}
@@ -688,11 +688,12 @@ def permission_probe(client: SheetsClient) -> dict[str, Any]:
             "requests": [{"addSheet": {"properties": {"title": title}}}],
         })
         sheet_id = created["replies"][0]["addSheet"]["properties"]["sheetId"]
-        batch_write_values(client, title, 1, {0: marker}, sleep=lambda _: None)
+        summary["temporarySheetId"] = sheet_id
+        batch_write_values(client, title, 1, {0: marker, 1: 123.456}, sleep=lambda _: None)
         summary["stages"]["CLOSE_DATA_WRITE"] = "SUCCESS"
         summary["failedStage"] = "READBACK_VERIFY"
-        values = read_values(client, title, "A1", "UNFORMATTED_VALUE")
-        if values != [[marker]]:
+        values = read_values(client, title, "A1:B1", "UNFORMATTED_VALUE")
+        if values != [[marker, 123.456]]:
             raise CloseSyncError("READBACK_VERIFY", "Permission probe readback mismatch.")
         summary["stages"]["READBACK_VERIFY"] = "SUCCESS"
         summary["failedStage"] = ""
