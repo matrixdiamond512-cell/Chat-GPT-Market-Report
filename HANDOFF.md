@@ -136,3 +136,8 @@ branch `codex/zero-cost-delivery`、base取得main `f94229ba1c135215623881faf4f5
 ### MR-SOURCE-HANDOFF-20261113-01｜21時枠の早期実行・未発行終了（2026-11-13 JST）
 
 ユーザーから21時taskが20:55:04〜20:55:16にcompletedだが未発行/Drive action未呼出という履歴を受領。HTTP保存エラーなし。通常チャットに書込action/正本参照権限があっても定期runのtool提供は未確認。runごとに会話参照が変わるためtask ID+run ID+予定枠+実行会話+指定表示先で照合。私的IDsは追跡外ログのみ。既存監視で原本なしをFAILとする隔離再現は確認したが、早期起動原因/枠までの待機・再開は未実証。taskや時刻/権限を変更せず、同IDの台帳とearly-task-no-publication.jsonを読んで切り分ける。
+
+
+## MR-TASK-DIAG-20261113-01｜保存プロンプト3,954文字の診断（2026-11-13 JST）
+
+21:57の提供診断から保存prompt3,954文字とSHA501ce01e9a49a1ef742af95aee66d6b5e0e001d03f3e8ae49ab4a8466943757fを確認。保存/原文保持/通常保存と正式公開のゲート分離は既に指示あり。早期終了の直接命令はなく、公式待機/再開が未規定。復旧時刻はpromptにあるが予約されていないとの提供診断、PNG任意は全4枠必須と不整合。evidence/task-prompt-diagnostic.jsonとEVIDENCE_LEDGERを読む。task停止/変更・本番取り込み禁止を維持し、追加の保存コード/実行系は作らない。次の必要証拠は対象runのtool/call traceと適用prompt/schedule/サーバー時刻。最小差分案はoperations内のみ、実taskへ未適用。

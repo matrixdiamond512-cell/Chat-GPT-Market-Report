@@ -110,3 +110,8 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 影響マトリクス：requirements.md（保存受入の工程境界）、specification.md（実保存/全文一致・revisionの観測）、operations.md（既存connectorでの引渡し/差分停止）、EVIDENCE_LEDGERと本台帳を同一変更IDで追補。本文/図解の承認内容は変更しない。固定Google Docs要件/仕様/本文作成/運用/台帳/図解マニュアルへの追補は、403等で現revisionを読めないためBLOCKED_EXTERNAL_ACCESS。正本名/IDは保持、新規の要件/仕様/マニュアルは作らない。
 
 非本番試験Docだけを新規作成/限定修正し、元の正式原本/タスクは変更していない。source-handoff-save-readback.jsonは新規実保存の証拠で、定時publication receiptの代替ではない。詳細はEVIDENCE_LEDGER同IDとDraft PR200。
+
+
+## MR-TASK-DIAG-20261113-01｜保存プロンプト3,954文字の診断（2026-11-13 JST）
+
+影響：requirements（早期実行/復旧/独立PNG要件の照合）、specification（既存指示と実環境の差異/原本hash）、operations（未適用の最小差分と実測順）、本台帳、EVIDENCE_LEDGER、HANDOFF。固定Google Docs要件/仕様/本文作成/運用/台帳/図解のIDは維持し、今回同期・書込は未実施。本文作成ルール/承認済み品質を削らない。新しい要件/仕様/マニュアルは作成せず、実taskのprompt/schedule/有効状態も変更しない。出典は添付診断21:57 JST、関連Draft PR200。判定DIAGNOSED_NOT_FIXED、運用受入は引き続き未達。

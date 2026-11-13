@@ -124,3 +124,14 @@ get_document_textの段落リストは空段落を省くため、単純join/trim
 実行状態completedはスケジューラーの終了状態で、本文/Docs/PNG/公開の成功状態ではない。今回ユーザー履歴の予定21:00と開始20:55:04の差は-296秒、保存action=NOT_CALLED、HTTP error=NOT_APPLICABLE。原因を権限不足へ置換しない。
 
 既存verify_scheduled_report_delivery.verifyを隔離空rootで再実行するとMissing published canonical 2026-11-13_21-00.jsonで失敗し、ファイルを作らない。機械可読の再現結果はevidence/early-task-no-publication.json。これは既存監視の原本欠落判定の確認で、ChatGPTの時計/早期起動/待機/再開を検証したものではない。新しい監視/待機/再実行経路は追加していない。
+
+
+## MR-TASK-DIAG-20261113-01｜保存プロンプト3,954文字の診断（2026-11-13 JST）
+
+静的診断はevidence/task-prompt-diagnostic.jsonに提供資料hash/抽出文字数/7つの原文引用と8件の所見を保存。原文全文とtask/run/会話の私的識別子は追跡外logs/task-prompt-diagnosticに保持し、公開PRへコピーしない。実RRULE文字列は添付に含まれないため、復旧枠不在はUSER_REPORTEDとして区別し、RRULEを逆算作成しない。
+
+T01：提供されたrunは20:55実行→21時前で終了。ただし保存プロンプト自体に『予定前なら終了』という明示命令はなく、待機/再開の扱いがない。モデルの判断/実prompt適用/実schedule/プラットフォーム時刻のいずれが原因かはUNKNOWN。exact_scheduleというmode名だけで早期実行の原因を断定しない。
+
+T02/T03：プロンプト中の09/13/17/22時は実行予約の存在証明にならない。PNGの『作成するときのみ』は全4枠独立図解の目標と不整合。T04/T05：同実行原文保持と通常保存/正式公開のゲート分離は既に記載されており、コードを新設して同指示を重ねる前に実tool提供/呼出の有無を確認する。
+
+T06：生成元にGitHubのmain/日時別データ/参照JSの直接編集を指示している点は、最終書込を単一publisherへ集約する切替目標との責務差異。現在のshadowは本番publisherではないため、旧役割を今外して完了と扱わない。T07/T08：inherited/nullは実tool一覧ではなく、通常会話と定期run、Codexと別接続で権限を同一視しない。create_file親指定制限とimport_document親指定成功は、異なるaction/主体の観測として保持する。

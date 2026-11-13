@@ -1,0 +1,88 @@
+{
+  "changeId": "MR-TASK-DIAG-20261113-01",
+  "source": "USER_SUPPLIED_DIAGNOSTIC_ATTACHMENT",
+  "sourceCreatedAt": "2026-11-13T21:57:00+09:00",
+  "rawAttachmentSha256": "0d4b87c554c82e7c310742629dc34c51e7d774af675018769dae195a9cfec89f",
+  "promptBoundary": "exact supplied start/end marker lines; CRLF converted to LF for character count only",
+  "reportedPromptCharacters": 3954,
+  "extractedPromptCharacters": 3954,
+  "promptUtf16CodeUnits": 3954,
+  "promptSha256Utf8LF": "501ce01e9a49a1ef742af95aee66d6b5e0e001d03f3e8ae49ab4a8466943757f",
+  "exactSchedule": "USER_REPORTED",
+  "environmentSelection": "inherited (USER_REPORTED)",
+  "runtimeEnvironmentDetails": null,
+  "publicationSlots": [
+    "08:00",
+    "12:00",
+    "16:00",
+    "21:00"
+  ],
+  "promptOnlyRecoveryTimes": [
+    "09:00",
+    "13:00",
+    "17:00",
+    "22:00"
+  ],
+  "recoveryScheduleSource": "User diagnostic says actual RRULE contains only publication slots; literal RRULE not included in attachment",
+  "findings": [
+    {
+      "id": "T01",
+      "status": "CONFIRMED_PROMPT_OMISSION_AND_USER_REPORTED_RUN",
+      "observation": "No explicit before-slot wait/resume rule; observed run stopped at 20:55 before scheduled 21:00",
+      "importantLimit": "Prompt does not explicitly instruct early exit. Cause of early start is UNKNOWN; omission is not proof of platform scheduler defect.",
+      "quote": "JST平日08:00・12:00・16:00・21:00は新規本文を1本発行。"
+    },
+    {
+      "id": "T02",
+      "status": "PROMPT_SCHEDULE_MISMATCH_USER_REPORTED",
+      "observation": "Recovery times are mentioned only in prompt; no corresponding scheduled executions are evidenced",
+      "quote": "09:00・13:00・17:00・22:00は直前枠の保存・公開の復旧確認専用。"
+    },
+    {
+      "id": "T03",
+      "status": "CONFIRMED_REQUIREMENT_MISMATCH",
+      "observation": "PNG is optional in stored prompt although approved target requires one independent infographic for every slot",
+      "quote": "PNGは作成するときのみ"
+    },
+    {
+      "id": "T04",
+      "status": "HANDOFF_INSTRUCTION_PRESENT_EXECUTION_UNKNOWN",
+      "observation": "Prompt already requires chat body then same-execution full Docs save/readback and preservation of generated body. Missing instruction alone is not the established cause.",
+      "quote": "同一実行で自ら生成した本文を捨てず、必ず保存用の全文として使う。"
+    },
+    {
+      "id": "T05",
+      "status": "SAVE_AND_PUBLICATION_GATES_EXPLICITLY_SEPARATED",
+      "observation": "Missing pre-draft evidence should hold formal publication, not ordinary Docs storage. User-reported Nov 11 no-write must be traced rather than justified by the formal gate.",
+      "quote": "ただしチャット本文、Google Docsへの通常保存、読戻し、ポータルの『非正式分析版・参考閲覧』掲載は止めない。"
+    },
+    {
+      "id": "T06",
+      "status": "RESPONSIBILITY_CONFLICT_WITH_SINGLE_PUBLISHER_GOAL",
+      "observation": "Stored producer prompt asks ChatGPT to edit GitHub portal data and reference JS directly; future single publisher handoff needs this responsibility separated before cutover",
+      "quote": "既存の日時別ポータル表示データ・参照JSを点検し"
+    },
+    {
+      "id": "T07",
+      "status": "CAPABILITY_UNKNOWN_PER_RUN",
+      "observation": "inherited/null is not a runtime tool inventory. Current chat actions do not prove task-run actions or authentication.",
+      "quote": null
+    },
+    {
+      "id": "T08",
+      "status": "CONNECTION_AND_ACTION_SPECIFIC",
+      "observation": "Prior OAuth create_file parent limitation is not disproved by Codex import_document success; actions and principals differ. Test Doc visibility differs by connection.",
+      "quote": "新規作成時に親フォルダー指定が失敗したら"
+    }
+  ],
+  "unchanged": {
+    "taskSchedule": true,
+    "taskPrompt": true,
+    "taskEnabled": true,
+    "productionData": true,
+    "formalDocs": true,
+    "paidApiCalls": 0
+  },
+  "overall": "DIAGNOSED_NOT_FIXED",
+  "cutover": "ON_HOLD"
+}

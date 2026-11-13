@@ -256,3 +256,20 @@ Google固定ID影響マトリクスはDOCUMENT_CONTROLの同ID。requirements/sp
 既存read-only監視のverifyを一時空rootで再現し、Missing published canonical 2026-11-13_21-00.jsonで停止、生成ファイル0件を確認。evidence/early-task-no-publication.jsonを共有する。これは欠落判定のオフライン再現で、実taskの待機/再開/保存/定時受入ではない。既存32件の合格数を33件へ水増しせず、独立シナリオとして分離。今回追加のランタイムコード/タスク/監視/有料サービスはなし。
 
 継続課題：taskの実prompt/予定schedule/サーバー時刻/提供toolの照合、早期起動後に枠まで保持/再開する公式機能の実証、run別会話と指定表示先の一致。原因候補を権限問題と混同しない。既存taskは有効のまま保持し、Google正本文書も不変。
+
+
+## MR-TASK-DIAG-20261113-01｜保存プロンプト3,954文字の診断（2026-11-13 JST）
+
+出典：ユーザー添付21:57診断資料。開始時HEADae249df9f07dfaf6ca08959c543b901f9d2e0c7e、worktree clean、PR200 Open/Draftで同head CI4件successをAPI再確認。main fetch49cee0bd5（今回のscripts/apps-script/config/workflows/docs固定実装へupstream新変更なし、候補の本番取り込みは保留）。
+
+提供promptを開始/終了マーカーで抽出し、LFで3,954文字/UTF-16 3,954単位を独立計数、SHA501ce01e9a49a1ef742af95aee66d6b5e0e001d03f3e8ae49ab4a8466943757f。抽出時に改行以外のstrip/要約/改稿をしない。7つの引用が実原文に存在することを照合し、8項目をevidence/task-prompt-diagnostic.jsonへ保存。完全promptと元添付はローカルで保全。提供資料の真正なtask backend exportかどうかは未検証で、各UI/API履歴はUSER_REPORTED。
+
+確認事項：同実行の原文保持/全文保存/readback、正式証拠不足でも通常保存を継続する指示は存在。早期終了を明示命令した条項はない。予定前に起動した場合の公式な保持/継続手順は未規定。よって『promptに保存指示がない』『promptが早期終了を命じた』『Drive権限不足が当該runを失敗させた』は未確定/不適切な断定として排除する。
+
+復旧09/13/17/22時は原文にあるが、提供診断ではactual scheduleは4枠のみ。literal RRULEは添付にないため、raw設定の独立照合はNOT_RUN。PNG任意文言は原文で確認でき、承認済み全4枠必須と不一致。inherited/environments=nullはtool提供証拠ではない。一般的機能紹介をruntime実測へ置換しない。
+
+追加の責務差：producer promptはGitHub mainの日時別データ・JS変更まで要求し、単一writer切替目標と整理が必要。現shadowは本番publisherではないので、これを理由に既存役割/機能を停止しない。create_fileとimport_document、Codexと別会話、通常chatとtask runの接続差も独立記録する。非本番試験Docの他接続404/403はCodex保存成功の否定でも、task保存未呼出の原因確定でもない。
+
+実施した検証はprompt計数/hash/引用・既存設定との照合。task実行の新試験、保存処理の追加実装、task変更、API課金、本番データ/Google正本/Pages変更はなし。コード変更なしにつき既存32件を新実行と数えず、今回の診断をruntime回帰PASSと表現しない。最小prompt差分はoperationsの同IDに未適用候補として保持し、別冊を作らない。
+
+残る実測はtaskの適用prompt/schedule/正確な開始時刻/提供toolとcall trace、および予定前起動時の公式継続/再開能力。現在のツールでは対象runのこれらを独立取得できない。原本TXT/実PNG・受渡し確認・正式receipt・公開・通知・切替・20枠受入は未達のまま。新しいwatchdog/recovery/有料APIで埋めない。
