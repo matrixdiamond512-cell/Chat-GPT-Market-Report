@@ -135,3 +135,35 @@ T01：提供されたrunは20:55実行→21時前で終了。ただし保存プ�
 T02/T03：プロンプト中の09/13/17/22時は実行予約の存在証明にならない。PNGの『作成するときのみ』は全4枠独立図解の目標と不整合。T04/T05：同実行原文保持と通常保存/正式公開のゲート分離は既に記載されており、コードを新設して同指示を重ねる前に実tool提供/呼出の有無を確認する。
 
 T06：生成元にGitHubのmain/日時別データ/参照JSの直接編集を指示している点は、最終書込を単一publisherへ集約する切替目標との責務差異。現在のshadowは本番publisherではないため、旧役割を今外して完了と扱わない。T07/T08：inherited/nullは実tool一覧ではなく、通常会話と定期run、Codexと別接続で権限を同一視しない。create_file親指定制限とimport_document親指定成功は、異なるaction/主体の観測として保持する。
+
+
+## MR-SOURCE-HANDOFF-RECOVERY-20261113-01（2026-11-13 JST）
+出典: 23:34 JST指示書 / Draft PR #200。既存タスク・Google固定正本・main・本番設定は変更なし。影響: requirements/specification/operations/DOCUMENT_CONTROL、台帳、HANDOFF。Google固定ID文書・本文/図解マニュアルへの同期は未実施（権限/承認待ち）。承認済み本文・図解品質は維持。
+
+既存verify_scheduled_report_delivery.pyへ任意の`--run-observation`を追加。予定/実開始/実終了・情報基準/原本作成時刻を分離し、completedだけを成功とせず本文/PNG/Docs/受渡しとlocal canonicalを別判定する。新しい監視job・schedule・writerなし。観測ファイルを自動取得する接続は未実装、現行監視へrun情報が自動注入されるわけではない。時刻またぎ・早期終了・PNG欠落・canonical欠落・異なる予定枠・timezone欠落を回帰検証。既存32件＋配信検証9件=41件PASS（合成試験を含み、実E2Eではない）。
+
+実物読戻し: 11/13 16時Docの全文・親・MIME・時刻を取得、revisionはnull、実runとの結合UNKNOWN。実PNGは未受領。取得0件を不存在とは断定しない。実本文を既存shadowへ渡すとWAITING_FOR_SOURCE_ARTIFACT、欠けた6ファイルを明示、productionWrites=0。証拠: `docs/project-control/evidence/source-handoff-recovery.json`。前回の非本番2495文字保存成功は維持、新しい保存成功へ水増ししない。今回のPNG保存・bundle受入・公開・通知は未実施。
+
+公式継続/遅延再開/強制実行は、この接続で提供されるautomation操作(view/create/update/delete)では実証できない。BLOCKED_PLATFORM_CAPABILITY。原因不明の早期起動を平台障害と断定せず、sleep/未予約復旧を対策としない。通常ChatGPTのDrive操作可用性はユーザー報告、定期runのtool一覧/主体/呼出traceは取得不能。CodexのDoc読戻しと以前の非本番書込は実測、GAS/Actionsの認証・導入版はUNKNOWN。確認にはユーザーが許可した実runのaction履歴と原本文・実PNGが必要。無課金の自動会話転送は実証済み公開接続なし。人手受渡しは非本番試験に限り許容、自動配信成功に数えない。
+
+最小プロンプト差分は `docs/project-control/task-prompt-change.patch.md`（未適用）。本番切替/rollbackは既存operationsの承認gateを維持。4枠＋20枠の実受入は未達。費用PASS_LOCAL_ONLYは契約/本番費用保証ではない。
+
+原本の依存順（生成主体は予定責任、稼働証明ではない）:
+```mermaid
+flowchart LR
+ A[既存市場取得・枠前凍結] --> E[evidence.json]
+ C[ChatGPT実run 本文と独立PNG] --> D[Drive保存と独立読戻し]
+ D --> R[report.json 本文・元hash・Doc revision]
+ D --> M[drive-file.json 実metadata]
+ C --> I[infographic.png 元byte]
+ I --> N[infographic-manifest.json 同内容版の画像QA]
+ R --> Q[receipt.json 読戻し検証証拠]
+ M --> Q
+ E --> Q
+ Q --> B[bundle.json 月親ID等の受渡manifest]
+ B --> S[既存shadow 7ファイル再照合]
+ N --> S
+ I --> S
+ S --> P[将来の単一正式writer 未実装・未受入]
+```
+receipt.jsonは既存verify_slot_evidenceが発行するDOC_READBACK_PASS（schema2）、公開結果ではない。publicationEvidenceはその証拠値をreportへ結ぶフィールドで、公開済み状態を前提にしないため依存循環ではない。ただし独立した元本文/画像と真正な枠前証拠が無ければ生成不可。bundle/画像manifestの自動出力元は未接続、架空のreceipt・revision・画像QAは作らない。通常保存はこの7ファイルの正式資格gateに依存しない。画像manifestのbyte照合はデザイン/読字性QAを代替しない。

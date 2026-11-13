@@ -2,6 +2,8 @@ name: Zero-cost report delivery shadow contracts
 on:
   pull_request:
     paths:
+      - scripts/verify_scheduled_report_delivery.py
+      - tests/test_scheduled_report_delivery.py
       - scripts/run_report_delivery.py
       - scripts/build_market_json.py
       - tests/test_market_projection_immutability.py
@@ -31,4 +33,4 @@ jobs:
       - name: Verify offline intake, immutable sources, locking and restart
         env:
           PYTHONPATH: scripts
-        run: python -m unittest tests.test_zero_cost_delivery tests.test_market_projection_immutability tests.test_publication_evidence tests.test_report_slot_evidence -v
+        run: python -m unittest tests.test_zero_cost_delivery tests.test_market_projection_immutability tests.test_publication_evidence tests.test_report_slot_evidence tests.test_scheduled_report_delivery -v
