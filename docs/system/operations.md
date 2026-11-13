@@ -181,3 +181,11 @@ GitHub APIで対象repoはpublicを確認。標準runnerのpublic実行は現行
 公式継続/遅延再開/強制実行は、この接続で提供されるautomation操作(view/create/update/delete)では実証できない。BLOCKED_PLATFORM_CAPABILITY。原因不明の早期起動を平台障害と断定せず、sleep/未予約復旧を対策としない。通常ChatGPTのDrive操作可用性はユーザー報告、定期runのtool一覧/主体/呼出traceは取得不能。CodexのDoc読戻しと以前の非本番書込は実測、GAS/Actionsの認証・導入版はUNKNOWN。確認にはユーザーが許可した実runのaction履歴と原本文・実PNGが必要。無課金の自動会話転送は実証済み公開接続なし。人手受渡しは非本番試験に限り許容、自動配信成功に数えない。
 
 最小プロンプト差分は `docs/project-control/task-prompt-change.patch.md`（未適用）。本番切替/rollbackは既存operationsの承認gateを維持。4枠＋20枠の実受入は未達。費用PASS_LOCAL_ONLYは契約/本番費用保証ではない。
+
+
+### 2026-11-14 JST 観測追補 — MR-SOURCE-HANDOFF-RECOVERY-20261113-01
+出典: ユーザーの別接続revision照会とコミット535e5dd提示 / PR #200。今回の新規実証は証拠JSONのfollowupObservationsを参照。Codexのget_document（全文/fields指定）とget_document_textはいずれもrevision=null。ユーザー報告revisionを今回の独立読戻し本文へ転記して成功扱いしない。共有操作権限falseをrevision欠落の原因とは断定しない。
+
+現在のDoc本文4640文字は以前の読戻しhashと一致。GitHub535e5ddの保存版は同じDoc ID・月親・提示revision、verifiedAtSlot=false。ただしfullTextは4548文字・1行、Docの92個のLFを全削除した文字列とだけ一致する。全文byte/hashの一致条件はFAIL。改行を無視してPASSにせず、改行を失わせた操作主体・処理はUNKNOWNとする。今回mainの保存版は修正していない。将来の承認済み取込ではDocの原文改行を保全し、readback hashとarchive hashを独立照合する。
+
+16時固有run ID/会話参照/保存actionログはユーザー側でも取得不能。21時runを流用しない。TASK_RUN_BINDING_UNKNOWNを維持。対象実PNGは未受領（検索で見つかった非レポート画像は除外）、PNG保存/byte読戻し/正式公開はNOT_RUN。必要な次証拠は許可された実runの対象Doc ID付き保存action結果と同runのPNG原本。既存タスク・固定Google文書・本番・未適用prompt候補は変更なし。要件/本文・図解品質の変更なし、コード変更・追加機械試験なし。固定Google Docs同期は未実施。
