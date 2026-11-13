@@ -75,3 +75,7 @@ Google Docs固定ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` へ対応す�
 ## MR-CLOSE-SYNC-20261114-01（2026-11-14 JST）
 
 SheetsClient.a1_rangeはエスケープ済みのliteral A1を返し、_rangeはURLパス専用の1回エンコードを返す。values:batchUpdateのJSONとbatchGetのquery構築前にはliteralを使用する。朝用windowは任意--status-outputへ当該runの要約を保存。syncは--upstream-outcomeが非successならsnapshot読込/認証/Sheets呼出なしで診断だけを出力する。締切超過はACQUISITION_EXPIRED、その他FETCH_FAILED/WRITE_FAILED/READBACK_FAILED等を区別し、LOG失敗でも先行failedStageを保持。GITHUB_SAVEは同期スクリプト自身で独立証明しないためUNKNOWN。手動permission_probe=true時だけ既存workflowの隔離jobを実行し、同Secretsの認証で新規一時タブへランダム文字列を保存・再読込・削除・タブ一覧再確認する。通常取得jobは実行せず、既存終値セルは変更しない。これは終値行の日付・価格の受入試験ではない。
+
+### 実権限検証の追補（2026-11-14 02:38 JST）
+
+MR-CLOSE-SYNC-20261114-01 / Draft PR #201 / code commit 0e35a3df80af3064001b3d9cd3d334ebccd98bd2。Actions run [43474764135](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43474764135)のpermission-probe job SUCCESS、通常acquire job SKIPPED。結果artifactを別リクエストで取得・読戻し、対象spreadsheetIdが指定の終値一覧2026と一致、CLOSE_DATA_WRITE/READBACK_VERIFY/cleanupすべてSUCCESS、reportCellsModified=0を確認。既存Secretsのサービスアカウントを使用し、主体のfingerprintを証拠JSONに記録。これは本番ファイル内の隔離タブにおける権限・保存経路の実証に限定し、日付キー/終値・前日比の実行受入ではない。今回の条件では400/403は再現しなかったが全経路の解消とは断定しない。68ローカル試験と同code headのhosted checks SUCCESS。実終値行読戻し/定時性回復/20対象営業日/main統合/Google固定文書同期は未達・NOT_RUN、遅延の発生原因はUNKNOWNのまま。先行のNOT_RUN記録は当時の履歴として保持する。

@@ -7,7 +7,29 @@
   "failures": 0,
   "errors": 0,
   "status": "PASS",
-  "livePermissionProbe": "NOT_RUN",
+  "livePermissionProbe": {
+    "runId": 43474764135,
+    "codeCommit": "0e35a3df80af3064001b3d9cd3d334ebccd98bd2",
+    "artifactId": 14061953985,
+    "result": {
+      "status": "SUCCESS",
+      "stages": {
+        "CLOSE_DATA_WRITE": "SUCCESS",
+        "READBACK_VERIFY": "SUCCESS"
+      },
+      "failedStage": "",
+      "temporarySheet": "Codex_Close_Probe_64b3c69e3359411d9236d41deaf74668",
+      "cleanup": "SUCCESS",
+      "reportCellsModified": 0,
+      "failureCode": null,
+      "spreadsheetId": "1n2ACInX4pmK0TdijC8xaur2RIiNZyVa6GFTZAyofcuE",
+      "principalSha256": "0a462906ac74c2847a4f74e4b3a04e906b34b9eed2b7c8eab408ef9cb5b17c2e",
+      "checkedAt": "2026-11-14T02:38:41+09:00",
+      "runKey": "43474764135:1",
+      "permissionProbe": true
+    },
+    "scope": "Same configured Actions service account; temporary tab in configured target spreadsheet only. Does not verify actual close-date row or market values."
+  },
   "liveCloseRowReadback": "NOT_RUN",
   "stable20BusinessDays": "NOT_RUN",
   "sourceRun": {
@@ -16,5 +38,43 @@
     "url": "https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43355399689",
     "logObserved": "2026-11-13T02:55:19.5269370Z Past report cutoff for 08:00: no source acquisition",
     "diagnosis": "07:50 intended attempt started at 11:55 JST. Acquisition was not attempted; scheduler delay origin UNKNOWN. Existing cutoff correctly blocked retrospective evidence."
-  }
+  },
+  "pullRequest": "https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/201",
+  "hostedChecks": [
+    {
+      "name": "test",
+      "head_sha": "0e35a3df80af3064001b3d9cd3d334ebccd98bd2",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43474871871/job/132055978925"
+    },
+    {
+      "name": "forbid-late-source",
+      "head_sha": "0e35a3df80af3064001b3d9cd3d334ebccd98bd2",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43474871756/job/132055977874"
+    },
+    {
+      "name": "acquire",
+      "head_sha": "0e35a3df80af3064001b3d9cd3d334ebccd98bd2",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43474764135/job/132055605502"
+    },
+    {
+      "name": "permission-probe",
+      "head_sha": "0e35a3df80af3064001b3d9cd3d334ebccd98bd2",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43474764135/job/132055602673"
+    },
+    {
+      "name": "forbid-late-source",
+      "head_sha": "0e35a3df80af3064001b3d9cd3d334ebccd98bd2",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43474762202/job/132055583306"
+    }
+  ]
 }

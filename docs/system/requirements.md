@@ -81,3 +81,7 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 ## MR-CLOSE-SYNC-20261114-01（2026-11-14 JST）
 
 対象日の保存成功は、実Sheetsの日付・更新値の再読込一致を必要とする。コード/CI、隔離タブ権限試験、実終値行受入、連続20対象営業日の運用受入を分離する。取得期限切れ・取得失敗・認証・書込・再読込・ログ失敗を区別し、未実行工程はNOT_RUN。古い市場snapshotを取得失敗の代用品として保存しない。既存の08時締切・28項目QA・公開資格・配信時刻を緩和しない。
+
+### 実権限検証の追補（2026-11-14 02:38 JST）
+
+MR-CLOSE-SYNC-20261114-01 / Draft PR #201 / code commit 0e35a3df80af3064001b3d9cd3d334ebccd98bd2。Actions run [43474764135](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43474764135)のpermission-probe job SUCCESS、通常acquire job SKIPPED。結果artifactを別リクエストで取得・読戻し、対象spreadsheetIdが指定の終値一覧2026と一致、CLOSE_DATA_WRITE/READBACK_VERIFY/cleanupすべてSUCCESS、reportCellsModified=0を確認。既存Secretsのサービスアカウントを使用し、主体のfingerprintを証拠JSONに記録。これは本番ファイル内の隔離タブにおける権限・保存経路の実証に限定し、日付キー/終値・前日比の実行受入ではない。今回の条件では400/403は再現しなかったが全経路の解消とは断定しない。68ローカル試験と同code headのhosted checks SUCCESS。実終値行読戻し/定時性回復/20対象営業日/main統合/Google固定文書同期は未達・NOT_RUN、遅延の発生原因はUNKNOWNのまま。先行のNOT_RUN記録は当時の履歴として保持する。

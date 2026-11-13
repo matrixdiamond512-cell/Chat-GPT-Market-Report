@@ -84,3 +84,7 @@ Google Docs固定ID `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg` に対応す�
 ## MR-CLOSE-SYNC-20261114-01（2026-11-14 JST）
 
 最新の取得step failureをAPI障害と即断せず、runログの開始時刻・予定枠・cutoffを照合する。11/13 run 43355399689は07:50予定に対して11:55 JST開始、取得未実行でexpired。遅延の発生主体はUNKNOWN、cron変更・締切緩和・過去枠evidence再生成は行わない。既存workflow market-data-08-anchor.ymlの手動permission_probe=trueは同じActions Secretsで隔離タブを検証し、結果artifactのwrite/readback/cleanupを確認する。cleanup失敗は仮タブ名/IDとともに未解決扱い、成功と報告しない。通常runの診断artifactはwindow-status/close-status、取得失敗時は実保存しない。Git保存に失敗してもartifactを確認する。実終値の受入と20営業日は別途必要。
+
+### 実権限検証の追補（2026-11-14 02:38 JST）
+
+MR-CLOSE-SYNC-20261114-01 / Draft PR #201 / code commit 0e35a3df80af3064001b3d9cd3d334ebccd98bd2。Actions run [43474764135](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43474764135)のpermission-probe job SUCCESS、通常acquire job SKIPPED。結果artifactを別リクエストで取得・読戻し、対象spreadsheetIdが指定の終値一覧2026と一致、CLOSE_DATA_WRITE/READBACK_VERIFY/cleanupすべてSUCCESS、reportCellsModified=0を確認。既存Secretsのサービスアカウントを使用し、主体のfingerprintを証拠JSONに記録。これは本番ファイル内の隔離タブにおける権限・保存経路の実証に限定し、日付キー/終値・前日比の実行受入ではない。今回の条件では400/403は再現しなかったが全経路の解消とは断定しない。68ローカル試験と同code headのhosted checks SUCCESS。実終値行読戻し/定時性回復/20対象営業日/main統合/Google固定文書同期は未達・NOT_RUN、遅延の発生原因はUNKNOWNのまま。先行のNOT_RUN記録は当時の履歴として保持する。
