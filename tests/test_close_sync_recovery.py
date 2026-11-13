@@ -56,8 +56,22 @@ class FailureStatusTests(unittest.TestCase):
             client.assert_not_called()
             result = json.loads(output.read_text(encoding="utf-8"))
             self.assertEqual(result["failureCode"], "ACQUISITION_EXPIRED")
+            self.assertEqual(result["stages"]["FETCH"], "NOT_RUN")
             self.assertEqual(result["stages"]["CLOSE_DATA_WRITE"], "NOT_RUN")
             self.assertEqual(result["stages"]["READBACK_VERIFY"], "NOT_RUN")
+
+    def test_evidence_failure_does_not_relabel_successful_fetch(self):
+        with TemporaryDirectory() as tmp:
+            output = Path(tmp) / "status.json"
+            upstream = Path(tmp) / "window.json"
+            upstream.write_text(json.dumps({"failureCode": "EVIDENCE_BLOCKED", "acquisitionStatus": "READY"}))
+            with patch.object(sync.sys, "argv", ["sync", "--upstream-outcome", "failure", "--window-status", str(upstream), "--status-output", str(output)]), patch.object(sync, "SheetsClient") as client:
+                self.assertEqual(sync.main(), 1)
+            client.assert_not_called()
+            result = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(result["stages"]["FETCH"], "SUCCESS")
+            self.assertEqual(result["stages"]["CLOSE_DATA_WRITE"], "NOT_RUN")
+            self.assertEqual(result["failureCode"], "EVIDENCE_BLOCKED")
 
     def test_missing_credentials_are_auth_failure(self):
         with TemporaryDirectory() as tmp:

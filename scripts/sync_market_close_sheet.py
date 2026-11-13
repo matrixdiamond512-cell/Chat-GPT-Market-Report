@@ -741,6 +741,14 @@ def main() -> int:
                 window = json.loads(Path(args.window_status).read_text(encoding="utf-8"))
                 summary["upstreamStatus"] = window
                 summary["failureCode"] = window.get("failureCode") or "FETCH_FAILED"
+                if summary["failureCode"] == "ACQUISITION_EXPIRED":
+                    summary["failedStage"] = "SCHEDULE"
+                    summary["stages"]["FETCH"] = "NOT_RUN"
+                    summary["stages"]["SCHEDULE"] = "FAILED"
+                elif window.get("acquisitionStatus") == "READY":
+                    summary["failedStage"] = "EVIDENCE"
+                    summary["stages"]["FETCH"] = "SUCCESS"
+                    summary["stages"]["EVIDENCE"] = "FAILED"
         else:
             payload = {} if args.permission_probe else json.loads(Path(args.latest).read_text(encoding="utf-8"))
             stage = "AUTH"
