@@ -98,3 +98,8 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 実測・検証：同IDのEVIDENCE_LEDGERと固定DELIVERY_PATH_INVENTORY.json、追跡外logs/zero-cost-deliveryを参照。ローカル試験32件PASS、実本文4枠shadowはすべてWAITING_FOR_SOURCE_ARTIFACT、公開4枠DOMは対象データなし。全工程VERIFIED/完成/切替済みとは報告しない。
 
 未解決：Google正本6文書の実revision/本文/基準図、Drive本文の親とrevision、PNG実体、独立タスクrunログ/指定会話、GAS導入版/トリガー、Actions認証主体、公式自動受渡し、外部非本番保存/公開経路、課金/再配布条件、全4枠実地受入、単一writer切替、20枠連続運用。ログ/原本/履歴を削除して未解決を隠さない。
+
+
+### MR-ZEROCOST-20261113-01｜レビュー公開状態の追補（2026-11-13 JST）
+
+関連PRを [Draft #200](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/200) に固定。review branchはcodex/zero-cost-delivery、初回共有commit62485d557491d821f82ebff86f96ef7f7ebc0d29。GitHubで差分・台帳・32件の証拠ファイルをreadbackし、同head CI successを確認。main統合/Google固定ID同期/本番運用受入とは別ステータス。本文/図解/保存/公開の既存未達とBLOCKEDは解消したと扱わない。詳細はEVIDENCE_LEDGER同ID。

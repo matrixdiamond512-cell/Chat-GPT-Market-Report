@@ -207,3 +207,13 @@ Google固定ID影響マトリクスはDOCUMENT_CONTROLの同ID。requirements/sp
 上記証拠ファイルには、今回再実行した32件の個別結果、コマンド、実行日時、Python版、対象source SHA-256とコストゲートを保全。32件PASS、追加依存/API課金なし。ローカル検証とhosted CIを分ける。PR前コストゲート=PASS_LOCAL_ONLY、NEW_RECURRING_COST=0、NEW_USAGE_BILLING=0、NEW_PAID_API_CALLS=0、NEW_CREDIT_CARD_REQUIRED=false。本番料金条件はBLOCKED_COST_UNVERIFIEDのまま。
 
 本工程はbranch push/Draft PRだけ。main merge、既存定期タスク停止、Drive正式原本/公開JSON/PNG/receiptの上書き、Pages本番起動は行わない。push/PR結果のURLとcommitは成功後に追記する。以前の未push/PR未作成記録は各観測時点の履歴として保持。
+
+
+## MR-ZEROCOST-20261113-01｜GitHub共有の実結果（2026-11-13 JST）
+
+- レビュー用commit `62485d557491d821f82ebff86f96ef7f7ebc0d29` をoriginの `codex/zero-cost-delivery` へpush成功。remote refのSHA一致をGitHub APIで確認。
+- Draft PR [#200](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/200) を作成し、open/draft=true/head SHAを独立readback。branch URL: https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/tree/codex/zero-cost-delivery 。以前の「remote不存在」は解消した。mainへはマージしていない。
+- PR files APIで20ファイルの差分を読戻し、コード・固定文書・検証台帳・32件の証拠ファイルを確認。本番reports/data/PNG/receipt、追跡外の実本文/会話情報/資格情報は含まない。
+- GitHub上の `docs/project-control/evidence/zero-cost-delivery-tests.txt` を取得し、commitのGit blobと実バイト完全一致を確認。作業コピーのCRLF差はGit正規化と区別した。ファイルには32件の再実行結果・日時・コマンド・環境・source hash・cost gateを収録。
+- 同headのhosted CIをGitHub APIで確認： [shadow contracts run43419256599](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43419256599) SUCCESS、[delivery health run43419256486](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43419256486) SUCCESS、[frozen-cutoff PR run43419256334](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43419256334) SUCCESS、[frozen-cutoff push run43418865436](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43418865436) SUCCESS。各check jobはcompleted/success。これは62485d557に対する結果であり、後続headの結果は別途照合する。
+- 今回はGitHubで共同検証可能な候補公開まで。Draftを維持。main merge/既存タスク停止/Google正式原本上書き/本番配信切替/Pages手動起動は未実施。CI PASSを本文4本・独立図解4枚・Drive・Portal・通知の運用受入へ置換しない。既存BLOCKEDと全工程NOT_VERIFIEDは維持。
