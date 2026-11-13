@@ -126,3 +126,8 @@ branch `codex/zero-cost-delivery`、base取得main `f94229ba1c135215623881faf4f5
 ## MR-ZEROCOST-20261113-01｜GitHub共有済み（2026-11-13 JST）
 
 レビューbranch `codex/zero-cost-delivery` をpushし、Draft PR https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/200 を作成。初回code/evidence commitは `62485d557491d821f82ebff86f96ef7f7ebc0d29`、同headのshadow/health/frozen-cutoff CIはSUCCESS。GitHubのtest証拠ファイルとcommit blobの実バイト一致を確認。この共有結果追補は同branchへ追加。最新headはPRのheadSHAで照合する。以前の未push記録は当時の履歴。main/定期タスク/正式原本は不変、発行復旧と切替/20枠受入は未達。
+
+
+## MR-SOURCE-HANDOFF-20261113-01｜非本番の実保存・原本受渡し境界（2026-11-13 JST）
+
+ユーザーの優先指示により新経路を増やさず既存connectorで実保存を試験。非本番Doc1fRNyN1E2xzk0vj1GahLn5Xc4gupsEth7LZcNQYVLf6Mは、初回末尾LF不一致を記録後、revision付き限定修正と独立readbackで本文2495文字/SHA/親/MIME一致。source-handoff-save-readback.jsonとEVIDENCE_LEDGERを読む。これは元Docの補充本文コピー保存で、指定ChatGPT会話からの原本引渡しの証拠ではない。生成元会話のDrive action/エラー全文をユーザーへ確認中。元Doc revision/PNG/固定正本アクセスは引き続き未了。ランタイムコード変更なし、本番/既存task/正式原本不変。既存PR200 Draftのまま実測証拠を共有する。

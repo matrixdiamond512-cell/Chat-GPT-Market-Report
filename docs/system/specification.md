@@ -106,3 +106,14 @@ Google Docs固定ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` へ対応す�
 `scripts/build_market_json.py` はPR #188 head `860ec370af7633a8ccadf393a474ee2614ce5430` の同一blobを再利用し、latestReport/reports内部へlive市場データを注入する処理を削除。dashboard.marketData、更新日時・出典・欠損警告は維持。既存の公開JSONの強制再生成や過去原本の補正はしない。
 
 PR用CIは読取権限、public repositoryの標準ubuntu runner、外部API/Secrets/依存インストール/追加schedule/有料artifact保存なし。ホストCIは未実行。全既存writerの本番単一化は、所有者/導入版/停止影響/readbackが揃うまで未実装・切替保留。
+
+
+## MR-SOURCE-HANDOFF-20261113-01｜非本番の実保存・原本受渡し境界（2026-11-13 JST）
+
+本段階で追加のランタイム経路は実装していない。既存Drive connectorの `import_document(native_google_docs, parent_folder_id)` による実保存と、get_document/full text・get_file_metadata・revision readbackを手動実行した。
+
+非本番folder `1JN-iq2Y2cmiYpiDIqOM7xtn53-_ztuIv`、Doc `1fRNyN1E2xzk0vj1GahLn5Xc4gupsEth7LZcNQYVLf6M`。元は11/12 08時補充Docの取得済み全文2495文字。変換直後2496文字で末尾改行1文字の不一致を検出。初回Docs revisionをrequiredRevisionIdに指定し、新規試験DocのUTF-16範囲2495:2496だけ削除。再読戻し2495文字、SHA-256 `2f9347fd286f3311040fe76fbd7911d669503dff2dde75d69e1a6e61e899259e` が入力と完全一致、親とMIMEも一致した。元Docは変更していない。
+
+この試験結果はpublication receiptではなく非本番の観測証拠 `docs/project-control/evidence/source-handoff-save-readback.json`。Docsの実作成/更新日時と予定枠日時を分離し、元Doc revisionや枠前証拠を補作しない。既存shadowは引き続き本番adapterなし/全工程NOT_VERIFIED。タスクの実原文・画像を受け取るまで当該工程はWAITING/BLOCKED。
+
+get_document_textの段落リストは空段落を省くため、単純join/trimを全文一致の根拠にしない。比較には実構造のtextRun（全対象tab・空段落を保持）を使用する。今回の限定的な末尾修正を一般のstrip/改行一括正規化へ拡大しない。

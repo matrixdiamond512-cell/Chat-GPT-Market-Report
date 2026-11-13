@@ -103,3 +103,10 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 ### MR-ZEROCOST-20261113-01｜レビュー公開状態の追補（2026-11-13 JST）
 
 関連PRを [Draft #200](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/200) に固定。review branchはcodex/zero-cost-delivery、初回共有commit62485d557491d821f82ebff86f96ef7f7ebc0d29。GitHubで差分・台帳・32件の証拠ファイルをreadbackし、同head CI successを確認。main統合/Google固定ID同期/本番運用受入とは別ステータス。本文/図解/保存/公開の既存未達とBLOCKEDは解消したと扱わない。詳細はEVIDENCE_LEDGER同ID。
+
+
+## MR-SOURCE-HANDOFF-20261113-01｜非本番の実保存・原本受渡し境界（2026-11-13 JST）
+
+影響マトリクス：requirements.md（保存受入の工程境界）、specification.md（実保存/全文一致・revisionの観測）、operations.md（既存connectorでの引渡し/差分停止）、EVIDENCE_LEDGERと本台帳を同一変更IDで追補。本文/図解の承認内容は変更しない。固定Google Docs要件/仕様/本文作成/運用/台帳/図解マニュアルへの追補は、403等で現revisionを読めないためBLOCKED_EXTERNAL_ACCESS。正本名/IDは保持、新規の要件/仕様/マニュアルは作らない。
+
+非本番試験Docだけを新規作成/限定修正し、元の正式原本/タスクは変更していない。source-handoff-save-readback.jsonは新規実保存の証拠で、定時publication receiptの代替ではない。詳細はEVIDENCE_LEDGER同IDとDraft PR200。

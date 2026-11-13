@@ -105,3 +105,12 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - Google Docs正本6文書の読取/図解基準照合は403/404でブロック。本文作成マニュアル/図解マニュアルを未読のまま改稿せず、既存GitHub契約の構造検証合格を承認品質の全達成と呼ばない。
 
 変更対象：本要件、specification.md、operations.md、DOCUMENT_CONTROL.md、EVIDENCE_LEDGER、DELIVERY_PATH_INVENTORY.json、HANDOFF、コスト設定/検査、shadow入口/CI、原本不変writer。Google固定IDの同期はBLOCKED_EXTERNAL_ACCESS。詳細検証は同IDの台帳へ記録。
+
+
+## MR-SOURCE-HANDOFF-20261113-01｜非本番の実保存・原本受渡し境界（2026-11-13 JST）
+
+出典：ユーザーのPR200共同レビュー後指示。既存ChatGPT→原本引渡し→Drive保存を優先し、今回新しいpublisher/recovery/watchdog/有料APIは追加しない。
+
+既存Google Drive connectorを使った非本番本文保存は実測した。新規フォルダ/Docの作成、親MIME、全文SHA、Docs revisionの独立readbackを確認できた範囲に限り保存試験PASS。指定ChatGPT定期タスクからの原本引渡し、同枠PNG、正式receipt、Portal、通知は別工程で、未接続/未検証を保持する。
+
+既存Docの補充本文をコピーした試験を、指定会話の本文表示や定時生成成功へ昇格させない。TXT変換での余分な改行もhash不一致として記録し、新規試験Docだけをrevision付きで限定修正した。原本本文や合格基準は変更しない。本文・図解の品質/全4枠/事前証拠/公開資格は既存要件のまま。

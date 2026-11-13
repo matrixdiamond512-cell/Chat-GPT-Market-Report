@@ -217,3 +217,29 @@ Google固定ID影響マトリクスはDOCUMENT_CONTROLの同ID。requirements/sp
 - GitHub上の `docs/project-control/evidence/zero-cost-delivery-tests.txt` を取得し、commitのGit blobと実バイト完全一致を確認。作業コピーのCRLF差はGit正規化と区別した。ファイルには32件の再実行結果・日時・コマンド・環境・source hash・cost gateを収録。
 - 同headのhosted CIをGitHub APIで確認： [shadow contracts run43419256599](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43419256599) SUCCESS、[delivery health run43419256486](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43419256486) SUCCESS、[frozen-cutoff PR run43419256334](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43419256334) SUCCESS、[frozen-cutoff push run43418865436](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43418865436) SUCCESS。各check jobはcompleted/success。これは62485d557に対する結果であり、後続headの結果は別途照合する。
 - 今回はGitHubで共同検証可能な候補公開まで。Draftを維持。main merge/既存タスク停止/Google正式原本上書き/本番配信切替/Pages手動起動は未実施。CI PASSを本文4本・独立図解4枚・Drive・Portal・通知の運用受入へ置換しない。既存BLOCKEDと全工程NOT_VERIFIEDは維持。
+
+
+## MR-SOURCE-HANDOFF-20261113-01 — 既存ChatGPT受渡し/Drive実保存の接続調査（2026-11-13 JST）
+
+出典：PR200共同レビュー後のユーザー指示。新経路の増設ではなく、既存ChatGPTからの原本引渡しと既存Drive接続による実保存を優先。開始時branch codex/zero-cost-delivery、HEAD7c31ccbf6193ff6c5b9c5db20a84b5b2f9ca0373、worktree clean、PR200 Open/DraftをAPI再照合。mainはfetchのみで本番取り込み保留。既存タスク/正式原本を変更しない。
+
+費用境界：OpenAI/他社AI API・課金可能外部サービスは使わない。既存Google Drive/Docs connectorの少数の標準操作で、非本番フォルダと保存試験文書の作成/全文readbackを試す。課金設定/追加依存/本番adapter/定期実行は追加しない。変更前cost gateはPASS_LOCAL_ONLY（0/0/0/false）、本番の費用保証とは分ける。試験文書は正式レポート名とせず、定時発行成功に数えない。実保存結果はfileID/親/本文hash/revisionで分けて記録。
+
+接続プロフィールは本人アカウント。既存11月本文フォルダmetadataは取得可能だがparent/capabilityの必要項目は未確認、図解マニュアルは再取得でも403。既存GASメニュー/AutoPublishは保存済みDocsの読込/公開担当であり、指定ChatGPT会話から原本を取得する公式入口ではない。ブラウザ/内部通信/非公式endpointによるChatGPT取得は行わない。公式タスクの一般的なconnected tools対応と、この実タスクの実行権限/出力は別の証拠として扱う。
+
+影響候補：requirements/specification/operations/DOCUMENT_CONTROL、固定Google Docs要件/仕様/本文作成/運用/台帳、図解マニュアル。ただし本段階は接続実測で、承認内容/品質/発行ゲートを変更しない。実測に応じ必要な既存固定文書の追補だけを行い、新たな要件/仕様/マニュアルを増やさない。現在は接続調査中、保存実験/受渡し/本番受入はNOT_RUN。
+
+
+### MR-SOURCE-HANDOFF-20261113-01｜実保存と独立読戻しの結果
+
+- 既存connectorで非本番folder `1JN-iq2Y2cmiYpiDIqOM7xtn53-_ztuIv` を作成し、metadataで本人root下を読戻し。既存正式フォルダやタスクの変更なし。folder IDは実応答由来。
+- 既存11/12 08時補充Docから取得済みの原文2495文字を、そのままTXT入力として非本番親へnative Docs変換保存。Doc ID `1fRNyN1E2xzk0vj1GahLn5Xc4gupsEth7LZcNQYVLf6M`、URL https://docs.google.com/document/d/1fRNyN1E2xzk0vj1GahLn5Xc4gupsEth7LZcNQYVLf6M/edit?usp=drivesdk 。正式レポート名を使用していない。
+- 初回独立readback：親/MIME一致・Docs revision取得成功。ただし本文2496文字、SHA7de6954ace3e78579893938c18904ab15b387fde1e3b3814c079b04fa70cdfc8で不一致。実diffは変換時に末尾LF1文字追加。DOC_SAVE_QA_BLOCKEDを記録し、初回応答とdiffは追跡外ログに保存。
+- 新規試験Docに限り、取得済みrevisionをrequiredRevisionIdへ指定してUTF-16範囲2495:2496のLF1文字を削除。原入力/元Doc/公開資格ゲートは変更せず、正規化で差分を隠していない。
+- 修正後の独立get_document/get_file_metadataで全文2495文字、SHA2f9347fd286f3311040fe76fbd7911d669503dff2dde75d69e1a6e61e899259eが原入力と完全一致。親1JN-iq2Y2cmiYpiDIqOM7xtn53-_ztuIv、MIMEapplication/vnd.google-apps.document、Docs revisionと作成2026-11-13T12:14:48.460Z/更新12:17:26.397Zを取得。判定PASS_NONPRODUCTION_DOC_SAVE。保存後のファイル一覧でも同IDを確認。
+- 非機密の機械可読証拠は固定 `docs/project-control/evidence/source-handoff-save-readback.json`。原文全文・接続profile・task/chat情報は追跡外logs/source-handoffへ保持。既存の32件テスト/CIは既存code commitへの証拠で、この保存試験とは別。今回ランタイムコードの追加/変更はなし。
+- 元Docのmetadataも再取得し、11月親1vnZ7JgQTbqVSvoTIaY-1GlEroSzNLXkPを今回確認できた。一方、元DocのDocs revisionは依然null。前回の親UNKNOWNは観測更新し、全過去文書の親を検証済みとはしない。
+- 当日11/13の本文フォルダ一覧には08時Doc1Ih0Nqzn8VrK0uWnEF5vWAlnseyOkuM9sEZRjDUGoV8A、16時Doc1ghRXLO78cTNePqSZVAdb-Vubd8zd_W6c2IMSvOLHgqwを観測。他slot/実task生成/PNG/正式資格はこの一覧から推定しない。
+- 指定ChatGPTtask viewは再度card描画応答だけで、prompt/tool権限/run全文は機械読戻し不能。生成元会話のDrive action有無/失敗エラーをユーザーへ確認中。公式説明の一般対応を当アカウント実証に置換しない。ブラウザ/非公式ChatGPT APIは使用しない。
+- 図解マニュアルは再取得403。11月図解フォルダ検索はraw qでも0件だが、不存在やPNG消失の証明ではない。実原本PNGを受領できないためPNG保存/bytes/hash QAはNOT_RUN。簡易画像/別画像を代用しない。
+- 費用：新規AI API呼出し0、新規課金provider/依存/請求設定/利用枠増加なし。既存Drive標準操作だけで実測。全自動発行の原本引渡し/正式receipt/公開/通知/切替/20枠は未達、本番取り込み保留。作成した非本番フォルダ/Docは証拠として保持し、無断削除しない。
