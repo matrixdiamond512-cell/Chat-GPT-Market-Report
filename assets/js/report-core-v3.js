@@ -433,7 +433,7 @@ function normalizeArchiveEntry(report, sourcePath, expectedFolderId) {
   if (!source?.id || typeof report.driveRevisionId !== "string" || !report.driveRevisionId ||
       report.driveTextLength !== report.fullText.length) return reject("Google Docs readback identity/revision/text length mismatch");
 
-  const conventionalReadback = report.archiveType === "DRIVE_SAVED_DOCUMENT" &&
+  const conventionalReadback = ["DRIVE_SAVED_DOCUMENT", "DRIVE_RECOVERY_DOCUMENT"].includes(report.archiveType) &&
     report.originalReportStatus === "DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED" &&
     Array.isArray(report.missingAtSlotEvidence) && report.missingAtSlotEvidence.length > 0;
   const analysisReadback = (

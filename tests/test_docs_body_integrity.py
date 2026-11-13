@@ -71,3 +71,12 @@ class DocsBodyIntegrityTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,"before save"):
                 save_json(path,{"fullText":self.TEXT.replace("\n",""),"bodyHash":body_hash(self.TEXT)})
             self.assertFalse(path.exists())
+
+    def test_existing_archive_writer_preserves_nested_body(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "archive.json"
+            payload = self.candidate()
+            save_json(path, payload)
+            body = json.loads(path.read_bytes())["reports"][0]["fullText"]
+            self.assertEqual(body,self.TEXT)
+            self.assertEqual(body_hash(body),body_hash(self.TEXT))

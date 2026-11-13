@@ -30,20 +30,35 @@ def read_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 def save_json(path: Path, obj):
-    path.parent.mkdir(parents=True, exist_ok=True)
+    """Verify every fullText, including reports[] archives, through disk readback."""
+    from report_source_contract import body_hash
+    def fingerprints(value, location="$"):
+        result = {}
+        if isinstance(value, dict):
+            if "fullText" in value:
+                text = value["fullText"]
+                if not isinstance(text, str):
+                    raise ValueError("Source body must be text")
+                digest = body_hash(text)
+                expected = value.get("bodyHash")
+                if (location == "$" and not expected) or (expected and expected != digest):
+                    raise ValueError("Source body hash mismatch before save")
+                result[location] = (text, digest)
+            for key, item in value.items():
+                result.update(fingerprints(item, location + "." + key))
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                result.update(fingerprints(item, location + "[" + str(index) + "]"))
+        return result
+    expected = fingerprints(obj)
     payload = (json.dumps(obj, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
-    if isinstance(obj, dict) and "fullText" in obj:
-        from report_source_contract import body_hash
-        expected = obj.get("bodyHash")
-        if not expected or body_hash(obj["fullText"]) != expected:
-            raise ValueError("Source body hash mismatch before save")
-        if body_hash(json.loads(payload)["fullText"]) != expected:
-            raise ValueError("Source body hash mismatch in serialized JSON")
+    if fingerprints(json.loads(payload)) != expected:
+        raise ValueError("Source body hash mismatch in serialized JSON")
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(payload)
-    if isinstance(obj, dict) and "fullText" in obj:
-        saved_text = json.loads(path.read_bytes())["fullText"]
-        if saved_text != obj["fullText"] or body_hash(saved_text) != expected:
-            raise ValueError("Source body hash mismatch after save")
+    if fingerprints(json.loads(path.read_bytes())) != expected:
+        raise ValueError("Source body hash mismatch after save")
+
 
 def open_session():
     from google.auth.transport.requests import AuthorizedSession

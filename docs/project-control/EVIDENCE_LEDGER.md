@@ -303,3 +303,19 @@ Google固定ID影響マトリクスはDOCUMENT_CONTROLの同ID。requirements/sp
 非本番候補: docs/project-control/evidence/archive-body-candidate.json（535e5dd時点の完全archiveを基準）。16時fullTextとdriveTextLengthの2項目だけ変更。4640文字/92LF、読戻しSHA 3d4bdc1b0d85edbdb2e59d662683192d2fbdfa4d8ab5a0546e1500749bcbae04。source Docは読取りのみ、archiveの既存revisionは維持するが、そのrevisionと今回の本文を結ぶ独立証明は引き続きUNKNOWN。現在mainに追加変更があれば候補をそのまま上書きせず再照合する。候補は本番ファイルではなく正式発行でもない。
 
 検証: 従来41件＋9件=50件PASS。実本文候補のディスク保存/読戻しはPASS。改行脱落・変更前hash不一致・別Doc・複数tabを拒否。証拠はbody-integrity-verification.jsonとbody-integrity-tests.txt。16時run結合・PNG・正式publicationは未検証。Google固定ID要件/仕様/本文作成/運用/図解/台帳は未同期、既存詳細品質はNO_CHANGE。影響文書: requirements/specification/operations/DOCUMENT_CONTROL/EVIDENCE_LEDGER。main merge/本番データ修正は承認待ち。
+
+
+## MR-PORTAL-PREVIEW-20261114-01（2026-11-14 JST）
+出典: ユーザーの3段階実証指示 / PR #200。新たに動いた工程: 11/13 16時の実本文4640文字・92LFを新規非本番Docへ実書込→独立全文/親/MIME/revision読戻し→既存save_jsonによるreports[]保存→HTTP読戻し→既存report.htmlの実ブラウザー表示。原文SHA一致、16見出し/全非空行を可視本文へ照合、画面PNG2枚。証拠: portal-preview.json、portal-preview-top.png、portal-preview-body.png（図解原本ではなくポータル画面証拠）。新規試験Docだけを書き、元Doc・main・本番・タスクは無変更。
+
+実表示での阻害条件はreport-core-v3.jsの参考閲覧種別判定: DRIVE_RECOVERY_DOCUMENTがunsupportedだった。既存の同一Doc/revision/文字数/欠損証拠/非正式判定を維持して当該種別のみ受理。正式ゲートは不変。save_jsonはトップ本文に加えてreports[]等の全fullTextを再帰走査し、保存前/JSON変換後/ディスク読戻しで文字列とUTF-8 SHAを照合。原文無改変のまま51 Python/9 Node試験PASS。画面DOMはMarkdown描画なので原文byte hash一致とは呼ばず、JSON原文hash一致と全非空行の可視照合を別記する。
+
+3954文字の保存promptは置換2箇所+末尾追記のみの4897文字candidateとしてtask-prompt-candidate.txtへ保持、差分はtask-prompt-change.patch.md。PNG各枠1枚、早期終了未発行、取得できるrun/Doc/revision/hashを記録、能力不足はUNKNOWN/BLOCKED、既存詳細品質とGitHub責任を無断削除しない。実適用は承認待ち。
+
+次の設定枠は11/16（月）08:00 JST、週末発行なし。未来runの観測はNOT_RUN。現在の公式接続にrun強制実行/過去16時action trace/自動会話転送はなく、実PNG未受領。無課金の可能な代替は許可された通常ChatGPT実行で公式Drive保存を実証し、その実本文とPNGファイルを人手で受領する非本番経路（完全自動化の証明ではない）。原本が無いまま画像生成/保存成功や自動受渡しを捏造しない。
+
+shadow停止はrun_report_delivery.runのrequired7ファイル確認。続くvalidate_bundleはbody/SOP、08時QA、validate_receipt/verify_slot_evidence、親/Doc ID、実PNGとmanifest同版byte hashを要求。11/13欠損evidenceを後作成しないため正式資格経路は停止したまま、通常Docs保存と参考表示だけを実証。新publisher/監視は追加しない。
+
+本番参考アーカイブ修正の適用条件: 明示承認→最新mainの対象Doc/slot/変更前hashと競合再照合→原Docのrevision付き再読戻しと原文hash→当該fullText/文字数だけ変更→reports[]保存前後hash→ブラウザー参考表示→非正式状態維持を確認。既存候補の全archiveをそのままmainへ上書きしない。rollbackは直前blobへ対象差分だけ戻し、他枠/後続編集を保全。publisher切替とは別承認。
+
+公開テスト記録の実行コマンドはpython -m unittestへ修正。過去commit履歴の絶対パス残存は未解消、force push/履歴改変なし。今回のログ生成も公開コマンドからユーザー絶対パスを除外。影響: requirements/specification/operations/DOCUMENT_CONTROL/台帳とprompt候補。固定Google文書の本文/図解品質はNO_CHANGE、同期未実施。PNG/正式publication/全4枠の本番受入は未達。
