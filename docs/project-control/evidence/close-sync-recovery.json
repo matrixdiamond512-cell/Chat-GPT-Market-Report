@@ -3,14 +3,14 @@
   "checkedAt": "2026-11-14T02:23:27.054558+09:00",
   "baseCommit": "0204a20c4d188be86328034d93e319c370e02d42",
   "command": "python -m unittest tests.test_sync_market_close_sheet tests.test_close_sync_recovery tests.test_market_data_window_evidence scripts.test_write_market_data_to_sheets tests.test_close_sheet_missing_audit tests.test_scheduled_report_delivery tests.test_report_slot_evidence -v",
-  "testsRun": 68,
+  "testsRun": 69,
   "failures": 0,
   "errors": 0,
   "status": "PASS",
   "livePermissionProbe": {
-    "runId": 43474764135,
-    "codeCommit": "0e35a3df80af3064001b3d9cd3d334ebccd98bd2",
-    "artifactId": 14061953985,
+    "runId": 43475352764,
+    "codeCommit": "30ddc2b59b658fa9fe2f697fba3c6e19b9a3bf61",
+    "artifactId": 14062756113,
     "result": {
       "status": "SUCCESS",
       "stages": {
@@ -18,17 +18,18 @@
         "READBACK_VERIFY": "SUCCESS"
       },
       "failedStage": "",
-      "temporarySheet": "Codex_Close_Probe_64b3c69e3359411d9236d41deaf74668",
+      "temporarySheet": "終値同期_検証_04c80604b9414c5f81eb1074279fc89f",
       "cleanup": "SUCCESS",
       "reportCellsModified": 0,
+      "temporarySheetId": 841430836,
       "failureCode": null,
       "spreadsheetId": "1n2ACInX4pmK0TdijC8xaur2RIiNZyVa6GFTZAyofcuE",
       "principalSha256": "0a462906ac74c2847a4f74e4b3a04e906b34b9eed2b7c8eab408ef9cb5b17c2e",
-      "checkedAt": "2026-11-14T02:38:41+09:00",
-      "runKey": "43474764135:1",
+      "checkedAt": "2026-11-14T02:42:16+09:00",
+      "runKey": "43475352764:1",
       "permissionProbe": true
     },
-    "scope": "Same configured Actions service account; temporary tab in configured target spreadsheet only. Does not verify actual close-date row or market values."
+    "scope": "Japanese temporary tab and numeric 123.456; same configured Actions principal; literal A1 batch write, URL readback, deletion readback. Actual close-row/date/price acceptance NOT_RUN."
   },
   "liveCloseRowReadback": "NOT_RUN",
   "stable20BusinessDays": "NOT_RUN",
@@ -76,5 +77,33 @@
       "conclusion": "success",
       "html_url": "https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43474762202/job/132055583306"
     }
-  ]
+  ],
+  "priorPermissionProbes": [
+    {
+      "runId": 43474764135,
+      "codeCommit": "0e35a3df80af3064001b3d9cd3d334ebccd98bd2",
+      "artifactId": 14061953985,
+      "result": {
+        "status": "SUCCESS",
+        "stages": {
+          "CLOSE_DATA_WRITE": "SUCCESS",
+          "READBACK_VERIFY": "SUCCESS"
+        },
+        "failedStage": "",
+        "temporarySheet": "Codex_Close_Probe_64b3c69e3359411d9236d41deaf74668",
+        "cleanup": "SUCCESS",
+        "reportCellsModified": 0,
+        "failureCode": null,
+        "spreadsheetId": "1n2ACInX4pmK0TdijC8xaur2RIiNZyVa6GFTZAyofcuE",
+        "principalSha256": "0a462906ac74c2847a4f74e4b3a04e906b34b9eed2b7c8eab408ef9cb5b17c2e",
+        "checkedAt": "2026-11-14T02:38:41+09:00",
+        "runKey": "43474764135:1",
+        "permissionProbe": true
+      },
+      "scope": "Same configured Actions service account; temporary tab in configured target spreadsheet only. Does not verify actual close-date row or market values."
+    }
+  ],
+  "localTestCodeCommit": "fb977a5ae15b21bfbb3566ff12a0dd6e664d0ba8",
+  "followup": "Expired acquisition is NOT_RUN; successful acquisition blocked on evidence retains FETCH SUCCESS; no Sheets call on either upstream failure.",
+  "localTestCheckedAt": "2026-11-14T02:43:55.310152+09:00"
 }

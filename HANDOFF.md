@@ -108,3 +108,7 @@ git branch --show-current
 ### 実権限検証の追補（2026-11-14 02:38 JST）
 
 MR-CLOSE-SYNC-20261114-01 / Draft PR #201 / code commit 0e35a3df80af3064001b3d9cd3d334ebccd98bd2。Actions run [43474764135](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43474764135)のpermission-probe job SUCCESS、通常acquire job SKIPPED。結果artifactを別リクエストで取得・読戻し、対象spreadsheetIdが指定の終値一覧2026と一致、CLOSE_DATA_WRITE/READBACK_VERIFY/cleanupすべてSUCCESS、reportCellsModified=0を確認。既存Secretsのサービスアカウントを使用し、主体のfingerprintを証拠JSONに記録。これは本番ファイル内の隔離タブにおける権限・保存経路の実証に限定し、日付キー/終値・前日比の実行受入ではない。今回の条件では400/403は再現しなかったが全経路の解消とは断定しない。68ローカル試験と同code headのhosted checks SUCCESS。実終値行読戻し/定時性回復/20対象営業日/main統合/Google固定文書同期は未達・NOT_RUN、遅延の発生原因はUNKNOWNのまま。先行のNOT_RUN記録は当時の履歴として保持する。
+
+### 日本語A1・数値の実検証（2026-11-14 02:42 JST）
+
+MR-CLOSE-SYNC-20261114-01 / PR #201。run [43475352764](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43475352764)、code30ddc2b59の日本語一時タブでliteral A1のbatch書込・数値123.456/文字列のURL読戻し・一時タブ削除後の一覧確認がSUCCESS。artifactを独立取得して対象シートID・同じ認証fingerprint・cleanup SUCCESS・既存reportCellsModified=0を照合。後続fb977a5aeで期限切れFETCH=NOT_RUNと取得成功/証拠不足FETCH=SUCCESSを分離し、失敗時にSheetsへ接続しない方針は維持。69関連ローカルテストPASS。実終値行・定時性回復・20営業日は引き続き未達、main未統合、Google固定文書同期NOT_RUN。新規取得元・列・トリガー・publisherなし。
