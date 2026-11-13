@@ -117,3 +117,10 @@ PR用CIは読取権限、public repositoryの標準ubuntu runner、外部API/Sec
 この試験結果はpublication receiptではなく非本番の観測証拠 `docs/project-control/evidence/source-handoff-save-readback.json`。Docsの実作成/更新日時と予定枠日時を分離し、元Doc revisionや枠前証拠を補作しない。既存shadowは引き続き本番adapterなし/全工程NOT_VERIFIED。タスクの実原文・画像を受け取るまで当該工程はWAITING/BLOCKED。
 
 get_document_textの段落リストは空段落を省くため、単純join/trimを全文一致の根拠にしない。比較には実構造のtextRun（全対象tab・空段落を保持）を使用する。今回の限定的な末尾修正を一般のstrip/改行一括正規化へ拡大しない。
+
+
+### MR-SOURCE-HANDOFF-20261113-01｜21時枠の早期実行・未発行終了（2026-11-13 JST）
+
+実行状態completedはスケジューラーの終了状態で、本文/Docs/PNG/公開の成功状態ではない。今回ユーザー履歴の予定21:00と開始20:55:04の差は-296秒、保存action=NOT_CALLED、HTTP error=NOT_APPLICABLE。原因を権限不足へ置換しない。
+
+既存verify_scheduled_report_delivery.verifyを隔離空rootで再実行するとMissing published canonical 2026-11-13_21-00.jsonで失敗し、ファイルを作らない。機械可読の再現結果はevidence/early-task-no-publication.json。これは既存監視の原本欠落判定の確認で、ChatGPTの時計/早期起動/待機/再開を検証したものではない。新しい監視/待機/再実行経路は追加していない。

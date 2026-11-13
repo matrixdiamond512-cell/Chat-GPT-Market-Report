@@ -1,0 +1,20 @@
+{
+  "changeId": "MR-SOURCE-HANDOFF-20261113-01",
+  "scenario": "TASK_COMPLETED_BEFORE_SLOT_WITHOUT_REPORT",
+  "inputProvenance": "USER_PROVIDED_TASK_HISTORY_NOT_INDEPENDENTLY_FETCHED",
+  "scheduledAt": "2026-11-13T21:00:00+09:00",
+  "startedAt": "2026-11-13T20:55:04+09:00",
+  "finishedAt": "2026-11-13T20:55:16+09:00",
+  "startOffsetSeconds": -296.0,
+  "taskRuntimeStatus": "completed",
+  "driveSaveAction": "NOT_CALLED_USER_REPORTED",
+  "driveHttpError": "NOT_APPLICABLE_NOT_CALLED",
+  "localVerifier": "scripts.verify_scheduled_report_delivery.verify",
+  "fixtureScope": "temporary empty root only; no source artifacts reconstructed",
+  "verifierResult": "Missing published canonical 2026-11-13_21-00.json",
+  "syntheticFilesCreated": 0,
+  "expected": "missing canonical must fail even though task runtime says completed",
+  "regressionStatus": "PASS",
+  "schedulerCause": "UNKNOWN; actual prompt/schedule/platform event not independently read",
+  "productionTaskChanged": false
+}

@@ -145,3 +145,12 @@ GitHub APIで対象repoはpublicを確認。標準runnerのpublic実行は現行
 生成元会話側のGoogle Drive保存actionの有無/失敗ログは確認待ち。原本TXTと実PNGの受領前に正式bundle/receiptを作らない。PNG未取得のため保存試験もNOT_RUN（別の画像を図解として代用しない）。現在のタスク/Google正本は保持、切替/公開/通知の受入は保留。
 
 [ChatGPT公式タスク説明](https://learn.chatgpt.com/docs/automations)はweb taskが会話のconnected toolsを使える旨を説明するが、対象タスクが今回の保存actionを実行できる証拠ではない。今回のDrive標準操作は[Google Drive APIの標準利用無追加料金という説明](https://developers.google.com/workspace/drive/api/guides/limits)の範囲で既存接続だけを使用し、AI API/課金設定/利用枠引上げを導入しない。将来の超過課金やアカウント全体の本番無課金まで保証したとは扱わない。
+
+
+### MR-SOURCE-HANDOFF-20261113-01｜21時枠の早期実行・未発行終了（2026-11-13 JST）
+
+次の切り分け順を固定する：(1)対象runにGoogle Drive書込actionが提供されたか (2)提供された場合実際に呼ばれたか (3)呼ばれた場合だけHTTP結果/認証主体 (4)月別親の書込・実readback (5)実行開始と予定枠/発行判定の不一致。
+
+ユーザー確認では通常チャットに作成/本文書込actionと両マニュアル参照権限があるが、定期task runでの同action提供は未確認。Codex側では非本番書込は実証できた一方、両正本参照には403がある。これらの環境差を同一権限と推測しない。
+
+追加受入シナリオ：予定前起動→待機/準備状態と予定枠保持を確認、予定時刻到達後→実原文/保存/PNGを確認、予定前completedで未再開→当該枠を未達として検出、日付またぎ/別run会話→task/run/予定枠/指定表示先を照合。公式環境で予定前起動後に継続できるか不明ならCAPABILITY_BLOCKEDとし、有料API/新規watchdog/架空の再開へ置換しない。現タスクのprompt/実scheduleは変更せず、早期発火/準備タスク設計/表示時刻解釈のどれが原因かを未確定のまま調査する。

@@ -131,3 +131,8 @@ branch `codex/zero-cost-delivery`、base取得main `f94229ba1c135215623881faf4f5
 ## MR-SOURCE-HANDOFF-20261113-01｜非本番の実保存・原本受渡し境界（2026-11-13 JST）
 
 ユーザーの優先指示により新経路を増やさず既存connectorで実保存を試験。非本番Doc1fRNyN1E2xzk0vj1GahLn5Xc4gupsEth7LZcNQYVLf6Mは、初回末尾LF不一致を記録後、revision付き限定修正と独立readbackで本文2495文字/SHA/親/MIME一致。source-handoff-save-readback.jsonとEVIDENCE_LEDGERを読む。これは元Docの補充本文コピー保存で、指定ChatGPT会話からの原本引渡しの証拠ではない。生成元会話のDrive action/エラー全文をユーザーへ確認中。元Doc revision/PNG/固定正本アクセスは引き続き未了。ランタイムコード変更なし、本番/既存task/正式原本不変。既存PR200 Draftのまま実測証拠を共有する。
+
+
+### MR-SOURCE-HANDOFF-20261113-01｜21時枠の早期実行・未発行終了（2026-11-13 JST）
+
+ユーザーから21時taskが20:55:04〜20:55:16にcompletedだが未発行/Drive action未呼出という履歴を受領。HTTP保存エラーなし。通常チャットに書込action/正本参照権限があっても定期runのtool提供は未確認。runごとに会話参照が変わるためtask ID+run ID+予定枠+実行会話+指定表示先で照合。私的IDsは追跡外ログのみ。既存監視で原本なしをFAILとする隔離再現は確認したが、早期起動原因/枠までの待機・再開は未実証。taskや時刻/権限を変更せず、同IDの台帳とearly-task-no-publication.jsonを読んで切り分ける。

@@ -243,3 +243,16 @@ Google固定ID影響マトリクスはDOCUMENT_CONTROLの同ID。requirements/sp
 - 指定ChatGPTtask viewは再度card描画応答だけで、prompt/tool権限/run全文は機械読戻し不能。生成元会話のDrive action有無/失敗エラーをユーザーへ確認中。公式説明の一般対応を当アカウント実証に置換しない。ブラウザ/非公式ChatGPT APIは使用しない。
 - 図解マニュアルは再取得403。11月図解フォルダ検索はraw qでも0件だが、不存在やPNG消失の証明ではない。実原本PNGを受領できないためPNG保存/bytes/hash QAはNOT_RUN。簡易画像/別画像を代用しない。
 - 費用：新規AI API呼出し0、新規課金provider/依存/請求設定/利用枠増加なし。既存Drive標準操作だけで実測。全自動発行の原本引渡し/正式receipt/公開/通知/切替/20枠は未達、本番取り込み保留。作成した非本番フォルダ/Docは証拠として保持し、無断削除しない。
+
+
+### MR-SOURCE-HANDOFF-20261113-01｜21時枠の早期実行・未発行終了（2026-11-13 JST）
+
+出典：ユーザー追加回答（独立task API取得ではない）。予定2026/11/13 21:00 JST、開始20:55:04/終了20:55:16、runtime completed。引用された出力は『21時前のため前倒し発行せず、Docs保存/GitHub/Pagesは未実行』。開始差-296秒。task/run/新旧会話IDと出力全文は追跡外logs/source-handoff/user-task-run-observation.jsonへ保全し、公開PRへ私的会話IDを追加しない。
+
+通常チャットの作成/本文書込action・両マニュアル参照成功はUSER_CONFIRMED。定期taskで同actionが提供されたかはUNKNOWN。今回runの保存actionはNOT_CALLED_USER_REPORTED、HTTP errorはNOT_APPLICABLE。従ってDrive権限不足を当該runの保存失敗原因と断定しない。11/11 16時はDocs不在/枠前証拠404でwrite未実行という追加履歴もユーザー報告として記録し、証拠を補作しない。
+
+公式read_threadで新旧の指定IDを読み取ろうとしたがNo Codex thread found。公式ChatGPT history先頭20件にも対象参照はなく、task viewはcard応答のみ。対象のprompt/提供tool/run全文の独立取得は未了（対象が不存在とは認定しない）。非公式endpoint/ブラウザ自動化へ迂回していない。
+
+既存read-only監視のverifyを一時空rootで再現し、Missing published canonical 2026-11-13_21-00.jsonで停止、生成ファイル0件を確認。evidence/early-task-no-publication.jsonを共有する。これは欠落判定のオフライン再現で、実taskの待機/再開/保存/定時受入ではない。既存32件の合格数を33件へ水増しせず、独立シナリオとして分離。今回追加のランタイムコード/タスク/監視/有料サービスはなし。
+
+継続課題：taskの実prompt/予定schedule/サーバー時刻/提供toolの照合、早期起動後に枠まで保持/再開する公式機能の実証、run別会話と指定表示先の一致。原因候補を権限問題と混同しない。既存taskは有効のまま保持し、Google正本文書も不変。
