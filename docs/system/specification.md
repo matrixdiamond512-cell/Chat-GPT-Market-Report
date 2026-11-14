@@ -71,3 +71,9 @@ Google Docs固定ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` へ対応す�
 - 08:00 QAは正式対象の28項目・順序・5列・基準日・必須行を検証する。HISTORICAL_ARCHIVEを正式QA合格に算入しない。QA未達ではrole=alertを表示し、対象市場表だけをDOMから除去する。本文と保存元statusを保持する。RECONSTRUCTED_UNVERIFIEDのquarantineは維持。
 - エラー/デバッグ出力は対象path/date/time/HTTP status/検証結果を含め、秘密情報を除く。JS更新時はHTMLのquery versionも更新し、Pages deploy後に公開DOMと実ファイルを読み戻す。
 - 実績：PR #193 98f3bcc、#194 025da7c、#195 8630b2c、#196 f870b22を統合。UI・アーカイブ関連CIとPages run 41836815631がSUCCESS。公開ブラウザで18日68slotを確認。
+
+## MR-CLOSE-TRIGGER-20261114-04｜独立トリガー純粋契約（2026-11-14 JST、Draft）
+- `scripts/reporting/close_sync_trigger_contract.py`は副作用のない契約実装。専用Schedulerリソース名・X-CloudScheduler-JobNameのID一致・X-CloudScheduler-ScheduleTime RFC3339(秒00、分未満小数可)・Asia/Tokyo平日07:48のみ・07:50より前の実行を照合し、固定workflowと`permission_probe=false`, `scheduled_time=07:50`を返す。bodyの任意日時は信用しない。
+- 出力は同一日同一枠で安定する`test-only/close-dispatch/YYYY-MM-DD_07-50/claim.json`とダイジェスト。これは送信済み証拠ではない。専用OIDC署名検証、別サービスアカウントとの結合、Storage create-only+世代固定読み戻し、GitHub呼出と真正のrun確認はこのPRに未実装。
+- 同一枠重複、誤job、週末、他時刻、期限超過、TZ欠如はfail closed。GitHub workflow_dispatch受理204のみでは実行開始・Sheets成功を証明しない。RUN_IDとの相関を別途実装する。
+- 既存`mr-pre-slot-test`・PR #201のSheets処理・正式発行公開ゲートは変更しない。
