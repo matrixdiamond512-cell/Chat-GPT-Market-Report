@@ -199,9 +199,15 @@ class SheetsClient:
         self.base_url = f"https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}"
 
     @staticmethod
-    def _range(sheet_name: str, cells: str) -> str:
+    def a1_range(sheet_name: str, cells: str) -> str:
+        """Literal A1 for JSON bodies and query parameters before URL encoding."""
         escaped = sheet_name.replace("'", "''")
-        return quote(f"'{escaped}'!{cells}", safe="!'")
+        return f"'{escaped}'!{cells}"
+
+    @staticmethod
+    def _range(sheet_name: str, cells: str) -> str:
+        """Encode exactly once when A1 is embedded in a URL path."""
+        return quote(SheetsClient.a1_range(sheet_name, cells), safe="!'")
 
     def _request(self, method: str, url: str, **kwargs: Any) -> dict[str, Any]:
         response = self.session.request(method, url, timeout=30, **kwargs)

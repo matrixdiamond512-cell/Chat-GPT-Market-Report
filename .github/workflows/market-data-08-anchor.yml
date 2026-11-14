@@ -3,6 +3,10 @@ name: 08:00 supporting market-data attempts
 on:
   workflow_dispatch:
     inputs:
+      permission_probe:
+        description: "Only test configured Sheets principal on a temporary tab; no acquisition/report writes"
+        type: boolean
+        default: false
       scheduled_time:
         description: "08:00 supporting acquisition label"
         required: false
@@ -34,6 +38,7 @@ concurrency:
 
 jobs:
   acquire:
+    if: ${{ !inputs.permission_probe }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -59,6 +64,7 @@ jobs:
           python -m py_compile scripts/sync_market_close_sheet.py
           python -m py_compile tests/test_sync_market_close_sheet.py
           python -m unittest discover -s tests -p 'test_sync_market_close_sheet.py' -v
+          python -m unittest discover -s tests -p 'test_close_sync_recovery.py' -v
 
       - name: Resolve intended Japan-time attempt
         id: intended
@@ -78,6 +84,7 @@ jobs:
           echo "time=$TIME" >> "$GITHUB_OUTPUT"
 
       - name: Run one supporting acquisition attempt (including late recovery)
+        id: acquisition
         env:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
@@ -89,10 +96,12 @@ jobs:
             --trigger-source "independent_schedule" \
             --max-catchup-minutes 180 \
             --mode auto \
-            --recover-expired
+            --recover-expired \
+            --status-output logs/close-sync/window-status.json
 
       - name: Persist and verify prior-session close row
         id: close-sync
+        if: ${{ always() && !cancelled() }}
         shell: bash
         env:
           MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
@@ -102,8 +111,16 @@ jobs:
           python scripts/sync_market_close_sheet.py \
             --latest data/market/latest.json \
             --scheduled-time "${{ steps.intended.outputs.time }}" \
-            --run-key "${{ github.run_id }}:${{ github.run_attempt }}"
+            --run-key "${{ github.run_id }}:${{ github.run_attempt }}" \
+            --upstream-outcome "${{ steps.acquisition.outcome }}" \
+            --window-status logs/close-sync/window-status.json \
+            --status-output logs/close-sync/close-status.json
           CODE=$?
+          if [ -f logs/close-sync/close-status.json ]; then
+            cp logs/close-sync/close-status.json data/market/close_data_sync_status.json
+          else
+            exit 1
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/market/close_data_sync_status.json || exit $?
@@ -114,8 +131,42 @@ jobs:
           fi
           exit "$CODE"
 
+      - name: Preserve this run's acquisition and close diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: close-sync-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            logs/close-sync/window-status.json
+            logs/close-sync/close-status.json
+
       - name: Explain 08:00 data semantics
         run: |
           echo "These supporting acquisitions must not become the 08:00 major-market table."
           echo "The 08:00 report uses date-matched prior-session closes from 終値一覧 and previous-close repair sources."
           echo "Retrieval time and market-data date are separate concepts."
+
+  permission-probe:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.permission_probe }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Google Sheets dependencies
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-market-data.txt
+      - name: Probe configured workflow principal and remove isolated tab
+        env:
+          MARKET_DATA_SPREADSHEET_ID: ${{ secrets.MARKET_DATA_SPREADSHEET_ID }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+        run: python scripts/sync_market_close_sheet.py --permission-probe --status-output logs/close-sync/permission-probe.json
+      - name: Preserve independent probe result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: close-permission-probe-${{ github.run_id }}-${{ github.run_attempt }}
+          path: logs/close-sync/permission-probe.json

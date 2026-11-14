@@ -508,29 +508,14 @@ def record_expired(
     git_commit_push(f"Record expired {slot} market data attempt {scheduled_time}")
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--slot", required=True, choices=("08:00", "12:00", "16:00", "21:00"))
-    parser.add_argument("--times", required=True, type=parse_times)
-    parser.add_argument("--trigger-source", default=os.environ.get("ACQUISITION_TRIGGER_SOURCE", "window"))
-    parser.add_argument("--max-catchup-minutes", type=int, default=30)
-    parser.add_argument("--mode", choices=("auto", "full"), default="auto")
-    parser.add_argument(
-        "--recover-expired",
-        action="store_true",
-        help=(
-            "After recording expired scheduled attempts, fetch one explicitly late "
-            "recovery snapshot when this slot/day still has no usable data."
-        ),
-    )
-    args = parser.parse_args()
-
+def run_window(args: argparse.Namespace) -> tuple[int, dict[str, Any]]:
     run(["git", "config", "user.name", "github-actions[bot]"])
     run(["git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"])
 
     day = now_jst().date()
     audit = audit_path(day, args.slot)
     failures: list[str] = []
+    attempt_errors: list[dict[str, str]] = []
     evidence_path = ROOT / "data" / "report-evidence" / f"{day.isoformat()}_{args.slot.replace(':', '-')}-r1.json"
     evidence_main_ready = False
     if evidence_path.is_file():
@@ -586,6 +571,7 @@ def main() -> int:
             if record.get("outcome") not in {"verified", "degraded"}:
                 failures.append(scheduled_time)
         except Exception as exc:
+            attempt_errors.append({"scheduledTime": scheduled_time, "reason": f"{type(exc).__name__}: {exc}"})
             print(f"Attempt {scheduled_time} failed: {exc}", file=sys.stderr, flush=True)
             failures.append(scheduled_time)
             # A multi-time manual/recovery window may continue to a later attempt.
@@ -620,6 +606,7 @@ def main() -> int:
             if recovery_record.get("evidenceStatus") == "VERIFIED_ON_MAIN" and recovery_record.get("evidenceReadback") == "PASS":
                 evidence_main_ready = True
         except Exception as exc:
+            attempt_errors.append({"scheduledTime": recovery_time, "reason": f"{type(exc).__name__}: {exc}"})
             print(f"Late recovery failed: {exc}", file=sys.stderr, flush=True)
 
     git_sync()
@@ -679,6 +666,10 @@ def main() -> int:
         "recoveryAfterExpiry": recovery_record,
         "currentSnapshotReady": current_snapshot_ready,
         "acquisitionStatus": "READY" if current_snapshot_ready else "BLOCKED",
+        "failureCode": (None if report_is_ready else "FETCH_FAILED" if attempt_errors else
+                        "ACQUISITION_EXPIRED" if not current_snapshot_ready and now_jst() >= target_datetime(day, args.slot)
+                        else "VALIDATION_FAILED" if not current_snapshot_ready else "EVIDENCE_BLOCKED"),
+        "attemptErrors": attempt_errors,
         "preDraftEvidenceOnMain": evidence_main_ready,
         "evidenceStatus": evidence_status,
         "reportReady": report_is_ready,
@@ -688,7 +679,43 @@ def main() -> int:
         "sheetsSyncMode": "pull_importdata",
     }
     print(json.dumps(summary, ensure_ascii=False, indent=2), flush=True)
-    return 0 if report_is_ready else 1
+    return (0 if report_is_ready else 1), summary
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--slot", required=True, choices=("08:00", "12:00", "16:00", "21:00"))
+    parser.add_argument("--times", required=True, type=parse_times)
+    parser.add_argument("--trigger-source", default=os.environ.get("ACQUISITION_TRIGGER_SOURCE", "window"))
+    parser.add_argument("--max-catchup-minutes", type=int, default=30)
+    parser.add_argument("--mode", choices=("auto", "full"), default="auto")
+    parser.add_argument(
+        "--recover-expired",
+        action="store_true",
+        help=(
+            "After recording expired scheduled attempts, fetch one explicitly late "
+            "recovery snapshot when this slot/day still has no usable data."
+        ),
+    )
+    parser.add_argument("--status-output", help="Write this run summary even when acquisition or persistence fails.")
+    args = parser.parse_args()
+
+    try:
+        code, summary = run_window(args)
+    except Exception as exc:
+        code = 1
+        summary = {
+            "reportSlot": args.slot, "acquisitionStatus": "BLOCKED", "reportReady": False,
+            "failureCode": "WINDOW_FAILED", "reason": f"{type(exc).__name__}: {exc}",
+        }
+        print(json.dumps(summary, ensure_ascii=False), file=sys.stderr, flush=True)
+    summary["checkedAt"] = iso()
+    summary["workflowRunId"] = os.environ.get("GITHUB_RUN_ID", "")
+    if args.status_output:
+        path = Path(args.status_output)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return code
 
 
 if __name__ == "__main__":
