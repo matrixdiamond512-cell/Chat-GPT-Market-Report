@@ -1,11 +1,11 @@
 {
   "schemaVersion": "1.1.0",
-  "updatedAt": "2026-11-13T11:42:22+09:00",
-  "status": "ok",
+  "updatedAt": "2026-11-14T11:30:57+09:00",
+  "status": "failed",
   "fetchOutcome": "success",
-  "crosscheckOutcome": "success",
+  "crosscheckOutcome": "failure",
   "logTail": [
-    "{\"status\": \"verified\", \"marketDate\": \"2026-11-12\", \"componentCount\": 503, \"topGainer\": \"Advanced Micro Devices（AMD）\", \"topLoser\": \"Global Payments, Inc.（GPN）\", \"topContribution\": \"Broadcom Inc. Common Stock（AVGO）\", \"validation\": {\"estimatedWeightedReturnPct\": -0.2924, \"verifiedSP500ReturnPct\": null, \"differencePt\": null}}",
-    "{\"status\": \"passed\", \"marketDate\": \"2026-11-12\", \"estimatedWeightedReturnPct\": -0.2924, \"verifiedSP500ReturnPct\": -0.35, \"differencePt\": 0.0576, \"tolerancePt\": 0.2}"
+    "{\"status\": \"unavailable\", \"error\": \"403 Client Error: Forbidden for url: https://www.slickcharts.com/sp500/returns/details\"}",
+    "mover/contribution basis date does not match verified U.S. market date"
   ]
 }
