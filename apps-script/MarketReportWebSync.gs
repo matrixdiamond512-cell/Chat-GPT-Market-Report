@@ -15,6 +15,29 @@ function showWebReportSidebar() {
   );
 }
 
+function marketReportSlotOwnerAllows_(report, ownership, publisher) {
+  if (!report || !report.time) return false;
+  if (report.time !== '08:00') return true;
+  if (!ownership || ownership.schemaVersion !== 1 || !ownership.slotOwners ||
+      typeof ownership.slotOwners['08:00'] !== 'string') return false;
+  return ownership.slotOwners['08:00'] === publisher;
+}
+
+function requireMarketReportSlotOwner_(report) {
+  if (!report || report.time !== '08:00') return;
+  var response;
+  try {
+    response = getGitHubJsonFile_('config/issuance_ownership.json');
+  } catch (error) {
+    throw new Error('ISSUANCE_OWNER_CONFIG_UNAVAILABLE: ' + error.message);
+  }
+  if (!marketReportSlotOwnerAllows_(report, response && response.data, 'apps_script_legacy')) {
+    var configured = response && response.data && response.data.slotOwners
+      ? String(response.data.slotOwners['08:00'] || 'missing') : 'missing';
+    throw new Error('ISSUANCE_OWNER_CONFLICT:08:00:' + configured);
+  }
+}
+
 function publishWebReport(text) {
   return publishWebReportObject_(parseAndValidateWebReport_(text));
 }
@@ -233,6 +256,7 @@ function publishMarketReportFromDocUrlPrompt() {
 
 function publishWebReportObject_(report) {
   report = validateWebReportObject_(report);
+  requireMarketReportSlotOwner_(report);
   report.report_status = 'BLOCKED';
   report.infographic_status = 'NOT_READY';
   if (typeof validateMarketReportBeforePublish_ !== 'function') {

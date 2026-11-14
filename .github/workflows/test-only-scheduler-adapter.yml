@@ -1,0 +1,46 @@
+name: TEST ONLY Scheduler and Cloud Run contract
+on:
+  pull_request:
+    paths:
+      - "scripts/reporting/scheduler_reliability.py"
+      - "scripts/reporting/cloud_run_testonly.py"
+      - "scripts/reporting/test_only_evidence_store.py"
+      - "scripts/persist_report_slot_evidence.py"
+      - "tests/test_scheduler_reliability.py"
+      - "tests/test_cloud_run_testonly.py"
+      - "tests/test_report_slot_evidence.py"
+      - "deploy/test-only-cloud-run/**"
+      - ".github/workflows/test-only-scheduler-adapter.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  python-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install TEST ONLY runtime dependencies
+        run: python -m pip install -r deploy/test-only-cloud-run/requirements.txt
+      - name: Compile adapters
+        run: python -m py_compile scripts/reporting/scheduler_reliability.py scripts/reporting/test_only_evidence_store.py scripts/reporting/cloud_run_testonly.py scripts/persist_report_slot_evidence.py
+      - name: Run scheduler, adapter, and Evidence regression tests
+        run: python -m unittest tests.test_scheduler_reliability tests.test_cloud_run_testonly tests.test_report_slot_evidence -v
+  terraform-validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: deploy/test-only-cloud-run/terraform
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+      - name: Format check
+        run: terraform fmt -check -diff -recursive
+      - name: Initialize providers without a backend
+        run: terraform init -backend=false -input=false
+      - name: Validate without credentials or resource access
+        run: terraform validate

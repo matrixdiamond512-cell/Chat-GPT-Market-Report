@@ -54,7 +54,17 @@ context.verifyPublicMarketReport_ = report => {
 };
 const files = new Map();
 const writes = [];
-context.getGitHubJsonFile_ = path => ({ data: files.has(path) ? files.get(path) : (path === 'reports.json' ? [] : null), sha: files.has(path) ? 'sha' : null });
+context.getGitHubJsonFile_ = path => ({
+  data: path === 'config/issuance_ownership.json'
+    ? { schemaVersion: 1, slotOwners: {
+        '08:00': 'apps_script_legacy',
+        '12:00': 'apps_script_legacy',
+        '16:00': 'apps_script_legacy',
+        '21:00': 'apps_script_legacy'
+      } }
+    : (files.has(path) ? files.get(path) : (path === 'reports.json' ? [] : null)),
+  sha: files.has(path) || path === 'config/issuance_ownership.json' ? 'sha' : null
+});
 context.putGitHubJsonFile_ = (path, content) => {
   writes.push(path);
   const parsed = JSON.parse(content);

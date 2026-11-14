@@ -216,7 +216,8 @@ function marketRows(report) {
   return [];
 }
 function legacyMarketRowsFromFullText(report) {
-  const source = fullTextOf(report);
+  // A Friday title (金) followed by 08:00 is metadata, never a gold price.
+  const source = splitCanonicalTitleFromSource_(fullTextOf(report), report?.title).bodySource;
   const specs = [
     ["金", /(?:現物金|金(?:\s*\(XAU\/USD\))?)[^\n]*?(?:約|[:：]\s*)?([0-9][0-9,]*(?:\.[0-9]+)?\s*(?:ドル|USD\/oz)?)/],
     ["WTI原油", /WTI[^\n]*?(?:約|[:：]\s*)?([0-9][0-9,]*(?:\.[0-9]+)?\s*ドル)/],
@@ -323,7 +324,12 @@ function renderMarketTable(report, lines, sectionTitle = "") {
   // A structured 08:00 table is the canonical 28-row contract. Do not append
   // guesses extracted from prose, which can reintroduce current-value rows.
   if (!(previousClose && hasStructuredRows)) rows = dedupe(rows.concat(extraRows(lines || [], rows)));
-  if (!rows.length) return `<p class="sop-empty">主要市場データを表として構成できませんでした。</p>`;
+  if (!rows.length) {
+    // Preserve authored source text when it contains no parseable price rows.
+    // This does not manufacture a table or change publication eligibility.
+    if ((lines || []).some(line => clean(line))) return renderRichText(lines);
+    return `<p class="sop-empty">主要市場データを表として構成できませんでした。</p>`;
+  }
   const headers = previousClose ? previousCloseHeaders(report) : CURRENT_MARKET_HEADERS;
   return `<div class="market-table-wrap"><table class="market-table market-table-five" data-market-table-mode="${previousClose ? "previous-close" : "current-value"}"><thead><tr>${headers.map(header => `<th>${esc(header)}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr><th scope="row">${esc(r.label)}</th><td>${esc(r.value || "—")}</td><td>${esc(r.change || "—")}</td><td>${esc(r.rate || "—")}</td><td>${esc(r.direction || "—")}</td></tr>`).join("")}</tbody></table></div>`;
 }
@@ -387,6 +393,9 @@ function renderDocument(report) {
   $("app").className = "report sop-report-applied";
   const app = $("app");
   app.innerHTML = `<header class="report-head"><h1 class="report-title">${esc(parsed.title || fallback)}</h1><div class="source-badge">reports.json正本</div></header>${renderInfographic(report)}<article class="report-body">${renderSupplementalChronology(report)}${renderPreface(parsed.preface)}${sections.map(s => { const market = isMarketSection(s.title); const title = market ? marketSectionTitle(report, s.title) : s.title; return `<section class="section sop-section" data-sop-title="${esc(title)}"><h2>${s.number ? `${esc(s.number)}．` : ""}${esc(title)}</h2>${market ? renderMarketTable(report, s.lines, s.title) : renderRichText(s.lines)}</section>`; }).join("")}</article>`;
+  app.dataset.reportId = String(report.report_id || "");
+  app.dataset.reportDate = String(report.date || "");
+  app.dataset.reportTime = String(report.time || "");
   if (isArchivedRecovery(report)) {
     $("reportStatus").textContent = "過去の記録を表示中｜保存本文・事後修復版（正式発行とは区別）";
     app.classList.add("report-archive-recovery");

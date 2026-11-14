@@ -67,6 +67,45 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - 公開ポータルの参照ページは正式公開と保存版の区別を表示し、公開中の本文全文・最新レポート・dashboard・receipt・公開ゲートを黙って切り替えない。E2E、正式canonical改訂、PNG正式公開の状態は引き続きUNVERIFIED/BLOCKEDと明記する。
 - 変更確認対象：本書、上記3システム固定文書、`report.html`、`assets/js/report-drive-source-reference.js`、`drive-source-selection.html`、`data/drive-source-selection.json`。Google Driveの固定ID文書側の同期とライブPages確認は別工程として記録する。
 
+
+## MRF-0800-20261029 — 08:00 issuance integration contract (Draft proposal)
+
+- Keep one weekday 08:00 report identity/revision bound to one immutable, generation-pinned acquisition snapshot, the complete pre-save G2 body and its SHA-256, a human-reviewed scenario record, Google Docs document/revision/full-text readback, and the existing portal canonical/readback identity.
+- Reject stale or post-cutoff evidence, TEST_ONLY evidence in the production path, any changed body/snapshot/identity, missing scenario review, ambiguous duplicate Docs, duplicate-slot identity conflicts, or a Docs/portal readback mismatch. Never publish after a failed stage.
+- Exact retries may proceed only when report ID, revision, body hash, evidence ID, and snapshot ID match the durable create-only slot claim.
+- TEST_ONLY acquisition on 2026-10-28 is limited evidence of the upstream acquisition/store path. It does not satisfy Docs, canonical, or portal acceptance. This requirement is proposed in a separate Draft PR and is not yet active on main.
+- 12:00/16:00/21:00 schedules and existing publication gates remain outside the implementation scope. No production write or deployment was performed.
+
+
+## MRF-0800-20261029 — importer handoff clarification
+
+- The Google Drive file name must follow the existing source importer key, `マーケットレポート_YYYY-MM-DD_08-00`; the report title remains the first line of the body. The writer now keeps those identities distinct and validates the body with the existing saved-report contract before Docs creation.
+- The existing portal importer reads pre-slot evidence from the checked-out `data/report-evidence/` path. A GCS generation alone is not visible to that importer. Until a protected, exact-generation GCS-to-importer handoff is implemented and proven, canonical portal publication remains NOT_RUN.
+
+
+
+## MRF-0800-20261029 — isolated importer staging contract
+
+- A TEST_ONLY GCS evidence object may be copied only by exact object generation and SHA-256 into a separately marked LOCAL_STAGING_ONLY checkout whose root is disjoint from the importer checkout (neither is an ancestor of the other). Require a standalone `test` token in both project and bucket identifiers and an exact `test-only/` object-name prefix; substring matches do not qualify. Create-only identical retries are allowed; conflicting bytes or identity stop. Resolve and verify the destination path remains inside staging root before creating directories; reject symlink or junction escapes.
+- The existing importer may run against that isolated checkout only when the caller explicitly opts into strict issuance binding. Docs appProperties must match report_id, revision, body_hash, evidence_id, and snapshot_id; otherwise the report remains held/archived.
+- The default scheduled importer path is unchanged. Staging code must not write Google Drive, GitHub main, or Pages. TEST_ONLY evidence and local staging output are not production issuance evidence.
+
+
+## MRF-INGESTION-20261030-01｜取込状態と公開状態の分離（2026-10-30 JST）
+- REQ-12: 保存済みDocsのGitHub取込結果は、canonical保存、発行前evidence/Docs読戻しreceipt、Pages配備、公開後DOM読戻しを別段階で記録する。SOURCE_ARCHIVEDのみの取込を正式publication成功として報告しない。
+- REQ-12a: evidence不足の本文は閲覧用canonical archiveに保存できるが、記録は「SOURCE_ARCHIVED_ONLY」とし、publication eligibilityを獲得しない。
+- REQ-12b: Docs readback receiptがある場合もPages配備・公開DOM確認とは別状態とする。
+- 適用範囲：GitHub取込ログと対応するCI。既存レポート、receipt、Docs、PNG、release schedule、publication gateの変更を含まない。
+
+## DELIVERY-CLOSEOUT-20261101-01 — 保存本文の見出し認識（統合candidate）
+
+- 保存本文の明示見出しとして `01｜見出し`、`第1: 見出し`、既存の番号付き形式を認識する。`結論：本文`、`最終判断：本文`、`まとめ：本文`はラベル以降の同じ段落本文を結論sectionとして保持する。
+- 見出しではない説明文を見出しへ昇格しない。パース後も元の本文を改変しない。
+- この認識修正は保存本文の取り込みに関するもの。28×5表、必須section、発行前Evidence、Docs読戻し、canonical/Receipt、Pagesの公開ゲートは変えず、過去枠の再発行資格を与えない。
+- 適用状態: latest-main基点の統合candidate上で実装・ローカル回帰確認。GitHub mainへの反映と固定ID Google Docsの更新/読戻しは未実施。
+
+DELIVERY-CLOSEOUT-20261101-01 追加受入条件: 回顧アーカイブ対象（2026-10-16 12:00/16:00/21:00）は、原本未発見・回顧レポートの区分・記録日時が一致する場合のみ履歴アーカイブとして扱う。正式公開枠へ昇格させず、検証スクリプト変更をPages workflowの対象パスへ含める。candidateで31件を検証しPASS。mainと固定Google Docsへの反映は未完了。
+
 ## 2026-11-04 現行差分統合 v2.2｜REPORT-ARCHIVE-CONTENT-AUDIT-20261104-01
 
 - 保存記録は `data/report-archive-manifest.json` から取得し、対象JSONごとにschema/date/time/body/source statusを検証する。特定月をJavaScriptへ固定せず、manifestの一覧をもとに統合する。
@@ -77,3 +116,197 @@ REQ-07: 要件定義書、仕様書、運用マニュアルを別ファイルと
 - 受入条件は11/02・11/03の各実在slot、10/30 21:00回帰、日付移動、URL指定、正本優先、取得失敗、不正アーカイブ除外、Pages公開後の実ブラウザ読み戻しとする。
 - 実績：PR #193～#196 main統合、68slot/18日分の公開画面確認、Pages deploy run 41836815631 SUCCESS。PR #193/#194は日付・時刻を価格として誤認するアーカイブ表を抑止。PR #195/#196は08:00 QA未達を明示する。
 - 未解決原本：10/22 12:00の復旧記録に12:00本文がなく、11/02 12:00の保存元状態情報に矛盾がある。元資料なしに修正・昇格しない。
+
+## MR-ISSUANCE-CONNECT-20261104-02 — issuance transaction acceptance
+
+- The existing PR #188 path must bind the same report ID/revision, immutable generation/hash-pinned pre-slot evidence, G2 body SHA-256, Docs ID/revision/full-text readback, canonical report, publication receipt, GitHub main commit, Pages workflow and actual public report JSON body.
+- Formal importer invocation is scoped to the exact 08:00 report title and Docs ID; ordinary scheduled three-day import and TEST_ONLY staging guards remain unchanged. A duplicate matching Docs name, changed revision, partial canonical/receipt pair, conflicting same report identity, failed GitHub readback, failed Pages workflow, or public body mismatch blocks `PUBLISHED`.
+- Identical retries may reuse an exact existing canonical report/receipt and must not create another main commit. If main commit completed but Pages/public readback did not, record partial completion and reconcile the exact commit/files before retrying Pages.
+- Mock/isolated test success is TEST_ONLY. Production acceptance requires a separate authorized 08:00 E2E; this implementation does not change the four weekday schedules or grant retroactive publication eligibility.
+
+### Invocation and public-index regression criteria
+
+- Invoke the 08:00 module as `python -m scripts.run_0800_issuance`; `--help` must run without credentials, while missing input and invalid slot data fail closed as `BLOCKED` before creating cloud clients.
+- Isolated public-mode DOM validation must use the public `reports.json` array shape, retain the existing `reports/` canonical corpus requested by page loaders, and serve the exact `reports/<reportId>.json` target source. It must require exactly one target reportId row and compare revision, date, time, fullText/body SHA-256, and the rendered report DOM before accepting the page.
+- The read-only preflight returns overall `READY` only when each required check is `PASS`; an unverified GitHub `contents:write` scope stays `UNKNOWN` and yields overall `NOT_READY`. An explicit independent administrator attestation may move that check to `PASS`; it does not bypass the protected Environment or write gate.
+
+### Follow-up acceptance: invocation, create-only, DOM, preflight
+
+- The protected 08:00 entry point accepts only today's weekday 08:00 slot within the existing 40-minute window, requires a G2 bundle plus an explicit GCS object name and generation, reads that exact generation, and calls existing `run_issuance()`. It does not select a latest object or change the scheduled task definition.
+- GitHub canonical JSON and publication receipt are a create-only atomic pair. Any existing mismatch or one-sided pair, stale main head with nonmatching files, compare-and-swap rejection, or uncertain commit readback blocks publication. A stale main head may be reconciled only when the entire target canonical/receipt/index file set is byte-identical, in which case retry reuses that commit without creating a second commit.
+- `PUBLISHED` requires rendered report DOM identity (report ID/date/time/title) and source body represented by the verified SHA-256. Public JSON validation and rendered UI validation are separate checks.
+- The Pages verifier must run the public-mode DOM validator against the actual HTTPS `report.html`/`reports.json` after the exact commit's deploy succeeds. If Chromium/Playwright is unavailable or the DOM identity/body differs, issuance remains blocked.
+- The production publisher requires GitHub Actions `refs/heads/main`, the named `report-publication` Environment context, its approval gate, an administrator attestation of the separately supplied token's contents-write permission, and the existing explicit write gate; developer checkouts and other Environments remain blocked.
+- A read-only preflight reports observable GitHub repository push access, active Pages workflow, protected Environment reviewers, Docs folder capability, exact Evidence generation access, and claim-bucket create permission through the provider's non-mutating permission-check endpoint. GitHub's read APIs cannot certify a fine-grained token's exact contents-write grant; that remains UNKNOWN and prevents overall READY until an authorized administrator attests it using protected `REPORT_ISSUANCE_CONTENTS_WRITE_VERIFIED=true`. Credentials are never emitted.
+- These are code/isolated acceptance criteria only; they do not prove scheduled-task linkage or production Docs, main, receipt, Pages, or public DOM.\n\n## MR-ISSUANCE-PRODUCTION-READINESS-20261105-01｜本番接続準備（2026-11-05 JST）\n- GitHub上で確認したPR #188 headは e5b967b3ead9a8c0e503f8251a38ec78edf1ea46、mainは d5db82e9bf88657b612ec41a471124b6c343cf84。mainのみの31コミットは市場データ・履歴JSONの追加更新で、PR headは mergeable。履歴保全のためforce同期やデータファイル取り込みを行わず、通常のPR merge base解決に委ねる。\n- 現行Apps Script Master Schedulerは平日枠ごとに publishMarketReportSlot_ を呼ぶ。PR #188 CLIが要求するG2 bundleとevidence_ref.object/generationを生成・渡すコードは確認できず、ChatGPT定時タスクの実体から当CLIへの接続も未確認。正規G2 bundleなしに発行しない。\n- protected execution preflightは REPORT_ISSUANCE_APPROVED 等の自己申告値を承認証拠にしない。GitHub Environment APIが返すrequired_reviewers規則とmain ref/Environment名を別に検査し、当該runの承認実績は NOT_INFERRED とする。\n- 追加する手動 workflow は workflow_dispatch/read-only、対象ID・revision・evidence object/generationを明示し、write permission/発行Secretsを与えない。Environmentが実保護されているかは未確認。\n- 2026-11-05時点のpreflightは実Google/GCS/GitHub発行権限・対象G2同一性・Pages/DOM環境を確定できないため本番試験 NOT_READY。固定ID Google Docsの同期は未実施。\n\n受入手順：将来の平日08:00枠1件のみを指定し、(1)実取得時刻とEvidence generation/hash、(2)G2 freeze時刻/body SHA、(3)Docs fileId/revision/全文読戻し、(4)canonical commit SHA、(5)receipt書込みと読戻し、(6)Pages run、(7)公開JSONとDOM本文全文照合、(8)失敗stage/completed stages/retryableを保存する。既存slot衝突・不一致では停止し、承認なしのwrite/dispatchを行わない。
+
+## MR-ISSUANCE-PRODUCTION-READINESS-20261105-01｜CI証拠追記
+- CI code head 5538a8707f2179fcabde9ea5b4fa32239664a00e でissuance integration contract PASS：83 Python tests (17+39+16+11) とcompile/CLI smoke。https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41875493256
+- isolated UI/DOM PASS：https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41875493440。その他8件も同じheadでPASS。これはActions隔離環境の結果で、本番Docs/GCS/GitHub canonical/receipt/PagesはNOT_RUN。
+- main f43cc00f60d5a32fa96fa6cb4de440c7f971fc4a を2親同期commitに保持。main-only data/history変更はPR側の変更パスと重複なし。Google Docs固定IDへの同期はNOT_RUN。
+
+## MR-ISSUANCE-ENTITY-20261105-02 — G2 producer/handoff acceptance
+
+A production G2 must be frozen by a declared producer before Docs save. Its exact GCS bucket/object/generation must bind reportId, revision, fullText SHA-256, frozen_at, Evidence object/generation, evidenceId, and snapshotId. Reading an existing Docs file is not evidence that this pre-save G2 existed. Repository inspection found no producer that creates this bundle: Apps Script reads an existing Google Doc and publishes it; the scheduled ChatGPT task is external and its configuration was not inspectable. Until that producer and its trusted write identity are connected, issuance is BLOCKED_G2_PRODUCER_MISSING.
+
+## MR-ISSUANCE-ENTITY-20261105-02 — trusted G2 producer requirement
+
+A valid production G2 requires a declared producer that freezes the exact fullText, reportId/revision, fullText SHA-256, freeze timestamp, and exact pre-slot Evidence object/generation, evidenceId and snapshotId before Docs creation. The protected runtime must verify producer provenance as well as object bytes/generation. Existing Google Docs are downstream saved copies and cannot establish that source. Until the producer adapter is invoked by a verified task actor and its trusted writer identity is confirmed, report BLOCKED_G2_PRODUCER_MISSING; matching bundle fields alone do not permit preflight READY.
+
+## MR-ISSUANCE-G2-PRODUCER-20261105-03 — implementation and connection status
+
+Implemented in the PR: `scripts/reporting/g2_bundle_producer.py` exposes `TrustedG2BundleProducer.freeze_and_store()`. It accepts final task-authored text plus the exact pre-slot Evidence envelope, binds reportId/revision/body SHA/frozen_at/evidenceId/snapshotId and scenario review, writes one create-only GCS object, and reads back its exact generation/bytes. Identical retry reuses the same generation; conflict or uncertain readback blocks. The 08:00 CLI consumes the returned object/generation with explicit report and Evidence references.
+
+This adapter is not yet invoked by the existing ChatGPT task, and its production GCP workload identity/bucket IAM is not configured or verified. No task callback or installed schedule was inspected. Therefore preflight remains `NOT_READY` and production status remains `BLOCKED_G2_PRODUCER_MISSING` until the task-to-adapter handoff and trusted writer identity are established. Do not infer G2 from an existing Docs file or change the task schedule.
+
+On code SHA `9fd7470606bbf2bdd9fbcc9fd1e9f250b63de736`, six isolated Python suites passed 110 tests (17+39+16+17+7+14); all 10 related Actions passed. This is fixture/CI evidence only, not a live task, GCS, Docs, GitHub, or Pages result.
+
+## MR-ISSUANCE-G2-PRODUCER-20261105-03 — synchronized code acceptance
+
+Executable tree on synchronized code SHA `a4641d4fa1d55120e1e95af0548d06a886dafb17` passed 110 Python tests under Actions Python 3.12: pipeline 17, portal 39, importer handoff 16, preflight 17, pinned G2 handoff 7, producer 14; compile and CLI smoke also passed. All ten related Actions passed: [issuance 41907967951](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907967951), [UI/DOM 41907968119](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968119), [sync recovery 41907967813](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907967813), [Apps Script validation 41907967892](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907967892), [frozen cutoff 41907968232](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968232), [delivery 41907968211](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968211), [dashboard health 41907967835](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907967835), [eligibility 41907968113](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968113), [historical recovery 41907968451](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968451), and [saved-source QA 41907968393](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41907968393).
+
+Main `ba8d09a1b1170b56b42c8f33c125a19f120fb0dd` was synchronized in merge commit `a4641d4fa1d55120e1e95af0548d06a886dafb17`. Main's only change since the previous sync was `data/usdjpy-volume.json`; it did not overlap the 44 PR paths and is absent from the PR diff. PR #188 remains OPEN/Draft/unmerged. Live G2 task invocation, workload identity/IAM, installed trigger inventory, authenticated preflight, Docs, canonical/receipt and Pages writes remain NOT_RUN or UNKNOWN. The adapter's automated pass does not remove BLOCKED_G2_PRODUCER_MISSING.
+
+## MR-ISSUANCE-TIME-CONTRACT-20261105-01｜08:00時刻契約修正
+
+08:00枠の工程時刻を分離する。Evidenceの期限・鮮度条件は変更しない。
+
+- 市場データ取得：定義済み06:30取得系およびT-13/T-7/T-3の当日枠取得。snapshotの生成時刻・鮮度は既存validator（15分以内）で検査する。
+- Evidence生成・凍結：08:00:00 JST以前。generation、object SHA-256、reportId/revision、snapshot/context/source hashを固定し、発行後生成・再構成を拒否する。
+- G2生成開始・レビュー・凍結：08:00:00〜08:40:00 JST。08:00に始まるレポート作成タスクが同時刻以前に本文を凍結することはできないため、G2はslot開始後に作成・人手レビューし、Docs保存前にfreezeする。reviewed_atは本文hashと同一reportIdに結び、slot開始以降かつfrozen_at以前とする。
+- G2 object保存：凍結後、同じ08:00〜08:40枠でcreate-only。GCS作成時刻・generation・本文hashを読戻し、作成時刻がfreezeより前または枠終了後なら停止する。
+- Docs保存・正式発行・公開照合：08:00:00〜08:40:00 JST。G2 freeze/review後に保存し、既存の全文読戻し、正式原本/receipt、Pages実DOMゲートを維持する。
+
+変更理由：従来のproducerはG2を08:00以前にfreezeし、producerの現在時刻を08:00未満に限定していた。一方で発行CLIは08:00〜08:40にのみ起動する。定時タスクが08:00開始なら、そのtaskが開始前に本文をfreezeするのは不可能である（実際のtask開始時刻と出力経路はUNKNOWN）。従来条件では一つの08:00開始経路として成立しなかった。これはEvidence期限を緩めず、本文側のfreeze/review条件のみをslot内に明示する改訂である。過去Docs・本文・Evidenceは新たな発行前証拠として認定しない。コード/隔離CIの合格は実タスク接続や本番公開の証拠ではない。
+
+### G2生成主体と実接続の証拠条件
+
+G2生成主体の判定は環境変数やbundle内の申告を証拠にしない。認証付きpreflightは、正確に読戻したGCSのbucket/object/generationとSHA-256に対してCloud Audit Logsのstorage.objects.create記録を引き、principalEmail・resourceName・generation・記録時刻（G2 freeze〜08:40 JST）を照合する。照合が取れない、記録が未有効、Logging API権限がない、principalが違う場合はBLOCKEDとする。Cloud Storage Data Access監査ログは明示的に有効化が必要で、未設定ならここで止まる。有効化や課金影響の設定は管理者作業とし、この変更では行わない。
+
+想定認証はGitHub Actionsの保護main/ref+EnvironmentからGoogle Workload Identity Federationで専用service accountをimpersonateし、G2 objectはcreate-only、Evidenceは指定generation read、claim prefixは既存の必要権限に限定する構成。GitHub側の期待service account名は保護環境の設定として扱い、監査ログの実principal一致が必要。service account keyをSecretsへ追加しない。
+
+ChatGPT定時タスクの生成本文をこの実行環境から取得するコネクタ/APIは確認できていないため、TrustedG2BundleProducerは呼出し可能なアダプターであり、タスクへ実接続済みの生成主体ではない。既存taskは08:00開始とされ、task出力が08:00〜08:40内に人手レビュー・freezeされれば新時刻契約には適合するが、実出力・完了時刻は未確認。
+
+実運用代替案は二つある。第一案は、本文を生成する既存ChatGPT taskを維持し、運用者が本文/revision/reviewを非公開の承認済み実行環境へ受け渡し、protected workflowがEvidence generationを読んでG2をfreeze/storeし、そのgenerationを発行CLIに渡す手動運用。早期の限定試験に向くが、手動受渡し記録が必要。第二案は、taskがOIDC/Webhookを実際に出せることを確認した後、専用の受信実行主体を作り、その主体がWIFで同じproducerを呼ぶ自動運用。taskのWebhook能力が未確認で、追加serviceの保護・費用確認も要るため現時点では実装可能と断定しない。公開GitHubのdispatch inputsへレポート本文を直接貼り付ける方法は監査イベントへの本文露出があるため採用しない。
+
+### 08:00 ownerの切替条件
+
+Git上のApps Scriptは08:00枠を含むDocs→GitHub発行コード/08:30付近のretry handlerを定義する。これは実際のApps Script deployment、installed trigger一覧、 timezone、直近実行履歴の証拠ではない。実状態はUNKNOWN。owner configは08:00をapps_script_legacyのまま維持し、新CLIは競合ガードにより発行を停止する。切替は承認後、(1)現行deployment版・trigger/last executionを読取り確認、(2)08:00旧triggerと08:30 retryのみ停止し12/16/21を維持、(3)停止状態を再読戻し、(4)08:00 owner configを新方式へ変更、(5)protected新方式を起動、(6)未来の08:00 slot 1件を承認付きE2Eで照合、の順とする。確認できないtrigger/historyはUNKNOWNのまま所有権を切り替えない。
+
+## MR-EVIDENCE-GCS-WINDOW-20261105-01｜発行前Evidenceの時刻・正本要件
+- 対象枠のJST実行時刻は枠開始15分前以上かつ枠時刻未満に限る。workflow scheduleと手動実行は同じ条件を適用し、対象日を実行日から推測して遅延イベントを翌日同時刻へ付け替えない。
+- この判定はmarket-data acquisition・GCS保存より前に行う。締切後・対象日違い・週末は `BLOCKED_SCHEDULE_WINDOW_MISMATCH`、遅延は `SCHEDULE_LATE` として停止する。
+- GCSはEvidenceの正本とし、`if_generation_match=0` で作成する。保存後、固定generationを指定して再読戻し、本文バイト列/SHA-256、reportId、revision、Evidence ID、snapshot ID、元データhash、Evidence作成時刻、GCS作成時刻を検証する。既存オブジェクトの内容不一致は上書きせず停止する。
+- GitHubのEvidenceファイルとGCS参照sidecarは監査用ミラーであり、GCS generationの読戻しがない限りREADYとしない。ミラーのみの成功を正本保存とみなさない。
+- Actions scheduleの欠落/遅延は自身のjobから確実に判定できないため、実行履歴上の未観測は `SCHEDULE_NOT_OBSERVED`、起動後の時間窓逸脱は `SCHEDULE_LATE` に分ける。実GCS権限・実generation読戻しは本番接続検証までNOT_RUN。
+
+
+## MR-EVIDENCE-GCS-WIF-SLOT-ISOLATION-20261105-01 — 08:00 GCS isolation and WIF contract (2026-11-05)
+
+- 新方式のGCS canonical Evidence保存・generation読戻しは08:00枠だけに適用する。08:00は対象日時の直前15分以内の実時間ガード、Evidenceの作成時刻・本文・取得データhashを保持し、GCSオブジェクトをcreate-onlyで保存してgenerationを固定読戻しする。GCS未設定・認証失敗・読戻し不一致は08:00をBLOCKEDとする。
+- 12:00・16:00・21:00は従来のGitHub内ローカルEvidence経路を維持する。従来の「対象締切より前」ガードとデータ鮮度・同一reportIdのimmutable衝突停止を維持し、GCS bucket・GCS認証を要求しない。GCS操作APIからは08:00以外を拒否する。
+- GCS認証はGitHub Actions OIDC→Google Cloud Workload Identity Federation→専用サービスアカウントのADCを使う。JSON鍵をGCSクライアントへ渡さない。既存の市場データ取得に使われるサービスアカウントSecretは別経路として扱い、本改修では変更しない。
+- 管理者設定: GitHub Actions Environment/Repository VariablesにWIF provider resource name、専用SA email、明示的project ID、Evidence bucketを登録し、Google Cloud側でGitHub repository/ref/workflow条件を限定したWIF provider/trustを構成する。専用SAには対象bucket/prefixに限定したcreate/get（object create + generation-pinned object get）権限を付与する。object list/delete/update権限は要求しない。Cloud Storage Data Access監査ログを利用する場合は管理者が対象サービス/ログ種別を有効化し、監査閲覧主体を別に制限する。
+- 検証状態: 実GCS書込み、IAM/WIF trust、Actions Environment設定は未実行。隔離テストとCIが通過しても本番Evidence READYとはしない。CI結果は同変更IDのEvidence Ledgerに追記する。
+
+
+### Verification update — code head bc9d7cd7fca9aa52c1e6ffe7269788204d2b49d1
+
+- Python 3.12 hosted CI: issuance contract suites PASS (18+40+16+18+9+17+23 = 141 tests); the 23-test Evidence suite includes 08:00 missing-GCS BLOCKED, non-08:00 cutoff-only behavior, immutable same-report conflict, late-run/date mismatch, GCS create-only/idempotent retry/conflict, and local-mirror retry/recovery cases.
+- The initial run on 4cfad54 failed 3 assertions in the new/affected Evidence suite. Logs showed a now=None keyword-shape expectation mismatch in the mocked 08:00 guard and a historical non-08:00 fixture whose post-write live-clock recheck correctly rejected it. The helper now preserves the no-argument live call shape; the historical-fixture test isolates the clock guard while asserting immutable conflict behavior. No gate was weakened.
+- Exact code-head Actions: issuance [41946722018](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946722018), frozen cutoff [41946722116](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946722116), delivery health [41946721817](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946721817), UI/DOM [41946722003](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946722003), Apps Script validation [41946721888](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946721888), sync recovery [41946721981](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946721981), dashboard health [41946722110](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946722110), dashboard eligibility [41946722083](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946722083), historical recovery [41946721805](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946721805), saved-source QA [41946721978](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/41946721978): all SUCCESS.
+- Evidence level: E2 hosted isolated tests and workflow regression. GCS used a fake adapter in tests; real OIDC/WIF trust, IAM, GCS object/generation, production schedule and 08:00 issuance are NOT_RUN. PR #188 remains Draft/open/unmerged; no main, Docs, receipt, Pages, Secrets or schedule writes occurred.
+
+## 2026-11-05 保護付きpreflight認証追補（MR-PROTECTED-PREFLIGHT-WIF-20261105-01）
+- 認証付きread-only preflightは、保護Environment上でGitHub OIDC Workload Identity Federationを用い、指定された専用read-only Google service accountで実行する。service-account JSON keyは使用しない。
+- WIF設定または実認証主体が未確認、Environment必須reviewer・対象Evidence/G2 generation・Docs保存先権限・GitHub権限・Pages/DOM依存が不足または未確認ならNOT_READYとする。設定診断は認証・外部接続を行わずREADYを返さない。
+- PR #188のコード/契約テストはPASS。実際の本番Environment認証・本番Google権限確認はNOT_RUN。
+
+
+## 2026-11-05 — MR-PROTECTED-PREFLIGHT-WIF-20261105-01 correction
+
+- Read-only inspection found the GitHub Environment `report-publication` absent (the environment list contained only `apps-script-production` and `github-pages`). Prior wording that implied it already existed is corrected by this record.
+- The authenticated preflight is blocked unless a separate unauthenticated GitHub API job confirms that `report-publication` exists and has at least one required reviewer. Missing/unreadable/unprotected Environment causes the WIF job to be skipped before authentication.
+- Code head `e8e96bf1acce7bb101f0ff9a9c9ac0b057f3371a`; exact-head issuance contract [42032888516](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/42032888516) passed (preflight suite 21 tests). This is CI evidence only. Environment configuration and production authenticated preflight remain NOT_RUN / NOT_READY. Admin must create and protect the Environment before a future preflight.
+
+
+
+## 2026-11-06 — MR-ENV-WIF-ISSUANCE-PREFLIGHT-20261106-01
+
+- 認証付きpreflightの前段ゲートは、Environmentの実在とRequired reviewersの有効な対象、Prevent self-review有効、Environment管理者バイパス無効、deployment branch policyが`main`のみであることを確認する。GitHub APIの失敗・欠落・未対応フィールドはBLOCKED/UNKNOWNとし、認証を開始しない。
+- 本番のEnvironment、WIF/IAM、Docs/GCS/canonical/receipt/Pages権限が未確認の場合はNOT_READYを維持する。自己申告変数やEnvironment設定値だけで実承認・権限をPASSにしない。
+- GitHub variable-list APIが値を返すためpreflightでは呼び出さず、Environment variableの全一覧は未確認とする。必要な設定値は保護付きread-only preflight内で不足の有無だけを表示し、値をログへ出さない。
+- CI変更と隔離テストは本番E2Eの証拠ではない。Google Docs固定ID同期、本番Environment/WIF/IAMと正式発行は未実施。
+
+
+## MR-G2-TASK-HANDOFF-20261111-01 — 2026-11-11 JST
+
+Source: user integration instructions and PR #188; prior head `b8ba8817f78294d9314f4fe20413b4b5b3dc4cbd`.
+Affected canonical paths: requirements.md, specification.md, operations.md, DOCUMENT_CONTROL.md; project-control objective, decisions, lessons and evidence ledger. Google Docs fixed IDs remain unchanged; their current revisions and runtime access were not available, so synchronization/readback is NOT_RUN. Body-authoring changes are specified below for the fixed body-authoring manual, pending authorized access.
+
+- Scope: task-output intake boundary plus an isolated chain; no production release. `task_output_handoff.freeze_task_output` reuses `TrustedG2BundleProducer.freeze_and_store`. Caller authentication must occur in an authorized host, outside task JSON. `VerifiedTaskInvocation` is a typed host contract, not an authentication implementation or a GCS provenance attestation.
+- Body-authoring handoff contract: schemaVersion=1, report (date/time/report_id/revision), full_text with terminal newline, body_sha256, evidence_ref (object/generation/evidence_id/snapshot_id), frozen_at and scenario_review. Preserve full text and review quote offsets exactly. No Docs-derived substitute, inferred review, historical Evidence reconstruction or deadline extension is allowed.
+- Independently configured evidence_reader reads the pinned generation; request-supplied Evidence bytes are ignored. The existing producer validates its exact bytes/hash/time/report/revision and persists G2 create-only. Return g2_ref object/generation/SHA-256, report/revision, Evidence reference and diagnostic invocation identity. Publication and notification remain NOT_RUN.
+- Actual task-to-host authentication, callback/output access, installed Apps Script deployment/triggers and Google Docs permissions are UNKNOWN. The official scheduled-task documentation describes schedules/chat context and supported app events, but does not establish this account's task-to-GCS interface: https://learn.chatgpt.com/docs/automations . Therefore live task handoff is BLOCKED_G2_TASK_HANDOFF. No undocumented API or invented task webhook is used.
+- Evidence must precede 08:00; review/freeze must remain within 08:00–08:40. The existing issuance CLI continues to enforce ownership and protected production gates. All four configured slots remain apps_script_legacy; weekday 08:00/12:00/16:00/21:00 and no weekend slots are unchanged.
+- Isolation: task input -> exact Evidence -> immutable G2 -> fake Docs -> fake canonical/Receipt/Pages -> exact HTMLParser text; UI CI additionally feeds this generated canonical into the real report renderer and Playwright public-mode DOM validator. External stores/adapters remain simulated; this is not TEST ONLY live-service or production proof.
+- Local verification: Python 3.13, ten targeted suites (task handoff, pipeline, portal, importer handoff, preflight, G2 handoff/producer, Evidence and WIF read/create-only), 168 tests, 167 PASS / 1 SKIP. Hosted final-head CI and browser DOM remain pending at this record's creation; older head successes are not reused.
+- Read-only Environment API: report-publication exists and has a required reviewer, but prevent_self_review=false. Custom branch policy is enabled; exact branch inventory and admin bypass remain unverified. Protected preflight is not ready. Production WIF/IAM/GCS audit principal/Docs write scopes/GitHub write scopes are UNKNOWN; authenticated preflight and production E2E NOT_RUN. No configuration was changed.
+
+
+### MR-G2-TASK-HANDOFF-20261111-01 — DOM regression correction
+
+Head 8054d6286 passed nine related CI systems and strict-current-report, but UI validate run 42870725218 failed the dynamically generated body with one missing source line. Its log proves the task handoff chain succeeded and the real renderer dropped the market-section prose when no price rows were parseable. Preserve that original prose via renderRichText instead of replacing it with an empty-table message; no fabricated table or relaxed eligibility/DOM gate. Added a focused renderer regression. Final corrected-head Actions are pending; do not reuse the failed run as PASS. Environment exact deployment branch inventory was independently read as one main branch; prevent_self_review=false remains a blocker. The one local Python skip was the Windows directory-symlink privilege test, not an issuance success.
+
+
+### MR-G2-TASK-HANDOFF-20261111-01 — title parsing correction and isolated index binding
+
+The first renderer correction alone did not resolve UI run 42871382048. Local replay of the exact generated canonical proved legacyMarketRowsFromFullText interpreted the Friday title `(金)08:00` as gold price `08`. Exclude the exact canonical title before legacy price extraction; preserve original prose when no actual price rows remain. A Friday-title regression now exercises this path. The isolated chain also projects its own report into temporary indexes and uses the real GitHubPagesVerifier over fake storage/HTTP instead of accepting a fake Pages success; the generated canonical remains the input to hosted real-browser DOM validation. External live services remain NOT_RUN. Final-head CI must be checked independently.
+
+
+## MR-G2-TASK-HANDOFF-20261111-02 — 2026-11-11 JST, local-only continuation
+
+Source: PR #188 at ebec70b4ffc0b02a9c839c8ea4b6acf061bdb567 and user's explicit decision to defer further external access. Affected canonical paths: requirements.md, specification.md, operations.md, DOCUMENT_CONTROL.md and project-control/EVIDENCE_LEDGER.md. Existing histories and fixed Docs IDs remain unchanged.
+
+Requirement: invalid report/slot/revision, unsupported input types, invalid or expired freeze time must stop before invoking the Evidence reader. Preserve the 08:00–08:40 contract, independent pinned Evidence validation, existing producer and owner gates. Uncertain reads and invalid storage receipts must never produce G2_FROZEN success.
+
+Implementation: task_output_handoff validates nonblank string invocation identifiers, exact integer schema/generation/revision, string Evidence identifiers, explicit target identity and timezone-aware live execution/freeze bounds before Evidence I/O. The producer still rechecks time after readback. Malformed envelope/JSON/snapshot shapes become TASK_OUTPUT_EVIDENCE_INVALID; unclassified reader errors become retryable TASK_OUTPUT_EVIDENCE_READ_FAILED at TASK_EVIDENCE_READ. Invalid G2 receipt types are blocked. No network endpoint, task authentication implementation, scheduler, credential discovery or production write path is added.
+
+Verification: local Python 3.13 ten-suite run, 172 tests: 171 PASS and one Windows directory-symlink privilege SKIP. Task handoff 11/11 PASS, including no reader invocation for expired/invalid input, malformed readback, timeout and invalid storage receipt. Renderer 6/6 PASS; git diff --check PASS. No external CI was run for this local change, and no previous-head CI success is attributed to it.
+
+Access observations before the user's hold: ChatGPT task page redirected to auth/login, so installed task settings/history were not inspected. The Google Drive connector could search existing files, but get_document for fixed document-control ID 1F5vH9_O0LUC9Dki0CNm1JDNVfg7gMYMcUCIxgeanE5g returned HTTP 403 PERMISSION_DENIED; canonical-folder listing and Apps Script MIME search returned no accessible entries. Search results included archived versioned Markdown copies; they were not promoted to canonical or modified. This proves only this connection's access limit, not the absence of the files or project. gcloud/clasp were not available on PATH. No fixed-ID document revision was read or updated.
+
+Operation: user deferred external access. Do not push, inspect additional external services, change permissions, task schedules/triggers, production owners or publish as part of this continuation. Preserve local changes for later review. Live task handoff remains BLOCKED_G2_TASK_HANDOFF, production E2E and live recovery NOT_RUN, fixed Docs sync NOT_RUN, production NOT_READY. Resumption requires the user's instruction to resume external access and authorized access to the actual task/runtime and canonical Docs; account login/access is separate from release approval.
+
+
+## MR-DASHBOARD-PROJECTION-20261111-01 — 2026-11-11 JST
+
+Source: PR #188, failed sync-recovery run 42881821634, and user request to identify the discrepancy without rewriting dashboard/canonical to force a pass. Independent live market data belongs at dashboard.marketData/marketDataUpdatedAt, with its source/status metadata. latestReport and reports must retain the exact saved canonical report, including any marketData originally frozen within that canonical. Do not overwrite these projections with a later acquisition. The complete-report equality/publication/receipt gates remain unchanged.
+
+Implementation: scripts/build_market_json.py no longer injects live payloads into latestReport or reports. Existing frontend consumers already prefer top-level marketData. Three isolated tests prove complete canonical equality, preservation of preexisting frozen marketData, and retry-safe source/error metadata. The sync-recovery CI watches and runs this regression. This prevents subsequent mutations; it neither retroactively repairs stored data nor promotes any publication. Body-authoring and G2/task interfaces are unchanged.
+
+Verification: local sync-related unittest 52/52, reconciliation helper 4/4, publication-consistency check PASS and index check 162 reports PASS; data/, reports/, reports.json and publication-receipts/ have zero working-tree changes. Final-head hosted CI pending at record creation. Google Docs fixed-ID synchronization and production E2E NOT_RUN; production NOT_READY. No schedule/owner/permission/trigger/main/Pages/Docs/notification change or production workflow dispatch.
+
+
+## 2026-11-11 Evidence scheduler reliability requirements — MR-EVIDENCE-SCHEDULER-RELIABILITY-20261111-01
+
+- Scheduled Evidence generation is best-effort; scheduler dispatch does not prove on-time execution. A delayed or missing run must be visible and must never become a different report date/slot.
+- A production scheduler adapter must authenticate its caller before accepting scheduling metadata. For Cloud Scheduler, verify OIDC identity and use the trusted `X-CloudScheduler-JobName` and `X-CloudScheduler-ScheduleTime` headers. The JSON body must not choose or override the report date, slot, attempt identity, or schedule time. Convert the original occurrence time to JST, validate it against the configured slot and schedule, and derive `reportId` from that occurrence. Retries must retain one idempotency key for the same occurrence; distinct scheduled attempts for one slot share a single immutable reportId claim.
+- All new Evidence writes use a strict 15-minute pre-slot window and are rejected at or after the slot cutoff. Late, future, weekend, malformed-time, caller-mismatch, and slot-mismatch requests fail closed. This narrows creation eligibility for 12:00/16:00/21:00; it does not change how existing Evidence is read.
+- Evidence monitoring must run independently of the Evidence producer and classify waiting, warning, blocked, invalid, and unknown states while retaining latest attempt/success timestamps. Monitoring produces a deterministic warning message; actual notification delivery remains a separately verified operation.
+- Preserve the 08:00 GCS canonical object, WIF, create-only generation, SHA-256, and pinned readback contract. Keep 12:00/16:00/21:00 on the existing GitHub Evidence storage contract; do not silently move these slots to GCS.
+- Acceptance for this change requires fixed-clock tests for on-time/5-minute/30-minute/hour/next-day delay, UTC/JST date rollover, weekday/weekend, missing/invalid scheduler headers, authenticated principal/job mismatch, duplicate retry idempotency, and missing/invalid Evidence watchdog states. Offline tests do not establish deployed scheduling or notification delivery.
+
+The 2026-11-11 16:00 run first reported missing pre-slot Evidence. The scheduled GitHub Actions execution history did not show a run for the configured attempt window; the internal scheduler reason and task Docs API invocation remain UNKNOWN. Do not represent the adjacent 12:00 importer failure or 16:30 Apps Script failure as direct causes of that 16:00 task.
+
+
+## 2026-11-11 TEST ONLY Scheduler → Cloud Run evidence boundary
+
+PR #188 adds an isolated TEST ONLY adapter contract. Cloud Scheduler's authenticated OIDC identity is checked separately from the short `X-CloudScheduler-JobName` ID and stable schedule-time header. Four weekday slots remain pinned to their scheduled date and cutoff; request-body identity is ignored. Producer attempts are logged after authentication and schedule validation, before GCS access, so the independent watchdog can find a failed attempt as well as a successful save.
+
+The Terraform candidate defines eight internal, IAM-authenticated Cloud Run services (producer + independent watchdog per slot), eight per-service caller identities, separate producer/watchdog runtime identities, prefix-conditional access to the pre-existing TEST ONLY bucket, and eight weekday JST Scheduler jobs. Scheduler jobs default to paused. Production endpoints, credentials, documents, canonical reports, receipts, Pages, notifications, and schedules are outside scope.
+
+Evidence:
+- Existing TEST ONLY WIF read-only Actions run [43010954640](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43010954640) authenticated the expected GitHub principal and read exactly generation `1793227650462378` with SHA-256 `92124cb17b36a407d3597487a09cca852b72d50de6c7b4f7cc98d6fb958aede9`; the log explicitly reports `GCS_WRITE_OPERATIONS=NONE`.
+- E2 contract tests and Terraform static validation are covered by [TEST ONLY Scheduler and Cloud Run contract run 43014475151](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43014475151).
+- Real Scheduler → Cloud Run invocation, new Evidence GCS write/readback, Watchdog read, and audit-principal verification remain `BLOCKED_TEST_ENV_APPROVAL / NOT_RUN`. The read-only WIF run is not a substitute for that E2E.
