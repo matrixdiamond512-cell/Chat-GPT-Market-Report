@@ -1,0 +1,28 @@
+{
+  "changeRequest": "MR-BODY-INTEGRITY-20261114-01",
+  "date": "2026-11-14 JST",
+  "sourceCommit": "535e5dd0081954ed388471713fc7a8e6ccdb7f7d",
+  "sourcePath": "data/dashboard-drive-archive-2026-11-13.json",
+  "sourceBlob": "ff9e5bce9c24edea81bbabb336e4373562ef8fe9",
+  "historicalWriterFunction": "UNKNOWN; commit contains only archive JSON; no conversion/action trace supplied",
+  "investigatedFunction": "scripts/sync_reports_from_drive.py:paragraph_text; textRun concatenation preserves LF, previous leading BOM strip removed",
+  "sourceBodyHash": "3d4bdc1b0d85edbdb2e59d662683192d2fbdfa4d8ab5a0546e1500749bcbae04",
+  "oldBodyHash": "6fecaa1185d7b01658e7e13bfc2921425494f55ec572959a598ec6e55a459278",
+  "candidateReadbackBodyHash": "3d4bdc1b0d85edbdb2e59d662683192d2fbdfa4d8ab5a0546e1500749bcbae04",
+  "sourceCharacters": 4640,
+  "oldCharacters": 4548,
+  "candidateCharacters": 4640,
+  "sourceLF": 92,
+  "candidateLF": 92,
+  "changedFields": [
+    "driveTextLength",
+    "fullText"
+  ],
+  "revisionUnchanged": true,
+  "revisionProof": "Archive value preserved; current connector revision null, same-revision body binding UNKNOWN",
+  "taskRunBinding": "UNKNOWN",
+  "PNG": "NOT_RUN",
+  "publication": "NOT_RUN",
+  "candidateStatus": "NONPRODUCTION_REVIEW_ONLY",
+  "productionWrites": 0
+}

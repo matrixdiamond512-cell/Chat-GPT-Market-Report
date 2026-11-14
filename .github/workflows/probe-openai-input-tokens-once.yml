@@ -9,6 +9,7 @@ permissions:
   contents: read
 jobs:
   count-only:
+    if: ${{ false }} # MR-ZEROCOST-20261113-01: no API calls, including probes
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

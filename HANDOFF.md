@@ -100,3 +100,56 @@ git branch --show-current
 
 ---
 この文書の最終更新: 2026-10-20 JST。文書管理の根拠は `docs/system/DOCUMENT_CONTROL.md`。配信システム本体の変更、Google Docsの正式正本の書換え、外部サービスの設定変更は、この引き継ぎ整備だけでは実施しない。
+
+## MR-RELIABILITY-20261113-01 — 2026-11-13 JST 継続先
+
+ユーザーの5営業日20枠の安定配信改善計画に着手。branch codex/reliability-phase0、base origin/main f00730cf4b63af65e17cb93df9f1cd3f359b0c5a。変更は固定文書と証拠記録のみ、未push。詳細はEVIDENCE_LEDGERの同ID。Phase 0未完了、修復未着手、運用受入未検証。
+
+最新API観測でPR #188はDraft/open、head 860ec370af7633a8ccadf393a474ee2614ce5430。dashboard writer修正候補と重複するため独立実装前に差分照合。mainでは依然live marketDataをlatestReportに注入。取込run 43253659543は索引readback失敗（Docsステップsuccessだけで取得成功を認定しない）、health run 43257052990も失敗。日付推論処理と未接続の独立監視を優先調査。
+
+次の必要証拠: 本人の認可アカウントから実task ID/有効状態/11月11日夕方の操作履歴、Apps Script導入版/trigger/history、Actions認証主体と月別フォルダ/対象Doc全文/親/revision、失敗run詳細ログ。Drive接続はフォルダ検索0件・固定台帳metadata 404であり不存在と断定しない。本番停止/変更/障害注入/公開workflow起動は未承認・未実施。新しい実枠を観測する前に20枠計数を開始しない。
+
+## MR-ZEROCOST-20261113-01 — 2026-11-13 JST 継続先
+
+branch `codex/zero-cost-delivery`、base取得main `f94229ba1c135215623881faf4f5417509c252ab`。前回文書7件dirtyを保全。今回差分は無課金policy/gate、単一shadow受領/SQLite原本保全、旧AI API4jobのfalse条件、PR用offline CI、PR188同一blobの市場writer責務分離、32テストと固定文書/監査台帳。commit/push/PR/main merge/外部publishは未実施。
+
+同IDのEVIDENCE_LEDGER、DOCUMENT_CONTROLの影響マトリクス、固定DELIVERY_PATH_INVENTORY.jsonを読む。ログは追跡外`logs/zero-cost-delivery/`（実本文19本、11/12実shadow4枠、公開HTTP/DOM、費用・試験）。task/会話IDと接続profileは公開PRへ転記しない。ユーザー画像で現タスク有効、11/11 16時本文表示/下流未達を確認。実タスク/正式文書は切替受入まで保持。
+
+11/12本文4本は翌13日00:59〜01:00補充。revision/親独立照合/PNG/枠前証拠/receipt不在を補作しない。公開最新は10/13 16時、11/12全4枠DOMは対象データなし。32テストPASSは定時配信成功ではない。Google正本6文書403/fetch404、11月本文フォルダ直接list/19全文は取得可能だがrevisionId=null。正式な自動引渡し/非本番外部adapter/料金・データ再配布条件/GAS導入版/分散writer所有者は未実証。次は独立権限・基準図・実原本証拠の確認。新API/無料枠有料代替を導入せず、切替と20枠受入はまだ開始しない。
+
+
+## MR-ZEROCOST-20261113-01｜レビュー共有の追加依頼（2026-11-13 JST）
+
+ユーザーから既存ローカル候補のpushとDraft PR作成を明示依頼。前回の「未push」は当時の状態。今回の公開準備と32件の再実行結果はEVIDENCE_LEDGERの同IDと追跡対象evidence/zero-cost-delivery-tests.txtへ記録。実本文/task/chat/profileを含むlogs/は公開対象外。main/本番タスク/正式原本は変更しない。remote/PR/commitの実結果は次の同ID追記を参照。
+
+
+## MR-ZEROCOST-20261113-01｜GitHub共有済み（2026-11-13 JST）
+
+レビューbranch `codex/zero-cost-delivery` をpushし、Draft PR https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/200 を作成。初回code/evidence commitは `62485d557491d821f82ebff86f96ef7f7ebc0d29`、同headのshadow/health/frozen-cutoff CIはSUCCESS。GitHubのtest証拠ファイルとcommit blobの実バイト一致を確認。この共有結果追補は同branchへ追加。最新headはPRのheadSHAで照合する。以前の未push記録は当時の履歴。main/定期タスク/正式原本は不変、発行復旧と切替/20枠受入は未達。
+
+
+## MR-SOURCE-HANDOFF-20261113-01｜非本番の実保存・原本受渡し境界（2026-11-13 JST）
+
+ユーザーの優先指示により新経路を増やさず既存connectorで実保存を試験。非本番Doc1fRNyN1E2xzk0vj1GahLn5Xc4gupsEth7LZcNQYVLf6Mは、初回末尾LF不一致を記録後、revision付き限定修正と独立readbackで本文2495文字/SHA/親/MIME一致。source-handoff-save-readback.jsonとEVIDENCE_LEDGERを読む。これは元Docの補充本文コピー保存で、指定ChatGPT会話からの原本引渡しの証拠ではない。生成元会話のDrive action/エラー全文をユーザーへ確認中。元Doc revision/PNG/固定正本アクセスは引き続き未了。ランタイムコード変更なし、本番/既存task/正式原本不変。既存PR200 Draftのまま実測証拠を共有する。
+
+
+### MR-SOURCE-HANDOFF-20261113-01｜21時枠の早期実行・未発行終了（2026-11-13 JST）
+
+ユーザーから21時taskが20:55:04〜20:55:16にcompletedだが未発行/Drive action未呼出という履歴を受領。HTTP保存エラーなし。通常チャットに書込action/正本参照権限があっても定期runのtool提供は未確認。runごとに会話参照が変わるためtask ID+run ID+予定枠+実行会話+指定表示先で照合。私的IDsは追跡外ログのみ。既存監視で原本なしをFAILとする隔離再現は確認したが、早期起動原因/枠までの待機・再開は未実証。taskや時刻/権限を変更せず、同IDの台帳とearly-task-no-publication.jsonを読んで切り分ける。
+
+
+## MR-TASK-DIAG-20261113-01｜保存プロンプト3,954文字の診断（2026-11-13 JST）
+
+21:57の提供診断から保存prompt3,954文字とSHA501ce01e9a49a1ef742af95aee66d6b5e0e001d03f3e8ae49ab4a8466943757fを確認。保存/原文保持/通常保存と正式公開のゲート分離は既に指示あり。早期終了の直接命令はなく、公式待機/再開が未規定。復旧時刻はpromptにあるが予約されていないとの提供診断、PNG任意は全4枠必須と不整合。evidence/task-prompt-diagnostic.jsonとEVIDENCE_LEDGERを読む。task停止/変更・本番取り込み禁止を維持し、追加の保存コード/実行系は作らない。次の必要証拠は対象runのtool/call traceと適用prompt/schedule/サーバー時刻。最小差分案はoperations内のみ、実taskへ未適用。
+
+
+## MR-SOURCE-HANDOFF-RECOVERY-20261113-01（2026-11-13 JST）
+出典: 23:34 JST指示書 / Draft PR #200。既存タスク・Google固定正本・main・本番設定は変更なし。影響: requirements/specification/operations/DOCUMENT_CONTROL、台帳、HANDOFF。Google固定ID文書・本文/図解マニュアルへの同期は未実施（権限/承認待ち）。承認済み本文・図解品質は維持。
+
+既存verify_scheduled_report_delivery.pyへ任意の`--run-observation`を追加。予定/実開始/実終了・情報基準/原本作成時刻を分離し、completedだけを成功とせず本文/PNG/Docs/受渡しとlocal canonicalを別判定する。新しい監視job・schedule・writerなし。観測ファイルを自動取得する接続は未実装、現行監視へrun情報が自動注入されるわけではない。時刻またぎ・早期終了・PNG欠落・canonical欠落・異なる予定枠・timezone欠落を回帰検証。既存32件＋配信検証9件=41件PASS（合成試験を含み、実E2Eではない）。
+
+実物読戻し: 11/13 16時Docの全文・親・MIME・時刻を取得、revisionはnull、実runとの結合UNKNOWN。実PNGは未受領。取得0件を不存在とは断定しない。実本文を既存shadowへ渡すとWAITING_FOR_SOURCE_ARTIFACT、欠けた6ファイルを明示、productionWrites=0。証拠: `docs/project-control/evidence/source-handoff-recovery.json`。前回の非本番2495文字保存成功は維持、新しい保存成功へ水増ししない。今回のPNG保存・bundle受入・公開・通知は未実施。
+
+公式継続/遅延再開/強制実行は、この接続で提供されるautomation操作(view/create/update/delete)では実証できない。BLOCKED_PLATFORM_CAPABILITY。原因不明の早期起動を平台障害と断定せず、sleep/未予約復旧を対策としない。通常ChatGPTのDrive操作可用性はユーザー報告、定期runのtool一覧/主体/呼出traceは取得不能。CodexのDoc読戻しと以前の非本番書込は実測、GAS/Actionsの認証・導入版はUNKNOWN。確認にはユーザーが許可した実runのaction履歴と原本文・実PNGが必要。無課金の自動会話転送は実証済み公開接続なし。人手受渡しは非本番試験に限り許容、自動配信成功に数えない。
+
+最小プロンプト差分は `docs/project-control/task-prompt-change.patch.md`（未適用）。本番切替/rollbackは既存operationsの承認gateを維持。4枠＋20枠の実受入は未達。費用PASS_LOCAL_ONLYは契約/本番費用保証ではない。

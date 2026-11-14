@@ -1,0 +1,85 @@
+Change ID: MR-ZEROCOST-20261113-01
+Stage: LOCAL_OFFLINE_CONTRACT_TESTS (not hosted CI / not production publication)
+Executed at: 2026-11-13T20:34:07.933661+09:00
+Base commit: f94229ba1c135215623881faf4f5417509c252ab
+Command: python -m unittest tests.test_zero_cost_delivery tests.test_market_projection_immutability tests.test_publication_evidence tests.test_report_slot_evidence -v
+Environment: Python 3.13.15; PYTHONPATH=scripts; existing runtime timezone data supplied via PYTHONTZPATH; no dependency install
+Source file SHA-256:
+{
+  "scripts/run_report_delivery.py": "93562177099bcd9b93e6447d64ee99cdfde6136e49ddb9fff1b69b58e6d267ba",
+  "scripts/verify_zero_cost_delivery.py": "23b139a30438a77c026787095155076dd1b1524e328d43a8c937122a32b9009a",
+  "scripts/build_market_json.py": "115f22f8c52071288cbb97efaf003b6f10c0a1649cfaa93fd96d5e1a5645e8ab",
+  "tests/test_zero_cost_delivery.py": "1ee3d2192b6af2962f0763381d3434db18f36d5d80f80f13a73a7d2b38dfa31c",
+  "tests/test_market_projection_immutability.py": "c31a5ec1559a215a803679898f1e30d8e8a4b04f6a887e74a041d059feade053",
+  "config/report_delivery_policy.json": "353a83ab9f21fc8a8b21b98058ed641e006e667884575430c8085cbd584234b5",
+  ".github/workflows/report-delivery-shadow-ci.yml": "5d4977d7905d759918dfc8e4c7a34b0e70f7ba64029675d296921678ced3d62d"
+}
+
+test_one_reenabled_job_blocks_even_with_another_disabled_job (tests.test_zero_cost_delivery.CostTests.test_one_reenabled_job_blocks_even_with_another_disabled_job) ... ok
+test_production_cost_is_not_asserted_from_local_pass (tests.test_zero_cost_delivery.CostTests.test_production_cost_is_not_asserted_from_local_pass) ... ok
+test_repo_has_no_enabled_ai_api_workflows (tests.test_zero_cost_delivery.CostTests.test_repo_has_no_enabled_ai_api_workflows) ... ok
+test_bad_hash_missing_snapshot_and_wrong_parent_are_blocked (tests.test_zero_cost_delivery.DeliveryTests.test_bad_hash_missing_snapshot_and_wrong_parent_are_blocked) ... ok
+test_billing_policy_fails_closed (tests.test_zero_cost_delivery.DeliveryTests.test_billing_policy_fails_closed) ... ok
+test_crash_rolls_back_and_retry_resumes_original (tests.test_zero_cost_delivery.DeliveryTests.test_crash_rolls_back_and_retry_resumes_original) ... ok
+test_image_byte_mutation_is_blocked (tests.test_zero_cost_delivery.DeliveryTests.test_image_byte_mutation_is_blocked) ... ok
+test_missing_body_or_image_waits_without_creating_content (tests.test_zero_cost_delivery.DeliveryTests.test_missing_body_or_image_waits_without_creating_content) ... ok
+test_missing_durable_image_is_not_silently_recreated (tests.test_zero_cost_delivery.DeliveryTests.test_missing_durable_image_is_not_silently_recreated) ... ok
+test_morning_table_gate_runs_before_receipt_or_image_acceptance (tests.test_zero_cost_delivery.DeliveryTests.test_morning_table_gate_runs_before_receipt_or_image_acceptance) ... ok
+test_parallel_writer_is_locked (tests.test_zero_cost_delivery.DeliveryTests.test_parallel_writer_is_locked) ... ok
+test_same_revision_changed_bundle_does_not_overwrite (tests.test_zero_cost_delivery.DeliveryTests.test_same_revision_changed_bundle_does_not_overwrite) ... ok
+test_source_change_during_validation_stops_commit (tests.test_zero_cost_delivery.DeliveryTests.test_source_change_during_validation_stops_commit) ... ok
+test_valid_bundle_is_shadow_only_and_idempotent (tests.test_zero_cost_delivery.DeliveryTests.test_valid_bundle_is_shadow_only_and_idempotent) ... ok
+test_wrong_slot_and_weekend_are_rejected (tests.test_zero_cost_delivery.DeliveryTests.test_wrong_slot_and_weekend_are_rejected) ... ok
+test_absent_frozen_market_data_is_not_backfilled_from_live (tests.test_market_projection_immutability.MarketProjectionTests.test_absent_frozen_market_data_is_not_backfilled_from_live) ... ok
+test_new_live_prices_cannot_change_either_saved_projection (tests.test_market_projection_immutability.MarketProjectionTests.test_new_live_prices_cannot_change_either_saved_projection) ... ok
+test_archived_report_promotion_uses_unique_canonical_doc_identity (tests.test_publication_evidence.PublicationEvidenceTests.test_archived_report_promotion_uses_unique_canonical_doc_identity) ... ok
+test_exact_doc_readback_is_bound_to_frozen_context_and_snapshot (tests.test_publication_evidence.PublicationEvidenceTests.test_exact_doc_readback_is_bound_to_frozen_context_and_snapshot) ... ok
+test_missing_or_tampered_snapshot_fails_closed (tests.test_publication_evidence.PublicationEvidenceTests.test_missing_or_tampered_snapshot_fails_closed) ... ok
+test_post_slot_document_edit_fails_closed (tests.test_publication_evidence.PublicationEvidenceTests.test_post_slot_document_edit_fails_closed) ... ok
+test_receipt_body_or_evidence_mismatch_is_rejected (tests.test_publication_evidence.PublicationEvidenceTests.test_receipt_body_or_evidence_mismatch_is_rejected) ... ok
+test_strict_receipt_epoch_preserves_legacy_history_and_requires_new_proof (tests.test_publication_evidence.PublicationEvidenceTests.test_strict_receipt_epoch_preserves_legacy_history_and_requires_new_proof) ... ok
+test_changed_acquisition_cannot_overwrite_same_revision (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_changed_acquisition_cannot_overwrite_same_revision) ... ok
+test_cutoff_cleanup_preserves_a_replacement_written_by_another_actor (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_cutoff_cleanup_preserves_a_replacement_written_by_another_actor) ... ok
+test_existing_immutable_evidence_can_be_validated_without_latest_data (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_existing_immutable_evidence_can_be_validated_without_latest_data) ... ok
+test_identical_repeat_is_no_op (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_identical_repeat_is_no_op) ... ok
+test_live_evidence_is_removed_if_write_crosses_slot_cutoff (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_live_evidence_is_removed_if_write_crosses_slot_cutoff) ... ok
+test_live_evidence_must_be_created_strictly_before_slot (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_live_evidence_must_be_created_strictly_before_slot) ... ok
+test_persists_bound_snapshot_context_and_exact_source_hash (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_persists_bound_snapshot_context_and_exact_source_hash) ... ok
+test_weekend_new_report_is_rejected (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_weekend_new_report_is_rejected) ... ok
+test_wrong_slot_and_stale_or_future_cutoff_are_rejected (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_wrong_slot_and_stale_or_future_cutoff_are_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 32 tests in 10.242s
+
+OK
+
+Local cost gate:
+{
+  "changeId": "MR-ZEROCOST-20261113-01",
+  "scope": "LOCAL_SHADOW_ONLY",
+  "NEW_RECURRING_COST": 0,
+  "NEW_USAGE_BILLING": 0,
+  "NEW_PAID_API_CALLS": 0,
+  "NEW_CREDIT_CARD_REQUIRED": false,
+  "newDependencies": [],
+  "status": "PASS_LOCAL_ONLY",
+  "reasons": [],
+  "retainedApiWorkflows": [
+    {
+      "path": ".github/workflows/one-time-openai-funded-test-20261015.yml",
+      "allJobsDisabled": true
+    },
+    {
+      "path": ".github/workflows/one-time-openai-generation-20261015.yml",
+      "allJobsDisabled": true
+    },
+    {
+      "path": ".github/workflows/probe-openai-input-tokens-once.yml",
+      "allJobsDisabled": true
+    },
+    {
+      "path": ".github/workflows/verify-openai-api-readiness.yml",
+      "allJobsDisabled": true
+    }
+  ]
+}

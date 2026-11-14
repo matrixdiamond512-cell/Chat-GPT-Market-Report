@@ -43,14 +43,65 @@ def verify(root: Path, date: str, slot: str) -> dict:
     return {"status": "PASS", "date": date, "slot": slot, "canonical": str(report_path)}
 
 
+def observe_run(root: Path, date: str, slot: str, run: dict, now: datetime) -> dict:
+    """Read-only diagnostic; supplied run observations never authorize publication."""
+    if slot not in SLOTS:
+        raise ValueError("Unknown market report slot")
+    target = datetime.fromisoformat(f"{date}T{slot}:00+09:00")
+    def timestamp(value):
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if parsed.utcoffset() is None:
+            raise ValueError("Timezone required")
+        return parsed
+    if now.utcoffset() is None:
+        raise ValueError("Timezone required")
+    scheduled = timestamp(run["scheduled_for"])
+    start = timestamp(run["started_at"])
+    end = timestamp(run["completed_at"]) if run.get("completed_at") else None
+    if scheduled != target or (end and end < start):
+        raise ValueError("Run slot or timestamp order mismatch")
+    stages = {key: run.get(key, "UNKNOWN") for key in
+              ("chatBody", "image", "DocsSave", "DocsReadback", "sourceBundle")}
+    allowed = {"PASS", "FAIL", "NOT_RUN", "BLOCKED", "UNKNOWN"}
+    if any(value not in allowed for value in stages.values()):
+        raise ValueError("Unknown stage status")
+    try:
+        publication = verify(root, date, slot)
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        publication = {"status": "FAIL", "reason": str(exc)}
+    missing = [key for key, value in stages.items() if value != "PASS"]
+    early_end = bool(end and end < target)
+    success = publication["status"] == "PASS" and not missing and not early_end
+    return {
+        "reportId": f"{date}_{slot.replace(':', '-')}",
+        "scheduledAt": run["scheduled_for"], "actualStart": run["started_at"],
+        "actualEnd": run.get("completed_at"), "runId": run.get("runId"),
+        "dataCutoff": run.get("dataCutoff"), "sourceCreatedAt": run.get("sourceCreatedAt"),
+        "startOffsetSeconds": (start - target).total_seconds(),
+        "taskStatus": run.get("status", "UNKNOWN"), "stages": stages,
+        "publication": publication, "unverifiedStages": missing,
+        "status": "PASS" if success else "FAIL" if end or now >= target else "PENDING",
+        "reason": "EARLY_COMPLETION_WITHOUT_ACCEPTED_DELIVERY" if early_end else
+                  "DELIVERY_PROOFS_MISSING" if not success else "OBSERVED_DELIVERY_CHECKS_PASS",
+        "continuation": "BLOCKED_PLATFORM_CAPABILITY" if early_end else "NOT_ASSESSED",
+        "proofScope": "Supplied run observations and local publication files; not live DOM or notice",
+    }
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--slot", choices=SLOTS, required=True)
     parser.add_argument("--date")
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument("--run-observation", type=Path)
     args = parser.parse_args()
     date = args.date or datetime.now(JST).date().isoformat()
-    print(json.dumps(verify(args.root, date, args.slot), ensure_ascii=False))
+    result = observe_run(args.root, date, args.slot,
+                         json.loads(args.run_observation.read_text(encoding="utf-8-sig")),
+                         datetime.now(JST)) if args.run_observation else verify(args.root, date, args.slot)
+    print(json.dumps(result, ensure_ascii=False))
+    if result["status"] != "PASS":
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

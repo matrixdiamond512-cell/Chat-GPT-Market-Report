@@ -161,3 +161,20 @@ test("all sources down produces visible error; partial archive failure still all
   assert.equal(partial.window.MarketReportLastRendered.fullText, archiveSlot("2026-10-30","21:00").fullText);
   assert.match(partial.nodes.get("reportStatus").textContent,/一部データ未取得/);
 });
+
+
+test("actual Nov 13 correction is display-only and retains all source newlines", async () => {
+  const candidate = JSON.parse(fs.readFileSync(path.join(root,"docs/project-control/evidence/archive-body-candidate.json"),"utf8"));
+  const report = candidate.reports.find(r => r.time === "16:00");
+  const archivePath = "data/dashboard-drive-archive-2026-11-13.json";
+  const previewManifest = structuredClone(manifest);
+  previewManifest.files.push({path:archivePath,sourceFolderId:report.sourceFolderId});
+  const { window } = await boot({search:"?date=2026-11-13&time=16:00",
+    payloadOverrides:{"data/report-archive-manifest.json":previewManifest,[archivePath]:candidate}});
+  const selected=window.MarketReportLastRendered;
+  assert.equal(selected.fullText,report.fullText);
+  assert.equal(selected.fullText.length,4640);
+  assert.equal(selected.fullText.split("\n").length-1,92);
+  assert.equal(selected.verifiedAtSlot,false);
+  assert.equal(selected.originalReportStatus,"DRIVE_DOC_READBACK_NOT_SLOT_VERIFIED");
+});

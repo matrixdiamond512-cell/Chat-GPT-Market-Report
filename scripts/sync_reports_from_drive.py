@@ -16,8 +16,6 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from google.auth.transport.requests import AuthorizedSession
-from google.oauth2 import service_account
 
 ROOT = Path(__file__).resolve().parents[1]
 JST = timezone(timedelta(hours=9))
@@ -32,10 +30,39 @@ def read_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 def save_json(path: Path, obj):
+    """Verify every fullText, including reports[] archives, through disk readback."""
+    from report_source_contract import body_hash
+    def fingerprints(value, location="$"):
+        result = {}
+        if isinstance(value, dict):
+            if "fullText" in value:
+                text = value["fullText"]
+                if not isinstance(text, str):
+                    raise ValueError("Source body must be text")
+                digest = body_hash(text)
+                expected = value.get("bodyHash")
+                if (location == "$" and not expected) or (expected and expected != digest):
+                    raise ValueError("Source body hash mismatch before save")
+                result[location] = (text, digest)
+            for key, item in value.items():
+                result.update(fingerprints(item, location + "." + key))
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                result.update(fingerprints(item, location + "[" + str(index) + "]"))
+        return result
+    expected = fingerprints(obj)
+    payload = (json.dumps(obj, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
+    if fingerprints(json.loads(payload)) != expected:
+        raise ValueError("Source body hash mismatch in serialized JSON")
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    path.write_bytes(payload)
+    if fingerprints(json.loads(path.read_bytes())) != expected:
+        raise ValueError("Source body hash mismatch after save")
 
-def open_session() -> AuthorizedSession:
+
+def open_session():
+    from google.auth.transport.requests import AuthorizedSession
+    from google.oauth2 import service_account
     raw = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "")
     if not raw:
         raise RuntimeError("GOOGLE_SERVICE_ACCOUNT_JSON secret is not configured")
@@ -93,21 +120,9 @@ def eligible_sources(session, now, folder_id=None):
     return found, scanned
 
 def paragraph_text(doc: dict) -> str:
-    """Preserve exact Docs text runs, including paragraph newlines."""
-    parts = []
-    def walk(elements):
-        for element in elements:
-            if "paragraph" in element:
-                for part in element["paragraph"].get("elements", []):
-                    parts.append(part.get("textRun", {}).get("content", ""))
-            if "table" in element:
-                for row in element["table"].get("tableRows", []):
-                    for cell in row.get("tableCells", []):
-                        walk(cell.get("content", []))
-            if "tableOfContents" in element:
-                walk(element["tableOfContents"].get("content", []))
-    walk(doc.get("body", {}).get("content", []))
-    return "".join(parts).lstrip("\ufeff")
+    from report_source_contract import docs_body_text
+    return docs_body_text(doc)
+
 
 def build_report(session, date: str, slot: str, item: dict) -> dict:
     from report_source_contract import body_hash, title_for, validate_saved_body

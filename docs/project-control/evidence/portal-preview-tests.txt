@@ -1,0 +1,76 @@
+Command: python -m unittest tests.test_zero_cost_delivery tests.test_market_projection_immutability tests.test_publication_evidence tests.test_report_slot_evidence tests.test_scheduled_report_delivery tests.test_docs_body_integrity -v
+test_one_reenabled_job_blocks_even_with_another_disabled_job (tests.test_zero_cost_delivery.CostTests.test_one_reenabled_job_blocks_even_with_another_disabled_job) ... ok
+test_production_cost_is_not_asserted_from_local_pass (tests.test_zero_cost_delivery.CostTests.test_production_cost_is_not_asserted_from_local_pass) ... ok
+test_repo_has_no_enabled_ai_api_workflows (tests.test_zero_cost_delivery.CostTests.test_repo_has_no_enabled_ai_api_workflows) ... ok
+test_bad_hash_missing_snapshot_and_wrong_parent_are_blocked (tests.test_zero_cost_delivery.DeliveryTests.test_bad_hash_missing_snapshot_and_wrong_parent_are_blocked) ... ok
+test_billing_policy_fails_closed (tests.test_zero_cost_delivery.DeliveryTests.test_billing_policy_fails_closed) ... ok
+test_crash_rolls_back_and_retry_resumes_original (tests.test_zero_cost_delivery.DeliveryTests.test_crash_rolls_back_and_retry_resumes_original) ... ok
+test_image_byte_mutation_is_blocked (tests.test_zero_cost_delivery.DeliveryTests.test_image_byte_mutation_is_blocked) ... ok
+test_missing_body_or_image_waits_without_creating_content (tests.test_zero_cost_delivery.DeliveryTests.test_missing_body_or_image_waits_without_creating_content) ... ok
+test_missing_durable_image_is_not_silently_recreated (tests.test_zero_cost_delivery.DeliveryTests.test_missing_durable_image_is_not_silently_recreated) ... ok
+test_morning_table_gate_runs_before_receipt_or_image_acceptance (tests.test_zero_cost_delivery.DeliveryTests.test_morning_table_gate_runs_before_receipt_or_image_acceptance) ... ok
+test_parallel_writer_is_locked (tests.test_zero_cost_delivery.DeliveryTests.test_parallel_writer_is_locked) ... ok
+test_same_revision_changed_bundle_does_not_overwrite (tests.test_zero_cost_delivery.DeliveryTests.test_same_revision_changed_bundle_does_not_overwrite) ... ok
+test_source_change_during_validation_stops_commit (tests.test_zero_cost_delivery.DeliveryTests.test_source_change_during_validation_stops_commit) ... ok
+test_valid_bundle_is_shadow_only_and_idempotent (tests.test_zero_cost_delivery.DeliveryTests.test_valid_bundle_is_shadow_only_and_idempotent) ... ok
+test_wrong_slot_and_weekend_are_rejected (tests.test_zero_cost_delivery.DeliveryTests.test_wrong_slot_and_weekend_are_rejected) ... ok
+test_absent_frozen_market_data_is_not_backfilled_from_live (tests.test_market_projection_immutability.MarketProjectionTests.test_absent_frozen_market_data_is_not_backfilled_from_live) ... ok
+test_new_live_prices_cannot_change_either_saved_projection (tests.test_market_projection_immutability.MarketProjectionTests.test_new_live_prices_cannot_change_either_saved_projection) ... ok
+test_archived_report_promotion_uses_unique_canonical_doc_identity (tests.test_publication_evidence.PublicationEvidenceTests.test_archived_report_promotion_uses_unique_canonical_doc_identity) ... ok
+test_exact_doc_readback_is_bound_to_frozen_context_and_snapshot (tests.test_publication_evidence.PublicationEvidenceTests.test_exact_doc_readback_is_bound_to_frozen_context_and_snapshot) ... ok
+test_missing_or_tampered_snapshot_fails_closed (tests.test_publication_evidence.PublicationEvidenceTests.test_missing_or_tampered_snapshot_fails_closed) ... ok
+test_post_slot_document_edit_fails_closed (tests.test_publication_evidence.PublicationEvidenceTests.test_post_slot_document_edit_fails_closed) ... ok
+test_receipt_body_or_evidence_mismatch_is_rejected (tests.test_publication_evidence.PublicationEvidenceTests.test_receipt_body_or_evidence_mismatch_is_rejected) ... ok
+test_strict_receipt_epoch_preserves_legacy_history_and_requires_new_proof (tests.test_publication_evidence.PublicationEvidenceTests.test_strict_receipt_epoch_preserves_legacy_history_and_requires_new_proof) ... ok
+test_changed_acquisition_cannot_overwrite_same_revision (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_changed_acquisition_cannot_overwrite_same_revision) ... ok
+test_cutoff_cleanup_preserves_a_replacement_written_by_another_actor (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_cutoff_cleanup_preserves_a_replacement_written_by_another_actor) ... ok
+test_existing_immutable_evidence_can_be_validated_without_latest_data (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_existing_immutable_evidence_can_be_validated_without_latest_data) ... ok
+test_identical_repeat_is_no_op (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_identical_repeat_is_no_op) ... ok
+test_live_evidence_is_removed_if_write_crosses_slot_cutoff (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_live_evidence_is_removed_if_write_crosses_slot_cutoff) ... ok
+test_live_evidence_must_be_created_strictly_before_slot (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_live_evidence_must_be_created_strictly_before_slot) ... ok
+test_persists_bound_snapshot_context_and_exact_source_hash (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_persists_bound_snapshot_context_and_exact_source_hash) ... ok
+test_weekend_new_report_is_rejected (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_weekend_new_report_is_rejected) ... ok
+test_wrong_slot_and_stale_or_future_cutoff_are_rejected (tests.test_report_slot_evidence.ReportSlotEvidenceTests.test_wrong_slot_and_stale_or_future_cutoff_are_rejected) ... ok
+test_complete_observations_still_require_canonical (tests.test_scheduled_report_delivery.DeliveryTests.test_complete_observations_still_require_canonical) ... ok
+test_complete_slot (tests.test_scheduled_report_delivery.DeliveryTests.test_complete_slot) ... ok
+test_completed_early_is_not_delivery_even_with_canonical (tests.test_scheduled_report_delivery.DeliveryTests.test_completed_early_is_not_delivery_even_with_canonical) ... ok
+test_cross_slot_preserves_target_and_missing_png (tests.test_scheduled_report_delivery.DeliveryTests.test_cross_slot_preserves_target_and_missing_png) ... ok
+test_index_missing_detected (tests.test_scheduled_report_delivery.DeliveryTests.test_index_missing_detected) ... ok
+test_latest_stale_detected (tests.test_scheduled_report_delivery.DeliveryTests.test_latest_stale_detected) ... ok
+test_missing_canonical_detected (tests.test_scheduled_report_delivery.DeliveryTests.test_missing_canonical_detected) ... ok
+test_naive_timestamp_rejected (tests.test_scheduled_report_delivery.DeliveryTests.test_naive_timestamp_rejected) ... ok
+test_wrong_slot_observation_rejected (tests.test_scheduled_report_delivery.DeliveryTests.test_wrong_slot_observation_rejected) ... ok
+test_concurrent_archive_change_rejected (tests.test_docs_body_integrity.DocsBodyIntegrityTests.test_concurrent_archive_change_rejected) ... ok
+test_existing_archive_writer_preserves_nested_body (tests.test_docs_body_integrity.DocsBodyIntegrityTests.test_existing_archive_writer_preserves_nested_body) ... ok
+test_existing_writer_disk_readback_preserves_sha (tests.test_docs_body_integrity.DocsBodyIntegrityTests.test_existing_writer_disk_readback_preserves_sha) ... ok
+test_existing_writer_rejects_changed_body_before_write (tests.test_docs_body_integrity.DocsBodyIntegrityTests.test_existing_writer_rejects_changed_body_before_write) ... ok
+test_lost_newlines_cannot_match_original_hash (tests.test_docs_body_integrity.DocsBodyIntegrityTests.test_lost_newlines_cannot_match_original_hash) ... ok
+test_multiple_tabs_not_silently_concatenated (tests.test_docs_body_integrity.DocsBodyIntegrityTests.test_multiple_tabs_not_silently_concatenated) ... ok
+test_serialized_candidate_preserves_full_sha_and_source_metadata (tests.test_docs_body_integrity.DocsBodyIntegrityTests.test_serialized_candidate_preserves_full_sha_and_source_metadata) ... ok
+test_table_and_single_tab_keep_text_runs (tests.test_docs_body_integrity.DocsBodyIntegrityTests.test_table_and_single_tab_keep_text_runs) ... ok
+test_text_runs_keep_blank_lines_headings_bom_and_japanese (tests.test_docs_body_integrity.DocsBodyIntegrityTests.test_text_runs_keep_blank_lines_headings_bom_and_japanese) ... ok
+test_wrong_document_rejected (tests.test_docs_body_integrity.DocsBodyIntegrityTests.test_wrong_document_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 51 tests in 11.624s
+
+OK
+
+Command: node --test tests/report-archive-loader.test.mjs
+✔ manifest archive slots preserve exact bodies; missing 11/03 21:00 never falls back (31.6517ms)
+✔ legacy archive count stays separate from manifest-listed Drive archives (5.2434ms)
+✔ unverified archives stay display-only and 11/02 12:00 source is not mutated (6.7897ms)
+✔ date controls move Oct 30 to Nov 2, then allow selecting a real Nov 3 slot (8.3583ms)
+✔ formal data failure does not discard valid saved records and warns (4.386ms)
+✔ formal publication wins duplicate slot (3.7603ms)
+✔ published or malformed records fail archive validation (4.6792ms)
+✔ all sources down produces visible error; partial archive failure still allows available data (6.2314ms)
+✔ actual Nov 13 correction is display-only and retains all source newlines (8.5491ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 269.0397

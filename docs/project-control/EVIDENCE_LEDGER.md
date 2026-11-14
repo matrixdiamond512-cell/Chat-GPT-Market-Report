@@ -86,3 +86,236 @@ Local implementation evidence E1/E2 (candidate only): connected the last eligibl
 - Scope: development onboarding and documentation only. Unchanged by this task: `docs/system/requirements.md`, `docs/system/specification.md`, `docs/system/operations.md`, fixed-ID Google Docs, Apps Script runtime settings, market data, reports, images, publication receipts, Pages deploy scripts, schedules, paid API credentials.
 - GitHub connector returned file commit SHA values; final PR diff/readback and CI evidence must be checked after the PR is created. Local application regression tests = NOT_RUN; second-PC Codex sign-in/clone = NOT_RUN; production E2E = NOT_RUN; Google Drive formal document write/readback = NOT_RUN because no formal functional specification change is made.
 - Unresolved: GitHub PR review/merge, exact-head CI check, partner-PC permissions and test (#173), existing 2026-10-20 publication failures and other production audit findings (#103), existing PR #172 and #170.
+
+## MR-RELIABILITY-20261113-01 — Phase 0 初回証拠（2026-11-13 JST）
+
+Source: user plan 2026-11-13 01:21 JST; public GitHub REST API and git fetch/readback; connected Google Drive metadata/search. 調査前worktreeはclean、branch codex/pr188-market-projection-20261111、HEAD f9649d7bd。新規調査branch codex/reliability-phase0は取得したorigin/main f00730cf4b63af65e17cb93df9f1cd3f359b0c5aを基準とする。変更は文書のみ。
+
+| 観測対象 | 独立して取得した事実 | 証拠範囲・未解決 |
+|---|---|---|
+| main | git ls-remoteとfetchでf00730cf4b63af65e17cb93df9f1cd3f359b0c5a | 取得時点のsnapshot。以後のmain変更は別途照合 |
+| PR overlap | #188 OPEN/Draft、head 860ec370af7633a8ccadf393a474ee2614ce5430。取込/時刻/evidence/文書/market writerを含む。#199、#184、#183、#182ほかもOPEN | 既存候補を本番実装と見なさず、重複修正・二重mergeを避ける。#103/#173/#176もOPEN |
+| 発行枠 | main config/report_schedule.json: weekdays 08/12/16/21、weekend空 | 実タスクの有効/停止状態を証明しない。ローカル候補のissuance_ownershipは全枠legacy、実トリガー不明 |
+| Docs取込 | [run 43253659543](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43253659543)、schedule、2026-11-13 00:59:02 JST、head 46817415e431a76e40c1fba8eb93c6fa8c00bbcb。契約テスト/Docs assess/ingestステップsuccess、index readbackステップfailure、commit/deploy dispatch skipped | 読取ステップsuccessだけでは月別フォルダアクセス/取得件数/全文/revisionは不明。詳細ログ未取得、直接原因UNKNOWN。Drive認証障害と断定しない |
+| 配信監視 | [run 43257052990](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43257052990)、schedule、2026-11-13 01:17:33 JST、head 22b42ba493009a9f6909a1d23fb35c5dfb8a5506。回帰テストsuccess、canonical/portal readinessステップfailure | 詳細エラー・予定発火時刻/対象枠は未取得。実行開始から予定枠を再構成しない |
+| Pages | [run 43257778745](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43257778745)、main f00730cf4、success | 公開URLの当日本文/DOM一致、通知到達はNOT_RUN |
+| dashboard writer | main scripts/build_market_json.py attach_market_dataは最新live marketDataをlatestReportへ挿入する。既存PR #188に修正候補あり | 再発リスクの静的確認。今回runの同一原因確定/実データ再現はNOT_RUN。JSONを強制整合させない |
+| 日時 | main verify_scheduled_report_delivery.pyは--date省略時datetime.now(JST).date()。check workflowはschedule→slotを渡すが予定日を渡さない。watchdogも実行日のdateを使用し、21時前の場合success終了する分岐あり | 遅延/日付またぎで誤対象・検知漏れを起こす可能性。修復/回帰再現は未着手。run開始とschedule予定を区別する |
+| Drive利用者接続 | 月別フォルダ名検索0件、広い「マーケットレポート」folder検索も0件。固定台帳ID 1F5vH9_O0LUC9Dki0CNm1JDNVfg7gMYMcUCIxgeanE5g metadata取得404 NOT_FOUND | この接続から見えない事実のみ。不存在/削除/Actions SA拒否の証明ではない。固定revision UNKNOWN |
+| タスク/Apps Script | 現行task ID、停止履歴、11/11夕方の操作監査、導入済みdeployment/triggers/historyは未取得。対象URLをユーザーへ照会 | 停止理由は原因不明、操作監査証拠不足は独立課題。過去handoffの観測を現状証拠へ流用しない |
+
+### 実行経路・主体・認証の初期マップ（全4枠、runtime照合未了）
+
+| 工程 | コード/設定上の主体・保存先 | 認証/証拠の未解決 |
+|---|---|---|
+| 本文生成/チャット表示 | 実ChatGPT定時タスク、実出力未取得 | 利用者アカウント/有効task ID/履歴 UNKNOWN |
+| Drive本文保存/旧同期 | Apps Script旧経路候補、月別「マーケットレポートYYYY年M月」 | 導入版/trigger/実行主体/親ID UNKNOWN |
+| 枠前証拠 | freeze-report-slot-evidence.yml、data/report-evidence/ | mainの実行履歴・各slotの締切前証拠を別途確認。後付け禁止 |
+| 保存済みDocs取込 | publish-saved-google-docs-reports.yml、sync_reports_from_drive.py | GOOGLE_SERVICE_ACCOUNT_JSON secret参照。主体メール/実権限/件数/全文/revision UNKNOWN。秘密値は出力しない |
+| 正本と索引 | reports/、reports.json、data/latest-report.json、data/dashboard.json、publication-receipts/ | Actions GitHub token contents:write/actions:write。workflowはmainを書きPagesをdispatchするため診断目的で起動しない |
+| 公開 | deploy-pages.ymlおよびpages build/deployment、実公開サイト | workflow successと公開本文/DOM一致を分離。今回public readback NOT_RUN |
+| 監視/修復 | check-scheduled-report-delivery.ymlはread-onlyローカル正本/索引確認、watchdogはcontents:writeの修復処理 | 独立Drive/full text/public URL/task/通知を全て確認する監視とは未認定。通知先/到達 UNKNOWN |
+
+変更文書: system固定4文書、OBJECTIVE_CARD、EVIDENCE_LEDGER、HANDOFF。同一ID・日付で計画/制約/未検証を追記。本文作成マニュアル内容はNO_CHANGE、固定Google Docs同期/現行revisionはNOT_RUN。修復コード、fixture作成、本番データ変更、workflow dispatch、PR作成/push/merge、タスク停止/時刻/保存先/権限変更はなし。
+
+検証: 追記後のgit diff --checkはexit 0（PASS）。変更対象は文書7件のみで、本番コード/公開データの差分なし。コードテストは文書変更のみにつきNOT_RUN。Phase 0完了条件は未達、Phase 1–4はNOT_RUN、20枠連続の計数は未開始。開発完了/運用受入PASSを宣言しない。
+
+## MR-ZEROCOST-20261113-01 — 費用0円のローカル候補・実物監査（2026-11-13 JST）
+
+### 出典、変更範囲、前提
+
+- 出典：ユーザー添付03:16改訂版（末尾はREADY_FORで途切れる）、後続指示、タスクID/会話IDのユーザー回答と画像。Task/Chatの識別子・プロフィールは追跡外ローカルログに保持し、公開PRへ転記しない。
+- 着手時：branch codex/reliability-phase0、HEAD f00730cf4b63af65e17cb93df9f1cd3f359b0c5a、前回の文書7件dirty。新branch codex/zero-cost-deliveryへ保持。fetchしたmain f94229ba1c135215623881faf4f5417509c252abへfast-forwardし、前回文書を保全。取得中にpacked-refs.lock競合の警告あり、lock削除/force操作なし。
+- main履歴12,476 commits、bot名/emailヒューリスティック9,390（約75.3%）、baseline workflows107、root直下ファイル102。全refsでは14,316と9,394（65.6%）で、ref範囲によって異なる。別レビューの約12,475/9,400/107/114とは観測時点/対象範囲が異なり、件数を原因の確定根拠としない。新しいPR専用CI追加後はworkflow108。
+- PR overlap：#188 Draft/open head860ec370af7633a8ccadf393a474ee2614ce5430。APIのfiles page1は100件で全差分ではない。該当build_market_json.pyはローカルGit objectから個別比較し同一blobを再利用。#199、#184/#183/#182/#181/#180/#175/#170等もopen。Cloud Run/GCS/有料AIを含む未マージ案は採用しない。
+
+### 実行経路・writer・保存すべき機能
+
+全workflow107本、明示呼出先、cron、credential名、writer静的候補、Webのscript参照は `DELIVERY_PATH_INVENTORY.json`。実行履歴は取得した最新100repo runs等の範囲に限定。grepだけで未使用/停止可と認定していない。以下は実ソース読取による重要経路。
+
+| 入口→呼出先 | 読込/書込先・権限境界 | 判定 |
+|---|---|---|
+| ChatGPT定期タスク→本文/図解/指定会話 | 接続中利用者の契約/ツール。ユーザー確認で有効4枠。GitHubは生成元ではない | 保持。独立run/自動引渡しはCAPABILITY_BLOCKED（未実証） |
+| freeze-report-slot-evidence→market window/persist | source data→data/report-evidence。Google SA/Sheets設定とGitHub contents:write | 現役必須の時点証拠。全4枠T-13/-7/-3分。遡及生成しない |
+| publish-saved-google-docs→sync_reports_from_drive→selector/builder | 月別Docs readonly→reports/receipt/latest/index/dashboard→main commit→Pages明示dispatch。Google SAとGitHub token | 統合対象だが生成/Docs保存担当ではない。今回は本番維持 |
+| sync-latest-report-publication→参照修復/reconcile/selector/builder | Sheets/market/latest→latest/report/index/dashboard。別concurrency group | 最終write統合候補。週末cronは既存データ同期用であり土曜新規発行枠へ昇格させない |
+| sync-latest-report-watchdog→reconcile/selector/builder | 同じ本番JSONへwrite。取込/同期と別concurrency group | 競合リスクの構造を確認。所有者/停止影響不明につき保持 |
+| rebuild-report-index→build_report_index | reports→index/latest/dashboard、contents:write、bot actorガード | 索引writer統合候補。名前だけでは停止しない |
+| structure-market-reports→structure/complete/persist | dispatch/PR入力→index/canonical書込候補 | 参照/CI/履歴照合後に統合候補。生成済みsourceの書換え可否は要個別審査 |
+| update-market-data→build_market_json | market→dashboard直下liveカード。旧版はlatestReport/reports内部へも注入 | PR188既存修正を再利用し後者の書込を除去。実データは再生成しない |
+| GAS AutoPublish/WebSync/DashboardJsonSync等 | Docs/PNG/manifest→GitHub canonical/latest/dashboard/画像Git transaction | 導入版/実trigger/所有者/credentialはUNKNOWN。既存runtime不変 |
+| deploy-pages→prepare/validators/deploy/live QA | GitHub読込→Pages公開。pages/id-token write、concurrency pages | 現役必須。main push/dispatchから起動。今回は起動しない |
+| check-scheduled-delivery等 | canonical/portal readiness readonly | 現役監視を維持。独立Task/Drive/通知を全検証したとは認定しない |
+| one-time/inspect/旧dashboard-*.js | 履歴/調査/現Web参照を台帳に記録 | AI API4本のみ候補jobを無条件停止。他の停止/削除は未実施 |
+
+構造的な再起動の可能性：外部GAS/PAT→本番JSON commit→push対象workflow→JSON commit、または取込→明示Pages dispatch。GITHUB_TOKEN由来pushの後続抑制/actorガードがあるため、実際の自己起動ループと断定しない。異なるconcurrency groupは相互の排他にならない。導入資格情報と実ログが未取得なので本番の最終writer所有者は未確定。市場取得06:30、金利/株式/需給/業種/イベント等の他系統と、現Web参照の旧JSは保存し、無断停止しない。
+
+### 実物監査（2026-11-13 03時台JST観測）
+
+| 対象 | 実取得した証拠 | 限界/判定 |
+|---|---|---|
+| Task | ユーザー回答・画像：平日4枠、有効。直近確認は11/11 16時、本文表示あり、Docs/PNG/公開未達。提供IDのview toolはcard描画結果のみ | USER_CONFIRMED。独立run開始/終了/会話出力/通知記録は未取得。既存タスクは保持 |
+| Drive利用者 | get_profileは本人名とアカウントを返した | 接続先本人確認のみ。Actions SAやApps Script主体とは別 |
+| 固定正本6文書 | get_document403、fetchのraw metadata取得404。親正式フォルダmetadata404/list空 | 権限/可視性不足と不存在を区別。revision/内容/基準図は未確認。更新/改名/削除なし |
+| 11月本文フォルダ | ID1vnZ7JgQTbqVSvoTIaY-1GlEroSzNLXkPの直接list取得。キーワード検索は0件だったが一覧は取得可能 | source_visibility_status=access_not_verified、parent_ids=null。フォルダ検索0を不存在としない |
+| 直近5営業日20枠 | 11/06,09,10,11,12を対象に19Docs全文を取得・ローカル保存。各slotのID/作成/更新/本文SHA/文字数を台帳に記録 | 11/06 08時は対象一覧に未観測。全Docs revisionId=null、親独立readback未了。19件の存在は19枠の定時成功を意味しない |
+| 11/12本文4本 | 08Doc1A2hASu03fve5IZIJDxQYJdaSxPiyzzrvoeA2LxfyF-w、12Doc1mizuu8M7hu3Xbu7l-Fih4t39KKRUrOEAdbISp-tstRk、16Doc19Jk0-YQ3P5_iPr0nz3TiWn9GAd_7SDh3KLMnXC23Z4s、21Doc19Yzv074EoqG3qeJ_wltm3_CxhsrD3oKHGYbP6W5A8qM。作成UTC11/12 15:59:44〜16:00:08、本文に翌13日00:59/01:00の補完と明記 | 当日定時原本へ昇格不可。内容の市場数値/ニュースを外部全件検証したものではない |
+| PNG/基準図 | 図解フォルダ検索0、基準マニュアル403/404。root関連一覧も未観測 | PNG不存在とは断定不可。bytes/SHA/manifest/実画像QAはBLOCKED_EXTERNAL_ACCESS/BLOCKED_REFERENCE_IMAGE |
+| GitHub canonical/receipt/枠前証拠 | 対象20slotの固定パスは取得mainツリーで不在 | 後付け生成なし。閲覧用archiveをcanonicalへ転記しない |
+| 公開JSON | HTTP200。latest-report SHA6554a7d3c4c90da4e21a79deafa93130ce6970e8fbf5043516f1bcff9299d1e7、最新10/13 16時。reports.json162件、SHA3febae92f8d52dadf0523a5747573f5f30706c9c10d43ceffbcda713e1adaf2f | 公開中の古い最新ポインタを実測。20slot個別HTTPは404/503混在で503は取得エラーとして記録。後者を不存在証明にしない |
+| 公開DOM | ブラウザで11/12の08/12/16/21を個別指定。各枠『対象データなし：この日時のレポート本文は登録されていません。』 | 4枠の公開受入FAIL。Pages成功と区別 |
+| 公開整合性検査 | verify_publication_consistency.pyは10/13 16時を対象にPASS | 古いcanonical/latest/dashboard/index一致を確認しただけ。11月の配信成功ではない |
+| 取込Actions | 最新取得run43264189019 SUCCESS（11/13 01:57JST）。run43253659543 FAILUREはindex readback stepで失敗 | 最新successを新規発行と解釈しない。元本文/PNG生成証拠なし。詳細logs endpoint403で原因の全文未取得 |
+| 監視Actions | health43257052990失敗（canonical/portal readiness）、watchdog43262010898失敗 | 失敗検出は確認できるが根本原因/通知到達はUNKNOWN |
+| 旧API利用履歴 | funded38655076550 success、count38652763404 success、readiness38647146632 success、generation38653269794 failure | 実行履歴あり。課金額/実レスポンスusageはUNKNOWN。今回API実行なし。4workflow jobにfalseを付ける差分はmain未反映 |
+
+### 実装・試験・コスト
+
+- `run_report_delivery.py`：明示slotと不変source bundleを単一入口にする隔離候補。SQLiteへ原本実バイト/候補/イベントを同一transactionで保全。欠落・hash/revision/evidence不一致・PNG不正・同一revision差替え・格納済み実体欠落・並行writer・検証中の変更をブロック。失敗rollback後の同一原本再試行はfixture検証済み。ロックはローカル限定で分散writer排他は未実装。
+- `build_market_json.py`：PR188の同一blobを再利用し、latestReport/reportsへのlive marketData注入を削除。直下liveカード/出典/欠損警告は継続。公開データの書換えなし。
+- コストpolicy/gate、旧API4jobの無条件停止、PR用read-only/offline CIを追加。API/無料枠有料代替/追加依存/新規schedule/カード/請求設定なし。費用0の新外部サービスは仮定していない。
+- 変更前ログcost-before.json：BLOCKED_COST_UNVERIFIED（既存到達可能API4本、production quota等不明）。候補修正後gate：PASS_LOCAL_ONLY、NEW_RECURRING_COST=0 / NEW_USAGE_BILLING=0 / NEW_PAID_API_CALLS=0 / NEW_CREDIT_CARD_REQUIRED=false。--productionはBLOCKED_COST_UNVERIFIED。PR作成前/main切替前ゲートは未実施であり、ローカルPASSを転用しない。
+- テストコマンド：`python -m unittest tests.test_zero_cost_delivery tests.test_market_projection_immutability tests.test_publication_evidence tests.test_report_slot_evidence -v`。最終32 tests PASS。初回のWindowsテスト接続close漏れを修正。一部既存試験のtzdata不足は、既存bundled runtimeのzoneinfoをPYTHONTZPATHへ指定して解消し、新依存を導入していない。合成PNG/証拠は一時test rootのみで実画像QA/定時発行証拠ではない。
+- 実データshadow：読めた11/12の本文4本だけを受領。全4枠 `WAITING_FOR_SOURCE_ARTIFACT`、receipt/Drive独立metadata/親確認bundle/枠前evidence/PNG/manifest不足、本番書込0。原本revision番号を推測で付けていない。
+- 差分検査/最終readback結果は下記最終検査追記。Hosted CI、push/PR、main反映、本番タスク変更、Drive書込、Pages deploy、通知試験、正式publisherの実稼働、単一writer切替、20枠連続はNOT_RUN。
+
+### 最小構成の採否と未達
+
+採用候補は経路Aだけ：現行ChatGPTで既存品質を生成/確認し、公式手段の実証または明示した人の引渡し後に一つの検証/publisherへ渡す。今回はローカル受領/不変保全/既存gate/再開を実装した段階。外部保存/公開adapterは本人権限・固定正本/基準図・費用/再配布条件・writer所有者を確認できず未接続。チャット内出力/画像生成/Drive保存を偽装しない。ルールベース本文や簡易画像へ置換しない。4枠の完全無人発行は現条件では未達。
+
+Google固定ID影響マトリクスはDOCUMENT_CONTROLの同ID。requirements/specification/operations/台帳と本記録、OBJECTIVE_CARD/HANDOFFを同時追記。Google側同期は403/404のためBLOCKED_EXTERNAL_ACCESS。既存タスク/正式文書/市場データ運用/過去履歴は維持。次の実枠を観測する前に20枠の計数を開始しない。
+
+
+### MR-ZEROCOST-20261113-01｜最終ローカル検査
+
+- Python compile：run_report_delivery / verify_zero_cost_delivery / build_market_json / 新規2test modules PASS。
+- 回帰試験：tests-final.txtに最終32件OKを読戻し。依存追加なし。朝刊28行ゲート、原本受領中の変更、SQLite同時書込/rollback/再実行/保存実体欠落を含む。
+- cost gate：PASS_LOCAL_ONLY、4値は0/0/0/false。production gateはBLOCKED_COST_UNVERIFIEDのまま。コード内の既知AI接続先4workflowは全job falseを照合。これはネットワーク全体の課金防壁や旧SHAの再実行停止を保証しない。
+- git diff --check：PASS。新規コード/CIの末尾空白チェックPASS。本番reports/、reports.json、data/、publication-receipts/、images/はHEADに対する今回差分0を確認。
+- YAML機械parse：NOT_RUN（通常Python/既存bundled Pythonともyaml moduleなし）。新規CIと4jobの差分は目視readback済み。追加インストールを行わず、hosted CI/Actions schema検証成功を主張しない。
+- 本文フォルダ直接一覧は実測34件（対象20枠中19件）。インデックス34件すべてを完全権限確認した意味ではない。固定監査JSONの件数を訂正。
+- 最終remote mainは `545fd7fabf7b722618056332400a850dae108426`。候補baseからのupstream差分は35パス、すべてdata/配下で今回のコード/文書との重複なし。最新データを今回の作業変更へ混入させる再生成/mergeはせず、候補baseはf94229ba1を保持。公開観測は取得時点のsnapshotとして扱う。
+- 状態：19ファイルのローカル差分（前回文書7件含む）をbranch codex/zero-cost-deliveryに保持。commit/push/PR/hosted CI/main反映はNOT_RUN。実配信、Drive正本同期、全工程受入、切替/戻し/20連続は未達。本番タスク/正式文書は保持。
+
+
+## MR-ZEROCOST-20261113-01｜共同レビュー用の公開準備（2026-11-13 JST）
+
+出典：ユーザーの追加依頼画像。前回はローカル候補だけでremote branch/PRは未作成だったため、GitHubで差分と証拠を共有する工程を追加。既存tracked差分を追跡外patchへ、untrackedコードを追跡外zipへ保全した。既存Git認証の本人アカウントにrepo push権限があることをAPIで確認（credential/tokenはログに出さない）。remote同名branch/PRは準備時点で不在。main取得225fcc45e38b707887d8d4bea3c1b40d6dac6382、前回baseとの差は市場data・イベント・既存top-dashboard等で今回の変更ファイルとの重複なし。既存PR188の重複採用箇所も再確認。
+
+公開対象は候補コード/設定/CI、固定文書・監査台帳、`docs/project-control/evidence/zero-cost-delivery-tests.txt`。追跡外の実本文、task/chat識別子、接続プロフィール、資格情報は含めない。変更19ファイルに対する秘密キー/tokenパターン走査は検出なし（完全なsecret不存在証明ではない）。既存の前回文書7件も同一配信改善の履歴としてレビュー対象に含める。
+
+上記証拠ファイルには、今回再実行した32件の個別結果、コマンド、実行日時、Python版、対象source SHA-256とコストゲートを保全。32件PASS、追加依存/API課金なし。ローカル検証とhosted CIを分ける。PR前コストゲート=PASS_LOCAL_ONLY、NEW_RECURRING_COST=0、NEW_USAGE_BILLING=0、NEW_PAID_API_CALLS=0、NEW_CREDIT_CARD_REQUIRED=false。本番料金条件はBLOCKED_COST_UNVERIFIEDのまま。
+
+本工程はbranch push/Draft PRだけ。main merge、既存定期タスク停止、Drive正式原本/公開JSON/PNG/receiptの上書き、Pages本番起動は行わない。push/PR結果のURLとcommitは成功後に追記する。以前の未push/PR未作成記録は各観測時点の履歴として保持。
+
+
+## MR-ZEROCOST-20261113-01｜GitHub共有の実結果（2026-11-13 JST）
+
+- レビュー用commit `62485d557491d821f82ebff86f96ef7f7ebc0d29` をoriginの `codex/zero-cost-delivery` へpush成功。remote refのSHA一致をGitHub APIで確認。
+- Draft PR [#200](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/200) を作成し、open/draft=true/head SHAを独立readback。branch URL: https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/tree/codex/zero-cost-delivery 。以前の「remote不存在」は解消した。mainへはマージしていない。
+- PR files APIで20ファイルの差分を読戻し、コード・固定文書・検証台帳・32件の証拠ファイルを確認。本番reports/data/PNG/receipt、追跡外の実本文/会話情報/資格情報は含まない。
+- GitHub上の `docs/project-control/evidence/zero-cost-delivery-tests.txt` を取得し、commitのGit blobと実バイト完全一致を確認。作業コピーのCRLF差はGit正規化と区別した。ファイルには32件の再実行結果・日時・コマンド・環境・source hash・cost gateを収録。
+- 同headのhosted CIをGitHub APIで確認： [shadow contracts run43419256599](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43419256599) SUCCESS、[delivery health run43419256486](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43419256486) SUCCESS、[frozen-cutoff PR run43419256334](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43419256334) SUCCESS、[frozen-cutoff push run43418865436](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43418865436) SUCCESS。各check jobはcompleted/success。これは62485d557に対する結果であり、後続headの結果は別途照合する。
+- 今回はGitHubで共同検証可能な候補公開まで。Draftを維持。main merge/既存タスク停止/Google正式原本上書き/本番配信切替/Pages手動起動は未実施。CI PASSを本文4本・独立図解4枚・Drive・Portal・通知の運用受入へ置換しない。既存BLOCKEDと全工程NOT_VERIFIEDは維持。
+
+
+## MR-SOURCE-HANDOFF-20261113-01 — 既存ChatGPT受渡し/Drive実保存の接続調査（2026-11-13 JST）
+
+出典：PR200共同レビュー後のユーザー指示。新経路の増設ではなく、既存ChatGPTからの原本引渡しと既存Drive接続による実保存を優先。開始時branch codex/zero-cost-delivery、HEAD7c31ccbf6193ff6c5b9c5db20a84b5b2f9ca0373、worktree clean、PR200 Open/DraftをAPI再照合。mainはfetchのみで本番取り込み保留。既存タスク/正式原本を変更しない。
+
+費用境界：OpenAI/他社AI API・課金可能外部サービスは使わない。既存Google Drive/Docs connectorの少数の標準操作で、非本番フォルダと保存試験文書の作成/全文readbackを試す。課金設定/追加依存/本番adapter/定期実行は追加しない。変更前cost gateはPASS_LOCAL_ONLY（0/0/0/false）、本番の費用保証とは分ける。試験文書は正式レポート名とせず、定時発行成功に数えない。実保存結果はfileID/親/本文hash/revisionで分けて記録。
+
+接続プロフィールは本人アカウント。既存11月本文フォルダmetadataは取得可能だがparent/capabilityの必要項目は未確認、図解マニュアルは再取得でも403。既存GASメニュー/AutoPublishは保存済みDocsの読込/公開担当であり、指定ChatGPT会話から原本を取得する公式入口ではない。ブラウザ/内部通信/非公式endpointによるChatGPT取得は行わない。公式タスクの一般的なconnected tools対応と、この実タスクの実行権限/出力は別の証拠として扱う。
+
+影響候補：requirements/specification/operations/DOCUMENT_CONTROL、固定Google Docs要件/仕様/本文作成/運用/台帳、図解マニュアル。ただし本段階は接続実測で、承認内容/品質/発行ゲートを変更しない。実測に応じ必要な既存固定文書の追補だけを行い、新たな要件/仕様/マニュアルを増やさない。現在は接続調査中、保存実験/受渡し/本番受入はNOT_RUN。
+
+
+### MR-SOURCE-HANDOFF-20261113-01｜実保存と独立読戻しの結果
+
+- 既存connectorで非本番folder `1JN-iq2Y2cmiYpiDIqOM7xtn53-_ztuIv` を作成し、metadataで本人root下を読戻し。既存正式フォルダやタスクの変更なし。folder IDは実応答由来。
+- 既存11/12 08時補充Docから取得済みの原文2495文字を、そのままTXT入力として非本番親へnative Docs変換保存。Doc ID `1fRNyN1E2xzk0vj1GahLn5Xc4gupsEth7LZcNQYVLf6M`、URL https://docs.google.com/document/d/1fRNyN1E2xzk0vj1GahLn5Xc4gupsEth7LZcNQYVLf6M/edit?usp=drivesdk 。正式レポート名を使用していない。
+- 初回独立readback：親/MIME一致・Docs revision取得成功。ただし本文2496文字、SHA7de6954ace3e78579893938c18904ab15b387fde1e3b3814c079b04fa70cdfc8で不一致。実diffは変換時に末尾LF1文字追加。DOC_SAVE_QA_BLOCKEDを記録し、初回応答とdiffは追跡外ログに保存。
+- 新規試験Docに限り、取得済みrevisionをrequiredRevisionIdへ指定してUTF-16範囲2495:2496のLF1文字を削除。原入力/元Doc/公開資格ゲートは変更せず、正規化で差分を隠していない。
+- 修正後の独立get_document/get_file_metadataで全文2495文字、SHA2f9347fd286f3311040fe76fbd7911d669503dff2dde75d69e1a6e61e899259eが原入力と完全一致。親1JN-iq2Y2cmiYpiDIqOM7xtn53-_ztuIv、MIMEapplication/vnd.google-apps.document、Docs revisionと作成2026-11-13T12:14:48.460Z/更新12:17:26.397Zを取得。判定PASS_NONPRODUCTION_DOC_SAVE。保存後のファイル一覧でも同IDを確認。
+- 非機密の機械可読証拠は固定 `docs/project-control/evidence/source-handoff-save-readback.json`。原文全文・接続profile・task/chat情報は追跡外logs/source-handoffへ保持。既存の32件テスト/CIは既存code commitへの証拠で、この保存試験とは別。今回ランタイムコードの追加/変更はなし。
+- 元Docのmetadataも再取得し、11月親1vnZ7JgQTbqVSvoTIaY-1GlEroSzNLXkPを今回確認できた。一方、元DocのDocs revisionは依然null。前回の親UNKNOWNは観測更新し、全過去文書の親を検証済みとはしない。
+- 当日11/13の本文フォルダ一覧には08時Doc1Ih0Nqzn8VrK0uWnEF5vWAlnseyOkuM9sEZRjDUGoV8A、16時Doc1ghRXLO78cTNePqSZVAdb-Vubd8zd_W6c2IMSvOLHgqwを観測。他slot/実task生成/PNG/正式資格はこの一覧から推定しない。
+- 指定ChatGPTtask viewは再度card描画応答だけで、prompt/tool権限/run全文は機械読戻し不能。生成元会話のDrive action有無/失敗エラーをユーザーへ確認中。公式説明の一般対応を当アカウント実証に置換しない。ブラウザ/非公式ChatGPT APIは使用しない。
+- 図解マニュアルは再取得403。11月図解フォルダ検索はraw qでも0件だが、不存在やPNG消失の証明ではない。実原本PNGを受領できないためPNG保存/bytes/hash QAはNOT_RUN。簡易画像/別画像を代用しない。
+- 費用：新規AI API呼出し0、新規課金provider/依存/請求設定/利用枠増加なし。既存Drive標準操作だけで実測。全自動発行の原本引渡し/正式receipt/公開/通知/切替/20枠は未達、本番取り込み保留。作成した非本番フォルダ/Docは証拠として保持し、無断削除しない。
+
+
+### MR-SOURCE-HANDOFF-20261113-01｜21時枠の早期実行・未発行終了（2026-11-13 JST）
+
+出典：ユーザー追加回答（独立task API取得ではない）。予定2026/11/13 21:00 JST、開始20:55:04/終了20:55:16、runtime completed。引用された出力は『21時前のため前倒し発行せず、Docs保存/GitHub/Pagesは未実行』。開始差-296秒。task/run/新旧会話IDと出力全文は追跡外logs/source-handoff/user-task-run-observation.jsonへ保全し、公開PRへ私的会話IDを追加しない。
+
+通常チャットの作成/本文書込action・両マニュアル参照成功はUSER_CONFIRMED。定期taskで同actionが提供されたかはUNKNOWN。今回runの保存actionはNOT_CALLED_USER_REPORTED、HTTP errorはNOT_APPLICABLE。従ってDrive権限不足を当該runの保存失敗原因と断定しない。11/11 16時はDocs不在/枠前証拠404でwrite未実行という追加履歴もユーザー報告として記録し、証拠を補作しない。
+
+公式read_threadで新旧の指定IDを読み取ろうとしたがNo Codex thread found。公式ChatGPT history先頭20件にも対象参照はなく、task viewはcard応答のみ。対象のprompt/提供tool/run全文の独立取得は未了（対象が不存在とは認定しない）。非公式endpoint/ブラウザ自動化へ迂回していない。
+
+既存read-only監視のverifyを一時空rootで再現し、Missing published canonical 2026-11-13_21-00.jsonで停止、生成ファイル0件を確認。evidence/early-task-no-publication.jsonを共有する。これは欠落判定のオフライン再現で、実taskの待機/再開/保存/定時受入ではない。既存32件の合格数を33件へ水増しせず、独立シナリオとして分離。今回追加のランタイムコード/タスク/監視/有料サービスはなし。
+
+継続課題：taskの実prompt/予定schedule/サーバー時刻/提供toolの照合、早期起動後に枠まで保持/再開する公式機能の実証、run別会話と指定表示先の一致。原因候補を権限問題と混同しない。既存taskは有効のまま保持し、Google正本文書も不変。
+
+
+## MR-TASK-DIAG-20261113-01｜保存プロンプト3,954文字の診断（2026-11-13 JST）
+
+出典：ユーザー添付21:57診断資料。開始時HEADae249df9f07dfaf6ca08959c543b901f9d2e0c7e、worktree clean、PR200 Open/Draftで同head CI4件successをAPI再確認。main fetch49cee0bd5（今回のscripts/apps-script/config/workflows/docs固定実装へupstream新変更なし、候補の本番取り込みは保留）。
+
+提供promptを開始/終了マーカーで抽出し、LFで3,954文字/UTF-16 3,954単位を独立計数、SHA501ce01e9a49a1ef742af95aee66d6b5e0e001d03f3e8ae49ab4a8466943757f。抽出時に改行以外のstrip/要約/改稿をしない。7つの引用が実原文に存在することを照合し、8項目をevidence/task-prompt-diagnostic.jsonへ保存。完全promptと元添付はローカルで保全。提供資料の真正なtask backend exportかどうかは未検証で、各UI/API履歴はUSER_REPORTED。
+
+確認事項：同実行の原文保持/全文保存/readback、正式証拠不足でも通常保存を継続する指示は存在。早期終了を明示命令した条項はない。予定前に起動した場合の公式な保持/継続手順は未規定。よって『promptに保存指示がない』『promptが早期終了を命じた』『Drive権限不足が当該runを失敗させた』は未確定/不適切な断定として排除する。
+
+復旧09/13/17/22時は原文にあるが、提供診断ではactual scheduleは4枠のみ。literal RRULEは添付にないため、raw設定の独立照合はNOT_RUN。PNG任意文言は原文で確認でき、承認済み全4枠必須と不一致。inherited/environments=nullはtool提供証拠ではない。一般的機能紹介をruntime実測へ置換しない。
+
+追加の責務差：producer promptはGitHub mainの日時別データ・JS変更まで要求し、単一writer切替目標と整理が必要。現shadowは本番publisherではないので、これを理由に既存役割/機能を停止しない。create_fileとimport_document、Codexと別会話、通常chatとtask runの接続差も独立記録する。非本番試験Docの他接続404/403はCodex保存成功の否定でも、task保存未呼出の原因確定でもない。
+
+実施した検証はprompt計数/hash/引用・既存設定との照合。task実行の新試験、保存処理の追加実装、task変更、API課金、本番データ/Google正本/Pages変更はなし。コード変更なしにつき既存32件を新実行と数えず、今回の診断をruntime回帰PASSと表現しない。最小prompt差分はoperationsの同IDに未適用候補として保持し、別冊を作らない。
+
+残る実測はtaskの適用prompt/schedule/正確な開始時刻/提供toolとcall trace、および予定前起動時の公式継続/再開能力。現在のツールでは対象runのこれらを独立取得できない。原本TXT/実PNG・受渡し確認・正式receipt・公開・通知・切替・20枠受入は未達のまま。新しいwatchdog/recovery/有料APIで埋めない。
+
+
+## MR-SOURCE-HANDOFF-RECOVERY-20261113-01（2026-11-13 JST）
+出典: 23:34 JST指示書 / Draft PR #200。既存タスク・Google固定正本・main・本番設定は変更なし。影響: requirements/specification/operations/DOCUMENT_CONTROL、台帳、HANDOFF。Google固定ID文書・本文/図解マニュアルへの同期は未実施（権限/承認待ち）。承認済み本文・図解品質は維持。
+
+既存verify_scheduled_report_delivery.pyへ任意の`--run-observation`を追加。予定/実開始/実終了・情報基準/原本作成時刻を分離し、completedだけを成功とせず本文/PNG/Docs/受渡しとlocal canonicalを別判定する。新しい監視job・schedule・writerなし。観測ファイルを自動取得する接続は未実装、現行監視へrun情報が自動注入されるわけではない。時刻またぎ・早期終了・PNG欠落・canonical欠落・異なる予定枠・timezone欠落を回帰検証。既存32件＋配信検証9件=41件PASS（合成試験を含み、実E2Eではない）。
+
+実物読戻し: 11/13 16時Docの全文・親・MIME・時刻を取得、revisionはnull、実runとの結合UNKNOWN。実PNGは未受領。取得0件を不存在とは断定しない。実本文を既存shadowへ渡すとWAITING_FOR_SOURCE_ARTIFACT、欠けた6ファイルを明示、productionWrites=0。証拠: `docs/project-control/evidence/source-handoff-recovery.json`。前回の非本番2495文字保存成功は維持、新しい保存成功へ水増ししない。今回のPNG保存・bundle受入・公開・通知は未実施。
+
+公式継続/遅延再開/強制実行は、この接続で提供されるautomation操作(view/create/update/delete)では実証できない。BLOCKED_PLATFORM_CAPABILITY。原因不明の早期起動を平台障害と断定せず、sleep/未予約復旧を対策としない。通常ChatGPTのDrive操作可用性はユーザー報告、定期runのtool一覧/主体/呼出traceは取得不能。CodexのDoc読戻しと以前の非本番書込は実測、GAS/Actionsの認証・導入版はUNKNOWN。確認にはユーザーが許可した実runのaction履歴と原本文・実PNGが必要。無課金の自動会話転送は実証済み公開接続なし。人手受渡しは非本番試験に限り許容、自動配信成功に数えない。
+
+最小プロンプト差分は `docs/project-control/task-prompt-change.patch.md`（未適用）。本番切替/rollbackは既存operationsの承認gateを維持。4枠＋20枠の実受入は未達。費用PASS_LOCAL_ONLYは契約/本番費用保証ではない。
+
+
+### 2026-11-14 JST 観測追補 — MR-SOURCE-HANDOFF-RECOVERY-20261113-01
+出典: ユーザーの別接続revision照会とコミット535e5dd提示 / PR #200。今回の新規実証は証拠JSONのfollowupObservationsを参照。Codexのget_document（全文/fields指定）とget_document_textはいずれもrevision=null。ユーザー報告revisionを今回の独立読戻し本文へ転記して成功扱いしない。共有操作権限falseをrevision欠落の原因とは断定しない。
+
+現在のDoc本文4640文字は以前の読戻しhashと一致。GitHub535e5ddの保存版は同じDoc ID・月親・提示revision、verifiedAtSlot=false。ただしfullTextは4548文字・1行、Docの92個のLFを全削除した文字列とだけ一致する。全文byte/hashの一致条件はFAIL。改行を無視してPASSにせず、改行を失わせた操作主体・処理はUNKNOWNとする。今回mainの保存版は修正していない。将来の承認済み取込ではDocの原文改行を保全し、readback hashとarchive hashを独立照合する。
+
+16時固有run ID/会話参照/保存actionログはユーザー側でも取得不能。21時runを流用しない。TASK_RUN_BINDING_UNKNOWNを維持。対象実PNGは未受領（検索で見つかった非レポート画像は除外）、PNG保存/byte読戻し/正式公開はNOT_RUN。必要な次証拠は許可された実runの対象Doc ID付き保存action結果と同runのPNG原本。既存タスク・固定Google文書・本番・未適用prompt候補は変更なし。要件/本文・図解品質の変更なし、コード変更・追加機械試験なし。固定Google Docs同期は未実施。
+
+
+## MR-BODY-INTEGRITY-20261114-01（2026-11-14 JST）
+出典: ユーザーの改行保全指示 / Draft PR #200 / 535e5ddの保存版と実Doc読戻し。変更対象: report_source_contract.py、sync_reports_from_drive.py、回帰tests、既存shadow CI。本番・タスク・Google Docs原本・正式資格gateは未変更。
+
+実装: Docs textRunを無変換抽出し、空行・日本語・Markdown見出し・先頭BOMを保持。既存paragraph_textはLFを保持しており、既存のBOM削除だけを廃止した。535e5ddはJSON登録のみで実行コード/ツールtraceを含まず、92LFを脱落させた実関数/実行主体はUNKNOWN。BOM削除を92LF欠落原因と偽認しない。既存save_jsonへ書込前の本文hash/JSON変換後/ファイル読戻しの一致gateを追加。review専用archive_body_candidateは元Doc ID・元本文hash・変更前archive hash・一意な枠を要求し、全文を変更なしに設定、status/revisionを保全。新しいpublisher/監視なし。
+
+非本番候補: docs/project-control/evidence/archive-body-candidate.json（535e5dd時点の完全archiveを基準）。16時fullTextとdriveTextLengthの2項目だけ変更。4640文字/92LF、読戻しSHA 3d4bdc1b0d85edbdb2e59d662683192d2fbdfa4d8ab5a0546e1500749bcbae04。source Docは読取りのみ、archiveの既存revisionは維持するが、そのrevisionと今回の本文を結ぶ独立証明は引き続きUNKNOWN。現在mainに追加変更があれば候補をそのまま上書きせず再照合する。候補は本番ファイルではなく正式発行でもない。
+
+検証: 従来41件＋9件=50件PASS。実本文候補のディスク保存/読戻しはPASS。改行脱落・変更前hash不一致・別Doc・複数tabを拒否。証拠はbody-integrity-verification.jsonとbody-integrity-tests.txt。16時run結合・PNG・正式publicationは未検証。Google固定ID要件/仕様/本文作成/運用/図解/台帳は未同期、既存詳細品質はNO_CHANGE。影響文書: requirements/specification/operations/DOCUMENT_CONTROL/EVIDENCE_LEDGER。main merge/本番データ修正は承認待ち。
+
+
+## MR-PORTAL-PREVIEW-20261114-01（2026-11-14 JST）
+出典: ユーザーの3段階実証指示 / PR #200。新たに動いた工程: 11/13 16時の実本文4640文字・92LFを新規非本番Docへ実書込→独立全文/親/MIME/revision読戻し→既存save_jsonによるreports[]保存→HTTP読戻し→既存report.htmlの実ブラウザー表示。原文SHA一致、16見出し/全非空行を可視本文へ照合、画面PNG2枚。証拠: portal-preview.json、portal-preview-top.png、portal-preview-body.png（図解原本ではなくポータル画面証拠）。新規試験Docだけを書き、元Doc・main・本番・タスクは無変更。
+
+実表示での阻害条件はreport-core-v3.jsの参考閲覧種別判定: DRIVE_RECOVERY_DOCUMENTがunsupportedだった。既存の同一Doc/revision/文字数/欠損証拠/非正式判定を維持して当該種別のみ受理。正式ゲートは不変。save_jsonはトップ本文に加えてreports[]等の全fullTextを再帰走査し、保存前/JSON変換後/ディスク読戻しで文字列とUTF-8 SHAを照合。原文無改変のまま51 Python/9 Node試験PASS。画面DOMはMarkdown描画なので原文byte hash一致とは呼ばず、JSON原文hash一致と全非空行の可視照合を別記する。
+
+3954文字の保存promptは置換2箇所+末尾追記のみの4897文字candidateとしてtask-prompt-candidate.txtへ保持、差分はtask-prompt-change.patch.md。PNG各枠1枚、早期終了未発行、取得できるrun/Doc/revision/hashを記録、能力不足はUNKNOWN/BLOCKED、既存詳細品質とGitHub責任を無断削除しない。実適用は承認待ち。
+
+次の設定枠は11/16（月）08:00 JST、週末発行なし。未来runの観測はNOT_RUN。現在の公式接続にrun強制実行/過去16時action trace/自動会話転送はなく、実PNG未受領。無課金の可能な代替は許可された通常ChatGPT実行で公式Drive保存を実証し、その実本文とPNGファイルを人手で受領する非本番経路（完全自動化の証明ではない）。原本が無いまま画像生成/保存成功や自動受渡しを捏造しない。
+
+shadow停止はrun_report_delivery.runのrequired7ファイル確認。続くvalidate_bundleはbody/SOP、08時QA、validate_receipt/verify_slot_evidence、親/Doc ID、実PNGとmanifest同版byte hashを要求。11/13欠損evidenceを後作成しないため正式資格経路は停止したまま、通常Docs保存と参考表示だけを実証。新publisher/監視は追加しない。
+
+本番参考アーカイブ修正の適用条件: 明示承認→最新mainの対象Doc/slot/変更前hashと競合再照合→原Docのrevision付き再読戻しと原文hash→当該fullText/文字数だけ変更→reports[]保存前後hash→ブラウザー参考表示→非正式状態維持を確認。既存候補の全archiveをそのままmainへ上書きしない。rollbackは直前blobへ対象差分だけ戻し、他枠/後続編集を保全。publisher切替とは別承認。
+
+公開テスト記録の実行コマンドはpython -m unittestへ修正。過去commit履歴の絶対パス残存は未解消、force push/履歴改変なし。今回のログ生成も公開コマンドからユーザー絶対パスを除外。影響: requirements/specification/operations/DOCUMENT_CONTROL/台帳とprompt候補。固定Google文書の本文/図解品質はNO_CHANGE、同期未実施。PNG/正式publication/全4枠の本番受入は未達。

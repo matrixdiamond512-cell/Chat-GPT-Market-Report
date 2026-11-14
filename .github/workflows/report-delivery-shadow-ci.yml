@@ -1,0 +1,45 @@
+name: Zero-cost report delivery shadow contracts
+on:
+  pull_request:
+    paths:
+      - scripts/verify_scheduled_report_delivery.py
+      - tests/test_scheduled_report_delivery.py
+      - scripts/report_source_contract.py
+      - scripts/sync_reports_from_drive.py
+      - tests/test_docs_body_integrity.py
+      - assets/js/report-core-v3.js
+      - tests/report-archive-loader.test.mjs
+      - docs/project-control/evidence/archive-body-candidate.json
+      - scripts/run_report_delivery.py
+      - scripts/build_market_json.py
+      - tests/test_market_projection_immutability.py
+      - scripts/verify_zero_cost_delivery.py
+      - tests/test_zero_cost_delivery.py
+      - config/report_delivery_policy.json
+      - .github/workflows/report-delivery-shadow-ci.yml
+      - .github/workflows/one-time-openai-funded-test-20261015.yml
+      - .github/workflows/one-time-openai-generation-20261015.yml
+      - .github/workflows/probe-openai-input-tokens-once.yml
+      - .github/workflows/verify-openai-api-readiness.yml
+permissions:
+  contents: read
+jobs:
+  offline-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Enforce local-only zero-cost policy before tests
+        run: python scripts/verify_zero_cost_delivery.py
+      - name: Verify offline intake, immutable sources, locking and restart
+        env:
+          PYTHONPATH: scripts
+        run: python -m unittest tests.test_zero_cost_delivery tests.test_market_projection_immutability tests.test_publication_evidence tests.test_report_slot_evidence tests.test_scheduled_report_delivery tests.test_docs_body_integrity -v
+
+      - name: Verify existing portal reference-only archive loading
+        run: node --test tests/report-archive-loader.test.mjs
