@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 import html
 import io
 import json
@@ -14,6 +15,7 @@ import os
 import re
 import sys
 import time
+import xml.etree.ElementTree as ET
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -66,7 +68,7 @@ def append_jsonl(path: Path, data: Any) -> None:
         fh.write("\n")
 
 
-def http_get(url: str, timeout: int = 20, headers: dict[str, str] | None = None) -> tuple[bytes, str]:
+def http_get(url: str, timeout: int = 8, headers: dict[str, str] | None = None) -> tuple[bytes, str]:
     request_headers = {"User-Agent": USER_AGENT}
     request_headers.update(headers or {})
     request = urllib.request.Request(url, headers=request_headers)
@@ -175,21 +177,24 @@ def parse_jst_month_day_time(month_day: str, time_text: str | None = None) -> st
 def parse_nikkei_profile_timestamp(value: str) -> str:
     text = str(value or "").strip()
     match = re.search(r"([A-Za-z]{3})/(\d{1,2})/(\d{4})\((\d{1,2}):(\d{2})\)", text)
-    if not match:
-        return iso()
-    try:
-        month = dt.datetime.strptime(match.group(1), "%b").month
-        parsed = dt.datetime(
-            int(match.group(3)),
-            month,
-            int(match.group(2)),
-            int(match.group(4)),
-            int(match.group(5)),
-            tzinfo=JST,
-        )
-        return parsed.replace(microsecond=0).isoformat()
-    except ValueError:
-        return iso()
+    if match:
+        try:
+            month = dt.datetime.strptime(match.group(1), "%b").month
+            parsed = dt.datetime(int(match.group(3)), month, int(match.group(2)),
+                                 int(match.group(4)), int(match.group(5)), tzinfo=JST)
+            return parsed.replace(microsecond=0).isoformat()
+        except ValueError:
+            return iso()
+    match = re.search(r"(\d{4})[./-](\d{1,2})[./-](\d{1,2})\((\d{1,2}):(\d{2})\)", text)
+    if match:
+        try:
+            parsed = dt.datetime(int(match.group(1)), int(match.group(2)), int(match.group(3)),
+                                 int(match.group(4)), int(match.group(5)), tzinfo=JST)
+            return parsed.replace(microsecond=0).isoformat()
+        except ValueError:
+            return iso()
+    return iso()
+
 
 
 def format_value(value: float | None, places: int) -> str:
@@ -217,6 +222,7 @@ def candidate(
     as_of: str | None = None,
     raw_reference: str = "",
     classification: str | None = None,
+    reported_decimal_places: int | None = None,
 ) -> dict[str, Any]:
     if change is None and previous_close not in (None, 0):
         change = value - float(previous_close)
@@ -231,6 +237,9 @@ def candidate(
         "fetchedAt": iso(),
         "sourceId": source["id"],
         "sourceName": source["name"],
+        "sourceSeriesId": source.get("sourceSeriesId") or source.get("seriesId") or "",
+        "unit": source.get("unit") or "",
+        "reportedDecimalPlaces": reported_decimal_places,
         "sourceUrl": source.get("sourceUrl") or source.get("url"),
         "marketType": source.get("marketType"),
         "session": source.get("session"),
@@ -243,7 +252,7 @@ def candidate(
 
 def fetch_yahoo_chart(source: dict[str, Any]) -> dict[str, Any]:
     symbol = source["symbol"]
-    params = urllib.parse.urlencode({"range": "5d", "interval": "1d"})
+    params = urllib.parse.urlencode({"range": source.get("range", "5d"), "interval": source.get("interval", "1d")})
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(symbol, safe='')}?{params}"
     text = http_text(url)
     try:
@@ -278,6 +287,40 @@ def fetch_yahoo_chart(source: dict[str, Any]) -> dict[str, Any]:
         elif len(valid) >= 2:
             previous = valid[-2][1]
     return candidate(source, value, previous_close=previous, as_of=as_of, raw_reference=symbol)
+
+
+def fetch_yahoo_sma_deviation(source: dict[str, Any]) -> dict[str, Any]:
+    """Calculate close-to-SMA deviation from date-stamped Nikkei daily bars."""
+    symbol = source["symbol"]
+    params = urllib.parse.urlencode({"range": source.get("range", "1y"), "interval": "1d"})
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{urllib.parse.quote(symbol, safe='')}?{params}"
+    text = http_text(url)
+    try:
+        result = json.loads(text)["chart"]["result"][0]
+        timestamps = result.get("timestamp") or []
+        closes = (((result.get("indicators") or {}).get("quote") or [{}])[0]).get("close") or []
+        bars = [(int(t), safe_float(c)) for t, c in zip(timestamps, closes)]
+        bars = [(t, c) for t, c in bars if c is not None]
+    except (KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
+        raise FetchError("PARSE_ERROR", f"Yahoo SMA history parse failed for {symbol}") from exc
+    window = int(source.get("window", 0))
+    if window < 2 or len(bars) < window:
+        raise FetchError("INSUFFICIENT_HISTORY", f"{symbol} needs {window} complete daily closes; got {len(bars)}")
+    # Use the latest bar not later than the target date, preventing future-session leakage.
+    target_date = dt.date.fromisoformat(str(source.get("targetDate") or now_jst().date().isoformat()))
+    bars = [(t, c) for t, c in bars if dt.datetime.fromtimestamp(t, UTC).astimezone(JST).date() <= target_date]
+    if len(bars) < window:
+        raise FetchError("INSUFFICIENT_HISTORY", f"{symbol} has fewer than {window} bars on or before {target_date}")
+    tail = bars[-window:]
+    latest_ts, latest_close = tail[-1]
+    mean = sum(c for _, c in tail) / window
+    if mean == 0:
+        raise FetchError("INVALID_VALUE", "moving average is zero")
+    deviation_percent = (latest_close / mean - 1) * 100
+    as_of = parse_epoch(latest_ts)
+    result = candidate(source, deviation_percent, as_of=as_of, raw_reference=f"{symbol} close / SMA{window}")
+    result.update({"movingAverage": mean, "window": window, "close": latest_close})
+    return result
 
 
 def fetch_stooq_quote(source: dict[str, Any]) -> dict[str, Any]:
@@ -395,61 +438,146 @@ def fetch_coinmarketcap_fear_greed(source: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+def parse_nikkei_csv_date(value: Any) -> str | None:
+    text = str(value or "").strip().replace("/", ".").replace("-", ".")
+    match = re.fullmatch(r"(\d{4})\.(\d{1,2})\.(\d{1,2})", text)
+    if not match:
+        return None
+    try:
+        return dt.date(int(match.group(1)), int(match.group(2)), int(match.group(3))).isoformat()
+    except ValueError:
+        return None
+
+
+def read_nikkei_daily_csv(source: dict[str, Any]) -> list[tuple[str, float, int]]:
+    """Read dated Nikkei official daily CSV rows without guessing column meanings."""
+    body, _ = http_get(str(source["url"]), timeout=int(source.get("timeoutSeconds", 20)),
+                       headers={"Accept": "text/csv,text/plain,*/*"})
+    encoding = str(source.get("encoding") or "utf-8-sig")
+    try:
+        text = body.decode(encoding, errors="replace").lstrip("\ufeff")
+    except LookupError:
+        text = body.decode("utf-8-sig", errors="replace").lstrip("\ufeff")
+    rows = list(csv.reader(io.StringIO(text)))
+    date_aliases = {"date", "basedate", "marketdate", "日付", "年月日", "基準日"}
+    value_aliases = {"close", "closing", "closingprice", "index", "value", "終値", "指数値"}
+    date_index = int(source.get("dateColumnIndex", 0))
+    value_index = int(source["valueColumnIndex"]) if source.get("valueColumnIndex") is not None else None
+    data_start = 0
+    header_found = False
+    for row_index, row in enumerate(rows[:20]):
+        normalized = [re.sub(r"[^a-z0-9一-龯ぁ-んァ-ン]", "", str(cell).strip().lower()) for cell in row]
+        dates = [i for i, cell in enumerate(normalized) if cell in date_aliases]
+        values = [i for i, cell in enumerate(normalized) if cell in value_aliases]
+        if dates:
+            header_found = True
+            if not values:
+                raise FetchError("PARSE_ERROR", "Nikkei official CSV header has no identifiable close column")
+            date_index, value_index, data_start = dates[0], values[0], row_index + 1
+            break
+    if not header_found and value_index is None:
+        raise FetchError("PARSE_ERROR", "Nikkei official CSV has no recognizable header or configured value column")
+    if value_index is None:
+        raise FetchError("PARSE_ERROR", "Nikkei official CSV close column is not configured")
+    observations: list[tuple[str, float, int]] = []
+    for row in rows[data_start:]:
+        if len(row) <= max(date_index, value_index):
+            continue
+        market_date = parse_nikkei_csv_date(row[date_index])
+        lexical = str(row[value_index] or "").strip().replace(",", "")
+        number = safe_float(lexical)
+        if not market_date or number is None:
+            continue
+        try:
+            decimals = max(0, -Decimal(lexical).as_tuple().exponent)
+        except InvalidOperation:
+            decimals = 0
+        observations.append((market_date, number, decimals))
+    if not observations:
+        raise FetchError("PARSE_ERROR", "Nikkei official daily CSV had no dated numeric close rows")
+    observations.sort(key=lambda item: item[0])
+    return observations
+
+
+def fetch_nikkei_daily_csv(source: dict[str, Any]) -> dict[str, Any]:
+    observations = read_nikkei_daily_csv(source)
+    target = str(source.get("targetDate") or now_jst().date().isoformat())
+    eligible = [item for item in observations if item[0] <= target]
+    if not eligible:
+        raise FetchError("NO_ELIGIBLE_DATE", "Nikkei official CSV has no row on or before target date")
+    latest_date, latest_value, precision = eligible[-1]
+    previous_value = eligible[-2][1] if len(eligible) > 1 else None
+    close_time = str(source.get("closeTimeJst") or "15:30")
+    return candidate(
+        source, latest_value, previous_close=previous_value,
+        as_of=f"{latest_date}T{close_time}:00+09:00",
+        raw_reference="Nikkei official daily index CSV close",
+        reported_decimal_places=precision,
+    )
+
+
+def fetch_nikkei_sma_deviation(source: dict[str, Any]) -> dict[str, Any]:
+    observations = read_nikkei_daily_csv(source)
+    target = str(source.get("targetDate") or now_jst().date().isoformat())
+    observations = [item for item in observations if item[0] <= target]
+    window = int(source.get("window", 0))
+    if window < 2 or len(observations) < window:
+        raise FetchError("INSUFFICIENT_HISTORY", f"Nikkei official CSV needs {window} daily closes")
+    tail = observations[-window:]
+    date_text, close, _ = tail[-1]
+    mean = sum(item[1] for item in tail) / window
+    if mean == 0:
+        raise FetchError("INVALID_VALUE", "Nikkei official SMA is zero")
+    deviation = (close / mean - 1) * 100
+    result = candidate(
+        source, deviation, as_of=f"{date_text}T15:30:00+09:00",
+        raw_reference=f"Nikkei official daily close / SMA{window}",
+        reported_decimal_places=2,
+    )
+    result.update({"window": window, "calculationClose": close, "movingAverage": mean})
+    return result
+
+
 def fetch_nikkei_profile(source: dict[str, Any]) -> dict[str, Any]:
     html_text = http_text(source["url"])
     text = strip_tags(html_text)
+    is_vi = "nk225vi" in source.get("url", "")
+    titles = (
+        ["日経平均ボラティリティー・インデックス", "Nikkei Stock Average Volatility Index"]
+        if is_vi
+        else ["日経平均株価", "Nikkei Stock Average"]
+    )
+    title = next((value for value in titles if value in text), None)
+    if title is None:
+        raise FetchError("PARSE_ERROR", "Nikkei official profile title was not found")
+    scoped = text[text.index(title) : text.index(title) + 600]
+    pattern = (
+        re.escape(title)
+        + r"\s+(?P<value>\d{1,3}(?:,\d{3})*(?:\.\d+)?)"
+        + r"\s+(?P<change_percent>[+-]?\d+(?:\.\d+)?)%"
+        + r"\s+(?P<change>[+-]?\d+(?:\.\d+)?)"
+        + r"\s+(?P<timestamp>(?:[A-Za-z]{3}/\d{1,2}/\d{4}|\d{4}[./-]\d{1,2}[./-]\d{1,2})\([^)]*\)|\d{4}[./-]\d{1,2}[./-]\d{1,2})"
+    )
+    match = re.search(pattern, scoped)
+    if not match:
+        raise FetchError("PARSE_ERROR", "Nikkei official profile did not contain its value and dated timestamp")
+    value = safe_float(match.group("value"))
+    change = safe_float(match.group("change"))
+    if value is None:
+        raise FetchError("PARSE_ERROR", "Nikkei official profile value was not numeric")
+    previous = value - change if change is not None else None
+    timestamp = match.group("timestamp")
+    return candidate(
+        source,
+        value,
+        previous_close=previous,
+        change=change,
+        change_percent=safe_float(match.group("change_percent")),
+        as_of=parse_nikkei_profile_timestamp(timestamp),
+        raw_reference=title,
+        reported_decimal_places=max(0, -Decimal(match.group("value").replace(",", "")).as_tuple().exponent),
+    )
 
-    titles = ["Nikkei 225 Futures Index"]
-    if "nk225vi" in source.get("url", ""):
-        titles = ["Nikkei Stock Average Volatility Index"]
-
-    for title in titles:
-        pattern = (
-            re.escape(title)
-            + r"\s+(?P<value>\d{1,3}(?:,\d{3})*(?:\.\d+)?)"
-            + r"\s+(?P<change_percent>[+-]?\d+(?:\.\d+)?)%"
-            + r"\s+(?P<change>[+-]?\d+(?:\.\d+)?)"
-            + r"\s+(?P<timestamp>[A-Za-z]{3}/\d{1,2}/\d{4}\(\d{1,2}:\d{2}\))"
-        )
-        match = re.search(pattern, text)
-        if match:
-            value = safe_float(match.group("value"))
-            change = safe_float(match.group("change"))
-            if value is None:
-                break
-            previous = value - change if change is not None else None
-            return candidate(
-                source,
-                value,
-                previous_close=previous,
-                change=change,
-                change_percent=safe_float(match.group("change_percent")),
-                as_of=parse_nikkei_profile_timestamp(match.group("timestamp")),
-                raw_reference=title,
-            )
-
-    lower_bound = min((idx for title in titles if (idx := text.find(title)) >= 0), default=-1)
-    if lower_bound < 0:
-        raise FetchError("PARSE_ERROR", "Nikkei profile title was not found")
-    scoped = text[lower_bound : lower_bound + 500]
-    numbers = []
-    for match in re.finditer(r"\b\d{1,3}(?:,\d{3})*(?:\.\d+)?\b", scoped):
-        value = safe_float(match.group(0))
-        if value is not None:
-            numbers.append(value)
-    if not numbers:
-        raise FetchError("PARSE_ERROR", "Nikkei profile had no numeric values")
-
-    if "nk225vi" in source.get("url", ""):
-        plausible = [value for value in numbers if 0 < value < 100]
-    else:
-        plausible = [value for value in numbers if value > 10000]
-    if not plausible:
-        raise FetchError("PARSE_ERROR", "Nikkei profile had no plausible value")
-    value = plausible[0]
-    date_match = re.search(r"(\d{4})[/-](\d{1,2})[/-](\d{1,2})", scoped)
-    as_of = parse_date_time(date_match.group(0)) if date_match else iso()
-    return candidate(source, value, as_of=as_of, raw_reference=source.get("url", "nikkei_profile"))
 
 
 def fetch_jpx_html(source: dict[str, Any]) -> dict[str, Any]:
@@ -509,14 +637,543 @@ def fetch_jpx_html(source: dict[str, Any]) -> dict[str, Any]:
     )
 
 
+
+def fetch_fred_csv(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch a daily FRED series CSV and keep its observation date."""
+    text = http_text(source["url"])
+    reader = csv.DictReader(io.StringIO(text.lstrip("\\ufeff")))
+    date_field = str(source.get("dateField") or "observation_date")
+    value_field = str(source.get("valueField") or source.get("seriesId") or "")
+    observations: list[tuple[str, float]] = []
+    for row in reader:
+        date_value = str(row.get(date_field) or "").strip()
+        value = safe_float(row.get(value_field))
+        if date_value and value is not None and parse_iso(date_value):
+            observations.append((date_value, value))
+    if not observations:
+        raise FetchError("PARSE_ERROR", f"FRED series {value_field} had no numeric observations")
+    observations.sort(key=lambda item: item[0])
+    latest_date, latest_value = observations[-1]
+    previous_value = observations[-2][1] if len(observations) > 1 else None
+    return candidate(
+        source,
+        latest_value,
+        previous_close=previous_value,
+        as_of=latest_date,
+        raw_reference=value_field,
+        reported_decimal_places=latest_precision,
+    )
+
+
+def fetch_fred_api(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch dated FRED observations through its documented, keyed API."""
+    api_key_env = str(source.get("apiKeyEnv") or "FRED_API_KEY")
+    api_key = os.environ.get(api_key_env, "").strip()
+    if not api_key:
+        raise FetchError("MISSING_CREDENTIAL", "FRED API key is not configured")
+
+    endpoint = str(source.get("url") or "https://api.stlouisfed.org/fred/series/observations")
+    series_id = str(source.get("seriesId") or "").strip()
+    if not series_id:
+        raise FetchError("INVALID_SOURCE_CONFIG", "FRED series ID is missing")
+    query = urllib.parse.urlencode({
+        "series_id": series_id,
+        "api_key": api_key,
+        "file_type": "json",
+        "sort_order": "desc",
+        "limit": int(source.get("observationLimit", 10)),
+    })
+    try:
+        body, _ = http_get(f"{endpoint}?{query}", timeout=int(source.get("timeoutSeconds", 15)))
+    except FetchError as exc:
+        # http_get includes the request URL in its internal error message; the
+        # API key is a query parameter, so do not let that message escape.
+        raise FetchError(exc.code, "FRED observations request failed") from None
+    try:
+        payload = json.loads(body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise FetchError("PARSE_ERROR", "FRED observations response was not valid JSON") from exc
+
+    rows = payload.get("observations") if isinstance(payload, dict) else None
+    if not isinstance(rows, list):
+        raise FetchError("PARSE_ERROR", "FRED observations response had no observation list")
+    date_field = str(source.get("dateField") or "date")
+    value_field = str(source.get("valueField") or "value")
+    observations: list[tuple[str, float]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        date_value = str(row.get(date_field) or "").strip()
+        value = safe_float(row.get(value_field))
+        if date_value and value is not None and parse_iso(date_value):
+            observations.append((date_value, value))
+    if not observations:
+        raise FetchError("PARSE_ERROR", f"FRED series {series_id} had no numeric observations")
+    observations.sort(key=lambda item: item[0])
+    latest_date, latest_value = observations[-1]
+    previous_value = observations[-2][1] if len(observations) > 1 else None
+    return candidate(
+        source,
+        latest_value,
+        previous_close=previous_value,
+        as_of=latest_date,
+        raw_reference=series_id,
+    )
+
+
+def fetch_treasury_yield_xml(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch the US Treasury's documented daily yield XML feed (current month)."""
+    current = now_jst()
+    params = urllib.parse.urlencode({
+        "data": source.get("data", "daily_treasury_yield_curve"),
+        "field_tdr_date_value_month": current.strftime("%Y%m"),
+    })
+    url = f"{source['url']}?{params}"
+    body, _ = http_get(url, timeout=int(source.get("timeoutSeconds", 15)), headers={"Accept": "application/atom+xml,application/xml,text/xml"})
+    try:
+        root = ET.fromstring(body)
+    except ET.ParseError as exc:
+        raise FetchError("PARSE_ERROR", "US Treasury yield feed was not valid XML") from exc
+
+    def local_name(tag: str) -> str:
+        return tag.rsplit("}", 1)[-1].upper()
+
+    observations: list[tuple[str, float, int]] = []
+    value_field = str(source.get("valueField", "BC_10YEAR")).upper()
+    for entry in (node for node in root.iter() if local_name(node.tag) == "ENTRY"):
+        values = {local_name(node.tag): (node.text or "").strip() for node in entry.iter()}
+        date_text = values.get(str(source.get("dateField", "NEW_DATE")).upper(), "")[:10]
+        value_text = values.get(value_field, "")
+        value = safe_float(value_text)
+        if date_text and parse_iso(date_text) and value is not None:
+            try:
+                lexical_precision = max(0, -Decimal(value_text).as_tuple().exponent)
+            except InvalidOperation:
+                lexical_precision = 0
+            published_precision = source.get("publishedDecimalPlaces")
+            precision = int(published_precision) if published_precision is not None else lexical_precision
+            observations.append((date_text, value, precision))
+    if not observations:
+        raise FetchError("PARSE_ERROR", "US Treasury yield feed had no dated 10-year observations")
+    observations.sort(key=lambda item: item[0])
+    latest_date, latest_value, latest_precision = observations[-1]
+    previous_value = observations[-2][1] if len(observations) > 1 else None
+    return candidate(
+        source,
+        latest_value,
+        previous_close=previous_value,
+        as_of=latest_date,
+        raw_reference=f"{source.get('data', 'daily_treasury_yield_curve')} {value_field}",
+        reported_decimal_places=latest_precision,
+    )
+
+
+def fetch_local_rates_json(source: dict[str, Any]) -> dict[str, Any]:
+    """Reuse a same-date, confirmed rate from the rates page's generated data."""
+    payload = load_json(ROOT / str(source["path"]), {})
+    meta = payload.get("meta") or {}
+    if meta.get("status") != "confirmed" or meta.get("isStale") is not False:
+        raise FetchError("UNVERIFIED_LOCAL_SOURCE", "rates-bonds JSON is not confirmed and fresh")
+
+    record_name = str(source.get("recordName") or "")
+    record = next(
+        (item for item in payload.get("rates") or [] if item.get("name") == record_name),
+        None,
+    )
+    if not record or record.get("status") != "confirmed":
+        raise FetchError("UNVERIFIED_LOCAL_SOURCE", f"confirmed rate {record_name!r} is unavailable")
+
+    as_of = str(record.get("asOf") or "")
+    if not as_of or as_of[:10] != str(meta.get("asOfDate") or ""):
+        raise FetchError("SOURCE_DATE_MISMATCH", f"{record_name} date does not match rates-bonds asOfDate")
+    value = safe_float(record.get("value"))
+    if value is None:
+        raise FetchError("PARSE_ERROR", f"{record_name} value is not numeric")
+
+    change_bp = safe_float(record.get("changeBp"))
+    change = change_bp / 100 if change_bp is not None else None
+    previous = value - change if change is not None else None
+    return candidate(
+        source,
+        value,
+        previous_close=previous,
+        change=change,
+        as_of=as_of,
+        raw_reference=record_name,
+    )
+
+
+
+def _parse_mof_jgb_date(value: Any) -> str | None:
+    text = str(value or "").strip().lstrip("\ufeff")
+    if not text:
+        return None
+    for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%Y%m%d", "%m/%d/%Y"):
+        try:
+            return dt.datetime.strptime(text, fmt).date().isoformat()
+        except ValueError:
+            pass
+    match = re.fullmatch(r"([SHR])(\d{1,2})[./-](\d{1,2})[./-](\d{1,2})", text, re.IGNORECASE)
+    if match:
+        era, year, month, day = match.groups()
+        offset = {"S": 1925, "H": 1988, "R": 2018}[era.upper()]
+        try:
+            return dt.date(offset + int(year), int(month), int(day)).isoformat()
+        except ValueError:
+            return None
+    return None
+
+
+def fetch_mof_jgb_yield_csv(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch MOF's PDL-licensed daily constant-maturity JGB yield CSV."""
+    body, _ = http_get(str(source["url"]), timeout=int(source.get("timeoutSeconds", 20)),
+                       headers={"Accept": "text/csv,text/plain,*/*"})
+    try:
+        text = body.decode(str(source.get("encoding") or "cp932"), errors="replace")
+    except LookupError:
+        text = body.decode("utf-8-sig", errors="replace")
+    rows = list(csv.reader(io.StringIO(text.lstrip("\ufeff"))))
+    if not rows:
+        raise FetchError("PARSE_ERROR", "MOF JGB CSV had no rows")
+
+    def normalized(value: Any) -> str:
+        return re.sub(r"[^a-z0-9一-龯ぁ-んァ-ン]", "", str(value or "").strip().lower())
+
+    header_index = None
+    date_index = 0
+    yield_index = 10
+    date_names = {"date", "basedate", "observationdate", "基準日", "年月日"}
+    yield_names = {"10", "10y", "10yr", "10year", "10years", "10年", "10年金利"}
+    for row_index, row in enumerate(rows[:20]):
+        names = [normalized(cell) for cell in row]
+        date_candidates = [i for i, name in enumerate(names) if name in date_names]
+        yield_candidates = [i for i, name in enumerate(names) if name in yield_names]
+        if date_candidates and yield_candidates:
+            header_index = row_index
+            date_index = date_candidates[0]
+            yield_index = yield_candidates[0]
+            break
+
+    data_rows = rows[header_index + 1:] if header_index is not None else rows
+    observations: list[tuple[str, float, int]] = []
+    for row in data_rows:
+        if len(row) <= max(date_index, yield_index):
+            continue
+        date_text = _parse_mof_jgb_date(row[date_index])
+        value_text = str(row[yield_index] or "").strip()
+        value = safe_float(value_text)
+        if not date_text or value is None:
+            continue
+        try:
+            precision = max(0, -Decimal(value_text.replace(",", "")).as_tuple().exponent)
+        except InvalidOperation:
+            precision = 0
+        observations.append((date_text, value, precision))
+    if not observations:
+        raise FetchError("PARSE_ERROR", "MOF JGB CSV had no dated 10-year observations")
+    observations.sort(key=lambda item: item[0])
+    latest_date, latest_value, precision = observations[-1]
+    previous_value = observations[-2][1] if len(observations) > 1 else None
+    return candidate(source, latest_value, previous_close=previous_value, as_of=latest_date,
+                     raw_reference="MOF JGB constant-maturity 10-year yield",
+                     reported_decimal_places=precision)
+
+
+def fetch_boj_time_series(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch one daily BOJ Time-Series Data Search observation by series code."""
+    now = now_jst()
+    start = now.date() - dt.timedelta(days=int(source.get("lookbackDays", 90)))
+    params = urllib.parse.urlencode({
+        "format": "json", "lang": "en",
+        "db": str(source.get("database") or "FM08"),
+        "code": str(source.get("seriesCode") or "FXERD04"),
+        "startDate": start.strftime("%Y%m"), "endDate": now.strftime("%Y%m"),
+    })
+    url = f"{str(source['url']).rstrip('?')}?{params}"
+    text = http_text(url, timeout=int(source.get("timeoutSeconds", 20)),
+                     headers={"Accept": "application/json"})
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise FetchError("PARSE_ERROR", "BOJ time-series API response was not valid JSON") from exc
+    if not isinstance(payload, dict) or str(payload.get("STATUS", payload.get("status", ""))) != "200":
+        raise FetchError("SOURCE_ERROR", "BOJ time-series API reported an unsuccessful status")
+
+    resultset = payload.get("RESULTSET") or payload.get("resultset") or []
+    if not isinstance(resultset, list):
+        raise FetchError("PARSE_ERROR", "BOJ time-series result set was malformed")
+    code = str(source.get("seriesCode") or "FXERD04").upper()
+    series = next((item for item in resultset if isinstance(item, dict)
+                   and str(item.get("SERIES_CODE") or item.get("series_code") or "").upper() == code), None)
+    if not series:
+        raise FetchError("PARSE_ERROR", "BOJ response did not contain the configured series")
+    values_block = series.get("VALUES") or series.get("values") or {}
+    if isinstance(values_block, dict):
+        dates = values_block.get("SURVEY_DATES") or values_block.get("survey_dates") or []
+        values = values_block.get("VALUES") or values_block.get("values") or []
+    else:
+        dates = series.get("SURVEY_DATES") or series.get("survey_dates") or []
+        values = values_block
+    if not isinstance(dates, list) or not isinstance(values, list):
+        raise FetchError("PARSE_ERROR", "BOJ date/value arrays were malformed")
+
+    observations: list[tuple[str, float]] = []
+    for date_value, raw_value in zip(dates, values):
+        date_text = re.sub(r"\D", "", str(date_value or ""))
+        if len(date_text) != 8:
+            continue
+        try:
+            observation_date = dt.datetime.strptime(date_text, "%Y%m%d").date()
+        except ValueError:
+            continue
+        value = safe_float(raw_value)
+        if value is not None:
+            observations.append((observation_date.isoformat(), value))
+    if not observations:
+        raise FetchError("PARSE_ERROR", "BOJ series had no dated numeric observations")
+    observations.sort(key=lambda item: item[0])
+    latest_date, latest_value = observations[-1]
+    previous_value = observations[-2][1] if len(observations) > 1 else None
+    observed_at = dt.datetime.combine(dt.date.fromisoformat(latest_date),
+                                      dt.time(hour=int(source.get("observationHourJst", 17))), tzinfo=JST)
+    return candidate(source, latest_value, previous_close=previous_value, as_of=observed_at.isoformat(),
+                     raw_reference=f"{source.get('database', 'FM08')}:{code}",
+                     reported_decimal_places=int(source.get("publishedDecimalPlaces", 2)))
+
+
+def parse_boj_shorthand_range(text: str) -> Decimal:
+    """Parse BOJ shorthand ranges such as 158.33-34 and return their midpoint."""
+    match = re.fullmatch(r"\s*(\d+\.\d+)\s*-\s*(\d{1,4})\s*", text)
+    if not match:
+        raise FetchError("PARSE_ERROR", "BOJ PDF did not contain the expected USD/JPY 17:00 quote range")
+    lower_text, upper_suffix = match.groups()
+    lower = Decimal(lower_text)
+    whole, fraction = lower_text.split(".", 1)
+    if len(upper_suffix) > len(fraction):
+        raise FetchError("PARSE_ERROR", "BOJ shorthand quote precision was inconsistent")
+    upper_text = whole + "." + fraction[:len(fraction) - len(upper_suffix)] + upper_suffix
+    upper = Decimal(upper_text)
+    if upper < lower:
+        # Shorthand ranges can cross the next whole-yen boundary.
+        upper += Decimal(1)
+    return (lower + upper) / Decimal(2)
+
+
+def parse_boj_usdjpy_17_pdf_text(text: str, source: dict[str, Any], market_date: dt.date) -> dict[str, Any]:
+    """Extract the official Tokyo 17:00 USD/JPY bid/offer midpoint from a BOJ daily PDF."""
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    marker = re.search(r"(?:At\s+)?17:00\s+JST", text, re.IGNORECASE)
+    if not marker:
+        raise FetchError("PARSE_ERROR", "BOJ PDF had no 17:00 JST quote line")
+    quote_line = text[marker.end():].splitlines()[0]
+    ranges = re.findall(r"(?<![\d.])(\d{2,3}\.\d{2}\s*-\s*\d{1,2})(?![\d.])", quote_line)
+    if not ranges:
+        raise FetchError("PARSE_ERROR", "BOJ PDF had no USD/JPY bid-offer range")
+    midpoint = parse_boj_shorthand_range(ranges[0])
+    places = int(source.get("publishedDecimalPlaces", 2))
+    quantum = Decimal(1).scaleb(-places)
+    value = float(midpoint.quantize(quantum, rounding=ROUND_HALF_UP))
+    as_of = dt.datetime.combine(
+        market_date, dt.time(hour=int(source.get("observationHourJst", 17))), tzinfo=JST,
+    ).isoformat()
+    return candidate(
+        source, value, as_of=as_of, raw_reference=f"BOJ daily FX PDF {market_date.isoformat()}",
+        reported_decimal_places=places,
+    )
+
+
+def extract_boj_pdf_text(data: bytes) -> str:
+    try:
+        from pypdf import PdfReader
+    except ImportError as exc:
+        raise FetchError("MISSING_DEPENDENCY", "pypdf is required to read BOJ daily FX PDFs") from exc
+    try:
+        reader = PdfReader(io.BytesIO(data))
+        return "\n".join(page.extract_text() or "" for page in reader.pages)
+    except Exception as exc:
+        raise FetchError("PARSE_ERROR", "BOJ daily FX PDF text extraction failed") from exc
+
+
+def fetch_boj_daily_fx_pdf(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch the latest two dated BOJ daily PDFs and use the 17:00 USD/JPY midpoint."""
+    now = now_jst()
+    listing_url = str(source.get("listingUrl") or source.get("url") or "")
+    page = http_text(
+        listing_url, timeout=int(source.get("timeoutSeconds", 20)),
+        headers={"Cache-Control": "no-cache"},
+    )
+    matches = re.findall(
+        r"""href\s*=\s*["']([^"']*fx(?:list/)?fx(\d{6})\.pdf(?:\?[^"']*)?)["']""",
+        page, flags=re.IGNORECASE,
+    )
+    if not matches:
+        # Some BOJ page renderers use a root-relative target whose path includes
+        # a directory before the standard fxlist/ segment.
+        matches = re.findall(
+            r"""href\s*=\s*["']([^"']*/fxlist/fx(\d{6})\.pdf(?:\?[^"']*)?)["']""",
+            page, flags=re.IGNORECASE,
+        )
+    dated_links: list[tuple[dt.date, str]] = []
+    for href, date_code in matches:
+        try:
+            report_date = dt.datetime.strptime(date_code, "%y%m%d").date()
+        except ValueError:
+            continue
+        if report_date <= now.date():
+            dated_links.append((report_date, urllib.parse.urljoin(listing_url, href)))
+    dated_links.sort(key=lambda item: item[0], reverse=True)
+    # De-duplicate alternate links to the same date and fail if the listing is stale.
+    newest: list[tuple[dt.date, str]] = []
+    seen_dates: set[dt.date] = set()
+    for item in dated_links:
+        if item[0] not in seen_dates:
+            newest.append(item)
+            seen_dates.add(item[0])
+        if len(newest) == 2:
+            break
+    if not newest:
+        raise FetchError("PARSE_ERROR", "BOJ daily FX listing had no dated PDF")
+    records: list[dict[str, Any]] = []
+    for report_date, pdf_url in newest:
+        body, _encoding = http_get(
+            pdf_url, timeout=int(source.get("timeoutSeconds", 20)),
+            headers={"Accept": "application/pdf", "Cache-Control": "no-cache"},
+        )
+        records.append(parse_boj_usdjpy_17_pdf_text(extract_boj_pdf_text(body), source, report_date))
+    current = records[0]
+    current["previousClose"] = records[1]["value"] if len(records) > 1 else None
+    current["change"] = (
+        current["value"] - current["previousClose"]
+        if current.get("previousClose") is not None else None
+    )
+    current["changePercent"] = (
+        current["change"] / current["previousClose"] * 100
+        if current.get("change") is not None and current["previousClose"] else None
+    )
+    return current
+
+
+def fetch_ecb_reference_rate(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch an ECB daily euro FX reference-rate series from the official SDMX CSV API."""
+    now = now_jst()
+    start = now.date() - dt.timedelta(days=int(source.get("lookbackDays", 20)))
+    series_key = str(source.get("seriesKey") or "D.USD.EUR.SP00.A")
+    params = urllib.parse.urlencode({
+        "startPeriod": start.isoformat(),
+        "endPeriod": now.date().isoformat(),
+        "format": "csvdata",
+    })
+    url = f"{str(source['url']).rstrip('?')}?{params}"
+    body, encoding = http_get(
+        url,
+        timeout=int(source.get("timeoutSeconds", 20)),
+        headers={"Accept": "text/csv"},
+    )
+    try:
+        text = body.decode(encoding or "utf-8-sig", errors="replace").lstrip("\ufeff")
+    except LookupError:
+        text = body.decode("utf-8-sig", errors="replace").lstrip("\ufeff")
+    rows = list(csv.DictReader(io.StringIO(text)))
+    observations: list[tuple[str, float]] = []
+    expected_currency = str(source.get("currency") or "USD").upper()
+    expected_denominator = str(source.get("currencyDenominator") or "EUR").upper()
+    for row in rows:
+        period = str(row.get("TIME_PERIOD") or row.get("time_period") or "").strip()
+        value = safe_float(row.get("OBS_VALUE") or row.get("obs_value"))
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", period) or value is None:
+            continue
+        currency = str(row.get("CURRENCY") or row.get("currency") or expected_currency).upper()
+        denominator = str(row.get("CURRENCY_DENOM") or row.get("currency_denom") or expected_denominator).upper()
+        if currency != expected_currency or denominator != expected_denominator:
+            continue
+        observations.append((period, value))
+    if not observations:
+        raise FetchError("PARSE_ERROR", "ECB SDMX CSV had no matching dated exchange-rate observations")
+    observations.sort(key=lambda item: item[0])
+    latest_date, latest_value = observations[-1]
+    previous_value = observations[-2][1] if len(observations) > 1 else None
+    return candidate(
+        source,
+        latest_value,
+        previous_close=previous_value,
+        as_of=latest_date,
+        raw_reference=series_key,
+    )
+
+
+def fetch_kraken_ohlc(source: dict[str, Any]) -> dict[str, Any]:
+    """Fetch the last completed UTC daily candle for one Kraken spot market."""
+    pair = str(source.get("pair") or "XBTUSD").upper()
+    interval = int(source.get("intervalMinutes", 1440))
+    if interval != 1440:
+        raise FetchError("CONFIGURATION_ERROR", "Kraken reference adapter requires daily candles")
+    params = urllib.parse.urlencode({"pair": pair, "interval": interval})
+    url = f"{str(source.get('url') or 'https://api.kraken.com/0/public/OHLC').rstrip('?')}?{params}"
+    text = http_text(url, timeout=int(source.get("timeoutSeconds", 20)),
+                     headers={"Accept": "application/json"})
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as exc:
+        raise FetchError("PARSE_ERROR", "Kraken OHLC response was not valid JSON") from exc
+    if not isinstance(payload, dict):
+        raise FetchError("PARSE_ERROR", "Kraken OHLC response was malformed")
+    errors = payload.get("error") or []
+    if errors:
+        raise FetchError("SOURCE_ERROR", "Kraken OHLC endpoint returned an error")
+    result = payload.get("result") or {}
+    result_key = str(source.get("resultKey") or "")
+    rows = result.get(result_key)
+    if not isinstance(rows, list) or len(rows) < 3:
+        raise FetchError("PARSE_ERROR", "Kraken OHLC response lacked completed daily candles")
+    completed = rows[:-1]  # Kraken always returns the current, not-yet-committed candle last.
+    parsed: list[tuple[dt.date, float]] = []
+    for row in completed:
+        if not isinstance(row, list) or len(row) < 5:
+            continue
+        epoch = safe_float(row[0])
+        close = safe_float(row[4])
+        if epoch is None or close is None:
+            continue
+        day = dt.datetime.fromtimestamp(epoch, UTC).date()
+        parsed.append((day, close))
+    if len(parsed) < 2:
+        raise FetchError("PARSE_ERROR", "Kraken OHLC response lacked two valid completed candles")
+    parsed.sort(key=lambda item: item[0])
+    latest_date, latest_close = parsed[-1]
+    previous_close = parsed[-2][1]
+    close_at = dt.datetime.combine(
+        latest_date + dt.timedelta(days=1), dt.time(0, 0), tzinfo=UTC
+    ) - dt.timedelta(seconds=1)
+    return candidate(
+        source,
+        latest_close,
+        previous_close=previous_close,
+        as_of=close_at.isoformat(),
+        raw_reference=f"Kraken {pair} UTC 1d OHLC",
+    )
+
+
+
 FETCHERS = {
     "yahoo_chart": fetch_yahoo_chart,
+    "yahoo_sma_deviation": fetch_yahoo_sma_deviation,
     "stooq_quote": fetch_stooq_quote,
     "cboe_history_csv": fetch_cboe_history_csv,
     "cnn_fear_greed": fetch_cnn_fear_greed,
     "coinmarketcap_fear_greed": fetch_coinmarketcap_fear_greed,
     "nikkei_profile": fetch_nikkei_profile,
+    "nikkei_daily_csv": fetch_nikkei_daily_csv,
+    "nikkei_sma_deviation": fetch_nikkei_sma_deviation,
     "jpx_html": fetch_jpx_html,
+    "local_rates_json": fetch_local_rates_json,
+    "fred_csv": fetch_fred_csv,
+    "fred_api": fetch_fred_api,
+    "treasury_yield_xml": fetch_treasury_yield_xml,
+    "mof_jgb_yield_csv": fetch_mof_jgb_yield_csv,
+    "boj_time_series": fetch_boj_time_series,
+    "boj_daily_fx_pdf": fetch_boj_daily_fx_pdf,
+    "ecb_exchange_rate": fetch_ecb_reference_rate,
+    "kraken_ohlc": fetch_kraken_ohlc,
 }
 
 
@@ -695,7 +1352,8 @@ def fetch_symbol(
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     errors: list[dict[str, Any]] = []
     valid_candidates: list[dict[str, Any]] = []
-    for source in sorted(symbol_config.get("sources", []), key=lambda item: item.get("priority", 99)):
+    ordered_sources = sorted(symbol_config.get("sources", []), key=lambda item: item.get("priority", 99))
+    for source_index, source in enumerate(ordered_sources):
         if source.get("referenceOnly") and not validation.get("allowReferenceOnly", False):
             errors.append(
                 {
@@ -718,7 +1376,10 @@ def fetch_symbol(
             )
             continue
 
-        for attempt in range(retries):
+        source_retry_limit = min(max(retries, 1), int(source.get("maxRetries", 2)))
+        if valid_candidates:
+            source_retry_limit = 1
+        for attempt in range(source_retry_limit):
             try:
                 raw = fetcher(source)
                 raw["referenceOnly"] = source.get("referenceOnly", False)
@@ -757,7 +1418,7 @@ def fetch_symbol(
                         "attempt": attempt + 1,
                     }
                 )
-                if attempt + 1 < retries:
+                if attempt + 1 < source_retry_limit:
                     time.sleep(0.6 * (2**attempt))
             except Exception as exc:  # Keep one symbol from breaking every other symbol.
                 errors.append(
@@ -769,6 +1430,21 @@ def fetch_symbol(
                         "attempt": attempt + 1,
                     }
                 )
+                break
+
+        if valid_candidates:
+            primary_candidate = valid_candidates[0]
+            comparison_required = bool(
+                validation.get("requireSourceCrossCheck", False)
+                or validation.get("maxSourceDivergencePercent") is not None
+            )
+            next_comparable = any(
+                item.get("marketType", symbol_config.get("marketType")) == primary_candidate.get("marketType")
+                and item.get("session", symbol_config.get("session")) == primary_candidate.get("session")
+                for item in ordered_sources[source_index + 1:]
+                if not item.get("referenceOnly")
+            )
+            if not comparison_required or not next_comparable:
                 break
 
     if not valid_candidates:
@@ -941,3 +1617,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

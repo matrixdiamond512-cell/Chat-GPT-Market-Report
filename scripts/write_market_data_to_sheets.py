@@ -22,6 +22,11 @@ DEFAULT_INPUT_SHEET = "ChatGPT_Market_Input"
 DEFAULT_HISTORY_SHEET = "Market_Data_Verified"
 DEFAULT_RULES_SHEET = "ChatGPT_Market_Rules"
 MARKET_ORDER = [
+    "dow",
+    "nasdaq",
+    "sp500",
+    "russell2000",
+    "nikkei225_cash",
     "gold",
     "wti",
     "nikkei225_futures_ose",
@@ -32,6 +37,8 @@ MARKET_ORDER = [
     "nikkei_vi",
     "fear_greed",
     "crypto_fear_greed",
+    "jp10y",
+    "us10y",
 ]
 
 SHEET_HEADERS = [
@@ -203,11 +210,56 @@ class SheetsClient:
         escaped = sheet_name.replace("'", "''")
         return quote(f"'{escaped}'!{cells}", safe="!'")
 
+    @staticmethod
+    def _safe_api_error_tag(response: Any) -> str:
+        """Return only a whitelisted API category and HTTP status; never log response text."""
+        status_code = getattr(response, "status_code", None)
+        safe_status = str(status_code) if isinstance(status_code, int) and 100 <= status_code <= 599 else "UNKNOWN"
+        allowed_reasons = {
+            "ACCESS_TOKEN_SCOPE_INSUFFICIENT",
+            "FAILED_PRECONDITION",
+            "FORBIDDEN",
+            "INTERNAL",
+            "INVALID_ARGUMENT",
+            "NOT_FOUND",
+            "PERMISSION_DENIED",
+            "RATE_LIMIT_EXCEEDED",
+            "RESOURCE_EXHAUSTED",
+            "SERVICE_DISABLED",
+            "UNAUTHENTICATED",
+            "UNAVAILABLE",
+            "USER_RATE_LIMIT_EXCEEDED",
+        }
+        reason = "OTHER"
+        try:
+            error = (response.json() or {}).get("error", {})
+            details = error.get("details", []) if isinstance(error, dict) else []
+            candidates = [
+                detail.get("reason")
+                for detail in details
+                if isinstance(detail, dict)
+            ]
+            candidates.extend(
+                detail.get("reason")
+                for detail in (error.get("errors", []) if isinstance(error, dict) else [])
+                if isinstance(detail, dict)
+            )
+            if isinstance(error, dict):
+                candidates.append(error.get("status"))
+            reason = next(
+                (candidate for candidate in candidates if candidate in allowed_reasons),
+                "OTHER",
+            )
+        except Exception:
+            pass
+        return f"HTTP_{safe_status}_{reason}"
+
     def _request(self, method: str, url: str, **kwargs: Any) -> dict[str, Any]:
         response = self.session.request(method, url, timeout=30, **kwargs)
         if not getattr(response, "ok", False):
-            detail = getattr(response, "text", "")[:500]
-            raise SheetsSyncError(f"Google Sheets API {method} failed: {response.status_code} {detail}")
+            raise SheetsSyncError(
+                f"Google Sheets API {method} failed {self._safe_api_error_tag(response)}"
+            )
         if not getattr(response, "content", b""):
             return {}
         return response.json()
@@ -235,7 +287,13 @@ class SheetsClient:
         return sheets
 
     def get_values(self, sheet_name: str, cells: str) -> list[list[Any]]:
-        data = self._request("GET", self.base_url + "/values/" + self._range(sheet_name, cells))
+        data = self._request(
+            "GET",
+            self.base_url
+            + "/values/"
+            + self._range(sheet_name, cells)
+            + "?valueRenderOption=UNFORMATTED_VALUE",
+        )
         return data.get("values") or []
 
     def clear(self, sheet_name: str, cells: str = "A:AZ") -> None:
@@ -326,6 +384,12 @@ def sync_payload(client: SheetsClient, payload: dict[str, Any], input_sheet: str
 
     client.clear(input_sheet)
     client.update(input_sheet, "A1", [SHEET_HEADERS] + rows)
+    input_readback = client.get_values(input_sheet, f"A1:AA{len(rows) + 1}")
+    expected_input = [SHEET_HEADERS] + rows
+    for index, expected in enumerate(expected_input):
+        actual = input_readback[index] if index < len(input_readback) else []
+        if [safe_cell(value) for value in actual[: len(SHEET_HEADERS)]] + [""] * max(0, len(SHEET_HEADERS) - len(actual)) != expected:
+            raise SheetsSyncError(f"input sheet readback mismatch at row {index + 1}")
 
     history_values = client.get_values(history_sheet, "A:A")
     existing_ids = {str(row[0]) for row in history_values[1:] if row}
@@ -333,6 +397,11 @@ def sync_payload(client: SheetsClient, payload: dict[str, Any], input_sheet: str
         client.update(history_sheet, "A1", [SHEET_HEADERS])
     new_history_rows = [row for row in rows if str(row[0]) not in existing_ids]
     client.append(history_sheet, "A:AA", new_history_rows)
+    history_readback = client.get_values(history_sheet, "A:AA")
+    history_ids = [str(row[0]) for row in history_readback[1:] if row]
+    expected_ids = [str(row[0]) for row in rows]
+    if any(history_ids.count(snapshot_id) != 1 for snapshot_id in expected_ids):
+        raise SheetsSyncError("history sheet readback failed snapshot identity/duplicate check")
 
     client.clear(rules_sheet)
     client.update(rules_sheet, "A1", RULES_ROWS)
@@ -348,6 +417,17 @@ def sync_payload(client: SheetsClient, payload: dict[str, Any], input_sheet: str
     return {
         "inputRows": len(rows),
         "historyRowsAdded": len(new_history_rows),
+        "inputReadback": "verified",
+        "historyReadback": "verified",
+        "itemResults": [
+            {
+                "id": row[4],
+                "acquisitionResult": "SUCCESS" if row[16] == "verified" and not row[18] else "FAILED",
+                "validationResult": "PASS" if row[16] == "verified" and not row[18] else "NOT_CURRENTLY_VERIFIED",
+                "persistenceResult": "SAVED_READBACK_CONFIRMED",
+            }
+            for row in rows
+        ],
         "overallStatus": payload.get("overallStatus"),
         "generatedAt": payload.get("generatedAt"),
     }
@@ -380,3 +460,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
