@@ -67,3 +67,9 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 - GitHub固定パス：`docs/system/requirements.md`、`docs/system/specification.md`、`docs/system/operations.md`。PR #197で更新し、PR #193～#196の表示修正・QA表示要件を同一変更IDで反映する。
 - 受入根拠：PR #193～#196 main統合、UI/アーカイブCI成功、Pages deploy run 41836815631成功、公開画面の68slot/18日分読み戻し。
 - 未解決原本：2026-10-22 12:00本文欠落、2026-11-02 12:00 source status矛盾。状態値を書き換えない。市場価格を全件外部照合した結果とは主張しない。
+
+## 変更記録 MR-CLOSE-TRIGGER-20261114-04（2026-11-14 JST、Draft）
+- 変更対象：GitHub固定パス`docs/system/requirements.md`、`specification.md`、`operations.md`、本規程、および新規純粋契約/オフライン試験/CI。Google Docs固定ID本文の変更はNOT_RUN。
+- 出典：GitHub PR #201/#202、2026-11-09/10 Cloud Run TEST_ONLYログとGCS台帳のユーザー提示結果、11/11〜13 HTTP 200、Github cron遅延の監査記録。
+- 検証：CI/テストはPR作成後の実行結果で判定。本コードの検証通過は本番Scheduler→GitHub→終値取得→Sheets読戻しの証明にならない。
+- 未解決：独立トリガー認証・永続的冪等性・dispatchとrunner相関・実装リビジョン照合・PR #201統合・本番Sheets対象行の実データ受入・現行Google Docs固定IDとの同版同期。mainやGoogle Cloud環境は未変更。
