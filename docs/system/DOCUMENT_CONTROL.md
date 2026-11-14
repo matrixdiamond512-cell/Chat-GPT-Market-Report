@@ -68,6 +68,14 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 - 受入根拠：PR #193～#196 main統合、UI/アーカイブCI成功、Pages deploy run 41836815631成功、公開画面の68slot/18日分読み戻し。
 - 未解決原本：2026-10-22 12:00本文欠落、2026-11-02 12:00 source status矛盾。状態値を書き換えない。市場価格を全件外部照合した結果とは主張しない。
 
+## MR-CLOSE-RECOVERY-20261115-01（2026-11-15 JST）
+
+- 影響文書マトリクス：要件定義書 `docs/system/requirements.md`（既存値保全・停止条件）、システム仕様書 `docs/system/specification.md`（読書込・型・非対象セル照合）、運用マニュアル `docs/system/operations.md`（失敗時の調査手順）、本台帳、証拠台帳。本文作成マニュアルは市場データ取扱い要件を変更しないためNO_CHANGE。
+- 実装対象：PR #201を基礎とする `scripts/sync_market_close_sheet.py` とclose-sync回帰テスト。GitHub mainとの差分は調査済み。PR #201/202/203は未マージの前提で重複・依存範囲を分離する。
+- ローカル検証：close-sync関連32テストPASS、公開ポリシーJavaScriptテストPASS、`git diff --check` PASS。Python全236件は tzdata/jpholiday 不在と既存BTCテスト1件により全体PASSではない。
+- 未実証：新しいDraft PR/CI、Cloud Scheduler起動・Cloud Run取得開始、実市場データ、隔離Sheets実終値行書込み/再読込、20営業日運用、固定ID Google Docsへの同期。ブラウザーのGoogle Cloudセッションは未サインイン。結果をSUCCESS扱いしない。
+- 変更制限：既存終値原本、レポート、Scheduler/Cloud Run本番設定、公開ゲート、固定ID Google Docsは更新しない。
+
 ## MR-CLOSE-SYNC-20261114-01（2026-11-14 JST）
 
 出典: ユーザー修正版改善計画Version 1.1と添付計画、run 43355399689の認証付き実ログ。基準main 0204a20c4d188be86328034d93e319c370e02d42、task branch codex/close-sync-recovery-20261114。既存PR200とは分離、新規PRは未作成。影響: requirements/specification/operations/本台帳、EVIDENCE_LEDGER、HANDOFF、同期2script/window/朝用workflow/既存CI/回帰tests。既存日付キー/重複防止/値照合は維持。固定Google Docs要件102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA、仕様1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI、運用1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg、台帳1F5vH9_O0LUC9Dki0CNm1JDNVfg7gMYMcUCIxgeanE5gの現revision照合/同期はNOT_RUN。本文作成1M9LzxKgg8Y50uHSzE1OhML-lU-ufPhvh79xj_m1jWYQは品質・本文ルールNO_CHANGE（データ検証状態の運用整合のみ影響）。固定名/ID維持、別名の要件・仕様・マニュアルを作らない。ローカル68tests PASS、実権限probe/実終値行再読込/20営業日/本番適用はNOT_RUN。遅延原因UNKNOWN、取得定時性は未修復。詳細はevidence/close-sync-recovery.json。

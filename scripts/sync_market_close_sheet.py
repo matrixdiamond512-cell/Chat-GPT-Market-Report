@@ -298,6 +298,27 @@ def normalized_value(value: Any) -> float | str | None:
     return parsed if parsed is not None else (str(value).strip() if value is not None else None)
 
 
+def is_blank_cell(value: Any) -> bool:
+    return value is None or (isinstance(value, str) and not value.strip())
+
+
+def expected_cell_matches(expected: Any, actual: Any) -> bool:
+    """Compare a Sheets value without accepting numeric strings as numbers."""
+    if isinstance(expected, (int, float)) and not isinstance(expected, bool):
+        return (
+            isinstance(actual, (int, float))
+            and not isinstance(actual, bool)
+            and math.isfinite(float(actual))
+            and math.isclose(float(expected), float(actual), rel_tol=1e-8, abs_tol=1e-8)
+        )
+    return isinstance(actual, str) and str(expected).strip() == actual.strip()
+
+
+def snapshot_cell_matches(before: Any, after: Any) -> bool:
+    """Require exact type and value preservation for cells outside the write set."""
+    return type(before) is type(after) and before == after
+
+
 def close_row_sync(
     client: SheetsClient,
     payload: dict[str, Any],
@@ -363,7 +384,12 @@ def close_row_sync(
         if not headers or "日付" not in headers:
             raise CloseSyncError("VALIDATE", "終値一覧 header row or 日付 header is missing.")
         header_indices = {name: i for i, name in enumerate(headers) if name}
-        column_values = read_many_columns(client, sheet_name, list({h for trio in PRICE_FIELDS.values() for h in trio if h} | {"日付"}), header_indices)
+        column_headers = {
+            h for trio in PRICE_FIELDS.values() for h in trio if h
+        } | set(REQUIRED_CLOSE_HEADERS) | {
+            "日付", "登録日時", "USDJPY価格取得元", "USDJPY価格取得日時", "FearGreed判定",
+        }
+        column_values = read_many_columns(client, sheet_name, sorted(column_headers), header_indices)
         date_values = column_values.get("日付", [])
         target_row, insert_row = find_target_row(date_values, target)
         duplicate_count = sum(1 for value in date_values[1:] if parse_sheet_date(value) == target)
@@ -376,7 +402,9 @@ def close_row_sync(
         # Resolve previous close from the most recent earlier date already in
         # the master sheet. This is needed when an overnight feed has rolled
         # into the next JST date and exposes the target close as previousClose.
-        writes: dict[str, Any] = {"日付": target.strftime("%Y/%m/%d")}
+        writes: dict[str, Any] = {}
+        if inserting:
+            writes["日付"] = target.strftime("%Y/%m/%d")
         source_ids: list[str] = []
         field_warnings: list[str] = []
         statuses = []
@@ -476,23 +504,71 @@ def close_row_sync(
                 writes[header] = str(value)
 
         active_stage = "CLOSE_DATA_WRITE"
+        before_values: list[Any] = []
+        before_formulas: list[Any] = []
         if inserting:
             formula_columns = insert_formatted_row(client, sheet_map[sheet_name], target_row, len(headers), sheet_name, sleep)
         else:
+            row_range = f"A{target_row}:{letter_for_column(len(headers)-1)}{target_row}"
+            value_rows = read_values(client, sheet_name, row_range, "UNFORMATTED_VALUE")
+            formula_rows = read_values(client, sheet_name, row_range, "FORMULA")
+            before_values = value_rows[0] if value_rows else []
+            before_formulas = formula_rows[0] if formula_rows else []
             formulas = read_values(client, sheet_name, f"A{target_row}:{letter_for_column(len(headers)-1)}{target_row}", "FORMULA")
             formula_columns = {i for i, value in enumerate(formulas[0] if formulas else []) if isinstance(value, str) and value.startswith("=")}
 
-        updates = {header_indices[name]: value for name, value in writes.items() if name in header_indices and header_indices[name] not in formula_columns}
+        updates: dict[int, Any] = {}
+        conflicts: list[str] = []
+        preserved_fields: list[str] = []
+        for name, expected in writes.items():
+            if name not in header_indices:
+                continue
+            column = header_indices[name]
+            if column in formula_columns:
+                preserved_fields.append(name)
+                continue
+            if inserting:
+                updates[column] = expected
+                continue
+
+            actual = before_values[column] if column < len(before_values) else ""
+            if is_blank_cell(actual):
+                updates[column] = expected
+                continue
+            if name == "登録日時":
+                preserved_fields.append(name)
+                continue
+            if name == "日付" and parse_sheet_date(actual) == target:
+                preserved_fields.append(name)
+                continue
+            if expected_cell_matches(expected, actual):
+                preserved_fields.append(name)
+                continue
+            if isinstance(expected, str) and expected.startswith("取得不能（"):
+                preserved_fields.append(name)
+                continue
+            conflicts.append(name)
+
+        if conflicts:
+            raise CloseSyncError(
+                "VALIDATE",
+                "Existing nonblank target-row cells differ from the verified candidate; no row values were written: "
+                + ", ".join(conflicts),
+            )
+
         batch_write_values(client, sheet_name, target_row, updates, sleep)
         summary["stages"]["CLOSE_DATA_WRITE"] = "SUCCESS"
         summary["row"] = target_row
         summary["inserted"] = inserting
-        summary["updatedFields"] = [name for name in writes if name in header_indices and header_indices[name] not in formula_columns]
+        summary["updatedFields"] = [name for name in writes if header_indices.get(name) in updates]
+        summary["preservedExistingFields"] = sorted(set(preserved_fields))
         summary["sources"] = sorted(set(source_ids))
 
         active_stage = "READBACK_VERIFY"
         readback = read_values(client, sheet_name, f"A{target_row}:{letter_for_column(len(headers)-1)}{target_row}", "UNFORMATTED_VALUE")
         actual_row = readback[0] if readback else []
+        formula_readback = read_values(client, sheet_name, f"A{target_row}:{letter_for_column(len(headers)-1)}{target_row}", "FORMULA")
+        actual_formulas = formula_readback[0] if formula_readback else []
         actual_date = parse_sheet_date(actual_row[header_indices["日付"]] if len(actual_row) > header_indices["日付"] else "")
         if actual_date != target:
             raise CloseSyncError("READBACK_VERIFY", f"Date readback mismatch: expected {target}, got {actual_date}.")
@@ -502,16 +578,35 @@ def close_row_sync(
                 continue
             index = header_indices[name]
             actual = actual_row[index] if index < len(actual_row) else ""
-            expected_number = number(expected)
-            actual_number = number(actual)
-            if expected_number is not None:
-                if actual_number is None or not math.isclose(expected_number, actual_number, rel_tol=1e-8, abs_tol=1e-8):
-                    mismatches.append(f"{name}: expected {expected_number}, read {actual!r}")
-            elif str(actual).strip() != str(expected).strip():
+            if name == "日付":
+                if parse_sheet_date(actual) != target:
+                    mismatches.append(f"{name}: expected date {target}, read {actual!r}")
+                continue
+            if not expected_cell_matches(expected, actual):
                 mismatches.append(f"{name}: expected {expected!r}, read {actual!r}")
+        if not inserting:
+            for index in range(len(headers)):
+                if index in updates:
+                    continue
+                before_formula = before_formulas[index] if index < len(before_formulas) else ""
+                after_formula = actual_formulas[index] if index < len(actual_formulas) else ""
+                if not snapshot_cell_matches(before_formula, after_formula):
+                    mismatches.append(f"column {letter_for_column(index)}: formula/value changed outside write set")
+                    continue
+                if isinstance(before_formula, str) and before_formula.startswith("="):
+                    continue
+                before_value = before_values[index] if index < len(before_values) else ""
+                after_value = actual_row[index] if index < len(actual_row) else ""
+                if not snapshot_cell_matches(before_value, after_value):
+                    mismatches.append(f"column {letter_for_column(index)}: value/type changed outside write set")
         if mismatches:
             raise CloseSyncError("READBACK_VERIFY", "; ".join(mismatches[:10]))
         summary["stages"]["READBACK_VERIFY"] = "SUCCESS"
+        summary["rowIntegrity"] = {
+            "nonTargetCellsUnchanged": True if not inserting else "NOT_APPLICABLE_NEW_ROW",
+            "formulaColumnsPreserved": True,
+            "numericTypesVerified": True,
+        }
 
         # Re-evaluate required cells after the upsert. A same-day prior verified
         # value counts; an empty cell stays explicitly listed as incomplete.

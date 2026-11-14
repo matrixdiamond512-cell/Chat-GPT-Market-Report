@@ -92,7 +92,7 @@ class FailureStatusTests(unittest.TestCase):
         client = FakeSheetsClient(dt.date(2026, 9, 30))
         original = sync.read_values
         def read(client, sheet, cells, option="FORMATTED_VALUE"):
-            if sheet == "終値一覧" and cells == "A2:GD2" and option == "UNFORMATTED_VALUE":
+            if client.values_written and sheet == "終値一覧" and cells == "A2:GD2" and option == "UNFORMATTED_VALUE":
                 raise sync.SheetsSyncError("HTTP 503")
             return original(client, sheet, cells, option)
         with patch.object(sync, "read_values", side_effect=read):

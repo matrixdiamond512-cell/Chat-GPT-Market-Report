@@ -98,3 +98,12 @@ MR-CLOSE-SYNC-20261114-01 / Draft PR #201 / code commit 0e35a3df80af3064001b3d9c
 ### 日本語A1・数値の実検証（2026-11-14 02:42 JST）
 
 MR-CLOSE-SYNC-20261114-01 / PR #201。run [43475352764](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43475352764)、code30ddc2b59の日本語一時タブでliteral A1のbatch書込・数値123.456/文字列のURL読戻し・一時タブ削除後の一覧確認がSUCCESS。artifactを独立取得して対象シートID・同じ認証fingerprint・cleanup SUCCESS・既存reportCellsModified=0を照合。後続fb977a5aeで期限切れFETCH=NOT_RUNと取得成功/証拠不足FETCH=SUCCESSを分離し、失敗時にSheetsへ接続しない方針は維持。69関連ローカルテストPASS。実終値行・定時性回復・20営業日は引き続き未達、main未統合、Google固定文書同期NOT_RUN。新規取得元・列・トリガー・publisherなし。
+
+## MR-CLOSE-RECOVERY-20261115-01（2026-11-15 JST）
+
+- 作業ブランチ `codex/close-sync-e2e-20261115` はPR #201 head `d33c3dc796b5330b7ee01eb28f33507fe107b024` を基礎とする。最新取得mainは `bf338b46f`。PR #201/202/203のhead refsも確認し、#203は契約・CIに限定される一方、実起動/Sheets保存未実装、差分に無関係な市場データ変更も存在するため取り込まない。
+- 対象変更は既存行の上書き拒否/空欄限定補完、数式保持、数値型厳密照合、書込対象外セルの全行読戻し整合確認と回帰テスト。変更ファイルとPR/CIはpush後に追記する。
+- ローカル検証：`python -m unittest tests.test_sync_market_close_sheet tests.test_close_sync_recovery -q` は32件PASS。`node tests/test_report_publication_policy.js` PASS。`git diff --check` PASS。
+- 全Python discovery 236件：FAIL/ERROR。環境に `tzdata` と `jpholiday` がなく9件がimport/test error、別の既存 `test_real_numeric_prices_still_parse` 1件が失敗。これを今回の変更と無関係と断定せず、GitHub CIで再検証する。
+- Cloud Run/Scheduler/Sheets実E2EはNOT_RUN。EdgeはGoogle Cloud Console未サインインで、TEST_ONLY spreadsheet/service configurationの確認不能。既存所有者提供の11/11–13 HTTP 200はTEST_ONLY到達証拠に限定し、Sheets終値行保存を示さない。
+- 本番設定、日付行/レポート原本、公開ゲート、Google Docs固定3文書は未変更。Google Docs同期、実運用20営業日、main統合、Scheduler切替はNOT_RUN。
