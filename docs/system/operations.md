@@ -87,3 +87,8 @@ Google Docs固定ID `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg` に対応す�
 3. 独立ジョブ候補の事前受入にはGoogle署名OIDCとcaller/job/date固定、専用最小権限、create-only claim、失敗後のUNKNOWN隔離、rollbackと費用見積り、同一枠の起動二重防止を必要とする。ShadowでScheduler到達時間とGitHub runner実起動を別々に測る。
 4. 実際のGoogle Sheets終値一覧へのwrite/readbackは本番変更の許可と隔離環境での再試験を経て実施。データ日付・対象行・既存数式・欠損セル・重複日付・色条件を読戻し、最低20営業日の受入証跡が揃うまで未完了。
 5. 11/9 TEST_ONLY失敗（取得検証ValueError、後続CLAIMED）、11/10 07:47の日付不一致は別原因として保全。11/10 07:53/57のEvidenceファイル存在と基本項目PASSはSheets正常化の証拠ではない。
+
+### 2026-11-14 live Sheets read-only observation (same change ID)
+- Native spreadsheet `マーケットレポート終値一覧2026` > `終値一覧` has 186 named columns. The date index is not sorted descending: 2026-11-11 at row 120, 2026-11-12 at row 121, 2026-11-13 at row 122, after older June rows. Earlier visible rows include 2026-11-09 at row 2, 2026-11-02 at row 3 and 2026-11-10 at row 4.
+- Readback of A:GD for rows 120–122 yielded 186 nonblank formatted values per row; no literal `取得不能`/`未確認` placeholders in those rows. This proves cell presence only, not market-price provenance/correctness, publishing readiness, source freshness or scheduled-sheet write success.
+- Never insert duplicate date rows based only on the top-of-sheet order. Before attempting write/repair, scan all date keys with format normalization and verify existing row, original formulas/values, intended date, overwrite policy and readback. Fixing order or reformatting existing rows was not authorized or performed.
