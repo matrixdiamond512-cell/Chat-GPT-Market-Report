@@ -79,6 +79,10 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 
 ## MR-CLOSE-SYNC-20261114-01（2026-11-14 JST）
 
+### MR-CLOSE-RECOVERY CI・起動元の追補（2026-11-15）
+
+PR #204はDraft・未マージ、最終確認head `7f973ef380880195de720738714d28a7114dbcf7`、base `codex/close-sync-recovery-20261114`、変更8ファイル。PR起動CIは取得締切回帰run [43622356001](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43622356001) と配信ヘルスrun [43622355992](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43622355992)、push起動CIは取得締切回帰run [43622349968](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43622349968) で、すべてSUCCESS。直前追補に記録した初回runは初期headの結果であり、最終headの結果は上記のとおり。Cloud Scheduler/Run/Sheets実E2Eは引き続きNOT_RUN。
+
 出典: ユーザー修正版改善計画Version 1.1と添付計画、run 43355399689の認証付き実ログ。基準main 0204a20c4d188be86328034d93e319c370e02d42、task branch codex/close-sync-recovery-20261114。既存PR200とは分離、新規PRは未作成。影響: requirements/specification/operations/本台帳、EVIDENCE_LEDGER、HANDOFF、同期2script/window/朝用workflow/既存CI/回帰tests。既存日付キー/重複防止/値照合は維持。固定Google Docs要件102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA、仕様1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI、運用1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg、台帳1F5vH9_O0LUC9Dki0CNm1JDNVfg7gMYMcUCIxgeanE5gの現revision照合/同期はNOT_RUN。本文作成1M9LzxKgg8Y50uHSzE1OhML-lU-ufPhvh79xj_m1jWYQは品質・本文ルールNO_CHANGE（データ検証状態の運用整合のみ影響）。固定名/ID維持、別名の要件・仕様・マニュアルを作らない。ローカル68tests PASS、実権限probe/実終値行再読込/20営業日/本番適用はNOT_RUN。遅延原因UNKNOWN、取得定時性は未修復。詳細はevidence/close-sync-recovery.json。
 
 ### 実権限検証の追補（2026-11-14 02:38 JST）

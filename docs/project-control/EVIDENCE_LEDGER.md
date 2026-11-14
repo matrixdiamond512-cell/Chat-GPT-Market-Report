@@ -101,6 +101,10 @@ MR-CLOSE-SYNC-20261114-01 / PR #201。run [43475352764](https://github.com/matri
 
 ## MR-CLOSE-RECOVERY-20261115-01（2026-11-15 JST）
 
+### 最終HEADのCI起動元追補（2026-11-15）
+
+Draft PR #204の最終確認head `7f973ef380880195de720738714d28a7114dbcf7`、base `codex/close-sync-recovery-20261114`、変更8ファイル。PR起動の取得締切回帰 [run 43622356001](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43622356001) と配信ヘルス回帰 [run 43622355992](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43622355992)、push起動の取得締切回帰 [run 43622349968](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43622349968) はすべてSUCCESS。初回追補のCI IDは更新前headに属するため、最終headの検証結果としては扱わない。Cloud Scheduler/Run/Sheets実E2Eと20営業日運用はNOT_RUN。
+
 - 作業ブランチ `codex/close-sync-e2e-20261115` はPR #201 head `d33c3dc796b5330b7ee01eb28f33507fe107b024` を基礎とする。最新取得mainは `bf338b46f`。PR #201/202/203のhead refsも確認し、#203は契約・CIに限定される一方、実起動/Sheets保存未実装、差分に無関係な市場データ変更も存在するため取り込まない。
 - 対象変更は既存行の上書き拒否/空欄限定補完、数式保持、数値型厳密照合、書込対象外セルの全行読戻し整合確認と回帰テスト。変更ファイルとPR/CIはpush後に追記する。
 - ローカル検証：`python -m unittest tests.test_sync_market_close_sheet tests.test_close_sync_recovery -q` は32件PASS。`node tests/test_report_publication_policy.js` PASS。`git diff --check` PASS。
