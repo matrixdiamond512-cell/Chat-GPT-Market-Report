@@ -1,0 +1,104 @@
+{
+  "changeRequestId": "MR-CLOSE-SYNC-20261114-02",
+  "observedAt": "2026-11-14",
+  "scope": "GitHub Actions morning acquisition schedule delay investigation; no live schedule or production data change",
+  "sample": {
+    "startDate": "2026-10-05",
+    "endDate": "2026-11-13",
+    "serviceWeekdays": 30,
+    "note": "The service-weekday sample includes Tokyo cash-market holidays on 2026-10-12 and 2026-11-03; it is not 30 TSE trading sessions."
+  },
+  "workflow": {
+    "file": ".github/workflows/market-data-08-anchor.yml",
+    "id": 329602865,
+    "scheduledSlotsJst": ["06:30", "07:00", "07:20", "07:30", "07:40", "07:45", "07:50"],
+    "cronUtc": ["28 21 * * 0-5", "58 21 * * 0-5", "18 22 * * 0-5", "28 22 * * 0-5", "38 22 * * 0-5", "43 22 * * 0-5", "48 22 * * 0-5"]
+  },
+  "results": {
+    "uniqueScheduledAttempts": 210,
+    "onTime": 0,
+    "delayed": 210,
+    "missingSlots": 0,
+    "medianLatenessMinutes": 194.7,
+    "meanLatenessMinutes": 199.6,
+    "maximumLatenessMinutes": 369.3,
+    "expiredInitialRows": 192,
+    "uniqueRunsWithLaterEffectiveFetch": 12,
+    "deduplication": "scheduledDate + scheduledTime + workflowRunId"
+  },
+  "bySlot": [
+    {"jst": "06:30", "attempts": 30, "onTime": 0, "delayed": 30, "medianLatenessMinutes": 211.6, "meanLatenessMinutes": 210.0, "expired": 27, "effectiveFetch": 3},
+    {"jst": "07:00", "attempts": 30, "onTime": 0, "delayed": 30, "medianLatenessMinutes": 209.7, "meanLatenessMinutes": 206.8, "expired": 28, "effectiveFetch": 2},
+    {"jst": "07:20", "attempts": 30, "onTime": 0, "delayed": 30, "medianLatenessMinutes": 204.2, "meanLatenessMinutes": 203.1, "expired": 28, "effectiveFetch": 2},
+    {"jst": "07:30", "attempts": 30, "onTime": 0, "delayed": 30, "medianLatenessMinutes": 198.0, "meanLatenessMinutes": 198.6, "expired": 27, "effectiveFetch": 1},
+    {"jst": "07:40", "attempts": 30, "onTime": 0, "delayed": 30, "medianLatenessMinutes": 194.1, "meanLatenessMinutes": 195.6, "expired": 28, "effectiveFetch": 1},
+    {"jst": "07:45", "attempts": 30, "onTime": 0, "delayed": 30, "medianLatenessMinutes": 190.9, "meanLatenessMinutes": 192.6, "expired": 27, "effectiveFetch": 2},
+    {"jst": "07:50", "attempts": 30, "onTime": 0, "delayed": 30, "medianLatenessMinutes": 186.9, "meanLatenessMinutes": 190.4, "expired": 27, "effectiveFetch": 1}
+  ],
+  "incident": {
+    "dateJst": "2026-11-13",
+    "slotJst": "07:50",
+    "workflowRunId": 43355399689,
+    "scheduledAtUtc": "2026-11-12T22:50:00Z",
+    "runCreatedAtUtc": "2026-11-13T02:54:55Z",
+    "runStartedAtUtc": "2026-11-13T02:54:55Z",
+    "runStartedAtJst": "2026-11-13T11:54:55+09:00",
+    "jobStartedAtUtc": "2026-11-13T02:54:58Z",
+    "acquisitionStepUtc": {"start": "2026-11-13T02:55:17Z", "end": "2026-11-13T02:55:25Z"},
+    "recordedLatenessMinutes": 245.3,
+    "outcome": "expired",
+    "effectiveFetch": false,
+    "reason": "outside catch-up window",
+    "sheetsSync": "skipped",
+    "interpretation": "The workflow run did not exist until over four hours after the scheduled event; runner startup followed run creation by seconds. No acquisition completed and no Sheets close-row write/readback occurred."
+  },
+  "finding": {
+    "classification": "ACTIONS_EVENT_CREATION_DELAY",
+    "supported": "Observed scheduled events and audit records show lateness before GitHub Actions run creation across the sampled dates.",
+    "notEstablished": "The evidence does not establish GitHub's internal cause. It does not support attributing the delay to provider outage, dependency setup, runner queue, or concurrency."
+  },
+  "relatedPr201": {
+    "url": "https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/201",
+    "state": "OPEN_DRAFT_UNMERGED",
+    "base": "201964103babadc56f5f311768072bf48eca290a",
+    "head": "d33c3dc796b5330b7ee01eb28f33507fe107b024",
+    "mergeable": true,
+    "mergeableState": "clean",
+    "checks": [
+      {"name": "forbid-late-source", "runId": 43594201476, "conclusion": "success"},
+      {"name": "test", "runId": 43594201461, "conclusion": "success"}
+    ],
+    "localMergedTreeValidation": "69 tests PASS across the seven PR delivery-health modules; Python compilation PASS. The PR branch update synchronized main into PR #201 but did not merge the PR into main."
+  },
+  "productionObservations": {
+    "closeSyncStatus": {"date": "2026-10-15", "status": "FAILED", "failedStage": "LOG", "observedError": "GET range parsing error and POST permission denied on WEB_Data_Update_Log"},
+    "closeMissingAudit": {"status": "AUDITED", "coreBlank": 267, "extraBlank": 4780},
+    "backfill": {"status": "NO_NEW_DATA"},
+    "source": "Published GitHub main records only; no direct live Sheets inspection or write in this task."
+  },
+  "triggerOptions": {
+    "existingAppsScript": "VerifiedMarketDataAutoSync.gs is a consumer that downloads public GitHub latest.json and writes ChatGPT_Market_Input, Market_Data_Verified, and rules tabs. It is not the morning market-price acquisition or the close-row writer; deployed version and active triggers were not verified.",
+    "existingIntegrityWorkflow": "close-sheet-integrity.yml runs at 18:25 JST weekdays and performs blank-only backfill from verified archives plus audit. It does not repair morning acquisition and relies on GitHub Actions scheduling.",
+    "candidateIndependentDispatcher": "A narrowly scoped Apps Script or Cloud Scheduler trigger could dispatch the existing workflow_dispatch route, but requires confirming a maintainable deployed project/identity and a scoped GitHub credential, then testing event delivery in an isolated environment.",
+    "status": "DESIGN_REVIEW_REQUIRED",
+    "decisionGate": "Present and approve a concrete design, owner, permissions, cost ceiling, rollback, and isolation plan before changing a trigger or adding a service."
+  },
+  "unchanged": [
+    "main was not modified or merged",
+    "production settings and schedules were not changed",
+    "existing close data and report originals were not changed",
+    "formal publication gate was not changed",
+    "the three formal Google Docs were not changed",
+    "no live Sheets write was performed",
+    "no Apps Script trigger was changed",
+    "no external service was provisioned",
+    "P2 or later was not started"
+  ],
+  "unresolved": [
+    "GitHub Actions internal event creation delay cause is unknown.",
+    "Production Sheets close-row validation/readback remains not run.",
+    "Active deployed Apps Script project, version, and trigger inventory remain unverified.",
+    "Independent trigger implementation awaits design approval and confirmed project, permissions, and cost ceiling.",
+    "Future scheduled-slot end-to-end acceptance is not run."
+  ]
+}
