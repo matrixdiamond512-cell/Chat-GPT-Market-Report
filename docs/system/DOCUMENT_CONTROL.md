@@ -75,6 +75,7 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 - ローカル検証：close-sync関連32テストPASS、公開ポリシーJavaScriptテストPASS、`git diff --check` PASS。Python全236件は tzdata/jpholiday 不在と既存BTCテスト1件により全体PASSではない。
 - 未実証：新しいDraft PR/CI、Cloud Scheduler起動・Cloud Run取得開始、実市場データ、隔離Sheets実終値行書込み/再読込、20営業日運用、固定ID Google Docsへの同期。ブラウザーのGoogle Cloudセッションは未サインイン。結果をSUCCESS扱いしない。
 - 変更制限：既存終値原本、レポート、Scheduler/Cloud Run本番設定、公開ゲート、固定ID Google Docsは更新しない。
+- 追補：Draft PR [#204](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/204) を作成。head `9989ec5e6a5964d3e5cdecbb6324359cd6ce8e8e`、base `codex/close-sync-recovery-20261114`。対象8ファイル。PR checksの取得締切回帰 `43621650984` と配信ヘルス回帰 `43621650816` は成功。これはCI上の回帰確認であり、Cloud Scheduler/Run/実Sheets終値行のE2E成功ではない。実環境E2E・20営業日運用・main統合・固定ID Google Docs同期は引き続きNOT_RUN。
 
 ## MR-CLOSE-SYNC-20261114-01（2026-11-14 JST）
 
