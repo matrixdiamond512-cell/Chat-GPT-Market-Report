@@ -89,3 +89,14 @@ MR-CLOSE-SYNC-20261114-01 / Draft PR #201 / code commit 0e35a3df80af3064001b3d9c
 ### 日本語A1・数値の実検証（2026-11-14 02:42 JST）
 
 MR-CLOSE-SYNC-20261114-01 / PR #201。run [43475352764](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43475352764)、code30ddc2b59の日本語一時タブでliteral A1のbatch書込・数値123.456/文字列のURL読戻し・一時タブ削除後の一覧確認がSUCCESS。artifactを独立取得して対象シートID・同じ認証fingerprint・cleanup SUCCESS・既存reportCellsModified=0を照合。後続fb977a5aeで期限切れFETCH=NOT_RUNと取得成功/証拠不足FETCH=SUCCESSを分離し、失敗時にSheetsへ接続しない方針は維持。69関連ローカルテストPASS。実終値行・定時性回復・20営業日は引き続き未達、main未統合、Google固定文書同期NOT_RUN。新規取得元・列・トリガー・publisherなし。
+
+## MR-CLOSE-RECOVERY-20261115-01（2026-11-15 JST）
+
+既存の日付行では日付を再書込みせず、検証済み候補と異なる非空値があれば行の値を書き込む前に停止する。空欄だけを補完し、既存数式・同値・登録日時・取得不能表示を保持する。保存後は対象行全体を再読込し、書込対象の値と型、対象外セルおよび数式の不変を確認する。これは未マージの実装候補であり、Cloud Run起動・実市場データ・隔離Sheetsの実終値行受入はNOT_RUN。既存終値原本、定時設定、公開ゲート、正式Google Docsは変更しない。
+
+## MR-CLOSE-READBACK-20261115-02 (2026-11-15 JST, PR #204)
+
+- CLARIFY/CORRECT MR-CLOSE-RECOVERY-20261115-01: candidate comparison applies only to columns actually written (`updates`). Every preserved existing cell is compared with its pre-write UNFORMATTED_VALUE and FORMULA snapshot, including exact value/type and formula result.
+- Regression: existing registration timestamp, unavailable candidate with existing numeric zero, preserved value/type/formula corruption. Focused Python suite: 35 PASS; publication policy JS PASS; py_compile and diff check PASS. Evidence E1/E2 fixture only, run MR-CLOSE-READBACK-20261115-02, Python 3.13 Windows.
+- Cloud Shell access succeeded and listed market-report-test-only. Console sign-in failure is not evidence that Cloud Run/GCS are unavailable. Service/revision/config readback, isolated real-data Sheets E2E, independent scheduled invocation remain pending; no production changes or merge authorized by this result.
+- Required order: readback fix + exact-final-HEAD CI, isolated Sheets real-data readback, independent scheduled invocation. Draft/unmerged retained. Fixed-ID Google Docs synchronization NOT_RUN.

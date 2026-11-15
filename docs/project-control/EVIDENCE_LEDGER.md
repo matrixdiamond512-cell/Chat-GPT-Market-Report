@@ -98,3 +98,24 @@ MR-CLOSE-SYNC-20261114-01 / Draft PR #201 / code commit 0e35a3df80af3064001b3d9c
 ### 日本語A1・数値の実検証（2026-11-14 02:42 JST）
 
 MR-CLOSE-SYNC-20261114-01 / PR #201。run [43475352764](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43475352764)、code30ddc2b59の日本語一時タブでliteral A1のbatch書込・数値123.456/文字列のURL読戻し・一時タブ削除後の一覧確認がSUCCESS。artifactを独立取得して対象シートID・同じ認証fingerprint・cleanup SUCCESS・既存reportCellsModified=0を照合。後続fb977a5aeで期限切れFETCH=NOT_RUNと取得成功/証拠不足FETCH=SUCCESSを分離し、失敗時にSheetsへ接続しない方針は維持。69関連ローカルテストPASS。実終値行・定時性回復・20営業日は引き続き未達、main未統合、Google固定文書同期NOT_RUN。新規取得元・列・トリガー・publisherなし。
+
+## MR-CLOSE-RECOVERY-20261115-01（2026-11-15 JST）
+
+### 最終HEADのCI起動元追補（2026-11-15）
+
+Draft PR #204の最終確認head `7f973ef380880195de720738714d28a7114dbcf7`、base `codex/close-sync-recovery-20261114`、変更8ファイル。PR起動の取得締切回帰 [run 43622356001](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43622356001) と配信ヘルス回帰 [run 43622355992](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43622355992)、push起動の取得締切回帰 [run 43622349968](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43622349968) はすべてSUCCESS。初回追補のCI IDは更新前headに属するため、最終headの検証結果としては扱わない。Cloud Scheduler/Run/Sheets実E2Eと20営業日運用はNOT_RUN。
+
+- 作業ブランチ `codex/close-sync-e2e-20261115` はPR #201 head `d33c3dc796b5330b7ee01eb28f33507fe107b024` を基礎とする。最新取得mainは `bf338b46f`。PR #201/202/203のhead refsも確認し、#203は契約・CIに限定される一方、実起動/Sheets保存未実装、差分に無関係な市場データ変更も存在するため取り込まない。
+- 対象変更は既存行の上書き拒否/空欄限定補完、数式保持、数値型厳密照合、書込対象外セルの全行読戻し整合確認と回帰テスト。変更ファイルとPR/CIはpush後に追記する。
+- ローカル検証：`python -m unittest tests.test_sync_market_close_sheet tests.test_close_sync_recovery -q` は32件PASS。`node tests/test_report_publication_policy.js` PASS。`git diff --check` PASS。
+- 全Python discovery 236件：FAIL/ERROR。環境に `tzdata` と `jpholiday` がなく9件がimport/test error、別の既存 `test_real_numeric_prices_still_parse` 1件が失敗。これを今回の変更と無関係と断定せず、GitHub CIで再検証する。
+- Cloud Run/Scheduler/Sheets実E2EはNOT_RUN。EdgeはGoogle Cloud Console未サインインで、TEST_ONLY spreadsheet/service configurationの確認不能。既存所有者提供の11/11–13 HTTP 200はTEST_ONLY到達証拠に限定し、Sheets終値行保存を示さない。
+- 本番設定、日付行/レポート原本、公開ゲート、Google Docs固定3文書は未変更。Google Docs同期、実運用20営業日、main統合、Scheduler切替はNOT_RUN。
+- 追補（2026-11-15）：Draft PR [#204](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/204) を作成し、head `9989ec5e6a5964d3e5cdecbb6324359cd6ce8e8`、base `codex/close-sync-recovery-20261114`、変更8ファイルを確認。PRの取得締切回帰CI [run 43621650984](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43621650984) と配信ヘルス回帰CI [run 43621650816](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43621650816) は両方SUCCESS。Cloud実環境のScheduler/Run/Sheets終値行書込・読戻しは未検証のためNOT_RUNを維持。Draft PRとCIは実E2E受入を代替しない。
+
+## MR-CLOSE-READBACK-20261115-02 (2026-11-15 JST, PR #204)
+
+- CLARIFY/CORRECT MR-CLOSE-RECOVERY-20261115-01: candidate comparison applies only to columns actually written (`updates`). Every preserved existing cell is compared with its pre-write UNFORMATTED_VALUE and FORMULA snapshot, including exact value/type and formula result.
+- Regression: existing registration timestamp, unavailable candidate with existing numeric zero, preserved value/type/formula corruption. Focused Python suite: 35 PASS; publication policy JS PASS; py_compile and diff check PASS. Evidence E1/E2 fixture only, run MR-CLOSE-READBACK-20261115-02, Python 3.13 Windows.
+- Cloud Shell access succeeded and listed market-report-test-only. Console sign-in failure is not evidence that Cloud Run/GCS are unavailable. Service/revision/config readback, isolated real-data Sheets E2E, independent scheduled invocation remain pending; no production changes or merge authorized by this result.
+- Required order: readback fix + exact-final-HEAD CI, isolated Sheets real-data readback, independent scheduled invocation. Draft/unmerged retained. Fixed-ID Google Docs synchronization NOT_RUN.

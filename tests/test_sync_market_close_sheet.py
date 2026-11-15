@@ -37,11 +37,14 @@ def col_label(index: int) -> str:
 
 
 class FakeSheetsClient:
-    def __init__(self, target: dt.date, prior: dt.date | None = None, *, write_failure: bool = False, corrupt_readback: bool = False):
+    def __init__(self, target: dt.date, prior: dt.date | None = None, *, write_failure: bool = False, corrupt_readback: bool = False, corrupt_untargeted_readback: bool = False, numeric_as_text: bool = False):
         self.base_url = "https://fake/sheets"
         self.spreadsheet_id = "fake"
         self.write_failure = write_failure
         self.corrupt_readback = corrupt_readback
+        self.corrupt_untargeted_readback = corrupt_untargeted_readback
+        self.numeric_as_text = numeric_as_text
+        self.values_written = False
         self.headers = [""] * 186
         for index, header in enumerate(BASE_HEADERS):
             self.headers[index] = header
@@ -116,8 +119,11 @@ class FakeSheetsClient:
             encoded = parsed.path.split("/values/", 1)[1]
             sheet, address = self._parse_range(encoded.split("?", 1)[0])
             values = self._matrix(sheet, address)
-            if self.corrupt_readback and sheet == "終値一覧" and address.startswith("A2:GF2") and len(values) and len(values[0]) > 25:
+            if self.values_written and self.corrupt_readback and sheet == "終値一覧" and address.startswith("A2:GD2") and len(values) and len(values[0]) > 25:
                 values[0][25] = -999
+            if self.values_written and self.corrupt_untargeted_readback and sheet == "終値一覧" and address.startswith("A2:GD2") and len(values):
+                values[0].extend([""] * max(0, 185 - len(values[0])))
+                values[0][184] = 777
             return {"values": values}
         if method == "POST" and parsed.path.endswith("/values:batchUpdate"):
             if self.write_failure:
@@ -126,6 +132,7 @@ class FakeSheetsClient:
             for entry in body.get("data", []):
                 sheet, address = self._parse_range(entry["range"])
                 self._write(sheet, address, entry.get("values") or [])
+            self.values_written = True
             return {}
         if method == "POST" and parsed.path.endswith(":batchUpdate"):
             requests = (kwargs.get("json") or {}).get("requests") or []
@@ -157,6 +164,8 @@ class FakeSheetsClient:
                 target.extend([""] * (c2 + 1 - len(target)))
             for cidx, value in enumerate(row):
                 cell_index = c1 + cidx
+                if self.numeric_as_text and isinstance(value, (int, float)) and not isinstance(value, bool):
+                    value = str(value)
                 target[cell_index] = -999 if (self.corrupt_readback and sheet == "終値一覧" and cell_index == 25) else value
 
 
@@ -260,6 +269,111 @@ class CloseSyncTests(unittest.TestCase):
         self.run_sync(client, payload)
         self.run_sync(client, payload)
         self.assertEqual(sum(close_sync.parse_sheet_date(row[0]) == self.target for row in client.data[1:]), 1)
+
+    def test_existing_conflicting_market_value_fails_before_row_write(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        payload = snapshot(self.target, self.next_day)
+        populate_import_tabs(client, payload)
+        col = close_sync.PRICE_FIELDS["dow"][0]
+        client.data[1][BASE_HEADERS.index(col)] = 123.0
+        before = client.data[1][:]
+        result = close_sync.close_row_sync(client, payload, self.next_day, sleep=lambda _: None)
+        self.assertEqual(result["status"], "FAILED")
+        self.assertEqual(result["failedStage"], "VALIDATE")
+        self.assertEqual(client.data[1], before)
+        self.assertIn(col, result["errors"][0])
+
+    def test_equal_existing_market_value_is_preserved_and_not_rewritten(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        payload = snapshot(self.target, self.next_day)
+        populate_import_tabs(client, payload)
+        col = close_sync.PRICE_FIELDS["dow"][0]
+        expected = payload["markets"]["dow"]["value"]
+        client.data[1][BASE_HEADERS.index(col)] = expected
+        result = close_sync.close_row_sync(client, payload, self.next_day, sleep=lambda _: None)
+        # This fixture intentionally omits unrelated required market values;
+        # preservation is the assertion under test, while the overall row is
+        # correctly reported as partial.
+        self.assertEqual(result["status"], "PARTIAL")
+        self.assertNotIn(col, result["updatedFields"])
+        self.assertIn(col, result["preservedExistingFields"])
+        self.assertEqual(client.data[1][BASE_HEADERS.index(col)], expected)
+
+    def test_required_existing_value_outside_price_column_set_is_not_replaced(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        payload = snapshot(self.target, self.next_day)
+        populate_import_tabs(client, payload)
+        header = "米10年債利回り"
+        existing = 4.125
+        client.data[1][BASE_HEADERS.index(header)] = existing
+        result = close_sync.close_row_sync(client, payload, self.next_day, sleep=lambda _: None)
+        self.assertEqual(client.data[1][BASE_HEADERS.index(header)], existing)
+        self.assertNotIn(header, result["updatedFields"])
+        self.assertNotIn(header, result["missingRequiredFields"])
+
+    def test_existing_registration_is_verified_against_snapshot(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        index = BASE_HEADERS.index("登録日時")
+        original = "2026/10/01 06:00 JST (08:00 scheduled)"
+        client.data[1][index] = original
+        result = self.run_sync(client, snapshot(self.target, self.next_day))
+        self.assertEqual(result["stages"]["READBACK_VERIFY"], "SUCCESS")
+        self.assertEqual(client.data[1][index], original)
+        self.assertNotIn("登録日時", result["updatedFields"])
+
+    def test_unavailable_candidate_preserves_existing_numeric_value(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        header = close_sync.PRICE_FIELDS["dow"][0]
+        index = BASE_HEADERS.index(header)
+        client.data[1][index] = 0.0
+        result = self.run_sync(client, snapshot(self.target, self.next_day, missing="dow"))
+        self.assertEqual(result["stages"]["READBACK_VERIFY"], "SUCCESS")
+        self.assertEqual(client.data[1][index], 0.0)
+        self.assertIs(type(client.data[1][index]), float)
+        self.assertNotIn(header, result["updatedFields"])
+        self.assertIn(header, result["preservedExistingFields"])
+
+    def test_preserved_cell_value_type_and_formula_changes_fail(self):
+        for before, after in (("old registration", "changed"), (456.25, "456.25"),
+                              ("=1+2", "=1+3")):
+            with self.subTest(before=before, after=after):
+                client = FakeSheetsClient(self.target, self.prior)
+                index = BASE_HEADERS.index("登録日時")
+                client.data[1][index] = before
+                write = close_sync.batch_write_values
+                def mutate(*args, **kwargs):
+                    write(*args, **kwargs)
+                    client.data[1][index] = after
+                with patch.object(close_sync, "batch_write_values", side_effect=mutate):
+                    result = self.run_sync(client, snapshot(self.target, self.next_day))
+                self.assertEqual(result["failedStage"], "READBACK_VERIFY")
+                self.assertEqual(result["status"], "FAILED")
+
+    def test_existing_formula_is_preserved(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        payload = snapshot(self.target, self.next_day)
+        populate_import_tabs(client, payload)
+        header = close_sync.PRICE_FIELDS["dow"][2]
+        formula = "=IFERROR(B2/C2,0)"
+        client.data[1][BASE_HEADERS.index(header)] = formula
+        result = close_sync.close_row_sync(client, payload, self.next_day, sleep=lambda _: None)
+        self.assertEqual(client.data[1][BASE_HEADERS.index(header)], formula)
+        self.assertNotIn(header, result["updatedFields"])
+        self.assertIn(header, result["preservedExistingFields"])
+
+    def test_numeric_string_readback_fails_type_check(self):
+        client = FakeSheetsClient(self.target, self.prior, numeric_as_text=True)
+        result = self.run_sync(client, snapshot(self.target, self.next_day))
+        self.assertEqual(result["status"], "FAILED")
+        self.assertEqual(result["failedStage"], "READBACK_VERIFY")
+        self.assertIn("Dow終値", result["errors"][0])
+
+    def test_non_target_cell_change_is_detected_on_row_readback(self):
+        client = FakeSheetsClient(self.target, self.prior, corrupt_untargeted_readback=True)
+        result = self.run_sync(client, snapshot(self.target, self.next_day))
+        self.assertEqual(result["status"], "FAILED")
+        self.assertEqual(result["failedStage"], "READBACK_VERIFY")
+        self.assertIn("changed outside write set", result["errors"][0])
 
 
 if __name__ == "__main__":

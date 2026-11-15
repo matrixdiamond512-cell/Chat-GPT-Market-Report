@@ -68,7 +68,20 @@ Google Drive正式文書は要件定義書、システム仕様書、本文作�
 - 受入根拠：PR #193～#196 main統合、UI/アーカイブCI成功、Pages deploy run 41836815631成功、公開画面の68slot/18日分読み戻し。
 - 未解決原本：2026-10-22 12:00本文欠落、2026-11-02 12:00 source status矛盾。状態値を書き換えない。市場価格を全件外部照合した結果とは主張しない。
 
+## MR-CLOSE-RECOVERY-20261115-01（2026-11-15 JST）
+
+- 影響文書マトリクス：要件定義書 `docs/system/requirements.md`（既存値保全・停止条件）、システム仕様書 `docs/system/specification.md`（読書込・型・非対象セル照合）、運用マニュアル `docs/system/operations.md`（失敗時の調査手順）、本台帳、証拠台帳。本文作成マニュアルは市場データ取扱い要件を変更しないためNO_CHANGE。
+- 実装対象：PR #201を基礎とする `scripts/sync_market_close_sheet.py` とclose-sync回帰テスト。GitHub mainとの差分は調査済み。PR #201/202/203は未マージの前提で重複・依存範囲を分離する。
+- ローカル検証：close-sync関連32テストPASS、公開ポリシーJavaScriptテストPASS、`git diff --check` PASS。Python全236件は tzdata/jpholiday 不在と既存BTCテスト1件により全体PASSではない。
+- 未実証：新しいDraft PR/CI、Cloud Scheduler起動・Cloud Run取得開始、実市場データ、隔離Sheets実終値行書込み/再読込、20営業日運用、固定ID Google Docsへの同期。ブラウザーのGoogle Cloudセッションは未サインイン。結果をSUCCESS扱いしない。
+- 変更制限：既存終値原本、レポート、Scheduler/Cloud Run本番設定、公開ゲート、固定ID Google Docsは更新しない。
+- 追補：Draft PR [#204](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/204) を作成。head `9989ec5e6a5964d3e5cdecbb6324359cd6ce8e8e`、base `codex/close-sync-recovery-20261114`。対象8ファイル。PR checksの取得締切回帰 `43621650984` と配信ヘルス回帰 `43621650816` は成功。これはCI上の回帰確認であり、Cloud Scheduler/Run/実Sheets終値行のE2E成功ではない。実環境E2E・20営業日運用・main統合・固定ID Google Docs同期は引き続きNOT_RUN。
+
 ## MR-CLOSE-SYNC-20261114-01（2026-11-14 JST）
+
+### MR-CLOSE-RECOVERY CI・起動元の追補（2026-11-15）
+
+PR #204はDraft・未マージ、最終確認head `7f973ef380880195de720738714d28a7114dbcf7`、base `codex/close-sync-recovery-20261114`、変更8ファイル。PR起動CIは取得締切回帰run [43622356001](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43622356001) と配信ヘルスrun [43622355992](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43622355992)、push起動CIは取得締切回帰run [43622349968](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43622349968) で、すべてSUCCESS。直前追補に記録した初回runは初期headの結果であり、最終headの結果は上記のとおり。Cloud Scheduler/Run/Sheets実E2Eは引き続きNOT_RUN。
 
 出典: ユーザー修正版改善計画Version 1.1と添付計画、run 43355399689の認証付き実ログ。基準main 0204a20c4d188be86328034d93e319c370e02d42、task branch codex/close-sync-recovery-20261114。既存PR200とは分離、新規PRは未作成。影響: requirements/specification/operations/本台帳、EVIDENCE_LEDGER、HANDOFF、同期2script/window/朝用workflow/既存CI/回帰tests。既存日付キー/重複防止/値照合は維持。固定Google Docs要件102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA、仕様1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI、運用1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg、台帳1F5vH9_O0LUC9Dki0CNm1JDNVfg7gMYMcUCIxgeanE5gの現revision照合/同期はNOT_RUN。本文作成1M9LzxKgg8Y50uHSzE1OhML-lU-ufPhvh79xj_m1jWYQは品質・本文ルールNO_CHANGE（データ検証状態の運用整合のみ影響）。固定名/ID維持、別名の要件・仕様・マニュアルを作らない。ローカル68tests PASS、実権限probe/実終値行再読込/20営業日/本番適用はNOT_RUN。遅延原因UNKNOWN、取得定時性は未修復。詳細はevidence/close-sync-recovery.json。
 
@@ -79,3 +92,10 @@ MR-CLOSE-SYNC-20261114-01 / Draft PR #201 / code commit 0e35a3df80af3064001b3d9c
 ### 日本語A1・数値の実検証（2026-11-14 02:42 JST）
 
 MR-CLOSE-SYNC-20261114-01 / PR #201。run [43475352764](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43475352764)、code30ddc2b59の日本語一時タブでliteral A1のbatch書込・数値123.456/文字列のURL読戻し・一時タブ削除後の一覧確認がSUCCESS。artifactを独立取得して対象シートID・同じ認証fingerprint・cleanup SUCCESS・既存reportCellsModified=0を照合。後続fb977a5aeで期限切れFETCH=NOT_RUNと取得成功/証拠不足FETCH=SUCCESSを分離し、失敗時にSheetsへ接続しない方針は維持。69関連ローカルテストPASS。実終値行・定時性回復・20営業日は引き続き未達、main未統合、Google固定文書同期NOT_RUN。新規取得元・列・トリガー・publisherなし。
+
+## MR-CLOSE-READBACK-20261115-02 (2026-11-15 JST, PR #204)
+
+- CLARIFY/CORRECT MR-CLOSE-RECOVERY-20261115-01: candidate comparison applies only to columns actually written (`updates`). Every preserved existing cell is compared with its pre-write UNFORMATTED_VALUE and FORMULA snapshot, including exact value/type and formula result.
+- Regression: existing registration timestamp, unavailable candidate with existing numeric zero, preserved value/type/formula corruption. Focused Python suite: 35 PASS; publication policy JS PASS; py_compile and diff check PASS. Evidence E1/E2 fixture only, run MR-CLOSE-READBACK-20261115-02, Python 3.13 Windows.
+- Cloud Shell access succeeded and listed market-report-test-only. Console sign-in failure is not evidence that Cloud Run/GCS are unavailable. Service/revision/config readback, isolated real-data Sheets E2E, independent scheduled invocation remain pending; no production changes or merge authorized by this result.
+- Required order: readback fix + exact-final-HEAD CI, isolated Sheets real-data readback, independent scheduled invocation. Draft/unmerged retained. Fixed-ID Google Docs synchronization NOT_RUN.
