@@ -87,3 +87,10 @@ MR-CLOSE-SYNC-20261114-01 / PR #201。run [43475352764](https://github.com/matri
 ## MR-CLOSE-RECOVERY-20261115-01（2026-11-15 JST）
 
 `sync_market_close_sheet.py` の候補動作：日付列全走査と重複拒否を維持し、既存対象行の空欄のみ書く。既存の非空値が取得候補と異なる場合は一切の行書込み前に `VALIDATE` 失敗とする。既存数式・同値は保持し、`取得不能` は既存値へ上書きしない。再読込では数値文字列を数値として受け入れず、書込対象外セルの値・型・数式も比較する。これらはローカルfixture検証であり、実API・実行権限・実終値値の精度検証とは別である。
+
+## MR-CLOSE-READBACK-20261115-02 (2026-11-15 JST, PR #204)
+
+- CLARIFY/CORRECT MR-CLOSE-RECOVERY-20261115-01: candidate comparison applies only to columns actually written (`updates`). Every preserved existing cell is compared with its pre-write UNFORMATTED_VALUE and FORMULA snapshot, including exact value/type and formula result.
+- Regression: existing registration timestamp, unavailable candidate with existing numeric zero, preserved value/type/formula corruption. Focused Python suite: 35 PASS; publication policy JS PASS; py_compile and diff check PASS. Evidence E1/E2 fixture only, run MR-CLOSE-READBACK-20261115-02, Python 3.13 Windows.
+- Cloud Shell access succeeded and listed market-report-test-only. Console sign-in failure is not evidence that Cloud Run/GCS are unavailable. Service/revision/config readback, isolated real-data Sheets E2E, independent scheduled invocation remain pending; no production changes or merge authorized by this result.
+- Required order: readback fix + exact-final-HEAD CI, isolated Sheets real-data readback, independent scheduled invocation. Draft/unmerged retained. Fixed-ID Google Docs synchronization NOT_RUN.

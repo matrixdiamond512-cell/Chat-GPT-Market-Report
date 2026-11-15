@@ -311,6 +311,44 @@ class CloseSyncTests(unittest.TestCase):
         self.assertNotIn(header, result["updatedFields"])
         self.assertNotIn(header, result["missingRequiredFields"])
 
+    def test_existing_registration_is_verified_against_snapshot(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        index = BASE_HEADERS.index("登録日時")
+        original = "2026/10/01 06:00 JST (08:00 scheduled)"
+        client.data[1][index] = original
+        result = self.run_sync(client, snapshot(self.target, self.next_day))
+        self.assertEqual(result["stages"]["READBACK_VERIFY"], "SUCCESS")
+        self.assertEqual(client.data[1][index], original)
+        self.assertNotIn("登録日時", result["updatedFields"])
+
+    def test_unavailable_candidate_preserves_existing_numeric_value(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        header = close_sync.PRICE_FIELDS["dow"][0]
+        index = BASE_HEADERS.index(header)
+        client.data[1][index] = 0.0
+        result = self.run_sync(client, snapshot(self.target, self.next_day, missing="dow"))
+        self.assertEqual(result["stages"]["READBACK_VERIFY"], "SUCCESS")
+        self.assertEqual(client.data[1][index], 0.0)
+        self.assertIs(type(client.data[1][index]), float)
+        self.assertNotIn(header, result["updatedFields"])
+        self.assertIn(header, result["preservedExistingFields"])
+
+    def test_preserved_cell_value_type_and_formula_changes_fail(self):
+        for before, after in (("old registration", "changed"), (456.25, "456.25"),
+                              ("=1+2", "=1+3")):
+            with self.subTest(before=before, after=after):
+                client = FakeSheetsClient(self.target, self.prior)
+                index = BASE_HEADERS.index("登録日時")
+                client.data[1][index] = before
+                write = close_sync.batch_write_values
+                def mutate(*args, **kwargs):
+                    write(*args, **kwargs)
+                    client.data[1][index] = after
+                with patch.object(close_sync, "batch_write_values", side_effect=mutate):
+                    result = self.run_sync(client, snapshot(self.target, self.next_day))
+                self.assertEqual(result["failedStage"], "READBACK_VERIFY")
+                self.assertEqual(result["status"], "FAILED")
+
     def test_existing_formula_is_preserved(self):
         client = FakeSheetsClient(self.target, self.prior)
         payload = snapshot(self.target, self.next_day)

@@ -112,3 +112,10 @@ Draft PR #204の最終確認head `7f973ef380880195de720738714d28a7114dbcf7`、ba
 - Cloud Run/Scheduler/Sheets実E2EはNOT_RUN。EdgeはGoogle Cloud Console未サインインで、TEST_ONLY spreadsheet/service configurationの確認不能。既存所有者提供の11/11–13 HTTP 200はTEST_ONLY到達証拠に限定し、Sheets終値行保存を示さない。
 - 本番設定、日付行/レポート原本、公開ゲート、Google Docs固定3文書は未変更。Google Docs同期、実運用20営業日、main統合、Scheduler切替はNOT_RUN。
 - 追補（2026-11-15）：Draft PR [#204](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/204) を作成し、head `9989ec5e6a5964d3e5cdecbb6324359cd6ce8e8`、base `codex/close-sync-recovery-20261114`、変更8ファイルを確認。PRの取得締切回帰CI [run 43621650984](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43621650984) と配信ヘルス回帰CI [run 43621650816](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43621650816) は両方SUCCESS。Cloud実環境のScheduler/Run/Sheets終値行書込・読戻しは未検証のためNOT_RUNを維持。Draft PRとCIは実E2E受入を代替しない。
+
+## MR-CLOSE-READBACK-20261115-02 (2026-11-15 JST, PR #204)
+
+- CLARIFY/CORRECT MR-CLOSE-RECOVERY-20261115-01: candidate comparison applies only to columns actually written (`updates`). Every preserved existing cell is compared with its pre-write UNFORMATTED_VALUE and FORMULA snapshot, including exact value/type and formula result.
+- Regression: existing registration timestamp, unavailable candidate with existing numeric zero, preserved value/type/formula corruption. Focused Python suite: 35 PASS; publication policy JS PASS; py_compile and diff check PASS. Evidence E1/E2 fixture only, run MR-CLOSE-READBACK-20261115-02, Python 3.13 Windows.
+- Cloud Shell access succeeded and listed market-report-test-only. Console sign-in failure is not evidence that Cloud Run/GCS are unavailable. Service/revision/config readback, isolated real-data Sheets E2E, independent scheduled invocation remain pending; no production changes or merge authorized by this result.
+- Required order: readback fix + exact-final-HEAD CI, isolated Sheets real-data readback, independent scheduled invocation. Draft/unmerged retained. Fixed-ID Google Docs synchronization NOT_RUN.

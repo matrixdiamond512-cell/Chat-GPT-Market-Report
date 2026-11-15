@@ -574,7 +574,7 @@ def close_row_sync(
             raise CloseSyncError("READBACK_VERIFY", f"Date readback mismatch: expected {target}, got {actual_date}.")
         mismatches = []
         for name, expected in writes.items():
-            if name not in header_indices or header_indices[name] in formula_columns:
+            if name not in header_indices or header_indices[name] not in updates:
                 continue
             index = header_indices[name]
             actual = actual_row[index] if index < len(actual_row) else ""
@@ -592,8 +592,6 @@ def close_row_sync(
                 after_formula = actual_formulas[index] if index < len(actual_formulas) else ""
                 if not snapshot_cell_matches(before_formula, after_formula):
                     mismatches.append(f"column {letter_for_column(index)}: formula/value changed outside write set")
-                    continue
-                if isinstance(before_formula, str) and before_formula.startswith("="):
                     continue
                 before_value = before_values[index] if index < len(before_values) else ""
                 after_value = actual_row[index] if index < len(actual_row) else ""
