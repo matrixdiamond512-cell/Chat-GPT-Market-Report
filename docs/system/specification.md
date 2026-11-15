@@ -71,3 +71,15 @@ Google Docs固定ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` へ対応す�
 - 08:00 QAは正式対象の28項目・順序・5列・基準日・必須行を検証する。HISTORICAL_ARCHIVEを正式QA合格に算入しない。QA未達ではrole=alertを表示し、対象市場表だけをDOMから除去する。本文と保存元statusを保持する。RECONSTRUCTED_UNVERIFIEDのquarantineは維持。
 - エラー/デバッグ出力は対象path/date/time/HTTP status/検証結果を含め、秘密情報を除く。JS更新時はHTMLのquery versionも更新し、Pages deploy後に公開DOMと実ファイルを読み戻す。
 - 実績：PR #193 98f3bcc、#194 025da7c、#195 8630b2c、#196 f870b22を統合。UI・アーカイブ関連CIとPages run 41836815631がSUCCESS。公開ブラウザで18日68slotを確認。
+
+## MR-CLOSE-SYNC-20261114-01（2026-11-14 JST）
+
+SheetsClient.a1_rangeはエスケープ済みのliteral A1を返し、_rangeはURLパス専用の1回エンコードを返す。values:batchUpdateのJSONとbatchGetのquery構築前にはliteralを使用する。朝用windowは任意--status-outputへ当該runの要約を保存。syncは--upstream-outcomeが非successならsnapshot読込/認証/Sheets呼出なしで診断だけを出力する。締切超過はACQUISITION_EXPIRED、その他FETCH_FAILED/WRITE_FAILED/READBACK_FAILED等を区別し、LOG失敗でも先行failedStageを保持。GITHUB_SAVEは同期スクリプト自身で独立証明しないためUNKNOWN。手動permission_probe=true時だけ既存workflowの隔離jobを実行し、同Secretsの認証で新規一時タブへランダム文字列を保存・再読込・削除・タブ一覧再確認する。通常取得jobは実行せず、既存終値セルは変更しない。これは終値行の日付・価格の受入試験ではない。
+
+### 実権限検証の追補（2026-11-14 02:38 JST）
+
+MR-CLOSE-SYNC-20261114-01 / Draft PR #201 / code commit 0e35a3df80af3064001b3d9cd3d334ebccd98bd2。Actions run [43474764135](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43474764135)のpermission-probe job SUCCESS、通常acquire job SKIPPED。結果artifactを別リクエストで取得・読戻し、対象spreadsheetIdが指定の終値一覧2026と一致、CLOSE_DATA_WRITE/READBACK_VERIFY/cleanupすべてSUCCESS、reportCellsModified=0を確認。既存Secretsのサービスアカウントを使用し、主体のfingerprintを証拠JSONに記録。これは本番ファイル内の隔離タブにおける権限・保存経路の実証に限定し、日付キー/終値・前日比の実行受入ではない。今回の条件では400/403は再現しなかったが全経路の解消とは断定しない。68ローカル試験と同code headのhosted checks SUCCESS。実終値行読戻し/定時性回復/20対象営業日/main統合/Google固定文書同期は未達・NOT_RUN、遅延の発生原因はUNKNOWNのまま。先行のNOT_RUN記録は当時の履歴として保持する。
+
+### 日本語A1・数値の実検証（2026-11-14 02:42 JST）
+
+MR-CLOSE-SYNC-20261114-01 / PR #201。run [43475352764](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43475352764)、code30ddc2b59の日本語一時タブでliteral A1のbatch書込・数値123.456/文字列のURL読戻し・一時タブ削除後の一覧確認がSUCCESS。artifactを独立取得して対象シートID・同じ認証fingerprint・cleanup SUCCESS・既存reportCellsModified=0を照合。後続fb977a5aeで期限切れFETCH=NOT_RUNと取得成功/証拠不足FETCH=SUCCESSを分離し、失敗時にSheetsへ接続しない方針は維持。69関連ローカルテストPASS。実終値行・定時性回復・20営業日は引き続き未達、main未統合、Google固定文書同期NOT_RUN。新規取得元・列・トリガー・publisherなし。

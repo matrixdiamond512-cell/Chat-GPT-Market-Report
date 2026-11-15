@@ -4,6 +4,11 @@ on:
     branches: [fix/production-report-slot-health-20261013]
   pull_request:
     paths:
+      - scripts/sync_market_close_sheet.py
+      - scripts/write_market_data_to_sheets.py
+      - tests/test_sync_market_close_sheet.py
+      - tests/test_close_sync_recovery.py
+      - .github/workflows/market-data-08-anchor.yml
       - scripts/run_market_data_window.py
       - scripts/persist_report_slot_evidence.py
       - scripts/verify_scheduled_report_delivery.py
@@ -28,4 +33,4 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: python -m unittest tests.test_scheduled_report_delivery tests.test_report_slot_evidence tests.test_market_data_window_evidence -v
+      - run: python -m unittest tests.test_scheduled_report_delivery tests.test_report_slot_evidence tests.test_market_data_window_evidence tests.test_sync_market_close_sheet tests.test_close_sync_recovery scripts.test_write_market_data_to_sheets tests.test_close_sheet_missing_audit -v
