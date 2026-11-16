@@ -33,16 +33,22 @@ function harness(search = '') {
     history: { replaceState(_state, _unused, url) { window.location.href = String(url); } },
     MarketReportPublicationPolicy: { isEligible: () => true }
   };
-  const context = vm.createContext({ window, document, URLSearchParams, URL, Date, console });
+  const fetch = async () => ({
+    ok: true, json: async () => ({ status: 'SOURCE_NOT_FOUND_IN_REPOSITORY', missingSlots: gaps })
+  });
+  const context = vm.createContext({ window, document, URLSearchParams, URL, Date, console, fetch });
   vm.runInContext(main + '\nwindow.hooks={selectReport,setDashboardMissingState,init,selected:()=>selectedReport,missing:()=>requestedMissingSlot};', context);
   const known = [
     { date: '2026-11-16', time: '16:00' },
     { date: '2026-10-20', time: '12:00' },
     { date: '2026-10-22', time: '08:00' },
+    // An old recovery notice exists, but the original 12:00 body does not.
+    { date: '2026-10-22', time: '12:00', originalReportStatus: 'ORIGINAL_NOT_FOUND', archiveType: 'RECONSTRUCTED_SOURCE' },
     { date: '2026-11-04', time: '12:00' },
     { date: '2026-11-06', time: '16:00' }
   ];
   vm.runInContext('reports=' + JSON.stringify(known), context);
+  vm.runInContext('knownMissingReportSlots=new Set(' + JSON.stringify(gaps) + ')', context);
   return { window, document, shell, nodes, hooks: window.hooks, known, context };
 }
 
