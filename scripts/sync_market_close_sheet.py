@@ -36,7 +36,7 @@ from write_market_data_to_sheets import (  # noqa: E402
 ROOT = SCRIPT_DIR.parent
 JST = dt.timezone(dt.timedelta(hours=9))
 DEFAULT_SPREADSHEET_ID = "1n2ACInX4pmK0TdijC8xaur2RIiNZyVa6GFTZAyofcuE"
-TEST_ONLY_SPREADSHEET_ID = "1KBDBa-m35ZgleJpD-uPrxOHafIECjfKw4k1nL2HzDLs"
+TEST_ONLY_SPREADSHEET_ID = "1C0U7JXZT7DMDvDSL8Ah9uVfLhncnCOffIgKl3n8Hk-w"
 VALUE_RETRY_DELAYS = (5, 15)
 IMPORT_RETRY_DELAYS = (5, 15)
 MAX_STALE_DAYS = 10
