@@ -32,6 +32,17 @@ def classify_sync_result(return_code: int, summary: dict[str, Any]) -> dict[str,
     }
 
 
+def finalize_market_snapshot(snapshot_path: Path, now: dt.datetime, *, late_manual: bool) -> dict[str, Any]:
+    """Stamp the completed snapshot with its actual generation time and mode."""
+    snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
+    snapshot["generatedAt"] = now.astimezone(JST).replace(microsecond=0).isoformat()
+    if late_manual:
+        snapshot["cutoffStatus"] = "MISSED_MANUAL_TEST_ONLY"
+        snapshot["acquisitionMode"] = "TEST_ONLY-MANUAL-LATE"
+    snapshot_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return snapshot
+
+
 def _required_env(name: str) -> str:
     value = os.environ.get(name, "").strip()
     if not value:
@@ -82,6 +93,7 @@ def merge_verified_28_rows_into_close_snapshot() -> dict[str, Any]:
             "changePercent": item.get("changePercent"),
             "asOf": expected_date,
             "sessionDate": expected_date,
+            "expectedSessionDate": expected_date,
             "fetchedAt": item.get("fetchedAt"),
             "sourceId": item.get("sourceId"),
             "sourceName": item.get("sourceName"),
@@ -177,6 +189,19 @@ def run() -> dict[str, Any]:
     _run("repair_morning_daily_references.py")
     _run("apply_japan_close_reference.py")
     merge_verified_28_rows_into_close_snapshot()
+    close_snapshot = finalize_market_snapshot(market_latest, dt.datetime.now(JST), late_manual=late_manual)
+    report_payload_after_repair = json.loads((ROOT / "data" / "latest-report.json").read_text(encoding="utf-8"))
+    report_after_repair = report_payload_after_repair.get("latestReport") or report_payload_after_repair.get("report") or report_payload_after_repair
+    report_table = report_after_repair.get("marketDataTable") or {}
+    report_table_date = report_table.get("dataDate") or report_after_repair.get("dataProvenance", {}).get("closeSheet", {}).get("dataDate")
+    # A report is dated by its issue date; the close row is dated by the
+    # verified market-session anchor. Do not compare those two dates.
+    try:
+        import sync_market_close_sheet as close_sync_module
+        close_target_date = close_sync_module.resolve_target_date(close_snapshot, dt.datetime.now(JST))
+        close_target_date_text = close_target_date.isoformat()
+    except Exception:
+        close_target_date_text = None
     close_sync_path = WORK / "close-sync-status.json"
     late_manual = os.environ.get("MARKET_CLOSE_TEST_ONLY_LATE_RUN") == "1"
     idempotency_key = f"{report_date}:08:00" + (":TEST_ONLY-MANUAL-LATE" if late_manual else "")
@@ -198,10 +223,6 @@ def run() -> dict[str, Any]:
     evidence_rows = repaired_report.get("dataProvenance", {}).get("dailyCloseRepair", {}).get("items", {})
     if len(evidence_rows) != 28:
         raise RuntimeError("close acquisition did not produce a full 28-row audit map")
-    report_table = repaired_report.get("marketDataTable") or {}
-    report_table_date = report_table.get("dataDate") or repaired_report.get("dataProvenance", {}).get("closeSheet", {}).get("dataDate")
-    if report_table_date and str(report_table_date) != report_date:
-        raise RuntimeError(f"TEST_ONLY fixture date mismatch: market table date {report_table_date} != {report_date}")
 
     completed_market_input = {
         "reportDate": report_date,
@@ -232,6 +253,12 @@ def run() -> dict[str, Any]:
         "unavailableCount": len(coverage_unavailable),
         "rowCount": len(evidence_rows),
         "dataDateByLabel": {label: item.get("dataDate") for label, item in evidence_rows.items()},
+        "expectedSessionDateByLabel": {
+            label: item.get("expectedSessionDate")
+            for label, item in ((repaired_report.get("dataProvenance", {}).get("morningCoverage", {}).get("items") or {}).items())
+        },
+        "sheetCloseTargetDate": close_target_date_text,
+        "reportTableDataDate": report_table_date,
         "sourceByLabel": {label: item.get("source") or item.get("sourceName") for label, item in evidence_rows.items()},
         "unavailable": repaired_report.get("dataProvenance", {}).get("dailyCloseRepair", {}).get("unavailable", {}),
         "inputJsonSha256": __import__("hashlib").sha256(input_path.read_bytes()).hexdigest(),

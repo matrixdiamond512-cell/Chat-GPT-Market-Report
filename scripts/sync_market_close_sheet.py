@@ -202,20 +202,29 @@ def close_value_for_market(market: dict[str, Any], target: dt.date) -> tuple[flo
     status = str(market.get("verificationStatus") or "")
     if status not in {"verified", "fallback"}:
         return None, "", f"status={status or 'missing'}"
-    observed = parse_datetime(market.get("asOf"))
+    raw_as_of = str(market.get("asOf") or "").strip()
+    observed = parse_datetime(raw_as_of)
     if not observed:
         return None, "", "asOf missing or invalid"
+    # Session dates are exchange-local calendar dates; converting an NY close
+    # timestamp to JST can shift it into the following day.
+    source_session_date = parse_sheet_date(market.get("sessionDate")) or parse_sheet_date(raw_as_of[:10]) or observed.date()
+    expected_session_date = target
+    if market.get("expectedSessionDate"):
+        expected_session_date = parse_sheet_date(market.get("expectedSessionDate"))
+        if expected_session_date is None:
+            return None, observed.date().isoformat(), "expectedSessionDate is invalid"
     value = number(market.get("value"))
     previous = number(market.get("previousClose"))
     if value is None:
         return None, observed.date().isoformat(), "value is not numeric"
-    if observed.date() == target:
-        return value, observed.date().isoformat(), "fallback" if status == "fallback" else ""
-    if observed.date() == target + dt.timedelta(days=1) and previous is not None:
+    if source_session_date == expected_session_date:
+        return value, source_session_date.isoformat(), "fallback" if status == "fallback" else ""
+    if source_session_date == expected_session_date + dt.timedelta(days=1) and previous is not None:
         # At 06:30 JST a continuous/overnight quote may already have rolled to
         # the next market date. In that case previousClose is the target date.
         return previous, observed.date().isoformat(), ""
-    return None, observed.date().isoformat(), f"asOf date {observed.date().isoformat()} does not match {target.isoformat()}"
+    return None, source_session_date.isoformat(), f"market session date {source_session_date.isoformat()} does not match expected {expected_session_date.isoformat()}"
 
 
 def prior_numeric_value(column_values: list[Any], dates: list[Any], target: dt.date) -> float | None:

@@ -134,3 +134,12 @@ Draft PR #204の最終確認head `7f973ef380880195de720738714d28a7114dbcf7`、ba
 - Cloud environment: NOT_RUN. Local Google Cloud CLI is absent. Existing Cloud Shell browser tab reports connection lost. No Cloud Run image/job, Sheets row, GCS object, IAM, or Scheduler was modified in this attempt. Digest, actual 28-item source counts, independent Sheets readback, and 07:50 schedule proof remain NOT_RUN.
 - Constraints retained: PR #204 and #206 Draft/unmerged; no production, main, formal Docs, or existing Scheduler changes.
 - Next action: restore a stable authorized Cloud Shell/CLI session, back up the TEST_ONLY Job config, then build/pin and run the isolated image. The latest code/test commit has successful hosted CI; current branch head `189cf6cd14e513eeed3ea187ab38399ad039618b` only updates this evidence ledger, so no workflow was triggered for it. If Cloud Shell remains unavailable, stop before infrastructure changes; do not present local CI as E2E proof.
+
+## MR-CLOSE-RUNNER-DATE-20261116-02 (2026-11-16 JST, PR #206 review follow-up)
+
+- Fixed manual TEST_ONLY snapshot finalization to stamp actual JST `generatedAt` and explicit missed-cutoff/manual-mode fields after market candidate merging. Carried each verified candidate's `expectedSessionDate` into the close snapshot.
+- Replaced the incorrect report-date equality gate with market-session semantics. `close_value_for_market` now uses the candidate's exchange-local `sessionDate`/`asOf` calendar date and its explicit `expectedSessionDate`; an NY close timestamp is no longer shifted to the next JST date for matching. Evidence records report-table date separately from the close-row target and per-label expected session dates.
+- Added regressions for generatedAt/cutoff stamping, expected-session propagation, exchange-local date matching when row/report date differs, and malformed expected session rejection.
+- Focused acquisition/sync/repair/cutoff suite: 68 PASS; py_compile and diff check PASS. Evidence E1/E2 fixtures. Hosted CI for this follow-up: NOT_RUN yet.
+- Cloud Run image/job, TEST_ONLY Sheets, GCS evidence and Scheduler remain unchanged/NOT_RUN. Need stable authorized Cloud Shell/CLI; never promote this local result as runtime proof.
+- Next action: push the code/test follow-up to PR #206, run CI on its final implementation head, then back up and update only the TEST_ONLY Job and continue live E2E. Keep PR Draft/unmerged and production unchanged.

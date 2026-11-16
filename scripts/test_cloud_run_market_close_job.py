@@ -48,6 +48,35 @@ class CloudRunTestOnlyGuardTests(unittest.TestCase):
         self.assertEqual(result["marketDataStatus"], "FAILED")
         self.assertEqual(result["sheetsPersistenceStatus"], "SUCCESS")
 
+    def test_late_manual_snapshot_has_actual_generation_time_and_cutoff_marker(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "latest.json"
+            path.write_text(json.dumps({"reportDate": "2026-11-16", "reportSlot": "08:00", "markets": {}}), encoding="utf-8")
+            generated = job.dt.datetime(2026, 11, 16, 12, 38, tzinfo=job.JST)
+            result = job.finalize_market_snapshot(path, generated, late_manual=True)
+            self.assertEqual(result["generatedAt"], "2026-11-16T12:38:00+09:00")
+            self.assertEqual(result["cutoffStatus"], "MISSED_MANUAL_TEST_ONLY")
+            self.assertEqual(result["acquisitionMode"], "TEST_ONLY-MANUAL-LATE")
+
+    def test_close_snapshot_merge_keeps_expected_market_session_date(self):
+        import build_chatgpt_report_input as contract
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            market_dir = root / "data" / "market"
+            market_dir.mkdir(parents=True)
+            (market_dir / "latest.json").write_text(json.dumps({"markets": {}}), encoding="utf-8")
+            items = {}
+            for _, symbol, _, market_type, session in contract.ITEMS:
+                items[symbol] = {
+                    "verificationStatus": "verified", "expectedSessionDate": "2026-11-12",
+                    "asOf": "2026-11-12", "value": 100, "sourceName": "source",
+                    "sourceUrl": "https://example.test", "marketType": market_type, "session": session,
+                }
+            (market_dir / "chatgpt-input.json").write_text(json.dumps({"reportDate": "2026-11-16", "markets": items}), encoding="utf-8")
+            with patch.object(job, "ROOT", root):
+                result = job.merge_verified_28_rows_into_close_snapshot()
+            self.assertEqual(result["markets"]["dow"]["expectedSessionDate"], "2026-11-12")
+
     def test_job_uses_issue_205_allowlisted_isolated_sheet(self):
         self.assertEqual(job.TEST_ONLY_SPREADSHEET_ID, "1KBDBa-m35ZgleJpD-uPrxOHafIECjfKw4k1nL2HzDLs")
 

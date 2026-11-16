@@ -206,6 +206,25 @@ def populate_import_tabs(client: FakeSheetsClient, payload: dict) -> None:
         ])
 
 
+class MarketSpecificSessionDateTests(unittest.TestCase):
+    def test_market_close_uses_its_expected_session_not_report_or_sheet_date(self):
+        market = {
+            "verificationStatus": "verified", "asOf": "2026-11-12T16:00:00-05:00",
+            "expectedSessionDate": "2026-11-12", "value": 100.0,
+        }
+        value, source_date, warning = close_sync.close_value_for_market(market, dt.date(2026, 11, 13))
+        self.assertEqual((value, source_date, warning), (100.0, "2026-11-12", ""))
+
+    def test_invalid_market_expected_session_date_fails_closed(self):
+        market = {
+            "verificationStatus": "verified", "asOf": "2026-11-12T16:00:00-05:00",
+            "expectedSessionDate": "not-a-date", "value": 100.0,
+        }
+        value, _, warning = close_sync.close_value_for_market(market, dt.date(2026, 11, 12))
+        self.assertIsNone(value)
+        self.assertEqual(warning, "expectedSessionDate is invalid")
+
+
 class CloseSyncTests(unittest.TestCase):
     def setUp(self):
         self.target = dt.date(2026, 9, 30)
