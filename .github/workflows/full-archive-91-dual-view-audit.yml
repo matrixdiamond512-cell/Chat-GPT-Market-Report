@@ -1,0 +1,64 @@
+name: Full saved archive dual-view public audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/validate_full_saved_archive_dom.js'
+      - '.github/workflows/full-archive-91-dual-view-audit.yml'
+  pull_request:
+    paths:
+      - 'scripts/validate_full_saved_archive_dom.js'
+      - '.github/workflows/full-archive-91-dual-view-audit.yml'
+  workflow_run:
+    workflows:
+      - 'Deploy WEB Market Report to GitHub Pages'
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-archive-audit-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install Chromium for actual public browser checks
+        run: |
+          npm install --prefix "$RUNNER_TEMP/full-archive-audit" --no-save playwright
+          "$RUNNER_TEMP/full-archive-audit/node_modules/.bin/playwright" install --with-deps chromium
+
+      - name: Syntax-check 91-slot read-only audit
+        run: node --check scripts/validate_full_saved_archive_dom.js
+
+      - name: Audit all 91 saved slots on both public screens
+        env:
+          PORTAL_URL: https://matrixdiamond512-cell.github.io/Chat-GPT-Market-Report/
+          NODE_PATH: ${{ runner.temp }}/full-archive-audit/node_modules
+          QA_EVIDENCE_PATH: ${{ runner.temp }}/archive-91-dual-view-evidence.json
+          QA_WORKERS: '2'
+        run: node scripts/validate_full_saved_archive_dom.js
+
+      - name: Preserve per-slot audit evidence (including failures)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: saved-archive-dual-view-${{ github.run_id }}
+          path: ${{ runner.temp }}/archive-91-dual-view-evidence.json
+          if-no-files-found: warn
+          retention-days: 30
