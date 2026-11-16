@@ -187,3 +187,20 @@ GitHub main advanced from `c3dae9fdaea7c05d8006006b6fb052a28e2535f4` to `9615882
 Main advanced four commits from `9615882cf018479bf3cb2eeeb6f6b73367ea764b` to `d6420e2c3d53a16304bb8d301677e2db4c41da0c`. The actual range changes 15 production data files only (Japan stocks, Nikkei/US dollar-yen supply-demand and market references); no acquisition/evidence code, workflow, or tests changed. Merged without conflicts as `415c28c6d`; local compare 0 behind / 14 ahead before this record commit.
 
 Verified on the synced tree: `data/market/latest.json` is `2026-10-16T20:16:17+09:00`, slot `21:00`, `verified`, with no required-field gaps; `data/report-evidence/2026-10-16_21-00-r1.json` and `reports/2026-10-16_21-00.json` are absent; `reports.json` latest is 2026-10-13 16:00. Do not reconstruct or publish the missed 21:00 slot. The recovery PR applies to future eligible acquisitions. Following local/final-head CI, the user has now directed PR #156 to be reviewed and merged; verify head/base once more, mark ready, and merge the exact approved head. Then observe future-slot production acceptance separately.
+
+## PR #94 market-data continuation — 2026-10-30
+
+PRIMARY OBJECTIVE: Keep the 28-item personal market workflow safe and usable while reconciling this branch with current main.
+
+STATUS: PR #94 remains OPEN / Draft / unmerged. The PR branch carries market-data acquisition, snapshot, report and private test-Sheets work; production close-list writes remain prohibited unless exact series/date/blank-cell guards pass.
+
+NEXT NECESSARY ACTION: Run focused market acquisition/window regressions on the synchronized PR head, then verify GitHub reports the PR OPEN, Draft and unmerged.
+
+
+## PR #94 Nikkei validation repair — 2026-10-30 (ADD)
+
+The mismatched Nikkei SMA market-type metadata is corrected: each deviation item is `technical` and retains `underlyingMarketType: index`. Its regression fixture now uses a realistic in-range series and the exact trailing 25-session average. Latest HEAD before this record: `e9fabc4f17c128d98092f2bfe6e48d1d04cd8b12`; hosted checks on that head are all successful. Actions run #314 also completed the dedicated Nikkei test-sheet fetch/write/readback/idempotency path for four official fields, with four numeric readbacks, four date readbacks, one occurrence per field, and no rows added on retry. No production sheet was used. PR #94 remains OPEN / Draft / unmerged.
+
+OPEN OUTCOMES: 28-item coverage and production integration are still incomplete; JPX Prime history, official 200-day series, futures settlement values, and other previously listed gaps remain.
+
+NEXT NECESSARY ACTION: Continue the remaining market-data gaps already listed in the PR body and Evidence Ledger. Keep production close-list read-only, do not merge, and verify any new sheet writes only in the private test spreadsheet.
