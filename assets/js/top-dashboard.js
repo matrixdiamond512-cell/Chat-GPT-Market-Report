@@ -83,6 +83,9 @@ window.MarketReportInitialRequestedSlot =
 let reports = [];
 let selectedReport = null;
 let requestedMissingSlot = null;
+// Authoritative list of slots whose original body could not be recovered.
+// These must not be filled by a legacy recovery notice or an older report.
+let knownMissingReportSlots = new Set();
 let dashboardMeta = null;
 let dashboardCalendarEvents = [];
 let dashboardCalendarMeta = null;
@@ -1570,8 +1573,10 @@ function reportsForDate(dateText) {
 }
 
 function selectReport(dateText, timeText) {
-  // Never substitute another report for a deliberately selected missing slot.
-  selectedReport = reports.find((report) => report.date === dateText && report.time === timeText) || null;
+  // A recovery notice is not the missing source report itself.
+  const missing = knownMissingReportSlots.has(dateText + " " + timeText);
+  selectedReport = missing ? null
+    : reports.find((report) => report.date === dateText && report.time === timeText) || null;
   requestedMissingSlot = selectedReport ? null : { date: dateText, time: timeText };
   render();
   const url = new URL(window.location.href);
@@ -2481,6 +2486,26 @@ function render() {
   renderFootnote(report);
 }
 
+async function loadDocumentedMissingSlots() {
+  try {
+    const response = await fetch("data/report-content-gaps.json?ts=" + Date.now(), { cache: "no-store" });
+    if (!response.ok) throw new Error("missing slot manifest HTTP " + response.status);
+    const payload = await response.json();
+    if (payload?.status !== "SOURCE_NOT_FOUND_IN_REPOSITORY" || !Array.isArray(payload.missingSlots)) {
+      throw new Error("missing slot manifest schema mismatch");
+    }
+    return new Set(payload.missingSlots.filter(key =>
+      /^\d{4}-\d{2}-\d{2} (?:08:00|12:00|16:00|21:00)$/.test(key)));
+  } catch (error) {
+    console.warn("[dashboard missing-slot manifest]", error.message);
+    // Do not reinterpret an explicitly marked source-recovery notice as an
+    // original market report just because the manifest request failed.
+    return new Set(reports.filter(report =>
+      report.originalReportStatus === "ORIGINAL_NOT_FOUND" && report.archiveType === "RECONSTRUCTED_SOURCE"
+    ).map(report => report.date + " " + report.time));
+  }
+}
+
 async function init() {
   try {
     const data = await loadDashboardReports();
@@ -2489,6 +2514,7 @@ async function init() {
       .filter((report) => /^\d{4}-\d{2}-\d{2}$/.test(report.date || ""))
       .sort((a, b) => reportKey(b).localeCompare(reportKey(a)));
     dashboardMeta = data.meta || null;
+    knownMissingReportSlots = await loadDocumentedMissingSlots();
     const calendar = await loadDashboardEventCalendar();
     dashboardCalendarMeta = calendar;
     dashboardCalendarEvents = asArray(calendar.events).map(normalizeCalendarEvent).filter(Boolean);
@@ -2501,7 +2527,7 @@ async function init() {
     const date = initial?.date || params.get("date");
     const time = initial?.time || params.get("time");
     const validExplicitSlot = /^\d{4}-\d{2}-\d{2}$/.test(date || "") && REPORT_TIMES.includes(time);
-    const exactRequestedReport = validExplicitSlot
+    const exactRequestedReport = validExplicitSlot && !knownMissingReportSlots.has(date + " " + time)
       ? reports.find((report) => report.date === date && report.time === time)
       : null;
     selectedReport = exactRequestedReport || (validExplicitSlot ? null : reports[0]);
