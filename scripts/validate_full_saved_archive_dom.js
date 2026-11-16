@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-// Read-only, exhaustive public-site audit: 91 saved Google Docs report slots,
+// Read-only, exhaustive public-site audit: at least 91 baseline saved slots,
 // both the full-text report and dashboard, plus source/provenance consistency.
 // Never turns an archive into formal publication or invents a missing body.
 const assert = require('node:assert/strict');
