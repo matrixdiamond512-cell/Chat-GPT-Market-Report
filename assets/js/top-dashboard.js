@@ -82,6 +82,10 @@ window.MarketReportInitialRequestedSlot =
 
 let reports = [];
 let selectedReport = null;
+let requestedMissingSlot = null;
+// Authoritative list of slots whose original body could not be recovered.
+// These must not be filled by a legacy recovery notice or an older report.
+let knownMissingReportSlots = new Set();
 let dashboardMeta = null;
 let dashboardCalendarEvents = [];
 let dashboardCalendarMeta = null;
@@ -1569,24 +1573,25 @@ function reportsForDate(dateText) {
 }
 
 function selectReport(dateText, timeText) {
-  const sameDate = reportsForDate(dateText);
-  selectedReport = sameDate.find((report) => report.time === timeText) || sameDate.at(-1) || reports[0];
+  // A recovery notice is not the missing source report itself.
+  const missing = knownMissingReportSlots.has(dateText + " " + timeText);
+  selectedReport = missing ? null
+    : reports.find((report) => report.date === dateText && report.time === timeText) || null;
+  requestedMissingSlot = selectedReport ? null : { date: dateText, time: timeText };
   render();
   const url = new URL(window.location.href);
-  url.searchParams.set("date", selectedReport.date);
-  url.searchParams.set("time", selectedReport.time);
+  url.searchParams.set("date", dateText);
+  url.searchParams.set("time", timeText);
   window.history.replaceState({}, "", url);
 }
 
 function renderControls(report) {
-  const sameDate = reportsForDate(report.date);
-  const times = new Set(sameDate.map((item) => item.time));
+  // All configured times remain selectable, even if their source bodies are missing.
   $("timeTabs").innerHTML = REPORT_TIMES.map((time) => {
     const active = time === report.time ? " is-active" : "";
-    const disabled = times.has(time) ? "" : " disabled";
-    return `<button type="button" class="time-tab${active}" data-time="${esc(time)}"${disabled}>${esc(time)}</button>`;
+    return `<button type="button" class="time-tab${active}" data-time="${esc(time)}">${esc(time)}</button>`;
   }).join("");
-  $("timeTabs").querySelectorAll("button:not(:disabled)").forEach((button) => {
+  $("timeTabs").querySelectorAll("button").forEach((button) => {
     button.addEventListener("click", () => selectReport(report.date, button.dataset.time));
   });
 
@@ -2437,9 +2442,33 @@ function renderFootnote(report) {
     : `本レポートは投資判断の参考情報であり、特定の投資を推奨するものではありません。表示中：${dateToJp(report.date)} ${report.time}。`;
 }
 
+function setDashboardMissingState(slot) {
+  const shell = document.querySelector(".page-shell");
+  shell?.classList.toggle("dashboard-missing-slot", Boolean(slot));
+  const notice = $("dashboardMissingSlot");
+  if (notice) {
+    notice.hidden = !slot;
+    if (slot) {
+      notice.textContent = `対象データなし｜${dateToJp(slot.date)} ${slot.time}。この日時のレポート本文は取得できていません。前のレポートや別の時間帯の市場データは代わりに表示しません。`;
+    } else {
+      notice.textContent = "";
+    }
+  }
+  if (slot) {
+    $("reportStatus").textContent = `対象データなし：${dateToJp(slot.date)} ${slot.time}`;
+    document.title = `マーケット分析ポータル｜対象データなし｜${dateToJp(slot.date)} ${slot.time}`;
+    renderControls(slot);
+  }
+}
+
 function render() {
+  if (!selectedReport && requestedMissingSlot) {
+    setDashboardMissingState(requestedMissingSlot);
+    return;
+  }
   const report = selectedReport || reports[0];
   if (!report) return;
+  setDashboardMissingState(null);
   renderHeader(report);
   renderControls(report);
   renderDashboardArchive(report);
@@ -2457,6 +2486,26 @@ function render() {
   renderFootnote(report);
 }
 
+async function loadDocumentedMissingSlots() {
+  try {
+    const response = await fetch("data/report-content-gaps.json?ts=" + Date.now(), { cache: "no-store" });
+    if (!response.ok) throw new Error("missing slot manifest HTTP " + response.status);
+    const payload = await response.json();
+    if (payload?.status !== "SOURCE_NOT_FOUND_IN_REPOSITORY" || !Array.isArray(payload.missingSlots)) {
+      throw new Error("missing slot manifest schema mismatch");
+    }
+    return new Set(payload.missingSlots.filter(key =>
+      /^\d{4}-\d{2}-\d{2} (?:08:00|12:00|16:00|21:00)$/.test(key)));
+  } catch (error) {
+    console.warn("[dashboard missing-slot manifest]", error.message);
+    // Do not reinterpret an explicitly marked source-recovery notice as an
+    // original market report just because the manifest request failed.
+    return new Set(reports.filter(report =>
+      report.originalReportStatus === "ORIGINAL_NOT_FOUND" && report.archiveType === "RECONSTRUCTED_SOURCE"
+    ).map(report => report.date + " " + report.time));
+  }
+}
+
 async function init() {
   try {
     const data = await loadDashboardReports();
@@ -2465,6 +2514,7 @@ async function init() {
       .filter((report) => /^\d{4}-\d{2}-\d{2}$/.test(report.date || ""))
       .sort((a, b) => reportKey(b).localeCompare(reportKey(a)));
     dashboardMeta = data.meta || null;
+    knownMissingReportSlots = await loadDocumentedMissingSlots();
     const calendar = await loadDashboardEventCalendar();
     dashboardCalendarMeta = calendar;
     dashboardCalendarEvents = asArray(calendar.events).map(normalizeCalendarEvent).filter(Boolean);
@@ -2476,14 +2526,13 @@ async function init() {
     const initial = window.MarketReportInitialRequestedSlot;
     const date = initial?.date || params.get("date");
     const time = initial?.time || params.get("time");
-    const exactRequestedReport = reports.find((report) => report.date === date && report.time === time);
-    selectedReport = exactRequestedReport || reports[0];
-    if (!exactRequestedReport && date && time && selectedReport) {
-      const canonicalUrl = new URL(window.location.href);
-      canonicalUrl.searchParams.set("date", selectedReport.date);
-      canonicalUrl.searchParams.set("time", selectedReport.time);
-      window.history.replaceState({}, "", canonicalUrl);
-    }
+    const validExplicitSlot = /^\d{4}-\d{2}-\d{2}$/.test(date || "") && REPORT_TIMES.includes(time);
+    const exactRequestedReport = validExplicitSlot && !knownMissingReportSlots.has(date + " " + time)
+      ? reports.find((report) => report.date === date && report.time === time)
+      : null;
+    selectedReport = exactRequestedReport || (validExplicitSlot ? null : reports[0]);
+    requestedMissingSlot = validExplicitSlot && !exactRequestedReport ? { date, time } : null;
+    // Preserve the requested URL when a slot has no source body.
     render();
   } catch (error) {
     $("reportStatus").textContent = "データ取得エラー";

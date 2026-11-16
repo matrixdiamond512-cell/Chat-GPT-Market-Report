@@ -11,6 +11,10 @@ on:
       - 'data/report-archive-manifest.json'
       - 'data/dashboard-drive-archive*.json'
       - 'tests/dashboard-archive-completeness.test.mjs'
+      - 'tests/dashboard-missing-slot-empty-state.test.mjs'
+      - 'scripts/validate_dashboard_missing_slot_dom.js'
+      - 'assets/css/top-dashboard.css'
+      - 'index.html'
       - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
       - 'scripts/validate_market_report_dom.js'
@@ -31,6 +35,10 @@ on:
       - 'data/report-archive-manifest.json'
       - 'data/dashboard-drive-archive*.json'
       - 'tests/dashboard-archive-completeness.test.mjs'
+      - 'tests/dashboard-missing-slot-empty-state.test.mjs'
+      - 'scripts/validate_dashboard_missing_slot_dom.js'
+      - 'assets/css/top-dashboard.css'
+      - 'index.html'
       - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
       - 'scripts/validate_market_report_dom.js'
@@ -57,7 +65,7 @@ jobs:
           node-version: '24'
 
       - name: Test archived report loading and publication separation
-        run: node --test tests/report-archive-loader.test.mjs tests/dashboard-archive-completeness.test.mjs
+        run: node --test tests/report-archive-loader.test.mjs tests/dashboard-archive-completeness.test.mjs tests/dashboard-missing-slot-empty-state.test.mjs
 
       - name: Test Markdown table rendering and archive market section
         run: node --test tests/report-markdown-table-rendering.test.mjs
@@ -141,6 +149,12 @@ jobs:
           PORTAL_REPORT_FIXTURE: tests/fixtures/report_title_boundary_malformed.json
           NODE_PATH: ${{ runner.temp }}/renderer-regression/node_modules
         run: node scripts/validate_market_report_dom.js
+
+      - name: Browser regression for five missing dashboard report slots
+        env:
+          PORTAL_URL: http://127.0.0.1:8766
+          NODE_PATH: ${{ runner.temp }}/renderer-regression/node_modules
+        run: node scripts/validate_dashboard_missing_slot_dom.js
 
   strict-current-report:
     runs-on: ubuntu-latest
