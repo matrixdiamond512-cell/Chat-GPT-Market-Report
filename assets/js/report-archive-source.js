@@ -26,4 +26,3 @@
   }
   global.MarketReportArchiveSource = {normalize};
 })(window);
-
