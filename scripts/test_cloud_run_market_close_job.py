@@ -24,6 +24,18 @@ class CloudRunTestOnlyGuardTests(unittest.TestCase):
         self.assertEqual(result["sheetsPersistenceStatus"], "SUCCESS")
         self.assertEqual(result["failedPersistenceStages"], [])
 
+    def test_manual_late_accepts_skipped_import_tabs_but_requires_write_and_readback(self):
+        stages = {
+            "SHEETS_IMPORT": "SKIPPED", "CHATGPT_INPUT": "SKIPPED",
+            "CLOSE_DATA_WRITE": "SUCCESS", "READBACK_VERIFY": "SUCCESS",
+        }
+        allowed = job.classify_sync_result(0, {"status": "PARTIAL", "stages": stages}, allow_skipped_imports=True)
+        self.assertEqual(allowed["sheetsPersistenceStatus"], "SUCCESS")
+        self.assertEqual(allowed["failedPersistenceStages"], [])
+        rejected = job.classify_sync_result(0, {"status": "PARTIAL", "stages": stages})
+        self.assertEqual(rejected["sheetsPersistenceStatus"], "FAILED")
+        self.assertEqual(rejected["failedPersistenceStages"], ["SHEETS_IMPORT", "CHATGPT_INPUT"])
+
     def test_readback_failure_means_job_persistence_failure(self):
         result = job.classify_sync_result(1, {
             "status": "PARTIAL",
@@ -135,6 +147,7 @@ class CloudRunTestOnlyGuardTests(unittest.TestCase):
                     output_path.parent.mkdir(parents=True, exist_ok=True)
                     output_path.write_text(json.dumps({"items": {}}), encoding="utf-8")
                 if script == "sync_market_close_sheet.py":
+                    self.assertIn("--skip-import-check", args)
                     latest_path = Path(args[args.index("--latest") + 1])
                     snapshot = json.loads(latest_path.read_text(encoding="utf-8"))
                     observed.update(snapshot)
@@ -150,7 +163,10 @@ class CloudRunTestOnlyGuardTests(unittest.TestCase):
                     status_path = Path(args[args.index("--status-output") + 1])
                     status_path.write_text(json.dumps({
                         "status": "SUCCESS",
-                        "stages": {stage: "SUCCESS" for stage in job.PERSISTENCE_STAGES},
+                        "stages": {
+                            "SHEETS_IMPORT": "SKIPPED", "CHATGPT_INPUT": "SKIPPED",
+                            "CLOSE_DATA_WRITE": "SUCCESS", "READBACK_VERIFY": "SUCCESS",
+                        },
                     }), encoding="utf-8")
                 stdout = ""
                 if script == "write_test_only_close_evidence.py":
@@ -195,13 +211,13 @@ class CloudRunTestOnlyGuardTests(unittest.TestCase):
             self.assertEqual(result["markets"]["dow"]["expectedSessionDate"], "2026-11-12")
 
     def test_job_uses_issue_205_allowlisted_isolated_sheet(self):
-        self.assertEqual(job.TEST_ONLY_SPREADSHEET_ID, "1KBDBa-m35ZgleJpD-uPrxOHafIECjfKw4k1nL2HzDLs")
+        self.assertEqual(job.TEST_ONLY_SPREADSHEET_ID, "1C0U7JXZT7DMDvDSL8Ah9uVfLhncnCOffIgKl3n8Hk-w")
 
     def test_test_only_adc_refuses_non_test_project_or_sheet_before_auth(self):
         with self.assertRaises(close_sync.CloseSyncError):
             close_sync.create_test_only_adc_session("market-report-production", job.TEST_ONLY_SPREADSHEET_ID)
         with self.assertRaises(close_sync.CloseSyncError):
-            close_sync.create_test_only_adc_session("market-report-test-only", "1vqraQzVpIHWLFSxP5X5NWoTYquT6B27l-A7UuyYauNY")
+            close_sync.create_test_only_adc_session("market-report-test-only", "1KBDBa-m35ZgleJpD-uPrxOHafIECjfKw4k1nL2HzDLs")
 
     def test_rejects_non_test_project(self):
         with patch.dict(os.environ, {
