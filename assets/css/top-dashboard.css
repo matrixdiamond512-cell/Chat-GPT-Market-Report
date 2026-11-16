@@ -1618,3 +1618,21 @@ td:last-child {
   color: var(--muted);
   border-color: color-mix(in srgb, currentColor 35%, transparent);
 }
+
+/* Missing source slot: never leave the previous report's panels visible. */
+#dashboardMissingSlot[hidden] {
+  display: none !important;
+}
+.page-shell.dashboard-missing-slot > :not(.control-bar):not(#dashboardMissingSlot) {
+  display: none !important;
+}
+.page-shell .dashboard-missing-notice:not([hidden]) {
+  display: block;
+  margin: 18px 0;
+  padding: 28px 20px;
+  color: var(--text, #1f2937);
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #d8dce2);
+  line-height: 1.8;
+  white-space: normal;
+}
