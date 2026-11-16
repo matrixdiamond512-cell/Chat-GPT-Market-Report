@@ -58,6 +58,122 @@ class CloudRunTestOnlyGuardTests(unittest.TestCase):
             self.assertEqual(result["cutoffStatus"], "MISSED_MANUAL_TEST_ONLY")
             self.assertEqual(result["acquisitionMode"], "TEST_ONLY-MANUAL-LATE")
 
+    def test_late_manual_run_finalizes_snapshot_before_mixed_session_sync(self):
+        base_datetime = job.dt.datetime
+        fixed_now = base_datetime(2026, 11, 16, 12, 38, tzinfo=job.JST)
+
+        class FrozenDateTime(base_datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return fixed_now if tz else fixed_now.replace(tzinfo=None)
+
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            work = root / "work"
+            work.mkdir()
+            input_path = root / "input.json"
+            report = {
+                "date": "2026-11-16",
+                "time": "08:00",
+                "marketDataTable": {
+                    "dataDate": "2026-11-13",
+                    "rows": [{"label": f"row-{index}"} for index in range(28)],
+                },
+            }
+            input_path.write_text(json.dumps({"latestReport": report}), encoding="utf-8")
+            observed = {}
+
+            def fake_run(script, *args, env=None, check=True):
+                if script == "repair_morning_daily_references.py":
+                    market_latest = root / "data" / "market" / "latest.json"
+                    market_latest.parent.mkdir(parents=True, exist_ok=True)
+                    markets = {
+                        "vix": {
+                            "verificationStatus": "verified",
+                            "value": 20.0,
+                            "asOf": "2026-11-13T16:15:00-05:00",
+                            "sessionDate": "2026-11-13",
+                            "expectedSessionDate": "2026-11-13",
+                        },
+                        "nikkei_vi": {
+                            "verificationStatus": "verified",
+                            "value": 25.0,
+                            "asOf": "2026-11-13T15:50:00+09:00",
+                            "sessionDate": "2026-11-13",
+                            "expectedSessionDate": "2026-11-13",
+                        },
+                        "btcusd": {
+                            "verificationStatus": "verified",
+                            "value": 65312.48,
+                            "asOf": "2026-11-15T00:00:00Z",
+                            "sessionDate": "2026-11-14",
+                            "expectedSessionDate": "2026-11-14",
+                        },
+                    }
+                    market_latest.write_text(json.dumps({
+                        "reportDate": "2026-11-16",
+                        "reportSlot": "08:00",
+                        "markets": markets,
+                    }), encoding="utf-8")
+                    report_path = root / "data" / "latest-report.json"
+                    payload = json.loads(report_path.read_text(encoding="utf-8"))
+                    latest_report = payload["latestReport"]
+                    latest_report["dataProvenance"] = {
+                        "dailyCloseRepair": {
+                            "items": {
+                                f"row-{index}": {"status": "verified", "dataDate": "2026-11-13"}
+                                for index in range(28)
+                            },
+                            "unavailable": {},
+                        },
+                        "morningCoverage": {"items": {}},
+                    }
+                    report_path.write_text(json.dumps(payload), encoding="utf-8")
+                if script == "fetch_morning_reference.py":
+                    output_path = Path(args[args.index("--output-path") + 1])
+                    output_path.parent.mkdir(parents=True, exist_ok=True)
+                    output_path.write_text(json.dumps({"items": {}}), encoding="utf-8")
+                if script == "sync_market_close_sheet.py":
+                    latest_path = Path(args[args.index("--latest") + 1])
+                    snapshot = json.loads(latest_path.read_text(encoding="utf-8"))
+                    observed.update(snapshot)
+                    self.assertEqual(snapshot["generatedAt"], "2026-11-16T12:38:00+09:00")
+                    self.assertEqual(snapshot["cutoffStatus"], "MISSED_MANUAL_TEST_ONLY")
+                    self.assertEqual(snapshot["acquisitionMode"], "TEST_ONLY-MANUAL-LATE")
+                    self.assertEqual(snapshot["reportDate"], "2026-11-16")
+                    self.assertEqual(snapshot["markets"]["btcusd"]["expectedSessionDate"], "2026-11-14")
+                    self.assertEqual(
+                        close_sync.resolve_target_date(snapshot, fixed_now).isoformat(),
+                        "2026-11-13",
+                    )
+                    status_path = Path(args[args.index("--status-output") + 1])
+                    status_path.write_text(json.dumps({
+                        "status": "SUCCESS",
+                        "stages": {stage: "SUCCESS" for stage in job.PERSISTENCE_STAGES},
+                    }), encoding="utf-8")
+                stdout = ""
+                if script == "write_test_only_close_evidence.py":
+                    stdout = "generation=42 sha256=" + ("a" * 64)
+                return subprocess.CompletedProcess([script], 0, stdout, "")
+
+            with patch.dict(os.environ, {
+                "GOOGLE_CLOUD_PROJECT": job.ALLOWED_PROJECT,
+                job.EVIDENCE_BUCKET: "market-report-test-only-close-evidence",
+                "MARKET_CLOSE_ENVIRONMENT": "TEST_ONLY",
+                "MARKET_CLOSE_REPORT_DATE": "2026-11-16",
+                "MARKET_CLOSE_TEST_ONLY_INPUT_JSON": str(input_path),
+                "MARKET_CLOSE_TEST_ONLY_LATE_RUN": "1",
+                "CLOUD_RUN_EXECUTION": "late-manual-regression",
+            }, clear=True), patch.object(job, "ROOT", root), patch.object(job, "WORK", work), \
+                 patch.object(job, "_run", side_effect=fake_run), patch.object(job.dt, "datetime", FrozenDateTime):
+                result = job.run()
+
+            self.assertEqual(result["cutoffStatus"], "MISSED_MANUAL_TEST_ONLY")
+            self.assertEqual(result["reportTableDataDate"], "2026-11-13")
+            self.assertEqual(result["sheetCloseTargetDate"], "2026-11-13")
+            self.assertEqual(result["sheetsPersistenceStatus"], "SUCCESS")
+            self.assertEqual(observed["markets"]["btcusd"]["expectedSessionDate"], "2026-11-14")
+
     def test_close_snapshot_merge_keeps_expected_market_session_date(self):
         import build_chatgpt_report_input as contract
         with tempfile.TemporaryDirectory() as temp:
