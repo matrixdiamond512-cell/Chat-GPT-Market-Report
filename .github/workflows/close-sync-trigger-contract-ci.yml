@@ -1,0 +1,25 @@
+name: Close sync external trigger contract (offline)
+on:
+  pull_request:
+    paths:
+      - 'scripts/reporting/close_sync_trigger_contract.py'
+      - 'tests/test_close_sync_trigger_contract.py'
+      - '.github/workflows/close-sync-trigger-contract-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile and run offline contract tests
+        run: |
+          python -m py_compile scripts/reporting/close_sync_trigger_contract.py tests/test_close_sync_trigger_contract.py
+          python -m unittest discover -s tests -p test_close_sync_trigger_contract.py -v
