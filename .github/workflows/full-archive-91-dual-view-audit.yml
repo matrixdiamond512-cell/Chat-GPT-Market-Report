@@ -1,7 +1,12 @@
-name: Full archive 91-slot dual-view public audit
+name: Full saved archive dual-view public audit
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/validate_full_saved_archive_dom.js'
+      - '.github/workflows/full-archive-91-dual-view-audit.yml'
   pull_request:
     paths:
       - 'scripts/validate_full_saved_archive_dom.js'
@@ -53,7 +58,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: archive-91-dual-view-${{ github.run_id }}
+          name: saved-archive-dual-view-${{ github.run_id }}
           path: ${{ runner.temp }}/archive-91-dual-view-evidence.json
           if-no-files-found: warn
           retention-days: 30
