@@ -1,0 +1,50 @@
+name: PR206 TEST_ONLY GCP preflight contract
+
+on:
+  push:
+    paths:
+      - 'scripts/pr206_test_only_preflight.sh'
+      - '.github/workflows/pr206-test-only-preflight-ci.yml'
+  pull_request:
+    paths:
+      - 'scripts/pr206_test_only_preflight.sh'
+      - '.github/workflows/pr206-test-only-preflight-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  preflight-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate bash syntax without accessing GCP
+        run: bash -n scripts/pr206_test_only_preflight.sh
+
+      - name: Verify read-only guards and PR206 isolation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path("scripts/pr206_test_only_preflight.sh").read_text()
+          assert s.startswith("#!/usr/bin/env bash\n")
+          for required in (
+            'PROJECT="market-report-test-only"',
+            'EXPECTED_SHEET="1C0U7JXZT7DMDvDSL8Ah9uVfLhncnCOffIgKl3n8Hk-w"',
+            'BRANCH="codex/close-acquisition-p0-20261116"',
+            'git status --porcelain',
+            'gcloud run jobs list',
+            'gcloud run jobs describe',
+            'PREFLIGHT_READ_ONLY_OK',
+          ):
+            assert required in s, f"preflight missing required guard: {required}"
+          for forbidden in (
+            "gcloud run jobs execute", "gcloud run jobs update",
+            "gcloud run jobs create", "gcloud run jobs delete",
+            "gcloud scheduler jobs create", "gcloud scheduler jobs update",
+            "gcloud builds submit", "gcloud artifacts docker images delete",
+            "gcloud config set", "gcloud auth print-access-token",
+          ):
+            assert forbidden not in s, f"preflight contains prohibited operation: {forbidden}"
+          print("PASS: isolated read-only preflight contract")
+          PY
