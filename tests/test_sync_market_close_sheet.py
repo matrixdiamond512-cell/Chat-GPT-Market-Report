@@ -207,6 +207,38 @@ def populate_import_tabs(client: FakeSheetsClient, payload: dict) -> None:
 
 
 class MarketSpecificSessionDateTests(unittest.TestCase):
+    def test_us_close_timestamp_keeps_friday_exchange_session_date(self):
+        now = dt.datetime(2026, 11, 16, 8, 5, tzinfo=JST)
+        payload = {
+            "markets": {
+                "vix": {
+                    "verificationStatus": "verified",
+                    "asOf": "2026-11-13T16:15:00-05:00",
+                    "sessionDate": "2026-11-13",
+                    "expectedSessionDate": "2026-11-13",
+                },
+                "nikkei_vi": {
+                    "verificationStatus": "verified",
+                    "asOf": "2026-11-13T15:50:00+09:00",
+                    "sessionDate": "2026-11-13",
+                    "expectedSessionDate": "2026-11-13",
+                },
+            }
+        }
+        self.assertEqual(close_sync.resolve_target_date(payload, now), dt.date(2026, 11, 13))
+
+    def test_completed_btc_utc_bar_uses_its_own_saturday_session_date(self):
+        market = {
+            "verificationStatus": "verified",
+            "asOf": "2026-11-15T00:00:00Z",
+            "sessionDate": "2026-11-14",
+            "expectedSessionDate": "2026-11-14",
+            "value": 65312.48,
+            "previousClose": 64110.28,
+        }
+        value, source_date, warning = close_sync.close_value_for_market(market, dt.date(2026, 11, 13))
+        self.assertEqual((value, source_date, warning), (65312.48, "2026-11-14", ""))
+
     def test_market_close_uses_its_expected_session_not_report_or_sheet_date(self):
         market = {
             "verificationStatus": "verified", "asOf": "2026-11-12T16:00:00-05:00",
