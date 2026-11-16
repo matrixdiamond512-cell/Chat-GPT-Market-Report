@@ -152,3 +152,11 @@ Draft PR #204の最終確認head `7f973ef380880195de720738714d28a7114dbcf7`、ba
 - Affected-document matrix: this ledger records the change; requirements, specification, operations manual, and fixed Google Docs are NO_CHANGE because no policy or user-facing delivery contract was altered. `docs/system/DOCUMENT_CONTROL.md` read before recording. README/HANDOFF and current PR #206 status were reviewed.
 - Local tests: NOT_RUN in this constrained workspace. TEST_ONLY Cloud Run execution, new image digest, real market acquisition counts, test Sheets write/readback, GCS evidence readback, and scheduler firing: NOT_RUN. No Cloud resources, Sheets, production data, main, IAM, or scheduler were changed.
 - PR #206 remains OPEN / Draft / unmerged. Next necessary action for runtime acceptance is a separately authorized TEST_ONLY Cloud Run execution after confirming the isolated Job configuration; production deployment and main merge are out of scope.
+
+## MR-CLOSE-TESTONLY-PREFLIGHT-20261117-01（2026-11-17 JST）
+- Issue #205 / Draft PR #206。PR #204とは隔離。PR #206のクラウド実行前チェックを読み取り専用で強化。
+- Google Drive metadata E3（**シートの実在・権限のみ**）：専用ID `1C0U7JXZT7DMDvDSL8Ah9uVfLhncnCOffIgKl3n8Hk-w`、「Market Close PR206 TEST ONLY E2E 2026-11-16」、`終値一覧`（186列）、`Manual_E2E_Archive`、`GitHub_Market_Import`、`ChatGPT_Market_Input`、`WEB_Data_Update_Log`の5タブ。ランタイム想定SA `mr-pre-slot-test-runner@market-report-test-only.iam.gserviceaccount.com` writer。PR #204専用ID `1KBDBa-m35ZgleJpD-uPrxOHafIECjfKw4k1nL2HzDLs` とは別。
+- 2026-11-17の読み取りで、PR206 `終値一覧` A1:N7はヘッダーのみ、`Manual_E2E_Archive`には以前のPARTIAL試験行、`WEB_Data_Update_Log`にはPR204由来の履歴があった。**PR206の新しいCloud Runからの実書込み/独立読戻し成功証拠ではない**。
+- 実行手順を `scripts/pr206_test_only_preflight.sh` に実装。只の読み取り専用gcloud list/describe・ローカル非公開バックアップ。構文/非書込契約のGitHub Actions `.github/workflows/pr206-test-only-preflight-ci.yml`を追加。
+- preflight実行、固定イメージビルド、PR206専用Job起動、28項目実取得、Sheets書込/独立読戻し、GCS世代一致、07:50 Scheduler発火は全て **NOT_RUN**。既存Cloud Run/IAM/Scheduler/Sheets、本番データ、main、PR204は未変更。
+- 変更影響：運用マニュアルとEvidence Ledger。要件/仕様/本文作成マニュアルはNO_CHANGE（契約変更なし）。固定ID Google Docsの更新は未実施で別作業。結果をE4/E5 PASSと混同しない。
