@@ -15,14 +15,21 @@ WORK = ROOT / "work"
 JST = dt.timezone(dt.timedelta(hours=9))
 ALLOWED_PROJECT = "market-report-test-only"
 EVIDENCE_BUCKET = "MARKET_CLOSE_TEST_ONLY_EVIDENCE_BUCKET"
-TEST_ONLY_SPREADSHEET_ID = "1KBDBa-m35ZgleJpD-uPrxOHafIECjfKw4k1nL2HzDLs"
+TEST_ONLY_SPREADSHEET_ID = "1C0U7JXZT7DMDvDSL8Ah9uVfLhncnCOffIgKl3n8Hk-w"
 PERSISTENCE_STAGES = ("SHEETS_IMPORT", "CHATGPT_INPUT", "CLOSE_DATA_WRITE", "READBACK_VERIFY")
 
 
-def classify_sync_result(return_code: int, summary: dict[str, Any]) -> dict[str, Any]:
+def classify_sync_result(
+    return_code: int, summary: dict[str, Any], *, allow_skipped_imports: bool = False
+) -> dict[str, Any]:
     """Keep market completeness separate from Sheets persistence success."""
     stages = summary.get("stages") if isinstance(summary.get("stages"), dict) else {}
-    failed = [stage for stage in PERSISTENCE_STAGES if stages.get(stage) != "SUCCESS"]
+    import_stages = {"SHEETS_IMPORT", "CHATGPT_INPUT"}
+    failed = [
+        stage for stage in PERSISTENCE_STAGES
+        if stages.get(stage) != "SUCCESS"
+        and not (allow_skipped_imports and stage in import_stages and stages.get(stage) == "SKIPPED")
+    ]
     data_status = summary.get("status")
     return {
         "marketDataStatus": data_status if data_status in {"SUCCESS", "PARTIAL"} else "FAILED",
@@ -205,13 +212,20 @@ def run() -> dict[str, Any]:
     close_sync_path = WORK / "close-sync-status.json"
     late_manual = os.environ.get("MARKET_CLOSE_TEST_ONLY_LATE_RUN") == "1"
     idempotency_key = f"{report_date}:08:00" + (":TEST_ONLY-MANUAL-LATE" if late_manual else "")
-    close_sync = _run(
-        "sync_market_close_sheet.py",
+    sync_args = [
         "--latest", str(ROOT / "data" / "market" / "latest.json"),
         "--scheduled-time", "TEST_ONLY-MANUAL-LATE" if late_manual else "07:50",
         "--run-key", idempotency_key,
         "--status-output", str(close_sync_path),
         "--test-only-adc",
+    ]
+    if late_manual:
+        # Manual-late mode validates this job's own TEST_ONLY write/readback;
+        # copied IMPORTDATA tabs are not evidence for this fresh snapshot.
+        sync_args.append("--skip-import-check")
+    close_sync = _run(
+        "sync_market_close_sheet.py",
+        *sync_args,
         env={"MARKET_DATA_SPREADSHEET_ID": TEST_ONLY_SPREADSHEET_ID},
         check=False,
     )
@@ -235,7 +249,7 @@ def run() -> dict[str, Any]:
     morning_reference = json.loads(market_output_path.read_text(encoding="utf-8")) if market_output_path.is_file() else {"items": {}}
 
     coverage_unavailable = repaired_report.get("dataProvenance", {}).get("dailyCloseRepair", {}).get("unavailable", {})
-    sync_classification = classify_sync_result(close_sync.returncode, close_sync_status)
+    sync_classification = classify_sync_result(close_sync.returncode, close_sync_status, allow_skipped_imports=late_manual)
     status = "verified" if not coverage_unavailable and sync_classification["marketDataStatus"] == "SUCCESS" and sync_classification["sheetsPersistenceStatus"] == "SUCCESS" else "partial"
     evidence = {
         "projectId": project_id,
@@ -249,7 +263,7 @@ def run() -> dict[str, Any]:
         **sync_classification,
         "cutoffStatus": "MISSED_MANUAL_TEST_ONLY" if late_manual else "SCHEDULED_CUTOFF_ENFORCED",
         "marketCount": sum(1 for item in evidence_rows.values() if item.get("dataDate") and item.get("status") != "unavailable"),
-        "verifiedCount": sum(1 for item in evidence_rows.values() if item.get("dataDate") and item.get("status") != "unavailable"),
+        "verifiedCount": sum(1 for item in evidence_rows.values() if item.get("dataDate") and item.get("status") == "verified"),
         "unavailableCount": len(coverage_unavailable),
         "rowCount": len(evidence_rows),
         "dataDateByLabel": {label: item.get("dataDate") for label, item in evidence_rows.items()},
