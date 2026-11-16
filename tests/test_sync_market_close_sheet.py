@@ -181,6 +181,16 @@ def snapshot(target: dt.date, now: dt.datetime, *, missing: str | None = None) -
             "fetchedAt": now.isoformat(), "sourceId": symbol + "_source", "sourceName": symbol + " source",
             "verificationStatus": "verified", "classification": "Neutral",
         }
+    for symbol, value, previous in (
+        ("us10y", 4.25, 4.20), ("jp10y", 1.75, 1.70),
+        ("nikkei225_eps", 2500.0, 2490.0), ("nikkei225_per", 18.0, 17.9),
+    ):
+        markets[symbol] = {
+            "value": value, "previousClose": previous, "change": value - previous,
+            "asOf": dt.datetime.combine(target, dt.time(15, 0), JST).isoformat(),
+            "fetchedAt": now.isoformat(), "sourceId": symbol + "_source",
+            "sourceName": symbol + " source", "verificationStatus": "verified",
+        }
     return {"generatedAt": now.isoformat(), "reportSlot": "08:00", "overallStatus": "verified", "missingRequired": [], "markets": markets}
 
 
@@ -286,14 +296,14 @@ class CloseSyncTests(unittest.TestCase):
     def test_equal_existing_market_value_is_preserved_and_not_rewritten(self):
         client = FakeSheetsClient(self.target, self.prior)
         payload = snapshot(self.target, self.next_day)
+        payload["overallStatus"] = "partial"
         populate_import_tabs(client, payload)
         col = close_sync.PRICE_FIELDS["dow"][0]
         expected = payload["markets"]["dow"]["value"]
         client.data[1][BASE_HEADERS.index(col)] = expected
         result = close_sync.close_row_sync(client, payload, self.next_day, sleep=lambda _: None)
-        # This fixture intentionally omits unrelated required market values;
-        # preservation is the assertion under test, while the overall row is
-        # correctly reported as partial.
+        # The upstream snapshot is deliberately partial; preservation must not
+        # upgrade its overall data quality.
         self.assertEqual(result["status"], "PARTIAL")
         self.assertNotIn(col, result["updatedFields"])
         self.assertIn(col, result["preservedExistingFields"])
