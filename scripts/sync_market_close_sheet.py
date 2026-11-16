@@ -125,7 +125,16 @@ def resolve_target_date(payload: dict[str, Any], now: dt.datetime) -> dt.date:
             continue
         observed = parse_datetime(market.get("asOf"))
         if observed:
-            anchor_dates.append(observed.date())
+            # Anchor the row to the exchange's session date, not to the timestamp
+            # after converting it to JST. A Friday US close can occur on Saturday
+            # in Japan while remaining a Friday market session.
+            session_date = (
+                parse_sheet_date(market.get("sessionDate"))
+                or parse_sheet_date(market.get("expectedSessionDate"))
+                or parse_sheet_date(str(market.get("asOf") or "")[:10])
+                or observed.date()
+            )
+            anchor_dates.append(session_date)
     if not anchor_dates:
         raise CloseSyncError("VALIDATE", "No verified VIX or Nikkei VI session date is available.")
 
