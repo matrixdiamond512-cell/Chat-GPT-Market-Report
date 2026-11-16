@@ -59,16 +59,23 @@ const base = String(process.env.PORTAL_URL || '').replace(/\/$/, '') + '/';
       !document.getElementById('reportStatus')?.textContent.includes('対象データなし'), null, { timeout: 60000 });
     const restored = await page.evaluate(() => ({
       noticeHidden: document.getElementById('dashboardMissingSlot')?.hidden,
-      mainVisible: getComputedStyle(document.querySelector('.market-summary')).display !== 'none',
+      missingFenceCleared: !document.querySelector('.page-shell')?.classList.contains('dashboard-missing-slot'),
+      scenarioGridVisible: getComputedStyle(document.querySelector('.scenario-grid')).display !== 'none',
+      reportStatus: document.getElementById('reportStatus')?.textContent || '',
+      // The separate data-quality guard intentionally hides the market summary
+      // when no verified market cards exist. That is not a stale-slot failure.
+      marketSummaryDisplay: getComputedStyle(document.querySelector('.market-summary')).display,
       date: document.getElementById('dateInput')?.value,
       selectedTime: document.querySelector('#timeTabs .time-tab.is-active')?.dataset.time
     }));
     assert.equal(restored.noticeHidden, true, 'missing notice persisted after real selection');
-    assert.equal(restored.mainVisible, true, 'normal dashboard panels did not return');
+    assert.equal(restored.missingFenceCleared, true, 'missing-slot visibility fence persisted');
+    assert.equal(restored.scenarioGridVisible, true, 'normal dashboard layout did not return');
+    assert.match(restored.reportStatus, /2026\/11\/06.*16:00/, 'valid report identity was not rendered');
     assert.equal(restored.date, '2026-11-06');
     assert.equal(restored.selectedTime, '16:00');
     assert.deepEqual(errors, [], 'dashboard JavaScript errors');
-    console.log('PASS missing-slot to valid-report navigation');
+    console.log('PASS missing-slot to valid-report navigation; data-quality-gated market summary=' + restored.marketSummaryDisplay);
     await page.close();
   } finally {
     await browser.close();
