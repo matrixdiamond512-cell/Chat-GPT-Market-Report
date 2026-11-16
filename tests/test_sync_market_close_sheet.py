@@ -338,6 +338,31 @@ class CloseSyncTests(unittest.TestCase):
         result = self.run_sync(client, payload, monday_now)
         self.assertEqual(result["targetDate"], friday.isoformat())
 
+    def test_monday_sync_keeps_exchange_dates_for_friday_closes_and_completed_btc_bar(self):
+        friday = dt.date(2026, 11, 13)
+        monday_now = dt.datetime(2026, 11, 16, 8, 5, tzinfo=JST)
+        client = FakeSheetsClient(friday, friday - dt.timedelta(days=1))
+        payload = snapshot(friday, monday_now)
+        for market in payload["markets"].values():
+            if isinstance(market, dict):
+                market.update({
+                    "sessionDate": "2026-11-13",
+                    "expectedSessionDate": "2026-11-13",
+                })
+        payload["markets"]["vix"]["asOf"] = "2026-11-13T16:15:00-05:00"
+        payload["markets"]["nikkei_vi"]["asOf"] = "2026-11-13T15:50:00+09:00"
+        payload["markets"]["btcusd"].update({
+            "asOf": "2026-11-15T00:00:00Z",
+            "sessionDate": "2026-11-14",
+            "expectedSessionDate": "2026-11-14",
+        })
+        result = self.run_sync(client, payload, monday_now)
+        self.assertEqual(result["targetDate"], friday.isoformat())
+        self.assertEqual(result["status"], "SUCCESS", result)
+        btc = next(item for item in result["marketData"] if item["symbol"] == "btcusd")
+        self.assertEqual(btc["asOf"], "2026-11-15T00:00:00Z")
+        self.assertEqual(btc["closeValue"], 100.0)
+
     def test_9_same_payload_twice_has_no_duplicate(self):
         client = FakeSheetsClient(self.target, self.prior)
         payload = snapshot(self.target, self.next_day)
