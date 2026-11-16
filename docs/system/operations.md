@@ -89,3 +89,12 @@ Google Docs固定ID `1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg` に対応す�
 Driveから10枠を追加回復し、保存本文91枠を検証。見出し別の主導市場・シナリオ・結論・時系列表示を修正。未取得値を推測せず、残る原本欠落5枠は `data/report-content-gaps.json` に記録する（10/20 08、10/22 12、11/04 08、11/06 08・12）。10/20 08と10/22 12は復旧メモ、11/06 12は空Doc。
 
 検証：Nodeの対象20テストPASS（E2、実保存本文を使ったアダプター/選択/表示回帰）。公開ブラウザは変更前を観測。変更後の公開DOM・Pages反映はNOT_RUN。Google Docs固定ID文書への同期は未実施。定時配信・正式原本・receipt・スケジュールは本変更の対象外。
+
+
+## 公開済み保存本文の全件・両画面監査｜2026-11-17 JST（PORTAL-ARCHIVE-DUALVIEW-AUDIT-20261117-01）
+
+- 監査対象は固定91枠ではなく `data/report-archive-manifest.json` 内の全保存枠（2026-11-17時点で92枠）。基準数91未満への後退は異常とし、翌日以降に追加された枠も自動で対象へ含める。
+- `scripts/validate_full_saved_archive_dom.js` はGitHub Pagesの公開JSONを元ファイルと一致照合し、全保存枠の `report.html` と `index.html` を実ブラウザで個別に開いて、指定日時・タイトル・本文表示・出典・正式公開優先順位・欠落状態の混同を検査する。数値の外部市場データ照合と正式発行証拠の新規作成は**実施しない**。
+- `.github/workflows/full-archive-91-dual-view-audit.yml` はPR・手動・mainの監査コード変更時に実行し、通常のPagesデプロイが成功した後にも別ワークフローで読み取り専用監査を実行する。監査結果はJSONの各slot PASS/FAILと代替出典の選択件数をGitHub Actions artifactへ30日保存する。
+- 初回公開画面監査の記録：2026-11-17 JST、GitHub Actions run `43906236040`、保存元92/92・本文画面92/92・ダッシュボード92/92・出典の取り違え0・失敗0（PR候補の検証）。最終mainへの反映後はmain上の監査を独立して確認する。
+- 原本のない5枠は `data/report-content-gaps.json` のまま維持。正式発行status、receipt、本文・価格、Google Docs本文、PR #204/#206、Sheets/Cloud Runはこの監査で変更しない。
