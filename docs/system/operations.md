@@ -103,3 +103,16 @@ MR-CLOSE-SYNC-20261114-01 / PR #201。run [43475352764](https://github.com/matri
 - Regression: existing registration timestamp, unavailable candidate with existing numeric zero, preserved value/type/formula corruption. Focused Python suite: 35 PASS; publication policy JS PASS; py_compile and diff check PASS. Evidence E1/E2 fixture only, run MR-CLOSE-READBACK-20261115-02, Python 3.13 Windows.
 - Cloud Shell access succeeded and listed market-report-test-only. Console sign-in failure is not evidence that Cloud Run/GCS are unavailable. Service/revision/config readback, isolated real-data Sheets E2E, independent scheduled invocation remain pending; no production changes or merge authorized by this result.
 - Required order: readback fix + exact-final-HEAD CI, isolated Sheets real-data readback, independent scheduled invocation. Draft/unmerged retained. Fixed-ID Google Docs synchronization NOT_RUN.
+
+## MR-CLOSE-TESTONLY-PREFLIGHT-20261117-01（2026-11-17 JST、Issue #205 / PR #206）
+
+**目的**：TEST_ONLY Cloud Runの隔離実行前に、認証・実行先・既存Job・Scheduler・GCS・Artifact Registryの状態を読み取り専用で確認し、既存Job設定を秘密のローカル保存先にバックアップする。
+
+1. 実行先は `market-report-test-only` 固定。対象の隔離Sheets IDは **`1C0U7JXZT7DMDvDSL8Ah9uVfLhncnCOffIgKl3n8Hk-w`**（PR #206専用）であり、PR #204用 `1KBDBa-m35ZgleJpD-uPrxOHafIECjfKw4k1nL2HzDLs` と混同しない。専用Sheetsは「終値一覧」など既存5タブ、186列であること、実行用SAにwriter権限があることをGoogle Drive metadataで確認済み。ただしCloud Run実証とは区別する。
+2. Cloud Shell等の認証済みCLIで、まずPR #206の `codex/close-acquisition-p0-20261116` をチェックアウトし、`PR206_EXPECTED_SHA=$(git rev-parse HEAD) bash scripts/pr206_test_only_preflight.sh` を実行する。スクリプトは読み取り専用のgcloud list/describeだけを実行する。Gitがdirty、ブランチが異なる、シートallowlistが一致しない、認証がない場合には停止する。実行ログにはアクセストークンや環境変数値を含めない。
+3. Job設定バックアップは `$HOME/pr206-test-only-preflight/<UTC時刻>/`（umask 077）に保存する。環境変数やSA名など機微な設定を含む可能性があるため**GitHub/チャット/公開ログへアップロードしない**。共有するのは対象Job名、イメージdigest、実行時刻、PASS/BLOCKEDの判定と非秘密の根拠だけ。
+4. 読取り専用確認がPASSした後、古いPR #204 Jobの上書きはせず、既に承認されたPR #206専用の隔離Jobが存在するか確認する。存在しなければ新規課金資源やIAM権限の作成・拡張に先立って明示承認と費用・rollback計画を要求する。
+5. 実行可能になったら、コードSHAに固定されたTEST_ONLYイメージdigestで、`MARKET_CLOSE_TEST_ONLY_LATE_RUN=1` を使った手動E2Eを実行し、`TEST_ONLY-MANUAL-LATE`／`MISSED_MANUAL_TEST_ONLY`を保持する。28項目の取得件数、出典、sessionDate、Sheets独立READBACK_VERIFY、GCS generation/SHA-256およびCloud Run exitを記録する。これを07:50の定時性証拠へ昇格させない。
+6. 次の独立工程で07:50実Scheduler発火から08:00までのFETCH・READBACKを確認する。本番Sheets、本番Job/Scheduler、main、PR #204、正式Docsを変更しない。
+
+**実績の境界**：Google Driveファイルメタデータと隔離Sheetsのヘッダー/ログの**読み取り**までは確認済み。上記CLI preflightとCloud Run image build/Job run/Sheets新規書込/GCS保存/Scheduler実発火はNOT_RUN。E4/E5実稼働成功とは記載しない。影響文書マトリクス：本運用マニュアル＋証拠台帳を追加。要件/仕様/本文作成マニュアルは新しい機能要件・公開契約を変更しないためNO_CHANGE、正式Google Docs側への同期は別工程。
