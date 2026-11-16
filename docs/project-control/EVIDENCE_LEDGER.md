@@ -101,6 +101,12 @@ MR-CLOSE-SYNC-20261114-01 / PR #201。run [43475352764](https://github.com/matri
 
 ## MR-CLOSE-RECOVERY-20261115-01（2026-11-15 JST）
 
+## MR-CLOSE-ACQUISITION-P0-20261116-01（2026-11-16 JST）
+
+Local implementation candidate on `codex/close-acquisition-p0-20261116`, based on `b52940a2324c14f788c13a858dfc97957b5cd4ba`. Added exchange-local session dates to market candidates, exact-date/source validation and cross-checks for major US indices, market-calendar handling, fail-closed row ownership/coverage, UTC-completed BTC bars, dynamic futures contract selection, TEST_ONLY-only ADC Sheets target enforcement, direct Cloud Run Job orchestration and create-only GCS evidence with generation-pinned readback. Exact Issue #205 spreadsheet is allowlisted; unrelated Market Data API Test is excluded. Regression sweep: 62 targeted unittest cases PASS after fixing UTC conversion to use stdlib timezone; `compileall scripts` PASS; `git diff --check` PASS. This is E1/E2 local evidence only. No live vendor source result was fetched, no cloud resources were inspected or changed, no Sheet was written, no GCS artifact was stored, and no scheduler fired. Cloud Shell remained at an authorization prompt; `gcloud` is unavailable locally. Hosted CI NOT_RUN. Market rows without a proven exact-session source remain UNAVAILABLE; no completeness or 07:50 timing claim. PR #204 stays Draft/unmerged; no production mutation. Run ID: local targeted unittest command, 2026-11-16 JST.
+
+OPEN OUTCOMES: code/diff review and commit/push, final-head hosted CI, Cloud Shell access to inspect existing TEST_ONLY config/service identity, live source-to-TEST_ONLY Sheets write/readback and GCS evidence, then independent one-shot scheduler observation. Production cutover remains out of scope and requires separate approval.
+
 ### 最終HEADのCI起動元追補（2026-11-15）
 
 Draft PR #204の最終確認head `7f973ef380880195de720738714d28a7114dbcf7`、base `codex/close-sync-recovery-20261114`、変更8ファイル。PR起動の取得締切回帰 [run 43622356001](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43622356001) と配信ヘルス回帰 [run 43622355992](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43622355992)、push起動の取得締切回帰 [run 43622349968](https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/actions/runs/43622349968) はすべてSUCCESS。初回追補のCI IDは更新前headに属するため、最終headの検証結果としては扱わない。Cloud Scheduler/Run/Sheets実E2Eと20営業日運用はNOT_RUN。

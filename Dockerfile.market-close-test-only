@@ -1,0 +1,8 @@
+FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /app
+COPY scripts/ /app/scripts/
+COPY config/ /app/config/
+RUN python -m pip install --no-cache-dir -r /app/scripts/requirements-market-data.txt
+RUN mkdir -p /app/data/market /app/data/logs /app/logs
+ENTRYPOINT ["python", "/app/scripts/cloud_run_market_close_job.py"]

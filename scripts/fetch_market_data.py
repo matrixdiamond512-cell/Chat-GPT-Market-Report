@@ -19,6 +19,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -215,6 +216,7 @@ def candidate(
     change: float | None = None,
     change_percent: float | None = None,
     as_of: str | None = None,
+    session_date: str | None = None,
     raw_reference: str = "",
     classification: str | None = None,
 ) -> dict[str, Any]:
@@ -228,6 +230,7 @@ def candidate(
         "change": change,
         "changePercent": change_percent,
         "asOf": as_of or iso(),
+        "sessionDate": session_date or "",
         "fetchedAt": iso(),
         "sourceId": source["id"],
         "sourceName": source["name"],
@@ -266,6 +269,14 @@ def fetch_yahoo_chart(source: dict[str, Any]) -> dict[str, Any]:
     if value is None:
         raise FetchError("PARSE_ERROR", f"Yahoo chart had no numeric value for {symbol}")
     as_of = parse_epoch(meta.get("regularMarketTime") or (valid[-1][0] if valid else None))
+    session_date = ""
+    session_timestamp = meta.get("regularMarketTime") or (valid[-1][0] if valid else None)
+    if session_timestamp is not None:
+        try:
+            exchange_tz = ZoneInfo(str(meta.get("exchangeTimezoneName") or "UTC"))
+        except Exception:
+            exchange_tz = UTC
+        session_date = dt.datetime.fromtimestamp(float(session_timestamp), UTC).astimezone(exchange_tz).date().isoformat()
     as_of_date = parse_iso(as_of)
     if valid and as_of_date:
         completed = [
@@ -277,7 +288,7 @@ def fetch_yahoo_chart(source: dict[str, Any]) -> dict[str, Any]:
             previous = completed[-1]
         elif len(valid) >= 2:
             previous = valid[-2][1]
-    return candidate(source, value, previous_close=previous, as_of=as_of, raw_reference=symbol)
+    return candidate(source, value, previous_close=previous, as_of=as_of, session_date=session_date, raw_reference=symbol)
 
 
 def fetch_stooq_quote(source: dict[str, Any]) -> dict[str, Any]:
@@ -308,8 +319,9 @@ def fetch_cboe_history_csv(source: dict[str, Any]) -> dict[str, Any]:
     previous = safe_float(prev.get("CLOSE") or prev.get("Close"))
     if value is None:
         raise FetchError("PARSE_ERROR", "Cboe CSV close was not numeric")
-    as_of = parse_date_time(last.get("DATE") or last.get("Date") or "")
-    return candidate(source, value, previous_close=previous, as_of=as_of, raw_reference="VIX_History.csv")
+    session_date = str(last.get("DATE") or last.get("Date") or "")[:10]
+    as_of = parse_date_time(session_date)
+    return candidate(source, value, previous_close=previous, as_of=as_of, session_date=session_date, raw_reference="VIX_History.csv")
 
 
 def fetch_cnn_fear_greed(source: dict[str, Any]) -> dict[str, Any]:
@@ -629,6 +641,7 @@ def format_market(symbol_id: str, config: dict[str, Any], validation: dict[str, 
         "marketType": cand.get("marketType") or config.get("marketType"),
         "session": cand.get("session") or config.get("session"),
         "asOf": cand.get("asOf") or "",
+        "sessionDate": cand.get("sessionDate") or "",
         "fetchedAt": cand.get("fetchedAt") or iso(),
         "sourceId": cand.get("sourceId"),
         "sourceName": cand.get("sourceName"),

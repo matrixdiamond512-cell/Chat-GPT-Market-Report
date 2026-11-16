@@ -81,6 +81,24 @@ IMPLEMENTATION STATUS: Local implementation complete. Full Python suite 102/102,
 
 NEXT NECESSARY ACTION: Await code review on Draft PR #75. Keep the PR unmerged until provider provenance and external nonproduction acceptance are separately completed. Do not merge as part of this task.
 
+## Issue #205 — morning close acquisition and direct TEST_ONLY execution (ADD, 2026-11-16)
+
+PRIMARY OBJECTIVE: For each required 08:00 market row, acquire a date-correct close with attributable source/value/change evidence; execute acquisition directly from an isolated Cloud Run Job and prove TEST_ONLY Sheets write/readback before any production cutover.
+
+ACTIVE PROFILE: data-tool. Change request `MR-CLOSE-ACQUISITION-P0-20261116-01`; source Issue #205. Base HEAD `b52940a2324c14f788c13a858dfc97957b5cd4ba`.
+
+ACCEPTANCE: 28-row/186-column source mapping; exact market-session dates and source provenance; regression checks for calendar, weekend BTC, HTTP 404, numeric/change validation, divergence and preserved Sheets state; current-day 07:50 Cloud Run acquisition; isolated TEST_ONLY write + independent readback + idempotent same-date rerun; GCS generation-pinned evidence. Each stage is separate. PARTIAL cannot be promoted to verified.
+
+CONSTRAINTS: Keep PR #204 Draft/unmerged. No production sheet/service/Scheduler changes or production cutover. TEST_ONLY Sheet ID from Issue #205 is `1KBDBa-m35ZgleJpD-uPrxOHafIECjfKw4k1nL2HzDLs`; the unrelated “Market Data API Test” spreadsheet is not an E2E target. No service-account private keys. Do not infer market close from a current quote, stale value, mismatched timezone date, or unverified futures contract.
+
+OUT OF SCOPE: Main merge, production deployment/cutover, 20-business-day stability, publication/Docs/Pages, and declaring complete while any required market item is not verified.
+
+IMPLEMENTATION STATUS: Acquisition/source validation, isolated Cloud Run Job code path, ADC Sheets allowlist, GCS evidence writer, and regression fixtures are implemented locally. 62 targeted tests, compileall, and `git diff --check` PASS. Hosted CI, live source sample, Cloud Run Job deployment/execution, isolated Sheets readback, one-shot scheduler observation, and formal fixed-ID Google Docs synchronization are NOT_RUN. Market completeness and 07:50 timing remain NOT_RUN.
+
+OPEN OUTCOMES: (1) verify remaining per-market source mapping and exact session/close semantics; unverified futures, Nikkei VI, Fear & Greed and yields remain UNAVAILABLE; (2) build/push candidate and obtain exact-final-HEAD CI; (3) inspect existing TEST_ONLY Cloud resources and provision only after comparing the exact diff/permissions; (4) live source-to-TEST_ONLY Sheets E2E; (5) independently scheduled 07:50 execution and cutoff evidence; (6) separately approved production transition.
+
+NEXT NECESSARY ACTION: Complete source review, record evidence, commit and attempt hosted branch validation. Cloud Shell authorization remains blocked; do not merge or change production.
+
 ## Fixture / production trust separation — 2026-10-07 (CORRECT)
 
 CORRECTION: The `fixture-test-only` identity must never be accepted as production trust, even when a sufficiently long key is configured. Apps Script trust configuration and production verifier reject it. Python signer defaults reject it; fixture signing requires explicit test-only authorization. The signed review schema and HMAC canonical payload remain unchanged.

@@ -17,6 +17,10 @@ import json
 import re
 from pathlib import Path
 from typing import Any
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from repair_morning_daily_references import expected_prior_session
 
 ROOT=Path(__file__).resolve().parents[1]
 LATEST=ROOT/"data/latest-report.json"
@@ -43,7 +47,7 @@ def save(path:Path,payload:Any)->None:
 
 
 def expected_prior(report_date:dt.date)->dt.date:
-    return report_date-dt.timedelta(days=3 if report_date.weekday()==0 else 1)
+    return expected_prior_session(report_date,"日経225現物")
 
 
 def numeric(value:Any)->float|None:
@@ -81,6 +85,8 @@ def apply_rates_reference(by:dict[str,dict[str,Any]],expected:dt.date)->dict[str
         result["reason"]="existing usable value preserved"
         return result
 
+    row_snapshot = dict(row)
+
     payload=load(RATES,{})
     rates=payload.get("rates") if isinstance(payload,dict) else None
     if not isinstance(rates,list):
@@ -93,14 +99,32 @@ def apply_rates_reference(by:dict[str,dict[str,Any]],expected:dt.date)->dict[str
         return result
     if str(item.get("asOf") or "")!=expected.isoformat():
         result["reason"]=f"rates-bonds date mismatch: {item.get('asOf') or 'empty'}"
+        row.clear(); row.update(row_snapshot)
         return result
     if str(item.get("status") or "").lower() not in {"confirmed","verified"}:
         result["reason"]=f"rates-bonds status not confirmed: {item.get('status') or 'empty'}"
+        row.clear(); row.update(row_snapshot)
+        return result
+    source=str(item.get("source") or "").strip()
+    if not source:
+        result["reason"]="rates-bonds source attribution missing"
+        row.clear(); row.update(row_snapshot)
+        return result
+    if "FRED" in source:
+        source_url="https://fred.stlouisfed.org/series/DGS10"
+    elif "財務省" in source:
+        source_url="https://www.mof.go.jp/english/policy/jgbs/reference/interest_rate/"
+    elif "TradingView" in source:
+        source_url="https://www.tradingview.com/symbols/TVC-JP10Y/"
+    else:
+        result["reason"]=f"rates-bonds source is not in the approved reference map: {source}"
+        row.clear(); row.update(row_snapshot)
         return result
 
     value=numeric(item.get("value"))
     if value is None:
         result["reason"]="Japan 10Y value is not numeric"
+        row.clear(); row.update(row_snapshot)
         return result
     change=numeric(item.get("changeBp"))
     row["value"]=f"{value:.3f}%"
@@ -109,8 +133,19 @@ def apply_rates_reference(by:dict[str,dict[str,Any]],expected:dt.date)->dict[str
     row["direction"]=("上昇" if change is not None and change>0 else "低下" if change is not None and change<0 else "横ばい")
     result["applied"].append("日本10年国債利回り")
     result["source"]=str(item.get("source") or "data/rates-bonds.json")
+    result["sourceUrl"]=source_url
     result["asOf"]=str(item.get("asOf") or "")
     return result
+
+
+def reference_item_is_exact(item: dict[str, Any], label: str, expected: dt.date) -> bool:
+    if str(item.get("date") or "") != expected.isoformat():
+        return False
+    if numeric(item.get("value")) is None:
+        return False
+    source_name = str(item.get("sourceName") or "").strip()
+    source_url = str(item.get("sourceUrl") or "").strip()
+    return bool(source_name and source_url)
 
 
 def main()->int:
@@ -129,7 +164,7 @@ def main()->int:
     if ref.get("dataDate")==expected.isoformat():
         for label,item in (ref.get("items") or {}).items():
             if label not in ALLOWED or label not in by or not isinstance(item,dict):continue
-            if str(item.get("date") or "")!=expected.isoformat():continue
+            if not reference_item_is_exact(item,label,expected):continue
             value=str(item.get("value") or "").strip()
             if not value:continue
             row=by[label]
