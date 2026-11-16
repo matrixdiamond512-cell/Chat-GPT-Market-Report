@@ -16,6 +16,20 @@ JST = dt.timezone(dt.timedelta(hours=9))
 ALLOWED_PROJECT = "market-report-test-only"
 EVIDENCE_BUCKET = "MARKET_CLOSE_TEST_ONLY_EVIDENCE_BUCKET"
 TEST_ONLY_SPREADSHEET_ID = "1KBDBa-m35ZgleJpD-uPrxOHafIECjfKw4k1nL2HzDLs"
+PERSISTENCE_STAGES = ("SHEETS_IMPORT", "CHATGPT_INPUT", "CLOSE_DATA_WRITE", "READBACK_VERIFY")
+
+
+def classify_sync_result(return_code: int, summary: dict[str, Any]) -> dict[str, Any]:
+    """Keep market completeness separate from Sheets persistence success."""
+    stages = summary.get("stages") if isinstance(summary.get("stages"), dict) else {}
+    failed = [stage for stage in PERSISTENCE_STAGES if stages.get(stage) != "SUCCESS"]
+    data_status = summary.get("status")
+    return {
+        "marketDataStatus": data_status if data_status in {"SUCCESS", "PARTIAL"} else "FAILED",
+        "sheetsPersistenceStatus": "SUCCESS" if not failed else "FAILED",
+        "failedPersistenceStages": failed,
+        "syncReturnCode": return_code,
+    }
 
 
 def _required_env(name: str) -> str:
@@ -137,8 +151,9 @@ def run() -> dict[str, Any]:
     market_output_path.parent.mkdir(parents=True, exist_ok=True)
     market_input_path.write_text(json.dumps(market_input, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     run_id = os.environ.get("CLOUD_RUN_EXECUTION", "manual")
-    idempotency_key = f"{report_date}:08:00"
-    evidence_key = f"{report_date}-08-00-{run_id}"
+    late_manual = os.environ.get("MARKET_CLOSE_TEST_ONLY_LATE_RUN") == "1"
+    idempotency_key = f"{report_date}:08:00" + (":TEST_ONLY-MANUAL-LATE" if late_manual else "")
+    evidence_key = f"{report_date}-08-00-{run_id}" + ("-manual-late" if late_manual else "")
 
     # Collector stages write to the disposable container filesystem only.
     from repair_morning_daily_references import expected_prior_session
@@ -146,9 +161,16 @@ def run() -> dict[str, Any]:
     japan_session_date = os.environ.get("MARKET_CLOSE_JAPAN_SESSION_DATE", expected_japan_session)
     if japan_session_date != expected_japan_session:
         raise RuntimeError(f"Japan session override {japan_session_date} does not match expected {expected_japan_session}")
-    # Directly invoke the configured market-data collectors inside Cloud Run;
-    # the invocation is still constrained by the 08:00 frozen-report cutoff.
-    _run("run_market_data_acquisition.py", "--slot", "08:00", "--mode", "full", "--print-summary")
+    # Late manual validation is explicitly separated from the scheduled cutoff.
+    late_manual = os.environ.get("MARKET_CLOSE_TEST_ONLY_LATE_RUN") == "1"
+    if late_manual:
+        if project_id != ALLOWED_PROJECT or os.environ.get("MARKET_CLOSE_ENVIRONMENT") != "TEST_ONLY":
+            raise RuntimeError("late manual mode is restricted to the TEST_ONLY project")
+        market_input["markets"] = {}
+        market_latest.parent.mkdir(parents=True, exist_ok=True)
+        market_latest.write_text(json.dumps(market_input, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    else:
+        _run("run_market_data_acquisition.py", "--slot", "08:00", "--mode", "full", "--print-summary")
     japan_capture = _run_optional("capture_japan_close_reference.py", "--date", japan_session_date)
     morning_capture = _run_optional("fetch_morning_reference.py", "--report-date", report_date, "--slot", "08:00", "--input-path", str(market_input_path), "--output-path", str(market_output_path))
     rates_capture = _run_optional("build_rates_bonds_json.py")
@@ -156,10 +178,12 @@ def run() -> dict[str, Any]:
     _run("apply_japan_close_reference.py")
     merge_verified_28_rows_into_close_snapshot()
     close_sync_path = WORK / "close-sync-status.json"
+    late_manual = os.environ.get("MARKET_CLOSE_TEST_ONLY_LATE_RUN") == "1"
+    idempotency_key = f"{report_date}:08:00" + (":TEST_ONLY-MANUAL-LATE" if late_manual else "")
     close_sync = _run(
         "sync_market_close_sheet.py",
         "--latest", str(ROOT / "data" / "market" / "latest.json"),
-        "--scheduled-time", "07:50",
+        "--scheduled-time", "TEST_ONLY-MANUAL-LATE" if late_manual else "07:50",
         "--run-key", idempotency_key,
         "--status-output", str(close_sync_path),
         "--test-only-adc",
@@ -190,7 +214,8 @@ def run() -> dict[str, Any]:
     morning_reference = json.loads(market_output_path.read_text(encoding="utf-8")) if market_output_path.is_file() else {"items": {}}
 
     coverage_unavailable = repaired_report.get("dataProvenance", {}).get("dailyCloseRepair", {}).get("unavailable", {})
-    status = "verified" if not coverage_unavailable and close_sync_status.get("status") == "SUCCESS" else "partial"
+    sync_classification = classify_sync_result(close_sync.returncode, close_sync_status)
+    status = "verified" if not coverage_unavailable and sync_classification["marketDataStatus"] == "SUCCESS" and sync_classification["sheetsPersistenceStatus"] == "SUCCESS" else "partial"
     evidence = {
         "projectId": project_id,
         "environment": "TEST_ONLY",
@@ -200,9 +225,14 @@ def run() -> dict[str, Any]:
         "testOnlySpreadsheetId": TEST_ONLY_SPREADSHEET_ID,
         "idempotencyKey": idempotency_key,
         "overallStatus": status,
+        **sync_classification,
+        "cutoffStatus": "MISSED_MANUAL_TEST_ONLY" if late_manual else "SCHEDULED_CUTOFF_ENFORCED",
         "marketCount": sum(1 for item in evidence_rows.values() if item.get("dataDate") and item.get("status") != "unavailable"),
+        "verifiedCount": sum(1 for item in evidence_rows.values() if item.get("dataDate") and item.get("status") != "unavailable"),
+        "unavailableCount": len(coverage_unavailable),
         "rowCount": len(evidence_rows),
         "dataDateByLabel": {label: item.get("dataDate") for label, item in evidence_rows.items()},
+        "sourceByLabel": {label: item.get("source") or item.get("sourceName") for label, item in evidence_rows.items()},
         "unavailable": repaired_report.get("dataProvenance", {}).get("dailyCloseRepair", {}).get("unavailable", {}),
         "inputJsonSha256": __import__("hashlib").sha256(input_path.read_bytes()).hexdigest(),
         "outputJsonSha256": __import__("hashlib").sha256((ROOT / "data" / "latest-report.json").read_bytes()).hexdigest(),
@@ -221,7 +251,7 @@ def run() -> dict[str, Any]:
         "publisher": "NOT_RUN",
         "timestamp": dt.datetime.now(JST).isoformat(),
     }
-    evidence_path = ROOT / "logs" / "close-acquisition" / f"{report_date}-08-00-{run_id}.json"
+    evidence_path = ROOT / "logs" / "close-acquisition" / f"{report_date}-08-00-{run_id}{'-manual-late' if late_manual else ''}.json"
     evidence_path.parent.mkdir(parents=True, exist_ok=True)
     evidence_path.write_text(json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     # Upload a create-only object. GCS object generation preconditions prevent
@@ -234,6 +264,12 @@ def run() -> dict[str, Any]:
         raise RuntimeError("TEST_ONLY GCS evidence writer did not return generation-pinned readback proof")
     evidence["evidenceObjectGeneration"] = int(match.group(1))
     evidence["evidenceObjectSha256"] = match.group(2)
+    if sync_classification["sheetsPersistenceStatus"] != "SUCCESS":
+        raise RuntimeError(
+            "TEST_ONLY Sheets persistence failed at "
+            + ", ".join(sync_classification["failedPersistenceStages"])
+            + f"; evidence object generation {evidence['evidenceObjectGeneration']} was preserved"
+        )
     return evidence
 
 

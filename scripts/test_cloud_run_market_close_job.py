@@ -14,6 +14,32 @@ import sync_market_close_sheet as close_sync
 
 
 class CloudRunTestOnlyGuardTests(unittest.TestCase):
+    def test_partial_market_data_can_be_persisted_successfully(self):
+        result = job.classify_sync_result(1, {
+            "status": "PARTIAL",
+            "stages": {stage: "SUCCESS" for stage in job.PERSISTENCE_STAGES},
+        })
+        self.assertEqual(result["marketDataStatus"], "PARTIAL")
+        self.assertEqual(result["sheetsPersistenceStatus"], "SUCCESS")
+        self.assertEqual(result["failedPersistenceStages"], [])
+
+    def test_readback_failure_means_job_persistence_failure(self):
+        result = job.classify_sync_result(1, {
+            "status": "PARTIAL",
+            "stages": {
+                "SHEETS_IMPORT": "SUCCESS", "CHATGPT_INPUT": "SUCCESS",
+                "CLOSE_DATA_WRITE": "SUCCESS", "READBACK_VERIFY": "FAILED",
+            },
+        })
+        self.assertEqual(result["marketDataStatus"], "PARTIAL")
+        self.assertEqual(result["sheetsPersistenceStatus"], "FAILED")
+        self.assertEqual(result["failedPersistenceStages"], ["READBACK_VERIFY"])
+
+    def test_missing_or_failed_write_stage_is_not_success(self):
+        result = job.classify_sync_result(1, {"status": "FAILED", "stages": {"SHEETS_IMPORT": "SUCCESS"}})
+        self.assertEqual(result["sheetsPersistenceStatus"], "FAILED")
+        self.assertIn("CLOSE_DATA_WRITE", result["failedPersistenceStages"])
+
     def test_job_uses_issue_205_allowlisted_isolated_sheet(self):
         self.assertEqual(job.TEST_ONLY_SPREADSHEET_ID, "1KBDBa-m35ZgleJpD-uPrxOHafIECjfKw4k1nL2HzDLs")
 
