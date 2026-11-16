@@ -69,12 +69,16 @@ def _run(
     )
 
 
-def merge_verified_28_rows_into_close_snapshot() -> dict[str, Any]:
+def merge_verified_28_rows_into_close_snapshot(*, allow_missing_input: bool = False) -> dict[str, Any]:
     """Expose only exact-date verified report rows to the existing close writer."""
     contract = __import__("build_chatgpt_report_input")
     snapshot_path = ROOT / "data" / "market" / "latest.json"
     input_path = ROOT / "data" / "market" / "chatgpt-input.json"
     snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
+    if not input_path.is_file():
+        if allow_missing_input:
+            return snapshot
+        raise FileNotFoundError(f"required market input is missing: {input_path}")
     market_input = json.loads(input_path.read_text(encoding="utf-8"))
     markets = snapshot.setdefault("markets", {})
     symbols = {
@@ -195,7 +199,7 @@ def run() -> dict[str, Any]:
     rates_capture = _run_optional("build_rates_bonds_json.py")
     _run("repair_morning_daily_references.py")
     _run("apply_japan_close_reference.py")
-    merge_verified_28_rows_into_close_snapshot()
+    merge_verified_28_rows_into_close_snapshot(allow_missing_input=late_manual)
     close_snapshot = finalize_market_snapshot(market_latest, dt.datetime.now(JST), late_manual=late_manual)
     report_payload_after_repair = json.loads((ROOT / "data" / "latest-report.json").read_text(encoding="utf-8"))
     report_after_repair = report_payload_after_repair.get("latestReport") or report_payload_after_repair.get("report") or report_payload_after_repair
