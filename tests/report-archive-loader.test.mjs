@@ -60,6 +60,7 @@ async function boot({ search = "", fail = [], payloadOverrides = {} } = {}) {
       window.__hooks = { reports: () => reports, select: (d,t) => selectReport(d,t), selected: () => selectedReport };
       window.__loadPromise = init();`);
   assert.notEqual(testable, source, "test hook insertion point");
+  vm.runInContext(fs.readFileSync(path.join(root, "assets/js/report-archive-source.js"), "utf8"), context);
   vm.runInContext(testable, context, { filename: "report-core-v3.js" });
   await window.__loadPromise;
   return { window, nodes, calls, warnings };
@@ -161,3 +162,14 @@ test("all sources down produces visible error; partial archive failure still all
   assert.equal(partial.window.MarketReportLastRendered.fullText, archiveSlot("2026-10-30","21:00").fullText);
   assert.match(partial.nodes.get("reportStatus").textContent,/一部データ未取得/);
 });
+
+ test('every saved revision is available in the report selector with exact source body', async () => {
+ const {window}=await boot();
+ for(const [file,payload] of archives) for(const record of payload.reports){
+   const view=window.MarketReportArchiveSource.normalize(record,payload.sourceFolderId);
+   assert.ok(view, file+' '+slotKey(record));
+   window.__hooks.select(record.date,record.time);
+   assert.equal(window.MarketReportLastRendered.fullText,record.fullText,slotKey(record));
+   assert.equal(window.MarketReportLastRendered.verifiedAtSlot,false);
+ }
+ });

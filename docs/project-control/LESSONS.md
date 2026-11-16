@@ -10,3 +10,5 @@
 - Phase E: UNKNOWN recovery must restore a successful prior state even when the remaining run has no new checkpoint. Persist validated publication observations before attempting Receipt creation.
 - Phase E: Simulation markers and disabled production adapters bound the evidence claim. Synthetic SHA/DOM/PNG binding can establish E3 recovery behavior, not E5 real publication.
 - Infographic validation: require exact section headings and bind each number to a typed market row, timestamp, unit and source section; caller-supplied PASS flags cannot stand in for provider-backed Vision or live readback.
+
+- Archive manifests must be shared between dashboard and full report; metadata format drift must be normalized in a display-only adapter without changing publication eligibility. Test every saved source slot and forbid inference of actual capital flows from conditional prose.

@@ -6,6 +6,11 @@ on:
     paths:
       - 'report.html'
       - 'assets/js/report-core-v3.js'
+      - 'assets/js/report-archive-source.js'
+      - 'assets/js/top-dashboard.js'
+      - 'data/report-archive-manifest.json'
+      - 'data/dashboard-drive-archive*.json'
+      - 'tests/dashboard-archive-completeness.test.mjs'
       - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
       - 'scripts/validate_market_report_dom.js'
@@ -21,6 +26,11 @@ on:
     paths:
       - 'report.html'
       - 'assets/js/report-core-v3.js'
+      - 'assets/js/report-archive-source.js'
+      - 'assets/js/top-dashboard.js'
+      - 'data/report-archive-manifest.json'
+      - 'data/dashboard-drive-archive*.json'
+      - 'tests/dashboard-archive-completeness.test.mjs'
       - 'assets/js/report-markdown-fulltext-fix.js'
       - 'assets/js/morning-report-qa-gate.js'
       - 'scripts/validate_market_report_dom.js'
@@ -47,7 +57,7 @@ jobs:
           node-version: '24'
 
       - name: Test archived report loading and publication separation
-        run: node --test tests/report-archive-loader.test.mjs
+        run: node --test tests/report-archive-loader.test.mjs tests/dashboard-archive-completeness.test.mjs
 
       - name: Test Markdown table rendering and archive market section
         run: node --test tests/report-markdown-table-rendering.test.mjs

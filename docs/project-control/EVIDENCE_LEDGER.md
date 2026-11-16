@@ -86,3 +86,14 @@ Local implementation evidence E1/E2 (candidate only): connected the last eligibl
 - Scope: development onboarding and documentation only. Unchanged by this task: `docs/system/requirements.md`, `docs/system/specification.md`, `docs/system/operations.md`, fixed-ID Google Docs, Apps Script runtime settings, market data, reports, images, publication receipts, Pages deploy scripts, schedules, paid API credentials.
 - GitHub connector returned file commit SHA values; final PR diff/readback and CI evidence must be checked after the PR is created. Local application regression tests = NOT_RUN; second-PC Codex sign-in/clone = NOT_RUN; production E2E = NOT_RUN; Google Drive formal document write/readback = NOT_RUN because no formal functional specification change is made.
 - Unresolved: GitHub PR review/merge, exact-head CI check, partner-PC permissions and test (#173), existing 2026-10-20 publication failures and other production audit findings (#103), existing PR #172 and #170.
+
+
+## PORTAL-CONTENT-COMPLETENESS-20261116-01（2026-11-16 JST）
+
+両画面は `data/report-archive-manifest.json` の同じ保存本文一覧と `assets/js/report-archive-source.js` の表示専用アダプターを使用する。Doc ID/URL、revision、本文長、日時、出典フォルダーを確認し、形式差（fileId/revision/URL形式/BOM）で有効な本文を落とさない。元本文と正式公開状態を変更しない。後日再構成版は定時原本に昇格せず、参考価格と実測資金フローを混同しない。
+
+Driveから10枠を追加回復し、保存本文91枠を検証。見出し別の主導市場・シナリオ・結論・時系列表示を修正。未取得値を推測せず、残る原本欠落5枠は `data/report-content-gaps.json` に記録する（10/20 08、10/22 12、11/04 08、11/06 08・12）。10/20 08と10/22 12は復旧メモ、11/06 12は空Doc。
+
+検証：Nodeの対象20テストPASS（E2、実保存本文を使ったアダプター/選択/表示回帰）。公開ブラウザは変更前を観測。変更後の公開DOM・Pages反映はNOT_RUN。Google Docs固定ID文書への同期は未実施。定時配信・正式原本・receipt・スケジュールは本変更の対象外。
+
+Run ID: PORTAL-CONTENT-COMPLETENESS-20261116-01. Source base: c45d54206a8a44499efdac93f29520686265151d. Drive monthly folder listings and 13 source Docs read read-only; 10 report bodies recovered; one empty Doc and two recovery notices excluded. Existing tests assert fullText equality for every stored archive. Evidence ceiling: E2 for changed candidate; E4 for prior public missing-content observation only.
