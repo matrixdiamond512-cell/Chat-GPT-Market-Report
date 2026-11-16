@@ -187,3 +187,15 @@ GitHub main advanced from `c3dae9fdaea7c05d8006006b6fb052a28e2535f4` to `9615882
 Main advanced four commits from `9615882cf018479bf3cb2eeeb6f6b73367ea764b` to `d6420e2c3d53a16304bb8d301677e2db4c41da0c`. The actual range changes 15 production data files only (Japan stocks, Nikkei/US dollar-yen supply-demand and market references); no acquisition/evidence code, workflow, or tests changed. Merged without conflicts as `415c28c6d`; local compare 0 behind / 14 ahead before this record commit.
 
 Verified on the synced tree: `data/market/latest.json` is `2026-10-16T20:16:17+09:00`, slot `21:00`, `verified`, with no required-field gaps; `data/report-evidence/2026-10-16_21-00-r1.json` and `reports/2026-10-16_21-00.json` are absent; `reports.json` latest is 2026-10-13 16:00. Do not reconstruct or publish the missed 21:00 slot. The recovery PR applies to future eligible acquisitions. Following local/final-head CI, the user has now directed PR #156 to be reviewed and merged; verify head/base once more, mark ready, and merge the exact approved head. Then observe future-slot production acceptance separately.
+
+
+## PORTAL-CONTENT-COMPLETENESS-20261116-01
+PRIMARY OBJECTIVE: 両画面で保存済みの分析内容を欠落なく閲覧でき、未取得データ・欠落原本を識別できる。
+Classification: ADD; earlier delivery objectives remain open.
+ACTIVE PROFILE: dashboard + data-tool.
+ACCEPTANCE: 同一一覧、原文不変、全保存枠の選択、本文見出し/時系列の反映、参考版と正式版の区別、公開DOM確認。
+CONSTRAINTS: existing dirty workspace preserved; no fabricated prices/evidence; no canonical/receipt/schedule changes.
+FORBIDDEN SUBSTITUTE: test PASS alone is not public portal recovery.
+STATUS: IN_PROGRESS; 91 source slots adapted, 10 slots recovered, 20 focused tests PASS.
+OPEN OUTCOMES: public deployment/readback; 5 missing original bodies; fixed-ID Docs synchronization.
+NEXT NECESSARY ACTION: branch/CI review and public DOM acceptance, then source-owner recovery for the 5 genuinely missing bodies.

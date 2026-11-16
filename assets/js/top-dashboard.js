@@ -1148,6 +1148,8 @@ function renderList(id, values, fallback) {
 
 /* Historical archive is display-only and never passes formal publication gates. */
 function isDashboardHistoricalArchive(r) {
+  if ([r?.originalReportStatus,r?.report_status,r?.publicationStatus,r?.status].some(s => /^(?:PUBLISHED|FORMALLY_PUBLISHED)$/.test(s || ""))) return false;
+  if (window.MarketReportArchiveSource?.normalize(r, r?.sourceFolderId)) return true;
   if (!r || r.archiveStatus !== "HISTORICAL_ARCHIVE" || r.verifiedAtSlot !== false) return false;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(r.date || "")) || !REPORT_TIMES.includes(r.time)) return false;
   if (typeof r.fullText !== "string" || r.fullText.length < 250) return false;
@@ -1178,6 +1180,7 @@ function isDashboardReconstructedArchive(r) {
 function archiveSectionBody(report, pattern) {
   const lines = String(report.fullText || "").replace(/\r/g, "").split("\n");
   const header = line => {
+    if (Array.isArray(report.archiveSectionHeadings) && report.archiveSectionHeadings.includes(String(line || "").trim())) return String(line).trim();
     const m=String(line||"").trim().match(/^(?:\d{1,2}(?:補)?[．.]\s*|#{1,4}\s*|【)(.+?)(?:】)?$/);
     if (m) {
       const title=m[1].replace(/】$/, "").trim();
@@ -1188,6 +1191,7 @@ function archiveSectionBody(report, pattern) {
       return title;
     }
     const bare=String(line||"").trim();
+    if (/^(?:個別市場見通し|主導市場|シナリオ|結論(?:・市場スタンス)?|市場の出来事と反応の時系列|総合判断・今日の相場テーマ|主要6市場：短期見通し|前営業日終値と朝の市場データ)$/.test(bare)) return bare;
     if (/^(?:総合判断|主要市場データ|今日の相場テーマ|前回からの変化|市場別価格・見通し.*|クロスアセット資金フロー|需給・ポジション|重要ニュース|材料と値動きの整合性|今日の主導市場|メインシナリオ|代替シナリオ|崩れる条件|次の時間帯への引き継ぎ|NY市場の流れ)$/.test(bare)) return bare;
     return "";
   };
@@ -1291,7 +1295,7 @@ function archiveDashboardSummary(record) {
   const summary = section(/総合判断|今日の相場テーマ/);
   const timeline = section(/時系列/);
   const mainPrices = section(/前営業日終値・主要市場データ|主要市場データ/);
-  const outlook = section(/主要6市場の短期見通し|6市場の個別見通し|主要6市場の|主要6市場の短期|個別6市場の/);
+  const outlook = section(/主要6市場の短期見通し|6市場の個別見通し|主要6市場の|主要6市場の短期|個別6市場の|個別市場見通し/);
   const wholeText=String(record.fullText||"").replace(/\r/g,"");
   const blockByAsset = label => {
     const lines=wholeText.split("\n");
@@ -1433,12 +1437,12 @@ function archiveDashboardSummary(record) {
       reaction: String(row.reaction || ""), region: String(row.region || "当時の市場"),
       importance: String(row.importance || "出来事"), next: String(row.next || "保存本文の時系列")
     })) : split(timeline)
-    .filter(s => s.includes("｜出来事：") && /株|市場|金利|発表|決算|取引|先物|ニュース/.test(s))
+    .filter(s => /株|市場|金利|発表|決算|取引|先物|ニュース|円|ドル/.test(s) && (s.includes("｜出来事：") || /(?:\d{1,2}\/\d{1,2}|\d{1,2}:\d{2}|NY|東京|欧州)/.test(s)))
     .slice(0, 12)
     .map(s => ({ time: s.match(/\b[0-2]?\d:[0-5]\d\b/)?.[0] || "時間帯", text: s }));
   const originalNews = split(section(/重要ニュース|ニュースと影響市場|ニュースと波及/));
   const news = originalNews.length ? originalNews : timelineRows.slice(0, 4).map(r => r.text);
-  const main = section(/メインシナリオ/);
+  const main = section(/メインシナリオ/) || section(/^シナリオ$/) || section(/シナリオ失効条件/);
   const scenarios = section(/メイン・代替シナリオ/);
   const adapted = {
     ...record,
@@ -1451,17 +1455,18 @@ function archiveDashboardSummary(record) {
     theme: (split(summary).slice(0, 3).join(" ") || split(section(/今日の相場テーマ/)).slice(0, 3).join(" ") || split(wholeText).slice(1, 4).filter(v=>!/^(?:作成|復旧作成|対象時点|情報基準|保存復旧|復旧版)/.test(v)).join(" ")).slice(0, 560),
     changes: record.time === "12:00"
       ? split(summary).slice(0, 2)
-      : split(section(/版からの変化|からの変化/)).slice(0, 5),
+      : split(section(/版からの変化|からの変化|からの主な変化/)).slice(0, 5),
     consistency: split(section(/材料と値動きの整合性/)).slice(0, 5),
-    leadingMarket: split(section(/主導市場・クロスアセット|材料と値動きの整合性・主導市場|今日の主導市場/)).slice(0, 3).join(" ") || split(summary)[0] || "",
-    crossAssetFlow: split(section(/クロスアセット資金フロー|主導市場・クロスアセット/)).slice(0, 6),
+    leadingMarket: split(section(/主導市場・クロスアセット|材料と値動きの整合性・主導市場|今日の主導市場|^主導市場$/)).slice(0, 3).join(" ") || split(summary)[0] || "",
+    crossAssetFlow: split(section(/クロスアセット資金フロー|主導市場・クロスアセット|整合性・クロスアセット/)).slice(0, 6),
     news,
     positioning: split(section(/需給・ポジション/)).slice(0, 6),
+    conclusion: section(/^結論(?:・市場スタンス)?$/),
     mainScenario: split(main || scenarios).slice(0, 5).join(" "),
-    alternativeScenario: split(section(/代替シナリオ/) || scenarios).slice(0, 5).join(" "),
-    breakConditions: split(section(/崩れる条件/)).slice(0, 5).join(" "),
+    alternativeScenario: split(section(/代替シナリオ/) || scenarios || section(/^シナリオ$/) || section(/シナリオ失効条件/)).slice(0, 5).join(" "),
+    breakConditions: split(section(/崩れる条件|シナリオ失効条件/)).slice(0, 5).join(" "),
     riskManagement: split(section(/リスク管理|崩れる条件/)).slice(0, 5),
-    handover: split(section(/引き継ぎ/)).slice(0, 5)
+    handover: split(section(/引き継ぎ|引継ぎ/)).slice(0, 5)
   };
 
   // The Oct 19 documents were read back from the owner's October Drive folder.
@@ -1869,15 +1874,15 @@ function renderFlowList(id, items, type, emptyText) {
 function renderFlow(report) {
   const inflow = explicitFlowItems(report, "in");
   const outflow = explicitFlowItems(report, "out");
-  const inferredIn = uniq(inferredFlowItems(report, "up").concat(semanticFlowItems(report, "in")));
-  const inferredOut = uniq(inferredFlowItems(report, "down").concat(semanticFlowItems(report, "out")));
+  const inferredIn = isDashboardHistoricalArchive(report) ? [] : uniq(inferredFlowItems(report, "up").concat(semanticFlowItems(report, "in")));
+  const inferredOut = isDashboardHistoricalArchive(report) ? [] : uniq(inferredFlowItems(report, "down").concat(semanticFlowItems(report, "out")));
   const inItems = inflow.length ? inflow : inferredIn;
   const outItems = outflow.length ? outflow : inferredOut;
   const featureItems = flowFeatures(report);
 
   if ($("flowInItems") || $("flowOutItems") || $("flowFeatureItems")) {
-    renderFlowList("flowInItems", inItems, "in", "流入資産がJSONにありません");
-    renderFlowList("flowOutItems", outItems, "out", "流出資産がJSONにありません");
+    renderFlowList("flowInItems", inItems, "in", "保存本文に確認済みの流入資産の記載なし");
+    renderFlowList("flowOutItems", outItems, "out", "保存本文に確認済みの流出資産の記載なし");
     renderFlowList("flowFeatureItems", featureItems, "feature", "フローの特徴がJSONにありません");
     return;
   }
@@ -2394,6 +2399,7 @@ function renderMarketLens(report) {
 }
 
 function conclusionFrom(report) {
+  if (report.conclusion) return cleanText(report.conclusion, Infinity);
   const lead = cleanText(report.leadingMarket || "", Infinity);
   const main = cleanText(report.mainScenario || "", Infinity);
   const risk = cleanText(topList(report.riskManagement, 1, Infinity)[0] || breakConditionsFromReport(report, Infinity) || "", Infinity);
@@ -2557,28 +2563,18 @@ async function loadDashboardReports() {
   const reportList = [...bySlot.values()];
   // User-owned Google Docs kept in the canonical monthly folder, read back at
   // the revision recorded in each archive file. Never grant formal-publication status.
-  const driveArchivePaths = [
-    "data/dashboard-drive-archive-2026-10-01-05.json",
-    "data/dashboard-drive-archive-2026-10-06-07.json",
-    "data/dashboard-drive-archive-2026-10-09-12.json",
-    "data/dashboard-drive-archive-2026-10-external.json",
-    "data/dashboard-drive-archive-2026-10-19.json",
-    "data/dashboard-drive-archive-2026-10-26.json",
-    "data/dashboard-drive-archive-2026-10-27.json",
-    "data/dashboard-drive-archive-2026-10-28.json",
-    "data/dashboard-drive-archive-2026-10-29.json",
-    "data/dashboard-drive-archive-2026-10-30.json",
-    "data/dashboard-drive-archive-2026-11-02.json",
-    "data/dashboard-drive-archive-2026-11-03.json",
-    "data/dashboard-drive-archive-2026-11-04.json",
-    "data/dashboard-drive-archive-2026-11-05.json",
-    "data/dashboard-drive-archive-2026-11-06.json",
-    "data/dashboard-drive-archive-2026-11-09.json",
-    "data/dashboard-drive-archive-2026-11-10.json",
-    "data/dashboard-drive-archive-2026-11-11.json",
-    "data/dashboard-drive-archive-2026-11-13.json",
-    "data/dashboard-drive-archive-2026-11-16.json"
-  ];
+  let archiveManifest = {schemaVersion:1,files:[]};
+  try {
+  const archiveManifestResponse = await fetch('data/report-archive-manifest.json?ts=' + Date.now(), {cache:'no-store'});
+  if (!archiveManifestResponse.ok) throw new Error('保存記録一覧を取得できません');
+  archiveManifest = await archiveManifestResponse.json();
+  if (archiveManifest.schemaVersion !== 1 || !Array.isArray(archiveManifest.files)) throw new Error('保存記録一覧の形式が不正です');
+  } catch (error) {
+    console.warn('[dashboard archive manifest]', error.message);
+    errors.push(error.message);
+    archiveManifest = {schemaVersion:1,files:[]};
+  }
+  const driveArchivePaths = archiveManifest.files.filter(entry => /^data\/dashboard-drive-archive-\d{4}-\d{2}(?:-\d{2}(?:-\d{2})?|-external)\.json$/.test(entry?.path || '')).map(entry => entry.path);
   const drivePayloads = await Promise.all(driveArchivePaths.map(async path => {
     try {
       const response = await fetch(path + "?ts=" + Date.now(), { cache: "no-store" });
@@ -2590,7 +2586,7 @@ async function loadDashboardReports() {
       if (payload?.kind !== "HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION"
           || payload?.sourceFolderId !== expectedFolder
           || !Array.isArray(payload.reports)) throw new Error("source archive schema mismatch");
-      return payload.reports.filter(isDashboardHistoricalArchive).map(archiveDashboardSummary);
+      return payload.reports.map(record => window.MarketReportArchiveSource ? window.MarketReportArchiveSource.normalize(record, expectedFolder) : (isDashboardHistoricalArchive(record) ? record : null)).filter(Boolean).map(archiveDashboardSummary);
     } catch (error) {
       console.warn("[dashboard Drive archive] unavailable", path, error.message);
       return [];

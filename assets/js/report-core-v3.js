@@ -26,7 +26,7 @@ function isArchivedRecovery(r) {
     && r.verifiedAtSlot === false
     && /^\d{4}-\d{2}-\d{2}$/.test(String(r.date || ""))
     && REPORT_TIMES.includes(r.time)
-    && typeof r.fullText === "string" && r.fullText.replace(/^#{1,3}\s+/, "").startsWith(String(r.title || ""))
+    && typeof r.fullText === "string" && r.fullText.replace(/^\uFEFF/, "").replace(/^#{1,3}\s+/, "").startsWith(String(r.title || ""))
     && String(r.archiveNotice || "").length > 10;
 }
 function sortReports(list) {
@@ -415,6 +415,7 @@ function renderDocument(report) {
 function render() { if (!selectedReport) return; renderControls(selectedReport); renderDocument(selectedReport); window.MarketReportLastRendered = selectedReport; window.dispatchEvent(new CustomEvent("market-report-rendered", { detail: { report: selectedReport } })); }
 
 function normalizeArchiveEntry(report, sourcePath, expectedFolderId) {
+  if (window.MarketReportArchiveSource) return window.MarketReportArchiveSource.normalize(report, expectedFolderId);
   const reject = (reason) => {
     console.warn("[market report archive validation]", sourcePath, report?.date || "date:unknown",
       report?.time || "time:unknown", "REJECTED", reason);
@@ -519,7 +520,7 @@ async function init() {
   const seenPaths = new Set();
   for (const entry of manifest.files) {
     const path = entry?.path;
-    if (typeof path !== "string" || !/^data\/dashboard-drive-archive-\d{4}-\d{2}-\d{2}\.json$/.test(path) ||
+    if (typeof path !== "string" || !/^data\/dashboard-drive-archive-\d{4}-\d{2}(?:-\d{2}(?:-\d{2})?|-external)\.json$/.test(path) ||
         typeof entry.sourceFolderId !== "string" || !entry.sourceFolderId) {
       warnings.push("保存記録一覧に不正な項目があります");
       console.warn("[market report archive manifest] REJECTED invalid path/sourceFolderId", path || "path:unknown");
