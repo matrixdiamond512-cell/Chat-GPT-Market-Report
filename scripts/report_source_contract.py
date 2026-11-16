@@ -37,9 +37,12 @@ def body_hash(text: str) -> str:
 
 def heading(line: str) -> str:
     line = line.strip().strip("\ufeff")
-    explicit = re.match(r"^(?:【(.+?)】|#{1,6}\s+(.+)|\d{1,2}[．.、)）]\s*(.+))$", line)
+    explicit = re.match(r"^(?:【(.+?)】|#{1,6}\s+(.+)|(?:第?\d{1,2})\s*[．.、)）|｜:：]\s*(.+))$", line)
     if explicit:
         return next(value.strip() for value in explicit.groups() if value)
+    labeled_conclusion = re.match(r"^(結論|最終判断|まとめ)[：:]\s*\S", line)
+    if labeled_conclusion:
+        return labeled_conclusion.group(1)
     return line if PLAIN_HEADING.fullmatch(line) else ""
 
 

@@ -3,9 +3,16 @@ name: Freeze pre-draft report-slot evidence
 on:
   workflow_dispatch:
     inputs:
+      operation:
+        description: "Select regular Evidence generation or a TEST ONLY WIF probe."
+        required: true
+        type: choice
+        default: "freeze_evidence"
+        options: ["freeze_evidence", "test_wif_readonly", "test_wif_create_only"]
       report_slot:
         description: "Current JST report slot only. Past slots are rejected."
         required: true
+        default: "08:00"
         type: choice
         options: ["08:00", "12:00", "16:00", "21:00"]
   schedule:
@@ -19,13 +26,17 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: freeze-pre-draft-report-slot-evidence
-  cancel-in-progress: false
-
 jobs:
   freeze:
+    if: github.event_name == 'schedule' || inputs.operation == 'freeze_evidence'
     runs-on: ubuntu-latest
+    concurrency:
+      # Separate slots can proceed independently; duplicate attempts for one slot serialize.
+      group: freeze-pre-draft-report-slot-evidence-${{ github.event.schedule || inputs.report_slot }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      id-token: write
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -56,28 +67,61 @@ jobs:
           esac
           echo "date=$(TZ=Asia/Tokyo date +%F)" >> "$GITHUB_OUTPUT"
           echo "slot=$SLOT" >> "$GITHUB_OUTPUT"
-      - name: Reject any run that starts at or after the report cutoff
+      - name: Apply the matching slot guard
         env:
           REPORT_DATE: ${{ steps.slot.outputs.date }}
           REPORT_SLOT: ${{ steps.slot.outputs.slot }}
         run: |
           python - <<'PY'
           import os
-          from scripts.persist_report_slot_evidence import require_before_slot
-          require_before_slot(os.environ["REPORT_DATE"], os.environ["REPORT_SLOT"])
+          from scripts.persist_report_slot_evidence import require_evidence_slot_guard
+          require_evidence_slot_guard(os.environ["REPORT_DATE"], os.environ["REPORT_SLOT"])
           print("LIVE_PRE_SLOT_WINDOW=PASS")
           PY
+      - name: Install pinned Google Storage client for the 08:00 path only
+        if: steps.slot.outputs.slot == '08:00'
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-issuance.txt
+      - name: Require 08:00 GCS WIF configuration
+        if: steps.slot.outputs.slot == '08:00'
+        env:
+          WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          EVIDENCE_SERVICE_ACCOUNT: ${{ vars.REPORT_EVIDENCE_SERVICE_ACCOUNT }}
+          EVIDENCE_PROJECT_ID: ${{ vars.REPORT_EVIDENCE_PROJECT_ID }}
+          EVIDENCE_BUCKET: ${{ vars.REPORT_EVIDENCE_BUCKET }}
+        run: |
+          test -n "$WIF_PROVIDER" || { echo "EVIDENCE_AUTH_NOT_CONFIGURED: GCP_WORKLOAD_IDENTITY_PROVIDER"; exit 1; }
+          test -n "$EVIDENCE_SERVICE_ACCOUNT" || { echo "EVIDENCE_AUTH_NOT_CONFIGURED: REPORT_EVIDENCE_SERVICE_ACCOUNT"; exit 1; }
+          test -n "$EVIDENCE_PROJECT_ID" || { echo "EVIDENCE_AUTH_NOT_CONFIGURED: REPORT_EVIDENCE_PROJECT_ID"; exit 1; }
+          test -n "$EVIDENCE_BUCKET" || { echo "EVIDENCE_AUTH_NOT_CONFIGURED: REPORT_EVIDENCE_BUCKET"; exit 1; }
+      - name: Authenticate to GCS using GitHub OIDC and Workload Identity Federation
+        if: steps.slot.outputs.slot == '08:00'
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.REPORT_EVIDENCE_SERVICE_ACCOUNT }}
+          create_credentials_file: true
       - name: Validate writer and offline regression tests
         run: |
-          python -m py_compile scripts/persist_report_slot_evidence.py
-          python -m unittest tests.test_report_slot_evidence -v
-      - name: Verify an existing immutable artifact before retrying acquisition
+          python -m py_compile scripts/persist_report_slot_evidence.py scripts/reporting/scheduler_reliability.py
+          python -m unittest tests.test_report_slot_evidence tests.test_scheduler_reliability -v
+      - name: Reconcile or validate existing slot evidence before acquisition
         id: existing
         env:
           REPORT_DATE: ${{ steps.slot.outputs.date }}
           REPORT_SLOT: ${{ steps.slot.outputs.slot }}
+          REPORT_EVIDENCE_BUCKET: ${{ vars.REPORT_EVIDENCE_BUCKET }}
         run: |
-          python - <<'PY'
+          set -euo pipefail
+          if [ "$REPORT_SLOT" = "08:00" ]; then
+            python scripts/persist_report_slot_evidence.py \
+              --date "$REPORT_DATE" \
+              --slot "$REPORT_SLOT" \
+              --output-dir data/report-evidence \
+              --gcs-bucket "$REPORT_EVIDENCE_BUCKET" \
+              --gcs-prefix pre-draft-evidence \
+              --reconcile-gcs
+          else
+            python - <<'PY'
           import os
           from pathlib import Path
           from scripts.persist_report_slot_evidence import validate_stored_slot_evidence
@@ -94,6 +138,7 @@ jobs:
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
               output.write("ready=true\n")
           PY
+          fi
       - name: Check whether a fresh verified acquisition already exists
         id: input
         if: steps.existing.outputs.ready != 'true'
@@ -116,7 +161,9 @@ jobs:
               build_slot_evidence(os.environ["REPORT_DATE"], os.environ["REPORT_SLOT"],
                                   json.loads(raw), raw, max_age_minutes=15)
           except (ValueError, KeyError, TypeError) as exc:
-              print("INPUT_NOT_ELIGIBLE: " + str(exc))
+              message = str(exc)
+              category = "INPUT_SLOT_MISMATCH" if "INPUT_SLOT_MISMATCH" in message else ("ACQUISITION_FAILED" if "ACQUISITION_FAILED" in message else "INPUT_STALE")
+              print(category + ": " + message)
               sys.exit(2)
           print("CURRENT_VERIFIED_INPUT=PASS")
           PY
@@ -134,26 +181,45 @@ jobs:
           ACTUAL_TIME="$(TZ=Asia/Tokyo date +%H:%M)"
           python - "$TARGET_DATE" "$REPORT_SLOT" <<'PY'
           import sys
-          from scripts.persist_report_slot_evidence import require_before_slot
-          require_before_slot(sys.argv[1], sys.argv[2])
+          from scripts.persist_report_slot_evidence import require_evidence_slot_guard
+          require_evidence_slot_guard(sys.argv[1], sys.argv[2])
           PY
-          python scripts/run_market_data_window.py \
+          if ! python scripts/run_market_data_window.py \
             --slot "$REPORT_SLOT" \
             --times "$ACTUAL_TIME" \
             --trigger-source report_evidence_pre_slot_recovery \
             --max-catchup-minutes 5 \
             --mode auto \
-            --recover-expired
-      - name: Freeze only verified current-slot acquisition, with live cutoff guard
-        if: steps.existing.outputs.ready != 'true'
+            --recover-expired; then
+            echo "ACQUISITION_FAILED" >&2
+            exit 1
+          fi
+      - name: Freeze and persist 08:00 Evidence to canonical GCS
+        if: steps.slot.outputs.slot == '08:00' && steps.existing.outputs.ready != 'true'
+        env:
+          REPORT_EVIDENCE_BUCKET: ${{ vars.REPORT_EVIDENCE_BUCKET }}
+          REPORT_EVIDENCE_PROJECT_ID: ${{ vars.REPORT_EVIDENCE_PROJECT_ID }}
         run: |
           python scripts/persist_report_slot_evidence.py \
             --date "${{ steps.slot.outputs.date }}" \
             --slot "${{ steps.slot.outputs.slot }}" \
+            --output-dir data/report-evidence \
+            --gcs-bucket "$REPORT_EVIDENCE_BUCKET" \
+            --gcs-prefix pre-draft-evidence \
+            --max-age-minutes 15 \
+            --persist-gcs \
+            --require-live-before-slot
+      - name: Freeze non-08:00 Evidence using the legacy local-only path
+        if: steps.slot.outputs.slot != '08:00' && steps.existing.outputs.ready != 'true'
+        run: |
+          python scripts/persist_report_slot_evidence.py \
+            --date "${{ steps.slot.outputs.date }}" \
+            --slot "${{ steps.slot.outputs.slot }}" \
+            --output-dir data/report-evidence \
             --max-age-minutes 15 \
             --require-live-before-slot
       - name: Commit immutable evidence (not a report or publication receipt)
-        if: steps.existing.outputs.ready != 'true'
+        if: steps.existing.outputs.ready != 'true' || steps.existing.outputs.restored == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -168,3 +234,116 @@ jobs:
           git pull --rebase origin main
           git push origin HEAD:main
           echo "PRE_DRAFT_EVIDENCE_PERSISTED: publication remains separately gated."
+
+  test-wif-readonly:
+    if: github.event_name == 'workflow_dispatch' && inputs.operation == 'test_wif_readonly' && github.ref == 'refs/heads/codex/0800-main-issuance-e2e-20261029'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: test-wif-readonly-${{ github.run_id }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - name: Verify the selected branch and workflow identity
+        env:
+          EXPECTED_REF: refs/heads/codex/0800-main-issuance-e2e-20261029
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+        run: |
+          test "$GITHUB_REF" = "$EXPECTED_REF"
+          test "$WORKFLOW_REF" = "matrixdiamond512-cell/Chat-GPT-Market-Report/.github/workflows/freeze-report-slot-evidence.yml@$EXPECTED_REF"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned Google Storage client
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-issuance.txt
+      - name: Authenticate with TEST ONLY Workload Identity Federation
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: projects/765600646675/locations/global/workloadIdentityPools/mr-evidence-test-github/providers/github-pr188-evidence
+          service_account: mr-pr188-evidence-test@market-report-test-only.iam.gserviceaccount.com
+          project_id: market-report-test-only
+          create_credentials_file: true
+          export_environment_variables: true
+      - name: Report allowlisted GitHub OIDC claims (diagnostic only)
+        env:
+          EXPECTED_ISS: https://token.actions.githubusercontent.com
+          EXPECTED_SUB: repo:matrixdiamond512-cell@302495668/Chat-GPT-Market-Report@1314063427:ref:refs/heads/codex/0800-main-issuance-e2e-20261029
+          EXPECTED_REPOSITORY_ID: '1314063427'
+          EXPECTED_REF: refs/heads/codex/0800-main-issuance-e2e-20261029
+          EXPECTED_WORKFLOW_REF: matrixdiamond512-cell/Chat-GPT-Market-Report/.github/workflows/freeze-report-slot-evidence.yml@refs/heads/codex/0800-main-issuance-e2e-20261029
+        run: |
+          python - <<'PY'
+          import base64, json, os, sys
+          from urllib.parse import urlencode
+          from urllib.request import Request, urlopen
+          try:
+              with open(os.environ['GOOGLE_GHA_CREDS_PATH'], encoding='utf-8') as f:
+                  audience = json.load(f).get('audience')
+              if not audience:
+                  raise ValueError('missing audience')
+              separator = '&' if '?' in os.environ['ACTIONS_ID_TOKEN_REQUEST_URL'] else '?'
+              url = os.environ['ACTIONS_ID_TOKEN_REQUEST_URL'] + separator + urlencode({'audience': audience})
+              req = Request(url, headers={'Authorization': 'Bearer ' + os.environ['ACTIONS_ID_TOKEN_REQUEST_TOKEN']})
+              with urlopen(req, timeout=20) as response:
+                  token = json.load(response)['value']
+              payload = token.split('.')[1]
+              payload += '=' * (-len(payload) % 4)
+              claims = json.loads(base64.urlsafe_b64decode(payload.encode('ascii')))
+          except Exception as exc:
+              print('GITHUB_OIDC_DIAGNOSTIC=ERROR')
+              print('GITHUB_OIDC_ERROR_TYPE=' + type(exc).__name__)
+              sys.exit(1)
+          for name in ('iss', 'aud', 'sub', 'repository_id', 'ref', 'workflow_ref'):
+              print('GITHUB_OIDC_' + name.upper() + '=' + json.dumps(claims.get(name), ensure_ascii=True, sort_keys=True))
+          expected = {'iss': os.environ['EXPECTED_ISS'], 'sub': os.environ['EXPECTED_SUB'], 'repository_id': os.environ['EXPECTED_REPOSITORY_ID'], 'ref': os.environ['EXPECTED_REF'], 'workflow_ref': os.environ['EXPECTED_WORKFLOW_REF']}
+          mismatches = [name for name, value in expected.items() if str(claims.get(name)) != value]
+          aud = claims.get('aud')
+          if not (aud == audience or isinstance(aud, list) and audience in aud):
+              mismatches.append('aud')
+          print('GITHUB_OIDC_EXPECTED_CLAIMS=' + ('FAIL' if mismatches else 'PASS'))
+          print('GITHUB_OIDC_MISMATCH_FIELDS=' + (','.join(mismatches) if mismatches else 'NONE'))
+          PY
+      - name: Read one existing TEST ONLY object at its pinned generation
+        run: python -m scripts.reporting.gcs_wif_readonly
+
+  test-wif-create-only:
+    if: github.event_name == 'workflow_dispatch' && inputs.operation == 'test_wif_create_only' && github.ref == 'refs/heads/codex/0800-main-issuance-e2e-20261029'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: test-wif-create-only-${{ github.run_id }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - name: Verify the selected branch and workflow identity
+        env:
+          EXPECTED_REF: refs/heads/codex/0800-main-issuance-e2e-20261029
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+        run: |
+          test "$GITHUB_REF" = "$EXPECTED_REF"
+          test "$WORKFLOW_REF" = "matrixdiamond512-cell/Chat-GPT-Market-Report/.github/workflows/freeze-report-slot-evidence.yml@$EXPECTED_REF"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned Google Storage client
+        run: python -m pip install --disable-pip-version-check -r scripts/requirements-issuance.txt
+      - name: Authenticate with TEST ONLY Workload Identity Federation
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: projects/765600646675/locations/global/workloadIdentityPools/mr-evidence-test-github/providers/github-pr188-evidence
+          service_account: mr-pr188-evidence-test@market-report-test-only.iam.gserviceaccount.com
+          project_id: market-report-test-only
+          create_credentials_file: true
+          export_environment_variables: true
+      - name: Create one TEST ONLY object and read back its generation and hash
+        run: python -m scripts.reporting.gcs_wif_create_only

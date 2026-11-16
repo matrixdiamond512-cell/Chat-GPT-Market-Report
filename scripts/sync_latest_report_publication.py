@@ -5,9 +5,14 @@ import json
 import re
 from pathlib import Path
 
-from report_source_contract import heading, validate_saved_body
-from report_identity import internal_report_key
-from reporting.publication_eligibility import is_publication_eligible
+try:
+    from scripts.report_source_contract import heading, validate_saved_body
+    from scripts.report_identity import internal_report_key
+    from scripts.reporting.publication_eligibility import is_publication_eligible
+except ModuleNotFoundError:
+    from report_source_contract import heading, validate_saved_body
+    from report_identity import internal_report_key
+    from reporting.publication_eligibility import is_publication_eligible
 
 ROOT = Path(__file__).resolve().parents[1]
 LATEST = ROOT / "data/latest-report.json"
@@ -39,7 +44,7 @@ def normalize_heading(line: str) -> str:
     text = re.sub(r"^#{1,6}\s+", "", text)
     if text.startswith("【") and text.endswith("】"):
         text = text[1:-1].strip()
-    text = re.sub(r"^\s*(?:第?\d{1,2}|[一二三四五六七八九十]+)\s*[．.、)）]\s*", "", text)
+    text = re.sub(r"^\s*(?:第?\d{1,2}|[一二三四五六七八九十]+)\s*[．.、)）|｜:：]\s*", "", text)
     return text.strip()
 
 
@@ -47,6 +52,10 @@ def sop_sections(full_text: str) -> list[tuple[str, str]]:
     """Extract heading-line bodies without treating incidental prose as headings."""
     sections: list[list[object]] = []
     for line in str(full_text or "").replace("\r", "").split("\n"):
+        inline_label = re.match(r"^(結論|最終判断|まとめ)[：:]\s*(\S.*)$", line.strip())
+        if inline_label:
+            sections.append([inline_label.group(1), [inline_label.group(2)]])
+            continue
         title = normalize_heading(line)
         if title:
             sections.append([title, []])
