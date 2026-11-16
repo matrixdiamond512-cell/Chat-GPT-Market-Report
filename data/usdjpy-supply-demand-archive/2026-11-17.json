@@ -2,27 +2,27 @@
   "schemaVersion": "1.0.0",
   "pageId": "usdjpy-supply-demand-archive",
   "reportDate": "2026-11-17",
-  "generatedAt": "2026-11-17T00:52:35+09:00",
+  "generatedAt": "2026-11-17T03:14:57+09:00",
   "market": {
     "schemaVersion": "1.1.0",
-    "generatedAt": "2026-11-14T03:47:19+09:00",
+    "generatedAt": "2026-11-17T01:29:41+09:00",
     "status": null,
     "markets": {
       "usdjpy": {
         "id": "usdjpy",
         "displayName": "USD/JPY",
         "dashboardKey": "usdjpy",
-        "value": 159.69,
-        "displayValue": "159.69",
-        "previousClose": 159.69000244140625,
-        "change": -2.4414062522737368e-06,
-        "changePercent": -1.528841009346138e-06,
-        "changeText": "-0.00 / -0.00%",
+        "value": 159.613,
+        "displayValue": "159.61",
+        "previousClose": 159.875,
+        "change": -0.26200000000000045,
+        "changePercent": -0.16387802971070675,
+        "changeText": "-0.26 / -0.16%",
         "unit": "円",
         "marketType": "spot",
         "session": "continuous",
-        "asOf": "2026-11-14T03:47:26+09:00",
-        "fetchedAt": "2026-11-14T03:47:27+09:00",
+        "asOf": "2026-11-17T01:29:49+09:00",
+        "fetchedAt": "2026-11-17T01:29:50+09:00",
         "sourceId": "yahoo_jpy_x",
         "sourceName": "Yahoo Finance USD/JPY",
         "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
@@ -31,11 +31,11 @@
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-11-14T03:47:30+09:00",
+        "lastVerifiedAt": "2026-11-17T01:29:54+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-11-14T03:47:19+09:00",
+        "lastAttemptAt": "2026-11-17T01:29:41+09:00",
         "lastError": "stooq_usdjpy: HTTP_404: HTTP 404 https://stooq.com/q/l/?s=usdjpy&f=sd2t2ohlcv&h&e=csv",
         "retryPreserved": false
       },
@@ -43,31 +43,31 @@
         "id": "vix",
         "displayName": "VIX",
         "dashboardKey": "vix",
-        "value": 18.7,
-        "displayValue": "18.70",
-        "previousClose": 17.49,
-        "change": 1.2100000000000009,
-        "changePercent": 6.91823899371069,
-        "changeText": "+1.21 / +6.92%",
+        "value": 21.25,
+        "displayValue": "21.25",
+        "previousClose": 21.25,
+        "change": 0.0,
+        "changePercent": 0.0,
+        "changeText": "+0.00 / +0.00%",
         "unit": "pt",
         "marketType": "index",
-        "session": "daily",
-        "asOf": "2026-11-12T09:00:00+09:00",
-        "fetchedAt": "2026-11-14T03:47:36+09:00",
-        "sourceId": "cboe_vix_history",
-        "sourceName": "Cboe VIX Historical Data",
-        "sourceUrl": "https://www.cboe.com/tradable_products/vix/vix_historical_data/",
-        "rawReference": "VIX_History.csv",
+        "session": "delayed",
+        "asOf": "2026-11-17T01:14:46+09:00",
+        "fetchedAt": "2026-11-17T01:30:01+09:00",
+        "sourceId": "yahoo_vix",
+        "sourceName": "Yahoo Finance VIX",
+        "sourceUrl": "https://finance.yahoo.com/quote/%5EVIX/",
+        "rawReference": "^VIX",
         "classification": "",
         "verificationStatus": "verified",
         "freshnessStatus": "fresh",
         "fallbackUsed": false,
-        "lastVerifiedAt": "2026-11-14T03:47:36+09:00",
+        "lastVerifiedAt": "2026-11-17T01:30:01+09:00",
         "error": null,
         "note": "",
         "attemptCount": 1,
-        "lastAttemptAt": "2026-11-14T03:47:19+09:00",
-        "lastError": "",
+        "lastAttemptAt": "2026-11-17T01:29:41+09:00",
+        "lastError": "cboe_vix_history: STALE_DATA: age 88.5h > 84h",
         "retryPreserved": false
       }
     }
@@ -75,12 +75,12 @@
   "rates": {
     "schemaVersion": "2.0.0",
     "pageId": "rates-bonds",
-    "generatedAt": "2026-11-16T10:25:10+09:00",
+    "generatedAt": "2026-11-17T01:29:44+09:00",
     "meta": {
       "page": "rates-bonds",
-      "asOfDate": "2026-11-13",
+      "asOfDate": "2026-11-16",
       "asOfTime": "各市場の公表時点",
-      "updatedAt": "2026-11-16T10:25:10+09:00",
+      "updatedAt": "2026-11-17T01:29:44+09:00",
       "status": "confirmed",
       "sourceStatus": "自動取得",
       "isStale": false,
@@ -118,17 +118,17 @@
       },
       {
         "name": "日本10年国債利回り",
-        "value": 2.899,
+        "value": 2.89,
         "unit": "%",
-        "changeBp": 5.8,
-        "weekChangeBp": 20.3,
-        "direction": "上昇",
-        "asOf": "2026-11-13",
+        "changeBp": -0.9,
+        "weekChangeBp": 16.6,
+        "direction": "低下",
+        "asOf": "2026-11-16",
         "status": "confirmed",
-        "source": "財務省 国債金利情報",
+        "source": "TradingView JGB market snapshot (LSEG)",
         "missingReason": null,
         "staticMeaning": "円・銀行株・日経225・円キャリーへの影響を確認",
-        "currentInterpretation": "順イールド。前日では長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。"
+        "currentInterpretation": "順イールド。週間では長期・超長期側の上昇が大きく、供給・財政・インフレプレミアムを確認。"
       }
     ]
   },
@@ -2072,8 +2072,8 @@
   },
   "events": {
     "schemaVersion": "2.0.0",
-    "generatedAt": "2026-11-16T15:16:15+09:00",
-    "dataAsOf": "2026-11-16T15:16:15+09:00",
+    "generatedAt": "2026-11-17T01:05:41+09:00",
+    "dataAsOf": "2026-11-17T01:05:41+09:00",
     "status": "ok",
     "events": [
       {
@@ -2321,7 +2321,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-11-15T16:44:51+09:00",
-        "updatedAt": "2026-11-16T15:16:15+09:00",
+        "updatedAt": "2026-11-17T01:05:41+09:00",
         "resultExpected": false,
         "resultType": "qualitative"
       },
@@ -2570,7 +2570,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-11-15T16:44:51+09:00",
-        "updatedAt": "2026-11-16T15:16:15+09:00",
+        "updatedAt": "2026-11-17T01:05:41+09:00",
         "resultExpected": false,
         "resultType": "qualitative"
       },
@@ -2819,7 +2819,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-11-15T16:44:51+09:00",
-        "updatedAt": "2026-11-16T15:16:15+09:00"
+        "updatedAt": "2026-11-17T01:05:41+09:00"
       },
       {
         "id": "event-066a9edc6af597",
@@ -3066,7 +3066,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-11-15T16:44:51+09:00",
-        "updatedAt": "2026-11-16T15:16:15+09:00"
+        "updatedAt": "2026-11-17T01:05:41+09:00"
       },
       {
         "id": "event-0ca486b2ba1000",
@@ -3313,7 +3313,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-11-15T16:44:51+09:00",
-        "updatedAt": "2026-11-16T15:16:15+09:00",
+        "updatedAt": "2026-11-17T01:05:41+09:00",
         "resultExpected": false,
         "resultType": "qualitative"
       },
@@ -3562,7 +3562,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-11-15T16:44:51+09:00",
-        "updatedAt": "2026-11-16T15:16:15+09:00"
+        "updatedAt": "2026-11-17T01:05:41+09:00"
       },
       {
         "id": "event-7b3c61b60e99d9",
@@ -3809,7 +3809,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-11-15T16:44:51+09:00",
-        "updatedAt": "2026-11-16T15:16:15+09:00"
+        "updatedAt": "2026-11-17T01:05:41+09:00"
       },
       {
         "id": "event-55eced8729c615",
@@ -4056,7 +4056,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-11-15T16:44:51+09:00",
-        "updatedAt": "2026-11-16T15:16:15+09:00"
+        "updatedAt": "2026-11-17T01:05:41+09:00"
       },
       {
         "id": "event-f96104d2518d88",
@@ -4303,7 +4303,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-11-15T16:44:51+09:00",
-        "updatedAt": "2026-11-16T15:16:15+09:00",
+        "updatedAt": "2026-11-17T01:05:41+09:00",
         "resultExpected": false,
         "resultType": "qualitative"
       },
@@ -4552,7 +4552,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-11-16T15:16:15+09:00",
-        "updatedAt": "2026-11-16T15:16:15+09:00",
+        "updatedAt": "2026-11-17T01:05:41+09:00",
         "resultExpected": false,
         "resultType": "qualitative"
       },
@@ -4801,7 +4801,7 @@
         "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
         "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
         "createdAt": "2026-11-15T16:44:51+09:00",
-        "updatedAt": "2026-11-16T15:16:15+09:00",
+        "updatedAt": "2026-11-17T01:05:41+09:00",
         "resultExpected": false,
         "resultType": "qualitative"
       }
@@ -4810,7 +4810,7 @@
   "config": {
     "schemaVersion": "3.2.0",
     "pageId": "usdjpy-supply-demand",
-    "generatedAt": "2026-11-17T00:52:35+09:00",
+    "generatedAt": "2026-11-17T03:14:57+09:00",
     "mode": "integrated-realistic",
     "sourceStatus": {
       "tradersWebFx": "confirmed",
@@ -4821,7 +4821,7 @@
       "name": "トレーダーズ・ウェブFX 無料ページ",
       "url": "https://www.traderswebfx.jp/order/currency/USDJPY",
       "sourceUpdatedAt": "2026-11-16T06:38:00+09:00",
-      "checkedAt": "2026-11-17T00:52:36+09:00",
+      "checkedAt": "2026-11-17T03:14:58+09:00",
       "status": "confirmed",
       "pageConfirmed": true,
       "publicScope": "一般公開はUSD/JPYの直近情報",
@@ -4830,7 +4830,7 @@
       "sourceDate": "2026-11-16",
       "sourceTime": "06:38",
       "freshness": "previous-session",
-      "ageHours": 18.2,
+      "ageHours": 20.6,
       "keyLevels": {
         "referenceSpot": "159.68",
         "referenceSpotDescription": "11/16 06:30現在（高値159.77円 - 安値159.60円）",
@@ -5333,7 +5333,7 @@
       "judgement": "円買い越し拡大",
       "judgementSub": "USD/JPYの下押し圧力",
       "priceStatus": "available",
-      "checkedAt": "2026-11-17T00:52:35+09:00",
+      "checkedAt": "2026-11-17T03:14:57+09:00",
       "comment": "円買い越し拡大。円先物のNetは+102,321枚、前週比+730枚。USD/JPY価格線と合わせ、ポジション変化が価格に追随しているか、先行しているかを確認する。",
       "verifiedPoints": 52,
       "priceVerifiedPoints": 52,
@@ -5341,13 +5341,13 @@
     },
     "coreSnapshot": {
       "market": {
-        "generatedAt": "2026-11-14T03:47:19+09:00",
-        "asOf": "2026-11-14T03:47:26+09:00",
+        "generatedAt": "2026-11-17T01:29:41+09:00",
+        "asOf": "2026-11-17T01:29:49+09:00",
         "verificationStatus": "verified"
       },
       "ratesBonds": {
-        "generatedAt": "2026-11-16T10:25:10+09:00",
-        "asOfDate": "2026-11-13",
+        "generatedAt": "2026-11-17T01:29:44+09:00",
+        "asOfDate": "2026-11-16",
         "status": "confirmed"
       },
       "usdJpyVolume": {
@@ -5373,7 +5373,7 @@
   "flow": {
     "schemaVersion": "1.0.0",
     "pageId": "usdjpy-flow-summary",
-    "generatedAt": "2026-11-17T00:52:36+09:00",
+    "generatedAt": "2026-11-17T03:14:59+09:00",
     "status": "ok",
     "realDemand": {
       "score": null,
@@ -5420,7 +5420,7 @@
           "score": 0.0,
           "status": "verified",
           "asOf": "2026-11-17",
-          "updatedAt": "2026-11-17T00:52:36+09:00",
+          "updatedAt": "2026-11-17T03:14:59+09:00",
           "valueText": "非該当",
           "sourceName": "",
           "sourceUrl": "",
@@ -5434,7 +5434,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-11-17T00:52:36+09:00",
+          "updatedAt": "2026-11-17T03:14:59+09:00",
           "valueText": "対外－対内ネット +7,528億円。企業の当日実額ではなく週次資本フロー代理（為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -5448,7 +5448,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-06",
-          "updatedAt": "2026-11-17T00:52:36+09:00",
+          "updatedAt": "2026-11-17T03:14:59+09:00",
           "valueText": "輸出 10.93兆円／輸入 11.34兆円／収支 -4099億円（構造要因）",
           "sourceName": "財務省 貿易統計",
           "sourceUrl": "https://www.customs.go.jp/toukei/shinbun/trade-st/2026/2026065.pdf",
@@ -5462,7 +5462,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-11-17T00:52:36+09:00",
+          "updatedAt": "2026-11-17T03:14:59+09:00",
           "valueText": "合計 +6,262億円（取得超は外貨需要候補、為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -5476,7 +5476,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-08-01",
-          "updatedAt": "2026-11-17T00:52:36+09:00",
+          "updatedAt": "2026-11-17T03:14:59+09:00",
           "valueText": "合計 -1,266億円（取得超は円需要候補、為替ヘッジ不明）",
           "sourceName": "財務省 対外及び対内証券投資",
           "sourceUrl": "https://www.mof.go.jp/policy/international_policy/reference/itn_transactions_in_securities/week.pdf",
@@ -5490,7 +5490,7 @@
           "score": 0.0,
           "status": "verified",
           "asOf": "2026-11-17",
-          "updatedAt": "2026-11-17T00:52:36+09:00",
+          "updatedAt": "2026-11-17T03:14:59+09:00",
           "valueText": "月末非該当",
           "sourceName": "",
           "sourceUrl": "",
@@ -5513,7 +5513,7 @@
           "score": null,
           "status": "stale",
           "asOf": "2026-11-03",
-          "updatedAt": "2026-11-17T00:52:35+09:00",
+          "updatedAt": "2026-11-17T03:14:57+09:00",
           "valueText": "円Net前週比 +730枚（USD/JPY方向へ符号反転）／基準日から14日",
           "sourceName": "CFTC Commitments of Traders - Japanese Yen",
           "sourceUrl": "https://www.cftc.gov/dea/newcot/deafut.txt",
@@ -5568,9 +5568,9 @@
           "direction": "neutral",
           "score": 0.0,
           "status": "calculated",
-          "asOf": "2026-11-14T03:47:26+09:00",
-          "updatedAt": "2026-11-14T03:47:27+09:00",
-          "valueText": "USD/JPY -0.00%／米日2年金利変化差 +10.5bp（同時反応の代理、因果断定なし）",
+          "asOf": "2026-11-17T01:29:49+09:00",
+          "updatedAt": "2026-11-17T01:29:50+09:00",
+          "valueText": "USD/JPY -0.16%／米日2年金利変化差 +12.7bp（同時反応の代理、因果断定なし）",
           "sourceName": "市場価格・金利データ統合",
           "sourceUrl": "https://finance.yahoo.com/quote/JPY=X/",
           "frequency": "daily proxy"
@@ -5589,7 +5589,7 @@
       "realDemand": null,
       "speculative": 0.0,
       "combined": null,
-      "generatedAt": "2026-11-16T10:21:22+09:00"
+      "generatedAt": "2026-11-17T00:52:36+09:00"
     },
     "officialFlows": {
       "trade": {
@@ -5611,9 +5611,9 @@
     }
   },
   "meta": {
-    "priceDataDate": "2026-11-14",
+    "priceDataDate": "2026-11-17",
     "usDataDate": "2026-11-12",
-    "japanDataDate": "2026-11-13",
+    "japanDataDate": "2026-11-16",
     "tokyoDataDate": "2026-11-13",
     "cftcDate": "2026-11-03"
   }
