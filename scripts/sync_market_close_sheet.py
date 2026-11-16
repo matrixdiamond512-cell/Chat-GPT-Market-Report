@@ -209,11 +209,9 @@ def close_value_for_market(market: dict[str, Any], target: dt.date) -> tuple[flo
     # Session dates are exchange-local calendar dates; converting an NY close
     # timestamp to JST can shift it into the following day.
     source_session_date = parse_sheet_date(market.get("sessionDate")) or parse_sheet_date(raw_as_of[:10]) or observed.date()
-    expected_session_date = target
-    if market.get("expectedSessionDate"):
-        expected_session_date = parse_sheet_date(market.get("expectedSessionDate"))
-        if expected_session_date is None:
-            return None, observed.date().isoformat(), "expectedSessionDate is invalid"
+    expected_session_date = market_expected_session_date(market, target)
+    if expected_session_date is None:
+        return None, source_session_date.isoformat(), "expectedSessionDate is invalid"
     value = number(market.get("value"))
     previous = number(market.get("previousClose"))
     if value is None:
@@ -225,6 +223,12 @@ def close_value_for_market(market: dict[str, Any], target: dt.date) -> tuple[flo
         # the next market date. In that case previousClose is the target date.
         return previous, observed.date().isoformat(), ""
     return None, source_session_date.isoformat(), f"market session date {source_session_date.isoformat()} does not match expected {expected_session_date.isoformat()}"
+
+
+def market_expected_session_date(market: dict[str, Any], target: dt.date) -> dt.date | None:
+    if not market.get("expectedSessionDate"):
+        return target
+    return parse_sheet_date(market.get("expectedSessionDate"))
 
 
 def prior_numeric_value(column_values: list[Any], dates: list[Any], target: dt.date) -> float | None:
@@ -464,7 +468,7 @@ def close_row_sync(
                 field_warnings.append(f"{symbol}: {warning}")
             source_ids.append(str(market.get("sourceId") or symbol))
             writes[close_header] = close_value
-            observed = parse_datetime(market.get("asOf"))
+            market_target_date = market_expected_session_date(market, target) or target
             summary["marketData"].append({
                 "symbol": symbol,
                 "sourceId": market.get("sourceId"),
@@ -473,13 +477,13 @@ def close_row_sync(
                 "fetchedAt": market.get("fetchedAt"),
                 "verifiedAt": market.get("verifiedAt") or market.get("verifiedAtUtc") or "",
                 "verificationStatus": market.get("verificationStatus"),
-                "valueSource": "value" if observed and observed.date() == target else "previousClose",
+                "valueSource": "value" if source_date == market_target_date.isoformat() else "previousClose",
                 "closeValue": close_value,
             })
             if change_header:
                 change_value: float | None = None
                 percent_value: float | None = None
-                if source_date == target.isoformat():
+                if source_date == market_target_date.isoformat():
                     change_value, percent_value, warning = validate_change(market, close_value)
                 else:
                     previous = prior_numeric_value(column_values.get(close_header, []), date_values, target)
@@ -510,7 +514,7 @@ def close_row_sync(
                             existing_value = existing_column[target_row - 1]
                     if not str(existing_value or "").strip():
                         writes[percent_header] = f"取得不能（{warning or '騰落率を検証できません'}）"
-            if symbol == "fear_greed" and source_date == target.isoformat() and str(market.get("classification") or "").strip():
+            if symbol == "fear_greed" and source_date == market_target_date.isoformat() and str(market.get("classification") or "").strip():
                 writes["FearGreed判定"] = str(market.get("classification")).strip()
 
         for symbol, header in SCALAR_FIELDS.items():
@@ -524,11 +528,12 @@ def close_row_sync(
                 continue
             source_ids.append(str(market.get("sourceId") or symbol))
             writes[header] = close_value
+            market_target_date = market_expected_session_date(market, target) or target
             summary["marketData"].append({
                 "symbol": symbol, "sourceId": market.get("sourceId"),
                 "sourceName": market.get("sourceName"), "asOf": market.get("asOf"),
                 "fetchedAt": market.get("fetchedAt"), "verificationStatus": market.get("verificationStatus"),
-                "valueSource": "value", "closeValue": close_value,
+                "valueSource": "value" if source_date == market_target_date.isoformat() else "previousClose", "closeValue": close_value,
             })
 
         # Make every required-but-unavailable field explicit. Preserve any

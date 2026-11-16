@@ -275,6 +275,20 @@ class CloseSyncTests(unittest.TestCase):
             result = self.run_sync(client, payload)
         self.assertEqual(result["status"], "SUCCESS")
 
+    def test_market_specific_prior_session_is_used_for_value_and_change(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        payload = snapshot(self.target, self.next_day)
+        payload["markets"]["dow"].update({
+            "value": 100.0, "previousClose": 90.0, "change": 10.0,
+            "changePercent": 100.0 / 9.0, "asOf": "2026-09-29T16:00:00-04:00",
+            "sessionDate": "2026-09-29", "expectedSessionDate": "2026-09-29",
+        })
+        result = self.run_sync(client, payload)
+        self.assertEqual(client.data[1][1], 100.0)
+        self.assertEqual(client.data[1][2], 10.0)
+        dow = next(item for item in result["marketData"] if item["symbol"] == "dow")
+        self.assertEqual(dow["valueSource"], "value")
+
     def test_7_saturday_uses_friday_without_saturday_row(self):
         friday = dt.date(2026, 10, 2)
         saturday_now = dt.datetime(2026, 10, 3, 6, 35, tzinfo=JST)
