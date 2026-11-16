@@ -40,6 +40,14 @@ class CloudRunTestOnlyGuardTests(unittest.TestCase):
         self.assertEqual(result["sheetsPersistenceStatus"], "FAILED")
         self.assertIn("CLOSE_DATA_WRITE", result["failedPersistenceStages"])
 
+    def test_market_failure_is_distinct_from_successful_persistence(self):
+        result = job.classify_sync_result(1, {
+            "status": "FAILED",
+            "stages": {stage: "SUCCESS" for stage in job.PERSISTENCE_STAGES},
+        })
+        self.assertEqual(result["marketDataStatus"], "FAILED")
+        self.assertEqual(result["sheetsPersistenceStatus"], "SUCCESS")
+
     def test_job_uses_issue_205_allowlisted_isolated_sheet(self):
         self.assertEqual(job.TEST_ONLY_SPREADSHEET_ID, "1KBDBa-m35ZgleJpD-uPrxOHafIECjfKw4k1nL2HzDLs")
 
