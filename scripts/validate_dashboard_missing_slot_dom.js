@@ -75,7 +75,7 @@ const base = String(process.env.PORTAL_URL || '').replace(/\/$/, '') + '/';
     assert.equal(restored.date, '2026-11-06');
     assert.equal(restored.selectedTime, '16:00');
     assert.deepEqual(errors, [], 'dashboard JavaScript errors');
-    console.log('PASS missing-slot to valid-report navigation');
+    console.log('PASS missing-slot to valid-report navigation; data-quality-gated market summary=' + restored.marketSummaryDisplay);
     await page.close();
   } finally {
     await browser.close();
