@@ -104,3 +104,10 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 2. 市場取得が `BLOCKED_FUTURE_ACQUISITION_WINDOW` の場合は次枠までsleepしない。前日のcronの遅延を今日の将来枠に転用しない。証拠runが `BLOCKED_LIVE_EVIDENCE_OUTSIDE_PRE_SLOT_WINDOW` / `BLOCKED_LIVE_EVIDENCE_AFTER_SLOT` なら発行前証拠は未成立と報告する。
 3. 既存の正常取得と正式証拠があるかGitHub mainを実読戻しする。欠落なら本文・Google Docs・参考閲覧保存を別工程で続行し、正式receipt/canonicalへ偽昇格させない。チャット主タスクの早期実行もユーザー可視本文無しなら未発行と判定し、15分後の復旧で同一枠だけを点検する。
 4. 検証を分離：ユニット回帰、PR CI、main反映、次の平日4枠の発行前証拠読戻し、Docs、Pages DOM、PNG、通知。設定変更をもって定時発行成功と主張しない。
+
+## REPORT-SLOT-QUEUE-20261117-02｜11月17日定時配信障害への対処と未解決（2026-11-17 JST）
+
+1. 08:00証拠ワークフロー run `44019617757` は13:48 JST頃に実行され、`BLOCKED_LIVE_EVIDENCE_AFTER_SLOT` で停止。08:00 final refresh run `44019745595` は時刻外取得として拒否。時刻外の拒否は正当で、過去evidenceの再生成は禁止。
+2. Google Docs importer run `44021644786` は `monthly_folder_access=False`、`REPORT_SOURCE_MISSING 2026-11-17 12:00` で失敗。Google Drive `マーケットレポート2026年11月`（folder ID `1vnZ7JgQTbqVSvoTIaY-1GlEroSzNLXkP`）の配信用サービスアカウント共有を、正当な所有者権限で付与し、次回の実runで直接子の読戻しを検証する。TEST_ONLYの別サービスアカウントを本番用と取り違えない。
+3. 本修正ではデータ取得・証拠固定workflowsのconcurrencyを枠ごとに独立させる。各枠内の先行・予備・健全性jobの直列性は保つ。コードの修正はGitHub cronの起動保証、権限付与、正式レポート発行の証明とは別。
+4. 受入はPR CI→main反映→実予定時刻のmarket latest/証拠main readback→Docs importer folder access→publication receipt→canonical/index→Pages DOMの順に個別確認する。未実証の段階を完了扱いしない。
