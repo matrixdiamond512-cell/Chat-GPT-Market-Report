@@ -160,3 +160,10 @@ Draft PR #204の最終確認head `7f973ef380880195de720738714d28a7114dbcf7`、ba
 - 実行手順を `scripts/pr206_test_only_preflight.sh` に実装。只の読み取り専用gcloud list/describe・ローカル非公開バックアップ。構文/非書込契約のGitHub Actions `.github/workflows/pr206-test-only-preflight-ci.yml`を追加。
 - preflight実行、固定イメージビルド、PR206専用Job起動、28項目実取得、Sheets書込/独立読戻し、GCS世代一致、07:50 Scheduler発火は全て **NOT_RUN**。既存Cloud Run/IAM/Scheduler/Sheets、本番データ、main、PR204は未変更。
 - 変更影響：運用マニュアルとEvidence Ledger。要件/仕様/本文作成マニュアルはNO_CHANGE（契約変更なし）。固定ID Google Docsの更新は未実施で別作業。結果をE4/E5 PASSと混同しない。
+
+## MR-CLOSE-TESTONLY-MANUAL-E2E-20261117-02（2026-11-17 JST）
+- Issue #205 / Draft PR #206: TEST_ONLY専用の一回限りCloud Run実行スクリプト `scripts/pr206_test_only_manual_e2e.sh` を追加。既存 `scripts/pr206_test_only_preflight.sh` を先に実行し、レビュー済みHEAD、clean worktree、TEST_ONLYプロジェクト・専用Sheets allowlist、既存Artifact Registryリポジトリ・サービスアカウント・証拠Bucketを検証する。
+- `PR206_APPLY_TEST_ONLY=YES` がない限りCloud Build/Job作成/実行を行わない。明示許可時も新規専用Job `mr-close-acquisition-pr206-e2e` の存在を検査し、既存Jobの置換を拒否。対象は `market-report-test-only` 内の画像ビルド・digest固定・Job作成・期限後の手動実行のみ。Scheduler、IAM変更、PR204、production、main、正式Docsへの操作は含めない。
+- 追加した `.github/workflows/pr206-test-only-manual-e2e-ci.yml` の `bash -n` と隔離・明示許可・非Scheduler/非本番契約チェックはSUCCESS。新規スクリプトとCIワークフローを含むコードHEAD `a4f117d3bb740619e6c2d3cefbbf79290fb8f24a` のGitHub check-runは5件SUCCESS（test、forbid-late-source、preflight-contract、test-only-safety×2）。
+- 2026-11-17のGoogle Drive read-only確認ではPR206専用Sheets `1C0U7JXZT7DMDvDSL8Ah9uVfLhncnCOffIgKl3n8Hk-w` の `終値一覧` A1:P10 にヘッダー行のみ。**実データ28項目の取得・Cloud Run実行・Sheets書込/独立読戻し・GCS generation確認・07:50定時起動はNOT_RUN**。本番正常化・E4/E5 PASSとは扱わない。
+- 現チャットではGoogle Cloudの認証済みCLI/Cloud Shell操作接続が利用できず、実クラウドコマンドは起動できない。スクリプトはCloud Shell/CLIから認証済み実行者が実行する必要がある。PR #206 Draft・未マージを維持。
