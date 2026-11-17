@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import call, patch
 
-from scripts.persist_report_slot_evidence import persist_slot_evidence, validate_stored_slot_evidence
+from scripts.persist_report_slot_evidence import persist_slot_evidence, validate_stored_slot_evidence, require_live_pre_slot_window
 from scripts.reporting.snapshot import digest
 
 
@@ -98,6 +98,28 @@ class ReportSlotEvidenceTests(unittest.TestCase):
         self.write_payload()
         with self.assertRaisesRegex(ValueError, "date/slot/cutoff"):
             persist_slot_evidence("2026-10-16", "08:00", self.market_path, self.output)
+
+    def test_workflow_rejects_wrong_day_delayed_early_and_post_slot_runs(self):
+        jst = timezone(timedelta(hours=9))
+        with self.assertRaisesRegex(ValueError, "OUTSIDE_PRE_SLOT_WINDOW"):
+            require_live_pre_slot_window(
+                "2026-11-17", "21:00", now=datetime(2026, 11, 17, 6, 14, tzinfo=jst),
+            )
+        with self.assertRaisesRegex(ValueError, "OUTSIDE_PRE_SLOT_WINDOW"):
+            require_live_pre_slot_window(
+                "2026-11-17", "12:00", now=datetime(2026, 11, 17, 11, 44, tzinfo=jst),
+            )
+        # Exact lower cutoff and the last pre-slot second are permitted.
+        require_live_pre_slot_window(
+            "2026-11-17", "12:00", now=datetime(2026, 11, 17, 11, 45, tzinfo=jst),
+        )
+        require_live_pre_slot_window(
+            "2026-11-17", "12:00", now=datetime(2026, 11, 17, 11, 59, 59, tzinfo=jst),
+        )
+        with self.assertRaisesRegex(ValueError, "AFTER_SLOT"):
+            require_live_pre_slot_window(
+                "2026-11-17", "12:00", now=datetime(2026, 11, 17, 12, 0, tzinfo=jst),
+            )
 
     def test_live_evidence_must_be_created_strictly_before_slot(self):
         jst = timezone(timedelta(hours=9))
