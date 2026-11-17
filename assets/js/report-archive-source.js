@@ -16,7 +16,12 @@
     if (record.driveTextLength != null && record.driveTextLength !== record.fullText.length) return null;
     const reference = /HISTORICAL_ARCHIVE_NOT_OFFICIAL_PUBLICATION|REFERENCE|NOT_VERIFIED|NOT_FORMALLY_PUBLISHED|ANALYSIS_VIEW_ONLY|閲覧用分析版|NOT_SLOT_VERIFIED|PUBLICATION_PENDING|ORIGINAL_NOT_FOUND/.test(
       [record.archiveType,record.originalReportStatus,record.publicationStatus,record.status].join(' '));
-    if (!reference) return null;
+    const heldReadback = record.originalReportStatus === 'BLOCKED_PRE_DRAFT_EVIDENCE_MISSING' &&
+      record.verifiedAtSlot === false && (
+        (record.archiveType === 'DRIVE_READBACK_ANALYSIS' && record.archiveStatus === 'HISTORICAL_ARCHIVE') ||
+        (record.archiveType === 'GOOGLE_DOCS_READBACK' && record.archiveStatus === 'REFERENCE_ANALYSIS_NOT_OFFICIAL')
+      );
+    if (!reference && !heldReadback) return null;
     // Contradictory legacy slot verification is usable only as a conservative view.
     return {...record, sourceDocument: {...(typeof source === 'object' ? source : {}),id,url:url || 'https://docs.google.com/document/d/'+id+'/edit'},
       driveRevisionId:revision, driveTextLength:record.fullText.length,
