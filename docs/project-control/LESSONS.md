@@ -10,3 +10,4 @@
 - Phase E: UNKNOWN recovery must restore a successful prior state even when the remaining run has no new checkpoint. Persist validated publication observations before attempting Receipt creation.
 - Phase E: Simulation markers and disabled production adapters bound the evidence claim. Synthetic SHA/DOM/PNG binding can establish E3 recovery behavior, not E5 real publication.
 - Infographic validation: require exact section headings and bind each number to a typed market row, timestamp, unit and source section; caller-supplied PASS flags cannot stand in for provider-backed Vision or live readback.
+- Market close validation: a JST timestamp date can differ from the exchange-local session date. Preserve both, key close candidates by market/session, and reject `regularMarketPrice` or a current quote unless the source establishes that it is the exact session close. An honest UNAVAILABLE row is safer than assigning a stale or timezone-shifted value.

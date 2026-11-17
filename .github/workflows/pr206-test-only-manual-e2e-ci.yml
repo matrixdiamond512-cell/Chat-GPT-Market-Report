@@ -1,0 +1,61 @@
+name: PR206 isolated Cloud Run one-shot safety
+
+on:
+  push:
+    paths:
+      - 'scripts/pr206_test_only_manual_e2e.sh'
+      - '.github/workflows/pr206-test-only-manual-e2e-ci.yml'
+  pull_request:
+    paths:
+      - 'scripts/pr206_test_only_manual_e2e.sh'
+      - '.github/workflows/pr206-test-only-manual-e2e-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test-only-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax check
+        run: bash -n scripts/pr206_test_only_manual_e2e.sh
+      - name: Verify isolated, explicit opt-in and no scheduler/prod operations
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s = Path("scripts/pr206_test_only_manual_e2e.sh").read_text()
+          for required in (
+              'PROJECT="market-report-test-only"',
+              'SHEET="1C0U7JXZT7DMDvDSL8Ah9uVfLhncnCOffIgKl3n8Hk-w"',
+              'JOB="mr-close-acquisition-pr206-e2e"',
+              'PR206_APPLY_TEST_ONLY',
+              'PR206_EXPECTED_SHA',
+              'PR206_EVIDENCE_BUCKET',
+              'bash scripts/pr206_test_only_preflight.sh',
+              'gcloud builds submit',
+              'gcloud run jobs create',
+              'gcloud run jobs execute',
+              'image_summary.digest',
+              'MISSED',
+              'NOT_RUN: Scheduler',
+          ):
+              if required == 'MISSED':
+                  # The cutoff marker lives in the Cloud Run implementation,
+                  # rather than this shell entrypoint.
+                  assert 'MARKET_CLOSE_TEST_ONLY_LATE_RUN=1' in s
+              else:
+                  assert required in s, required
+          for forbidden in (
+              'gcloud run jobs update',
+              'gcloud scheduler jobs create',
+              'gcloud scheduler jobs update',
+              'gcloud projects add-iam-policy-binding',
+              'gcloud iam service-accounts keys create',
+              'gcloud config set',
+              '1n2ACInX4pmK0TdijC8xaur2RIiNZyVa6GFTZAyofcuE',
+              'mr-close-sheet-pr204-e2e" --image',
+          ):
+              assert forbidden not in s, forbidden
+          print("PASS: manual launch constrained to new PR206 TEST_ONLY job")
+          PY

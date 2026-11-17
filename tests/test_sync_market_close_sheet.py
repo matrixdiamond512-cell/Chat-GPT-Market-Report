@@ -181,6 +181,16 @@ def snapshot(target: dt.date, now: dt.datetime, *, missing: str | None = None) -
             "fetchedAt": now.isoformat(), "sourceId": symbol + "_source", "sourceName": symbol + " source",
             "verificationStatus": "verified", "classification": "Neutral",
         }
+    for symbol, value, previous in (
+        ("us10y", 4.25, 4.20), ("jp10y", 1.75, 1.70),
+        ("nikkei225_eps", 2500.0, 2490.0), ("nikkei225_per", 18.0, 17.9),
+    ):
+        markets[symbol] = {
+            "value": value, "previousClose": previous, "change": value - previous,
+            "asOf": dt.datetime.combine(target, dt.time(15, 0), JST).isoformat(),
+            "fetchedAt": now.isoformat(), "sourceId": symbol + "_source",
+            "sourceName": symbol + " source", "verificationStatus": "verified",
+        }
     return {"generatedAt": now.isoformat(), "reportSlot": "08:00", "overallStatus": "verified", "missingRequired": [], "markets": markets}
 
 
@@ -194,6 +204,57 @@ def populate_import_tabs(client: FakeSheetsClient, payload: dict) -> None:
             close_sync.use_policy(market), market.get("value"), market.get("asOf", ""), market.get("fetchedAt", ""),
             market.get("verificationStatus", ""), market.get("sourceName", ""),
         ])
+
+
+class MarketSpecificSessionDateTests(unittest.TestCase):
+    def test_us_close_timestamp_keeps_friday_exchange_session_date(self):
+        now = dt.datetime(2026, 11, 16, 8, 5, tzinfo=JST)
+        payload = {
+            "markets": {
+                "vix": {
+                    "verificationStatus": "verified",
+                    "asOf": "2026-11-13T16:15:00-05:00",
+                    "sessionDate": "2026-11-13",
+                    "expectedSessionDate": "2026-11-13",
+                },
+                "nikkei_vi": {
+                    "verificationStatus": "verified",
+                    "asOf": "2026-11-13T15:50:00+09:00",
+                    "sessionDate": "2026-11-13",
+                    "expectedSessionDate": "2026-11-13",
+                },
+            }
+        }
+        self.assertEqual(close_sync.resolve_target_date(payload, now), dt.date(2026, 11, 13))
+
+    def test_completed_btc_utc_bar_uses_its_own_saturday_session_date(self):
+        market = {
+            "verificationStatus": "verified",
+            "asOf": "2026-11-15T00:00:00Z",
+            "sessionDate": "2026-11-14",
+            "expectedSessionDate": "2026-11-14",
+            "value": 65312.48,
+            "previousClose": 64110.28,
+        }
+        value, source_date, warning = close_sync.close_value_for_market(market, dt.date(2026, 11, 13))
+        self.assertEqual((value, source_date, warning), (65312.48, "2026-11-14", ""))
+
+    def test_market_close_uses_its_expected_session_not_report_or_sheet_date(self):
+        market = {
+            "verificationStatus": "verified", "asOf": "2026-11-12T16:00:00-05:00",
+            "expectedSessionDate": "2026-11-12", "value": 100.0,
+        }
+        value, source_date, warning = close_sync.close_value_for_market(market, dt.date(2026, 11, 13))
+        self.assertEqual((value, source_date, warning), (100.0, "2026-11-12", ""))
+
+    def test_invalid_market_expected_session_date_fails_closed(self):
+        market = {
+            "verificationStatus": "verified", "asOf": "2026-11-12T16:00:00-05:00",
+            "expectedSessionDate": "not-a-date", "value": 100.0,
+        }
+        value, _, warning = close_sync.close_value_for_market(market, dt.date(2026, 11, 12))
+        self.assertIsNone(value)
+        self.assertEqual(warning, "expectedSessionDate is invalid")
 
 
 class CloseSyncTests(unittest.TestCase):
@@ -246,6 +307,20 @@ class CloseSyncTests(unittest.TestCase):
             result = self.run_sync(client, payload)
         self.assertEqual(result["status"], "SUCCESS")
 
+    def test_market_specific_prior_session_is_used_for_value_and_change(self):
+        client = FakeSheetsClient(self.target, self.prior)
+        payload = snapshot(self.target, self.next_day)
+        payload["markets"]["dow"].update({
+            "value": 100.0, "previousClose": 90.0, "change": 10.0,
+            "changePercent": 100.0 / 9.0, "asOf": "2026-09-29T16:00:00-04:00",
+            "sessionDate": "2026-09-29", "expectedSessionDate": "2026-09-29",
+        })
+        result = self.run_sync(client, payload)
+        self.assertEqual(client.data[1][1], 100.0)
+        self.assertEqual(client.data[1][2], 10.0)
+        dow = next(item for item in result["marketData"] if item["symbol"] == "dow")
+        self.assertEqual(dow["valueSource"], "value")
+
     def test_7_saturday_uses_friday_without_saturday_row(self):
         friday = dt.date(2026, 10, 2)
         saturday_now = dt.datetime(2026, 10, 3, 6, 35, tzinfo=JST)
@@ -262,6 +337,31 @@ class CloseSyncTests(unittest.TestCase):
         payload = snapshot(friday, monday_now)
         result = self.run_sync(client, payload, monday_now)
         self.assertEqual(result["targetDate"], friday.isoformat())
+
+    def test_monday_sync_keeps_exchange_dates_for_friday_closes_and_completed_btc_bar(self):
+        friday = dt.date(2026, 11, 13)
+        monday_now = dt.datetime(2026, 11, 16, 8, 5, tzinfo=JST)
+        client = FakeSheetsClient(friday, friday - dt.timedelta(days=1))
+        payload = snapshot(friday, monday_now)
+        for market in payload["markets"].values():
+            if isinstance(market, dict):
+                market.update({
+                    "sessionDate": "2026-11-13",
+                    "expectedSessionDate": "2026-11-13",
+                })
+        payload["markets"]["vix"]["asOf"] = "2026-11-13T16:15:00-05:00"
+        payload["markets"]["nikkei_vi"]["asOf"] = "2026-11-13T15:50:00+09:00"
+        payload["markets"]["btcusd"].update({
+            "asOf": "2026-11-15T00:00:00Z",
+            "sessionDate": "2026-11-14",
+            "expectedSessionDate": "2026-11-14",
+        })
+        result = self.run_sync(client, payload, monday_now)
+        self.assertEqual(result["targetDate"], friday.isoformat())
+        self.assertEqual(result["status"], "SUCCESS", result)
+        btc = next(item for item in result["marketData"] if item["symbol"] == "btcusd")
+        self.assertEqual(btc["asOf"], "2026-11-15T00:00:00Z")
+        self.assertEqual(btc["closeValue"], 100.0)
 
     def test_9_same_payload_twice_has_no_duplicate(self):
         client = FakeSheetsClient(self.target, self.prior)
@@ -286,14 +386,14 @@ class CloseSyncTests(unittest.TestCase):
     def test_equal_existing_market_value_is_preserved_and_not_rewritten(self):
         client = FakeSheetsClient(self.target, self.prior)
         payload = snapshot(self.target, self.next_day)
+        payload["overallStatus"] = "partial"
         populate_import_tabs(client, payload)
         col = close_sync.PRICE_FIELDS["dow"][0]
         expected = payload["markets"]["dow"]["value"]
         client.data[1][BASE_HEADERS.index(col)] = expected
         result = close_sync.close_row_sync(client, payload, self.next_day, sleep=lambda _: None)
-        # This fixture intentionally omits unrelated required market values;
-        # preservation is the assertion under test, while the overall row is
-        # correctly reported as partial.
+        # The upstream snapshot is deliberately partial; preservation must not
+        # upgrade its overall data quality.
         self.assertEqual(result["status"], "PARTIAL")
         self.assertNotIn(col, result["updatedFields"])
         self.assertIn(col, result["preservedExistingFields"])

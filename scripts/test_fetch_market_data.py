@@ -1,10 +1,30 @@
 import unittest
 from unittest import mock
+import json
+import urllib.error
 
 import scripts.fetch_market_data as market_data
 
 
 class FetchMarketDataValidationTests(unittest.TestCase):
+    def test_yahoo_session_date_uses_exchange_timezone_not_jst(self):
+        source = {"id": "yahoo", "name": "Yahoo", "url": "https://example.test", "sourceUrl": "https://example.test/history", "symbol": "^DJI", "marketType": "index", "session": "daily"}
+        payload = {"chart": {"result": [{
+            "meta": {"regularMarketPrice": 50000, "previousClose": 49900, "regularMarketTime": 1794603600, "exchangeTimezoneName": "America/New_York"},
+            "timestamp": [1794603600], "indicators": {"quote": [{"close": [50000]}]},
+        }]}}
+        with mock.patch.object(market_data, "http_text", return_value=json.dumps(payload)):
+            result = market_data.fetch_yahoo_chart(source)
+        self.assertEqual(result["sessionDate"], "2026-11-13")
+
+    def test_http_404_is_reported_without_retrying_as_timeout(self):
+        error = urllib.error.HTTPError("https://example.test", 404, "Not Found", {}, None)
+        with mock.patch.object(market_data.urllib.request, "urlopen", side_effect=error) as opener:
+            with self.assertRaises(market_data.FetchError) as raised:
+                market_data.http_get("https://example.test")
+        self.assertEqual(raised.exception.code, "HTTP_404")
+        self.assertEqual(opener.call_count, 1)
+
     def test_coinmarketcap_crypto_fear_greed_keeps_previous_daily_value(self):
         source = {
             "id": "cmc",

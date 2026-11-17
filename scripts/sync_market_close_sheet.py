@@ -36,6 +36,7 @@ from write_market_data_to_sheets import (  # noqa: E402
 ROOT = SCRIPT_DIR.parent
 JST = dt.timezone(dt.timedelta(hours=9))
 DEFAULT_SPREADSHEET_ID = "1n2ACInX4pmK0TdijC8xaur2RIiNZyVa6GFTZAyofcuE"
+TEST_ONLY_SPREADSHEET_ID = "1C0U7JXZT7DMDvDSL8Ah9uVfLhncnCOffIgKl3n8Hk-w"
 VALUE_RETRY_DELAYS = (5, 15)
 IMPORT_RETRY_DELAYS = (5, 15)
 MAX_STALE_DAYS = 10
@@ -54,6 +55,12 @@ PRICE_FIELDS: dict[str, tuple[str, str, str]] = {
     "vix": ("VIX終値", "VIX前日比", "VIX騰落率"),
     "nikkei_vi": ("日経VI終値", "日経VI前日比", "日経VI騰落率"),
     "fear_greed": ("FearGreed終値", "FearGreed前日比", ""),
+}
+SCALAR_FIELDS: dict[str, str] = {
+    "us10y": "米10年債利回り",
+    "jp10y": "日本10年債利回り",
+    "nikkei225_eps": "日経225予想EPS",
+    "nikkei225_per": "日経225予想PER",
 }
 REQUIRED_CLOSE_HEADERS = tuple(
     [header for fields in PRICE_FIELDS.values() for header in fields if header]
@@ -118,7 +125,16 @@ def resolve_target_date(payload: dict[str, Any], now: dt.datetime) -> dt.date:
             continue
         observed = parse_datetime(market.get("asOf"))
         if observed:
-            anchor_dates.append(observed.date())
+            # Anchor the row to the exchange's session date, not to the timestamp
+            # after converting it to JST. A Friday US close can occur on Saturday
+            # in Japan while remaining a Friday market session.
+            session_date = (
+                parse_sheet_date(market.get("sessionDate"))
+                or parse_sheet_date(market.get("expectedSessionDate"))
+                or parse_sheet_date(str(market.get("asOf") or "")[:10])
+                or observed.date()
+            )
+            anchor_dates.append(session_date)
     if not anchor_dates:
         raise CloseSyncError("VALIDATE", "No verified VIX or Nikkei VI session date is available.")
 
@@ -162,6 +178,23 @@ def read_values(client: SheetsClient, sheet: str, cells: str, option: str = "FOR
     return retry(lambda: client._request("GET", url).get("values") or [])
 
 
+def create_test_only_adc_session(project_id: str, spreadsheet_id: str):
+    """Use the Cloud Run runtime identity only for the fixed TEST_ONLY sheet."""
+    if project_id != "market-report-test-only" or spreadsheet_id != TEST_ONLY_SPREADSHEET_ID:
+        raise CloseSyncError("AUTH", "TEST_ONLY ADC is restricted to the allowlisted project and spreadsheet.")
+    try:
+        import google.auth
+        from google.auth.transport.requests import AuthorizedSession
+    except ImportError as exc:
+        raise CloseSyncError("AUTH", "Google ADC dependencies are missing.") from exc
+    credentials, active_project = google.auth.default(
+        scopes=["https://www.googleapis.com/auth/spreadsheets"]
+    )
+    if active_project and active_project != project_id:
+        raise CloseSyncError("AUTH", f"ADC project mismatch: {active_project}")
+    return AuthorizedSession(credentials)
+
+
 def read_many_columns(client: SheetsClient, sheet: str, headers: list[str], header_indices: dict[str, int]) -> dict[str, list[Any]]:
     wanted = ["日付"] + [name for name in headers if name in header_indices]
     ranges = [SheetsClient.a1_range(sheet, f"{letter_for_column(header_indices[name])}:{letter_for_column(header_indices[name])}") for name in wanted]
@@ -178,20 +211,33 @@ def close_value_for_market(market: dict[str, Any], target: dt.date) -> tuple[flo
     status = str(market.get("verificationStatus") or "")
     if status not in {"verified", "fallback"}:
         return None, "", f"status={status or 'missing'}"
-    observed = parse_datetime(market.get("asOf"))
+    raw_as_of = str(market.get("asOf") or "").strip()
+    observed = parse_datetime(raw_as_of)
     if not observed:
         return None, "", "asOf missing or invalid"
+    # Session dates are exchange-local calendar dates; converting an NY close
+    # timestamp to JST can shift it into the following day.
+    source_session_date = parse_sheet_date(market.get("sessionDate")) or parse_sheet_date(raw_as_of[:10]) or observed.date()
+    expected_session_date = market_expected_session_date(market, target)
+    if expected_session_date is None:
+        return None, source_session_date.isoformat(), "expectedSessionDate is invalid"
     value = number(market.get("value"))
     previous = number(market.get("previousClose"))
     if value is None:
         return None, observed.date().isoformat(), "value is not numeric"
-    if observed.date() == target:
-        return value, observed.date().isoformat(), "fallback" if status == "fallback" else ""
-    if observed.date() == target + dt.timedelta(days=1) and previous is not None:
+    if source_session_date == expected_session_date:
+        return value, source_session_date.isoformat(), "fallback" if status == "fallback" else ""
+    if source_session_date == expected_session_date + dt.timedelta(days=1) and previous is not None:
         # At 06:30 JST a continuous/overnight quote may already have rolled to
         # the next market date. In that case previousClose is the target date.
         return previous, observed.date().isoformat(), ""
-    return None, observed.date().isoformat(), f"asOf date {observed.date().isoformat()} does not match {target.isoformat()}"
+    return None, source_session_date.isoformat(), f"market session date {source_session_date.isoformat()} does not match expected {expected_session_date.isoformat()}"
+
+
+def market_expected_session_date(market: dict[str, Any], target: dt.date) -> dt.date | None:
+    if not market.get("expectedSessionDate"):
+        return target
+    return parse_sheet_date(market.get("expectedSessionDate"))
 
 
 def prior_numeric_value(column_values: list[Any], dates: list[Any], target: dt.date) -> float | None:
@@ -431,7 +477,7 @@ def close_row_sync(
                 field_warnings.append(f"{symbol}: {warning}")
             source_ids.append(str(market.get("sourceId") or symbol))
             writes[close_header] = close_value
-            observed = parse_datetime(market.get("asOf"))
+            market_target_date = market_expected_session_date(market, target) or target
             summary["marketData"].append({
                 "symbol": symbol,
                 "sourceId": market.get("sourceId"),
@@ -440,13 +486,13 @@ def close_row_sync(
                 "fetchedAt": market.get("fetchedAt"),
                 "verifiedAt": market.get("verifiedAt") or market.get("verifiedAtUtc") or "",
                 "verificationStatus": market.get("verificationStatus"),
-                "valueSource": "value" if observed and observed.date() == target else "previousClose",
+                "valueSource": "value" if source_date == market_target_date.isoformat() else "previousClose",
                 "closeValue": close_value,
             })
             if change_header:
                 change_value: float | None = None
                 percent_value: float | None = None
-                if source_date == target.isoformat():
+                if source_date == market_target_date.isoformat():
                     change_value, percent_value, warning = validate_change(market, close_value)
                 else:
                     previous = prior_numeric_value(column_values.get(close_header, []), date_values, target)
@@ -477,8 +523,27 @@ def close_row_sync(
                             existing_value = existing_column[target_row - 1]
                     if not str(existing_value or "").strip():
                         writes[percent_header] = f"取得不能（{warning or '騰落率を検証できません'}）"
-            if symbol == "fear_greed" and source_date == target.isoformat() and str(market.get("classification") or "").strip():
+            if symbol == "fear_greed" and source_date == market_target_date.isoformat() and str(market.get("classification") or "").strip():
                 writes["FearGreed判定"] = str(market.get("classification")).strip()
+
+        for symbol, header in SCALAR_FIELDS.items():
+            market_value = markets.get(symbol)
+            market = market_value if isinstance(market_value, dict) else {}
+            close_value, source_date, warning = close_value_for_market(market, target)
+            if close_value is None:
+                field_warnings.append(f"{symbol}: {warning or 'missing from snapshot'}")
+                if header in header_indices and (inserting or is_blank_cell(column_values.get(header, [])[target_row - 1] if target_row - 1 < len(column_values.get(header, [])) else "")):
+                    writes[header] = f"取得不能（{warning or 'missing from snapshot'}）"
+                continue
+            source_ids.append(str(market.get("sourceId") or symbol))
+            writes[header] = close_value
+            market_target_date = market_expected_session_date(market, target) or target
+            summary["marketData"].append({
+                "symbol": symbol, "sourceId": market.get("sourceId"),
+                "sourceName": market.get("sourceName"), "asOf": market.get("asOf"),
+                "fetchedAt": market.get("fetchedAt"), "verificationStatus": market.get("verificationStatus"),
+                "valueSource": "value" if source_date == market_target_date.isoformat() else "previousClose", "closeValue": close_value,
+            })
 
         # Make every required-but-unavailable field explicit. Preserve any
         # existing same-date value when this snapshot lacks a replacement.
@@ -823,6 +888,7 @@ def main() -> int:
     parser.add_argument("--upstream-outcome", choices=("success", "failure", "cancelled", "skipped"), default="success")
     parser.add_argument("--window-status", help="Current workflow acquisition summary; never a previous run's status.")
     parser.add_argument("--permission-probe", action="store_true", help="Use a new temporary tab to test this principal, then delete it.")
+    parser.add_argument("--test-only-adc", action="store_true", help="Use Cloud Run ADC for the fixed TEST_ONLY project/sheet allowlist.")
     args = parser.parse_args()
 
     now = dt.datetime.now(JST).replace(microsecond=0)
@@ -846,11 +912,17 @@ def main() -> int:
             payload = {} if args.permission_probe else json.loads(Path(args.latest).read_text(encoding="utf-8"))
             stage = "AUTH"
             spreadsheet_id = os.environ.get("MARKET_DATA_SPREADSHEET_ID", DEFAULT_SPREADSHEET_ID).strip()
-            secret = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
-            if not secret:
-                raise CloseSyncError("AUTH", "GOOGLE_SERVICE_ACCOUNT_JSON is required; connected-user access is not workflow-principal evidence.")
-            account = load_service_account_info(secret)
-            client = SheetsClient(create_authorized_session(account), spreadsheet_id)
+            if args.test_only_adc:
+                client = SheetsClient(
+                    create_test_only_adc_session(os.environ.get("GOOGLE_CLOUD_PROJECT", ""), spreadsheet_id),
+                    spreadsheet_id,
+                )
+            else:
+                secret = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
+                if not secret:
+                    raise CloseSyncError("AUTH", "GOOGLE_SERVICE_ACCOUNT_JSON is required; connected-user access is not workflow-principal evidence.")
+                account = load_service_account_info(secret)
+                client = SheetsClient(create_authorized_session(account), spreadsheet_id)
             if args.permission_probe:
                 summary = permission_probe(client)
                 summary["spreadsheetId"] = spreadsheet_id
