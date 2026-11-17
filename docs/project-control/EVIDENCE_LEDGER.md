@@ -120,3 +120,32 @@ Run ID: PORTAL-CONTENT-COMPLETENESS-20261116-01. Source base: c45d54206a8a44499e
 | folder修正候補 | 月別参照不能時は全Drive検索せずBLOCKED、重複folderを全page確認、Docsの読取前後に親/type確認。7新規tests含む65回帰PASS。 | E1/E2 / PASS | fixtureであり実SA/Drive復旧の証拠ではない。Windows tzdata不足の初回runはFAIL、workspace専用tzdata2026.6導入後PASS。 |
 
 ChatGPT4枠設定/実履歴/対象chat/通知=UNKNOWN（利用可能toolsにChatGPT Tasks履歴なし）。GAS実トリガー=UNKNOWN、ソース定義を実設定とみなさない。本番初期4枠=NOT_RUN、10営業日40枠=NOT_STARTED。外部Scheduler案は既存#203/#206を先に評価し、別本発行経路を増設しない。
+
+
+### MR-STABILITY-REPAIR-20261117-03 / 受入工程別状態（11/17 19時台JST）
+
+| 工程 | 08:00 | 12:00 | 16:00 | 21:00 |
+|---|---|---|---|---|
+| 市場取得（正しいslot/鮮度） | FAIL 最終窓外 | UNKNOWN 同時点データ不足 | UNKNOWN 同時点データ不足 | UNKNOWN 未到来・06:14誤取得は不適格 |
+| 発行前証拠 | FAIL 不在 | FAIL 不在 | FAIL 不在 | UNKNOWN 未到来 |
+| ChatGPT定期起動 | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN |
+| 指定chat本文 | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN |
+| 図解生成・表示 | UNKNOWN 数値不一致保留表示 | UNKNOWN | UNKNOWN | UNKNOWN |
+| Docs保存・全文読戻し | SUCCESS 現在本文存在 / 保存時照合UNKNOWN | SUCCESS 現在本文存在 / 保存時照合UNKNOWN | SUCCESS 現在本文存在 / 保存時照合UNKNOWN | UNKNOWN 未到来 |
+| PNG月別保存 | FAIL 検索なし | FAIL 検索なし | FAIL 検索なし | UNKNOWN 未到来 |
+| GitHub canonical | FAIL 不在 | FAIL 不在 | FAIL 不在 | UNKNOWN 未到来 |
+| publication receipt | FAIL 不在 | FAIL 不在 | FAIL 不在 | UNKNOWN 未到来 |
+| Pages正式発行 | FAIL 保存版のみ | FAIL 保存版のみ | FAIL 保存版のみ | UNKNOWN 未到来 |
+| 公開DOM保存版 | SUCCESS 本文/同slot | SUCCESS 本文/同slot | SUCCESS 本文/同slot | UNKNOWN ボタン無効 |
+| 通知実到達 | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN |
+
+PNG検索: 正式11月図解folderの当日name画像は0件（connected-user metadata検索）。図解生成そのものの成否は推測しない。
+ユーザー回答: 管理者権限付与は未実施、本番client_emailは元資格情報保管場所で確認が必要。Secret値の再表示はできず、資格情報をこのchatへ送らない。権限工程BLOCKED。
+固定Docs4件を同一変更IDで追記し、同一IDから追記全文・revision・parentをreadback済み（E5文書更新のみ）。本文作成マニュアルは形式変更なしで未編集。
+102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA: revision AHj4eMQoexUTpj23q3km2kEioQCeX6JSivGLrQUPKqz8ksMNoA693hpwvSt1GWjnYTuWFZU6h_NGys6j36cmhieWQpMJwTnp4iJTN5G0UHM, parent 1c4iLSdrlraVZHK5vjYKk-2WvpW5jnXXQ
+1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI: revision AHj4eMT0AdCPB3qbskcZP18KfxzALycwrGsyMg_jazzkWRx2HqgUqaeICpyq_WbIn7dyodEeBk3BuXh2mY8PJbFH7y4wNvizLiyO03kQK3g, parent 1M_fQhBA7oEQRfrWyirHcUeDZiRYI41yT
+1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg: revision AHj4eMSRc4REfzcThBs43O1JSxrNFY0HRpeT-0O0dUjbzrIgdT8qBstwTsG6aGnDDxNjQbIgTCgwI1yltXbHdv1fWhSQIFTs-txrZ75Rlk4, parent 1YBXf0KOfy3tSy_beahBYHF_LulGKi9g-
+1F5vH9_O0LUC9Dki0CNm1JDNVfg7gMYMcUCIxgeanE5g: revision AHj4eMQKH2hzWfIkAT_AoYW4nuWyk9ELcS2ua2u5kKq6gs2X2UKHCFYY6NpksEEBWF8JH0L2C-whlztMXYFbxmC51GX41JM8dmu5542ZPmA, parent 1QRAssyIcEqk46S774Z38qi_jf24tZKB-
+PR #214 code head95538ddb58b3c6fdb9e6c10942a87bb6b61b925f: 同期CI44062371251、delivery44062370937、cutoff44062370935、Pages-dispatch-contract44062371133すべてSUCCESS。reviewなし、未マージ。本記録追記後の最終HEAD CIは別途確認する。
+
+Required next: PRレビュー/本番反映許可、本番Drive主体特定/共有/readback、既存独立スケジューラー候補の認証と定時性受入、終値既存PRの本番安全統合とdry-run。実初期4枠合格前は10営業日観察NOT_STARTED。全面復旧ではない。
