@@ -16,8 +16,6 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from google.auth.transport.requests import AuthorizedSession
-from google.oauth2 import service_account
 
 ROOT = Path(__file__).resolve().parents[1]
 JST = timezone(timedelta(hours=9))
@@ -35,7 +33,9 @@ def save_json(path: Path, obj):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-def open_session() -> AuthorizedSession:
+def open_session():
+    from google.auth.transport.requests import AuthorizedSession
+    from google.oauth2 import service_account
     raw = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "")
     if not raw:
         raise RuntimeError("GOOGLE_SERVICE_ACCOUNT_JSON secret is not configured")
@@ -53,13 +53,41 @@ def get_json(session, endpoint, params=None):
         raise RuntimeError(f"Google API HTTP {response.status_code} ({error.get('status','')})")
     return response.json()
 
-def eligible_sources(session, now, folder_id=None):
+def monthly_source_folder(session, now):
+    name = f"マーケットレポート{now.year}年{now.month}月"
+    matches = []
+    page = None
+    while True:
+        params = {
+            "q": f"name = '{name}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
+            "fields": "nextPageToken,files(id,name,mimeType)", "pageSize": 100,
+        }
+        if page:
+            params["pageToken"] = page
+        result = get_json(session, DRIVE + "/files", params)
+        matches.extend(result.get("files", []))
+        if len(matches) > 1:
+            raise RuntimeError(f"BLOCKED_MONTHLY_FOLDER_AMBIGUOUS: {name}")
+        page = result.get("nextPageToken")
+        if not page:
+            break
+    if not matches:
+        raise RuntimeError(
+            f"BLOCKED_MONTHLY_FOLDER_ACCESS: {name}; monthly_folder_access=False. "
+            "Administrator must verify the production service account and monthly folder sharing. "
+            "No unscoped fallback or canonical writes were attempted."
+        )
+    return matches[0]["id"]
+
+
+def eligible_sources(session, now, folder_id):
     # When the owner has shared the monthly report folder, limit discovery to
     # direct children of that authoritative folder, excluding identically
     # named orphan/root copies from older recovery attempts.
+    if not folder_id:
+        raise RuntimeError("BLOCKED_MONTHLY_FOLDER_ACCESS: authoritative folder required")
     query = "name contains 'マーケットレポート_' and mimeType = 'application/vnd.google-apps.document' and trashed = false"
-    if folder_id:
-        query += " and '" + folder_id.replace("'", "\\'") + "' in parents"
+    query += " and '" + folder_id.replace("'", "\\'") + "' in parents"
     page = None
     found = {}
     scanned = 0
@@ -109,10 +137,12 @@ def paragraph_text(doc: dict) -> str:
     walk(doc.get("body", {}).get("content", []))
     return "".join(parts).lstrip("\ufeff")
 
-def build_report(session, date: str, slot: str, item: dict) -> dict:
+def build_report(session, date: str, slot: str, item: dict, *, folder_id: str) -> dict:
     from report_source_contract import body_hash, title_for, validate_saved_body
     from sync_latest_report_publication import validate_sop_body
     docid = item["id"]
+    if not folder_id or folder_id not in item.get("parents", []):
+        raise RuntimeError(f"BLOCKED_SOURCE_PARENT_MISMATCH: {date} {slot}")
     doc = get_json(session, f"{DOCS}/documents/{docid}",
                    {"fields": "documentId,title,revisionId,body(content)"})
     if doc.get("documentId") != docid or doc.get("title") != item.get("name"):
@@ -122,6 +152,9 @@ def build_report(session, date: str, slot: str, item: dict) -> dict:
     })
     if drive_after.get("id") != docid or drive_after.get("name") != item.get("name"):
         raise RuntimeError(f"Drive identity/title changed during Docs readback: {date} {slot}")
+    if (folder_id not in drive_after.get("parents", []) or
+            drive_after.get("mimeType") != "application/vnd.google-apps.document"):
+        raise RuntimeError(f"BLOCKED_SOURCE_PARENT_OR_TYPE_CHANGED: {date} {slot}")
     for field in ("createdTime", "modifiedTime", "headRevisionId"):
         before = item.get(field)
         after = drive_after.get(field)
@@ -174,17 +207,8 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
     try:
         # Locate the owner-authoritative month folder first; the service
         # account's inherited read access is verified through this lookup.
-        month_folder_name = f"マーケットレポート{now.year}年{now.month}月"
-        folders = get_json(session, DRIVE + "/files", {
-            "q": "name = '" + month_folder_name + "' and mimeType = 'application/vnd.google-apps.folder' and trashed = false",
-            "fields": "nextPageToken,files(id,name,mimeType)",
-            "pageSize": 100
-        })
-        folder_matches = folders.get("files", [])
-        if len(folder_matches) > 1:
-            raise RuntimeError(f"multiple accessible monthly report folders: {month_folder_name}")
-        folder_id = folder_matches[0]["id"] if folder_matches else None
-        folder_access = bool(folder_id)
+        folder_id = monthly_source_folder(session, now)
+        folder_access = True
         source_files, scanned = eligible_sources(session, now, folder_id=folder_id)
         print(f"Google Drive scan: {scanned} accessible report-name candidates; "
               f"{len(source_files)} recent slots; monthly_folder_access={folder_access}; "
@@ -224,7 +248,7 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                 if (canonical.get("report_status") == "SOURCE_ARCHIVED" and
                         is_canonical_document(anchored, canonical_id)):
                     try:
-                        rebuilt = build_report(session, *key, anchored[0])
+                        rebuilt = build_report(session, *key, anchored[0], folder_id=folder_id)
                         _verified_source_revision(rebuilt)
                     except (ValueError, SystemExit) as exc:
                         print(f"SOURCE_READBACK_BLOCKED: {key}: {exc}")
@@ -257,7 +281,7 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                 raise RuntimeError(f"ambiguous new report with multiple Google Docs: {key}")
             item = matches[0]
             try:
-                new_report = build_report(session, *key, item)
+                new_report = build_report(session, *key, item, folder_id=folder_id)
                 _verified_source_revision(new_report)
             except (ValueError, SystemExit) as exc:
                 # A historical source that does not satisfy the actual SOP
@@ -290,8 +314,7 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                     raise RuntimeError(
                         f"REPORT_SOURCE_MISSING {today} {due[-1]}; "
                         f"monthly_folder_access={folder_access}. "
-                        "Share the monthly report folder with the service account "
-                        "or share each newly saved Google Doc before its ingestion."
+                        "Verify the source Doc exists in the authoritative monthly folder."
                     )
         print(json.dumps({
             "mode": "APPLY" if apply else "DRY_RUN",

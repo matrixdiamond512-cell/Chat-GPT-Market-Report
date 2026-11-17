@@ -111,3 +111,7 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 2. Google Docs importer run `44021644786` は `monthly_folder_access=False`、`REPORT_SOURCE_MISSING 2026-11-17 12:00` で失敗。Google Drive `マーケットレポート2026年11月`（folder ID `1vnZ7JgQTbqVSvoTIaY-1GlEroSzNLXkP`）の配信用サービスアカウント共有を、正当な所有者権限で付与し、次回の実runで直接子の読戻しを検証する。TEST_ONLYの別サービスアカウントを本番用と取り違えない。
 3. 本修正ではデータ取得・証拠固定workflowsのconcurrencyを枠ごとに独立させる。各枠内の先行・予備・健全性jobの直列性は保つ。コードの修正はGitHub cronの起動保証、権限付与、正式レポート発行の証明とは別。
 4. 受入はPR CI→main反映→実予定時刻のmarket latest/証拠main readback→Docs importer folder access→publication receipt→canonical/index→Pages DOMの順に個別確認する。未実証の段階を完了扱いしない。
+
+## MR-STABILITY-REPAIR-20261117-03（2026-11-17 JST / 修正候補）
+BLOCKED_MONTHLY_FOLDER_ACCESSでは管理者がsecretのclient_emailだけを安全に確認し、TEST_ONLYと区別した本番認証主体の共有権限を点検する。秘密鍵/JSONをログやチャットへ出さない。本文folder 1vnZ7JgQTbqVSvoTIaY-1GlEroSzNLXkP、PNGfolder 1h7ft4COBO2jcWVBMFeAKLr1Fq9sdBj58。importerは読取専用、保存producerの書込権限とは別。権限変更は事前承認後に管理者が実施し、本番SAで再読取して確認。過去枠の証拠を再生成しない。
+検証: 新規7件を含む65回帰テストPASS（E1/E2）。本番SAのfolder読戻し・初期4枠・10営業日40枠は未実施。コード/CI成功を全面復旧としない。

@@ -33,3 +33,11 @@
 - 2026-10-07 PORTAL-D03: Run browser DOM validation on the normalized local artifact before upload/deploy and repeat the same strict checks against the public Portal after deployment. Keep exact title equality and fail closed. A successful Deploy step is not a successful Portal publication when live DOM validation fails.
 
 - 2026-10-20 / HANDOFF-20261020-01: Add `README.md` and `HANDOFF.md` as **stable developer onboarding paths**, extend existing `AGENTS.md` and introduce a PR evidence checklist. This is development-process documentation only: no report schedule, publication code, market data, receipt, Google Docs canonical requirements/specification/operations, or portal output is changed. Preserve the `docs/system/DOCUMENT_CONTROL.md` precedence and fixed-ID formal document workflow. Refer to Issue #173 for actual second-PC acceptance, Issue #103 for production audit, and live PR/Actions state rather than copying old success claims. Reassess any future functional change separately with the affected-document matrix.
+# MR-STABILITY-REPAIR-20261117-03 / 2026-11-17 JST
+
+Problem: monthly folder inaccessible while importer falls back to an unscoped scan; readback does not check parent.
+Chosen: stop with BLOCKED_MONTHLY_FOLDER_ACCESS before scanning/writing; resolve duplicate folders across all pages; check parent and MIME before/after Docs readback.
+Reason: observed production failure and verified main code path. Preserve the existing exact body/revision/publication gate.
+Trade-off: individually shared orphan Docs are no longer eligible; monthly direct storage is the existing formal requirement.
+Reversal condition: explicit requirement change plus equivalent identity/readback acceptance.
+Diagnostics: KEEP non-sensitive folder/error codes. No secret logging or automatic permission changes.
