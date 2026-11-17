@@ -4,8 +4,38 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.run_market_data_window import completed_times, snapshot_is_current
+from scripts.run_market_data_window import completed_times, snapshot_is_current, acquisition_window_status
 
+
+class AcquisitionWindowGuardTests(unittest.TestCase):
+    def test_delayed_overnight_job_never_becomes_todays_future_slot(self):
+        jst = dt.timezone(dt.timedelta(hours=9))
+        actual = dt.datetime(2026, 11, 17, 6, 14, tzinfo=jst)
+        self.assertEqual(
+            acquisition_window_status(actual, "21:00", ["20:30", "20:35", "20:55"]),
+            "BLOCKED_FUTURE_ACQUISITION_WINDOW",
+        )
+
+    def test_normal_and_short_early_attempt_allowed(self):
+        jst = dt.timezone(dt.timedelta(hours=9))
+        self.assertEqual(
+            acquisition_window_status(dt.datetime(2026, 11, 17, 20, 28, tzinfo=jst),
+                                      "21:00", ["20:30", "20:35"]),
+            "OK",
+        )
+        self.assertEqual(
+            acquisition_window_status(dt.datetime(2026, 11, 17, 11, 15, tzinfo=jst),
+                                      "12:00", ["11:30", "11:35"]),
+            "OK",
+        )
+
+    def test_far_after_cutoff_cannot_retag_old_schedule(self):
+        jst = dt.timezone(dt.timedelta(hours=9))
+        self.assertEqual(
+            acquisition_window_status(dt.datetime(2026, 11, 17, 17, 40, tzinfo=jst),
+                                      "12:00", ["11:30", "11:55"]),
+            "BLOCKED_EXPIRED_ACQUISITION_WINDOW",
+        )
 
 class SnapshotCurrentTests(unittest.TestCase):
     def test_accepts_usable_snapshot_for_requested_slot_and_day(self):
