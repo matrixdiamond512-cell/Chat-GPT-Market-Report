@@ -2,16 +2,16 @@
   "schemaVersion": "2.1.0",
   "pageId": "nikkei225-supply-demand",
   "pageTitle": "日経225需給分析",
-  "generatedAt": "2026-11-17T13:14:58+09:00",
+  "generatedAt": "2026-11-17T20:16:02+09:00",
   "spot": {
     "sourceName": "JPX 日経225オプション理論価格等情報・原資産終値",
     "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/option-price/",
-    "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261116tp.csv",
+    "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261117tp.csv",
     "comment": "NK225E理論価格ファイルの原資産終値。先物とは同一取引日でも時刻が異なるため、表示差は理論ベーシスではなく単純な現物終値対比。",
-    "value": 59662.02,
-    "asOfDate": "2026-11-16",
+    "value": 58860.43,
+    "asOfDate": "2026-11-17",
     "status": "verified",
-    "fetchedAt": "2026-11-17T13:14:58+09:00"
+    "fetchedAt": "2026-11-17T20:16:02+09:00"
   },
   "futures": {
     "sourceName": "JPX / 大阪取引所 日経225先物",
@@ -19,21 +19,21 @@
     "price": 59210.0,
     "priceChange": -540.0,
     "priceChangePercent": -0.9037656903765678,
-    "asOfDate": "2026-11-16",
+    "asOfDate": "2026-11-17",
     "priceAsOf": "2026-11-17T05:54:00+09:00",
-    "volume": 47869,
-    "openInterest": 181755,
-    "miniVolume": 751471,
-    "miniOpenInterest": 285429,
-    "openInterestChange": 631,
-    "miniOpenInterestChange": 22382,
-    "volumeChangePercent": null,
-    "miniVolumeChangePercent": null,
+    "volume": 57465,
+    "openInterest": 182962,
+    "miniVolume": 835669,
+    "miniOpenInterest": 301961,
+    "openInterestChange": 1207,
+    "miniOpenInterestChange": 16532,
+    "volumeChangePercent": 0.0,
+    "miniVolumeChangePercent": 0.0,
     "status": "verified",
-    "fetchedAt": "2026-11-17T13:13:29+09:00",
-    "previousOpenInterest": 181124,
-    "miniPreviousOpenInterest": 263047,
-    "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261116open_interest.xlsx"
+    "fetchedAt": "2026-11-17T20:14:24+09:00",
+    "previousOpenInterest": 181755,
+    "miniPreviousOpenInterest": 285429,
+    "oiSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261117open_interest.xlsx"
   },
   "sessions": {
     "sourceName": "JPX デリバティブ取引市況（ナイト・日通し）",
@@ -50,24 +50,24 @@
     "asOfDate": "2026-09-30",
     "nightSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/tvdivq00000014nn-att/20260930_derivatives_market_data_night.xlsx",
     "status": "stale",
-    "fetchedAt": "2026-11-17T13:14:50+09:00",
+    "fetchedAt": "2026-11-17T20:15:54+09:00",
     "error": "JPXセッション別出来高取得失敗: ValueError: night-session workbook link not found"
   },
   "arbitrage": {
     "sourceName": "JPX 裁定取引の状況",
     "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/",
     "comment": "裁定買い・売りポジションはJPXの全取引参加者報告合計。前々営業日データとして鮮度を分離表示。",
-    "asOfDate": "2026-11-12",
-    "sellBalance": 6130,
-    "buyBalance": 848660,
-    "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt000002ptul-att/261112.pdf",
-    "sellChange": -393,
-    "buyChange": 18249,
+    "asOfDate": "2026-11-13",
+    "sellBalance": 6528,
+    "buyBalance": 849310,
+    "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/program/t13vrt000002pyah-att/261113.pdf",
+    "sellChange": 398,
+    "buyChange": 650,
     "status": "verified",
     "frequency": "daily",
-    "lastAttemptAt": "2026-11-17T13:13:22+09:00",
-    "lastSuccessAt": "2026-11-17T13:13:22+09:00",
-    "fetchedAt": "2026-11-17T13:13:22+09:00",
+    "lastAttemptAt": "2026-11-17T20:14:15+09:00",
+    "lastSuccessAt": "2026-11-17T20:14:15+09:00",
+    "fetchedAt": "2026-11-17T20:14:15+09:00",
     "error": null
   },
   "options": {
@@ -77,88 +77,88 @@
     "nextSqDate": "2026-12-11",
     "businessDaysToSq": 17,
     "putCallRatio": null,
-    "iv": 34.18,
+    "iv": 34.11,
     "ivChange": null,
     "asOfDate": "2026-11-17",
     "status": "calculated",
     "error": "Put/Call・IVはJPX列構造を確認できるまで推測せず空欄",
-    "fetchedAt": "2026-11-17T13:14:58+09:00",
+    "fetchedAt": "2026-11-17T20:16:02+09:00",
     "putVolume": null,
     "callVolume": null,
     "putCallStatus": "unavailable",
     "putCallReason": "取得不能（ValueError: JPX当日取引総括CSVが見つかりません）",
     "ivStatus": "verified",
     "ivDefinition": "JPX基準ボラティリティ（NK225E・期近限月）",
-    "baseVolatility": 34.18,
-    "referenceStrikePrice": 59625.0,
-    "referencePutSettlementVolatility": 33.933099999999996,
-    "referenceCallSettlementVolatility": 34.4283,
+    "baseVolatility": 34.11,
+    "referenceStrikePrice": 58875.0,
+    "referencePutSettlementVolatility": 34.1532,
+    "referenceCallSettlementVolatility": 34.063900000000004,
     "ivContractMonth": "202612",
-    "ivUnderlyingClose": 59662.02,
-    "ivSourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261116tp.csv",
-    "ivAsOfDate": "2026-11-16"
+    "ivUnderlyingClose": 58860.43,
+    "ivSourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/option-price/files/ose20261117tp.csv",
+    "ivAsOfDate": "2026-11-17"
   },
   "participantFlow": {
     "sourceName": "JPX 取引参加者別取引高（手口上位一覧）",
     "sourceUrl": "https://www.jpx.co.jp/markets/derivatives/participant-volume/",
     "comment": "日次ファイルは売買方向別ではなく取引高上位です。取引高上位を売り・買いと読み替えません。",
-    "asOfDate": "2026-11-16",
+    "asOfDate": "2026-11-17",
     "contract": "NIKKEI 225 FUT 2612",
     "leaders": [
       {
         "name": "ＡＢＮクリアリン証券",
-        "volume": 14856,
+        "volume": 16355,
         "rank": 1
       },
       {
         "name": "ソシエテＧ証券",
-        "volume": 12823,
+        "volume": 14831,
         "rank": 2
       },
       {
         "name": "バークレイズ証券",
-        "volume": 10202,
+        "volume": 8479,
         "rank": 3
       },
       {
         "name": "モルガンＭＵＦＧ証券",
-        "volume": 2079,
+        "volume": 3311,
         "rank": 4
       },
       {
         "name": "サスケハナ・ホンコン",
-        "volume": 1960,
+        "volume": 2846,
         "rank": 5
       },
       {
-        "name": "野村証券",
-        "volume": 1627,
+        "name": "ドイツ証券",
+        "volume": 2449,
         "rank": 6
       },
       {
         "name": "ＪＰモルガン証券",
-        "volume": 1483,
+        "volume": 1599,
         "rank": 7
       },
       {
-        "name": "ドイツ証券",
-        "volume": 1323,
+        "name": "ゴールドマン証券",
+        "volume": 1235,
         "rank": 8
       },
       {
-        "name": "ゴールドマン証券",
-        "volume": 1272,
+        "name": "三菱ＵＦＪ証券",
+        "volume": 1051,
         "rank": 9
       },
       {
-        "name": "三菱ＵＦＪ証券",
-        "volume": 1158,
+        "name": "野村証券",
+        "volume": 935,
         "rank": 10
       }
     ],
-    "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202611/20261116_volume_by_participant_whole_day.xlsx",
+    "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/participant-volume/files/daily/202611/20261117_volume_by_participant_whole_day.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-11-17T13:14:51+09:00"
+    "fetchedAt": "2026-11-17T20:15:55+09:00"
   },
   "foreignInvestors": {
     "sourceName": "JPX 投資部門別売買状況",
@@ -771,7 +771,7 @@
       ]
     },
     "status": "verified",
-    "fetchedAt": "2026-11-17T13:14:49+09:00"
+    "fetchedAt": "2026-11-17T20:15:53+09:00"
   },
   "participantOpenInterest": {
     "sourceName": "JPX 取引参加者別建玉残高",
@@ -885,18 +885,18 @@
     ],
     "sourceFileUrl": "https://www.jpx.co.jp/automation/markets/derivatives/open-interest/files/2026/20261113_indexfut_oi_by_tp.xlsx",
     "status": "verified",
-    "fetchedAt": "2026-11-17T13:14:53+09:00"
+    "fetchedAt": "2026-11-17T20:15:57+09:00"
   },
   "shortSelling": {
     "sourceName": "JPX 空売り集計",
     "sourceUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/",
     "comment": "空売り比率は価格規制あり・なしの合計。5日・20日平均と比較し、単独で弱気判定しません。",
-    "asOfDate": "2026-11-16",
-    "ratio": 42.199999999999996,
-    "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002puy8-att/261116-m.pdf",
-    "avg5": 42.58,
+    "asOfDate": "2026-11-17",
+    "ratio": 41.6,
+    "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002py6q-att/261117-m.pdf",
+    "avg5": 42.36,
     "avg20": null,
-    "sampleCount": 10,
+    "sampleCount": 11,
     "series": [
       {
         "asOfDate": "2026-11-02",
@@ -947,10 +947,15 @@
         "asOfDate": "2026-11-16",
         "ratio": 42.199999999999996,
         "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002puy8-att/261116-m.pdf"
+      },
+      {
+        "asOfDate": "2026-11-17",
+        "ratio": 41.6,
+        "sourceFileUrl": "https://www.jpx.co.jp/markets/statistics-equities/short-selling/t13vrt000002py6q-att/261117-m.pdf"
       }
     ],
     "status": "verified",
-    "fetchedAt": "2026-11-17T13:13:28+09:00"
+    "fetchedAt": "2026-11-17T20:14:23+09:00"
   },
   "margin": {
     "sourceName": "JPX 信用取引現在高",
@@ -1011,7 +1016,7 @@
       }
     ],
     "status": "stale",
-    "fetchedAt": "2026-11-17T13:13:30+09:00",
+    "fetchedAt": "2026-11-17T20:14:25+09:00",
     "error": "JPX信用需給取得失敗: ValueError: weekly margin total monetary row not found"
   },
   "assessment": {
@@ -1307,19 +1312,19 @@
     "market": null,
     "status": "partial",
     "error": "同日市場全体建玉取得失敗: HTTPError: 404 Client Error: Not Found for url: https://www.jpx.co.jp/automation/markets/statistics-derivatives/monthly-statistics/files/2026/SIF_D_202611.xlsx",
-    "fetchedAt": "2026-11-17T13:14:56+09:00",
+    "fetchedAt": "2026-11-17T20:16:00+09:00",
     "marketAlignment": "weekly participant OI anchor + same-date JPX SIF_D market OI + same-date futures price"
   },
   "nikkeiFuturesDailyHistory": [
     {
-      "asOfDate": "2026-11-16",
+      "asOfDate": "2026-11-17",
       "price": 59210.0,
-      "openInterest": 181755,
-      "volume": 47869,
+      "openInterest": 182962,
+      "volume": 57465,
       "sourceName": "JPX / 大阪取引所 日経225先物",
       "priceSourceUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/",
-      "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261116open_interest.xlsx",
-      "capturedAt": "2026-11-17T13:14:55+09:00",
+      "oiSourceFileUrl": "https://www.jpx.co.jp/markets/derivatives/trading-volume/t13vrt0000026aes-att/20261117open_interest.xlsx",
+      "capturedAt": "2026-11-17T20:15:59+09:00",
       "status": "verified"
     }
   ],
@@ -1336,7 +1341,7 @@
     "status": "verified",
     "releaseFrequency": "weekly",
     "lookbackWeeks": 52,
-    "fetchedAt": "2026-11-17T13:14:59+09:00",
+    "fetchedAt": "2026-11-17T20:16:05+09:00",
     "priceSourceName": "Yahoo Finance 日経225 (^N225) historical close",
     "priceSourceUrl": "https://finance.yahoo.com/quote/%5EN225/history/",
     "priceStatus": "available",
