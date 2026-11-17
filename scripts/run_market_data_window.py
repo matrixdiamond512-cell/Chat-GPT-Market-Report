@@ -92,6 +92,33 @@ def target_datetime(day: dt.date, hhmm: str) -> dt.datetime:
     return dt.datetime.combine(day, dt.time(hour, minute), tzinfo=JST)
 
 
+
+def acquisition_window_status(
+    current: dt.datetime,
+    slot: str,
+    times: list[str],
+    *,
+    early_grace_minutes: int = 15,
+    late_grace_minutes: int = 90,
+) -> str:
+    """Guard against delayed scheduled jobs being relabelled as today's future slot.
+
+    The earliest intended attempt must be near the actual JST clock. A job
+    queued overnight for yesterday's 21:00 slot must not wait until 20:30
+    today, write a future 21:00 snapshot, or block sibling workflows.
+    """
+    if current.tzinfo is None or not times:
+        raise ValueError("timezone-aware time and at least one attempt are required")
+    today = current.astimezone(JST).date()
+    first = target_datetime(today, min(times))
+    cutoff = target_datetime(today, slot)
+    if current < first - dt.timedelta(minutes=early_grace_minutes):
+        return "BLOCKED_FUTURE_ACQUISITION_WINDOW"
+    if current > cutoff + dt.timedelta(minutes=late_grace_minutes):
+        return "BLOCKED_EXPIRED_ACQUISITION_WINDOW"
+    return "OK"
+
+
 def audit_path(day: dt.date, slot: str) -> Path:
     return ROOT / "data" / "market" / "acquisition_runs" / f"{day.isoformat()}_{slot.replace(':', '-')}.jsonl"
 
@@ -524,6 +551,19 @@ def main() -> int:
         ),
     )
     args = parser.parse_args()
+
+    # Fail before git_sync(), waiting for a future timestamp, or writing data.
+    # Scheduled Github runners may begin hours after the original cron day.
+    window_status = acquisition_window_status(now_jst(), args.slot, args.times)
+    if window_status != "OK":
+        print(json.dumps({
+            "reportSlot": args.slot,
+            "expectedTimes": args.times,
+            "windowStatus": window_status,
+            "reportReady": False,
+            "message": "No market-data file, audit or report evidence was changed.",
+        }, ensure_ascii=False), flush=True)
+        return 2
 
     run(["git", "config", "user.name", "github-actions[bot]"])
     run(["git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"])

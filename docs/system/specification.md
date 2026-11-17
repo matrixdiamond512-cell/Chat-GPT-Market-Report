@@ -80,3 +80,8 @@ Google Docs固定ID `1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI` へ対応す�
 Driveから10枠を追加回復し、保存本文91枠を検証。見出し別の主導市場・シナリオ・結論・時系列表示を修正。未取得値を推測せず、残る原本欠落5枠は `data/report-content-gaps.json` に記録する（10/20 08、10/22 12、11/04 08、11/06 08・12）。10/20 08と10/22 12は復旧メモ、11/06 12は空Doc。
 
 検証：Nodeの対象20テストPASS（E2、実保存本文を使ったアダプター/選択/表示回帰）。公開ブラウザは変更前を観測。変更後の公開DOM・Pages反映はNOT_RUN。Google Docs固定ID文書への同期は未実施。定時配信・正式原本・receipt・スケジュールは本変更の対象外。
+
+## REPORT-SLOT-WINDOW-20261117-01｜時刻窓ガード仕様（2026-11-17）
+- `scripts/run_market_data_window.py:acquisition_window_status()`：現在JSTが[最初の取得予定−15分, 対象発行枠+90分]の外なら `BLOCKED_FUTURE_ACQUISITION_WINDOW` / `BLOCKED_EXPIRED_ACQUISITION_WINDOW`。Git設定・待機・Git取得・市場データ書込より前に終了コード2で遮断する。
+- `scripts/persist_report_slot_evidence.py:require_live_pre_slot_window()` と `.github/workflows/freeze-report-slot-evidence.yml`：対象のJST YYYY-MM-DD HH:MMに対し[T-15分,T)だけ実行。T以降・前日遅延の次日誤写像・早すぎる取得を拒否する。既存の生成済みimmutable evidence、sourceHash、contextHash、snapshotHash、evidenceIdと公開ゲートは無改変。
+- 回帰：T-16拒否、T-15許可、T-1秒許可、T拒否、06:14の21:00誤取得拒否、正常な20:28の21:00取得許可、T+90分超拒否。実GitHub Actionsのスケジューラー遅延は別要因であり、定時E2E成功と混同しない。

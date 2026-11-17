@@ -10,7 +10,7 @@ import argparse
 import hashlib
 import json
 import os
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 if __package__:
@@ -127,6 +127,29 @@ def require_before_slot(report_date: str, report_time: str, *, now: datetime | N
     target = aware(f"{report_date}T{report_time}:00+09:00")
     if current >= target:
         raise ValueError("BLOCKED_LIVE_EVIDENCE_AFTER_SLOT")
+
+
+
+def require_live_pre_slot_window(
+    report_date: str,
+    report_time: str,
+    *,
+    now: datetime | None = None,
+    max_age_minutes: int = 15,
+) -> None:
+    """Reject a schedule that runs on the wrong day or far before the intended slot.
+
+    GitHub Actions scheduled invocations can be delayed by many hours. Mapping
+    a delayed cron to today's slot without this guard could relabel an earlier
+    event as a future report. This is an execution-window check, not evidence.
+    """
+    if max_age_minutes <= 0:
+        raise ValueError("max_age_minutes must be positive")
+    current = now if now is not None else datetime.now(timezone.utc)
+    require_before_slot(report_date, report_time, now=current)
+    target = aware(f"{report_date}T{report_time}:00+09:00")
+    if current < target - timedelta(minutes=max_age_minutes):
+        raise ValueError("BLOCKED_LIVE_EVIDENCE_OUTSIDE_PRE_SLOT_WINDOW")
 
 
 def unlink_if_same_file(path: Path, opened_stat: os.stat_result) -> bool:

@@ -98,3 +98,9 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 - `.github/workflows/full-archive-91-dual-view-audit.yml` はPR・手動・mainの監査コード変更時に実行し、通常のPagesデプロイが成功した後にも別ワークフローで読み取り専用監査を実行する。監査結果はJSONの各slot PASS/FAILと代替出典の選択件数をGitHub Actions artifactへ30日保存する。
 - 初回公開画面監査の記録：2026-11-17 JST、GitHub Actions run `43906236040`、保存元92/92・本文画面92/92・ダッシュボード92/92・出典の取り違え0・失敗0（PR候補の検証）。最終mainへの反映後はmain上の監査を独立して確認する。
 - 原本のない5枠は `data/report-content-gaps.json` のまま維持。正式発行status、receipt、本文・価格、Google Docs本文、PR #204/#206、Sheets/Cloud Runはこの監査で変更しない。
+
+## REPORT-SLOT-WINDOW-20261117-01｜発行前証拠・市場取得の時間外起動時（2026-11-17）
+1. まず対象workflowのGitHub Actions run ID、event.schedule、実開始JST、対象枠、実失敗step、stdout/stderrを採取する。2026-11-17のrun `43958040721` は06:14 JSTに21:00枠として起動し、実取得済みでも `acquisition is outside the allowed pre-draft cutoff window` で証拠固定に失敗した。
+2. 市場取得が `BLOCKED_FUTURE_ACQUISITION_WINDOW` の場合は次枠までsleepしない。前日のcronの遅延を今日の将来枠に転用しない。証拠runが `BLOCKED_LIVE_EVIDENCE_OUTSIDE_PRE_SLOT_WINDOW` / `BLOCKED_LIVE_EVIDENCE_AFTER_SLOT` なら発行前証拠は未成立と報告する。
+3. 既存の正常取得と正式証拠があるかGitHub mainを実読戻しする。欠落なら本文・Google Docs・参考閲覧保存を別工程で続行し、正式receipt/canonicalへ偽昇格させない。チャット主タスクの早期実行もユーザー可視本文無しなら未発行と判定し、15分後の復旧で同一枠だけを点検する。
+4. 検証を分離：ユニット回帰、PR CI、main反映、次の平日4枠の発行前証拠読戻し、Docs、Pages DOM、PNG、通知。設定変更をもって定時発行成功と主張しない。
