@@ -20,7 +20,9 @@ permissions:
   contents: write
 
 concurrency:
-  group: freeze-pre-draft-report-slot-evidence
+  # Isolate 08/12/16/21 slots: an overdue runner cannot occupy another slot's queue.
+  # Keep attempts for the same slot serialized and never relax the live cutoff.
+  group: freeze-pre-draft-report-slot-evidence-${{ github.event.schedule || inputs.report_slot || github.run_id }}
   cancel-in-progress: false
 
 jobs:
