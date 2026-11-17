@@ -19,7 +19,7 @@
     const heldReadback = record.originalReportStatus === 'BLOCKED_PRE_DRAFT_EVIDENCE_MISSING' &&
       record.verifiedAtSlot === false && (
         (record.archiveType === 'DRIVE_READBACK_ANALYSIS' && record.archiveStatus === 'HISTORICAL_ARCHIVE') ||
-        (record.archiveType === 'GOOGLE_DOCS_READBACK' && record.archiveStatus === 'REFERENCE_ANALYSIS_NOT_OFFICIAL')
+        (record.archiveType === 'GOOGLE_DOCS_READBACK' && ['REFERENCE_ANALYSIS_NOT_OFFICIAL', 'HISTORICAL_ARCHIVE'].includes(record.archiveStatus))
       );
     if (!reference && !heldReadback) return null;
     // Contradictory legacy slot verification is usable only as a conservative view.
