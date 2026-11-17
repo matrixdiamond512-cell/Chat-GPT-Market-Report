@@ -56,15 +56,17 @@ jobs:
           esac
           echo "date=$(TZ=Asia/Tokyo date +%F)" >> "$GITHUB_OUTPUT"
           echo "slot=$SLOT" >> "$GITHUB_OUTPUT"
-      - name: Reject any run that starts at or after the report cutoff
+      - name: Reject early or late scheduled invocations before any data writes
         env:
           REPORT_DATE: ${{ steps.slot.outputs.date }}
           REPORT_SLOT: ${{ steps.slot.outputs.slot }}
         run: |
           python - <<'PY'
           import os
-          from scripts.persist_report_slot_evidence import require_before_slot
-          require_before_slot(os.environ["REPORT_DATE"], os.environ["REPORT_SLOT"])
+          from scripts.persist_report_slot_evidence import require_live_pre_slot_window
+          require_live_pre_slot_window(
+              os.environ["REPORT_DATE"], os.environ["REPORT_SLOT"], max_age_minutes=15,
+          )
           print("LIVE_PRE_SLOT_WINDOW=PASS")
           PY
       - name: Validate writer and offline regression tests
