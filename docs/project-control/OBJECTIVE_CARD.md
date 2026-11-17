@@ -199,3 +199,15 @@ FORBIDDEN SUBSTITUTE: test PASS alone is not public portal recovery.
 STATUS: IN_PROGRESS; 91 source slots adapted, 10 slots recovered, 20 focused tests PASS.
 OPEN OUTCOMES: public deployment/readback; 5 missing original bodies; fixed-ID Docs synchronization.
 NEXT NECESSARY ACTION: branch/CI review and public DOM acceptance, then source-owner recovery for the 5 genuinely missing bodies.
+
+
+## MR-STABILITY-REPAIR-20261117-03（2026-11-17 JST / CLARIFY + ADD）
+PRIMARY OBJECTIVE: 平日4枠の本文・独立図解・Drive・canonical・receipt・Pages・通知を実際に整合して届け、初期4枠と続く10営業日40枠で安定稼働を実証する。
+ACTIVE PROFILE: data-tool + generic-app + dashboard。既存の未完了outcomesを維持。
+ACCEPTANCE: 指定4 run原因調査、P0時間窓/待ち行列・Drive障害の安全な修復、終値の検証済み空セル限定dry-run/読戻し、本文28x5・時系列・6市場/図解の同一性、本番全工程の独立証拠。
+CONSTRAINTS: 最新main b2d5973d840d37e80dd88798c33e6440fa2e88c9基点。元workspaceのdirty treeを保全。PR #213を保持。権限・保護変更は承認必須。既存原本/画像/数式保全。後付け枠前証拠禁止。
+OUT OF SCOPE: 新機能・別本発行経路・全面再設計。
+FORBIDDEN SUBSTITUTE: CI成功/閲覧アーカイブ/Docs存在を正式発行・全面復旧の代わりにしない。
+STATUS: IN_PROGRESS / production NOT_READY。10営業日受入はNOT_STARTED（OBSERVINGへ移る条件未達）。
+OPEN OUTCOMES: 本番Drive認証主体/共有・読戻し、GitHub cron遅延の発生源、ChatGPT実タスク/通知とGAS実トリガー、PRレビュー/CI/承認済main反映、終値PR #201/#204/#206の整合・本番dry-run、4枠初期受入、10営業日40枠。21:00は調査時点未到来。
+NEXT NECESSARY ACTION: Drive取込のfolder fail-closed/parent readback修正をPRで検証し、本番サービスアカウントの権限を管理者が確認。実時刻窓内の次回runから全工程を観測する。

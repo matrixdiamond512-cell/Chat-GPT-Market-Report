@@ -97,3 +97,26 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 検証：Nodeの対象20テストPASS（E2、実保存本文を使ったアダプター/選択/表示回帰）。公開ブラウザは変更前を観測。変更後の公開DOM・Pages反映はNOT_RUN。Google Docs固定ID文書への同期は未実施。定時配信・正式原本・receipt・スケジュールは本変更の対象外。
 
 Run ID: PORTAL-CONTENT-COMPLETENESS-20261116-01. Source base: c45d54206a8a44499efdac93f29520686265151d. Drive monthly folder listings and 13 source Docs read read-only; 10 report bodies recovered; one empty Doc and two recovery notices excluded. Existing tests assert fullText equality for every stored archive. Evidence ceiling: E2 for changed candidate; E4 for prior public missing-content observation only.
+
+
+## MR-STABILITY-REPAIR-20261117-03 / 2026-11-17 JST
+
+調査基点 main b2d5973d840d37e80dd88798c33e6440fa2e88c9。固定Docsの要件/仕様/運用/台帳と台帳指定本文マニュアルID 1M9LzxKgg8Y50uHSzE1OhML-lU-ufPhvh79xj_m1jWYQを読取。旧版を現行へ昇格していない。
+
+| Claim / run | Evidence | Level / result | Limit |
+|---|---|---|---|
+| 43958040721 | schedule、freeze workflow、head 1252d7c。created/run_started 11/17 06:14:29 JST、job 06:14:31〜06:15:13。21:00枠の当日誤割当・回復取得、PRE_DRAFT_EVIDENCE_BLOCKED: acquisition is outside the allowed pre-draft cutoff window。history/acquisition audit作成のlogあり。actor matrixdiamond512-cell。 | E4 / FAIL | cronの元発火日時はAPIにない。遅延の基盤原因とGoogle認証主体はUNKNOWN。 |
+| 44019617757 | freeze、head ca734eab、run_started 13:47:41、job 13:47:44〜13:48:06。08:00、Reject early or late stepでBLOCKED_LIVE_EVIDENCE_AFTER_SLOT。後続取得/書込skipped。 | E4 / FAIL (guard PASS) | run作成からjob開始3秒。数時間の遅れをrunner待機だけのせいにできない。予定試行候補07:47/53/57。 |
+| 44019745595 | market-data-08-health、head ca734eab、13:48:51開始、job 13:48:53〜13:49:16。07:55 refreshでBLOCKED_EXPIRED_ACQUISITION_WINDOW、exit 2。 | E4 / FAIL (guard PASS) | run作成からjob開始2秒。cron遅延発生源UNKNOWN。 |
+| 44021644786 | importer、head bc375ff、14:05:42開始、job 14:05:45〜14:06:11。92 accessible candidates / 0 recent slots / monthly_folder_access=False。apply step REPORT_SOURCE_MISSING 2026-11-17 12:00。 | E4 / FAIL | workflow actorとGoogle主体は別。秘密鍵/secretは取得していない。 |
+| 44044688511 | importer後続17:11:58起動、17:12:29時点でも92 / 0 / folder=False、16:00 source missing。 | E4 / FAIL | 本修正前のproduction log。 |
+| 既存修正 | PR #213 merged 14:39:12 JST、fdee367c、codeと固定Docs追補を照合。T-15〜T未満、intraday slot groups維持。 | E0/E4 / PASS | 定時性の保証やlive 4枠成功を示さない。 |
+| Drive11月保存先 | 本文1vnZ7JgQTbqVSvoTIaY-1GlEroSzNLXkP、PNG1h7ft4COBO2jcWVBMFeAKLr1Fq9sdBj58。各同名候補1。metadata共有一覧にservice-accountなし。本文owner+reader1、PNG ownerのみ。 | E5 / BLOCKED production identity | connected userは読取可。本番SAアクセス/保存権限は未実証。権限付与を管理者へ依頼、変更していない。 |
+| 保存本文 | 08:00 Doc 1F-QNJDs9LdFU94tABs7JYbG_md1BKtTN62b1Wz4Mx5w、12:00 1IDo8blPWol90veDK8SrG5UhLCCLxx9UButQZa-8gL4g、16:00 1njvlSNRio_BONNBVT3Ts54o44djAwnlg8z_GFe3xJn4、全文取得4505/3823/4427 chars。各遅延/閲覧用・証拠欠落と記載。 | E5 / text exists | production保存主体、同一revision/作成直後全文照合、定時chat出力はUNKNOWN。市場値の外部正確性は未監査。 |
+| 公開DOM | report.htmlの11/17 08/12/16を実ブラウザで選択、日時/本文/6市場見通し/保存記録・修復版表示を確認。08図解は数値不一致で保留と表示、21ボタンdisabled。 | E5 / archive view PASS; formal issuance FAIL | 図解実体/通知到達UNKNOWN。全文hashの機械的一致はNOT_RUN。 |
+| canonical/receipt/evidence | 基点mainに11/17の4枠すべて不在。latest市場データは06:14:47 JST/21:00/verifiedのまま。 | E0 / absent | verifiedは取得層だけ。21時未到来の不在を障害判定しない。 |
+| 終値一覧 | metadata sheetId1589411552、186列。A1:GD1、A2:A180、A2:GD6実読取。11/16=row2:85/185記入、100空欄、Dow/Nasdaq/S&P/日経終値空欄。11/17=row5:31記入154空欄。date '/'と'-'混在、読取範囲で11/16は1行。 | E5 / missing confirmed | 空欄全件を障害扱いしない。週次/月次/任意を含む。既記入値はsource-verifiedとしない。書込/補完0。 |
+| 終値既存候補 | #201基礎修正、#204既存値/数式保全と実書込集合readback、#206 TEST_ONLY取得/市場session日付。すべてDraft/unmerged、#206は#204上のstack。 | E0 / inspected | 本番投入は未承認、独立実データ取得/検証済空セルdry-run未了。重複実装しない。 |
+| folder修正候補 | 月別参照不能時は全Drive検索せずBLOCKED、重複folderを全page確認、Docsの読取前後に親/type確認。7新規tests含む65回帰PASS。 | E1/E2 / PASS | fixtureであり実SA/Drive復旧の証拠ではない。Windows tzdata不足の初回runはFAIL、workspace専用tzdata2026.6導入後PASS。 |
+
+ChatGPT4枠設定/実履歴/対象chat/通知=UNKNOWN（利用可能toolsにChatGPT Tasks履歴なし）。GAS実トリガー=UNKNOWN、ソース定義を実設定とみなさない。本番初期4枠=NOT_RUN、10営業日40枠=NOT_STARTED。外部Scheduler案は既存#203/#206を先に評価し、別本発行経路を増設しない。

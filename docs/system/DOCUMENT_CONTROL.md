@@ -91,3 +91,7 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 - GitHub対象：`.github/workflows/freeze-report-slot-evidence.yml`、`.github/workflows/market-data-intraday-{anchor,fallback,health}.yml`、`tests/test_report_slot_evidence.py`、要件/仕様/運用/本台帳の固定パス。Docs原本と価格、receipt、既存GitHub Pages本文は変更対象外。
 - 変更内容：同一枠の直列化は維持し、異なる予定枠どうしの待ち行列だけを分離。証拠作成許可時間・正式公開条件は不変。
 - 未解決：本番サービスアカウントの正確なIDはGitHub secretに保管されており本変更では参照しない。Driveフォルダー共有の実施・確認、GitHubの定時起動保証、次回4枠E2E、Google Docs固定ID正本への同期は別作業であり現時点で未検証。
+
+## MR-STABILITY-REPAIR-20261117-03（2026-11-17 JST / 修正候補）
+影響: 要件・仕様・運用・本台帳の固定パス/固定Docs。本文作成マニュアルの形式要件は不変（参照済）。原因資料: run43958040721/44019617757/44019745595/44021644786/44044688511、最新main b2d5973。PR #213を保持。変更はfolder fail-closed/parent readback/CI回帰のみ。権限付与・保存原本・PNG・canonical・receipt・本番スケジュールは変更しない。固定Docs同期・PR CI/main反映・実4枠/10営業日受入は各別に記録する。
+検証: 新規7件を含む65回帰テストPASS（E1/E2）。本番SAのfolder読戻し・初期4枠・10営業日40枠は未実施。コード/CI成功を全面復旧としない。

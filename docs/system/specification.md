@@ -91,3 +91,7 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 - `.github/workflows/freeze-report-slot-evidence.yml`: 実行待ち行列のキーを `github.event.schedule || inputs.report_slot || github.run_id` で分離。08/12/16/21時ごとの予定cronを混在させず、同じcronの試行は直列化する。
 - `.github/workflows/market-data-intraday-{anchor,fallback,health}.yml`: 予定cronのUTC時刻帯と手動 `inputs.report_slot` を同じ08/12/16/21時制約に正規化。12時内・16時内・21時内の一次/補助/健全性確認は同じgroupを共有し、別の対象枠とは分離する。
 - `cancel-in-progress: false` を維持。元データ内容、cutoff、immutable evidence、Docs、receipt、canonical、Pagesは変更しない。時計の正確さやGitHub cronの定時起動は保証しない。
+
+## MR-STABILITY-REPAIR-20261117-03（2026-11-17 JST / 修正候補）
+sync_reports_from_drive.pyは月別folder検索を全ページ走査し、一意のIDが得られなければBLOCKED_MONTHLY_FOLDER_ACCESS/AMBIGUOUSで書込前に停止。候補検索は当該parentに限定し、Docs全文取得前後のparentとMIMEを検証する。後続の本文/revision/hash/枠前証拠/receiptゲートは維持する。
+検証: 新規7件を含む65回帰テストPASS（E1/E2）。本番SAのfolder読戻し・初期4枠・10営業日40枠は未実施。コード/CI成功を全面復旧としない。

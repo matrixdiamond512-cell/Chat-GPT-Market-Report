@@ -11,6 +11,7 @@ on:
       - "scripts/reporting/snapshot.py"
       - "scripts/verify_publication_consistency.py"
       - "tests/test_publication_evidence.py"
+      - "tests/test_drive_source_folder.py"
       - ".github/workflows/publish-saved-google-docs-reports.yml"
   workflow_dispatch:
   schedule:
@@ -47,7 +48,7 @@ jobs:
       - name: Test fail-closed pre-draft evidence and readback receipt contract
         env:
           PYTHONPATH: scripts
-        run: python -m unittest tests.test_publication_evidence tests.test_report_slot_evidence -v
+        run: python -m unittest tests.test_publication_evidence tests.test_report_slot_evidence tests.test_drive_source_folder -v
       - name: Read actual Google Docs and assess append-only canonical import
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
