@@ -84,3 +84,10 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 - 実装方法：誤った実行窓を取り込み前に遮断する。T-15/Tの前後条件以外、発行枠、過去evidence、正式receipt、Drive本文、PNG、canonical、ポータル表示を改変しない。
 - 検証状態：PRブランチの静的実装。ユニットCI・main反映・次回定時E2E・公開DOM・通知は別途検証するまで未確認。関連PRおよび結果はGit履歴で追跡する。
 - 未解決：GitHub Actionsスケジューラー自体の長時間遅延・スキップはコードだけで保証できない。枠前の正当な実行が一度もなければ正式証拠は欠落し、後から補作しない。
+
+## REPORT-SLOT-QUEUE-20261117-02｜定時処理待ち行列分離（2026-11-17 JST）
+
+- 変更理由：GitHub Actionsのcron大幅遅延・跨枠の全体concurrencyと、Google Drive11月フォルダーの配信用サービスアカウント参照不能を11月17日ログで確認。
+- GitHub対象：`.github/workflows/freeze-report-slot-evidence.yml`、`.github/workflows/market-data-intraday-{anchor,fallback,health}.yml`、`tests/test_report_slot_evidence.py`、要件/仕様/運用/本台帳の固定パス。Docs原本と価格、receipt、既存GitHub Pages本文は変更対象外。
+- 変更内容：同一枠の直列化は維持し、異なる予定枠どうしの待ち行列だけを分離。証拠作成許可時間・正式公開条件は不変。
+- 未解決：本番サービスアカウントの正確なIDはGitHub secretに保管されており本変更では参照しない。Driveフォルダー共有の実施・確認、GitHubの定時起動保証、次回4枠E2E、Google Docs固定ID正本への同期は別作業であり現時点で未検証。

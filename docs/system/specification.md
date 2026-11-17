@@ -85,3 +85,9 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 - `scripts/run_market_data_window.py:acquisition_window_status()`：現在JSTが[最初の取得予定−15分, 対象発行枠+90分]の外なら `BLOCKED_FUTURE_ACQUISITION_WINDOW` / `BLOCKED_EXPIRED_ACQUISITION_WINDOW`。Git設定・待機・Git取得・市場データ書込より前に終了コード2で遮断する。
 - `scripts/persist_report_slot_evidence.py:require_live_pre_slot_window()` と `.github/workflows/freeze-report-slot-evidence.yml`：対象のJST YYYY-MM-DD HH:MMに対し[T-15分,T)だけ実行。T以降・前日遅延の次日誤写像・早すぎる取得を拒否する。既存の生成済みimmutable evidence、sourceHash、contextHash、snapshotHash、evidenceIdと公開ゲートは無改変。
 - 回帰：T-16拒否、T-15許可、T-1秒許可、T拒否、06:14の21:00誤取得拒否、正常な20:28の21:00取得許可、T+90分超拒否。実GitHub Actionsのスケジューラー遅延は別要因であり、定時E2E成功と混同しない。
+
+## REPORT-SLOT-QUEUE-20261117-02｜時間帯別concurrency契約（2026-11-17 JST）
+
+- `.github/workflows/freeze-report-slot-evidence.yml`: 実行待ち行列のキーを `github.event.schedule || inputs.report_slot || github.run_id` で分離。08/12/16/21時ごとの予定cronを混在させず、同じcronの試行は直列化する。
+- `.github/workflows/market-data-intraday-{anchor,fallback,health}.yml`: 予定cronのUTC時刻帯と手動 `inputs.report_slot` を同じ08/12/16/21時制約に正規化。12時内・16時内・21時内の一次/補助/健全性確認は同じgroupを共有し、別の対象枠とは分離する。
+- `cancel-in-progress: false` を維持。元データ内容、cutoff、immutable evidence、Docs、receipt、canonical、Pagesは変更しない。時計の正確さやGitHub cronの定時起動は保証しない。

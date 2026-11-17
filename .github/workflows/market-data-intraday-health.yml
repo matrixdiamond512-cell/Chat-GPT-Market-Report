@@ -21,7 +21,9 @@ permissions:
   contents: write
 
 concurrency:
-  group: market-data-intraday-window
+  # Same-slot anchor/fallback/health runs remain serialized across workflows.
+  # A delayed 12:00 run must not block 16:00 or 21:00 acquisition.
+  group: market-data-intraday-window-${{ (contains(github.event.schedule, ' 2 * * ') || contains(github.event.schedule, ' 3 * * ')) && '12' || (contains(github.event.schedule, ' 6 * * ') || contains(github.event.schedule, ' 7 * * ')) && '16' || (contains(github.event.schedule, ' 11 * * ') || contains(github.event.schedule, ' 12 * * ')) && '21' || inputs.report_slot || github.run_id }}
   cancel-in-progress: false
 
 jobs:

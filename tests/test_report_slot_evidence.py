@@ -187,5 +187,33 @@ class ReportSlotEvidenceTests(unittest.TestCase):
             persist_slot_evidence("2026-10-17", "08:00", self.market_path, self.output)
 
 
+    def test_workflows_isolate_backlogged_slots_without_relaxing_cutoff(self):
+        root = Path(__file__).resolve().parents[1]
+        freeze = (root / ".github/workflows/freeze-report-slot-evidence.yml").read_text(encoding="utf-8")
+        self.assertIn(
+            "group: freeze-pre-draft-report-slot-evidence-"
+            "${{ github.event.schedule || inputs.report_slot || github.run_id }}",
+            freeze,
+        )
+        self.assertIn("require_live_pre_slot_window(", freeze)
+        self.assertIn("--require-live-before-slot", freeze)
+        workflows = (
+            "market-data-intraday-anchor.yml",
+            "market-data-intraday-fallback.yml",
+            "market-data-intraday-health.yml",
+        )
+        for name in workflows:
+            with self.subTest(workflow=name):
+                content = (root / ".github/workflows" / name).read_text(encoding="utf-8")
+                self.assertIn("group: market-data-intraday-window-${{", content)
+                self.assertIn("|| inputs.report_slot || github.run_id", content)
+                self.assertIn("&& '12'", content)
+                self.assertIn("&& '16'", content)
+                self.assertIn("&& '21'", content)
+                for hour in ("2", "3", "6", "7", "11", "12"):
+                    self.assertIn("contains(github.event.schedule, ' " + hour + " * * ')", content)
+                self.assertIn("cancel-in-progress: false", content)
+
+
 if __name__ == "__main__":
     unittest.main()
