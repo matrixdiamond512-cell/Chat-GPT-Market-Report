@@ -79,14 +79,14 @@ jobs:
           git add reports/ reports.json data/latest-report.json data/dashboard.json publication-receipts/
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "NO_NEW_REPORTS: all reachable Docs already published; no fake publication."
+            echo "NO_NEW_CANONICAL_CHANGES: no new Docs-derived file changes. This is not proof of formal publication."
             exit 0
           fi
-          git commit -m "Publish verified saved Google Docs report to canonical history"
+          git commit -m "Sync saved Google Docs sources and verified publications"
           git pull --rebase origin main
           git push origin HEAD:main
           echo "changed=true" >> "$GITHUB_OUTPUT"
-          echo "PUSHED_VERIFIED_DOCS_REPORTS: eligible Docs with frozen evidence/readback receipts are public; held sources remain archived. Pages dispatch follows."
+          echo "PUSHED_DOCS_HISTORY: source archives and formally verified reports are separately classified in the importer log. A successful push is NOT proof of formal publication. Pages dispatch follows."
 
       - name: Dispatch Pages deployment for the committed archive
         if: steps.persist.outputs.changed == 'true'
