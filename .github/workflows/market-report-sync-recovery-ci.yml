@@ -16,6 +16,8 @@ on:
       - "tests/test_drive_source_folder.py"
       - "scripts/verify_publication_consistency.py"
       - "scripts/verify_scheduled_report_delivery.py"
+      - "scripts/reporting/publication_evidence.py"
+      - "tests/test_publication_evidence.py"
       - "tests/test_market_report_sync_contract.py"
       - "tests/test_report_contract.py"
       - "tests/test_dashboard_publication_health.py"
@@ -42,6 +44,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_market_report_sync_contract.py' -v
           python -m unittest discover -s tests -p 'test_dashboard_publication_health.py' -v
           python -m unittest discover -s tests -p 'test_scheduled_report_delivery.py' -v
+          python -m unittest tests.test_publication_evidence -v
           python -m unittest discover -s tests -p 'test_publication_eligibility.py' -v
           python -m unittest discover -s tests -p 'test_report_contract.py' -v
           python scripts/test_reconcile_latest_report_market_data.py
