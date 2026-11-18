@@ -46,13 +46,34 @@ def slot_datetime(report: dict) -> datetime:
         raise SystemExit(f"invalid report slot {report.get('date')} {report.get('time')}: {exc}") from exc
 
 
-def verify_dashboard_copy(latest: dict, dashboard: dict) -> None:
-    """The dashboard stores the complete canonical latest report."""
+def dashboard_latest_is_consistent(latest: dict, dashboard: dict) -> bool:
+    """Allow only the independent marketData overlay on latestReport.
+
+    The live updater projects the identical marketData on dashboard root and
+    latestReport for the existing UI; it must not mutate canonical report data.
+    """
     projected = dashboard.get("latestReport")
     if not isinstance(projected, dict):
+        return False
+    if projected == latest:
+        return True
+    if "marketData" in latest or "marketData" not in projected:
+        return False
+    overlay = projected["marketData"]
+    if not isinstance(overlay, dict) or overlay != dashboard.get("marketData"):
+        return False
+    original_projection = dict(projected)
+    del original_projection["marketData"]
+    return original_projection == latest
+
+
+def verify_dashboard_copy(latest: dict, dashboard: dict) -> None:
+    """Require exact canonical report identity except the validated overlay."""
+    if not isinstance(dashboard.get("latestReport"), dict):
         raise SystemExit("dashboard.latestReport is missing")
-    if projected != latest:
+    if not dashboard_latest_is_consistent(latest, dashboard):
         raise SystemExit("dashboard.latestReport does not match complete latest report")
+
 
 
 def requires_strict_receipt(report: dict) -> bool:

@@ -17,7 +17,7 @@ import re
 from report_identity import canonical_path, internal_report_key
 from reporting.publication_eligibility import is_publication_eligible
 from reporting.publication_evidence import validate_receipt
-from verify_publication_consistency import STRICT_RECEIPT_POLICY_FROM
+from verify_publication_consistency import STRICT_RECEIPT_POLICY_FROM, dashboard_latest_is_consistent
 
 JST = timezone(timedelta(hours=9))
 SLOTS = ("08:00", "12:00", "16:00", "21:00")
@@ -103,7 +103,7 @@ def verify(root: Path, date: str, slot: str, *, require_infographic: bool = Fals
     if (latest.get("date"), latest.get("time")) < key:
         raise ValueError("Latest report pointer is behind required slot")
     dashboard = json.loads((root / "data" / "dashboard.json").read_text(encoding="utf-8"))
-    if dashboard.get("latestReport") != latest:
+    if not dashboard_latest_is_consistent(latest, dashboard):
         raise ValueError("Dashboard and latest report pointer disagree")
     if dashboard.get("currentReportKey") != internal_report_key(latest):
         raise ValueError("Dashboard currentReportKey disagrees with latest report")
