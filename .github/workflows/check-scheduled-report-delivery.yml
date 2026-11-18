@@ -42,7 +42,7 @@ jobs:
           esac
           test -n "$SLOT" || { echo "Missing scheduled slot"; exit 1; }
           if [[ -n "$DATE" ]]; then
-            python scripts/verify_scheduled_report_delivery.py --slot "$SLOT" --date "$DATE"
+            python scripts/verify_scheduled_report_delivery.py --slot "$SLOT" --date "$DATE" --require-infographic
           else
-            python scripts/verify_scheduled_report_delivery.py --slot "$SLOT"
+            python scripts/verify_scheduled_report_delivery.py --slot "$SLOT" --require-infographic
           fi
