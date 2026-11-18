@@ -101,3 +101,9 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 ## MR-STABILITY-REPAIR-20261117-03（2026-11-17 JST / 修正候補）
 月別直接保存と原本保全を維持する。サービスアカウントが正式月別フォルダーを一意に参照できない場合、他folderやDrive全体の同名Docを代替原本にせずBLOCKEDとする。本文生成・図解・証拠・正式公開の要件は変更しない。
 検証: 新規7件を含む65回帰テストPASS（E1/E2）。本番SAのfolder読戻し・初期4枠・10営業日40枠は未実施。コード/CI成功を全面復旧としない。
+
+## MR-DELIVERY-STABILITY-20261118-01｜発行・図解の再発検知と証拠多重化（2026-11-18 11:58 JST）
+- 平日08:00/12:00/16:00/21:00の本文・図解・Docs・receipt/canonical・Pagesを工程別に判定する。Docs保存、PNG実在、GitHub Actions successはそれだけで正式発行成功とは扱わない。
+- 2026-10-16以降の新規正式発行は対象reportId/revision/bodyHash、正しい枠前snapshot/context、真正なDocs全文読戻しreceiptの一致が必要。図解はREADY時のみbody/hash/snapshotに結びつくmanifest、数字・renderer検証を必須とし、Drive画像byteおよび内容一致は別に検証する。
+- 証拠固定経路を追加してもT-15分からT直前の厳格な期限、既存証拠の不変性、過去枠の事後捏造禁止を維持する。本文・画像・参考閲覧・正式公開は独立の状態。
+- 実装：PR #215 main dbc95b8cf613ecf6ef990149e58d66bb6f7bac78、PR #216 main da71661a25a8dce65b0a75e8e27c6e9d10342504、関連CI PASS。11/18 12:00枠前証拠のmain読戻しはPASS。4枠正式発行の本番継続受入・10営業日40枠は未完了。固定ID Google Docsへの同変更ID追記済み。

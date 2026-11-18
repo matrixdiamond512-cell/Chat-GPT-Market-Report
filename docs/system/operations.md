@@ -115,3 +115,10 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 ## MR-STABILITY-REPAIR-20261117-03（2026-11-17 JST / 修正候補）
 BLOCKED_MONTHLY_FOLDER_ACCESSでは管理者がsecretのclient_emailだけを安全に確認し、TEST_ONLYと区別した本番認証主体の共有権限を点検する。秘密鍵/JSONをログやチャットへ出さない。本文folder 1vnZ7JgQTbqVSvoTIaY-1GlEroSzNLXkP、PNGfolder 1h7ft4COBO2jcWVBMFeAKLr1Fq9sdBj58。importerは読取専用、保存producerの書込権限とは別。権限変更は事前承認後に管理者が実施し、本番SAで再読取して確認。過去枠の証拠を再生成しない。
 検証: 新規7件を含む65回帰テストPASS（E1/E2）。本番SAのfolder読戻し・初期4枠・10営業日40枠は未実施。コード/CI成功を全面復旧としない。
+
+## MR-DELIVERY-STABILITY-20261118-01｜定時運用・再発時確認手順（2026-11-18 11:58 JST）
+1. 対象枠のGitHub main `data/report-evidence/<reportId>-r1.json` と取得時刻、現時刻<T、T-15分内の取得、reportSlot・source hash・context/snapshot不変性を検証する。取得連動workflow `freeze-report-evidence-on-acquisition.yml` のSUCCESS/NO_OPもbyte読戻しの有無で区別。
+2. ChatGPT主タスクのcompletedだけでなく、実際のレポート本文全文・日時・時系列・6市場を確認。Docsは正しい月フォルダーの1件に保存し全文とrevisionを読み戻す。15分後復旧は既存PNGを完全一致ファイル名で検索し、ある場合は再生成・上書きせず、実体と品質を別判定する。
+3. 定時健康監視 `check-scheduled-report-delivery.yml` が枠+45分で正式receipt/canonical/index/latest・図解READY/manifestを確認。PNGがあるだけ、Docsがあるだけ、Pages参考アーカイブが表示されるだけなら未達とする。コード検査は遠隔画像の実byteや視覚品質を保証しないため、別途Driveの画像byte/SHA、数値、文字切れ、本文と因果の一致を確認する。
+4. 証拠欠損時は参考閲覧を維持しつつ正式receipt/index/latestへ偽昇格させない。GitHub cronが全て遅延した時は独立schedulerが必要。秘密鍵・JSONや本番権限を拡大しない。
+5. 主な確認実績：PR #215/#216 CI PASS、main反映。11/18 12:00証拠はrun44226581259のNO_OP/main実byte読戻しPASS。4枠本番正式発行/図解QA/10営業日40枠は未受入。固定Google Docs同変更IDへ追記済み。
