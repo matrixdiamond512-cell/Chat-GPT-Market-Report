@@ -106,3 +106,9 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 - 固定Google Docs要件定義書/システム仕様書/運用マニュアル/文書管理台帳に同じ変更IDを追記・読戻し成功。GitHub固定文書にも同じ追補。
 - PR #218 https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/218 はmain 5420fed6600bda41aa8be45eae7eee8768242bdd。参考閲覧版の正式receipt昇格禁止、独立dashboard市場データの限定的整合判定、publication-evidence CIを実装。CI run44228487454 / 44228487434 PASS。
 - 11/18 12:00主タスクは11:56:57〜11:57:38 JSTに早期終了、本文表示のみ。PNG/Docs/正式公開未達。プラットフォームの時刻保証・継続40枠の本番受入は未完了。過去の原本や証拠を捏造・上書きしない。
+
+## REPORT-PIPELINE-REDESIGN-20261118-01｜再設計の変更管理（2026-11-18 JST）
+- 区分：提案・設計文書のみ。Cloud Run/Scheduler/Workflows/外部テキストAPI/Drive writerは未実装、未デプロイ、未承認。既存タスク、GitHub main配信プログラム、正式発行ゲートは変更しない。
+- 正本は固定Docs IDs：要件定義書 102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA、仕様書 1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI、本文作成マニュアル 1M9LzxKgg8Y50uHSzE1OhML-lU-ufPhvh79xj_m1jWYQ、運用マニュアル 1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg、台帳 1F5vH9_O0LUC9Dki0CNm1JDNVfg7gMYMcUCIxgeanE5g。同一変更IDで追記・読み戻し済み。
+- GitHub固定文書は docs/system/requirements.md、specification.md、operations.md、DOCUMENT_CONTROL.md のみ追記対象。本PRのマージは「設計案の記録」であって「実装済み」ではない。
+- 受入条件：書込権限/費用/チャット配信経路の実証→コーディネーター/PNG renderer/Drive uploader実装→1枠E2E→4枠E2E→10営業日40枠→承認に基づく切替。過去のsource/evidence/receiptは一切補造・変更しない。

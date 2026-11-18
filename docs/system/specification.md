@@ -108,3 +108,12 @@ PR #218 main 5420fed6600bda41aa8be45eae7eee8768242bdd：
 - `scripts/verify_publication_consistency.py:dashboard_latest_is_consistent()` はdashboard.latestReportの市場データ投影をdashboard.marketDataと完全一致する単一追加フィールドに限って許容し、その他差異は拒否。 `scripts/verify_scheduled_report_delivery.py` でも同じ判定。 `tests/test_report_contract.py` に回帰追加。
 - `.github/workflows/market-report-sync-recovery-ci.yml` にpublication_evidence変更トリガー、PYTHONPATH=scriptsでの実テストを追加。CI run44228487454 と44228487434はSUCCESS。
 - 本番12:00枠主タスクは11:56:57〜11:57:38 JSTに早期実行。本文は出力したがPNG/Docs/公開未実行。platform実起動時刻保証は未解決。
+
+## REPORT-PIPELINE-REDESIGN-20261118-01｜発行システムvNext技術設計（2026-11-18 JST / 設計案・未実装）
+- 構成候補：Cloud Scheduler(Asia/Tokyo) → Cloud Run/Workflows controller → Firestore(工程状態)＋Cloud Storage(バージョン固定原本) → 既存市場データ取得・freeze → 外部テキスト生成API adapter → 本文/数値QA → HTML/CSS+Chromium固定レイアウトPNG renderer → 図解QA → Google Docs/Drive PNG writer → publication receipt・GitHub canonical/index/latest → Pages DOM readback → 通知／ChatGPT表示アダプター。Cloud実行基盤は未設定、既存コードへ未実装。
+- 1枠の原本contract：reportId=YYYY-MM-DD_HH-MM, scheduleTimeJST, frozenAt, snapshotId, sourceHash, contextHash, revision, bodyHash, imageHash, docsFileId, docsRevision, docsParentId, pngFileId, pngParentId, receiptId, githubSha, pagesReadbackAt, chatDeliveryEvidence。工程単位の実行ID・attempt・失敗コード・実行時刻を持つ。
+- 発行時刻ガード：pre-draft証拠は[T-15min,T)に実現した検証済みsourceのみ。実行がTより早ければ予定時刻までキュー待機、T以降に新しい枠前証拠を生成しない。遅れた結果は時刻と実際の遅延を表示し、正式・参考を混同しない。
+- 生成契約：本文と正規化データを同一reportId/revisionでロックし、必須見出し、イベントのJST実時刻→実測反応、価格の出典・限月・単位・方向、08時28×5表・6市場・クロスチェックの一致を確認。取得不能値は創作しない。
+- 図解：承認済みの高情報量グリッド/表/矢印をHTMLで確定的に描画し、PNG byteを作る。元本文以外から数値・ニュースを補完しない。DOM overflow/画像実サイズ/保存byte SHA-256/manifest/bodyHash結合/必要ならvision reviewを別検証。正式画像ファイル名マーケットレポート_YYYY-MM-DD_HH-MM.png、画像内に対象枠と実作成日時。
+- Drive：本文ファイル名マーケットレポート_YYYY-MM-DD_HH-MM。YYYY年M月の既存親フォルダーIDを一意同定、事前重複検査、専用write principalの限定権限、送信原文/byteの保存後再取得・SHA確認。現在の本番Drive importer SAはread-onlyであり、無断権限付与は禁止。
+- 状態/受入：SCHEDULED→FROZEN→TEXT_QA_PASS→IMAGE_QA_PASS→DOCS_READBACK_PASS→PNG_READBACK_PASS→PUBLICATION_READY→PAGES_READBACK_PASS、さらにCHAT_DELIVEREDを独立管理。PARTIAL/FAILED/BLOCKED時は保存済み成功工程を再実行せず同じ入力hashだけを再試行。1枠の実手動E2E→全4枠→40実枠＋障害注入。
