@@ -27,6 +27,14 @@ def verify_slot_evidence(report: dict, path: Path, drive_file: dict, document_re
     This never repairs a body. Missing, stale, mismatched, or post-slot evidence
     raises ValueError so callers can retain the source as an ineligible archive.
     """
+    # A recovery/analytical source explicitly labeled as non-formal must never
+    # become canonical simply because valid market evidence was captured.
+    # Keep it readable as a historical archive; this gate concerns promotion only.
+    source_preamble = str(report.get("fullText") or "")[:800]
+    if any(marker in source_preamble for marker in (
+        "遅延分析版", "閲覧用分析版", "非正式分析版", "正式公開保留",
+    )):
+        raise ValueError("BLOCKED_NONFORMAL_REPORT_SOURCE")
     if not path.is_file():
         raise ValueError("BLOCKED_SNAPSHOT_MISSING")
     evidence = json.loads(path.read_text(encoding="utf-8"))
