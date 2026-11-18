@@ -128,3 +128,10 @@ BLOCKED_MONTHLY_FOLDER_ACCESSでは管理者がsecretのclient_emailだけを安
 2. 「閲覧用分析版」「遅延分析版」「非正式分析版」「正式公開保留」は正式publicationへの昇格を拒否、archive保全。証拠の事後補作やタスク内sleepで時刻保証を装わない。
 3. dashboard.latestReportの独立marketData投影はroot側dashboard.marketDataと完全一致する場合だけ認め、正式reportの日時・本文・他フィールドの変更を認めない。PR #218 main 5420fed6600bda41aa8be45eae7eee8768242bdd、CI run44228487454/44228487434 PASS。
 4. 早期起動自体はGitHubコードで修復できない。枠後の復旧と、正式発行の実証を分ける。4枠E2Eと図解品質は未受入。
+
+## REPORT-PIPELINE-REDESIGN-20261118-01｜vNextの安全な導入・切替（2026-11-18 JST / 設計案・未実装）
+1. 現行のChatGPT主タスク・15分後復旧タスク、GitHub Actions、Apps Scriptの実発行トリガーを棚卸しする。現行の運用を無断停止しない。原文・画像・receipt・アーカイブは保存し、既存の正常ロジックを再実装しない。
+2. 新Controller・永続state・PNG renderer・Docs/Drive writerを別環境に実装。まず合成データで4枠、境界T-15/T、早期・遅延・重複起動、APIエラー、Drive権限拒否・重複、GitHub競合、Pages staleを模擬する。責任主体と監視ログを各工程で記録。
+3. 本番書込用SA・Cloudプロジェクト/予算/外部APIキーはユーザー/管理者承認を得てから設定し、秘密鍵をチャットやGitHubに開示しない。データ取得後の本文/画像は完全一致の同一reportId・revision・hashでのみ公開へ進む。画像は一時sandboxだけに置かず保存プログラムから月別Driveへ直接アップロード・byte読戻し。
+4. 新方式はまず影稼働とし、旧タスクや正式公開を二重実行しない。1枠の実E2E・全4枠の実E2E・10営業日40枠観測、本文/PNG/Docs/PagesとChatGPTチャットの表示を個別受入。外部APIから既存ChatGPT会話への自動投稿は未実証であり、技術的に接続できない場合は満足したふりをしない。
+5. 本番切替は別途ユーザー承認後に実施。切替スイッチ・旧経路へのロールバックを保持。障害時はfail-closedでPARTIAL/BLOCKEDを通知し、既に成功した工程を再生成しない。
