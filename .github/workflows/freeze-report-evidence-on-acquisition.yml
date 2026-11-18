@@ -1,0 +1,160 @@
+name: Freeze pre-draft evidence from successful acquisition
+
+# Redundant, event-driven path. A GitHub Actions cron may run many minutes late
+# or not at all. A successful market-data acquisition can prompt an immediate
+# freeze attempt, but NEVER authorizes evidence after the original slot cutoff.
+on:
+  workflow_run:
+    workflows:
+      - "08:00 supporting market-data attempts"
+      - "08:00 market data fallback checks"
+      - "08:00 market data final readiness check"
+      - "Intraday market data primary windows"
+      - "Intraday market data fallback windows"
+      - "Recover current market snapshot"
+    types: [completed]
+
+permissions:
+  contents: write
+
+concurrency:
+  # Never queue a different slot behind another slot's delayed job.
+  group: freeze-evidence-after-acquisition-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+jobs:
+  freeze:
+    # workflow_run receives a privileged token: never run from a fork/PR.
+    if: >-
+      ${{ github.event.workflow_run.conclusion == 'success'
+          && github.event.workflow_run.head_branch == 'main'
+          && github.event.workflow_run.head_repository.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Select only real pre-slot verified acquisition
+        id: candidate
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+          from scripts.persist_report_slot_evidence import (
+              build_slot_evidence,
+              require_live_pre_slot_window,
+              validate_stored_slot_evidence,
+          )
+
+          now = datetime.now(timezone.utc)
+          jst = timezone(timedelta(hours=9))
+          day = now.astimezone(jst).date()
+          source = Path("data/market/latest.json")
+          output = os.environ["GITHUB_OUTPUT"]
+
+          def skip(reason):
+              print("PRE_DRAFT_EVIDENCE_EVENT_SKIPPED:", reason)
+              with open(output, "a", encoding="utf-8") as stream:
+                  stream.write("ready=false\n")
+              raise SystemExit(0)
+
+          if day.weekday() >= 5:
+              skip("No weekend publication slots")
+          if not source.is_file():
+              skip("Current verified market snapshot is absent")
+          raw = source.read_bytes()
+          try:
+              payload = json.loads(raw)
+          except (UnicodeDecodeError, json.JSONDecodeError):
+              skip("Market snapshot JSON is invalid")
+          if not isinstance(payload, dict):
+              skip("Market snapshot must be an object")
+          slot = payload.get("reportSlot")
+          if slot not in {"08:00", "12:00", "16:00", "21:00"}:
+              skip("Unsupported/absent acquisition slot")
+          report_date = day.isoformat()
+          try:
+              # Never infer today's slot from the runner start time.
+              require_live_pre_slot_window(
+                  report_date, slot, now=now, max_age_minutes=15,
+              )
+              evidence_path = Path("data/report-evidence") / (
+                  f"{report_date}_{slot.replace(':', '-')}-r1.json"
+              )
+              if evidence_path.is_file():
+                  validate_stored_slot_evidence(
+                      evidence_path.read_bytes(), report_date, slot
+                  )
+              else:
+                  # Same acquisition/context/snapshot validation as the writer.
+                  build_slot_evidence(
+                      report_date, slot, payload, raw, max_age_minutes=15
+                  )
+          except (ValueError, TypeError, KeyError) as exc:
+              skip(f"Not eligible for immutable pre-slot evidence: {exc}")
+
+          print(f"ELIGIBLE_PRE_DRAFT_EVIDENCE={report_date} {slot}")
+          with open(output, "a", encoding="utf-8") as stream:
+              stream.write(f"date={report_date}\n")
+              stream.write(f"slot={slot}\n")
+              stream.write("ready=true\n")
+          PY
+      - name: Freeze exact validated source and push before cutoff
+        if: steps.candidate.outputs.ready == 'true'
+        env:
+          REPORT_DATE: ${{ steps.candidate.outputs.date }}
+          REPORT_SLOT: ${{ steps.candidate.outputs.slot }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          EVIDENCE_PATH="data/report-evidence/${REPORT_DATE}_${REPORT_SLOT/:/-}-r1.json"
+          python scripts/persist_report_slot_evidence.py \
+            --date "$REPORT_DATE" --slot "$REPORT_SLOT" \
+            --max-age-minutes 15 --require-live-before-slot
+          python -m unittest tests.test_report_slot_evidence -q
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$EVIDENCE_PATH"
+          if ! git diff --cached --quiet; then
+            git commit -m "Freeze actual pre-slot evidence from verified acquisition"
+            # Never force push or overwrite an existing immutable artifact.
+            git pull --rebase origin main
+            python - "$REPORT_DATE" "$REPORT_SLOT" <<'PY'
+          import sys
+          from scripts.persist_report_slot_evidence import require_before_slot
+          require_before_slot(sys.argv[1], sys.argv[2])
+          PY
+            git push origin HEAD:main
+          fi
+          # Distinguish local creation from origin/main durable readback.
+          git fetch origin main
+          python - "$EVIDENCE_PATH" "$REPORT_DATE" "$REPORT_SLOT" <<'PY'
+          import subprocess
+          import sys
+          from pathlib import Path
+          from scripts.persist_report_slot_evidence import (
+              require_before_slot, validate_stored_slot_evidence
+          )
+          path, report_date, slot = sys.argv[1:]
+          require_before_slot(report_date, slot)
+          local = Path(path).read_bytes()
+          remote = subprocess.check_output(["git", "show", f"origin/main:{path}"])
+          if remote != local:
+              raise SystemExit("BLOCKED_MAIN_EVIDENCE_READBACK_MISMATCH")
+          validate_stored_slot_evidence(remote, report_date, slot)
+          require_before_slot(report_date, slot)
+          print(f"VERIFIED_PRE_DRAFT_EVIDENCE_ON_MAIN={report_date} {slot}")
+          PY
+      - name: Explain missing opportunity (not a publication success)
+        if: steps.candidate.outputs.ready != 'true'
+        run: |
+          echo "An acquisition completion did not yield eligible pre-slot evidence."
+          echo "No evidence file was created and no formal publication is implied."
