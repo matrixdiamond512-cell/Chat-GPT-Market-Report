@@ -79,5 +79,26 @@ class PublicationEvidenceTests(unittest.TestCase):
         self.assertTrue(requires_strict_receipt(current))
 
 
+    def test_delayed_or_reference_only_body_never_promoted(self):
+        for marker in ("遅延分析版", "閲覧用分析版", "非正式分析版", "正式公開保留"):
+            report = dict(self.report, fullText=(
+                self.report["title"] + "\n" + marker + "\n" + "本文" * 800
+            ))
+            report["bodyHash"] = hashlib.sha256(report["fullText"].encode("utf-8")).hexdigest()
+            with self.subTest(marker=marker):
+                with self.assertRaisesRegex(ValueError, "BLOCKED_NONFORMAL_REPORT_SOURCE"):
+                    verify_slot_evidence(
+                        report, self.evidence_path, self.drive_file, "drive-revision-1"
+                    )
+
+    def test_nonformal_marker_after_preamble_does_not_block_formal_receipt(self):
+        report = dict(self.report, fullText=("本文" * 500) + "閲覧用分析版という語の説明")
+        report["bodyHash"] = hashlib.sha256(report["fullText"].encode("utf-8")).hexdigest()
+        receipt = verify_slot_evidence(
+            report, self.evidence_path, self.drive_file, "drive-revision-1"
+        )
+        self.assertEqual(receipt["status"], "DOC_READBACK_PASS")
+
+
 if __name__ == "__main__":
     unittest.main()
