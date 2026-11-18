@@ -101,3 +101,8 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 - コード反映：PR #215 https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/215 （receipt/図解付き定時health、main dbc95b8cf613ecf6ef990149e58d66bb6f7bac78）、PR #216 https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/216 （データ取得完了起点で枠前証拠固定、main da71661a25a8dce65b0a75e8e27c6e9d10342504）。関連CI成功とmainファイル読み戻しを確認。
 - 本番証跡：2026-11-18 12:00証拠READY_FOR_DRAFT、run44226581259でorigin/main readback PASS（NO_OP）。11/18 08:00のPNGがDriveに存在しても視覚QA/公式manifestは未受入。Google Drive読取権限問題は本番SAの読取診断成功済みで、新規権限要求はしていない。
 - 状態：コード反映=IMPLEMENTED、CI=PASS、12時枠事前証拠=LIVE_READBACK_PASS、全4枠E2E=NOT_ACCEPTED、10営業日40枠=NOT_STARTED、画像正式品質検証=NOT_ACCEPTED。未検証の工程を完了と呼ばない。
+
+## MR-DELIVERY-STABILITY-20261118-02｜追加変更記録（2026-11-18 12:11 JST）
+- 固定Google Docs要件定義書/システム仕様書/運用マニュアル/文書管理台帳に同じ変更IDを追記・読戻し成功。GitHub固定文書にも同じ追補。
+- PR #218 https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/218 はmain 5420fed6600bda41aa8be45eae7eee8768242bdd。参考閲覧版の正式receipt昇格禁止、独立dashboard市場データの限定的整合判定、publication-evidence CIを実装。CI run44228487454 / 44228487434 PASS。
+- 11/18 12:00主タスクは11:56:57〜11:57:38 JSTに早期終了、本文表示のみ。PNG/Docs/正式公開未達。プラットフォームの時刻保証・継続40枠の本番受入は未完了。過去の原本や証拠を捏造・上書きしない。

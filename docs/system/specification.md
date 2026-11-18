@@ -101,3 +101,10 @@ sync_reports_from_drive.pyは月別folder検索を全ページ走査し、一意
 - PR #216（main da71661a25a8dce65b0a75e8e27c6e9d10342504）：`.github/workflows/freeze-report-evidence-on-acquisition.yml` を追加。指定市場データ取得workflows完了時、main同一repositoryイベントのみから現在の検証済み取得snapshotを選び、reportSlot、平日、T-15<=now<T、generatedAt鮮度・source/context/snapshot hash一致を検証後、排他的なevidence固定とorigin/main byte読戻し。過去枠再生成・既存証拠上書き・force pushは禁止。回帰は `tests/test_report_slot_evidence.py`。
 - 実本番：11/18 11:53:37 JST取得 `data/market/latest.json` はreportSlot=12:00、degraded。`data/report-evidence/2026-11-18_12-00-r1.json` はREADY_FOR_DRAFT。取得連動run44226581259は11:54頃既存証拠をNO_OPで確認し `VERIFIED_PRE_DRAFT_EVIDENCE_ON_MAIN` を出力（このrunが新規証拠を作成したとは主張しない）。
 - 未受入：4枠本文→独立PNGのQA→Docs→canonical/receipt→Pages DOM→通知の本番一貫性、10営業日40枠、GitHub cron全遅延時の独立実行保証。固定ID Google Docs正本にも同変更ID追記済み。
+
+## MR-DELIVERY-STABILITY-20261118-02｜追加実装（2026-11-18 12:11 JST）
+PR #218 main 5420fed6600bda41aa8be45eae7eee8768242bdd：
+- `scripts/reporting/publication_evidence.py:verify_slot_evidence()` は原本文冒頭800文字の「遅延分析版」「閲覧用分析版」「非正式分析版」「正式公開保留」を `BLOCKED_NONFORMAL_REPORT_SOURCE` で正式化拒否。archive閲覧は維持。 `tests/test_publication_evidence.py` に正負回帰。
+- `scripts/verify_publication_consistency.py:dashboard_latest_is_consistent()` はdashboard.latestReportの市場データ投影をdashboard.marketDataと完全一致する単一追加フィールドに限って許容し、その他差異は拒否。 `scripts/verify_scheduled_report_delivery.py` でも同じ判定。 `tests/test_report_contract.py` に回帰追加。
+- `.github/workflows/market-report-sync-recovery-ci.yml` にpublication_evidence変更トリガー、PYTHONPATH=scriptsでの実テストを追加。CI run44228487454 と44228487434はSUCCESS。
+- 本番12:00枠主タスクは11:56:57〜11:57:38 JSTに早期実行。本文は出力したがPNG/Docs/公開未実行。platform実起動時刻保証は未解決。

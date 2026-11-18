@@ -107,3 +107,9 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 - 2026-10-16以降の新規正式発行は対象reportId/revision/bodyHash、正しい枠前snapshot/context、真正なDocs全文読戻しreceiptの一致が必要。図解はREADY時のみbody/hash/snapshotに結びつくmanifest、数字・renderer検証を必須とし、Drive画像byteおよび内容一致は別に検証する。
 - 証拠固定経路を追加してもT-15分からT直前の厳格な期限、既存証拠の不変性、過去枠の事後捏造禁止を維持する。本文・画像・参考閲覧・正式公開は独立の状態。
 - 実装：PR #215 main dbc95b8cf613ecf6ef990149e58d66bb6f7bac78、PR #216 main da71661a25a8dce65b0a75e8e27c6e9d10342504、関連CI PASS。11/18 12:00枠前証拠のmain読戻しはPASS。4枠正式発行の本番継続受入・10営業日40枠は未完了。固定ID Google Docsへの同変更ID追記済み。
+
+## MR-DELIVERY-STABILITY-20261118-02｜早期実行と誤昇格への追加要件（2026-11-18 12:11 JST）
+- 11/18 12:00主タスクは11:56:57〜11:57:38 JSTに早期終了。閲覧用分析版本文は可視表示されたがPNG/Docs/公開未実行。定時発行成功扱いしない。
+- 正しい枠前証拠があっても原本文が「閲覧用分析版」「遅延分析版」「非正式分析版」「正式公開保留」と自己表示する場合、正式publicationへ昇格させない。参考閲覧は継続可能。
+- 正規latestReportとdashboard.latestReportに許す差は、独立のdashboard.marketDataと完全一致するmarketData投影だけとする。本文/日時/余計な属性の差異は拒否。
+- 実装：PR #218、main 5420fed6600bda41aa8be45eae7eee8768242bdd。CI run44228487454/44228487434 SUCCESS。早期起動そのものと全工程E2Eは未受入。固定ID Google Docsへ同変更ID反映済み。

@@ -122,3 +122,9 @@ BLOCKED_MONTHLY_FOLDER_ACCESSでは管理者がsecretのclient_emailだけを安
 3. 定時健康監視 `check-scheduled-report-delivery.yml` が枠+45分で正式receipt/canonical/index/latest・図解READY/manifestを確認。PNGがあるだけ、Docsがあるだけ、Pages参考アーカイブが表示されるだけなら未達とする。コード検査は遠隔画像の実byteや視覚品質を保証しないため、別途Driveの画像byte/SHA、数値、文字切れ、本文と因果の一致を確認する。
 4. 証拠欠損時は参考閲覧を維持しつつ正式receipt/index/latestへ偽昇格させない。GitHub cronが全て遅延した時は独立schedulerが必要。秘密鍵・JSONや本番権限を拡大しない。
 5. 主な確認実績：PR #215/#216 CI PASS、main反映。11/18 12:00証拠はrun44226581259のNO_OP/main実byte読戻しPASS。4枠本番正式発行/図解QA/10営業日40枠は未受入。固定Google Docs同変更IDへ追記済み。
+
+## MR-DELIVERY-STABILITY-20261118-02｜早期実行・公開整合（2026-11-18 12:11 JST）
+1. ChatGPT主タスクはscheduled_for、実開始、実終了、ユーザー可視本文・図解、Docs保存を別判定。11/18 12:00のような約3分前の実開始と枠前終了は、completedでも正常定時配信とはしない。
+2. 「閲覧用分析版」「遅延分析版」「非正式分析版」「正式公開保留」は正式publicationへの昇格を拒否、archive保全。証拠の事後補作やタスク内sleepで時刻保証を装わない。
+3. dashboard.latestReportの独立marketData投影はroot側dashboard.marketDataと完全一致する場合だけ認め、正式reportの日時・本文・他フィールドの変更を認めない。PR #218 main 5420fed6600bda41aa8be45eae7eee8768242bdd、CI run44228487454/44228487434 PASS。
+4. 早期起動自体はGitHubコードで修復できない。枠後の復旧と、正式発行の実証を分ける。4枠E2Eと図解品質は未受入。
