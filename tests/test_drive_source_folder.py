@@ -93,5 +93,29 @@ class DriveSourceFolderTests(unittest.TestCase):
         self.assertEqual(report["report_status"], "SOURCE_ARCHIVED")
 
 
+    def test_ingestion_logging_separates_archived_and_public_sources(self):
+        public = {"date": "2026-11-18", "time": "08:00"}
+        archive = {"date": "2026-11-18", "time": "12:00"}
+        promoted = {"date": "2026-11-17", "time": "16:00"}
+        records = sync.classify_ingestion_outcomes(
+            {("2026-11-18", "08:00"): (public, {"status": "DOC_READBACK_PASS"}),
+             ("2026-11-18", "12:00"): (archive, None)},
+            {("2026-11-17", "16:00"): (promoted, {"status": "DOC_READBACK_PASS"})}
+        )
+        self.assertEqual(records["new_public"], ["2026-11-18_08-00"])
+        self.assertEqual(records["new_archived"], ["2026-11-18_12-00"])
+        self.assertEqual(records["promoted"], ["2026-11-17_16-00"])
+
+    def test_only_archived_sources_are_never_reported_as_published(self):
+        outcomes = sync.classify_ingestion_outcomes(
+            {("2026-11-18", "12:00"): ({"date": "2026-11-18"}, None)},
+            {}
+        )
+        self.assertEqual(outcomes["new_public"], [])
+        self.assertEqual(outcomes["new_archived"], ["2026-11-18_12-00"])
+        self.assertEqual(outcomes["promoted"], [])
+
+
+
 if __name__ == "__main__":
     unittest.main()

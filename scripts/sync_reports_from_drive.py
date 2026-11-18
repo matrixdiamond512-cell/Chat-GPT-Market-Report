@@ -195,6 +195,19 @@ def publication_evidence(root: Path, report: dict, item: dict) -> tuple[dict | N
     except (ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
         return None, str(exc)
 
+def classify_ingestion_outcomes(
+    new_sources: dict, promoted_sources: dict,
+) -> dict[str, list[str]]:
+    """Classify persisted Docs without treating archive-only as publication."""
+    public = [f"{date}_{time.replace(':', '-')}" for (date, time), (_, receipt)
+              in sorted(new_sources.items()) if receipt is not None]
+    held = [f"{date}_{time.replace(':', '-')}" for (date, time), (_, receipt)
+            in sorted(new_sources.items()) if receipt is None]
+    promoted = [f"{date}_{time.replace(':', '-')}" for (date, time)
+                in sorted(promoted_sources)]
+    return {"new_public": public, "new_archived": held, "promoted": promoted}
+
+
 def poll(root: Path, *, apply: bool, enforce_slot: bool):
     from report_identity import internal_report_key
     from build_reports import _verified_source_revision
@@ -344,11 +357,16 @@ def poll(root: Path, *, apply: bool, enforce_slot: bool):
                        cwd=root, check=True)
         subprocess.run([sys.executable, "scripts/verify_publication_consistency.py"],
                        cwd=root, check=True)
-        print("VERIFIED_REPORT_INGESTION_AND_PUBLICATION: "+", ".join(
-            internal_report_key(to_write[x][0]) for x in sorted(to_write)))
-        if to_promote:
-            print("SOURCE_ARCHIVE_PROMOTION_VERIFIED: "+", ".join(
-                internal_report_key(to_promote[x][0]) for x in sorted(to_promote)))
+        outcomes = classify_ingestion_outcomes(to_write, to_promote)
+        if outcomes["new_public"]:
+            print("VERIFIED_REPORT_INGESTION_AND_PUBLICATION: " +
+                  ", ".join(outcomes["new_public"]))
+        if outcomes["new_archived"]:
+            print("SOURCE_ARCHIVE_ONLY_NOT_PUBLISHED: " +
+                  ", ".join(outcomes["new_archived"]))
+        if outcomes["promoted"]:
+            print("SOURCE_ARCHIVE_PROMOTION_VERIFIED: " +
+                  ", ".join(outcomes["promoted"]))
     finally:
         session.close()
 
