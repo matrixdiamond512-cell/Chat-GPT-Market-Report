@@ -112,6 +112,23 @@ class ReportContractTests(unittest.TestCase):
                 sys.argv = old_argv
 
 
+    def test_market_data_overlay_is_allowed_but_no_other_dashboard_drift(self):
+        report = {"date": "2026-10-13", "time": "16:00", "title": "test", "theme": "source"}
+        market = {"reportSlot": "12:00", "overallStatus": "degraded", "generatedAt": "2026-11-18T11:53:37+09:00"}
+        dashboard = {"latestReport": dict(report, marketData=market), "marketData": market}
+        self.assertTrue(verify_publication_consistency.dashboard_latest_is_consistent(report, dashboard))
+        verify_publication_consistency.verify_dashboard_copy(report, dashboard)
+        dashboard["latestReport"]["theme"] = "altered"
+        self.assertFalse(verify_publication_consistency.dashboard_latest_is_consistent(report, dashboard))
+        dashboard["latestReport"]["theme"] = "source"
+        dashboard["marketData"] = {"reportSlot": "16:00"}
+        self.assertFalse(verify_publication_consistency.dashboard_latest_is_consistent(report, dashboard))
+        with self.assertRaisesRegex(SystemExit, "complete latest report"):
+            verify_publication_consistency.verify_dashboard_copy(report, dashboard)
+        dashboard["marketData"] = market
+        dashboard["latestReport"]["extra"] = "untrusted"
+        self.assertFalse(verify_publication_consistency.dashboard_latest_is_consistent(report, dashboard))
+
     def test_current_21_aliases_are_recognized_without_weakening_contract(self):
         source = """主要6市場
 金：4,119ドル
