@@ -95,3 +95,9 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 ## MR-STABILITY-REPAIR-20261117-03（2026-11-17 JST / 修正候補）
 影響: 要件・仕様・運用・本台帳の固定パス/固定Docs。本文作成マニュアルの形式要件は不変（参照済）。原因資料: run43958040721/44019617757/44019745595/44021644786/44044688511、最新main b2d5973。PR #213を保持。変更はfolder fail-closed/parent readback/CI回帰のみ。権限付与・保存原本・PNG・canonical・receipt・本番スケジュールは変更しない。固定Docs同期・PR CI/main反映・実4枠/10営業日受入は各別に記録する。
 検証: 新規7件を含む65回帰テストPASS（E1/E2）。本番SAのfolder読戻し・初期4枠・10営業日40枠は未実施。コード/CI成功を全面復旧としない。
+
+## MR-DELIVERY-STABILITY-20261118-01｜変更台帳・実装検証（2026-11-18 11:58 JST）
+- 変更対象：固定Google Docs 要件定義書/システム仕様書/運用マニュアル/文書管理台帳 と、GitHub mainの固定パス `docs/system/requirements.md`、`specification.md`、`operations.md`、本規程。本文作成マニュアルの形式要件は変更していない。新しい別冊正本は作らない。
+- コード反映：PR #215 https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/215 （receipt/図解付き定時health、main dbc95b8cf613ecf6ef990149e58d66bb6f7bac78）、PR #216 https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/216 （データ取得完了起点で枠前証拠固定、main da71661a25a8dce65b0a75e8e27c6e9d10342504）。関連CI成功とmainファイル読み戻しを確認。
+- 本番証跡：2026-11-18 12:00証拠READY_FOR_DRAFT、run44226581259でorigin/main readback PASS（NO_OP）。11/18 08:00のPNGがDriveに存在しても視覚QA/公式manifestは未受入。Google Drive読取権限問題は本番SAの読取診断成功済みで、新規権限要求はしていない。
+- 状態：コード反映=IMPLEMENTED、CI=PASS、12時枠事前証拠=LIVE_READBACK_PASS、全4枠E2E=NOT_ACCEPTED、10営業日40枠=NOT_STARTED、画像正式品質検証=NOT_ACCEPTED。未検証の工程を完了と呼ばない。
