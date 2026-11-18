@@ -113,3 +113,10 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 - 正しい枠前証拠があっても原本文が「閲覧用分析版」「遅延分析版」「非正式分析版」「正式公開保留」と自己表示する場合、正式publicationへ昇格させない。参考閲覧は継続可能。
 - 正規latestReportとdashboard.latestReportに許す差は、独立のdashboard.marketDataと完全一致するmarketData投影だけとする。本文/日時/余計な属性の差異は拒否。
 - 実装：PR #218、main 5420fed6600bda41aa8be45eae7eee8768242bdd。CI run44228487454/44228487434 SUCCESS。早期起動そのものと全工程E2Eは未受入。固定ID Google Docsへ同変更ID反映済み。
+
+## REPORT-PIPELINE-REDESIGN-20261118-01｜発行システムvNext再設計要件（2026-11-18 JST / 設計案・未実装）
+- 設計目的：ChatGPTタスクの単一実行で本文・図解・Docs・GitHub/Pagesまで完走する依存を撤廃し、各工程を独立した再試行可能な処理とする。現行の平日08:00/12:00/16:00/21:00 JST、土日なし、朝28項目×5列、主要6市場、12/16/21の実出来事時系列、Google Drive月別原本/公開ポータルを維持する。
+- 必須機能：枠前の不変snapshot、reportId一意の実行台帳、本文構造QA、固定JSON→決定論的PNGレンダリング、月別Docs/PNGの別保存・実読戻し、独立receipt/manifest/Pages DOM検証、失敗工程だけの冪等再試行、通知とチャット表示の独立受入。
+- 安全：過去証拠の事後生成と非正式報告の正式昇格は禁止。GitHub ActionsやChatGPTタスクのcompleted、Docs/PNGの単なる存在を正式発行成功としない。既存タスクの停止・本番権限変更・外部API利用は本案の範囲外。
+- 重要な未検証依存：既存ChatGPTチャットへの外部生成本文/画像の自動挿入経路は実証されていない。チャット可視表示契約を維持し、未実証なら独立にUNKNOWNとし全工程VERIFIEDとしない。Google Cloud予算・権限・書込用SAの承認、1枠実E2E、4枠実E2E、10営業日40枠の受入も未実施。
+- 本文作成マニュアル含むGoogle Docs固定ID正本5件に同変更ID・未実装明記で設計案を追記済み。
