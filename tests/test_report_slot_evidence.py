@@ -215,5 +215,22 @@ class ReportSlotEvidenceTests(unittest.TestCase):
                 self.assertIn("cancel-in-progress: false", content)
 
 
+    def test_acquisition_completion_backup_is_fail_closed(self):
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github/workflows/freeze-report-evidence-on-acquisition.yml").read_text(encoding="utf-8")
+        self.assertIn("workflow_run:", workflow)
+        self.assertIn("head_repository.full_name == github.repository", workflow)
+        self.assertIn("head_branch == 'main'", workflow)
+        self.assertIn("require_live_pre_slot_window(", workflow)
+        self.assertIn("build_slot_evidence(", workflow)
+        self.assertIn("validate_stored_slot_evidence(", workflow)
+        self.assertIn("--require-live-before-slot", workflow)
+        self.assertIn("require_before_slot(", workflow)
+        self.assertIn("VERIFIED_PRE_DRAFT_EVIDENCE_ON_MAIN", workflow)
+        self.assertIn("No evidence file was created", workflow)
+        self.assertNotIn("--force", workflow)
+
+
+
 if __name__ == "__main__":
     unittest.main()
