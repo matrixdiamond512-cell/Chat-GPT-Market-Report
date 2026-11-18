@@ -44,7 +44,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_market_report_sync_contract.py' -v
           python -m unittest discover -s tests -p 'test_dashboard_publication_health.py' -v
           python -m unittest discover -s tests -p 'test_scheduled_report_delivery.py' -v
-          python -m unittest tests.test_publication_evidence -v
+          PYTHONPATH=scripts python -m unittest tests.test_publication_evidence -v
           python -m unittest discover -s tests -p 'test_publication_eligibility.py' -v
           python -m unittest discover -s tests -p 'test_report_contract.py' -v
           python scripts/test_reconcile_latest_report_market_data.py
