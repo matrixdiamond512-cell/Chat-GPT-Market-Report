@@ -95,3 +95,9 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 ## MR-STABILITY-REPAIR-20261117-03（2026-11-17 JST / 修正候補）
 sync_reports_from_drive.pyは月別folder検索を全ページ走査し、一意のIDが得られなければBLOCKED_MONTHLY_FOLDER_ACCESS/AMBIGUOUSで書込前に停止。候補検索は当該parentに限定し、Docs全文取得前後のparentとMIMEを検証する。後続の本文/revision/hash/枠前証拠/receiptゲートは維持する。
 検証: 新規7件を含む65回帰テストPASS（E1/E2）。本番SAのfolder読戻し・初期4枠・10営業日40枠は未実施。コード/CI成功を全面復旧としない。
+
+## MR-DELIVERY-STABILITY-20261118-01｜コード実装差分・本番検証（2026-11-18 11:58 JST）
+- PR #215（main dbc95b8cf613ecf6ef990149e58d66bb6f7bac78）：`scripts/verify_scheduled_report_delivery.py` で2026-10-16以降の新規枠に明示適格statusと `publication-receipts/<reportId>.json`、`validate_receipt()` のDocs本文/readback/hash/証拠ID一致を要求。旧status未指定/単なる参考archiveは正式成功扱いしない。`--require-infographic` 時は正式READY、本文・report/revision・snapshot/manifest/PNG hash・検証PASSの一致を要求し、遠隔PNG byte読戻しを代替したとは扱わない。`.github/workflows/check-scheduled-report-delivery.yml` は各枠+45分の健康検証で図解READYを必須とする。回帰は `tests/test_scheduled_report_delivery.py`。
+- PR #216（main da71661a25a8dce65b0a75e8e27c6e9d10342504）：`.github/workflows/freeze-report-evidence-on-acquisition.yml` を追加。指定市場データ取得workflows完了時、main同一repositoryイベントのみから現在の検証済み取得snapshotを選び、reportSlot、平日、T-15<=now<T、generatedAt鮮度・source/context/snapshot hash一致を検証後、排他的なevidence固定とorigin/main byte読戻し。過去枠再生成・既存証拠上書き・force pushは禁止。回帰は `tests/test_report_slot_evidence.py`。
+- 実本番：11/18 11:53:37 JST取得 `data/market/latest.json` はreportSlot=12:00、degraded。`data/report-evidence/2026-11-18_12-00-r1.json` はREADY_FOR_DRAFT。取得連動run44226581259は11:54頃既存証拠をNO_OPで確認し `VERIFIED_PRE_DRAFT_EVIDENCE_ON_MAIN` を出力（このrunが新規証拠を作成したとは主張しない）。
+- 未受入：4枠本文→独立PNGのQA→Docs→canonical/receipt→Pages DOM→通知の本番一貫性、10営業日40枠、GitHub cron全遅延時の独立実行保証。固定ID Google Docs正本にも同変更ID追記済み。
