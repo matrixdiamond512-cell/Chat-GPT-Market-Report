@@ -23,10 +23,10 @@ class PriceBackfillTest(unittest.TestCase):
         self.assertEqual(parse_history(html)["2025-10-01"]["close"], 149.30)
 
     def test_stooq_daily_csv_parser_rejects_bad_candles(self):
-        csv_text = "Date,Open,High,Low,Close\\n" \
-                   "2025-09-30,149.10,149.30,148.80,149.00\\n" \
-                   "2025-10-01,149.10,149.75,148.95,149.30\\n" \
-                   "2025-10-02,149.10,148.75,148.95,149.30\\n"
+        csv_text = "Date,Open,High,Low,Close\n" \
+                   "2025-09-30,149.10,149.30,148.80,149.00\n" \
+                   "2025-10-01,149.10,149.75,148.95,149.30\n" \
+                   "2025-10-02,149.10,148.75,148.95,149.30\n"
         candles = parse_csv(csv_text, start_date="2025-10-01", end_date="2025-10-10")
         self.assertEqual(list(candles), ["2025-10-01"])
         self.assertEqual(candles["2025-10-01"]["close"], 149.30)
