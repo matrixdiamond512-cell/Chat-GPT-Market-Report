@@ -14,6 +14,7 @@ import run_usdjpy_volume_price_backfill as runner
 import update_usdjpy_volume_prices as core
 from stooq_usdjpy_ohlc import parse_csv
 from yahoo_jp_usdjpy_ohlc import parse_history
+from apply_dukascopy_usdjpy_csv import read_candles, fill, SOURCE_ID
 
 
 class PriceBackfillTest(unittest.TestCase):
@@ -30,6 +31,30 @@ class PriceBackfillTest(unittest.TestCase):
         candles = parse_csv(csv_text, start_date="2025-10-01", end_date="2025-10-10")
         self.assertEqual(list(candles), ["2025-10-01"])
         self.assertEqual(candles["2025-10-01"]["close"], 149.30)
+
+    def test_dukascopy_csv_only_fills_empty_candles(self):
+        duka_csv = "timestamp,open,high,low,close,volume\n" \
+                   "1759190400000,148.90,149.30,148.70,149.00,120\n" \
+                   "1759276800000,149.10,149.75,148.95,149.30,100\n"
+        with tempfile.TemporaryDirectory() as td:
+            csv_file = Path(td) / "usd-jpy.csv"
+            csv_file.write_text(duka_csv, encoding="utf-8")
+            candles = read_candles([csv_file])
+        self.assertIn("2025-10-01", candles)
+        data = {"records": [
+            {"targetDate": "2025-10-01", "spotVolume": 3200, "close": None,
+             "open": None, "high": None, "low": None, "priceChangePct": None},
+            {"targetDate": "2025-10-02", "spotVolume": 2900, "open": 150,
+             "high": 151, "low": 149, "close": 150.5, "priceChangePct": 0.1},
+        ], "priceRecords": []}
+        count, dates = fill(data, candles)
+        self.assertEqual(count, 1)
+        self.assertEqual(dates, ["2025-10-01", "2025-10-02"])
+        self.assertEqual(data["records"][0]["spotVolume"], 3200)
+        self.assertEqual(data["records"][0]["close"], 149.30)
+        self.assertEqual(data["records"][0]["priceSourceId"], SOURCE_ID)
+        self.assertEqual(data["records"][0]["priceChangePct"], 0.20)
+        self.assertEqual(data["records"][1]["close"], 150.5)
 
     def test_old_gap_outside_last_20_is_filled_without_replacing_prices_or_volume(self):
         newer_days = []
