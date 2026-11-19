@@ -33,9 +33,9 @@ class PriceBackfillTest(unittest.TestCase):
         self.assertEqual(candles["2025-10-01"]["close"], 149.30)
 
     def test_dukascopy_csv_only_fills_empty_candles(self):
-        duka_csv = "timestamp,open,high,low,close,volume\\n" \
-                   "1759190400000,148.90,149.30,148.70,149.00,120\\n" \
-                   "1759276800000,149.10,149.75,148.95,149.30,100\\n"
+        duka_csv = "timestamp,open,high,low,close,volume\n" \
+                   "1759190400000,148.90,149.30,148.70,149.00,120\n" \
+                   "1759276800000,149.10,149.75,148.95,149.30,100\n"
         with tempfile.TemporaryDirectory() as td:
             csv_file = Path(td) / "usd-jpy.csv"
             csv_file.write_text(duka_csv, encoding="utf-8")
