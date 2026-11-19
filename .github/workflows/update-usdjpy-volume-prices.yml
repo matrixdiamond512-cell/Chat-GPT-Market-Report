@@ -7,6 +7,7 @@ on:
       - .github/workflows/update-usdjpy-volume-prices.yml
       - scripts/run_usdjpy_volume_price_backfill.py
       - scripts/yahoo_jp_usdjpy_ohlc.py
+      - scripts/stooq_usdjpy_ohlc.py
       - scripts/fix_usdjpy_volume_price_labels.py
       # Apps Script publishes BOJ turnover under the user's token.
       # Re-attach verified OHLC immediately after that volume-only write.
@@ -25,7 +26,7 @@ concurrency:
 jobs:
   backfill:
     runs-on: ubuntu-latest
-    timeout-minutes: 7
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,12 +34,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Backfill and cross-check Yahoo Japan USDJPY daily OHLC
+      - name: Backfill and cross-check USDJPY historical daily OHLC
         run: |
-          python -m py_compile scripts/update_usdjpy_volume_prices.py scripts/yahoo_jp_usdjpy_ohlc.py scripts/run_usdjpy_volume_price_backfill.py scripts/fix_usdjpy_volume_price_labels.py
+          python -m py_compile scripts/update_usdjpy_volume_prices.py scripts/yahoo_jp_usdjpy_ohlc.py scripts/run_usdjpy_volume_price_backfill.py scripts/stooq_usdjpy_ohlc.py scripts/fix_usdjpy_volume_price_labels.py
           python scripts/run_usdjpy_volume_price_backfill.py
           python scripts/fix_usdjpy_volume_price_labels.py
-      - name: Validate all spot-volume sessions have complete prices
+      - name: Audit full history and verified price-source metadata
         run: |
           python - <<'PY'
           import json
@@ -48,9 +49,11 @@ jobs:
           assert len(rows)>=20, 'Fewer than 20 spot-volume rows'
           missing={r['targetDate']: [key for key in ('open','high','low','close','priceChangePct') if r.get(key) is None] for r in rows}
           missing={date: fields for date, fields in missing.items() if fields}
-          if missing:
-              raise SystemExit('Price backfill not complete: '+str(missing))
-          print('PASS: all',len(rows),'BOJ volume dates include USDJPY open/high/low/close/change')
+          print('Historical price gaps:',len(missing),list(missing)[:25])
+          print('Coverage:',len(rows)-len(missing),'/',len(rows))
+          print('Missing dates recorded:',len(payload['data'].get('priceAcquisition',{}).get('missingAllDates',[])))
+          assert set(payload['data'].get('priceAcquisition',{}).get('missingAllDates',[])) == {date for date,fields in missing.items() if any(k in fields for k in ('open','high','low','close'))}, 'Historical missing OHLC metadata out of sync'
+          print('OHLC audit checked',len(rows),'BOJ volume dates')
           print('Newest volume date:',rows[0]['targetDate'],'USDJPY close:',rows[0]['close'])
           print('Price source:',payload['data'].get('priceSourceName'))
           PY
@@ -66,3 +69,15 @@ jobs:
           git commit -m 'Complete BOJ USDJPY spot-volume chart and disclose daily OHLC sources'
           git pull --rebase origin main
           git push origin HEAD:main
+      - name: Fail health check when historical dates still missing
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=json.loads(Path("data/usdjpy-volume.json").read_text(encoding="utf-8"))
+          missing=[r["targetDate"] for r in p["data"]["records"]
+                   if any(r.get(k) is None for k in ("open","high","low","close","priceChangePct"))]
+          if missing:
+              raise SystemExit(f"USDJPY HISTORICAL PRICE GAPS REMAIN ({len(missing)}): "+", ".join(missing[:15]))
+          print("PASS: all BOJ volume dates have complete attributed USDJPY daily OHLC and price change")
+          PY
