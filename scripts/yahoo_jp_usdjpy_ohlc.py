@@ -75,11 +75,24 @@ def parse_history(html: str) -> dict[str, dict]:
     return result
 
 
-def fetch_history(target_dates: set[str] | None = None) -> dict[str, dict]:
-    """Fetch enough history pages to cover all targeted BOJ spot-volume dates."""
+def fetch_history(
+    target_dates: set[str] | None = None,
+    *,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    max_pages: int = 30,
+) -> dict[str, dict]:
+    """Retrieve the requested historical window, not only the latest 120 days.
+
+    Yahoo Japan serves 20 rows per page. Keep pagination bounded and require
+    exact dates in the returned table; never interpolate a missing FX quote.
+    """
     result: dict[str, dict] = {}
-    for page in range(1, 7):
-        url = SOURCE_URL + ("?" + urllib.parse.urlencode({"page": page}) if page > 1 else "")
+    for page in range(1, max_pages + 1):
+        params = {"page": page, "timeFrame": "d"}
+        if start_date and end_date:
+            params.update({"from": start_date, "to": end_date})
+        url = SOURCE_URL + "?" + urllib.parse.urlencode(params)
         req = urllib.request.Request(url, headers={
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml",
@@ -89,12 +102,16 @@ def fetch_history(target_dates: set[str] | None = None) -> dict[str, dict]:
             html = response.read().decode("utf-8", "replace")
         found = parse_history(html)
         if not found:
-            raise RuntimeError(f"Yahoo Japan history page {page} yielded no valid USDJPY daily OHLC rows")
+            if page == 1:
+                raise RuntimeError("Yahoo Japan returned no valid USDJPY daily OHLC rows")
+            break
         before = len(result)
         result.update(found)
         print(f"YahooJP USDJPY history page {page}: {len(found)} rows / {min(found)}..{max(found)}")
         if target_dates is not None and target_dates.issubset(result):
             break
         if len(result) == before:
+            break
+        if start_date and min(found) <= start_date:
             break
     return result
