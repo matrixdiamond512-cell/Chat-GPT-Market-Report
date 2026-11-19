@@ -4,6 +4,11 @@ on:
     paths:
       - "apps-script/UsdJpyVolumeJsonFlexibleSync.gs"
       - "scripts/test_usdjpy_volume_json_preservation.js"
+      - "scripts/run_usdjpy_volume_price_backfill.py"
+      - "scripts/update_usdjpy_volume_prices.py"
+      - "scripts/yahoo_jp_usdjpy_ohlc.py"
+      - "scripts/stooq_usdjpy_ohlc.py"
+      - "tests/test_usdjpy_volume_historical_backfill.py"
       - ".github/workflows/usdjpy-volume-price-regression-ci.yml"
   workflow_dispatch:
 permissions:
@@ -17,3 +22,8 @@ jobs:
         with:
           node-version: "22"
       - run: node scripts/test_usdjpy_volume_json_preservation.js
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m py_compile scripts/run_usdjpy_volume_price_backfill.py scripts/update_usdjpy_volume_prices.py scripts/yahoo_jp_usdjpy_ohlc.py scripts/stooq_usdjpy_ohlc.py
+      - run: python -m unittest discover -s tests -p "test_usdjpy_volume_historical_backfill.py" -v
