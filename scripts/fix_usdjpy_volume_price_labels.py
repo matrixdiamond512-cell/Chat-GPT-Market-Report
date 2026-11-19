@@ -24,6 +24,9 @@ def main() -> None:
         if old in updated:
             updated = updated.replace(old, new, 1)
         elif new not in updated:
+            # A more recent, source-aware note is valid; do not block price writes.
+            if old.startswith("※ 出来高は") and "補完元はデータの各日付に保持します。" in updated:
+                continue
             raise SystemExit("Dashboard price attribution marker absent: " + old[:65])
     if updated != original:
         PAGE.write_text(updated, encoding="utf-8")
