@@ -60,10 +60,11 @@ def main() -> None:
 
     attempted = []
     completed_by_provider: dict[str, int] = {}
+    yahoo_global_url = core.SOURCE_URL
     providers = [
         ("YAHOO_JP_USDJPY", YAHOO_JP_URL,
          lambda: fetch_history(missing_dates, start_date=start, end_date=end)),
-        ("YAHOO_GLOBAL_USDJPY", core.SOURCE_URL, core.fetch_yahoo),
+        ("YAHOO_GLOBAL_USDJPY", yahoo_global_url, core.fetch_yahoo),
         ("STOOQ_USDJPY", STOOQ_URL,
          lambda: fetch_stooq(start_date=start, end_date=end)),
     ]
@@ -119,7 +120,7 @@ def main() -> None:
 
     names = {
         "YAHOO_JP_USDJPY": ("Yahoo!ファイナンス日本版 USDJPY=X 日足OHLC", YAHOO_JP_URL),
-        "YAHOO_GLOBAL_USDJPY": ("Yahoo Finance JPY=X daily OHLC", core.SOURCE_URL),
+        "YAHOO_GLOBAL_USDJPY": ("Yahoo Finance JPY=X daily OHLC", yahoo_global_url),
         "STOOQ_USDJPY": ("Stooq USDJPY daily OHLC", STOOQ_URL),
     }
     used = {r.get("priceSourceId") for r in rows}
