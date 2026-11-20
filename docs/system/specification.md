@@ -132,3 +132,8 @@ PR #218 main 5420fed6600bda41aa8be45eae7eee8768242bdd：
 - `scripts/verify_drive_infographic_upload.py` の `scheduled_date(schedule, observed_utc)` は既知のUTC cron曜日と時刻から直近の有効発火予定時刻を選び、JST対象日を導出。18h超遅延なら `SCHEDULE_DELAY_AMBIGUOUS` を返す。
 - `check-scheduled-report-delivery.yml` で `TARGET_REPORT_DATE` を1回だけ決定して、Drive実体照合と `verify_scheduled_report_delivery.py` の両方に必ず `--date` を渡す。手動dispatchで `date` 指定可。
 - 回帰テストで金曜16:45予定→土曜01:23実行、金曜21:45予定→土曜11:00実行、UTC日曜23:45→JST月曜08:45、および18h超過を確認。
+
+## MR-WATCHDOG-MIDNIGHT-20261121-03｜共有cron日付解決と検証ゲート
+- `.github/workflows/sync-latest-report-watchdog.yml` のscheduled verificationで `scheduled_date(schedule, now_utc)` を使用。旧 `datetime.now(JST).date()` と `slot==21:00 and now.hour<21` の無検証正常終了を撤去。
+- `scheduled_date`は分の複数指定（5,15,30等）にも対応し、UTC cron曜日・時刻から18h以内の直近予定回を特定してJST対象日を返す。画像Drive健康監視と公開watchdogで同じ判断規則を使用。
+- JS静的回帰とPython日付跨ぎ回帰を追加。実定時E2Eとは別判定。
