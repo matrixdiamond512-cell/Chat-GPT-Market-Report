@@ -150,3 +150,7 @@ BLOCKED_MONTHLY_FOLDER_ACCESSでは管理者がsecretのclient_emailだけを安
 2. 2026-11-21のGitHub Actions実ログ（run 44772805142）はGitHub時刻で16:23 UTC開始、直近cronは11/20 07:45 UTC（同日16:45 JST）。旧コードは11/21のPNGを検索して失敗。修正後は11/20を対象にする。
 3. 45分監視はPNGが欠ける場合、競合実行・当該Docs本文を検査して同セッションで復旧PNGを生成し、exact source_file_ref経由Drive保存を試行。Drive読戻し確認を必須とし、復旧遅延を隠さない。
 4. 本修正の単体テストPASSと本番マージだけで毎枠E2E成功とはしない。次の4枠で原本、PNG、Docs、manifest、公開DOM、通知を別々に実測する。
+
+## MR-WATCHDOG-MIDNIGHT-20261121-03｜21時翌日遅延の扱い
+- Github予定runが21:05〜21:30 JSTの枠で開始したのに翌日0〜数時台にずれた場合、`now.hour < 21` を根拠に成功終了してはいけない。実予定枠が特定できれば前日の21時報告を検査、特定できなければFAILEDとし通知する。
+- GitHub Actions監視の成功はPNG Drive保存・実チャット配信・Pages DOMを代替しない。
