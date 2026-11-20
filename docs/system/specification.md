@@ -126,3 +126,9 @@ PR #218 main 5420fed6600bda41aa8be45eae7eee8768242bdd：
 - +45分監視 `.github/workflows/check-scheduled-report-delivery.yml` に `scripts/verify_drive_infographic_upload.py` を追加。既存read-only `GOOGLE_SERVICE_ACCOUNT_JSON` の実Drive APIから月別folder IDと正確なPNG名を一意取得し、親・MIME・非空size・実bytesとサイズ一致・PNG署名・寸法・SHA256を照合。receipt/canonical検査と独立の工程とする。秘密鍵の内容をログへ出さない。
 - 単体試験: Drive/tempへテストPNG 2,140 bytes upload→metadata再取得PASS（その後ごみ箱へ移動）。本番画像の正式QA/manifestは別試験。GitHubテスト `tests/test_drive_infographic_upload.py` と `scripts/test_report_watchdog_fail_closed.js` を追加/拡張。
 - 状態: ChatGPT稼働3タスクの指示更新は反映済み。GitHub監視コードはPR #226の未マージ差分。CI、main、次回4枠の実E2E、サービスアカウントの実バイト読戻しは検証待ち。
+
+## MR-DRIVE-SCHEDULE-DATE-20261121-02｜GitHub scheduled checkの対象日導出
+- 2026-11-21 JSTの実ログで、`45 7 * * 1-5` の16:45 JST監視が翌日01:23 JSTに遅延実行され、`datetime.now(JST).date()` によって誤って翌営業日ではない11/21画像を検索、`DRIVE_INFOGRAPHIC_MISSING_OR_DUPLICATED` を出した。Google Drive認証は成功し、対象日指定に欠陥がある。
+- `scripts/verify_drive_infographic_upload.py` の `scheduled_date(schedule, observed_utc)` は既知のUTC cron曜日と時刻から直近の有効発火予定時刻を選び、JST対象日を導出。18h超遅延なら `SCHEDULE_DELAY_AMBIGUOUS` を返す。
+- `check-scheduled-report-delivery.yml` で `TARGET_REPORT_DATE` を1回だけ決定して、Drive実体照合と `verify_scheduled_report_delivery.py` の両方に必ず `--date` を渡す。手動dispatchで `date` 指定可。
+- 回帰テストで金曜16:45予定→土曜01:23実行、金曜21:45予定→土曜11:00実行、UTC日曜23:45→JST月曜08:45、および18h超過を確認。

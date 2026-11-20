@@ -144,3 +144,9 @@ BLOCKED_MONTHLY_FOLDER_ACCESSでは管理者がsecretのclient_emailだけを安
 4. 独立図解タスクがcompletedであってもPNG保存が0件なら、復旧タスクはその別タスクのsandboxを使えると仮定せず、競合がなく原本文が存在するときのみ復旧版画像を生成して保存する。本文外の情報を補わない。正式snapshot/manifest/receiptがなければ正式READYにしない。
 5. +45分のGitHub Actions監視で `scripts/verify_drive_infographic_upload.py` の `DRIVE_PNG_VERIFIED`（PNG実体）と既存の `verify_scheduled_report_delivery.py --require-infographic`（canonical+receipt+manifest）をそれぞれ確認。前者のFAILを後者のSUCCESSで代用しない。故障した場合はmissing, duplicate, folder, bytes, auth の原因別に通知。
 6. 単体実証: 2026-11-21テストPNGのGoogle Drive保存/再読取PASS、テストファイルはごみ箱。GitHubコードはPR #226。CI、main反映、次の08/12/16/21時全枠でのPNG保存、内容QA、Pages DOM、通知は未検証。GitHub監視だけでは画像生成やDrive保存そのものを実行しないことを明記。
+
+## MR-DRIVE-SCHEDULE-DATE-20261121-02｜遅延実行と45分後復旧の運用
+1. 定時監視の障害は、GitHub Actions作成/実行UTC時刻、cronの予定UTC時刻、対象レポートJST日付、実際の検索先フォルダーを照合する。`today()`の結果だけで障害日を確定しない。
+2. 2026-11-21のGitHub Actions実ログ（run 44772805142）はGitHub時刻で16:23 UTC開始、直近cronは11/20 07:45 UTC（同日16:45 JST）。旧コードは11/21のPNGを検索して失敗。修正後は11/20を対象にする。
+3. 45分監視はPNGが欠ける場合、競合実行・当該Docs本文を検査して同セッションで復旧PNGを生成し、exact source_file_ref経由Drive保存を試行。Drive読戻し確認を必須とし、復旧遅延を隠さない。
+4. 本修正の単体テストPASSと本番マージだけで毎枠E2E成功とはしない。次の4枠で原本、PNG、Docs、manifest、公開DOM、通知を別々に実測する。

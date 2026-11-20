@@ -1,12 +1,13 @@
 """Regression tests for the real Drive PNG verifier (no API calls)."""
 import struct
+from datetime import datetime, timezone
 import sys
 from pathlib import Path
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from verify_drive_infographic_upload import (
-    expected_identity, choose_slot, require_unique, validate_png_bytes, PNG_SIGNATURE,
+    expected_identity, choose_slot, require_unique, validate_png_bytes, PNG_SIGNATURE, scheduled_date,
 )
 
 
@@ -25,6 +26,27 @@ class TestDriveInfographicUpload(unittest.TestCase):
             choose_slot("", "not a valid cron")
         with self.assertRaises(ValueError):
             choose_slot("23:00", "")
+
+    def test_delayed_1645_schedule_checks_previous_jst_day(self):
+        # Actual Actions failure: scheduled Fri 16:45 JST, executed Sat 01:23 JST.
+        late_run = datetime(2026, 11, 20, 16, 23, tzinfo=timezone.utc)
+        self.assertEqual(scheduled_date("45 7 * * 1-5", late_run), "2026-11-20")
+
+    def test_delayed_2145_schedule_does_not_shift_to_saturday(self):
+        late_run = datetime(2026, 11, 21, 2, 0, tzinfo=timezone.utc)
+        self.assertEqual(scheduled_date("45 12 * * 1-5", late_run), "2026-11-20")
+
+    def test_0845_utc_sunday_is_jst_monday(self):
+        next_run = datetime(2026, 11, 23, 0, 30, tzinfo=timezone.utc)
+        self.assertEqual(scheduled_date("45 23 * * 0-4", next_run), "2026-11-23")
+
+    def test_very_late_or_naive_schedule_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "SCHEDULE_DELAY_AMBIGUOUS"):
+            scheduled_date("45 7 * * 1-5", datetime(2026, 11, 21, 16, 23, tzinfo=timezone.utc))
+        with self.assertRaisesRegex(ValueError, "timezone-aware"):
+            scheduled_date("45 7 * * 1-5", datetime(2026, 11, 20, 16, 23))
+        with self.assertRaisesRegex(ValueError, "Unknown scheduled cron"):
+            scheduled_date("invalid", datetime(2026, 11, 20, 16, 23, tzinfo=timezone.utc))
 
     def test_missing_or_duplicate_file_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "found 0"):

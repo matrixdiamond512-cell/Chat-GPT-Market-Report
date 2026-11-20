@@ -29,21 +29,42 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_scheduled_report_delivery.py' -v
       - name: Test real Drive PNG verification rules
         run: python -m unittest discover -s tests -p 'test_drive_infographic_upload.py' -v
+      - name: Resolve target report day for delayed GitHub schedule
+        env:
+          TRIGGER_SCHEDULE: ${{ github.event.schedule }}
+          INPUT_DATE: ${{ inputs.date }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os
+          from datetime import date, datetime, timezone
+          from scripts.verify_drive_infographic_upload import JST, scheduled_date
+          observed = datetime.now(timezone.utc)
+          schedule = os.environ.get('TRIGGER_SCHEDULE', '')
+          manual = os.environ.get('INPUT_DATE', '')
+          if schedule:
+              target = scheduled_date(schedule, observed)
+          elif manual:
+              target = date.fromisoformat(manual).isoformat()
+          else:
+              target = observed.astimezone(JST).date().isoformat()
+          print(f'Check report date={target}; observed UTC={observed.isoformat()}')
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
+              output.write('TARGET_REPORT_DATE=' + target + '\n')
+          PY
       - name: Verify actual infographic PNG bytes in Google Drive
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           TRIGGER_SCHEDULE: ${{ github.event.schedule }}
           SLOT: ${{ inputs.slot }}
-          DATE: ${{ inputs.date }}
         shell: bash
         run: |
           python -m pip install --disable-pip-version-check -q google-auth requests
-          python scripts/verify_drive_infographic_upload.py --slot "$SLOT" --schedule "$TRIGGER_SCHEDULE" --date "$DATE"
+          python scripts/verify_drive_infographic_upload.py --slot "$SLOT" --schedule "$TRIGGER_SCHEDULE" --date "$TARGET_REPORT_DATE"
       - name: Verify scheduled canonical and portal readiness
         env:
           SCHEDULE: ${{ github.event.schedule }}
           SLOT: ${{ inputs.slot }}
-          DATE: ${{ inputs.date }}
         shell: bash
         run: |
           case "$SCHEDULE" in
@@ -53,8 +74,5 @@ jobs:
             "45 12 * * 1-5") SLOT="21:00" ;;
           esac
           test -n "$SLOT" || { echo "Missing scheduled slot"; exit 1; }
-          if [[ -n "$DATE" ]]; then
-            python scripts/verify_scheduled_report_delivery.py --slot "$SLOT" --date "$DATE" --require-infographic
-          else
-            python scripts/verify_scheduled_report_delivery.py --slot "$SLOT" --require-infographic
-          fi
+          test -n "$TARGET_REPORT_DATE" || { echo "Missing target report date"; exit 1; }
+          python scripts/verify_scheduled_report_delivery.py --slot "$SLOT" --date "$TARGET_REPORT_DATE" --require-infographic
