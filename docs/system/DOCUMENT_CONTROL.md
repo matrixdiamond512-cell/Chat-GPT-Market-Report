@@ -119,3 +119,8 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 - 対象変更: ChatGPTの稼働中3タスクのPNG受渡し/復旧条件、GitHub PR #226（`sync-latest-report-watchdog.yml`、`check-scheduled-report-delivery.yml`、`verify_drive_infographic_upload.py`、該当テスト）、固定GitHub文書 `requirements.md`・`specification.md`・`operations.md`・本書。Google Docs固定IDの該当3文書/台帳も同期対象。本文作成マニュアルの分析項目・図解レイアウト変更なし。
 - 検証: テストPNG 2,140 bytesのFiles Library経由Drive保存、Google Drive metadata読戻しPASS（片付け済み）。3タスクの設定更新SUCCESS。GitHubコードはPR #226ブランチ反映のみで、CI/main/毎枠実E2E/正式PNG品質・manifest/Pages DOM/通知の受入はUNKNOWN。サービスアカウント秘密情報や原本は変更しない。
 - 未解決: 別のChatGPT実行環境からのsource_file_ref利用が毎回成功するか、GitHub Actionsの実行遅延/通知、正式出版ゲートの通過、10営業日40枠の連続成功。コードの改善だけを正式発行完了とは表現しない。
+
+## MR-DRIVE-SCHEDULE-DATE-20261121-02｜監視対象日誤判定の修復記録
+- 発見: 2026-11-21、GitHub run 44772805142（cron `45 7 * * 1-5`）がJST日付跨ぎで起動し、実行日を誤用してDrive PNGを0件と誤判定。
+- 更新: scheduled_dateから対象JST日付を決定し、Drive実体/正式canonicalの双方を同じ日付で検査する改修、遅延回帰テスト、45分後の自動復旧タスク指示（原本・競合確認、読戻し必須）。
+- 事実確認: PR #226 main反映 `749eba4e233ae87852abd3021fa48276f4cac71c`、本修正は別PR・CI・main/定時実E2Eを別々に判定する。過去の正式receiptや画像品質は補造しない。
