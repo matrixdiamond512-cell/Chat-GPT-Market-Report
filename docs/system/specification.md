@@ -117,3 +117,12 @@ PR #218 main 5420fed6600bda41aa8be45eae7eee8768242bdd：
 - 図解：承認済みの高情報量グリッド/表/矢印をHTMLで確定的に描画し、PNG byteを作る。元本文以外から数値・ニュースを補完しない。DOM overflow/画像実サイズ/保存byte SHA-256/manifest/bodyHash結合/必要ならvision reviewを別検証。正式画像ファイル名マーケットレポート_YYYY-MM-DD_HH-MM.png、画像内に対象枠と実作成日時。
 - Drive：本文ファイル名マーケットレポート_YYYY-MM-DD_HH-MM。YYYY年M月の既存親フォルダーIDを一意同定、事前重複検査、専用write principalの限定権限、送信原文/byteの保存後再取得・SHA確認。現在の本番Drive importer SAはread-onlyであり、無断権限付与は禁止。
 - 状態/受入：SCHEDULED→FROZEN→TEXT_QA_PASS→IMAGE_QA_PASS→DOCS_READBACK_PASS→PNG_READBACK_PASS→PUBLICATION_READY→PAGES_READBACK_PASS、さらにCHAT_DELIVEREDを独立管理。PARTIAL/FAILED/BLOCKED時は保存済み成功工程を再実行せず同じ入力hashだけを再試行。1枠の実手動E2E→全4枠→40実枠＋障害注入。
+
+
+## MR-INFOGRAPHIC-DRIVE-20261121-01｜PNG保存経路および実体照合仕様（2026-11-21 JST）
+- 原因: ChatGPTの独立図解タスクが生成した `/mnt/data/マーケットレポート_YYYY-MM-DD_HH-MM.png` と、Google_Drive `upload_file(file_uri)` の要求するコネクタ参照に互換性がなく、画像生成SUCCESS/Drive保存BLOCKED_FILE_REFERENCEとなった。
+- 実証した転送経路: 同一実行セッションでPNGを実体化し、`source_file_ref.file_id` を取得後、`files__manage_library` の `upload`（`overwrite=false`、`destination_path=/Google Drive/マーケットレポート図解YYYY年M月/マーケットレポート_YYYY-MM-DD_HH-MM.png`）を利用。事前に同名有無を検査、結果を公式Drive metadataでfileId・parentId・MIME・size照合。未対応のsandbox URIをGoogle_Drive upload_fileへ直接渡さない。転送失敗時はfail closedとし、画質レビュー通過・正式READYを偽装しない。
+- `.github/workflows/sync-latest-report-watchdog.yml` の `infographic if truthy` を撤去し、欠落または `infographic_status != READY` なら明示FAILED。
+- +45分監視 `.github/workflows/check-scheduled-report-delivery.yml` に `scripts/verify_drive_infographic_upload.py` を追加。既存read-only `GOOGLE_SERVICE_ACCOUNT_JSON` の実Drive APIから月別folder IDと正確なPNG名を一意取得し、親・MIME・非空size・実bytesとサイズ一致・PNG署名・寸法・SHA256を照合。receipt/canonical検査と独立の工程とする。秘密鍵の内容をログへ出さない。
+- 単体試験: Drive/tempへテストPNG 2,140 bytes upload→metadata再取得PASS（その後ごみ箱へ移動）。本番画像の正式QA/manifestは別試験。GitHubテスト `tests/test_drive_infographic_upload.py` と `scripts/test_report_watchdog_fail_closed.js` を追加/拡張。
+- 状態: ChatGPT稼働3タスクの指示更新は反映済み。GitHub監視コードはPR #226の未マージ差分。CI、main、次回4枠の実E2E、サービスアカウントの実バイト読戻しは検証待ち。
