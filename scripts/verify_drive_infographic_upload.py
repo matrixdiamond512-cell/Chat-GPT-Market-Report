@@ -22,6 +22,41 @@ SCHEDULES = {
     "45 12 * * 1-5": "21:00",
 }
 SLOTS = {"08:00", "12:00", "16:00", "21:00"}
+SCHEDULE_DAYS_UTC = {
+    "45 23 * * 0-4": {6, 0, 1, 2, 3},  # Sun-Thu UTC = Mon-Fri 08:45 JST
+    "45 3 * * 1-5": {0, 1, 2, 3, 4},
+    "45 7 * * 1-5": {0, 1, 2, 3, 4},
+    "45 12 * * 1-5": {0, 1, 2, 3, 4},
+}
+
+
+def scheduled_date(schedule: str, observed: datetime) -> str:
+    """Resolve the target JST day from the scheduled UTC occurrence, not runner start.
+
+    GitHub Actions cron runs can be delayed past JST midnight. If the inferred
+    occurrence is more than 18h old, fail rather than silently check a wrong day.
+    """
+    if schedule not in SCHEDULES:
+        raise ValueError("Unknown scheduled cron: " + schedule)
+    if observed.tzinfo is None:
+        raise ValueError("Observed run time must be timezone-aware")
+    now = observed.astimezone(timezone.utc)
+    minute, hour = (int(part) for part in schedule.split()[:2])
+    for days_ago in range(8):
+        day = (now - timedelta(days=days_ago)).date()
+        if day.weekday() not in SCHEDULE_DAYS_UTC[schedule]:
+            continue
+        occurrence = datetime(day.year, day.month, day.day, hour, minute, tzinfo=timezone.utc)
+        if occurrence > now:
+            continue
+        if now - occurrence > timedelta(hours=18):
+            raise ValueError(
+                "SCHEDULE_DELAY_AMBIGUOUS: scheduled run is over 18h late; "
+                "pass an explicit --date to inspect the intended report"
+            )
+        return occurrence.astimezone(JST).date().isoformat()
+    raise ValueError("No valid recent scheduled occurrence")
+
 DRIVE_API = "https://www.googleapis.com/drive/v3"
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
@@ -140,7 +175,10 @@ def main() -> None:
     parser.add_argument("--date", default="")
     args = parser.parse_args()
     slot = choose_slot(args.slot, args.schedule)
-    day = args.date or datetime.now(JST).date().isoformat()
+    day = args.date or (
+        scheduled_date(args.schedule, datetime.now(timezone.utc))
+        if args.schedule else datetime.now(JST).date().isoformat()
+    )
     result = check_drive_png(read_session(), day, slot)
     print(json.dumps(result, ensure_ascii=False))
 
