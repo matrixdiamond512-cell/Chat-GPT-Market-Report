@@ -50,7 +50,7 @@ jobs:
               target = observed.astimezone(JST).date().isoformat()
           print(f'Check report date={target}; observed UTC={observed.isoformat()}')
           with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as output:
-              output.write('TARGET_REPORT_DATE=' + target + '\\n')
+              output.write('TARGET_REPORT_DATE=' + target + '\n')
           PY
       - name: Verify actual infographic PNG bytes in Google Drive
         env:
