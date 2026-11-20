@@ -135,3 +135,12 @@ BLOCKED_MONTHLY_FOLDER_ACCESSでは管理者がsecretのclient_emailだけを安
 3. 本番書込用SA・Cloudプロジェクト/予算/外部APIキーはユーザー/管理者承認を得てから設定し、秘密鍵をチャットやGitHubに開示しない。データ取得後の本文/画像は完全一致の同一reportId・revision・hashでのみ公開へ進む。画像は一時sandboxだけに置かず保存プログラムから月別Driveへ直接アップロード・byte読戻し。
 4. 新方式はまず影稼働とし、旧タスクや正式公開を二重実行しない。1枠の実E2E・全4枠の実E2E・10営業日40枠観測、本文/PNG/Docs/PagesとChatGPTチャットの表示を個別受入。外部APIから既存ChatGPT会話への自動投稿は未実証であり、技術的に接続できない場合は満足したふりをしない。
 5. 本番切替は別途ユーザー承認後に実施。切替スイッチ・旧経路へのロールバックを保持。障害時はfail-closedでPARTIAL/BLOCKEDを通知し、既に成功した工程を再生成しない。
+
+
+## MR-INFOGRAPHIC-DRIVE-20261121-01｜図解Drive保存障害の復旧手順（2026-11-21 JST）
+1. 対象slotに対して主タスク・独立図解（+10分）・未発行復旧（+15分）の実行記録を確認し、`completed` と保存成功を混同しない。2026-11-20 21時枠は主タスクDocs/PNG未実行、独立図解がBLOCKED_FILE_REFERENCE、復旧はDocsのみ保存。Drive PNGは翌11/21 00:53に実存在を確認したため、定時保存はFAILと判定する。
+2. `マーケットレポート図解YYYY年M月` の対象PNGを完全一致の名前で検索し、0件なら保存・復旧対象、1件ならfileId/親/MIME/実バイトを検査し、2件以上ならAMBIGUOUSとして停止。既存画像の上書きや別枠画像への差替えは禁止。
+3. 新規図解を生成した同じタスク内で、実PNGパスからexportしたsource_file_refを`files__manage_library`で既存月別Drive folderへアップロードする（`overwrite=false`）。標準のGoogle_Drive upload_fileにローカルsandboxパスを渡して再試行しない。保存成功後は同一fileIdをGoogle Drive APIで再読取する。
+4. 独立図解タスクがcompletedであってもPNG保存が0件なら、復旧タスクはその別タスクのsandboxを使えると仮定せず、競合がなく原本文が存在するときのみ復旧版画像を生成して保存する。本文外の情報を補わない。正式snapshot/manifest/receiptがなければ正式READYにしない。
+5. +45分のGitHub Actions監視で `scripts/verify_drive_infographic_upload.py` の `DRIVE_PNG_VERIFIED`（PNG実体）と既存の `verify_scheduled_report_delivery.py --require-infographic`（canonical+receipt+manifest）をそれぞれ確認。前者のFAILを後者のSUCCESSで代用しない。故障した場合はmissing, duplicate, folder, bytes, auth の原因別に通知。
+6. 単体実証: 2026-11-21テストPNGのGoogle Drive保存/再読取PASS、テストファイルはごみ箱。GitHubコードはPR #226。CI、main反映、次の08/12/16/21時全枠でのPNG保存、内容QA、Pages DOM、通知は未検証。GitHub監視だけでは画像生成やDrive保存そのものを実行しないことを明記。
