@@ -7,6 +7,8 @@ on:
       - scripts/run_market_data_window.py
       - scripts/persist_report_slot_evidence.py
       - scripts/verify_scheduled_report_delivery.py
+      - scripts/verify_drive_infographic_upload.py
+      - tests/test_drive_infographic_upload.py
       - tests/test_market_data_window_evidence.py
       - tests/test_report_slot_evidence.py
       - tests/test_scheduled_report_delivery.py
@@ -29,3 +31,4 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m unittest tests.test_scheduled_report_delivery tests.test_report_slot_evidence tests.test_market_data_window_evidence -v
+      - run: python -m unittest discover -s tests -p 'test_drive_infographic_upload.py' -v
