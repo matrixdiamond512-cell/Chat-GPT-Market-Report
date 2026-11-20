@@ -4,6 +4,9 @@ const scheduledCheck=yaml.split('name: Verify scheduled slot after reconciliatio
 assert(scheduledCheck.includes('from report_identity import canonical_path, internal_report_key'), 'scheduled slot verifier must import shared report identity helpers');
 assert(!yaml.includes('5,20 0 * * 6'), 'Saturday cron still active');
 assert(!yaml.includes('No complete source exists for'), '21:00 missing publication silently accepted');
+assert(scheduledCheck.includes('if not isinstance(infographic, dict):'), 'missing infographic must fail closed');
+assert(scheduledCheck.includes("report.get('infographic_status') != 'READY'"), 'not-ready infographic must fail closed');
+assert(!scheduledCheck.includes('if infographic:'), 'optional infographic check would pass a missing image');
 assert(yaml.includes("raise SystemExit(f'scheduled canonical report missing after reconciliation: {path}')"));
 for(const cron of ['5,15,30 23 * * 0-4','5,15,30 3 * * 1-5','5,15,30,50 7 * * 1-5','5,15,30 12 * * 1-5'])assert(yaml.includes(cron),cron);
 console.log('Watchdog schedule and missing 21:00 fail-closed PASS');

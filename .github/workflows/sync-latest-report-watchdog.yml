@@ -126,11 +126,14 @@ jobs:
               raise SystemExit(f'scheduled report is not synchronized exactly once in reports.json: {key}')
 
           infographic = report.get('infographic')
-          if infographic:
-              image_key = date + '_' + slot.replace(':', '-')
-              image_path = Path(str(infographic.get('src') or ''))
-              if infographic.get('slotKey') != image_key or not image_path.is_file():
-                  raise SystemExit(f'scheduled infographic is missing or mismatched: {image_key}')
+          if not isinstance(infographic, dict):
+              raise SystemExit(f'scheduled infographic is missing: {date} {slot}')
+          if report.get('infographic_status') != 'READY':
+              raise SystemExit(f'scheduled infographic has no verified READY manifest: {date} {slot}')
+          image_key = date + '_' + slot.replace(':', '-')
+          image_path = Path(str(infographic.get('src') or ''))
+          if infographic.get('slotKey') != image_key or not image_path.is_file():
+              raise SystemExit(f'scheduled infographic is missing or mismatched: {image_key}')
 
           print(f'Scheduled publication verified after reconciliation: {date} {slot} (key={internal_report_key(slot_report)})')
           PY

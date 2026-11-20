@@ -112,3 +112,10 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 - 正本は固定Docs IDs：要件定義書 102PMtKQ4DaXqV1G2RhE8vFtQ8qes-tvIvy2jYQda_xA、仕様書 1qL7f3yKwghuDb5PiAI3RhwFJUVUfLwGakC8z8EOJ9oI、本文作成マニュアル 1M9LzxKgg8Y50uHSzE1OhML-lU-ufPhvh79xj_m1jWYQ、運用マニュアル 1OUVDAMjv009VWlI48Jb8TVuzszy4TIkjgBrHlzbNxYg、台帳 1F5vH9_O0LUC9Dki0CNm1JDNVfg7gMYMcUCIxgeanE5g。同一変更IDで追記・読み戻し済み。
 - GitHub固定文書は docs/system/requirements.md、specification.md、operations.md、DOCUMENT_CONTROL.md のみ追記対象。本PRのマージは「設計案の記録」であって「実装済み」ではない。
 - 受入条件：書込権限/費用/チャット配信経路の実証→コーディネーター/PNG renderer/Drive uploader実装→1枠E2E→4枠E2E→10営業日40枠→承認に基づく切替。過去のsource/evidence/receiptは一切補造・変更しない。
+
+
+## MR-INFOGRAPHIC-DRIVE-20261121-01｜図解PNG保存経路障害・再発防止（2026-11-21 JST）
+- 根拠: 11/20 21:00主タスクのGoogle Docs/PNG未実行、21:10独立PNG保存BLOCKED_FILE_REFERENCE、21:15復旧でGoogle Docsのみ保存。11/21 00:53に対象PNGのDrive実体（2,413,109 bytes）を確認。定刻のPNG保存失敗を後追い保存の成功で帳消しにしない。
+- 対象変更: ChatGPTの稼働中3タスクのPNG受渡し/復旧条件、GitHub PR #226（`sync-latest-report-watchdog.yml`、`check-scheduled-report-delivery.yml`、`verify_drive_infographic_upload.py`、該当テスト）、固定GitHub文書 `requirements.md`・`specification.md`・`operations.md`・本書。Google Docs固定IDの該当3文書/台帳も同期対象。本文作成マニュアルの分析項目・図解レイアウト変更なし。
+- 検証: テストPNG 2,140 bytesのFiles Library経由Drive保存、Google Drive metadata読戻しPASS（片付け済み）。3タスクの設定更新SUCCESS。GitHubコードはPR #226ブランチ反映のみで、CI/main/毎枠実E2E/正式PNG品質・manifest/Pages DOM/通知の受入はUNKNOWN。サービスアカウント秘密情報や原本は変更しない。
+- 未解決: 別のChatGPT実行環境からのsource_file_ref利用が毎回成功するか、GitHub Actionsの実行遅延/通知、正式出版ゲートの通過、10営業日40枠の連続成功。コードの改善だけを正式発行完了とは表現しない。
