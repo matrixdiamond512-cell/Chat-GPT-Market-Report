@@ -48,6 +48,18 @@ class TestDriveInfographicUpload(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unknown scheduled cron"):
             scheduled_date("invalid", datetime(2026, 11, 20, 16, 23, tzinfo=timezone.utc))
 
+    def test_late_2105_watchdog_never_checks_saturday(self):
+        late = datetime(2026, 11, 21, 1, 20, tzinfo=timezone.utc)
+        self.assertEqual(scheduled_date("5,15,30 12 * * 1-5", late), "2026-11-20")
+
+    def test_late_0805_watchdog_uses_monday_jst(self):
+        late = datetime(2026, 11, 23, 1, 0, tzinfo=timezone.utc)
+        self.assertEqual(scheduled_date("5,15,30 23 * * 0-4", late), "2026-11-23")
+
+    def test_early_watchdog_late_run_across_utc_boundary(self):
+        late = datetime(2026, 11, 20, 16, 30, tzinfo=timezone.utc)
+        self.assertEqual(scheduled_date("5,15,30,50 7 * * 1-5", late), "2026-11-20")
+
     def test_missing_or_duplicate_file_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "found 0"):
             require_unique([], "DRIVE_INFOGRAPHIC_MISSING_OR_DUPLICATED")

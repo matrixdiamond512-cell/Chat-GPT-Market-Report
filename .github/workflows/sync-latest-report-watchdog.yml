@@ -90,6 +90,7 @@ jobs:
           import sys
           sys.path.insert(0, 'scripts')
           from report_identity import canonical_path, internal_report_key
+          from verify_drive_infographic_upload import scheduled_date
 
           schedule = os.environ.get('TRIGGER_SCHEDULE', '')
           slots = {
@@ -103,12 +104,10 @@ jobs:
           if not slot:
               raise SystemExit(f'unknown watchdog schedule: {schedule}')
 
-          now = datetime.now(timezone(timedelta(hours=9)))
-          date = now.date().isoformat()
+          now_utc = datetime.now(timezone.utc)
+          date = scheduled_date(schedule, now_utc)
           key = (date, slot)
-          if slot == '21:00' and now.hour < 21:
-              print(f'21:00 JST has not arrived; no report is expected yet for {date}.')
-              raise SystemExit(0)
+          print(f'Verify scheduled report {date} {slot}; runner started {now_utc.isoformat()} UTC')
 
           slot_report = {'date': date, 'time': slot}
           path = canonical_path(slot_report, Path('reports'))

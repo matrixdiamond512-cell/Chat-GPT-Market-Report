@@ -124,3 +124,6 @@ Driveから10枠を追加回復し、保存本文91枠を検証。見出し別�
 - 発見: 2026-11-21、GitHub run 44772805142（cron `45 7 * * 1-5`）がJST日付跨ぎで起動し、実行日を誤用してDrive PNGを0件と誤判定。
 - 更新: scheduled_dateから対象JST日付を決定し、Drive実体/正式canonicalの双方を同じ日付で検査する改修、遅延回帰テスト、45分後の自動復旧タスク指示（原本・競合確認、読戻し必須）。
 - 事実確認: PR #226 main反映 `749eba4e233ae87852abd3021fa48276f4cac71c`、本修正は別PR・CI・main/定時実E2Eを別々に判定する。過去の正式receiptや画像品質は補造しない。
+
+## MR-WATCHDOG-MIDNIGHT-20261121-03｜公開watchdogの跨日検査漏れ修復
+- GitHub Actionsの21時枠が翌日へ遅延した場合の無検証終了分岐を撤去。共有cron対象日判定、Python/JS回帰、requirements/specification/operations/台帳を同一変更要求IDで反映。正式publication receiptを捏造しない。

@@ -27,6 +27,11 @@ SCHEDULE_DAYS_UTC = {
     "45 3 * * 1-5": {0, 1, 2, 3, 4},
     "45 7 * * 1-5": {0, 1, 2, 3, 4},
     "45 12 * * 1-5": {0, 1, 2, 3, 4},
+    "5,15,30 23 * * 0-4": {6, 0, 1, 2, 3},
+    "5,15,30 3 * * 1-5": {0, 1, 2, 3, 4},
+    "5,15,30,50 7 * * 1-5": {0, 1, 2, 3, 4},
+    "10 8 * * 1-5": {0, 1, 2, 3, 4},
+    "5,15,30 12 * * 1-5": {0, 1, 2, 3, 4},
 }
 
 
@@ -36,25 +41,28 @@ def scheduled_date(schedule: str, observed: datetime) -> str:
     GitHub Actions cron runs can be delayed past JST midnight. If the inferred
     occurrence is more than 18h old, fail rather than silently check a wrong day.
     """
-    if schedule not in SCHEDULES:
+    if schedule not in SCHEDULE_DAYS_UTC:
         raise ValueError("Unknown scheduled cron: " + schedule)
     if observed.tzinfo is None:
         raise ValueError("Observed run time must be timezone-aware")
     now = observed.astimezone(timezone.utc)
-    minute, hour = (int(part) for part in schedule.split()[:2])
+    minute_field, hour_field = schedule.split()[:2]
+    minutes = sorted((int(value) for value in minute_field.split(",")), reverse=True)
+    hour = int(hour_field)
     for days_ago in range(8):
         day = (now - timedelta(days=days_ago)).date()
         if day.weekday() not in SCHEDULE_DAYS_UTC[schedule]:
             continue
-        occurrence = datetime(day.year, day.month, day.day, hour, minute, tzinfo=timezone.utc)
-        if occurrence > now:
-            continue
-        if now - occurrence > timedelta(hours=18):
-            raise ValueError(
-                "SCHEDULE_DELAY_AMBIGUOUS: scheduled run is over 18h late; "
-                "pass an explicit --date to inspect the intended report"
-            )
-        return occurrence.astimezone(JST).date().isoformat()
+        for minute in minutes:
+            occurrence = datetime(day.year, day.month, day.day, hour, minute, tzinfo=timezone.utc)
+            if occurrence > now:
+                continue
+            if now - occurrence > timedelta(hours=18):
+                raise ValueError(
+                    "SCHEDULE_DELAY_AMBIGUOUS: scheduled run is over 18h late; "
+                    "pass an explicit --date to inspect the intended report"
+                )
+            return occurrence.astimezone(JST).date().isoformat()
     raise ValueError("No valid recent scheduled occurrence")
 
 DRIVE_API = "https://www.googleapis.com/drive/v3"
