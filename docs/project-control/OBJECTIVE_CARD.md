@@ -220,6 +220,6 @@ ACCEPTANCE: spool再起動後も原文/hashを保持、DOCS/PNG個別checkpoint�
 CONSTRAINTS: PR #229のP1修正を混入・変更しない。既存発行枠・本文・画像仕様・Drive原本を変更しない。テスト用隔離先以外へ書かない。本番切替・mergeなし。
 OUT OF SCOPE: 本番復旧、正式画像品質QA、Pages公開、独立監査合格。
 FORBIDDEN SUBSTITUTE: モックCIまたはDrive UI経由の試験をPython実writerの実運用証明にしない。
-STATUS: IN_PROGRESS; spool 14 tests PASS, writer mock 6 PASS, CLI 1 PASS / 1 FAIL (assertion wording mismatch); exact-head CI pending.
-OPEN OUTCOMES: 最終CI PASS、固定文書と証拠台帳更新、PR作成、実コードwriterの隔離Google Docs/PNG write-readback (post independent review), writer認証経路の実証。
-NEXT NECESSARY ACTION: assertionと固定文書の更新を含む最終headをpushし、CIを再実行する。
+STATUS: IN_PROGRESS; final-head CI run 45349812435 PASS (spool 14, writer mock 6, CLI 2; total 22).
+OPEN OUTCOMES: 専用stacked Draft PR作成、実コードwriterの隔離Google Docs/PNG write-readback (post independent review), writer認証経路の実証。
+NEXT NECESSARY ACTION: Phase 1A/1B branchをbaseとするPhase 2専用Draft PRを作成し、CIと実Drive試験の証拠境界を記載する。

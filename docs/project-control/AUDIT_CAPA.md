@@ -294,4 +294,4 @@ P2追加検証: 許可リストartifact上の主要11画面（dashboard/report/s
 
 ユーザー指定のPhase 2優先順位に基づき、公開済み基盤 `28165dbcb6714cfe0419d18acc7467546cf3a571` から専用branch `codex/phase2-google-writer` を作成。PR #229のP1修正は未取込であり、Phase 2差分は #229 branchをbaseにした独立stacked PRとして提出する。Docs本文とPNGのDrive writer、Drive読戻し、隔離TEST_ONLY folder制限、CLI、モックCIを追加。成功済みlaneは再利用し、作成結果不明時は照合できるまで重複作成を停止する。本文生成、発行時刻/枠、正式公開、Pages、GAS、既存Drive原本は変更しない。
 
-CI run `45349333730` はspool 14件、writer mock 6件をPASS、CLIは1/2件PASS。残る失敗はspool pathの拒否文とテストregexの不一致。実装fail-closed文言に合わせるテスト修正、および固定文書への要件/運用/仕様追記をローカル作業中。この修正のCIはNOT_RUN。Google Docs/PNGのPython実writerによる実Drive保存・読戻しは未実施であり、connector試験でも代替しない。独立レビュー後に利用可能な隔離フォルダーと認証主体を確認して別受入とする。PR作成後もmerge、本番書込み、本番切替は行わない。
+CI run `45349333730` のCLI正規表現不一致を実際のfail-closed文言へ合わせて修正。固定要件/仕様/運用文書、OBJECTIVE_CARD、EVIDENCE_LEDGER、DECISIONS、AUDIT_CAPAを追記。Final head `8bc981b58383cac64e98200f9c0b2ad1e0a9bcd3` の専用workflow run `45349812435` はspool 14/14、Drive writer mock 6/6、CLI 2/2、計22件PASS。GitHub hosted Python 3.13.18、E2 mock integrationに限定。Google Docs/PNGのPython実writerによる実Drive保存・読戻しは未実施であり、connector試験でも代替しない。独立レビュー後に利用可能な隔離フォルダーと認証主体を確認して別受入とする。PR作成後もmerge、本番書込み、本番切替は行わない。

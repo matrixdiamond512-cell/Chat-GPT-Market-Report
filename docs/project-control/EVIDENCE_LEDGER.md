@@ -182,11 +182,11 @@ PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承�
 
 ## MR-AUDIT-CAPA-20261124-01｜Phase 2 Google Drive writer PR準備（2026-11-24 JST）
 - Claim: docs/png実writer接続・耐障害再試行のPR準備。Branch `codex/phase2-google-writer`、baseはPhase 2のGitHub公開commit `28165dbcb6714cfe0419d18acc7467546cf3a571`。PR #229 head未取込のため、#229ブランチをbaseにしたstacked PRとする。
-- Evidence: GitHub Actions run `45349333730`, job `138291551542`。spool 14/14 PASS、Drive writer fake 6/6 PASS、CLI 1/2 PASS。残る1件はfail-closedの実装メッセージとテストregexの不一致であり、この追補作成時点で修正済み、再実行NOT_RUN。
-- Level/result: E2モック統合試験の一部PASS。Google実writer・隔離Drive write/readback=NOT_RUN。test statusは最新CI完了までUNKNOWN。
+- Evidence: Final head `8bc981b58383cac64e98200f9c0b2ad1e0a9bcd3`, GitHub Actions run `45349812435`, job `138293142349`。spool 14/14 PASS、Drive writer fake 6/6 PASS、CLI 2/2 PASS。全22件PASS。
+- Level/result: E2 mocked integration PASS on final head; Google実writer・隔離Drive write/readback=NOT_RUN。
 - Limit: connectorによるDrive操作はサービスアカウント資格情報を使うPython writerの挙動を証明しない。TEST_ONLY folderの利用可能性/実write permissionも未確認。
-- Run ID/timestamp: 45349333730 / 2026-11-24 JST。
-- Next: 再実行した最終head CIを確認し、専用Draft PRを作成。実Google Docs/PNG writerの隔離保存は独立レビュー後に行う。
+- Run ID/timestamp: 45349812435 / 2026-11-24 JST。
+- Next: 専用Draft PRを作成。実Google Docs/PNG writerの隔離保存は独立レビュー後に行う。
 
 
 ### PR提出記録（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）
