@@ -173,6 +173,10 @@ Pagesは `config/pages_public_files.json` の静的ファイル一覧・限定�
 
 ローカル検証と制約は `docs/project-control/AUDIT_CAPA.md` のPhase 1追補および `phase1-evidence.json` に記録。hosted CI、本番設定切替、変更後live Pages、固定Google Docs同期、通知実到達、独立再監査はNOT_RUN。固定Docs5件のmetadata読取404は権限/接続上の制約であり不存在の証明ではない。
 
+## Phase 2｜隔離writer実行手順（PR段階）
+
+writer CLIへ渡す本文/PNGは既に生成済みの成果物に限る。SQLite spoolは同期対象外のローカルapp-dataまたは一時領域に配置し、TEST_ONLYフォルダーIDを明示する。DOCS/PNGの結果を別々に確認し、PARTIALなら成功済み側を保持して不足レーンだけを再実行する。UNKNOWNではDrive実体を照合するまで再作成しない。実Google保存・再取得の受入前は本番フォルダー、定時タスク、Pages、正式品質判定に接続しない。
+
 ### Phase 1検証と本番適用の境界
 
 ローカル回帰: `python -m unittest discover -s tests -p test_audit_phase1.py -v`、既存のdashboard/publication eligibility/report contract/scheduled delivery/deployment verificationの関連回帰、`node --test tests/report-delivery-health.test.cjs`。Windowsのzoneinfoにはtzdataを隔離依存として導入した。テスト用固定時刻はfixtureに限定する。

@@ -41,3 +41,8 @@ Reason: observed production failure and verified main code path. Preserve the ex
 Trade-off: individually shared orphan Docs are no longer eligible; monthly direct storage is the existing formal requirement.
 Reversal condition: explicit requirement change plus equivalent identity/readback acceptance.
 Diagnostics: KEEP non-sensitive folder/error codes. No secret logging or automatic permission changes.
+
+## MR-AUDIT-CAPA-20261124-01｜Phase 2 PR base選択（2026-11-24 JST）
+- Decision: `codex/phase2-google-writer` のPR baseを `codex/audit-capa-phase1ab` とし、Phase 2追加分だけを差分としてレビュー可能にする。
+- Context: 公開基盤branchはP2 commit `28165dbcb6714cfe0419d18acc7467546cf3a571`。PR #229のP1最新修正はPhase 2 branchに含まれない。`main`をbaseにするとP1変更が差分へ混入するため、Phase 2としての正確なレビュー境界を保つ。
+- Constraint: stacked PRであることと未マージ依存を明記。PR #229はDraft・未マージのまま保ち、Phase2 PRは独立レビュー後の試験待ちとする。mainへのmerge、本番切替/書込みは本作業に含まない。

@@ -156,6 +156,10 @@ Pagesは `config/pages_public_files.json` の静的ファイル一覧・限定�
 
 ローカル検証と制約は `docs/project-control/AUDIT_CAPA.md` のPhase 1追補および `phase1-evidence.json` に記録。hosted CI、本番設定切替、変更後live Pages、固定Google Docs同期、通知実到達、独立再監査はNOT_RUN。固定Docs5件のmetadata読取404は権限/接続上の制約であり不存在の証明ではない。
 
+## Phase 2｜レポート成果物の保全要件（実装PR・本番未適用）
+
+Docs本文と図解PNGはreportId・revision・SHA-256で個別に永続保全し、保存処理を独立して再試行する。各writerはDrive上の親フォルダー・MIME・サイズ・内容を読戻し照合し、成功済み成果物を再作成しない。API結果不明時は外部実体を照合できるまで重複作成を停止する。転送読戻しは正式publication、PNG品質QA、Pages表示の証明に代用しない。Phase 2 PRのモックCIと実Google隔離保存試験、本番受入は別判定とする。
+
 
 ## MR-AUDIT-CAPA-20261124-01｜Phase 1A・1B PR準備（2026-11-24 JST）
 

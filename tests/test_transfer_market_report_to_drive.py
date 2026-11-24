@@ -47,7 +47,7 @@ class TransferCommandTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             accepted = local_spool_path(str(Path(temp) / "source.sqlite"))
             self.assertEqual(accepted, Path(temp).resolve() / "source.sqlite")
-        with self.assertRaisesRegex(ValueError, "local OS temporary"):
+        with self.assertRaisesRegex(ValueError, "local non-synced app-data or temp directory"):
             local_spool_path(str(Path.cwd() / "synced" / "source.sqlite"))
 
     def test_command_can_resume_png_only_after_docs_checkpoint_is_saved(self):

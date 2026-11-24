@@ -211,3 +211,15 @@ FORBIDDEN SUBSTITUTE: CI成功/閲覧アーカイブ/Docs存在を正式発行�
 STATUS: IN_PROGRESS / production NOT_READY。10営業日受入はNOT_STARTED（OBSERVINGへ移る条件未達）。
 OPEN OUTCOMES: 本番Drive認証主体/共有・読戻し、GitHub cron遅延の発生源、ChatGPT実タスク/通知とGAS実トリガー、PRレビュー/CI/承認済main反映、終値PR #201/#204/#206の整合・本番dry-run、4枠初期受入、10営業日40枠。21:00は調査時点未到来。
 NEXT NECESSARY ACTION: Drive取込のfolder fail-closed/parent readback修正をPRで検証し、本番サービスアカウントの権限を管理者が確認。実時刻窓内の次回runから全工程を観測する。
+
+## MR-AUDIT-CAPA-20261124-01｜Phase 2 Google Docs・PNG writer
+PRIMARY OBJECTIVE: 生成済み本文と図解を失わず隔離Google Driveへ個別保存・再試行し、Driveからの読戻し一致を確認できる実writerをPRとして独立レビュー可能にする。
+Classification: ADD; Phase 1A/1B、本番復旧・Pages受入のopen outcomesは維持。
+ACTIVE PROFILE: generic-app + data-tool。
+ACCEPTANCE: spool再起動後も原文/hashを保持、DOCS/PNG個別checkpoint、重複作成を抑止、TEST_ONLY folderでmetadata/親/MIME/内容照合、8種の障害再現、CI成功、専用PR作成。実Drive connector試験とコードwriter試験は別の証拠として報告。
+CONSTRAINTS: PR #229のP1修正を混入・変更しない。既存発行枠・本文・画像仕様・Drive原本を変更しない。テスト用隔離先以外へ書かない。本番切替・mergeなし。
+OUT OF SCOPE: 本番復旧、正式画像品質QA、Pages公開、独立監査合格。
+FORBIDDEN SUBSTITUTE: モックCIまたはDrive UI経由の試験をPython実writerの実運用証明にしない。
+STATUS: IN_PROGRESS; spool 14 tests PASS, writer mock 6 PASS, CLI 1 PASS / 1 FAIL (assertion wording mismatch); exact-head CI pending.
+OPEN OUTCOMES: 最終CI PASS、固定文書と証拠台帳更新、PR作成、実コードwriterの隔離Google Docs/PNG write-readback (post independent review), writer認証経路の実証。
+NEXT NECESSARY ACTION: assertionと固定文書の更新を含む最終headをpushし、CIを再実行する。

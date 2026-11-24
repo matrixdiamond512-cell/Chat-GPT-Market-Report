@@ -289,3 +289,9 @@ P2追加検証: 許可リストartifact上の主要11画面（dashboard/report/s
 ローカルfixture6件PASS: 再起動後の原本保持・同revision上書き拒否、Docs失敗時の本文保持/二重write拒否、readbackだけの再試行、Docs失敗時のPNG独立保存、成功工程の再実行抑止、PNG不変性と品質未判定。初回はSQLite connection解放漏れをWindowsで検出し、closeを保証するcontext managerへ修正後に全件PASS。
 
 残課題: provider側の冪等key/重複照合、UNKNOWN復旧、月別folder/親ID/Docs全文revision読戻し、PNGの視覚数値品質、既存producerとの接続、本番の永続ストレージ配置と実権限検証。同期ドライブ上のSQLiteやコンテナ一時FSを本番保存先と決めたものではなく、保存backendは未選定。本モジュールだけで11/24のDocs/PNG保存障害が修復したとは主張しない。次は既存producer入力→永続原本→認証済writer/readbackの接続を隔離環境で実装・受入する。
+
+### Phase 2実writer接続PR準備（2026-11-24 JST）
+
+ユーザー指定のPhase 2優先順位に基づき、公開済み基盤 `28165dbcb6714cfe0419d18acc7467546cf3a571` から専用branch `codex/phase2-google-writer` を作成。PR #229のP1修正は未取込であり、Phase 2差分は #229 branchをbaseにした独立stacked PRとして提出する。Docs本文とPNGのDrive writer、Drive読戻し、隔離TEST_ONLY folder制限、CLI、モックCIを追加。成功済みlaneは再利用し、作成結果不明時は照合できるまで重複作成を停止する。本文生成、発行時刻/枠、正式公開、Pages、GAS、既存Drive原本は変更しない。
+
+CI run `45349333730` はspool 14件、writer mock 6件をPASS、CLIは1/2件PASS。残る失敗はspool pathの拒否文とテストregexの不一致。実装fail-closed文言に合わせるテスト修正、および固定文書への要件/運用/仕様追記をローカル作業中。この修正のCIはNOT_RUN。Google Docs/PNGのPython実writerによる実Drive保存・読戻しは未実施であり、connector試験でも代替しない。独立レビュー後に利用可能な隔離フォルダーと認証主体を確認して別受入とする。PR作成後もmerge、本番書込み、本番切替は行わない。

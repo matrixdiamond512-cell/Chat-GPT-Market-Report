@@ -156,6 +156,10 @@ Pagesは `config/pages_public_files.json` の静的ファイル一覧・限定�
 
 ローカル検証と制約は `docs/project-control/AUDIT_CAPA.md` のPhase 1追補および `phase1-evidence.json` に記録。hosted CI、本番設定切替、変更後live Pages、固定Google Docs同期、通知実到達、独立再監査はNOT_RUN。固定Docs5件のmetadata読取404は権限/接続上の制約であり不存在の証明ではない。
 
+## Phase 2｜Docs・PNG writer契約（実装PR・本番未適用）
+
+`DeliverySpool` は外部書込み前に成果物バイトとハッシュを保存し、DOCSとPNGを別レーンで管理する。Google Drive writerはTEST_ONLYフォルダーを必須とし、Driveのマーカー、親ID、MIME、ファイルサイズ、およびDocs全文またはPNG実バイトを照合する。既知の作成拒否は再試行可能、作成結果不明はUNKNOWNとして再作成を止める。保存済みreferenceがある場合の再試行は読戻しのみ行う。転送状態は正式公開・視覚品質・Pages表示の状態から独立する。
+
 ### Phase 1契約の詳細
 
 - `scripts/report_delivery_health.py`: JSTの現在時刻以下の最新予定枠を平日/土日設定から算出。公開日時が期待枠と一致する場合だけCURRENT。古い日時はBEHIND_SCHEDULE、欠損/不正/期待より先の日時はMISSING。休日市場休場でも既存の平日配信枠を黙って休止しない。
