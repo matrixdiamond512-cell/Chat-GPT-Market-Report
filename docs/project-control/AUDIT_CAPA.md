@@ -262,3 +262,8 @@ rolloutは未実施。今後は差分レビュー→固定Docs同期→明示さ
 公開リポジトリへ監査原文・詳細issue/runtime証跡・全ログ・workflow棚卸しをまとめて転送する操作は、自動承認レビューが公開範囲不明確として拒否した。これらは削除せずローカルに保持し、本PRから除外する。原資料は既存Driveの固定ファイルを参照し、audit-source-index.jsonには名称/byte数/SHA-256と既存Driveリンクだけを収録する。元のPhase 0/1検証記録は実施時の履歴であり、そこにあるローカル証跡名をGitHubへ公開済みと解釈しない。
 
 独立レビュー用に公開する証拠はpr-validation.json（全60/32テスト名・結果・環境・コマンド）とpr-public-dependencies.json（公開assetの430参照・新規欠落0・既存欠落2）に限定する。詳細な機械ログ、監査原文、workflow inventoryはローカル保全。是正台帳・仕様/運用の既存固定文書は本修正の説明に必要な差分だけを含める。raw市場本文、資格情報、ユーザー実タスク内容を追加公開しない。
+
+
+### PR提出記録（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）
+
+独立レビュー用Draft PR: https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/229 。専用branch `codex/audit-capa-phase1ab`、実装/ローカル試験対象commit `f2bcebd4cd24d548ccb5eceabdcef418e768d4fe`。GitHub APIでAUDIT_CAPA.mdのblobを独立取得しローカルGit blobと一致確認。公開30ファイル、監査原文・詳細runtime/issue証跡・全ログ・棚卸しはローカル保全で非提出。PRはOPEN/Draft・未マージ。hosted CIの最終状態はPRの同head Checksで確認し、ローカル92件の合格とは分離する。今回はPages設定/配備・Drive正本・ChatGPTタスクを変更しない。
