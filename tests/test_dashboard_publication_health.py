@@ -1,4 +1,5 @@
 """Regression: reconstructed original cannot be displayed as a healthy report."""
+import datetime as dt
 import tempfile
 import unittest
 from pathlib import Path
@@ -25,7 +26,7 @@ class DashboardHealthTests(unittest.TestCase):
                        "status":"ok","isStale":False,"staleReason":""}
             sync.dump_json(path, initial)
             with patch.object(sync,"DASHBOARD",path):
-                sync.sync_dashboard(report)
+                sync.sync_dashboard(report, now=dt.datetime(2026, 10, 13, 16, tzinfo=sync.JST))
                 changed = sync.load_json(path,{})
                 self.assertEqual(changed["latestReport"],report)
                 self.assertEqual(changed["currentReportKey"],"2026-10-12_08-00")
@@ -33,7 +34,7 @@ class DashboardHealthTests(unittest.TestCase):
                 self.assertIs(changed["isStale"], True)
                 self.assertEqual(changed["staleReason"],"REPORT_SOURCE_RECONSTRUCTED_UNVERIFIED")
                 before = path.read_bytes()
-                sync.sync_dashboard(report)
+                sync.sync_dashboard(report, now=dt.datetime(2026, 10, 13, 16, tzinfo=sync.JST))
                 self.assertEqual(path.read_bytes(),before)
 
     def test_healthy_report_does_not_promote_independent_partial_dashboard(self):
@@ -44,7 +45,7 @@ class DashboardHealthTests(unittest.TestCase):
                        "isStale":False,"staleReason":"MARKET_DATA_PARTIAL"}
             sync.dump_json(path, initial)
             with patch.object(sync,"DASHBOARD",path):
-                sync.sync_dashboard(report)
+                sync.sync_dashboard(report, now=dt.datetime(2026, 10, 13, 16, tzinfo=sync.JST))
                 changed = sync.load_json(path,{})
                 self.assertEqual(changed["status"],"partial")
                 self.assertEqual(changed["staleReason"],"MARKET_DATA_PARTIAL")

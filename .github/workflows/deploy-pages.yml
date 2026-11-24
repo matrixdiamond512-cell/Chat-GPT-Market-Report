@@ -22,6 +22,10 @@ on:
       - 'scripts/build_reports.py'
       - 'scripts/reporting/publication_eligibility.py'
       - 'scripts/prepare_pages_site.py'
+      - 'scripts/verify_pages_artifact.py'
+      - 'scripts/verify_pages_dependencies.py'
+      - 'config/pages_public_files.json'
+      - 'config/report_schedule.json'
       - 'scripts/verify_public_report_deployment.py'
       - 'scripts/validate_market_report_dom.js'
       - 'scripts/validate_drive_archive_2026_10_27_dom.js'
@@ -31,6 +35,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -93,6 +98,13 @@ jobs:
       - name: Verify recovered historical archive stays distinct from formal publication
         run: python scripts/validate_report_recovery.py
 
+      - name: Require workflow Pages publishing mode
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mode=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq .build_type)
+          test "$mode" = workflow || { echo "Pages publishing mode must be workflow; settings change requires separate approval."; exit 1; }
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
@@ -138,6 +150,9 @@ jobs:
         env:
           PAGES_SITE_DIR: ${{ runner.temp }}/market-report-pages-site
         run: python scripts/prepare_pages_site.py --output "$PAGES_SITE_DIR"
+
+      - name: Verify allowlist artifact local dependencies
+        run: python scripts/verify_pages_dependencies.py --site "$RUNNER_TEMP/market-report-pages-site"
 
       - name: Set up Node.js for local Portal DOM validation
         uses: actions/setup-node@v4
@@ -189,13 +204,23 @@ jobs:
 
 
       - name: Upload static site
+        id: pages-upload
         uses: actions/upload-pages-artifact@v3
         with:
           path: ${{ runner.temp }}/market-report-pages-site
+          name: github-pages
+
+      - name: Read back the exact uploaded Pages artifact before deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_ARTIFACT_ID: ${{ steps.pages-upload.outputs.artifact_id }}
+        run: python scripts/verify_pages_artifact.py --artifact-id "$PAGES_ARTIFACT_ID"
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages
 
       - name: Verify the public report index and exact infographic bytes
         env:

@@ -9,6 +9,8 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
+from report_delivery_health import apply_delivery_health
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -29,7 +31,7 @@ def write_json(path: Path, data: Any) -> None:
         fh.write("\n")
 
 
-def attach_market_data(dashboard: dict[str, Any], market_data: dict[str, Any]) -> dict[str, Any]:
+def attach_market_data(dashboard: dict[str, Any], market_data: dict[str, Any], *, now=None) -> dict[str, Any]:
     result = deepcopy(dashboard)
     result["marketData"] = market_data
     result["marketDataUpdatedAt"] = market_data.get("generatedAt", "")
@@ -52,12 +54,9 @@ def attach_market_data(dashboard: dict[str, Any], market_data: dict[str, Any]) -
         if not (isinstance(error, str) and error.startswith("市場データ取得基盤:"))
     ]
     if market_data.get("overallStatus") != "verified":
-        errors.append(
-            "市場データ取得基盤: "
-            + market_data.get("overallStatus", "unknown")
-            + " / missing="
-            + ",".join(market_data.get("missingRequired") or [])
-        )
+        missing = market_data.get("missingRequired") or []
+        detail = " / missing=" + ",".join(missing) if missing else ""
+        errors.append("市場データ取得基盤: " + market_data.get("overallStatus", "unknown") + detail)
     result["errors"] = errors
 
     latest_report = result.get("latestReport")
@@ -75,6 +74,7 @@ def attach_market_data(dashboard: dict[str, Any], market_data: dict[str, Any]) -
                 report["marketData"] = market_data
                 break
         result["reports"] = reports
+    apply_delivery_health(result, result.get("latestReport") or {}, now=now)
     return result
 
 
