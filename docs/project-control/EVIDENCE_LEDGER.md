@@ -192,10 +192,12 @@ PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承�
 ## PR #230｜独立レビュー3指摘の是正（2026-11-24 JST）
 - Source: reviewer comment 7125946721: (1) auth/network前に本文・PNGをspool、(2) multi-host writer lock、(3) Drive `incompleteSearch` を返却fieldsに含めて判定。Requested restart/auth/network/concurrency regression tests.
 - Changes: CLI persists all supplied files before constructing credentials; default local path selects Windows LOCALAPPDATA. `DeliverySpool.transfer` accepts a guard spanning reconciliation/create/checkpoint/readback. Production writer requires a GCS atomic create-if-absent lock bucket (`ifGenerationMatch=0`) and holds it across the lane transaction. `files.list` requests `incompleteSearch` and aborts if true.
-- Planned tests: auth initialization failure preserves both source lanes; process interruption after Docs create resumes by reconcile from reopened SQLite; response loss keeps sources and retries without a second create; two independent spool/writer instances contend on one fake atomic GCS lock and result in one Drive create; incompleteSearch true prevents create; default spool selects LOCALAPPDATA.
-- Evidence: NOT_RUN at this entry time. Prior head `e76175a9c09c57cce22008e2f5408530f94c807b` had the original 22 tests PASS; new CI required for review fixes.
-- Limit: mocks only. No real GCS bucket, credentials, real Drive write/readback, or cold reboot testing. Hard kill can leave a lock object and require verified manual removal. LOCALAPPDATA doesn't share source bytes across hosts; runner temp is ephemeral after the job.
-- Next: run all three Phase 2 suites on final PR head; inspect PR checks and update PR #230 without marking ready/merging.
+- Tests: auth initialization failure preserves both source lanes; process interruption after Docs create resumes by reconcile from reopened SQLite; response loss keeps sources and retries without a second create; two independent spool/writer instances contend on one fake atomic GCS lock and result in one Drive create; incompleteSearch true prevents create; default spool selects LOCALAPPDATA.
+- First-run outcome: run `45359682014` failed because the new CLI test omitted the `DeliverySpool` import (spool 14 and writer 8 passed; CLI had 3 affected tests). Fixed in commit `9470c9f2f`.
+- Evidence: head `9470c9f2f964ed05f1cff1b3a323d9a33c328a42`; push run `45359805223` and PR run `45359815049` PASS. Spool 14/14, writer/lock 8/8, CLI 6/6; total 28 tests. Other PR checks `45359815182` and `45359815126` PASS.
+- Level/result: E2 mocked integration PASS. No live GCS bucket, credentials, real Drive write/readback, or cold reboot test.
+- Limit: hard kill can leave a lock object and require verified manual removal. LOCALAPPDATA doesn't share source bytes across hosts; runner temp is ephemeral after the job.
+- Next: reflect final tested head and limitation in PR #230, leaving it Draft/unmerged for independent re-review.
 
 
 ### PR提出記録（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）

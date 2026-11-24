@@ -220,6 +220,6 @@ ACCEPTANCE: Google認証・通信前に本文/PNGを両方spoolへcommit、reope
 CONSTRAINTS: PR #229のP1修正を混入・変更しない。既存発行枠・本文・画像仕様・Drive原本を変更しない。テスト用隔離先以外へ書かない。本番切替・mergeなし。
 OUT OF SCOPE: 本番復旧、正式画像品質QA、Pages公開、独立監査合格。
 FORBIDDEN SUBSTITUTE: モックCIまたはDrive UI経由の試験をPython実writerの実運用証明にしない。
-STATUS: IN_PROGRESS; Draft PR #230 open; current-head CI run 45350558543 PASS (spool 14, writer mock 6, CLI 2; total 22).
-OPEN OUTCOMES: PR #230の修正CI、Cloud Storage lock bucketの隔離設定/実権限、同PC再起動後のspool実体確認、独立レビュー再確認、後続の実Docs/PNG write-readback。
-NEXT NECESSARY ACTION: 修正・追加fixtureを実行し、結果をPR #230へpush。Cloud Storage/Driveの権限設定は変更せず、実環境要件を記録する。
+STATUS: IN_PROGRESS; Draft PR #230 open; Phase 2 regression workflow on head 9470c9f2f964ed05f1cff1b3a323d9a33c328a42 PASS (spool 14, writer/lock 8, CLI 6; total 28); PR and push runs successful.
+OPEN OUTCOMES: PR #230の独立再レビュー、TEST_ONLY Cloud Storage lock bucketの設定/実権限、同PC cold reboot後のspool確認、後続の実Docs/PNG write-readback。
+NEXT NECESSARY ACTION: 最終CI証拠をPR #230へ反映し、Draftのまま開発責任者へ再レビュー依頼する。

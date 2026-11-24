@@ -300,4 +300,6 @@ CI run `45349333730` のCLI正規表現不一致を実際のfail-closed文言へ
 
 レビューコメント `https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/230#issuecomment-7125946721` に基づき、CLIはwriter認証初期化前に本文・PNG双方をSQLiteへcommitし、すべての提供sourceの保全が成功するまで通信を開始しない。既定spool先は同期対象外Windows LOCALAPPDATA。CLIはslot/kind単位のCloud Storage `ifGenerationMatch=0` lockをspool transfer全体で保持し、別hostの並行createを防ぐ。lock用bucket設定/IAMは変更していない。Drive files.listのfieldsにincompleteSearchを追加しtrueなら作成を中止する。
 
+修正head `9470c9f2f964ed05f1cff1b3a323d9a33c328a42` のPhase 2 workflow push run `45359805223` とPR run `45359815049` は合格。追加テストを含む計28件（spool 14、writer/lock 8、CLI 6）PASS。PR checkのfrozen-cutoff `45359815182` とdelivery-health `45359815126` もPASS。初回run `45359682014` はCLIテストのimport欠落で失敗し、`9470c9f2f` で修正済み。
+
 残る制約: process/OS強制停止時にCloud Storage lock objectが残ると、自動期限切れはせず、稼働writer不在の確認後に対象objectの手動除去が必要。LOCALAPPDATA spoolは同一PCの再起動用で、別hostと自動共有しない。GitHub runnerのtempはjobを超えた永続性を保証しない。Drive/GCS実権限、実保存、cold rebootは未検証。
