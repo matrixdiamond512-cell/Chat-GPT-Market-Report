@@ -197,3 +197,8 @@ PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承�
 ローカルfixture6件PASS: 再起動後の原本保持・同revision上書き拒否、Docs失敗時の本文保持/二重write拒否、readbackだけの再試行、Docs失敗時のPNG独立保存、成功工程の再実行抑止、PNG不変性と品質未判定。初回はSQLite connection解放漏れをWindowsで検出し、closeを保証するcontext managerへ修正後に全件PASS。
 
 残課題: provider側の冪等key/重複照合、UNKNOWN復旧、月別folder/親ID/Docs全文revision読戻し、PNGの視覚数値品質、既存producerとの接続、本番の永続ストレージ配置と実権限検証。同期ドライブ上のSQLiteやコンテナ一時FSを本番保存先と決めたものではなく、保存backendは未選定。本モジュールだけで11/24のDocs/PNG保存障害が修復したとは主張しない。次は既存producer入力→永続原本→認証済writer/readbackの接続を隔離環境で実装・受入する。
+
+## PR #230追加指摘｜分散create不確実性とロック解放（2026-11-24 JST）
+Google Driveのcreate要求で応答が不明な場合、同じslot/kindのGCS lock objectを解放せず残し、独立SQLite spoolを使う別hostのcreate/reconcile経路をfail-closedにする。曖昧なcreateをDrive検索0件だけで再試行可能へ戻してはならない。運用者は稼働中writerがないことに加え、TEST_ONLY先で同一delivery identityの実体を検索・内容読戻ししてから、対象lockだけを手動解消する。検索に出ないことは不在証明ではないため、結果が曖昧な間はlockを保持する。
+
+保護されたDrive保存・全文/byte読戻し結果とGCS lock解放結果を別々に出力する。lock解放失敗時は検証済みDrive成果物を保持し、`resultStatus=LOCK_RELEASE_FAILED`、lane別`lockRelease=FAILED`、終了コード3を返す。配信状態COMPLETEだけを見てコマンド成功としない。PR #230独立レビューコメント7126900842に基づく。テストとCIの実測結果はEVIDENCE_LEDGERへ記録する。

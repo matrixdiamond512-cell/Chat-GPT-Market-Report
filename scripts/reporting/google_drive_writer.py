@@ -56,6 +56,15 @@ class DriveLockBusy(DriveWriterError):
     definitely_not_created = True
 
 
+class DriveLockReleaseError(DriveWriterError):
+    """The protected operation and its lock cleanup have separate outcomes."""
+
+    def __init__(self, *, operation_succeeded: bool, operation_error: Exception | None = None):
+        super().__init__("shared writer lock release failed")
+        self.operation_succeeded = operation_succeeded
+        self.operation_error = operation_error
+
+
 class GCSArtifactLock:
     """Cross-machine mutex using Cloud Storage create-if-absent preconditions.
 
@@ -97,18 +106,31 @@ class GCSArtifactLock:
             # place and fail closed rather than risk releasing another owner.
             raise DriveWriterError("shared writer lock generation is unreadable") from exc
         delete_url = GCS_API + f"/b/{quote(self.bucket, safe='')}/o/{quote(object_name, safe='')}"
+        lease = {"retain": False}
+        operation_error = None
         try:
-            yield
-        finally:
+            yield lease
+        except BaseException as exc:
+            operation_error = exc
+        if lease["retain"]:
+            if operation_error is not None:
+                raise operation_error
+            return
+        try:
             try:
                 released = self.session.request(
                     "DELETE", delete_url, params={"ifGenerationMatch": generation}, timeout=self.timeout,
                 )
             except Exception as exc:
-                raise DriveWriterError("shared writer lock release outcome is unknown") from exc
+                raise DriveLockReleaseError(operation_succeeded=operation_error is None) from exc
             release_status = int(getattr(released, "status_code", 0) or 0)
             if not 200 <= release_status < 300:
-                raise DriveWriterError(f"shared writer lock release failed (HTTP {release_status or 'unknown'})")
+                raise DriveLockReleaseError(operation_succeeded=operation_error is None)
+        except DriveLockReleaseError as release_error:
+            release_error.operation_error = operation_error
+            raise
+        if operation_error is not None:
+            raise operation_error
 
 
 @dataclass(frozen=True)
@@ -195,15 +217,18 @@ class GoogleDriveReportWriter:
                 raise DriveWriterError("shared writer lock is not configured")
             yield
             return
-        with self.lock_store.acquire(lock_key):
+        with self.lock_store.acquire(lock_key) as lease:
             active = getattr(self._active_locks, "keys", set())
             if lock_key in active:
                 raise DriveWriterError("nested shared writer lock acquisition is not allowed")
             self._active_locks.keys = active | {lock_key}
+            leases = getattr(self._active_locks, "leases", {})
+            self._active_locks.leases = {**leases, lock_key: lease}
             try:
                 yield
             finally:
                 self._active_locks.keys = active
+                self._active_locks.leases = leases
 
     @staticmethod
     def _body_hash(payload: bytes) -> str:
@@ -508,7 +533,17 @@ class GoogleDriveReportWriter:
         if existing:
             return existing.encode()
         media_mime = "text/plain; charset=UTF-8" if kind == "DOCS" else PNG_MIME
-        item = self._create(name, mime, props, payload, media_mime)
+        try:
+            item = self._create(name, mime, props, payload, media_mime)
+        except Exception as exc:
+            # An unclassified create failure may mean Drive accepted the
+            # request. Retain the shared lock as a durable fail-closed claim;
+            # another spool/host cannot create until an operator reconciles it.
+            if not getattr(exc, "definitely_not_created", False):
+                lease = getattr(self._active_locks, "leases", {}).get(self._lock_key(key))
+                if lease is not None:
+                    lease["retain"] = True
+            raise
         reference = FileReference(str(item["id"]), kind, report_id, revision, body_hash, artifact_hash)
         # The spool will persist this reference before its mandatory readback.
         return reference.encode()

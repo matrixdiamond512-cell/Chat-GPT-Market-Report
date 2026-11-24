@@ -184,3 +184,6 @@ PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承�
 
 ## MR-AUDIT-CAPA-20261124-01｜Phase 2 review追補（2026-11-24 JST）
 要件/仕様/運用の固定パスに、source先行spool、GCS cross-host lock、`incompleteSearch` 検査、LOCALAPPDATAのspool既定先、stale lock復旧手順とCI/実Drive証拠の分離を追記。PR #230の独立レビュー指摘に基づく。実Drive/GCS bucket設定、正式Docs ID同期、Pages、本番原本には変更なし。
+
+## MR-AUDIT-CAPA-20261124-01｜PR #230追加指摘の修正記録
+変更要求: MR-AUDIT-CAPA-20261124-01（追加レビューコメント7126900842）。対象: `scripts/reporting/google_drive_writer.py`、`scripts/transfer_market_report_to_drive.py`、関連tests、固定文書requirements/specification/operations/DOCUMENT_CONTROLおよびPhase 2証跡。内容: create応答不明時はGCS lockを共有fail-closed claimとして保持し、別spoolからの新規作成を阻止。lock解放結果を保存/読戻し証拠と分離し、解放失敗時はLOCK_RELEASE_FAILED・終了コード3を報告する。実装後テスト/CI/実Drive隔離試験は本追補作成時点で未確定のためEVIDENCE_LEDGERで更新する。

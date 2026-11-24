@@ -16,10 +16,10 @@ from pathlib import Path
 
 try:
     from reporting.delivery_spool import DeliverySpool
-    from reporting.google_drive_writer import GoogleDriveReportWriter
+    from reporting.google_drive_writer import DriveLockReleaseError, GoogleDriveReportWriter
 except ModuleNotFoundError:
     from scripts.reporting.delivery_spool import DeliverySpool
-    from scripts.reporting.google_drive_writer import GoogleDriveReportWriter
+    from scripts.reporting.google_drive_writer import DriveLockReleaseError, GoogleDriveReportWriter
 
 
 def local_spool_path(value: str) -> Path:
@@ -60,6 +60,7 @@ def run(args) -> tuple[dict, int]:
     identity = (args.report_id, args.revision)
 
     outcomes = {}
+    lock_release = {}
     available = []
     persist_failed = False
     # Read and commit every supplied source before authenticating or making
@@ -79,7 +80,7 @@ def run(args) -> tuple[dict, int]:
         except ValueError:
             outcomes[kind] = "NOT_PROVIDED"
     if persist_failed or not available:
-        return _result(spool, identity, outcomes)
+        return _result(spool, identity, outcomes, lock_release)
 
     try:
         writer = GoogleDriveReportWriter.from_environment(args.folder_id)
@@ -87,7 +88,7 @@ def run(args) -> tuple[dict, int]:
         # Leave all source bytes intact when auth/configuration is unavailable.
         for kind in available:
             outcomes[kind] = "BLOCKED:" + type(exc).__name__
-        result, exit_code = _result(spool, identity, outcomes)
+        result, exit_code = _result(spool, identity, outcomes, lock_release)
         return result, 1 if exit_code == 0 else exit_code
 
     for kind, write in (("DOCS", writer.write_docs), ("PNG", writer.write_png)):
@@ -97,19 +98,34 @@ def run(args) -> tuple[dict, int]:
             spool.transfer(*identity, kind, write=write, readback=writer.readback,
                            reconcile=writer.reconcile, guard=writer.transfer_guard)
             outcomes[kind] = "WRITE_READBACK_VERIFIED"
+            lock_release[kind] = "RELEASED"
+        except DriveLockReleaseError as exc:
+            # Keep verified Drive readback and lock cleanup as separate facts.
+            if exc.operation_succeeded:
+                outcomes[kind] = "WRITE_READBACK_VERIFIED"
+            elif exc.operation_error is not None:
+                outcomes[kind] = "FAILED:" + type(exc.operation_error).__name__
+            else:
+                outcomes[kind] = "FAILED:DriveLockReleaseError"
+            lock_release[kind] = "FAILED"
         except Exception as exc:
             # Do not expose body, image, destination URL, or credential details.
             outcomes[kind] = "FAILED:" + type(exc).__name__
+            lock_release[kind] = "NOT_CONFIRMED"
 
-    return _result(spool, identity, outcomes)
+    return _result(spool, identity, outcomes, lock_release)
 
 
-def _result(spool, identity, outcomes):
+def _result(spool, identity, outcomes, lock_release=None):
     status = spool.delivery_status(*identity)
-    result = {**status, "attemptOutcomes": outcomes,
+    lock_release = lock_release or {}
+    release_failed = any(value == "FAILED" for value in lock_release.values())
+    result = {**status, "attemptOutcomes": outcomes, "lockRelease": lock_release,
+              "resultStatus": "LOCK_RELEASE_FAILED" if release_failed else status["status"],
               "hashes": {kind: spool.inspect(*identity, kind)["sha256"]
                          for kind in ("DOCS", "PNG") if kind in status["lanes"]}}
-    exit_code = 0 if status["status"] == "COMPLETE" else (2 if status["status"] == "PARTIAL" else 1)
+    exit_code = (3 if release_failed else 0 if status["status"] == "COMPLETE" else
+                 2 if status["status"] == "PARTIAL" else 1)
     return result, exit_code
 
 

@@ -1,11 +1,12 @@
 import tempfile
-from contextlib import nullcontext
+from contextlib import contextmanager
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
 from scripts.reporting.delivery_spool import DeliverySpool, TransferReadback
+from scripts.reporting.google_drive_writer import DriveLockReleaseError
 from scripts.transfer_market_report_to_drive import default_spool_path, local_spool_path, run
 
 
@@ -13,6 +14,7 @@ class WriterFixture:
     def __init__(self):
         self.saved = {}
         self.calls = []
+        self.fail_lock_release = False
 
     @classmethod
     def from_environment(cls, folder_id=None):
@@ -43,7 +45,12 @@ class WriterFixture:
         return None
 
     def transfer_guard(self, key, payload):
-        return nullcontext()
+        @contextmanager
+        def guard():
+            yield
+            if self.fail_lock_release:
+                raise DriveLockReleaseError(operation_succeeded=True)
+        return guard()
 
 
 class TransferCommandTests(unittest.TestCase):
@@ -183,6 +190,28 @@ class TransferCommandTests(unittest.TestCase):
             self.assertEqual(fixture.calls.count("DOCS_WRITE"), 0)
             self.assertEqual(fixture.calls.count("PNG_WRITE"), 1)
             self.assertEqual(fixture.calls.count("RECONCILE:fixture-doc"), 1)
+
+    def test_lock_release_failure_keeps_verified_status_but_returns_operational_failure(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            body = root / "body.txt"
+            png = root / "image.png"
+            body.write_bytes(b"TEST_ONLY release failure body")
+            png.write_bytes(b"\x89PNG\r\n\x1a\nTEST_ONLY release failure")
+            fixture = WriterFixture()
+            fixture.fail_lock_release = True
+            args = SimpleNamespace(report_id="2026-11-24_12-00", revision=9,
+                spool=str(root / "source.sqlite"), folder_id="TEST_ONLY_FOLDER",
+                body_file=str(body), png_file=str(png))
+            with patch("scripts.transfer_market_report_to_drive.GoogleDriveReportWriter.from_environment",
+                       return_value=fixture):
+                result, exit_code = run(args)
+            self.assertEqual(result["status"], "COMPLETE")
+            self.assertEqual(result["resultStatus"], "LOCK_RELEASE_FAILED")
+            self.assertEqual(result["attemptOutcomes"], {
+                "DOCS": "WRITE_READBACK_VERIFIED", "PNG": "WRITE_READBACK_VERIFIED"})
+            self.assertEqual(result["lockRelease"], {"DOCS": "FAILED", "PNG": "FAILED"})
+            self.assertEqual(exit_code, 3)
 
 
 if __name__ == "__main__":

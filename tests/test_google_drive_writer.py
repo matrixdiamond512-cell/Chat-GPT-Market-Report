@@ -10,7 +10,9 @@ from scripts.reporting.google_drive_writer import (
     DRIVE,
     FOLDER_MIME,
     GCSArtifactLock,
+    DriveLockReleaseError,
     DriveLockBusy,
+    DriveWriterError,
     DefinitiveWriteRejection,
     PNG_MIME,
     UPLOAD,
@@ -38,6 +40,8 @@ class MemoryDriveSession:
         self.calls = []
         self.next_id = 1
         self.incomplete_search = False
+        self.lose_next_create_response = False
+        self.hide_files_from_search = False
         self.files["sandbox-folder"] = {"id": "sandbox-folder", "name": "TEST_ONLY",
                                          "mimeType": FOLDER_MIME, "parents": [], "trashed": False}
 
@@ -55,6 +59,8 @@ class MemoryDriveSession:
             if property_match:
                 value = property_match.group(1)
                 files = [item for item in files if item.get("appProperties", {}).get("delivery_key") == value]
+            if self.hide_files_from_search:
+                files = []
             return Response(body={"files": files, "incompleteSearch": self.incomplete_search})
         if method == "GET" and url.endswith("/files/sandbox-folder"):
             return Response(body=self.files["sandbox-folder"])
@@ -78,6 +84,9 @@ class MemoryDriveSession:
             self.files[file_id] = item
             if metadata["mimeType"] == DOC_MIME:
                 self.documents[file_id] = {"documentId": file_id, "revisionId": "docs-rev-1", "text": payload.decode("utf-8")}
+            if self.lose_next_create_response:
+                self.lose_next_create_response = False
+                raise TimeoutError("synthetic response loss after Drive accepted create")
             return Response(body={k: v for k, v in item.items() if not k.startswith("_")})
         if method == "GET" and url.startswith("https://docs.googleapis.com/v1/documents/"):
             file_id = url.rsplit("/", 1)[-1]
@@ -97,6 +106,7 @@ class MemoryGCSLockSession:
         self.calls = []
         self.generation = 0
         self.mutex = threading.Lock()
+        self.fail_delete = False
 
     def request(self, method, url, *, params=None, data=None, headers=None, timeout=None):
         params = params or {}
@@ -111,6 +121,8 @@ class MemoryGCSLockSession:
                 self.objects[name] = generation
                 return Response(body={"generation": generation})
         if method == "DELETE":
+            if self.fail_delete:
+                return Response(503)
             object_name = url.rsplit("/o/", 1)[1].replace("%2F", "/")
             with self.mutex:
                 if self.objects.get(object_name) != str(params.get("ifGenerationMatch")):
@@ -258,6 +270,51 @@ class GoogleDriveWriterTests(unittest.TestCase):
                              "WRITE_READBACK_VERIFIED")
         self.assertEqual(sum(method == "POST" and url == UPLOAD for method, url, _ in drive.calls), 1)
         self.assertEqual(lock_http.objects, {})
+
+    def test_lost_create_response_retains_shared_lock_and_blocks_other_spool_when_search_lags(self):
+        import tempfile
+        from pathlib import Path
+
+        drive = MemoryDriveSession()
+        drive.lose_next_create_response = True
+        drive.hide_files_from_search = True
+        lock_http = MemoryGCSLockSession()
+        writer_a = GoogleDriveReportWriter(drive, "sandbox-folder",
+            lock_store=GCSArtifactLock(lock_http, "test-lock-bucket"), lock_required=True)
+        writer_b = GoogleDriveReportWriter(drive, "sandbox-folder",
+            lock_store=GCSArtifactLock(lock_http, "test-lock-bucket"), lock_required=True)
+        with tempfile.TemporaryDirectory() as one, tempfile.TemporaryDirectory() as two:
+            spool_a = DeliverySpool(Path(one) / "one.sqlite")
+            spool_b = DeliverySpool(Path(two) / "two.sqlite")
+            for spool in (spool_a, spool_b):
+                spool.persist(self.report_id, self.revision, "DOCS", self.body)
+            with self.assertRaises(DriveWriterError):
+                spool_a.transfer(self.report_id, self.revision, "DOCS", write=writer_a.write_docs,
+                    readback=writer_a.readback, reconcile=writer_a.reconcile, guard=writer_a.transfer_guard)
+            self.assertEqual(spool_a.inspect(self.report_id, self.revision, "DOCS")["state"], "UNKNOWN")
+            with self.assertRaises(DriveLockBusy):
+                spool_b.transfer(self.report_id, self.revision, "DOCS", write=writer_b.write_docs,
+                    readback=writer_b.readback, reconcile=writer_b.reconcile, guard=writer_b.transfer_guard)
+        self.assertEqual(sum(method == "POST" and url == UPLOAD for method, url, _ in drive.calls), 1)
+        self.assertEqual(len(lock_http.objects), 1, "ambiguous create must leave a provider-wide fail-closed claim")
+
+    def test_lock_release_failure_is_distinct_from_verified_drive_write(self):
+        import tempfile
+        from pathlib import Path
+
+        lock_http = MemoryGCSLockSession()
+        lock_http.fail_delete = True
+        writer = GoogleDriveReportWriter(self.session, "sandbox-folder",
+            lock_store=GCSArtifactLock(lock_http, "test-lock-bucket"), lock_required=True)
+        with tempfile.TemporaryDirectory() as temp:
+            spool = DeliverySpool(Path(temp) / "release.sqlite")
+            spool.persist(self.report_id, self.revision, "DOCS", self.body)
+            with self.assertRaises(DriveLockReleaseError) as raised:
+                spool.transfer(self.report_id, self.revision, "DOCS", write=writer.write_docs,
+                    readback=writer.readback, reconcile=writer.reconcile, guard=writer.transfer_guard)
+            self.assertTrue(raised.exception.operation_succeeded)
+            self.assertEqual(spool.inspect(self.report_id, self.revision, "DOCS")["state"], "WRITE_READBACK_VERIFIED")
+        self.assertEqual(len(lock_http.objects), 1, "failed delete leaves the lock object for operator recovery")
 
 
 if __name__ == "__main__":

@@ -206,3 +206,8 @@ PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承�
 ローカルfixture6件PASS: 再起動後の原本保持・同revision上書き拒否、Docs失敗時の本文保持/二重write拒否、readbackだけの再試行、Docs失敗時のPNG独立保存、成功工程の再実行抑止、PNG不変性と品質未判定。初回はSQLite connection解放漏れをWindowsで検出し、closeを保証するcontext managerへ修正後に全件PASS。
 
 残課題: provider側の冪等key/重複照合、UNKNOWN復旧、月別folder/親ID/Docs全文revision読戻し、PNGの視覚数値品質、既存producerとの接続、本番の永続ストレージ配置と実権限検証。同期ドライブ上のSQLiteやコンテナ一時FSを本番保存先と決めたものではなく、保存backendは未選定。本モジュールだけで11/24のDocs/PNG保存障害が修復したとは主張しない。次は既存producer入力→永続原本→認証済writer/readbackの接続を隔離環境で実装・受入する。
+
+## PR #230追加指摘｜writer lock回復契約（2026-11-24 JST）
+実Drive createが応答喪失・不明となったとき、共有GCS lockを永続claimとして残す。別hostの同一slot/kind処理はlock取得時点で停止し、Drive検索結果が0件でも新規createを試さない。これは可用性より重複防止を優先するfail-closed状態であり、検索反映遅延中の自動回復は保証しない。運用者が同一identityの実体と内容を確認し、曖昧さを解消してから対象lockを解除する。
+
+Lock releaseはartifact write/readbackとは独立した運用結果。保存読戻しが成功し解放だけ失敗した場合、laneは`WRITE_READBACK_VERIFIED`を保ち、集約結果を`LOCK_RELEASE_FAILED`、終了コードを3とする。release failureはartifact内容を巻き戻したり再createしたりする根拠にしない。GCS IAM・実Driveでのこの契約は隔離E3までNOT_RUN。

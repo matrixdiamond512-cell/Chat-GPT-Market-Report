@@ -222,3 +222,8 @@ PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承�
 ローカルfixture6件PASS: 再起動後の原本保持・同revision上書き拒否、Docs失敗時の本文保持/二重write拒否、readbackだけの再試行、Docs失敗時のPNG独立保存、成功工程の再実行抑止、PNG不変性と品質未判定。初回はSQLite connection解放漏れをWindowsで検出し、closeを保証するcontext managerへ修正後に全件PASS。
 
 残課題: provider側の冪等key/重複照合、UNKNOWN復旧、月別folder/親ID/Docs全文revision読戻し、PNGの視覚数値品質、既存producerとの接続、本番の永続ストレージ配置と実権限検証。同期ドライブ上のSQLiteやコンテナ一時FSを本番保存先と決めたものではなく、保存backendは未選定。本モジュールだけで11/24のDocs/PNG保存障害が修復したとは主張しない。次は既存producer入力→永続原本→認証済writer/readbackの接続を隔離環境で実装・受入する。
+
+## PR #230追加指摘｜応答不明・lock解放失敗時の運用（2026-11-24 JST）
+create応答が不明なときはGCS lockを残し、別hostからの同じslot/kind書込みを阻止する。Drive検索に見つからないだけでlockを削除・再試行しない。運用者はwriter停止を確認し、TEST_ONLYフォルダーでdelivery key/name、fileId、parent、MIMEと本文/PNG実体を照合する。Driveの反映が遅れ結果が特定できなければlockを維持してエスカレーションする。解決時も該当lock objectだけをgeneration条件付きで扱い、他のartifactやlockを削除しない。
+
+CLI出力の`status`はDocs/PNG laneの保存・読戻し状態、`lockRelease`は各laneの共有lock解放状態、`resultStatus`は運用上の総合状態として別々に確認する。`resultStatus=LOCK_RELEASE_FAILED`または終了コード3では、Drive readbackが成功していても運用警告として扱い、次工程へ成功扱いで自動遷移しない。

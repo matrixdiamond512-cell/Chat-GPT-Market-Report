@@ -216,10 +216,10 @@ NEXT NECESSARY ACTION: Drive取込のfolder fail-closed/parent readback修正を
 PRIMARY OBJECTIVE: 生成済み本文と図解を失わず隔離Google Driveへ個別保存・再試行し、Driveからの読戻し一致を確認できる実writerをPRとして独立レビュー可能にする。
 Classification: ADD; Phase 1A/1B、本番復旧・Pages受入のopen outcomesは維持。
 ACTIVE PROFILE: generic-app + data-tool。
-ACCEPTANCE: Google認証・通信前に本文/PNGを両方spoolへcommit、reopen後の再試行、GCS generation conditional shared lockによるhost間直列化、Drive incompleteSearch fail closed、TEST_ONLY folderでmetadata/親/MIME/内容照合、失敗/再起動/並行回帰テスト、CI成功、専用PR更新。実Drive試験は独立レビュー後。
+ACCEPTANCE: Google認証・通信前に本文/PNGを両方spoolへcommit、reopen後の再試行、GCS generation conditional shared lockによるhost間直列化、Drive incompleteSearch fail closed、応答不明create後の共有fail-closed claim、lock release失敗とartifact読戻し結果の分離、TEST_ONLY folderでmetadata/親/MIME/内容照合、失敗/再起動/並行回帰テスト、CI成功、専用PR更新。実Drive試験は独立レビュー後。
 CONSTRAINTS: PR #229のP1修正を混入・変更しない。既存発行枠・本文・画像仕様・Drive原本を変更しない。テスト用隔離先以外へ書かない。本番切替・mergeなし。
 OUT OF SCOPE: 本番復旧、正式画像品質QA、Pages公開、独立監査合格。
 FORBIDDEN SUBSTITUTE: モックCIまたはDrive UI経由の試験をPython実writerの実運用証明にしない。
-STATUS: IN_PROGRESS; Draft PR #230 open; Phase 2 regression workflow on head 9470c9f2f964ed05f1cff1b3a323d9a33c328a42 PASS (spool 14, writer/lock 8, CLI 6; total 28); PR and push runs successful.
-OPEN OUTCOMES: PR #230の独立再レビュー、TEST_ONLY Cloud Storage lock bucketの設定/実権限、同PC cold reboot後のspool確認、後続の実Docs/PNG write-readback。
-NEXT NECESSARY ACTION: 最終CI証拠をPR #230へ反映し、Draftのまま開発責任者へ再レビュー依頼する。
+STATUS: IN_PROGRESS; Draft PR #230 open. Prior head's 28 E2 tests passed; latest two-finding regressions and CI pending.
+OPEN OUTCOMES: 新headのCIと独立再レビュー、TEST_ONLY Cloud Storage lock bucketの設定/実権限、同PC cold reboot後のspool確認、後続の実Docs/PNG write-readback。応答不明時に残るfail-closed claimは手動の実体照合・解消を要する。
+NEXT NECESSARY ACTION: 追加2指摘の負例と関連回帰を実行し、Draft PRを更新してCI/独立再レビューを受ける。再レビュー後、認証と隔離先が利用可能ならTEST_ONLY実保存を行う。

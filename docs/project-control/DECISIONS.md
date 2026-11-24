@@ -51,3 +51,9 @@ Diagnostics: KEEP non-sensitive folder/error codes. No secret logging or automat
 - Decision: SQLite `BEGIN IMMEDIATE` だけでは異なるhostのspoolを排他できないため、実writerは明示設定されたGoogle Cloud Storage bucketでdeterministic slot/kind lock objectを `ifGenerationMatch=0` により取得し、Drive preflight→create/reconcile→spool checkpoint→full readbackまで保持する。
 - Safety: lock competition/response ambiguity is fail-closed. Lock deletion uses owner generation precondition. A hard process/OS stop may leave a live lock object; automatic expiry is excluded because it can permit two writers. Recovery requires operator verification that no owner remains, then deletion of only the named lock object.
 - Dependencies/limits: `GOOGLE_REPORT_WRITER_LOCK_BUCKET`, same service account permission to create/delete objects, and bucket without a retention rule that prevents lock deletion. No bucket/permission setup or live write was performed. GCS lock is for concurrency, not a durable cross-host report spool.
+
+## MR-AUDIT-CAPA-20261124-01｜PR #230追加指摘対応方針
+- Source: PR #230 comment 7126900842. Scope only the two added findings: ambiguous create across independent spools, and contradictory status after GCS lock deletion failure. Preserve the prior three fixes and Phase 1A/1B code.
+- Decision: retain the deterministic GCS lock after any unclassified Drive create failure. The stale lock is a durable fail-closed claim, so a second host cannot create when Drive search visibility lags. Resolution requires operator identity/readback reconciliation before deleting only that lock.
+- Result contract: lane delivery/readback state and `lockRelease` remain separate. If readback succeeded but deletion failed, report `resultStatus=LOCK_RELEASE_FAILED`, preserve `WRITE_READBACK_VERIFIED`, and exit 3.
+- Constraints: Draft/unmerged PR; no production folders/settings; actual writes limited to an explicitly authorized TEST_ONLY folder after CI/re-review.
