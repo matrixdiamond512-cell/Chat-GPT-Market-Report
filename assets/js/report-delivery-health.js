@@ -19,7 +19,20 @@
     if (!expected) throw new Error("No scheduled publication");
     const published = Date.parse(dashboard.dataAsOf || "");
     const behind = !Number.isFinite(published) || published !== expected.timestamp;
-    return { behind, expected: expected.date + " " + expected.slot, published: dashboard.dataAsOf || "未確認" };
+    const report = dashboard.latestReport;
+    const formal = dashboard.reportDelivery?.formalPublication;
+    const key = expected.date + "_" + expected.slot.replace(":", "-");
+    const formalVerified = !behind && Boolean(report && formal
+      && ["PUBLISHED", "DOC_READBACK_PASS"].includes(report.report_status)
+      && report.date === expected.date && report.time === expected.slot
+      && formal.state === "VERIFIED" && formal.canonical === "PASS"
+      && formal.receipt === "PASS" && formal.index === "PASS"
+      && formal.reportKey === key && formal.bodyHash && formal.bodyHash === report.bodyHash
+      && formal.revision === report.revision);
+    return { behind, slotFreshness: behind ? "BEHIND_OR_MISSING" : "CURRENT",
+      formalPublication: formalVerified ? "VERIFIED" : "UNVERIFIED",
+      pagesDisplay: "NOT_VERIFIED", expected: expected.date + " " + expected.slot,
+      published: dashboard.dataAsOf || "未確認" };
   }
   if (typeof module === "object" && module.exports) module.exports = { assess };
   if (!root.document) return;
@@ -44,7 +57,9 @@
         return response.json();
       }));
       const health = assess(values[0], values[1]);
-      show(health.behind ? `正式レポートの更新が遅れています。予定枠：${health.expected} JST ／ 公開済み：${health.published}。保存記録・過去レポートは定時配信成功を示しません。` : "");
+      show(health.behind ? `正式レポートの更新が遅れています。予定枠：${health.expected} JST ／ 公開済み：${health.published}。保存記録・過去レポートは定時配信成功を示しません。` : health.formalPublication !== "VERIFIED"
+        ? `予定枠の日時は一致していますが、正式本文の保存・登録証拠は未確認です。対象：${health.expected} JST。配信成功とは判定していません。`
+        : "正式本文の保存・登録証拠を確認しました。Pagesでの全文・画像表示の受入確認は未実施です。");
     } catch (_) {
       show("正式レポートの配信状態を確認できません。最新枠の公開は未確認です。");
     }

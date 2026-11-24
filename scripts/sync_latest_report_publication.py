@@ -215,7 +215,7 @@ def sync_dashboard(report: dict, *, now=None) -> str:
     # Scheduled recovery runs must be idempotent. If the exact same report is
     # already projected, do not create a timestamp-only dashboard commit.
     previous_health = {k: dashboard.get(k) for k in ("status", "isStale", "staleReason", "reportDelivery")}
-    apply_delivery_health(dashboard, report, now=now)
+    apply_delivery_health(dashboard, report, now=now, evidence_root=DASHBOARD.parent.parent)
     if (previous_report == report and dashboard.get("currentReportKey") == key
             and dashboard.get("dataAsOf") == data_as_of
             and previous_health == {k: dashboard.get(k) for k in previous_health}):
@@ -238,7 +238,7 @@ def sync_dashboard(report: dict, *, now=None) -> str:
     for source in sources:
         if isinstance(source, dict) and source.get("id") == "MARKET_REPORTS_JSON":
             source["asOf"] = key
-            source["status"] = "ok" if dashboard["reportDelivery"]["state"] == "CURRENT" else "degraded"
+            source["status"] = dashboard["reportDelivery"]["formalPublication"]["state"].lower()
             found = True
             break
     if not found:
@@ -247,7 +247,7 @@ def sync_dashboard(report: dict, *, now=None) -> str:
             "name": "マーケットレポート本文の構造化JSON",
             "path": "reports.json",
             "asOf": key,
-            "status": "ok" if dashboard["reportDelivery"]["state"] == "CURRENT" else "degraded",
+            "status": dashboard["reportDelivery"]["formalPublication"]["state"].lower(),
             "note": "data/latest-report.json を正本として reports.json と dashboard.json を自動同期。",
         })
     dashboard["sources"] = sources
@@ -314,7 +314,7 @@ def main() -> None:
     payload["dataAsOf"] = f"{report['date']}T{report['time']}:00+09:00"
     dump_json(LATEST, payload)
     outcome = sync_dashboard(report, now=now)
-    print(f"Projection={outcome}; delivery={load_json(DASHBOARD, {}).get('reportDelivery', {}).get('state', 'UNKNOWN')}")
+    print(f"Projection={outcome}; deliveryEvidence={load_json(DASHBOARD, {}).get('reportDelivery', {})}")
     print(f"Synced {report['date']} {report['time']} -> {report_path.relative_to(ROOT)}, data/dashboard.json")
 
 

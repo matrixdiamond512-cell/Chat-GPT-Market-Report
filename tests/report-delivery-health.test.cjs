@@ -18,3 +18,22 @@ test('old healthy flags, missing and future data do not claim current delivery',
     assert.equal(assess({dataAsOf,isStale:false,status:'ok'},schedule,new Date('2026-11-24T12:00:00+09:00')).behind,true);
   }
 });
+
+test('current dataAsOf alone never verifies formal publication or Pages', () => {
+  const d = {dataAsOf:'2026-11-24T12:00:00+09:00'};
+  const now=new Date('2026-11-24T12:05:00+09:00');
+  assert.equal(assess(d,schedule,now).formalPublication,'UNVERIFIED');
+  for (const report_status of ['DOC_READBACK_PASS','SOURCE_ARCHIVED','DOC_READBACK_FAIL']) {
+    const value=assess({...d,latestReport:{date:'2026-11-24',time:'12:00',report_status}},schedule,now);
+    assert.equal(value.formalPublication,'UNVERIFIED');assert.equal(value.pagesDisplay,'NOT_VERIFIED');
+  }
+});
+test('matching repository evidence does not imply Pages DOM acceptance', () => {
+  const report={date:'2026-11-24',time:'12:00',report_status:'DOC_READBACK_PASS',bodyHash:'fixture-hash',revision:1};
+  const formal={state:'VERIFIED',canonical:'PASS',receipt:'PASS',index:'PASS',reportKey:'2026-11-24_12-00',bodyHash:'fixture-hash',revision:1};
+  const d={dataAsOf:'2026-11-24T12:00:00+09:00',latestReport:report,reportDelivery:{formalPublication:formal,pagesDisplay:{state:'VERIFIED'}}};
+  const now=new Date('2026-11-24T12:05:00+09:00');
+  assert.equal(assess(d,schedule,now).formalPublication,'VERIFIED');
+  assert.equal(assess(d,schedule,now).pagesDisplay,'NOT_VERIFIED');
+  assert.equal(assess({...d,latestReport:{...report,revision:2}},schedule,now).formalPublication,'UNVERIFIED');
+});

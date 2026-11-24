@@ -64,7 +64,7 @@ class ScheduleHealthTests(unittest.TestCase):
         d={"latestReport":report,"status":"ok","isStale":False}
         result=attach_market_data(d,{"overallStatus":"degraded","missingRequired":[]},now=moment("2026-11-24T12:00:00"))
         self.assertNotIn("missing=",result["errors"][0])
-        self.assertEqual(result["reportDelivery"]["state"],"BEHIND_SCHEDULE")
+        self.assertEqual(result["reportDelivery"]["slotFreshness"]["state"],"BEHIND_SCHEDULE")
         self.assertEqual(result["status"],"degraded")
         self.assertFalse(d["isStale"])
 

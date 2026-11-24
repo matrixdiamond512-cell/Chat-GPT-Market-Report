@@ -12,6 +12,7 @@ on:
       - assets/js/report-delivery-health.js
       - assets/css/report-delivery-health.css
       - tests/test_audit_phase1.py
+      - tests/test_review_publication_health.py
       - tests/report-delivery-health.test.cjs
       - .github/workflows/deploy-pages.yml
       - .github/workflows/sync-latest-report-publication.yml
@@ -35,6 +36,7 @@ on:
       - assets/js/report-delivery-health.js
       - assets/css/report-delivery-health.css
       - tests/test_audit_phase1.py
+      - tests/test_review_publication_health.py
       - tests/report-delivery-health.test.cjs
       - .github/workflows/deploy-pages.yml
       - .github/workflows/sync-latest-report-publication.yml
@@ -74,7 +76,9 @@ jobs:
           result = unittest.TextTestRunner(verbosity=2).run(suite)
           sys.exit(not result.wasSuccessful() or result.testsRun != 60)
           PY
-      - name: Re-run the 32 Portal Node regressions
+      - name: Verify review negative cases independently of the original 60
+        run: python -m unittest discover -s tests -p test_review_publication_health.py -v
+      - name: Re-run the 32 original Portal regressions plus review cases
         run: node --test tests/*.test.mjs tests/report-delivery-health.test.cjs
       - name: Validate archived supplemental reports without publication promotion
         run: python scripts/validate_report_recovery.py
