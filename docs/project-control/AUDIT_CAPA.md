@@ -277,3 +277,6 @@ rolloutは未実施。今後は差分レビュー→固定Docs同期→明示さ
 
 
 P2追加検証: 許可リストartifact上の主要11画面（dashboard/report/stocks/events/rates/USDJPY/gold/Nikkei需給/裁定/USDJPY出来高/Drive参照）で動的fetchを実行。今回観測した新規404・source既存404・pageerrorは0。両画面に現在枠かつreceipt未確認のdashboard fixtureを与えても警告が表示されることをDOMで確認。review-dynamic-smoke.jsonはローカル検証の要約であり、本番切替受入・全動的分岐の網羅を意味しない。
+
+
+レビューP1補強（同変更ID / 2026-11-24 JST）: slotFreshness.scope=TIMESTAMP_ONLYを明記。正式本文のcanonical/receipt/indexが合格してもPagesはNOT_VERIFIEDのまま、dashboard全体はokへ昇格せずpartial/PAGES_DISPLAY_UNVERIFIEDとする。正式本文証拠と全工程配信成功を区別する追加正例を含め、既存92件＋追加10件を再実行して合格。Phase 2ローカル基盤は別branch codex/audit-capa-phase2-storage、commit 28165dbcb6714cfe0419d18acc7467546cf3a571に保全し、PR #229へ含めない。実writer接続・本番保存は未修復。

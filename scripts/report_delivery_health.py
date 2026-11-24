@@ -7,7 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 JST = dt.timezone(dt.timedelta(hours=9))
-OWNED_REASONS = {"LATEST_REPORT_BEHIND_SCHEDULE", "LATEST_REPORT_MISSING", "REPORT_SOURCE_RECONSTRUCTED_UNVERIFIED", "FORMAL_PUBLICATION_UNVERIFIED"}
+OWNED_REASONS = {"LATEST_REPORT_BEHIND_SCHEDULE", "LATEST_REPORT_MISSING", "REPORT_SOURCE_RECONSTRUCTED_UNVERIFIED", "FORMAL_PUBLICATION_UNVERIFIED", "PAGES_DISPLAY_UNVERIFIED"}
 
 def expected_slot(now=None, schedule=None):
     now = now or dt.datetime.now(JST)
@@ -41,7 +41,7 @@ def delivery_health(report, *, now=None, schedule=None):
     if published is not None and published > expected:
         state = "MISSING"
     reason = "" if state == "CURRENT" else ("LATEST_REPORT_MISSING" if state == "MISSING" else "LATEST_REPORT_BEHIND_SCHEDULE")
-    return {"state": state, "expectedReportKey": expected.strftime("%Y-%m-%d_%H-%M"),
+    return {"scope": "TIMESTAMP_ONLY", "state": state, "expectedReportKey": expected.strftime("%Y-%m-%d_%H-%M"),
             "publishedReportKey": published.strftime("%Y-%m-%d_%H-%M") if published else "",
             "staleReason": reason}
 
@@ -113,6 +113,12 @@ def apply_delivery_health(dashboard, report, *, now=None, schedule=None, evidenc
             dashboard["status"] = "partial"
         if not dashboard.get("staleReason"):
             dashboard["staleReason"] = "FORMAL_PUBLICATION_UNVERIFIED"
+    # Overall dashboard health must not imply completed Pages acceptance either.
+    if not reason and formal["state"] == "VERIFIED":
+        if dashboard.get("status") == "ok":
+            dashboard["status"] = "partial"
+        if not dashboard.get("staleReason"):
+            dashboard["staleReason"] = "PAGES_DISPLAY_UNVERIFIED"
     return dashboard
 
 

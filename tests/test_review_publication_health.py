@@ -35,6 +35,7 @@ class ReviewPublicationHealthTests(unittest.TestCase):
         d=self.assess();self.assertEqual(d["reportDelivery"]["slotFreshness"]["state"],"CURRENT")
         self.assertEqual(d["reportDelivery"]["formalPublication"]["state"],"VERIFIED")
         self.assertEqual(d["reportDelivery"]["pagesDisplay"]["state"],"NOT_VERIFIED")
+        self.assertNotEqual(d["status"],"ok")
     def test_current_slot_missing_receipt_cannot_be_ok(self):
         (self.root/"publication-receipts/2026-11-24_12-00.json").unlink()
         d=self.assess();self.assertEqual(d["reportDelivery"]["slotFreshness"]["state"],"CURRENT")
