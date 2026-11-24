@@ -182,11 +182,11 @@ PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承�
 
 ## MR-AUDIT-CAPA-20261124-01｜Phase 2 Google Drive writer PR準備（2026-11-24 JST）
 - Claim: docs/png実writer接続・耐障害再試行のPR準備。Branch `codex/phase2-google-writer`、baseはPhase 2のGitHub公開commit `28165dbcb6714cfe0419d18acc7467546cf3a571`。PR #229 head未取込のため、#229ブランチをbaseにしたstacked PRとする。
-- Evidence: Rebased head `797086dadcfa405df0ea932d7512e886494d396a`, GitHub Actions run `45350337697`, job `138294891786` (push), and run `45350327595` (pull_request). spool 14/14 PASS、Drive writer fake 6/6 PASS、CLI 2/2 PASS。全22件PASS。
+- Evidence: Head `576918c065768e2f3f6c517f93e1bbc166bcd820`, GitHub Actions run `45350558543`, job `138295622707` (push), and run `45350552584` (pull_request). spool 14/14 PASS、Drive writer fake 6/6 PASS、CLI 2/2 PASS。全22件PASS。
 - Level/result: E2 mocked integration PASS on final head; Google実writer・隔離Drive write/readback=NOT_RUN。
 - Limit: connectorによるDrive操作はサービスアカウント資格情報を使うPython writerの挙動を証明しない。TEST_ONLY folderの利用可能性/実write permissionも未確認。
-- Run ID/timestamp: 45350337697 / 2026-11-24 JST。
-- PR: Draft #230, https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/230; base `codex/audit-capa-phase1ab` at `0a6a3767ea36661172ce355a743b093f0348f50d`, head `codex/phase2-google-writer` at `797086dadcfa405df0ea932d7512e886494d396a`. Initial base conflict was resolved by rebasing Phase 2 on the P1 branch; API now reports mergeable=true and compare shows only Phase 2 files.
+- Run ID/timestamp: 45350558543 / 2026-11-24 JST。
+- PR: Draft #230, https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/230; base `codex/audit-capa-phase1ab` at `0a6a3767ea36661172ce355a743b093f0348f50d`, head `codex/phase2-google-writer` at `576918c065768e2f3f6c517f93e1bbc166bcd820`. Initial base conflict was resolved by rebasing Phase 2 on the P1 branch; API reports mergeable=true and compare shows only Phase 2 files.
 - Next: user's independent review.実Google Docs/PNG writerの隔離保存はレビュー後に行う。
 
 
