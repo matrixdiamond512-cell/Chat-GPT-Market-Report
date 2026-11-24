@@ -156,6 +156,12 @@ Pagesは `config/pages_public_files.json` の静的ファイル一覧・限定�
 
 ローカル検証と制約は `docs/project-control/AUDIT_CAPA.md` のPhase 1追補および `phase1-evidence.json` に記録。hosted CI、本番設定切替、変更後live Pages、固定Google Docs同期、通知実到達、独立再監査はNOT_RUN。固定Docs5件のmetadata読取404は権限/接続上の制約であり不存在の証明ではない。
 
+## Phase 2｜レポート成果物の保全要件（実装PR・本番未適用）
+
+Docs本文と図解PNGはreportId・revision・SHA-256で個別に永続保全し、保存処理を独立して再試行する。各writerはDrive上の親フォルダー・MIME・サイズ・内容を読戻し照合し、成功済み成果物を再作成しない。API結果不明時は外部実体を照合できるまで重複作成を停止する。転送読戻しは正式publication、PNG品質QA、Pages表示の証明に代用しない。Phase 2 PRのモックCIと実Google隔離保存試験、本番受入は別判定とする。
+
+認証/通信開始前に本文・PNG双方の提供済み原データをspoolへcommitする。異なる実行環境間の同一slot/kind競合はGoogle Cloud Storageの `ifGenerationMatch=0` を使う共有lockで直列化し、lock不明/使用中はDrive作成を行わない。Drive重複検索は `incompleteSearch` を取得し、trueなら作成を中止する。共有lock用bucket/権限が未設定ならwriterはfail closedとする。
+
 
 ## MR-AUDIT-CAPA-20261124-01｜Phase 1A・1B PR準備（2026-11-24 JST）
 
@@ -182,3 +188,17 @@ PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承�
 
 
 レビューP1補強（同変更ID / 2026-11-24 JST）: slotFreshness.scope=TIMESTAMP_ONLYを明記。正式本文のcanonical/receipt/indexが合格してもPagesはNOT_VERIFIEDのまま、dashboard全体はokへ昇格せずpartial/PAGES_DISPLAY_UNVERIFIEDとする。正式本文証拠と全工程配信成功を区別する追加正例を含め、既存92件＋追加10件を再実行して合格。Phase 2ローカル基盤は別branch codex/audit-capa-phase2-storage、commit 28165dbcb6714cfe0419d18acc7467546cf3a571に保全し、PR #229へ含めない。実writer接続・本番保存は未修復。
+## MR-AUDIT-CAPA-20261124-01｜Phase 2原本保全・再試行基盤の着手（2026-11-24 JST）
+
+別ローカルbranch `codex/audit-capa-phase2-storage`、基準はPR #229レビュー対応commit b246008126ffdb39b163a05bd9067a70fd9342fa。scripts/reporting/delivery_spool.pyとtests/test_delivery_spool.pyを追加。実Google/GitHub adapter、タスク、trigger、Pages、課金、固定Docsは未接続/未変更。この変更をPR #229へ混入させず、push/PR作成もしていない。
+
+外部writer呼出し前に原文UTF-8 bytesをSQLiteへcommitし、同一reportId/revisionでの改変を拒否。生成PNGも本文hashへ結び付けて保全。Docs/PNGのcheckpointを独立させ、一方の保存失敗で他方の成功や原本を失わない。writerがreferenceを返した後の読戻し失敗ではそのreferenceだけを再読込し、再作成しない。writer timeout/成否不明ではUNKNOWNとして二重作成を遮断し、再開は外部writerによる照合/復旧手順が必要。転送readbackを正式publication/PNG品質/Pages合格へ昇格しない。
+
+ローカルfixture6件PASS: 再起動後の原本保持・同revision上書き拒否、Docs失敗時の本文保持/二重write拒否、readbackだけの再試行、Docs失敗時のPNG独立保存、成功工程の再実行抑止、PNG不変性と品質未判定。初回はSQLite connection解放漏れをWindowsで検出し、closeを保証するcontext managerへ修正後に全件PASS。
+
+残課題: provider側の冪等key/重複照合、UNKNOWN復旧、月別folder/親ID/Docs全文revision読戻し、PNGの視覚数値品質、既存producerとの接続、本番の永続ストレージ配置と実権限検証。同期ドライブ上のSQLiteやコンテナ一時FSを本番保存先と決めたものではなく、保存backendは未選定。本モジュールだけで11/24のDocs/PNG保存障害が修復したとは主張しない。次は既存producer入力→永続原本→認証済writer/readbackの接続を隔離環境で実装・受入する。
+
+## PR #230追加指摘｜分散create不確実性とロック解放（2026-11-24 JST）
+Google Driveのcreate要求で応答が不明な場合、同じslot/kindのGCS lock objectを解放せず残し、独立SQLite spoolを使う別hostのcreate/reconcile経路をfail-closedにする。曖昧なcreateをDrive検索0件だけで再試行可能へ戻してはならない。運用者は稼働中writerがないことに加え、TEST_ONLY先で同一delivery identityの実体を検索・内容読戻ししてから、対象lockだけを手動解消する。検索に出ないことは不在証明ではないため、結果が曖昧な間はlockを保持する。
+
+保護されたDrive保存・全文/byte読戻し結果とGCS lock解放結果を別々に出力する。lock解放失敗時は検証済みDrive成果物を保持し、`resultStatus=LOCK_RELEASE_FAILED`、lane別`lockRelease=FAILED`、終了コード3を返す。配信状態COMPLETEだけを見てコマンド成功としない。PR #230独立レビューコメント7126900842に基づく。テストとCIの実測結果はEVIDENCE_LEDGERへ記録する。

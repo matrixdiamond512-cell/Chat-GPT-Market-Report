@@ -280,3 +280,26 @@ P2追加検証: 許可リストartifact上の主要11画面（dashboard/report/s
 
 
 レビューP1補強（同変更ID / 2026-11-24 JST）: slotFreshness.scope=TIMESTAMP_ONLYを明記。正式本文のcanonical/receipt/indexが合格してもPagesはNOT_VERIFIEDのまま、dashboard全体はokへ昇格せずpartial/PAGES_DISPLAY_UNVERIFIEDとする。正式本文証拠と全工程配信成功を区別する追加正例を含め、既存92件＋追加10件を再実行して合格。Phase 2ローカル基盤は別branch codex/audit-capa-phase2-storage、commit 28165dbcb6714cfe0419d18acc7467546cf3a571に保全し、PR #229へ含めない。実writer接続・本番保存は未修復。
+## MR-AUDIT-CAPA-20261124-01｜Phase 2原本保全・再試行基盤の着手（2026-11-24 JST）
+
+別ローカルbranch `codex/audit-capa-phase2-storage`、基準はPR #229レビュー対応commit b246008126ffdb39b163a05bd9067a70fd9342fa。scripts/reporting/delivery_spool.pyとtests/test_delivery_spool.pyを追加。実Google/GitHub adapter、タスク、trigger、Pages、課金、固定Docsは未接続/未変更。この変更をPR #229へ混入させず、push/PR作成もしていない。
+
+外部writer呼出し前に原文UTF-8 bytesをSQLiteへcommitし、同一reportId/revisionでの改変を拒否。生成PNGも本文hashへ結び付けて保全。Docs/PNGのcheckpointを独立させ、一方の保存失敗で他方の成功や原本を失わない。writerがreferenceを返した後の読戻し失敗ではそのreferenceだけを再読込し、再作成しない。writer timeout/成否不明ではUNKNOWNとして二重作成を遮断し、再開は外部writerによる照合/復旧手順が必要。転送readbackを正式publication/PNG品質/Pages合格へ昇格しない。
+
+ローカルfixture6件PASS: 再起動後の原本保持・同revision上書き拒否、Docs失敗時の本文保持/二重write拒否、readbackだけの再試行、Docs失敗時のPNG独立保存、成功工程の再実行抑止、PNG不変性と品質未判定。初回はSQLite connection解放漏れをWindowsで検出し、closeを保証するcontext managerへ修正後に全件PASS。
+
+残課題: provider側の冪等key/重複照合、UNKNOWN復旧、月別folder/親ID/Docs全文revision読戻し、PNGの視覚数値品質、既存producerとの接続、本番の永続ストレージ配置と実権限検証。同期ドライブ上のSQLiteやコンテナ一時FSを本番保存先と決めたものではなく、保存backendは未選定。本モジュールだけで11/24のDocs/PNG保存障害が修復したとは主張しない。次は既存producer入力→永続原本→認証済writer/readbackの接続を隔離環境で実装・受入する。
+
+### Phase 2実writer接続PR準備（2026-11-24 JST）
+
+ユーザー指定のPhase 2優先順位に基づき、公開済み基盤 `28165dbcb6714cfe0419d18acc7467546cf3a571` から専用branch `codex/phase2-google-writer` を作成。PR #229のP1修正は未取込であり、Phase 2差分は #229 branchをbaseにした独立stacked PRとして提出する。Docs本文とPNGのDrive writer、Drive読戻し、隔離TEST_ONLY folder制限、CLI、モックCIを追加。成功済みlaneは再利用し、作成結果不明時は照合できるまで重複作成を停止する。本文生成、発行時刻/枠、正式公開、Pages、GAS、既存Drive原本は変更しない。
+
+CI run `45349333730` のCLI正規表現不一致を実際のfail-closed文言へ合わせて修正。P1ブランチとの8文書競合を両側の追補を保持して解消するため、Phase 2 branchを最新head `0a6a3767ea36661172ce355a743b093f0348f50d` へrebaseした。PR差分比較ではPhase 2 17ファイルのみ、GitHub API mergeable=true。Head `576918c065768e2f3f6c517f93e1bbc166bcd820` のworkflow run `45350558543` とPR run `45350552584` はspool 14/14、Drive writer mock 6/6、CLI 2/2、計22件PASS。GitHub hosted Python 3.13.18、E2 mock integrationに限定。Draft PR #230 (base codex/audit-capa-phase1ab) を作成し独立レビュー待ち。Google Docs/PNGのPython実writerによる実Drive保存・読戻しは未実施であり、connector試験でも代替しない。独立レビュー後に利用可能な隔離フォルダーと認証主体を確認して別受入とする。merge、本番書込み、本番切替は行わない。
+
+### PR #230 独立レビュー修正（2026-11-24 JST）
+
+レビューコメント `https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/230#issuecomment-7125946721` に基づき、CLIはwriter認証初期化前に本文・PNG双方をSQLiteへcommitし、すべての提供sourceの保全が成功するまで通信を開始しない。既定spool先は同期対象外Windows LOCALAPPDATA。CLIはslot/kind単位のCloud Storage `ifGenerationMatch=0` lockをspool transfer全体で保持し、別hostの並行createを防ぐ。lock用bucket設定/IAMは変更していない。Drive files.listのfieldsにincompleteSearchを追加しtrueなら作成を中止する。
+
+修正head `9470c9f2f964ed05f1cff1b3a323d9a33c328a42` のPhase 2 workflow push run `45359805223` とPR run `45359815049` は合格。追加テストを含む計28件（spool 14、writer/lock 8、CLI 6）PASS。PR checkのfrozen-cutoff `45359815182` とdelivery-health `45359815126` もPASS。初回run `45359682014` はCLIテストのimport欠落で失敗し、`9470c9f2f` で修正済み。
+
+残る制約: process/OS強制停止時にCloud Storage lock objectが残ると、自動期限切れはせず、稼働writer不在の確認後に対象objectの手動除去が必要。LOCALAPPDATA spoolは同一PCの再起動用で、別hostと自動共有しない。GitHub runnerのtempはjobを超えた永続性を保証しない。Drive/GCS実権限、実保存、cold rebootは未検証。

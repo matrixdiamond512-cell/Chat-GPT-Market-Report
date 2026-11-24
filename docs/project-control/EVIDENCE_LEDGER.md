@@ -180,6 +180,25 @@ Pagesは `config/pages_public_files.json` の静的ファイル一覧・限定�
 
 PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承認レビューにより原監査・詳細証跡・全ログの一括公開pushは拒否されたため、これらはローカルに保全してPR対象外とする。公開証拠はaudit-source-index.json（原資料のhash/既存Drive参照）、pr-validation.json（60/32件のテスト名・結果・環境）、pr-public-dependencies.jsonに限定。元の詳細ログ/phase0・phase1-evidence/棚卸しの記載はローカル保全記録であり、GitHub公開済みの意味ではない。コード・固定文書の修正範囲は不変。
 
+## MR-AUDIT-CAPA-20261124-01｜Phase 2 Google Drive writer PR準備（2026-11-24 JST）
+- Claim: docs/png実writer接続・耐障害再試行のPR準備。Branch `codex/phase2-google-writer`、baseはPhase 2のGitHub公開commit `28165dbcb6714cfe0419d18acc7467546cf3a571`。PR #229 head未取込のため、#229ブランチをbaseにしたstacked PRとする。
+- Evidence: Head `576918c065768e2f3f6c517f93e1bbc166bcd820`, GitHub Actions run `45350558543`, job `138295622707` (push), and run `45350552584` (pull_request). spool 14/14 PASS、Drive writer fake 6/6 PASS、CLI 2/2 PASS。全22件PASS。
+- Level/result: E2 mocked integration PASS on final head; Google実writer・隔離Drive write/readback=NOT_RUN。
+- Limit: connectorによるDrive操作はサービスアカウント資格情報を使うPython writerの挙動を証明しない。TEST_ONLY folderの利用可能性/実write permissionも未確認。
+- Run ID/timestamp: 45350558543 / 2026-11-24 JST。
+- PR: Draft #230, https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/230; base `codex/audit-capa-phase1ab` at `0a6a3767ea36661172ce355a743b093f0348f50d`, head `codex/phase2-google-writer` at `576918c065768e2f3f6c517f93e1bbc166bcd820`. Initial base conflict was resolved by rebasing Phase 2 on the P1 branch; API reports mergeable=true and compare shows only Phase 2 files.
+- Next: PR #230のレビュー指摘を修正し、追加CIをPASSさせて独立レビューへ戻す。実Google Docs/PNG writerの隔離保存は再レビュー後に行う。
+
+## PR #230｜独立レビュー3指摘の是正（2026-11-24 JST）
+- Source: reviewer comment 7125946721: (1) auth/network前に本文・PNGをspool、(2) multi-host writer lock、(3) Drive `incompleteSearch` を返却fieldsに含めて判定。Requested restart/auth/network/concurrency regression tests.
+- Changes: CLI persists all supplied files before constructing credentials; default local path selects Windows LOCALAPPDATA. `DeliverySpool.transfer` accepts a guard spanning reconciliation/create/checkpoint/readback. Production writer requires a GCS atomic create-if-absent lock bucket (`ifGenerationMatch=0`) and holds it across the lane transaction. `files.list` requests `incompleteSearch` and aborts if true.
+- Tests: auth initialization failure preserves both source lanes; process interruption after Docs create resumes by reconcile from reopened SQLite; response loss keeps sources and retries without a second create; two independent spool/writer instances contend on one fake atomic GCS lock and result in one Drive create; incompleteSearch true prevents create; default spool selects LOCALAPPDATA.
+- First-run outcome: run `45359682014` failed because the new CLI test omitted the `DeliverySpool` import (spool 14 and writer 8 passed; CLI had 3 affected tests). Fixed in commit `9470c9f2f`.
+- Evidence: head `9470c9f2f964ed05f1cff1b3a323d9a33c328a42`; push run `45359805223` and PR run `45359815049` PASS. Spool 14/14, writer/lock 8/8, CLI 6/6; total 28 tests. Other PR checks `45359815182` and `45359815126` PASS.
+- Level/result: E2 mocked integration PASS. No live GCS bucket, credentials, real Drive write/readback, or cold reboot test.
+- Limit: hard kill can leave a lock object and require verified manual removal. LOCALAPPDATA doesn't share source bytes across hosts; runner temp is ephemeral after the job.
+- Next: reflect final tested head and limitation in PR #230, leaving it Draft/unmerged for independent re-review.
+
 
 ### PR提出記録（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）
 
@@ -194,3 +213,27 @@ PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承�
 
 
 レビューP1補強（同変更ID / 2026-11-24 JST）: slotFreshness.scope=TIMESTAMP_ONLYを明記。正式本文のcanonical/receipt/indexが合格してもPagesはNOT_VERIFIEDのまま、dashboard全体はokへ昇格せずpartial/PAGES_DISPLAY_UNVERIFIEDとする。正式本文証拠と全工程配信成功を区別する追加正例を含め、既存92件＋追加10件を再実行して合格。Phase 2ローカル基盤は別branch codex/audit-capa-phase2-storage、commit 28165dbcb6714cfe0419d18acc7467546cf3a571に保全し、PR #229へ含めない。実writer接続・本番保存は未修復。
+## MR-AUDIT-CAPA-20261124-01｜Phase 2原本保全・再試行基盤の着手（2026-11-24 JST）
+
+別ローカルbranch `codex/audit-capa-phase2-storage`、基準はPR #229レビュー対応commit b246008126ffdb39b163a05bd9067a70fd9342fa。scripts/reporting/delivery_spool.pyとtests/test_delivery_spool.pyを追加。実Google/GitHub adapter、タスク、trigger、Pages、課金、固定Docsは未接続/未変更。この変更をPR #229へ混入させず、push/PR作成もしていない。
+
+外部writer呼出し前に原文UTF-8 bytesをSQLiteへcommitし、同一reportId/revisionでの改変を拒否。生成PNGも本文hashへ結び付けて保全。Docs/PNGのcheckpointを独立させ、一方の保存失敗で他方の成功や原本を失わない。writerがreferenceを返した後の読戻し失敗ではそのreferenceだけを再読込し、再作成しない。writer timeout/成否不明ではUNKNOWNとして二重作成を遮断し、再開は外部writerによる照合/復旧手順が必要。転送readbackを正式publication/PNG品質/Pages合格へ昇格しない。
+
+ローカルfixture6件PASS: 再起動後の原本保持・同revision上書き拒否、Docs失敗時の本文保持/二重write拒否、readbackだけの再試行、Docs失敗時のPNG独立保存、成功工程の再実行抑止、PNG不変性と品質未判定。初回はSQLite connection解放漏れをWindowsで検出し、closeを保証するcontext managerへ修正後に全件PASS。
+
+残課題: provider側の冪等key/重複照合、UNKNOWN復旧、月別folder/親ID/Docs全文revision読戻し、PNGの視覚数値品質、既存producerとの接続、本番の永続ストレージ配置と実権限検証。同期ドライブ上のSQLiteやコンテナ一時FSを本番保存先と決めたものではなく、保存backendは未選定。本モジュールだけで11/24のDocs/PNG保存障害が修復したとは主張しない。次は既存producer入力→永続原本→認証済writer/readbackの接続を隔離環境で実装・受入する。
+
+### PR #230追加レビュー指摘｜追加検証（2026-11-24 JST）
+- Source: PR comment 7126900842. P1 scenario: independent spools; Drive accepts create but response is lost; list remains stale. P2 scenario: Drive readback completes but GCS lock DELETE fails.
+- Change: unclassified create errors retain the cross-host lock as a fail-closed claim. Lane readback and lock cleanup are reported independently; cleanup failure is nonzero operational result.
+- Required regressions: stale-search/lost-response blocks second spool; lock DELETE failure preserves verified artifact state but reports `LOCK_RELEASE_FAILED`/exit 3.
+- Evidence at record creation: NOT_RUN. Must record exact HEAD, CI runs, test counts, and any TEST_ONLY Drive readback separately after execution. Live TEST_ONLY write is not production recovery.
+
+## PR #230 追加2指摘の是正・CI結果｜2026-11-24 JST
+- Head: `dd96077b26f587bac7fe8e57df1cab8f331c1abc`, PR #230 remains OPEN/DRAFT, unmerged, mergeable.
+- Changes: a non-definitive Google Drive create error retains the shared GCS generation-locked object. A second independent spool/host cannot enter reconciliation or create while the claim remains. Lock cleanup failure is a separate `lockRelease` outcome; verified lanes remain verified, `resultStatus=LOCK_RELEASE_FAILED`, CLI exit 3.
+- Tests: exact-head workflow run `45367066687` PASS; logs show spool 14, Google writer/lock 10, CLI 7 = 31 PASS. Added lost-create-response with stale Drive search blocking a second spool, direct lock DELETE failure preserving verified state, and CLI status/exit-code regression. PR runs `45367066852` and `45367066374` PASS.
+- Result: E2 mocked integration PASS. Local Python test execution NOT_RUN because this PC's WindowsApps Python launcher cannot start. No Google API call/write by the Python writer was made.
+- TEST_ONLY discovery: connected Drive search returned one folder whose name starts `TEST_ONLY`; process environment has no `GOOGLE_SERVICE_ACCOUNT_JSON`, `GOOGLE_REPORT_WRITER_FOLDER_ID`, or `GOOGLE_REPORT_WRITER_LOCK_BUCKET`. Therefore real writer E3 is BLOCKED/NOT_RUN; no connector-created substitute files were used.
+- Limits: retained ambiguous-create lock requires human verification of writer inactivity and exact artifact identity/readback; stale Drive search is not proof that create failed. No actual GCS IAM or Drive writer permission was tested. PR #229 code, production settings/folders, formal report artifacts, Pages and schedules were untouched.
+- Next: configure existing TEST_ONLY service-account and GCS lock-bucket environment, then run actual writer Docs/PNG save and readback. Do not treat CI as E3 or production recovery.

@@ -172,3 +172,20 @@ PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承�
 
 
 レビューP1補強（同変更ID / 2026-11-24 JST）: slotFreshness.scope=TIMESTAMP_ONLYを明記。正式本文のcanonical/receipt/indexが合格してもPagesはNOT_VERIFIEDのまま、dashboard全体はokへ昇格せずpartial/PAGES_DISPLAY_UNVERIFIEDとする。正式本文証拠と全工程配信成功を区別する追加正例を含め、既存92件＋追加10件を再実行して合格。Phase 2ローカル基盤は別branch codex/audit-capa-phase2-storage、commit 28165dbcb6714cfe0419d18acc7467546cf3a571に保全し、PR #229へ含めない。実writer接続・本番保存は未修復。
+## MR-AUDIT-CAPA-20261124-01｜Phase 2原本保全・再試行基盤の着手（2026-11-24 JST）
+
+別ローカルbranch `codex/audit-capa-phase2-storage`、基準はPR #229レビュー対応commit b246008126ffdb39b163a05bd9067a70fd9342fa。scripts/reporting/delivery_spool.pyとtests/test_delivery_spool.pyを追加。実Google/GitHub adapter、タスク、trigger、Pages、課金、固定Docsは未接続/未変更。この変更をPR #229へ混入させず、push/PR作成もしていない。
+
+外部writer呼出し前に原文UTF-8 bytesをSQLiteへcommitし、同一reportId/revisionでの改変を拒否。生成PNGも本文hashへ結び付けて保全。Docs/PNGのcheckpointを独立させ、一方の保存失敗で他方の成功や原本を失わない。writerがreferenceを返した後の読戻し失敗ではそのreferenceだけを再読込し、再作成しない。writer timeout/成否不明ではUNKNOWNとして二重作成を遮断し、再開は外部writerによる照合/復旧手順が必要。転送readbackを正式publication/PNG品質/Pages合格へ昇格しない。
+
+ローカルfixture6件PASS: 再起動後の原本保持・同revision上書き拒否、Docs失敗時の本文保持/二重write拒否、readbackだけの再試行、Docs失敗時のPNG独立保存、成功工程の再実行抑止、PNG不変性と品質未判定。初回はSQLite connection解放漏れをWindowsで検出し、closeを保証するcontext managerへ修正後に全件PASS。
+
+残課題: provider側の冪等key/重複照合、UNKNOWN復旧、月別folder/親ID/Docs全文revision読戻し、PNGの視覚数値品質、既存producerとの接続、本番の永続ストレージ配置と実権限検証。同期ドライブ上のSQLiteやコンテナ一時FSを本番保存先と決めたものではなく、保存backendは未選定。本モジュールだけで11/24のDocs/PNG保存障害が修復したとは主張しない。次は既存producer入力→永続原本→認証済writer/readbackの接続を隔離環境で実装・受入する。
+
+## MR-AUDIT-CAPA-20261124-01｜Phase 2 review追補（2026-11-24 JST）
+要件/仕様/運用の固定パスに、source先行spool、GCS cross-host lock、`incompleteSearch` 検査、LOCALAPPDATAのspool既定先、stale lock復旧手順とCI/実Drive証拠の分離を追記。PR #230の独立レビュー指摘に基づく。実Drive/GCS bucket設定、正式Docs ID同期、Pages、本番原本には変更なし。
+
+## MR-AUDIT-CAPA-20261124-01｜PR #230追加指摘の修正記録
+変更要求: MR-AUDIT-CAPA-20261124-01（追加レビューコメント7126900842）。対象: `scripts/reporting/google_drive_writer.py`、`scripts/transfer_market_report_to_drive.py`、関連tests、固定文書requirements/specification/operations/DOCUMENT_CONTROLおよびPhase 2証跡。内容: create応答不明時はGCS lockを共有fail-closed claimとして保持し、別spoolからの新規作成を阻止。lock解放結果を保存/読戻し証拠と分離し、解放失敗時はLOCK_RELEASE_FAILED・終了コード3を報告する。実装後テスト/CI/実Drive隔離試験は本追補作成時点で未確定のためEVIDENCE_LEDGERで更新する。
+
+実装後追補（2026-11-24 JST）: PR #230追加2指摘をhead `dd96077b26f587bac7fe8e57df1cab8f331c1abc`で修正し、Phase 2関連31件とPRの3 checksが成功。独立worker間のcreate応答不明では共有GCS lockを残して二重createを遮断し、Drive保存/読戻しとlock releaseを別結果にした。Connected Drive検索でTEST_ONLYフォルダーを確認したが、ローカルprocessにはwriter service account・folder env・GCS lock bucket envがなく、実Python writerのDocs/PNG保存・読戻しはNOT_RUN。PRはDraft/未マージ。本番フォルダー・設定・定期タスク変更なし。証拠と次工程は`docs/project-control/EVIDENCE_LEDGER.md`参照。

@@ -173,6 +173,12 @@ Pagesは `config/pages_public_files.json` の静的ファイル一覧・限定�
 
 ローカル検証と制約は `docs/project-control/AUDIT_CAPA.md` のPhase 1追補および `phase1-evidence.json` に記録。hosted CI、本番設定切替、変更後live Pages、固定Google Docs同期、通知実到達、独立再監査はNOT_RUN。固定Docs5件のmetadata読取404は権限/接続上の制約であり不存在の証明ではない。
 
+## Phase 2｜隔離writer実行手順（PR段階）
+
+writer CLIへ渡す本文/PNGは既に生成済みの成果物に限る。SQLite spoolは同期対象外のローカルapp-dataまたは一時領域に配置し、TEST_ONLYフォルダーIDを明示する。DOCS/PNGの結果を別々に確認し、PARTIALなら成功済み側を保持して不足レーンだけを再実行する。UNKNOWNではDrive実体を照合するまで再作成しない。実Google保存・再取得の受入前は本番フォルダー、定時タスク、Pages、正式品質判定に接続しない。
+
+既定spool先はWindows `LOCALAPPDATA` の専用ディレクトリーで、プロセス/OS再起動後も同一PCのファイルが残ることを想定する。これは別hostへの共有・backupではない。GitHub runner/temp領域はjob終了後の永続性を保証しないため、跨job復旧が必要なrunnerでは別途永続ローカルdiskを確保する。別hostの同時writerは `GOOGLE_REPORT_WRITER_LOCK_BUCKET` のCloud Storage bucketを共有し、bucket IAMにobject create/deleteを限定付与する。Cloud Storage lock objectは停止/電源断で残り得る。lockが残る場合は稼働writerがいないことを確認してから対象lock objectのみ運用者が削除する。自動期限切れは安全性のため行わない。Drive検索の `incompleteSearch=true` は未完了検索として保存処理を中止する。
+
 ### Phase 1検証と本番適用の境界
 
 ローカル回帰: `python -m unittest discover -s tests -p test_audit_phase1.py -v`、既存のdashboard/publication eligibility/report contract/scheduled delivery/deployment verificationの関連回帰、`node --test tests/report-delivery-health.test.cjs`。Windowsのzoneinfoにはtzdataを隔離依存として導入した。テスト用固定時刻はfixtureに限定する。
@@ -207,3 +213,17 @@ PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承�
 
 
 レビューP1補強（同変更ID / 2026-11-24 JST）: slotFreshness.scope=TIMESTAMP_ONLYを明記。正式本文のcanonical/receipt/indexが合格してもPagesはNOT_VERIFIEDのまま、dashboard全体はokへ昇格せずpartial/PAGES_DISPLAY_UNVERIFIEDとする。正式本文証拠と全工程配信成功を区別する追加正例を含め、既存92件＋追加10件を再実行して合格。Phase 2ローカル基盤は別branch codex/audit-capa-phase2-storage、commit 28165dbcb6714cfe0419d18acc7467546cf3a571に保全し、PR #229へ含めない。実writer接続・本番保存は未修復。
+## MR-AUDIT-CAPA-20261124-01｜Phase 2原本保全・再試行基盤の着手（2026-11-24 JST）
+
+別ローカルbranch `codex/audit-capa-phase2-storage`、基準はPR #229レビュー対応commit b246008126ffdb39b163a05bd9067a70fd9342fa。scripts/reporting/delivery_spool.pyとtests/test_delivery_spool.pyを追加。実Google/GitHub adapter、タスク、trigger、Pages、課金、固定Docsは未接続/未変更。この変更をPR #229へ混入させず、push/PR作成もしていない。
+
+外部writer呼出し前に原文UTF-8 bytesをSQLiteへcommitし、同一reportId/revisionでの改変を拒否。生成PNGも本文hashへ結び付けて保全。Docs/PNGのcheckpointを独立させ、一方の保存失敗で他方の成功や原本を失わない。writerがreferenceを返した後の読戻し失敗ではそのreferenceだけを再読込し、再作成しない。writer timeout/成否不明ではUNKNOWNとして二重作成を遮断し、再開は外部writerによる照合/復旧手順が必要。転送readbackを正式publication/PNG品質/Pages合格へ昇格しない。
+
+ローカルfixture6件PASS: 再起動後の原本保持・同revision上書き拒否、Docs失敗時の本文保持/二重write拒否、readbackだけの再試行、Docs失敗時のPNG独立保存、成功工程の再実行抑止、PNG不変性と品質未判定。初回はSQLite connection解放漏れをWindowsで検出し、closeを保証するcontext managerへ修正後に全件PASS。
+
+残課題: provider側の冪等key/重複照合、UNKNOWN復旧、月別folder/親ID/Docs全文revision読戻し、PNGの視覚数値品質、既存producerとの接続、本番の永続ストレージ配置と実権限検証。同期ドライブ上のSQLiteやコンテナ一時FSを本番保存先と決めたものではなく、保存backendは未選定。本モジュールだけで11/24のDocs/PNG保存障害が修復したとは主張しない。次は既存producer入力→永続原本→認証済writer/readbackの接続を隔離環境で実装・受入する。
+
+## PR #230追加指摘｜応答不明・lock解放失敗時の運用（2026-11-24 JST）
+create応答が不明なときはGCS lockを残し、別hostからの同じslot/kind書込みを阻止する。Drive検索に見つからないだけでlockを削除・再試行しない。運用者はwriter停止を確認し、TEST_ONLYフォルダーでdelivery key/name、fileId、parent、MIMEと本文/PNG実体を照合する。Driveの反映が遅れ結果が特定できなければlockを維持してエスカレーションする。解決時も該当lock objectだけをgeneration条件付きで扱い、他のartifactやlockを削除しない。
+
+CLI出力の`status`はDocs/PNG laneの保存・読戻し状態、`lockRelease`は各laneの共有lock解放状態、`resultStatus`は運用上の総合状態として別々に確認する。`resultStatus=LOCK_RELEASE_FAILED`または終了コード3では、Drive readbackが成功していても運用警告として扱い、次工程へ成功扱いで自動遷移しない。

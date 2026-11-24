@@ -211,3 +211,15 @@ FORBIDDEN SUBSTITUTE: CI成功/閲覧アーカイブ/Docs存在を正式発行�
 STATUS: IN_PROGRESS / production NOT_READY。10営業日受入はNOT_STARTED（OBSERVINGへ移る条件未達）。
 OPEN OUTCOMES: 本番Drive認証主体/共有・読戻し、GitHub cron遅延の発生源、ChatGPT実タスク/通知とGAS実トリガー、PRレビュー/CI/承認済main反映、終値PR #201/#204/#206の整合・本番dry-run、4枠初期受入、10営業日40枠。21:00は調査時点未到来。
 NEXT NECESSARY ACTION: Drive取込のfolder fail-closed/parent readback修正をPRで検証し、本番サービスアカウントの権限を管理者が確認。実時刻窓内の次回runから全工程を観測する。
+
+## MR-AUDIT-CAPA-20261124-01｜Phase 2 Google Docs・PNG writer
+PRIMARY OBJECTIVE: 生成済み本文と図解を失わず隔離Google Driveへ個別保存・再試行し、Driveからの読戻し一致を確認できる実writerをPRとして独立レビュー可能にする。
+Classification: ADD; Phase 1A/1B、本番復旧・Pages受入のopen outcomesは維持。
+ACTIVE PROFILE: generic-app + data-tool。
+ACCEPTANCE: Google認証・通信前に本文/PNGを両方spoolへcommit、reopen後の再試行、GCS generation conditional shared lockによるhost間直列化、Drive incompleteSearch fail closed、応答不明create後の共有fail-closed claim、lock release失敗とartifact読戻し結果の分離、TEST_ONLY folderでmetadata/親/MIME/内容照合、失敗/再起動/並行回帰テスト、CI成功、専用PR更新。実Drive試験は独立レビュー後。
+CONSTRAINTS: PR #229のP1修正を混入・変更しない。既存発行枠・本文・画像仕様・Drive原本を変更しない。テスト用隔離先以外へ書かない。本番切替・mergeなし。
+OUT OF SCOPE: 本番復旧、正式画像品質QA、Pages公開、独立監査合格。
+FORBIDDEN SUBSTITUTE: モックCIまたはDrive UI経由の試験をPython実writerの実運用証明にしない。
+STATUS: IN_PROGRESS; Draft PR #230 open at dd96077b26f587bac7fe8e57df1cab8f331c1abc. 31 Phase 2 tests and three PR checks passed (E2). Code re-review completed; live writer E3 is NOT_RUN because process credentials and lock bucket are not configured.
+OPEN OUTCOMES: independent maintainer re-review, TEST_ONLY Cloud Storage lock bucket and IAM, Python writer service-account configuration, same-PC cold reboot spool check, and real Docs/PNG write-readback. An ambiguous create intentionally leaves a fail-closed claim requiring operator reconciliation.
+NEXT NECESSARY ACTION: provision/use the existing TEST_ONLY writer identity and GCS lock bucket in this environment, then perform isolated Docs/PNG save and exact readback. No production configuration or folder is authorized.
