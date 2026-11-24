@@ -5,7 +5,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from scripts.reporting.delivery_spool import TransferReadback
+from scripts.reporting.delivery_spool import DeliverySpool, TransferReadback
 from scripts.transfer_market_report_to_drive import default_spool_path, local_spool_path, run
 
 
