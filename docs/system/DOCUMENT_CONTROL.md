@@ -181,3 +181,6 @@ PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承�
 ローカルfixture6件PASS: 再起動後の原本保持・同revision上書き拒否、Docs失敗時の本文保持/二重write拒否、readbackだけの再試行、Docs失敗時のPNG独立保存、成功工程の再実行抑止、PNG不変性と品質未判定。初回はSQLite connection解放漏れをWindowsで検出し、closeを保証するcontext managerへ修正後に全件PASS。
 
 残課題: provider側の冪等key/重複照合、UNKNOWN復旧、月別folder/親ID/Docs全文revision読戻し、PNGの視覚数値品質、既存producerとの接続、本番の永続ストレージ配置と実権限検証。同期ドライブ上のSQLiteやコンテナ一時FSを本番保存先と決めたものではなく、保存backendは未選定。本モジュールだけで11/24のDocs/PNG保存障害が修復したとは主張しない。次は既存producer入力→永続原本→認証済writer/readbackの接続を隔離環境で実装・受入する。
+
+## MR-AUDIT-CAPA-20261124-01｜Phase 2 review追補（2026-11-24 JST）
+要件/仕様/運用の固定パスに、source先行spool、GCS cross-host lock、`incompleteSearch` 検査、LOCALAPPDATAのspool既定先、stale lock復旧手順とCI/実Drive証拠の分離を追記。PR #230の独立レビュー指摘に基づく。実Drive/GCS bucket設定、正式Docs ID同期、Pages、本番原本には変更なし。

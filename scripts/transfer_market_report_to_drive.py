@@ -40,37 +40,71 @@ def local_spool_path(value: str) -> Path:
     raise ValueError("spool must be stored under a local non-synced app-data or temp directory")
 
 
+def default_spool_path() -> str:
+    configured = os.environ.get("MARKET_REPORT_SPOOL_PATH", "").strip()
+    if configured:
+        return configured
+    app_data = os.environ.get("LOCALAPPDATA", "").strip()
+    if not app_data:
+        return ""
+    # LocalAppData survives process/OS restarts and is not a cloud-synced path.
+    return str(Path(app_data) / "MarketReportDelivery" / "delivery-spool.sqlite3")
+
+
 def _load_optional(path: str | None) -> bytes | None:
     return Path(path).read_bytes() if path else None
 
 
 def run(args) -> tuple[dict, int]:
     spool = DeliverySpool(local_spool_path(args.spool))
-    writer = GoogleDriveReportWriter.from_environment(args.folder_id)
     identity = (args.report_id, args.revision)
 
     outcomes = {}
-    for kind, source_path, write in (("DOCS", args.body_file, writer.write_docs),
-                                     ("PNG", args.png_file, writer.write_png)):
+    available = []
+    persist_failed = False
+    # Read and commit every supplied source before authenticating or making
+    # any network request. Both lanes survive a stop during the first transfer.
+    for kind, source_path in (("DOCS", args.body_file), ("PNG", args.png_file)):
         try:
             payload = _load_optional(source_path)
             if payload is not None:
                 spool.persist(*identity, kind, payload)
         except Exception as exc:
             outcomes[kind] = "PERSIST_FAILED:" + type(exc).__name__
+            persist_failed = True
             continue
         try:
-            artifact = spool.inspect(*identity, kind)
+            spool.inspect(*identity, kind)
+            available.append(kind)
         except ValueError:
             outcomes[kind] = "NOT_PROVIDED"
+    if persist_failed or not available:
+        return _result(spool, identity, outcomes)
+
+    try:
+        writer = GoogleDriveReportWriter.from_environment(args.folder_id)
+    except Exception as exc:
+        # Leave all source bytes intact when auth/configuration is unavailable.
+        for kind in available:
+            outcomes[kind] = "BLOCKED:" + type(exc).__name__
+        result, exit_code = _result(spool, identity, outcomes)
+        return result, 1 if exit_code == 0 else exit_code
+
+    for kind, write in (("DOCS", writer.write_docs), ("PNG", writer.write_png)):
+        if kind not in available:
             continue
         try:
-            spool.transfer(*identity, kind, write=write, readback=writer.readback, reconcile=writer.reconcile)
+            spool.transfer(*identity, kind, write=write, readback=writer.readback,
+                           reconcile=writer.reconcile, guard=writer.transfer_guard)
             outcomes[kind] = "WRITE_READBACK_VERIFIED"
         except Exception as exc:
             # Do not expose body, image, destination URL, or credential details.
             outcomes[kind] = "FAILED:" + type(exc).__name__
 
+    return _result(spool, identity, outcomes)
+
+
+def _result(spool, identity, outcomes):
     status = spool.delivery_status(*identity)
     result = {**status, "attemptOutcomes": outcomes,
               "hashes": {kind: spool.inspect(*identity, kind)["sha256"]
@@ -83,7 +117,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report-id", required=True)
     parser.add_argument("--revision", required=True, type=int)
-    parser.add_argument("--spool", default=os.environ.get("MARKET_REPORT_SPOOL_PATH", ""))
+    parser.add_argument("--spool", default=default_spool_path())
     parser.add_argument("--folder-id", default=None, help="TEST_ONLY folder; otherwise GOOGLE_REPORT_WRITER_FOLDER_ID")
     parser.add_argument("--body-file", help="Path to an already-generated UTF-8 body")
     parser.add_argument("--png-file", help="Path to an already-generated PNG")

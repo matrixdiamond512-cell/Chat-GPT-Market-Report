@@ -10,7 +10,9 @@ import hashlib
 import json
 import os
 import re
+import threading
 import uuid
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import date
 from urllib.parse import quote
@@ -28,6 +30,8 @@ PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 REPORT_ID = re.compile(r"^\d{4}-\d{2}-\d{2}_(?:08|12|16|21)-00$")
 FILE_FIELDS = "id,name,mimeType,parents,size,headRevisionId,appProperties,trashed"
 MAX_INLINE_UPLOAD = 5 * 1024 * 1024
+GCS_UPLOAD = "https://storage.googleapis.com/upload/storage/v1"
+GCS_API = "https://storage.googleapis.com/storage/v1"
 
 
 class DriveWriterError(RuntimeError):
@@ -44,6 +48,67 @@ class DefinitiveWriteRejection(DriveWriterError):
     """Google rejected a create request before accepting a file."""
 
     definitely_not_created = True
+
+
+class DriveLockBusy(DriveWriterError):
+    """Another execution environment owns this report/lane lock."""
+
+    definitely_not_created = True
+
+
+class GCSArtifactLock:
+    """Cross-machine mutex using Cloud Storage create-if-absent preconditions.
+
+    A process crash can leave a lock object behind. Subsequent writes fail
+    closed until an operator confirms no writer is active and removes that
+    exact stale lock; expiry is never guessed from a local clock.
+    """
+
+    def __init__(self, session, bucket: str, *, timeout: int = 35):
+        bucket = str(bucket or "").strip()
+        if not bucket or "/" in bucket or "?" in bucket:
+            raise ValueError("an explicit Cloud Storage lock bucket is required")
+        self.session = session
+        self.bucket = bucket
+        self.timeout = timeout
+
+    @contextmanager
+    def acquire(self, lock_key: str):
+        object_name = "market-report-writer-locks/" + lock_key
+        upload_url = GCS_UPLOAD + f"/b/{quote(self.bucket, safe='')}/o"
+        try:
+            response = self.session.request(
+                "POST", upload_url,
+                params={"uploadType": "media", "name": object_name, "ifGenerationMatch": "0"},
+                data=json.dumps({"lockKey": lock_key, "owner": uuid.uuid4().hex}, separators=(",", ":")).encode(),
+                headers={"Content-Type": "application/json"}, timeout=self.timeout,
+            )
+        except Exception as exc:
+            raise DriveWriterError("shared writer lock outcome is unknown") from exc
+        status = int(getattr(response, "status_code", 0) or 0)
+        if status == 412:
+            raise DriveLockBusy("another execution environment owns the report lock")
+        if not 200 <= status < 300:
+            raise DriveWriterError(f"shared writer lock failed (HTTP {status or 'unknown'})")
+        try:
+            generation = str(response.json()["generation"])
+        except Exception as exc:
+            # The lock may exist but its generation is unknown; leave it in
+            # place and fail closed rather than risk releasing another owner.
+            raise DriveWriterError("shared writer lock generation is unreadable") from exc
+        delete_url = GCS_API + f"/b/{quote(self.bucket, safe='')}/o/{quote(object_name, safe='')}"
+        try:
+            yield
+        finally:
+            try:
+                released = self.session.request(
+                    "DELETE", delete_url, params={"ifGenerationMatch": generation}, timeout=self.timeout,
+                )
+            except Exception as exc:
+                raise DriveWriterError("shared writer lock release outcome is unknown") from exc
+            release_status = int(getattr(released, "status_code", 0) or 0)
+            if not 200 <= release_status < 300:
+                raise DriveWriterError(f"shared writer lock release failed (HTTP {release_status or 'unknown'})")
 
 
 @dataclass(frozen=True)
@@ -71,12 +136,15 @@ class FileReference:
 
 
 class GoogleDriveReportWriter:
-    def __init__(self, session, folder_id: str, *, timeout: int = 35):
+    def __init__(self, session, folder_id: str, *, lock_store=None, lock_required=False, timeout: int = 35):
         folder_id = str(folder_id or "").strip()
         if not folder_id or folder_id.lower() == "root":
             raise ValueError("an explicit isolated Drive folder ID is required")
         self.session = session
         self.folder_id = folder_id
+        self.lock_store = lock_store
+        self.lock_required = lock_required
+        self._active_locks = threading.local()
         self.timeout = timeout
 
     @classmethod
@@ -84,10 +152,13 @@ class GoogleDriveReportWriter:
         """Use existing service-account material; never log or persist it."""
         raw = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "")
         destination = folder_id or os.environ.get("GOOGLE_REPORT_WRITER_FOLDER_ID", "")
+        lock_bucket = os.environ.get("GOOGLE_REPORT_WRITER_LOCK_BUCKET", "")
         if not raw:
             raise RuntimeError("GOOGLE_SERVICE_ACCOUNT_JSON is not configured")
         if not destination:
             raise RuntimeError("GOOGLE_REPORT_WRITER_FOLDER_ID is not configured")
+        if not lock_bucket:
+            raise RuntimeError("GOOGLE_REPORT_WRITER_LOCK_BUCKET is not configured")
         try:
             from google.auth.transport.requests import AuthorizedSession
             from google.oauth2 import service_account
@@ -100,11 +171,39 @@ class GoogleDriveReportWriter:
                 scopes=[
                     "https://www.googleapis.com/auth/drive.file",
                     "https://www.googleapis.com/auth/drive.metadata.readonly",
+                    "https://www.googleapis.com/auth/devstorage.read_write",
                 ],
             )
         except Exception as exc:
             raise RuntimeError("Google Drive writer credentials could not be initialized") from exc
-        return cls(AuthorizedSession(credentials), destination)
+        session = AuthorizedSession(credentials)
+        return cls(session, destination, lock_store=GCSArtifactLock(session, lock_bucket), lock_required=True)
+
+    @staticmethod
+    def _lock_key(key: dict) -> str:
+        # Serialize by output name so different revisions/hashes for one slot
+        # cannot race to create the same Drive filename.
+        identity = f"{key.get('reportId', '')}\0{key.get('kind', '')}".encode("utf-8")
+        return hashlib.sha256(identity).hexdigest()
+
+    @contextmanager
+    def transfer_guard(self, key: dict, payload: bytes):
+        self._identity(key, payload)
+        lock_key = self._lock_key(key)
+        if self.lock_store is None:
+            if self.lock_required:
+                raise DriveWriterError("shared writer lock is not configured")
+            yield
+            return
+        with self.lock_store.acquire(lock_key):
+            active = getattr(self._active_locks, "keys", set())
+            if lock_key in active:
+                raise DriveWriterError("nested shared writer lock acquisition is not allowed")
+            self._active_locks.keys = active | {lock_key}
+            try:
+                yield
+            finally:
+                self._active_locks.keys = active
 
     @staticmethod
     def _body_hash(payload: bytes) -> str:
@@ -183,7 +282,7 @@ class GoogleDriveReportWriter:
         token = None
         found = []
         while True:
-            params = {"q": query, "fields": f"nextPageToken,files({FILE_FIELDS})", "pageSize": 1000,
+            params = {"q": query, "fields": f"nextPageToken,incompleteSearch,files({FILE_FIELDS})", "pageSize": 1000,
                       "supportsAllDrives": "true", "includeItemsFromAllDrives": "true"}
             if token:
                 params["pageToken"] = token
@@ -395,6 +494,8 @@ class GoogleDriveReportWriter:
         return TransferReadback(payload, common)
 
     def _write(self, key: dict, payload: bytes):
+        if self.lock_required and self._lock_key(key) not in getattr(self._active_locks, "keys", set()):
+            raise DriveWriterError("production writer must be invoked under the shared transfer guard")
         report_id, revision, kind, body_hash, artifact_hash = self._identity(key, payload)
         try:
             self._folder()

@@ -160,6 +160,8 @@ Pagesは `config/pages_public_files.json` の静的ファイル一覧・限定�
 
 `DeliverySpool` は外部書込み前に成果物バイトとハッシュを保存し、DOCSとPNGを別レーンで管理する。Google Drive writerはTEST_ONLYフォルダーを必須とし、Driveのマーカー、親ID、MIME、ファイルサイズ、およびDocs全文またはPNG実バイトを照合する。既知の作成拒否は再試行可能、作成結果不明はUNKNOWNとして再作成を止める。保存済みreferenceがある場合の再試行は読戻しのみ行う。転送状態は正式公開・視覚品質・Pages表示の状態から独立する。
 
+CLIはSQLiteを初期化し、提供された全ファイルを読み込んでcommitした後にGoogle認証を初期化する。既定spoolはWindows `LOCALAPPDATA/MarketReportDelivery/delivery-spool.sqlite3`。複数host間のlockは設定必須の `GOOGLE_REPORT_WRITER_LOCK_BUCKET` に、`reportId + kind` 由来のdeterministic object名を作成条件 `ifGenerationMatch=0` で確保し、spool transfer・Drive reconciliation・readback全体を保護する。lock解放は取得時generation一致を条件とする。`files.list` のfieldsに `incompleteSearch` を含め、trueを検出した場合はDrive書込み前に中止する。
+
 ### Phase 1契約の詳細
 
 - `scripts/report_delivery_health.py`: JSTの現在時刻以下の最新予定枠を平日/土日設定から算出。公開日時が期待枠と一致する場合だけCURRENT。古い日時はBEHIND_SCHEDULE、欠損/不正/期待より先の日時はMISSING。休日市場休場でも既存の平日配信枠を黙って休止しない。

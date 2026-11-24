@@ -160,6 +160,8 @@ Pagesは `config/pages_public_files.json` の静的ファイル一覧・限定�
 
 Docs本文と図解PNGはreportId・revision・SHA-256で個別に永続保全し、保存処理を独立して再試行する。各writerはDrive上の親フォルダー・MIME・サイズ・内容を読戻し照合し、成功済み成果物を再作成しない。API結果不明時は外部実体を照合できるまで重複作成を停止する。転送読戻しは正式publication、PNG品質QA、Pages表示の証明に代用しない。Phase 2 PRのモックCIと実Google隔離保存試験、本番受入は別判定とする。
 
+認証/通信開始前に本文・PNG双方の提供済み原データをspoolへcommitする。異なる実行環境間の同一slot/kind競合はGoogle Cloud Storageの `ifGenerationMatch=0` を使う共有lockで直列化し、lock不明/使用中はDrive作成を行わない。Drive重複検索は `incompleteSearch` を取得し、trueなら作成を中止する。共有lock用bucket/権限が未設定ならwriterはfail closedとする。
+
 
 ## MR-AUDIT-CAPA-20261124-01｜Phase 1A・1B PR準備（2026-11-24 JST）
 

@@ -295,3 +295,9 @@ P2追加検証: 許可リストartifact上の主要11画面（dashboard/report/s
 ユーザー指定のPhase 2優先順位に基づき、公開済み基盤 `28165dbcb6714cfe0419d18acc7467546cf3a571` から専用branch `codex/phase2-google-writer` を作成。PR #229のP1修正は未取込であり、Phase 2差分は #229 branchをbaseにした独立stacked PRとして提出する。Docs本文とPNGのDrive writer、Drive読戻し、隔離TEST_ONLY folder制限、CLI、モックCIを追加。成功済みlaneは再利用し、作成結果不明時は照合できるまで重複作成を停止する。本文生成、発行時刻/枠、正式公開、Pages、GAS、既存Drive原本は変更しない。
 
 CI run `45349333730` のCLI正規表現不一致を実際のfail-closed文言へ合わせて修正。P1ブランチとの8文書競合を両側の追補を保持して解消するため、Phase 2 branchを最新head `0a6a3767ea36661172ce355a743b093f0348f50d` へrebaseした。PR差分比較ではPhase 2 17ファイルのみ、GitHub API mergeable=true。Head `576918c065768e2f3f6c517f93e1bbc166bcd820` のworkflow run `45350558543` とPR run `45350552584` はspool 14/14、Drive writer mock 6/6、CLI 2/2、計22件PASS。GitHub hosted Python 3.13.18、E2 mock integrationに限定。Draft PR #230 (base codex/audit-capa-phase1ab) を作成し独立レビュー待ち。Google Docs/PNGのPython実writerによる実Drive保存・読戻しは未実施であり、connector試験でも代替しない。独立レビュー後に利用可能な隔離フォルダーと認証主体を確認して別受入とする。merge、本番書込み、本番切替は行わない。
+
+### PR #230 独立レビュー修正（2026-11-24 JST）
+
+レビューコメント `https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/230#issuecomment-7125946721` に基づき、CLIはwriter認証初期化前に本文・PNG双方をSQLiteへcommitし、すべての提供sourceの保全が成功するまで通信を開始しない。既定spool先は同期対象外Windows LOCALAPPDATA。CLIはslot/kind単位のCloud Storage `ifGenerationMatch=0` lockをspool transfer全体で保持し、別hostの並行createを防ぐ。lock用bucket設定/IAMは変更していない。Drive files.listのfieldsにincompleteSearchを追加しtrueなら作成を中止する。
+
+残る制約: process/OS強制停止時にCloud Storage lock objectが残ると、自動期限切れはせず、稼働writer不在の確認後に対象objectの手動除去が必要。LOCALAPPDATA spoolは同一PCの再起動用で、別hostと自動共有しない。GitHub runnerのtempはjobを超えた永続性を保証しない。Drive/GCS実権限、実保存、cold rebootは未検証。

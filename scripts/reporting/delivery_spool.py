@@ -3,7 +3,7 @@
 No Google/GitHub adapter or trigger is configured here. Transfer readback is
 not formal publication, image quality, or Pages acceptance evidence.
 """
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 import hashlib
 import re
 import sqlite3
@@ -90,7 +90,23 @@ class DeliverySpool:
             db.execute("UPDATE artifacts SET state=?,reference=COALESCE(?,reference),readback_metadata=COALESCE(?,readback_metadata) WHERE report_id=? AND revision=? AND kind=?", (state, reference, encoded_metadata, *identity))
             self._event(db, *identity, state)
 
-    def transfer(self, report_id, revision, kind, *, write, readback, reconcile=None):
+    def transfer(self, report_id, revision, kind, *, write, readback, reconcile=None, guard=None):
+        """Run one lane under an optional provider-wide guard.
+
+        The guard spans reconciliation, provider create, checkpoint persistence,
+        and full readback. Local SQLite claims alone cannot coordinate separate
+        machines, so real remote writers must supply their shared guard.
+        """
+        artifact = self.inspect(report_id, revision, kind)
+        body = self.inspect(report_id, revision, "DOCS")
+        key = {"reportId": report_id, "revision": revision, "bodyHash": body["sha256"],
+               "artifactHash": artifact["sha256"], "kind": kind}
+        payload = bytes(artifact["payload"])
+        with guard(key, payload) if guard is not None else nullcontext():
+            return self._transfer_locked(report_id, revision, kind, write=write,
+                                         readback=readback, reconcile=reconcile)
+
+    def _transfer_locked(self, report_id, revision, kind, *, write, readback, reconcile=None):
         """Only invoked adapters have side effects. Retrying a saved reference
         performs readback only. A provider lookup can resolve an ambiguous write
         without creating a duplicate; absence never authorizes a second write.

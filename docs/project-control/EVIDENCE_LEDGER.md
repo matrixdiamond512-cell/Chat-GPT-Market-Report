@@ -187,7 +187,15 @@ PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承�
 - Limit: connectorによるDrive操作はサービスアカウント資格情報を使うPython writerの挙動を証明しない。TEST_ONLY folderの利用可能性/実write permissionも未確認。
 - Run ID/timestamp: 45350558543 / 2026-11-24 JST。
 - PR: Draft #230, https://github.com/matrixdiamond512-cell/Chat-GPT-Market-Report/pull/230; base `codex/audit-capa-phase1ab` at `0a6a3767ea36661172ce355a743b093f0348f50d`, head `codex/phase2-google-writer` at `576918c065768e2f3f6c517f93e1bbc166bcd820`. Initial base conflict was resolved by rebasing Phase 2 on the P1 branch; API reports mergeable=true and compare shows only Phase 2 files.
-- Next: user's independent review.実Google Docs/PNG writerの隔離保存はレビュー後に行う。
+- Next: PR #230のレビュー指摘を修正し、追加CIをPASSさせて独立レビューへ戻す。実Google Docs/PNG writerの隔離保存は再レビュー後に行う。
+
+## PR #230｜独立レビュー3指摘の是正（2026-11-24 JST）
+- Source: reviewer comment 7125946721: (1) auth/network前に本文・PNGをspool、(2) multi-host writer lock、(3) Drive `incompleteSearch` を返却fieldsに含めて判定。Requested restart/auth/network/concurrency regression tests.
+- Changes: CLI persists all supplied files before constructing credentials; default local path selects Windows LOCALAPPDATA. `DeliverySpool.transfer` accepts a guard spanning reconciliation/create/checkpoint/readback. Production writer requires a GCS atomic create-if-absent lock bucket (`ifGenerationMatch=0`) and holds it across the lane transaction. `files.list` requests `incompleteSearch` and aborts if true.
+- Planned tests: auth initialization failure preserves both source lanes; process interruption after Docs create resumes by reconcile from reopened SQLite; response loss keeps sources and retries without a second create; two independent spool/writer instances contend on one fake atomic GCS lock and result in one Drive create; incompleteSearch true prevents create; default spool selects LOCALAPPDATA.
+- Evidence: NOT_RUN at this entry time. Prior head `e76175a9c09c57cce22008e2f5408530f94c807b` had the original 22 tests PASS; new CI required for review fixes.
+- Limit: mocks only. No real GCS bucket, credentials, real Drive write/readback, or cold reboot testing. Hard kill can leave a lock object and require verified manual removal. LOCALAPPDATA doesn't share source bytes across hosts; runner temp is ephemeral after the job.
+- Next: run all three Phase 2 suites on final PR head; inspect PR checks and update PR #230 without marking ready/merging.
 
 
 ### PR提出記録（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）

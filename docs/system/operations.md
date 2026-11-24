@@ -177,6 +177,8 @@ Pagesは `config/pages_public_files.json` の静的ファイル一覧・限定�
 
 writer CLIへ渡す本文/PNGは既に生成済みの成果物に限る。SQLite spoolは同期対象外のローカルapp-dataまたは一時領域に配置し、TEST_ONLYフォルダーIDを明示する。DOCS/PNGの結果を別々に確認し、PARTIALなら成功済み側を保持して不足レーンだけを再実行する。UNKNOWNではDrive実体を照合するまで再作成しない。実Google保存・再取得の受入前は本番フォルダー、定時タスク、Pages、正式品質判定に接続しない。
 
+既定spool先はWindows `LOCALAPPDATA` の専用ディレクトリーで、プロセス/OS再起動後も同一PCのファイルが残ることを想定する。これは別hostへの共有・backupではない。GitHub runner/temp領域はjob終了後の永続性を保証しないため、跨job復旧が必要なrunnerでは別途永続ローカルdiskを確保する。別hostの同時writerは `GOOGLE_REPORT_WRITER_LOCK_BUCKET` のCloud Storage bucketを共有し、bucket IAMにobject create/deleteを限定付与する。Cloud Storage lock objectは停止/電源断で残り得る。lockが残る場合は稼働writerがいないことを確認してから対象lock objectのみ運用者が削除する。自動期限切れは安全性のため行わない。Drive検索の `incompleteSearch=true` は未完了検索として保存処理を中止する。
+
 ### Phase 1検証と本番適用の境界
 
 ローカル回帰: `python -m unittest discover -s tests -p test_audit_phase1.py -v`、既存のdashboard/publication eligibility/report contract/scheduled delivery/deployment verificationの関連回帰、`node --test tests/report-delivery-health.test.cjs`。Windowsのzoneinfoにはtzdataを隔離依存として導入した。テスト用固定時刻はfixtureに限定する。

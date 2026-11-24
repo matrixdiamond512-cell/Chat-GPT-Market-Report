@@ -1,6 +1,7 @@
 import hashlib
 import json as json_module
 import re
+import threading
 import unittest
 
 from scripts.reporting.delivery_spool import DeliverySpool
@@ -8,6 +9,9 @@ from scripts.reporting.google_drive_writer import (
     DOC_MIME,
     DRIVE,
     FOLDER_MIME,
+    GCSArtifactLock,
+    DriveLockBusy,
+    DefinitiveWriteRejection,
     PNG_MIME,
     UPLOAD,
     DriveConflict,
@@ -33,6 +37,7 @@ class MemoryDriveSession:
         self.documents = {}
         self.calls = []
         self.next_id = 1
+        self.incomplete_search = False
         self.files["sandbox-folder"] = {"id": "sandbox-folder", "name": "TEST_ONLY",
                                          "mimeType": FOLDER_MIME, "parents": [], "trashed": False}
 
@@ -50,7 +55,7 @@ class MemoryDriveSession:
             if property_match:
                 value = property_match.group(1)
                 files = [item for item in files if item.get("appProperties", {}).get("delivery_key") == value]
-            return Response(body={"files": files})
+            return Response(body={"files": files, "incompleteSearch": self.incomplete_search})
         if method == "GET" and url.endswith("/files/sandbox-folder"):
             return Response(body=self.files["sandbox-folder"])
         if method == "GET" and url.startswith(DRIVE + "/files/"):
@@ -82,6 +87,37 @@ class MemoryDriveSession:
                                       {"textRun": {"content": doc["text"]}}
                                   ]}}]}})
         raise AssertionError(f"Unexpected fixture request: {method} {url}")
+
+
+class MemoryGCSLockSession:
+    """Thread-safe fake for the GCS ifGenerationMatch=0 object claim."""
+
+    def __init__(self):
+        self.objects = {}
+        self.calls = []
+        self.generation = 0
+        self.mutex = threading.Lock()
+
+    def request(self, method, url, *, params=None, data=None, headers=None, timeout=None):
+        params = params or {}
+        self.calls.append((method, url, dict(params)))
+        name = params.get("name")
+        if method == "POST" and params.get("ifGenerationMatch") == "0":
+            with self.mutex:
+                if name in self.objects:
+                    return Response(412)
+                self.generation += 1
+                generation = str(self.generation)
+                self.objects[name] = generation
+                return Response(body={"generation": generation})
+        if method == "DELETE":
+            object_name = url.rsplit("/o/", 1)[1].replace("%2F", "/")
+            with self.mutex:
+                if self.objects.get(object_name) != str(params.get("ifGenerationMatch")):
+                    return Response(412)
+                del self.objects[object_name]
+                return Response(204)
+        raise AssertionError(f"Unexpected fake GCS lock request: {method} {url}")
 
 
 class GoogleDriveWriterTests(unittest.TestCase):
@@ -133,6 +169,16 @@ class GoogleDriveWriterTests(unittest.TestCase):
             self.writer.write_docs(self.key("DOCS", self.body), self.body)
         self.assertFalse(any(method == "POST" and url == UPLOAD for method, url, _ in self.session.calls))
 
+    def test_incomplete_search_is_requested_and_blocks_create(self):
+        self.session.incomplete_search = True
+        with self.assertRaises(DefinitiveWriteRejection):
+            self.writer.write_docs(self.key("DOCS", self.body), self.body)
+        list_calls = [(method, url, params) for method, url, params in self.session.calls
+                      if method == "GET" and url == DRIVE + "/files"]
+        self.assertTrue(list_calls)
+        self.assertIn("incompleteSearch", list_calls[0][2]["fields"])
+        self.assertFalse(any(method == "POST" and url == UPLOAD for method, url, _ in self.session.calls))
+
     def test_existing_marker_with_wrong_parent_blocks_reuse(self):
         key = self.key("DOCS", self.body)
         props = self.writer._properties(key, self.body)
@@ -160,6 +206,58 @@ class GoogleDriveWriterTests(unittest.TestCase):
         for folder_id in ("", "root"):
             with self.assertRaises(ValueError):
                 GoogleDriveReportWriter(self.session, folder_id)
+
+    def test_two_writer_instances_share_atomic_lock_and_create_only_one_drive_file(self):
+        import tempfile
+        from pathlib import Path
+
+        drive = MemoryDriveSession()
+        lock_http = MemoryGCSLockSession()
+        lock_a = GCSArtifactLock(lock_http, "test-lock-bucket")
+        lock_b = GCSArtifactLock(lock_http, "test-lock-bucket")
+        writer_a = GoogleDriveReportWriter(drive, "sandbox-folder", lock_store=lock_a, lock_required=True)
+        writer_b = GoogleDriveReportWriter(drive, "sandbox-folder", lock_store=lock_b, lock_required=True)
+        entered = threading.Event()
+        continue_write = threading.Event()
+        first_errors = []
+
+        def first_writer():
+            with tempfile.TemporaryDirectory() as temp:
+                spool = DeliverySpool(Path(temp) / "one.sqlite")
+                spool.persist(self.report_id, self.revision, "DOCS", self.body)
+
+                def pause_then_write(key, payload):
+                    entered.set()
+                    self.assertTrue(continue_write.wait(5))
+                    return writer_a.write_docs(key, payload)
+
+                try:
+                    spool.transfer(self.report_id, self.revision, "DOCS", write=pause_then_write,
+                        readback=writer_a.readback, reconcile=writer_a.reconcile, guard=writer_a.transfer_guard)
+                except Exception as exc:
+                    first_errors.append(exc)
+
+        thread = threading.Thread(target=first_writer)
+        thread.start()
+        self.assertTrue(entered.wait(5))
+        with tempfile.TemporaryDirectory() as temp:
+            other_spool = DeliverySpool(Path(temp) / "two.sqlite")
+            other_spool.persist(self.report_id, self.revision, "DOCS", self.body)
+            with self.assertRaises(DriveLockBusy):
+                other_spool.transfer(self.report_id, self.revision, "DOCS", write=writer_b.write_docs,
+                    readback=writer_b.readback, reconcile=writer_b.reconcile, guard=writer_b.transfer_guard)
+            continue_write.set()
+            thread.join(5)
+            self.assertFalse(thread.is_alive())
+            self.assertEqual(first_errors, [])
+            # Once the owner finishes, a later machine retries safely by
+            # finding and reading back the already-created file under the lock.
+            other_spool.transfer(self.report_id, self.revision, "DOCS", write=writer_b.write_docs,
+                readback=writer_b.readback, reconcile=writer_b.reconcile, guard=writer_b.transfer_guard)
+            self.assertEqual(other_spool.inspect(self.report_id, self.revision, "DOCS")["state"],
+                             "WRITE_READBACK_VERIFIED")
+        self.assertEqual(sum(method == "POST" and url == UPLOAD for method, url, _ in drive.calls), 1)
+        self.assertEqual(lock_http.objects, {})
 
 
 if __name__ == "__main__":

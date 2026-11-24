@@ -46,3 +46,8 @@ Diagnostics: KEEP non-sensitive folder/error codes. No secret logging or automat
 - Decision: `codex/phase2-google-writer` のPR baseを `codex/audit-capa-phase1ab` とし、Phase 2追加分だけを差分としてレビュー可能にする。
 - Context: 公開基盤branchはP2 commit `28165dbcb6714cfe0419d18acc7467546cf3a571`。PR #229のP1最新修正はPhase 2 branchに含まれない。`main`をbaseにするとP1変更が差分へ混入するため、Phase 2としての正確なレビュー境界を保つ。
 - Constraint: stacked PRであることと未マージ依存を明記。PR #229はDraft・未マージのまま保ち、Phase2 PRは独立レビュー後の試験待ちとする。mainへのmerge、本番切替/書込みは本作業に含まない。
+
+## MR-AUDIT-CAPA-20261124-01｜cross-host writer lock（2026-11-24 JST）
+- Decision: SQLite `BEGIN IMMEDIATE` だけでは異なるhostのspoolを排他できないため、実writerは明示設定されたGoogle Cloud Storage bucketでdeterministic slot/kind lock objectを `ifGenerationMatch=0` により取得し、Drive preflight→create/reconcile→spool checkpoint→full readbackまで保持する。
+- Safety: lock competition/response ambiguity is fail-closed. Lock deletion uses owner generation precondition. A hard process/OS stop may leave a live lock object; automatic expiry is excluded because it can permit two writers. Recovery requires operator verification that no owner remains, then deletion of only the named lock object.
+- Dependencies/limits: `GOOGLE_REPORT_WRITER_LOCK_BUCKET`, same service account permission to create/delete objects, and bucket without a retention rule that prevents lock deletion. No bucket/permission setup or live write was performed. GCS lock is for concurrency, not a durable cross-host report spool.
