@@ -1,0 +1,31 @@
+name: Phase 2 report writer fixtures
+
+on:
+  push:
+    branches: [codex/phase2-google-writer]
+  pull_request:
+    paths:
+      - 'scripts/reporting/delivery_spool.py'
+      - 'scripts/reporting/google_drive_writer.py'
+      - 'scripts/transfer_market_report_to_drive.py'
+      - 'tests/test_delivery_spool.py'
+      - 'tests/test_google_drive_writer.py'
+      - 'tests/test_transfer_market_report_to_drive.py'
+      - '.github/workflows/test-phase2-report-writer.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  fixtures:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Run Phase 2 offline and mocked Drive tests
+        run: |
+          python -m unittest discover -s tests -p 'test_delivery_spool.py' -v
+          python -m unittest discover -s tests -p 'test_google_drive_writer.py' -v
+          python -m unittest discover -s tests -p 'test_transfer_market_report_to_drive.py' -v
