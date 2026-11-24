@@ -400,6 +400,8 @@ class GoogleDriveReportWriter:
             self._folder()
             name, mime, props, existing = self._target(key, payload)
         except Exception as exc:
+            if getattr(exc, "definitely_not_created", False):
+                raise
             # No create request was sent; the original remains safely retryable.
             raise DefinitiveWriteRejection("Drive preflight did not permit a create") from exc
         if existing:
