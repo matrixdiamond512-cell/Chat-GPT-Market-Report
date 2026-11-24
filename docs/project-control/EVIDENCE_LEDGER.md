@@ -228,3 +228,12 @@ PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承�
 - Change: unclassified create errors retain the cross-host lock as a fail-closed claim. Lane readback and lock cleanup are reported independently; cleanup failure is nonzero operational result.
 - Required regressions: stale-search/lost-response blocks second spool; lock DELETE failure preserves verified artifact state but reports `LOCK_RELEASE_FAILED`/exit 3.
 - Evidence at record creation: NOT_RUN. Must record exact HEAD, CI runs, test counts, and any TEST_ONLY Drive readback separately after execution. Live TEST_ONLY write is not production recovery.
+
+## PR #230 追加2指摘の是正・CI結果｜2026-11-24 JST
+- Head: `dd96077b26f587bac7fe8e57df1cab8f331c1abc`, PR #230 remains OPEN/DRAFT, unmerged, mergeable.
+- Changes: a non-definitive Google Drive create error retains the shared GCS generation-locked object. A second independent spool/host cannot enter reconciliation or create while the claim remains. Lock cleanup failure is a separate `lockRelease` outcome; verified lanes remain verified, `resultStatus=LOCK_RELEASE_FAILED`, CLI exit 3.
+- Tests: exact-head workflow run `45367066687` PASS; logs show spool 14, Google writer/lock 10, CLI 7 = 31 PASS. Added lost-create-response with stale Drive search blocking a second spool, direct lock DELETE failure preserving verified state, and CLI status/exit-code regression. PR runs `45367066852` and `45367066374` PASS.
+- Result: E2 mocked integration PASS. Local Python test execution NOT_RUN because this PC's WindowsApps Python launcher cannot start. No Google API call/write by the Python writer was made.
+- TEST_ONLY discovery: connected Drive search returned one folder whose name starts `TEST_ONLY`; process environment has no `GOOGLE_SERVICE_ACCOUNT_JSON`, `GOOGLE_REPORT_WRITER_FOLDER_ID`, or `GOOGLE_REPORT_WRITER_LOCK_BUCKET`. Therefore real writer E3 is BLOCKED/NOT_RUN; no connector-created substitute files were used.
+- Limits: retained ambiguous-create lock requires human verification of writer inactivity and exact artifact identity/readback; stale Drive search is not proof that create failed. No actual GCS IAM or Drive writer permission was tested. PR #229 code, production settings/folders, formal report artifacts, Pages and schedules were untouched.
+- Next: configure existing TEST_ONLY service-account and GCS lock-bucket environment, then run actual writer Docs/PNG save and readback. Do not treat CI as E3 or production recovery.

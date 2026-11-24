@@ -220,6 +220,6 @@ ACCEPTANCE: Google認証・通信前に本文/PNGを両方spoolへcommit、reope
 CONSTRAINTS: PR #229のP1修正を混入・変更しない。既存発行枠・本文・画像仕様・Drive原本を変更しない。テスト用隔離先以外へ書かない。本番切替・mergeなし。
 OUT OF SCOPE: 本番復旧、正式画像品質QA、Pages公開、独立監査合格。
 FORBIDDEN SUBSTITUTE: モックCIまたはDrive UI経由の試験をPython実writerの実運用証明にしない。
-STATUS: IN_PROGRESS; Draft PR #230 open. Prior head's 28 E2 tests passed; latest two-finding regressions and CI pending.
-OPEN OUTCOMES: 新headのCIと独立再レビュー、TEST_ONLY Cloud Storage lock bucketの設定/実権限、同PC cold reboot後のspool確認、後続の実Docs/PNG write-readback。応答不明時に残るfail-closed claimは手動の実体照合・解消を要する。
-NEXT NECESSARY ACTION: 追加2指摘の負例と関連回帰を実行し、Draft PRを更新してCI/独立再レビューを受ける。再レビュー後、認証と隔離先が利用可能ならTEST_ONLY実保存を行う。
+STATUS: IN_PROGRESS; Draft PR #230 open at dd96077b26f587bac7fe8e57df1cab8f331c1abc. 31 Phase 2 tests and three PR checks passed (E2). Code re-review completed; live writer E3 is NOT_RUN because process credentials and lock bucket are not configured.
+OPEN OUTCOMES: independent maintainer re-review, TEST_ONLY Cloud Storage lock bucket and IAM, Python writer service-account configuration, same-PC cold reboot spool check, and real Docs/PNG write-readback. An ambiguous create intentionally leaves a fail-closed claim requiring operator reconciliation.
+NEXT NECESSARY ACTION: provision/use the existing TEST_ONLY writer identity and GCS lock bucket in this environment, then perform isolated Docs/PNG save and exact readback. No production configuration or folder is authorized.

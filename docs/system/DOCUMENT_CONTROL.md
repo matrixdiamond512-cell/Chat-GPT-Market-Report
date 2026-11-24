@@ -187,3 +187,5 @@ PR公開範囲追補（MR-AUDIT-CAPA-20261124-01 / 2026-11-24 JST）: 自動承�
 
 ## MR-AUDIT-CAPA-20261124-01｜PR #230追加指摘の修正記録
 変更要求: MR-AUDIT-CAPA-20261124-01（追加レビューコメント7126900842）。対象: `scripts/reporting/google_drive_writer.py`、`scripts/transfer_market_report_to_drive.py`、関連tests、固定文書requirements/specification/operations/DOCUMENT_CONTROLおよびPhase 2証跡。内容: create応答不明時はGCS lockを共有fail-closed claimとして保持し、別spoolからの新規作成を阻止。lock解放結果を保存/読戻し証拠と分離し、解放失敗時はLOCK_RELEASE_FAILED・終了コード3を報告する。実装後テスト/CI/実Drive隔離試験は本追補作成時点で未確定のためEVIDENCE_LEDGERで更新する。
+
+実装後追補（2026-11-24 JST）: PR #230追加2指摘をhead `dd96077b26f587bac7fe8e57df1cab8f331c1abc`で修正し、Phase 2関連31件とPRの3 checksが成功。独立worker間のcreate応答不明では共有GCS lockを残して二重createを遮断し、Drive保存/読戻しとlock releaseを別結果にした。Connected Drive検索でTEST_ONLYフォルダーを確認したが、ローカルprocessにはwriter service account・folder env・GCS lock bucket envがなく、実Python writerのDocs/PNG保存・読戻しはNOT_RUN。PRはDraft/未マージ。本番フォルダー・設定・定期タスク変更なし。証拠と次工程は`docs/project-control/EVIDENCE_LEDGER.md`参照。
