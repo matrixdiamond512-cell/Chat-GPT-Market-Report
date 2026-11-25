@@ -1,45 +1,39 @@
 {
-  "schemaVersion": "2.1.0",
-  "generatedAt": "2026-11-25T08:28:18+09:00",
-  "dataAsOf": "2026-11-24",
-  "sourceMode": "東京市場確定値統合（複数ソース・項目別基準日）",
+  "schemaVersion": "1.1.0",
+  "generatedAt": "2026-11-25T13:31:57+09:00",
+  "dataAsOf": "2026-11-13",
   "sourceSheet": "終値一覧",
-  "reference": "data/market/japan-close-reference.json",
+  "sourceRow": 12,
   "metrics": {
     "日経VI": {
-      "raw": "31.51",
-      "display": "31.51",
-      "change": "-1.56（-4.72%）",
-      "evaluation": "Nikkei 225 VI official profileの確認済み値。基準日 2026-11-24。",
-      "source": "Nikkei 225 VI official profile"
+      "raw": "34.39",
+      "display": "34.39",
+      "change": "-1.69（-4.68%）",
+      "evaluation": "警戒域。日本株のボラティリティ上昇に注意。基準日 2026-11-13。"
     },
     "日経225予想PER": {
-      "raw": "14.84倍",
-      "display": "14.84倍",
+      "raw": "15.36",
+      "display": "15.36倍",
       "change": "—",
-      "evaluation": "投資の森 日経平均PER・PBRの確定値。基準日 2026-11-24。",
-      "source": "投資"
+      "evaluation": "予想利益に対する株価水準。EPSと指数水準を合わせて確認。基準日 2026-11-13。"
     },
     "日経225予想EPS": {
-      "raw": "3,951.79円",
-      "display": "3,951.79円",
+      "raw": "3980.62",
+      "display": "3,980.62円",
       "change": "—",
-      "evaluation": "投資の森 日経平均PER・PBRの確定値。基準日 2026-11-24。",
-      "source": "投資"
+      "evaluation": "日経225構成銘柄の予想利益水準。PERの分母として確認。基準日 2026-11-13。"
     },
     "日経225 25日乖離率": {
-      "raw": "取得不能（対象日の確定値なし）",
-      "display": "取得不能（対象日の確定値なし）",
+      "raw": "-3.63%",
+      "display": "-3.63%",
       "change": "—",
-      "evaluation": "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-11-24。",
-      "source": "公開ソース"
+      "evaluation": "25日線からの乖離は警戒域外。短期の過熱感は限定的。基準日 2026-11-13。"
     },
     "日経225 200日乖離率": {
-      "raw": "取得不能（対象日の確定値なし）",
-      "display": "取得不能（対象日の確定値なし）",
+      "raw": "-1.59%",
+      "display": "-1.59%",
       "change": "—",
-      "evaluation": "取得不能（公開ソースで対象日の確定値を取得できず）。基準日 2026-11-24。",
-      "source": "公開ソース"
+      "evaluation": "200日線を下回る。長期トレンドの弱化を確認。基準日 2026-11-13。"
     }
   }
 }
