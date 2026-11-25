@@ -1,60 +1,60 @@
 {
   "schemaVersion": "1.2.0",
-  "generatedAt": "2026-11-25T08:28:16+09:00",
-  "dataDate": "2026-11-24",
+  "generatedAt": "2026-11-26T08:02:00+09:00",
+  "dataDate": "2026-11-25",
   "complete": false,
   "items": {
     "日経225予想PER": {
-      "value": "14.84倍",
-      "date": "2026-11-24",
+      "value": "14.74倍",
+      "date": "2026-11-25",
       "sourceName": "投資の森 日経平均PER・PBR",
       "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
     },
     "日経225 PBR": {
-      "value": "1.72倍",
-      "date": "2026-11-24",
+      "value": "1.71倍",
+      "date": "2026-11-25",
       "sourceName": "投資の森 日経平均PER・PBR",
       "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
     },
     "日経225予想EPS": {
-      "value": "3,951.79円",
-      "date": "2026-11-24",
+      "value": "3,867.82円",
+      "date": "2026-11-25",
       "sourceName": "投資の森 日経平均PER・PBR",
       "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/"
     },
     "東証プライム値上がり銘柄数": {
-      "value": "956",
-      "date": "2026-11-24",
+      "value": "993",
+      "date": "2026-11-25",
       "sourceName": "投資の森 値上がり・値下がり銘柄数",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
     },
     "東証プライム値下がり銘柄数": {
-      "value": "558",
-      "date": "2026-11-24",
+      "value": "537",
+      "date": "2026-11-25",
       "sourceName": "投資の森 値上がり・値下がり銘柄数",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
     },
     "東証プライム25日騰落レシオ": {
-      "value": "81.44%",
-      "date": "2026-11-24",
+      "value": "84.58%",
+      "date": "2026-11-25",
       "sourceName": "投資の森 東証プライム騰落銘柄数の保存履歴から25営業日で算出",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/",
       "method": "25 exact-date Prime breadth sessions"
     },
     "日経225現物": {
-      "value": "58,644.63",
-      "change": "+2,207.98",
-      "rate": "+3.91%",
-      "direction": "上昇",
-      "date": "2026-11-24",
+      "value": "57,011.62",
+      "change": "-1,633.01",
+      "rate": "-2.78%",
+      "direction": "下落",
+      "date": "2026-11-25",
       "sourceName": "投資の森 日経平均PER・PBR（同日終値・前日差）",
       "sourceUrl": "https://nikkeiyosoku.com/nikkeiper/",
       "status": "exact_date_close_anchor"
     }
   },
   "unavailable": {
-    "日経225現物": "2026-11-24の確定日足がソースに未反映",
-    "東証プライム売買高": "2026-11-24の大引けブロックがトレーダーズ・ウェブに取得時点で見つからず"
+    "日経225現物": "2026-11-25の確定日足がソースに未反映",
+    "東証プライム売買高": "2026-11-25の大引けブロックがトレーダーズ・ウェブに取得時点で見つからず"
   },
   "breadthHistory": [
     {
@@ -735,16 +735,23 @@
       "primeDecliners": 558,
       "sourceName": "投資の森 値上がり・値下がり銘柄数",
       "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
+    },
+    {
+      "date": "2026-11-25",
+      "primeAdvancers": 993,
+      "primeDecliners": 537,
+      "sourceName": "投資の森 値上がり・値下がり銘柄数",
+      "sourceUrl": "https://nikkeiyosoku.com/jp_index_rate/"
     }
   ],
   "rule": "accept exact target-date records only; never carry stale records forward",
   "qualityChecks": {
     "nikkeiCloseCrossCheck": {
-      "checkedAt": "2026-11-25T08:28:16+09:00",
-      "targetDate": "2026-11-24",
-      "authoritativeClose": 58644.63,
-      "authoritativeChange": 2207.98,
-      "previousCloseDerived": 56436.649999999994,
+      "checkedAt": "2026-11-26T08:02:00+09:00",
+      "targetDate": "2026-11-25",
+      "authoritativeClose": 57011.62,
+      "authoritativeChange": -1633.01,
+      "previousCloseDerived": 58644.630000000005,
       "oldReferenceClose": null,
       "yahooTargetDayRawClose": null,
       "differenceVsYahoo": null,
