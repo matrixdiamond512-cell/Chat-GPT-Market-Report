@@ -2,7 +2,7 @@
   "schemaVersion": "2.0.0",
   "pageTitle": "ゴールド需給分析",
   "subtitle": "COMEX先物・投機筋・ETF・中国/インド現物需要から総合判定",
-  "generatedAt": "2026-11-26T06:37:03+09:00",
+  "generatedAt": "2026-11-26T13:06:08+09:00",
   "comex": {
     "status": "preserved_after_fetch_error",
     "asOfDate": "2026-08-06",
@@ -16,7 +16,7 @@
     "sourceUrl": "https://www.cmegroup.com/daily_bulletin/current/Section02B_Summary_Volume_And_Open_Interest_Metals_Futures_And_Options.pdf",
     "note": "CME Daily Bulletin PG02BのGC COMEX GOLD FUTURES。価格×建玉判定は同一基準日の価格取得後に実施。",
     "error": "CME取得失敗: RuntimeError: HTTP取得失敗（3回試行）: HTTPSConnectionPool(host='www.cmegroup.com', port=443): Read timed out. (read timeout=45)",
-    "lastAttemptAt": "2026-11-26T06:38:41+09:00"
+    "lastAttemptAt": "2026-11-26T13:07:46+09:00"
   },
   "cftc": {
     "status": "verified",
@@ -29,7 +29,7 @@
     "judgement": "投機筋の売り増加",
     "sourceName": "CFTC Disaggregated COT - Futures Only",
     "sourceUrl": "https://publicreporting.cftc.gov/Commitments-of-Traders/Disaggregated-Futures-Only/72hh-3qpy",
-    "fetchedAt": "2026-11-26T06:38:41+09:00",
+    "fetchedAt": "2026-11-26T13:07:56+09:00",
     "historyWeeks": [
       {
         "asOfDate": "2025-11-25",
@@ -609,26 +609,26 @@
     "managedMoneyLongChange": -5412,
     "managedMoneyShortChange": 3987,
     "goldPrice": 3864.2,
-    "historyFetchedAt": "2026-11-25T21:38:44+00:00"
+    "historyFetchedAt": "2026-11-26T04:08:10+00:00"
   },
   "etf": {
     "gld": {
       "status": "verified",
-      "asOfDate": "2026-11-24",
-      "tonnes": 1027.31,
-      "changeTonnes": -3.990000000000009,
+      "asOfDate": "2026-11-25",
+      "tonnes": 1027.88,
+      "changeTonnes": 0.5700000000001637,
       "sourceName": "SPDR Gold Shares Historical Archive",
       "sourceUrl": "https://www.spdrgoldshares.com/usa/gld/",
-      "fetchedAt": "2026-11-26T06:38:42+09:00"
+      "fetchedAt": "2026-11-26T13:07:56+09:00"
     },
     "iau": {
       "status": "verified",
-      "asOfDate": "2026-11-24",
-      "tonnes": 459.76,
-      "changeTonnes": 0.0,
+      "asOfDate": "2026-11-25",
+      "tonnes": 459.47,
+      "changeTonnes": -0.2899999999999636,
       "sourceName": "iShares Gold Trust",
       "sourceUrl": "https://www.ishares.com/us/products/239561/ishares-gold-trust-fund",
-      "fetchedAt": "2026-11-26T06:38:42+09:00"
+      "fetchedAt": "2026-11-26T13:07:57+09:00"
     },
     "global": {
       "status": "verified",
@@ -641,15 +641,10 @@
       "frequency": "monthly",
       "sourceName": "World Gold Council Gold ETF Flows",
       "sourceUrl": "https://www.gold.org/goldhub/research/gold-etfs-holdings-and-flows/2026/11",
-      "fetchedAt": "2026-11-26T06:38:43+09:00",
+      "fetchedAt": "2026-11-26T13:07:59+09:00",
       "note": "WGC公式月次レポート本文から公開値を抽出。週次チャートがログイン必須の場合は月次公開値を使用。"
     },
     "gldHistory": [
-      {
-        "asOfDate": "2026-07-21",
-        "tonnes": 1005.87,
-        "changeTonnes": 2.2799999999999727
-      },
       {
         "asOfDate": "2026-07-22",
         "tonnes": 1007.87,
@@ -1094,6 +1089,11 @@
         "asOfDate": "2026-11-24",
         "tonnes": 1027.31,
         "changeTonnes": -3.990000000000009
+      },
+      {
+        "asOfDate": "2026-11-25",
+        "tonnes": 1027.88,
+        "changeTonnes": 0.5700000000001637
       }
     ],
     "iauHistory": [
@@ -1481,6 +1481,11 @@
         "asOfDate": "2026-11-24",
         "tonnes": 459.76,
         "changeTonnes": 0.0
+      },
+      {
+        "asOfDate": "2026-11-25",
+        "tonnes": 459.47,
+        "changeTonnes": -0.2899999999999636
       }
     ],
     "historyDaily": [
@@ -2176,9 +2181,18 @@
         "iauChangeTonnes": 0.0,
         "combinedChangeTonnes": -3.990000000000009,
         "aligned": true
+      },
+      {
+        "asOfDate": "2026-11-25",
+        "gldTonnes": 1027.88,
+        "iauTonnes": 459.47,
+        "gldChangeTonnes": 0.5700000000001637,
+        "iauChangeTonnes": -0.2899999999999636,
+        "combinedChangeTonnes": 0.2800000000002001,
+        "aligned": true
       }
     ],
-    "historyDaysCount": 77,
+    "historyDaysCount": 78,
     "historyStatus": "verified",
     "historyFallback": null
   },
@@ -2187,7 +2201,7 @@
     "frequency": "weekly",
     "sourceName": "World Gold Council Local gold price premium/discount",
     "sourceUrl": "https://www.gold.org/goldhub/data/gold-premium",
-    "fetchedAt": "2026-11-26T06:38:42+09:00",
+    "fetchedAt": "2026-11-26T13:07:58+09:00",
     "error": "WGC現物プレミアム取得不能: RuntimeError: HTTP取得失敗（1回試行）: 403 Client Error: Forbidden for url: https://www.gold.org/download/file/11657/gold-premiums.xlsx",
     "note": "一般公開経路を確認できないため旧値を最新値として表示しません。"
   },
@@ -2228,7 +2242,7 @@
       "sourceName": "FRED DFII10",
       "sourceUrl": "https://fred.stlouisfed.org/series/DFII10",
       "label": "米10年実質金利",
-      "fetchedAt": "2026-11-26T06:38:43+09:00"
+      "fetchedAt": "2026-11-26T13:07:58+09:00"
     },
     "dollarBroad": {
       "status": "verified",
@@ -2238,7 +2252,7 @@
       "sourceName": "FRED DTWEXBGS",
       "sourceUrl": "https://fred.stlouisfed.org/series/DTWEXBGS",
       "label": "米ドル実効指数（Broad）",
-      "fetchedAt": "2026-11-26T06:38:43+09:00"
+      "fetchedAt": "2026-11-26T13:07:58+09:00"
     },
     "usdjpy": {
       "status": "verified",
@@ -2251,9 +2265,9 @@
     }
   },
   "assessment": {
-    "shortTerm": "売り優勢",
+    "shortTerm": "中立〜やや売り",
     "structural": "買い需要あり（確認項目限定）",
-    "score": 24,
+    "score": 41,
     "components": [
       {
         "name": "CFTC",
@@ -2261,7 +2275,7 @@
       },
       {
         "name": "ETF",
-        "score": -1.0
+        "score": 1.0
       },
       {
         "name": "実質金利",
@@ -2281,7 +2295,7 @@
     "金先物は前回比-0.06%です。COMEXの出来高・建玉は別の基準日で表示し、日付を合わせられた場合だけ価格×建玉判定を行います。",
     "COMEX出来高・建玉は取得待ちです。取得不能時は推測値を表示しません。",
     "CFTC Managed Moneyのネットは102,942枚、前週比-9,399枚です。週次データとして短期需給に反映します。",
-    "主要金ETF保有量は GLD 1027.31t / IAU 459.76t。金融需要の実流入・流出を先物と分けて確認します。",
+    "主要金ETF保有量は GLD 1027.88t / IAU 459.47t。金融需要の実流入・流出を先物と分けて確認します。",
     "中国・インドの現物プレミアムはWGCの公開更新を確認できる場合だけ表示します。ログイン等で取得できない場合は前回値を捏造せず保留します。"
   ]
 }
