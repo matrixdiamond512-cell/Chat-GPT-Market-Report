@@ -1,9 +1,9 @@
 {
   "schemaVersion": "2.0.0",
   "pageId": "events",
-  "generatedAt": "2026-11-27T21:38:55+09:00",
-  "publishedAt": "2026-11-27T21:38:55+09:00",
-  "dataAsOf": "2026-11-27T21:38:55+09:00",
+  "generatedAt": "2026-11-28T06:39:14+09:00",
+  "publishedAt": "2026-11-28T06:39:14+09:00",
+  "dataAsOf": "2026-11-28T06:39:14+09:00",
   "timezone": "Asia/Tokyo",
   "status": "ok",
   "isStale": false,
@@ -37,7 +37,7 @@
       "id": "event_result_repair",
       "name": "重要イベント実績値の補完取得",
       "status": "ok",
-      "note": "代替カレンダー照合 0件、公式PDF補完 0件、取得不能理由明記 1件。"
+      "note": "代替カレンダー照合 0件、公式PDF補完 0件、取得不能理由明記 2件。"
     },
     {
       "id": "weekly_claims_validation",
@@ -292,8 +292,8 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-22T17:01:49+09:00",
-      "updatedAt": "2026-11-27T21:38:55+09:00",
-      "resultSavedAt": "2026-11-27T21:38:55+09:00",
+      "updatedAt": "2026-11-28T06:39:14+09:00",
+      "resultSavedAt": "2026-11-28T06:39:14+09:00",
       "resultSource": {
         "id": "tradingview_economic_calendar",
         "name": "Statistics Bureau",
@@ -322,7 +322,7 @@
       "actual": "",
       "revised": "",
       "resultComparison": "",
-      "resultExplanation": "実績値の更新を確認中。公式発表元と取得元の更新後に自動反映します。",
+      "resultExplanation": "取得不能（代替カレンダーと公式発表元の双方で入札結果を照合できません）",
       "status": "result_pending",
       "isTimed": true,
       "isImportantEvent": true,
@@ -544,7 +544,8 @@
       "sourceUrl": "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
       "sourceNote": "週間カレンダーをJST変換し、WEBマーケットレポート独自の重要度と市場対応を付与",
       "createdAt": "2026-11-27T21:38:55+09:00",
-      "updatedAt": "2026-11-27T21:38:55+09:00"
+      "updatedAt": "2026-11-28T06:39:17+09:00",
+      "resultFetchStatus": "unavailable"
     }
   ]
 }
