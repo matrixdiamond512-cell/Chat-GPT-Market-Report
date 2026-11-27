@@ -2,6 +2,20 @@ name: Report dashboard publication health regression
 on:
   pull_request:
     paths:
+      - scripts/report_delivery_health.py
+      - scripts/build_market_json.py
+      - scripts/prepare_pages_site.py
+      - scripts/verify_pages_artifact.py
+      - scripts/verify_pages_dependencies.py
+      - config/report_schedule.json
+      - config/pages_public_files.json
+      - assets/js/report-delivery-health.js
+      - assets/css/report-delivery-health.css
+      - tests/test_audit_phase1.py
+      - tests/test_review_publication_health.py
+      - tests/report-delivery-health.test.cjs
+      - .github/workflows/deploy-pages.yml
+      - .github/workflows/sync-latest-report-publication.yml
       - scripts/sync_latest_report_publication.py
       - tests/test_dashboard_publication_health.py
       - scripts/validate_report_recovery.py
@@ -12,6 +26,20 @@ on:
     branches:
       - fix/report-dashboard-verification-state-20261013
     paths:
+      - scripts/report_delivery_health.py
+      - scripts/build_market_json.py
+      - scripts/prepare_pages_site.py
+      - scripts/verify_pages_artifact.py
+      - scripts/verify_pages_dependencies.py
+      - config/report_schedule.json
+      - config/pages_public_files.json
+      - assets/js/report-delivery-health.js
+      - assets/css/report-delivery-health.css
+      - tests/test_audit_phase1.py
+      - tests/test_review_publication_health.py
+      - tests/report-delivery-health.test.cjs
+      - .github/workflows/deploy-pages.yml
+      - .github/workflows/sync-latest-report-publication.yml
       - scripts/sync_latest_report_publication.py
       - tests/test_dashboard_publication_health.py
       - .github/workflows/report-dashboard-health-ci.yml
@@ -28,9 +56,35 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Verify source and regression
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Re-run the 60 Python regressions recorded for independent review
         run: |
-          python -m py_compile scripts/sync_latest_report_publication.py tests/test_dashboard_publication_health.py
-          python -m unittest discover -s tests -p test_dashboard_publication_health.py -v
-      - name: Validate all archived supplemental reports without promotion to canonical
+          python - <<'PY'
+          import unittest
+          import sys
+          suite = unittest.TestSuite()
+          loader = unittest.TestLoader()
+          for pattern in (
+              'test_audit_phase1.py', 'test_dashboard_publication_health.py',
+              'test_publication_eligibility.py', 'test_market_report_sync_contract.py',
+              'test_report_contract.py', 'test_scheduled_report_delivery.py',
+              'test_verify_public_report_deployment.py',
+          ):
+              suite.addTests(loader.discover('tests', pattern=pattern))
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          sys.exit(not result.wasSuccessful() or result.testsRun != 60)
+          PY
+      - name: Verify review negative cases independently of the original 60
+        run: python -m unittest discover -s tests -p test_review_publication_health.py -v
+      - name: Re-run the 32 original Portal regressions plus review cases
+        run: node --test tests/*.test.mjs tests/report-delivery-health.test.cjs
+      - name: Validate archived supplemental reports without publication promotion
         run: python scripts/validate_report_recovery.py
+      - name: Verify real allowlist artifact dependencies without deployment
+        env:
+          PAGES_REVIEW_SITE: ${{ runner.temp }}/pages-review-site
+        run: |
+          python scripts/prepare_pages_site.py --output "$PAGES_REVIEW_SITE"
+          python scripts/verify_pages_dependencies.py --site "$PAGES_REVIEW_SITE"

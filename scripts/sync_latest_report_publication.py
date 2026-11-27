@@ -5,6 +5,7 @@ import json
 import re
 from pathlib import Path
 
+from report_delivery_health import apply_delivery_health
 from report_source_contract import heading, validate_saved_body
 from report_identity import internal_report_key
 from reporting.publication_eligibility import is_publication_eligible
@@ -199,7 +200,7 @@ def report_publication_health(report: dict) -> tuple[str, bool, str]:
     return ("ok", False, "")
 
 
-def sync_dashboard(report: dict) -> None:
+def sync_dashboard(report: dict, *, now=None) -> str:
     dashboard = load_json(DASHBOARD, {})
     previous_report = dashboard.get("latestReport") if isinstance(dashboard.get("latestReport"), dict) else {}
     if not report.get("marketData"):
@@ -213,38 +214,20 @@ def sync_dashboard(report: dict) -> None:
 
     # Scheduled recovery runs must be idempotent. If the exact same report is
     # already projected, do not create a timestamp-only dashboard commit.
-    source_status, source_is_stale, source_stale_reason = report_publication_health(report)
-    previous_status = str(dashboard.get("status") or "partial")
-    previous_stale_reason = str(dashboard.get("staleReason") or "")
-    if previous_stale_reason == "REPORT_SOURCE_RECONSTRUCTED_UNVERIFIED":
-        # Clear only a status previously caused by the report source. Unknown
-        # independent data completeness remains partial until separately verified.
-        previous_status = "partial"
-        previous_is_stale = False
-        previous_stale_reason = ""
-    else:
-        previous_is_stale = bool(dashboard.get("isStale", False))
-    status = "degraded" if source_status == "degraded" else (
-        previous_status if previous_status in {"ok", "partial", "degraded"} else "partial"
-    )
-    is_stale = source_is_stale or previous_is_stale
-    stale_reason = source_stale_reason or previous_stale_reason
+    previous_health = {k: dashboard.get(k) for k in ("status", "isStale", "staleReason", "reportDelivery")}
+    apply_delivery_health(dashboard, report, now=now, evidence_root=DASHBOARD.parent.parent)
     if (previous_report == report and dashboard.get("currentReportKey") == key
-            and dashboard.get("status") == status
-            and dashboard.get("isStale") is is_stale
-            and dashboard.get("staleReason", "") == stale_reason):
-        return
+            and dashboard.get("dataAsOf") == data_as_of
+            and previous_health == {k: dashboard.get(k) for k in previous_health}):
+        return "NO_OP"
 
-    now = dt.datetime.now(JST).replace(microsecond=0).isoformat()
+    timestamp = (now or dt.datetime.now(JST)).replace(microsecond=0).isoformat()
 
     dashboard.setdefault("schemaVersion", "1.1.0")
     dashboard.setdefault("pageId", "dashboard")
-    dashboard["generatedAt"] = now
-    dashboard["publishedAt"] = now
+    dashboard["generatedAt"] = timestamp
+    dashboard["publishedAt"] = timestamp
     dashboard["dataAsOf"] = data_as_of
-    dashboard["status"] = status
-    dashboard["isStale"] = is_stale
-    dashboard["staleReason"] = stale_reason
     dashboard["currentReportKey"] = key
     dashboard["latestReport"] = report
 
@@ -255,7 +238,7 @@ def sync_dashboard(report: dict) -> None:
     for source in sources:
         if isinstance(source, dict) and source.get("id") == "MARKET_REPORTS_JSON":
             source["asOf"] = key
-            source["status"] = "ok"
+            source["status"] = dashboard["reportDelivery"]["formalPublication"]["state"].lower()
             found = True
             break
     if not found:
@@ -264,11 +247,12 @@ def sync_dashboard(report: dict) -> None:
             "name": "マーケットレポート本文の構造化JSON",
             "path": "reports.json",
             "asOf": key,
-            "status": "ok",
+            "status": dashboard["reportDelivery"]["formalPublication"]["state"].lower(),
             "note": "data/latest-report.json を正本として reports.json と dashboard.json を自動同期。",
         })
     dashboard["sources"] = sources
     dump_json(DASHBOARD, dashboard)
+    return "UPDATED"
 
 
 def select_same_slot_revision(reports: list[dict], source: str) -> dict:
@@ -329,7 +313,8 @@ def main() -> None:
     payload["latestReport"] = report
     payload["dataAsOf"] = f"{report['date']}T{report['time']}:00+09:00"
     dump_json(LATEST, payload)
-    sync_dashboard(report)
+    outcome = sync_dashboard(report, now=now)
+    print(f"Projection={outcome}; deliveryEvidence={load_json(DASHBOARD, {}).get('reportDelivery', {})}")
     print(f"Synced {report['date']} {report['time']} -> {report_path.relative_to(ROOT)}, data/dashboard.json")
 
 

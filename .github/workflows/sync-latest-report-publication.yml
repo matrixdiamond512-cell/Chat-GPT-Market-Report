@@ -17,6 +17,8 @@ on:
       - "scripts/build_chatgpt_report_input.py"
       - "scripts/build_market_sheet_exports.py"
       - "scripts/sync_latest_report_publication.py"
+      - "scripts/report_delivery_health.py"
+      - "config/report_schedule.json"
       - "scripts/build_reports.py"
       - "scripts/report_identity.py"
       - "scripts/report_source_contract.py"
@@ -262,3 +264,7 @@ jobs:
           git commit -m "Sync latest market report publication"
           git pull --rebase origin main
           git push origin main
+
+      - name: Require the latest scheduled report independently of projection changes
+        if: success()
+        run: python scripts/report_delivery_health.py

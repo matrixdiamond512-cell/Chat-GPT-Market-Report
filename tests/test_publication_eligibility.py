@@ -151,6 +151,9 @@ class PublicationEligibilityTests(unittest.TestCase):
                 (source / "reports" / name).write_text(json.dumps(item), encoding="utf-8")
             (source / "reports.json").write_text(json.dumps([published]), encoding="utf-8")
 
+            (source / "config").mkdir()
+            (source / "config/pages_public_files.json").write_text(
+                json.dumps({"schemaVersion": 1, "files": ["reports.json"]}), encoding="utf-8")
             excluded = prepare_pages_site.prepare_pages_site(source, site)
 
             self.assertEqual(excluded, ["2026-10-14_08-00.json"])
