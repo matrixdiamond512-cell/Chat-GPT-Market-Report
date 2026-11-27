@@ -87,25 +87,28 @@ def latest_pdf_records(items: list[dict], api_latest_target: str) -> list[dict]:
             "publicationDate": publication["date"],
             "sourcePdfName": publication["pdfName"],
             "sourcePdfUrl": publication["url"],
+            "sourcePdfStatus": "pdf_value_verified",
             "spotVolume": float(match.group(1).replace(",", "")),
         })
     return rows
 
 
-def next_weekday(value: str) -> str:
-    current = date.fromisoformat(value) + timedelta(days=1)
-    while current.weekday() >= 5:
-        current += timedelta(days=1)
-    return current.isoformat()
+def publication_for(target: str, items: list[dict], observation_dates: list[str]) -> dict:
+    """Find the next BOJ business day, not the oldest PDF in the rolling list.
 
-
-def publication_for(target: str, items: list[dict]) -> dict:
-    match = next((item for item in items if item["date"] > target), None)
-    if match:
-        return match
-    publication = next_weekday(target)
+    Historical FXERD06 dates supply the business-day calendar before the
+    rolling PDF list. A reconstructed URL is not a verified PDF.
+    """
+    listed = {item["date"]: item for item in items}
+    calendar = sorted(set(observation_dates) | set(listed))
+    publication = next((day for day in calendar if day > target), None)
+    if publication is None:
+        raise RuntimeError(f"No observed BOJ publication day after {target}")
+    if publication in listed:
+        return {**listed[publication], "status": "pdf_listed"}
     compact = publication.replace("-", "")[2:]
-    return {"date": publication, "pdfName": f"fx{compact}.pdf", "url": f"{PDF_BASE}fx{compact}.pdf"}
+    return {"date": publication, "pdfName": f"fx{compact}.pdf",
+            "url": f"{PDF_BASE}fx{compact}.pdf", "status": "calendar_derived"}
 
 
 def rounded(value: float | None, digits: int = 0):
@@ -132,14 +135,19 @@ def build(existing: dict, now: datetime) -> dict:
     pdf_observations = latest_pdf_records(publication_files, max(row["targetDate"] for row in observations))
     existing_rows = {row.get("targetDate"): dict(row) for row in ((existing.get("data") or {}).get("records") or []) if row.get("targetDate")}
     price_rows = {row.get("date"): row for row in ((existing.get("data") or {}).get("priceRecords") or []) if row.get("date")}
+    observation_dates = sorted(set(existing_rows) | {row["targetDate"] for row in observations})
     for observation in observations:
         target = observation["targetDate"]
         row = existing_rows.get(target, {"targetDate": target})
-        publication = publication_for(target, publication_files)
+        publication = publication_for(target, publication_files, observation_dates)
+        status = publication["status"]
+        if row.get("publicationDate") == publication["date"] and row.get("sourcePdfStatus") == "pdf_value_verified":
+            status = "pdf_value_verified"
         row.update({
             "publicationDate": publication["date"],
             "sourcePdfName": publication["pdfName"],
             "sourcePdfUrl": publication["url"],
+            "sourcePdfStatus": status,
             "spotVolume": rounded(observation["spotVolume"]),
         })
         price = price_rows.get(target) or {}
@@ -166,7 +174,7 @@ def build(existing: dict, now: datetime) -> dict:
             row = existing_rows.get(target)
             if not row:
                 continue
-            for field in ("open", "high", "low", "close", "priceChangePct", "priceSourceId"):
+            for field in ("open", "high", "low", "close", "priceChangePct", "priceSourceId", "priceChangePctMethod"):
                 if row.get(field) is None and recovered.get(field) is not None:
                     row[field] = recovered[field]
     records = sorted(existing_rows.values(), key=lambda row: row["targetDate"], reverse=True)

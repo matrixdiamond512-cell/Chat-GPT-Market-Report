@@ -22,7 +22,7 @@ def main() -> None:
     if not rows:
         raise SystemExit("BOJ spot volume records missing; cannot align dates")
     # Repair a second updater that may have overwritten the published JSON.
-    # Recover only the seven historically verified sessions, never future prices.
+    # Recover only saved historical sessions, never future prices.
     recovery_path = core.PATH.with_name("usdjpy-volume-price-recovery.json")
     if recovery_path.exists():
         snapshot = json.loads(recovery_path.read_text(encoding="utf-8"))
@@ -34,15 +34,25 @@ def main() -> None:
             if row is None:
                 continue
             if any(row.get(field) is None for field in (*core.FIELDS, "priceChangePct")):
-                for field in (*core.FIELDS, "priceChangePct", "priceSourceId"):
+                for field in (*core.FIELDS, "priceChangePct", "priceSourceId", "priceChangePctMethod"):
                     if row.get(field) is None and candle.get(field) is not None:
                         row[field] = candle[field]
-                price_records[day] = {"date": day, **{field: row.get(field) for field in (*core.FIELDS, "priceChangePct", "priceSourceId")}}
+                price_records[day] = {"date": day, **{field: row.get(field) for field in (*core.FIELDS, "priceChangePct", "priceSourceId", "priceChangePctMethod") if row.get(field) is not None}}
         data["priceRecords"] = sorted(price_records.values(), key=lambda r: r["date"], reverse=True)
         good = sorted(r["targetDate"] for r in rows if r.get("close") is not None)
         data["priceRange"] = {"startDate": good[0] if good else None, "endDate": good[-1] if good else None, "count": len(good)}
-        if all(all(r.get(k) is not None for k in (*core.FIELDS, "priceChangePct")) for r in rows[:20]):
-            payload.setdefault("components", {})["usdjpyOhlc"] = {"status": "ok", "sourceId": "YAHOO_GLOBAL_USDJPY", "latestDate": good[-1], "missingLast20Dates": []}
+        missing = [r["targetDate"] for r in rows if any(r.get(k) is None for k in core.FIELDS)]
+        missing_pct = [r["targetDate"] for r in rows if r.get("priceChangePct") is None]
+        latest20 = [r["targetDate"] for r in rows[:20] if any(r.get(k) is None for k in (*core.FIELDS, "priceChangePct"))]
+        payload.setdefault("components", {}).setdefault("usdjpyOhlc", {}).update({
+            "status": "partial" if missing or missing_pct else "ok",
+            "sourceId": rows[0].get("priceSourceId"), "latestDate": good[-1] if good else None,
+            "missingLast20Dates": latest20, "missingHistoricalDates": sorted(missing),
+        })
+        data.setdefault("priceAcquisition", {}).update({
+            "missingAllDates": sorted(missing), "missingPriceChangePctDates": sorted(missing_pct),
+            "missingLast20Dates": latest20,
+        })
         core.PATH.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     # Audit EVERY BOJ-volume date. The old latest-20 shortcut left 130 gaps.
     def open_gaps():
@@ -114,7 +124,7 @@ def main() -> None:
         if row["targetDate"] in complete:
             d = row["targetDate"]
             price_items[d] = {"date": d, **{
-                k: row.get(k) for k in (*core.FIELDS, "priceChangePct", "priceSourceId")
+                k: row.get(k) for k in (*core.FIELDS, "priceChangePct", "priceSourceId", "priceChangePctMethod") if row.get(k) is not None
             }}
     data["priceRecords"] = sorted(price_items.values(), key=lambda r: r["date"], reverse=True)
 

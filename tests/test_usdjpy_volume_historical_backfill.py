@@ -10,11 +10,26 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+import update_usdjpy_volume as volume
 import run_usdjpy_volume_price_backfill as runner
 import update_usdjpy_volume_prices as core
 from stooq_usdjpy_ohlc import parse_csv
 from yahoo_jp_usdjpy_ohlc import parse_history
 from apply_dukascopy_usdjpy_csv import read_candles, fill, SOURCE_ID
+
+
+class PublicationCalendarTest(unittest.TestCase):
+    def test_old_date_uses_next_observation_not_oldest_listed_pdf(self):
+        items = [{"date": "2026-08-13", "pdfName": "fx260813.pdf", "url": "official"}]
+        days = ["2025-10-01", "2025-10-02", "2026-08-10", "2026-08-12"]
+        result = volume.publication_for("2025-10-01", items, days)
+        self.assertEqual(result["date"], "2025-10-02")
+        self.assertEqual(result["pdfName"], "fx251002.pdf")
+        self.assertEqual(result["status"], "calendar_derived")
+        self.assertEqual(volume.publication_for("2026-08-10", items, days)["date"], "2026-08-12")
+        self.assertEqual(volume.publication_for("2026-08-12", items, days)["status"], "pdf_listed")
+        with self.assertRaises(RuntimeError):
+            volume.publication_for("2026-08-13", items, days)
 
 
 class PriceBackfillTest(unittest.TestCase):
