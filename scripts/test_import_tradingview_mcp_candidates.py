@@ -29,7 +29,11 @@ def make_snapshot() -> dict:
             "marketType": contract["marketType"],
             "session": contract["session"],
             "interval": "1D",
-            "barAnchorUtc": "2026-10-11T00:00:00Z",
+            "barAnchorUtc": (
+                "2026-10-08T21:00:00Z"
+                if item_id in {"usdjpy", "eurusd"}
+                else "2026-10-11T00:00:00Z"
+            ),
             "marketDate": "2026-10-10" if item_id == "btcusd" else "2026-10-09",
         })
     return {"retrievedAt": retrieved, "items": items}
@@ -57,6 +61,29 @@ class TradingViewMcpCandidateImportTests(unittest.TestCase):
             normalized["candidates"][0]["snapshotId"],
             "tv-mcp-dow-20261011000000",
         )
+        fx = {item["id"]: item for item in normalized["candidates"]}
+        for field in ("usdjpy", "eurusd"):
+            self.assertEqual(
+                fx[field]["recommendedMcpQueryWindow"],
+                {"dateFrom": "2026-10-08", "dateTo": "2026-10-09"},
+            )
+            self.assertEqual(fx[field]["barCloseBoundaryUtc"], "2026-10-09T21:00:00Z")
+            self.assertEqual(
+                fx[field]["reviewStatus"],
+                "CANDIDATE_CLOSE_AND_SESSION_REVIEW_REQUIRED",
+            )
+
+    def test_fx_anchor_date_is_not_misused_as_close_market_date(self) -> None:
+        snapshot = make_snapshot()
+        item = next(row for row in snapshot["items"] if row["id"] == "usdjpy")
+        item["marketDate"] = "2026-10-08"
+        normalized = normalize_snapshot(
+            snapshot,
+            now=dt.datetime.fromisoformat("2026-10-11T18:00:00+00:00"),
+        )
+        fx = next(row for row in normalized["candidates"] if row["id"] == "usdjpy")
+        self.assertEqual(fx["reviewStatus"], "CONFLICT")
+        self.assertIn("prior-day anchor", fx["reviewBasis"])
 
     def test_repeat_import_adds_no_duplicate_rows(self) -> None:
         normalized = normalize_snapshot(
