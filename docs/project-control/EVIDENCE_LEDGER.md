@@ -590,3 +590,14 @@ Unresolved: Actions-driven all-28 refresh and report roundtrip; official JPX Pri
 ### Follow-up MRDATA-20261030-NIKKEI-200D-REPORT-ROUNDTRIP — normalized input rows (2026-10-31 JST)
 
 Source/PR: Actions run #314 (41059206296), PR #94 branch. Four official Nikkei observations for market date 2026-10-30 (cash, VI, 25-day deviation, 200-day deviation) were appended to the private test-sheet `Personal_Report_Ready` using the existing 12-column schema. The prior rows were preserved. All four rows read back exactly, including source date, VERIFIED state and retrieval time; each new observation ID occurred once. Values matched the existing dedicated Nikkei history tab. This connects the Actions result to the standard report-input tab; it does not mean a new all-28 acquisition ran. No production sheet write. Code tests NOT_RUN; no code changed. Unresolved acceptance remains the all-28 Actions acquisition/report/readback and JPX/futures items listed above.
+
+## MRDATA-20261128-FX-ANCHOR-01 — FX日足検索窓の原因再現と修正（2026-11-28 JST）
+
+- **対象:** PR #94 / `codex/market-data-completeness-recovery`。修正HEAD: `ca3f7c9dda074a3514cdf6fd81cdf6df1a7d354e`。
+- **原因:** TradingViewの日次FX足はニューヨーク17:00の区切りを使い、足のanchor（開始日）は対象終値日の前日になる。取得要求をUTC/カレンダー上の対象日1日だけ（例: 2026-11-27〜2026-11-27）に限定すると該当足を検索範囲から外す。日付を前日から対象日までに拡張すると、同じ足が見つかった。したがって、主因はデータ欠落ではなく検索窓とanchor日の取り違え。
+- **再現証拠:** 2026-11-28 03:27 UTCのTradingView公式MCP手動照会で、USD/JPY・EUR/USDとも対象日だけの1D要求は空、前日〜対象日の要求ではanchor 2026-11-26 22:00 UTC（NY 17:00）で市場日2026-11-27の足が返った。1h系列の終端も同じNY 17:00境界と整合した。
+- **判定上の制限:** MCP応答には形成中barに関する一般警告が残っており、この確認は検索窓の原因を再現したE4相当の取得証拠および同一提供元内整合性に限る。独立ソース照合、確定終値認定、Sheets保存の証明ではない。該当値は確定値へ昇格せず、Sheetsへ書き込んでいない。本番「終値一覧」は未変更。
+- **修正:** `scripts/import_tradingview_mcp_candidates.py` がFXの推奨取得窓を前日〜市場日で出し、NY 17:00 anchorからDST対応で終端境界を算出する。前日anchorを市場日として渡した候補はCONFLICTにする。
+- **回帰防止:** `scripts/verify_tradingview_close.py` のFX日次境界検証を固定UTC 24時間差から「次のNYローカル日17:00」に変更。春・秋DST（23/25時間差）と誤った前日marketDateのテストを追加。
+- **コード変更:** commits `c154d5c`, `17720b7`, `ea07c39`, `91cb727`, `ca3f7c9`。自動テスト/Actions結果はこの記録の作成時点で未確認（NOT_RUN/UNKNOWN）。
+- **次の必要確認:** PR #94の最終HEADで回帰テストとCIが成功したことを確認し、次回の確定済みFX日次足を広い日付窓で取得する。MCPの形成中警告が消え、終端時刻・市場日が一致し、必要な独立照合が済むまでは確定扱いにしない。
