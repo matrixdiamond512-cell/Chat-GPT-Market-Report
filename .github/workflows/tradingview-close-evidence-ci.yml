@@ -1,0 +1,36 @@
+name: TradingView close evidence regression
+
+on:
+  push:
+    branches:
+      - codex/market-data-completeness-recovery
+    paths:
+      - "scripts/import_tradingview_mcp_candidates.py"
+      - "scripts/verify_tradingview_close.py"
+      - "scripts/test_import_tradingview_mcp_candidates.py"
+      - "scripts/test_verify_tradingview_close.py"
+      - ".github/workflows/tradingview-close-evidence-ci.yml"
+  pull_request:
+    paths:
+      - "scripts/import_tradingview_mcp_candidates.py"
+      - "scripts/verify_tradingview_close.py"
+      - "scripts/test_import_tradingview_mcp_candidates.py"
+      - "scripts/test_verify_tradingview_close.py"
+      - ".github/workflows/tradingview-close-evidence-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  close-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile TradingView candidate and close verifiers
+        run: python -m py_compile scripts/import_tradingview_mcp_candidates.py scripts/verify_tradingview_close.py
+      - name: Run offline candidate normalization and close evidence tests
+        run: python -m unittest scripts.test_import_tradingview_mcp_candidates scripts.test_verify_tradingview_close -v
