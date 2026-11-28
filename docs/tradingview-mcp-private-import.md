@@ -19,6 +19,10 @@ python scripts/import_tradingview_mcp_candidates.py `
   --write-test-sheet
 ```
 
+## FX daily-bar query dates
+
+For USD/JPY and EUR/USD, TradingView's 1D bar timestamp is the bar anchor, not the NY 17:00 close date. A bar anchored at 17:00 America/New_York on the prior calendar date closes at 17:00 on the target market date. Therefore, when requesting a target FX close date, include the prior calendar date in the MCP window: for target 2026-11-27, request `date_from=2026-11-26` and `date_to=2026-11-27`. A one-day window containing only 2026-11-27 can return no bar even when the target close is available. The normalized candidate records this suggested window, the NY close boundary derived from a valid 17:00 anchor, and marks anchor-date/close-date mismatches as CONFLICT. This only fixes retrieval and date labeling; it does not override a source's forming-bar warning or independently verify the close.
+
 ## Validation boundary
 
 The adapter requires all 17 IDs exactly once; rejects unexpected symbols, units, market types, sessions, non-daily bars, nonfinite values, timezone-free timestamps, and future dates; and preserves each market's own date and exact UTC bar anchor. It labels every output `CANDIDATE_CLOSE_AND_SESSION_REVIEW_REQUIRED`. Passing the schema checks does not establish that a 1D bar close matches the report's cash close, settlement, reference time, or exchange session. The candidate must not be promoted to a verified report value until that per-market check is completed.
