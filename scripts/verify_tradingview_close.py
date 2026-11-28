@@ -129,8 +129,15 @@ def verify_close_evidence(candidate: dict, evidence: dict | None) -> dict:
             return {"status": "CONFLICT", "basis": "daily FX bar does not start at the declared NY-close boundary"}
         if boundary.astimezone(ZoneInfo("America/New_York")).strftime("%H:%M") != "17:00":
             return {"status": "CONFLICT", "basis": "daily FX bar does not end at the declared NY-close boundary"}
-        if boundary != anchor + dt.timedelta(days=1):
-            return {"status": "CONFLICT", "basis": "daily bar does not end at the declared NY-close boundary"}
+        anchor_local = anchor.astimezone(ZoneInfo("America/New_York"))
+        expected_boundary_local = dt.datetime.combine(
+            anchor_local.date() + dt.timedelta(days=1),
+            dt.time(17, 0),
+            tzinfo=ZoneInfo("America/New_York"),
+        )
+        expected_boundary = expected_boundary_local.astimezone(dt.timezone.utc)
+        if boundary != expected_boundary:
+            return {"status": "CONFLICT", "basis": "daily bar does not end at the next NY 17:00 close boundary"}
         if boundary != intraday_start + dt.timedelta(hours=1):
             return {"status": "CONFLICT", "basis": "intraday close bar does not end at the declared NY-close boundary"}
         local_date = boundary.astimezone(ZoneInfo("America/New_York")).date().isoformat()
