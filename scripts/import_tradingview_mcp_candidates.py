@@ -128,6 +128,29 @@ def snapshot_id(item_id: str, symbol: str, anchor: str) -> str:
     return f"tv-mcp-{item_id}-{parsed_anchor.strftime('%Y%m%d%H%M%S')}"
 
 
+def forex_daily_query_window(market_date: dt.date) -> dict[str, str]:
+    """Include the previous UTC calendar date because NY 17:00 bars open the prior date."""
+    return {
+        "dateFrom": (market_date - dt.timedelta(days=1)).isoformat(),
+        "dateTo": market_date.isoformat(),
+    }
+
+
+def forex_close_boundary_from_anchor(anchor: dt.datetime) -> dt.datetime | None:
+    """Return the next NY 17:00 boundary for a correctly anchored FX daily bar."""
+    timezone = ZoneInfo("America/New_York")
+    local_anchor = anchor.astimezone(timezone)
+    if local_anchor.strftime("%H:%M") != "17:00":
+        return None
+    close_day = local_anchor.date() + dt.timedelta(days=1)
+    local_boundary = dt.datetime.combine(
+        close_day,
+        dt.time(17, 0),
+        tzinfo=timezone,
+    )
+    return local_boundary.astimezone(dt.timezone.utc)
+
+
 def normalize_snapshot(snapshot: dict[str, Any], now: dt.datetime | None = None) -> dict[str, Any]:
     if not isinstance(snapshot, dict):
         raise CandidateImportError("snapshot must be an object")
@@ -188,6 +211,22 @@ def normalize_snapshot(snapshot: dict[str, Any], now: dt.datetime | None = None)
             "source": "TradingView official MCP",
         }
         review = verify_close_evidence(candidate, item.get("closeValidation"))
+        if item_id in {"usdjpy", "eurusd"}:
+            candidate["recommendedMcpQueryWindow"] = forex_daily_query_window(market_date)
+            close_boundary = forex_close_boundary_from_anchor(anchor)
+            if close_boundary is None:
+                review = {
+                    "status": "CONFLICT",
+                    "basis": "FX 1D bar anchor must be 17:00 America/New_York; query a window including the prior UTC date",
+                }
+            else:
+                candidate["barCloseBoundaryUtc"] = close_boundary.isoformat().replace("+00:00", "Z")
+                close_date = close_boundary.astimezone(ZoneInfo("America/New_York")).date()
+                if market_date != close_date:
+                    review = {
+                        "status": "CONFLICT",
+                        "basis": "FX marketDate must be the New York date of the daily bar close, not its prior-day anchor",
+                    }
         candidate["reviewStatus"] = review["status"]
         candidate["reviewBasis"] = review["basis"]
         candidates.append(candidate)
