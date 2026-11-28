@@ -104,6 +104,34 @@ class TradingViewCloseEvidenceTests(unittest.TestCase):
         candidate["marketDate"] = "2026-10-08"
         self.assertEqual(verify_close_evidence(candidate, evidence)["status"], "CONFLICT")
 
+    def test_forex_daily_boundary_handles_fall_dst_transition(self) -> None:
+        candidate = {
+            "id": "usdjpy", "symbol": "FX:USDJPY", "marketType": "spot",
+            "marketDate": "2026-11-01", "barAnchorUtc": "2026-10-31T21:00:00Z",
+            "value": "159.568",
+        }
+        evidence = {
+            "type": "forex_daily_close", "timezone": "America/New_York",
+            "closeTime": "17:00", "closeBoundaryUtc": "2026-11-01T22:00:00Z",
+            "intradayBarStartUtc": "2026-11-01T21:00:00Z",
+            "marketDate": "2026-11-01", "intradayClose": "159.568",
+        }
+        self.assertEqual(verify_close_evidence(candidate, evidence)["status"], "VERIFIED")
+
+    def test_forex_daily_boundary_handles_spring_dst_transition(self) -> None:
+        candidate = {
+            "id": "eurusd", "symbol": "FX:EURUSD", "marketType": "spot",
+            "marketDate": "2026-03-08", "barAnchorUtc": "2026-03-07T22:00:00Z",
+            "value": "1.09325",
+        }
+        evidence = {
+            "type": "forex_daily_close", "timezone": "America/New_York",
+            "closeTime": "17:00", "closeBoundaryUtc": "2026-03-08T21:00:00Z",
+            "intradayBarStartUtc": "2026-03-08T20:00:00Z",
+            "marketDate": "2026-03-08", "intradayClose": "1.09325",
+        }
+        self.assertEqual(verify_close_evidence(candidate, evidence)["status"], "VERIFIED")
+
     def test_forex_close_rejects_a_daily_bar_with_the_wrong_boundary(self) -> None:
         candidate = {
             "id": "eurusd", "symbol": "FX:EURUSD", "marketType": "spot",
