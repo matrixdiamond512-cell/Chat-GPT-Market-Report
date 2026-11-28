@@ -2,12 +2,12 @@
   "schemaVersion": "1.0.0",
   "pageId": "gold-supply-demand",
   "reportDate": "2026-11-28",
-  "generatedAt": "2026-11-28T06:08:49+09:00",
+  "generatedAt": "2026-11-28T12:50:59+09:00",
   "gold": {
     "schemaVersion": "2.0.0",
     "pageTitle": "ゴールド需給分析",
     "subtitle": "COMEX先物・投機筋・ETF・中国/インド現物需要から総合判定",
-    "generatedAt": "2026-11-28T06:08:49+09:00",
+    "generatedAt": "2026-11-28T12:50:59+09:00",
     "comex": {
       "status": "preserved_after_fetch_error",
       "asOfDate": "2026-08-06",
@@ -21,7 +21,7 @@
       "sourceUrl": "https://www.cmegroup.com/daily_bulletin/current/Section02B_Summary_Volume_And_Open_Interest_Metals_Futures_And_Options.pdf",
       "note": "CME Daily Bulletin PG02BのGC COMEX GOLD FUTURES。価格×建玉判定は同一基準日の価格取得後に実施。",
       "error": "CME取得失敗: RuntimeError: HTTP取得失敗（3回試行）: HTTPSConnectionPool(host='www.cmegroup.com', port=443): Read timed out. (read timeout=45)",
-      "lastAttemptAt": "2026-11-28T06:10:27+09:00"
+      "lastAttemptAt": "2026-11-28T12:52:37+09:00"
     },
     "cftc": {
       "status": "verified",
@@ -34,7 +34,7 @@
       "judgement": "投機筋の売り増加",
       "sourceName": "CFTC Disaggregated COT - Futures Only",
       "sourceUrl": "https://publicreporting.cftc.gov/Commitments-of-Traders/Disaggregated-Futures-Only/72hh-3qpy",
-      "fetchedAt": "2026-11-28T06:10:28+09:00",
+      "fetchedAt": "2026-11-28T12:52:38+09:00",
       "historyWeeks": [
         {
           "asOfDate": "2025-11-25",
@@ -614,7 +614,7 @@
       "managedMoneyLongChange": -5412,
       "managedMoneyShortChange": 3987,
       "goldPrice": 3864.2,
-      "historyFetchedAt": "2026-11-27T21:10:32+00:00"
+      "historyFetchedAt": "2026-11-28T03:52:41+00:00"
     },
     "etf": {
       "gld": {
@@ -624,16 +624,16 @@
         "changeTonnes": 0.5700000000001637,
         "sourceName": "SPDR Gold Shares Historical Archive",
         "sourceUrl": "https://www.spdrgoldshares.com/usa/gld/",
-        "fetchedAt": "2026-11-28T06:10:28+09:00"
+        "fetchedAt": "2026-11-28T12:52:38+09:00"
       },
       "iau": {
         "status": "verified",
-        "asOfDate": "2026-11-25",
-        "tonnes": 459.47,
-        "changeTonnes": -0.2899999999999636,
+        "asOfDate": "2026-11-27",
+        "tonnes": 459.17,
+        "changeTonnes": -0.30000000000001137,
         "sourceName": "iShares Gold Trust",
         "sourceUrl": "https://www.ishares.com/us/products/239561/ishares-gold-trust-fund",
-        "fetchedAt": "2026-11-28T06:10:29+09:00"
+        "fetchedAt": "2026-11-28T12:52:39+09:00"
       },
       "global": {
         "status": "verified",
@@ -646,7 +646,7 @@
         "frequency": "monthly",
         "sourceName": "World Gold Council Gold ETF Flows",
         "sourceUrl": "https://www.gold.org/goldhub/research/gold-etfs-holdings-and-flows/2026/11",
-        "fetchedAt": "2026-11-28T06:10:30+09:00",
+        "fetchedAt": "2026-11-28T12:52:40+09:00",
         "note": "WGC公式月次レポート本文から公開値を抽出。週次チャートがログイン必須の場合は月次公開値を使用。"
       },
       "gldHistory": [
@@ -1491,6 +1491,11 @@
           "asOfDate": "2026-11-25",
           "tonnes": 459.47,
           "changeTonnes": -0.2899999999999636
+        },
+        {
+          "asOfDate": "2026-11-27",
+          "tonnes": 459.17,
+          "changeTonnes": -0.30000000000001137
         }
       ],
       "historyDaily": [
@@ -2206,7 +2211,7 @@
       "frequency": "weekly",
       "sourceName": "World Gold Council Local gold price premium/discount",
       "sourceUrl": "https://www.gold.org/goldhub/data/gold-premium",
-      "fetchedAt": "2026-11-28T06:10:29+09:00",
+      "fetchedAt": "2026-11-28T12:52:39+09:00",
       "error": "WGC現物プレミアム取得不能: RuntimeError: HTTP取得失敗（1回試行）: 403 Client Error: Forbidden for url: https://www.gold.org/download/file/11657/gold-premiums.xlsx",
       "note": "一般公開経路を確認できないため旧値を最新値として表示しません。"
     },
@@ -2241,13 +2246,13 @@
     "environment": {
       "realYield10y": {
         "status": "verified",
-        "asOfDate": "2026-11-24",
-        "value": 2.79,
-        "change": 0.0,
+        "asOfDate": "2026-11-25",
+        "value": 2.73,
+        "change": -0.06000000000000005,
         "sourceName": "FRED DFII10",
         "sourceUrl": "https://fred.stlouisfed.org/series/DFII10",
         "label": "米10年実質金利",
-        "fetchedAt": "2026-11-28T06:10:29+09:00"
+        "fetchedAt": "2026-11-28T12:52:39+09:00"
       },
       "dollarBroad": {
         "status": "verified",
@@ -2257,7 +2262,7 @@
         "sourceName": "FRED DTWEXBGS",
         "sourceUrl": "https://fred.stlouisfed.org/series/DTWEXBGS",
         "label": "米ドル実効指数（Broad）",
-        "fetchedAt": "2026-11-28T06:10:29+09:00"
+        "fetchedAt": "2026-11-28T12:52:40+09:00"
       },
       "usdjpy": {
         "status": "verified",
@@ -2270,9 +2275,9 @@
       }
     },
     "assessment": {
-      "shortTerm": "中立〜やや売り",
+      "shortTerm": "中立",
       "structural": "買い需要あり（確認項目限定）",
-      "score": 41,
+      "score": 50,
       "components": [
         {
           "name": "CFTC",
@@ -2284,7 +2289,7 @@
         },
         {
           "name": "実質金利",
-          "score": 0.0
+          "score": 1.0
         },
         {
           "name": "ドル",
@@ -2300,7 +2305,7 @@
       "金先物は前回比-0.06%です。COMEXの出来高・建玉は別の基準日で表示し、日付を合わせられた場合だけ価格×建玉判定を行います。",
       "COMEX出来高・建玉は取得待ちです。取得不能時は推測値を表示しません。",
       "CFTC Managed Moneyのネットは102,942枚、前週比-9,399枚です。週次データとして短期需給に反映します。",
-      "主要金ETF保有量は GLD 1027.88t / IAU 459.47t。金融需要の実流入・流出を先物と分けて確認します。",
+      "主要金ETF保有量は GLD 1027.88t / IAU 459.17t。金融需要の実流入・流出を先物と分けて確認します。",
       "中国・インドの現物プレミアムはWGCの公開更新を確認できる場合だけ表示します。ログイン等で取得できない場合は前回値を捏造せず保留します。"
     ]
   },
@@ -2901,7 +2906,7 @@
   },
   "etfHistory": {
     "schemaVersion": "1.0.0",
-    "updatedAt": "2026-11-28T06:10:30+09:00",
+    "updatedAt": "2026-11-28T12:52:40+09:00",
     "gld": [
       {
         "asOfDate": "2026-06-08",
@@ -3894,6 +3899,11 @@
         "asOfDate": "2026-11-25",
         "tonnes": 459.47,
         "changeTonnes": -0.2899999999999636
+      },
+      {
+        "asOfDate": "2026-11-27",
+        "tonnes": 459.17,
+        "changeTonnes": -0.30000000000001137
       }
     ]
   }
