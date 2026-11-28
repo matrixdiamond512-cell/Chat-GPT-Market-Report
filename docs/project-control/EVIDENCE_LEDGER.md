@@ -601,3 +601,10 @@ Source/PR: Actions run #314 (41059206296), PR #94 branch. Four official Nikkei o
 - **回帰防止:** `scripts/verify_tradingview_close.py` のFX日次境界検証を固定UTC 24時間差から「次のNYローカル日17:00」に変更。春・秋DST（23/25時間差）と誤った前日marketDateのテストを追加。
 - **コード変更:** commits `c154d5c`, `17720b7`, `ea07c39`, `91cb727`, `ca3f7c9`。自動テスト/Actions結果はこの記録の作成時点で未確認（NOT_RUN/UNKNOWN）。
 - **次の必要確認:** PR #94の最終HEADで回帰テストとCIが成功したことを確認し、次回の確定済みFX日次足を広い日付窓で取得する。MCPの形成中警告が消え、終端時刻・市場日が一致し、必要な独立照合が済むまでは確定扱いにしない。
+
+
+### MRDATA-20261128-FX-ANCHOR-01 検証追記（2026-11-28 JST）
+
+- 専用回帰workflow `.github/workflows/tradingview-close-evidence-ci.yml` を追加。FX候補取込器・終値検証器・対応する2つのoffline test moduleだけを対象にする。
+- workflow run **#790 / run ID 46104290377**、コードHEAD `dced59937909d2e12b05659373d8fffa72ef5864` でコンパイルと両回帰テストがPASS。Actions上での自動回帰確認であり、ライブ取得やSheets保存の証明ではない。
+- 証拠台帳更新後のPR HEADは別途確認する。修正後のFX値は未昇格、未保存。本番シート変更なし。
